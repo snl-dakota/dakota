@@ -257,7 +257,8 @@ std::string WorkdirHelper::po_which(const std::string& driver_name)
   }
   else {
     //Cout << "ABSOLUTE path to driver was specified" << std::endl;
-    driver_path_str = driver_name;
+    if (bfs::is_regular_file(driver_path))
+      driver_path_str = driver_name;
   }
 
   return driver_path_str;
@@ -706,6 +707,7 @@ void WorkdirHelper::copy_items(const StringArray& source_items,
 }
 
 
+// no longer being used...
 void WorkdirHelper::prepend_path_items(const StringArray& source_items)
 {
   file_op_function file_op = &WorkdirHelper::prepend_path_item;
@@ -719,6 +721,14 @@ bool WorkdirHelper::check_equivalent_dest(const StringArray& source_items,
 {
   file_op_function file_op = &WorkdirHelper::check_equivalent;
   return file_op_items(file_op, source_items, dest_dir, false);
+}
+
+bool WorkdirHelper::find_driver(const StringArray& source_items,
+				const bfs::path& search_driver)
+{
+  // BMA TODO: file_op_items should short-circuit when found and not be verbose...
+  file_op_function file_op = &WorkdirHelper::find_file;
+  return file_op_items(file_op, source_items, search_driver, false);
 }
 
 
@@ -816,6 +826,15 @@ bool WorkdirHelper::check_equivalent(const bfs::path& src_path,
   return false;
 }
 
+bool WorkdirHelper::find_file(const bfs::path& src_path, 
+			      const bfs::path& search_file, bool overwrite)
+{
+  if ( bfs::is_regular_file(src_path) && 
+       src_path.filename() == search_file.filename())
+    return true;
+
+  return false;
+}
 
 // TODO: Boost 1.50 and newer support concat (+=) on paths, remove
 // this function when we allow that version

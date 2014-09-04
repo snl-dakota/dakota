@@ -23,11 +23,9 @@
 /** 
     Work directory TODO
     
-    * Remove legacy utilities (once concepts migrated)
+    * Doc: we will search for drivers in PATH, workdir (.), RUNDIR
 
-    * Update search paths for driver check to work with lists of wildcards
- 
-    * Remove directories during file_cleanup()
+    * Remove legacy utilities (once concepts migrated)
 
     - In general review cases with race conditions such as single dir
       getting created / removed for each eval.
@@ -41,7 +39,7 @@
 
     - Verify template files exist at parse and that workdir parent exists
 
-    - Verify behavior when directory exitsts
+    - Verify behavior when directory exists
   
     - Allow recursive copy to descend to overwrite leaf nodes when
       directories already exist
@@ -120,31 +118,6 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
     problem_db.get_s2a("interface.application.analysis_components"))
 {
   size_t num_programs = programNames.size();
-  if (num_programs > 0 && !programNames[0].empty()) {
-    // Ignore anything beyond the first whitespace in programNames[0]
-    std::vector<std::string> driver_and_args;
-
-    boost::split( driver_and_args, programNames[0], boost::is_any_of("\t ") );
-
-    std::string driver_path = WorkdirHelper::which(driver_and_args[0]);
-    if ( driver_path.empty() ) {
-      Cout << "\nWarning (analysis_driver): '" << driver_and_args[0] 
-	   << "': command not found.\n" << std::endl;
-      // we decided not to make this a fatal error as it's too fragile
-      //abort_handler(INTERFACE_ERROR);
-    }
-    else if (driver_path.substr(0, 4) == DAK_PATH_ENV_NAME) {
-      // Allow legacy logic to proceed normally
-#ifdef DEBUG
-      Cout << driver_and_args[0] << " - FOUND in:\n" << driver_path <<std::endl;
-#endif
-    }
-    /* Uncomment for filename debugging
-    else
-      Cout << driver_path << std::endl;
-    // End filename debugging */
-  }
-
   if (num_programs > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;
 
@@ -812,11 +785,10 @@ remove_params_results_files(const bfs::path& params_path,
 }
 
 
-// TODO: remove directories as well
-/** Remove any files still referenced in the fileNameMap */
+/** Remove any files and directories still referenced in the fileNameMap */
 void ProcessApplicInterface::file_cleanup() const
 {
-  if (fileSaveFlag)
+  if (fileSaveFlag && dirSave)
     return;
 
   std::map<int, PathTriple>::const_iterator
@@ -825,20 +797,26 @@ void ProcessApplicInterface::file_cleanup() const
   for(; file_name_map_it != file_name_map_end; ++file_name_map_it) {
     const bfs::path& parfile = (file_name_map_it->second).get<0>();
     const bfs::path& resfile = (file_name_map_it->second).get<1>();
-    if (!multipleParamsFiles || !iFilterName.empty()) {
-      bfs::remove(parfile);
-      bfs::remove(resfile);
-    }
-    if (multipleParamsFiles) {
-      size_t i, num_programs = programNames.size();
-      for(i=1; i<=num_programs; ++i) {
-        std::string prog_num("." + boost::lexical_cast<std::string>(i));
-	bfs::path pname = WorkdirHelper::concat_path(parfile, prog_num);
-	bfs::remove(pname);
-	bfs::path rname = WorkdirHelper::concat_path(resfile, prog_num);
-	bfs::remove(rname);
+    const bfs::path& wd_path = (file_name_map_it->second).get<2>();
+    if (!fileSaveFlag) {
+      if (!multipleParamsFiles || !iFilterName.empty()) {
+	bfs::remove(parfile);
+	bfs::remove(resfile);
+      }
+      if (multipleParamsFiles) {
+	size_t i, num_programs = programNames.size();
+	for(i=1; i<=num_programs; ++i) {
+	  std::string prog_num("." + boost::lexical_cast<std::string>(i));
+	  bfs::path pname = WorkdirHelper::concat_path(parfile, prog_num);
+	  bfs::remove(pname);
+	  bfs::path rname = WorkdirHelper::concat_path(resfile, prog_num);
+	  bfs::remove(rname);
+	}
       }
     }
+    // a non-empty entry here indicates the directory was created for this eval
+    if (!dirSave && !wd_path.empty())
+      WorkdirHelper::recursive_remove(wd_path);
   }
 }
 

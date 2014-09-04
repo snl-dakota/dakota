@@ -72,6 +72,10 @@ private:
   std::list<void*> VIL;
   static void check_variables_node(void*);
 
+  static int check_driver(const String& an_driver,
+			  const StringArray& link_files,
+			  const StringArray& copy_files);
+
 public:
 
   static int nerr;

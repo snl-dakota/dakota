@@ -238,6 +238,11 @@ public:
 				    const bfs::path& dest_dir);
 
 
+  /// check whether the any of the passed source items (possibly
+  /// including wildcards to be expanded) matches the passed search driver
+  static bool find_driver(const StringArray& source_items,
+			  const bfs::path& search_driver);
+
   // Kernels for file operations to apply when iterating directory
   // entries or wildcards.  All must be of type file_op_function.
 
@@ -259,6 +264,11 @@ public:
   /// return true if the src and dest are filesystem equivalent
   static bool check_equivalent(const bfs::path& src_path, 
 			       const bfs::path& dest_dir, bool overwrite);
+
+  /// return true if the src_path is a regular file and has same
+  /// filename as search_file
+  static bool find_file(const bfs::path& src_path, 
+			const bfs::path& search_file, bool overwrite);
 
   /// recursively perform file_op (copy, path adjust, etc.) on a list
   /// of source_paths (files, directories, symlinks), which

@@ -24,6 +24,8 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 #ifdef HAVE_OPTPP
 #include "globals.h"
 #endif
@@ -772,15 +774,11 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
 {
   Iface_Info *ii = *(Iface_Info**)g;
   DataInterfaceRep *di = ii->di;
-  StringArray *sa;
-  const char *s;
-  int ac, ec, j, nd;
-  void (*Complain)(const char *fmt, ...);
-  size_t i, n;
 
-  nd = di->analysisDrivers.size();
-  ac = di->asynchLocalAnalysisConcurrency;
-  ec = di->asynchLocalEvalConcurrency;
+  StringArray& analysis_drivers = di->analysisDrivers;
+  int nd = analysis_drivers.size();
+  int ac = di->asynchLocalAnalysisConcurrency;
+  int ec = di->asynchLocalEvalConcurrency;
 
   if (di->algebraicMappings == "" && nd == 0)
     squawk("interface specification must provide algebraic_mappings,\n\t"
@@ -796,27 +794,14 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
 	 "Synchronous operations will be used", ec, ac);
     di->interfaceSynchronization = SYNCHRONOUS_INTERFACE;
   }
-  if ((di->interfaceType == "system" || di->interfaceType == "fork")
-      && (Complain = Dak_pddb->parallel_library().command_line_check() ? warn
-	  : Dak_pddb->parallel_library().command_line_run() ? squawk : 0)) {
-    sa = &di->analysisDrivers;
-    n = sa->size();
 
-    // BMA TODO: This could go here or in Interface ctor, probably
-    // better at parse time... Also should do not_executable warn here
-
-    // Prepend any directories from linkFiles and copyFiles to env
-    // path to help find drivers
-    WorkdirHelper::prepend_path_items(di->linkFiles);
-    WorkdirHelper::prepend_path_items(di->copyFiles);
-#ifdef DEBUG_NOT_EXECUTABLE
-    for(i = 0; i < n; ++i)
-      if ((j = not_executable(s = (*sa)[i], di->templateDir)))
-	Complain("analysis driver \"%s\" %s", s,
-		 j == 1	? "not found"
-		 : "exists but is not executable");
-#endif
-  }
+  // validate each of the analysis_drivers
+  if ( di->interfaceType == "system" || di->interfaceType == "fork" )
+    for(size_t i = 0; i < nd; ++i) {
+      // trim any leading whitespace from the driver, in place
+      boost::trim(analysis_drivers[i]);
+      check_driver(analysis_drivers[i], di->linkFiles, di->copyFiles);
+    }
 
   // Check to make sure none of the linkFiles nor copyFiles are the
   // same as the workDir (could combine into single loop with above)
@@ -828,6 +813,66 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   pDDBInstance->dataInterfaceList.push_back(*ii->di_handle);
   delete ii->di_handle;
   delete ii;
+}
+
+/** returns 1 if not found, 2 if found, but not executable, 0 if found (no error) in case we want to return to error on not found... */
+int NIDRProblemDescDB::check_driver(const String& an_driver,
+				    const StringArray& link_files,
+				    const StringArray& copy_files)
+{
+  using boost::escaped_list_separator;
+  using boost::tokenizer;
+
+  StringArray driver_and_args;  // to hold tokens of the driver
+
+  // tokenize on whistespace, preserving quoted strings and escapes,
+  // so the outermost quoted strings become single command-line args
+  escaped_list_separator<char> els("\\", " \t", "\"'");
+  tokenizer<escaped_list_separator<char> > tok(an_driver, els);
+  std::copy(tok.begin(), tok.end(), std::back_inserter(driver_and_args));
+
+  if (driver_and_args.size() == 0)
+    squawk("Empty analysis_driver string");
+  else {
+
+    // the executable program name to check
+    const String& program_name = driver_and_args[0];
+
+    if (program_name.empty())
+      squawk("Empty analysis_driver string");
+    else {
+
+      // Drivers can be found in $PATH:WORKDIR(.):RUNDIR
+      // Therefore have to check PATH, link/copy files, PWD
+
+      // check PATH and RUNDIR (since . is already on the search path)
+      String driver_found = WorkdirHelper::which(program_name);
+      if (!driver_found.empty())
+	return 0;
+
+      // check against link/copy files that will appear in workdir
+
+      // TODO: if they are specified with ./subdirA/subdir1/foo.sh
+      // would have been found above which might be an error if subdir
+      // is not linked or copied file
+
+      if (WorkdirHelper::find_driver(link_files, program_name))
+	return 0;
+
+      if (WorkdirHelper::find_driver(copy_files, program_name))
+	return 0;
+
+      const char* s = program_name.c_str();
+      warn("analysis driver \"%s\" %s", s, "not found");
+
+      // BMA TODO: check whether the driver is executable and if not, return 2
+      // : "exists but is not executable");
+
+    }
+
+  }
+
+  return 1;
 }
 
 void NIDRProblemDescDB::
