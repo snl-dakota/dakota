@@ -67,10 +67,10 @@ void test_cp_template_files_into_wd(bfs::path& wd)
       ++file_count;
       //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
     } 
-    //else if( is_link(p) ) {
-      //++link_count;
+    else if( is_symlink(p) ) {
+      ++link_count;
       //std::cout << "counting links poplated wdir.. currentLCount is: " << link_count << std::endl;
-    //} 
+    } 
     else if( is_directory(p) ) {
       ++dir_count;
       //std::cout << "counting dirs poplated wdir.. currentDCount is: " << dir_count << std::endl;
@@ -78,7 +78,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
   }
 
   BOOST_CHECK( !wd.empty() );
-  BOOST_CHECK( file_count+link_count+dir_count >= 3 );
+  BOOST_CHECK( file_count+link_count+dir_count >= 2 );
   //std::cout << "DONE iterating dir:  " << wd << std::endl;
 }
 
@@ -100,10 +100,10 @@ void test_ln_template_files_into_wd(bfs::path& wd)
       ++file_count;
       //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
     } 
-    //else if( is_link(p) ) {
-      //++link_count;
+    else if( is_symlink(p) ) {
+      ++link_count;
       //std::cout << "counting links poplated wdir.. currentLCount is: " << link_count << std::endl;
-    //} 
+    } 
     else if( is_directory(p) ) {
       ++dir_count;
       //std::cout << "counting dirs poplated wdir.. currentDCount is: " << dir_count << std::endl;
@@ -111,7 +111,7 @@ void test_ln_template_files_into_wd(bfs::path& wd)
   }
 
   BOOST_CHECK( !wd.empty() );
-  BOOST_CHECK( file_count+link_count+dir_count >= 3 );
+  BOOST_CHECK( file_count+link_count+dir_count >= 2 );
   //std::cout << "DONE iterating dir:  " << wd << std::endl;
 
   //BOOST_CHECK( bfs::exists(wd += "/dakota_workdir.templatedir.dat") );
