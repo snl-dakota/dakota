@@ -1,8 +1,10 @@
 Blurb::
 Overwrite existing files within a work directory
+
 Description::
-By default, Dakota will not overwrite any existing files in a work directory it creates. 
-The \c replace keyword changes this behavior to force overwriting.
+By default, Dakota will not overwrite any existing files in a work
+directory.  The \c replace keyword changes this behavior to
+force overwriting.
 
 Topics::
 Examples::

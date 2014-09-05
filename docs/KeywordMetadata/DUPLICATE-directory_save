@@ -1,11 +1,11 @@
 Blurb::
-Do not delete the work directories after completion of the function evaluation
-Description::
-If a working directory is created by Dakota using the \c work_directory keyword, 
-it is deleted after the evaluation is completed unless the the \c directory_save keyword is specified.
+Preserve the work directory after function evaluation completion
 
-This keyword can only be used if the \c named keyword is used to specify a 
-work directory name.
+Description::
+By default, when a working directory is created by Dakota using the \c
+work_directory keyword, it is deleted after the evaluation is
+completed.  The \c directory_save keyword will cause Dakota to leave
+(not delete) the directory.
 
 Topics::
 Examples::

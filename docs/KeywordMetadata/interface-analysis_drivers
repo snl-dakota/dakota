@@ -1,10 +1,11 @@
 Blurb::
 Define how Dakota should run a function evaluation
 Description::
-The required \c analysis_drivers keyword provides the names of
-executable analysis programs or scripts, a.k.a. "drivers" which comprise a function
-evaluation. The optional and required sub-keywords specify how Dakota will
-manage directories and files, and run the driver(s).
+The required \c analysis_drivers keyword provides the names of one or
+more executable analysis programs or scripts, a.k.a. "drivers" which
+comprise a function evaluation. The optional and required sub-keywords
+specify how Dakota will manage directories and files, and run the
+driver(s).
 
 <b> Types of Interfaces </b>
 
@@ -37,6 +38,23 @@ A function evaluation may comprise:
    (See the \c asynchronous keyword) and can have any of the above options as
    well.
 
+For fork and system interfaces, the analysis_driver list contains the
+names of one or more executable programs or scripts taking parameters
+files as input and producing results files as output.  The first field
+in each analysis driver string must be an executable program or script
+for Dakota to spawn to perform the function evaluation.  Drivers
+support: 
+
+ - One set of nested quotes, for arguments with spaces 
+ 
+ - Environment variables to be evaluated before the child process is
+   started.  Dakota will define special environment variables \c
+   DAKOTA_PARAMETERS_FILE and \c DAKOTA_RESULTS_FILE which can be used
+   in the driver script.
+
+ - Variable definitions preceding the executable program or script,
+   such as 'MY_VAR=2 run_analysis.sh' are no longer supported.
+
 For details and examples see the Simulation Interface
 Components section of the Interfaces chapter of the User's Manual; for
 details on the filters and environment variables, see the subsection on
@@ -44,6 +62,38 @@ Syntax for Filter and Driver Strings.
 
 Topics::	problem
 Examples::
+
+Examples:
+\begin verbatim
+  1. analysis_drivers = 'run_simulation_part1.sh' 'run_simulation_part2.sh'
+
+  2. analysis_driver = 'run_simulation.sh -option "option 1"'
+
+  3. analysis_driver = 'simulation.exe -option value -dakota_params $DAKOTA_PARAMETERS_FILE -input sim.in -dakota_results_file $DAKOTA_RESULTS_FILE'
+\end verbatim
+
 Theory::
 Faq::
+<b>Where will Dakota look for the analysis_driver?</b> Dakota will
+locate analysis_driver programs first in the system PATH environment
+variable, then the present working directory (the
+interface-analysis_drivers-fork-work_directory if used, otherwise the
+directory in which Dakota is started), then the directory from which
+Dakota is started.
+
+<b>Where should the driver be located?</b> When the driver is a script
+it is most commonly placed in the same directory as the Dakota input
+file.  When using a \ref
+interface-analysis_drivers-fork-work_directory, Dakota will also look
+for drivers in the specified working directory, so link_files or
+copy_files may specify the driver to get copied or linked into the
+work directory.  When executable programs are used as drivers, they
+are often elsewhere on the filesystem.  These can be specified using
+absolute paths, or by prepending the PATH environment variable so
+Dakota finds them.
+
+<b>What if Dakota fails to run my analysis_driver?</b> Prepend the
+absolute location of the driver to the PATH environment variable
+before running Dakota.
+
 See_Also::	

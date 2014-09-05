@@ -1,16 +1,19 @@
 Blurb::
-Have Dakota set up working directories before launching analysis driver
-Description::
-When performing concurrent evaluations and/or analyses, it is often necessary 
-to cloister input and output files in separate directories to avoid conflicts. 
-When the \c work_directory feature is enabled, Dakota will create a directory for 
-each evaluation/analysis (with optional tagging and saving as with files), and 
-execute the analysis driver from that working directory. 
+Perform each function evaluation in a separate working directory
 
-The directory may be \c named with a string, or left anonymous to use temporary 
-file space. If an optional \c template_directory and/or list of 
-\c template_files is specified, Dakota will link (or copy) those files into 
-each working directory.
+Description::
+When performing concurrent evaluations, it is typically necessary to
+cloister simulation input and output files in separate directories to
+avoid conflicts.  When the \c work_directory feature is enabled,
+Dakota will create a directory for each evaluation, with optional
+tagging (\c directory_tag) and saving (\c directory_save ), as with
+files, and execute the analysis driver from that working directory.
+
+The directory may be \c named with a string, or left anonymous to use
+an automatically-generated directory in the system's temporary file
+space, e.g., /tmp/dakota_work_c93vb71z/. The optional \c link_files
+and \c copy_files keywords specify files or directories which should
+appear in each working directory.
 
 Topics::
 Examples::
