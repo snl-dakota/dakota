@@ -664,6 +664,10 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	  active2ACVarMapTargets[curr_index] = Pecos::N_LWR_BND;
 	else if (map2 == "upper_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::N_UPR_BND;
+	else if (map2 == "location")
+	  active2ACVarMapTargets[curr_index] = Pecos::N_LOCATION;
+	else if (map2 == "scale")
+	  active2ACVarMapTargets[curr_index] = Pecos::N_SCALE;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "normal distributions." << std::endl;
@@ -728,11 +732,14 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	}
       }
       else if (type == UNIFORM_UNCERTAIN) {
-	// TO DO: mean/std deviation or location/scale
 	if (map2 == "lower_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::U_LWR_BND;
 	else if (map2 == "upper_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::U_UPR_BND;
+	else if (map2 == "location")
+	  active2ACVarMapTargets[curr_index] = Pecos::U_LOCATION;
+	else if (map2 == "scale")
+	  active2ACVarMapTargets[curr_index] = Pecos::U_SCALE;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "uniform distributions." << std::endl;
@@ -752,13 +759,16 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	}
       }
       else if (type == TRIANGULAR_UNCERTAIN) {
-	// TO DO: mean/std deviation or location/scale
 	if (map2 == "mode")
 	  active2ACVarMapTargets[curr_index] = Pecos::T_MODE;
 	else if (map2 == "lower_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::T_LWR_BND;
 	else if (map2 == "upper_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::T_UPR_BND;
+	else if (map2 == "location")
+	  active2ACVarMapTargets[curr_index] = Pecos::T_LOCATION;
+	else if (map2 == "scale")
+	  active2ACVarMapTargets[curr_index] = Pecos::T_SCALE;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "triangular distributions." << std::endl;
@@ -2570,18 +2580,21 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
 
     size_t dist_index = pacvm_index - num_cdv;
     switch (sacvm_target) {
-    case Pecos::N_MEAN:    case Pecos::N_STD_DEV:
-    case Pecos::N_LWR_BND: case Pecos::N_UPR_BND:
+    case Pecos::N_MEAN:     case Pecos::N_STD_DEV:
+    case Pecos::N_LWR_BND:  case Pecos::N_UPR_BND:
+    case Pecos::N_LOCATION: case Pecos::N_SCALE:
       break;
     case Pecos::LN_MEAN:     case Pecos::LN_STD_DEV:
     case Pecos::LN_LAMBDA:   case Pecos::LN_ZETA:
     case Pecos::LN_ERR_FACT: case Pecos::LN_LWR_BND: case Pecos::LN_UPR_BND:
       dist_index -= num_nuv; break;
-    case Pecos::U_LWR_BND: case Pecos::U_UPR_BND:
+    case Pecos::U_LWR_BND:  case Pecos::U_UPR_BND:
+    case Pecos::U_LOCATION: case Pecos::U_SCALE:
       dist_index -= num_nuv + num_lnuv; break;
     case Pecos::LU_LWR_BND: case Pecos::LU_UPR_BND:
       dist_index -= num_nuv + num_lnuv + num_uuv; break;
-    case Pecos::T_MODE: case Pecos::T_LWR_BND: case Pecos::T_UPR_BND:
+    case Pecos::T_MODE:     case Pecos::T_LWR_BND:   case Pecos::T_UPR_BND:
+    case Pecos::T_LOCATION: case Pecos::T_SCALE:
       dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv; break;
     case Pecos::E_BETA:
       dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv; break;
@@ -2710,6 +2723,12 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
     subModel.all_continuous_lower_bound(r_var, mapped_index); break;
   case Pecos::CDV_UPR_BND: case Pecos::CSV_UPR_BND:
     subModel.all_continuous_upper_bound(r_var, mapped_index); break;
+  // N_{MEAN,STD_DEV,LWR_BND,UPR_BND} change individual dist parameters only.
+  // N_{LOCATION,SCALE} change multiple parameters to accomplish a translation
+  // or scaling.  They are mapped to a convenient definition believed to be the
+  // most natural for a user, where the definition changes from distribution to
+  // distribution (a consistent meaning of mu/sigma would be more awkward for a
+  // user to convert).  For Normal, location & scale are mean & std deviation.
   case Pecos::N_MEAN:
     submodel_adp.normal_mean(r_var, mapped_index); break;
   case Pecos::N_STD_DEV:
@@ -2718,6 +2737,35 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
     submodel_adp.normal_lower_bound(r_var, mapped_index); break;
   case Pecos::N_UPR_BND:
     submodel_adp.normal_upper_bound(r_var, mapped_index); break;
+  case Pecos::N_LOCATION: { // a translation with no change in shape/scale
+    Real mean = submodel_adp.normal_mean(mapped_index), delta = r_var - mean,
+	l_bnd = submodel_adp.normal_lower_bound(mapped_index),
+	u_bnd = submodel_adp.normal_upper_bound(mapped_index);
+    // translate: change bounds by same amount as mean
+    submodel_adp.normal_mean(r_var, mapped_index);
+    if (l_bnd > -DBL_MAX)
+      submodel_adp.normal_lower_bound(l_bnd + delta, mapped_index);
+    if (u_bnd <  DBL_MAX)
+      submodel_adp.normal_upper_bound(u_bnd + delta, mapped_index);
+    break;
+  }
+  case Pecos::N_SCALE: { // change in shape/scale without translation
+    Real mean = submodel_adp.normal_mean(mapped_index),
+        stdev = submodel_adp.normal_std_deviation(mapped_index),
+	l_bnd = submodel_adp.normal_lower_bound(mapped_index),
+	u_bnd = submodel_adp.normal_upper_bound(mapped_index);
+    // scale: preserve number of std deviations where l,u bound occurs
+    submodel_adp.normal_std_deviation(r_var, mapped_index);
+    if (l_bnd > -DBL_MAX) {
+      Real num_sig_l = (mean - l_bnd) / stdev;
+      submodel_adp.normal_lower_bound(mean - num_sig_l * r_var, mapped_index);
+    }
+    if (u_bnd <  DBL_MAX) {
+      Real num_sig_u = (u_bnd - mean) / stdev;
+      submodel_adp.normal_upper_bound(mean + num_sig_u * r_var, mapped_index);
+    }
+    break;
+  }
   case Pecos::LN_MEAN:
     submodel_adp.lognormal_mean(r_var, mapped_index); break;
   case Pecos::LN_STD_DEV:
@@ -2732,20 +2780,72 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
     submodel_adp.lognormal_lower_bound(r_var, mapped_index); break;
   case Pecos::LN_UPR_BND:
     submodel_adp.lognormal_upper_bound(r_var, mapped_index); break;
+  // U_{LWR_BND,UPR_BND} change individual dist parameters only.
+  // U_{LOCATION,SCALE} change multiple parameters to accomplish a translation
+  // or scaling.  They are mapped to a convenient definition believed to be the
+  // most natural for a user, where the definition changes from distribution to
+  // distribution (a consistent meaning of mu/sigma would be more awkward for a
+  // user to convert).  For Uniform, location & scale are center & range.
   case Pecos::U_LWR_BND:
     submodel_adp.uniform_lower_bound(r_var, mapped_index); break;
   case Pecos::U_UPR_BND:
     submodel_adp.uniform_upper_bound(r_var, mapped_index); break;
+  case Pecos::U_LOCATION: {
+    // translate: change both bounds by same amount
+    Real l_bnd = submodel_adp.uniform_lower_bound(mapped_index),
+	 u_bnd = submodel_adp.uniform_upper_bound(mapped_index),
+        center = (u_bnd + l_bnd) / 2., delta = r_var - center;
+    submodel_adp.uniform_lower_bound(l_bnd + delta, mapped_index);
+    submodel_adp.uniform_upper_bound(u_bnd + delta, mapped_index);
+    break;
+  }
+  case Pecos::U_SCALE: {
+    // scale: move bounds in/out by same amount about consistent center
+    Real l_bnd = submodel_adp.uniform_lower_bound(mapped_index),
+	 u_bnd = submodel_adp.uniform_upper_bound(mapped_index),
+	center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.;
+    submodel_adp.uniform_lower_bound(center - half_range, mapped_index);
+    submodel_adp.uniform_upper_bound(center + half_range, mapped_index);
+    break;
+  }
   case Pecos::LU_LWR_BND:
     submodel_adp.loguniform_lower_bound(r_var, mapped_index); break;
   case Pecos::LU_UPR_BND:
     submodel_adp.loguniform_upper_bound(r_var, mapped_index); break;
+  // T_{MODE,LWR_BND,UPR_BND} change individual dist parameters only.
+  // T_{LOCATION,SCALE} change multiple parameters to accomplish a translation
+  // or scaling.  They are mapped to a convenient definition believed to be the
+  // most natural for a user, where the definition changes from distribution to
+  // distribution (a consistent meaning of mu/sigma would be more awkward for a
+  // user to convert).  For Triangular, location & scale are mode & range.
   case Pecos::T_MODE:
     submodel_adp.triangular_mode(r_var, mapped_index); break;
   case Pecos::T_LWR_BND:
     submodel_adp.triangular_lower_bound(r_var, mapped_index); break;
   case Pecos::T_UPR_BND:
     submodel_adp.triangular_upper_bound(r_var, mapped_index); break;
+  case Pecos::T_LOCATION: {
+    // translate: change mode and both bounds by same amount
+    Real mode = submodel_adp.triangular_mode(mapped_index),
+        l_bnd = submodel_adp.triangular_lower_bound(mapped_index),
+        u_bnd = submodel_adp.triangular_upper_bound(mapped_index),
+        delta = r_var - mode;
+    submodel_adp.triangular_mode(r_var, mapped_index);
+    submodel_adp.triangular_lower_bound(l_bnd + delta, mapped_index);
+    submodel_adp.triangular_upper_bound(u_bnd + delta, mapped_index);
+    break;
+  }
+  case Pecos::T_SCALE: {
+    // scale: preserve L/M/U proportions while scaling range
+    Real mode = submodel_adp.triangular_mode(mapped_index),
+        l_bnd = submodel_adp.triangular_lower_bound(mapped_index),
+	u_bnd = submodel_adp.triangular_upper_bound(mapped_index),
+        range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
+       perc_u = (u_bnd - mode) / range;
+    submodel_adp.triangular_lower_bound(mode - perc_l * r_var, mapped_index);
+    submodel_adp.triangular_upper_bound(mode + perc_u * r_var, mapped_index);
+    break;
+  }
   case Pecos::E_BETA:
     submodel_adp.exponential_beta(r_var, mapped_index); break;
   case Pecos::BE_ALPHA:
