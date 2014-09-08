@@ -1,11 +1,16 @@
 Blurb::
-The \c nonblocking option causes Dakota to run the algorithm in asynchronous mode
+Evaluate points in the pattern until an improving point is found
 Description::
-The \c nonblocking option causes Dakota to run the algorithm in asynchronous
-mode.
 
-The \c nonblocking option is not available when %Dakota is
-used in message-passing mode.
+In the \c nonblocking case, all points in the pattern may not be evaluated, 
+since the first improving point found becomes the next iterate. Since 
+the algorithm steps will be subject to parallel timing variabilities, 
+these runs will not generally be repeatable.
+
+In this release, both \c blocking and \c nonblocking specifications result 
+in blocking behavior (except in the case where \c exporatory_moves is set 
+to \c adaptive_pattern). Nonblocking behavior will be re-enabled after 
+some underlying technical issues have been resolved.
 
 Topics::	not_yet_reviewed
 Examples::

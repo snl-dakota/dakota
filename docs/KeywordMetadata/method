@@ -81,7 +81,7 @@ reasonable to pull them out of the method dependent blocks and consolidate the
 specifications, however, they are NOT universally respected by all methods.
 
 
-Topics::	block, not_yet_reviewed
+Topics::	block
 Examples::
 Several examples follow. The first example shows a minimal
 specification for an optimization method.

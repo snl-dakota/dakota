@@ -1,10 +1,10 @@
 Blurb::
-Select how Dakota schedules function evaluations
+Select how Dakota schedules function evaluations in a pattern search
 Description::
 The \c synchronization specification can be used to specify
 the use of either \c blocking or \c nonblocking schedulers.
 
-Topics::	not_yet_reviewed
+Topics:: 	
 Examples::
 Theory::
 Faq::
