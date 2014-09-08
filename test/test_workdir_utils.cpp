@@ -7,8 +7,8 @@
     _______________________________________________________________________ */
 
 #include "WorkdirHelper.hpp"
-//#include "dakota_global_defs.hpp"
-//#include "dakota_filesystem_utils.hpp"
+#include "dakota_global_defs.hpp"
+#include "dakota_filesystem_utils.hpp"
 
 // Boost.Test
 #include <boost/test/minimal.hpp>
@@ -22,6 +22,34 @@
 
 namespace Dakota {
 namespace TestWorkdir {
+
+void test_save_current_path(const std::string& pwd_str,
+                            const std::string& env_path_str)
+{
+// 1.	Save current path
+// 4.	Change directory into newly created dir (verify current path is as expected)
+// and
+// 6.	Change to startup PWD (aka rundir) (verify current path is as expected)
+
+  bfs::path wd( WorkdirHelper::system_tmp_name("") );
+  WorkdirHelper::create_directory(wd, DIR_CLEAN);
+
+  if( bfs::exists(wd) && is_directory(wd) ) {
+    WorkdirHelper::change_directory(wd);
+    std::string new_pwd_str = Dakota::get_cwd();
+    BOOST_CHECK( pwd_str != new_pwd_str );
+
+    WorkdirHelper::prepend_preferred_env_path( wd.string() );
+    BOOST_CHECK( env_path_str != std::getenv("PATH") );
+
+    // change back to original rundir
+    bfs::path rundir(pwd_str);
+    WorkdirHelper::change_directory(rundir);
+    new_pwd_str = Dakota::get_cwd();
+    BOOST_CHECK( pwd_str == new_pwd_str );
+  }
+}
+
 
 void count_driver_scripts(const std::string& glob_string)
 {
@@ -119,6 +147,7 @@ void test_ln_template_files_into_wd(bfs::path& wd)
 
 void test_rmdir(bfs::path& wd)
 {
+  // 7.	Remove the directory (verify its gone)
   WorkdirHelper::recursive_remove(wd);
   BOOST_CHECK( !bfs::exists(wd) );
 }
@@ -126,6 +155,11 @@ void test_rmdir(bfs::path& wd)
 
 void test_create_and_remove_tmpdir(const std::string& dir_name, bool copy=false)
 {
+// 2.	Use system tmp name (verify non-empty)
+// 3.	Make a directory (verify it exists);
+//		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
+// 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
+
   bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
@@ -144,7 +178,10 @@ void test_create_and_remove_tmpdir(const std::string& dir_name, bool copy=false)
 void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
   bool copy=false)
 {
-  //bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
+// 3.	Make a directory (verify it exists);
+//		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
+// 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
+
   bfs::path wd( dir_name );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
@@ -173,7 +210,21 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
 int test_main( int argc, char* argv[] )      // note the name!
 {
   using namespace Dakota::TestWorkdir;
-  //using Dakota::WorkdirHelper;;
+
+  Dakota::WorkdirHelper::initialize();
+
+  std::string pwd_str( std::getenv("PWD") );
+  std::string env_path_str( std::getenv("PATH") );
+  test_save_current_path(pwd_str, env_path_str);
+
+  test_create_and_remove_tmpdir("dak_wd");        // SYM LINKS used by default
+  test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
+
+  // Repeat create_and_remove, but override the default "link" case and perform
+  // file copies
+  bool do_copy = true;
+  test_create_and_remove_tmpdir("dak_wd", do_copy);
+  test_create_and_remove_wd_in_rundir("workdir", do_copy);
 
   //bfs::path fq_search(argv[1]);
   std::string fq_search(std::getenv("PWD"));
@@ -181,12 +232,6 @@ int test_main( int argc, char* argv[] )      // note the name!
   int run_result = 0;
 
   count_driver_scripts(fq_search);
-  test_create_and_remove_tmpdir("dak_wd");        // SYM LINKS used by default
-  test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
-
-  bool do_copy = true;
-  test_create_and_remove_tmpdir("dak_wd", do_copy);
-  test_create_and_remove_wd_in_rundir("workdir", do_copy);
 
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
