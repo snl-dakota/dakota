@@ -265,6 +265,12 @@ std::string WorkdirHelper::po_which(const std::string& driver_name)
 }
 
 
+void WorkdirHelper::set_preferred_path()
+{
+  putenv_impl(dakPreferredEnvPath.c_str());
+}
+
+
 void WorkdirHelper::reset()
 {
   if (DAK_CHDIR( startupPWD.c_str() )) {
@@ -272,8 +278,7 @@ void WorkdirHelper::reset()
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
   }
-
-  putenv_impl(dakPreferredEnvPath.c_str());
+  set_preferred_path();
 }
 
 

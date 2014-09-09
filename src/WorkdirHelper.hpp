@@ -277,6 +277,10 @@ public:
 			    const StringArray& source_paths,
 			    const bfs::path& dest_dir,
 			    bool overwrite);
+
+  /// set/reset PATH to dakPreferredEnvPath
+  static void set_preferred_path();
+
   ///  Resets the working directory "state" to its initial state when
   ///  DAKOTA  was launched
   static void reset();

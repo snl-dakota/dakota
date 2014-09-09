@@ -839,6 +839,9 @@ bfs::path ProcessApplicInterface::get_workdir_name()
 
 void ProcessApplicInterface::prepare_process_environment()
 {
+  // TODO: consider whether to do this per eval or only at startup...
+  WorkdirHelper::set_preferred_path();
+
   if (useWorkdir)
     WorkdirHelper::change_directory(curWorkdir);
 
