@@ -2251,7 +2251,8 @@
                   </keyword>
                 </keyword>
                 <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial neural network" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <keyword  id="nodes" name="nodes" code="{N_mom(shint,annNodes)}" label="ANN number nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
+                  <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="ANN maximum nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
+		    <alias name="nodes"/>
                     <param type="INTEGER" />
                   </keyword>
                   <keyword  id="range" name="range" code="{N_mom(Real,annRange)}" label="ANN range" help="ModelCommands.html#ModelSurrG" minOccurs="0" >

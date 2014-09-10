@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1306 distinct keywords (plus 206 aliases) **/
+/** 1306 distinct keywords (plus 207 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -1673,9 +1673,10 @@ static KeyWord
 		{"poly_order",9,0,1,0,0,0.,0.,0,N_mom(shint,mlsPolyOrder)},
 		{"weight_function",9,0,2,0,0,0.,0.,0,N_mom(shint,mlsWeightFunction)}
 		},
-	kw_283[4] = {
+	kw_283[5] = {
 		{"export_model_file",11,0,4,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
-		{"nodes",9,0,1,0,0,0.,0.,0,N_mom(shint,annNodes)},
+		{"max_nodes",9,0,1,0,0,0.,0.,0,N_mom(shint,annNodes)},
+		{"nodes",1,0,1,0,0,0.,0.,-1,N_mom(shint,annNodes)},
 		{"random_weight",9,0,3,0,0,0.,0.,0,N_mom(shint,annRandomWeight)},
 		{"range",10,0,2,0,0,0.,0.,0,N_mom(Real,annRange)}
 		},
@@ -1710,7 +1711,7 @@ static KeyWord
 		{"metrics",15,2,9,0,kw_272,0.,0.,0,N_mom(strL,diagMetrics)},
 		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
 		{"moving_least_squares",8,3,1,1,kw_282,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
-		{"neural_network",8,4,1,1,kw_283,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
+		{"neural_network",8,5,1,1,kw_283,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
 		{"polynomial",8,4,1,1,kw_284,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
 		{"radial_basis",8,5,1,1,kw_285,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
 		{"recommended_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},

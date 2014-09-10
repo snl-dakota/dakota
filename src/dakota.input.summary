@@ -1644,7 +1644,7 @@ KEYWORD model
 	      )
 	    |
 	    ( neural_network
-	      [ nodes INTEGER ]
+	      [ max_nodes ALIAS nodes INTEGER ]
 	      [ range REAL ]
 	      [ random_weight INTEGER ]
 	      [ export_model_file STRING ]

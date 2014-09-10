@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1306 distinct keywords (plus 206 aliases) **/
+/** 1306 distinct keywords (plus 207 aliases) **/
 
 static GuiKeyWord
 	kw_1[2] = {
@@ -1790,9 +1790,10 @@ static GuiKeyWord
 		{"poly_order",9,0,1,0,1707,0,0.,0.,0.,0,"{MLS polynomial order} ModelCommands.html#ModelSurrG"},
 		{"weight_function",9,0,2,0,1709,0,0.,0.,0.,0,"{MLS weight function} ModelCommands.html#ModelSurrG"}
 		},
-	kw_267[4] = {
+	kw_267[5] = {
 		{"export_model_file",11,0,4,0,1721},
-		{"nodes",9,0,1,0,1715,0,0.,0.,0.,0,"{ANN number nodes} ModelCommands.html#ModelSurrG"},
+		{"max_nodes",9,0,1,0,1715},
+		{"nodes",1,0,1,0,1714},
 		{"random_weight",9,0,3,0,1719,0,0.,0.,0.,0,"{ANN random weight} ModelCommands.html#ModelSurrG"},
 		{"range",10,0,2,0,1717,0,0.,0.,0.,0,"{ANN range} ModelCommands.html#ModelSurrG"}
 		},
@@ -1827,7 +1828,7 @@ static GuiKeyWord
 		{"metrics",15,2,9,0,1789,kw_256,0.,0.,0.,0,"{Compute surrogate diagnostics} ModelCommands.html#ModelSurrG"},
 		{"minimum_points",8,0,2,0,1747},
 		{"moving_least_squares",8,3,1,1,1705,kw_266,0.,0.,0.,0,"{Moving least squares} ModelCommands.html#ModelSurrG"},
-		{"neural_network",8,4,1,1,1713,kw_267,0.,0.,0.,0,"{Artificial neural network} ModelCommands.html#ModelSurrG"},
+		{"neural_network",8,5,1,1,1713,kw_267,0.,0.,0.,0,"{Artificial neural network} ModelCommands.html#ModelSurrG"},
 		{"polynomial",8,4,1,1,1735,kw_268,0.,0.,0.,0,"{Polynomial} ModelCommands.html#ModelSurrG"},
 		{"radial_basis",8,5,1,1,1723,kw_269},
 		{"recommended_points",8,0,2,0,1749},

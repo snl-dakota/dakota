@@ -1551,9 +1551,7 @@ TAG "model/surrogate/global/moving_least_squares/export_model_file"
 TAG "model/surrogate/global/neural_network"
 	DESC "{Artificial neural network} ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/neural_network/nodes"
-	DESC "{ANN number nodes} ModelCommands.html#ModelSurrG"
-
+TAG "model/surrogate/global/neural_network/max_nodes"
 TAG "model/surrogate/global/neural_network/range"
 	DESC "{ANN range} ModelCommands.html#ModelSurrG"
 

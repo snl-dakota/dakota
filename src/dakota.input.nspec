@@ -1520,7 +1520,7 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
-        [ nodes INTEGER {N_mom(shint,annNodes)} ]
+        [ max_nodes ALIAS nodes INTEGER {N_mom(shint,annNodes)} ]
         [ range REAL {N_mom(Real,annRange)} ]
         [ random_weight INTEGER {N_mom(shint,annRandomWeight)} ]
         [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
