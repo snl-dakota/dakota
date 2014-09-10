@@ -39,15 +39,29 @@ void test_save_current_path(const std::string& pwd_str,
     std::string new_pwd_str = Dakota::get_cwd();
     BOOST_CHECK( pwd_str != new_pwd_str );
 
-    WorkdirHelper::prepend_preferred_env_path( wd.string() );
-    BOOST_CHECK( env_path_str != std::getenv("PATH") );
+    //WorkdirHelper::prepend_preferred_env_path( wd.string() );
+    WorkdirHelper::set_preferred_path();
+
+    // verify that PATH has been updated; i.e. '.' is prepended
+    std::string new_env_path_str( std::getenv("PATH") );
+    BOOST_CHECK( env_path_str != new_env_path_str );
+    BOOST_CHECK( new_env_path_str[0] == '.' );
 
     // change back to original rundir
     bfs::path rundir(pwd_str);
     WorkdirHelper::change_directory(rundir);
     new_pwd_str = Dakota::get_cwd();
     BOOST_CHECK( pwd_str == new_pwd_str );
+
+    // verify that PATH no longer has '.' prepended
+    //WorkdirHelper::set_preferred_path();
+    WorkdirHelper::prepend_preferred_env_path( pwd_str );
+
+    std::string newest_env_path_str( std::getenv("PATH") );
+    BOOST_CHECK( newest_env_path_str[0] != '.' );
   }
+  else
+    BOOST_ERROR( "Issue with newly created workdir in test_save_current_path()" );
 }
 
 
