@@ -1,11 +1,13 @@
 Blurb::
-Construct surrogate with the minimum amount of points
+Construct surrogate with minimum number of points
+
 Description::
+
+The minimum is d+1, for d input dimensions, except for polynomials.
 See parent page.
 
 Topics::	
 Examples::
 Theory::
 Faq::
-What is the heuristic?
-See_Also::	
+See_Also::

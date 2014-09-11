@@ -1,0 +1,18 @@
+Blurb::
+Maximum number of hidden layer nodes
+
+Description::
+
+Limits the number of hidden layer nodes in the neural network model.
+By default is to use one less node than available training data points
+yielding a fully-determined linear least squares problem.  However,
+reducing the number of nodes can help reduce overfitting and more
+importantly, can drastically reduce surrogate construction time when
+building from a large data set.  Historically, Dakota limited the
+number of nodes to 100.
+
+Topics::	surrogate_models
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,7 +1,9 @@
 Blurb::
-The maximum number of basis allowed to be used in the approximation.
+Maximum number of MARS bases
+
 Description::
-The maximum number of basis allowed to be used in the approximation.
+The maximum number of basis functions allowed in the MARS approximation model.
+
 Topics::
 Examples::
 Theory::

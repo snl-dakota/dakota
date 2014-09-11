@@ -1,22 +1,24 @@
 Blurb::
-Linear, Quadratic, or Cubic Polynomial Models
+Polynomial surrogate model
+
 Description::
-Linear, quadratic, or cubic polynomial surrogates models are available in
-Dakota.
-The utility of the polynomial models stems from two sources: 
-\li over
-  a small portion of the parameter space, a low-order polynomial model
-  is often an accurate approximation to the true data trends
+
+Linear, quadratic, and cubic polynomial surrogate models are available
+in Dakota.  The utility of the simple polynomial models stems from two
+sources:
+\li over a small portion of the parameter space, a low-order
+  polynomial model is often an accurate approximation to the true data
+  trends
 \li the least-squares procedure provides a surface fit that smooths out
   noise in the data.
 
-The surrogate-based optimization
-methods are often successful when using polynomial models,
-particularly quadratic models. However, a polynomial surface fit may
-not be the best choice for modeling data trends over the entire
-parameter space, unless it is known a priori that the true data trends
-are close to linear, quadratic, or cubic. See \cite Mye95 for more
-information on polynomial models.
+Local surrogate-based optimization methods (\ref
+method-surrogate_based_local) are often successful when using
+polynomial models, particularly quadratic models. However, a
+polynomial surface fit may not be the best choice for modeling data
+trends globally over the entire parameter space, unless it is known a
+priori that the true data trends are close to linear, quadratic, or
+cubic. See \cite Mye95 for more information on polynomial models.
 
 Topics::	
 Examples::

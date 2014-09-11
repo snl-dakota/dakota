@@ -1,15 +1,16 @@
 Blurb::
 Moving Least Squares surrogate models
+
 Description::
 Moving least squares is a further generalization of weighted least squares
 where the weighting is "moved" or recalculated for every new point where 
 a prediction is desired \cite Nea04.
 
-<b> The implementation of moving least squares is still under development. </b>
-We have found that it works well 
-in trust region methods where the surrogate model is constructed in 
-a constrained region over a few points. It does not appear to be working 
-as well globally, at least at this point in time.
+<b> The implementation of moving least squares is still under
+development. </b> It tends to work well in trust region optimization
+methods where the surrogate model is constructed in a constrained
+region over a few points. The present implementation may not work as
+well globally.
 
 Topics::	
 Examples::

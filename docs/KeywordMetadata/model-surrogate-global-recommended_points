@@ -1,12 +1,13 @@
 Blurb::
-(Default) Construct surrogate with the recommended amount of points
+Construct surrogate with recommended number of points
+
 Description::
-See parent page.
+This is the default option.  It requires 5*d build points for d input
+dimensions, except for polynomial models.  See parent page.
 
 Topics::	
 Examples::
 Theory::
 Faq::
-What is the heuristic?
 See_Also::	
 

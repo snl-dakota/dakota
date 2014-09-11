@@ -1,8 +1,13 @@
 Blurb::
-????
+Export surrogate to Surfpack model file
+
 Description::
-Not mentioned
-Topics::	problem
+Serialize the global surrogate model to a text or binary Surfpack
+model file, for later loading and evaluation using the Surfpack
+interpreter or C interface.  The filename must have an .sps extension
+for text output or a .bsps extension for binary output.
+
+Topics::	surrogate_models
 Examples::
 Theory::
 Faq::

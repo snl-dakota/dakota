@@ -1,0 +1,12 @@
+Blurb::
+Percent data per cross validation fold
+
+Description::
+Percent of the training data to use in each cross validation fold
+(default 0.1).
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

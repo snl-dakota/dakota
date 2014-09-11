@@ -1,7 +1,18 @@
 Blurb::
-This is not mentioned in the reference manual
-Description::
-Topics::	not_yet_reviewed, problem
+(Experimental) efficient subspace method (ESM)
+
+Description:: 
+
+ESM is experimental and its implementation is incomplete.  It is an
+active subspace method, intended for use with models with high
+dimensional input parameter spaces and analytic gradients.  The method
+works by evaluating the response gradient at a number of points in the
+input parameter space and using a singular value decomposition to
+identify key linear combinations of input directions along which the
+response varies.  Then UQ is performed in the reduced input parameter
+space.
+
+Topics::	uncertainty_quantification
 Examples::
 Theory::
 Faq::

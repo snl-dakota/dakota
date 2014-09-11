@@ -1,8 +1,9 @@
 Blurb::
-The interpolation type. Linear or cubic.
+MARS model interpolation type
+
 Description::
-The interpolation type. Linear or cubic.
-Not mentioned
+The MARS model interpolation type: linear or cubic.
+
 Topics::
 Examples::
 Theory::

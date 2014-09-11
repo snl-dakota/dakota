@@ -1,11 +1,10 @@
 Blurb::
-Leave-one-out cross-validation
-Description::
-Leave-one-out (PRESS) cross validation may be
-performed by specifying \c press.
+Leave-one-out cross validation
 
-The cross-validation statistics will be calculated
-for all metrics.
+Description::
+Leave-one-out (PRESS) cross validation may be performed by specifying
+\c press.  The cross-validation statistics will be calculated for all
+metrics.
 
 Topics::	
 Examples::

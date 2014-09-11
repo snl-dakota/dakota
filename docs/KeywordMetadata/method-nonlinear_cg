@@ -1,7 +1,12 @@
 Blurb::
-This is not mentioned in the reference manual
+(Experimental) nonlinear conjugate gradient optimization
+
 Description::
-Topics::	not_yet_reviewed, problem
+
+This method is an incomplete experimental implementation of nonlinear
+conjugate gradient optimization, a local, gradient-based solver.
+
+Topics::	local_optimization_methods
 Examples::
 Theory::
 Faq::

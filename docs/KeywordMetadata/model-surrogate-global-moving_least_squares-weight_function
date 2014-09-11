@@ -1,7 +1,17 @@
 Blurb::
-The weight function used to weight samples in the weighted least squares formulation.
+Selects the weight function for the MLS model
+
 Description::
-The weight function used to weight samples in the weighted least squares formulation.
+
+The weight function decays as a function of distance from the training
+data.  Specify one of:
+
+\li 1 (default):  exponential decay in weight function; once differentiable MLS model    
+
+\li 2: twice differentiable MLS model
+
+\li 3: three times differentiable MLS model
+
 Topics::
 Examples::
 Theory::

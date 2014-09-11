@@ -1,22 +1,18 @@
 Blurb::
-Specify a datafile of points to compare surrogate responses against
+Datafile of points to assess surrogate quality
+
 Description::
-If a file is specified, it must contain variables and response data.
+Specifies a datafile containing variable and response (truth) values
+in either annotated or free-form tabular format.
 
-The surrogate is evaluated at the points
-in the file, and the surrogate responses are compared against
-the results in the file.
-
-The requested metrics will be reported for the surrogate
-evaluated at the specified variables versus the function values from
-the challenge data file.
-
-The imported points file may be in annotated
-for free-form tabular format.
+The surrogate is evaluated at the points in the file, and the
+surrogate (approximate) responses are compared against the truth
+results from the file.  All metrics specified with \ref
+model-surrogate-global-metrics will be computed for the challenge
+data.
 
 Topics::	
 Examples::
 Theory::
 Faq::
-What metrics?
 See_Also::	

@@ -1,5 +1,6 @@
 Blurb::
 Multivariate Adaptive Regression Spline (MARS)
+
 Description::
 This surface fitting method uses multivariate adaptive regression
 splines from the MARS3.5 package \cite Fri91 developed at Stanford

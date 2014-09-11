@@ -1,6 +1,11 @@
-Blurb::
+Blurb:: 
+Initial number of radial basis functions
+
 Description::
-Topics::	empty
+Initial number of radial basis functions.  The default value is the
+smaller of the number of training points and 100.
+
+Topics::	surrogate_models
 Examples::
 Theory::
 Faq::

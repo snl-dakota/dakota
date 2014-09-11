@@ -1,1 +1,11 @@
-DUPLICATE-cubic
+Blurb::
+Cubic interpolation
+
+Description::
+Use cubic interpolation in the MARS model.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

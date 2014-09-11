@@ -1,7 +1,9 @@
 Blurb::
-The degree of thep total degree polynomial basis.
+Polynomial order for the MLS bases
+
 Description::
-The degree of thep total degree polynomial basis.
+The polynomial order for the moving least squares basis function (default = 2).
+
 Topics::
 Examples::
 Theory::

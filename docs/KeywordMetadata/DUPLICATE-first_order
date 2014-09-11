@@ -1,7 +1,12 @@
 Blurb::
 Specify that truth values and gradients must be matched.
+
 Description::
-The correction specification specifies that the approximation will be corrected to match truth data. The keyword zeroth_order matching ensures that truth values and gradients are matched. 
+
+This correction specification specifies that the approximation will be
+corrected to match truth data. The keyword \c first_order matching
+ensures that truth values and gradients are matched.
+
 Topics::
 Examples::
 Theory::

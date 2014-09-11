@@ -1,38 +1,41 @@
 Blurb::
-Compute metrics of surrogate quality
+Compute surrogate quality metrics
+
 Description::
 A variety of diagnostic metrics are available to assess the
 goodness of fit of a global surrogate to its training data.
 
 The default diagnostics are:
-\li \c sum_squared
-\li \c mean_squared
 \li \c root_mean_squared
-\li \c sum_abs
 \li \c mean_abs
-\li \c max_abs
 \li \c rsquared
 
-Additional metrics can be activated using the keywords \c press
-and \c cross_validate.
+Additional available diagnostics include
+\li \c sum_squared
+\li \c mean_squared
+\li \c sum_abs
+\li \c max_abs
 
-Topics::	problem
+The keywords \c press and \c cross_validation further specify
+leave-one-out or k-fold cross validation, respectively, for all of the
+active metrics from above.
+
+Topics::	surrogate_models
 Examples::
 Theory::
+
 Most of these diagnostics refer to some operation on the
 residuals (the difference between the surrogate model and the truth
 model at the data points upon which the surrogate is built).
 
-For
-example, \c sum_squared refers to the sum of the squared residuals,
-and \c mean_abs refers to the mean of the absolute value of the
-residuals. \c rsquared refers to the R-squared value typically used
-in regression analysis (the proportion of the variability in the
+For example, \c sum_squared refers to the sum of the squared
+residuals, and \c mean_abs refers to the mean of the absolute value of
+the residuals. \c rsquared refers to the R-squared value typically
+used in regression analysis (the proportion of the variability in the
 response that can be accounted for by the surrogate model). Care
 should be taken when interpreting metrics, for example, errors may be
 near zero for interpolatory models or rsquared may not be applicable
 for non-polynomial models.
 
 Faq::
-Are the default diagnostics correct? Actually, this behavior is not in the ref man at all, so I just made this page up.
 See_Also::	

@@ -1,48 +1,51 @@
 Blurb::
-Artificial Neural Network Models
+Artificial neural network model
+
 Description::
-The Artificial Neural Network surrogate in Dakota employs a stochastic layered
-perceptron artificial neural network based on the direct
-training approach of Zimmerman \cite Zim96.
+Dakota's artificial neural network surrogate is a stochastic layered
+perceptron network, with a single hidden layer.  Weights for the input
+layer are chosen randomly, while those in the hidden layer are
+estimated from data using a variant of the Zimmerman direct training
+approach \cite Zim96.
 
-The method is
-designed to have a lower training cost than traditional neural networks.
-This is
-a useful feature for surrogate-based optimization and
-optimization under uncertainty, where new surrogates are constructed many
-times during the optimization process (i.e., one surrogate for each response
-function, and new surrogates for each optimization iteration).
+This typically yields lower training cost than traditional neural
+networks yet, good out-of-sample performance.  This is helpful in
+surrogate-based optimization and optimization under uncertainty, where
+multiple surrogates may be repeatedly constructed during the
+optimization process, e.g., a surrogate per response function, and a
+new surrogate for each optimization iteration.
 
-The nueral network is a non parametric surface fitting method. Thus, along
-with kriging (Gaussian Process) and MARS,
-it can be used to model data trends that have
-slope discontinuities as well as multiple maxima and minima. However,
-unlike kriging, the neural network surrogate is not guaranteed to exactly match the
-response values of the data points from which it was constructed. 
+The neural network is a non parametric surface fitting method. Thus,
+along with Kriging (Gaussian Process) and MARS, it can be used to
+model data trends that have slope discontinuities as well as multiple
+maxima and minima. However, unlike Kriging, the neural network
+surrogate is not guaranteed to interpolate the data from which it was
+constructed.
 
-This surrogate
-can be constructed from fewer than \f$n_{c_{quad}}\f$ data points,
-however, it is a good rule of thumb to use at least \f$n_{c_{quad}}\f$
-data points when possible.
+This surrogate can be constructed from fewer than \f$n_{c_{quad}}\f$
+data points, however, it is a good rule of thumb to use at least
+\f$n_{c_{quad}}\f$ data points when possible.
 
 Topics::	
 Examples::
 Theory::
-The form of
-the SLP ANN model is
 
-\f[ \hat{f}(\mathbf{x}) \approx
- \tanh(\tanh((\mathbf{x A}_{0}+\theta_{0})\mathbf{A}_{1}+\theta_{1})) \f]
+The form of the neural network model is
 
-where \f$\mathbf{x}\f$ is the current point in \f$n\f$-dimensional parameter
-space, and the terms
-\f$\mathbf{A}_{0},\theta_{0},\mathbf{A}_{1},\theta_{1}\f$ are the matrices
-and vectors that correspond to the neuron weights and offset values in
-the ANN model. These terms are computed during the ANN training
-process, and are analogous to the polynomial coefficients in a
-quadratic surface fit. A singular value decomposition method is used
-in the numerical methods that are employed to solve for the weights
-and offsets.
+\f[ 
+\hat{f}(\mathbf{x}) \approx
+\tanh\left\{ \mathbf{A}_{1} \tanh\left( \mathbf{A}_{0}^{T} \mathbf{x} +\theta_{0}^T \right)+\theta_{1} \right\} 
+\f]
+
+where \f$\mathbf{x}\f$ is the evaluation point in \f$n\f$-dimensional
+parameter space; the terms \f$\mathbf{A}_{0}, \theta_{0}\f$ are the
+random input layer weight matrix and bias vector, respectively; and
+\f$\mathbf{A}_{1}, \theta_{1}\f$ are a weight vector and bias scalar,
+respectively, estimated from training data.  These coefficients are
+analogous to the polynomial coefficients obtained from regression to
+training data.  The neural network uses a cross validation-based
+orthogonal matching pursuit solver to solver for the weights and
+offsets.
 
 Faq::
 See_Also::	

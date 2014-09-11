@@ -1,8 +1,10 @@
 Blurb::
-????
+(Inactive) Random weight control
+
 Description::
-Not mentioned
-Topics::	problem
+This option is not currently in use and is likely to be removed
+
+Topics::	surrogate_models
 Examples::
 Theory::
 Faq::

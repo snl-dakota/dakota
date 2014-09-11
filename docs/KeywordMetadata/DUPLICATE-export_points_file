@@ -1,9 +1,12 @@
 Blurb::
-Specify file to write out the responses from the surrogate
+Output file for evaluations of a surrogate model
+
 Description::
-File of points (inputs and predicted outputs from the surrogate)
-evaluated on the surrogate model. Note that the export points contain
-test points and the emulator predictions at these points.
+File of points (input variable values and predicted approximate
+outputs from the surrogate) evaluated on the surrogate model. Note
+that the export points contain test point values and the emulator
+predictions at these points.
+
 Topics::
 Examples::
 Theory::

@@ -221,9 +221,10 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   //// For radial basis function networks
   else if (sharedDataRep->approxType == "global_radial_basis") {
     args["type"] = "rbf";
+    // mapping number bases to number of centers
     short bases = problem_db.get_short("model.surrogate.rbf_bases");
     if (bases > 0) {
-      args["bases"] = toString<short>(bases);
+      args["centers"] = toString<short>(bases);
     }
     short min_partition
       = problem_db.get_short("model.surrogate.rbf_min_partition");
@@ -235,9 +236,10 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     if (max_subsets > 0) {
       args["max_iter"] = toString<short>(max_subsets);
     }
+    // mapping max_pts to cvt_pts
     short max_pts = problem_db.get_short("model.surrogate.rbf_max_pts");
     if (max_pts > 0) {
-      args["max_pts"] = toString<short>(max_pts);
+      args["cvt_pts"] = toString<short>(max_pts);
     }
   }
 

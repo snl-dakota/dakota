@@ -34,11 +34,16 @@ The number of training data points used in building a global approximation is
 determined by specifying one of three point counts:
 
 <ol>
-  <li> \c minimum_points: minimum "reasonable" amount of training data,
-     based on Dakota's heuristics </li>
+  <li> \c minimum_points: minimum required or minimum "reasonable"
+       amount of training data. Defaults to d+1 for d input dimensions
+       for most models, e.g., polynomials override to the number of
+       coefficients required to estimate the requested order.</li>
+
   <li> \c recommended_points: recommended number of training data,
-     based on Dakota's heuristics (this is the default, if none of the
-     keywords is specified)</li>
+       (this is the default option, if none of the keywords is
+       specified).  Defaults to 5*d, except for polynomials where it's
+       equal to the minimum.</li>
+
   <li> \c total_points: specify the number of training data points. 
      However, if the \c total_points value is less than the default 
      \c minimum_points value, the \c minimum_points value is used. </li>

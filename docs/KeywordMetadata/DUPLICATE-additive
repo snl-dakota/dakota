@@ -1,7 +1,9 @@
 Blurb::
-Use an additive correction factor to improve the local accuracy of a surrogate.
+Additive correction factor for local surrogate accuracy
+
 Description::
 Use an additive correction factor to improve the local accuracy of a surrogate.
+
 Topics::
 Examples::
 Theory::

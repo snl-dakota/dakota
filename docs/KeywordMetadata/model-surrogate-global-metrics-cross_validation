@@ -1,0 +1,23 @@
+Blurb::
+Perform k-fold cross validation
+
+Description::
+
+General k-fold cross validation may be performed by specifying \c
+cross_validation.  The cross-validation statistics will be calculated
+for all metrics.
+
+Cross validation may further specify:
+\li \c folds, the number of folds into which to divide the build
+  data (between 2 and number of data points) or
+\li \c percent, the fraction of data (between 0 and 0.5)
+  to use in each fold.
+
+These will be adjusted as needed based on the number of available
+training points.  The default number of folds k = 10, or 0.1
+
+Topics::	surrogate_models
+Examples::
+Theory::
+Faq::
+See_Also::	

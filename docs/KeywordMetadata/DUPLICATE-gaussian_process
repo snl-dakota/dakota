@@ -1,5 +1,6 @@
 Blurb::
-Use a Gaussian Process surrogate
+Gaussian Process surrogate model
+
 Description::
 %Dakota uses the Gaussian process (GP) surrogate from
 Surfpack, which is specified using the
