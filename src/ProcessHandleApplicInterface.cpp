@@ -518,14 +518,16 @@ pid_t ProcessHandleApplicInterface::analysis_process_group_id() const
 /** This function will split the analysis command in argList[0] based
     on whitespace, but preserve spaces within quoted strings, such
     that quoted strings can be passed as single command arguments.
-    NOTE: This function allocates memory that is implicitly freed when
-    the child exits (control never returns to caller). */
-const char** ProcessHandleApplicInterface::create_command_arguments() const
+    NOTE: This function allocates memory in av that might be
+    implicitly freed when the child exits (control never returns to
+    caller).  driver_and_args needs to be a return argument because av
+    will contain pointers into its c_str()'s when done.
+*/
+void ProcessHandleApplicInterface::
+create_command_arguments(const char** & av, StringArray& driver_and_args)
 {
   using boost::escaped_list_separator;
   using boost::tokenizer;
-
-  StringArray driver_and_args;  // to hold tokens of argList[0]
 
   // tokenize on whistespace, preserving quoted strings and escapes,
   // so the outermost quoted strings become single command-line args
@@ -538,7 +540,7 @@ const char** ProcessHandleApplicInterface::create_command_arguments() const
   if (commandLineArgs)
     nargs += 2;
   // ideally would use char *const argv[],
-  const char** av = new const char*[nargs+1];  // need extra NULL
+  av = new const char*[nargs+1];  // need extra NULL
 
   size_t i = 0;
   for ( ; i<driver_and_args.size(); ++i)
@@ -551,9 +553,6 @@ const char** ProcessHandleApplicInterface::create_command_arguments() const
     
   // last entry must be null-terminated
   av[i] = NULL;
-
-  return av;
-
 }
 
 

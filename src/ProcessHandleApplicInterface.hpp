@@ -110,10 +110,10 @@ protected:
   /// set argList for execution of the specified analysis driver
   void driver_argument_list(int analysis_id);
 
-  /// parse argList into argument array suitable for passing to
+  /// parse argList into argument array av suitable for passing to
   /// execvp, appending parameters and results filenames if requested
   /// by commandLineArgs
-  const char** create_command_arguments() const; 
+  void create_command_arguments(const char** & av, StringArray& driver_and_args); 
 
 
   //

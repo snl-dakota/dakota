@@ -153,21 +153,35 @@ pid_t SpawnApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
   const char **av;
-  pid_t status;
+  pid_t status = 0;
   pid_t pid = 0;
 
   // Set PATH, environment, and change directory
-  // Only the child changes directory; shouldn't have to restore with reset
   prepare_process_environment();
 
   // Convert argList StringArray to an array of const char*'s. 
-  av = create_command_arguments();
+  // av will point to tokens in driver_and_args, so both get passed in
+  StringArray driver_and_args;
+  create_command_arguments(av, driver_and_args);
 
+  // TODO: consider using exec so we can spawn scripts not just .exe
   if (block_flag) status = _spawnvp(  _P_WAIT, av[0], av);
   else               pid = _spawnvp(_P_NOWAIT, av[0], av);
 
-  if (useWorkdir)
+  if (status != 0 || pid == -1) {
+    Cerr << "\nCould not spawn; error code " << errno << " (" 
+	 << std::strerror(errno) << ")" << std::endl;
+    abort_handler(-1);
+  }
+
+  // Spawn returns control here, so free memory and change directory back
+  delete[] av;
+  if (useWorkdir) {
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Changing directory back to " << WorkdirHelper::startup_pwd()
+	   << std::endl;
     WorkdirHelper::reset();
+  }
 
   return(pid);
 }

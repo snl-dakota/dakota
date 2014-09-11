@@ -842,8 +842,12 @@ void ProcessApplicInterface::prepare_process_environment()
   // TODO: consider whether to do this per eval or only at startup...
   WorkdirHelper::set_preferred_path();
 
-  if (useWorkdir)
+  if (useWorkdir) {
+    // BMA: Is this output safe in the child?  Maybe should do in parent?
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Changing directory to " << curWorkdir << std::endl;
     WorkdirHelper::change_directory(curWorkdir);
+  }
 
   // setenv()/putenv() of DAKOTA_PARAMETERS_FILE/DAKOTA_RESULTS_FILE
   WorkdirHelper::set_environment("DAKOTA_PARAMETERS_FILE", paramsFileName);

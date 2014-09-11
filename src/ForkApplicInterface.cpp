@@ -121,7 +121,7 @@ pid_t ForkApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
   const char** av;
-  int status;
+  int status = 0;
   pid_t pid = 0;
 
   // vfork() should be used here since there is an immediate execvp(). This 
@@ -154,16 +154,21 @@ create_analysis_process(bool block_flag, bool new_group)
     // Convert argList StringArray to an array of const char*'s. 
     // This fails if done earlier in this block, which begs the question:
     // Are these operations safe in the child before exec?
-    av = create_command_arguments();
+    // av will point to tokens in driver_and_args, so both get passed in
+    StringArray driver_and_args;
+    create_command_arguments(av, driver_and_args);
 
     // replace the child process with the fork target defined in arg_list
     status = execvp(av[0], (char*const*)av);
-    // if execvp returns then it failed; exit gracefully. 
-    _exit(status); // since this is a copy of the parent, use _exit
-    // so that the parent i/o stream is not prematurely flushed and closed.
 
-    // child never returns to here; no need to free memory (implicit cleanup)
-    //delete[] av;
+    // if execvp returns then it failed; exit gracefully. 
+    // old comment: child never returns to here; no need to free
+    //memory (implicit cleanup)?
+    delete[] av;
+
+    // since this is a copy of the parent, use _exit
+    // so that the parent i/o stream is not prematurely flushed and closed.
+    _exit(status); 
 
   }
   else { // parent
