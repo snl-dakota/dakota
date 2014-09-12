@@ -19,6 +19,8 @@ using namespace std;
 
 enum var_t { FT1,  FT2 };
 
+#define HIERARCH_TAG
+
 
 int main(int argc, char** argv)
 {
@@ -38,6 +40,10 @@ int main(int argc, char** argv)
 
   // Get the parameter vector and ignore the labels
   fin >> num_vars >> text;
+  if (num_vars != 2 && num_vars != 10) {
+    cerr << "Error: wrong number of variables for trajectory_post().\n";
+    exit(-1);
+  }
   map<var_t, double> vars;
   //vector<var_t> labels(num_vars);
   double value_i; string label_i; //var_t v_i;
@@ -61,21 +67,17 @@ int main(int argc, char** argv)
     if (v_iter != var_t_map.end())
       vars[v_iter->second] = value_i;
   }
-  if (vars.size() != 2) {
-    cerr << "Error: wrong number of variables for trajectory_post().\n";
-    exit(-1);
-  }
 
   // Get the ASV vector and ignore the labels
   fin >> num_fns >> text;
+  if (num_fns != 1) {
+    cerr << "Error: wrong number of functions in trajectory_post.\n";
+    exit(-1);
+  }
   vector<short> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
-  }
-  if (num_fns != 1) {
-    cerr << "Error: wrong number of functions in trajectory_post().\n";
-    exit(-1);
   }
 
   // Get the DVV vector and ignore the labels
@@ -96,13 +98,14 @@ int main(int argc, char** argv)
     fin.ignore(256, '\n');
   }
 
+#ifdef HIERARCH_TAG
   // Extract the hierarchical fn eval tags (required to link to opt interface)
   fin >> hier_tag; fin.ignore(256, '\n');
   vector<string> tags;
   boost::split(tags, hier_tag, boost::is_any_of(".: "));
   size_t num_tags = tags.size();
   if (num_tags < 2) {
-    cerr << "Error: unsufficient hierarchical tag depth." << endl;
+    cerr << "Error: insufficient hierarchical tag depth." << endl;
     exit(-1);
   }
   string e_tag   = tags[0];                 // if file_tag is on
@@ -112,6 +115,10 @@ int main(int argc, char** argv)
 
   // Compute and output responses
   string history = "../epistemic_simulation." + e_tag + "/time_history.dat";
+#else
+  string history = "time_history.dat";
+#endif
+
   ifstream hist_in(history.c_str());
   if (!fin) {
     cerr << "\nError: failure opening " << history << endl;

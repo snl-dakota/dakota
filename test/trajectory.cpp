@@ -40,28 +40,41 @@ int main(int argc, char** argv)
 
   // Get the parameter vector and ignore the labels
   fin >> num_vars >> vars_text;
+  if (num_vars != 8 && num_vars != 10) {
+    cerr << "Wrong number of variables for the trajectory problem\n";
+    exit(-1);
+  }
   map<var_t, double> vars;
   //vector<var_t> labels(num_vars);
-  double var_i; string label_i; var_t v_i;
+  double value_i; string label_i; var_t v_i;
   map<string, var_t>::iterator v_iter;
   for (i=0; i<num_vars; i++) {
-    fin >> var_i >> label_i;
+    fin >> value_i >> label_i;
     transform(label_i.begin(), label_i.end(), label_i.begin(),
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
-    if (v_iter == var_t_map.end()) {
-      cerr << "Error: label \"" << label_i << "\" not supported in analysis "
-	   << "driver." << endl;
-      exit(-1);
-    }
-    else
-      v_i = v_iter->second;
-    vars[v_i] = var_i;
-    //labels[i] = v_i;
+    // if (v_iter == var_t_map.end()) {
+    //   cerr << "Error: label \"" << label_i << "\" not supported in analysis "
+    // 	   << "driver." << endl;
+    //   exit(-1);
+    // }
+    // else
+    //   v_i = v_iter->second;
+    // vars[v_i] = value_i;
+    // labels[i] = v_i;
+
+    // ignore any failure thresholds; only need the epistemic variables
+    if (v_iter != var_t_map.end())
+      vars[v_iter->second] = value_i;
   }
 
   // Get the ASV vector and ignore the labels
   fin >> num_fns >> fns_text;
+  // ignore num_fns
+  // if (num_fns < 1 || num_fns > 2) { // 1 fn -> opt, 2 fns -> least sq
+  //   cerr << "Wrong number of functions in trajectory.\n";
+  //   exit(-1);
+  // }
   vector<short> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
@@ -77,16 +90,6 @@ int main(int argc, char** argv)
     fin.ignore(256, '\n');
     //DVV[i] = labels[dvv_i-1];
   }
-
-  if (num_vars != 8) {
-    cerr << "Wrong number of variables for the trajectory problem\n";
-    exit(-1);
-  }
-  // ignore num_fns
-  // if (num_fns < 1 || num_fns > 2) { // 1 fn -> opt, 2 fns -> least sq
-  //   cerr << "Wrong number of functions in trajectory problem\n";
-  //   exit(-1);
-  // }
 
   ofstream hist_out("time_history.dat");
   if (!hist_out) {

@@ -1231,9 +1231,14 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
   }
 
   Cout << "\n---------------------------\nNestedModel Evaluation "
-       << std::setw(4) << nestedModelEvalCntr << " total response:"
-       << "\n---------------------------\n\nActive response data "
-       << "from nested mapping:\n" << currentResponse << '\n';
+       << std::setw(4) << nestedModelEvalCntr << " results:"
+       << "\n---------------------------\n";
+  // if secondary variable mappings (distribution parameter insertions), the
+  // Nested parameters are not directly reflected in the subIterator output:
+  if (outputLevel >= VERBOSE_OUTPUT && !active2ACVarMapTargets.empty())
+    Cout << "Nested parameters:\n" << currentVariables;
+  Cout << "\nActive response data from nested mapping:\n" << currentResponse
+       << '\n';
 }
 
 
