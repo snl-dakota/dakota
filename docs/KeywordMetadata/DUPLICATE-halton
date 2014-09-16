@@ -3,6 +3,8 @@ Generate samples from a Halton sequence
 Description::
 The quasi-Monte Carlo sequences of Halton are deterministic 
 sequences determined by a set of prime bases. 
+These sequences generate random numbers with the goal of 
+filling a unit hypercube uniformly. 
 
 Generally, we recommend that the user leave the default 
 setting for the bases, which are the lowest primes. 
@@ -17,7 +19,7 @@ then a point closer to one. An individual sequence is based on a radix
 inverse function defined on a prime base. The prime base determines 
 how quickly the [0,1] interval is filled in. 
 
-Topics::	not_yet_reviewed
+Topics:: package_fsudace	
 Examples::
 Theory::
 For more information about 

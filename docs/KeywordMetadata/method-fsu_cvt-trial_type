@@ -8,7 +8,7 @@ can be one of three types:
 \li \c halton, where points are generated according to the Halton sequence
 \li \c grid, where points are placed on a regular grid over the hyperspace. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

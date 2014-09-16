@@ -7,7 +7,7 @@ sequence (meaning the same set of samples) for subsequent calls of
 the QMC sampling method (for example, this might be used in a surrogate 
 based optimization method or a parameter study where one wants to 
 fix the uncertain variables). 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

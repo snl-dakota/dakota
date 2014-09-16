@@ -1,8 +1,17 @@
 Blurb::
 Scale the \b log-likelihood function
 Description::
-<b> Note that this changes the formulation of the calibration problem </b>
-Topics::	not_yet_reviewed
+The \c likelihood_scale is applied to the weighted sum-squared error 
+term which is used in the log-likelihood function.  The 
+log-likelihood is -0.5*the weighted sum-squared errors/the likelihood scale.
+Thus, if the sum-squared errors is on the order of 1E+12, you will want to 
+make the likelihood scale on the order of 1E+12 or 1E+11.  Similarly, 
+if the weighted sum-squared errors is very small, the likelihood scale 
+should be very small.  
+<b> Note that applying a likelihood scale changes the formulation of the calibration problem. </b>  At this point, we only recommend using it for problems 
+that are poorly conditioned and for which the MCMC is not working without 
+applying some type of scaling.
+Topics::	
 Examples::
 Theory::
 Faq::

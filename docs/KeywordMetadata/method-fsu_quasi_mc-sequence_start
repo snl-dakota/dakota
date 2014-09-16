@@ -6,7 +6,7 @@ Description::
 The default \c sequence_start is a 
 vector with 0 for each variable, specifying that each sequence 
 start with the first term. 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 For example, for the Halton sequence in base 2, if the user specifies 
 sequence_start = 2, the sequence would not include 0.5 and 0.25, but 

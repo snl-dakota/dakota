@@ -4,7 +4,7 @@ This keyword allows the user to specify the proposal covariance matrix for the M
 \c proposal_covariance_scale should be followed by a number of terms equal to the number of variables being calibrated.  Each particular value represents an estimate of the variance in that particular parameter.  This proposal covariance is taken to be the covariance governing a multivariate normal distribution.  Samples are generated from this distribution in the MCMC process.  Thus, this proposal covariance is critical in determining how big the step sizes are in the MCMC chain.
 
 This keyword scales the values on the diagonal of the proposal covariance and may be useful when the input variables being calibrated are of different magnitudes: one may want to take a larger step in a direction with a larger magnitude, for example. The proposal covariance is a list of reals, one for each variable. 
-Topics::	bayesian_calibration, problem
+Topics::	bayesian_calibration
 Examples::
 Theory::
 Faq::

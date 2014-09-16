@@ -7,7 +7,7 @@ is recommended that the user not specify this and use the default values.
 \li For the Halton sequence, the default bases are primes in increasing order, starting with 2, 3, 5, etc. 
 \li For the Hammersley sequence, the user specifies (s-1) primes if one is generating an s-dimensional set of random variables. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 Theory::
 Faq::

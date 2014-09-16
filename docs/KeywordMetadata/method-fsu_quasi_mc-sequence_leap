@@ -5,7 +5,7 @@ Description::
 terms in the sequence. The default is 1 for each variable, 
 meaning that each term in the sequence be returned. 
 
-Topics::	not_yet_reviewed
+Topics::	
 Examples::
 If the user specifies 
 a sequence_leap of 2 for a variable, the points returned would be every other 

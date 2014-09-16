@@ -1,5 +1,5 @@
 Blurb::
-Calculate metrics to assess the quality of the samples
+Calculate metrics to assess the quality of quasi-Monte Carlo samples
 Description::
 \c quality_metrics calculates four quality metrics relating to the
 volumetric spacing of the samples. The four quality metrics measure 
@@ -22,7 +22,7 @@ better (the smaller the metric, the better the uniformity of the point
 distribution). 
 
 
-Topics::	not_yet_reviewed
+Topics::   package_fsudace	
 Examples::
 Complete explanation of these measures can be found in 
 [\cite Gunzburger2004 "Gunzburger and Burkardt, 2004."].
