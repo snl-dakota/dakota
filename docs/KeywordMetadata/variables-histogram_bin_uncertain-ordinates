@@ -1,32 +1,11 @@
 Blurb::
-??????????
+Define the profile of a "skyline" probability density function
 Description::
-Within the histogram bin uncertain optional group specification, the
-number of histogram bin uncertain variables is a required
-specification, the number of pairs is an optional key for
-apportionment of abscissas/ordinates/counts, specification of
-abscissas and either ordinates or counts is required, and the variable
-descriptors is an optional specification. When using a histogram bin
-variable, one must define at least one bin (with two bounding value
-pairs).
 
-The \c abscissas specification define abscissa values ("x"
-coordinates) for the probability density function of each histogram variable. When paired with
-\c counts, the specifications provide sets of \c (x,c) pairs for each
-histogram variable where \c c defines a count (i.e., a frequency or
-relative probability) associated with a bin. If using bins of unequal
-width and specification of probability densities is more natural, then
-the \c counts specification can be replaced with a \c ordinates
-specification ("y" coordinates) in order to support interpretation of
-the input as \c (x,y) pairs defining the profile of a "skyline" probability density function.
-Conversion between the two specifications is straightforward: a
-count/frequency is a cumulative probability quantity defined from the
-product of the ordinate density value and the \c x bin width. Thus,
-in the cases of bins of equal width, ordinate and count specifications
-are equivalent. In addition, ordinates and counts may be relative
-values; it is not necessary to scale them as all user inputs will be
-normalized.
-Topics::	problem
+\c ordinates defines the profile of a "skyline" probability density function.
+It accepts a list of values. See  \ref variables-histogram_bin_uncertain for details. 
+
+Topics:: 
 Examples::
 Theory::
 Faq::

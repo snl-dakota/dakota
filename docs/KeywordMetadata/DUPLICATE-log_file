@@ -11,7 +11,7 @@ this input is ignored. If file logging is enabled and no \c log_file is
 specified, the default file name of JEGAGlobal.log is used. 
 
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

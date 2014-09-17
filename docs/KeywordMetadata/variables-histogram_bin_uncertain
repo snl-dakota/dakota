@@ -1,16 +1,20 @@
 Blurb::
 Aleatory uncertain variable - an arbitrary continuous random variable
-!!!!!!!!!!!!!!!clarify difference between ordinatea and count
 
 Description::
 Histogram uncertain variables are typically used to model a set of
 empirical data. A bin histogram is a continuous aleatory distribution
 that allows the user to specify bins of non-zero width where the
-uncertain variable may lie along with the relative frequencies that
+uncertain variable may lie, along with the relative frequencies that
 are associated with each bin. 
-When using a histogram bin variable, one must define at least one bin (with two bounding value
-pairs). One can characterize the bin with non-zero widths
-(abscissas and counts) or with individual points (abscissas and ordinates).
+
+Within the histogram bin uncertain optional group specification, the 
+number of histogram bin uncertain variables is a required specification, 
+the number of pairs is an optional key for apportionment of 
+abscissas/ordinates/counts, specification of abscissas and either 
+ordinates or counts is required, and the variable descriptors is an 
+optional specification. When using a histogram bin variable, one must 
+define at least one bin (with two bounding value pairs).
 
 <!-- The distinction between the two types is that the former
 specifies bins of non-zero width, whereas the latter specifies
@@ -22,17 +26,16 @@ histogram" distribution (although the points are real-valued, the
 number of possible values is finite). -->
 
 
-
-The \c abscissas specification define abscissa values ("x"
+The \c abscissas specification defines abscissa values ("x"
 coordinates) for the probability density function of each histogram variable. 
-When paired with
-\c counts, the specifications provide sets of \c (x,c) pairs for each
-histogram variable where \c c defines a count (i.e., a frequency or
+When paired with \c counts, the specifications provide sets of \c (x,c) pairs 
+for each histogram variable where \c c defines a count (i.e., a frequency or
 relative probability) associated with a bin. If using bins of unequal
 width and specification of probability densities is more natural, then
-the \c counts specification can be replaced with a \c ordinates
+the \c counts specification can be replaced with an \c ordinates
 specification ("y" coordinates) in order to support interpretation of
-the input as \c (x,y) pairs defining the profile of a "skyline" probability density function.
+the input as \c (x,y) pairs defining the profile of a "skyline" probability 
+density function.
 Conversion between the two specifications is straightforward: a
 count/frequency is a cumulative probability quantity defined from the
 product of the ordinate density value and the \c x bin width. Thus,

@@ -3,7 +3,7 @@ Specify how to initialize the population
 Description::
 The \c initialization_type defines how the initial population is created
 for the GA. There are three types: 
--# \c simple_random 
+-# \c simple_random  
 -# \c unique_random (default)
 -# \c flat_file
 
@@ -14,7 +14,7 @@ created using the \c unique_random initializer and then the \c
 simple_random initializer if necessary.
 
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::
