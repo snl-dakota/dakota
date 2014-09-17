@@ -195,7 +195,10 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
 
 
 void NIDRProblemDescDB::derived_broadcast()
-{ check_variables(&dataVariablesList); check_responses(&dataResponsesList); }
+{ 
+  check_variables(&dataVariablesList); 
+  check_responses(&dataResponsesList); 
+}
 // check_variables() invokes check_variables_node(), either directly or after
 // some manip of interval/histogram/correlation data.  check_variables_node
 // does label processing (?) followed by additional processing in
@@ -2825,6 +2828,10 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
+
+/// Check the histogram bin input data, normalize the counts and
+/// populate the histogramUncBinPairs map data structure; map keys are
+/// guaranteed unique since the abscissas must increase
 static void 
 Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -2854,7 +2861,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       for(i=tothbp=0; i<m; ++i) {
 	tothbp += nhbpi = (*nhbp)[i];
 	if (nhbpi < 2) {
-	  Squawk("num_pairs must be >= 2");
+	  Squawk("pairs_per_variable must be >= 2");
 	  return;
 	}
       }
@@ -2867,7 +2874,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = false;
       m = dv->numHistogramBinUncVars;
       if (num_a % m) {
-	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
+	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use pairs_per_variable for unequal apportionment", num_a, m);
 	return;
       }
       else
@@ -2912,6 +2919,9 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   }
 }
 
+/// Infer lower/upper bounds for histogram and set initial variable
+/// values based on initial_point or moments, snapping to bounds as
+/// needed.  (Histogram bin doesn't have lower/upper bounds specifcation)
 static void Vgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
 {
   RealVector *L, *U, *V, *IP;
@@ -3115,7 +3125,8 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
 
 
 /// Check the histogram point integer input data, normalize the
-/// counts, and populate DataVariables::histogramUncPointIntPairs
+/// counts, and populate DataVariables::histogramUncPointIntPairs; map
+/// keys are guaranteed unique since the abscissas must increase
 static void 
 Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3142,7 +3153,7 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       for(i=tothpp=0; i<m; ++i) {
 	tothpp += nhppi = (*nhpip)[i];
 	if (nhppi < 1) {
-	  Squawk("num_pairs must be >= 1");
+	  Squawk("pairs_per_variable must be >= 1");
 	  return;
 	}
       }
@@ -3155,7 +3166,7 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = false;
       m = dv->numHistogramPtIntUncVars;
       if (num_a % m) {
-	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
+	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use pairs_per_variable for unequal apportionment", num_a, m);
 	return;
       }
       else
@@ -3171,7 +3182,6 @@ Vchk_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       for (j=0; j<nhppi; ++j, ++cntr) {
 	int x = (*hpia)[cntr]; // abscissas
 	Real y = (*hpic)[cntr]; // counts
-	// BMA: to check?!?  Probably could relax
 	if (j<nhppi-1 && x >= (*hpia)[cntr+1]) {
 	  Squawk("histogram point x values must increase");
 	  return;
@@ -3237,8 +3247,10 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
-/// Check the histogram point string input data, normalize the
-/// counts, and populate DataVariables::histogramUncPointStrPairs
+/// Check the histogram point string input data, normalize the counts,
+/// and populate DataVariables::histogramUncPointStrPairs; map keys
+/// are guaranteed unique since the abscissas must increase
+/// (lexicographically)
 static void 
 Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3264,7 +3276,7 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       for(i=tothpp=0; i<m; ++i) {
 	tothpp += nhppi = (*nhpsp)[i];
 	if (nhppi < 1) {
-	  Squawk("num_pairs must be >= 1");
+	  Squawk("pairs_per_variable must be >= 1");
 	  return;
 	}
       }
@@ -3277,7 +3289,7 @@ Vchk_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = false;
       m = dv->numHistogramPtStrUncVars;
       if (num_a % m) {
-	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
+	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use pairs_per_variable for unequal apportionment", num_a, m);
 	return;
       }
       else
@@ -3358,8 +3370,9 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
 }
 
 
-/// Check the histogram point integer real data, normalize the
-/// counts, and populate DataVariables::histogramUncPointRealPairs
+/// Check the histogram point integer real data, normalize the counts,
+/// and populate DataVariables::histogramUncPointRealPairs; map keys
+/// are guaranteed unique since the abscissas must increase
 static void 
 Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3384,7 +3397,7 @@ Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       for(i=tothpp=0; i<m; ++i) {
 	tothpp += nhppi = (*nhprp)[i];
 	if (nhppi < 1) {
-	  Squawk("num_pairs must be >= 1");
+	  Squawk("pairs_per_variable must be >= 1");
 	  return;
 	}
       }
@@ -3397,7 +3410,7 @@ Vchk_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = false;
       m = dv->numHistogramPtRealUncVars;
       if (num_a % m) {
-	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use num_pairs for unequal apportionment", num_a, m);
+	Squawk("Number of abscissas (%d) not evenly divisible by number of variables (%d); Use pairs_per_variable for unequal apportionment", num_a, m);
 	return;
       }
       else
@@ -3479,7 +3492,11 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
 }
 
 
-static void 
+/// Check the continuous interval uncertain input data and populate
+/// DataVariables::continuousIntervalUncBasicProbs; map keys (real
+/// intervals) are checked for uniqueness because we don't have a
+/// theoretically sound way to combine duplicate intervals
+static void
 Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t i, j, k, m, num_p = 0, num_lb, num_ub;
@@ -3541,14 +3558,16 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     P.resize(m);
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
-      RealRealPairRealMap& Pi = P[i];  
+      RealRealPairRealMap& Pi = P[i];  // map from an interval to a probability
       ub = -(lb = DBL_MAX);
       if (!num_p) default_p = 1./nIi; // default = equal probability per cell
       for(j=0; j<nIi; ++j, ++k) {
 	lbj = (*Ilb)[k];
 	ubj = (*Iub)[k];
 	RealRealPair interval(lbj, ubj);
-	Pi[interval]  = (num_p) ? (*Ip)[k] : default_p;
+	Real probability = (num_p) ? (*Ip)[k] : default_p;
+	if (!Pi.insert(make_pair(interval, probability)).second)
+	  Squawk("Continuous interval [%g, %g] specified more than once for variable %d", interval.first, interval.second, i);
 	if (lb > lbj) lb = lbj;
 	if (ub < ubj) ub = ubj;
       }
@@ -3596,6 +3615,10 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
+/// Check the discrete interval uncertain input data and populate
+/// DataVariables::discreteIntervalUncBasicProbs; map keys (integer
+/// intervals) are checked for uniqueness because we don't have a
+/// theoretically sound way to combine duplicate intervals
 static void 
 Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3659,14 +3682,16 @@ Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     P.resize(m);
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
-      IntIntPairRealMap& Pi = P[i];  
+      IntIntPairRealMap& Pi = P[i];   // map from an interval to a probability
       lb = INT_MAX; ub = INT_MIN;
       if (!num_p) default_p = 1./nIi; // default = equal probability per cell
       for(j=0; j<nIi; ++j, ++k) {
 	lbj = (*Ilb)[k];      
 	ubj = (*Iub)[k];
 	IntIntPair interval(lbj, ubj);
-	Pi[interval]  = (num_p) ? (*Ip)[k] : default_p;
+	Real probability =  (num_p) ? (*Ip)[k] : default_p;
+	if (!Pi.insert(make_pair(interval, probability)).second)
+	  Squawk("Discrete interval [%d, %d] specified more than once for variable %d", interval.first, interval.second, i);
 	if (lb > lbj) lb = lbj;
 	if (ub < ubj) ub = ubj;
       }
@@ -3713,6 +3738,11 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
+
+/// validate the number of set elements (values) given the number of
+/// variables and an optional apportionment with
+/// elements_per_variable; return the average number per variable if
+/// equally distributed
 static bool 
 check_set_keys(size_t num_v, size_t ds_len, const char *kind,
 	       IntArray *input_nds, int& avg_num_ds)
@@ -3742,6 +3772,9 @@ check_set_keys(size_t num_v, size_t ds_len, const char *kind,
   return key;
 }
 
+
+/// check discrete sets of integers (design and state variables);
+/// error if a duplicate value is specified
 static void 
 Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	   IntVector *input_dsi, IntSetArray& dsi_all, IntVector& dsi_init_pt)
@@ -3784,6 +3817,8 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
   //else: default initialization performed in Vgen_DIset
 }
 
+/// check discrete sets of integers (uncertain variables);
+/// error if a duplicate value is specified
 static void 
 Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	   IntVector *input_dsi, RealVector *input_dsip,
@@ -3814,7 +3849,8 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
       if (dsi_v_p_i.find(val) == dsi_v_p_i.end())
 	dsi_v_p_i[val]  = prob; // insert new
       else {
-	dsi_v_p_i[val] += prob; // add to existing
+	// don't want to aggregate the probability; just error
+	//dsi_v_p_i[val] += prob; // add to existing
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
       }
@@ -3911,7 +3947,8 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
       if (dss_v_p_i.find(val) == dss_v_p_i.end())
 	dss_v_p_i[val]  = prob; // insert new
       else {
-	dss_v_p_i[val] += prob; // add to existing
+	// don't want to aggregate the probability; just error
+	//dss_v_p_i[val] += prob; // add to existing
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
       }
@@ -4009,7 +4046,8 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
       if (dsr_v_p_i.find(val) == dsr_v_p_i.end())
 	dsr_v_p_i[val]  = prob; // insert new
       else {
-	dsr_v_p_i[val] += prob; // add to existing
+	// don't want to aggregate the probability; just error
+	//dsr_v_p_i[val] += prob; // add to existing
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
       }
@@ -4553,9 +4591,9 @@ Var_Name(StringArray *sa, char *buf, size_t i)
   return (const char*)buf;
 }
 
-/// For integer-valued variables: verify lengths of bounds and initial
-/// point, validate bounds and initial point against bounds
-static void Var_boundchk(DataVariablesRep *dv, Var_rcheck *b)
+/// For real-valued variables: verify lengths of bounds and initial
+/// point, validate bounds and adjust initial point to bounds
+static void Var_RealBoundIPCheck(DataVariablesRep *dv, Var_rcheck *b)
 {
   RealVector *L, *U, *V;
   StringArray *sa;
@@ -4624,15 +4662,9 @@ static void Var_boundchk(DataVariablesRep *dv, Var_rcheck *b)
   }
 }
 
-/// For string-valued variables: verify lengths of bounds and initial
-/// point, validate bounds and initial point against bounds
-
-
-
-
 /// For integer-valued variables: verify lengths of bounds and initial
 /// point, validate bounds and initial point against bounds
-static void Var_iboundchk(DataVariablesRep *dv, Var_icheck *ib)
+static void Var_IntBoundIPCheck(DataVariablesRep *dv, Var_icheck *ib)
 {
   IntVector *L, *U, *V;
   StringArray *sa;
@@ -4698,6 +4730,9 @@ static void Var_iboundchk(DataVariablesRep *dv, Var_icheck *ib)
   }
 }
 
+
+// setup the Vchk functions for each of the uncertain variable
+// contiguous containers, and for discrete sets
 #define VarLabelInfo(a,b)     { #a, #b, &DataVariablesRep::num##b##Vars, Vchk_##b }
 static Var_uinfo CAUVLbl[CAUVar_Nkinds] = {
   VarLabelInfo(nuv_, NormalUnc),
@@ -4769,8 +4804,20 @@ struct VarLabelChk {
   const char *name;
 };
 
+
+// For validation to be performed in check_variables_node(), each
+// variable type must be included in at least one of
+// DesignAndStateLabelsCheck, LUncertainInt, VLUncertainStr,
+// VLUncertainReal, or DiscSetLbl.  Design and state discrete sets are
+// currently in both DesignAndStateLabelsCheck (check lengths) and
+// DiscSetLbl (duplicates and STL population)
+
 #define AVI &DataVariablesRep::
-static VarLabelChk Vlch[] = {
+/// Variables label array designations for design and state.  All
+/// non-uncertain variables need to be in this array.  Used in
+/// check_variables_node to check lengths and make_variable_defaults
+/// to build labels.
+static VarLabelChk DesignAndStateLabelsCheck[] = {
   { AVI numContinuousDesVars, AVI continuousDesignLabels, "cdv_", "cdv_descriptors" },
   { AVI numDiscreteDesRangeVars, AVI discreteDesignRangeLabels, "ddriv_", "ddriv_descriptors" },
   { AVI numDiscreteDesSetIntVars, AVI discreteDesignSetIntLabels, "ddsiv_", "ddsiv_descriptors" },
@@ -4785,6 +4832,7 @@ static VarLabelChk Vlch[] = {
 };
 #undef  AVI
 
+/// structure for validating real uncertain variable labels, bounds, values
 struct VLreal {
   int n;
   VarLabel Var_Info::* VL; // should be "VarLabel *Var_Info::* VL"
@@ -4796,6 +4844,7 @@ struct VLreal {
   RealVector DataVariablesRep::* UncVars;
 };
 
+/// structure for validating integer uncertain variable labels, bounds, values
 struct VLint {
   int n;
   VarLabel Var_Info::* VL; // should be "VarLabel *Var_Info::* VL"
@@ -4807,6 +4856,7 @@ struct VLint {
   IntVector DataVariablesRep::* UncVars;
 };
 
+/// structure for validating string uncertain variable labels, bounds, values
 struct VLstr {
   int n;
   VarLabel Var_Info::* VL; // should be "VarLabel *Var_Info::* VL"
@@ -4818,14 +4868,21 @@ struct VLstr {
   StringArray DataVariablesRep::* UncVars;
 };
 
-enum { N_VLR = 4 };  // number of real-valued   uncertain contiguous containers
-enum { N_VLI = 2 };  // number of int-valued    uncertain contiguous containers
-enum { N_VLS = 2 };  // number of string-valued uncertain contiguous containers
+/// number of real-valued   uncertain contiguous containers
+enum { NUM_UNC_REAL_CONT = 4 };
+/// number of int-valued    uncertain contiguous containers
+enum { NUM_UNC_INT_CONT = 2 }; 
+/// number of string-valued uncertain contiguous containers
+enum { NUM_UNC_STR_CONT = 2 }; 
 
 #define AVI (VarLabel Var_Info::*) &Var_Info::	// cast to bypass g++ bug
 #define DVR &DataVariablesRep::
 
-static VLreal VLR[N_VLR] = {
+/// Variables labels/bounds/values check array for real-valued
+/// uncertain variables; one array entry per contiguous container.
+/// These associate the individual variables given by, e.g., CAUVLbl,
+/// with the contiguous container in which they are stored.
+static VLreal VLUncertainReal[NUM_UNC_REAL_CONT] = {
  {CAUVar_Nkinds,  AVI CAUv,  CAUVLbl,
 	DVR continuousAleatoryUncLabels,
 	DVR continuousAleatoryUncLowerBnds,
@@ -4847,7 +4904,11 @@ static VLreal VLR[N_VLR] = {
 	DVR discreteRealEpistemicUncUpperBnds,
 	DVR discreteRealEpistemicUncVars}};
 
-static VLint VLI[N_VLI] = {
+/// Variables labels/bounds/values check array for integer-valued
+/// uncertain variables; one array entry per contiguous container.
+/// These associate the individual variables given by, e.g., DAUIVLbl,
+/// with the contiguous container in which they are stored.
+static VLint VLUncertainInt[NUM_UNC_INT_CONT] = {
  {DAUIVar_Nkinds, AVI DAUIv, DAUIVLbl,
 	DVR discreteIntAleatoryUncLabels,
         DVR discreteIntAleatoryUncLowerBnds,
@@ -4859,7 +4920,11 @@ static VLint VLI[N_VLI] = {
 	DVR discreteIntEpistemicUncUpperBnds,
 	DVR discreteIntEpistemicUncVars}};
 
-static VLstr VLS[N_VLS] = {
+/// Variables labels/bounds/values check array for string-valued
+/// uncertain variables; one array entry per contiguous container.
+/// These associate the individual variables given by, e.g., DAUSVLbl,
+/// with the contiguous container in which they are stored.
+static VLstr VLUncertainStr[NUM_UNC_STR_CONT] = {
  {DAUSVar_Nkinds, AVI DAUSv, DAUSVLbl,
 	DVR discreteStrAleatoryUncLabels,
 	DVR discreteStrAleatoryUncLowerBnds,
@@ -4875,10 +4940,13 @@ static VLstr VLS[N_VLS] = {
 #undef	DVR
 #undef  AVI
 
-// which of the "all" containers are aleatory (true = 1)
-static int VLR_aleatory[N_VLR] = { 1, 0, 1, 0 };
-static int VLI_aleatory[N_VLI] = { 1, 0 };
-static int VLS_aleatory[N_VLS] = { 1, 0 };
+/// which uncertain real check array containers are aleatory (true = 1)
+static int VLR_aleatory[NUM_UNC_REAL_CONT] = { 1, 0, 1, 0 };
+/// which uncertain integer check array containers are aleatory (true = 1)
+static int VLI_aleatory[NUM_UNC_INT_CONT] = { 1, 0 };
+/// which uncertain string check array containers are aleatory (true = 1)
+static int VLS_aleatory[NUM_UNC_STR_CONT] = { 1, 0 };
+
 
 /// Generate check data for variables with just name, size, and a
 /// generator function
@@ -4898,6 +4966,7 @@ static int VLS_aleatory[N_VLS] = { 1, 0 };
 //    initialization takes place."
 
 // These are used within make_variable_defaults(): Vgen_##y is applied
+// to generate bounds, adjust initial values
 static Var_check
   var_mp_check_cv[] = {
 	Vchk_3(continuous_design,ContinuousDes),
@@ -4943,29 +5012,33 @@ static Var_check
   var_mp_check_deur[] = {
 	Vchk_3(discrete_uncertain_set_real,DiscreteUncSetReal) };
 
-/// This is used within check_variables_node(): Var_boundchk() is applied
+/// This is used within check_variables_node(): Var_RealBoundIPCheck()
+/// is applied to validate bounds and initial points
 static Var_rcheck
   var_mp_cbound[] = {
 	Vchk_7(continuous_design,ContinuousDes,continuousDesign),
 	Vchk_7(continuous_state,ContinuousState,continuousState),
-	// BMA TODO: Should these be promoted to Vchk_7 now that they
-	// have initial point in input spec?
+	// BMA: I believe these should these be promoted to Vchk_7,
+	// but not easy to do since their labels are stored in an
+	// aggregated array instead of individually
 	Vchk_5(normal_uncertain,NormalUnc,normalUnc),
 	Vchk_5(lognormal_uncertain,LognormalUnc,lognormalUnc),
 	Vchk_5(uniform_uncertain,UniformUnc,uniformUnc),
 	Vchk_5(loguniform_uncertain,LoguniformUnc,loguniformUnc),
 	Vchk_5(triangular_uncertain,TriangularUnc,triangularUnc),
 	Vchk_5(beta_uncertain,BetaUnc,betaUnc) };
+// gamma, gumbel, frechet, weibull, histogram_bin don't support bounds
+// from user input, so are omitted here?
 
-// BMA TODO: Should all discrete sets be validated for initial point
-/// This is used within check_variables_node(): Var_iboundchk() is applied
+/// This is used in check_variables_node(): Var_IntBoundIPCheck() is
+/// applied to validate bounds and initial points, and in
+/// make_variable_defaults(): Vgen_* is called to infer bounds.
 static Var_icheck
   var_mp_drange[] = {
 	Vchk_7(discrete_design_range,DiscreteDesRange,discreteDesignRange),
 	Vchk_7(discrete_state_range,DiscreteStateRange,discreteStateRange) };
 
-/// Used to apply Var_sboundcheck to string variables, mainly to check
-/// initial point
+// would be used to check initial point, but those are covered in DiscSetLbl
 // static Var_scheck
 // var_mp_sbound[] = {
 //   Vchk_7(discrete_design_set_string,DiscreteDesSetStr,discreteDesignSetStr) };
@@ -4974,6 +5047,10 @@ static Var_icheck
 #undef Vchk_5
 #undef Vchk_3
 
+
+/** Size arrays for contiguous storage of aggregated uncertain types.
+    For each variable type, call Vgen_* to generate inferred bounds
+    and initial point, repairing initial if needed. */
 void NIDRProblemDescDB::
 make_variable_defaults(std::list<DataVariables>* dvl)
 {
@@ -4989,15 +5066,20 @@ make_variable_defaults(std::list<DataVariables>* dvl)
   VarLabelChk *vlc, *vlce;
   Var_uinfo *vui, *vuie;
   char buf[32];
-  size_t i, j, k, n, nu, nursave[N_VLR], nuisave[N_VLI], nussave[N_VLS];
+  size_t i, j, k, n, nu, nursave[NUM_UNC_REAL_CONT], nuisave[NUM_UNC_INT_CONT], 
+    nussave[NUM_UNC_STR_CONT];
   static const char Inconsistent_bounds[] =
     "Inconsistent bounds on %s uncertain variables";
 
+  /// size the aggregate arrays for uncertain (design and state are
+  /// stored separately
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
     dv = It->dataVarsRep;
-    for(k = 0; k < N_VLR; ++k) {
-      vlr = &VLR[k];
+    // size the aggregate labels, bounds, values arrays for
+    // real-valued uncertain
+    for(k = 0; k < NUM_UNC_REAL_CONT; ++k) {
+      vlr = &VLUncertainReal[k];
       vui = vlr->vui;
       vuie = vui + vlr->n;
       for(nu = 0; vui < vuie; ++vui)
@@ -5012,8 +5094,10 @@ make_variable_defaults(std::list<DataVariables>* dvl)
       U->sizeUninitialized(nu);
       V->sizeUninitialized(nu);
     }
-    for(k = 0; k < N_VLI; ++k) {
-      vli = &VLI[k];
+    // size the aggregate labels, bounds, values arrays for
+    // integer-valued uncertain
+    for(k = 0; k < NUM_UNC_INT_CONT; ++k) {
+      vli = &VLUncertainInt[k];
       vui = vli->vui;
       vuie = vui + vli->n;
       for(nu = 0; vui < vuie; ++vui)
@@ -5028,8 +5112,10 @@ make_variable_defaults(std::list<DataVariables>* dvl)
       IU->sizeUninitialized(nu);
       IV->sizeUninitialized(nu);
     }
-    for(k = 0; k < N_VLS; ++k) {
-      vls = &VLS[k];
+    // size the aggregate labels, bounds, values arrays for
+    // string-valued uncertain
+    for(k = 0; k < NUM_UNC_STR_CONT; ++k) {
+      vls = &VLUncertainStr[k];
       vui = vls->vui;
       vuie = vui + vls->n;
       for(nu = 0; vui < vuie; ++vui)
@@ -5044,15 +5130,20 @@ make_variable_defaults(std::list<DataVariables>* dvl)
       SU->resize(nu);
       SV->resize(nu);
     }
-    // inferred bound generation for continuous variable types
+
+    // inferred bound generation for continuous variable types;
+    // populates the individual (design/state) or aggregate
+    // (uncertain) arrays of bounds and values by applying Vgen_##y
 
     // loop over cdv/csv
     Var_check *c, *ce;
-    size_t offset = 0;
+    // the offset into the aggregated aleatory or epistemic arrays
+    size_t offset = 0; 
     for(c=var_mp_check_cv, ce = c + Numberof(var_mp_check_cv); c < ce; ++c)
       if ((n = dv->*c->n) > 0)
 	(*c->vgen)(dv, offset); // offset not used
     // loop over nuv/lnuv/uuv/luuv/truv/euv/buv/gauv/guuv/fuv/wuv/hbuv
+    // working with continuousAleatoryUnc*
     for(c=var_mp_check_cau, ce=c + Numberof(var_mp_check_cau); c < ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
@@ -5062,7 +5153,9 @@ make_variable_defaults(std::list<DataVariables>* dvl)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
 
-    // inferred bound generation for discrete variable types
+    // inferred bound generation for discrete variable types;
+    // populates the individual (design/state) or aggregate
+    // (uncertain) arrays of bounds and values by applying Vgen_##y
 
     // discrete design,state ranges
     Var_icheck *ic, *ice;
@@ -5071,38 +5164,42 @@ make_variable_defaults(std::list<DataVariables>* dvl)
       if ((n = dv->*ic->n) > 0)
 	{ (*ic->vgen)(dv, offset); } // offset not used
     // discrete int aleatory uncertain use offset passed into Vgen_*Unc
+    // working with discreteIntAleatoryUnc*
     for(c=var_mp_check_daui, ce=c + Numberof(var_mp_check_daui); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     // discrete string aleatory uncertain use offset passed into Vgen_*Unc
+    // working with discreteStrAleatoryUnc*
     offset = 0.;
     for(c=var_mp_check_daus, ce=c + Numberof(var_mp_check_daus); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     // discrete real aleatory uncertain use offset passed into Vgen_*Unc
+    // working with discreteRealAleatoryUnc*
     offset = 0;
     for(c=var_mp_check_daur, ce=c + Numberof(var_mp_check_daur); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     // discrete int epistemic uncertain use offset passed into Vgen_*Unc
+    // working with discreteIntEpistemicUnc*
     offset = 0;
     for(c=var_mp_check_deui, ce=c + Numberof(var_mp_check_deui); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     // discrete string epistemic uncertain use offset passed into Vgen_*Unc
+    // working with discreteStrEpistemicUnc*
     offset = 0;
     for(c=var_mp_check_deus, ce=c + Numberof(var_mp_check_deus); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     // discrete real epistemic uncertain use offset passed into Vgen_*Unc
+    // working with discreteRealEpistemicUnc*
     offset = 0;
     for(c=var_mp_check_deur, ce=c + Numberof(var_mp_check_deur); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
     
-    // BMA: what discrete sets are managed below vs. above?
-
-    // check discrete set types
+    // check discrete design and state set types
     // these don't use an offset passed into Vgen_Discrete*Set*
     offset = 0;
     for(c=var_mp_check_dset, ce=c + Numberof(var_mp_check_dset); c<ce; ++c)
@@ -5110,11 +5207,15 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 	(*c->vgen)(dv, offset); // offset not used
 
 
-    for(k = 0; k < N_VLR; ++k) {
+    // Validate bounds (again?) for uncertain variables and set
+    // default labels for all types
+
+    // uncertain real: bounds check and label generation
+    for(k = 0; k < NUM_UNC_REAL_CONT; ++k) {
       nu = nursave[k];
       if (!nu)
 	continue;
-      vlr = &VLR[k];
+      vlr = &VLUncertainReal[k];
       vui = vlr->vui;
       vuie = vui + vlr->n;
       L = &(dv->*vlr->LowerBnds);
@@ -5141,11 +5242,13 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 	  i += n;
       }
     }
-    for(k = 0; k < N_VLI; ++k) {
+
+    // uncertain integer: bounds check and label generation
+    for(k = 0; k < NUM_UNC_INT_CONT; ++k) {
       nu = nuisave[k];
       if (!nu)
 	continue;
-      vli = &VLI[k];
+      vli = &VLUncertainInt[k];
       vui = vli->vui;
       vuie = vui + vli->n;
       IL = &(dv->*vli->LowerBnds);
@@ -5172,11 +5275,13 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 	  i += n;
       }
     }
-    for(k = 0; k < N_VLS; ++k) {
+
+    // uncertain string: bounds check and label generation
+    for(k = 0; k < NUM_UNC_STR_CONT; ++k) {
       nu = nussave[k];
       if (!nu)
 	continue;
-      vls = &VLS[k];
+      vls = &VLUncertainStr[k];
       vui = vls->vui;
       vuie = vui + vls->n;
       SL = &(dv->*vls->LowerBnds);
@@ -5203,7 +5308,9 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 	  i += n;
       }
     }
-    for(vlc = Vlch, vlce = vlc + Numberof(Vlch); vlc < vlce; ++vlc)
+
+    // build labels for all design and state variables if needed
+    for(vlc = DesignAndStateLabelsCheck, vlce = vlc + Numberof(DesignAndStateLabelsCheck); vlc < vlce; ++vlc)
       if (vlc->stub && (n = dv->*vlc->n)) {
 	sa = &(dv->*vlc->sa);
 	if (sa->size() == 0)
@@ -5227,28 +5334,29 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 #define AVI &Var_Info::
   // Used for deallocation of Var_Info temporary data
   static IntArray   *Var_Info::* Ia_delete[]
-    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss,
-	AVI ndusr, AVI ndssi, AVI ndssr };
+    = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, 
+	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr, 
+	AVI ndssi, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
-    = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp, AVI DSIp, AVI DSSp, AVI DSRp,
-	AVI dusr, AVI hba, AVI hbo, AVI hbc, AVI hpic, AVI hpsc, AVI hpra, AVI hprc, AVI ucm,
+    = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp,
+	AVI DSIp, AVI DSSp, AVI DSRp,
+	AVI dusr, AVI hba, AVI hbo, AVI hbc, 
+	AVI hpic, AVI hpsc, AVI hpra, AVI hprc, 
+	AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
     = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
   static StringArray *Var_Info::* Sa_delete[]
     = { AVI ddss, AVI duss, AVI dsss };
 #undef AVI
-  static char ucmerr[]
-    = "Got %lu entries for the uncertain_correlation_matrix\n\
-	but needed %lu for %lu uncertain variables";
 
   Var_Info *vi = (Var_Info*)v;
   DataVariablesRep *dv = vi->dv;
 
-  /* check and generate labels for design and state variables */
-
+  // check label lengths for design and state variables, if present
   nv = 0;
-  for(vlc = Vlch, vlce = vlc + Numberof(Vlch); vlc < vlce; ++vlc)
+  for(vlc = DesignAndStateLabelsCheck, vlce = vlc + Numberof(DesignAndStateLabelsCheck); 
+      vlc < vlce; ++vlc)
     if ((n = dv->*vlc->n)) {
       if (vlc->stub)
 	nv += n;
@@ -5263,10 +5371,14 @@ void NIDRProblemDescDB::check_variables_node(void *v)
       }
     }
 
-  /* now deal with uncertain variables */
+  // Now check uncertain variables.  Calls the Vchk_* functions (e.g.,
+  // Vchk_NormalUnc) for each variable type, which for simple
+  // uncertain variables check lengths, but for histograms and
+  // intervals, translate the data into arrays of maps.
 
-  for(k = nu = nutot = 0; k < N_VLR; ++k) {
-    vlr = &VLR[k];
+  // uncertain real
+  for(k = nu = nutot = 0; k < NUM_UNC_REAL_CONT; ++k) {
+    vlr = &VLUncertainReal[k];
     havelabels = 0;
     nuk = 0;
     vl = &(vi->*vlr->VL);	// "&(...)" to bypass a g++ bug
@@ -5302,8 +5414,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
       }
     }
   }
-  for(k = 0; k < N_VLI; ++k) {
-    vli = &VLI[k];
+
+  // uncertain integer
+  for(k = 0; k < NUM_UNC_INT_CONT; ++k) {
+    vli = &VLUncertainInt[k];
     havelabels = 0;
     nuk = 0;
     vl = &(vi->*vli->VL);	// "&(...)" to bypass a g++ bug
@@ -5339,8 +5453,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
       }
     }
   }
-  for(k = 0; k < N_VLS; ++k) {
-    vls = &VLS[k];
+
+  // uncertain string
+  for(k = 0; k < NUM_UNC_STR_CONT; ++k) {
+    vls = &VLUncertainStr[k];
     havelabels = 0;
     nuk = 0;
     vl = &(vi->*vls->VL);	// "&(...)" to bypass a g++ bug
@@ -5377,11 +5493,15 @@ void NIDRProblemDescDB::check_variables_node(void *v)
     }
   }
 
-
-  if ((Rv = vi->ucm)) { // uncertain_correlation_matrix
+  // uncertain_correlation_matrix
+  if ((Rv = vi->ucm)) {
     n = Rv->length();
-    if (n != nu*nu)
+    if (n != nu*nu) {
+      static char ucmerr[]
+	= "Got %lu entries for the uncertain_correlation_matrix\n\
+	but needed %lu for %lu uncertain variables";
       squawk(ucmerr, (UL)n, (UL)nu*nu, (UL)nu);
+    }
     else {
       Rm = &dv->uncertainCorrelations;
       Rm->reshape(nu);
@@ -5392,8 +5512,13 @@ void NIDRProblemDescDB::check_variables_node(void *v)
     }
   }
 
-  /* check discrete variables */
+  // The above functions don't validate the initial point; those below do
 
+  // Check discrete design and state set variables.  Call Vchk_* for
+  // the discrete design and state set (integer/string/real) types,
+  // e.g, Vchk_DiscreteDesSetInt; these check for duplicates, validate
+  // that initial point is in the set, and populate arrays of maps or
+  // other STL data structures
   nd = 0;
   for(vui=DiscSetLbl, vuie=DiscSetLbl+DiscSetVar_Nkinds; vui<vuie; ++vui) {
     if ((n = dv->*vui->n) > 0) {
@@ -5405,22 +5530,28 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   if (nd + nv + nutot == 0)
     squawk("at least one variable must be specified");
 
-  /* check bounds */
+  // Check bounds and adjust initial points for remaining types.
 
-  // loop over continuous bound specs: cdv/csv/nuv/lnuv/uuv/luuv/truv/buv
+  // TODO: these don't support explicit bounds, but their initial
+  // point could still be validated here: gamma, gumbel, frechet,
+  // weibull, histogram_bin, poisson, binomial, negative_binomial,
+  // geometric, hypergeometric, histogram_point
+
+  // TODO: continuous and discrete interval, initial point not checked
+  // anywhere?
+
+  // Continuous bound specs: cdv/csv/nuv/lnuv/uuv/luuv/truv/buv
   Var_rcheck *rc, *rce;
   for(rc = var_mp_cbound, rce = rc + Numberof(var_mp_cbound); rc < rce; ++rc)
-    Var_boundchk(dv, rc);
-  // loop over discrete bound specs: design,state ranges
+    Var_RealBoundIPCheck(dv, rc);
+
+  // Discrete bound specs: design,state ranges
   Var_icheck *ic, *ice;
   for(ic = var_mp_drange, ice = ic + Numberof(var_mp_drange); ic < ice; ++ic)
-    Var_iboundchk(dv, ic);
+    Var_IntBoundIPCheck(dv, ic);
   
-  // BMA TODO: Do we need to check anything with sets here?
 
-
-  /* finish up and deallocate temporary Var_Info data */
-
+  // deallocate temporary Var_Info data
   n = Numberof(Ia_delete);
   for(i = 0; i < n; i++)
     if ((Ia = vi->*Ia_delete[i]))
@@ -5438,6 +5569,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
     if ((Sa = vi->*Sa_delete[i]))
       delete Sa;
   delete vi;
+
   if (nerr)
     abort_handler(PARSE_ERROR);
 }
@@ -5720,6 +5852,13 @@ static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma,
 void NIDRProblemDescDB::
 check_variables(std::list<DataVariables>* dvl)
 {
+  // BMA: If parse was called, then the Var_Info objects have already
+  // been populated; in the case of pure DB insertion in library mode,
+  // they won't be and some data from DataVariables needs to be mapped
+  // back to the flat Var_Info structures.  Not sure if this correctly
+  // captures the case where a parse is followed by a DB update of an
+  // input keyword not accounted for below
+
   if (pDDBInstance) {
     std::list<void*>::iterator It, Ite = pDDBInstance->VIL.end();
     for(It = pDDBInstance->VIL.begin(); It != Ite; ++It)
@@ -5728,6 +5867,7 @@ check_variables(std::list<DataVariables>* dvl)
   }
   else {
     // library mode with manual provision of everything
+    // map all data back into NIDR Var_Info structures
     DataVariablesRep *dv;
     IntArray *ia;
     RealSymMatrix *rsm;

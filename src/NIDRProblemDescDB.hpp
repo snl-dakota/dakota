@@ -63,28 +63,42 @@ public:
   //- Heading: Data
   //
 
-  /// pointer to the active object instance used within the static kwhandler
-  /// functions in order to avoid the need for static data
+  /// Pointer to the active object instance used within the static
+  /// kwhandler functions in order to avoid the need for static data.
+  /// Only initialized when parsing an input file; will be NULL for
+  /// cases of direct DB population only.
   static NIDRProblemDescDB* pDDBInstance;
 
 private:
 
+  /// List of Var_Info pointers, one per Variables instance
   std::list<void*> VIL;
-  static void check_variables_node(void*);
 
+  /// check a single variables node; input argument v is Var_Info*
+  static void check_variables_node(void* v);
+  
+  /// tokenize and try to validate the presence of an analysis driver,
+  /// potentially included in the linked or copied template files
   static int check_driver(const String& an_driver,
 			  const StringArray& link_files,
 			  const StringArray& copy_files);
 
 public:
 
+  /// number of parse error encountered
   static int nerr;
+  /// print and error message and immediately abort
   static void botch(const char *fmt, ...);
+  /// check each node in a list of DataVariables, first mapping
+  /// DataVariables members back to flat NIDR arrays if needed.
   static void check_variables(std::list<DataVariables>*);
   static void check_responses(std::list<DataResponses>*);
+  /// Bounds and initial point check and inferred bounds generation
   static void make_variable_defaults(std::list<DataVariables>*);
   static void make_response_defaults(std::list<DataResponses>*);
+  /// print an error message and increment nerr, but continue
   static void squawk(const char *fmt, ...);
+  /// print a warning
   static void warn(const char *fmt, ...);
 
   //
