@@ -34,7 +34,12 @@ $naninf = "-?([Nn][Aa][Nn]|[Ii][Nn][Ff])";
 $e = "($expo|$naninf)";
 # numerical field in integer notation
 $i = "-?\\d+";                     
-
+# get tolerance from environment, if it exists.
+if (exists $ENV{'DAKDIFF_REL_EPSILON'}) {
+    $REL_EPSILON = $ENV{'DAKDIFF_REL_EPSILON'};
+} else {
+    $REL_EPSILON = 1.e-4;
+}
 
 # -----------------
 # Process TEST file
@@ -585,7 +590,7 @@ sub diff {
   # $_[1] = baseline value
 
   #print "Diffing $_[0] and $_[1]\n";
-
+  
   # for nan or inf, require exact string match
   if ( $_[0] =~ /$naninf/ || $_[1] =~ /$naninf/ ) {
     if ( $_[0] ne $_[1] ) {
@@ -598,7 +603,7 @@ sub diff {
 
   $SMALL       = 1.e-8; # use absolute difference for small values
   $ABS_EPSILON = 5.e-9; # allow up to a quarter of the total abs() interval
-  $REL_EPSILON = 1.e-4; # allow up to 0.01% numerical differences
+#  $REL_EPSILON = 1.e-4; # allow up to 0.01% numerical differences
   if ( (abs($_[0]) < $SMALL) || (abs($_[1]) < $SMALL) ) {
     $differ = abs($_[0] - $_[1]);     # absolute difference
     if ($differ > $ABS_EPSILON) {
