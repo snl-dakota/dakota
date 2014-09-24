@@ -32,8 +32,7 @@ specification identifies a model, a model specification identifies
 variables, responses, and (for some types) interface specifications.
 This top-down flow specifies all of the object interrelationships.
 
-
-Topics:: block, not_yet_reviewed
+Topics:: block
 Examples::
 The next example displays a surrogate model specification which
 selects a quadratic polynomial from among the global approximation

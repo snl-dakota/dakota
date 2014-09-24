@@ -7,9 +7,7 @@ orthogonal_distance is the only one. It reduces the final solution set
 size such that a minimum distance in each direction exists between any
 two designs.
 
-!!!!!!!!!!! Is this correct, the original did not match the input spec
-
-Topics::	problem
+Topics::
 Examples::
 Theory::
 Faq::

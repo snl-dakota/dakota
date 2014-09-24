@@ -100,7 +100,7 @@ User-provided values violating this lower bound are accepted
 unaltered, whereas for automatically calculated scaling, the lower
 bound is enforced.
 
-Topics::	not_yet_reviewed, method_independent_controls
+Topics::	method_independent_controls
 Examples::
 The two examples below are equivalent:
 \verbatim

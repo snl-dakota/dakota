@@ -171,7 +171,7 @@ optimization under uncertainty
 (OUU), and surrogate-based UQ.
 
 
-Topics::	block_pointer, not_yet_reviewed
+Topics::	block_pointer
 Examples::
 Theory::
 Faq::

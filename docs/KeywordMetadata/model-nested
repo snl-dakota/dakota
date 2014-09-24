@@ -25,7 +25,7 @@ combined with data from the nested iterator using the \c
 primary_response_mapping and \c secondary_response_mapping inputs (see
 mapping discussion below).
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 An example of variable and response mappings is provided below:
 \verbatim
@@ -73,6 +73,6 @@ sub-iterator response values, and the mapping matrix will have a value
 of one along the diagonal and zeros elsewhere. -->
 
 
-Theory::	problem
+Theory::
 Faq::
 See_Also::	model-single, model-surrogate 

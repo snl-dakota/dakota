@@ -130,8 +130,7 @@ are often effective in finding local minima.
  improve the rate of convergence of the SBO algorithm.
 
 \li When using the first order correction methods, the
- \c TRUE_FCN_GRAD response keywords must be modified (see
- bottom of Figure <!-- TODO \ref{sbm:sblm_rosen}) --> to allow either analytic or
+ gradient-related response keywords must be modified to allow either analytic or
  numerical gradients to be computed. This provides the gradient data
  needed to compute the correction function.
 
@@ -140,8 +139,6 @@ are often effective in finding local minima.
  discontinuous (or may not exist at all). In such cases the heuristic
  SBO algorithm has been an effective approach at identifying optimal
  designs \cite Giu02.
-
---->
 
 Topics::
 Examples::

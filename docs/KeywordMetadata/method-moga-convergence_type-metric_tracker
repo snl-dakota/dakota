@@ -11,7 +11,7 @@ If \c metric_tracker is specified, then a \c percent_change and \c
 num_generations must be supplied as well.  These are listed as
 optional keywords in the input spec.
 
-Topics::	problem
+Topics::
 Examples::
 Theory::
 

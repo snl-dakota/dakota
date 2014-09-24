@@ -7,7 +7,7 @@ applications. Dakota also offers more advanced algorithms, e.g., to
 manage multi-objective optimization or perform surrogate-based
 minimization.  This chapter summarizes optimization problem
 formulation, standard algorithms available in Dakota (mostly through
-included third-party libraries, see <!-- TODO ~\ref{opt:libraries} -->), some
+included third-party libraries, see Section 6.5 of [\cite UsersMan "Adams et al., 2010"]), some
 advanced capabilities, and offers usage guidelines.
 
 \section OptFormulations Optimization Formulations
@@ -66,7 +66,7 @@ constraints. Correspondingly, a design point is said to be
 <em>infeasible</em> if it violates one or more of the constraints.
 
 Many different methods exist to solve the optimization problem given
-by Equation<!-- TODO ~\ref{opt:formulations:equation01}-->, all of which iterate on
+in Section 6.1 of [\cite UsersMan "Adams et al., 2010"], all of which iterate on
 \f$\mathbf{x}\f$ in some manner. That is, an initial value for each
 parameter in \f$\mathbf{x}\f$ is chosen, the <em>response quantities</em>,
 \f$f(\mathbf{x})\f$, \f$\mathbf{g(x)}\f$, \f$\mathbf{h(x)}\f$, are computed, often
@@ -144,11 +144,11 @@ local, multipoint, global, and hierarchical surrogates for use in
 optimization. Finally, sometimes there are multiple objectives that 
 one may want to optimize simultaneously instead of a single scalar 
 objective.  In this case, one may employ multi-objective methods 
-that are described in Section<!-- TODO ~\ref{opt:additional:multiobjective}-->.
+that are described in Section 6.3.1 of [\cite UsersMan "Adams et al., 2010"].
 
 This overview of optimization approaches underscores that no single
 optimization method or algorithm works best for all types of
-optimization problems. Section<!-- TODO ~\ref{opt:usage}--> offers guidelines for
+optimization problems. Section 6.4 of [\cite UsersMan "Adams et al., 2010"] offers guidelines for
 choosing a Dakota optimization algorithm best matched to your specific
 optimization problem.
 
@@ -197,7 +197,7 @@ active continuous variables, which in this case are the
 <em>continuous design variables</em>. This differs from parameter study
 methods (for which all continuous variables are active) and from
 nondeterministic analysis methods (for which the uncertain variables
-are active). Refer to Section<!-- TODO ~\ref{responses:active}--> for additional
+are active). Refer to Chapter 11 of [\cite UsersMan "Adams et al., 2010"] for additional
 information on derivative components and active continuous variables.
 
 \section OptMethods Optimizing with Dakota: Choosing a Method
@@ -205,21 +205,21 @@ information on derivative components and active continuous variables.
 This section summarizes the optimization methods available in
 Dakota. We group them according to search method and search goal and
 establish their relevance to types of problems. For a summary of this
-discussion, see Section<!-- TODO ~\ref{opt:usage}-->.
+discussion, see Section 6.4 of [\cite UsersMan "Adams et al., 2010"].
 
 \subsection OptMethodsGradient Gradient-Based Local Methods
 
 Gradient-based optimizers are best suited for efficient navigation to
 a local minimum in the vicinity of the initial point.  They are not
 intended to find global optima in nonconvex design spaces.  For global
-optimization methods, see<!-- TODO ~\ref{opt:methods:gradientfree:global}-->.
+optimization methods, see Section 6.2.3 of [\cite UsersMan "Adams et al., 2010"].
 Gradient-based optimization methods are highly efficient, with the
 best convergence rates of all of the local optimization methods, and
 are the methods of choice when the problem is smooth, unimodal, and
 well-behaved. However, these methods can be among the least robust
 when a problem exhibits nonsmooth, discontinuous, or multimodal
 behavior.  The derivative-free methods described
-in<!-- TODO ~\ref{opt:methods:gradientfree:local}--> are more appropriate for
+in Section 6.2.2 of [\cite UsersMan "Adams et al., 2010"] are more appropriate for
 problems with these characteristics.
 
 Gradient accuracy is a critical factor for gradient-based optimizers,

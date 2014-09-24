@@ -11,7 +11,7 @@ region ratio. For infeasible iterates, constraint relaxation can be
 used for balancing constraint satisfaction and progress made toward an
 optimum.
 
-Topics::	not_yet_reviewed
+Topics::
 Examples::
 Theory::
 Faq::

@@ -1,13 +1,18 @@
 Blurb::
 Select a replacement type for JEGA methods
 Description::
-!!!!!!!!!! INCONSISTENCY in the manual. This says replacement types are the same
-between methods, however, this is not true in the input spec.
-below_limit vs. favor_feasible.
+Replace the population with members selected to continue in the next
+generation. The pool of potential members is the current population
+and the current set of offspring. The \c replacement_type of
+\c roulette_wheel or \c unique_roulette_wheel may be used either with MOGA
+or SOGA problems however they are not recommended for use with
+MOGA. Given that the only two fitness assessors for MOGA are the
+\c layer_rank and \c domination_count, the recommended selector is the
+\c below_limit selector. The \c below_limit replacement will only keep
+designs that are dominated by fewer than a limiting number of other
+designs.
 
-As of JEGA v2.0, all replacement types are common to both MOGA and SOGA.
-They include the \c roulette_wheel, \c unique_roulette_wheel, \c elitist, and
-\c below_limit selectors. In roulette_wheel replacement, each design is
+In \c roulette_wheel replacement, each design is
 conceptually allotted a portion of a wheel proportional to its fitness
 relative to the fitnesses of the other Designs. Then,
 portions of the wheel are chosen at random and the design occupying
@@ -34,36 +39,24 @@ a shrinkage limit, a small group of "super" designs may appear and
 quickly cull the population down to a size on the order of
 the limiting value. In this case, all the diversity of the population 
 is lost and it is expensive to re-diversify and spread the population. The
-\c elitist selector simply chooses the required number of designs taking the
-most fit. For example, if 100 selections are requested, then the top 100
-designs as ranked by fitness will be selected and the remaining will be
-discarded.
 
-The initialization, crossover, and mutation controls were all
-described above. There are no SOGA specific aspects to these
-controls. The \c replacement_type for a SOGA may be \c roulette_wheel,
-\c unique_roulette_wheel, \c elitist, or \c favor_feasible. 
+The \c replacement_type for a SOGA may be \c roulette_wheel, \c
+unique_roulette_wheel, \c elitist, or \c favor_feasible. The \c
+elitist selector simply chooses the required number of designs taking
+the most fit. For example, if 100 selections are requested, then the
+top 100 designs as ranked by fitness will be selected and the
+remaining will be discarded. The \c favor_feasible replacement type
+first considers feasibility as a selection criteria. If that does not
+produce a "winner" then it moves on to considering fitness
+value. Because of this, any fitness assessor used with the \c
+favor_feasible selector must only account objectives in the creation
+of fitness. Therefore, there is such a fitness assessor and it's use
+is enforced when the \c favor_feasible selector is chosen. In that
+case, and if the output level is set high enough, a message will be
+presented indicating that the \c weighted_sum_only fitness assessor
+will be used.
 
-The
-\c favor_feasible replacement type first considers feasibility as a selection
-criteria. If that does not produce a "winner" then it moves on to considering
-fitness value. Because of this, any fitness assessor used with the
-\c favor_feasible selector must only account objectives in the creation of
-fitness. Therefore, there is such a fitness assessor and it's use is enforced
-when the \ favor_feasible selector is chosen. In that case, and if the output
-level is set high enough, a message will be presented indicating that the
-\c weighted_sum_only fitness assessor will be used. As of JEGA v2.0 and beyond,
-the fitness assessment operator must be specified with SOGA
-although the \c merit_function is currently the only one (note that the
-\c weighted_sum_only assessor exists but cannot be selected). The roulette
-wheel selectors no longer assume a fitness function. The \c merit_function
-fitness assessor uses an exterior penalty function formulation to penalize
-infeasible designs. The specification allows the input of a
-\c constraint_penalty which is the multiplier to use on the
-constraint violations.
-
-
-Topics::	not_yet_reviewed, problem
+Topics::
 Examples::
 Theory::
 Faq::
