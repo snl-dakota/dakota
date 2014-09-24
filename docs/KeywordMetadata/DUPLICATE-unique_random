@@ -1,5 +1,5 @@
 Blurb::
-(Default) Initilization option for JEGA methods
+Create random initial solutions, but enforce uniqueness (default)
 Description::
 \c unique_random is the same as \c simple_random, except that when a
 new solution is generated, it is checked against the rest of the

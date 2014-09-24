@@ -1,5 +1,5 @@
 Blurb::
-Initilization option for JEGA methods
+Read initial solutions from file
 Description::
 \c flat_file allows the initial population to be read from a flat
 file. If \c flat_file is specified, a file name must be given.
