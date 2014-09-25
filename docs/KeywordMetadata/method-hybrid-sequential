@@ -5,13 +5,13 @@ In the \c sequential approach, methods are run one at a time, in
 sequence.  The best solutions from one method are used to initialize
 the next method.
 
-A list of method strings supplied with the \c method_list
-specification specifies the identity and sequence of iterators to be
-used. Any number of iterators may be specified.
+The sequence of methods (i.e. iterators) to run are specified using 
+either a \c method_pointer_list or a \c method_name_list (with optional
+\c model_pointer_list). Any number of iterators may be specified.
 
 Method switching is managed through the separate convergence controls
 of each method. The number of solutions transferred between methods is
-specified by the particular method through its \c final_solutions
+specified by the particular method through its \ref method-final_solutions
 method control.
 
 For example, if one sets up a two-level study with a first method

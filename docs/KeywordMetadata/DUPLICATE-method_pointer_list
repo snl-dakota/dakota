@@ -1,6 +1,11 @@
 Blurb::
+Pointers to methods to execute sequantially or collaboratively
 Description::
-Topics::	block_pointer, not_yet_reviewed
+\c method_pointer_list specifies by name the methods that are to be executed by
+a \c hybrid \c sequential or \c hybrid \c collaborative method. Its argument is 
+a list of strings that refer to method blocks by name (i.e. to their 
+\ref method-id_method labels).
+Topics::	block_pointer
 Examples::
 Theory::
 Faq::

@@ -1,8 +1,11 @@
 Blurb::
-Specify the local method
+Specify the local method by Dakota name
 Description::
-See parent page.
-Topics::	block_pointer, not_yet_reviewed
+\c local_method_name is used to specify the local method in a \c hybrid 
+\c embedded optimization by Dakota name (e.g. '\ref conmin_mfd'). The name 
+of the method is provided as a string. The method is executed with default 
+options.
+Topics::	
 Examples::
 Theory::
 Faq::

@@ -1,1 +1,10 @@
-DUPLICATE-local_method_pointer
+Blurb::
+Pointer to local method
+Description::
+The \c local_method_pointer identifies the method block to use as the local 
+method in a \c hybrid \c embedded optimization using its \ref method-id_method
+Topics::	block_pointer
+Examples::
+Theory::
+Faq::
+See_Also::	

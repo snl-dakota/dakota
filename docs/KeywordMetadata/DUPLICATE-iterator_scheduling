@@ -1,12 +1,20 @@
 Blurb::
 Specify the scheduling of concurrent iterators when Dakota is run in parallel
 Description::
-When Dakota is run in parallel, the partition type of the iterator servers is 
-determined automatically. If this setting is undesirable, it may be
-overridden by the user using the \c iterator_scheduling keyword.
+An important feature for component-based iterators is that execution
+of sub-iterator runs may be performed concurrently. The optional 
+\c iterator_scheduling specification supports user override
+of the automatic parallel configuration for the number of iterator 
+servers. That is, if the automatic configuration is
+undesirable for some reason, the user can enforce a desired number of
+partitions at the iterator parallelism level. Currently, \c hybrid, 
+\c multi_start, and \c pareto_set component-based iterators support 
+concurrency in their sub-iterators. Refer to ParallelLibrary 
+and the Parallel Computing chapter of the Users Manual 
+[\cite UsersMan "Adams et al., 2010"] for additional information.
 
-Topics::	concurrency_and_parallelism, problem
+Topics::	concurrency_and_parallelism
 Examples::
 Theory::
 Faq::
-See_Also::	
+See_Also:: 
