@@ -1,22 +1,20 @@
-This page discusses discrete state, design, and uncertain variables. 
-
-Variables with the word \c discrete in their name are all
-specified in similar ways. These include:
+This page discusses discrete state, design, and uncertain variables
+(which have \c discrete in their keyword name) as they have similar
+specifications. These include:
 -# Set of integers
+-# Set of strings
 -# Set of reals
 -# Range(s)
-and each of these is described below.
+and each is described below.
 
-In addition, some uncertain variables are discrete, real-valued
-random variables and are specified using parameters. These
-are described on their individual keyword pages.
-
-
+In addition, some uncertain variables, e.g., binomial, are discrete,
+real-valued random variables specified using parameters. These are
+described on their individual keyword pages.
 
 <b> Sets </b>
 
-Sets of integers and reals are the same, except
-that one of them is restricted to integer values.
+Sets of integers, strings, and reals have similar specifications,
+though different value types.
 
 The variables are specified using three keywords:
 - Variable declaration keyword - specifies the number of variables being defined
@@ -28,11 +26,17 @@ The variables are specified using three keywords:
   - The list is partitioned according to the values of \c num_set_values, and each partition is assigned to a variable.
 - The ordering of \c num_set_values, and the partitions of \c set_values must match the strings from \c descriptions
 
+For string variables, each string element value must be quoted and may
+contain alphanumeric, dash, underscore, and colon. White space, quote
+characters, and backslash/metacharacters are not permitted.
+
 Examples are given on the pages:
-- \ref variables-discrete_design_set_integer
-- \ref variables-discrete_design_set_real 
-- \ref variables-discrete_uncertain_set_integer
-- \ref variables-discrete_uncertain_set_real
+- \ref variables-discrete_design_set-integer
+- \ref variables-discrete_design_set-string
+- \ref variables-discrete_design_set-real 
+- \ref variables-discrete_uncertain_set-integer
+- \ref variables-discrete_uncertain_set-real
+
 
 <b> Range </b>
 

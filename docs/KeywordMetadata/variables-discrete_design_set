@@ -1,8 +1,11 @@
 Blurb::
-Set valued discrete design variables
+Set-valued discrete design variables
+
 Description::
-Discrete design variables whose values come from a set of admissible elements. 
-The set can be of types integer, string, and real.
+Discrete design variables whose values come from a set of admissible
+elements. Each variable specified must be of type integer, string, or
+real.
+
 Topics:: 	discrete_variables, design_variables     
 Examples::
 Theory::

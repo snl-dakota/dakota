@@ -1,11 +1,13 @@
 Blurb:: 
-Label the variables
+Labels for the variables
+
 Description::
-The optional variables labels specification \c descriptors is a list of
-strings which will be printed in %Dakota input file to identify the values
-for particular variable.
+The optional variables labels specification \c descriptors is a list
+of strings which identify the variables.  These are used in console
+and tabular output.
 
 The default descriptor strings use a root string plus a numeric identifier. 
+
 Topics::	
 Examples::
 Theory::

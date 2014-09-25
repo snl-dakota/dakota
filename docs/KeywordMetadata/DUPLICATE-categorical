@@ -1,0 +1,33 @@
+Blurb::
+Whether the set-valued variables are categorical or relaxable
+
+Description::
+
+A list of strings of length equal to the number of set (integer,
+string, or real) variables indicating whether they are strictly
+categorical, meaning may only take on values from the provided set, or
+relaxable, meaning may take on any integer or real value between the
+lowest and highest specified element. Valid categorical strings
+include 'yes', 'no', 'true', and 'false', or any abbreviation in
+[yYnNtTfF][.]*
+
+Topics::        
+
+Examples::
+Discrete_design_set variable, 'rotor_blades', can take on only integer
+values, 2, 4, or 7 by default. Since categorical is specified to be
+false, the integrality can be relaxed and 'rotor_blades' can take on
+any value between 2 and 7, e.g., 3, 6, or 5.5.
+
+\verbatim
+discrete_design_set
+	integer 1
+        elements 2 4 7
+	descriptor 'rotor_blades'
+	categorical 'no'
+\endverbatim
+
+Theory::
+Faq::
+See_Also::
+

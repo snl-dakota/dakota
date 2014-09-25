@@ -1,0 +1,14 @@
+Blurb::
+Set-valued discrete uncertain variables
+
+Description::
+Discrete uncertain variables whose values come from a set of admissible
+elements. Each variable specified must be of type integer, string, or
+real.
+
+Topics:: 	discrete_variables
+Examples::
+Theory::
+Faq::
+See_Also::
+

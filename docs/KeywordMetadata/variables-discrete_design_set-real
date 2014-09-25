@@ -1,13 +1,21 @@
 Blurb::
-Discrete design variables - specified using lists of reals 
+Real-valued discrete design variables
+
 Description::
-The details of how to specify this discrete variable are located on the 
-\ref topic-discrete_variables page.
+A design variable whose values come from a specified set of admissible
+reals.  The details of how to specify this discrete variable are
+located on the \ref topic-discrete_variables page.
 
 Topics:: 	discrete_variables, design_variables
-Examples:: Two continuous, restricted variables whose values will be selected during  the search for an optimal design. \f$y1 \in [0.25,1.25, 2.25, 3.25, 4.25]\f$, \f$y2 \in [0,5]\f$
+
+Examples:: 
+Two continuous, restricted variables whose values will be selected
+from the following sets during the search for an optimal design. \f$y1
+\in \{0.25,1.25, 2.25, 3.25, 4.25\}\f$, \f$y2 \in \{0,5\}\f$
+
 \verbatim
-discrete_design_set_real 2
+discrete_design_set
+	real 2
         num_set_values 5 2
         set_values 0.25 1.25 2.25 3.25 4.25 0 5
         descriptors 'y1' 'y2'

@@ -7,8 +7,8 @@ epistemic uncertainties through the keywords:
 
 \li \ref variables-continuous_interval_uncertain
 \li \ref variables-discrete_interval_uncertain
-\li \ref variables-discrete_uncertain_set_integer
-\li \ref variables-discrete_uncertain_set_real
+\li \ref variables-discrete_uncertain_set-integer
+\li \ref variables-discrete_uncertain_set-real
 
 Interval-based and set variables do
 not represent probability distributions.

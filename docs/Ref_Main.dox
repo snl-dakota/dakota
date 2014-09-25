@@ -437,11 +437,11 @@ cases where the \c remove command was insufficient).
 Conversion of a binary restart file to a tabular format enables
 convenient import of this data into 3rd-party post-processing tools
 such as Matlab, TECplot, Excel, etc. This facility is nearly identical
-to the output activated by the \ref environment-tabular_graphics_data 
+to the output activated by the \ref environment-tabular_data 
 keyword in the Dakota input file specification, but
 with two important differences:
 -# No function evaluations are suppressed as they are with
-  \c tabular_graphics_data (i.e., any internal finite
+  \c tabular_data (i.e., any internal finite
   difference evaluations are included).
 -# The conversion can be performed later, i.e., for Dakota
   runs executed previously.

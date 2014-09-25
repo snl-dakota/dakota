@@ -1,0 +1,16 @@
+Blurb::
+Number of admissible elements for each set variable
+
+Description::
+Discrete set variables (including design, uncertain, and state) take
+on only a fixed set of values.  For each type (integer, string, or
+real), this keyword specifies how many admissible values are provided
+for each variable.  If not specified, equal apportionment of elements
+among variables is assumed, and the number of elements must be evenly
+divisible by the number of variables.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -7,8 +7,9 @@ epistemic uncertainties through the keywords:
 
 \li \ref variables-continuous_interval_uncertain
 \li \ref variables-discrete_interval_uncertain
-\li \ref variables-discrete_uncertain_set_integer
-\li \ref variables-discrete_uncertain_set_real
+\li \ref variables-discrete_uncertain_set-integer
+\li \ref variables-discrete_uncertain_set-string
+\li \ref variables-discrete_uncertain_set-real
 
 Interval-based and set variables do
 not represent probability distributions.
@@ -31,14 +32,15 @@ Examples::
 Let d1 be 2.1 or 1.3 and d2 be 0.4, 5 or 2.6.
 The following specification is for an interval analysis:
 \verbatim
-discrete_uncertain_set_integer
+discrete_uncertain_set
+ integer
  num_set_values  2           3
  set_values      2.1  1.3    0.4  5  2.6
  descriptors     'd1'        'd2'
 \endverbatim
 
 Theory::
-The \c discrete_uncertain_set_integer
+The \c discrete_uncertain_set-integer
 variable is NOT a discrete random variable.
 It can be contrasted to a the histogram-defined random variables:
 \ref variables-histogram_bin_uncertain and \ref variables-histogram_point_uncertain.
