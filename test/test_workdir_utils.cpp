@@ -92,6 +92,24 @@ void count_driver_scripts(const std::string& glob_string)
 }
 
 
+void test_which_driver(bfs::path& wd, const std::string& driver_name)
+{
+  BOOST_CHECK( bfs::exists(wd) );
+  BOOST_CHECK( wd.is_absolute() );
+
+  // BFS issue?  mkdir/change_dir seems problematic if wd is relative dir
+  WorkdirHelper::change_directory(wd);
+  WorkdirHelper::set_preferred_path();
+
+  // verify that a driver can be found in newly populated wdir
+  bfs::path driver = WorkdirHelper::which(driver_name);
+
+  BOOST_CHECK( !driver.is_absolute() );
+  BOOST_CHECK( bfs::is_regular_file(driver) );
+  BOOST_CHECK( bfs::equivalent(driver, bfs::path(driver_name)) );
+}
+
+
 void test_cp_template_files_into_wd(bfs::path& wd)
 {
   //std::cout << "OK to COPY template files into EMPTY dir:  " << wd << std::endl;
@@ -122,12 +140,17 @@ void test_cp_template_files_into_wd(bfs::path& wd)
   BOOST_CHECK( !wd.empty() );
   BOOST_CHECK( file_count+link_count+dir_count >= 2 );
   //std::cout << "DONE iterating dir:  " << wd << std::endl;
+
+  // now determine if PATH environment is suitable for script in workdir
+  // i.e. test the behavior of "which" after cd into newly populated dir
+
+  test_which_driver(wd, "templatedir_rosenbrock.py"); // consider argv[1] here?
 }
 
 
 void test_ln_template_files_into_wd(bfs::path& wd)
 {
-  //std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
+  std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
   std::string template_path_str( std::getenv("PWD") );
   template_path_str += "/../test/dakota_workdir.templatedir/*";
 
@@ -156,8 +179,14 @@ void test_ln_template_files_into_wd(bfs::path& wd)
   BOOST_CHECK( file_count+link_count+dir_count >= 2 );
   //std::cout << "DONE iterating dir:  " << wd << std::endl;
 
+  // now determine if PATH environment is suitable for script in workdir
+  // i.e. test the behavior of "which" after cd into newly populated dir
+
+  test_which_driver(wd, "templatedir_rosenbrock.py"); // consider argv[1] here?
+
   //BOOST_CHECK( bfs::exists(wd += "/dakota_workdir.templatedir.dat") );
 }
+
 
 void test_rmdir(bfs::path& wd)
 {
@@ -196,7 +225,7 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
 //		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
 // 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
 
-  bfs::path wd( dir_name );
+  bfs::path wd( WorkdirHelper::rel_to_abs(dir_name) );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
@@ -204,7 +233,7 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
            : test_ln_template_files_into_wd(wd);
 
     //std::cout << "OK to remove dir (with contained items): " << wd << std::endl;
-#if 1
+#if 0
     test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
 #endif
   }
@@ -234,8 +263,8 @@ int test_main( int argc, char* argv[] )      // note the name!
   test_create_and_remove_tmpdir("dak_wd");        // SYM LINKS used by default
   test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
 
-  // Repeat create_and_remove, but override the default "link" case and perform
-  // file copies
+  // Repeat create_and_remove, but override the default "link" case by copying
+  // files instead
   bool do_copy = true;
   test_create_and_remove_tmpdir("dak_wd", do_copy);
   test_create_and_remove_wd_in_rundir("workdir", do_copy);
