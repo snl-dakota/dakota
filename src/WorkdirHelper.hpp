@@ -186,6 +186,10 @@ public:
   //  including typical windows extensions
   static std::string which(const std::string& driver_name);
 
+  /// get a valid absolute bfs::path to a subdirectory relative to rundir
+  static bfs::path rel_to_abs(const std::string& subdir_str)
+  { return ( startupPWD / bfs::path(subdir_str) ); }
+
   /// given a string with an optional path and a wildcard, e.g.,
   /// /tmp/D*.?pp, parse it into the search path /tmp (default .) and
   /// the wildcard D*.?pp.  Return wild_card as path to reduce wstring
