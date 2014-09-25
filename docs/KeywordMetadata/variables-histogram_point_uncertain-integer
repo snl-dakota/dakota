@@ -1,11 +1,23 @@
 Blurb::
-TODO: Review Blurb --Aleatory uncertain discrete variable - arbitrary discrete
-random integer variable
+Integer valued random variable defined by a histogram
 Description::
-TODO transfer appropriate /ref variables-histogram_point_uncertain information)
-to this page
-Topics::	discrete_variables, aleatory_uncertain_variables
+This probability mass function is restricted to integer values -
+meaning the abscissa values must all be integers.
+The \c n abscissa values are paired with \c n \c counts which
+indicate the relative frequency (mass) that the integer will appear,
+relative to all other possible integers.
+
+Topics::	
 Examples::
+\verbatim
+histogram_point_uncertain = 2
+ integer
+ pairs_per_variable = 2 3 
+ abscissas = 3 4 100 200 300
+ counts =    1 1 1   2   1
+\endverbatim
+There are two variables, the first one has two possible integer values which are equally probable.
+The second one has three options, and 200 is twice as probable as 100 or 300 - appearing 1/2 of the time.
 Theory::
 Faq::
 See_Also::	

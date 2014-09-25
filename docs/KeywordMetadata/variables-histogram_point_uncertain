@@ -1,43 +1,54 @@
 Blurb::
-Aleatory uncertain discrete variable - arbitrary discrete random variable
+Aleatory uncertain discrete variable defined by a histogram
 Description::
 Histogram uncertain variables are typically used
-to model a set of empirical data.  A histogram can be viewed as
-a probability distribution function (PDF).  A point histogram is a discrete
-aleatory distribution that allows the user to specify a set of
-real-valued points and associated frequency values or counts.
-<!-- In this case, the histogram's "bins" have zero width.
+to model a set of empirical data.
+When the data are discrete values or categories, a histogram describes
+a probability mass function.
+
+Dakota has three types of discrete histograms, depending on the 
+data type: integers, reals, or strings.
+
+A discrete histogram is specified its datatype, and by abscissa/count pairs.
+The abscissa are all the possible values (integers or reals) or strings.
+The count that is paired with a value/string indicates the relative frequency
+that the value/string, relative to all other possible values/strings.
+
+At least one set of abscissa/count pairs must be specified.
+
+<!--
+In this case, the histogram's "bins" have zero width.
 Point histograms are similar to \ref variables-discrete_design_set-real and \ref variables-discrete_state_set-real, but
 differ in the inclusion of information on the relative probabilities
-of observing the different values within the set.-->
+of observing the different values within the set.
 
 
-When using a histogram point variable, one must define at least one set of
-abscissa/count pairs.   The \c
-abscissas  define abscissa values ("x" coordinates) for
-the PDF of each histogram variable.  These are  paired with \c counts which
+The \c
+abscissas define abscissa values ("x" coordinates) for
+the PDF of each histogram variable.
+These are paired with \c counts which
 provide sets of \c (x,c) pairs for each histogram
 variable where \c c defines a count (i.e., a frequency)
 associated with a point.
 
 To fully specify a point-based histogram with \c n points, \c n
-\c (x,c) pairs   must be specified with the following features:
+\c (x,c) pairs must be specified with the following features:
 
 \li \c x is the point value and \c c is the corresponding count 
-    for that value.
+ for that value.
 \li the \c x values must be strictly increasing.
 \li all \c c values must be positive.
 \li a minimum of one pair must be specified for each point-based histogram.
 
 The \c num_pairs specification provides for the proper association of
 multiple sets of \c (x,c) or \c (x,y) pairs with individual histogram
-variables.  For example, in the following specification,
+variables. For example, in the following specification,
 
 \verbatim
 histogram_point_uncertain = 2
-  num_pairs =   2           3  
-  abscissas = 3 4 100 200 300
-  counts    = 1 1   1   2   1
+ num_pairs = 2   3 
+ abscissas = 3 4 100 200 300
+ counts = 1 1 1 2 1
 \endverbatim
 
 \c num_pairs associates the \c (x,c) pairs ((3,1),(4,1)) with one
@@ -45,6 +56,8 @@ point-based histogram variable (where the values 3 and 4 are equally
 probable) and associates the \c (x,c) pairs ((100,1),(200,2),(300,1))
 with a second point-based histogram variable (where the value 200 is
 twice as probable as either 100 or 300).
+-->
+
 
 Topics::	discrete_variables, aleatory_uncertain_variables
 Examples::
