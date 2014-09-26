@@ -2818,8 +2818,8 @@
       </keyword>
       <keyword  id="histogram_bin_uncertain" name="histogram_bin_uncertain" code="{N_vam(pintz,numHistogramBinUncVars)}" label="histogram bin uncertain variables" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" group="Continuous Aleatory Uncertain" >
         <param type="INTEGER" constraint="> 0" />
-        <keyword  id="num_pairs" name="num_pairs" code="{N_vam(newiarray,Var_Info_nhbp)}" label="key to apportionment among bin-based histogram variables" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" >
-          <alias name="huv_num_bin_pairs"/>
+        <keyword  id="pairs_per_variable3" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhbp)}" label="key to apportionment among bin-based histogram variables" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" >
+          <alias name="num_pairs"/>
           <param type="INTEGERLIST" constraint="LEN histogram_bin_uncertain" />
         </keyword>
         <keyword  id="abscissas" name="abscissas" code="{N_vam(newrvec,Var_Info_hba)}" label="sets of abscissas for bin-based histogram variables" help="VarCommands.html#VarCAUV_Bin_Histogram"  >

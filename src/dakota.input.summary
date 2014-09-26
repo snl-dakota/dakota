@@ -1872,7 +1872,7 @@ KEYWORD12 variables
 	  [ descriptors ALIAS wuv_descriptors STRINGLIST ]
 	  ]
 	[ histogram_bin_uncertain INTEGER > 0
-	  [ num_pairs ALIAS huv_num_bin_pairs INTEGERLIST ]
+	  [ pairs_per_variable ALIAS num_pairs INTEGERLIST ]
 	  abscissas ALIAS huv_bin_abscissas REALLIST
 	  ordinates ALIAS huv_bin_ordinates REALLIST
 	  | counts ALIAS huv_bin_counts REALLIST

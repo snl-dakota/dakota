@@ -24,8 +24,8 @@ The following example is a good comparison to the examples on
 \verbatim
 # tested on Dakota 6.0 on 140501
 environment
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_centered.dat'
+  tabular_data
+    tabular_data_file = 'rosen_centered.dat'
 
 method
   centered_parameter_study

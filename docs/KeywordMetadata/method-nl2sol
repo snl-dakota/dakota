@@ -42,8 +42,8 @@ attempt to match the model responses to. See \ref responses-calibration_terms-ca
 \verbatim
 # Dakota Input File: rosen_opt_nls.in
 environment
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_opt_nls.dat'
+  tabular_data
+    tabular_data_file = 'rosen_opt_nls.dat'
 
 method
   max_iterations = 100

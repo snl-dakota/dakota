@@ -1,20 +1,22 @@
 Blurb::
 Aleatory uncertain discrete variable defined by a histogram
+
 Description::
-Histogram uncertain variables are typically used
-to model a set of empirical data.
-When the data are discrete values or categories, a histogram describes
-a probability mass function.
 
-Dakota has three types of discrete histograms, depending on the 
-data type: integers, reals, or strings.
+Histogram uncertain variables are typically used to model a set of
+empirical data.  When the data are discrete values or categories, a
+histogram describes a probability mass function.  Dakota has three
+types of discrete histograms, depending on the data type: integer,
+real, or string.
 
-A discrete histogram is specified its datatype, and by abscissa/count pairs.
-The abscissa are all the possible values (integers or reals) or strings.
-The count that is paired with a value/string indicates the relative frequency
-that the value/string, relative to all other possible values/strings.
+A discrete histogram is specified by its datatype, and by
+abscissa/count pairs.  The abscissas are the possible values the
+variable can take on (integers, strings, or reals).  The count
+paired an abscissa indicates the relative frequency that theof this
+value/string, relative to the other possible values/strings.
 
-At least one set of abscissa/count pairs must be specified.
+At least one set of abscissa/count pairs must be specified.  Abscissas
+must be specified in increasing order (lexicographic for strings).
 
 <!--
 In this case, the histogram's "bins" have zero width.

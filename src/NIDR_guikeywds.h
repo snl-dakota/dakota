@@ -2309,10 +2309,10 @@ static GuiKeyWord
 		{"huv_bin_counts",6,0,3,2,2078},
 		{"huv_bin_descriptors",7,0,5,0,2082,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
 		{"huv_bin_ordinates",6,0,3,2,2076},
-		{"huv_num_bin_pairs",5,0,1,0,2072,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
 		{"initial_point",14,0,4,0,2081,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
-		{"num_pairs",13,0,1,0,2073,0,0.,0.,0.,0,"{key to apportionment among bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram",0,"histogram_bin_uncertain"},
-		{"ordinates",14,0,3,2,2077,0,0.,0.,0.,0,"{sets of ordinates for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"}
+		{"num_pairs",5,0,1,0,2072,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
+		{"ordinates",14,0,3,2,2077,0,0.,0.,0.,0,"{sets of ordinates for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
+		{"pairs_per_variable",13,0,1,0,2073,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"}
 		},
 	kw_327[6] = {
 		{"abscissas",13,0,2,1,2139,0,0.,0.,0.,0,"{sets of abscissas for point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"},

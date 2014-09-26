@@ -9,11 +9,11 @@ optimization or local reliability specialize the use of the graphics
 window.
 
 There is no dependence between the \c graphics flag and the \c
-tabular_graphics_data flag; they may be used independently or
+tabular_data flag; they may be used independently or
 concurrently.
 
 Topics::	dakota_output
 Examples::
 Theory::
 Faq::
-See_Also::	environment-tabular_graphics
+See_Also::	environment-tabular_data

@@ -37,8 +37,8 @@ which uses the input file:
 # LHS_10.in
 
 environment
-  tabular_graphics_data
-    tabular_graphics_file = 'lhs10.dat'
+  tabular_data
+    tabular_data_file = 'lhs10.dat'
 
 method
   sampling
@@ -76,8 +76,8 @@ file containing the results of the previous LHS study.
 # LHS_20.in
 
 environment
-  tabular_graphics_data
-    tabular_graphics_file = 'lhs_incremental_20.dat'
+  tabular_data
+    tabular_data_file = 'lhs_incremental_20.dat'
 
 method
   sampling
@@ -109,7 +109,7 @@ maintain both the correlation and stratification of the original LHS
 sample. The new samples will be combined with the original
 samples to generate a combined sample of size 20.
 
-This is clearly seen by comparing the two tabular graphics data files.
+This is clearly seen by comparing the two tabular data files.
 
 Theory::
 Faq::

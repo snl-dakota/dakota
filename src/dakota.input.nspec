@@ -1787,7 +1787,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
     [ descriptors ALIAS wuv_descriptors STRINGLIST LEN weibull_uncertain {N_vae(caulbl,CAUVar_weibull)} ]
    ]
   [ histogram_bin_uncertain INTEGER > 0 {N_vam(pintz,numHistogramBinUncVars)}
-    [ num_pairs ALIAS huv_num_bin_pairs INTEGERLIST LEN histogram_bin_uncertain {N_vam(newiarray,Var_Info_nhbp)} ]
+    [ pairs_per_variable ALIAS num_pairs INTEGERLIST LEN histogram_bin_uncertain {N_vam(newiarray,Var_Info_nhbp)} ]
     abscissas ALIAS huv_bin_abscissas REALLIST {N_vam(newrvec,Var_Info_hba)}
     ordinates ALIAS huv_bin_ordinates REALLIST {N_vam(newrvec,Var_Info_hbo)}
     |

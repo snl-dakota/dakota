@@ -193,7 +193,7 @@ error associated with that experiment.
 \verbatim
 strategy,
         single_method
-        tabular_graphics_data
+        tabular_data
 
 method,
         bayes_calibration queso

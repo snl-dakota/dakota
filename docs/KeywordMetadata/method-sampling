@@ -78,8 +78,8 @@ Examples::
 # tested on Dakota 6.0 on 140501
 
 environment
-  tabular_graphics_data
-    tabular_graphics_file = 'Sampling_basic.dat'
+  tabular_data
+    tabular_data_file = 'Sampling_basic.dat'
 
 method
   sampling

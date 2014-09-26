@@ -1960,9 +1960,7 @@ TAG "variables/weibull_uncertain/descriptors"
 TAG "variables/histogram_bin_uncertain" GROUP "Continuous Aleatory Uncertain"
 	DESC "{histogram bin uncertain variables} VarCommands.html#VarCAUV_Bin_Histogram"
 
-TAG "variables/histogram_bin_uncertain/num_pairs"
-	DESC "{key to apportionment among bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"
-
+TAG "variables/histogram_bin_uncertain/pairs_per_variable"
 TAG "variables/histogram_bin_uncertain/abscissas"
 	DESC "{sets of abscissas for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"
 

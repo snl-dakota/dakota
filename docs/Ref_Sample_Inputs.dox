@@ -18,8 +18,8 @@ Dakota/examples/users/textbook_opt_conmin.in.
 # Dakota Input File: textbook_opt_conmin.in
 environment
  graphics
- tabular_graphics_data
-  tabular_graphics_file = 'textbook_opt_conmin.dat'
+ tabular_data
+  tabular_data_file = 'textbook_opt_conmin.dat'
 
 method
 # dot_mmfd #DOT performs better but may not be available
@@ -62,8 +62,8 @@ Dakota/examples/users/rosen_opt_nls.in
 # Dakota Input File: rosen_opt_nls.in
 environment
  graphics
- tabular_graphics_data
-  tabular_graphics_file = 'rosen_opt_nls.dat'
+ tabular_data
+  tabular_data_file = 'rosen_opt_nls.dat'
 
 method
  max_iterations = 100
@@ -160,8 +160,8 @@ directory as \c Dakota/examples/users/rosen_ps_vector.in.
 # Dakota Input File: rosen_ps_vector.in
 environment
  graphics
- tabular_graphics_data
-  tabular_graphics_file = 'rosen_ps_vector.dat'
+ tabular_data
+  tabular_data_file = 'rosen_ps_vector.dat'
 
 method
  vector_parameter_study

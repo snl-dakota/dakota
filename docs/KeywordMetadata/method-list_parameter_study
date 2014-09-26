@@ -61,8 +61,8 @@ And here's a full input file:
 \verbatim
 # tested on Dakota 6.0 on 140501
 environment
-  tabular_graphics_data
-    tabular_graphics_file 'List_param_study.dat'
+  tabular_data
+    tabular_data_file 'List_param_study.dat'
 
 method
   list_parameter_study

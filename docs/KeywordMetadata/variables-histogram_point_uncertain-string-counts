@@ -1,5 +1,6 @@
 Blurb::
-Distribution parameter for the histogram point distribution 
+Counts for string-valued discrete histogram
+
 Description::
 When using a histogram point variable, one must define at least one set of
 abscissa/count pairs.   The \c
@@ -14,7 +15,7 @@ To fully specify a point-based histogram with \c n points, \c n
 
 \li \c x is the point value and \c c is the corresponding count 
     for that value.
-\li the \c x values must be strictly increasing.
+\li the \c x values must be strictly increasing (lexicographically for strings).
 \li all \c c values must be positive.
 \li a minimum of one pair must be specified for each point-based histogram.
 
