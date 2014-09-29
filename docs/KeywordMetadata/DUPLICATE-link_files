@@ -12,15 +12,15 @@ Topics::
 Examples::
 
 Specifying
-\begin verbatim
+\verbatim
   link_files = 'siminput*.in' '/path/to/simdir1' 'simdir2/*'
-\end verbatim
+\endverbatim
 will create copies
-\begin verbatim
+\verbatim
   workdir/siminput*.in  # links to each of rundir / siminput*.in
   workdir/simdir1/      # whole directory simdir1 linked
   workdir/*		# each entry in directory simdir2 linked
-\end verbatim
+\endverbatim
 
 Theory::
 Faq::

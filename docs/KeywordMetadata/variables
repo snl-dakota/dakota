@@ -23,10 +23,11 @@ To accommodate these different studies, Dakota supports different:
  - discrete
   - discrete range
   - discrete integer set
+  - discrete string set
   - discrete real set
 
-Use the \ref topic-variables_and_responses page to browse the available variables
-by type and domain.
+Use the \ref topic-variables_and_responses page to browse the
+available variables by type and domain.
 
 
 <b> Variable Types </b>
@@ -70,31 +71,34 @@ one of three ways, which are discussed on the page \ref topic-discrete_variables
 
 <b> Ordering of Variables </b>
 
-The ordering of variables is important, and a consistent ordering 
-is employed throughout the Dakota software. It is the same ordering 
-as shown in dakota.input.summary 
-That ordering can be summarized as 
+The ordering of variables is important, and a consistent ordering is
+employed throughout the Dakota software.  The ordering is shown in
+dakota.input.summary and can be summarized as:
 -# design
  -# continuous 
  -# discrete integer 
+ -# discrete string
  -# discrete real
 -# aleatory uncertain
  -# continuous 
  -# discrete integer 
+ -# discrete string
  -# discrete real
 -# epistemic uncertain
  -# continuous 
  -# discrete integer 
+ -# discrete string
  -# discrete real
 -# state
  -# continuous 
  -# discrete integer 
+ -# discrete string
  -# discrete real
 
-Ordering of variable types below this 
-granularity (e.g., from normal to histogram bin within 
-aleatory uncertain - continuous ) is defined somewhat arbitrarily, but is 
-enforced consistently throughout the code.
+Ordering of variable types below this granularity (e.g., from normal
+to histogram bin within aleatory uncertain - continuous ) is defined
+somewhat arbitrarily, but is enforced consistently throughout the
+code.
 
 <b> Active Variables </b>
 
@@ -104,9 +108,9 @@ determines which variable types are "active" and will be assigned values
 by the method. For example, optimization methods will only vary the
 design variables - by default.
 
-The default behavior should be described
-on each method page, or on topics pages that relate to classes of methods.
-In addition, the default behavior can be modified using the \ref variables-active
+The default behavior should be described on each method page, or on
+topics pages that relate to classes of methods.  In addition, the
+default behavior can be modified using the \ref variables-active
 keyword.
 
 

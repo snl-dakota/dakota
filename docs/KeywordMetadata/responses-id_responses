@@ -1,7 +1,7 @@
 Blurb::
-Name the response block, when there are multiple responses blocks
-Description::
+Name the response block, helpful when there are multiple
 
+Description::
 The optional block identifier \c id_responses specifies a string to
 uniquely identify a particular responses specification (typically used
 when there are multiple present).  A \ref model can then specify or

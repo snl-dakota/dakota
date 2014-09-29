@@ -65,7 +65,7 @@ with
 \f}
 
 The solution for the optimization problem constrained by \f$g_1\f$\\
-(\texttt{num_nonlinear_inequality_constraints} set to one) is:
+(\c num_nonlinear_inequality_constraints set to one) is:
 \f{eqnarray*}
     x_1 &=& 0.763 \\
     x_2 &=& 1.16
@@ -77,7 +77,7 @@ with
 \f}
 
 The solution for the optimization problem constrained by \f$g_1\f$ and \f$g_2\f$\\
-(\texttt{num_nonlinear_inequality_constraints} set to two) is:
+(\c num_nonlinear_inequality_constraints set to two) is:
 \f{eqnarray*}
     x_1 &=& 0.500 \\
     x_2 &=& 0.500
@@ -111,8 +111,8 @@ The standard two-dimensional formulation can be stated as
 \texttt{minimize } f=100(x_2-x_1^2)^2+(1-x_1)^2 \tag{rosenstd}
 \f}
 
-Surface and contour plots for this function have been shown previously
-in Figure \ref tutorial:rosenbrock_prob. 
+Surface and contour plots for this function are shown in the Dakota
+User's Manual.
 
 The optimal solution is:
 \f{eqnarray*}

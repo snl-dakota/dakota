@@ -9,7 +9,6 @@ among the histogram point string variables.  It must specify one
 integer >=1 per variable that indicates how many of the (abscissa,
 count) = (x,c) pairs to associate with that variable.
 
-
 Topics::	
 Examples::
 Theory::

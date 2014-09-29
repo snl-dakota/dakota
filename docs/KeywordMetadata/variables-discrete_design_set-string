@@ -1,12 +1,11 @@
 Blurb::
-String-valued discrete design variables
+String-valued discrete design set variables
 
 Description::
-A design variable whose values come from a specified set of admissible
-strings.  The details of how to specify this discrete variable are
-located on the \ref topic-discrete_variables page.
-
-Each string element value must be quoted and may contain alphanumeric,
+Discrete design variables whose values come from a specified set of
+admissible strings.  The details of how to specify this discrete
+variable are located on the \ref topic-discrete_variables page.  Each
+string element value must be quoted and may contain alphanumeric,
 dash, underscore, and colon. White space, quote characters, and
 backslash/metacharacters are not permitted.
 
@@ -20,10 +19,11 @@ values from a set of three possible elements and the second variable,
 
 \verbatim
 discrete_design_set
-        string 2
-        descriptors 'linear_solver' 'mesh_file' 
-        elements_per_variable 3 2
-        elements 'cg' 'gmres' 'direct' 'mesh64.exo' 'mesh128.exo'
+  string 2
+    descriptors           'linear_solver'  'mesh_file' 
+    elements_per_variable 3                2
+    elements              'cg' 'gmres' 'direct' 
+                          'mesh64.exo' 'mesh128.exo'
 \endverbatim
 
 Theory::

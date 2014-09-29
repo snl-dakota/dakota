@@ -1,5 +1,6 @@
 Blurb::
-Epistemic uncertain variable - continuous values within one or more intervals
+Epistemic uncertain variable - values from one or more continuous intervals
+
 Description::
 In addition to continuous and discrete aleatory probability
 distributions, %Dakota provides support for continuous and discrete
@@ -8,6 +9,7 @@ epistemic uncertainties through the keywords:
 \li \ref variables-continuous_interval_uncertain
 \li \ref variables-discrete_interval_uncertain
 \li \ref variables-discrete_uncertain_set-integer
+\li \ref variables-discrete_uncertain_set-string
 \li \ref variables-discrete_uncertain_set-real
 
 Interval-based and set variables do

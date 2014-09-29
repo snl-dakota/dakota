@@ -1,5 +1,6 @@
 Blurb::
-Give the block a name, in case of multiple method blocks
+Name the method block; helpful when there are multiple
+
 Description::
 The method identifier string is supplied with \c id_method and is used
 to provide a unique identifier string for use with environment or

@@ -1,5 +1,6 @@
 Blurb::
-Modify how the iterator treats different types of variables
+Set the active variables view a method will see
+
 Description::
 There are certain situations where the user may want to explicitly
 control the subset of variables that is considered active for a

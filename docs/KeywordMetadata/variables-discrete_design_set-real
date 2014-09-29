@@ -15,10 +15,10 @@ from the following sets during the search for an optimal design. \f$y1
 
 \verbatim
 discrete_design_set
-	real 2
-        num_set_values 5 2
-        set_values 0.25 1.25 2.25 3.25 4.25 0 5
-        descriptors 'y1' 'y2'
+  real 2
+    descriptors           'y1'                       'y2'
+    elements_per_variable 5                          2
+    elemetns              0.25 1.25 2.25 3.25 4.25   0 5
 \endverbatim
 
 Theory::

@@ -1,5 +1,6 @@
 Blurb::
-Continuous and discrete variables are treated separately
+Maintain continuous/discrete variable distinction
+
 Description::
 The variables domain specifies how the discrete variables are treated.
 If the user specifies \c mixed in the variable specification block,

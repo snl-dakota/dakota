@@ -1,5 +1,6 @@
 Blurb::
-Continuous design variables, each defined by a single interval
+Continuous design variables; each defined by a real interval
+
 Description::
 Continuous variables that are changed during the search for the optimal
 design.

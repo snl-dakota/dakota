@@ -1,11 +1,13 @@
 Blurb::
-Define abscissa values for the probability density function of each histogram variable
-Description::
+Real abscissas for a bin histogram
 
-\c abscissas is required when using \c histogram_bin_uncertain variables.
-It defines abscissa values ("x" coordinates) for the probability density 
-function of each histogram variable. The \c abscissas keyword accepts a list 
-of values. See  \ref variables-histogram_bin_uncertain for details. 
+Description::
+A list of real abscissa ("x" coordinate) values characterizing the
+probability density function for each of the \c
+histogram_bin_uncertain variables.  These are paired with either 
+\ref variables-histogram_bin_uncertain-counts or 
+\ref variables-histogram_bin_uncertain-ordinates.  See 
+\ref variables-histogram_bin_uncertain for details and examples.
 
 Topics::	
 Examples::

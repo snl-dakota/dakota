@@ -1,5 +1,6 @@
 Blurb::
-Specify correlations between aleatory uncertain variables
+Correlation among aleatory uncertain variables
+
 Description::
 Aleatory uncertain variables may have correlations specified through
 use of an \c uncertain_correlation_matrix specification. This

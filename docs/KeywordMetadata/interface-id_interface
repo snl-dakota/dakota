@@ -1,5 +1,6 @@
 Blurb::
-Give the block a name, in case of multiple interface blocks
+Name the interface block; helpful when there are multiple
+
 Description::
 The optional set identifier specification uses the keyword \c
 id_interface to input a string for use in identifying a particular

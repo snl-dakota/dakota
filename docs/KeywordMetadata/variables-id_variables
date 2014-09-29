@@ -1,5 +1,6 @@
 Blurb::
-Give the block a name, in case of multiple variables blocks
+Name the variables block; helpful when there are multiple
+
 Description::
 The optional set identifier specification uses the keyword \c
 id_variables to input a unique string for use in identifying a

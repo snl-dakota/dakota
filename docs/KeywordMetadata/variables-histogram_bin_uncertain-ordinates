@@ -1,9 +1,12 @@
 Blurb::
-Define the profile of a "skyline" probability density function
+Ordinates specifying a "skyline" probability density function
+
 Description::
 
-\c ordinates defines the profile of a "skyline" probability density function.
-It accepts a list of values. See  \ref variables-histogram_bin_uncertain for details. 
+The \c ordinates list of real values defines the profile of a
+"skyline" probability density function by pairing with the specified
+\ref variables-histogram_bin_uncertain-abscissas.  See 
+\ref variables-histogram_bin_uncertain for details.
 
 Topics:: 
 Examples::

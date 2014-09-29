@@ -64,13 +64,13 @@ Topics::	problem
 Examples::
 
 Examples:
-\begin verbatim
+\verbatim
   1. analysis_drivers = 'run_simulation_part1.sh' 'run_simulation_part2.sh'
 
   2. analysis_driver = 'run_simulation.sh -option "option 1"'
 
   3. analysis_driver = 'simulation.exe -option value -dakota_params $DAKOTA_PARAMETERS_FILE -input sim.in -dakota_results_file $DAKOTA_RESULTS_FILE'
-\end verbatim
+\endverbatim
 
 Theory::
 Faq::

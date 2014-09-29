@@ -24,7 +24,7 @@ of the actual lognormal distribution (option 2), or the mean
 and standard deviation 
 \f$\zeta\f$ ("zeta") 
 of the underlying normal distribution (option 3).
-<!-- This approach diverges from that of [\ref Wyss1998 "Wyss and Jorgensen, 1998"], which assumes that a specification of mean and standard deviation provides parameters of the underlying normal distribution, and a specification of mean and error factor provides statistics of the actual lognormal distribution. --> 
+<!-- This approach diverges from that of [\cite Wyss1998 "Wyss and Jorgensen, 1998"], which assumes that a specification of mean and standard deviation provides parameters of the underlying normal distribution, and a specification of mean and error factor provides statistics of the actual lognormal distribution. --> 
 
 The conversion equations from lognormal mean
 \f$\mu\f$ and either lognormal error factor 

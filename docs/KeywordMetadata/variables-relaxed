@@ -1,5 +1,6 @@
 Blurb::
-Treat discrete variables as continuous
+Allow treatment of discrete variables as continuous
+
 Description::
 The variables domain specifies how the discrete variables are treated.
 If the user specifies \c mixed in the variable specification block,

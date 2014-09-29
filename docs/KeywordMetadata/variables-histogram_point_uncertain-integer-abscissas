@@ -1,24 +1,13 @@
 Blurb::
-Distribution parameter for discrete point histograms
+Integer abscissas for a point histogram
+
 Description::
-
-When using a histogram point variable, one must define at least one set of
-abscissa/count pairs.   The \c
-abscissas  define abscissa values ("x" coordinates) for
-the PDF of each histogram variable.  These are  paired with \c counts which
-provide sets of \c (x,c) pairs for each histogram
-variable where \c c defines a count (i.e., a frequency)
-associated with a point.
-
-To fully specify a point-based histogram with \c n points, \c n
-\c (x,c) pairs   must be specified with the following features:
-
-\li \c x is the point value and \c c is the corresponding count 
-    for that value.
-\li the \c x values must be strictly increasing.
-\li all \c c values must be positive.
-\li a minimum of one pair must be specified for each point-based histogram.
-
+A list of integer abscissa ("x" coordinate) values characterizing the
+probability density function for each of the integer \c
+histogram_point_uncertain variables.  These must be listed in
+increasing order for each variable, and are paired with 
+\ref variables-histogram_point_uncertain-integer-counts.  See 
+\ref variables-histogram_point_uncertain for details and examples.
 
 Topics::	
 Examples::

@@ -1,5 +1,6 @@
 Blurb::
-Discrete state variable defined by bounds
+Discrete state variables; each defined by an integer interval
+
 Description::
 Discrete state variables defined by bounds.
 
