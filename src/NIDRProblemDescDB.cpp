@@ -849,8 +849,8 @@ int NIDRProblemDescDB::check_driver(const String& an_driver,
       // Therefore have to check PATH, link/copy files, PWD
 
       // check PATH and RUNDIR (since . is already on the search path)
-      String driver_found = WorkdirHelper::which(program_name);
-      if (!driver_found.empty())
+      bfs::path driver_found = WorkdirHelper::which(program_name);
+      if ( is_regular_file(driver_found) )
 	return 0;
 
       // check against link/copy files that will appear in workdir
