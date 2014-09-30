@@ -1932,9 +1932,9 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
     [ input_filter STRING {N_ifm(str,inputFilter)} ]
     [ output_filter STRING {N_ifm(str,outputFilter)} ]
     ( 
-      system {N_ifm(lit,interfaceType_system)}
+      system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
       |
-      fork {N_ifm(lit,interfaceType_fork)}
+      fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
       [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
@@ -1952,19 +1952,19 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
        ]
      )
     |
-    ( direct {N_ifm(lit,interfaceType_direct)}
+    ( direct {N_ifm(type,interfaceType_TEST_INTERFACE)}
       [ processors_per_analysis INTEGER > 0 {N_ifm(pint,procsPerAnalysis)} ]
      )
     |
-    matlab {N_ifm(lit,interfaceType_matlab)}
+    matlab {N_ifm(type,interfaceType_MATLAB_INTERFACE)}
     |
-    ( python {N_ifm(lit,interfaceType_python)}
+    ( python {N_ifm(type,interfaceType_PYTHON_INTERFACE)}
       [ numpy {N_ifm(true,numpyFlag)} ]
      )
     |
-    scilab {N_ifm(lit,interfaceType_scilab)}
+    scilab {N_ifm(type,interfaceType_SCILAB_INTERFACE)}
     |
-    grid {N_ifm(lit,interfaceType_grid)}
+    grid {N_ifm(type,interfaceType_GRID_INTERFACE)}
     [ failure_capture {0}
       abort {N_ifm(lit,failAction_abort)}
       |

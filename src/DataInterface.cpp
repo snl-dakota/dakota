@@ -18,6 +18,7 @@
 namespace Dakota {
 
 DataInterfaceRep::DataInterfaceRep():
+  interfaceType(DEFAULT_INTERFACE),
   allowExistingResultsFlag(false), verbatimFlag(false), apreproFlag(false),
   fileTagFlag(false), fileSaveFlag(false),
   interfaceSynchronization(SYNCHRONOUS_INTERFACE), asynchLocalEvalConcurrency(0),

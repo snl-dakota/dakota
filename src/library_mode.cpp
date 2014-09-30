@@ -255,7 +255,7 @@ void /*Dakota::*/run_dakota_data()
     // Set any non-default values: mimic default_input
     dmr->methodName = Dakota::OPTPP_Q_NEWTON;
     dvr->numContinuousDesVars = 2;
-    dir->interfaceType = "direct";
+    dir->interfaceType = Dakota::TEST_INTERFACE;
     if (parallel_lib.mpirun_flag()) {
       dir->analysisDrivers.push_back("plugin_text_book");
       drr->numObjectiveFunctions = 1;
@@ -462,7 +462,7 @@ static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
   // more advanced usage would require set_db_list_nodes() or equivalent.
   db->resolve_top_method();
 
-  if (db->get_string("interface.type") != "direct")
+  if ( !(db->get_ushort("interface.type") & DIRECT_INTERFACE_BIT) )
     return;
 
   // supply labels, initial_point, and bounds

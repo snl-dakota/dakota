@@ -88,16 +88,16 @@ static KeyWord
 	kw_15[12] = {
 		{"analysis_components",15,0,1,0,0,0.,0.,0,N_ifm(str2D,analysisComponents)},
 		{"deactivate",8,4,6,0,kw_9},
-		{"direct",8,1,4,1,kw_10,0.,0.,0,N_ifm(lit,interfaceType_direct)},
+		{"direct",8,1,4,1,kw_10,0.,0.,0,N_ifm(type,interfaceType_TEST_INTERFACE)},
 		{"failure_capture",8,4,5,0,kw_11},
-		{"fork",8,9,4,1,kw_14,0.,0.,0,N_ifm(lit,interfaceType_fork)},
-		{"grid",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_grid)},
+		{"fork",8,9,4,1,kw_14,0.,0.,0,N_ifm(type,interfaceType_FORK_INTERFACE)},
+		{"grid",8,0,4,1,0,0.,0.,0,N_ifm(type,interfaceType_GRID_INTERFACE)},
 		{"input_filter",11,0,2,0,0,0.,0.,0,N_ifm(str,inputFilter)},
-		{"matlab",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_matlab)},
+		{"matlab",8,0,4,1,0,0.,0.,0,N_ifm(type,interfaceType_MATLAB_INTERFACE)},
 		{"output_filter",11,0,3,0,0,0.,0.,0,N_ifm(str,outputFilter)},
-		{"python",8,1,4,1,kw_12,0.,0.,0,N_ifm(lit,interfaceType_python)},
-		{"scilab",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_scilab)},
-		{"system",8,9,4,1,kw_14,0.,0.,0,N_ifm(lit,interfaceType_system)}
+		{"python",8,1,4,1,kw_12,0.,0.,0,N_ifm(type,interfaceType_PYTHON_INTERFACE)},
+		{"scilab",8,0,4,1,0,0.,0.,0,N_ifm(type,interfaceType_SCILAB_INTERFACE)},
+		{"system",8,9,4,1,kw_14,0.,0.,0,N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
 		},
 	kw_16[2] = {
 		{"master",8,0,1,1,0,0.,0.,0,N_ifm(type,analysisScheduling_MASTER_SCHEDULING)},

@@ -264,6 +264,11 @@ struct Iface_mp_type {
   short type;
 };
 
+struct Iface_mp_utype {
+  unsigned short DataInterfaceRep::* sp;
+  unsigned short type;
+};
+
 struct Meth_Info {
   DataMethodRep *dme;
   DataMethod *dme0;
@@ -799,7 +804,8 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   }
 
   // validate each of the analysis_drivers
-  if ( di->interfaceType == "system" || di->interfaceType == "fork" )
+  if ( di->interfaceType == SYSTEM_INTERFACE || 
+       di->interfaceType == FORK_INTERFACE )
     for(size_t i = 0; i < nd; ++i) {
       // trim any leading whitespace from the driver, in place
       boost::trim(analysis_drivers[i]);
@@ -6165,14 +6171,7 @@ static Iface_mp_ilit
 
 static Iface_mp_lit
 	MP2(failAction,abort),
-	MP2(failAction,continuation),
-	MP2(interfaceType,direct),
-	MP2(interfaceType,fork),
-	MP2(interfaceType,grid),
-	MP2(interfaceType,matlab),
-	MP2(interfaceType,python),
-	MP2(interfaceType,scilab),
-	MP2(interfaceType,system);
+	MP2(failAction,continuation);
 
 static Iface_mp_type
 	MP2s(analysisScheduling,MASTER_SCHEDULING),
@@ -6186,6 +6185,15 @@ static Iface_mp_type
         MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING),
         MP2s(interfaceSynchronization,ASYNCHRONOUS_INTERFACE),
         MP2s(interfaceSynchronization,SYNCHRONOUS_INTERFACE);
+
+static Iface_mp_utype
+	MP2s(interfaceType,TEST_INTERFACE),
+	MP2s(interfaceType,FORK_INTERFACE),
+	MP2s(interfaceType,GRID_INTERFACE),
+	MP2s(interfaceType,MATLAB_INTERFACE),
+	MP2s(interfaceType,PYTHON_INTERFACE),
+	MP2s(interfaceType,SCILAB_INTERFACE),
+	MP2s(interfaceType,SYSTEM_INTERFACE);
 
 static String
 	MP_(algebraicMappings),

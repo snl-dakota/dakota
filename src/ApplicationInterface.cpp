@@ -67,7 +67,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);
-  if (!coreMappings && !algebraicMappings && !interfaceType.empty()) {
+  if (!coreMappings && !algebraicMappings && interfaceType > DEFAULT_INTERFACE) {
     Cerr << "\nError: no parameter to response mapping defined in "
 	 << "ApplicationInterface.\n" << std::endl;
     abort_handler(-1);
@@ -114,7 +114,7 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
 
-  bool direct_int         = (interfaceType == "direct");
+  bool direct_int         = (interfaceType & DIRECT_INTERFACE_BIT);
   // Peer dynamic requires asynch local executions and dynamic job assignment
   bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
 
@@ -331,8 +331,8 @@ bool ApplicationInterface::check_multiprocessor_analysis(bool warn)
     if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
       else      Cerr << "Error:   ";
-      Cerr << "Multiprocessor analyses are not valid with " << interfaceType
-	   << " interfaces.";
+      Cerr << "Multiprocessor analyses are not valid with " 
+	   << interface_enum_to_string(interfaceType) << " interfaces.";
       if (warn) Cerr << "\n         This issue may be resolved at run time.";
       else
 	Cerr << "\n         Your processor allocation may exceed the "
@@ -361,8 +361,8 @@ check_asynchronous(bool warn, int max_eval_concurrency)
     if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
       else      Cerr << "Error:   ";
-      Cerr << "asynchronous capability not supported in " << interfaceType
-	   << " interfaces.";
+      Cerr << "asynchronous capability not supported in " 
+	   << interface_enum_to_string(interfaceType) << " interfaces.";
       if (warn) Cerr << "\n         This issue may be resolved at run time.";
       Cerr << std::endl;
     }
@@ -707,7 +707,7 @@ const IntResponseMap& ApplicationInterface::synch()
 	// interface, multiProcEvalFlag (includes single proc analysis cases),
 	// static scheduling override, or static asynch local specification.
 	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
-	    interfaceType == "direct" ||
+	    interfaceType & DIRECT_INTERFACE_BIT ||
 	    evalScheduling == PEER_STATIC_SCHEDULING)
 	  peer_static_schedule_evaluations();
 	else // utilizes asynch local evals even if hybrid mode not specified
@@ -793,7 +793,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 	master_dynamic_schedule_evaluations_nowait();
       else {
 	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
-	    interfaceType == "direct" ||
+	    interfaceType & DIRECT_INTERFACE_BIT ||
 	    evalScheduling == PEER_STATIC_SCHEDULING) {
 	  //peer_static_schedule_evaluations_nowait(); // needed for override?
 	  Cerr << "Error: message passing requires nonblocking scheduler."

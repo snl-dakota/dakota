@@ -58,7 +58,7 @@ namespace Dakota {
     IS the representation, interfaceRep is set to NULL (an uninitialized 
     pointer causes problems in ~Interface). */
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
-  interfaceType(problem_db.get_string("interface.type")),
+  interfaceType(problem_db.get_ushort("interface.type")),
   interfaceId(problem_db.get_string("interface.id")), algebraicMappings(false),
   coreMappings(true), currEvalId(0), fineGrainEvalCounters(false),
   evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
@@ -219,10 +219,10 @@ Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
     to the appropriate derived type. */
 Interface* Interface::get_interface(ProblemDescDB& problem_db)
 {
-  const String& interface_type = problem_db.get_string("interface.type");
+  const unsigned short interface_type = problem_db.get_ushort("interface.type");
 #ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting interface " << interface_type 
-       << std::endl;
+  Cout << "Envelope instantiating letter: Getting interface "
+       << interface_enum_to_string(interface_type) << std::endl;
 #endif
 
   // In the case where a derived interface type has been selected for managing
@@ -230,10 +230,10 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   // algebraic mappings are overlayed by ApplicationInterface.
   const String& algebraic_map_file
     = problem_db.get_string("interface.algebraic_mappings");
-  if (interface_type == "system")
+  if (interface_type == SYSTEM_INTERFACE)
     return new SysCallApplicInterface(problem_db);
 
-  else if (interface_type == "fork") {
+  else if (interface_type == FORK_INTERFACE) {
 #if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H) // includes CYGWIN/MINGW
     return new ForkApplicInterface(problem_db);
 #elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
@@ -245,18 +245,18 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 #endif
   }
 
-  else if (interface_type == "direct")
+  else if (interface_type == TEST_INTERFACE)
     return new TestDriverInterface(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
 
 #ifdef DAKOTA_GRID
-  else if (interface_type == "grid")
+  else if (interface_type == GRID_INTERFACE)
     return new GridApplicInterface(problem_db);
 #endif
 
-  else if (interface_type == "matlab") {
+  else if (interface_type == MATLAB_INTERFACE) {
 #ifdef DAKOTA_MATLAB
     return new MatlabInterface(problem_db);
 #else
@@ -266,7 +266,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 #endif
   }
 
-  else if (interface_type == "python") {
+  else if (interface_type == PYTHON_INTERFACE) {
 #ifdef DAKOTA_PYTHON
     return new PythonInterface(problem_db);
 #else
@@ -276,7 +276,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 #endif
   }
 
-  else if (interface_type == "scilab") {
+  else if (interface_type == SCILAB_INTERFACE) {
 #ifdef DAKOTA_SCILAB
     return new ScilabInterface(problem_db);
 #else
@@ -288,7 +288,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 
   // Should not be needed since ApproximationInterface is plugged-in from
   // DataFitSurrModel using Interface::assign_rep().
-  //else if (interface_type == "approximation")
+  //else if (interface_type == APPROX_INTERFACE)
   //  return new ApproximationInterface(problem_db, num_acv, num_fns);
 
   // In the case where only algebraic mappings are used, then no derived map
@@ -303,14 +303,15 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 
   // If the interface type is empty (e.g., from default DataInterface creation
   // in ProblemDescDB::check_input()), then ApplicationInterface is the letter.
-  else if (interface_type.empty()) {
+  else if (interface_type == DEFAULT_INTERFACE) {
     Cerr << "Warning: empty interface type in Interface::get_interface()."
 	 << std::endl;
     return new ApplicationInterface(problem_db);
   }
 
   else {
-    Cerr << "Invalid interface: " << interface_type << std::endl;
+    Cerr << "Invalid interface: " << interface_enum_to_string(interface_type) 
+	 << std::endl;
     return NULL;
   }
 }

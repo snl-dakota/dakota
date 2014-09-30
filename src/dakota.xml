@@ -3226,8 +3226,8 @@
         <oneOf>
           <required>
             <oneOf>
-              <keyword  id="system9" name="system" code="{N_ifm(lit,interfaceType_system)}" label="system" help=""  />
-              <keyword  id="fork" name="fork" code="{N_ifm(lit,interfaceType_fork)}" label="Fork interface " help="InterfCommands.html#InterfApplicF"  />
+              <keyword  id="system9" name="system" code="{N_ifm(type,interfaceType_SYSTEM_INTERFACE)}" label="system" help=""  />
+              <keyword  id="fork" name="fork" code="{N_ifm(type,interfaceType_FORK_INTERFACE)}" label="Fork interface " help="InterfCommands.html#InterfApplicF"  />
             </oneOf>
             <keyword  id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="parameters_file" help="" minOccurs="0" >
               <param type="STRING" />
@@ -3261,21 +3261,21 @@
               <keyword  id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="replace" help="" minOccurs="0" />
             </keyword>
           </required>
-          <keyword  id="direct" name="direct" code="{N_ifm(lit,interfaceType_direct)}" label="Direct function interface " help="InterfCommands.html#InterfApplicDF" minOccurs="1" >
+          <keyword  id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct function interface " help="InterfCommands.html#InterfApplicDF" minOccurs="1" >
             <keyword  id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of processors per analysis server" help="InterfCommands.html#InterfApplicDF" minOccurs="0" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
           </keyword>
           <!-- TODO: processors per analysis? -->
-          <keyword  id="matlab" name="matlab" code="{N_ifm(lit,interfaceType_matlab)}" label="Matlab interface " help="InterfCommands.html#InterfApplicMSP"  />
-          <!-- #	  | modelcenter {N_ifm(lit,interfaceType_modelcenter)}
-               #	  | plugin {N_ifm(lit,interfaceType_plugin)}
+          <keyword  id="matlab" name="matlab" code="{N_ifm(type,interfaceType_MATLAB_INTERFACE)}" label="Matlab interface " help="InterfCommands.html#InterfApplicMSP"  />
+          <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
+               #	  | plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
             -->
-          <keyword  id="python" name="python" code="{N_ifm(lit,interfaceType_python)}" label="Python interface " help="InterfCommands.html#InterfApplicMSP" minOccurs="1" >
+          <keyword  id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python interface " help="InterfCommands.html#InterfApplicMSP" minOccurs="1" >
             <keyword  id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy dataflow" help="InterfCommands.html#InterfApplicMSP" minOccurs="0" />
           </keyword>
-          <keyword  id="scilab" name="scilab" code="{N_ifm(lit,interfaceType_scilab)}" label="Scilab interface " help="InterfCommands.html#InterfApplicMSP"  />
-          <keyword  id="grid2" name="grid" code="{N_ifm(lit,interfaceType_grid)}" label="Grid interface " help="InterfCommands.html#InterfApplicG"  />
+          <keyword  id="scilab" name="scilab" code="{N_ifm(type,interfaceType_SCILAB_INTERFACE)}" label="Scilab interface " help="InterfCommands.html#InterfApplicMSP"  />
+          <keyword  id="grid2" name="grid" code="{N_ifm(type,interfaceType_GRID_INTERFACE)}" label="Grid interface " help="InterfCommands.html#InterfApplicG"  />
         </oneOf>
         <keyword  id="failure_capture" name="failure_capture" code="{0}" label="Failure capturing" help="InterfCommands.html#InterfApplic" minOccurs="0" >
           <oneOf label="failure mitigation">

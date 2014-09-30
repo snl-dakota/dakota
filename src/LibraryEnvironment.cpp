@@ -132,7 +132,8 @@ filtered_interface_list(const String& interf_type, const String& an_driver)
   for (ml_iter = models.begin(); ml_iter != ml_end; ++ml_iter) {
     Interface& model_interface = ml_iter->derived_interface();
     if ( ( interf_type.empty() || 
-	   model_interface.interface_type() == interf_type ) &&
+	   interface_enum_to_string(model_interface.interface_type()) == 
+	   interf_type ) &&
 	 ( an_driver.empty() || 
 	   //interface.analysis_drivers().size() == 1  &&
 	   contains(model_interface.analysis_drivers(), an_driver) ) )
@@ -157,7 +158,8 @@ filtered_model_list(const String& model_type, const String& interf_type,
     if (model_type.empty() || ml_iter->model_type() == model_type) {
       Interface& model_interface = ml_iter->derived_interface();
       if ( ( interf_type.empty() || 
-	     model_interface.interface_type() == interf_type ) &&
+	     interface_enum_to_string(model_interface.interface_type()) == 
+	     interf_type ) &&
 	   ( an_driver.empty() || 
 	     //interface.analysis_drivers().size() == 1  &&
 	     contains(model_interface.analysis_drivers(), an_driver) ) )

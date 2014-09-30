@@ -79,7 +79,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
       ? true : false;
 
     // A printing-friendly (capitalized) name for the interface type
-    String interface_type(interfaceType);
+    String interface_type(interface_enum_to_string(interfaceType));
     interface_type.replace(0, 1, 1, std::toupper(*interface_type.begin()));
 
     if (eaDedMasterFlag)

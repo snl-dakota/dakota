@@ -208,7 +208,7 @@ void DakotaRunner::start()
   ModelList& models = problem_db.model_list();
   for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
     Interface& model_interface = ml_iter->derived_interface();
-    if ( model_interface.interface_type() == "direct" &&
+    if ( (model_interface.interface_type() & DIRECT_INTERFACE_BIT) &&
 	 contains(model_interface.analysis_drivers(), "plugin_rosenbrock") ) {
       // set the DB nodes to that of the existing Model specification
       problem_db.set_db_model_nodes(ml_iter->model_id());

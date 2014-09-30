@@ -214,7 +214,7 @@ public:
   void assign_rep(Interface* interface_rep, bool ref_count_incr = true);
 
   /// returns the interface type
-  const String& interface_type() const;
+  unsigned short interface_type() const;
 
   /// returns the interface identifier
   const String& interface_id() const;
@@ -295,8 +295,8 @@ protected:
   //- Heading: Data
   //
 
-  /// the interface type: system, fork, direct, grid, or approximation
-  String interfaceType;
+  /// the interface type: enum for system, fork, direct, grid, or approximation
+  unsigned short interfaceType;
   /// the interface specification identifier string from the DAKOTA input file
   String interfaceId;
 
@@ -414,7 +414,7 @@ private:
 
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
-inline const String& Interface::interface_type() const
+inline unsigned short Interface::interface_type() const
 { return (interfaceRep) ? interfaceRep->interfaceType : interfaceType; }
 
 

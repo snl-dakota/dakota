@@ -1182,7 +1182,7 @@ int ProblemDescDB::get_max_procs_per_evaluation()
 {
   // Note: get_*() requires envelope execution (throws error if !dbRep)
 
-  return (get_string("interface.type") == "direct") ?
+  return (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
     parallelLib.world_size() :
     get_max_procs_per_evaluation(
       get_sa("interface.application.analysis_drivers").size(),
@@ -1221,7 +1221,7 @@ int ProblemDescDB::get_max_procs_per_iterator(int max_eval_concurrency)
   // explicit user overrides for _lower_ levels (user overrides for the
   // current level can be managed by resolve_inputs()).
 
-  if (get_string("interface.type") == "direct")
+  if (get_ushort("interface.type") & DIRECT_INTERFACE_BIT)
     return parallelLib.world_size();
   else { // processors_per_analysis = 1 for system/fork
     int max_procs_per_eval = get_max_procs_per_evaluation(),
@@ -2237,7 +2237,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"application.results_file", P resultsFile},
 	{"failure_capture.action", P failAction},
 	{"id", P idInterface},
-	{"type", P interfaceType},
 	{"workDir", P workDir}};
     #undef P
 
@@ -2582,6 +2581,18 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     KW<unsigned short, DataMethodRep> *kw;
     if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdmo, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "interface."))) {
+    if (dbRep->interfaceDBLocked)
+	Locked_db();
+    #define P &DataInterfaceRep::
+    static KW<unsigned short, DataInterfaceRep> UShdi[] = { // must be sorted
+        {"type", P interfaceType}};
+    #undef P
+
+    KW<unsigned short, DataInterfaceRep> *kw;
+    if ((kw = (KW<unsigned short, DataInterfaceRep>*)Binsearch(UShdi, L)))
+	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
   }
   Bad_name(entry_name, "get_ushort");
   return abort_handler_t<unsigned short>(-1);
