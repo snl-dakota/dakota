@@ -65,6 +65,10 @@ void WorkdirHelper::change_directory(const bfs::path& new_dir)
     Cerr << "\nError: failed to change directory to " << new_dir << std::endl;
     abort_handler(-1);
   }
+#if defined(DEBUG)
+  else
+    Cout << "\nEXPECTED: successful change directory to " << new_dir << std::endl;
+#endif
 }
 
 /** Creates a "PATH=.:$PWD:PATH" string so that analysis driver
@@ -184,10 +188,10 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 /** Uses string representing $PATH to locate an analysis driver on the host
  *  computer.  Returns the path to the driver (as a string)
  *
- *  This version is a wrapper over the "plain old which" implementation,
+ *  This version is a wrapper over the "plain ol' which" implementation,
  *  allowing an array of windows, 3-letter extensions to be checked.
  */
-std::string WorkdirHelper::which(const std::string& driver_name)
+bfs::path WorkdirHelper::which(const std::string& driver_name)
 {
   StringArray extensions = get_pathext(); // expect empty vector on posix
 
@@ -219,11 +223,11 @@ std::string WorkdirHelper::which(const std::string& driver_name)
     }
   }
 
-  return driver_path;
+  return bfs::path(driver_path);
 
 #else
 
-  // "Plain ol" UNIX case was reliable, so just call it if NOT native Windows
+  // "Plain ol" POSIX case was reliable, so just call it if NOT native Windows
   return po_which(driver_name);
 #endif // _WIN32
 }
@@ -231,9 +235,9 @@ std::string WorkdirHelper::which(const std::string& driver_name)
 /** Uses string representing $PATH to locate an analysis driver on the host
  *  computer.  Returns the path to the driver (as a string)
  *
- *  This is the "plain old which" impl that worked well, historically, on unix.
+ *  This is the "plain ol' which" impl that worked well, historically, on POSIX.
  */
-std::string WorkdirHelper::po_which(const std::string& driver_name)
+bfs::path WorkdirHelper::po_which(const std::string& driver_name)
 {
   std::string driver_path_str;
   bfs::path driver_path(driver_name);
@@ -261,7 +265,7 @@ std::string WorkdirHelper::po_which(const std::string& driver_name)
       driver_path_str = driver_name;
   }
 
-  return driver_path_str;
+  return driver_path;
 }
 
 
@@ -283,33 +287,6 @@ void WorkdirHelper::reset()
 
 
 #ifdef DEBUG_LEGACY_WORKDIR
-
-/** Change directory to workdir and make necessary adjustments
-    to $PATH (and drive for Windows platform) */
-void WorkdirHelper::change_cwd(const std::string& workdir)
-{
-  // Potential "adapter layer" to manager 3 different APIs
-  //       1. DMG version,  2. BoostFS V2, and  3. BoostFS V3
-  //
-  // (although NOT convinced BoostFS provides the necessary features)
-
-  workdir_adjust(workdir);
-}
-
-
-/* WJB - ToDo: debug later.. 
-int WorkdirHelper::symlink(const char* from, const char* to)
-{
-  std::string prefix_from("/");
-  prefix_from += from;
-  std::string adjusted_from( (*from != '/') ?
-                             WorkdirHelper::startupPWD + prefix_from : from );
-
-  Cout << "Symlink-newFrom: " << adjusted_from << '\n' << std::endl;
-  return symlink(adjusted_from.c_str(), to);
-}
-*/
-
 /* The following routines assume ASCII or UTF-encoded Unicode. */
 
 void find_env_token(const char *s0, const char **s1,

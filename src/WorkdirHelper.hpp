@@ -15,8 +15,6 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-//#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
-//                                    e.g. use of malloc w/o free is undesirable
 
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
@@ -155,14 +153,6 @@ class WorkdirHelper
   friend void get_npath(int,std::string*);         // dakPreferredEnvPath access
 #endif
 
-#ifdef DEBUG_LEGACY_WORKDIR
-  /// Treat my_cp as a legacy, "blackbox" utility
-  /** my_cp is a wrapper around 'cp -r'.  The extra layer allows for symlink
-      to be used instead of file copy. */
-  friend int my_cp(const char*, const struct stat*,
-                   int, int, void*);               // calls symlink
-#endif
-
 public:
 
   /// initialize paths in the workdir helper at runtime
@@ -182,9 +172,9 @@ public:
 			      const std::string& env_val, 
 			      bool overwrite_flag = true);
 
-  /// Returns the string representing the path to the analysis driver,
-  //  including typical windows extensions
-  static std::string which(const std::string& driver_name);
+  /// Returns the bfs::path for the analysis driver,
+  //  supporting typical windows filename extensions
+  static bfs::path which(const std::string& driver_name);
 
   /// get a valid absolute bfs::path to a subdirectory relative to rundir
   static bfs::path rel_to_abs(const std::string& subdir_str)
@@ -291,8 +281,8 @@ public:
 
 private:
 
-  /// Returns the string representing the path to the analysis driver
-  static std::string po_which(const std::string& driver_name);
+  /// Returns the bfs::path for the analysis driver - POSIX-style implementation
+  static bfs::path po_which(const std::string& driver_name);
 
   /// Initializes class member, startupPATH
   static std::string init_startup_path();
@@ -304,11 +294,6 @@ private:
   static std::vector<std::string> tokenize_env_path(const std::string& path);
 
 #ifdef DEBUG_LEGACY_WORKDIR
-  /// "Helper"/wrapper for system symlink when "from" needs path adjustment
-  static int symlink(const char* from, const char* to);
-
-  static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
-
   static const char** arg_adjust(bool cmd_line_args,
                                  const std::vector<std::string>& args,
                                  const char **av, const std::string& workdir);
