@@ -7,7 +7,7 @@ In this strategy we look at the topology of the scoring function and select the
 approximate Morse-Smale complex. This strategy does require the user to have the 
 Morse-Smale package.
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::

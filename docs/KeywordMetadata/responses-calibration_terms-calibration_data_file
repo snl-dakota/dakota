@@ -18,7 +18,7 @@ index | configuration xvars | y data observations | y data std devs
 \endverbatim
 
 Here each such row in the file corresponds to an experiment or
-replicate observation of an experment to be compared to the model
+replicate observation of an experiment to be compared to the model
 output.
 
 <b> Simple case </b>
@@ -139,7 +139,7 @@ will calculate the sum of the squared residuals as: \f[f =
 now are calculated as: \f[R_{i,j} = y^{Model}_i(\theta) - y^{Data}_{i,j}. \f]
 
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::

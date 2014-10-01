@@ -8,10 +8,9 @@ background information and usage notes </b>
 several global approaches for calculating the belief and plausibility functions: 
 \li \c lhs - note: this takes the minimum and maximum of the samples as the bounds per
 "interval cell combination." 
-\li \c ego
-\li \c sbo
-\li \c ea
-
+\li \c ego - uses Efficient Global Optimization which is based on an adaptive Gaussian process surrogate.
+\li \c sbo - uses a Gaussian process surrogate (non-adaptive) within an optimization process.
+\li \c ea - uses an evolutionary algorithm.  This can be expensive as the ea will be run for each interval cell combination.
 
 
 Note that to calculate the plausibility and belief cumulative
@@ -30,7 +29,7 @@ uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
 expensive.
 
-Topics::	problem, epistemic_uncertainty_quantification_methods, evidence_theory
+Topics:: epistemic_uncertainty_quantification_methods, evidence_theory
 Examples::
 Theory::
 The basic idea is that one specifies an "evidence structure"
