@@ -205,15 +205,15 @@ bfs::path WorkdirHelper::which(const std::string& driver_name)
     // check with extension as given (potentially mixed case), lower, and upper
     std::string driver_name_we = driver_name;
     driver_name_we += e;
-    driver_path = po_which(driver_name_we);
+    driver_path = po_which(driver_name_we).string();
 
     driver_name_we = driver_name;
     driver_name_we += boost::algorithm::to_lower_copy(e);
-    driver_path = po_which(driver_name_we);
+    driver_path = po_which(driver_name_we).string();
 
     driver_name_we = driver_name;
     driver_name_we += boost::algorithm::to_upper_copy(e);
-    driver_path = po_which(driver_name_we);
+    driver_path = po_which(driver_name_we).string();
 
     if( !driver_path.empty() ) {
 #if defined(DEBUG)
