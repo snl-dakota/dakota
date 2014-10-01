@@ -1,6 +1,12 @@
 Blurb::
+Pointer to interface that provides non-nested responses
 Description::
-Topics::	block_pointer, empty
+\c optional_interface_pointer is used to specify an optional inferface (using 
+that interface block's \ref interface-id_interface label) to provide non-nested 
+responses, which will be combined with respones from the nested sub-iterator. The
+\c primary_response_mapping and \c secondary_response_mapping keywords control 
+how responses are combined.
+Topics::	block_pointer
 Examples::
 Theory::
 Faq::
