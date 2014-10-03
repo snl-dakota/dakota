@@ -1,15 +1,11 @@
 Blurb::
-Name of a sub-method to apply to surrogate model
+Specify sub-method by name
 Description::
-The \c surrogate_based_local and \c surrogate_based_global methods
-must specify an optimization or least squares sub-method to apply to
-the surrogate model.
-
-Option 2 is using \c approx_method_name (e.g., 'npsol_sqp') which
-identifies a sub-method for the sub-problem minimizer (which will use
-default minimizer settings).
-
-Topics::	block_pointer, problem
+The \c method_name keyword is used to specify a sub-method by %Dakota method
+name (e.g. 'npsol_sqp') rather than block pointer. The method will be executed 
+using its default settings. The optional \c model_pointer specification can be
+used to associate a model block with the method. 
+Topics::
 Examples::
 Theory::
 Faq::

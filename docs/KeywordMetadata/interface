@@ -72,7 +72,7 @@ preferred when relative node scheduling is not required.
 
 
 
-Topics::	block, problem
+Topics::	block
 Examples::
 Theory::
 Function evaluations are performed using either interfaces to simulation codes, algebraic mappings, or a combination of the two.

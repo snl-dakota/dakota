@@ -9,7 +9,7 @@ partitions at the analysis parallelism level. Refer to ParallelLibrary
 and the Parallel Computing chapter of the Users Manual 
 [\cite UsersMan "Adams et al., 2010"] for additional information.
 
-Topics::	problem, concurrency_and_parallelism
+Topics::	concurrency_and_parallelism
 Examples::
 Theory::
 Faq::

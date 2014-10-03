@@ -22,7 +22,7 @@ analysis_concurrency specifications, a hybrid parallelism can be
 selected through combination of message passing parallelism with
 asynchronous parallelism on each server.
 
-Topics::	problem, concurrency_and_parallelism
+Topics::	concurrency_and_parallelism
 Examples::
 Theory::
 Faq::

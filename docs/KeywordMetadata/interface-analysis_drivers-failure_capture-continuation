@@ -9,7 +9,7 @@ then Dakota will attempt to march incrementally from a previous good evaluation
 algorithm employed by Dakota are supplied in the User's Manual 
 [\cite UsersMan "Adams et al., 2010"].
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::

@@ -12,7 +12,7 @@ number of analysis components \f$n_c\f$ should be an integer multiple
 of the number of drivers \f$n_d\f$, and the first \f$n_c/n_d\f$
 component strings will be passed to the first driver, etc.
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::

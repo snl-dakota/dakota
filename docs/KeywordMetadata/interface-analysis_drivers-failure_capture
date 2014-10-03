@@ -1,14 +1,15 @@
 Blurb::
 Determine how Dakota responds to analysis driver failure
 Description::
-Dakota can deal with analysis failure in a few ways. However,
-the first step is that Dakota must detect analysis failure. 
-- Dakota always expects a results file to be written by the analysis driver
-- If the file does not exist when the analysis driver exits, a Dakota error results.
-- The analysis driver must communicate an analysis failure to Dakota by
-  writing a results file beginning with "fail". 
-  - This is not case sensitive
-  - Everything after fail is ignored
+Dakota can deal with analysis failure in a few ways.
+
+The first step is that Dakota must detect analysis failure. Importantly, Dakota 
+always expects a results file to be written by the analysis driver, even when a
+failure has occurred. If the file does not exist when the analysis driver exits, 
+a Dakota error results, causing Dakota itself to terminate. The analysis driver 
+communicates an analysis failure to Dakota by writing a results file 
+beginning with the word "fail", which is not case sensitive. Everything after
+"fail" is ignored.
 
 Once Dakota detects analysis failure, the failure can be mitigated in four ways:
 - \ref interface-analysis_drivers-failure_capture-abort (the default)
@@ -29,7 +30,7 @@ Capturing chapter of the Users Manual [\cite UsersMan "Adams et al., 2010"]
 for additional information.
 
 
-Topics::	problem
+Topics::	
 Examples::
 Theory::
 Faq::
