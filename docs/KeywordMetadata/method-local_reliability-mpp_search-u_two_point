@@ -1,5 +1,7 @@
 Blurb::
-Description::   This mpp_search option is identical to x_two_point, but it performs the 
+Predict MPP using Two-point Adaptive Nonlinear Approximation in "u-space"
+Description::   
+This mpp_search option is identical to \c x_two_point, but it performs the 
 Two-point Adaptive Nonlinear Approximation (TANA) in u-space instead of x-space. 
 Topics::       reliability_methods	
 Examples::

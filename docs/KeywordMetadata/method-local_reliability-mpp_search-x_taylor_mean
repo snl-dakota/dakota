@@ -1,5 +1,7 @@
 Blurb::
-Description::   This mpp_search option performs a single Taylor series approximation in the space of the 
+Form Taylor series approximation in "x-space" at variable means
+Description::   
+This mpp_search option performs a single Taylor series approximation in the space of the 
 original uncertain variables ("x-space") centered at the uncertain variable means, 
 searches for the MPP for each response/probability level using this approximation, and 
 performs a validation response evaluation at each predicted MPP. 

@@ -1,5 +1,7 @@
 Blurb::
-Description::   This mpp_search option performs a single Taylor series approximation in the 
+Form Taylor series approximation in "u-space" at variable means
+Description::   
+This mpp_search option performs a single Taylor series approximation in the 
 transformed space of the uncertain variables ("u-space") centered at the uncertain variable means.
 This option is commonly known as the Advanced Mean Value (AMV) method, but is performed in u-space
 instead of x-space.

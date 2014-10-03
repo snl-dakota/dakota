@@ -1,5 +1,9 @@
 Blurb::
-Description::  This keyword controls how the probabilities at the MPP are computed: integration is followed by either first_order or second_order, indicating the order of the probability integration. 
+Integration approach
+Description::  
+This keyword controls how the probabilities at the MPP are computed: integration 
+is followed by either first_order or second_order, indicating the order of the 
+probability integration. 
 Topics::	reliability_methods
 Examples::
 Theory::
