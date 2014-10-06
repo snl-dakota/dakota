@@ -1,7 +1,9 @@
-Blurb::
-?????
+Blurb:: Aggregate response statistics assuming a series system
+
 Description::
-Topics::	not_yet_reviewed, problem
+See parent keyword \c system for description.
+
+Topics::
 Examples::
 Theory::
 Faq::
