@@ -140,26 +140,28 @@ NonDBayesCalibration::~NonDBayesCalibration()
 { }
 
 
-void NonDBayesCalibration::init_communicators()
+void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
   //iteratedModel.init_communicators(maxEvalConcurrency);
 
+  // stochExpIterator and emulatorModel use NoDBBaseConstructor,
+  // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
-    stochExpIterator.init_communicators();                break;
+    stochExpIterator.init_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    emulatorModel.init_communicators(maxEvalConcurrency); break;
+    emulatorModel.init_communicators(pl_iter, maxEvalConcurrency); break;
   }
 }
 
 
-void NonDBayesCalibration::free_communicators()
+void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
-    stochExpIterator.free_communicators();                break;
+    stochExpIterator.free_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    emulatorModel.free_communicators(maxEvalConcurrency); break;
+    emulatorModel.free_communicators(pl_iter, maxEvalConcurrency); break;
   }
 
   //iteratedModel.free_communicators(maxEvalConcurrency);

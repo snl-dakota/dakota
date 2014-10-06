@@ -26,7 +26,10 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
 	    problem_db.get_short("method.iterator_scheduling"))
-{ }
+{
+  if (!numFinalSolutions)  // default is zero
+    numFinalSolutions = 1; // for now...  (TO DO: hybrids, concurrent)
+}
 
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
@@ -38,13 +41,58 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
 {
   iteratedModel = model;
   //update_from_model(iteratedModel);
+
+  if (!numFinalSolutions)  // default is zero
+    numFinalSolutions = 1; // for now...  (TO DO: hybrids, concurrent)
 }
 
 
 MetaIterator::~MetaIterator()
+{ }
+
+
+bool MetaIterator::
+new_model(const String& method_ptr, const String& model_ptr)
 {
-  // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  // if an existing model was passed in through ctor, return false
+  if (!iteratedModel.is_null())
+    return false;
+
+  bool new_flag = false;
+  if (!method_ptr.empty()) {
+    size_t restore_index = probDescDB.get_db_method_node(); // for restoration
+    probDescDB.set_db_method_node(method_ptr);
+    if (!probDescDB.get_string("method.model_pointer").empty())
+      new_flag = true;
+    probDescDB.set_db_method_node(restore_index);           // restore
+  }
+  else if (!model_ptr.empty())
+    new_flag = true;
+
+  return new_flag;
+}
+
+
+void MetaIterator::
+check_model(const String& method_ptr, const String& model_ptr)
+{
+  bool warn_flag = false;
+  if (!method_ptr.empty()) {
+    size_t restore_index = probDescDB.get_db_method_node(); // for restoration
+    probDescDB.set_db_method_node(method_ptr);
+    if (probDescDB.get_string("method.model_pointer") !=
+	iteratedModel.model_id())
+      warn_flag = true;
+    probDescDB.set_db_method_node(restore_index);           // restore
+  }
+  else if (!model_ptr.empty() && model_ptr != iteratedModel.model_id())
+    warn_flag = true;
+
+  if (warn_flag)
+    Cerr << "Warning: concurrent meta-iterator specification includes an "
+	 << "inconsistent\n          model_pointer.  Sub-iterator database "
+	 << "initialization could be inconsistent\n          with passed Model."
+	 << std::endl;
 }
 
 
@@ -52,16 +100,16 @@ void MetaIterator::
 allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 		    Model& the_model)
 {
-  // set_db_list_nodes() sets all the nodes w/i the linked lists to the
-  // appropriate Variables, Interface, and Response specs (as governed
-  // by the pointer strings in the method specification).
-  size_t method_index = probDescDB.get_db_method_node(); // for restoration
+  // due to the possibility of Model recursion, store/restore the method/model
+  // indices separately
+  size_t method_index = probDescDB.get_db_method_node(),
+         model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);
   if (the_model.is_null())
     the_model = probDescDB.get_model();
-  iterSched.init_iterator(probDescDB, the_iterator, the_model,
-    probDescDB.parallel_library().parallel_configuration().mi_parallel_level());
-  probDescDB.set_db_list_nodes(method_index);            // restore
+  iterSched.init_iterator(probDescDB, the_iterator, the_model);
+  probDescDB.set_db_method_node(method_index);          // restore
+  probDescDB.set_db_model_nodes(model_index);           // restore
 }
 
 
@@ -77,8 +125,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
   }
   if (the_model.is_null())
     the_model = probDescDB.get_model();
-  iterSched.init_iterator(method_string, the_iterator, the_model,
-    probDescDB.parallel_library().parallel_configuration().mi_parallel_level());
+  iterSched.init_iterator(method_string, the_iterator, the_model);
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
 }
@@ -88,26 +135,24 @@ std::pair<int, int> MetaIterator::
 estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 		    Model& the_model)
 {
-  // set_db_list_nodes() sets all the nodes w/i the linked lists to the
-  // appropriate Variables, Interface, and Response specs (as governed
-  // by the pointer strings in the method specification).
-  size_t method_index = probDescDB.get_db_method_node(); // for restoration
+  // due to the possibility of Model recursion, store/restore the method/model
+  // indices separately
+  size_t method_index = probDescDB.get_db_method_node(),
+         model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);
 
   if (the_model.is_null())
     the_model = probDescDB.get_model();
 
-  const ParallelConfiguration& pc
-    = probDescDB.parallel_library().parallel_configuration();
-  int max_eval_concurrency
-    = iterSched.init_evaluation_concurrency(probDescDB, the_iterator,
-					    the_model, pc.w_parallel_level());
+  int max_eval_concurrency =
+    iterSched.init_evaluation_concurrency(probDescDB, the_iterator, the_model);
 
   // needs to follow set_db_list_nodes
   int min_ppi = probDescDB.get_min_procs_per_iterator(),
       max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_concurrency);
 
-  probDescDB.set_db_list_nodes(method_index);            // restore
+  probDescDB.set_db_method_node(method_index);          // restore
+  probDescDB.set_db_model_nodes(model_index);           // restore
   return std::pair<int, int>(min_ppi, max_ppi);
 }
 
@@ -126,11 +171,9 @@ estimate_by_name(const String& method_string, const String& model_ptr,
   if (the_model.is_null())
     the_model = probDescDB.get_model();
 
-  const ParallelConfiguration& pc
-    = probDescDB.parallel_library().parallel_configuration();
   int max_eval_concurrency
     = iterSched.init_evaluation_concurrency(method_string, the_iterator,
-					    the_model, pc.w_parallel_level());
+					    the_model);
 
   // needs to follow set_db_list_nodes
   int min_ppi = probDescDB.get_min_procs_per_iterator(),
@@ -139,13 +182,6 @@ estimate_by_name(const String& method_string, const String& model_ptr,
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
   return std::pair<int, int>(min_ppi, max_ppi);
-}
-
-
-void MetaIterator::deallocate(Iterator& the_iterator, Model& the_model)
-{
-  iterSched.free_iterator(the_iterator,
-    probDescDB.parallel_library().parallel_configuration().mi_parallel_level());
 }
 
 

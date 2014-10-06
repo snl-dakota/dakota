@@ -205,6 +205,11 @@ public:
   /// or 2 (SUB_MODEL/ACTUAL_MODEL/HF_MODEL/TRUTH_MODEL)].
   virtual void component_parallel_mode(short mode);
 
+  /// return the index for the metaiterator-iterator parallelism level within
+  /// ParallelConfiguration::miPLIters that is active for use in a particular
+  /// Model at runtime
+  virtual size_t mi_parallel_level_index() const;
+
   /// return derived model synchronization setting
   virtual short local_eval_synchronization();
   /// return derived model asynchronous evaluation concurrency
@@ -212,7 +217,7 @@ public:
 
   /// Service job requests received from the master.  Completes when
   /// a termination message is received from stop_servers().
-  virtual void serve(int max_eval_concurrency);
+  virtual void serve(ParLevLIter pl_iter, int max_eval_concurrency);
   /// Executed by the master to terminate all server operations for a
   /// particular model when iteration on the model is complete.
   virtual void stop_servers();
@@ -280,26 +285,29 @@ public:
 
   /// allocate communicator partitions for a model and store
   /// configuration in modelPCIterMap
-  void init_communicators(int max_eval_concurrency, bool recurse_flag = true);
+  void init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag = true);
   /// for cases where init_communicators() will not be called,
   /// modify some default settings to behave properly in serial.
   void init_serial();
   /// set active parallel configuration for the model (set modelPCIter
   /// from modelPCIterMap)
-  void set_communicators(int max_eval_concurrency, bool recurse_flag = true);
+  void set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			 bool recurse_flag = true);
   /// deallocate communicator partitions for a model
-  void free_communicators(int max_eval_concurrency, bool recurse_flag = true);
+  void free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag = true);
 
   /// retrieve the MPI communicator on which this model is configured to 
   /// conduct function evaluation analyses (provided for library clients)
   MPI_Comm analysis_comm() const;
 
-  /// called from Strategy::init_iterator() for iteratorComm rank 0 to
+  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_configurations() on other iteratorComm processors
-  void stop_configurations();
-  /// called from Strategy::init_iterator() for iteratorComm rank != 0
+  void stop_configurations(ParLevLIter pl_iter);
+  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
-  int serve_configurations();
+  int serve_configurations(ParLevLIter pl_iter);
 
   /// estimate messageLengths for a model
   void estimate_message_lengths();
@@ -867,9 +875,9 @@ public:
   const IntArray& message_lengths() const;
 
   /// set modelPCIter
-  void parallel_configuration_iterator(const ParConfigLIter& pc_iter);
+  void parallel_configuration_iterator(ParConfigLIter pc_iter);
   /// return modelPCIter
-  const ParConfigLIter& parallel_configuration_iterator() const;
+  ParConfigLIter parallel_configuration_iterator() const;
 
   /// set modelAutoGraphicsFlag to activate posting of graphics data within
   /// compute_response/synchronize functions (automatic graphics posting in
@@ -908,13 +916,12 @@ protected:
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
-	const SharedVariablesData& svd,	const ActiveSet& set,
-	short output_level);
+  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
+	ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
+	const ActiveSet& set, short output_level);
 
-  /// constructor initializing base class for recast model class instances
-  /// constructed on the fly
-  Model(RecastBaseConstructor, ProblemDescDB& problem_db,
+  /// constructor initializing base class for recast model instances
+  Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 	ParallelLibrary& parallel_lib);
 
   //
@@ -932,16 +939,23 @@ protected:
   virtual const IntResponseMap& derived_synchronize_nowait();
 
   /// portion of init_communicators() specific to derived model classes
-  virtual void derived_init_communicators(int max_eval_concurrency,
+  virtual void derived_init_communicators(ParLevLIter pl_iter,
+					  int max_eval_concurrency,
 					  bool recurse_flag = true);
   /// portion of init_serial() specific to derived model classes
   virtual void derived_init_serial();
   /// portion of set_communicators() specific to derived model classes
-  virtual void derived_set_communicators(int max_eval_concurrency,
+  virtual void derived_set_communicators(ParLevLIter pl_iter,
+					 int max_eval_concurrency,
 					 bool recurse_flag = true);
   /// portion of free_communicators() specific to derived model classes
-  virtual void derived_free_communicators(int max_eval_concurrency,
+  virtual void derived_free_communicators(ParLevLIter pl_iter,
+					  int max_eval_concurrency,
 					  bool recurse_flag = true);
+
+  /// default logic for defining asynchEvalFlag and evaluationCapacity
+  /// based on ie_pl settings
+  void set_ie_asynchronous_mode(int max_eval_concurrency);
 
   //
   //- Heading: Data
@@ -976,6 +990,8 @@ protected:
   /// an iterator at startup.
   Constraints userDefinedConstraints;
 
+  /// model identifier string from the input file
+  String modelId;
   /// type of model: single, nested, or surrogate
   String modelType;
   /// type of surrogate model: local_*, multipoint_*, global_*, or hierarchical
@@ -1042,7 +1058,7 @@ protected:
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
 
-  /// the ParallelConfiguration node used by this model instance
+  /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
 
   /// the component parallelism mode: 0 (none), 1 (INTERFACE/LF_MODEL), or 2
@@ -1159,9 +1175,6 @@ private:
   //- Heading: Data
   //
 
-  /// model identifier string from the input file
-  String modelId;
-
   /// evaluation counter for top-level compute_response() and
   /// asynch_compute_response() calls.  Differs from lower level counters
   /// in case of numerical derivative estimation (several lower level
@@ -1172,12 +1185,12 @@ private:
   /// asynch_compute_response()
   bool estDerivsFlag;
 
-  /// map<> used for tracking modelPCIter instances using concurrency
-  /// level as the lookup key
-  std::map<int, ParConfigLIter> modelPCIterMap;
+  /// map<> used for tracking modelPCIter instances using depth of parallelism
+  /// level and max evaluation concurrency as the lookup keys
+  std::map<SizetIntPair, ParConfigLIter> modelPCIterMap;
 
   /// flag for determining need to bcast the max concurrency from
-  /// init_communicators(); set from Strategy::init_iterator()
+  /// init_communicators(); set from IteratorScheduler::init_iterator()
   bool initCommsBcastFlag;
 
   /// flag for posting of graphics data within compute_response
@@ -3021,15 +3034,14 @@ inline const IntArray& Model::message_lengths() const
 { return (modelRep) ? modelRep->messageLengths : messageLengths; }
 
 
-inline void Model::
-parallel_configuration_iterator(const ParConfigLIter& pc_iter)
+inline void Model::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
   if (modelRep) modelRep->modelPCIter = pc_iter;
   else          modelPCIter = pc_iter;
 }
 
 
-inline const ParConfigLIter& Model::parallel_configuration_iterator() const
+inline ParConfigLIter Model::parallel_configuration_iterator() const
 { return (modelRep) ? modelRep->modelPCIter : modelPCIter; }
 
 

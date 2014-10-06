@@ -40,10 +40,10 @@ public:
   //
 
   /// specialization of init comms due to varied use of the original model
-  void init_communicators();
+  void derived_init_communicators(ParLevLIter pl_iter);
 
   /// specialization of free comms due to varied use of the original model
-  void free_communicators();
+  void derived_free_communicators(ParLevLIter pl_iter);
 
   /// ESM re-implementation of the virtual UQ iterator function
   void quantify_uncertainty();

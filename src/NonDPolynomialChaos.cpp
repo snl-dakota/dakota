@@ -301,7 +301,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   construct_expansion_sampler();
 
-  if (probDescDB.parallel_library().command_line_check())
+  if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
 	 << numSamplesOnModel << " evaluations to be performed." << std::endl;
 }
@@ -376,23 +376,23 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 { }
 
 
-void NonDPolynomialChaos::init_communicators()
+void NonDPolynomialChaos::derived_init_communicators(ParLevLIter pl_iter)
 {
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    iteratedModel.init_communicators(maxEvalConcurrency);
+    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
-  NonDExpansion::init_communicators();
+  NonDExpansion::derived_init_communicators(pl_iter);
 }
 
 
-void NonDPolynomialChaos::free_communicators()
+void NonDPolynomialChaos::derived_free_communicators(ParLevLIter pl_iter)
 {
-  NonDExpansion::free_communicators();
+  NonDExpansion::derived_free_communicators(pl_iter);
 
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    iteratedModel.free_communicators(maxEvalConcurrency);
+    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

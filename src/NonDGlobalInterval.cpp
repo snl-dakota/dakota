@@ -129,8 +129,8 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
       import_pts_file,
       probDescDB.get_bool("method.import_points_file_annotated")), false);
 
-    // Following this ctor, Strategy::init_iterator() initializes the parallel
-    // configuration for NonDGlobalInterval + iteratedModel using
+    // Following this ctor, IteratorScheduler::init_iterator() initializes the
+    // parallel configuration for NonDGlobalInterval + iteratedModel using
     // NonDGlobalInterval's maxEvalConcurrency.  During fHatModel construction
     // above, DataFitSurrModel::derived_init_communicators() initializes the
     // parallel configuration for daceIterator + iteratedModel using
@@ -138,11 +138,10 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     // currently exercised is that used by daceIterator within the initial GP
     // construction, but the NonDGlobalInterval maxEvalConcurrency must still be
     // set so as to avoid parallel config errors resulting from avail_procs
-    // > max_concurrency within Strategy::init_iterator().  A max of the local
-    // derivative concurrency and the DACE concurrency is used for this purpose.
-    maxEvalConcurrency
-      = std::max(maxEvalConcurrency,
-		 daceIterator.maximum_evaluation_concurrency());
+    // > max_concurrency within IteratorScheduler::init_iterator().  Max of the
+    // local deriv concurrency & the DACE concurrency is used for this purpose.
+    maxEvalConcurrency = std::max(maxEvalConcurrency,
+      daceIterator.maximum_evaluation_concurrency());
   }
   else
     fHatModel = iteratedModel; // shared rep
@@ -211,33 +210,35 @@ NonDGlobalInterval::~NonDGlobalInterval()
 { }
 
 
-void NonDGlobalInterval::init_communicators()
+void NonDGlobalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   // intervalOptModel.init_communicators() recursion is currently sufficient
   // for fHatModel.  An additional fHatModel.init_communicators() call would
   // be motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
   //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
-  //fHatModel.init_communicators(fHatMaxConcurrency);
+  //fHatModel.init_communicators(pl_iter, fHatMaxConcurrency);
 
-  intervalOptimizer.init_communicators();
+  // intervalOptimizer uses NoDBBaseConstructor, so no need to manage
+  // DB list nodes at this level
+  intervalOptimizer.init_communicators(pl_iter);
 }
 
 
-void NonDGlobalInterval::free_communicators()
+void NonDGlobalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
   // deallocate communicators for DIRECT on intervalOptModel
-  intervalOptimizer.free_communicators();
+  intervalOptimizer.free_communicators(pl_iter);
 
   // intervalOptModel.free_communicators() recursion is currently sufficient
   // for fHatModel.  An additional fHatModel.free_communicators() call would
   // be motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
-  //fHatModel.free_communicators(fHatMaxConcurrency);
+  //fHatModel.free_communicators(pl_iter, fHatMaxConcurrency);
 
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

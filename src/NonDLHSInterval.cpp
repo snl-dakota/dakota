@@ -48,17 +48,20 @@ NonDLHSInterval::~NonDLHSInterval()
 { }
 
 
-void NonDLHSInterval::init_communicators()
+void NonDLHSInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
-  //iteratedModel.init_communicators(maxEvalConcurrency);
-  lhsSampler.init_communicators();
+  //iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+
+  // lhsSampler uses NoDBBaseConstructor, so no need to manage DB list
+  // nodes at this level
+  lhsSampler.init_communicators(pl_iter);
 }
 
 
-void NonDLHSInterval::free_communicators()
+void NonDLHSInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
-  lhsSampler.free_communicators();
-  //iteratedModel.free_communicators(maxEvalConcurrency);
+  lhsSampler.free_communicators(pl_iter);
+  //iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

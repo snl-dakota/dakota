@@ -375,21 +375,28 @@ void Environment::construct()
   // required to resolve which method sits on top of a recursion.
   if (method_ptr.empty()) probDescDB.resolve_top_method();
   else                    probDescDB.set_db_list_nodes(method_ptr);
+  // TO DO: meta-iterators should set only the method node (not model nodes)
+  //    --> will quiet a warning and leave model nodes locked
+  //    --> only set model nodes in else {} below
 
-  // Instantiate the topLevelIterator in parallel (invoke
-  // ProblemDescDB ctor chain on all processors)
+  // Instantiate the topLevelIterator in parallel (invoke ProblemDescDB
+  // ctor chain on all processors).  Note that w_pl is the same for all
+  // parallel configurations.
+  ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
   if (probDescDB.get_ushort("method.algorithm") & META_BIT) {
-    // meta-iterator constructors manage IteratorScheduler::init_iterator()
-    // and IteratorScheduler::init_iterator_parallelism()
     topLevelIterator = probDescDB.get_iterator(); // all procs
+    // init_communicators() manages IteratorScheduler::init_iterator() and
+    // IteratorScheduler::init_iterator_parallelism()
+    topLevelIterator.init_communicators(w_pl_iter);
   }
   else {
-    IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
+    //IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
+    parallelLib.manage_outputs_restart(*w_pl_iter);// from init_serial_iterators
     //topLevelModel = probDescDB.get_model(); // if access needed downstream
     Model top_level_model = probDescDB.get_model();
     IteratorScheduler::init_iterator(probDescDB, topLevelIterator,
-      top_level_model, // modelRep gets shared in topLevelIterator
-      parallelLib.parallel_configuration().w_parallel_level());
+				     top_level_model, // shared modelRep
+				     w_pl_iter);
   }
 }
 
@@ -410,19 +417,23 @@ void Environment::execute()
 
     probDescDB.lock(); // prevent run-time DB queries
 
+    ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
     // topLevelIterator's methodName must be defined on all ranks
     if (topLevelIterator.method_name() & META_BIT) {
       // graphics initialization delegated by MetaIterator
 
-      topLevelIterator.run(Cout); // Iterator executes on all processors
+      // Iterator executes on all processors
+      topLevelIterator.set_communicators(w_pl_iter);
+      topLevelIterator.run(Cout);
     }
     else {
       if (output_rank) // set up plotting and data tabulation
 	topLevelIterator.initialize_graphics(); // default to server_id = 1
 
       // segregates parallel execution: Iterator on pl.serverCommRank == 0
+      IteratorScheduler::set_iterator(topLevelIterator, w_pl_iter);
       IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
-        parallelLib.parallel_configuration().w_parallel_level());
+				      w_pl_iter);
     }
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
@@ -454,19 +465,17 @@ void Environment::destruct()
 {
   // Called only by letter instances, no Rep forward required
 
+  ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
   if (topLevelIterator.is_null()) // help and version invocations
     return;
   else if (topLevelIterator.method_name() & META_BIT) {
-    // meta-iterator destructors manage IteratorScheduler::free_iterator()
-    // and IteratorScheduler::free_iterator_parallelism()
+    // free_iterator() manages IteratorScheduler::free_iterator() and
+    // IteratorScheduler::free_iterator_parallelism()
+    topLevelIterator.free_communicators(w_pl_iter);
   }
-  else {
-    // deallocate communicator partitions for topLevelIterator
+  else // deallocate communicator partitions for topLevelIterator
     IteratorScheduler::free_iterator(topLevelIterator, //topLevelModel,
-      parallelLib.parallel_configuration().w_parallel_level());
-    // deallocate the (serialized) mi_pl parallelism level
-    IteratorScheduler::free_iterator_parallelism(parallelLib);
-  }
+				     w_pl_iter);
 }
 
 } // namespace Dakota

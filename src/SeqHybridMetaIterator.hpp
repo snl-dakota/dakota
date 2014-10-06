@@ -70,6 +70,10 @@ protected:
   void core_run();
   void print_results(std::ostream& s);
 
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
+
   /// return the final solution from selectedIterators (variables)
   const Variables& variables_results() const;
   /// return the final solution from selectedIterators (response)
@@ -107,9 +111,9 @@ private:
   //- Heading: Data members
   //
 
-  String      seqHybridType; ///< empty (default) or "adaptive"
-  StringArray methodList;    ///< the list of method name identifiers
-  bool        lightwtCtor;   ///< indicates use of lightweight Iterator ctors
+  String   seqHybridType; ///< empty (default) or "adaptive"
+  StringArray methodList; ///< the list of method name identifiers
+  bool       lightwtCtor; ///< use of lightweight Iterator construction by name
 
   /// the set of iterators, one for each entry in methodList
   IteratorArray selectedIterators;
@@ -118,9 +122,7 @@ private:
 
   /// hybrid sequence counter: 0 to numIterators-1
   size_t seqCount;
-  /// the amount of progress made in a single iterator++ cycle within
-  /// a sequential adaptive hybrid
-  Real progressMetric;
+
   /// when the progress metric falls below this threshold, the
   /// sequential adaptive hybrid switches to the next method
   Real progressThreshold;

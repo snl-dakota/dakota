@@ -84,8 +84,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void init_communicators();
-  void free_communicators();
+  void derived_init_communicators();
+  void derived_free_communicators();
 
   /// performs a forward uncertainty propagation by using GPM/SA to 
   /// generate a posterior distribution on parameters given a set of 

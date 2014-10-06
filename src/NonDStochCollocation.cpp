@@ -132,7 +132,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------------------
   construct_expansion_sampler();
 
-  if (probDescDB.parallel_library().command_line_check())
+  if (parallelLib.command_line_check())
     Cout << "\nStochastic collocation construction completed: initial grid "
 	 << "size of " << numSamplesOnModel << " evaluations to be performed."
 	 << std::endl;

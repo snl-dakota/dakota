@@ -171,7 +171,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
 
 Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
-  interfaceId("NO_DB_INTERFACE"), algebraicMappings(false), coreMappings(true),
+  interfaceId("NO_SPECIFICATION"), algebraicMappings(false), coreMappings(true),
   currEvalId(0), fineGrainEvalCounters(false), evalIdCntr(0), newEvalIdCntr(0),
   evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
   ieDedMasterFlag(false), outputLevel(output_level), appendIfaceId(true),

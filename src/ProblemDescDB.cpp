@@ -484,19 +484,33 @@ void ProblemDescDB::set_db_list_nodes(const String& method_tag)
     dbRep->set_db_list_nodes(method_tag);
   else {
     set_db_method_node(method_tag);
-    set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+    if (methodDBLocked) {
+      modelDBLocked = variablesDBLocked = interfaceDBLocked
+	= responsesDBLocked = true;
+      // ensure consistency in get_db_{method,model}_node():
+      //dataModelIter = dataModelList.end();
+    }
+    else
+      set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
   }
 }
 
 
-void ProblemDescDB::set_db_list_nodes(const size_t& method_index)
+void ProblemDescDB::set_db_list_nodes(size_t method_index)
 {
   if (dbRep)
     dbRep->set_db_list_nodes(method_index);
   else {
     // Set the correct Index values for all Data class lists.
     set_db_method_node(method_index);
-    set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+    if (methodDBLocked) {
+      modelDBLocked = variablesDBLocked = interfaceDBLocked
+	= responsesDBLocked = true;
+      // ensure consistency in get_db_{method,model}_node():
+      //dataModelIter = dataModelList.end();
+    }
+    else
+      set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
   }
 }
 
@@ -576,7 +590,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	  if (parallelLib.world_rank() == 0)
 	    Cerr << "\nWarning: empty method id string not found.\n         "
 		 << "Last method specification parsed will be used.\n";
-	  dataMethodIter--; // last entry in list
+	  --dataMethodIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
 		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
@@ -584,64 +598,83 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	  Cerr << "\nWarning: empty method id string is ambiguous.\n         "
 	       << "First matching method specification will be used.\n";
       }
+      methodDBLocked = false; // unlock
     }
     else {
-      dataMethodIter
+      std::list<DataMethod>::iterator dm_it
 	= std::find_if( dataMethodList.begin(), dataMethodList.end(),
             boost::bind(DataMethod::id_compare, _1, method_tag) );
-      if (dataMethodIter == dataMethodList.end()) {
-	Cerr << "\nError: " << method_tag
-	     << " is not a valid method identifier string." << std::endl;
-	abort_handler(-1);
+      if (dm_it == dataMethodList.end()) {
+	methodDBLocked = true; // lock
+	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
+	// through (but leave DB locked to prevent dataMethodIter use).
+	if (method_tag != "NO_SPECIFICATION") {
+	  Cerr << "\nError: " << method_tag
+	       << " is not a valid method identifier string." << std::endl;
+	  abort_handler(PARSE_ERROR);
+	}
+	// do not update dataMethodIter, such that NO_SPECIFICATION instances
+	// within a recursion do not alter the list nodes sequencing
       }
-      else if (parallelLib.world_rank() == 0 &&
-		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
-                   boost::bind(DataMethod::id_compare, _1, method_tag)) > 1)
-	Cerr << "\nWarning: method id string " << method_tag << " is ambiguous."
-	     << "\n         First matching method specification will be used."
-	     << '\n';
+      else {
+	methodDBLocked = false; // unlock
+	dataMethodIter = dm_it;
+	if (parallelLib.world_rank() == 0 &&
+	    std::count_if(dataMethodList.begin(), dataMethodList.end(),
+			  boost::bind(DataMethod::id_compare,_1,method_tag))>1)
+	  Cerr << "\nWarning: method id string " << method_tag
+	       << " is ambiguous.\n         First matching method "
+	       << "specification will be used.\n";
+      }
     }
-    methodDBLocked = false; // unlock
   }
 }
 
 
-void ProblemDescDB::set_db_method_node(const size_t& method_index)
+void ProblemDescDB::set_db_method_node(size_t method_index)
 {
   if (dbRep)
     dbRep->set_db_method_node(method_index);
   else {
-    if (method_index >= dataMethodList.size()) {
-      Cerr << "\nError: method_index sent to set_db_list_nodes is out of range."
-	   << std::endl;
-      abort_handler(-1);
+    size_t num_meth_spec = dataMethodList.size();
+    // allow advancement up to but not past end()
+    if (method_index > num_meth_spec) {
+      Cerr << "\nError: method_index sent to set_db_method_node is out of "
+	   << "range." << std::endl;
+      abort_handler(PARSE_ERROR);
     }
     dataMethodIter = dataMethodList.begin();
     std::advance(dataMethodIter, method_index);
-    methodDBLocked = false; // unlock
+    // unlock if not advanced to end()
+    methodDBLocked = (method_index == num_meth_spec);
   }
 }
 
 
-void ProblemDescDB::set_db_model_nodes(const size_t& model_index)
+void ProblemDescDB::set_db_model_nodes(size_t model_index)
 {
   if (dbRep)
     dbRep->set_db_model_nodes(model_index);
   else {
-    // Set the correct Index values for the Data class lists.
-    if (model_index >= dataModelList.size()) {
-      Cerr << "\nError: model_index sent to set_db_list_nodes is out of range."
+    size_t num_model_spec = dataModelList.size();
+    // allow advancement up to but not past end()
+    if (model_index > num_model_spec) {
+      Cerr << "\nError: model_index sent to set_db_model_nodes is out of range."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(PARSE_ERROR);
     }
     dataModelIter = dataModelList.begin();
     std::advance(dataModelIter, model_index);
-    modelDBLocked = false; // unlock
-
-    DataModelRep *MoRep = dataModelIter->dataModelRep;
-    set_db_variables_node(MoRep->variablesPointer);
-    set_db_interface_node(MoRep->interfacePointer);
-    set_db_responses_node(MoRep->responsesPointer);
+    // unlock if not advanced to end()
+    if (model_index == num_model_spec)
+      modelDBLocked = variablesDBLocked = interfaceDBLocked = responsesDBLocked
+	= true;
+    else {
+      DataModelRep *MoRep = dataModelIter->dataModelRep;
+      set_db_variables_node(MoRep->variablesPointer);
+      set_db_interface_node(MoRep->interfacePointer);
+      set_db_responses_node(MoRep->responsesPointer);
+    }
   }
 }
 
@@ -656,7 +689,7 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
       if (dataModelList.empty()) {
 	DataModel data_model; // for library mode
 	dataModelList.push_back(data_model);
-	}
+      }
       if (dataModelList.size() == 1) // no ambiguity if only one spec
 	dataModelIter = dataModelList.begin();
       else { // try to match to a model without an id
@@ -667,7 +700,7 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	  if (parallelLib.world_rank() == 0)
 	    Cerr << "\nWarning: empty model id string not found.\n         "
 		 << "Last model specification parsed will be used.\n";
-	  dataModelIter--; // last entry in list
+	  --dataModelIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
 		 std::count_if(dataModelList.begin(), dataModelList.end(),
@@ -675,28 +708,44 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	  Cerr << "\nWarning: empty model id string is ambiguous.\n         "
 	       << "First matching model specification will be used.\n";
       }
+      modelDBLocked = false; // unlock
     }
     else {
-      dataModelIter
+      std::list<DataModel>::iterator dm_it
 	= std::find_if( dataModelList.begin(), dataModelList.end(),
             boost::bind(DataModel::id_compare, _1, model_tag) );
-      if (dataModelIter == dataModelList.end()) {
-	Cerr << "\nError: " << model_tag
-	     << " is not a valid model identifier string." << std::endl;
-	abort_handler(-1);
+      if (dm_it == dataModelList.end()) {
+	modelDBLocked = true; // lock
+	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
+	// through (but leave DB locked to prevent dataModelIter use).
+	if (model_tag != "NO_SPECIFICATION") {
+	  Cerr << "\nError: " << model_tag
+	       << " is not a valid model identifier string." << std::endl;
+	  abort_handler(PARSE_ERROR);
+	}
+	// do not update dataModelIter, such that NO_SPECIFICATION instances
+	// within a recursion do not alter the list nodes sequencing
       }
-      else if (parallelLib.world_rank() == 0 &&
-               std::count_if(dataModelList.begin(), dataModelList.end(),
-                 boost::bind(DataModel::id_compare, _1, model_tag)) > 1)
-	Cerr << "\nWarning: model id string " << model_tag << " is ambiguous."
-	     << "\n         First matching model specification will be used.\n";
+      else {
+	modelDBLocked = false; // unlock
+	dataModelIter = dm_it;
+	if (parallelLib.world_rank() == 0 &&
+	    std::count_if(dataModelList.begin(), dataModelList.end(),
+			  boost::bind(DataModel::id_compare, _1, model_tag))>1)
+	  Cerr << "\nWarning: model id string " << model_tag << " is ambiguous."
+	       << "\n         First matching model specification will be used."
+	       << '\n';
+      }
     }
-    modelDBLocked = false; // unlock
 
-    DataModelRep *MoRep = dataModelIter->dataModelRep;
-    set_db_variables_node(MoRep->variablesPointer);
-    set_db_interface_node(MoRep->interfacePointer);
-    set_db_responses_node(MoRep->responsesPointer);
+    if (modelDBLocked)
+      variablesDBLocked = interfaceDBLocked = responsesDBLocked	= true;
+    else {
+      DataModelRep *MoRep = dataModelIter->dataModelRep;
+      set_db_variables_node(MoRep->variablesPointer);
+      set_db_interface_node(MoRep->interfacePointer);
+      set_db_responses_node(MoRep->responsesPointer);
+    }
   }
 }
 
@@ -718,7 +767,7 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	  if (parallelLib.world_rank() == 0)
 	    Cerr << "\nWarning: empty variables id string not found.\n         "
 		 << "Last variables specification parsed will be used.\n";
-	  dataVariablesIter--; // last entry in list
+	  --dataVariablesIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
 		 std::count_if(dataVariablesList.begin(),
@@ -729,24 +778,36 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	       << "\n         First matching variables specification will be "
 	       << "used.\n";
       }
+      variablesDBLocked = false; // unlock
     }
     else {
-      dataVariablesIter
+      std::list<DataVariables>::iterator dv_it
 	= std::find_if( dataVariablesList.begin(), dataVariablesList.end(),
             boost::bind(DataVariables::id_compare, _1, variables_tag) );
-      if (dataVariablesIter == dataVariablesList.end()) {
-	Cerr << "\nError: " << variables_tag
-	     << " is not a valid variables identifier string." << std::endl;
-	abort_handler(-1);
+      if (dv_it == dataVariablesList.end()) {
+	variablesDBLocked = true; // lock
+	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
+	// through (but leave DB locked to prevent dataVariablesIter use).
+	if (variables_tag != "NO_SPECIFICATION") { // not currently in use
+	  Cerr << "\nError: " << variables_tag
+	       << " is not a valid variables identifier string." << std::endl;
+	  abort_handler(PARSE_ERROR);
+	}
+	// do not update dataVariablesIter, such that NO_SPECIFICATION
+	// instances within a recursion do not alter list nodes sequencing
       }
-      else if (parallelLib.world_rank() == 0 &&
-               std::count_if(dataVariablesList.begin(), dataVariablesList.end(),
-                 boost::bind(DataVariables::id_compare, _1, variables_tag)) > 1)
-	Cerr << "\nWarning: variables id string " << variables_tag
-	     << " is ambiguous.\n         First matching variables "
-	     << "specification will be used.\n";
+      else {
+	variablesDBLocked = false; // unlock
+	dataVariablesIter = dv_it;
+	if (parallelLib.world_rank() == 0 &&
+	    std::count_if(dataVariablesList.begin(), dataVariablesList.end(),
+			  boost::bind(DataVariables::id_compare, _1,
+				      variables_tag)) > 1)
+	  Cerr << "\nWarning: variables id string " << variables_tag
+	       << " is ambiguous.\n         First matching variables "
+	       << "specification will be used.\n";
+      }
     }
-    variablesDBLocked = false; // unlock
   }
 }
 
@@ -776,7 +837,7 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	      MoRep->modelType == "single")
 	    Cerr << "\nWarning: empty interface id string not found.\n         "
 		 << "Last interface specification parsed will be used.\n";
-	  dataInterfaceIter--; // last entry in list
+	  --dataInterfaceIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
 		 MoRep->modelType == "single"  &&
@@ -788,24 +849,36 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	       << "\n         First matching interface specification will be "
 	       << "used.\n";
       }
+      interfaceDBLocked = false; // unlock
     }
     else {
-      dataInterfaceIter
+      std::list<DataInterface>::iterator di_it
 	= std::find_if( dataInterfaceList.begin(), dataInterfaceList.end(),
             boost::bind(DataInterface::id_compare, _1, interface_tag) );
-      if (dataInterfaceIter == dataInterfaceList.end()) {
-	Cerr << "\nError: " << interface_tag
-	     << " is not a valid interface identifier string." << std::endl;
-	abort_handler(-1);
+      if (di_it == dataInterfaceList.end()) {
+	interfaceDBLocked = true; // lock
+	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
+	// through (but leave DB locked to prevent dataInterfaceIter use).
+	if (interface_tag != "NO_SPECIFICATION") {
+	  Cerr << "\nError: " << interface_tag
+	       << " is not a valid interface identifier string." << std::endl;
+	  abort_handler(PARSE_ERROR);
+	}
+	// do not update dataInterfaceIter, such that NO_SPECIFICATION
+	// instances within a recursion do not alter list nodes sequencing
       }
-      else if (parallelLib.world_rank() == 0 &&
-               std::count_if(dataInterfaceList.begin(), dataInterfaceList.end(),
-                 boost::bind(DataInterface::id_compare, _1, interface_tag)) > 1)
-	Cerr << "\nWarning: interface id string " << interface_tag
-	     << " is ambiguous.\n         First matching interface "
-	     << "specification will be used.\n";
+      else {
+	interfaceDBLocked = false; // unlock
+	dataInterfaceIter = di_it;
+	if (parallelLib.world_rank() == 0 &&
+	    std::count_if(dataInterfaceList.begin(), dataInterfaceList.end(),
+			  boost::bind(DataInterface::id_compare, _1,
+				      interface_tag)) > 1)
+	  Cerr << "\nWarning: interface id string " << interface_tag
+	       << " is ambiguous.\n         First matching interface "
+	       << "specification will be used.\n";
+      }
     }
-    interfaceDBLocked = false; // unlock
   }
 }
 
@@ -827,33 +900,47 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	  if (parallelLib.world_rank() == 0)
 	    Cerr << "\nWarning: empty responses id string not found.\n         "
 		 << "Last responses specification parsed will be used.\n";
-	  dataResponsesIter--; // last entry in list
+	  --dataResponsesIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-		 std::count_if(dataResponsesList.begin(),dataResponsesList.end(),
-                   boost::bind(DataResponses::id_compare,_1, responses_tag)) > 1)
+		 std::count_if(dataResponsesList.begin(),
+			       dataResponsesList.end(),
+			       boost::bind(DataResponses::id_compare, _1,
+					   responses_tag)) > 1)
 	  Cerr << "\nWarning: empty responses id string is ambiguous."
 	       << "\n         First matching responses specification will be "
 	       << "used.\n";
       }
+      responsesDBLocked = false; // unlock
     }
     else {
-      dataResponsesIter
+      std::list<DataResponses>::iterator dr_it
 	= std::find_if( dataResponsesList.begin(), dataResponsesList.end(),
             boost::bind(DataResponses::id_compare, _1, responses_tag) );
-      if (dataResponsesIter == dataResponsesList.end()) {
-	Cerr << "\nError: " << responses_tag
-	     << " is not a valid responses identifier string." << std::endl;
-	abort_handler(-1);
+      if (dr_it == dataResponsesList.end()) {
+	responsesDBLocked = true; // lock
+	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
+	// through (but leave DB locked to prevent dataResponsesIter use).
+	if (responses_tag != "NO_SPECIFICATION") { // not currently in use
+	  Cerr << "\nError: " << responses_tag
+	       << " is not a valid responses identifier string." << std::endl;
+	  abort_handler(PARSE_ERROR);
+	}
+	// do not update dataResponsesIter, such that NO_SPECIFICATION
+	// instances within a recursion do not alter list nodes sequencing
       }
-      else if (parallelLib.world_rank() == 0 &&
-               std::count_if(dataResponsesList.begin(), dataResponsesList.end(),
-                 boost::bind(DataResponses::id_compare, _1, responses_tag)) > 1)
-	Cerr << "\nWarning: responses id string " << responses_tag
-	     << " is ambiguous.\n         First matching responses "
-	     << "specification will be used.\n";
+      else {
+	responsesDBLocked = false; // unlock
+	dataResponsesIter = dr_it;
+	if (parallelLib.world_rank() == 0 &&
+	    std::count_if(dataResponsesList.begin(), dataResponsesList.end(),
+			  boost::bind(DataResponses::id_compare, _1,
+				      responses_tag)) > 1)
+	  Cerr << "\nWarning: responses id string " << responses_tag
+	       << " is ambiguous.\n         First matching responses "
+	       << "specification will be used.\n";
+      }
     }
-    responsesDBLocked = false; // unlock
   }
 }
 
@@ -894,7 +981,7 @@ const Iterator& ProblemDescDB::get_iterator()
   if (!dbRep) {
     Cerr << "Error: ProblemDescDB::get_iterator() called for letter object."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   // In general, have to worry about loss of encapsulation and use of context
@@ -928,7 +1015,7 @@ const Iterator& ProblemDescDB::get_iterator(Model& model)
   if (!dbRep) {
     Cerr << "Error: ProblemDescDB::get_iterator() called for letter object."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   const String& id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
@@ -959,7 +1046,7 @@ const Model& ProblemDescDB::get_model()
   if (!dbRep) {
     Cerr << "Error: ProblemDescDB::get_model() called for letter object."
          << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   // A model specification identifies its variables, interface, and responses.
@@ -992,7 +1079,7 @@ const Variables& ProblemDescDB::get_variables()
   if (!dbRep) {
     Cerr << "Error: ProblemDescDB::get_variables() called for letter object."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   // Have to worry about loss of encapsulation and use of context _above_ this
@@ -1034,7 +1121,7 @@ const Interface& ProblemDescDB::get_interface()
   if (!dbRep) {
     Cerr << "Error: ProblemDescDB::get_interface() called for letter object."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   // Have to worry about loss of encapsulation and use of context _above_ this
@@ -1081,7 +1168,7 @@ const Response& ProblemDescDB::get_response(const Variables& vars)
   if (!dbRep) {
     Cerr << "Error: ProblemDescDB::get_response() called for letter object."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(PARSE_ERROR);
   }
 
   // Have to worry about loss of encapsulation and use of context _above_ this
@@ -1301,28 +1388,28 @@ static void Bad_name(String entry_name, const char *where)
 {
   Cerr << "\nBad entry_name in ProblemDescDB::" << where << ":  "
        << entry_name << std::endl;
-  abort_handler(-1);
+  abort_handler(PARSE_ERROR);
 }
 
 static void Locked_db()
 {
   Cerr << "\nError: database is locked.  You must first unlock the database\n"
        << "       by setting the list nodes." << std::endl;
-  abort_handler(-1);
+  abort_handler(PARSE_ERROR);
 }
 
 static void Null_rep(const char *who)
 {
   Cerr << "\nError: ProblemDescDB::" << who
        << "() called with NULL representation." << std::endl;
-  abort_handler(-1);
+  abort_handler(PARSE_ERROR);
 }
 
 static void Null_rep1(const char *who)
 {
   Cerr << "\nError: ProblemDescDB::" << who
        << " called with NULL representation." << std::endl;
-  abort_handler(-1);
+  abort_handler(PARSE_ERROR);
 }
 
 
@@ -1496,7 +1583,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_rv");
-  return abort_handler_t<const RealVector&>(-1);
+  return abort_handler_t<const RealVector&>(PARSE_ERROR);
 }
 
 
@@ -1577,7 +1664,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_iv");
-  return abort_handler_t<const IntVector&>(-1);
+  return abort_handler_t<const IntVector&>(PARSE_ERROR);
 }
 
 
@@ -1618,7 +1705,7 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
   }
 
   Bad_name(entry_name, "get_ba");
-  return abort_handler_t<const BitArray&>(-1);
+  return abort_handler_t<const BitArray&>(PARSE_ERROR);
 }
 
 
@@ -1643,7 +1730,7 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
   }
 
   Bad_name(entry_name, "get_sza");
-  return abort_handler_t<const SizetArray&>(-1);
+  return abort_handler_t<const SizetArray&>(PARSE_ERROR);
 }
 
 
@@ -1671,7 +1758,7 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
   }
 
   Bad_name(entry_name, "get_usa");
-  return abort_handler_t<const UShortArray&>(-1);
+  return abort_handler_t<const UShortArray&>(PARSE_ERROR);
 }
 
 
@@ -1686,7 +1773,7 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
       return dbRep->dataVariablesIter->dataVarsRep->uncertainCorrelations;
   }
   Bad_name(entry_name, "get_rsm");
-  return abort_handler_t<const RealSymMatrix&>(-1);
+  return abort_handler_t<const RealSymMatrix&>(PARSE_ERROR);
 }
 
 
@@ -1713,7 +1800,7 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
   }
 
   Bad_name(entry_name, "get_rva");
-  return abort_handler_t<const RealVectorArray&>(-1);
+  return abort_handler_t<const RealVectorArray&>(PARSE_ERROR);
 }
 
 
@@ -1725,7 +1812,7 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
     Null_rep("get_iva");
   // BMA: no current use cases
   Bad_name(entry_name, "get_iva");
-  return abort_handler_t<const IntVectorArray&>(-1);
+  return abort_handler_t<const IntVectorArray&>(PARSE_ERROR);
 }
 
 
@@ -1758,7 +1845,7 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_is");
-  return abort_handler_t<const IntSet&>(-1);
+  return abort_handler_t<const IntSet&>(PARSE_ERROR);
 }
 
 
@@ -1782,7 +1869,7 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_isa");
-  return abort_handler_t<const IntSetArray&>(-1);
+  return abort_handler_t<const IntSetArray&>(PARSE_ERROR);
 }
 
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
@@ -1805,7 +1892,7 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_ssa");
-  return abort_handler_t<const StringSetArray&>(-1);
+  return abort_handler_t<const StringSetArray&>(PARSE_ERROR);
 }
 
 
@@ -1829,7 +1916,7 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_rsa");
-  return abort_handler_t<const RealSetArray&>(-1);
+  return abort_handler_t<const RealSetArray&>(PARSE_ERROR);
 }
 
 
@@ -1854,7 +1941,7 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_irma");
-  return abort_handler_t<const IntRealMapArray&>(-1);
+  return abort_handler_t<const IntRealMapArray&>(PARSE_ERROR);
 }
 
 const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
@@ -1878,7 +1965,7 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_srma");
-  return abort_handler_t<const StringRealMapArray&>(-1);
+  return abort_handler_t<const StringRealMapArray&>(PARSE_ERROR);
 }
 
 
@@ -1904,7 +1991,7 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_rrma");
-  return abort_handler_t<const RealRealMapArray&>(-1);
+  return abort_handler_t<const RealRealMapArray&>(PARSE_ERROR);
 }
 
 
@@ -1931,7 +2018,7 @@ get_rrrma(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_rrrma");
-  return abort_handler_t<const RealRealPairRealMapArray&>(-1);
+  return abort_handler_t<const RealRealPairRealMapArray&>(PARSE_ERROR);
 }
 
 
@@ -1958,7 +2045,7 @@ get_iirma(const String& entry_name) const
 	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
   }
   Bad_name(entry_name, "get_iirma");
-  return abort_handler_t<const IntIntPairRealMapArray&>(-1);
+  return abort_handler_t<const IntIntPairRealMapArray&>(PARSE_ERROR);
 }
 
 
@@ -2086,7 +2173,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_sa");
-  return abort_handler_t<const StringArray&>(-1);
+  return abort_handler_t<const StringArray&>(PARSE_ERROR);
 }
 
 
@@ -2101,7 +2188,7 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
       return dbRep->dataInterfaceIter->dataIfaceRep->analysisComponents;
   }
   Bad_name(entry_name, "get_s2a");
-  return abort_handler_t<const String2DArray&>(-1);
+  return abort_handler_t<const String2DArray&>(PARSE_ERROR);
 }
 
 
@@ -2267,7 +2354,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
   }
   Bad_name(entry_name, "get_string");
-  return abort_handler_t<const String&>(-1);
+  return abort_handler_t<const String&>(PARSE_ERROR);
 }
 
 
@@ -2359,7 +2446,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       return dbRep->dataInterfaceIter->dataIfaceRep->nearbyEvalCacheTol;
   }
   Bad_name(entry_name, "get_real");
-  return abort_handler_t<const Real&>(-1);
+  return abort_handler_t<const Real&>(PARSE_ERROR);
 }
 
 
@@ -2453,7 +2540,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
   }
   Bad_name(entry_name, "get_int");
-  return abort_handler_t<int>(-1);
+  return abort_handler_t<int>(PARSE_ERROR);
 }
 
 
@@ -2551,7 +2638,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
   }
   Bad_name(entry_name, "get_short");
-  return abort_handler_t<short>(-1);
+  return abort_handler_t<short>(PARSE_ERROR);
 }
 
 
@@ -2595,7 +2682,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
   }
   Bad_name(entry_name, "get_ushort");
-  return abort_handler_t<unsigned short>(-1);
+  return abort_handler_t<unsigned short>(PARSE_ERROR);
 }
 
 
@@ -2723,7 +2810,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_sizet");
-  return abort_handler_t<size_t>(-1);
+  return abort_handler_t<size_t>(PARSE_ERROR);
 }
 
 
@@ -2858,7 +2945,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_bool");
-  return abort_handler_t<bool>(-1);
+  return abort_handler_t<bool>(PARSE_ERROR);
 }
 
 void** ProblemDescDB::get_voidss(const String& entry_name) const
@@ -2869,7 +2956,7 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
 		return &dbRep->dataMethodIter->dataMethodRep->dlLib;
 		}
 	Bad_name(entry_name, "get_voidss");
-	return abort_handler_t<void**>(-1);
+	return abort_handler_t<void**>(PARSE_ERROR);
 	}
 
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)

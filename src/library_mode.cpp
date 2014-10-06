@@ -428,6 +428,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   Dakota::ModelLIter ml_iter;
+  size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (ml_iter = filt_models.begin(); ml_iter != filt_models.end(); ++ml_iter) {
     // set DB nodes to input specification for this Model
     problem_db.set_db_model_nodes(ml_iter->model_id());
@@ -446,6 +447,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
     model_interface.assign_rep(new
       SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
   }
+  problem_db.set_db_model_nodes(model_index);            // restore
 }
 
 

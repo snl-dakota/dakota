@@ -58,6 +58,13 @@ protected:
   //- Heading: Convenience member functions
   //
 
+  /// identify presence of a new model specification identified by pointer,
+  /// necessitating a new instantiation
+  bool new_model(const String& method_ptr, const String& model_ptr);
+  /// check that any model identified by pointer has the same id as
+  /// the passed iteratedModel
+  void check_model(const String& method_ptr, const String& model_ptr);
+
   /// initialize the_iterator and the_model based on method_ptr
   void allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 			   Model& the_model);
@@ -81,15 +88,17 @@ protected:
 				       Iterator& the_iterator,
 				       Model& the_model);
 
-  /// free communicators for the_iterator and the_model
-  void deallocate(Iterator& the_iterator, Model& the_model);
-
   //
   //- Heading: Data members
   //
 
   /// scheduler for concurrent execution of Iterators
   IteratorScheduler iterSched;
+
+  /// maps from outer parallel level index into index for subordinate
+  /// iterator partitioning
+  std::map<size_t, size_t> miPLIndexMap;
+
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;
 

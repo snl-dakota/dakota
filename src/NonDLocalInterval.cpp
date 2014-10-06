@@ -143,19 +143,21 @@ NonDLocalInterval::~NonDLocalInterval()
 { }
 
 
-void NonDLocalInterval::init_communicators()
+void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
-  minMaxOptimizer.init_communicators();
+  // minMaxOptimizer uses NoDBBaseConstructor, so no need to manage DB
+  // list nodes at this level
+  minMaxOptimizer.init_communicators(pl_iter);
 }
 
 
-void NonDLocalInterval::free_communicators()
+void NonDLocalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
-  minMaxOptimizer.free_communicators();
+  minMaxOptimizer.free_communicators(pl_iter);
 
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -290,10 +292,8 @@ void NonDLocalInterval::method_recourse()
   if (npsolFlag) {
     // if NPSOL already assigned, then reassign; otherwise just set the flag.
 #ifdef HAVE_OPTPP
-    minMaxOptimizer.free_communicators();
     minMaxOptimizer.assign_rep(
       new SNLLOptimizer("optpp_q_newton", minMaxModel), false);
-    minMaxOptimizer.init_communicators();
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";

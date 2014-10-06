@@ -145,7 +145,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 short output_level, const String& point_reuse,
 		 const String& export_points_file, bool export_annotated,
 		 const String& import_points_file, bool import_annotated):
-  SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
+  SurrogateModel(actual_model.problem_description_db(),
+		 actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
 		 actual_model.current_response().active_set(), output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
@@ -296,6 +297,62 @@ void DataFitSurrModel::build_approximation()
 }
 
 
+/** asynchronous flags need to be initialized for the sub-models.  In addition,
+    max_eval_concurrency is the outer level iterator concurrency, not the
+    DACE concurrency that actualModel will see, and recomputing the
+    message_lengths on the sub-model is probably not a bad idea either.
+    Therefore, recompute everything on actualModel using init_communicators. */
+void DataFitSurrModel::
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
+{
+  // initialize approxInterface (for serial operations).
+  // Note: this is where max_eval_concurrency would be used.
+  //approxInterface.init_serial();
+
+  // initialize actualModel for parallel operations
+  if (recurse_flag && !actualModel.is_null()) {
+
+    // minimum_points() returns the minimum number of points needed to build
+    // approxInterface (global and local approximations) without any numerical
+    // derivatives multiplier.  Obtain the deriv multiplier from actualModel.
+    // min_points does not account for reuse_points or anchor, since these
+    // will vary, and min_points must remain constant among ctor/run/dtor.
+    int min_conc = approxInterface.minimum_points(false)
+                 * actualModel.derivative_concurrency();
+    // as for constructors, we recursively set and restore DB list nodes
+    // (initiated from the restored starting point following construction)
+    size_t model_index = probDescDB.get_db_model_node(); // for restoration
+    if (daceIterator.is_null()) {
+      // store within empty envelope for later use in derived_{set,free}_comms
+      daceIterator.maximum_evaluation_concurrency(min_conc);
+      daceIterator.iterated_model(actualModel);
+      // init comms for actualModel
+      probDescDB.set_db_model_nodes(actualModel.model_id());
+      actualModel.init_communicators(pl_iter, min_conc);
+    }
+    else {
+      // daceIterator.maximum_evaluation_concurrency() includes user-specified
+      // samples for building a global approx & any numerical deriv multiplier.
+      // Analyzer::maxEvalConcurrency must remain constant for ctor/run/dtor.
+
+      // The concurrency for global/local surrogate construction is defined by
+      // the greater of the dace samples user-specification and the min_points
+      // approximation requirement.
+      if (min_conc > daceIterator.maximum_evaluation_concurrency())
+	daceIterator.maximum_evaluation_concurrency(min_conc); // update
+
+      // init comms for daceIterator
+      size_t method_index = probDescDB.get_db_method_node(); // for restoration
+      probDescDB.set_db_list_nodes(daceIterator.method_id());
+      daceIterator.init_communicators(pl_iter);
+      probDescDB.set_db_method_node(method_index); // restore method only
+    }
+    probDescDB.set_db_model_nodes(model_index); // restore all model nodes
+  }
+}
+
+
 /** This function constructs a new approximation, discarding any
     previous data.  It uses the passed data to populate
     SurrogateData::anchor{Vars,Resp} and constructs any required data
@@ -370,7 +427,7 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
   Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // replace the current points for each approximation
-  //daceIterator.run(Cout);
+  //daceIterator.run(pl_iter, Cout);
   const IntResponseMap& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
     approxInterface.update_approximation(daceIterator.all_samples(),  all_resp);
@@ -464,7 +521,7 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
   Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  //daceIterator.run(Cout);
+  //daceIterator.run(pl_iter, Cout);
   const IntResponseMap& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
     approxInterface.append_approximation(daceIterator.all_samples(),  all_resp);
@@ -1594,8 +1651,7 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
 
 void DataFitSurrModel::component_parallel_mode(short mode)
 {
-  // mode may be correct, but can't guarantee active parallel configuration is
-  // in synch
+  // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
   //  return; // already in correct parallel mode
 

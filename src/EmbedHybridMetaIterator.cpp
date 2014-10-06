@@ -22,92 +22,147 @@ namespace Dakota {
 
 EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
   MetaIterator(problem_db),
-  localSearchProb(
-    problem_db.get_real("method.hybrid.local_search_probability"))
-{
-  const String& global_ptr
-    = problem_db.get_string("method.hybrid.global_method_pointer");
-  const String& global_name
-    = problem_db.get_string("method.hybrid.global_method_name");
-  const String& local_ptr
-    = problem_db.get_string("method.hybrid.local_method_pointer");
-  const String& local_name
-    = problem_db.get_string("method.hybrid.local_method_name");
-
-  maxIteratorConcurrency = 1;
-
-  // See notes in ConcurrentMetaIterator.
-  const String& sub_model_ptr
-    = problem_db.get_string("method.sub_model_pointer");
-
-  std::pair<int, int> g_ppi = (global_name.empty()) ?
-    estimate_by_pointer(global_ptr, globalIterator, globalModel) :
-    estimate_by_name(global_name, sub_model_ptr, globalIterator, iteratedModel);
-  std::pair<int, int> l_ppi = (local_name.empty()) ?
-    estimate_by_pointer(local_ptr, localIterator, localModel) :
-    estimate_by_name(local_name, sub_model_ptr, localIterator, iteratedModel);
-
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
-				      std::min(g_ppi.first,  l_ppi.first),
-				      std::max(g_ppi.second, l_ppi.second));
-  summaryOutputFlag = iterSched.lead_rank();
-
-  if (!global_ptr.empty())
-    allocate_by_pointer(global_ptr, globalIterator, globalModel);
-  else if (!global_name.empty())
-    allocate_by_name(global_name, sub_model_ptr, globalIterator, iteratedModel);
-
-  if (!local_ptr.empty())
-    allocate_by_pointer(local_ptr, localIterator, localModel);
-  else if (!local_name.empty())
-    allocate_by_name(local_name, sub_model_ptr, localIterator, iteratedModel);
-}
+  localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
+{ maxIteratorConcurrency = 1; }
 
 
 EmbedHybridMetaIterator::
 EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
   MetaIterator(problem_db, model),
-  localSearchProb(
-    problem_db.get_real("method.hybrid.local_search_probability"))
+  localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
 {
-  // Hard-wired to lightweight methodList instantiation for now.  To support
-  // a more general case indicated by the sequential hybrid spec, will need
-  // to validate iteratedModel against any model pointers (--> warnings, see
-  // SurrBasedLocalMinimizer for example).
-
-  const String& global_name
-    = problem_db.get_string("method.hybrid.global_method_name");
-  const String& local_name
-    = problem_db.get_string("method.hybrid.local_method_name");
-  String empty_model_ptr; // for now
+  // Ensure consistency between iteratedModel and any method/model pointers
+  check_model(problem_db.get_string("method.hybrid.global_method_pointer"),
+	      problem_db.get_string("method.hybrid.global_model_pointer"));
+  check_model(problem_db.get_string("method.hybrid.local_method_pointer"),
+	      problem_db.get_string("method.hybrid.local_model_pointer"));
 
   maxIteratorConcurrency = 1;
-
-  std::pair<int, int> g_ppi = estimate_by_name(global_name,    empty_model_ptr,
-					       globalIterator, iteratedModel);
-  std::pair<int, int> l_ppi = estimate_by_name(local_name,     empty_model_ptr,
-					       localIterator,  iteratedModel);
-
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
-				      std::min(g_ppi.first,  l_ppi.first),
-				      std::max(g_ppi.second, l_ppi.second));
-  summaryOutputFlag = iterSched.lead_rank();
-
-  allocate_by_name(global_name, empty_model_ptr, globalIterator, iteratedModel);
-  allocate_by_name(local_name,  empty_model_ptr, localIterator,  iteratedModel);
 }
 
 
 EmbedHybridMetaIterator::~EmbedHybridMetaIterator()
 {
   // Virtual destructor handles referenceCount at Iterator level.
+}
 
-  if (globalModel.is_null()) deallocate(globalIterator, iteratedModel);
-  else                       deallocate(globalIterator, globalModel);
-  if (localModel.is_null())  deallocate(localIterator,  iteratedModel);
-  else                       deallocate(localIterator,  localModel);
 
-  // mi_pl parallelism level is deallocated in ~MetaIterator
+void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
+{
+  // See notes in ConcurrentMetaIterator::derived_init_communicators()
+
+  const String& global_method_ptr
+    = probDescDB.get_string("method.hybrid.global_method_pointer");
+  const String& global_method_name
+    = probDescDB.get_string("method.hybrid.global_method_name");
+  const String& global_model_ptr
+    = probDescDB.get_string("method.hybrid.global_model_pointer");
+
+  const String& local_method_ptr
+    = probDescDB.get_string("method.hybrid.local_method_pointer");
+  const String& local_method_name
+    = probDescDB.get_string("method.hybrid.local_method_name");
+  const String& local_model_ptr
+    = probDescDB.get_string("method.hybrid.local_model_pointer");
+
+  Model& global_model = (new_model(global_method_ptr, global_model_ptr)) ?
+    globalModel : iteratedModel;
+  Model& local_model  = (new_model(local_method_ptr, local_model_ptr)) ?
+    localModel  : iteratedModel;
+
+  std::pair<int, int> g_ppi = (!global_method_ptr.empty()) ?
+    estimate_by_pointer(global_method_ptr, globalIterator, global_model) :
+    estimate_by_name(global_method_name, global_model_ptr,
+		     globalIterator, global_model);
+  std::pair<int, int> l_ppi = (!local_method_ptr.empty()) ?
+    estimate_by_pointer(local_method_ptr, localIterator, local_model) :
+    estimate_by_name(local_method_name, local_model_ptr,
+		     localIterator, local_model);
+
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
+				      std::min(g_ppi.first,  l_ppi.first),
+				      std::max(g_ppi.second, l_ppi.second));
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+  miPLIndexMap[pl_index] = iterSched.miPLIndex;
+  summaryOutputFlag = iterSched.lead_rank();
+  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
+
+  if (!global_method_ptr.empty())
+    allocate_by_pointer(global_method_ptr, globalIterator, global_model);
+  else
+    allocate_by_name(global_method_name, global_model_ptr,
+		     globalIterator, global_model);
+  if (!local_method_ptr.empty())
+    allocate_by_pointer(local_method_ptr, localIterator, local_model);
+  else
+    allocate_by_name(local_method_name, local_model_ptr,
+		     localIterator, local_model);
+}
+
+
+void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
+{
+  // free the communicators for selectedIterators
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
+      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    iterSched.set_iterator(globalIterator, si_pl_iter);
+    iterSched.set_iterator(localIterator,  si_pl_iter);
+  }
+
+  /* See notes in NestedModel::derived_set_communicators()
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
+  iterSched.update(mi_pl_index);
+  if (pl_iter->message_pass() || pl_iter->idle_partition()) { // ***
+    ParLevLIter next_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
+    iterSched.set_iterator(globalIterator, next_pl_iter);
+    iterSched.set_iterator(localIterator,  next_pl_iter);
+  }
+  else {
+    iterSched.set_iterator(globalIterator, pl_iter);
+    iterSched.set_iterator(localIterator,  pl_iter);
+  }
+  */
+}
+
+
+void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
+{
+  // free the communicators for globalIterator and localIterator
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
+      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    iterSched.free_iterator(globalIterator, si_pl_iter);
+    iterSched.free_iterator(localIterator,  si_pl_iter);
+  }
+
+  /* See notes in NestedModel::derived_set_communicators()
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
+  iterSched.update(mi_pl_index);
+  if (pl_iter->message_pass() || pl_iter->idle_partition()) { // ***
+    ParLevLIter next_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
+    iterSched.free_iterator(globalIterator, next_pl_iter);
+    iterSched.free_iterator(localIterator,  next_pl_iter);
+  }
+  else {
+    iterSched.free_iterator(globalIterator, pl_iter);
+    iterSched.free_iterator(localIterator,  pl_iter);
+  }
+  */
+
+  // deallocate the mi_pl parallelism level
+  iterSched.free_iterator_parallelism();
+
+  miPLIndexMap.erase(pl_index);
 }
 
 

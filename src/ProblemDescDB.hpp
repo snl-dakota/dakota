@@ -135,7 +135,7 @@ public:
   /// set dataMethodIter based on an index within dataMethodList to activate a
   /// particular method specification and use pointers from this method
   /// specification to set all other list iterators.
-  void set_db_list_nodes(const size_t& method_index);
+  void set_db_list_nodes(size_t method_index);
   /// For a (default) environment lacking a top method pointer, this function
   /// is used to determine which of several potential method specifications
   /// corresponds to the top method and then sets the list nodes accordingly.
@@ -146,7 +146,7 @@ public:
   void set_db_method_node(const String& method_tag);
   /// set dataMethodIter based on an index within dataMethodList to activate a
   /// particular method specification (only).
-  void set_db_method_node(const size_t& method_index);
+  void set_db_method_node(size_t method_index);
   /// return the index of the active node in dataMethodList
   size_t get_db_method_node(); // restoration usage: return by value
 
@@ -157,7 +157,7 @@ public:
   /// set the model list iterators (dataModelIter, dataVariablesIter,
   /// dataInterfaceIter, and dataResponsesIter) based on an index
   /// within dataModelList
-  void set_db_model_nodes(const size_t& model_index);
+  void set_db_model_nodes(size_t model_index);
   /// return the index of the active node in dataModelList
   size_t get_db_model_node(); // restoration usage: return by value
 
@@ -510,21 +510,15 @@ inline ResponseList& ProblemDescDB::response_list()
 
 inline size_t ProblemDescDB::get_db_method_node()
 {
-  if (dbRep)
-    return dbRep->get_db_method_node();
-  else {
-    return std::distance(dataMethodList.begin(), dataMethodIter);
-  }
+  return (dbRep) ? dbRep->get_db_method_node() :
+    std::distance(dataMethodList.begin(), dataMethodIter);
 }
 
 
 inline size_t ProblemDescDB::get_db_model_node()
 {
-  if (dbRep)
-    return dbRep->get_db_model_node();
-  else {
-    return std::distance(dataModelList.begin(), dataModelIter);
-  }
+  return (dbRep) ? dbRep->get_db_model_node() :
+    std::distance(dataModelList.begin(), dataModelIter);
 }
 
 

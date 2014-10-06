@@ -62,7 +62,7 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
   // Set up special graphics for CDF/CCDF visualization
   if (totalLevelRequests) {
 
-    OutputManager& mgr = iteratedModel.parallel_library().output_manager();
+    OutputManager& mgr = parallelLib.output_manager();
     Graphics& dakota_graphics = mgr.graphics();
 
     // For graphics, limit (currently) to server id 1, for both ded master

@@ -61,11 +61,15 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  /// Performs the concurrent iteration by executing selectedIterator
-  /// on iteratedModel multiple times in parallel for different
-  /// settings within the iterator or model.
+  void pre_run();
+  /// Performs the concurrent iteration by executing selectedIterator on
+  /// iteratedModel multiple times in parallel for different parameter sets
   void core_run();
   void print_results(std::ostream& s);
+
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
 
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
@@ -82,23 +86,20 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// shared constructor code
-  void initialize(int param_set_len);
-
   /// called by unpack_parameters_buffer(MPIUnpackBuffer) and
   /// initialize_iterator(int) to update iteratedModel and selectedIterator
   void initialize_iterator(const RealVector& param_set);
 
   /// initialize the iterated Model prior to Iterator instantiation
   /// and define param_set_len
-  void initialize_model(int& param_set_len);
+  void initialize_model();
 
   //
   //- Heading: Data members
   //
 
   Iterator selectedIterator; ///< the iterator selected for concurrent iteration
-  bool     lightwtCtor;      ///< indicates use of lightweight Iterator ctors
+  bool     lightwtCtor; ///< use of lightweight Iterator construction by name
 
   /// the initial continuous variables for restoring the starting
   /// point in the Pareto set minimization
@@ -108,6 +109,14 @@ private:
   /// sets or pareto multi-objective/least squares weighting sets) to
   /// be performed.
   RealVectorArray parameterSets;
+  /// length of each of the parameter sets associated with an iterator job
+  /// (number of continuous variables for MULTI_START, number of objective
+  /// fns for PARETO_SET)
+  int paramSetLen;
+  /// number of randomly-generated parameter sets to evaluate
+  int numRandomJobs;
+  /// seed for random number generator for random samples
+  int randomSeed;
   /// 1-d array of ParamResponsePair results corresponding to numIteratorJobs
   PRPArray prpResults;
 };
@@ -117,20 +126,20 @@ inline const Model& ConcurrentMetaIterator::algorithm_space_model() const
 { return iteratedModel; }
 
 
-inline void ConcurrentMetaIterator::initialize_model(int& param_set_len)
+inline void ConcurrentMetaIterator::initialize_model()
 {
   if (methodName == PARETO_SET) {
-    param_set_len = probDescDB.get_sizet("responses.num_objective_functions");
+    paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
     // define dummy weights to trigger model recasting in iterator construction
     // (replaced at run-time with weight sets from specification)
     if (iteratedModel.primary_response_fn_weights().empty()) {
-      RealVector initial_wts(param_set_len, false);
-      initial_wts = 1./(Real)param_set_len;
+      RealVector initial_wts(paramSetLen, false);
+      initial_wts = 1./(Real)paramSetLen;
       iteratedModel.primary_response_fn_weights(initial_wts); // trigger recast
     }
   }
   else
-    param_set_len = iteratedModel.cv();
+    paramSetLen = iteratedModel.cv();
 }
 
 

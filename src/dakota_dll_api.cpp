@@ -206,6 +206,7 @@ void DakotaRunner::start()
   // Refer to the library mode documentation in the Developers Manual.
   ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
   ModelList& models = problem_db.model_list();
+  size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
     Interface& model_interface = ml_iter->derived_interface();
     if ( (model_interface.interface_type() & DIRECT_INTERFACE_BIT) &&
@@ -216,6 +217,7 @@ void DakotaRunner::start()
       model_interface.assign_rep(new SIM::SerialDirectApplicInterface(problem_db), false);
     }
   }
+  problem_db.set_db_model_nodes(model_index);            // restore
 
   // Execute the Dakota environment assume proceeding beyond help/version/check
   if (!dakotaEnv->check()) {

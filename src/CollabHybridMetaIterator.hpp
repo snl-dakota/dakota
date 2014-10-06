@@ -52,6 +52,10 @@ protected:
   /// Performs the collaborative hybrid iteration
   void core_run();
 
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
+
   /// return the final solution from the collaborative iteration (variables)
   const Variables& variables_results() const;
   /// return the final solution from the collaborative iteration (response)
@@ -64,8 +68,8 @@ private:
   //
 
   String hybridCollabType; ///< abo or hops
-  StringArray methodList;  ///< the list of method name identifiers
-  bool        lightwtCtor; ///< indicates use of lightweight Iterator ctors
+  StringArray  methodList; ///< the list of method name identifiers
+  bool        lightwtCtor; ///< use of lightweight Iterator construction by name
 
   /// the set of iterators, one for each entry in methodList
   IteratorArray selectedIterators;

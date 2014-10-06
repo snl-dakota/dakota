@@ -118,8 +118,7 @@ void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
   Model& truth_model = (methodName == SURROGATE_BASED_LOCAL ||
                         methodName == SURROGATE_BASED_GLOBAL) ?
     iteratedModel.truth_model() : iteratedModel;
-  ParallelLibrary& parallel_lib = truth_model.parallel_library();
-  OutputManager& mgr = parallel_lib.output_manager();
+  OutputManager& mgr = parallelLib.output_manager();
   Graphics& dakota_graphics = mgr.graphics();
   const Variables& vars = truth_model.current_variables();
   const Response&  resp = truth_model.current_response();

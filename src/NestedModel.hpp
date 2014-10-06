@@ -96,31 +96,34 @@ protected:
   /// optionalInterface and subModel
   void component_parallel_mode(short mode);
 
-  // return optionalInterface synchronization setting
-  //String local_eval_synchronization();
-  // return optionalInterface asynchronous evaluation concurrency
-  //int local_eval_concurrency();
+  /// return subIteratorSched.miPLIndex
+  size_t mi_parallel_level_index() const;
+
+  /// return optionalInterface synchronization setting
+  short local_eval_synchronization();
+  /// return optionalInterface asynchronous evaluation concurrency
+  int local_eval_concurrency();
 
   /// flag which prevents overloading the master with a multiprocessor
   /// evaluation (forwarded to optionalInterface)
   bool derived_master_overload() const;
   /// set up optionalInterface and subModel for parallel operations
-  void derived_init_communicators(int max_eval_concurrency,
+  void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up optionalInterface and subModel for serial operations.
   void derived_init_serial();
   /// set active parallel configuration within subModel
-  void derived_set_communicators(int max_eval_concurrency,
+  void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the NestedModel
   /// (forwarded to optionalInterface and subModel)
-  void derived_free_communicators(int max_eval_concurrency,
+  void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service optionalInterface and subModel job requests received from
   /// the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve(int max_eval_concurrency);
+  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
   /// Executed by the master to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
   void stop_servers();
@@ -160,6 +163,9 @@ private:
   //
   //- Heading: Convenience member functions
   //
+
+  /// update subIterator with mapping data and set subIterator-based counts
+  void update_sub_iterator();
 
   /// lower level function shared by initialize_iterator(int) and
   /// unpack_parameters_buffer()
@@ -270,6 +276,8 @@ private:
   //
   /// the sub-iterator that is executed on every evaluation of this model
   Iterator subIterator;
+  /// the sub-method pointer from the nested model specification
+  String subMethodPointer;
   /// the sub-model used in sub-iterator evaluations
   /** There are no restrictions on subModel, so arbitrary nestings are
       possible.  This is commonly used to support surrogate-based
@@ -280,6 +288,8 @@ private:
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
   IteratorScheduler subIteratorSched;
+  /// tracks the miPLIndex for use at runtime, as keyed by max_eval_concurrency
+  std::map<SizetIntPair, size_t> miPLIndexMap;
   // subIterator evaluation counter (since Iterator::execNum
   // increments at run time rather than queue load time)
   //int subIteratorEvalId;
@@ -434,23 +444,23 @@ inline void NestedModel::surrogate_response_mode(short mode)
 { if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
 
 
-/* Used in setting Model::asynchEvalFlag.  subModel synchronization
-   is used for setting asynchEvalFlag within subModel. */
-//inline short NestedModel::local_eval_synchronization()
-//{
-//  return ( optInterfacePointer.empty() ||
-//	   optionalInterface.asynch_local_evaluation_concurrency() == 1 ) ?
-//    SYNCHRONOUS_INTERFACE: optionalInterface.interface_synchronization();
-//}
+/** Used in setting Model::asynchEvalFlag.  subModel synchronization
+    is used for setting asynchEvalFlag within subModel. */
+inline short NestedModel::local_eval_synchronization()
+{
+  return ( optInterfacePointer.empty() ||
+	   optionalInterface.asynch_local_evaluation_concurrency() == 1 ) ?
+    SYNCHRONOUS_INTERFACE : optionalInterface.interface_synchronization();
+}
 
 
-/* Used in setting Model::evaluationCapacity.  subModel concurrency
-   is used for setting evaluationCapacity within subModel. */
-//inline int NestedModel::local_eval_concurrency()
-//{
-//  return ( !optInterfacePointer.empty() ) ?
-//    optionalInterface.asynch_local_evaluation_concurrency() : 0;
-//}
+/** Used in setting Model::evaluationCapacity.  subModel concurrency
+    is used for setting evaluationCapacity within subModel. */
+inline int NestedModel::local_eval_concurrency()
+{
+  return ( !optInterfacePointer.empty() ) ?
+    optionalInterface.asynch_local_evaluation_concurrency() : 0;
+}
 
 
 /** Derived master overload for subModel is handled separately in
@@ -459,46 +469,22 @@ inline bool NestedModel::derived_master_overload() const
 {
   return ( !optInterfacePointer.empty() &&
            optionalInterface.iterator_eval_dedicated_master() && 
-           optionalInterface.multi_proc_eval() ) ? true : false;
-}
-
-
-/** Asynchronous flags need to be initialized for the subModel.  In
-    addition, max_eval_concurrency is the outer level iterator
-    concurrency, not the subIterator concurrency that subModel will
-    see, and recomputing the message_lengths on the subModel is
-    probably not a bad idea either.  Therefore, recompute everything
-    on subModel using init_communicators(). */
-inline void NestedModel::
-derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
-{
-  // initialize optionalInterface for parallel operations
-  if (!optInterfacePointer.empty())
-    optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
-
-  /*
-  // initializations for subIteratorSched:
-  // > incoming max_eval_concurrency is for concurrent execs of NestedModel,
-  //   which must be distinguished from concurrent executions of its subModel.
-  // > leave default_config as PUSH_DOWN since sub-iterator run times will
-  //   tend to be heterogeneous
-  subIteratorSched.init_iterator_parallelism(max_eval_concurrency,
-    probDescDB.get_min_procs_per_iterator(),
-    probDescDB.get_max_procs_per_iterator(subIterator.maximum_evaluation_concurrency())); // TO DO: DB list nodes must be set properly for get_{min,max}, subIterator max concurrency must be defined on all Model procs
-  // > message lengths: vars/set from this model, final results from subIterator
-  MPIPackBuffer buff; buff << subIterator.response_results();
-  subIteratorSched.iterator_message_lengths(messageLengths[1], buff.size());
-  */
-
-  // max concurrency does not require a bcast as in Strategy::init_comms
-  // since all procs instantiate subIterator
-  if (recurse_flag)
-    subIterator.init_communicators();
+           optionalInterface.multi_proc_eval() );
 }
 
 
 inline void NestedModel::derived_init_serial()
 {
+  // serial instantiation of subIterator
+  size_t method_index = probDescDB.get_db_method_node(),
+         model_index  = probDescDB.get_db_model_node(); // for restoration
+  probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
+  subIterator = probDescDB.get_iterator(subModel);
+  probDescDB.set_db_method_node(method_index); // restore method only
+  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
+
+  update_sub_iterator();
+
   // initialize optionalInterface and subModel for serial operations
   // (e.g., num servers = 1 instead of the 0 default used by
   // ParallelLibrary::resolve_inputs())
@@ -508,46 +494,26 @@ inline void NestedModel::derived_init_serial()
 }
 
 
-inline void NestedModel::
-derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
-{
-  if (!optInterfacePointer.empty()) {
-    parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
-  }
-  if (recurse_flag)
-    subIterator.set_communicators();
-}
+inline size_t NestedModel::mi_parallel_level_index() const
+{ return subIteratorSched.miPLIndex; }
 
 
-inline void NestedModel::
-derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
-{
-  if (!optInterfacePointer.empty()) {
-    parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.free_communicators();
-  }
-  if (recurse_flag)
-    subIterator.free_communicators();
-}
-
-
-inline void NestedModel::serve(int max_eval_concurrency)
+inline void NestedModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   // don't recurse, as subModel.serve() will set subModel comms
-  set_communicators(max_eval_concurrency, false);
+  set_communicators(pl_iter, max_eval_concurrency, false);
 
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;
   while (componentParallelMode) {
-    parallelLib.bcast_i(componentParallelMode);
+    parallelLib.bcast(componentParallelMode, *pl_iter);
     if (componentParallelMode == OPTIONAL_INTERFACE &&
 	!optInterfacePointer.empty()) {
       parallelLib.parallel_configuration_iterator(modelPCIter);
       optionalInterface.serve_evaluations();
     }
     else if (componentParallelMode == SUB_MODEL)
-      subModel.serve(subIterator.maximum_evaluation_concurrency());
+      subModel.serve(pl_iter, subIterator.maximum_evaluation_concurrency());
   }
 }
 

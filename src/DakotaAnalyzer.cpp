@@ -33,11 +33,6 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   writePrecision(probDescDB.get_int("environment.output_precision"))
 {
-  // no partitioning: si parallel level same as world parallel level
-  //ParallelLibrary& parallel_lib = problem_db.parallel_library();
-  //if (!parallel_lib.mi_parallel_level_defined())
-  //  IteratorScheduler::init_serial_iterators(parallel_lib); // serialize level
-
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
@@ -57,10 +52,9 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 
 
 Analyzer::Analyzer(unsigned short method_name, Model& model):
-  Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
+  Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   writePrecision(0), numObjFns(0), numLSqTerms(0) // no best data tracking
 {
-  iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
 }
 
@@ -136,11 +130,6 @@ void Analyzer::initialize_run()
     //if (!subIteratorFlag)
     if (summaryOutputFlag)
       iteratedModel.set_evaluation_reference();
-
-    // Set the active parallel configuration within the Model
-    //Cout << "Setting comms with maxEvalConcurrency = " << maxEvalConcurrency
-    //     << std::endl;
-    iteratedModel.set_communicators(maxEvalConcurrency);
   }
 }
 
@@ -614,11 +603,10 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 void Analyzer::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!iteratedModel.parallel_library().command_line_user_modes())
+  if (!parallelLib.command_line_user_modes())
     return;
 
-  const String& filename =
-    iteratedModel.parallel_library().command_line_pre_run_output();
+  const String& filename = parallelLib.command_line_pre_run_output();
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -686,11 +674,10 @@ void Analyzer::pre_output()
 void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
-  if (!iteratedModel.parallel_library().command_line_user_modes())
+  if (!parallelLib.command_line_user_modes())
     return;
 
-  const String& filename = 
-    iteratedModel.parallel_library().command_line_post_run_input();
+  const String& filename = parallelLib.command_line_post_run_input();
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPost-run phase initialized: no input requested.\n" 

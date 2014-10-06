@@ -78,7 +78,8 @@ struct BaseConstructor {
   BaseConstructor(int = 0) {} ///< C++ structs can have constructors
 };
 
-/// Dummy struct for overloading constructors used in on-the-fly instantiations.
+/// Dummy struct for overloading constructors used in on-the-fly
+/// instantiations without ProblemDescDB support.
 /** NoDBBaseConstructor is used to overload the constructor used for
     on-the-fly instantiations in which ProblemDescDB queries cannot be
     used.  Putting this struct here avoids circular dependencies. */
@@ -88,11 +89,11 @@ struct NoDBBaseConstructor {
 
 /// Dummy struct for overloading constructors used in on-the-fly Model 
 /// instantiations.
-/** RecastBaseConstructor is used to overload the constructor used for
+/** LightWtBaseConstructor is used to overload the constructor used for
     on-the-fly Model instantiations.  Putting this struct here avoids
     circular dependencies. */
-struct RecastBaseConstructor {
-  RecastBaseConstructor(int = 0) {} ///< C++ structs can have constructors
+struct LightWtBaseConstructor {
+  LightWtBaseConstructor(int = 0) {} ///< C++ structs can have constructors
 };
 
 // ----------------

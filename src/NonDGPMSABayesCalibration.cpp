@@ -73,16 +73,19 @@ NonDGPMSABayesCalibration::~NonDGPMSABayesCalibration()
 { }
 
 
-void NonDGPMSABayesCalibration::init_communicators()
+void NonDGPMSABayesCalibration::derived_init_communicators()
 {
+  // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
+  // at this level
   lhsIter.init_communicators();
-  NonDBayesCalibration::init_communicators();
+
+  NonDBayesCalibration::derived_init_communicators();
 }
 
 
-void NonDGPMSABayesCalibration::free_communicators()
+void NonDGPMSABayesCalibration::derived_free_communicators()
 {
-  NonDBayesCalibration::free_communicators();
+  NonDBayesCalibration::derived_free_communicators();
   lhsIter.free_communicators();
 }
 

@@ -47,11 +47,6 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
-  // no partitioning: si parallel level same as world parallel level
-  //ParallelLibrary& parallel_lib = problem_db.parallel_library();
-  //if (!parallel_lib.mi_parallel_level_defined())
-  //  IteratorScheduler::init_serial_iterators(parallel_lib); // serialize level
-
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
 
@@ -66,13 +61,12 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
 
 
 Minimizer::Minimizer(unsigned short method_name, Model& model):
-  Iterator(NoDBBaseConstructor(), method_name), constraintTol(0.),
+  Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0),
   obsDataFlag(false), scaleFlag(false), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
-  iteratedModel = model;
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
 
@@ -246,9 +240,6 @@ void Minimizer::initialize_run()
     //if (!subIteratorFlag)
     if (summaryOutputFlag)
       iteratedModel.set_evaluation_reference();
-
-    // Set the active parallel configuration within the Model
-    iteratedModel.set_communicators(maxEvalConcurrency);
   }
 
   // Track any previous object instance in case of recursion.  Note that
@@ -2104,11 +2095,11 @@ void Minimizer::resize_best_resp_array(size_t newsize)
 {
   size_t curr_size = bestResponseArray.size();
 
-  if(newsize < curr_size) {
+  if (newsize < curr_size) {
     // If reduction in size, use the standard resize
     bestResponseArray.resize(newsize);
   }
-  else if(newsize > curr_size) {
+  else if (newsize > curr_size) {
 
     // Otherwise, we have to do the iteration ourselves so that we make use
     // of the model's current response for envelope-letter requirements.
@@ -2118,9 +2109,8 @@ void Minimizer::resize_best_resp_array(size_t newsize)
     // Dive into the originally passed model (could keep a shallow copy of it)
     // Don't use a reference here as want a shallow copy, not the instance
     Model usermodel(iteratedModel);
-    for (unsigned short i=1; i<=minimizerRecasts; ++i) {
+    for (unsigned short i=1; i<=minimizerRecasts; ++i)
       usermodel = usermodel.subordinate_model();
-    }
 
     bestResponseArray.reserve(newsize);
     for(size_t i=curr_size; i<newsize; ++i)

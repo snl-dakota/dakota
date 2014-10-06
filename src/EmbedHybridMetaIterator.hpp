@@ -55,6 +55,10 @@ protected:
   /// iterators, using a set of models that may vary in fidelity
   void core_run();
 
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
+
   /// return the final solution from the embedded hybrid (variables)
   const Variables& variables_results() const;
   /// return the final solution from the embedded hybrid (response)

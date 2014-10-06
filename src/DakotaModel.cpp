@@ -263,23 +263,25 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 
 Model::
-Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
-      const SharedVariablesData& svd, const ActiveSet& set, short output_level):
+Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
+      ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
+      const ActiveSet& set, short output_level):
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
   currentResponse(set), numFns(set.request_vector().size()),
   userDefinedConstraints(svd), fdGradStepType("relative"),
   fdHessStepType("relative"), supportsEstimDerivs(true),
-  probDescDB(dummy_db), parallelLib(parallel_lib),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),
-  modelId("NO_DB_MODEL"), modelEvalCntr(0), 
-  estDerivsFlag(false), initCommsBcastFlag(false),
-  modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
+  modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
+  initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
+  modelRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(NoDBBaseConstructor) called to build letter base class "
-       << "on the fly\n";
+  Cout << "Model::Model(NoDBBaseConstructor, ParallelLibrary&, "
+       << "SharedVariablesData&, ActiveSet&, short) called to build letter "
+       << "base class\n";
 #endif
 }
 
@@ -287,23 +289,21 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
 /** This constructor also builds the base class data for inherited
     models.  However, it is used for recast models which are
     instantiated on the fly.  Therefore it only initializes a small
-    subset of attributes.  Note that parallel_lib is managed
-    separately from problem_db since parallel_lib is needed even in
-    cases where problem_db is an empty envelope. */
+    subset of attributes. */
 Model::
-Model(RecastBaseConstructor, ProblemDescDB& problem_db,
+Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
-  probDescDB(problem_db), parallelLib(parallel_lib),
+  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  modelType("recast"), supportsEstimDerivs(false),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  hierarchicalTagging(false),
-  modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
-  modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
+  outputLevel(SILENT_OUTPUT), hierarchicalTagging(false),
+  modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
+  initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
+  modelRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
-  Cout << "Model::Model(RecastBaseConstructor, ProblemDescDB&) called to build "
-       << "letter base class\n";
+  Cout << "Model::Model(LightWtBaseConstructor, ProblemDescDB&, "
+       << "ParallelLibrary&) called to build letter base class\n";
 #endif
 }
 
@@ -2949,6 +2949,15 @@ void Model::component_parallel_mode(short mode)
 }
 
 
+size_t Model::mi_parallel_level_index() const
+{
+  return (modelRep) ?
+    modelRep->mi_parallel_level_index() : // envelope fwd to letter
+    modelPCIter->mi_parallel_level_last_index(); // default definition
+                   // (for Models without additional mi_pl recursions)
+}
+
+
 /** SingleModels and HierarchSurrModels redefine this virtual function.  A
     default value of "synchronous" prevents asynch local operations for:
 \li NestedModels: a subIterator can support message passing parallelism,
@@ -2960,7 +2969,7 @@ short Model::local_eval_synchronization()
   if (modelRep) // should not occur: protected fn only used by the letter
     return modelRep->local_eval_synchronization(); // envelope fwd to letter
   else // letter lacking redefinition of virtual fn.
-    return SYNCHRONOUS_INTERFACE; // default for Nested/DataFitSurr models
+    return SYNCHRONOUS_INTERFACE; // default value
 }
 
 
@@ -2970,14 +2979,14 @@ int Model::local_eval_concurrency()
   if (modelRep) // should not occur: protected fn only used by the letter
     return modelRep->local_eval_concurrency(); // envelope fwd to letter
   else // letter lacking redefinition of virtual fn.
-    return 0; // default for Nested/DataFitSurr models
+    return 0; // default value
 }
 
 
-void Model::serve(int max_eval_concurrency)
+void Model::serve(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->serve(max_eval_concurrency);
+    modelRep->serve(pl_iter, max_eval_concurrency);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual serve() function.\n"
          << "This model does not support server operations." << std::endl;
@@ -3004,10 +3013,12 @@ void Model::stop_servers()
     init_communicators() (not virtual) performs the estimation and then
     forwards the results to derived_init_communicators (virtual) which uses
     the data in different contexts. */
-void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
+void Model::
+init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+		   bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->init_communicators(max_eval_concurrency, recurse_flag);
+    modelRep->init_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
     // Undefined mi_pl can happen for IteratorScheduler::
@@ -3016,15 +3027,18 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
     // Iterators invoke init_communicators() for contained helper iterators.
     // Abandoning a parallel configuration means that these iterator instances
     // should be discarded and replaced once the mi_pl context is available.
-    if (!parallelLib.mi_parallel_level_defined())
-      return;
+    //if (!parallelLib.mi_parallel_level_defined())
+    //  return;
+    // Note for updated design: could replace with check miPLIters.size() <= 1,
+    // but w_pl has now been expanded to be a sufficient starting pt for ie/ea
+    // (meta-iterator partitioning is no longer required) --> leave commented
+    // out for now. 
 
     // matches bcast in Model::serve_configurations() called from
-    // Strategy::init_iterator().  bcastFlag assures that, when Model recursions
-    // are present in Iterator instantiations, only the matching Model instance
-    // participates in this collective communication.
-    if (initCommsBcastFlag &&
-	modelPCIter->mi_parallel_level().server_communicator_rank() == 0)
+    // IteratorScheduler::init_iterator().  bcastFlag assures that, when Model
+    // recursions are present in Iterator instantiations, only the matching
+    // Model instance participates in this collective communication.
+    if (initCommsBcastFlag && pl_iter->server_communicator_rank() == 0)
       parallelLib.bcast_i(max_eval_concurrency);
 
     // estimate messageLengths
@@ -3036,8 +3050,10 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
     // configurations must be supported.  This is managed using a map<> with
     // concurrency level as the lookup key.  Creation of a new parallel
     // configuration is avoided if an equivalent one already exists.
-    std::map<int, ParConfigLIter>::iterator map_iter
-      = modelPCIterMap.find(max_eval_concurrency);
+    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
+		     max_eval_concurrency);
+    std::map<SizetIntPair, ParConfigLIter>::iterator map_iter
+      = modelPCIterMap.find(key);
 
     // NOTE: modelPCIter update belongs in set_communicators().  However, also
     // updating it here allows passing of analysisComm into a parallel plugin
@@ -3052,13 +3068,13 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
       // set_communicators()).
       //if ( parallelLib.num_parallel_configurations() > 1 ||
       //     parallelLib.parallel_configuration_is_complete() )
-      parallelLib.increment_parallel_configuration();
+      parallelLib.increment_parallel_configuration(pl_iter);
 
       // Setting modelPCIter here is insufficient; it must be set at run time
       // (within set_communicators()) according to the iterator context.
-      modelPCIterMap[max_eval_concurrency] = modelPCIter
+      modelPCIterMap[key] = modelPCIter
 	= parallelLib.parallel_configuration_iterator();
-      derived_init_communicators(max_eval_concurrency, recurse_flag);
+      derived_init_communicators(pl_iter, max_eval_concurrency, recurse_flag);
     }
     else
       modelPCIter = map_iter->second;
@@ -3069,27 +3085,27 @@ void Model::init_communicators(int max_eval_concurrency, bool recurse_flag)
 }
 
 
-void Model::stop_configurations()
+void Model::stop_configurations(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->stop_configurations();
+    modelRep->stop_configurations(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int term_code = 0;
-    parallelLib.bcast_i(term_code);
+    parallelLib.bcast(term_code, *pl_iter);
   }
 }
 
 
-int Model::serve_configurations()
+int Model::serve_configurations(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->serve_configurations();
+    return modelRep->serve_configurations(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int max_eval_concurrency = 1, last_eval_concurrency = 1;
     while (max_eval_concurrency) {
-      parallelLib.bcast_i(max_eval_concurrency);
+      parallelLib.bcast(max_eval_concurrency, *pl_iter);
       if (max_eval_concurrency) {
-	init_communicators(max_eval_concurrency);
+	init_communicators(pl_iter, max_eval_concurrency);
 	last_eval_concurrency = max_eval_concurrency;
       }
     }
@@ -3098,14 +3114,18 @@ int Model::serve_configurations()
 }
 
 
-void Model::set_communicators(int max_eval_concurrency, bool recurse_flag)
+void Model::
+set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+		  bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->set_communicators(max_eval_concurrency, recurse_flag);
+    modelRep->set_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
-    std::map<int, ParConfigLIter>::iterator map_iter
-      = modelPCIterMap.find(max_eval_concurrency);
+    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
+		     max_eval_concurrency);
+    std::map<SizetIntPair, ParConfigLIter>::iterator map_iter
+      = modelPCIterMap.find(key);
     if (map_iter == modelPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
            << "Model::set_communicators()." << std::endl;
@@ -3114,61 +3134,69 @@ void Model::set_communicators(int max_eval_concurrency, bool recurse_flag)
     else
       modelPCIter = map_iter->second;
 
-    derived_set_communicators(max_eval_concurrency, recurse_flag);
-
-    // moved the following from init_communicators() since these are currently
-    // needed at run time and not construct time (if set only at construct time,
-    // run time values would reflect last of several init calls)
-
-    // Set asynchEvalFlag for either evaluation message passing or asynch local
-    // evaluations (or both).  Note that asynch local analysis concurrency by
-    // itself does not trigger an asynchronous model, since this concurrency
-    // can be handled within a synchronous model evaluation.
-    // In the case of Surrogate or Nested models, this sets the asynch flag for
-    // the top level iterator & model; the asynch flag for the sub-iterator &
-    // sub-model must be set by calling init_communicators on the sub-model
-    // within derived_init_communicators.
-    parallelLib.parallel_configuration_iterator(modelPCIter); // reset
-    if (parallelLib.ie_parallel_level_defined()) {
-      const ParallelLevel& ie_pl
-	= parallelLib.parallel_configuration().ie_parallel_level();
-
-      // Note: local_eval_synchronization() handles case of eval concurrency==1
-      bool asynch_local_eval
-	= (local_eval_synchronization() == ASYNCHRONOUS_INTERFACE) ? true : false;
-      if ( ie_pl.message_pass() || asynch_local_eval )
-	asynchEvalFlag = true;
-
-      // Set evaluationCapacity for use by iterators (e.g., COLINY).
-      int local_eval_conc = local_eval_concurrency();
-      if (parallelLib.world_size() > 1) { // message passing mode
-	evaluationCapacity = ie_pl.num_servers();
-	if (local_eval_conc) // hybrid mode: capacity augmented
-	  evaluationCapacity *= local_eval_conc;
-      }
-      else if (asynch_local_eval) // asynch local mode: capacity limited
-	evaluationCapacity = (local_eval_conc)
-	                   ?  local_eval_conc : max_eval_concurrency;
-    }
+    // Unlike init_comms, set_comms DOES need to be recursed each time
+    // to activate the correct comms at each level of the recursion.
+    derived_set_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   }
 }
 
 
-void Model::free_communicators(int max_eval_concurrency, bool recurse_flag)
+void Model::set_ie_asynchronous_mode(int max_eval_concurrency)
+{
+  // no rep forward required: called from derived classes
+
+  // Set asynchEvalFlag for either evaluation message passing or asynch local
+  // evaluations (or both).  Note that asynch local analysis concurrency by
+  // itself does not trigger an asynchronous model, since this concurrency
+  // can be handled within a synchronous model evaluation.
+  // In the case of Surrogate or Nested models, this sets the asynch flag for
+  // the top level iterator & model; the asynch flag for the sub-iterator &
+  // sub-model must be set by calling init_communicators on the sub-model
+  // within derived_init_communicators.
+  parallelLib.parallel_configuration_iterator(modelPCIter); // reset
+  if (parallelLib.ie_parallel_level_defined()) {
+    const ParallelLevel& ie_pl
+      = parallelLib.parallel_configuration().ie_parallel_level();
+
+    // Note: local_eval_synchronization() handles case of eval concurrency==1
+    bool message_passing = ie_pl.message_pass(), asynch_local_eval
+      = (local_eval_synchronization() == ASYNCHRONOUS_INTERFACE);
+    if ( message_passing || asynch_local_eval )
+      asynchEvalFlag = true;
+
+    // Set evaluationCapacity for use by iterators (e.g., COLINY).
+    int local_eval_conc = local_eval_concurrency();
+    if (message_passing) { // message passing mode
+      evaluationCapacity = ie_pl.num_servers();
+      if (local_eval_conc) // hybrid mode: capacity augmented
+	evaluationCapacity *= local_eval_conc;
+    }
+    else if (asynch_local_eval) // asynch local mode: capacity limited
+      evaluationCapacity = (local_eval_conc)
+	?  local_eval_conc : max_eval_concurrency;
+  }
+}
+
+
+void Model::
+free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+		   bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->free_communicators(max_eval_concurrency, recurse_flag);
+    modelRep->free_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
     // Note: deallocations do not utilize reference counting -> the _first_
     // call to free a particular configuration deallocates it and all
     // subsequent calls are ignored (to prevent multiple deallocations).
-    std::map<int, ParConfigLIter>::iterator map_iter
-      = modelPCIterMap.find(max_eval_concurrency);
+    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
+		     max_eval_concurrency);
+    std::map<SizetIntPair, ParConfigLIter>::iterator map_iter
+      = modelPCIterMap.find(key);
     if (map_iter != modelPCIterMap.end()) { // this config still exists
       modelPCIter = map_iter->second;
-      derived_free_communicators(max_eval_concurrency, recurse_flag);
-      modelPCIterMap.erase(max_eval_concurrency);
+      derived_free_communicators(pl_iter, max_eval_concurrency, recurse_flag);
+      modelPCIterMap.erase(key);
     }
   }
 }
@@ -3254,10 +3282,12 @@ void Model::init_serial()
 
 
 void Model::
-derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->derived_init_communicators(max_eval_concurrency, recurse_flag);
+    modelRep->
+      derived_init_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_init_"
 	 << "communicators() function.\n       This model does not support "
@@ -3280,19 +3310,23 @@ void Model::derived_init_serial()
 
 
 void Model::
-derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->derived_set_communicators(max_eval_concurrency, recurse_flag);
+    modelRep->
+      derived_set_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   // else default is nothing additional beyond set_communicators()
 }
 
 
 void Model::
-derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->derived_free_communicators(max_eval_concurrency, recurse_flag);
+    modelRep->
+      derived_free_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_free_"
 	 << "communicators() function.\nThis model does not support "

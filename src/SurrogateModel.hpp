@@ -44,8 +44,9 @@ protected:
   /// constructor
   SurrogateModel(ProblemDescDB& problem_db);
   /// alternate constructor
-  SurrogateModel(ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-		 const ActiveSet& set, short output_level);
+  SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		 const SharedVariablesData& svd, const ActiveSet& set,
+		 short output_level);
   /// destructor
   ~SurrogateModel();
 
@@ -58,6 +59,9 @@ protected:
 
   /// return responseMode
   short surrogate_response_mode() const;
+
+  /// return miPLIndex
+  size_t mi_parallel_level_index() const;
 
   /// return deltaCorr
   DiscrepancyCorrection& discrepancy_correction();
@@ -127,6 +131,10 @@ protected:
       build_approximation(). */
   size_t approxBuilds;
 
+  /// the index of the active metaiterator-iterator parallelism level
+  /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
+  size_t miPLIndex;
+
   /// stores a reference copy of active continuous lower bounds when the
   /// approximation is built; used to detect when a rebuild is required.
   RealVector referenceCLBnds;
@@ -189,6 +197,10 @@ inline Model& SurrogateModel::subordinate_model()
 
 inline short SurrogateModel::surrogate_response_mode() const
 { return responseMode; }
+
+
+inline size_t SurrogateModel::mi_parallel_level_index() const
+{ return miPLIndex; }
 
 
 inline DiscrepancyCorrection& SurrogateModel::discrepancy_correction()

@@ -83,23 +83,23 @@ protected:
   bool derived_master_overload() const;
   /// set up SingleModel for parallel operations (request forwarded to
   /// userDefinedInterface)
-  void derived_init_communicators(int max_eval_concurrency,
+  void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up SingleModel for serial operations (request forwarded to
   /// userDefinedInterface).
   void derived_init_serial();
   /// set active parallel configuration for the SingleModel
   /// (request forwarded to userDefinedInterface)
-  void derived_set_communicators(int max_eval_concurrency,
+  void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the SingleModel
   /// (request forwarded to userDefinedInterface)
-  void derived_free_communicators(int max_eval_concurrency,
+  void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service userDefinedInterface job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(int max_eval_concurrency);
+  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
   /// executed by the master to terminate userDefinedInterface server
   /// operations when SingleModel iteration is complete.
   void stop_servers();
@@ -184,7 +184,8 @@ inline bool SingleModel::derived_master_overload() const
 
 
 inline void SingleModel::
-derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
 {
   userDefinedInterface.init_communicators(messageLengths, max_eval_concurrency);
 }
@@ -195,24 +196,28 @@ inline void SingleModel::derived_init_serial()
 
 
 inline void SingleModel::
-derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag)
 {
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.set_communicators(messageLengths, max_eval_concurrency);
+  // assign asynchEvalFlag & evaluationCapacity:
+  set_ie_asynchronous_mode(max_eval_concurrency);
 }
 
 
 inline void SingleModel::
-derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
 {
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.free_communicators();
 }
 
 
-inline void SingleModel::serve(int max_eval_concurrency)
+inline void SingleModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
 {
-  set_communicators(max_eval_concurrency, false); // no recursion (moot)
+  set_communicators(pl_iter, max_eval_concurrency, false);// no recursion (moot)
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.serve_evaluations();
 }

@@ -139,11 +139,12 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 
   set_evaluation_communicators(message_lengths);
 
-  // Initialize communicators for analyses (partitions of evalComm).  This call
-  // is protected from an iterator dedicated master in the same way a strategy
-  // master never calls init_eval_comms (prevents some warnings in
-  // ParallelLibrary::resolve_inputs).  However, a dedicated master can run a
-  // local single-processor job if the algorithm uses a synchronous eval
+  // Initialize communicators for analyses (partitions of evalComm).  This
+  // call is protected from an iterator dedicated master in the same way a
+  // meta-iterator master never calls init_eval_comms (prevents some warnings
+  // in ParallelLibrary::resolve_inputs when there is a user spec that can't
+  // be supported from a single processor).  However, a dedicated master can
+  // run a local single-processor job if the algorithm uses a synchronous eval
   // (see derived_master_overload() usage in Model::compute_response()).
   if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
@@ -200,16 +201,9 @@ set_evaluation_communicators(const IntArray& message_lengths)
   lenResponseMessage   = message_lengths[2];
   lenPRPairMessage     = message_lengths[3];
 
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-
   // Pull data from (the lowest) concurrent iterator partition.  The active
-  // parallel configuration is managed in Strategy::init_communicators().
-  // To do: for the lowest level, will need --siPLIters.end().
-  // > This code needs to follow init_evaluation_communicators() in case
-  //   a siPLIter copy from the previous parallel configuration is used.
-  // > Future concurrent iterator partitioning within nested models would also 
-  //   dictate that iterator comm attributes get set at init time rather than
-  //   construct time.
+  // parallel configuration is managed in Model::init_communicators().
+  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
   const ParallelLevel& mi_pl = pc.mi_parallel_level(); // last mi level
   iteratorCommSize = mi_pl.server_communicator_size();
   iteratorCommRank = mi_pl.server_communicator_rank();
@@ -240,9 +234,8 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // (default is unlimited unless user concurrency spec) from message passing
   // parallelism with synchronous local evals (default; hybrid mode requires
   // user spec > 1).
-  asynchLocalEvalConcurrency = (/*ieMessagePass*/worldSize > 1 &&
-				asynchLocalEvalConcSpec == 0)
-    ? 1 : asynchLocalEvalConcSpec;
+  asynchLocalEvalConcurrency = (ieMessagePass && asynchLocalEvalConcSpec == 0)
+                             ? 1 : asynchLocalEvalConcSpec;
 }
 
 
@@ -285,8 +278,8 @@ void ApplicationInterface::set_analysis_communicators()
   // readily distinguish unlimited concurrency for asynch local parallelism
   // (default is unlimited unless user spec) from message passing parallelism
   // with synchronous local evals (default; hybrid mode requires user spec > 1).
-  asynchLocalAnalysisConcurrency = (/*eaMessagePass*/worldSize > 1 &&
-				    asynchLocalAnalysisConcSpec == 0)
+  asynchLocalAnalysisConcurrency
+    = (eaMessagePass && asynchLocalAnalysisConcSpec == 0)
     ? 1 : asynchLocalAnalysisConcSpec;
 
   // Set flag for asynch local parallelism of analyses.  In the local asynch

@@ -42,8 +42,8 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  void init_communicators();
-  void free_communicators();
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
 
   /// performs an epistemic uncertainty propagation using LHS samples
   void quantify_uncertainty();

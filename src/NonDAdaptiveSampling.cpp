@@ -158,20 +158,22 @@ namespace Dakota
   NonDAdaptiveSampling::~NonDAdaptiveSampling()
   { }
 
-  void NonDAdaptiveSampling::init_communicators()
+  void NonDAdaptiveSampling::derived_init_communicators(ParLevLIter pl_iter)
   {
-    iteratedModel.init_communicators(maxEvalConcurrency);
+    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
-    gpEval.init_communicators();
-    gpFinalEval.init_communicators();
+    // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
+    // manage DB list nodes at this level
+    gpEval.init_communicators(pl_iter);
+    gpFinalEval.init_communicators(pl_iter);
   }
 
-  void NonDAdaptiveSampling::free_communicators()
+  void NonDAdaptiveSampling::derived_free_communicators(ParLevLIter pl_iter)
   {
-    gpFinalEval.free_communicators();
-    gpEval.free_communicators();
+    gpFinalEval.free_communicators(pl_iter);
+    gpEval.free_communicators(pl_iter);
 
-    iteratedModel.free_communicators(maxEvalConcurrency);
+    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
   }
 
 

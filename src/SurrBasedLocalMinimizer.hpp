@@ -49,8 +49,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void init_communicators();
-  void free_communicators();
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
 
   /// reset convergence controls in case of multiple SBLM executions
   void reset();

@@ -235,6 +235,9 @@ protected:
   /// virtual function redefinition is simply a sanity check.
   void component_parallel_mode(short mode);
 
+  /// return subModel's MI parallel level index
+  size_t mi_parallel_level_index() const;
+
   /// return subModel local synchronization setting
   short local_eval_synchronization();
   /// return subModel local evaluation concurrency
@@ -244,21 +247,21 @@ protected:
   bool derived_master_overload() const;
 
   /// set up RecastModel for parallel operations (request forwarded to subModel)
-  void derived_init_communicators(int max_eval_concurrency,
+  void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up RecastModel for serial operations (request forwarded to subModel).
   void derived_init_serial();
   /// set active parallel configuration within subModel
-  void derived_set_communicators(int max_eval_concurrency,
+  void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the RecastModel (request forwarded
   /// to subModel)
-  void derived_free_communicators(int max_eval_concurrency,
+  void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service subModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(int max_eval_concurrency);
+  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
   /// executed by the master to terminate subModel server operations
   /// when RecastModel iteration is complete.
   void stop_servers();
@@ -563,6 +566,10 @@ inline void RecastModel::component_parallel_mode(short mode)
 }
 
 
+inline size_t RecastModel::mi_parallel_level_index() const
+{ return subModel.mi_parallel_level_index(); }
+
+
 inline short RecastModel::local_eval_synchronization()
 { return subModel.local_eval_synchronization(); }
 
@@ -576,8 +583,12 @@ inline bool RecastModel::derived_master_overload() const
 
 
 inline void RecastModel::
-derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
-{ if (recurse_flag) subModel.init_communicators(max_eval_concurrency); }
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
+{
+  if (recurse_flag)
+    subModel.init_communicators(pl_iter, max_eval_concurrency);
+}
 
 
 inline void RecastModel::derived_init_serial()
@@ -585,13 +596,14 @@ inline void RecastModel::derived_init_serial()
 
 
 inline void RecastModel::
-derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
+derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag)
 {
   if (recurse_flag) {
-    subModel.set_communicators(max_eval_concurrency);
+    subModel.set_communicators(pl_iter, max_eval_concurrency);
 
-    // the following assignments aren't overridden in Model::set_communicators()
-    // since RecastModels do not define the ie_parallel_level
+    // RecastModels do not utilize default set_ie_asynchronous_mode() as
+    // they do not define the ie_parallel_level
     asynchEvalFlag     = subModel.asynch_flag();
     evaluationCapacity = subModel.evaluation_capacity();
   }
@@ -599,16 +611,20 @@ derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
 
 
 inline void RecastModel::
-derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
-{ if (recurse_flag) subModel.free_communicators(max_eval_concurrency); }
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
+{
+  if (recurse_flag)
+    subModel.free_communicators(pl_iter, max_eval_concurrency);
+}
 
 
-inline void RecastModel::serve(int max_eval_concurrency)
+inline void RecastModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   // don't recurse, as subModel.serve() will set subModel comms
-  set_communicators(max_eval_concurrency, false);
+  set_communicators(pl_iter, max_eval_concurrency, false);
 
-  subModel.serve(max_eval_concurrency); // sets subModel comms
+  subModel.serve(pl_iter, max_eval_concurrency); // sets subModel comms
 }
 
 

@@ -116,8 +116,9 @@ static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02
 
 namespace Dakota {
 
-extern ProblemDescDB  dummy_db;        // defined in dakota_global_defs.cpp
-extern ResultsManager iterator_results_db;
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ResultsManager  iterator_results_db;
 
 
 /** This constructor builds the base class data for all inherited
@@ -128,7 +129,8 @@ extern ResultsManager iterator_results_db;
     the letter IS the representation, its representation pointer is
     set to NULL (an uninitialized pointer causes problems in ~Iterator). */
 Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
-  probDescDB(problem_db), methodName(probDescDB.get_ushort("method.algorithm")),
+  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  methodName(probDescDB.get_ushort("method.algorithm")),
   convergenceTol(probDescDB.get_real("method.convergence_tolerance")),
   maxIterations(probDescDB.get_int("method.max_iterations")),
   maxFunctionEvals(probDescDB.get_int("method.max_function_evaluations")),
@@ -167,12 +169,37 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
     meta-iterators.  It has no incoming model, so only sets up a
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
-Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
-  probDescDB(dummy_db), methodName(method_name), convergenceTol(0.0001),
+Iterator::
+Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
+  probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
   summaryOutputFlag(false), resultsDB(iterator_results_db),
-  methodId("NO_DB_METHOD"), iteratorRep(NULL), referenceCount(1)
+  methodId("NO_SPECIFICATION"), iteratorRep(NULL), referenceCount(1)
+{
+  //update_from_model(iteratedModel); // variable/response counts & checks
+
+#ifdef REFCOUNT_DEBUG
+  Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
+       << "class\n";
+#endif
+}
+
+
+/** This alternate constructor builds base class data for inherited
+    iterators.  It is used for on-the-fly instantiations for which DB
+    queries cannot be used, and is not used for construction of
+    meta-iterators.  It has no incoming model, so only sets up a
+    minimal set of defaults. However, its use is preferable to the
+    default constructor, which should remain as minimal as possible. */
+Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
+  probDescDB(dummy_db), parallelLib(dummy_lib), methodName(method_name),
+  convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
+  resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
+  iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -186,8 +213,9 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(): probDescDB(dummy_db), resultsDB(iterator_results_db),
-  methodName(DEFAULT_METHOD), iteratorRep(NULL), referenceCount(1)
+Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
+  resultsDB(iterator_results_db), methodName(DEFAULT_METHOD),
+  iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -202,7 +230,8 @@ Iterator::Iterator(): probDescDB(dummy_db), resultsDB(iterator_results_db),
     construction of all Iterators and MetaIterators, which construct
     their own Model instances. */
 Iterator::Iterator(ProblemDescDB& problem_db):
-  probDescDB(problem_db), resultsDB(iterator_results_db),
+  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  resultsDB(iterator_results_db),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -267,7 +296,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
     instead of pointer and passes in its iteratedModel, since these
     sub-iterators lack their own model pointers). */
 Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
-  probDescDB(problem_db), resultsDB(iterator_results_db),
+  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  resultsDB(iterator_results_db),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -458,7 +488,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     data.  This version is used for lightweight constructions without
     the ProblemDescDB. */
 Iterator::Iterator(const String& method_string, Model& model):
-  probDescDB(model.problem_description_db()), resultsDB(iterator_results_db),
+  probDescDB(model.problem_description_db()),
+  parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -561,7 +592,8 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 /** Copy constructor manages sharing of iteratorRep and incrementing
     of referenceCount. */
 Iterator::Iterator(const Iterator& iterator):
-  probDescDB(iterator.problem_description_db()), resultsDB(iterator_results_db)
+  probDescDB(iterator.problem_description_db()),
+  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db)
 {
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
@@ -909,8 +941,7 @@ void Iterator::run(std::ostream& s)
     // some methods (e.g., SBO and local/global reliability), avoid having to
     // reset the parallel configuration for the direct model evals by
     // eliminating configuration modifications within an iterator execution.
-    ParallelLibrary& parallel_lib = iteratedModel.parallel_library();
-    //ParConfigLIter prev_pc = parallel_lib.parallel_configuration_iterator();
+    //ParConfigLIter prev_pc = parallelLib.parallel_configuration_iterator();
 
     // the same iterator might run multiple times, or need a unique ID
     // due to name/id duplication, so increment the execution number
@@ -921,20 +952,20 @@ void Iterator::run(std::ostream& s)
     initialize_run();
     if (summaryOutputFlag)
       s << "\n>>>>> Running "  << method_string <<" iterator.\n";
-    if (parallel_lib.command_line_pre_run()) {
+    if (parallelLib.command_line_pre_run()) {
       if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 	s << "\n>>>>> " << method_string <<": pre-run phase.\n";
       pre_run();
       pre_output(); // for now, the helper manages whether output is needed
     }
-    if (parallel_lib.command_line_run()) {
+    if (parallelLib.command_line_run()) {
       //core_input();
       if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 	s << "\n>>>>> " << method_string <<": core run phase.\n";
       core_run();
       //core_output();
     }
-    if (parallel_lib.command_line_post_run()) {
+    if (parallelLib.command_line_post_run()) {
       post_input();
       if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 	s << "\n>>>>> " << method_string <<": post-run phase.\n";
@@ -944,7 +975,7 @@ void Iterator::run(std::ostream& s)
       s << "\n<<<<< Iterator " << method_string <<" completed.\n";
     finalize_run();
 
-    //parallel_lib.parallel_configuration_iterator(prev_pc); // reset
+    //parallelLib.parallel_configuration_iterator(prev_pc); // reset
   }
 }
 
@@ -1018,30 +1049,107 @@ void Iterator::finalize_run()
 }
 
 
-void Iterator::init_communicators()
+void Iterator::init_communicators(ParLevLIter pl_iter)
 {
-  if(iteratorRep) // envelope fwd to letter
-    iteratorRep->init_communicators();
-  else // default needed for empty envelopes on iteratorCommRank > 0
-    iteratedModel.init_communicators(maxEvalConcurrency); // recurse_flag = true
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->init_communicators(pl_iter);
+  else {
+    // Don't need to include maxEvalConcurrency since this is constant for
+    // a particular Iterator/Model pair: Models can be reused in different
+    // contexts, but non-meta-iterators should only have a single Model,
+    // providing derivative concurrency, and a single derived max-concurrency.
+    //SizetIntPair key(pl_index, maxEvalConcurrency);
+    size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+    std::map<size_t, ParConfigLIter>::iterator map_iter
+      = methodPCIterMap.find(pl_index);
+    if (map_iter == methodPCIterMap.end()) { // this config does not exist
+      parallelLib.increment_parallel_configuration(pl_iter);
+      methodPCIterMap[pl_index] = methodPCIter
+	= parallelLib.parallel_configuration_iterator();
+      derived_init_communicators(pl_iter);
+    }
+    else {
+      methodPCIter = map_iter->second;
+      // don't need to invoke derived_init_communicators() since each unique
+      // init only needs to be recursed once (see also Model::init_comms)
+    }
+  }
 }
 
 
-void Iterator::set_communicators()
+void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
-  if(iteratorRep) // envelope fwd to letter
-    iteratorRep->set_communicators();
-  else // default needed for empty envelopes on iteratorCommRank > 0
-    iteratedModel.set_communicators(maxEvalConcurrency); // recurse_flag = true
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->derived_init_communicators(pl_iter);
+  else if (!iteratedModel.is_null()) // default: init comms for iteratedModel
+    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
-void Iterator::free_communicators()
+void Iterator::set_communicators(ParLevLIter pl_iter)
 {
-  if(iteratorRep) // envelope fwd to letter
-    iteratorRep->free_communicators();
-  else // default needed for empty envelopes on iteratorCommRank > 0
-    iteratedModel.free_communicators(maxEvalConcurrency); // recurse_flag = true
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->set_communicators(pl_iter);
+  else {
+    // set the comms within Iterator: methodPCIter, miPLIndex, & derived.
+    // > miPLIndex is the index within ParallelConfiguration::miPLIters
+    // > pl_index (key within methodPCIterMap) is the index within
+    //   ParallelLibrary::parallelLevels (is configuration independent)
+    miPLIndex = parallelLib.mi_parallel_level_index(pl_iter);
+    size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+    std::map<size_t, ParConfigLIter>::iterator map_iter
+      = methodPCIterMap.find(pl_index);
+    if (map_iter == methodPCIterMap.end()) { // this config does not exist
+      Cerr << "Error: failure in parallel configuration lookup in "
+           << "Iterator::set_communicators()." << std::endl;
+      abort_handler(-1);
+    }
+    else
+      methodPCIter = map_iter->second;
+
+    // Unlike init_comms, set_comms DOES need to be recursed each time to 
+    // activate the correct comms at each level of the recursion.
+    derived_set_communicators(pl_iter);
+  }
+}
+
+
+void Iterator::derived_set_communicators(ParLevLIter pl_iter)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->derived_set_communicators(pl_iter);
+  else if (!iteratedModel.is_null()) // default: set comms within iteratedModel
+    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);  // recurse
+}
+
+
+void Iterator::free_communicators(ParLevLIter pl_iter)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->free_communicators(pl_iter);
+  else {
+    // Note: deallocations do not utilize reference counting -> the _first_
+    // call to free a particular configuration deallocates it and all
+    // subsequent calls are ignored (to prevent multiple deallocations).
+    size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+    std::map<size_t, ParConfigLIter>::iterator map_iter
+      = methodPCIterMap.find(pl_index);
+    if (map_iter != methodPCIterMap.end()) { // this config still exists
+      methodPCIter = map_iter->second;
+      // Like derived_init, derived_free can be protected inside found block
+      derived_free_communicators(pl_iter);
+      methodPCIterMap.erase(pl_index);
+    }
+  }
+}
+
+
+void Iterator::derived_free_communicators(ParLevLIter pl_iter)
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->derived_free_communicators(pl_iter);
+  else if (!iteratedModel.is_null()) // default: free comms on iteratedModel
+    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
@@ -1055,7 +1163,7 @@ void Iterator::reset()
 
 void Iterator::initialize_iterator(int job_index)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->initialize_iterator(job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initialize_iterator virtual "
@@ -1067,7 +1175,7 @@ void Iterator::initialize_iterator(int job_index)
 
 void Iterator::pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->pack_parameters_buffer(send_buffer, job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine pack_parameters_buffer "
@@ -1079,7 +1187,7 @@ void Iterator::pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 
 void Iterator::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->unpack_parameters_buffer(recv_buffer);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_buffer "
@@ -1091,7 +1199,7 @@ void Iterator::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
 
 void Iterator::pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->pack_results_buffer(send_buffer, job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine pack_results_buffer virtual "
@@ -1104,7 +1212,7 @@ void Iterator::pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 void Iterator::
 unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->unpack_results_buffer(recv_buffer, job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_results_buffer "
@@ -1116,7 +1224,7 @@ unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 
 void Iterator::update_local_results(int job_index)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->update_local_results(job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine update_local_results "
@@ -1186,7 +1294,7 @@ bool Iterator::returns_multiple_points() const
 
 void Iterator::initial_points(const VariablesArray& pts)
 {
-  if(iteratorRep) // envelope fwd to letter
+  if (iteratorRep) // envelope fwd to letter
     iteratorRep->initial_points(pts);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initial_points virtual fn.\n"
@@ -1198,7 +1306,7 @@ void Iterator::initial_points(const VariablesArray& pts)
 
 const VariablesArray& Iterator::initial_points() const
 {
-  if(!iteratorRep) { // letter lacking redefinition of virtual fn.!
+  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initial_points "
             "virtual fn.\nNo default defined at base class." << std::endl;
     abort_handler(-1);
@@ -1216,7 +1324,7 @@ void Iterator::initialize_graphics(int iterator_server_id)
   if (iteratorRep)
     iteratorRep->initialize_graphics(iterator_server_id);
   else { // no redefinition of virtual fn., use default initialization
-    OutputManager& mgr = iteratedModel.parallel_library().output_manager();
+    OutputManager& mgr = parallelLib.output_manager();
     Graphics& dakota_graphics = mgr.graphics();
     const Variables& vars = iteratedModel.current_variables();
     const Response&  resp = iteratedModel.current_response();
@@ -1412,13 +1520,11 @@ void Iterator::pre_output()
   if (iteratorRep)
     iteratorRep->pre_output();
   else {
-    const ParallelLibrary& parallel_lib = iteratedModel.parallel_library();
-
     // distinguish between defaulted pre-run and user-specified
-    if (!parallel_lib.command_line_user_modes())
+    if (!parallelLib.command_line_user_modes())
       return;
 
-    const String& filename = parallel_lib.command_line_pre_run_output();
+    const String& filename = parallelLib.command_line_pre_run_output();
     if (filename.empty()) {
       if (outputLevel > QUIET_OUTPUT)
 	Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -1437,14 +1543,11 @@ void Iterator::post_input()
   if (iteratorRep)
     iteratorRep->post_input(); // envelope fwd to letter
   else {
-    const ParallelLibrary& parallel_lib = iteratedModel.parallel_library();
-
     // distinguish between defaulted post-run and user-specified
-    if (!parallel_lib.command_line_user_modes())
+    if (!parallelLib.command_line_user_modes())
       return;
 
-    const String& filename = parallel_lib.command_line_post_run_input();
-
+    const String& filename = parallelLib.command_line_post_run_input();
     if (outputLevel > QUIET_OUTPUT) {
       if (filename.empty())
 	Cout << "\nPost-run phase initialized: no input requested.\n"

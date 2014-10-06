@@ -98,23 +98,23 @@ protected:
   void component_parallel_mode(short mode);
 
   /// set up lowFidelityModel and highFidelityModel for parallel operations
-  void derived_init_communicators(int max_eval_concurrency,
+  void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
   /// set up lowFidelityModel and highFidelityModel for serial operations.
   void derived_init_serial();
   /// set active parallel configuration within lowFidelityModel and
   /// highFidelityModel
-  void derived_set_communicators(int max_eval_concurrency,
+  void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the HierarchSurrModel
   /// (request forwarded to lowFidelityModel and highFidelityModel)
-  void derived_free_communicators(int max_eval_concurrency,
+  void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
 
   /// Service lowFidelityModel and highFidelityModel job requests received
   /// from the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve(int max_eval_concurrency);
+  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
   /// Executed by the master to terminate lowFidelityModel and
   /// highFidelityModel server operations when iteration on the
   /// HierarchSurrModel is complete.
@@ -232,172 +232,10 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 { surrogateFnIndices = surr_fn_indices; }
 
 
-inline void HierarchSurrModel::
-derived_init_communicators(int max_eval_concurrency, bool recurse_flag)
-{
-  // responseMode is a run-time setting (in SBLMinimizer, it is switched among
-  // AUTO_CORRECTED_SURROGATE, BYPASS_SURROGATE, and UNCORRECTED_SURROGATE;
-  // in NonDExpansion, it is switching between MODEL_DISCREPANCY and
-  // UNCORRECTED_SURROGATE).  Since it is neither static nor generally
-  // available at construct/init time, take a conservative approach with init
-  // and free and a more aggressive approach with set.
-
-  if (recurse_flag) {
-    // superset of possible init calls (two configurations for HF)
-    lowFidelityModel.init_communicators(max_eval_concurrency);
-    highFidelityModel.init_communicators(
-      highFidelityModel.derivative_concurrency());
-    highFidelityModel.init_communicators(max_eval_concurrency);
-
-    /*
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:
-      // LF are used in iterator evals
-      lowFidelityModel.init_communicators(max_eval_concurrency);
-      break;
-    case AUTO_CORRECTED_SURROGATE:
-      // LF are used in iterator evals
-      lowFidelityModel.init_communicators(max_eval_concurrency);
-      // HF evals are for correction and validation:
-      // concurrency = one eval at a time * derivative concurrency per eval
-      highFidelityModel.init_communicators(
-	highFidelityModel.derivative_concurrency());
-      break;
-    case BYPASS_SURROGATE:
-      // HF are used in iterator evals
-      highFidelityModel.init_communicators(max_eval_concurrency);
-      break;
-    case MODEL_DISCREPANCY:
-      // LF and HF are used in iterator evals
-      lowFidelityModel.init_communicators(max_eval_concurrency);
-      highFidelityModel.init_communicators(max_eval_concurrency);
-      break;
-    }
-    */
-  }
-}
-
-
-inline void HierarchSurrModel::
-derived_set_communicators(int max_eval_concurrency, bool recurse_flag)
-{
-  // asynchEvalFlag & asynchEvalFlag assignments are not overridden in
-  // Model::set_communicators() since HierarchSurrModels do not define
-  // the ie_parallel_level
-
-  // This aggressive logic is appropriate for invocations of the Model via
-  // Iterator::run(), but is fragile w.r.t. invocations of the Model outside
-  // this scope (e.g., Model::compute_response() within SBLMinimizer).  The
-  // default responseMode value is AUTO_CORRECTED_SURROGATE, which mitigates
-  // the specific case of SBLMinimizer, but the general fragility remains.
-  if (recurse_flag) {
-
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:
-      lowFidelityModel.set_communicators(max_eval_concurrency);
-      asynchEvalFlag     = lowFidelityModel.asynch_flag();
-      evaluationCapacity = lowFidelityModel.evaluation_capacity();
-      break;
-    case AUTO_CORRECTED_SURROGATE: {
-      lowFidelityModel.set_communicators(max_eval_concurrency);
-      int hf_deriv_conc = highFidelityModel.derivative_concurrency();
-      highFidelityModel.set_communicators(hf_deriv_conc);
-      asynchEvalFlag = ( lowFidelityModel.asynch_flag() ||
-	( hf_deriv_conc > 1 && highFidelityModel.asynch_flag() ) );
-      evaluationCapacity = std::max( lowFidelityModel.evaluation_capacity(),
-				     highFidelityModel.evaluation_capacity() );
-      break;
-    }
-    case BYPASS_SURROGATE:
-      highFidelityModel.set_communicators(max_eval_concurrency);
-      asynchEvalFlag     = highFidelityModel.asynch_flag();
-      evaluationCapacity = highFidelityModel.evaluation_capacity();
-      break;
-    case MODEL_DISCREPANCY:
-      lowFidelityModel.set_communicators(max_eval_concurrency);
-      highFidelityModel.set_communicators(max_eval_concurrency);
-      asynchEvalFlag = ( lowFidelityModel.asynch_flag() ||
-			 highFidelityModel.asynch_flag() );
-      evaluationCapacity = std::max( lowFidelityModel.evaluation_capacity(),
-				     highFidelityModel.evaluation_capacity() );
-      break;
-    }
-  }
-}
-
-
 inline void HierarchSurrModel::derived_init_serial()
 {
   lowFidelityModel.init_serial();
   highFidelityModel.init_serial();
-}
-
-
-inline void HierarchSurrModel::
-derived_free_communicators(int max_eval_concurrency, bool recurse_flag)
-{
-  if (recurse_flag) {
-    // superset of possible free calls (two configurations for HF)
-    lowFidelityModel.free_communicators(max_eval_concurrency);
-    highFidelityModel.free_communicators(
-      highFidelityModel.derivative_concurrency());
-    highFidelityModel.free_communicators(max_eval_concurrency);
-
-    /*
-    switch (responseMode) {
-    case UNCORRECTED_SURROGATE:
-      lowFidelityModel.free_communicators(max_eval_concurrency);
-      break;
-    case AUTO_CORRECTED_SURROGATE:
-      lowFidelityModel.free_communicators(max_eval_concurrency);
-      highFidelityModel.free_communicators(
-	highFidelityModel.derivative_concurrency());
-      break;
-    case BYPASS_SURROGATE:
-      highFidelityModel.free_communicators(max_eval_concurrency);
-      break;
-    case MODEL_DISCREPANCY:
-      lowFidelityModel.free_communicators(max_eval_concurrency);
-      highFidelityModel.free_communicators(max_eval_concurrency);
-      break;
-    }
-    */
-  }
-}
-
-
-inline void HierarchSurrModel::serve(int max_eval_concurrency)
-{
-  set_communicators(max_eval_concurrency, false); // don't recurse
-
-  // manage lowFidelityModel and highFidelityModel servers, matching
-  // communication from HierarchSurrModel::component_parallel_mode()
-  componentParallelMode = 1;
-  while (componentParallelMode) {
-    parallelLib.bcast_i(componentParallelMode);
-    if (componentParallelMode == LF_MODEL) {
-      lowFidelityModel.serve(max_eval_concurrency);
-      // Note: ignores erroneous BYPASS_SURROGATE to avoid responseMode bcast
-    }
-    else if (componentParallelMode == HF_MODEL) {
-      // receive responseMode from HierarchSurrModel::component_parallel_mode()
-      parallelLib.bcast_i(responseMode);
-      // employ correct iterator concurrency for highFidelityModel
-      switch (responseMode) {
-      case UNCORRECTED_SURROGATE:
-	Cerr << "Error: setting parallel mode to HF_MODEL is erroneous for a "
-	     << "response mode of UNCORRECTED_SURROGATE." << std::endl;
-	abort_handler(-1);
-	break;
-      case AUTO_CORRECTED_SURROGATE:
-	highFidelityModel.serve(highFidelityModel.derivative_concurrency());
-	break;
-      case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
-	highFidelityModel.serve(max_eval_concurrency);
-	break;
-      }
-    }
-  }
 }
 
 

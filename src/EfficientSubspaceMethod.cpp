@@ -294,7 +294,7 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
      contexts in this iterator, depending on build phase.  Note that
      this overrides the default behavior at Iterator which recurses
      into any submodels. */
-void EfficientSubspaceMethod::init_communicators()
+void EfficientSubspaceMethod::derived_init_communicators(ParLevLIter pl_iter)
 {
   // In ESM, the same model will be used in multiple contexts:
   //  - fullSpaceSampler(iteratedModel) with initialSamples
@@ -305,19 +305,19 @@ void EfficientSubspaceMethod::init_communicators()
   // Instead of using the helper iterators convenience function, we
   // directly set up communicators for each of the contexts that will
   // be encountered at run-time
-  iteratedModel.init_communicators(initialSamples);
-  iteratedModel.init_communicators(batchSize);
+  iteratedModel.init_communicators(pl_iter, initialSamples);
+  iteratedModel.init_communicators(pl_iter, batchSize);
   // defer this one to do it on the RecastModel at runtime
-  //  iteratedModel.init_communicators(subspaceSamples);
+  //  iteratedModel.init_communicators(pl_iter, subspaceSamples);
 }
 
 
-void EfficientSubspaceMethod::free_communicators()
+void EfficientSubspaceMethod::derived_free_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.free_communicators(batchSize);
-  iteratedModel.free_communicators(initialSamples);
+  iteratedModel.free_communicators(pl_iter, batchSize);
+  iteratedModel.free_communicators(pl_iter, initialSamples);
   // defer this one to do it on the RecastModel at runtime
-  //  iteratedModel.free_communicators(subspaceSamples);
+  //  iteratedModel.free_communicators(pl_iter, subspaceSamples);
 }
 
 
@@ -391,10 +391,11 @@ generate_fullspace_samples(unsigned int diff_samples)
 
   // select the right comm for current model evaluation concurrency
   // (initial build or batch update)
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   if (currIter == 1)
-    iteratedModel.set_communicators(initialSamples);
+    iteratedModel.set_communicators(pl_iter, initialSamples);
   else
-    iteratedModel.set_communicators(batchSize);
+    iteratedModel.set_communicators(pl_iter, batchSize);
   // and generate the additional samples
   fullSpaceSampler.run(Cout);
 }
@@ -730,7 +731,8 @@ void EfficientSubspaceMethod::reduced_space_uq()
 		    recast_secondary_offset, nonlinear_resp_map, NULL, NULL), 
     false);
 
-  vars_transform_model.init_communicators(subspaceSamples);
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  vars_transform_model.init_communicators(pl_iter, subspaceSamples);
 
   // convert the normal distributionsto the reduced space and set in the 
   // reduced model
@@ -765,7 +767,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   Cout << " --- ESM: Results of reduced-space UQ --- \n";
   reduced_space_sampler.print_results(Cout);
 
-  vars_transform_model.free_communicators(subspaceSamples);
+  vars_transform_model.free_communicators(pl_iter, subspaceSamples);
 
 }
 

@@ -62,8 +62,7 @@ ParallelLibrary(const MPIManager& mpi_mgr, ProgramOptions& prog_opts,
 		OutputManager& output_mgr): 
   mpiManager(mpi_mgr), programOptions(prog_opts), outputManager(output_mgr),
   dummyFlag(false), outputTimings(programOptions.proceed_to_run()),
-  startClock(0), currPLIter(parallelLevels.end()),
-  currPCIter(parallelConfigurations.end())
+  startClock(0), currPCIter(parallelConfigurations.end())
 {
   initialize_timers();
   init_mpi_comm();
@@ -78,10 +77,17 @@ void ParallelLibrary::init_mpi_comm()
   String start_msg("Running Dakota executable.");
 #ifdef DAKOTA_HAVE_MPI // mpi available
   if (mpiManager.mpirun_flag()) {
-    pl.serverIntraComm = mpiManager.dakota_mpi_comm();
-    pl.serverCommRank  = mpiManager.world_rank();
-    pl.serverCommSize  = mpiManager.world_size();
-    startMPITime       = MPI_Wtime();
+    // the w_pl level provides the default mi_pl level, so we define all
+    // non-default settings to allow this level to stand-in as an mi_pl:
+    pl.serverIntraComm  = mpiManager.dakota_mpi_comm();
+    pl.serverCommRank   = mpiManager.world_rank();
+    pl.serverCommSize   = mpiManager.world_size();
+    pl.serverMasterFlag = (pl.serverCommRank == 0);
+    // align specification settings, should they be queried:
+    pl.numServers       = 1;
+    pl.procsPerServer   = pl.serverCommSize;
+    // initialize MPI timer
+    startMPITime        = MPI_Wtime();
   }
   // else default ParallelLevel values apply
   
@@ -104,8 +110,7 @@ void ParallelLibrary::init_mpi_comm()
   outputManager.startup_message(start_msg);
 
   parallelLevels.push_back(pl);
-  currPLIter = parallelLevels.begin();
-  increment_parallel_configuration();
+  increment_parallel_configuration(); // define 1st parallelConfigurations entry
 }
 
 
@@ -169,7 +174,6 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
     ++currPCIter->numParallelLevels;
 
   parallelLevels.push_back(child_pl);
-  currPLIter = --parallelLevels.end();
 }
 
 
@@ -598,7 +602,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // is bypassed and the additional comm split overhead is incurred.
   if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc servers
     inherit_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank) ? true : false;
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank > 0);
     child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
     return;
   }
@@ -718,8 +722,9 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   }
 #endif // DAKOTA_HAVE_MPI
 
-  if (child_pl.serverCommRank == 0 && parent_pl.serverCommRank)
-    child_pl.serverMasterFlag = true; // this proc is a child partition master
+  // child partition master excludes parent dedicated master
+  child_pl.serverMasterFlag
+    = (child_pl.serverCommRank == 0 && parent_pl.serverCommRank);
   child_pl.commSplitFlag = true;
 }
 
@@ -873,8 +878,8 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   }
 #endif // DAKOTA_HAVE_MPI
 
-  if (child_pl.serverCommRank == 0) // don't exclude parent master 
-    child_pl.serverMasterFlag = true; // this proc is a child partition master
+  // child partition master (don't need to exclude parent master)
+  child_pl.serverMasterFlag = (child_pl.serverCommRank == 0);
   child_pl.commSplitFlag = true;
 }
 
@@ -887,7 +892,7 @@ void ParallelLibrary::print_configuration()
   // stratDedicatedMasterFlag in IteratorScheduler::self_schedule_iterators().
 
   const ParallelConfiguration& pc = *currPCIter;
-  const ParallelLevel& mi_pl = pc.mi_parallel_level();
+  const ParallelLevel& mi_pl = pc.mi_parallel_level(); // TO DO
   const ParallelLevel& ie_pl = pc.ie_parallel_level();
   const ParallelLevel& ea_pl = pc.ea_parallel_level();
 

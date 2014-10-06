@@ -114,6 +114,7 @@ typedef std::list<Iterator>            IteratorList;
 //typedef std::list<ParallelConfiguration> ParConfigList;
 
 typedef std::pair<int, int>            IntIntPair;
+typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
 typedef std::pair<int, Response>       IntResponsePair;
@@ -128,6 +129,7 @@ typedef std::vector<StringSet>         StringSetArray;
 typedef std::vector<UShortSet>         UShortSetArray;
 typedef std::map<int, int>             IntIntMap;
 typedef std::map<int, short>           IntShortMap;
+typedef std::map<int, short>           IntSizetMap;
 typedef std::map<int, Real>            IntRealMap;
 typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;

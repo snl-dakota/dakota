@@ -105,6 +105,7 @@ bool LibraryEnvironment::plugin_interface(const String& model_type,
 	 << "specified\n  model type = " << model_type << "\n  interface type = "
 	 << interf_type << "\n  driver name = " << an_driver << std::endl;
 
+  size_t model_index = probDescDB.get_db_model_node(); // for restoration
   ModelLIter ml_iter, ml_end = filt_models.end();
   for (ml_iter = filt_models.begin(); ml_iter != ml_end; ++ml_iter) {
     // set DB nodes to input specification for this Model
@@ -115,6 +116,7 @@ bool LibraryEnvironment::plugin_interface(const String& model_type,
     model_interface.assign_rep(plugin_iface, false);
     plugged_in = true;
   }
+  probDescDB.set_db_model_nodes(model_index);          // restore
 
   return plugged_in;
 }

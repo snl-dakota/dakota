@@ -119,7 +119,7 @@ private:
 
 
 inline ParallelLevel::ParallelLevel(): dedicatedMasterFlag(false),
-  commSplitFlag(false), serverMasterFlag(false), messagePass(false),
+  commSplitFlag(false), serverMasterFlag(true), messagePass(false),
   idlePartition(false), numServers(0), procsPerServer(0), procRemainder(0),
   serverIntraComm(MPI_COMM_NULL), serverCommRank(0), serverCommSize(1),
   hubServerIntraComm(MPI_COMM_NULL), hubServerCommRank(0), hubServerCommSize(1),
@@ -242,7 +242,7 @@ public:
   //- Heading: Member functions
   //
 
-  /// return the ParallelLevel corresponding to wPLIter
+  /// return the ParallelLevel corresponding to miPLIters.front()
   const ParallelLevel&  w_parallel_level() const;
   /// return the ParallelLevel corresponding to miPLIters[index]
   const ParallelLevel& mi_parallel_level(size_t index = _NPOS) const;
@@ -250,6 +250,20 @@ public:
   const ParallelLevel& ie_parallel_level() const;
   /// return the ParallelLevel corresponding to eaPLIter
   const ParallelLevel& ea_parallel_level() const;
+
+  /// return miPLIters.front()
+  ParLevLIter  w_parallel_level_iterator() const;
+  /// return miPLIters[index]
+  ParLevLIter mi_parallel_level_iterator(size_t index = _NPOS) const;
+  /// return iePLIter
+  ParLevLIter ie_parallel_level_iterator() const;
+  /// return eaPLIter
+  ParLevLIter ea_parallel_level_iterator() const;
+
+  /// return the index within miPLIters corresponding to pl_iter
+  size_t mi_parallel_level_index(ParLevLIter pl_iter) const;
+  /// return the index of the last entry in miPLIters
+  size_t mi_parallel_level_last_index() const;
 
 private:
 
@@ -266,12 +280,8 @@ private:
 
   short numParallelLevels; ///< number of parallel levels
 
-  /// list iterator for MPI_COMM_WORLD (not strictly required, but
-  /// improves modularity by avoiding explicit usage of MPI_COMM_WORLD)
-  ParLevLIter wPLIter;
-
-  /// list iterator for concurrent iterator partitions
-  /// (there may be multiple per parallel configuration instance)
+  /// list iterator for world level followed by any concurrent iterator
+  /// partitions (there may be multiple per parallel configuration instance)
   std::vector<ParLevLIter> miPLIters;
 
   /// list iterator identifying the iterator-evaluation parallelLevel 
@@ -285,31 +295,36 @@ private:
 
 
 inline ParallelConfiguration::ParallelConfiguration(): numParallelLevels(0)
-  //wPLIter(NULL), iePLIter(NULL), eaPLIter(NULL)
+  //iePLIter(NULL), eaPLIter(NULL)
 { }
+
 
 inline ParallelConfiguration::~ParallelConfiguration()
 { }
 
+
 inline void ParallelConfiguration::assign(const ParallelConfiguration& pc)
 {
   numParallelLevels = pc.numParallelLevels;
-  wPLIter   = pc.wPLIter;
   miPLIters = pc.miPLIters;
   iePLIter  = pc.iePLIter;
   eaPLIter  = pc.eaPLIter;
 }
 
+
 inline ParallelConfiguration::
 ParallelConfiguration(const ParallelConfiguration& pc)
 { assign(pc); }
+
 
 inline ParallelConfiguration& ParallelConfiguration::
 operator=(const ParallelConfiguration& pc)
 { assign(pc); return *this; }
 
-inline const ParallelLevel& ParallelConfiguration::w_parallel_level()  const
-{ return *wPLIter; }
+
+inline const ParallelLevel& ParallelConfiguration::w_parallel_level() const
+{ return *miPLIters.front(); }
+
 
 /** If a meaningful index is not provided, return the last mi parallel
     level.  This is useful within the Model context, for which we need
@@ -318,11 +333,48 @@ inline const ParallelLevel& ParallelConfiguration::
 mi_parallel_level(size_t index) const
 { return (index == _NPOS) ? *miPLIters.back() : *miPLIters[index]; }
 
+
+inline size_t ParallelConfiguration::
+mi_parallel_level_index(ParLevLIter pl_iter) const
+{
+  size_t i, len = miPLIters.size();
+  for (i=0; i<len; ++i)
+    if (miPLIters[i] == pl_iter)
+      return i;
+  return _NPOS;
+}
+
+
+inline size_t ParallelConfiguration::mi_parallel_level_last_index() const
+{ return (miPLIters.empty()) ? _NPOS : miPLIters.size() - 1; }
+
+
 inline const ParallelLevel& ParallelConfiguration::ie_parallel_level() const
 { return *iePLIter; }
 
+
 inline const ParallelLevel& ParallelConfiguration::ea_parallel_level() const
 { return *eaPLIter; }
+
+
+inline ParLevLIter ParallelConfiguration::w_parallel_level_iterator() const
+{ return miPLIters.front(); }
+
+
+/** If a meaningful index is not provided, return the last mi parallel
+    level.  This is useful within the Model context, for which we need
+    the lowest level partition after any meta-iterator recursions. */
+inline ParLevLIter ParallelConfiguration::
+mi_parallel_level_iterator(size_t index) const
+{ return (index == _NPOS) ? miPLIters.back() : miPLIters[index]; }
+
+
+inline ParLevLIter ParallelConfiguration::ie_parallel_level_iterator() const
+{ return iePLIter; }
+
+
+inline ParLevLIter ParallelConfiguration::ea_parallel_level_iterator() const
+{ return eaPLIter; }
 
 
 /// Class for partitioning multiple levels of parallelism and managing
@@ -466,6 +518,8 @@ public:
 
   /// broadcast an integer across the serverIntraComm of a ParallelLevel
   void bcast(int& data, const ParallelLevel& pl);
+  /// broadcast an integer across the serverIntraComm of a ParallelLevel
+  void bcast(short& data, const ParallelLevel& pl);
   /// broadcast an integer across MPI_COMM_WORLD
   void bcast_w(int& data);
   /// broadcast an integer across an iterator communicator
@@ -540,9 +594,9 @@ public:
   Real parallel_time() const; ///< returns current MPI wall clock time
 
   /// set the current ParallelConfiguration node
-  void parallel_configuration_iterator(const ParConfigLIter& pc_iter);
+  void parallel_configuration_iterator(ParConfigLIter pc_iter);
   /// return the current ParallelConfiguration node
-  const ParConfigLIter& parallel_configuration_iterator() const;
+  ParConfigLIter parallel_configuration_iterator() const;
   /// return the current ParallelConfiguration instance
   const ParallelConfiguration& parallel_configuration() const;
 
@@ -550,11 +604,16 @@ public:
   size_t num_parallel_configurations() const;
   /// identifies if the current ParallelConfiguration has been fully populated
   bool parallel_configuration_is_complete();
-  /// add a new node to parallelConfigurations and increment currPCIter
+  /// add a new node to parallelConfigurations and increment currPCIter;
+  /// limit miPLIters within new configuration to mi_pl_iter level
+  void increment_parallel_configuration(ParLevLIter mi_pl_iter);
+  /// add a new node to parallelConfigurations and increment currPCIter;
+  /// copy all of miPLIters into new configuration
   void increment_parallel_configuration();
   // decrement currPCIter
   //void decrement_parallel_configuration();
   /// test current parallel configuration for definition of world parallel level
+
   bool  w_parallel_level_defined() const;
   /// test current parallel configuration for definition of
   /// meta-iterator-iterator parallel level
@@ -565,6 +624,16 @@ public:
   /// test current parallel configuration for definition of
   /// evaluation-analysis parallel level
   bool ea_parallel_level_defined() const;
+
+  /// for this level, access through ParallelConfiguration is not necessary
+  ParLevLIter w_parallel_level_iterator();
+
+  /// return the index within parallelLevels corresponding to pl_iter
+  size_t parallel_level_index(ParLevLIter pl_iter);
+  /// return the index within miPLIters corresponding to pl_iter
+  size_t mi_parallel_level_index(ParLevLIter pl_iter) const;
+  /// return index of trailing entry in miPLIters
+  size_t mi_parallel_level_last_index() const;
 
   /// return the set of analysis intra communicators for all parallel
   /// configurations (used for setting up direct simulation interfaces
@@ -702,9 +771,6 @@ private:
   /// indexing into parallelLevels
   std::list<ParallelConfiguration> parallelConfigurations;
 
-  /// list iterator identifying the current node in parallelLevels
-  ParLevLIter currPLIter;
-
   /// list iterator identifying the current node in parallelConfigurations
   ParConfigLIter currPCIter;
 };
@@ -745,12 +811,11 @@ inline Real ParallelLibrary::parallel_time() const
 
 
 inline void ParallelLibrary::
-parallel_configuration_iterator(const ParConfigLIter& pc_iter)
+parallel_configuration_iterator(ParConfigLIter pc_iter)
 { currPCIter = pc_iter; }
 
 
-inline const ParConfigLIter& ParallelLibrary::
-parallel_configuration_iterator() const
+inline ParConfigLIter ParallelLibrary::parallel_configuration_iterator() const
 { return currPCIter; }
 
 
@@ -793,42 +858,56 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
     An increment is performed for each Model initialization except the first
     (which inherits the world and strategy-iterator parallel levels from the
     first partial configuration). */
-inline void ParallelLibrary::increment_parallel_configuration()
+inline void ParallelLibrary::
+increment_parallel_configuration(ParLevLIter mi_pl_iter)
 {
-  // The world level is set in the ParallelLib ctor, the mi level is
-  // defined in the Strategy ctor, and the ie and ea levels are defined in
+  // The world level is set in the ParallelLib ctor, mi levels are set in
+  // MetaIterators and NestedModels, and the ie and ea levels are defined in
   // ApplicationInterface::init_communicators().  Any undefined iterators
-  // are initialized to their "singular values" (NULL should not be used).
+  // are initialized to their "singular values" (NULL is not used).
   ParallelConfiguration pc;
 
-  // Approach 1 does not assign to pc.miPLIters (relies on assignment in
-  // init_evaluation_communicators()):
-  //pc.wPLIter  = parallelLevels.begin();
-  // leave pc.miPLIters as empty vector
-  //pc.iePLIter = pc.eaPLIter = parallelLevels.end();
+  // initial configuration: copy all parallel levels into miPLIters.  In
+  // current usage, there should only be one parallel level (world level)
+  // from ParallelLibrary::init_mpi_comm()
+  size_t i, num_mi_pl;
+  if (parallelConfigurations.empty()) {
+    for (ParLevLIter pl_iter=parallelLevels.begin();
+	 pl_iter!=parallelLevels.end(); ++pl_iter) {
+      pc.miPLIters.push_back(pl_iter);
+      if (pl_iter == mi_pl_iter) break;
+    }
+  }
+  // incrementing from an existing configuration: inherit a subset of
+  // mi parallel levels configured to this point
+  else {
+    //pc.miPLIters = currPCIter->miPLIters; // before passing of num_mipl
+    std::vector<ParLevLIter>& curr_mipl_iters = currPCIter->miPLIters;
+    num_mi_pl = curr_mipl_iters.size();
+    for (i=0; i<num_mi_pl; ++i) {
+      pc.miPLIters.push_back(curr_mipl_iters[i]);
+      if (curr_mipl_iters[i] == mi_pl_iter) break;
+    }
+  }
+  // update numParallelLevels to correspond to miPLIters starting point
+  num_mi_pl = pc.miPLIters.size();
+  for (i=0; i<num_mi_pl; ++i)
+    if (pc.miPLIters[i]->messagePass)
+      ++pc.numParallelLevels;
 
-  // Approach 2 is more bullet proof, but also less flexible:
-  ParLevLIter pl_iter = parallelLevels.begin();
-  pc.wPLIter = pl_iter;
-  // In the first call from the ParallelLibrary ctor, this sets pl_iter
-  // to parallelLevels.end() as there's only one ParallelLevel in the list:
-  ++pl_iter;
-  if (pl_iter == parallelLevels.end()) {
-    // leave miPLIters empty
-    pc.numParallelLevels = 0;
-  }
-  else { // TO DO: this logic only goes one deep...  recurse all of miPLIters?
-         //        need to review uses of increment_parallel_configuration()
-         //        (if always limited to ie/ea, then recurse all of mi)
-    pc.miPLIters.push_back(pl_iter);
-    // inherit parallelism level count from previous mi_pl partitioning
-    pc.numParallelLevels = (pl_iter->messagePass) ? 1 : 0;
-  }
-  // ie and ea levels to be defined by Model::init_communicators()
+  // ie & ea levels to be defined by ApplicationInterface::init_communicators()
   pc.iePLIter = pc.eaPLIter = parallelLevels.end();
 
   parallelConfigurations.push_back(pc);
   currPCIter = --parallelConfigurations.end();
+}
+
+
+inline void ParallelLibrary::increment_parallel_configuration()
+{
+  ParLevLIter pl_iter = (parallelConfigurations.empty()) ?
+    --parallelLevels.end() : currPCIter->miPLIters.back(); // last to include
+  increment_parallel_configuration(pl_iter);
 }
 
 
@@ -838,8 +917,8 @@ inline void ParallelLibrary::increment_parallel_configuration()
 
 inline bool ParallelLibrary::w_parallel_level_defined() const
 {
-  return ( currPCIter != parallelConfigurations.end() &&
-	   currPCIter->wPLIter != parallelLevels.end() );
+  return (  currPCIter != parallelConfigurations.end() &&
+	   !currPCIter->miPLIters.empty() );
 }
 
 
@@ -870,6 +949,46 @@ inline bool ParallelLibrary::ea_parallel_level_defined() const
 }
 
 
+inline ParLevLIter ParallelLibrary::w_parallel_level_iterator()
+{ return parallelLevels.begin(); }
+
+
+inline size_t ParallelLibrary::parallel_level_index(ParLevLIter pl_iter)
+{
+  return (parallelLevels.empty()) ? _NPOS :
+    std::distance(parallelLevels.begin(), pl_iter);
+}
+
+
+inline size_t ParallelLibrary::
+mi_parallel_level_index(ParLevLIter pl_iter) const
+{
+  if (currPCIter == parallelConfigurations.end() ||
+      currPCIter->miPLIters.empty()) {
+    Cerr << "Error: mi_parallel_level_index() called with no active mi "
+	 << "parallelism levels defined." << std::endl;
+    abort_handler(-1);
+    return _NPOS;
+  }
+  else 
+    return currPCIter->mi_parallel_level_index(pl_iter);
+}
+
+
+inline size_t ParallelLibrary::mi_parallel_level_last_index() const
+{
+  if (currPCIter == parallelConfigurations.end() ||
+      currPCIter->miPLIters.empty()) {
+    Cerr << "Error: mi_parallel_level_last_index() called with no active mi "
+	 << "parallelism levels defined." << std::endl;
+    abort_handler(-1);
+    return _NPOS;
+  }
+  else 
+    return currPCIter->mi_parallel_level_last_index();
+}
+
+
 inline std::vector<MPI_Comm> ParallelLibrary::analysis_intra_communicators()
 {
   size_t num_pc = parallelConfigurations.size();
@@ -890,13 +1009,22 @@ init_iterator_communicators(int iterator_servers, int procs_per_iterator,
 			    short iterator_scheduling, bool peer_dynamic_avail)
 {
   int asynch_local_iterator_concurrency = 0;
-  init_communicators(*parallelLevels.begin(), iterator_servers,
+  init_communicators(*currPCIter->miPLIters.back(), iterator_servers,
 		     procs_per_iterator, min_procs_per_iterator,
 		     max_procs_per_iterator, max_iterator_concurrency,
 		     asynch_local_iterator_concurrency, default_config,
 		     iterator_scheduling, peer_dynamic_avail);
-  currPCIter->miPLIters.push_back(currPLIter);
-  return *currPLIter;
+  ParLevLIter last = --parallelLevels.end();
+
+  // this approach unconditionally updates miPLIters
+  //currPCIter->miPLIters.push_back(last);
+  //return *last; // same as parallelLevels.back()
+
+  // update miPLIters iff change from previous partition
+  if (last->messagePass || last->idlePartition)
+    currPCIter->miPLIters.push_back(last);
+  //else parallelLevels.pop_back(); // leave parallelLevels redundancy for now
+  return *currPCIter->miPLIters.back();
 }
 
 
@@ -935,8 +1063,8 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
 		     max_procs_per_eval, max_evaluation_concurrency,
 		     asynch_local_evaluation_concurrency, default_config,
 		     evaluation_scheduling, peer_dynamic_avail);
-  currPCIter->iePLIter = currPLIter;
-  return *currPLIter;
+  currPCIter->iePLIter = --parallelLevels.end();
+  return *currPCIter->iePLIter;
 }
 
 
@@ -954,8 +1082,8 @@ init_analysis_communicators(int analysis_servers, int procs_per_analysis,
 		     max_procs_per_analysis, max_analysis_concurrency,
 		     asynch_local_analysis_concurrency, default_config,
 		     analysis_scheduling, peer_dynamic_avail);
-  currPCIter->eaPLIter = currPLIter;
-  return *currPLIter;
+  currPCIter->eaPLIter = --parallelLevels.end();
+  return *currPCIter->eaPLIter;
 }
 
 
@@ -1368,8 +1496,12 @@ inline void ParallelLibrary::bcast(int& data, const ParallelLevel& pl)
 { bcast(data, pl.serverIntraComm); }
 
 
+inline void ParallelLibrary::bcast(short& data, const ParallelLevel& pl)
+{ bcast(data, pl.serverIntraComm); }
+
+
 inline void ParallelLibrary::bcast_w(int& data)
-{ bcast(data, currPCIter->wPLIter->serverIntraComm); }
+{ bcast(data, currPCIter->miPLIters.front()->serverIntraComm); }
 
 
 inline void ParallelLibrary::bcast_i(int& data,	size_t index)
@@ -1413,7 +1545,7 @@ bcast(MPIPackBuffer& send_buff, const MPI_Comm& comm)
 
 
 inline void ParallelLibrary::bcast_w(MPIPackBuffer& send_buff)
-{ bcast(send_buff, currPCIter->wPLIter->serverIntraComm); }
+{ bcast(send_buff, currPCIter->miPLIters.front()->serverIntraComm); }
 
 
 inline void ParallelLibrary::bcast_i(MPIPackBuffer& send_buff, size_t index)
@@ -1450,7 +1582,7 @@ bcast(MPIUnpackBuffer& recv_buff, const MPI_Comm& comm)
 
 
 inline void ParallelLibrary::bcast_w(MPIUnpackBuffer& recv_buff)
-{ bcast(recv_buff, currPCIter->wPLIter->serverIntraComm); }
+{ bcast(recv_buff, currPCIter->miPLIters.front()->serverIntraComm); }
 
 
 inline void ParallelLibrary::bcast_i(MPIUnpackBuffer& recv_buff, size_t index)
@@ -1485,7 +1617,7 @@ inline void ParallelLibrary::barrier(const MPI_Comm& comm)
 
 
 inline void ParallelLibrary::barrier_w()
-{ barrier(currPCIter->wPLIter->serverIntraComm); }
+{ barrier(currPCIter->miPLIters.front()->serverIntraComm); }
 
 
 inline void ParallelLibrary::barrier_i(size_t index)

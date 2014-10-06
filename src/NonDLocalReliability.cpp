@@ -404,36 +404,39 @@ NonDLocalReliability::~NonDLocalReliability()
 { }
 
 
-void NonDLocalReliability::init_communicators()
+void NonDLocalReliability::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
   if (mppSearchType) {
+    // uSpaceModel, mppOptimizer, and importanceSampler use NoDBBaseConstructor,
+    // so no need to manage DB list nodes at this level
+
     // maxEvalConcurrency defined from the derivative concurrency in the
     // responses specification.  For FORM/SORM, the NPSOL/OPT++ concurrency
     // is the same, but for approximate methods, the concurrency is dictated
     // by the gradType/hessType logic in the instantiate on-the-fly
     // DataFitSurrModel constructor.
-    uSpaceModel.init_communicators(maxEvalConcurrency);
+    uSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);
     // TO DO: distinguish gradient concurrency for truth vs. surrogate?
     //        (probably doesn't matter for surrogate)
 
-    mppOptimizer.init_communicators();
+    mppOptimizer.init_communicators(pl_iter);
 
     if (integrationRefinement)
-      importanceSampler.init_communicators();
+      importanceSampler.init_communicators(pl_iter);
   }
 }
 
 
-void NonDLocalReliability::free_communicators()
+void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 {
   if (mppSearchType) {
-    mppOptimizer.free_communicators();
-    uSpaceModel.free_communicators(maxEvalConcurrency);
+    mppOptimizer.free_communicators(pl_iter);
+    uSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);
     if (integrationRefinement)
-      importanceSampler.free_communicators();
+      importanceSampler.free_communicators(pl_iter);
   }
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -463,8 +466,7 @@ void NonDLocalReliability::mean_value()
 
   // local reliability data aren't output to tabular, so send directly
   // to graphics window only
-  Graphics& dakota_graphics =
-    iteratedModel.parallel_library().output_manager().graphics();
+  Graphics& dakota_graphics = parallelLib.output_manager().graphics();
 
   // loop over response functions
   size_t i;
@@ -1537,8 +1539,7 @@ void NonDLocalReliability::update_level_data()
 {
   // local reliability data aren't output to tabular, so send directly
   // to graphics window only
-  Graphics& dakota_graphics =
-    iteratedModel.parallel_library().output_manager().graphics();
+  Graphics& dakota_graphics = parallelLib.output_manager().graphics();
 
   bool ria_flag = (levelCount < requestedRespLevels[respFnCount].length());
 
@@ -2668,10 +2669,8 @@ void NonDLocalReliability::method_recourse()
        << "detected method conflict.\n\n";
   if (mppSearchType && npsolFlag) {
 #ifdef HAVE_OPTPP
-    mppOptimizer.free_communicators();
     mppOptimizer.assign_rep(
       new SNLLOptimizer("optpp_q_newton", mppModel), false);
-    mppOptimizer.init_communicators();
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalReliability "
 	 << "(OPT++ NIP unavailable).\n";

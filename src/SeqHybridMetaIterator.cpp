@@ -24,7 +24,8 @@ namespace Dakota {
 
 SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
   MetaIterator(problem_db)
-  //seqHybridType(problem_db.get_string("method.hybrid.type"))
+  //seqHybridType(problem_db.get_string("method.hybrid.type")),
+  //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
 {
   // ***************************************************************************
   // TO DO: support sequences for both Minimizer (solution points) & Analyzer
@@ -46,69 +47,126 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
     { methodList = method_ptrs;  lightwtCtor = false; }
   else if (!method_names.empty())
     { methodList = method_names; lightwtCtor = true;  }
+
+  maxIteratorConcurrency = 1; // to be updated in derived_init_communicators()
+}
+
+
+SeqHybridMetaIterator::
+SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
+  MetaIterator(problem_db, model)
+  //seqHybridType(problem_db.get_string("method.hybrid.type")),
+  //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
+{
+  const StringArray& method_ptrs
+    = problem_db.get_sa("method.hybrid.method_pointers");
+  const StringArray& method_names
+    = problem_db.get_sa("method.hybrid.method_names");
+  if (!method_ptrs.empty())
+    { methodList = method_ptrs;  lightwtCtor = false; }
+  else if (!method_names.empty())
+    { methodList = method_names; lightwtCtor = true;  }
   size_t i, num_iterators = methodList.size();
 
-  // define maxIteratorConcurrency without access to selectedIterators
-  // (init_iterator_parallelism() requires maxIteratorConcurrency and
-  // init_iterator_parallelism() must precede allocate_by_*()).
-  size_t sizet_max_replace = 0;
-  if (lightwtCtor) {
-    // as a first cut, employ the final solutions spec for the seq hybrid
-    maxIteratorConcurrency = problem_db.get_sizet("method.final_solutions");
-  }
+  // validate iteratedModel against any model pointers
+  String empty_str;
+  if (!lightwtCtor)
+    for (i=0; i<num_iterators; ++i)
+      check_model(method_ptrs[i], empty_str);
   else {
-    maxIteratorConcurrency = 1;
-    size_t curr_final, next_concurrency = 1;
-    problem_db.set_db_list_nodes(methodList[0]);
-    unsigned short curr_method = problem_db.get_ushort("method.algorithm");
-    for (i=0; i<num_iterators; ++i) {
-      // current method data
-      curr_final = problem_db.get_sizet("method.final_solutions");
-      // manually replicate iterator-specific defaults, except replace
-      // sizet_max with something more useful for concurrency estimation
-      if (!curr_final) {
-	if (curr_method == MOGA)
-	  curr_final = sizet_max_replace
-	    = problem_db.get_int("method.population_size");
-	else
-	  curr_final = 1;
-      }
-
-      if (i < num_iterators-1) {
-	// look ahead method data
-	problem_db.set_db_list_nodes(methodList[i+1]);
-	unsigned short next_method = problem_db.get_ushort("method.algorithm");
-	// manually replicate accepts_multiple_points() support
-	bool next_multi_pt = (next_method == MOGA || next_method == SOGA);
-	// allow for multiplicative point growth
-	if (next_multi_pt) next_concurrency  = 1;
-	else               next_concurrency *= curr_final;
-	if (next_concurrency > maxIteratorConcurrency)
-	  maxIteratorConcurrency = next_concurrency;
-	// updates for next iteration
-	curr_method = next_method;
-      }
+    StringArray model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
+    if (!model_ptrs.empty()) {
+      Pecos::inflate_scalar(model_ptrs, num_iterators);
+      for (i=0; i<num_iterators; ++i)
+	check_model(empty_str, model_ptrs[i]);
     }
   }
 
-  const String& model_ptr = probDescDB.get_string("method.sub_model_pointer");
-  int min_procs_per_iter = INT_MAX, max_procs_per_iter = 0;
-  std::pair<int, int> ppi_pr;
-  selectedIterators.resize(num_iterators); // all procs need for iterator sched
-  if (!lightwtCtor) selectedModels.resize(num_iterators);
-  for (i=0; i<num_iterators; ++i) {
-    if (lightwtCtor)
-      ppi_pr = estimate_by_name(methodList[i], model_ptr,
-				selectedIterators[i], iteratedModel);
-    else
-      ppi_pr = estimate_by_pointer(methodList[i], selectedIterators[i],
-				   selectedModels[i]);
-    if (ppi_pr.first  < min_procs_per_iter) min_procs_per_iter = ppi_pr.first;
-    if (ppi_pr.second > max_procs_per_iter) max_procs_per_iter = ppi_pr.second;
-  }
+  maxIteratorConcurrency = 1; // to be updated in derived_init_communicators()
+}
 
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
-				      min_procs_per_iter, max_procs_per_iter);
+
+SeqHybridMetaIterator::~SeqHybridMetaIterator()
+{
+  // Virtual destructor handles referenceCount at Iterator level.
+}
+
+
+void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
+{
+  size_t i, num_iterators = methodList.size();
+  StringArray model_ptrs; bool models = false;
+  if (lightwtCtor) {
+    model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
+    if (!model_ptrs.empty()) models = true;
+  }
+  if (models)
+    Pecos::inflate_scalar(model_ptrs, num_iterators);
+  selectedIterators.resize(num_iterators); // all procs need for iterator sched
+  if (!lightwtCtor || models) // this test is conservative
+    selectedModels.resize(num_iterators);
+
+  int min_ppi = INT_MAX, max_ppi = 0,
+    pl_rank = pl_iter->server_communicator_rank();
+  std::pair<int, int> ppi_pr; String empty_str; BitArray new_mod(num_iterators);
+  size_t running_product = 1, sizet_max = std::numeric_limits<size_t>::max();
+  bool sizet_max_replace = false;
+  for (i=0; i<num_iterators; ++i) {
+    // compute min/max processors per iterator for each method
+    Iterator& the_iterator = selectedIterators[i];
+    if (lightwtCtor) {
+      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
+      new_mod[i] = new_model(empty_str, model_ptr);
+      Model& the_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
+      ppi_pr
+	= estimate_by_name(methodList[i], model_ptr, the_iterator, the_model);
+    }
+    else {
+      new_mod[i] = new_model(methodList[i], empty_str);
+      Model& the_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
+      ppi_pr = estimate_by_pointer(methodList[i], the_iterator, the_model);
+    }
+    if (ppi_pr.first  < min_ppi) min_ppi = ppi_pr.first;
+    if (ppi_pr.second > max_ppi) max_ppi = ppi_pr.second;
+
+    // selectedIterator[i] now exists on pl rank 0; use it to update
+    // maxIteratorConcurrency, where the iterator concurrency lags the
+    // number of final solutions by one step in the sequence
+    if (pl_rank == 0) {
+      // manage number of points accepted per iterator instance
+      if (the_iterator.accepts_multiple_points())
+        running_product = 1; // reset
+      // max concurrency tracking
+      else if (running_product > maxIteratorConcurrency)
+	maxIteratorConcurrency = running_product;
+      // manage number of points generated per iterator instance
+      if (the_iterator.returns_multiple_points()) {
+	size_t num_final = the_iterator.num_final_solutions();
+	// if unlimited final solns (e.g. MOGA), use a stand-in (e.g. pop_size)
+	if (num_final == sizet_max) {
+	  sizet_max_replace = true;
+	  running_product *= the_iterator.maximum_evaluation_concurrency();
+	}
+	else
+	  running_product *= num_final;
+      }
+    }
+  }
+  // bcast the maxIteratorConcurrency result to other ranks
+  if (pl_rank == 0) {
+    if (pl_iter->server_communicator_size() > 1)
+      parallelLib.bcast(maxIteratorConcurrency, *pl_iter);
+  }
+  else
+    parallelLib.bcast(maxIteratorConcurrency, *pl_iter);
+
+  // with maxIteratorConcurrency defined, initialize the concurrent
+  // iterator parallelism level
+  iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
+  // > store the miPLIndex for this parallel config to restore in set_comms()
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+  miPLIndexMap[pl_index] = iterSched.miPLIndex; // same or one beyond pl_iter
+
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
@@ -133,133 +191,112 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
 	     << "iterator parallelism." << std::endl;
       abort_handler(-1);
     }
-    if (iterSched.iteratorCommRank == 0) {
-      progressThreshold
-	= problem_db.get_real("method.hybrid.progress_threshold");
-      if (progressThreshold > 1.) {
-	if (summaryOutputFlag)
-	  Cerr << "Warning: progress_threshold should be <= 1. Setting to 1.\n";
-	progressThreshold = 1.;
-      }
-      else if (progressThreshold < 0.) {
-	if (summaryOutputFlag)
-	  Cerr << "Warning: progress_threshold should be >= 0. Setting to 0.\n";
-	progressThreshold = 0.;
-      }
+    if (progressThreshold > 1.) {
+      if (summaryOutputFlag)
+	Cerr << "Warning: progress_threshold should be <= 1. Setting to 1.\n";
+      progressThreshold = 1.;
+    }
+    else if (progressThreshold < 0.) {
+      if (summaryOutputFlag)
+	Cerr << "Warning: progress_threshold should be >= 0. Setting to 0.\n";
+      progressThreshold = 0.;
     }
   }
 
   // Instantiate all Models and Iterators
   if (lightwtCtor)
-    for (i=0; i<num_iterators; ++i) // drives need for additional ctor chain
-      allocate_by_name(methodList[i], model_ptr,
-		       selectedIterators[i], iteratedModel);
+    for (i=0; i<num_iterators; ++i) {
+      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
+      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
+      allocate_by_name(methodList[i], model_ptr, selectedIterators[i],
+		       selected_model);
+    }
   else
-    for (i=0; i<num_iterators; ++i)
-      allocate_by_pointer(methodList[i], selectedIterators[i],
-			  selectedModels[i]);
+    for (i=0; i<num_iterators; ++i) {
+      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
+      allocate_by_pointer(methodList[i], selectedIterators[i], selected_model);
+    }
 
   // now that parallel paritioning and iterator allocation has occurred,
   // manage acceptable values for Iterator::numFinalSolutions (needed for
   // results_msg_len estimation in run function)
-  if (iterSched.iteratorCommRank == 0 && sizet_max_replace) {
-    size_t sizet_max = std::numeric_limits<size_t>::max();
+  if (sizet_max_replace && iterSched.iteratorCommRank == 0)
+    for (i=0; i<num_iterators; ++i) {
+      Iterator& the_iterator = selectedIterators[i];
+      if (the_iterator.num_final_solutions() == sizet_max)
+	the_iterator.num_final_solutions(
+	  the_iterator.maximum_evaluation_concurrency());
+    }
+}
+
+
+void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
+{
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
+      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    size_t i, num_iterators = methodList.size();
     for (i=0; i<num_iterators; ++i)
-      if (selectedIterators[i].num_final_solutions() == sizet_max)
-	selectedIterators[i].num_final_solutions(sizet_max_replace);
-  }
-}
-
-
-SeqHybridMetaIterator::
-SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
-  MetaIterator(problem_db, model), lightwtCtor(true) // for now
-  //seqHybridType(problem_db.get_string("method.hybrid.type"))
-{
-  // Hard-wired to lightweight methodList instantiation for now.  To support
-  // a more general case indicated by the sequential hybrid spec, will need
-  // to validate iteratedModel against any model pointers (--> warnings, see
-  // SurrBasedLocalMinimizer for example).
-
-  methodList = problem_db.get_sa("method.hybrid.method_names");
-  size_t i, num_iterators = methodList.size();
-  selectedIterators.resize(num_iterators); // slaves also need for run_iterator
-
-  // define maxIteratorConcurrency without access to sub-method specs.
-  // as a first cut, employ the final solutions spec for the seq hybrid.
-  maxIteratorConcurrency = problem_db.get_sizet("method.final_solutions");
-
-  int min_procs_per_iter = INT_MAX, max_procs_per_iter = 0;
-  std::pair<int, int> ppi_pr;
-  String empty_model_ptr; // no need to reassign DB model nodes
-  for (i=0; i<num_iterators; ++i) {
-    ppi_pr = estimate_by_name(methodList[i], empty_model_ptr,
-			      selectedIterators[i], iteratedModel);
-    if (ppi_pr.first  < min_procs_per_iter) min_procs_per_iter = ppi_pr.first;
-    if (ppi_pr.second > max_procs_per_iter) max_procs_per_iter = ppi_pr.second;
+      iterSched.set_iterator(selectedIterators[i], si_pl_iter);
   }
 
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
-				      min_procs_per_iter, max_procs_per_iter);
-  summaryOutputFlag = iterSched.lead_rank();
-  // from this point on, we can specialize logic in terms of iterator servers.
-  // An idle partition need not instantiate iterators/models, so return now.
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
-    return;
-
-  if (!num_iterators) { // verify at least one method in list
-    if (summaryOutputFlag)
-      Cerr << "Error: hybrid method list must have a least one entry."
-	   << std::endl;
-    abort_handler(-1);
-  }
-
-  if (seqHybridType == "adaptive") {
-    if (iterSched.messagePass) {
-      // adaptive hybrid does not support iterator concurrency
-      if (summaryOutputFlag)
-	Cerr << "Error: adaptive Sequential Hybrid does not support concurrent "
-	     << "iterator parallelism." << std::endl;
-      abort_handler(-1);
-    }
-    if (iterSched.iteratorCommRank == 0) {
-      progressThreshold
-	= problem_db.get_real("method.hybrid.progress_threshold");
-      if (progressThreshold > 1.) {
-	if (summaryOutputFlag)
-	  Cerr << "Warning: progress_threshold should be <= 1. Setting to 1.\n";
-	progressThreshold = 1.;
-      }
-      else if (progressThreshold < 0.) {
-	if (summaryOutputFlag)
-	  Cerr << "Warning: progress_threshold should be >= 0. Setting to 0.\n";
-	progressThreshold = 0.;
-      }
-    }
-  }
-
-  // Instantiate all Models and Iterators
-  for (i=0; i<num_iterators; ++i) // drives need for additional ctor chain
-    allocate_by_name(methodList[i], empty_model_ptr,
-		     selectedIterators[i], iteratedModel);
-}
-
-
-SeqHybridMetaIterator::~SeqHybridMetaIterator()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-
+  /* See notes in NestedModel::derived_set_communicators()
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
+  iterSched.update(mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     size_t i, num_iterators = methodList.size();
-    if (lightwtCtor)
+    if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
+      ParLevLIter next_pl_iter
+	= methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
       for (i=0; i<num_iterators; ++i)
-	deallocate(selectedIterators[i], iteratedModel);
+	iterSched.set_iterator(selectedIterators[i], next_pl_iter);
+    }
     else
       for (i=0; i<num_iterators; ++i)
-	deallocate(selectedIterators[i], selectedModels[i]);
+	iterSched.set_iterator(selectedIterators[i], pl_iter);
+  }
+  */
+}
+
+
+void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
+{
+  // free the communicators for selectedIterators
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
+      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    size_t i, num_iterators = methodList.size();
+    for (i=0; i<num_iterators; ++i)
+      iterSched.free_iterator(selectedIterators[i], si_pl_iter);
   }
 
-  // mi_pl parallelism level is deallocated in ~MetaIterator
+  /* See notes in NestedModel::derived_set_communicators()
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    size_t i, num_iterators = methodList.size();
+    if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
+      ParLevLIter next_pl_iter
+	= methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
+      for (i=0; i<num_iterators; ++i)
+	iterSched.free_iterator(selectedIterators[i], next_pl_iter);
+    }
+    else
+      for (i=0; i<num_iterators; ++i)
+	iterSched.free_iterator(selectedIterators[i], pl_iter);
+  }
+  */
+
+  // deallocate the mi_pl parallelism level
+  iterSched.free_iterator_parallelism();
+
+  miPLIndexMap.erase(pl_index);
 }
 
 
@@ -275,7 +312,6 @@ void SeqHybridMetaIterator::core_run()
     satisfied.  Status: fully operational. */
 void SeqHybridMetaIterator::run_sequential()
 {
-  ParallelLibrary& parallel_lib = iterSched.parallelLib;
   size_t num_iterators = methodList.size();
   int server_id =  iterSched.iteratorServerId;
   bool    rank0 = (iterSched.iteratorCommRank == 0);
@@ -316,11 +352,11 @@ void SeqHybridMetaIterator::run_sequential()
 	  // send curr_accepts_multi from 1st iterator master to strategy master
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
-	    parallel_lib.send_mi(multi_flag, 0, 0);
+	    parallelLib.send_mi(multi_flag, 0, 0);
 	  }
 	  else if (server_id == 0) {
 	    int multi_flag; MPI_Status status;
-	    parallel_lib.recv_mi(multi_flag, 1, 0, status);
+	    parallelLib.recv_mi(multi_flag, 1, 0, status);
 	    curr_accepts_multi = (bool)multi_flag; // int -> bool
 	    iterSched.numIteratorJobs
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
@@ -332,7 +368,7 @@ void SeqHybridMetaIterator::run_sequential()
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  // bcast numIteratorJobs over iteratorComm
 	  if (iterSched.iteratorCommSize > 1)
-	    parallel_lib.bcast_i(iterSched.numIteratorJobs);
+	    parallelLib.bcast_i(iterSched.numIteratorJobs);
 	}
       }
       // --------------------------
@@ -415,14 +451,14 @@ void SeqHybridMetaIterator::run_sequential()
 	  MPIPackBuffer send_buffer;
 	  send_buffer << parameterSets;
 	  int buffer_len = send_buffer.size();
-	  parallel_lib.bcast_mi(buffer_len);
-	  parallel_lib.bcast_mi(send_buffer);
+	  parallelLib.bcast_mi(buffer_len);
+	  parallelLib.bcast_mi(send_buffer);
 	}
 	else { // replace partial list
 	  int buffer_len;
-	  parallel_lib.bcast_mi(buffer_len);
+	  parallelLib.bcast_mi(buffer_len);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallel_lib.bcast_mi(recv_buffer);
+	  parallelLib.bcast_mi(recv_buffer);
 	  recv_buffer >> parameterSets;
 	}
       }
@@ -444,11 +480,10 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   // NOTE 2: Parallel iterator scheduling is not currently supported (and this
   // code will fail if non-default iterator servers or scheduling is specified).
 
-  ParallelLibrary& parallel_lib = iterSched.parallelLib;
   size_t num_iterators = methodList.size();
   int server_id =  iterSched.iteratorServerId;
   bool    rank0 = (iterSched.iteratorCommRank == 0);
-  progressMetric = 1.0;
+  Real progress_metric = 1.0;
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
     // TO DO: don't run on ded master (see NOTE 2 above)
@@ -467,10 +502,10 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
 	   << methodList[seqCount] << '\n';
 
       curr_iterator.initialize_run();
-      while (progressMetric >= progressThreshold) {
+      while (progress_metric >= progressThreshold) {
         //selectedIterators[seqCount]++;
         const Response& resp_star = curr_iterator.response_results();
-        //progressMetric = compute_progress(resp_star);
+        //progress_metric = compute_progress(resp_star);
       }
       curr_iterator.finalize_run();
       Cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
@@ -488,8 +523,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
       selectedModels[seqCount].stop_servers();
     }
     else
-      iterSched.run_iterator(curr_iterator,
-	parallel_lib.parallel_configuration().mi_parallel_level());
+      iterSched.run_iterator(curr_iterator);
   }
 }
 
@@ -498,7 +532,8 @@ void SeqHybridMetaIterator::
 update_local_results(PRPArray& prp_results, int job_id)
 {
   Iterator& curr_iterator = selectedIterators[seqCount];
-  Model&    curr_model    = selectedModels[seqCount];
+  Model&    curr_model    = (selectedModels.empty()) ?
+    iteratedModel : selectedModels[seqCount];
   // Analyzers do not currently support returns_multiple_points() since the
   // distinction between Hybrid sampling and Multistart sampling is that
   // the former performs fn evals and processes the data (and current

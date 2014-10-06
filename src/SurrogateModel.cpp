@@ -34,7 +34,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 {
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
-    for (int i=0; i<numFns; i++)
+    for (int i=0; i<numFns; ++i)
       surrogateFnIndices.insert(i);
   else {
     // check for out of range values
@@ -48,15 +48,17 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
 
 SurrogateModel::
-SurrogateModel(ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-	       const ActiveSet& set, short output_level):
-  Model(NoDBBaseConstructor(), parallel_lib, svd, set, output_level),
+SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+	       const SharedVariablesData& svd, const ActiveSet& set,
+	       short output_level):
+  Model(LightWtBaseConstructor(), problem_db, parallel_lib,
+	svd, set, output_level),
   responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {
   modelType = "surrogate";
 
   // set up surrogateFnIndices to use default (all fns are approximated)
-  for (int i=0; i<numFns; i++)
+  for (int i=0; i<numFns; ++i)
     surrogateFnIndices.insert(i);
 }
 

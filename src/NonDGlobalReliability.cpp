@@ -242,8 +242,8 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
 
-  // Following this ctor, Strategy::init_iterator() initializes the parallel
-  // configuration for NonDGlobalReliability + iteratedModel using
+  // Following this ctor, IteratorScheduler::init_iterator() initializes the
+  // parallel configuration for NonDGlobalReliability + iteratedModel using
   // NonDGlobalReliability's maxEvalConcurrency. During uSpaceModel construction
   // above, DataFitSurrModel::derived_init_communicators() initializes the
   // parallel configuration for dace_iterator + iteratedModel using
@@ -251,9 +251,9 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   // currently exercised is that used by dace_iterator within the initial GP
   // construction, but the NonDGlobalReliability maxEvalConcurrency must still
   // be set so as to avoid parallel configuration errors resulting from
-  // avail_procs > max_concurrency within Strategy::init_iterator().  A max
-  // of the local derivative concurrency and the DACE concurrency is used for
-  // this purpose.
+  // avail_procs > max_concurrency within IteratorScheduler::init_iterator().
+  // A max of the local derivative concurrency and the DACE concurrency is used
+  // for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
 				dace_iterator.maximum_evaluation_concurrency());
 
@@ -312,38 +312,39 @@ NonDGlobalReliability::~NonDGlobalReliability()
 { }
 
 
-void NonDGlobalReliability::init_communicators()
+void NonDGlobalReliability::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   // mppModel.init_communicators() recursion is currently sufficient for
   // uSpaceModel.  An additional uSpaceModel.init_communicators() call would be
   // motivated by special parallel usage of uSpaceModel below that is not
   // otherwise covered by the recursion.
   //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
-  //uSpaceModel.init_communicators(uSpaceMaxConcurrency);
+  //uSpaceModel.init_communicators(pl_iter, uSpaceMaxConcurrency);
 
-  mppOptimizer.init_communicators();
-
-  importanceSampler.init_communicators();
+  // mppOptimizer and importanceSampler use NoDBBaseConstructor, so no
+  // need to manage DB list nodes at this level
+  mppOptimizer.init_communicators(pl_iter);
+  importanceSampler.init_communicators(pl_iter);
 }
 
 
-void NonDGlobalReliability::free_communicators()
+void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 {
   // deallocate communicators for MMAIS on uSpaceModel
-  importanceSampler.free_communicators();
+  importanceSampler.free_communicators(pl_iter);
 
   // deallocate communicators for DIRECT on mppModel
-  mppOptimizer.free_communicators();
+  mppOptimizer.free_communicators(pl_iter);
 
   // mppModel.free_communicators() recursion is currently sufficient for
   // uSpaceModel.  An additional uSpaceModel.free_communicators() call would
   // be motivated by special parallel usage of uSpaceModel below that is not
   // otherwise covered by the recursion.
-  //uSpaceModel.free_communicators(uSpaceMaxConcurrency);
+  //uSpaceModel.free_communicators(pl_iter, uSpaceMaxConcurrency);
 
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

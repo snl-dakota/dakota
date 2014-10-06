@@ -95,15 +95,6 @@ public:
   /// read tabular data for post-run mode
   virtual void post_input();
   
-  /// initialize the communicators associated with iteratedModel as
-  /// well as any subordinate iterators or subordinate models
-  virtual void init_communicators();
-  /// set the communicators associated with iteratedModel
-  virtual void set_communicators();
-  /// free the communicators associated with iteratedModel as well as
-  /// any subordinate iterators or subordinate models
-  virtual void free_communicators();
-
   /// restore initial state for repeated sub-iterator executions
   virtual void reset();
 
@@ -188,6 +179,13 @@ public:
   //- Heading: Member functions
   //
 
+  /// initialize the communicators associated with this Iterator instance
+  void init_communicators(ParLevLIter pl_iter);
+  /// set the communicators associated with this Iterator instance
+  void set_communicators(ParLevLIter pl_iter);
+  /// free the communicators associated with this Iterator instance
+  void free_communicators(ParLevLIter pl_iter);
+
   /// orchestrate initialize/pre/core/post/finalize phases
   void run(std::ostream& s);
 
@@ -203,6 +201,8 @@ public:
 
   /// return the problem description database (probDescDB)
   ProblemDescDB& problem_description_db() const;
+  /// return the parallel library (parallelLib)
+  ParallelLibrary& parallel_library() const;
 
   /// set the method name to an enumeration value
   void method_name(unsigned short m_name);
@@ -296,11 +296,24 @@ protected:
   Iterator(BaseConstructor, ProblemDescDB& problem_db);
 
   /// alternate constructor for base iterator classes constructed on the fly
+  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model);
+
+  /// alternate constructor for base iterator classes constructed on the fly
   Iterator(NoDBBaseConstructor, unsigned short method_name);
 
   //
   //- Heading: Virtual functions
   //
+
+  /// derived class contributions to initializing the communicators
+  /// associated with this Iterator instance
+  virtual void derived_init_communicators(ParLevLIter pl_iter);
+  /// derived class contributions to setting the communicators
+  /// associated with this Iterator instance
+  virtual void derived_set_communicators(ParLevLIter pl_iter);
+  /// derived class contributions to freeing the communicators
+  /// associated with this Iterator instance
+  virtual void derived_free_communicators(ParLevLIter pl_iter);
 
   /// set inherited data attributes based on extractions from incoming model
   virtual void update_from_model(const Model& model);
@@ -327,6 +340,9 @@ protected:
       get to 0), since ProblemDescDB contains {iterator,model}List. */
   ProblemDescDB& probDescDB;
 
+  /// class member reference to the parallel library
+  ParallelLibrary& parallelLib;
+
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
   Model iteratedModel;
@@ -337,6 +353,15 @@ protected:
   int maxIterations;    ///< maximum number of iterations for the iterator
   int maxFunctionEvals; ///< maximum number of fn evaluations for the iterator
 
+  /// the active ParallelConfiguration used by this Iterator instance
+  ParConfigLIter methodPCIter;
+  /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
+  size_t miPLIndex;
+  /// track the available configurations that have been created
+  /// (init_communicators) and are available for activation at run
+  /// time (set_communicators)
+  std::map<size_t, ParConfigLIter> methodPCIterMap;
+
   /// maximum number of concurrent model evaluations
   /** This is important for parallel configuration init/set/free and may be
       set within empty envelope instances.  Therefore, it cannot be pushed
@@ -346,7 +371,7 @@ protected:
   /// the response data requirements on each function evaluation
   ActiveSet activeSet;
 
-  ///  number of solutions to retain in best variables/response arrays
+  /// number of solutions to retain in best variables/response arrays
   size_t numFinalSolutions;
   /// collection of N best solution variables found during the study;
   /// always in context of Model originally passed to the Iterator
@@ -440,6 +465,10 @@ inline Model& Iterator::iterated_model()
 
 inline ProblemDescDB& Iterator::problem_description_db() const
 { return (iteratorRep) ? iteratorRep->probDescDB : probDescDB; }
+
+
+inline ParallelLibrary& Iterator::parallel_library() const
+{ return (iteratorRep) ? iteratorRep->parallelLib : parallelLib; }
 
 
 inline void Iterator::method_name(unsigned short m_name)

@@ -110,8 +110,8 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
     probDescDB.get_bool("method.import_points_file_annotated")), false);
 
-  // Following this ctor, Strategy::init_iterator() initializes the parallel
-  // configuration for EffGlobalMinimizer + iteratedModel using
+  // Following this ctor, IteratorScheduler::init_iterator() initializes the
+  // parallel configuration for EffGlobalMinimizer + iteratedModel using
   // EffGlobalMinimizer's maxEvalConcurrency.  During fHatModel construction
   // above, DataFitSurrModel::derived_init_communicators() initializes the
   // parallel config for dace_iterator + iteratedModel using dace_iterator's
@@ -119,8 +119,8 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   // is that used by dace_iterator within the initial GP construction, but the
   // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
   // parallel config errors resulting from avail_procs > max_concurrency within
-  // Strategy::init_iterator().  A max of the local derivative concurrency and
-  // the DACE concurrency is used for this purpose.
+  // IteratorScheduler::init_iterator().  A max of the local derivative
+  // concurrency and the DACE concurrency is used for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
 				dace_iterator.maximum_evaluation_concurrency());
 
@@ -159,35 +159,37 @@ EffGlobalMinimizer::~EffGlobalMinimizer()
 { }
 
 
-void EffGlobalMinimizer::init_communicators()
+void EffGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
   // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   // approxSubProbMinimizer.init_communicators() recursion is currently
   // sufficient for fHatModel.  An additional fHatModel.init_communicators()
   // call would be motivated by special parallel usage of fHatModel below that
   // is not otherwise covered by the recursion.
   //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
-  //fHatModel.init_communicators(fHatMaxConcurrency);
+  //fHatModel.init_communicators(pl_iter, fHatMaxConcurrency);
 
-  approxSubProbMinimizer.init_communicators();
+  // approxSubProbMinimizer uses NoDBBaseConstructor, so no need to
+  // manage DB list nodes at this level
+  approxSubProbMinimizer.init_communicators(pl_iter);
 }
 
 
-void EffGlobalMinimizer::free_communicators()
+void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
   // deallocate communicators for DIRECT on eifModel
-  approxSubProbMinimizer.free_communicators();
+  approxSubProbMinimizer.free_communicators(pl_iter);
 
   // approxSubProbMinimizer.free_communicators() recursion is currently
   // sufficient for fHatModel.  An additional fHatModel.free_communicators()
   // call would be motivated by special parallel usage of fHatModel below that
   // is not otherwise covered by the recursion.
-  //fHatModel.free_communicators(fHatMaxConcurrency);
+  //fHatModel.free_communicators(pl_iter, fHatMaxConcurrency);
 
   // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

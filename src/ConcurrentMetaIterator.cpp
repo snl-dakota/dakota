@@ -23,7 +23,9 @@ static const char rcsId[]="@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 
 namespace Dakota {
 
 ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db)
+  MetaIterator(problem_db),
+  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get_int("method.random_seed"))
 {
   // ***************************************************************************
   // TO DO: support concurrent meta-iteration for both Minimizer & Analyzer:
@@ -39,29 +41,27 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   // ***************************************************************************
 
   // pull these from the DB before any resetting of DB nodes
-  const RealVector& param_sets
+  const RealVector& raw_param_sets
     = problem_db.get_rv("method.concurrent.parameter_sets");
-  int num_random_sets = problem_db.get_int("method.concurrent.random_jobs");
+
+  const String& method_ptr = problem_db.get_string("method.sub_method_pointer");
+  const String& method_name = problem_db.get_string("method.sub_method_name");
+  const String& model_ptr = problem_db.get_string("method.sub_model_pointer");
 
   // Instantiate the model.  A model is used on all processors, even a
   // dedicated master.
-  ParallelLibrary& parallel_lib = problem_db.parallel_library();
-  const String& concurr_iter_ptr
-    = problem_db.get_string("method.sub_method_pointer");
-  const String& concurr_iter_name
-    = problem_db.get_string("method.sub_method_name");
-  const String& model_ptr = problem_db.get_string("method.sub_model_pointer");
-  int param_set_len; size_t restore_index;
-  bool print_rank = (parallel_lib.world_rank() == 0); // prior to lead_rank()
-  if (!concurr_iter_ptr.empty()) {
+  size_t method_index, model_index;
+  bool print_rank = (parallelLib.world_rank() == 0); // prior to lead_rank()
+  if (!method_ptr.empty()) {
     lightwtCtor = false;
-    restore_index = problem_db.get_db_method_node(); // for restoration
-    problem_db.set_db_list_nodes(concurr_iter_ptr);
+    method_index = problem_db.get_db_method_node(); // for restoration
+    model_index  = problem_db.get_db_model_node();  // for restoration
+    problem_db.set_db_list_nodes(method_ptr);
   }
-  else if (!concurr_iter_name.empty()) {
+  else if (!method_name.empty()) {
     lightwtCtor = true;
     if (!model_ptr.empty()) {
-      restore_index = problem_db.get_db_model_node(); // for restoration
+      model_index = problem_db.get_db_model_node(); // for restoration
       problem_db.set_db_model_nodes(model_ptr);
     }
   }
@@ -72,12 +72,15 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     abort_handler(-1);
   }
   iteratedModel = problem_db.get_model();
-  initialize_model(param_set_len);
+  initialize_model();
 
-  // estimation of param_set_len is dependent on the iteratedModel
+  // user-specified jobs
+  copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
+
+  // estimation of paramSetLen is dependent on the iteratedModel
   // --> concurrent iterator partitioning is pushed downstream a bit
   maxIteratorConcurrency = iterSched.numIteratorJobs
-    = param_sets.length() / param_set_len + num_random_sets;
+    = parameterSets.size() + numRandomJobs;
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
     if (print_rank)
       Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
@@ -85,30 +88,118 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
 	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
+
+  // restore list nodes
+  if (!lightwtCtor) {
+    problem_db.set_db_method_node(method_index);
+    problem_db.set_db_model_nodes(model_index);
+  }
+  else if (!model_ptr.empty())
+    problem_db.set_db_model_nodes(model_index);
+}
+
+
+ConcurrentMetaIterator::
+ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
+  MetaIterator(problem_db, model),
+  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get_int("method.random_seed"))
+{
+  const String& method_ptr = problem_db.get_string("method.sub_method_pointer");
+  const String& model_ptr  = problem_db.get_string("method.sub_model_pointer");
+  const RealVector& raw_param_sets
+    = problem_db.get_rv("method.concurrent.parameter_sets");
+
+  // ensure consistency between model and any method/model pointers
+  check_model(method_ptr, model_ptr);
+
+  lightwtCtor = method_ptr.empty();
+  size_t method_index, model_index;
+  if (!lightwtCtor) {
+    method_index = problem_db.get_db_method_node(); // for restoration
+    model_index  = problem_db.get_db_model_node();  // for restoration
+    problem_db.set_db_list_nodes(method_ptr);
+  }
+  else if (!model_ptr.empty()) {
+    model_index = problem_db.get_db_model_node(); // for restoration
+    problem_db.set_db_model_nodes(model_ptr);
+  }
+
+  initialize_model(); // uses DB lookup for number of obj fns
+
+  // user-specified jobs
+  copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
+
+  maxIteratorConcurrency = iterSched.numIteratorJobs
+    = parameterSets.size() + numRandomJobs;
+  if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
+    if (parallelLib.world_rank() == 0) // prior to lead_rank()
+      Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
+	   << "Please specify either a\n       list of parameter sets or a "
+	   << "number of random jobs." << std::endl;
+    abort_handler(-1);
+  }
+
+  // restore list nodes
+  if (!lightwtCtor) {
+    problem_db.set_db_method_node(method_index);
+    problem_db.set_db_model_nodes(model_index);
+  }
+  else if (!model_ptr.empty())
+    problem_db.set_db_model_nodes(model_index);
+}
+
+
+ConcurrentMetaIterator::~ConcurrentMetaIterator()
+{ } // Virtual destructor handles referenceCount at Iterator level
+
+
+void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
+{
+  const String& method_name = probDescDB.get_string("method.sub_method_name");
+  const String& model_ptr   = probDescDB.get_string("method.sub_model_pointer");
+  // Model recursions may update method or model nodes and restoration may not
+  // occur until the recursion completes, so don't assume that method and
+  // model indices are in sync.
+  size_t method_index, model_index;
+  if (!lightwtCtor) {
+    method_index = probDescDB.get_db_method_node(); // for restoration
+    model_index  = probDescDB.get_db_model_node();  // for restoration
+    probDescDB.set_db_list_nodes(
+      probDescDB.get_string("method.sub_method_pointer"));
+  }
+  else if (!model_ptr.empty()) {
+    model_index = probDescDB.get_db_model_node(); // for restoration
+    probDescDB.set_db_model_nodes(model_ptr);
+  }
+
   // It is not practical to estimate the evaluation concurrency without 
   // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
   // have a circular dependency: we need the evaluation concurrency from the
   // iterator to estimate the max_ppi for input to the mi_pl partition, but
   // we want to segregate iterator construction based on the mi_pl partition.
-  // To resolve this dependency, we instantiate the iterator based on the w_pl
-  // level and then augment it below based on the mi_pl level.  We avoid
-  // repeated instantiations by the check on iterator.is_null() as well as
-  // through the lookup in problem_db_get_iterator() (concurr_iter_ptr case);
-  // this requires that no calls to init_comms occur at construct time, since
-  // the mi_pl basis for this is not yet available.
-  const ParallelLevel& w_pl
-    = parallel_lib.parallel_configuration().w_parallel_level();
+  // To resolve this dependency, we instantiate the iterator based on the
+  // previous parallel level and then augment it below based on the mi_pl level.
+  // We avoid repeated instantiations by the check on iterator.is_null() as well
+  // as through the lookup in problem_db_get_iterator() (method_ptr case); this
+  // requires that no calls to init_comms occur at construct time, since the
+  // mi_pl basis for this is not yet available.
   int max_eval_conc = (lightwtCtor) ?
-    iterSched.init_evaluation_concurrency(concurr_iter_name, selectedIterator,
-					  iteratedModel, w_pl):
-    iterSched.init_evaluation_concurrency(problem_db, selectedIterator,
-					  iteratedModel, w_pl);
+    iterSched.init_evaluation_concurrency(method_name, selectedIterator,
+					  iteratedModel):
+    iterSched.init_evaluation_concurrency(probDescDB, selectedIterator,
+					  iteratedModel);
   // min and max ppi need DB list nodes set to sub-iterator/sub-model
   int min_ppi = probDescDB.get_min_procs_per_iterator(),
       max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_conc);
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
+  // > store the miPLIndex for this parallel config to restore in set_comms()
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+  miPLIndexMap[pl_index] = iterSched.miPLIndex; // same or one beyond pl_iter
+
   summaryOutputFlag = iterSched.lead_rank();
+
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators (empty selectedIterator
   // envelope is adequate) or initialize, so return now.
@@ -116,85 +207,86 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     return;
 
   // Instantiate the iterator.
-  // Note: the parallel configuration may have been incremented, so do not
-  // assume the same config as used above for w_pl.
-  const ParallelLevel& mi_pl
-    = parallel_lib.parallel_configuration().mi_parallel_level();
   if (lightwtCtor) {
-    iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-			    mi_pl);
+    iterSched.init_iterator(method_name, selectedIterator, iteratedModel);
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-      Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
+      Cout << "Concurrent Iterator = " << method_name << std::endl;
     if (!model_ptr.empty())
-      problem_db.set_db_model_nodes(restore_index); // restore
+      probDescDB.set_db_model_nodes(model_index); // restore
   }
   else {
-    iterSched.init_iterator(problem_db, selectedIterator, iteratedModel, mi_pl);
+    iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
     if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
       Cout << "Concurrent Iterator = "
-	   << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+	   << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
 	   << std::endl;
-    problem_db.set_db_list_nodes(restore_index);    // restore
+    probDescDB.set_db_method_node(method_index); // restore
+    probDescDB.set_db_model_nodes(model_index);  // restore
   }
-
-  initialize(param_set_len);
 }
 
 
-ConcurrentMetaIterator::
-ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
-  MetaIterator(problem_db, model), lightwtCtor(true) // for now
+void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  // Hard-wired to lightweight methodList instantiation for now.  To support
-  // a more general case indicated by the sequential hybrid spec, will need
-  // to validate iteratedModel against any model pointers (--> warnings, see
-  // SurrBasedLocalMinimizer for example).
-
-  const String& concurr_iter_name
-    = problem_db.get_string("method.sub_method_name");
-  //const String& model_ptr = problem_db.get_string("method.sub_model_pointer");
-
-  int param_set_len;
-  initialize_model(param_set_len);
-  ParallelLibrary& parallel_lib = problem_db.parallel_library();
-  const ParallelConfiguration& pc = parallel_lib.parallel_configuration();
-
-  maxIteratorConcurrency = iterSched.numIteratorJobs
-    = problem_db.get_rv("method.concurrent.parameter_sets").length()
-    / param_set_len + problem_db.get_int("method.concurrent.random_jobs");
-  if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
-    if (parallel_lib.world_rank() == 0) // prior to lead_rank()
-      Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
-	   << "Please specify either a\n       list of parameter sets or a "
-	   << "number of random jobs." << std::endl;
-    abort_handler(-1);
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
+      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    iterSched.set_iterator(selectedIterator, si_pl_iter);
   }
-  int max_eval_conc = 
-    iterSched.init_evaluation_concurrency(concurr_iter_name, selectedIterator,
-					  iteratedModel, pc.w_parallel_level());
-  // min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = probDescDB.get_min_procs_per_iterator(),
-      max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_conc);
 
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
-  summaryOutputFlag = iterSched.lead_rank();
-  // from this point on, we can specialize logic in terms of iterator servers.
-  // An idle partition need not instantiate iterators (empty selectedIterator
-  // envelope is adequate for serve_iterators()) or initialize, so return now.
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
-    return;
-
-  // Instantiate the iterator
-  iterSched.init_iterator(concurr_iter_name, selectedIterator, iteratedModel,
-			  pc.mi_parallel_level());
-  if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-    Cout << "Concurrent Iterator = " << concurr_iter_name << std::endl;
-
-  initialize(param_set_len);
+  /* See notes in NestedModel::derived_set_communicators()
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
+      ParLevLIter next_pl_iter
+	= methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
+      iterSched.set_iterator(selectedIterator, next_pl_iter);
+    }
+    else
+      iterSched.set_iterator(selectedIterator, pl_iter);
+  }
+  */
 }
 
 
-void ConcurrentMetaIterator::initialize(int param_set_len)
+void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
+{
+  // free the communicators for selectedIterator
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
+      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    iterSched.free_iterator(selectedIterator, si_pl_iter);
+  }
+
+  /* See notes in NestedModel::derived_set_communicators()
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
+  iterSched.update(mi_pl_index);
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    if (pl_iter->message_pass() || pl_iter->idle_partition()) { // ***
+      ParLevLIter next_pl_iter
+	= methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
+      iterSched.free_iterator(selectedIterator, next_pl_iter);
+    }
+    else
+      iterSched.free_iterator(selectedIterator, pl_iter);
+  }
+  */
+
+  // deallocate the mi_pl parallelism level
+  iterSched.free_iterator_parallelism();
+
+  miPLIndexMap.erase(pl_index);
+}
+
+
+void ConcurrentMetaIterator::pre_run()
 {
   // initialize initialPt
   if (methodName != MULTI_START)
@@ -205,7 +297,7 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
     int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
     // define params_msg_len
     if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
-      RealVector rv(param_set_len);
+      RealVector rv(paramSetLen);
       MPIPackBuffer send_buffer;
       send_buffer << rv;
       params_msg_len = send_buffer.size();
@@ -227,13 +319,8 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
        ( iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	 iterSched.iteratorCommRank == 0 ) ) {
 
-    // user-specified jobs
-    copy_data(probDescDB.get_rv("method.concurrent.parameter_sets"),
-	      parameterSets, 0, param_set_len);
-
     // random jobs
-    int num_random_jobs = probDescDB.get_int("method.concurrent.random_jobs");
-    if (num_random_jobs) { // random jobs specified
+    if (numRandomJobs) { // random jobs specified
       size_t i, j;
       RealVectorArray random_jobs;
       if (iterSched.lead_rank()) {
@@ -244,42 +331,40 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
 	  upper_bnds = iteratedModel.continuous_upper_bounds(); // view OK
 	}
 	else {
-	  lower_bnds.sizeUninitialized(param_set_len); lower_bnds = 0.;
-	  upper_bnds.sizeUninitialized(param_set_len); upper_bnds = 1.;
+	  lower_bnds.sizeUninitialized(paramSetLen); lower_bnds = 0.;
+	  upper_bnds.sizeUninitialized(paramSetLen); upper_bnds = 1.;
 	}
 	// invoke NonDLHSSampling as either old or new LHS is always available.
 	// We don't use a dace_method_pointer spec since we aren't sampling over
 	// the variables specification in all cases.  In particular, we're
 	// sampling over multiobj. weight sets in the Pareto-set case.  This
 	// hard-wiring currently restricts us to uniform, uncorrelated samples.
-        int seed = probDescDB.get_int("method.random_seed");
 	unsigned short sample_type = SUBMETHOD_DEFAULT;
 	String rng; // empty string: use default
-	NonDLHSSampling lhs_sampler(sample_type, num_random_jobs, seed, rng,
-				    lower_bnds, upper_bnds);
+	NonDLHSSampling lhs_sampler(sample_type, numRandomJobs, randomSeed,
+				    rng, lower_bnds, upper_bnds);
 	const RealMatrix& all_samples = lhs_sampler.all_samples();
-	random_jobs.resize(num_random_jobs);
-	for (i=0; i<num_random_jobs; ++i)
-	  copy_data(all_samples[i], param_set_len, random_jobs[i]);
+	random_jobs.resize(numRandomJobs);
+	for (i=0; i<numRandomJobs; ++i)
+	  copy_data(all_samples[i], paramSetLen, random_jobs[i]);
       }
 
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	  iterSched.numIteratorServers > 1) {
-	ParallelLibrary& parallel_lib = iterSched.parallelLib;
 	// For static scheduling, bcast all random jobs over mi_intra_comm (not 
 	// necessary for self-scheduling as jobs are assigned from the master).
 	if (iterSched.lead_rank()) {
 	  MPIPackBuffer send_buffer;
 	  send_buffer << random_jobs;
 	  int buffer_len = send_buffer.size();
-	  parallel_lib.bcast_mi(buffer_len);
-	  parallel_lib.bcast_mi(send_buffer);
+	  parallelLib.bcast_mi(buffer_len);
+	  parallelLib.bcast_mi(send_buffer);
 	}
 	else {
 	  int buffer_len;
-	  parallel_lib.bcast_mi(buffer_len);
+	  parallelLib.bcast_mi(buffer_len);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallel_lib.bcast_mi(recv_buffer);
+	  parallelLib.bcast_mi(recv_buffer);
 	  recv_buffer >> random_jobs;
 	}
       }
@@ -287,7 +372,7 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
       // rescale (if needed) and append to parameterSets
       size_t cntr = parameterSets.size();
       parameterSets.resize(iterSched.numIteratorJobs);
-      for (i=0; i<num_random_jobs; ++i, ++cntr) {
+      for (i=0; i<numRandomJobs; ++i, ++cntr) {
         if (methodName == MULTI_START)
           parameterSets[cntr] = random_jobs[i];
         else { // scale: multi-objective weights should add to 1
@@ -295,10 +380,10 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
           // design (e.g., Ch. 11 in Myers and Montgomery), but scaling an LHS
           // design is sufficient as a first cut.
           Real sum = 0.0;
-          for (j=0; j<param_set_len; j++)
+          for (j=0; j<paramSetLen; j++)
             sum += random_jobs[i][j];
-          parameterSets[cntr].sizeUninitialized(param_set_len);
-          for (j=0; j<param_set_len; j++)
+          parameterSets[cntr].sizeUninitialized(paramSetLen);
+          for (j=0; j<paramSetLen; j++)
             parameterSets[cntr][j] = random_jobs[i][j]/sum;
         }
       }
@@ -315,22 +400,6 @@ void ConcurrentMetaIterator::initialize(int param_set_len)
   // only some entries are defined locally
   if (iterSched.iteratorCommRank == 0)
     prpResults.resize(iterSched.numIteratorJobs);
-}
-
-
-ConcurrentMetaIterator::~ConcurrentMetaIterator()
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    // Free the communicators once for all selectedIterator executions.
-    // The strategy dedicated master processor is excluded.
-    ParallelLibrary& parallel_lib = probDescDB.parallel_library();
-    iterSched.free_iterator(selectedIterator,
-      parallel_lib.parallel_configuration().mi_parallel_level());
-  }
-
-  // mi_pl parallelism level is deallocated in ~MetaIterator
 }
 
 
@@ -362,11 +431,10 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
   StringMultiArrayConstView drv_labels
     = prpResults[0].prp_parameters().discrete_real_variable_labels();
   const StringArray& fn_labels = prpResults[0].prp_response().function_labels();
-  size_t i, param_set_len = parameterSets[0].length(),
-    num_cv  = cv_labels.size(),  num_div = div_labels.size(),
+  size_t i, num_cv  = cv_labels.size(),  num_div = div_labels.size(),
     num_drv = drv_labels.size(), num_fns = fn_labels.size();
   s << "   set_id "; // matlab comment syntax
-  for (i=0; i<param_set_len; ++i) {
+  for (i=0; i<paramSetLen; ++i) {
     if (methodName == MULTI_START)
       s << setw(14) << cv_labels[i].data() << ' ';
     else {
@@ -400,7 +468,7 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
     const ParamResponsePair& prp_result = prpResults[i];
     s << std::setprecision(10) << std::resetiosflags(std::ios::floatfield)
          << setw(9) << prp_result.eval_id() << ' ';
-    for (size_t j=0; j<param_set_len; ++j)
+    for (size_t j=0; j<paramSetLen; ++j)
       s << setw(14) << parameterSets[i][j] << ' ';
     const Variables& prp_vars = prp_result.prp_parameters();
     //prp_vars.write_tabular(s) not used since active vars, not all vars

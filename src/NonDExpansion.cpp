@@ -91,33 +91,35 @@ NonDExpansion::~NonDExpansion()
 { }
 
 
-void NonDExpansion::init_communicators()
+void NonDExpansion::derived_init_communicators(ParLevLIter pl_iter)
 {
   // this is redundant with Model recursions except for PCE coeff import case
-  //iteratedModel.init_communicators(maxEvalConcurrency);
+  //iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
+  // uSpaceModel, expansionSampler, and importanceSampler use
+  // NoDBBaseConstructor, so no need to manage DB list nodes at this level
   if (numSamplesOnExpansion)
-    expansionSampler.init_communicators();
+    expansionSampler.init_communicators(pl_iter);
   else
-    uSpaceModel.init_communicators(maxEvalConcurrency);
+    uSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   if (impSampling)
-    importanceSampler.init_communicators();
+    importanceSampler.init_communicators(pl_iter);
 }
 
 
-void NonDExpansion::free_communicators()
+void NonDExpansion::derived_free_communicators(ParLevLIter pl_iter)
 {
   if (impSampling)
-    importanceSampler.free_communicators();
+    importanceSampler.free_communicators(pl_iter);
 
   if (numSamplesOnExpansion)
-    expansionSampler.free_communicators();
+    expansionSampler.free_communicators(pl_iter);
   else
-    uSpaceModel.free_communicators(maxEvalConcurrency);
+    uSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);
 
   // this is redundant with Model recursions except for PCE coeff import case
-  //iteratedModel.free_communicators(maxEvalConcurrency);
+  //iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

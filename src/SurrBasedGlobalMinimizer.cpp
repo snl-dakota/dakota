@@ -85,27 +85,34 @@ SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
 { }
 
 
-void SurrBasedGlobalMinimizer::init_communicators()
+void SurrBasedGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
   // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.init_communicators(maxEvalConcurrency);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
   // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
   // concurrency is from approxSubProbMinimizer on lowFidelityModel.
-  approxSubProbMinimizer.init_communicators();
+  // As for constructors, we recursively set and restore DB list nodes
+  // (initiated from the restored starting point following construction).
+  size_t method_index = probDescDB.get_db_method_node(),
+         model_index  = probDescDB.get_db_model_node(); // for restoration
+  probDescDB.set_db_list_nodes(approxSubProbMinimizer.method_id());
+  approxSubProbMinimizer.init_communicators(pl_iter);
+  probDescDB.set_db_method_node(method_index); // restore method only
+  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 }
 
 
-void SurrBasedGlobalMinimizer::free_communicators()
+void SurrBasedGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
   // Virtual destructor handles referenceCount at Iterator level.
 
   // free communicators for iteratedModel
-  approxSubProbMinimizer.free_communicators();
+  approxSubProbMinimizer.free_communicators(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.free_communicators(maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

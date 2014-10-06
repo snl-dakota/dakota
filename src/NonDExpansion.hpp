@@ -47,8 +47,8 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  void init_communicators();
-  void free_communicators();
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
 
   /// perform a forward uncertainty propagation using PCE/SC methods
   void quantify_uncertainty(); // pure virtual fn. called by NonD

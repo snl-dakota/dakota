@@ -52,7 +52,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 					const Variables& recast_vars,
 					const Response& sub_model_response,
 					Response& recast_response)):
-  Model(RecastBaseConstructor(), sub_model.problem_description_db(),
+  Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
   subModel(sub_model), varsMapIndices(vars_map_indices),
   nonlinearVarsMapping(nonlinear_vars_mapping), variablesMapping(variables_map),
@@ -64,6 +64,8 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
   invSecRespMapping(NULL)
 {
+  modelType = "recast"; supportsEstimDerivs = false;
+
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 
@@ -155,7 +157,7 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	    const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
 	    size_t num_recast_secondary_fns, size_t recast_secondary_offset):
-  Model(RecastBaseConstructor(), sub_model.problem_description_db(),
+  Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
   subModel(sub_model), nonlinearVarsMapping(false), respMapping(false),
   variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
@@ -163,6 +165,8 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
   invSecRespMapping(NULL)
 {
+  modelType = "recast"; supportsEstimDerivs = false;
+
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 

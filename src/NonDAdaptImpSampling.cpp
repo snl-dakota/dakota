@@ -87,19 +87,21 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 }
 
 
-void NonDAdaptImpSampling::init_communicators()
+void NonDAdaptImpSampling::derived_init_communicators(ParLevLIter pl_iter)
 {
+  // uSpaceModel uses NoDBBaseConstructor, so no need to manage DB
+  // list nodes at this level
   if (initLHS)
-    uSpaceModel.init_communicators(numSamples);
-  uSpaceModel.init_communicators(refineSamples);
+    uSpaceModel.init_communicators(pl_iter, numSamples);
+  uSpaceModel.init_communicators(pl_iter, refineSamples);
 }
 
 
-void NonDAdaptImpSampling::free_communicators()
+void NonDAdaptImpSampling::derived_free_communicators(ParLevLIter pl_iter)
 {
-  uSpaceModel.free_communicators(refineSamples);
+  uSpaceModel.free_communicators(pl_iter, refineSamples);
   if (initLHS)
-    uSpaceModel.free_communicators(numSamples);
+    uSpaceModel.free_communicators(pl_iter, numSamples);
 }
 
 

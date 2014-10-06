@@ -63,7 +63,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       // precompute steps (using construct-time initialPoint) and perform error
       // checks only if in check mode; else avoid additional overhead and rely
       // on run-time checks for run-time initialPoint.
-      if (numSteps && iteratedModel.parallel_library().command_line_check()) {
+      if (numSteps && parallelLib.command_line_check()) {
 	initialCVPoint  = iteratedModel.continuous_variables();      // view
 	initialDIVPoint = iteratedModel.discrete_int_variables();    // view
 	initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
@@ -113,7 +113,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     // precompute steps (using construct-time bounds) and perform error checks
     // only if in check mode; else avoid additional overhead and rely on
     // run-time checks for run-time bounds.
-    if (iteratedModel.parallel_library().command_line_check())
+    if (parallelLib.command_line_check())
       distribute_partitions();
     break;
   default:

@@ -30,7 +30,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 		   problem_db.get_int("model.nested.sub_method_servers"),
 		   problem_db.get_int("model.nested.sub_method_processors"),
 		   problem_db.get_short("model.nested.sub_method_scheduling")),
-  optInterfacePointer(problem_db.get_string("model.interface_pointer"))
+  optInterfacePointer(problem_db.get_string("model.interface_pointer")),
+  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
@@ -94,9 +95,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     // db_responses restore not needed since set_db_list_nodes below will reset
   }
 
-  const String& sub_method_ptr
-    = problem_db.get_string("model.nested.sub_method_pointer");
-  problem_db.set_db_list_nodes(sub_method_ptr); // even if empty
+  problem_db.set_db_list_nodes(subMethodPointer); // even if empty
 
   subModel = problem_db.get_model();
   //check_submodel_compatibility(subModel); // sanity checks performed below
@@ -105,6 +104,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // final summaries without verbose output on every sub-iterator completion.
   if (outputLevel > NORMAL_OUTPUT)
     subModel.fine_grained_evaluation_counters();
+
+  problem_db.set_db_method_node(method_index); // restore method only
+  problem_db.set_db_model_nodes(model_index);  // restore all model nodes
 
   // Perform error checks on variable mapping inputs and convert from
   // strings to indices for efficiency at run time.
@@ -511,36 +513,170 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // view differences cause problems with recursion updating).
   if (inactive_sm_view != EMPTY)
     subModel.inactive_view(inactive_sm_view); // recurse
+}
 
-  /*
-  const ParallelLevel& prev_pl
-    = parallelLib.parallel_configuration().mi_parallel_level(index);
-  int max_eval_conc
-    = subIteratorSched.init_evaluation_concurrency(problem_db, subIterator,
-						   subModel, prev_pl);
-  // min and max ppi need DB list nodes set to sub-iterator/sub-model
+
+/** Asynchronous flags need to be initialized for the subModel.  In
+    addition, max_eval_concurrency is the outer level iterator
+    concurrency, not the subIterator concurrency that subModel will
+    see, and recomputing the message_lengths on the subModel is
+    probably not a bad idea either.  Therefore, recompute everything
+    on subModel using init_communicators(). */
+void NestedModel::
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
+{
+  // initialize optionalInterface for parallel operations
+  if (!optInterfacePointer.empty())
+    optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
+
+  if (!recurse_flag)
+    return;
+
+  // Due to Model::init_communicators(), we know that pl_iter is the lowest
+  // level within modelPCIter->miPLIters, from which we may further subdivide.
+
+  // initializations for subIteratorSched:
+  // > incoming max_eval_concurrency is for concurrent execs of NestedModel,
+  //   which must be distinguished from eval concurrency within subIterator.
+  // > circular dependency between concurrent iterator partitioning and
+  //   subIterator instantiation is managed as described in
+  //   ConcurrentMetaIterator::init_communicators().
+  // > as for constructors, we recursively set and restore DB list nodes
+  //   (initiated from the restored starting point following construction).
+  size_t method_index = probDescDB.get_db_method_node(),
+         model_index  = probDescDB.get_db_model_node();  // for restoration
+  probDescDB.set_db_list_nodes(subMethodPointer);
+  // > init_eval_concurrency instantiates subIterator on previous pl ranks
+  int max_subiter_eval_conc
+    = subIteratorSched.init_evaluation_concurrency(probDescDB, subIterator,
+						   subModel);
+  // > min and max ppi need DB list nodes set to sub-iterator/sub-model
   int min_ppi = probDescDB.get_min_procs_per_iterator(),
-      max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_conc);
+      max_ppi = probDescDB.get_max_procs_per_iterator(max_subiter_eval_conc);
+  // > leave default_config as PUSH_DOWN since sub-iterator run times will
+  //   tend to be heterogeneous
+  // > incoming max_eval_concurrency is the nested model's concurrency
+  subIteratorSched.init_iterator_parallelism(max_eval_concurrency,
+					     min_ppi, max_ppi);
+  // > store the miPLIndex for this parallel config to restore in set_comms()
+  SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
+		   max_eval_concurrency);
+  miPLIndexMap[key] = subIteratorSched.miPLIndex; // same or one beyond pl_iter
 
-  subIteratorSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi); // TO DO: another dependency issue!
+  // > now augment prev subIterator instantiations for additional mi_pl ranks
+  //   (new mi_pl is used via miPLIndex update in init_iterator_parallelism())
+  if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
+    subIteratorSched.init_iterator(probDescDB, subIterator, subModel);
 
-  // Due to this view updating reqmt, rely on retrieval of the subModel already
-  // instantiated above when subIterator ctor calls problem_db.get_model().
-  subIteratorSched.init_iterator(probDescDB, subIterator, subModel, mi_pl);// TO DO: define mi_pl; verify subModel passing is OK
-  */
-  subIterator = problem_db.get_iterator();
+  probDescDB.set_db_method_node(method_index); // restore method only
+  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
+
+  // > now that subIterator is constructed, perform downstream updates
+  if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers
+      && subIteratorSched.iteratorCommRank == 0) {
+    // follows DB restore since extracts DB data from nested model spec:
+    update_sub_iterator(); // TO DO: any of these updates needed on all ranks?
+    if (subIteratorSched.messagePass) {
+      // msg lengths: vars/set from this model, final results from subIterator
+      MPIPackBuffer buff; buff << subIterator.response_results();
+      subIteratorSched.iterator_message_lengths(messageLengths[1], buff.size());
+    }
+  }
+}
+
+
+void NestedModel::
+derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag)
+{
+  if (!optInterfacePointer.empty()) {
+    parallelLib.parallel_configuration_iterator(modelPCIter);
+    optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
+
+    // initial setting for asynchEvalFlag & evaluationCapacity based on
+    // optInterface (may be updated below)
+    set_ie_asynchronous_mode(max_eval_concurrency);
+  }
+  if (recurse_flag) {
+    // set comms for subIterator
+    // > pl_iter is incoming context prior to any subIterator partitioning
+    // > mi_pl_index reflects the miPL depth after any subIterator partitioning
+    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
+		     max_eval_concurrency);
+    size_t mi_pl_index = miPLIndexMap[key]; // same or one beyond pl_iter
+    subIteratorSched.update(mi_pl_index);
+    if (subIteratorSched.iteratorServerId <=
+	subIteratorSched.numIteratorServers) {
+      ParLevLIter si_pl_iter
+	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
+      subIteratorSched.set_iterator(subIterator, si_pl_iter);
+    }
+
+    /* This approach could eliminate need for miPLIndexMap, except for
+       inability to detect when partitioning has occurred at this level.
+       Note: subIterator's miPLIndex cannot help since it is defined in
+             Iterator::set_communicators() from the passed pl_iter.
+    size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter);
+    if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
+      ParLevLIter next_pl_iter
+	= modelPCIter->mi_parallel_level_iterator(++mi_pl_index);
+      subIteratorSched.set_iterator(subIterator, next_pl_iter);
+    }
+    else
+      subIteratorSched.set_iterator(subIterator, pl_iter);
+    subIteratorSched.update(mi_pl_index);
+    */
+
+    // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
+    if (subIteratorSched.messagePass)
+      asynchEvalFlag = true;
+    if (subIteratorSched.numIteratorServers > evaluationCapacity)
+      evaluationCapacity = subIteratorSched.numIteratorServers;
+  }
+}
+
+
+void NestedModel::
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
+{
+  if (!optInterfacePointer.empty()) {
+    parallelLib.parallel_configuration_iterator(modelPCIter);
+    optionalInterface.free_communicators();
+  }
+  if (recurse_flag) {
+    // finalize comms for subIterator
+    // > pl_iter is incoming context prior to any subIterator partitioning
+    // > mi_pl_index reflects the miPL depth after any subIterator partitioning
+    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
+		     max_eval_concurrency);
+    size_t mi_pl_index = miPLIndexMap[key]; // same or one beyond pl_iter
+    subIteratorSched.update(mi_pl_index);
+    if (subIteratorSched.iteratorServerId <=
+	subIteratorSched.numIteratorServers) {
+      ParLevLIter si_pl_iter
+	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
+      subIteratorSched.free_iterator(subIterator, si_pl_iter);
+    }
+    miPLIndexMap.erase(key);
+    subIteratorSched.free_iterator_parallelism();
+  }
+}
+
+
+void NestedModel::update_sub_iterator()
+{
   subIterator.sub_iterator_flag(true);
   subIterator.active_variable_mappings(active1ACVarMapIndices,
     active1ADIVarMapIndices, active1ADSVarMapIndices, active1ADRVarMapIndices,
     active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
     active2ADRVarMapTargets);
 
-  problem_db.set_db_method_node(method_index); // restore method only
-  problem_db.set_db_model_nodes(model_index);  // restore all model nodes
   const RealVector& primary_resp_coeffs
-    = problem_db.get_rv("model.nested.primary_response_mapping");
+    = probDescDB.get_rv("model.nested.primary_response_mapping");
   const RealVector& secondary_resp_coeffs
-    = problem_db.get_rv("model.nested.secondary_response_mapping");
+    = probDescDB.get_rv("model.nested.secondary_response_mapping");
 
   if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
     Cerr << "\nError: no mappings provided for sub-iterator functions."
@@ -582,9 +718,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // (subIterator constraints) from the total number of equality/inequality
   // constraints and the number of interface equality/inequality constraints.
   size_t num_mapped_ineq_con
-    = problem_db.get_sizet("responses.num_nonlinear_inequality_constraints"),
+    = probDescDB.get_sizet("responses.num_nonlinear_inequality_constraints"),
     num_mapped_eq_con
-    = problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
+    = probDescDB.get_sizet("responses.num_nonlinear_equality_constraints");
   numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
   numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
 }
@@ -1654,47 +1790,49 @@ void NestedModel::check_response_map(const ShortArray& mapped_asv)
 
 void NestedModel::component_parallel_mode(short mode)
 {
-  // mode may be correct, but can't guarantee active parallel configuration is
-  // in synch
+  // mode may be correct, but can't guarantee active parallel config is in sync
   //if (componentParallelMode == mode)
   //  return; // already in correct parallel mode
 
   // terminate previous serve mode (if active)
+  size_t index;
   if (componentParallelMode != mode) {
     if (componentParallelMode == OPTIONAL_INTERFACE) {
-      parallelLib.parallel_configuration_iterator(modelPCIter);
-      const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-      if (parallelLib.mi_parallel_level_defined() && 
-	  pc.mi_parallel_level().server_communicator_size() > 1)
+      index = subIteratorSched.miPLIndex; // runtime for active parallel config
+      if (modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
+	parallelLib.parallel_configuration_iterator(modelPCIter);
 	optionalInterface.stop_evaluation_servers();
+      }
     }
     else if (componentParallelMode == SUB_MODEL) {
-      parallelLib.parallel_configuration_iterator(
-        subModel.parallel_configuration_iterator());
-      const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-      if (parallelLib.mi_parallel_level_defined() && 
-	  pc.mi_parallel_level().server_communicator_size() > 1)
+      index = subModel.mi_parallel_level_index();
+      ParConfigLIter sm_pc_iter	= subModel.parallel_configuration_iterator();
+      if (sm_pc_iter->mi_parallel_level(index).server_communicator_size() > 1) {
+	parallelLib.parallel_configuration_iterator(sm_pc_iter);
 	subModel.stop_servers();
+      }
     }
   }
 
-  // set ParallelConfiguration for new mode
-  if (mode == SUB_MODEL)
-    parallelLib.parallel_configuration_iterator(
-      subModel.parallel_configuration_iterator());
-  else if (mode == OPTIONAL_INTERFACE)
-    parallelLib.parallel_configuration_iterator(modelPCIter);
-
-  // retrieve new ParallelConfiguration data
+  // set ParallelConfiguration for new mode & retrieve new data
   int new_iter_comm_size = 1;
-  if (parallelLib.mi_parallel_level_defined()) {
-    const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-    new_iter_comm_size = pc.mi_parallel_level().server_communicator_size();
+  if (mode == OPTIONAL_INTERFACE) {
+    parallelLib.parallel_configuration_iterator(modelPCIter);
+    index = subIteratorSched.miPLIndex;
+    new_iter_comm_size
+      = modelPCIter->mi_parallel_level(index).server_communicator_size();
+  }
+  else if (mode == SUB_MODEL) {
+    ParConfigLIter sm_pc_iter = subModel.parallel_configuration_iterator();
+    parallelLib.parallel_configuration_iterator(sm_pc_iter);
+    index = subModel.mi_parallel_level_index();
+    new_iter_comm_size
+      = sm_pc_iter->mi_parallel_level(index).server_communicator_size();
   }
 
   // activate the new serve mode
   if (new_iter_comm_size > 1 && componentParallelMode != mode)
-    parallelLib.bcast_i(mode);
+    parallelLib.bcast_i(mode, index);
   componentParallelMode = mode;
 }
 
