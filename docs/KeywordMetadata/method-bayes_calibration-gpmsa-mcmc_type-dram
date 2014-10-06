@@ -1,6 +1,6 @@
-Blurb::
-Description::
-Topics::	empty
+Blurb::  (Experimental) Specification of DRAM as the MCMC type in GPMSA
+Description:: GPMSA is an experimental capability and not ready for production use at this time. The MCMC type specification is not available in GPMSA currently.
+Topics::  bayesian_calibration
 Examples::
 Theory::
 Faq::

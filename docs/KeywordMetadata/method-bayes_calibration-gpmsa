@@ -1,9 +1,9 @@
-Blurb:: Gaussian Process Models for Simulation Analysis (GPMSA)
+Blurb:: (Experimental) Gaussian Process Models for Simulation Analysis (GPMSA)
 Markov Chain Monte Carlo algorithm with Gaussian Process Surrogate
 Description::
 GPMSA (Gaussian Process Models for Simulation Analysis) is another 
 approach that provides the capability for Bayesian
-calibration.
+calibration. The GPMSA implementation currently is an experimental capability and not ready for production use at this time. 
 A key part of GPMSA is the construction of an emulator from simulation runs
 collected at various settings of input parameters. The emulator is a
 statistical model of the system response, and it is used to incorporate

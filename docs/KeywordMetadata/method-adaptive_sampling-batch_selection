@@ -1,6 +1,8 @@
 Blurb::
-How to select new points
+(Experimental) How to select new points
 Description::
+The adaptive_sampling is an experimental capability that is not ready for production use at this time. 
+
 With batch or multi-point
 selection, the true model can be evaluated in parallel and thus
 increase throughput before refitting our surrogate model. This proposes a new

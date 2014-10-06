@@ -1,6 +1,6 @@
-Blurb::
-Description::
-Topics::	empty
+Blurb:: (Experimental) Type of MCMC algorithm used (dram or multilevel).
+Description::  The mcmc_type currently is not able to be specified in GPMSA:  it is an experimental capability and not ready for production use at this time. 
+Topics::        bayesian_calibration
 Examples::
 Theory::
 Faq::

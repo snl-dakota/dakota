@@ -1,6 +1,8 @@
 Blurb::
-Build a GP surrogate and refine it adaptively
+(Experimental) Build a GP surrogate and refine it adaptively
 Description::
+This is an experimental capability that is not ready for production use at this point. 
+
 The goal in performing adaptive sampling is to construct a surrogate model that
 can be used as an accurate predictor to some expensive simulation, thus it is
 to one's advantage to build a surrogate that minimizes the error over the entire
