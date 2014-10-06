@@ -81,16 +81,17 @@ void ParallelLibrary::init_mpi_comm()
     // non-default settings to allow this level to stand-in as an mi_pl:
     pl.serverIntraComm  = mpiManager.dakota_mpi_comm();
     pl.serverCommRank   = mpiManager.world_rank();
-    pl.serverCommSize   = mpiManager.world_size();
+    pl.serverCommSize   = pl.procsPerServer   = mpiManager.world_size();
     pl.serverMasterFlag = (pl.serverCommRank == 0);
     // align specification settings, should they be queried:
-    pl.numServers       = 1;
+    pl.serverId         = pl.numServers       = 1;
     pl.procsPerServer   = pl.serverCommSize;
     // initialize MPI timer
     startMPITime        = MPI_Wtime();
   }
-  // else default ParallelLevel values apply
-  
+  else // most default ParallelLevel values apply
+    pl.serverId         = pl.numServers       = pl.procsPerServer = 1;
+
   if (pl.serverCommSize > 1) {
     start_msg = "Running MPI Dakota executable in parallel on ";
     start_msg += boost::lexical_cast<std::string>(pl.serverCommSize) + 
@@ -655,7 +656,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   if (child_pl.numServers < 1) { // no check on idlePartition for ded master
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
-    child_pl.serverId = 0;
+    child_pl.serverId = 1; // 1st peer, no dedication of master
     return;
   }
 
@@ -810,7 +811,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   if (child_pl.numServers < 2 && !child_pl.idlePartition) { // 1 peer, no idle
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
-    child_pl.serverId = 1; // one server, peer id = 1
+    child_pl.serverId = 1; // one peer server with id = 1
     return;
   }
 
