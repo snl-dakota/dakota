@@ -369,9 +369,9 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline void DataFitSurrModel::update_from_subordinate_model(bool recurse_flag)
 {
-  if (probDescDB.is_null()) { // instantiation on-the-fly
+  if (!actualModel.is_null()) {
     // data flows from the bottom-up, so recurse first
-    if (recurse_flag && !actualModel.is_null())
+    if (recurse_flag)
       actualModel.update_from_subordinate_model(recurse_flag);
     // now pull the latest updates from actualModel
     update_from_actual_model();

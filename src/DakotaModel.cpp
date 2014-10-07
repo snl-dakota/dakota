@@ -296,7 +296,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(SILENT_OUTPUT), hierarchicalTagging(false),
+  outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
   modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   modelRep(NULL), referenceCount(1)
