@@ -128,10 +128,10 @@ create_analysis_process(bool block_flag, bool new_group)
   // conserves memory over fork().  If some platforms have problems with a
   // hybrid fork/vfork approach, add #ifdef's but make vfork the default.
 
-#if defined(HAVE_WORKING_VFORK)
-  pid = vfork(); // replicate this process
-#elif defined(HAVE_WORKING_FORK)
+#if defined(HAVE_WORKING_FORK) && !defined(DAKOTA_USE_VFORK)
   pid = fork(); // replicate this process
+#elif defined(HAVE_WORKING_VFORK) && defined(DAKOTA_USE_VFORK)
+  pid = vfork(); // replicate this process
 #else
   Cerr << "Error: fork/vfork are not supported under this OS." << std::endl;
   abort_handler(-1);
