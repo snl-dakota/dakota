@@ -84,7 +84,7 @@ init_iterator_parallelism(int max_iterator_concurrency,
     max_procs_per_iterator, max_iterator_concurrency, default_config,
     iteratorScheduling, false);// peer_dynamic not available prior to threading
 
-  update(parallelLib.mi_parallel_level_last_index());
+  update(parallelLib.parallel_configuration().mi_parallel_level_last_index());
 
   // Manage ostream output and binary restart input/output.  If concurrent
   // iterators, use tagged files.

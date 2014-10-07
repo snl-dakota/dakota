@@ -630,10 +630,10 @@ public:
 
   /// return the index within parallelLevels corresponding to pl_iter
   size_t parallel_level_index(ParLevLIter pl_iter);
-  /// return the index within miPLIters corresponding to pl_iter
-  size_t mi_parallel_level_index(ParLevLIter pl_iter) const;
-  /// return index of trailing entry in miPLIters
-  size_t mi_parallel_level_last_index() const;
+  // return the index within currPCIter->miPLIters corresponding to pl_iter
+  //size_t mi_parallel_level_index(ParLevLIter pl_iter) const;
+  // return index of trailing entry in currPCIter->miPLIters
+  //size_t mi_parallel_level_last_index() const;
 
   /// return the set of analysis intra communicators for all parallel
   /// configurations (used for setting up direct simulation interfaces
@@ -960,6 +960,8 @@ inline size_t ParallelLibrary::parallel_level_index(ParLevLIter pl_iter)
 }
 
 
+/* These are error-prone due to requirement to update currPCIter
+   --> force usage of {method,model}PCIter in clients...
 inline size_t ParallelLibrary::
 mi_parallel_level_index(ParLevLIter pl_iter) const
 {
@@ -987,6 +989,7 @@ inline size_t ParallelLibrary::mi_parallel_level_last_index() const
   else 
     return currPCIter->mi_parallel_level_last_index();
 }
+*/
 
 
 inline std::vector<MPI_Comm> ParallelLibrary::analysis_intra_communicators()
