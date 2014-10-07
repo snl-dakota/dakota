@@ -243,7 +243,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = the_model.serve_configurations(pl_iter);
+    int last_concurrency = the_model.serve_initialization(pl_iter);
     // store data for {run,free}_iterator() below:
     the_iterator.maximum_evaluation_concurrency(last_concurrency);
     the_iterator.iterated_model(the_model);
@@ -283,7 +283,7 @@ init_iterator(const String& method_string, Iterator& the_iterator,
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = the_model.serve_configurations(pl_iter);
+    int last_concurrency = the_model.serve_initialization(pl_iter);
     // store data for {run,free}_iterator() below:
     the_iterator.maximum_evaluation_concurrency(last_concurrency);
     the_iterator.iterated_model(the_model);
@@ -306,8 +306,13 @@ set_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
   //parallel_lib.parallel_configuration_iterator(
   //  the_iterator.iterated_model().parallel_configuration_iterator());
 
-  // set communicators for the_iterator
-  the_iterator.set_communicators(pl_iter);
+  // iterator rank 0: set the iterator communicators
+  if (pl_iter->server_communicator_rank() == 0)
+    the_iterator.set_communicators(pl_iter);
+  // iterator ranks 1->n
+  else // TO DO: is model.serve_set() necessary ?
+    the_iterator.derived_set_communicators(pl_iter);
+    // uses iteratedModel and maxEvalConcurrency stored in init_comms()
 }
 
 
@@ -352,8 +357,13 @@ free_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
   //parallel_lib.parallel_configuration_iterator(
   //  the_iterator.iterated_model().parallel_configuration_iterator());
 
-  // free communicators for the_iterator
-  the_iterator.free_communicators(pl_iter);
+  // iterator rank 0: free the iterator communicators
+  if (pl_iter->server_communicator_rank() == 0)
+    the_iterator.free_communicators(pl_iter);
+  // iterator ranks 1->n
+  else // TO DO: is model.serve_free() necessary ?
+    the_iterator.derived_free_communicators(pl_iter);
+    // uses iteratedModel and maxEvalConcurrency stored in init_comms()
 }
 
 

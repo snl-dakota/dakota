@@ -303,11 +303,11 @@ public:
   MPI_Comm analysis_comm() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
-  /// terminate serve_configurations() on other iteratorComm processors
+  /// terminate serve_initialization() on other iteratorComm processors
   void stop_configurations(ParLevLIter pl_iter);
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
-  int serve_configurations(ParLevLIter pl_iter);
+  int serve_initialization(ParLevLIter pl_iter);
 
   /// estimate messageLengths for a model
   void estimate_message_lengths();

@@ -70,6 +70,13 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// derived class contributions to setting the communicators
+  /// associated with this Iterator instance
+  virtual void derived_set_communicators(ParLevLIter pl_iter);
+  /// derived class contributions to freeing the communicators
+  /// associated with this Iterator instance
+  virtual void derived_free_communicators(ParLevLIter pl_iter);
+
   // Run phase functions: derived classes reimplementing one of these
   // must call the same function in their closest parent which implements.
 
@@ -308,12 +315,6 @@ protected:
   /// derived class contributions to initializing the communicators
   /// associated with this Iterator instance
   virtual void derived_init_communicators(ParLevLIter pl_iter);
-  /// derived class contributions to setting the communicators
-  /// associated with this Iterator instance
-  virtual void derived_set_communicators(ParLevLIter pl_iter);
-  /// derived class contributions to freeing the communicators
-  /// associated with this Iterator instance
-  virtual void derived_free_communicators(ParLevLIter pl_iter);
 
   /// set inherited data attributes based on extractions from incoming model
   virtual void update_from_model(const Model& model);

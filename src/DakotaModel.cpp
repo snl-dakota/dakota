@@ -3034,7 +3034,7 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // (meta-iterator partitioning is no longer required) --> leave commented
     // out for now. 
 
-    // matches bcast in Model::serve_configurations() called from
+    // matches bcast in Model::serve_initialization() called from
     // IteratorScheduler::init_iterator().  bcastFlag assures that, when Model
     // recursions are present in Iterator instantiations, only the matching
     // Model instance participates in this collective communication.
@@ -3096,10 +3096,10 @@ void Model::stop_configurations(ParLevLIter pl_iter)
 }
 
 
-int Model::serve_configurations(ParLevLIter pl_iter)
+int Model::serve_initialization(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->serve_configurations(pl_iter);
+    return modelRep->serve_initialization(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int max_eval_concurrency = 1, last_eval_concurrency = 1;
     while (max_eval_concurrency) {
