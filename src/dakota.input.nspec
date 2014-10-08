@@ -835,6 +835,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ variance_based_decomp {N_mdm(true,vbdFlag)}
                 [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
                ]
+              [ backfill {N_mdm(true,backfillFlag)} ]
              )
             [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
            )

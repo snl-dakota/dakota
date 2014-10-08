@@ -954,6 +954,7 @@ TAG "method/sampling/sample_type/incremental_lhs/previous_samples"
 
 TAG "method/sampling/variance_based_decomp"
 TAG "method/sampling/variance_based_decomp/drop_tolerance"
+TAG "method/sampling/backfill"
 TAG "method/polynomial_chaos/fixed_seed"
 	DESC "{Fixed seed flag} MethodCommands.html#MethodNonDMC"
 

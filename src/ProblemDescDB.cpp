@@ -2840,6 +2840,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	Locked_db();
     #define P &DataMethodRep::
     static KW<bool, DataMethodRep> Bdme[] = {	// must be sorted
+	{"backfill", P backfillFlag},
 	{"coliny.constant_penalty", P constantPenalty},
 	{"coliny.expansion", P expansionFlag},
 	{"coliny.randomize", P randomizeOrderFlag},

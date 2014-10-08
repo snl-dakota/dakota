@@ -6489,6 +6489,7 @@ static StringArray
 static bool
 	MP_(approxExportAnnotated),
 	MP_(approxImportAnnotated),
+	MP_(backfillFlag),
 	MP_(calibrateSigmaFlag),
 	MP_(constantPenalty),
 	MP_(crossValidation),

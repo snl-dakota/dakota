@@ -758,6 +758,9 @@ public:
   bool vbdFlag;
   /// the \c var_based_decomp tolerance for omitting index output
   Real vbdDropTolerance;
+  /// the \c backfill option allows one to augment in LHS sample 
+  /// by enforcing the addition of unique discrete variables to the sample
+  bool backfillFlag;
 
   // NonD
 

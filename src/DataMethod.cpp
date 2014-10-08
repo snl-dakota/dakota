@@ -114,7 +114,7 @@ DataMethodRep::DataMethodRep():
   randomSeed(0),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
-  vbdDropTolerance(-1.),
+  vbdDropTolerance(-1.),backfillFlag(false),
   // NonD
   vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE), rngName("mt19937"),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
@@ -233,7 +233,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
-    << vbdFlag << vbdDropTolerance;
+    << vbdFlag << vbdDropTolerance << backfillFlag;
 
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
@@ -358,7 +358,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag >> previousSamples
-    >> vbdFlag >> vbdDropTolerance;
+    >> vbdFlag >> vbdDropTolerance >> backfillFlag;
 
   // NonD
   s >> vbdOrder >> covarianceControl >> rngName >> refinementType
@@ -483,7 +483,7 @@ void DataMethodRep::write(std::ostream& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
-    << vbdFlag << vbdDropTolerance;
+    << vbdFlag << vbdDropTolerance << backfillFlag;
 
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1306 distinct keywords (plus 207 aliases) **/
+/** 1307 distinct keywords (plus 207 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -1230,12 +1230,13 @@ static KeyWord
 	kw_221[1] = {
 		{"drop_tolerance",10,0,1,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)}
 		},
-	kw_222[7] = {
+	kw_222[8] = {
 		{0,0,1,0,0,kw_22},
 		{0,0,2,0,0,kw_23},
 		{0,0,4,0,0,kw_28},
 		{0,0,2,0,0,kw_193},
 		{0,0,1,0,0,kw_194},
+		{"backfill",8,0,3,0,0,0.,0.,0,N_mdm(true,backfillFlag)},
 		{"sample_type",8,4,1,0,kw_220},
 		{"variance_based_decomp",8,1,2,0,kw_221,0.,0.,0,N_mdm(true,vbdFlag)}
 		},
@@ -1554,7 +1555,7 @@ static KeyWord
 		{"nond_local_reliability",0,3,10,1,kw_163,0.,0.,-20,N_mdm(utype,methodName_LOCAL_RELIABILITY)},
 		{"nond_pof_darts",0,1,10,1,kw_188,0.,0.,14,N_mdm(utype,methodName_POF_DARTS)},
 		{"nond_polynomial_chaos",0,20,10,1,kw_218,0.,0.,14,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
-		{"nond_sampling",0,2,10,1,kw_222,0.,0.,16,N_mdm(utype,methodName_RANDOM_SAMPLING)},
+		{"nond_sampling",0,3,10,1,kw_222,0.,0.,16,N_mdm(utype,methodName_RANDOM_SAMPLING)},
 		{"nond_stoch_collocation",0,18,10,1,kw_232,0.,0.,20,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"nonlinear_cg",8,1,10,1,kw_233,0.,0.,0,N_mdm(utype,methodName_NONLINEAR_CG)},
 		{"npsol_sqp",8,0,10,1,kw_235,0.,0.,0,N_mdm(utype,methodName_NPSOL_SQP)},
@@ -1570,7 +1571,7 @@ static KeyWord
 		{"polynomial_chaos",8,20,10,1,kw_218,0.,0.,0,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
 		{"psuade_moat",8,1,10,1,kw_246,0.,0.,0,N_mdm(utype,methodName_PSUADE_MOAT)},
 		{"richardson_extrap",8,4,10,1,kw_247,0.,0.,0,N_mdm(utype,methodName_RICHARDSON_EXTRAP)},
-		{"sampling",8,2,10,1,kw_222,0.,0.,0,N_mdm(utype,methodName_RANDOM_SAMPLING)},
+		{"sampling",8,3,10,1,kw_222,0.,0.,0,N_mdm(utype,methodName_RANDOM_SAMPLING)},
 		{"scaling",8,0,8,0,0,0.,0.,0,N_mdm(true,methodScaling)},
 		{"soga",8,3,10,1,kw_253,0.,0.,0,N_mdm(utype,methodName_SOGA)},
 		{"speculative",8,0,5,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},
