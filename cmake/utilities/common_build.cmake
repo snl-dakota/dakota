@@ -52,6 +52,10 @@ if ( NOT DAKOTA_TEST_SBATCH )
   set( DAKOTA_TEST_SBATCH OFF )
 endif()
 
+if ( NOT DAKOTA_TEST_MSUB )
+  set( DAKOTA_TEST_MSUB OFF )
+endif()
+
 if ( NOT DEFINED DAKOTA_DO_TEST )
   set( DAKOTA_DO_TEST ON )
 endif()
@@ -219,8 +223,8 @@ if ( ${ConfigStatus} EQUAL 0 )
     if (DAKOTA_TEST_SBATCH)
       # Generate files needed to submit tests to queue
       configure_file(
-	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sh.in
-	${CTEST_BINARY_DIRECTORY}/dakota_tests.sh @ONLY)
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_sbatch.sh.in
+	${CTEST_BINARY_DIRECTORY}/dakota_sbatch.sh @ONLY)
       configure_file(
 	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sbatch.in
 	${CTEST_BINARY_DIRECTORY}/dakota_tests.sbatch @ONLY)
@@ -229,7 +233,23 @@ if ( ${ConfigStatus} EQUAL 0 )
 	${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
       # TODO: Propagate the exit code
       message("Submitting tests to batch system.")
-      execute_process(COMMAND dakota_tests.sh 
+      execute_process(COMMAND dakota_sbatch.sh 
+	WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+	RESULT_VARIABLE CtestStatus)
+    elseif (DAKOTA_TEST_MSUB)
+      # Generate files needed to submit tests to queue
+      configure_file(
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_msub.sh.in
+	${CTEST_BINARY_DIRECTORY}/dakota_msub.sh @ONLY)
+      configure_file(
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.msub.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.msub @ONLY)
+      configure_file(
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.cmake.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
+      # TODO: Propagate the exit code
+      message("Submitting tests to batch system.")
+      execute_process(COMMAND dakota_msub.sh 
 	WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
 	RESULT_VARIABLE CtestStatus)
     else()
