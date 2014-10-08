@@ -1815,24 +1815,26 @@ void NestedModel::component_parallel_mode(short mode)
   }
 
   // set ParallelConfiguration for new mode & retrieve new data
-  int new_iter_comm_size = 1;
   if (mode == OPTIONAL_INTERFACE) {
     parallelLib.parallel_configuration_iterator(modelPCIter);
     index = subIteratorSched.miPLIndex;
-    new_iter_comm_size
-      = modelPCIter->mi_parallel_level(index).server_communicator_size();
   }
   else if (mode == SUB_MODEL) {
-    ParConfigLIter sm_pc_iter = subModel.parallel_configuration_iterator();
-    parallelLib.parallel_configuration_iterator(sm_pc_iter);
+    parallelLib.parallel_configuration_iterator(
+      subModel.parallel_configuration_iterator());
     index = subModel.mi_parallel_level_index();
-    new_iter_comm_size
-      = sm_pc_iter->mi_parallel_level(index).server_communicator_size();
   }
 
   // activate the new serve mode
-  if (new_iter_comm_size > 1 && componentParallelMode != mode)
-    parallelLib.bcast_i(mode, index);
+  if (componentParallelMode != mode) {
+    // new (mode = OPTIONAL_INTERFACE,SUB_MODEL) or previous (mode = 0) config:
+    const ParallelConfiguration& pc = parallelLib.parallel_configuration();
+    int new_comm_size = pc.mi_parallel_level(index).server_communicator_size();
+    // if multiproc comm, broadcast new mode (including 0)
+    if (new_comm_size > 1)
+      parallelLib.bcast_i(mode, index);
+  }
+
   componentParallelMode = mode;
 }
 

@@ -500,9 +500,6 @@ inline size_t NestedModel::mi_parallel_level_index() const
 
 inline void NestedModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
 {
-  // don't recurse, as subModel.serve() will set subModel comms
-  set_communicators(pl_iter, max_eval_concurrency, false);
-
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;
   while (componentParallelMode) {
@@ -513,7 +510,8 @@ inline void NestedModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
       optionalInterface.serve_evaluations();
     }
     else if (componentParallelMode == SUB_MODEL)
-      subModel.serve(pl_iter, subIterator.maximum_evaluation_concurrency());
+      subModel.serve(pl_iter/*TO DO*/,
+		     subIterator.maximum_evaluation_concurrency());
   }
 }
 
