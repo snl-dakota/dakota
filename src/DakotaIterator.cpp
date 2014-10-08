@@ -1106,6 +1106,8 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
     else
       methodPCIter = map_iter->second;
 
+    // This corresponds to pl_iter, prior to sub-iterator partitioning, and
+    // is therefore not that useful (misleading in MetaIterators).
     //miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
     // Unlike init_comms, set_comms DOES need to be recursed each time to 

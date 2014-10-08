@@ -3153,8 +3153,7 @@ void Model::set_ie_asynchronous_mode(int max_eval_concurrency)
   // the top level iterator & model; the asynch flag for the sub-iterator &
   // sub-model must be set by calling init_communicators on the sub-model
   // within derived_init_communicators.
-  parallelLib.parallel_configuration_iterator(modelPCIter); // reset
-  if (parallelLib.ie_parallel_level_defined()) {
+  if (modelPCIter->ie_parallel_level_defined()) {
     const ParallelLevel& ie_pl = modelPCIter->ie_parallel_level();
 
     // Note: local_eval_synchronization() handles case of eval concurrency==1

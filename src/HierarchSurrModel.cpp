@@ -918,51 +918,36 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   size_t index; int iter_comm_size;
   if (componentParallelMode != mode) {
     if (componentParallelMode == LF_MODEL) { // old mode
-      index = lowFidelityModel.mi_parallel_level_index();// active runtime index
-      //ParConfigLIter lf_pc_iter
-      //  = lowFidelityModel.parallel_configuration_iterator();
-      iter_comm_size = lowFidelityModel.parallel_configuration_iterator()->
-	mi_parallel_level(index).server_communicator_size();
-      if (iter_comm_size > 1) {
-	//parallelLib.parallel_configuration_iterator(lf_pc_iter);
+      const ParallelLevel& mi_pl =
+	lowFidelityModel.parallel_configuration_iterator()->
+	mi_parallel_level(lowFidelityModel.mi_parallel_level_index());
+      if (mi_pl.server_communicator_size() > 1)
 	lowFidelityModel.stop_servers();
-      }
     }
     else if (componentParallelMode == HF_MODEL) { // old mode
-      index = highFidelityModel.mi_parallel_level_index();//active runtime index
-      //ParConfigLIter hf_pc_iter
-      //  = highFidelityModel.parallel_configuration_iterator();
-      iter_comm_size = highFidelityModel.parallel_configuration_iterator()->
-	mi_parallel_level(index).server_communicator_size();
-      if (iter_comm_size > 1) {
-	//parallelLib.parallel_configuration_iterator(hf_pc_iter);
+      const ParallelLevel& mi_pl =
+	highFidelityModel.parallel_configuration_iterator()->
+	mi_parallel_level(highFidelityModel.mi_parallel_level_index());
+      if (mi_pl.server_communicator_size() > 1)
 	highFidelityModel.stop_servers();
-      }
     }
   }
 
   // set ParallelConfiguration for new mode and retrieve new data
   if (mode == HF_MODEL) { // new mode
-    //parallelLib.parallel_configuration_iterator(
-    //  highFidelityModel.parallel_configuration_iterator());
-    index = highFidelityModel.mi_parallel_level_index(); // active runtime index
-    iter_comm_size = highFidelityModel.parallel_configuration_iterator()->
-      mi_parallel_level(index).server_communicator_size();
+    // activation delegated to highFidelityModel
   }
   else if (mode == LF_MODEL) { // new mode
-    //parallelLib.parallel_configuration_iterator(
-    //  lowFidelityModel.parallel_configuration_iterator());
-    index = lowFidelityModel.mi_parallel_level_index(); // active runtime index
-    iter_comm_size = lowFidelityModel.parallel_configuration_iterator()->
-      mi_parallel_level(index).server_communicator_size();
+    // activation delegated to lowFidelityModel
   }
 
-  // activate the new serve mode (matches HierarchSurrModel::serve_run());
-  // index & iter_comm_size can be new (mode = OI,SM) or prev (mode = 0) values
-  if (componentParallelMode != mode && iter_comm_size > 1) {
-    parallelLib.bcast_i(mode, index);
+  // activate new serve mode (matches HierarchSurrModel::serve_run(pl_iter)).
+  // These bcasts match the outer parallel context (pl_iter).
+  if (componentParallelMode != mode && modelPCIter->
+      mi_parallel_level(miPLIndex).server_communicator_size() > 1) {
+    parallelLib.bcast_i(mode, miPLIndex);
     if (mode == HF_MODEL)
-      parallelLib.bcast_i(responseMode, index);
+      parallelLib.bcast_i(responseMode, miPLIndex);
   }
 
   componentParallelMode = mode;
@@ -975,7 +960,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   // communication from HierarchSurrModel::component_parallel_mode()
   componentParallelMode = 1;
   while (componentParallelMode) {
-    parallelLib.bcast(componentParallelMode, *pl_iter);
+    parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode == LF_MODEL) {
       lowFidelityModel.serve_run(pl_iter, max_eval_concurrency);
       // Note: ignores erroneous BYPASS_SURROGATE to avoid responseMode bcast

@@ -251,6 +251,15 @@ public:
   /// return the ParallelLevel corresponding to eaPLIter
   const ParallelLevel& ea_parallel_level() const;
 
+  /// test for definition of world parallel level
+  bool  w_parallel_level_defined() const;
+  /// test for definition of meta-iterator-iterator parallel level
+  bool mi_parallel_level_defined(size_t index = _NPOS) const;
+  /// test for definition of iterator-evaluation parallel level
+  bool ie_parallel_level_defined() const;
+  /// test for definition of evaluation-analysis parallel level
+  bool ea_parallel_level_defined() const;
+
   /// return miPLIters.front()
   ParLevLIter  w_parallel_level_iterator() const;
   /// return miPLIters[index]
@@ -283,14 +292,16 @@ private:
   /// list iterator for world level followed by any concurrent iterator
   /// partitions (there may be multiple per parallel configuration instance)
   std::vector<ParLevLIter> miPLIters;
-
   /// list iterator identifying the iterator-evaluation parallelLevel 
   /// (there can only be one)
   ParLevLIter iePLIter;
-
   /// list iterator identifying the evaluation-analysis parallelLevel 
   /// (there can only be one)
   ParLevLIter eaPLIter;
+
+  /// snapshot of the end of ParallelLibrary::parallelLevels; used for detecting
+  /// when a component of the parallel configuration has been initialized
+  ParLevLIter endPLIter;
 };
 
 
@@ -309,6 +320,7 @@ inline void ParallelConfiguration::assign(const ParallelConfiguration& pc)
   miPLIters = pc.miPLIters;
   iePLIter  = pc.iePLIter;
   eaPLIter  = pc.eaPLIter;
+  endPLIter = pc.endPLIter;
 }
 
 
@@ -355,6 +367,27 @@ inline const ParallelLevel& ParallelConfiguration::ie_parallel_level() const
 
 inline const ParallelLevel& ParallelConfiguration::ea_parallel_level() const
 { return *eaPLIter; }
+
+
+inline bool ParallelConfiguration::w_parallel_level_defined() const
+{ return !miPLIters.empty(); }
+
+
+inline bool ParallelConfiguration::mi_parallel_level_defined(size_t index) const
+{
+  if (index == _NPOS) // check for trailing entry (default=last partition)
+    return ( !miPLIters.empty() && miPLIters.back() != endPLIter );
+  else // specific mi parallel level from index
+    return ( index < miPLIters.size() && miPLIters[index] != endPLIter );
+}
+
+
+inline bool ParallelConfiguration::ie_parallel_level_defined() const
+{ return ( iePLIter != endPLIter ); }
+
+
+inline bool ParallelConfiguration::ea_parallel_level_defined() const
+{ return ( eaPLIter != endPLIter ); }
 
 
 inline ParLevLIter ParallelConfiguration::w_parallel_level_iterator() const
@@ -622,8 +655,8 @@ public:
   void increment_parallel_configuration();
   // decrement currPCIter
   //void decrement_parallel_configuration();
-  /// test current parallel configuration for definition of world parallel level
 
+  /// test current parallel configuration for definition of world parallel level
   bool  w_parallel_level_defined() const;
   /// test current parallel configuration for definition of
   /// meta-iterator-iterator parallel level
@@ -840,27 +873,25 @@ inline size_t ParallelLibrary::num_parallel_configurations() const
 
 inline bool ParallelLibrary::parallel_configuration_is_complete()
 {
-  // All processors invoke init_iterator_comms
-  // All strategy procs except ded master invoke init_eval_comms
-  // All iterator procs except ded master invoke init_analysis_comms
-  if ( currPCIter->miPLIters.empty() )
-    return false; // PC incomplete if mi level undefined
-  else { // mi level defined
-    const ParallelLevel& mi_pl = currPCIter->mi_parallel_level();
-    if (mi_pl.dedicatedMasterFlag && mpiManager.world_rank() == 0)
+  size_t i, num_mipl = currPCIter->miPLIters.size();
+  if (!num_mipl) return false; // PC incomplete if w level undefined
+  bool prev_pl_rank0 = (mpiManager.world_rank() == 0);
+  for (i=1; i<num_mipl; ++i) { // skip w_pl (dedicated master not supported)
+    const ParallelLevel& mi_pl = *currPCIter->miPLIters[i];
+    if (mi_pl.dedicatedMasterFlag && prev_pl_rank0)
       return true; // PC complete at mi level for strategy ded master
-    else if ( currPCIter->iePLIter == parallelLevels.end() )
-      return false; // PC incomplete for other procs if ie level undefined
-    else { // ie level defined
-      const ParallelLevel& ie_pl = currPCIter->ie_parallel_level();
-      if (ie_pl.dedicatedMasterFlag && mi_pl.serverCommRank == 0)
-	return true;  // PC complete at ie level for iterator ded master
-      else if ( currPCIter->eaPLIter == parallelLevels.end() )
-	return false; // PC incomplete for other procs if ea level undefined
-      else // ea level defined
-	return true;  // PC complete
-    }
+    else
+      prev_pl_rank0 = (mi_pl.serverCommRank == 0);
   }
+
+  if (!currPCIter->ie_parallel_level_defined())
+    return false; // PC incomplete for remaining procs if ie level undefined
+
+  const ParallelLevel& ie_pl = currPCIter->ie_parallel_level();
+  if (ie_pl.dedicatedMasterFlag && prev_pl_rank0)
+    return true;  // PC complete at ie level for iterator ded master
+  else // PC incomplete for remaining procs if ea level undefined
+    return currPCIter->ea_parallel_level_defined();
 }
 
 
@@ -906,7 +937,7 @@ increment_parallel_configuration(ParLevLIter mi_pl_iter)
       ++pc.numParallelLevels;
 
   // ie & ea levels to be defined by ApplicationInterface::init_communicators()
-  pc.iePLIter = pc.eaPLIter = parallelLevels.end();
+  pc.iePLIter = pc.eaPLIter = pc.endPLIter = parallelLevels.end();
 
   parallelConfigurations.push_back(pc);
   currPCIter = --parallelConfigurations.end();
@@ -928,34 +959,28 @@ inline void ParallelLibrary::increment_parallel_configuration()
 inline bool ParallelLibrary::w_parallel_level_defined() const
 {
   return (  currPCIter != parallelConfigurations.end() &&
-	   !currPCIter->miPLIters.empty() );
+	    currPCIter->w_parallel_level_defined() );
 }
 
 
 inline bool ParallelLibrary::mi_parallel_level_defined(size_t index) const
 {
-  if (currPCIter == parallelConfigurations.end())
-    return false;
-  else if (index == _NPOS) // check for trailing entry (default=last partition)
-    return ( !currPCIter->miPLIters.empty() &&
-	      currPCIter->miPLIters.back() != parallelLevels.end() );
-  else // specific mi parallel level from index
-    return ( index < currPCIter->miPLIters.size() &&
-	     currPCIter->miPLIters[index] != parallelLevels.end() );
+  return (  currPCIter != parallelConfigurations.end() &&
+	    currPCIter->mi_parallel_level_defined(index) );
 }
 
 
 inline bool ParallelLibrary::ie_parallel_level_defined() const
 {
   return ( currPCIter != parallelConfigurations.end() &&
-	   currPCIter->iePLIter != parallelLevels.end() );
+	   currPCIter->ie_parallel_level_defined() );
 }
 
 
 inline bool ParallelLibrary::ea_parallel_level_defined() const
 {
   return ( currPCIter != parallelConfigurations.end() &&
-	   currPCIter->eaPLIter != parallelLevels.end() );
+	   currPCIter->ea_parallel_level_defined() );
 }
 
 
