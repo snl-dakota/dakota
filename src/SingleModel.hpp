@@ -99,7 +99,7 @@ protected:
 
   /// Service userDefinedInterface job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
   /// executed by the master to terminate userDefinedInterface server
   /// operations when SingleModel iteration is complete.
   void stop_servers();
@@ -150,7 +150,10 @@ inline Interface& SingleModel::derived_interface()
 
 
 inline void SingleModel::derived_compute_response(const ActiveSet& set)
-{ userDefinedInterface.map(currentVariables, set, currentResponse); }
+{
+  parallelLib.parallel_configuration_iterator(modelPCIter);
+  userDefinedInterface.map(currentVariables, set, currentResponse);
+}
 
 
 inline void SingleModel::derived_asynch_compute_response(const ActiveSet& set)
@@ -158,11 +161,17 @@ inline void SingleModel::derived_asynch_compute_response(const ActiveSet& set)
 
 
 inline const IntResponseMap& SingleModel::derived_synchronize()
-{ return userDefinedInterface.synch(); }
+{
+  parallelLib.parallel_configuration_iterator(modelPCIter);
+  return userDefinedInterface.synch();
+}
 
 
 inline const IntResponseMap& SingleModel::derived_synchronize_nowait()
-{ return userDefinedInterface.synch_nowait(); }
+{
+  parallelLib.parallel_configuration_iterator(modelPCIter);
+  return userDefinedInterface.synch_nowait();
+}
 
 
 inline short SingleModel::local_eval_synchronization()
@@ -187,6 +196,7 @@ inline void SingleModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
+  parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.init_communicators(messageLengths, max_eval_concurrency);
 }
 
@@ -215,9 +225,10 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
-inline void SingleModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
+inline void SingleModel::
+serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
-  //parallelLib.parallel_configuration_iterator(modelPCIter);
+  parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.serve_evaluations();
 }
 

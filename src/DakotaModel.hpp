@@ -217,7 +217,7 @@ public:
 
   /// Service job requests received from the master.  Completes when
   /// a termination message is received from stop_servers().
-  virtual void serve(ParLevLIter pl_iter, int max_eval_concurrency);
+  virtual void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
   /// Executed by the master to terminate all server operations for a
   /// particular model when iteration on the model is complete.
   virtual void stop_servers();
@@ -303,11 +303,11 @@ public:
   MPI_Comm analysis_comm() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
-  /// terminate serve_initialization() on other iteratorComm processors
+  /// terminate serve_init() on other iteratorComm processors
   void stop_configurations(ParLevLIter pl_iter);
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
-  int serve_initialization(ParLevLIter pl_iter);
+  int serve_init(ParLevLIter pl_iter);
 
   /// estimate messageLengths for a model
   void estimate_message_lengths();

@@ -356,8 +356,8 @@ protected:
 
   /// the active ParallelConfiguration used by this Iterator instance
   ParConfigLIter methodPCIter;
-  /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
-  size_t miPLIndex;
+  // index for the active ParallelLevel within ParallelConfiguration::miPLIters
+  //size_t miPLIndex;
   /// track the available configurations that have been created
   /// (init_communicators) and are available for activation at run
   /// time (set_communicators)

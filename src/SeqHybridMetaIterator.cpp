@@ -352,11 +352,11 @@ void SeqHybridMetaIterator::run_sequential()
 	  // send curr_accepts_multi from 1st iterator master to strategy master
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
-	    parallelLib.send_mi(multi_flag, 0, 0);
+	    parallelLib.send_mi(multi_flag, 0, 0, iterSched.miPLIndex);
 	  }
 	  else if (server_id == 0) {
 	    int multi_flag; MPI_Status status;
-	    parallelLib.recv_mi(multi_flag, 1, 0, status);
+	    parallelLib.recv_mi(multi_flag, 1, 0, status, iterSched.miPLIndex);
 	    curr_accepts_multi = (bool)multi_flag; // int -> bool
 	    iterSched.numIteratorJobs
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
@@ -368,7 +368,7 @@ void SeqHybridMetaIterator::run_sequential()
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  // bcast numIteratorJobs over iteratorComm
 	  if (iterSched.iteratorCommSize > 1)
-	    parallelLib.bcast_i(iterSched.numIteratorJobs);
+	    parallelLib.bcast_i(iterSched.numIteratorJobs, iterSched.miPLIndex);
 	}
       }
       // --------------------------
@@ -451,14 +451,14 @@ void SeqHybridMetaIterator::run_sequential()
 	  MPIPackBuffer send_buffer;
 	  send_buffer << parameterSets;
 	  int buffer_len = send_buffer.size();
-	  parallelLib.bcast_mi(buffer_len);
-	  parallelLib.bcast_mi(send_buffer);
+	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
+	  parallelLib.bcast_mi(send_buffer, iterSched.miPLIndex);
 	}
 	else { // replace partial list
 	  int buffer_len;
-	  parallelLib.bcast_mi(buffer_len);
+	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallelLib.bcast_mi(recv_buffer);
+	  parallelLib.bcast_mi(recv_buffer, iterSched.miPLIndex);
 	  recv_buffer >> parameterSets;
 	}
       }

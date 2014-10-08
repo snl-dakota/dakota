@@ -1655,10 +1655,13 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   //if (componentParallelMode == mode)
   //  return; // already in correct parallel mode
 
-  if (mode == ACTUAL_MODEL)
-    parallelLib.parallel_configuration_iterator(
-      actualModel.parallel_configuration_iterator());
-  else if (mode == APPROX_INTERFACE)
+  // setting the parallel config iterator is now the responsibility of
+  // actualModel (occurs if its derived model type contains an interface)
+  //if (mode == ACTUAL_MODEL)
+  //  parallelLib.parallel_configuration_iterator(
+  //    actualModel.parallel_configuration_iterator());
+  //else 
+  if (mode == APPROX_INTERFACE)
     parallelLib.parallel_configuration_iterator(modelPCIter);
   //else if (mode == 0)
 

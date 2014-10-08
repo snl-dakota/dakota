@@ -357,14 +357,14 @@ void ConcurrentMetaIterator::pre_run()
 	  MPIPackBuffer send_buffer;
 	  send_buffer << random_jobs;
 	  int buffer_len = send_buffer.size();
-	  parallelLib.bcast_mi(buffer_len);
-	  parallelLib.bcast_mi(send_buffer);
+	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
+	  parallelLib.bcast_mi(send_buffer, iterSched.miPLIndex);
 	}
 	else {
 	  int buffer_len;
-	  parallelLib.bcast_mi(buffer_len);
+	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallelLib.bcast_mi(recv_buffer);
+	  parallelLib.bcast_mi(recv_buffer, iterSched.miPLIndex);
 	  recv_buffer >> random_jobs;
 	}
       }

@@ -1106,8 +1106,7 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
     else
       methodPCIter = map_iter->second;
 
-    //parallelLib.parallel_configuration_iterator(methodPCIter);
-    miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+    //miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
     // Unlike init_comms, set_comms DOES need to be recursed each time to 
     // activate the correct comms at each level of the recursion.

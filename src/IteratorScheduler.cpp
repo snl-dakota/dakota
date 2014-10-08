@@ -243,7 +243,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = the_model.serve_initialization(pl_iter);
+    int last_concurrency = the_model.serve_init(pl_iter);
     // store data for {run,free}_iterator() below:
     the_iterator.maximum_evaluation_concurrency(last_concurrency);
     the_iterator.iterated_model(the_model);
@@ -283,7 +283,7 @@ init_iterator(const String& method_string, Iterator& the_iterator,
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = the_model.serve_initialization(pl_iter);
+    int last_concurrency = the_model.serve_init(pl_iter);
     // store data for {run,free}_iterator() below:
     the_iterator.maximum_evaluation_concurrency(last_concurrency);
     the_iterator.iterated_model(the_model);
@@ -339,7 +339,7 @@ run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
   }
   else { // serve until stopped
     //ParConfigLIter prev_pc = parallelLib.parallel_configuration_iterator();
-    the_model.serve(pl_iter, the_iterator.maximum_evaluation_concurrency());
+    the_model.serve_run(pl_iter, the_iterator.maximum_evaluation_concurrency());
     //parallelLib.parallel_configuration_iterator(prev_pc); // reset
   }
 }

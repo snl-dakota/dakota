@@ -527,8 +527,10 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   // initialize optionalInterface for parallel operations
-  if (!optInterfacePointer.empty())
+  if (!optInterfacePointer.empty()) {
+    parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
+  }
 
   if (!recurse_flag)
     return;
@@ -1795,20 +1797,24 @@ void NestedModel::component_parallel_mode(short mode)
   //  return; // already in correct parallel mode
 
   // terminate previous serve mode (if active)
-  size_t index;
+  size_t index; int iter_comm_size;
   if (componentParallelMode != mode) {
     if (componentParallelMode == OPTIONAL_INTERFACE) {
       index = subIteratorSched.miPLIndex; // runtime for active parallel config
-      if (modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
+      iter_comm_size
+	= modelPCIter->mi_parallel_level(index).server_communicator_size();
+      if (iter_comm_size > 1) {
 	parallelLib.parallel_configuration_iterator(modelPCIter);
 	optionalInterface.stop_evaluation_servers();
       }
     }
     else if (componentParallelMode == SUB_MODEL) {
       index = subModel.mi_parallel_level_index();
-      ParConfigLIter sm_pc_iter	= subModel.parallel_configuration_iterator();
-      if (sm_pc_iter->mi_parallel_level(index).server_communicator_size() > 1) {
-	parallelLib.parallel_configuration_iterator(sm_pc_iter);
+      //ParConfigLIter sm_pc_iter = subModel.parallel_configuration_iterator();
+      iter_comm_size = subModel.parallel_configuration_iterator()->
+	mi_parallel_level(index).server_communicator_size();
+      if (iter_comm_size > 1) {
+	//parallelLib.parallel_configuration_iterator(sm_pc_iter);
 	subModel.stop_servers();
       }
     }
@@ -1818,22 +1824,24 @@ void NestedModel::component_parallel_mode(short mode)
   if (mode == OPTIONAL_INTERFACE) {
     parallelLib.parallel_configuration_iterator(modelPCIter);
     index = subIteratorSched.miPLIndex;
+    iter_comm_size
+      = modelPCIter->mi_parallel_level(index).server_communicator_size();
   }
   else if (mode == SUB_MODEL) {
-    parallelLib.parallel_configuration_iterator(
-      subModel.parallel_configuration_iterator());
+    //parallelLib.parallel_configuration_iterator(
+    //  subModel.parallel_configuration_iterator());
     index = subModel.mi_parallel_level_index();
+    iter_comm_size = subModel.parallel_configuration_iterator()->
+      mi_parallel_level(index).server_communicator_size();
   }
 
-  // activate the new serve mode
-  if (componentParallelMode != mode) {
-    // new (mode = OPTIONAL_INTERFACE,SUB_MODEL) or previous (mode = 0) config:
-    const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-    int new_comm_size = pc.mi_parallel_level(index).server_communicator_size();
-    // if multiproc comm, broadcast new mode (including 0)
-    if (new_comm_size > 1)
-      parallelLib.bcast_i(mode, index);
-  }
+  // TO DO: think carefully through this indexing logic -- need to match
+  // the pl_iter in serve_run (possible need to trigger a remote advancement?)
+
+  // activate the new serve mode (matches NestedModel::serve_run()); index &
+  // iter_comm_size can be new (mode = OI,SM) or previous (mode = 0) values
+  if (componentParallelMode != mode && iter_comm_size > 1)
+    parallelLib.bcast_i(mode, index);
 
   componentParallelMode = mode;
 }

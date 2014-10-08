@@ -203,7 +203,7 @@ protected:
 
   /// Service actualModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
   /// Executed by the master to terminate actualModel server operations
   /// when DataFitSurrModel iteration is complete.
   void stop_servers();
@@ -499,10 +499,11 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 
 inline void DataFitSurrModel::
-serve(ParLevLIter pl_iter, int max_eval_concurrency)
+serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   if (!actualModel.is_null())
-    actualModel.serve(pl_iter, daceIterator.maximum_evaluation_concurrency());
+    actualModel.serve_run(pl_iter,
+			  daceIterator.maximum_evaluation_concurrency());
 }
 
 

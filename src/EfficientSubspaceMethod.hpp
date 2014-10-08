@@ -41,7 +41,8 @@ public:
 
   /// specialization of init comms due to varied use of the original model
   void derived_init_communicators(ParLevLIter pl_iter);
-
+  /// specialization of init comms due to varied use of the original model
+  void derived_set_communicators(ParLevLIter pl_iter);
   /// specialization of free comms due to varied use of the original model
   void derived_free_communicators(ParLevLIter pl_iter);
 
@@ -160,6 +161,8 @@ private:
   /// size numContinuousVars * (numSamples)
   RealMatrix varsMatrix;
 
+  /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
+  size_t miPLIndex;
 
   // Helper members
 

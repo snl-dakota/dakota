@@ -2983,13 +2983,13 @@ int Model::local_eval_concurrency()
 }
 
 
-void Model::serve(ParLevLIter pl_iter, int max_eval_concurrency)
+void Model::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->serve(pl_iter, max_eval_concurrency);
+    modelRep->serve_run(pl_iter, max_eval_concurrency);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual serve() function.\n"
-         << "This model does not support server operations." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual serve_run() function"
+	 << ".\nThis model does not support server operations." << std::endl;
     abort_handler(-1);
   }
 }
@@ -3034,12 +3034,12 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // (meta-iterator partitioning is no longer required) --> leave commented
     // out for now. 
 
-    // matches bcast in Model::serve_initialization() called from
+    // matches bcast in Model::serve_init() called from
     // IteratorScheduler::init_iterator().  bcastFlag assures that, when Model
     // recursions are present in Iterator instantiations, only the matching
     // Model instance participates in this collective communication.
     if (initCommsBcastFlag && pl_iter->server_communicator_rank() == 0)
-      parallelLib.bcast_i(max_eval_concurrency);
+      parallelLib.bcast(max_eval_concurrency, *pl_iter);
 
     // estimate messageLengths
     if (messageLengths.empty())
@@ -3096,10 +3096,10 @@ void Model::stop_configurations(ParLevLIter pl_iter)
 }
 
 
-int Model::serve_initialization(ParLevLIter pl_iter)
+int Model::serve_init(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->serve_initialization(pl_iter);
+    return modelRep->serve_init(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int max_eval_concurrency = 1, last_eval_concurrency = 1;
     while (max_eval_concurrency) {
@@ -3155,8 +3155,7 @@ void Model::set_ie_asynchronous_mode(int max_eval_concurrency)
   // within derived_init_communicators.
   parallelLib.parallel_configuration_iterator(modelPCIter); // reset
   if (parallelLib.ie_parallel_level_defined()) {
-    const ParallelLevel& ie_pl
-      = parallelLib.parallel_configuration().ie_parallel_level();
+    const ParallelLevel& ie_pl = modelPCIter->ie_parallel_level();
 
     // Note: local_eval_synchronization() handles case of eval concurrency==1
     bool message_passing = ie_pl.message_pass(), asynch_local_eval
@@ -3207,8 +3206,7 @@ MPI_Comm Model::analysis_comm() const
   if (modelRep) // envelope fwd to letter
     return modelRep->analysis_comm();
   else
-    return parallel_configuration_iterator()->
-      ea_parallel_level().server_intra_communicator();
+    return modelPCIter->ea_parallel_level().server_intra_communicator();
 }
 
 

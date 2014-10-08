@@ -261,7 +261,7 @@ protected:
 
   /// Service subModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
   /// executed by the master to terminate subModel server operations
   /// when RecastModel iteration is complete.
   void stop_servers();
@@ -619,8 +619,9 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
-inline void RecastModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
-{ subModel.serve(pl_iter, max_eval_concurrency); } // sets subModel comms
+inline void RecastModel::
+serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
+{ subModel.serve_run(pl_iter, max_eval_concurrency); } // sets subModel comms
 
 
 inline void RecastModel::stop_servers()

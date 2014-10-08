@@ -123,7 +123,7 @@ protected:
   /// Service optionalInterface and subModel job requests received from
   /// the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
   /// Executed by the master to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
   void stop_servers();
@@ -498,7 +498,8 @@ inline size_t NestedModel::mi_parallel_level_index() const
 { return subIteratorSched.miPLIndex; }
 
 
-inline void NestedModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
+inline void NestedModel::
+serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;
@@ -510,8 +511,8 @@ inline void NestedModel::serve(ParLevLIter pl_iter, int max_eval_concurrency)
       optionalInterface.serve_evaluations();
     }
     else if (componentParallelMode == SUB_MODEL)
-      subModel.serve(pl_iter/*TO DO*/,
-		     subIterator.maximum_evaluation_concurrency());
+      subModel.serve_run(pl_iter/*TO DO*/,
+			 subIterator.maximum_evaluation_concurrency());
   }
 }
 

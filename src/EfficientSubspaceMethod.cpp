@@ -305,17 +305,24 @@ void EfficientSubspaceMethod::derived_init_communicators(ParLevLIter pl_iter)
   // Instead of using the helper iterators convenience function, we
   // directly set up communicators for each of the contexts that will
   // be encountered at run-time
-  iteratedModel.init_communicators(pl_iter, initialSamples);
+  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);//initialSamples
   iteratedModel.init_communicators(pl_iter, batchSize);
   // defer this one to do it on the RecastModel at runtime
   //  iteratedModel.init_communicators(pl_iter, subspaceSamples);
 }
 
 
+void EfficientSubspaceMethod::derived_set_communicators(ParLevLIter pl_iter)
+{
+  miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+  iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+}
+
+
 void EfficientSubspaceMethod::derived_free_communicators(ParLevLIter pl_iter)
 {
   iteratedModel.free_communicators(pl_iter, batchSize);
-  iteratedModel.free_communicators(pl_iter, initialSamples);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);//initialSamples
   // defer this one to do it on the RecastModel at runtime
   //  iteratedModel.free_communicators(pl_iter, subspaceSamples);
 }
