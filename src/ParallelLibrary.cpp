@@ -1003,7 +1003,7 @@ void ParallelLibrary::print_configuration()
     properly for concurrent iterator strategies.  In the case of
     concurrent iterators, each iterator has its own restart file
     tagged with iterator number. */
-void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
+void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
 {
   // Design rationale: this class should manage parallel-related
   // issues including broadcast, delegating filename management and
@@ -1018,14 +1018,18 @@ void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
   if (pl.serverCommRank > 0)
     return;
 
-  // Synchronize necessary data from worldRank 0 to iterator masters
-  bool stdout_redirect_required;
-  if (mpiManager.world_rank() == 0) {
+  // BMA TODO: take another pass to minimally broadcast data
+  // As we recurse, we broadcast key data from hubServerCommRank == 0
+  // to all other iterator servers in this ParallelLevel
+
+  // Synchronize necessary data from hubServerCommRank 0 to iterator masters
+  bool stdout_redirect_required = false;
+  if (pl.hubServerCommRank == 0) {
 
     // If iterator servers are in use, then always segregate the std
     // output.  However, for std error, assume that this should remain
     // directed to the screen unless an explicit "-e" command line
-    // option has been given.
+    // option has been given (managed in OutputManager).
     stdout_redirect_required = (pl.numServers > 1 || pl.dedicatedMasterFlag);
 
     // All in the server comm need the data to manage the files
@@ -1061,7 +1065,7 @@ void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
   // certain outputManager fields in the following.  We do not
   // broadcast the whole OutputManager as it may be managing open file
   // streams and the state would be hard to preserve.  (May later
-  // encapsulate the broadcase there though.)
+  // encapsulate the broadcast there though.)
 
   // This returns a strategy dedicated master processor, if present.
   if (!pl.serverMasterFlag)
@@ -1074,17 +1078,22 @@ void ParallelLibrary::manage_outputs_restart(const ParallelLevel& pl)
     // the output for 1 server in BranchBndStrategy/ConcurrentStrategy
     ctr_tag += "." + boost::lexical_cast<std::string>(pl.serverId);
   }
-  outputManager.file_tag(ctr_tag);
 
   // Now that all iterator masters have the output filename settings
   // and local tags have been added, initialize output streams,
   // restart, databases, etc., for each iterator master.  Note that
   // the opening of files on processors for which there is no output
   // is avoided.
-  outputManager.redirect_cout(programOptions, stdout_redirect_required);
-  outputManager.redirect_cerr(programOptions);
-  outputManager.init_resultsdb(programOptions);
-  outputManager.init_restart(programOptions);
+
+  // append tag and manage file open/close as needed
+  outputManager.push_output_tag(ctr_tag, programOptions, 
+				stdout_redirect_required);
+}
+
+
+void ParallelLibrary::pop_output_tag(const ParallelLevel& pl)
+{
+  outputManager.pop_output_tag();
 }
 
 

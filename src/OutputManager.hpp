@@ -72,8 +72,13 @@ public:
   /// Set the Dakota startup message ("Running on...")
   void startup_message(const String& start_msg);
 
-  /// Update the tag to use on files
-  void file_tag(const String& iterator_tag);
+  /// Update the tag to use on files and rebind any streams as needed
+  void push_output_tag(const String& iterator_tag, 
+		       const ProgramOptions& prog_opts,
+		       bool force_cout_redirect);
+
+  /// (Potentially) remove an output context and rebind streams
+  void pop_output_tag();
 
   /// Redirect cout based on program options filenames and force flag
   void redirect_cout(const ProgramOptions& prog_opts, 
@@ -83,7 +88,7 @@ public:
   void redirect_cerr(const ProgramOptions& prog_opts);
 
   /// Initialize results DB based on problem DB 
-  void init_resultsdb(ProgramOptions& prog_opts);
+  void init_resultsdb(const ProgramOptions& prog_opts);
 
   /// Initialize restart DB based on program options filenames
   void init_restart(const ProgramOptions& prog_opts);
@@ -175,6 +180,9 @@ private:
 
   /// tag for various input/output files (default none)
   String fileTag;
+
+  /// temporary variable to prevent recursive tagging initially
+  bool redirCalled;
 
   /// message to print at startup when proceeding to instantiate objects
   String startupMessage;

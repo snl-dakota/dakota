@@ -442,7 +442,17 @@ public:
   void print_configuration();
 
   /// manage output streams and restart file(s) (both modes)
-  void manage_outputs_restart(const ParallelLevel& pl);
+  // consider removing once push/pop are un use
+  void manage_outputs_restart(const ParallelLevel& pl) { push_output_tag(pl); };
+
+  /// conditionally append an iterator server id tag to the
+  /// hierarchical output tag, manage restart, and rebind cout/cerr
+  void push_output_tag(const ParallelLevel& pl);
+
+  /// pop the last output tag and rebind streams as needed; pl isn't
+  /// yet used, but may be in the future when we generalize to
+  /// arbitrary output context switching
+  void pop_output_tag(const ParallelLevel& pl);
 
   /// write a parameter/response set to the restart file
   void write_restart(const ParamResponsePair& prp);

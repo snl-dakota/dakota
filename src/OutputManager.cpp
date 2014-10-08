@@ -40,7 +40,8 @@ void start_dakota_heartbeat(int);
 
 OutputManager::OutputManager():
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false), 
-  worldRank(0), mpirunFlag(false), restartOutputArchive(NULL),
+  worldRank(0), mpirunFlag(false), redirCalled(false), 
+  restartOutputArchive(NULL),
   graphicsCntr(1), tabularCntrLabel("eval_id")
 
 { }
@@ -53,7 +54,7 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 	      bool dakota_mpirun_flag):
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false),
   worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag),
-  restartOutputArchive(NULL),
+  redirCalled(false), restartOutputArchive(NULL),
   graphicsCntr(1), tabularCntrLabel("eval_id")
 
 {
@@ -147,8 +148,37 @@ void OutputManager::startup_message(const String& start_msg)
 { startupMessage = start_msg; }
 
 
-void OutputManager::file_tag(const String& iterator_tag) 
-{ fileTag = iterator_tag; }
+// Since we can currently only write to one output stream at a
+// time, don't maintain all streams.  Consider a design with an
+// array of output managers at ParallelLibrary instead of arrays of
+// streams here...
+// <string_tag, redirect_required>
+//std::vector< std::pair<String, bool> > 
+// if the tag is changed or a new redirect is needed, do it
+
+/// Update the tag to use on files
+void OutputManager::
+push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
+		bool force_cout_redirect) 
+{
+  if (redirCalled)
+    return;
+  else
+    redirCalled = true;
+
+  fileTag += iterator_tag; 
+
+  redirect_cout(prog_opts, force_cout_redirect);
+  redirect_cerr(prog_opts);
+  init_resultsdb(prog_opts);
+  init_restart(prog_opts);
+}
+
+
+void OutputManager::pop_output_tag()
+{
+  fileTag.clear();
+}
 
 
 void OutputManager::redirect_cout(const ProgramOptions& prog_opts, 
@@ -164,7 +194,7 @@ void OutputManager::redirect_cerr(const ProgramOptions& prog_opts) {
 }
 
 
-void OutputManager::init_resultsdb(ProgramOptions& prog_opts) {
+void OutputManager::init_resultsdb(const ProgramOptions& prog_opts) {
   if (resultsOutputFlag)
     iterator_results_db.initialize(resultsOutputFile + fileTag);
 }
