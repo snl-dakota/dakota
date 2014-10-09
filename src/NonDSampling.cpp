@@ -188,8 +188,8 @@ void NonDSampling::get_parameter_sets(Model& model)
       lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, 
 					 uncertain_c_u_bnds,
 					 numSamples, allSamples, backfillFlag);
-    break;
     }
+    break;
   case ALEATORY_UNCERTAIN:
     {
       lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
@@ -257,7 +257,7 @@ void NonDSampling::get_parameter_sets(Model& model)
     const StringSetArray& ds_state_sets  = (numDiscStringStateVars) ?
       model.discrete_state_set_string_values()  : empty_ssa;
     const RealSetArray&   dr_state_sets  = (numDiscRealStateVars) ?
-      model.discrete_state_set_real_values()    : empty_rsa;
+      model.discrete_state_set_real_values()    : empty_rsa;    
 
     // Call LHS to generate the specified samples within the specified
     // distributions.  Use model distribution parameters unless ACTIVE
