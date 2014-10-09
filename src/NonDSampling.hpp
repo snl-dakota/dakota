@@ -196,6 +196,9 @@ protected:
    /// initialize statistical post processing
   SensAnalysisGlobal nonDSampCorr;
 
+  /// flags whether to use backfill to enforce uniqueness of discrete LHS samples
+  bool backfillFlag;
+
 private:
 
   /// allocate results array storage for pdf histograms
