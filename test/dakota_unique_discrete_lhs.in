@@ -1,0 +1,70 @@
+## DAKOTA INPUT FILE - dakota_backfill_lhs.in
+
+# This file contains tests of the variable views override capability
+# in the context of LHS.  It covers discrete and continuous variables
+# and considers only default and 'active all' views to 
+# catch the most egregious problems.
+
+environment,
+	output_precision = 16
+	tabular_graphics_data
+
+method,
+	sampling
+	  samples = 12
+	  seed = 123456 
+	  sample_type lhs backfill
+
+variables,
+	active all
+#	active uncertain is default
+	uniform_uncertain = 1			#0,#1,#2,#3,#4
+	  lower_bounds =  0.			#0,#1,#2,#3,#4
+	  upper_bounds =  1.			#0,#1,#2,#3,#4	
+	  descriptors  = 'continuous-uniform' 	#0,#1,#2,#3,#4
+#
+	discrete_uncertain_set			#0,#1,#2,#4,#5
+	  integer = 1				#0,#1,#2,#4,#5
+           elements_per_variable = 4		#0,#1,#2,#4,#5
+	    elements  1 3 5 7			#0,#1,#2,#4,#5
+     	    descriptors =    'design-set-int' 	#0,#1,#2,#4,#5
+#
+	  real = 1				#0
+	    initial_point = 0.50		#0
+	    set_values  =  0.25 0.50 0.75 1.00	#0
+     	    descriptors =  'design-set-real'	#0
+#
+#	  string = 1				#2
+#	    elements    = 'iso1' 'iso2' 'iso3'	#2
+#           descriptors = 'uncertain-set-sting'	#2
+#
+#	discrete_uncertain_range = 1		#1,#3,#5
+#	  lower_bounds  = 0.	      		#1,#3,#5
+#         upper_bounds  = 4.			#1,#3,#5
+#	  descriptors   = 'uncertain-range'	#1,#3,#5
+#
+#       discrete_design_range = 1		#1,#3
+#	  lower_bounds  = 0.	   		#1,#3
+#         upper_bounds  = 4.			#1,#3
+#	  descriptors   = 'design-range'	#1,#3
+#
+#	discrete_state_set   			#4
+#	  integer = 1				#4
+#           elements_per_variable = 4		#4
+#	    elements  1 3 5 7	    		#4
+#     	    descriptors =    'state-set-int'	#4
+#
+#        poisson_uncertain = 1                        #5
+#          lambdas           =  4.            	      #5
+#	  descriptors       =  'uncertain-poisson'    #5
+
+interface,
+	direct analysis_driver = 'text_book'		#0,#1,#3,#4,#5
+#	fork asynchronous evaluation_concurrency = 4	#2
+#	  analysis_driver = 'gerstner_string'	   	#2
+
+responses,
+	response_functions = 3				#0,#1,#3,#4,#5
+#	response_functions = 1				#2
+	no_gradients
+	no_hessians
