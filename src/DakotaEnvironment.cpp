@@ -371,17 +371,15 @@ void Environment::construct()
   // model and the iterator.
   const String& method_ptr
     = probDescDB.get_string("environment.top_method_pointer");
-  // The method pointer is optional and some detective work may be
-  // required to resolve which method sits on top of a recursion.
-  if (method_ptr.empty()) probDescDB.resolve_top_method();
-  else                    probDescDB.set_db_list_nodes(method_ptr);
-  // TO DO: meta-iterators should set only the method node (not model nodes)
-  //    --> will quiet a warning and leave model nodes locked
-  //    --> only set model nodes in else {} below
+  // The method pointer is optional and some detective work may be required to
+  // resolve which method sits on top of a recursion.  Only set the method node:
+  // leave model nodes locked for meta-iterators; standard iterators set model
+  // nodes separately within else block below.
+  if (method_ptr.empty()) probDescDB.resolve_top_method(false); // no model set
+  else                    probDescDB.set_db_method_node(method_ptr);
 
-  // Instantiate the topLevelIterator in parallel (invoke ProblemDescDB
-  // ctor chain on all processors).  Note that w_pl is the same for all
-  // parallel configurations.
+  // Instantiate topLevelIterator in parallel (invoke ProblemDescDB ctor chain
+  // on all procs).  Note that w_pl is the same for all parallel configurations.
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
   if (probDescDB.get_ushort("method.algorithm") & META_BIT) {
     topLevelIterator = probDescDB.get_iterator(); // all procs
@@ -392,11 +390,12 @@ void Environment::construct()
   else {
     //IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
     parallelLib.manage_outputs_restart(*w_pl_iter);// from init_serial_iterators
+    probDescDB.set_db_model_nodes(
+      probDescDB.get_string("method.model_pointer"));
     //topLevelModel = probDescDB.get_model(); // if access needed downstream
     Model top_level_model = probDescDB.get_model();
     IteratorScheduler::init_iterator(probDescDB, topLevelIterator,
-				     top_level_model, // shared modelRep
-				     w_pl_iter);
+				     top_level_model, w_pl_iter);
   }
 }
 

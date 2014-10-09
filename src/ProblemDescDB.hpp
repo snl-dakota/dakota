@@ -139,7 +139,7 @@ public:
   /// For a (default) environment lacking a top method pointer, this function
   /// is used to determine which of several potential method specifications
   /// corresponds to the top method and then sets the list nodes accordingly.
-  void resolve_top_method();
+  void resolve_top_method(bool set_model_nodes = true);
 
   /// set dataMethodIter based on a method identifier string to activate a
   /// particular method specification (only).
@@ -510,15 +510,21 @@ inline ResponseList& ProblemDescDB::response_list()
 
 inline size_t ProblemDescDB::get_db_method_node()
 {
-  return (dbRep) ? dbRep->get_db_method_node() :
-    std::distance(dataMethodList.begin(), dataMethodIter);
+  if (dbRep)
+    return dbRep->get_db_method_node();
+  else
+    return (methodDBLocked) ? _NPOS :
+      std::distance(dataMethodList.begin(), dataMethodIter);
 }
 
 
 inline size_t ProblemDescDB::get_db_model_node()
 {
-  return (dbRep) ? dbRep->get_db_model_node() :
-    std::distance(dataModelList.begin(), dataModelIter);
+  if (dbRep)
+    return dbRep->get_db_model_node();
+  else
+    return (modelDBLocked) ? _NPOS :
+      std::distance(dataModelList.begin(), dataModelIter);
 }
 
 

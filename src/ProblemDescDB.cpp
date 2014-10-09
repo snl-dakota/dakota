@@ -515,10 +515,10 @@ void ProblemDescDB::set_db_list_nodes(size_t method_index)
 }
 
 
-void ProblemDescDB::resolve_top_method()
+void ProblemDescDB::resolve_top_method(bool set_model_nodes)
 {
   if (dbRep)
-    dbRep->resolve_top_method();
+    dbRep->resolve_top_method(set_model_nodes);
   else { // deduce which method spec sits on top
     String& top_meth_ptr = environmentSpec.dataEnvRep->topMethodPointer;
     size_t num_method_spec = dataMethodList.size();
@@ -567,8 +567,10 @@ void ProblemDescDB::resolve_top_method()
       }
     }
     methodDBLocked = false; // unlock
+
     // set all subordinate list nodes for this method
-    set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+    if (set_model_nodes)
+      set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
   }
 }
 
@@ -635,7 +637,7 @@ void ProblemDescDB::set_db_method_node(size_t method_index)
 {
   if (dbRep)
     dbRep->set_db_method_node(method_index);
-  else {
+  else if (method_index != _NPOS) { // no-op if _NPOS
     size_t num_meth_spec = dataMethodList.size();
     // allow advancement up to but not past end()
     if (method_index > num_meth_spec) {
@@ -655,7 +657,7 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
 {
   if (dbRep)
     dbRep->set_db_model_nodes(model_index);
-  else {
+  else if (model_index != _NPOS) { // no-op if _NPOS
     size_t num_model_spec = dataModelList.size();
     // allow advancement up to but not past end()
     if (model_index > num_model_spec) {
