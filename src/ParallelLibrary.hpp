@@ -474,10 +474,6 @@ public:
   /// print the parallel level settings for a particular parallel configuration
   void print_configuration();
 
-  /// manage output streams and restart file(s) (both modes)
-  // consider removing once push/pop are un use
-  void manage_outputs_restart(const ParallelLevel& pl) { push_output_tag(pl); };
-
   /// conditionally append an iterator server id tag to the
   /// hierarchical output tag, manage restart, and rebind cout/cerr
   void push_output_tag(const ParallelLevel& pl);

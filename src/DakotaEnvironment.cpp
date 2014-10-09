@@ -335,10 +335,11 @@ void Environment::parse(bool check_bcast_database,
   // Manage input file parsing, output redirection, and restart processing.
   // Since all processors need the database, manage_inputs() does not require
   // iterator partitions and it can precede init_iterator_communicators()
-  // (a simple world bcast is sufficient).  Output/restart management does
-  // utilize iterator partitions, so manage_outputs_restart() must follow
-  // init_iterator_communicators() within the Environment constructor
-  // (output/restart options may only be specified at this time).
+  // (a simple world bcast is sufficient).
+
+  // Output/restart management utilizes iterator partitions, so calls to
+  // push_output_tag() follow init_iterator_communicators() within
+  // IteratorScheduler::init_iterator_parallelism().
 
   // ProblemDescDB requires cmd line information, so pass programOptions
 
@@ -389,7 +390,7 @@ void Environment::construct()
   }
   else {
     //IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
-    parallelLib.manage_outputs_restart(*w_pl_iter);// from init_serial_iterators
+    parallelLib.push_output_tag(*w_pl_iter);// from init_serial_iterators
     probDescDB.set_db_model_nodes(
       probDescDB.get_string("method.model_pointer"));
     //topLevelModel = probDescDB.get_model(); // if access needed downstream

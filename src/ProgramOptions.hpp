@@ -32,7 +32,7 @@ class ProblemDescDB;
 
 /// ProgramOptions stores options whether from the CLH or from library
 /// user; initially valid only on worldRank = 0, but then broadcast in
-/// ParallelLibrary::manage_outputs_restart
+/// ParallelLibrary::push_output_tag()
 class ProgramOptions {
 
 public:

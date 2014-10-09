@@ -97,7 +97,7 @@ init_iterator_parallelism(int max_iterator_concurrency,
   // strategy level.  For concurrent iterators within a nested model, iterator
   // output will be suppressed but restart will need some additional attention.
   // -->> second level of tagging?  e.g., dakota.rst.1.3?
-  parallelLib.manage_outputs_restart(mi_pl);
+  parallelLib.push_output_tag(mi_pl);
 }
 
 
@@ -113,7 +113,7 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
   const ParallelLevel& mi_pl = parallel_lib.init_iterator_communicators(0, 0,
     1, parallel_lib.world_size(), 1, PUSH_DOWN, DEFAULT_SCHEDULING, false);
   // set up output streams without iterator tagging
-  parallel_lib.manage_outputs_restart(mi_pl);
+  parallel_lib.push_output_tag(mi_pl);
 }
 
 
