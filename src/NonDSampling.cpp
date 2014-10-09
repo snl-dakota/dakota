@@ -153,29 +153,17 @@ void NonDSampling::get_parameter_sets(Model& model)
       // or from ALL lower/upper bounds (with model in ALL view).
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      if (!backfillFlag)
-	lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
-					   model.continuous_upper_bounds(),
-					   numSamples, allSamples);
-      else
-	lhsDriver.generate_unique_uniform_samples(
-		      model.continuous_lower_bounds(),
-		      model.continuous_upper_bounds(),
-		      numSamples, allSamples);
+      lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
+					 model.continuous_upper_bounds(),
+					 numSamples, allSamples, backfillFlag);
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      if (!backfillFlag)
-	lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
-					   model.all_continuous_upper_bounds(),
-					   numSamples, allSamples);
-      else
-	lhsDriver.generate_unique_uniform_samples(
-		      model.all_continuous_lower_bounds(),
-		      model.all_continuous_upper_bounds(),
-		      numSamples, allSamples);
+      lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
+					 model.all_continuous_upper_bounds(),
+					 numSamples, allSamples, backfillFlag);
     }
     else { // A, E, A+E UNCERTAIN
       // sample uniformly from {A,E,A+E} UNCERTAIN lower/upper bounds
@@ -197,49 +185,28 @@ void NonDSampling::get_parameter_sets(Model& model)
 	const_cast<Real*>(&all_c_u_bnds[start_acv]), num_acv);
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
       // TO DO: add support for uniform discrete
-      if (!backfillFlag)
-	lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, 
-					   uncertain_c_u_bnds,
-					   numSamples, allSamples);
-      else
-	lhsDriver.generate_unique_uniform_samples(uncertain_c_l_bnds, 
-						  uncertain_c_u_bnds,
-						  numSamples, allSamples);
-    }
+      lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, 
+					 uncertain_c_u_bnds,
+					 numSamples, allSamples, backfillFlag);
     break;
+    }
   case ALEATORY_UNCERTAIN:
     {
-      if (!backfillFlag)
-	lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-				   numSamples, allSamples);
-      else
-	lhsDriver.generate_unique_samples(
-		      model.aleatory_distribution_parameters(),
-		      numSamples, allSamples);
-	break;
-      }
+      lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
+				 numSamples, allSamples, backfillFlag);
+      break;
+    }
   case EPISTEMIC_UNCERTAIN:
     {
-      if (!backfillFlag)
-	lhsDriver.generate_samples(model.epistemic_distribution_parameters(),
-				   numSamples, allSamples);
-      else
-	lhsDriver.generate_unique_samples(
-                      model.epistemic_distribution_parameters(),
-		      numSamples, allSamples);
-    break;
+      lhsDriver.generate_samples(model.epistemic_distribution_parameters(),
+				 numSamples, allSamples, backfillFlag);
+      break;
     }
   case UNCERTAIN:
     {
-      if (!backfillFlag)
-	lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-				   model.epistemic_distribution_parameters(),
-				   numSamples, allSamples);
-      else
-	lhsDriver.generate_unique_samples(
-		      model.aleatory_distribution_parameters(),
-		      model.epistemic_distribution_parameters(),
-		      numSamples, allSamples);
+      lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
+				 model.epistemic_distribution_parameters(),
+				 numSamples, allSamples, backfillFlag);
       break;
     }
   case ACTIVE: case ALL: {
