@@ -129,6 +129,9 @@ free_iterator_parallelism(ParallelLibrary& parallel_lib)//, size_t index)
 
 void IteratorScheduler::free_iterator_parallelism()
 {
+  parallelLib.pop_output_tag(
+    parallelLib.parallel_configuration().mi_parallel_level(miPLIndex));
+
   // deallocate the mi_pl parallelism level
   parallelLib.free_iterator_communicators(miPLIndex);
 }

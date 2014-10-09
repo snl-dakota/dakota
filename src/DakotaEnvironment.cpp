@@ -473,9 +473,11 @@ void Environment::destruct()
     // IteratorScheduler::free_iterator_parallelism()
     topLevelIterator.free_communicators(w_pl_iter);
   }
-  else // deallocate communicator partitions for topLevelIterator
+  else { // deallocate communicator partitions for topLevelIterator
     IteratorScheduler::free_iterator(topLevelIterator, //topLevelModel,
 				     w_pl_iter);
+    parallelLib.pop_output_tag(*w_pl_iter);
+  }
 }
 
 } // namespace Dakota
