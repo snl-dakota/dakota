@@ -274,8 +274,8 @@ set(DAKOTA_TOPFILES_INSTALL . CACHE FILEPATH
 
 # Set the export name for install targets; parent packages likely want
 # to override this to the name of their target
-set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
-  "Name for the export target for ${CMAKE_PROJECT_NAME}")
+set(ExportTarget DakotaTargets CACHE STRING 
+  "Export set name for ${CMAKE_PROJECT_NAME}")
 
 # TODO: Have etphipp remove Trilinos-specific code and instead set in TriKota
 # when building inside Trilinos, the path to Teuchos will already be set

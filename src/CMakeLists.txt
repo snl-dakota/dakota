@@ -1130,3 +1130,11 @@ install(FILES ${Dakota_BINARY_DIR}/src/Makefile.export.Dakota.install
 # Unconditionally export targets to detect problems before Trilinos does
 export(TARGETS ${EXPORT_TARGETS} FILE
   "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
+
+# Workaround until we fix Dakota's overall use of exports
+if(ExportTarget STREQUAL DakotaTargets)
+  set(INSTALL_CMAKE_DIR "lib/cmake/Dakota")
+  message(STATUS 
+    "Installing Dakota exported targets to ${INSTALL_CMAKE_DIR}")
+  install(EXPORT ${ExportTarget} DESTINATION ${INSTALL_CMAKE_DIR})
+endif()
