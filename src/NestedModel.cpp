@@ -685,8 +685,8 @@ void NestedModel::update_sub_iterator()
     = probDescDB.get_rv("model.nested.secondary_response_mapping");
 
   if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
-    Cerr << "\nError: no mappings provided for sub-iterator functions."
-	 << std::endl;
+    Cerr << "\nError: no mappings provided for sub-iterator functions in "
+	 << "NestedModel initialization." << std::endl;
     abort_handler(-1);
   }
   // Convert vectors to matrices using the number of subIterator response
@@ -702,7 +702,7 @@ void NestedModel::update_sub_iterator()
       Cerr << "\nError: number of entries in primary_response_mapping ("
 	   << primary_resp_coeffs.length() << ") not evenly divisible"
 	   << "\n       by number of sub-iterator response functions ("
-	   << numSubIterFns << ")." << std::endl;
+	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
       abort_handler(-1);
     }
     copy_data(primary_resp_coeffs, primaryRespCoeffs, 0, (int)numSubIterFns);
@@ -714,7 +714,7 @@ void NestedModel::update_sub_iterator()
       Cerr << "\nError: number of entries in secondary_response_mapping ("
 	   << secondary_resp_coeffs.length() << ") not evenly divisible"
 	   << "\n       by number of sub-iterator response functions ("
-	   << numSubIterFns << ")." << std::endl;
+	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
       abort_handler(-1);
     }
     copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);

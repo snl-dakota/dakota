@@ -482,7 +482,11 @@ void ProblemDescDB::set_db_list_nodes(const String& method_tag)
 {
   if (dbRep)
     dbRep->set_db_list_nodes(method_tag);
-  else {
+  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
+  // through: do not update iterators or locks, such that previous
+  // specification settings remain active (NO_SPECIFICATION instances
+  // within a recursion do not alter list node sequencing).
+  else if (method_tag != "NO_SPECIFICATION") {
     set_db_method_node(method_tag);
     if (methodDBLocked) {
       modelDBLocked = variablesDBLocked = interfaceDBLocked
@@ -579,7 +583,11 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 {
   if (dbRep)
     dbRep->set_db_method_node(method_tag);
-  else {
+  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
+  // through: do not update dataMethodIter or methodDBLocked, such that
+  // previous specification settings remain active (NO_SPECIFICATION
+  // instances within a recursion do not alter list node sequencing).
+  else if (method_tag != "NO_SPECIFICATION") {
     // set the correct Index values for all Data class lists.
     if (method_tag.empty()) { // no pointer specification
       if (dataMethodList.size() == 1) // no ambiguity if only one spec
@@ -607,16 +615,10 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	= std::find_if( dataMethodList.begin(), dataMethodList.end(),
             boost::bind(DataMethod::id_compare, _1, method_tag) );
       if (dm_it == dataMethodList.end()) {
-	methodDBLocked = true; // lock
-	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
-	// through (but leave DB locked to prevent dataMethodIter use).
-	if (method_tag != "NO_SPECIFICATION") {
-	  Cerr << "\nError: " << method_tag
-	       << " is not a valid method identifier string." << std::endl;
-	  abort_handler(PARSE_ERROR);
-	}
-	// do not update dataMethodIter, such that NO_SPECIFICATION instances
-	// within a recursion do not alter the list nodes sequencing
+	methodDBLocked = true; // lock (moot)
+	Cerr << "\nError: " << method_tag
+	     << " is not a valid method identifier string." << std::endl;
+	abort_handler(PARSE_ERROR);
       }
       else {
 	methodDBLocked = false; // unlock
@@ -637,7 +639,9 @@ void ProblemDescDB::set_db_method_node(size_t method_index)
 {
   if (dbRep)
     dbRep->set_db_method_node(method_index);
-  else if (method_index != _NPOS) { // no-op if _NPOS
+  else if (method_index == _NPOS)
+    methodDBLocked = true;
+  else {
     size_t num_meth_spec = dataMethodList.size();
     // allow advancement up to but not past end()
     if (method_index > num_meth_spec) {
@@ -657,7 +661,10 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
 {
   if (dbRep)
     dbRep->set_db_model_nodes(model_index);
-  else if (model_index != _NPOS) { // no-op if _NPOS
+  else if (model_index == _NPOS)
+    modelDBLocked = variablesDBLocked = interfaceDBLocked
+      = responsesDBLocked = true;
+  else {
     size_t num_model_spec = dataModelList.size();
     // allow advancement up to but not past end()
     if (model_index > num_model_spec) {
@@ -674,7 +681,10 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
     else {
       DataModelRep *MoRep = dataModelIter->dataModelRep;
       set_db_variables_node(MoRep->variablesPointer);
-      set_db_interface_node(MoRep->interfacePointer);
+      if (MoRep->modelType == "single" || MoRep->modelType == "nested")
+	set_db_interface_node(MoRep->interfacePointer);
+      else
+	interfaceDBLocked = true;
       set_db_responses_node(MoRep->responsesPointer);
     }
   }
@@ -685,7 +695,11 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 {
   if (dbRep)
     dbRep->set_db_model_nodes(model_tag);
-  else {
+  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
+  // through: do not update model iterators or locks, such that previous
+  // specification settings remain active (NO_SPECIFICATION instances
+  // within a recursion do not alter list node sequencing).
+  else if (model_tag != "NO_SPECIFICATION") {
     // set dataModelIter from model_tag
     if (model_tag.empty()) { // no pointer specification
       if (dataModelList.empty()) {
@@ -717,16 +731,10 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	= std::find_if( dataModelList.begin(), dataModelList.end(),
             boost::bind(DataModel::id_compare, _1, model_tag) );
       if (dm_it == dataModelList.end()) {
-	modelDBLocked = true; // lock
-	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
-	// through (but leave DB locked to prevent dataModelIter use).
-	if (model_tag != "NO_SPECIFICATION") {
-	  Cerr << "\nError: " << model_tag
-	       << " is not a valid model identifier string." << std::endl;
-	  abort_handler(PARSE_ERROR);
-	}
-	// do not update dataModelIter, such that NO_SPECIFICATION instances
-	// within a recursion do not alter the list nodes sequencing
+	modelDBLocked = true; // lock (moot)
+	Cerr << "\nError: " << model_tag
+	     << " is not a valid model identifier string." << std::endl;
+	abort_handler(PARSE_ERROR);
       }
       else {
 	modelDBLocked = false; // unlock
@@ -745,7 +753,10 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
     else {
       DataModelRep *MoRep = dataModelIter->dataModelRep;
       set_db_variables_node(MoRep->variablesPointer);
-      set_db_interface_node(MoRep->interfacePointer);
+      if (MoRep->modelType == "single" || MoRep->modelType == "nested")
+	set_db_interface_node(MoRep->interfacePointer);
+      else
+	interfaceDBLocked = true;
       set_db_responses_node(MoRep->responsesPointer);
     }
   }
@@ -756,7 +767,11 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 {
   if (dbRep)
     dbRep->set_db_variables_node(variables_tag);
-  else {
+  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
+  // through: do not update dataVariablesIter or variablesDBLocked, such
+  // that previous specification remains active (NO_SPECIFICATION
+  // instances within a recursion do not alter list node sequencing).
+  else if (variables_tag != "NO_SPECIFICATION") { // not currently in use
     // set dataVariablesIter from variables_tag
     if (variables_tag.empty()) { // no pointer specification
       if (dataVariablesList.size() == 1) // no ambiguity if only one spec
@@ -787,16 +802,10 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	= std::find_if( dataVariablesList.begin(), dataVariablesList.end(),
             boost::bind(DataVariables::id_compare, _1, variables_tag) );
       if (dv_it == dataVariablesList.end()) {
-	variablesDBLocked = true; // lock
-	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
-	// through (but leave DB locked to prevent dataVariablesIter use).
-	if (variables_tag != "NO_SPECIFICATION") { // not currently in use
-	  Cerr << "\nError: " << variables_tag
-	       << " is not a valid variables identifier string." << std::endl;
-	  abort_handler(PARSE_ERROR);
-	}
-	// do not update dataVariablesIter, such that NO_SPECIFICATION
-	// instances within a recursion do not alter list nodes sequencing
+	variablesDBLocked = true; // lock (moot)
+	Cerr << "\nError: " << variables_tag
+	     << " is not a valid variables identifier string." << std::endl;
+	abort_handler(PARSE_ERROR);
       }
       else {
 	variablesDBLocked = false; // unlock
@@ -818,7 +827,11 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 {
   if (dbRep)
     dbRep->set_db_interface_node(interface_tag);
-  else {
+  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
+  // through: do not update dataInterfaceIter or interfaceDBLocked, such
+  // that previous specification remains active (NO_SPECIFICATION
+  // instances within a recursion do not alter list node sequencing).
+  else if (interface_tag != "NO_SPECIFICATION") {
     DataModelRep *MoRep = dataModelIter->dataModelRep;
     // set dataInterfaceIter from interface_tag
     if (interface_tag.empty()) { // no pointer specification
@@ -858,16 +871,10 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	= std::find_if( dataInterfaceList.begin(), dataInterfaceList.end(),
             boost::bind(DataInterface::id_compare, _1, interface_tag) );
       if (di_it == dataInterfaceList.end()) {
-	interfaceDBLocked = true; // lock
-	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
-	// through (but leave DB locked to prevent dataInterfaceIter use).
-	if (interface_tag != "NO_SPECIFICATION") {
-	  Cerr << "\nError: " << interface_tag
-	       << " is not a valid interface identifier string." << std::endl;
-	  abort_handler(PARSE_ERROR);
-	}
-	// do not update dataInterfaceIter, such that NO_SPECIFICATION
-	// instances within a recursion do not alter list nodes sequencing
+	interfaceDBLocked = true; // lock (moot)
+	Cerr << "\nError: " << interface_tag
+	     << " is not a valid interface identifier string." << std::endl;
+	abort_handler(PARSE_ERROR);
       }
       else {
 	interfaceDBLocked = false; // unlock
@@ -889,7 +896,11 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 {
   if (dbRep)
     dbRep->set_db_responses_node(responses_tag);
-  else {
+  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
+  // through: do not update dataResponsesIter or responsesDBLocked,
+  // such that previous specification remains active (NO_SPECIFICATION
+  // instances within a recursion do not alter list node sequencing).
+  else if (responses_tag != "NO_SPECIFICATION") {
     // set dataResponsesIter from responses_tag
     if (responses_tag.empty()) { // no pointer specification
       if (dataResponsesList.size() == 1) // no ambiguity if only one spec
@@ -920,16 +931,10 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	= std::find_if( dataResponsesList.begin(), dataResponsesList.end(),
             boost::bind(DataResponses::id_compare, _1, responses_tag) );
       if (dr_it == dataResponsesList.end()) {
-	responsesDBLocked = true; // lock
-	// for simplicity in client logic, allow NO_SPECIFICATION case to fall
-	// through (but leave DB locked to prevent dataResponsesIter use).
-	if (responses_tag != "NO_SPECIFICATION") { // not currently in use
-	  Cerr << "\nError: " << responses_tag
-	       << " is not a valid responses identifier string." << std::endl;
-	  abort_handler(PARSE_ERROR);
-	}
-	// do not update dataResponsesIter, such that NO_SPECIFICATION
-	// instances within a recursion do not alter list nodes sequencing
+	responsesDBLocked = true; // lock (moot)
+	Cerr << "\nError: " << responses_tag
+	     << " is not a valid responses identifier string." << std::endl;
+	abort_handler(PARSE_ERROR);
       }
       else {
 	responsesDBLocked = false; // unlock
