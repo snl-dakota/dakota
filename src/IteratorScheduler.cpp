@@ -305,17 +305,13 @@ set_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
   if (pl_iter->dedicated_master() && pl_iter->server_id() == 0)//ded master proc
     return;
 
-  // set the correct ParallelConfiguration within ParallelLibrary
-  //parallel_lib.parallel_configuration_iterator(
-  //  the_iterator.iterated_model().parallel_configuration_iterator());
-
   // iterator rank 0: set the iterator communicators
   if (pl_iter->server_communicator_rank() == 0)
     the_iterator.set_communicators(pl_iter);
   // iterator ranks 1->n
-  else // TO DO: is model.serve_set() necessary ?
+  else // empty envelope: fwds to iteratedModel using data stored in init_comms
     the_iterator.derived_set_communicators(pl_iter);
-    // uses iteratedModel and maxEvalConcurrency stored in init_comms()
+    //the_model.serve_set(); // if additional sophistication becomes needed
 }
 
 
@@ -327,10 +323,6 @@ set_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 void IteratorScheduler::
 run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 {
-  // set the correct ParallelConfiguration within ParallelLibrary
-  //parallelLib.parallel_configuration_iterator(
-  //  the_model.parallel_configuration_iterator());
-
   // for iterator ranks > 0, the_model is stored in the empty iterator
   // envelope in IteratorScheduler::init_iterator()
   Model& the_model = the_iterator.iterated_model();
@@ -340,11 +332,8 @@ run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
     the_iterator.run(Cout); // verbose mode
     the_model.stop_servers(); // Send the termination message to the servers
   }
-  else { // serve until stopped
-    //ParConfigLIter prev_pc = parallelLib.parallel_configuration_iterator();
+  else // serve until stopped
     the_model.serve_run(pl_iter, the_iterator.maximum_evaluation_concurrency());
-    //parallelLib.parallel_configuration_iterator(prev_pc); // reset
-  }
 }
 
 
@@ -356,17 +345,13 @@ free_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
   if (pl_iter->dedicated_master() && pl_iter->server_id() == 0)//ded master proc
     return;
 
-  // set the correct ParallelConfiguration within ParallelLibrary
-  //parallel_lib.parallel_configuration_iterator(
-  //  the_iterator.iterated_model().parallel_configuration_iterator());
-
   // iterator rank 0: free the iterator communicators
   if (pl_iter->server_communicator_rank() == 0)
     the_iterator.free_communicators(pl_iter);
   // iterator ranks 1->n
-  else // TO DO: is model.serve_free() necessary ?
+  else // empty envelope: fwds to iteratedModel using data stored in init_comms
     the_iterator.derived_free_communicators(pl_iter);
-    // uses iteratedModel and maxEvalConcurrency stored in init_comms()
+    //the_model.serve_free(); // if additional sophistication becomes needed
 }
 
 
