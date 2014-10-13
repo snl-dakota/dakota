@@ -681,7 +681,7 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
     else {
       DataModelRep *MoRep = dataModelIter->dataModelRep;
       set_db_variables_node(MoRep->variablesPointer);
-      if (MoRep->modelType == "single" || MoRep->modelType == "nested")
+      if (model_has_interface(MoRep))
 	set_db_interface_node(MoRep->interfacePointer);
       else
 	interfaceDBLocked = true;
@@ -753,7 +753,7 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
     else {
       DataModelRep *MoRep = dataModelIter->dataModelRep;
       set_db_variables_node(MoRep->variablesPointer);
-      if (MoRep->modelType == "single" || MoRep->modelType == "nested")
+      if (model_has_interface(MoRep))
 	set_db_interface_node(MoRep->interfacePointer);
       else
 	interfaceDBLocked = true;

@@ -404,6 +404,10 @@ private:
   /// and dataResponsesList.  Used by manage_inputs().
   void receive_db_buffer();
 
+  /// helper function for determining whether an interface specification
+  /// should be active, based on model type
+  bool model_has_interface(DataModelRep* model_rep) const;
+
   /// echo the (potentially) specified input file or string to stdout
   void echo_input_file(const ProgramOptions& prog_opts);
 
@@ -589,6 +593,18 @@ inline void ProblemDescDB::insert_node(const DataResponses& data_responses)
 inline bool ProblemDescDB::is_null() const
 { return (dbRep) ? false : true; }
 
+
+inline bool ProblemDescDB::model_has_interface(DataModelRep* model_rep) const
+{
+  // The following Models pull from the interface specification:
+  //   SingleModel (userDefinedInterface)
+  //   NestedModel (optionalInterface)
+  //   DataFitSurrModel (approxInterface)
+  return ( model_rep->modelType == "single" ||
+	   model_rep->modelType == "nested" ||
+	   ( model_rep->modelType == "surrogate" &&
+	     model_rep->surrogateType != "hierarchical") );
+}
 
 } // namespace Dakota
 
