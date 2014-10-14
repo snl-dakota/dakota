@@ -130,7 +130,7 @@ enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
 // NonDBayesCalibration
 // --------------------
 // define special values for emulatorType
-enum { NO_EMULATOR, PCE_EMULATOR, SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR };
+enum { NO_EMULATOR, PCE_EMULATOR, SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR, VPS_EMULATOR };
 
 // ------------
 // NonDSampling
@@ -894,6 +894,8 @@ public:
   /// the number of samples to construct a GP emulator for Bayesian 
   /// calibration methods (\ref MethodNonDBayesCalib)
   int emulatorSamples;
+  /// The total order to be used in construction of a VPS surrogate 
+  int emulatorOrder;
   /// the \c emulator specification in \ref MethodNonDBayesCalib
   short emulatorType;
   /// the \c mcmc type specification in \ref MethodNonDBayesCalib

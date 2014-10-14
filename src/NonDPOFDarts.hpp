@@ -72,8 +72,6 @@ protected:
   
     void execute(size_t kd);
     
-    void print_POF_results(double lower, double upper);
-    
     /// print the final statistics
     void print_results(std::ostream& s);
     
@@ -93,7 +91,7 @@ protected:
     void add_point(double* x);
     
     ////////////////////////////////////////////////////////////////
-    // OPT / POF METHODS
+    // POF METHODS
     ////////////////////////////////////////////////////////////////
     
     void assign_sphere_radius_POF(double* x, size_t isample);
@@ -110,8 +108,35 @@ protected:
     void initialize_surrogates();
     void add_surrogate_data(const Variables& vars, const Response& resp);
     void build_surrogate(size_t fn_index);
-    Real eval_surrogate(size_t fn_index, double *vin);
-
+    double eval_surrogate(size_t fn_index, double *vin);
+    void estimate_pof_surrogate();
+    
+    bool trim_line_using_Hyperplane(size_t num_dim,                               // number of dimensions
+                                    double* st, double *end,                      // line segmenet end points
+                                    double* qH, double* nH);                      // a point on the hyperplane and it normal
+    
+    
+    
+    //////////////////////////////////////////////////////////////
+    // VPS METHODS
+    //////////////////////////////////////////////////////////////
+    bool VPS_execute( );
+    void VPS_retrieve_neighbors_of_all_points_from_scratch();
+    void VPS_retrieve_neighbors(size_t ipoint);
+    void VPS_adjust_extend_neighbors_of_all_points();
+    void VPS_extend_neighbors(size_t ipoint);
+    void VPS_retrieve_poly_coefficients_for_all_points();
+    void VPS_retrieve_poly_coefficients(size_t ipoint, size_t function_index);
+    double VPS_evaluate_VPS_surrogate(size_t function_index, double* x);
+    void estimate_pof_VPS();
+    void VPS_destroy_global_containers();
+    
+    void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint);
+    double vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b);
+    bool Cholesky(int n, double** A, double** LD);
+    void Cholesky_solver(int n, double** LD, double* b, double* x);
+    void GMRES(size_t n, double** A, double* b, double* x, double eps);
+    
     
     ////////////////////////////////////////////////////////////////
     // OUTPUT METHODS
@@ -119,7 +144,7 @@ protected:
     
     double f_true(double* x); // for debuging only
     
-    void plot_vertices_2d();
+    void plot_vertices_2d(bool plot_true_function, bool plot_suurogate);
     
   //
   //- Heading: Data
@@ -131,7 +156,12 @@ protected:
     // user-specified seed
     int seed;
     
+    // emulator order
+    int emulatorOrder;
     
+    // emulator type (currently GP or VPS) 
+    short emulatorType;
+
     // variables for Random number generator
     double Q[1220];
     int indx;
@@ -148,6 +178,7 @@ protected:
     size_t _n_dim; // dimension of the problem
     double* _xmin; // lower left corner of the domain
     double* _xmax; // Upper right corner of the domain
+    double  _diag; // diagonal of the domain
     
     double _failure_threshold;
     
@@ -183,6 +214,24 @@ protected:
     SharedApproxData sharedData;
     std::vector<Approximation> gpApproximations;
     Variables gpEvalVars;
+    
+    // LSIV surrogate variables ... to be deleted
+    bool _use_vor_surrogate;
+    size_t _vor_order;
+    double*** _node_coeff;
+    
+    // variables for VPS
+    size_t _vps_num_points, _vps_num_functions, _num_GMRES;
+    double** _vps_x;
+    double** _vps_f;
+    double* _vps_dfar;
+    
+    size_t** _vps_neighbors;
+    size_t** _vps_ext_neighbors;
+    
+    size_t _vps_order, _vps_num_poly_terms;
+    size_t**  _vps_t;  // powers of the polynomial expansion
+    double*** _vps_c;  // polynomial coeffcients per point function
 
 };
 

@@ -128,7 +128,7 @@ DataMethodRep::DataMethodRep():
   sampleType(SUBMETHOD_DEFAULT), reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), refineSamples(0),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
-  responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
+  responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(1),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), mcmcType("dram"), likelihoodScale(1.0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
@@ -249,7 +249,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << integrationRefine << refineSamples << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << emulatorSamples << emulatorOrder << emulatorType << rejectionType << metropolisType
     << mcmcType << proposalCovScale << likelihoodScale << fitnessMetricType
     << batchSelectionType << batchSize << calibrateSigmaFlag << numChains
     << numCR << crossoverChainPairs << grThreshold << jumpStep;
@@ -374,7 +374,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> integrationRefine >> refineSamples >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
-    >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
+    >> emulatorSamples >> emulatorOrder >> emulatorType >> rejectionType >> metropolisType
     >> mcmcType >> proposalCovScale >> likelihoodScale >> fitnessMetricType
     >> batchSelectionType >> batchSize >> calibrateSigmaFlag >> numChains
     >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep;
@@ -499,7 +499,7 @@ void DataMethodRep::write(std::ostream& s) const
     << integrationRefine << refineSamples << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << emulatorSamples << emulatorOrder << emulatorType << rejectionType << metropolisType
     << mcmcType << proposalCovScale << likelihoodScale << fitnessMetricType
     << batchSelectionType << batchSize << calibrateSigmaFlag << numChains
     << numCR << crossoverChainPairs << grThreshold << jumpStep;

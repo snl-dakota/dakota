@@ -1125,6 +1125,13 @@ KEYWORD12 method
 	  )
 	|
 	( pof_darts ALIAS nond_pof_darts
+	  [ emulator
+	    gaussian_process
+	    |
+	    ( voronoi_surrogate
+	      [ surrogate_order INTEGER ]
+	      )
+	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute

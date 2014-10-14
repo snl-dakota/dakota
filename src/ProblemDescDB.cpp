@@ -2498,6 +2498,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.batch_size", P batchSize},
 	{"nond.emulator_samples", P emulatorSamples},
 	{"nond.refinement_samples", P refineSamples},
+	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},

@@ -1476,6 +1476,16 @@
                     </keyword>
                     <keyword  id="pof_darts" name="pof_darts" code="{N_mdm(utype,methodName_POF_DARTS)}" label="pof_darts" help="" minOccurs="1" >
                       <alias name="nond_pof_darts"/>
+                      <keyword  id="emulator1" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
+                        <oneOf>
+                          <keyword  id="gaussian_process4" name="gaussian_process" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="gaussian_process" help="" minOccurs="1" />
+                          <keyword  id="voronoi_surrogate1" name="voronoi_surrogate" code="{N_mdm(type,emulatorType_VPS_EMULATOR)}" label="voronoi_surrogate" help="" minOccurs="1" >
+		            <keyword  id="surrogate_order" name="surrogate_order" code="{N_mdm(int,emulatorOrder)}" label="surrogate_order" help="" minOccurs="0">
+		              <param type="INTEGER" />
+		            </keyword>
+                          </keyword>
+                        </oneOf>
+                      </keyword>
                       <keyword  id="response_levels4" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" >
                         <param type="REALLIST" />
                         <keyword  id="num_response_levels4" name="num_response_levels" code="{N_mdm(num_resplevs,responseLevels)}" label="num_response_levels" help="" minOccurs="0" >
