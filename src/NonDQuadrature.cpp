@@ -275,20 +275,20 @@ void NonDQuadrature::get_parameter_sets(Model& model)
                 index_u_bnds(numContinuousVars, false);
       for (j=0; j<numContinuousVars; ++j)
 	index_u_bnds[j] = quad_order[j] - 1;
-      std::set<IntArray> sorted_samples; std::set<IntArray>::iterator it;
+      IntMatrix sorted_samples;
       // generate unique samples since redundancy degrades the conditioning
       Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
       if (!randomSeed) randomSeed = generate_system_seed();
       lhs.seed(randomSeed);
       lhs.generate_unique_index_samples(index_l_bnds, index_u_bnds, numSamples,
 					sorted_samples);
+
       // convert multi-index samples into allSamples
-      for (it =sorted_samples.begin(), i=0;
-	   it!=sorted_samples.end(),   i<numSamples; ++it, ++i) {
-	Real*              all_samp_i = allSamples[i];
-	const IntArray& sorted_samp_i = *it;
+      for (i=0; i<numSamples; ++i){
+	Real* all_samp_i = allSamples[i];
+	int*  sorted_samples_i = sorted_samples[i];
 	for (j=0; j<numContinuousVars; ++j)
-	  all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][sorted_samp_i[j]];
+	  all_samp_i[j] = colloc_pts_1d[lev_index[j]][j][sorted_samples_i[j]];
       }
     }
     break;
