@@ -169,20 +169,8 @@ void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
       iterSched.set_iterator(selectedIterators[i], si_pl_iter);
   }
 
-  /* See notes in NestedModel::derived_set_communicators()
-  size_t i, num_iterators = methodList.size(),
-    mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
-  iterSched.update(mi_pl_index);
-  if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
-    ParLevLIter next_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
-    for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(selectedIterators[i], next_pl_iter);
-  }
-  else
-    for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(selectedIterators[i], pl_iter);
-  */
+  // See notes in NestedModel::derived_set_communicators() for reasons why
+  // a streamlined implementation (no miPLIndexMap) is insufficient.
 }
 
 
@@ -199,21 +187,8 @@ void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
     for (i=0; i<num_iterators; ++i)
       iterSched.free_iterator(selectedIterators[i], si_pl_iter);
   }
-
-  /* See notes in NestedModel::derived_set_communicators()
-  size_t i, num_iterators = methodList.size(),
-    mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter);
-  iterSched.update(mi_pl_index);
-  if (pl_iter->message_pass() || pl_iter->idle_partition()) { // ***
-    ParLevLIter next_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(++mi_pl_index);
-    for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(selectedIterators[i], next_pl_iter);
-  }
-  else
-    for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(selectedIterators[i], pl_iter);
-  */
+  // See notes in NestedModel::derived_set_communicators() for reasons why
+  // a streamlined implementation (no miPLIndexMap) is insufficient.
 
   // deallocate the mi_pl parallelism level
   iterSched.free_iterator_parallelism();

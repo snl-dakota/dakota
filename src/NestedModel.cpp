@@ -621,8 +621,9 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
     /* This approach could eliminate need for miPLIndexMap, except for
        inability to detect when partitioning has occurred at this level.
-       Note: subIterator's miPLIndex cannot help since it is defined in
-             Iterator::set_communicators() from the passed pl_iter.
+       Note that subIterator's miPLIndex cannot help since it is defined
+       in Iterator::set_communicators() from the passed pl_iter.  The same
+       limitations apply in derived_free_communicators() as well.
     size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter);
     if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
       ParLevLIter next_pl_iter

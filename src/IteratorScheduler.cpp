@@ -329,8 +329,8 @@ run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 
   // segregate processors into run/serve
   if (pl_iter->server_communicator_rank() == 0) { // iteratorCommRank
-    the_iterator.run(pl_iter);
-    the_model.stop_servers(); // Send the termination message to the servers
+    the_iterator.run(pl_iter); // set_communicators() occurs inside run()
+    the_model.stop_servers();  // send termination message to all servers
   }
   else // serve until stopped
     the_model.serve_run(pl_iter, the_iterator.maximum_evaluation_concurrency());

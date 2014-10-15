@@ -421,17 +421,16 @@ void Environment::execute()
     // topLevelIterator's methodName must be defined on all ranks
     if (topLevelIterator.method_name() & META_BIT) {
       // graphics initialization delegated by MetaIterator
+      // set_communicators() occurs inside run()
 
       // Iterator executes on all processors
-      //topLevelIterator.set_communicators(w_pl_iter);
       topLevelIterator.run(w_pl_iter);
     }
     else {
       if (output_rank) // set up plotting and data tabulation
 	topLevelIterator.initialize_graphics(); // default to server_id = 1
 
-      // segregates parallel execution: Iterator on pl.serverCommRank == 0
-      //IteratorScheduler::set_iterator(topLevelIterator, w_pl_iter);
+      // segregates parallel execution: run() if rank 0, else serve_run()
       IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
 				      w_pl_iter);
     }
