@@ -288,36 +288,34 @@ void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 
 void ConcurrentMetaIterator::pre_run()
 {
+  if (iterSched.iteratorCommRank > 0 ||
+      iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
+
   // initialize initialPt
   if (methodName != MULTI_START)
     copy_data(iteratedModel.continuous_variables(), initialPt); // view->copy
 
-  // estimate params_msg_len and results_msg_len
-  if (iterSched.iteratorCommRank == 0) {
-    int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
+  // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
+  int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
+  if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
     // define params_msg_len
-    if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
-      RealVector rv(paramSetLen);
-      MPIPackBuffer send_buffer;
-      send_buffer << rv;
-      params_msg_len = send_buffer.size();
-    }
+    RealVector rv(paramSetLen);
+    MPIPackBuffer send_buffer;
+    send_buffer << rv;
+    params_msg_len = send_buffer.size();
     // define results_msg_len
-    if (iterSched.iteratorScheduling == MASTER_SCHEDULING &&
-	iterSched.iteratorServerId == 0) // scheduler proc
-      iteratedModel.estimate_message_lengths(); // init_comms not called
-    results_msg_len = iteratedModel.message_lengths()[3];
-    // publish lengths to IteratorScheduler
-    iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
+    if (iterSched.iteratorServerId == 0) // master proc: init_comms not called
+      iteratedModel.estimate_message_lengths();
   }
+  results_msg_len = iteratedModel.message_lengths()[3];
+  iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
 
   // -------------------------------------------------------------------------
   // Define parameterSets from the combination of user-specified & random jobs
   // -------------------------------------------------------------------------
-  if ( ( iterSched.iteratorScheduling == MASTER_SCHEDULING &&
-	 iterSched.iteratorServerId == 0 ) ||
-       ( iterSched.iteratorScheduling == PEER_SCHEDULING &&
-	 iterSched.iteratorCommRank == 0 ) ) {
+  if ( iterSched.iteratorServerId   == 0 ||                // master proc
+       iterSched.iteratorScheduling == PEER_SCHEDULING ) { // peer server
 
     // random jobs
     if (numRandomJobs) { // random jobs specified
@@ -398,8 +396,7 @@ void ConcurrentMetaIterator::pre_run()
 
   // all iterator masters bookkeep on the full results list, even if
   // only some entries are defined locally
-  if (iterSched.iteratorCommRank == 0)
-    prpResults.resize(iterSched.numIteratorJobs);
+  prpResults.resize(iterSched.numIteratorJobs);
 }
 
 
