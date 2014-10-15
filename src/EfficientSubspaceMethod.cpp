@@ -404,7 +404,7 @@ generate_fullspace_samples(unsigned int diff_samples)
   else
     iteratedModel.set_communicators(pl_iter, batchSize);
   // and generate the additional samples
-  fullSpaceSampler.run();//pl_iter);
+  fullSpaceSampler.run();//(pl_iter);
 }
 
 

@@ -1024,13 +1024,11 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // issues including broadcast, delegating filename management and
   // redirection to OutputManager (with help from ProgramOptions).
 
-  // The incoming pl should be the lowest of the concurrent iterator levels
-
-  // If not rank 0 within an iteratorComm, then no output handling to
-  // manage.  Note that a meta-iterator dedicated master must participate
-  // in the broadcasts, but returns thereafter since it does not
-  // redirect its output, read from restart files, etc.
-  if (pl.serverCommRank > 0)
+  // If not rank 0 within an iteratorComm or if an idle partition, then no
+  // output handling to manage.  Note that a meta-iterator dedicated master
+  // must participate in the broadcasts, but returns thereafter since it
+  // does not redirect its output, read from restart files, etc.
+  if (pl.serverCommRank > 0 || pl.serverId > pl.numServers)
     return;
 
   // BMA TODO: take another pass to minimally broadcast data
@@ -1076,11 +1074,10 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
 		>> outputManager.resultsOutputFile;
   }
 
-  // After this communication, we can rely on programOptions and
-  // certain outputManager fields in the following.  We do not
-  // broadcast the whole OutputManager as it may be managing open file
-  // streams and the state would be hard to preserve.  (May later
-  // encapsulate the broadcast there though.)
+  // After this communication, we can rely on programOptions and certain
+  // outputManager fields in the following.  We do not broadcast the whole
+  // OutputManager as it may be managing open file streams and the state would
+  // be hard to preserve.  (May later encapsulate the broadcast there though.)
 
   // This returns a meta-iterator dedicated master processor, if present.
   if (!pl.serverMasterFlag)
@@ -1094,11 +1091,10 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
     ctr_tag += "." + boost::lexical_cast<std::string>(pl.serverId);
   }
 
-  // Now that all iterator masters have the output filename settings
-  // and local tags have been added, initialize output streams,
-  // restart, databases, etc., for each iterator master.  Note that
-  // the opening of files on processors for which there is no output
-  // is avoided.
+  // Now that all iterator masters have the output filename settings and local
+  // tags have been added, initialize output streams, restart, databases, etc.,
+  // for each iterator master.  Note that the opening of files on processors
+  // for which there is no output is avoided.
 
   // append tag and manage file open/close as needed
   outputManager.push_output_tag(ctr_tag, programOptions, 
