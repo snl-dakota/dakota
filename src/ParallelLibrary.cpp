@@ -1104,7 +1104,8 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
 
 void ParallelLibrary::pop_output_tag(const ParallelLevel& pl)
 {
-  outputManager.pop_output_tag();
+  if (pl.serverMasterFlag && pl.serverId <= pl.numServers)
+    outputManager.pop_output_tag();
 }
 
 
