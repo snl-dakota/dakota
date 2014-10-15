@@ -1650,9 +1650,10 @@ relax_constraints(const RealVector& lower_bnds,
 #endif
 
     // find optimum tau by solving approximate subproblem
-    // (pl_iter needed for hierarchical surrogate case)
-    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    tau_minimizer.run(pl_iter);
+    // (pl_iter could be needed for hierarchical surrogate case, in which case
+    // {set,free}_communicators must be added)
+    //ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    tau_minimizer.run();//(pl_iter);
 
     // retrieve tau from current response
     const RealVector& tau_and_x_star

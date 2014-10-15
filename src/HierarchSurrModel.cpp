@@ -140,6 +140,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
 
+    // bcast not needed for recurse_flag=false in serve_run call to set_comms
     //if (pl_iter->server_communicator_size() > 1)
     //  parallelLib.bcast(responseMode, *pl_iter);
 
