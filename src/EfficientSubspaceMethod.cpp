@@ -404,7 +404,7 @@ generate_fullspace_samples(unsigned int diff_samples)
   else
     iteratedModel.set_communicators(pl_iter, batchSize);
   // and generate the additional samples
-  fullSpaceSampler.run(pl_iter);
+  fullSpaceSampler.run();//pl_iter);
 }
 
 
@@ -768,7 +768,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   reduced_space_sampler.sampling_reset(subspaceSamples, all_data, gen_stats);
 
   reduced_space_sampler.sub_iterator_flag(false);
-  reduced_space_sampler.run(pl_iter);
+  reduced_space_sampler.run();//(pl_iter);
 
   // reduced space UQ results
   Cout << " --- ESM: Results of reduced-space UQ --- \n";
