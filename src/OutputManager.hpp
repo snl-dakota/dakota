@@ -14,17 +14,12 @@
 #ifndef DAKOTA_OUTPUT_MANAGER_H
 #define DAKOTA_OUTPUT_MANAGER_H
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DakotaGraphics.hpp"
 
-// forward declarations for restart I/O
-namespace boost {
-  namespace archive {
-    class binary_oarchive;
-    class binary_iarchive;
-  }
-}
 
 namespace Dakota {
 
@@ -32,9 +27,140 @@ class ProgramOptions;
 class ProblemDescDB;
 class ParamResponsePair;
 
+
+/** Component to manage a redirected output or error stream */
+class OutputWriter {
+
+public:
+  
+  /// ostream constructor; used to construct a writer to existing
+  /// stream, e.g., std::cout
+  OutputWriter(std::ostream* output_stream);
+
+  /// file redirect constructor; opens an overwriting file stream to given name
+  OutputWriter(const String& output_filename);
+
+  /// the (possibly empty) file name for this stream
+  const String& filename() const;
+
+  /// a pointer to the stream, either cout/cerr or a file
+  std::ostream* output_stream();
+
+protected:
+
+  /// the name of the output file (empty when constructed from pointer)
+  String outputFilename;
+
+  /// file output stream for console text; only open if string non-empty
+  std::ofstream outputFS;
+
+  /// pointer to the stream for this writer
+  std::ostream* outputStream;
+
+};
+
+
+/** Component to manage a set of output or error redirections.  Push
+    operations may present a new filename, or none in order to
+    preserve current binding to cout/cerr or file, but place an entry
+    on the stack.  Cout/Cerr are rebound as needed when a stream is
+    destroyed on pop. */
+class ConsoleRedirector {
+
+public:
+
+  /// Constructor taking a reference to the Dakota Cout/Cerr handle
+  /// and a default destination to use when no redirection (or destruct)
+  ConsoleRedirector(std::ostream* & dakota_stream, std::ostream* default_dest);
+
+  /// when the redirector stack is destroyed, it will rebind the
+  /// output handle to the default ostream, then destroy open files
+  ~ConsoleRedirector();
+
+  /// push back the default or repeat the last pushed file stream
+  void push_back();
+
+  /// push back a new output filestream, or repeat the last one if no
+  /// filename change
+  void push_back(const String& filename);
+
+  /// pop the last redirection
+  void pop_back();
+
+protected:
+  /// The handle (target ostream) through which output is sent;
+  /// typically dakota_cout or dakota_cerr.  Will be rebound to
+  /// specific streams as they are pushed or popped.
+  std::ostream*& ostreamHandle;
+  
+  /// initial stream to reset to when redirections are done (typically
+  /// std::cout or std::cerr)
+  std::ostream* defaultOStream;
+
+  /// stack of redirections to OutputWriters; shared pointers are used
+  /// to potentially share the same ostream at multiple levels
+  std::vector<boost::shared_ptr<OutputWriter> > ostreamDestinations;
+
+private:
+  // private ctors since current implementation with streams isn't
+  // easily copied.
+
+  /// default constructor is disallowed
+  ConsoleRedirector();
+  /// copy constructor is disallowed due
+  ConsoleRedirector(const ConsoleRedirector&);
+  /// assignment is disallowed
+  const ConsoleRedirector& operator=(const ConsoleRedirector&);
+};
+
+
+/** Component for writing restart files.  Creation and destruction of
+    archive and associated stream are managed here. */
+class RestartWriter {
+
+public:
+  /// typical ctor taking a filename
+  RestartWriter(const String& write_restart_filename);
+  
+  /// output filename for this writer
+  const String& filename();
+
+  // TODO: operator &
+  /// add the passed pair to the restart file
+  void append_prp(const ParamResponsePair& prp_in);
+
+  /// flush the restart stream so we have a complete restart record
+  /// should Dakota abort
+  void flush();
+
+private:
+  /// default constructor is disallowed as archive has no default ctor
+  /// (and since noncopyable)
+  RestartWriter();
+  /// copy constructor is disallowed due to file stream
+  RestartWriter(const RestartWriter&);
+  /// assignment is disallowed due to file stream
+  const RestartWriter& operator=(const RestartWriter&);
+
+  /// the name of the restart output file
+  String restartOutputFilename;
+
+  /// Binary stream to which restart data is written
+  std::ofstream restartOutputFS;
+
+  /// Binary output archive to which data is written
+  boost::archive::binary_oarchive restartOutputArchive;
+
+};  // class RestartWriter
+
+
+
 // TODO: tagging for pre/run/post I/O files
-// TODO: consider maintaining a list of redirections and pop them off
+// TODO: consider a map of redirections with arbitrary rebinding
 // TODO: better error checking in each function
+// Consider a design with an array of output managers at
+// ParallelLibrary instead of arrays of streams here...
+
 
 /// Class to manage redirection of stdout/stderr, keep track of
 /// current redir state, and manage rank 0 output.  Also manage
@@ -79,19 +205,6 @@ public:
 
   /// (Potentially) remove an output context and rebind streams
   void pop_output_tag();
-
-  /// Redirect cout based on program options filenames and force flag
-  void redirect_cout(const ProgramOptions& prog_opts, 
-		     bool force_cout_redirect = false);
-
-  /// Redirect cerr based on program options filenames only
-  void redirect_cerr(const ProgramOptions& prog_opts);
-
-  /// Initialize results DB based on problem DB 
-  void init_resultsdb(const ProgramOptions& prog_opts);
-
-  /// Initialize restart DB based on program options filenames
-  void init_restart(const ProgramOptions& prog_opts);
 
 
   // -----
@@ -155,12 +268,6 @@ public:
 
 private:
   
-  /// implementation of cout redirection
-  void redirect_cout(const String& new_filename);
-
-  /// implementation of cerr redirection
-  void redirect_cerr(const String& new_filename);
-
   /// conditionally import evaluations from restart file, then always
   /// create or overwrite restart file
   void read_write_restart(bool read_restart_flag,
@@ -178,36 +285,27 @@ private:
   /// some output is only for MPI runs
   bool mpirunFlag;
 
-  /// tag for various input/output files (default none)
-  String fileTag;
+  /// set of tags for various input/output files (default none)
+  StringArray fileTags;
 
   /// temporary variable to prevent recursive tagging initially
   bool redirCalled;
 
+  /// set of redirections for Dakota::Cout; stores any tagged filename
+  /// when there are concurrent Iterators
+  ConsoleRedirector coutRedirector;
+
+  /// set of redirections for Dakota::Cerr; stores any tagged filename
+  /// when there are concurrent Iterators and error redirection is
+  /// requested
+  ConsoleRedirector cerrRedirector;
+
+  /// Stack of active restart destinations; end is the last (active)
+  /// redirection. All remain open until popped or destroyed.
+  std::vector<boost::shared_ptr<RestartWriter> > restartDestinations;
+
   /// message to print at startup when proceeding to instantiate objects
   String startupMessage;
-
-
-  // For stdout/stderr management
-  // -----
-
-  /// current (potentially tagged) filename for output, ProgramOptions has root
-  String coutFilename;
-  /// current (potentially tagged) filename for error, ProgramOptions has root
-  String cerrFilename;
-
-  // Tagged output file streams used when there are concurrent iterators 
-  std::ofstream output_ofstream; ///< tagged file redirection of stdout
-  std::ofstream error_ofstream;  ///< tagged file redirection of stderr
-
-
-  // For restart management
-  // -----
-
-  /// Binary stream to which restart data is written
-  std::ofstream restartOutputFS;
-  /// Binary output archive to which data is written (ptr as no default ctor)
-  boost::archive::binary_oarchive *restartOutputArchive;
 
 
   /// graphics and tabular data output handler used by meta-iterators,
@@ -226,6 +324,9 @@ private:
 
   /// label for counter used in first line comment w/i the tabular data file
   std::string tabularCntrLabel;
+
+  /// output level (for debugging only; not passed in)
+  short outputLevel;
 
 };  // class OutputManager
 

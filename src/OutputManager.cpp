@@ -11,8 +11,6 @@
 //- Owner:       Brian Adams
 //- Checked by:
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
@@ -40,11 +38,12 @@ void start_dakota_heartbeat(int);
 
 OutputManager::OutputManager():
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false), 
-  worldRank(0), mpirunFlag(false), redirCalled(false), 
-  restartOutputArchive(NULL),
-  graphicsCntr(1), tabularCntrLabel("eval_id")
-
-{ }
+  worldRank(0), mpirunFlag(false), 
+  redirCalled(false), 
+  coutRedirector(dakota_cout, &std::cout), 
+  cerrRedirector(dakota_cerr, &std::cerr),
+  graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
+{  /* empty ctor */  }
 
 
 /// Only get minimal information off ProgramOptions as may be updated
@@ -53,20 +52,19 @@ OutputManager::
 OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 	      bool dakota_mpirun_flag):
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false),
-  worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag),
-  redirCalled(false), restartOutputArchive(NULL),
-  graphicsCntr(1), tabularCntrLabel("eval_id")
-
+  worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag), 
+  redirCalled(false), 
+  coutRedirector(dakota_cout, &std::cout), 
+  cerrRedirector(dakota_cerr, &std::cerr),
+  graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
 {
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
-    redirect_cout(prog_opts.output_file());
-  }
+  if (worldRank == 0 && prog_opts.user_stdout_redirect())
+    coutRedirector.push_back(prog_opts.output_file());
 
   //  if error file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stderr_redirect()) {
-    redirect_cerr(prog_opts.error_file());
-  }
+  if (worldRank == 0 && prog_opts.user_stderr_redirect())
+    cerrRedirector.push_back(prog_opts.error_file());
 
   if (!mpirunFlag
       // || (mpirunFlag && worldRank == 0) 
@@ -83,25 +81,10 @@ OutputManager::~OutputManager()
 
 void OutputManager::close_streams()
 {
-  // check if redirection is active
-  if (!coutFilename.empty() && output_ofstream.is_open()) {
-    output_ofstream.close();
-    dakota_cout = &std::cout;
-    coutFilename = "";
-  }
-  if (!cerrFilename.empty() && error_ofstream.is_open()) {
-    error_ofstream.close();
-    dakota_cerr = &std::cerr;
-    cerrFilename = "";
-  }
+  // cout/cerr will be restored to default when the redirector is destroyed
 
-  if (restartOutputArchive) {    
-    delete restartOutputArchive;
-    restartOutputArchive = NULL;
-  }
-
-  if (restartOutputFS.is_open())
-    restartOutputFS.close();
+  // any remaining restart files will be closed at the destructor...
+  //restartDestinations.clear();
 
   // After completion of timings in ParallelLibrary... 
   //
@@ -148,68 +131,77 @@ void OutputManager::startup_message(const String& start_msg)
 { startupMessage = start_msg; }
 
 
-// Since we can currently only write to one output stream at a
-// time, don't maintain all streams.  Consider a design with an
-// array of output managers at ParallelLibrary instead of arrays of
-// streams here...
-// <string_tag, redirect_required>
-//std::vector< std::pair<String, bool> > 
-// if the tag is changed or a new redirect is needed, do it
-
-/// Update the tag to use on files
 void OutputManager::
 push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
 		bool force_cout_redirect) 
 {
-  if (redirCalled)
-    return;
-  else
-    redirCalled = true;
+  fileTags.push_back(iterator_tag); 
 
-  fileTag += iterator_tag; 
+  String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
+  
+  if (outputLevel >= DEBUG_OUTPUT)
+    std::cout << "DEBUG: Rank " << worldRank << " pushing output tag; new tag '"
+	      << file_tag << "'" << std::endl;
 
-  redirect_cout(prog_opts, force_cout_redirect);
-  redirect_cerr(prog_opts);
-  init_resultsdb(prog_opts);
-  init_restart(prog_opts);
-}
-
-
-void OutputManager::pop_output_tag()
-{
-  fileTag.clear();
-}
-
-
-void OutputManager::redirect_cout(const ProgramOptions& prog_opts, 
-		     bool force_cout_redirect) {
   if (force_cout_redirect || prog_opts.user_stdout_redirect())
-    redirect_cout(prog_opts.output_file() + fileTag);
-}
+    coutRedirector.push_back(prog_opts.output_file() + file_tag);
+  else  // output file remains same as before (possibly cout)
+    coutRedirector.push_back();
 
-
-void OutputManager::redirect_cerr(const ProgramOptions& prog_opts) {
   if (!prog_opts.error_file().empty())
-    redirect_cerr(prog_opts.error_file() + fileTag);
-}
+    cerrRedirector.push_back(prog_opts.error_file() + file_tag);
+  else  // error file remains same as before (possibly cee)
+    cerrRedirector.push_back();
 
-
-void OutputManager::init_resultsdb(const ProgramOptions& prog_opts) {
-  if (resultsOutputFlag)
-    iterator_results_db.initialize(resultsOutputFile + fileTag);
-}
-
-
-void OutputManager::init_restart(const ProgramOptions& prog_opts) {
+  // We always write a restart file; need to be careful to only read
+  // if first time encountering this name
+  // TODO: review whether all read/write should be tagged
   bool read_restart_flag = !prog_opts.read_restart_file().empty();
   read_write_restart(read_restart_flag, 
-		     prog_opts.read_restart_file(),
+		     prog_opts.read_restart_file() + file_tag,
 		     prog_opts.stop_restart_evals(),
-		     prog_opts.write_restart_file() + fileTag);
+		     prog_opts.write_restart_file() + file_tag);
+
+  // for now protect results DB from more than one call
+  if (!redirCalled) {
+    if (resultsOutputFlag)
+      iterator_results_db.initialize(resultsOutputFile + file_tag);
+    redirCalled = true;
+  }
+
 }
 
 
-// TODO: Make release vs. stable depend on CMake settings
+/** For now this assumes the tag is .<int> */
+void OutputManager::pop_output_tag()
+{
+  if (fileTags.empty()) {
+    Cerr << "\nWarning: Rank " << worldRank 
+	 << " attempting to pop non-existent output tag." << std::endl;
+    return;
+  }
+
+  fileTags.pop_back();
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
+    std::cout << "DEBUG: Rank " << worldRank << " popping output tag; new tag '"
+	      << file_tag << "'" << std::endl;
+  }
+
+  // the redirector will rebind to previous stream when popped
+  coutRedirector.pop_back();
+  cerrRedirector.pop_back();
+
+  // the restart file will get closed if this pops the last reference to it
+  if (restartDestinations.empty())
+    Cerr << "\nWarning: Attempt to pop non-existent restart destination!"
+	 << std::endl;
+  else
+    restartDestinations.pop_back();
+}
+
+
 void OutputManager::output_version(std::ostream& os) const
 {
   // Version is always output to Cout
@@ -259,11 +251,15 @@ output_helper(const String& message, std::ostream &os) const
 
 void OutputManager::append_restart(const ParamResponsePair& prp)
 {
-  // TODO: catch errors
-
-  restartOutputArchive->operator&(prp);
+  if (restartDestinations.empty()) {
+    Cerr << "\nError: Attempt to append to restart file when not open."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  boost::shared_ptr<RestartWriter> rst_writer = restartDestinations.back();
+  rst_writer->append_prp(prp);
   // flush is critical so we have a complete restart record should Dakota abort
-  restartOutputFS.flush();
+  rst_writer->flush();
 }
 
 
@@ -281,7 +277,8 @@ create_tabular_datastream(const Variables& vars, const Response& response)
   // tabular data file set up
   // prevent multiple opens of tabular_data_file
   if (!tabularDataFStream.is_open()) {
-    TabularIO::open_file(tabularDataFStream, tabularDataFile + fileTag, 
+    String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
+    TabularIO::open_file(tabularDataFStream, tabularDataFile + file_tag, 
 			 "DakotaGraphics");
   }
 
@@ -353,72 +350,19 @@ int OutputManager::graphics_counter() const
 { return graphicsCntr; }
 
 
-void OutputManager::redirect_cout(const String& new_filename)
-{
-  // check if there was a file name added or changed
-  if (coutFilename != new_filename) {
-    // close and reopen the stream to a different file
-    if (output_ofstream.is_open())
-      output_ofstream.close();
-    output_ofstream.open(new_filename.c_str(), std::ios::out);
-  }
-  else {
-    // BMA TODO: Review whether this is true with new ctor chain
-
-    // If already open, just keep writing.  If not, either append
-    // (created by CLH) or create new (library) file.  This is safe
-    // only because the option to append is handled above, and
-    // needed because a library customer may never call
-    // specify_outputs_restart.
-    if (!output_ofstream.is_open())
-      output_ofstream.open(new_filename.c_str(), std::ios::out);
-  }
-  if (!output_ofstream.good()) {
-    Cerr << "\nError opening output file '" << new_filename << "'" 
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  // assign global dakota_cout to this ofstream
-  dakota_cout = &output_ofstream;
-  coutFilename = new_filename;
-}
-
-void OutputManager::redirect_cerr(const String& new_filename)
-{
-  // check if there was a file name added or changed
-  if (cerrFilename != new_filename) {
-    // close and reopen the stream to a different file
-    if (error_ofstream.is_open())
-      error_ofstream.close();
-    error_ofstream.open(new_filename.c_str(), std::ios::out);
-  }
-  else {
-    // If already open, just keep writing.  If not, either append
-    // (created by CLH) or create new (library) file.  This is safe
-    // only because the option to append is handled above, and
-    // needed because a library customer may never call
-    // specify_outputs_restart.
-    if (!error_ofstream.is_open())
-      error_ofstream.open(new_filename.c_str(), std::ios::out);
-  }
-  if (!error_ofstream.good()) {
-    Cerr << "\nError opening error file '" << new_filename << "'" 
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  // assign global dakota_cout to this ofstream
-  dakota_cerr = &error_ofstream;
-  cerrFilename = new_filename;
-}
-
-
 void OutputManager::read_write_restart(bool read_restart_flag,
 				       const String& read_restart_filename,
 				       size_t stop_restart_evals,
 				       const String& write_restart_filename)
 {
+  // true if this filename has already been read and opened for writing
+  // this restart name has already been processed, push it again
+  if ( !restartDestinations.empty() &&
+       write_restart_filename == restartDestinations.back()->filename() ) {
+    restartDestinations.push_back(restartDestinations.back());
+    return;
+  }
+
   // Conditionally process the evaluations from the restart file
   PRPCache read_pairs;
   if (read_restart_flag) {
@@ -502,8 +446,10 @@ void OutputManager::read_write_restart(bool read_restart_flag,
   else
     Cout << "Writing new restart file " << write_restart_filename << std::endl;
 
-  restartOutputFS.open(write_restart_filename.c_str(), std::ios::binary);
-  restartOutputArchive = new boost::archive::binary_oarchive(restartOutputFS);
+  // create a new restart destination
+  boost::shared_ptr<RestartWriter> 
+    rst_writer(new RestartWriter(write_restart_filename));
+  restartDestinations.push_back(rst_writer);
 
   // Write any processed records from the old restart file to the new file.
   // This prevents the situation where good data from an initial run and a 
@@ -516,7 +462,7 @@ void OutputManager::read_write_restart(bool read_restart_flag,
     // don't use a const iterator as PRP does not have a const serialize fn
     PRPCacheIter it, it_end = read_pairs.end();
     for (it = read_pairs.begin(); it != it_end; ++it) {
-      restartOutputArchive->operator&(*it);
+      rst_writer->append_prp(*it);
 
       // Distinguish restart evals in memory by negating their eval ids;
       // positive ids could be misleading if inconsistent with the progression
@@ -537,11 +483,115 @@ void OutputManager::read_write_restart(bool read_restart_flag,
     }
 
     // flush is critical so we have a complete restart record in case of abort
-    restartOutputFS.flush();
+    rst_writer->flush();
   }
 
   //}
 }
+
+
+OutputWriter::OutputWriter(std::ostream* output_stream)
+{ outputStream = output_stream; }
+
+OutputWriter::OutputWriter(const String& output_filename)
+{
+  outputFS.open(output_filename.c_str(), std::ios::out);
+  if (!outputFS.good()) {
+    Cerr << "\nError opening output file '" << output_filename << "'" 
+	 << std::endl;
+    abort_handler(-1);
+  }
+  outputStream = &outputFS;
+}
+
+const String& OutputWriter::filename() const
+{ return outputFilename; }
+
+ 
+std::ostream* OutputWriter::output_stream()
+{ return outputStream; }
+
+
+ConsoleRedirector::
+ConsoleRedirector(std::ostream* & dakota_stream, std::ostream* default_dest):
+  ostreamHandle(dakota_stream), defaultOStream(default_dest)
+{ /* empty ctor */ }
+
+
+ConsoleRedirector::~ConsoleRedirector()
+{
+  ostreamHandle = defaultOStream;
+}
+
+
+void ConsoleRedirector::push_back()
+{
+  if (ostreamDestinations.empty()) {
+    boost::shared_ptr<OutputWriter> 
+      out_writer_ptr(new OutputWriter(defaultOStream));
+    ostreamDestinations.push_back(out_writer_ptr);
+  }
+  else 
+    ostreamDestinations.push_back(ostreamDestinations.back());
+}
+
+
+void ConsoleRedirector::push_back(const String& output_filename)
+{
+  if (output_filename.empty()) {
+    push_back();
+    return;
+  }
+
+  // if this is a new redirection, or a redirection with a new
+  // filename, make a new stream, overwriting file contents
+  if (ostreamDestinations.empty() || 
+      ostreamDestinations.back()->filename() != output_filename) {
+    boost::shared_ptr<OutputWriter> 
+      out_writer_ptr(new OutputWriter(output_filename));
+    ostreamDestinations.push_back(out_writer_ptr);
+  }
+  // otherwise keep using the same stream
+  else
+    ostreamDestinations.push_back(ostreamDestinations.back());
+
+  ostreamHandle = ostreamDestinations.back()->output_stream();
+}
+
+
+void ConsoleRedirector::pop_back()
+{
+  if (!ostreamDestinations.empty())
+    ostreamDestinations.pop_back();
+  else 
+    Cerr << "\nWarning: Attempt to pop non-existent console output destination!"
+	 << std::endl;
+
+  // if stack is empty, rebind to the default
+  if (ostreamDestinations.empty())
+    ostreamHandle = defaultOStream;
+  else
+    ostreamHandle = ostreamDestinations.back()->output_stream();
+}
+
+
+RestartWriter::RestartWriter(const String& write_restart_filename):
+  restartOutputFilename(write_restart_filename),
+  restartOutputFS(restartOutputFilename.c_str(), std::ios::binary),
+  restartOutputArchive(restartOutputFS)
+{  /* empty ctor */  }
+
+
+const String& RestartWriter::filename()
+{ return restartOutputFilename; }
+
+
+void RestartWriter::append_prp(const ParamResponsePair& prp_in)
+{ restartOutputArchive & prp_in; }
+
+
+void RestartWriter::flush()
+{ restartOutputFS.flush(); }
 
 
 } //namespace Dakota
