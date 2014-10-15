@@ -415,6 +415,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
   // important to note that the MPP iteration is different for each response 
   // function, and it is not possible to combine the model evaluations for
   // multiple response functions.
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
 
     // The most general case is to allow a combination of response, probability,
@@ -526,8 +527,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 
 	// Execute GLOBAL search and retrieve u-space results
 	Cout << "\n>>>>> Initiating global reliability optimization\n";
-	// no summary output since on-the-fly constructed:
-	mppOptimizer.run(Cout);
+	mppOptimizer.run(pl_iter);
 	// Use these two lines for COLINY optimizers
 	//const VariablesArray& vars_star
 	//  = mppOptimizer.variables_array_results();
@@ -756,6 +756,8 @@ void NonDGlobalReliability::importance_sampling()
   size_t i;
   statCount = 0;
   const ShortArray& final_res_asv = finalStatistics.active_set_request_vector();
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
 
     // The most general case is to allow a combination of response, probability,
@@ -812,8 +814,7 @@ void NonDGlobalReliability::importance_sampling()
 	importance_sampler_rep->initialize(gp_inputs, x_data_flag,
 	  respFnCount, 0., computedRespLevels[respFnCount][levelCount]);
 
-      // no summary output since on-the-fly constructed:
-      importanceSampler.run(Cout);
+      importanceSampler.run(pl_iter);
 
       Real p = importance_sampler_rep->final_probability();
 #ifdef DEBUG

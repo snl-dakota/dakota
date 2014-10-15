@@ -85,37 +85,6 @@ SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
 { }
 
 
-void SurrBasedGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
-{
-  // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
-
-  // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
-  // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
-  // concurrency is from approxSubProbMinimizer on lowFidelityModel.
-  // As for constructors, we recursively set and restore DB list nodes
-  // (initiated from the restored starting point following construction).
-  size_t method_index = probDescDB.get_db_method_node(),
-         model_index  = probDescDB.get_db_model_node(); // for restoration
-  probDescDB.set_db_list_nodes(approxSubProbMinimizer.method_id());
-  approxSubProbMinimizer.init_communicators(pl_iter);
-  probDescDB.set_db_method_node(method_index); // restore method only
-  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
-}
-
-
-void SurrBasedGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
-{
-  // Virtual destructor handles referenceCount at Iterator level.
-
-  // free communicators for iteratedModel
-  approxSubProbMinimizer.free_communicators(pl_iter);
-
-  // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
-}
-
-
 void SurrBasedGlobalMinimizer::minimize_surrogates()
 {
   // Extract subIterator/subModel(s) from the SurrogateModel
@@ -189,11 +158,12 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
       }
     }
 
-    // use the iterator to solve the approximate model.  At the first iteration,
-    // this is the surrogate built using only the original truth samples.  At
-    // each subsequent iteration, the surrogate includes additional truth
-    // samples depending on the method of adding points
-    approxSubProbMinimizer.run(Cout);
+    // use the iterator to solve the approximate subproblem.  On the first
+    // iteration, the surrogate is built using only the original truth
+    // samples.  At each subsequent iteration, the surrogate includes
+    // additional truth samples from validation of subproblem solutions.
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    approxSubProbMinimizer.run(pl_iter);
 
     // Get the results from the iterator execution.
     VariablesArray vars_results;

@@ -228,7 +228,8 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 inline void SingleModel::
 serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
-  parallelLib.parallel_configuration_iterator(modelPCIter);
+  set_communicators(pl_iter, max_eval_concurrency, false);// no recursion (moot)
+
   userDefinedInterface.serve_evaluations();
 }
 

@@ -346,38 +346,6 @@ SurrBasedLocalMinimizer::~SurrBasedLocalMinimizer()
 { }
 
 
-void SurrBasedLocalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
-{
-  // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
-
-  // Allocate comms in approxSubProbModel/iteratedModel for parallel SBLM.
-  // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
-  // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
-  // concurrency is from approxSubProbMinimizer on lowFidelityModel.
-  // As for constructors, we recursively set and restore DB list nodes
-  // (initiated from the restored starting point following construction).
-  size_t method_index = probDescDB.get_db_method_node(),
-         model_index  = probDescDB.get_db_model_node(); // for restoration
-  probDescDB.set_db_list_nodes(approxSubProbMinimizer.method_id());
-  approxSubProbMinimizer.init_communicators(pl_iter);
-  probDescDB.set_db_method_node(method_index); // restore method only
-  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
-}
-
-
-void SurrBasedLocalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
-{
-  // Virtual destructor handles referenceCount at Strategy level.
-
-  // free communicators for approxSubProbModel/iteratedModel
-  approxSubProbMinimizer.free_communicators(pl_iter);
-
-  // iteratedModel is evaluated to add truth data (single compute_response())
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
-}
-
-
 /** Trust region-based strategy to perform surrogate-based optimization
     in subregions (trust regions) of the parameter space.  The minimizer
     operates on approximations in lieu of the more expensive simulation-based
@@ -571,9 +539,8 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
       if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
       	relax_constraints(tr_lower_bnds, tr_upper_bnds);
-      // This iterator constructed from DB, but summary output suppressed:
-      approxSubProbMinimizer.run(Cout);
-
+      ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+      approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
       Cout << "\n<<<<< Approximate optimization cycle completed.\n";
       sbIterNum++; // full iteration performed: increment the counter
 
@@ -1682,9 +1649,10 @@ relax_constraints(const RealVector& lower_bnds,
       hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol), false);
 #endif
 
-    // find optimum tau
-    // no summary output since on-the-fly constructed:
-    tau_minimizer.run(Cout);
+    // find optimum tau by solving approximate subproblem
+    // (pl_iter needed for hierarchical surrogate case)
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    tau_minimizer.run(pl_iter);
 
     // retrieve tau from current response
     const RealVector& tau_and_x_star

@@ -42,6 +42,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void derived_init_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_free_communicators(ParLevLIter pl_iter);
+
   /// initialize graphics customized for surrogate-based iteration
   void initialize_graphics(int iterator_server_id = 1);
   void core_run();
@@ -158,6 +162,9 @@ protected:
   /// decreasing sequence of allowable constraint violation used in augmented
   /// Lagrangian updates (refer to Conn, Gould, and Toint, section 14.4)
   Real etaSequence;
+
+  /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
+  size_t miPLIndex;
 };
 
 

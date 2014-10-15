@@ -329,7 +329,7 @@ run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 
   // segregate processors into run/serve
   if (pl_iter->server_communicator_rank() == 0) { // iteratorCommRank
-    the_iterator.run(Cout); // verbose mode
+    the_iterator.run(pl_iter);
     the_model.stop_servers(); // Send the termination message to the servers
   }
   else // serve until stopped

@@ -139,8 +139,8 @@ void ParallelLibrary::initialize_timers()
 
 /** Split parent communicator into concurrent child server partitions
     as specified by the passed parameters.  This constructs new child
-    intra-communicators and parent-child inter-communicators.  This
-    function is called from the Strategy constructor for the concurrent
+    intra-communicators and parent-child inter-communicators.  This fn
+    is called from MetaIterators and NestedModel for the concurrent
     iterator level and from ApplicationInterface::init_communicators()
     for the concurrent evaluation and concurrent analysis levels. */
 void ParallelLibrary::
@@ -888,55 +888,68 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 void ParallelLibrary::print_configuration()
 {
   // Print a consolidated report for all ParallelLevels within the current
-  // ParallelConfiguration instance.  Calls to this function are protected by
-  // worldSize in ApplicationInterface::init_communicators() and by worldRank/
-  // stratDedicatedMasterFlag in IteratorScheduler::self_schedule_iterators().
+  // ParallelConfiguration instance.
 
-  const ParallelConfiguration& pc = *currPCIter;
-  const ParallelLevel& mi_pl = pc.mi_parallel_level(); // TO DO
-  const ParallelLevel& ie_pl = pc.ie_parallel_level();
-  const ParallelLevel& ea_pl = pc.ea_parallel_level();
+  const std::vector<ParLevLIter>& mi_iters = currPCIter->miPLIters;
+  ParLevLIter ie_iter = currPCIter->iePLIter;
+  ParLevLIter ea_iter = currPCIter->eaPLIter;
 
   // --------------------------------------------------
   // Send partition info up the chain to worldRank == 0
   // --------------------------------------------------
-  // If the strategy has a dedicated master, then only iterator servers 
-  // participate in evaluation partitioning.  And if each iterator has a
+  // If a meta-iterator has a dedicated master, then only iterator servers 
+  // participate in evaluation partitioning.  And if iterator servers have a
   // dedicated master, then only evaluation servers participate in analysis
   // partitioning.  This requires up to two messages (within the confines of
   // the existing communicator and send/recv structure) to jump these two gaps
   // in partitioning participation.
-  if ( mi_pl.serverId == 1 && ie_pl.dedicatedMasterFlag && 
-       ie_pl.serverId == 1 && ie_pl.serverCommRank == 0 ) {
-    // eval server 1 master sends analysis info to iterator server 1 master
-    MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
-    send_buffer << ea_pl.numServers    << ea_pl.procsPerServer
-		<< ea_pl.procRemainder << ea_pl.dedicatedMasterFlag
-		<< pc.numParallelLevels;
-    send_ie(send_buffer, 0, 1001);
+
+  size_t i, num_mi = mi_iters.size();
+  /*
+  for (i=1; i<num_mi; ++i) { // skip w_pl
+    ParLevLIter mi_iter = mi_iters[i];
+
+    // TO DO: have to migrate to a vector-based message packing/unpacking
   }
+  */
+  ParLevLIter mi_iter = mi_iters[num_mi-1]; // last level for now
+
   // use local copies for settings from other processors
   // (do not update parallel settings on message recipients).
-  int num_anal_srv = ea_pl.numServers, p_per_anal = ea_pl.procsPerServer,
-    anal_remainder = ea_pl.procRemainder;
-  bool  eval_ded_master_flag = ea_pl.dedicatedMasterFlag;
-  short dak_par_levels = pc.numParallelLevels;
-  if (mi_pl.serverId == 1 && mi_pl.serverCommRank == 0) {
-    if (ie_pl.dedicatedMasterFlag) {
-      // iterator server 1 master recv's analysis info from eval server 1 master
-      MPIUnpackBuffer recv_buffer(64);
-      MPI_Status status;
-      recv_ie(recv_buffer, 1, 1001, status);
-      recv_buffer >> num_anal_srv >> p_per_anal >> anal_remainder
-		  >> eval_ded_master_flag >> dak_par_levels;
+  int num_anal_srv = ea_iter->numServers, p_per_anal = ea_iter->procsPerServer,
+      anal_remainder = ea_iter->procRemainder;
+  bool  eval_ded_master_flag = ea_iter->dedicatedMasterFlag;
+  short dak_par_levels = currPCIter->numParallelLevels;
+  if (mi_iter->serverId == 1) {
+    if ( ie_iter->dedicatedMasterFlag && ie_iter->serverId == 1 &&
+	 ie_iter->serverCommRank == 0 ) {
+      // *** EA SEND ***
+      // eval server 1 master sends analysis info to iterator server 1 master
+      MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
+      send_buffer << ea_iter->numServers    << ea_iter->procsPerServer
+		  << ea_iter->procRemainder << ea_iter->dedicatedMasterFlag
+		  << currPCIter->numParallelLevels;
+      send_ie(send_buffer, 0, 1001);
     }
-    if (mi_pl.dedicatedMasterFlag) {
-      // iterator server 1 master sends combined info to strategy master
-      MPIPackBuffer send_buffer(64);
-      send_buffer << ie_pl.numServers << ie_pl.procsPerServer
-                  << ie_pl.dedicatedMasterFlag << num_anal_srv << p_per_anal
-                  << anal_remainder << eval_ded_master_flag << dak_par_levels;
-      send_mi(send_buffer, 0, 1002);
+    if (mi_iter->serverCommRank == 0) {
+      if (ie_iter->dedicatedMasterFlag) {
+	// *** EA RECV ***
+	// iter server 1 master recv's analysis info from eval server 1 master
+	MPIUnpackBuffer recv_buffer(64);
+	MPI_Status status;
+	recv_ie(recv_buffer, 1, 1001, status);
+	recv_buffer >> num_anal_srv >> p_per_anal >> anal_remainder
+		    >> eval_ded_master_flag >> dak_par_levels;
+      }
+      if (mi_iter->dedicatedMasterFlag) {
+	// *** IE + EA SEND ***
+	// iterator server 1 master sends combined info to meta-iterator master
+	MPIPackBuffer send_buffer(64);
+	send_buffer << ie_iter->numServers << ie_iter->procsPerServer
+		    << ie_iter->dedicatedMasterFlag << num_anal_srv <<p_per_anal
+		    << anal_remainder << eval_ded_master_flag << dak_par_levels;
+	send_mi(send_buffer, 0, 1002);
+      }
     }
   }
 
@@ -944,10 +957,12 @@ void ParallelLibrary::print_configuration()
   // worldRank == 0 prints configuration
   // -----------------------------------
   if (mpiManager.world_rank() == 0) { // does all output
-    int  num_eval_srv = ie_pl.numServers, p_per_eval = ie_pl.procsPerServer;
-    bool iterator_ded_master_flag = ie_pl.dedicatedMasterFlag;
-    if (mi_pl.dedicatedMasterFlag) {
-      // strategy master receives combined info from iterator server 1 master
+    int num_eval_srv = ie_iter->numServers,
+        p_per_eval   = ie_iter->procsPerServer;
+    bool iterator_ded_master_flag = ie_iter->dedicatedMasterFlag;
+    if (mi_iter->dedicatedMasterFlag) {
+      // *** IE + EA RECV ***
+      // meta-iterator master recv combined info from iterator server 1 master
       MPIUnpackBuffer recv_buffer(64); // 5 ints+1 short+2 bools < ~22 bytes
       MPI_Status status;
       recv_mi(recv_buffer, 1, 1002, status);
@@ -956,16 +971,16 @@ void ParallelLibrary::print_configuration()
 		  >> eval_ded_master_flag >> dak_par_levels;
     }
 
-    // Strategy diagnostics
+    // Meta-iterator diagnostics
     Cout << "\n---------------------------------------------------------------"
 	 << "--------------\nDAKOTA parallel configuration:\n\n"
 	 << "Level\t\t\tnum_servers    procs_per_server    partition\n"
 	 << "-----\t\t\t-----------    ----------------    ---------\n"
 	 << "concurrent iterators\t  " << std::setw(4)
-         << mi_pl.numServers << "\t\t   " << std::setw(4)
-	 << mi_pl.procsPerServer << "\t\t   ";
-    if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
-    else                           Cout << "peer\n";
+         << mi_iter->numServers << "\t\t   " << std::setw(4)
+	 << mi_iter->procsPerServer << "\t\t   ";
+    if (mi_iter->dedicatedMasterFlag) Cout << "ded. master\n";
+    else                              Cout << "peer\n";
 
     // Iterator diagnostics
     Cout << "concurrent evaluations\t  " << std::setw(4) << num_eval_srv
@@ -1012,7 +1027,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // The incoming pl should be the lowest of the concurrent iterator levels
 
   // If not rank 0 within an iteratorComm, then no output handling to
-  // manage.  Note that a strategy dedicated master must participate
+  // manage.  Note that a meta-iterator dedicated master must participate
   // in the broadcasts, but returns thereafter since it does not
   // redirect its output, read from restart files, etc.
   if (pl.serverCommRank > 0)
@@ -1067,7 +1082,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // streams and the state would be hard to preserve.  (May later
   // encapsulate the broadcast there though.)
 
-  // This returns a strategy dedicated master processor, if present.
+  // This returns a meta-iterator dedicated master processor, if present.
   if (!pl.serverMasterFlag)
     return;
 
@@ -1075,7 +1090,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   String ctr_tag;
   if (pl.numServers > 1 || pl.dedicatedMasterFlag) {
     // could change to numServers>0 since it would still be nice to organize
-    // the output for 1 server in BranchBndStrategy/ConcurrentStrategy
+    // the output for 1 server in ConcurrentMetaIterator
     ctr_tag += "." + boost::lexical_cast<std::string>(pl.serverId);
   }
 

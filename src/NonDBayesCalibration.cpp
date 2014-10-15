@@ -171,8 +171,10 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 void NonDBayesCalibration::quantify_uncertainty()
 {
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-    stochExpIterator.run(Cout); break;
+  case PCE_EMULATOR: case SC_EMULATOR: {
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    stochExpIterator.run(pl_iter); break;
+  }
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace) {
       initialize_random_variable_parameters();

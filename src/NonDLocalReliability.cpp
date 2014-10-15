@@ -805,8 +805,9 @@ void NonDLocalReliability::mpp_search()
 
         // Execute MPP search and retrieve u-space results
         Cout << "\n>>>>> Initiating search for most probable point (MPP)\n";
-	// no summary output since on-the-fly constructed:
-	mppOptimizer.run(Cout);
+	ParLevLIter pl_iter
+	  = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+	mppOptimizer.run(pl_iter);
         const Variables& vars_star = mppOptimizer.variables_results();
         const Response&  resp_star = mppOptimizer.response_results();
 	const RealVector& fns_star = resp_star.function_values();
@@ -2210,8 +2211,8 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     bool x_data_flag = false;
     importance_sampler_rep->
       initialize(mpp_u, x_data_flag, respFnCount, p, requestedTargetLevel);
-    // no summary output since on-the-fly constructed:
-    importanceSampler.run(Cout);
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    importanceSampler.run(pl_iter);
     p = importance_sampler_rep->final_probability();
     if (outputLevel > NORMAL_OUTPUT)
       Cout << " refined = " << std::setw(wpp7) << p;

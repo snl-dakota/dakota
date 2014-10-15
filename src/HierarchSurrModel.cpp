@@ -140,8 +140,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
 
-    if (pl_iter->server_communicator_size() > 1)
-      parallelLib.bcast(responseMode, *pl_iter);
+    //if (pl_iter->server_communicator_size() > 1)
+    //  parallelLib.bcast(responseMode, *pl_iter);
 
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
@@ -921,17 +921,18 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   size_t index; int iter_comm_size;
   if (componentParallelMode != mode) {
     if (componentParallelMode == LF_MODEL) { // old mode
-      const ParallelLevel& mi_pl =
-	lowFidelityModel.parallel_configuration_iterator()->
-	mi_parallel_level(lowFidelityModel.mi_parallel_level_index());
-      if (mi_pl.server_communicator_size() > 1)
+      ParConfigLIter pc_it = lowFidelityModel.parallel_configuration_iterator();
+      size_t index = lowFidelityModel.mi_parallel_level_index();
+      if (pc_it->mi_parallel_level_defined(index) && 
+	  pc_it->mi_parallel_level(index).server_communicator_size() > 1)
 	lowFidelityModel.stop_servers();
     }
     else if (componentParallelMode == HF_MODEL) { // old mode
-      const ParallelLevel& mi_pl =
-	highFidelityModel.parallel_configuration_iterator()->
-	mi_parallel_level(highFidelityModel.mi_parallel_level_index());
-      if (mi_pl.server_communicator_size() > 1)
+      ParConfigLIter pc_it
+	= highFidelityModel.parallel_configuration_iterator();
+      size_t index = highFidelityModel.mi_parallel_level_index();
+      if (pc_it->mi_parallel_level_defined(index) && 
+	  pc_it->mi_parallel_level(index).server_communicator_size() > 1)
 	highFidelityModel.stop_servers();
     }
   }
@@ -946,8 +947,9 @@ void HierarchSurrModel::component_parallel_mode(short mode)
 
   // activate new serve mode (matches HierarchSurrModel::serve_run(pl_iter)).
   // These bcasts match the outer parallel context (pl_iter).
-  if (componentParallelMode != mode && modelPCIter->
-      mi_parallel_level(miPLIndex).server_communicator_size() > 1) {
+  if (componentParallelMode != mode &&
+      modelPCIter->mi_parallel_level_defined(miPLIndex) &&
+      modelPCIter->mi_parallel_level(miPLIndex).server_communicator_size() > 1){
     parallelLib.bcast_i(mode, miPLIndex);
     if (mode == HF_MODEL)
       parallelLib.bcast_i(responseMode, miPLIndex);
@@ -959,6 +961,8 @@ void HierarchSurrModel::component_parallel_mode(short mode)
 
 void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
+  set_communicators(pl_iter, max_eval_concurrency, false); // don't recurse
+
   // manage lowFidelityModel and highFidelityModel servers, matching
   // communication from HierarchSurrModel::component_parallel_mode()
   componentParallelMode = 1;

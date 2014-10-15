@@ -1364,8 +1364,11 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
 	boost::lexical_cast<String>(nestedModelEvalCntr);
       subIterator.eval_tag_prefix(eval_tag);
     }
-    // output suppressed by default, unless sub-iterator is verbose:
-    subIterator.run(Cout);
+    // For derived_compute_response(), partitioning for iterator concurrency 
+    // would not normally be expected, but singleton jobs could use this fn.
+    ParLevLIter pl_iter
+      = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
+    subIterator.run(pl_iter);
     const Response& sub_iter_resp = subIterator.response_results();
     Cout << "\nActive response data from sub_iterator:\n"<< sub_iter_resp<<'\n';
     // map subIterator results into their contribution to currentResponse
@@ -1803,17 +1806,18 @@ void NestedModel::component_parallel_mode(short mode)
   // terminate previous serve mode (if active)
   if (componentParallelMode != mode) {
     if (componentParallelMode == OPTIONAL_INTERFACE) {
-      const ParallelLevel& mi_pl
-	= modelPCIter->mi_parallel_level(subIteratorSched.miPLIndex);
-      if (mi_pl.server_communicator_size() > 1) {
+      size_t index = subIteratorSched.miPLIndex;
+      if (modelPCIter->mi_parallel_level_defined(index) && 
+	  modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
 	parallelLib.parallel_configuration_iterator(modelPCIter);
 	optionalInterface.stop_evaluation_servers();
       }
     }
     else if (componentParallelMode == SUB_MODEL) {
-      const ParallelLevel& mi_pl = subModel.parallel_configuration_iterator()->
-	mi_parallel_level(subModel.mi_parallel_level_index());
-      if (mi_pl.server_communicator_size() > 1)
+      ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
+      size_t index = subModel.mi_parallel_level_index();
+      if (pc_it->mi_parallel_level_defined(index) && 
+	  pc_it->mi_parallel_level(index).server_communicator_size() > 1)
 	subModel.stop_servers();
     }
   }
@@ -1828,8 +1832,10 @@ void NestedModel::component_parallel_mode(short mode)
 
   // activate new serve mode (matches NestedModel::serve_run(pl_iter)).  This
   // bcast matches the outer parallel context prior to subIterator partitioning.
-  if (componentParallelMode != mode && modelPCIter->
-      mi_parallel_level(outerMIPLIndex).server_communicator_size() > 1)
+  if (componentParallelMode != mode &&
+      modelPCIter->mi_parallel_level_defined(outerMIPLIndex) &&
+      modelPCIter->
+        mi_parallel_level(outerMIPLIndex).server_communicator_size() > 1)
     parallelLib.bcast_i(mode, outerMIPLIndex);
 
   componentParallelMode = mode;

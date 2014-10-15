@@ -290,7 +290,8 @@ namespace Dakota
 		}
 	
 		// Exploring Final Emulator
-		gpFinalEval.run(Cout);
+		ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+		gpFinalEval.run(pl_iter);
 		const IntResponseMap& all_resp = gpFinalEval.all_responses();
 		IntRespMCIter resp_it = all_resp.begin();
 
@@ -340,7 +341,9 @@ namespace Dakota
 		RealVector temp_cvars;
 
 		// generate new set of emulator samples.  Note this will have a different seed  each time.
-		gpEval.run(Cout);
+
+		ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+		gpEval.run(pl_iter);
 
 		// obtain results 
 		const RealMatrix&  all_samples = gpEval.all_samples();

@@ -919,7 +919,7 @@ increment_parallel_configuration(ParLevLIter mi_pl_iter)
   // mi parallel levels configured to this point
   else {
     //pc.miPLIters = currPCIter->miPLIters; // before passing of num_mipl
-    std::vector<ParLevLIter>& curr_mipl_iters = currPCIter->miPLIters;
+    const std::vector<ParLevLIter>& curr_mipl_iters = currPCIter->miPLIters;
     num_mi_pl = curr_mipl_iters.size();
     for (i=0; i<num_mi_pl; ++i) {
       pc.miPLIters.push_back(curr_mipl_iters[i]);

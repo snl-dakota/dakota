@@ -1687,8 +1687,8 @@ void NonDExpansion::compute_statistics()
     sampler_set.request_vector(sampler_asv);
     expansionSampler.active_set(sampler_set);
 
-    // no summary output since on-the-fly constructed:
-    expansionSampler.run(Cout);
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    expansionSampler.run(pl_iter);
     exp_sampler_rep->
       compute_distribution_mappings(expansionSampler.all_responses());
     exp_sampler_rep->update_final_statistics();
@@ -1739,8 +1739,7 @@ void NonDExpansion::compute_statistics()
 	    imp_sampler_rep->initialize(initial_points, x_data_flag, i, 
 	      exp_sampler_stats[sampler_cntr], requestedRespLevels[i][j]);
           
-	    // no summary output since on-the-fly constructed:
-            importanceSampler.run(Cout);
+            importanceSampler.run(pl_iter);
 
             //Real p = imp_sampler_rep->final_probability();
             //Cout << "importance sampling estimate for function " << i 

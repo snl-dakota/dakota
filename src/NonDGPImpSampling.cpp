@@ -153,7 +153,8 @@ void NonDGPImpSampling::quantify_uncertainty()
   size_t resp_fn_count, level_count, iter;
   RealVector new_X;
   initialize_distribution_mappings();
- 
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+
   for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
     size_t num_levels = requestedRespLevels[resp_fn_count].length();
     const Pecos::SurrogateData& gp_data = gpModel.approximation_data(resp_fn_count);
@@ -187,7 +188,7 @@ void NonDGPImpSampling::quantify_uncertainty()
       for (k = 0; k < numPtsAdd; k++) { 
 	// generate new set of emulator samples.
 	// Note this will have a different seed each time.
-        gpEval.run(Cout);
+        gpEval.run(pl_iter);
          // obtain results 
         const RealMatrix&  all_samples = gpEval.all_samples();
         const IntResponseMap& all_resp = gpEval.all_responses();
@@ -243,7 +244,7 @@ void NonDGPImpSampling::quantify_uncertainty()
         iter = 1;
         while ((iter<20) && (temp_norm_const*numEmulEval<25)) {
 	  iter = iter+1;
-          gpEval.run(Cout);
+          gpEval.run(pl_iter);
            // obtain results 
           const RealMatrix&  this_samples = gpEval.all_samples();
           const IntResponseMap& this_resp = gpEval.all_responses();
@@ -290,7 +291,7 @@ void NonDGPImpSampling::quantify_uncertainty()
  
         if (num_eval_kept==0) {
 	  normConst(k)=0.0;
-          sampleRhoOne.run(Cout);
+          sampleRhoOne.run(pl_iter);
          // obtain results 
           const RealMatrix&  rho1_samples = sampleRhoOne.all_samples();
           // For now, we always only draw one sample
@@ -369,7 +370,7 @@ void NonDGPImpSampling::quantify_uncertainty()
         } 
 //Since we need to evaluate the SUCCESSIVE SEQUENCES of GPs built using numSamples-->numPtsTotal
 //it might be most efficient to "pop" the data and go backward: 
-//listStudy.run();
+//listStudy.run(pl_iter);
 //obtain results and expected indicator functions
 //gpModel.pop_approximation();
 //

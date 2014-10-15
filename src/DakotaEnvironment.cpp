@@ -423,15 +423,15 @@ void Environment::execute()
       // graphics initialization delegated by MetaIterator
 
       // Iterator executes on all processors
-      topLevelIterator.set_communicators(w_pl_iter);
-      topLevelIterator.run(Cout);
+      //topLevelIterator.set_communicators(w_pl_iter);
+      topLevelIterator.run(w_pl_iter);
     }
     else {
       if (output_rank) // set up plotting and data tabulation
 	topLevelIterator.initialize_graphics(); // default to server_id = 1
 
       // segregates parallel execution: Iterator on pl.serverCommRank == 0
-      IteratorScheduler::set_iterator(topLevelIterator, w_pl_iter);
+      //IteratorScheduler::set_iterator(topLevelIterator, w_pl_iter);
       IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
 				      w_pl_iter);
     }

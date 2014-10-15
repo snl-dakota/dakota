@@ -262,6 +262,8 @@ void NonDGlobalInterval::quantify_uncertainty()
 
   initialize(); // virtual fn
 
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
 
     primary_resp_map[0][0] = respFnCntr;
@@ -300,9 +302,8 @@ void NonDGlobalInterval::quantify_uncertainty()
 	Cout << "\n>>>>> Initiating global minimization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
-	// no summary output since on-the-fly constructed:
 	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
-	intervalOptimizer.run(Cout);
+	intervalOptimizer.run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
 	post_process_run_results(false);
       }
@@ -335,9 +336,8 @@ void NonDGlobalInterval::quantify_uncertainty()
 	Cout << "\n>>>>> Initiating global maximization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
-	// no summary output since on-the-fly constructed:
 	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
-	intervalOptimizer.run(Cout);
+	intervalOptimizer.run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
 	post_process_run_results(true);
       }

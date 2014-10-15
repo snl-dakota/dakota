@@ -147,17 +147,21 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-/** This is an alternate constructor for instantiations on the fly
-    using a Model but no ProblemDescDB. */
-//EffGlobalMinimizer::
-//EffGlobalMinimizer(Model& model, int max_iter, int max_eval) :
-//  SurrBasedMinimizer(EFFICIENT_GLOBAL, model), setUpType("model")
-//{ maxIterations = max_iter; maxFunctionEvals = max_eval; }
+/* This is an alternate constructor for instantiations on the fly
+    using a Model but no ProblemDescDB.
+EffGlobalMinimizer::
+EffGlobalMinimizer(Model& model, int max_iter, int max_eval) :
+  SurrBasedMinimizer(EFFICIENT_GLOBAL, model), setUpType("model")
+{ maxIterations = max_iter; maxFunctionEvals = max_eval; }
+*/
 
 
 EffGlobalMinimizer::~EffGlobalMinimizer() 
 { }
 
+
+/*
+// SurrBasedMinimizer implementation of derived_{init,set,free} is sufficient
 
 void EffGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
@@ -191,6 +195,7 @@ void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
   // iteratedModel is evaluated to add truth data (single compute_response())
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
+*/
 
 
 void EffGlobalMinimizer::minimize_surrogates()
@@ -258,8 +263,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
     // Execute GLOBAL search and retrieve results
     Cout << "\n>>>>> Initiating global optimization\n";
-    // no summary output since on-the-fly constructed:
-    approxSubProbMinimizer.run(Cout);
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    approxSubProbMinimizer.run(pl_iter);
     const Variables&  vars_star = approxSubProbMinimizer.variables_results();
     const RealVector& c_vars    = vars_star.continuous_variables();
     const Response&   resp_star = approxSubProbMinimizer.response_results();

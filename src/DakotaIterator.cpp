@@ -928,54 +928,66 @@ void Iterator::update_from_model(const Model& model)
 }
 
 
-/** Iterator supports a
-    construct/initialize-run/pre-run/core-run/post-run/finalize-run/destruct
-    progression. This member (non-virtual) function sequences these run
-    phases; it accepts an ostream, but controls verbosity with outputLevel. */
-void Iterator::run(std::ostream& s)
+void Iterator::run(ParLevLIter pl_iter)
 {
   if (iteratorRep)
-    iteratorRep->run(s); // envelope fwd to letter
+    iteratorRep->run(pl_iter); // envelope fwd to letter
   else {
+
     // Since iterator executions are mixed with direct model evaluations in
     // some methods (e.g., SBO and local/global reliability), avoid having to
     // reset the parallel configuration for the direct model evals by
     // eliminating configuration modifications within an iterator execution.
     //ParConfigLIter prev_pc = parallelLib.parallel_configuration_iterator();
 
-    // the same iterator might run multiple times, or need a unique ID
-    // due to name/id duplication, so increment the execution number
-    // for this name/id pair
+    set_communicators(pl_iter);
+
+    // invoke overloaded version
+    run();
+
+    //parallelLib.parallel_configuration_iterator(prev_pc); // reset
+  }
+}
+
+
+/** Iterator supports a construct/initialize-run/pre-run/core-run/post-run/
+    finalize-run/destruct progression. This member (non-virtual) function
+    sequences these run phases. */
+void Iterator::run()
+{
+  if (iteratorRep)
+    iteratorRep->run(); // envelope fwd to letter
+  else {
+    // the same iterator might run multiple times, or need a unique ID due to
+    // name/id duplication, so increment execution number for this name/id pair
     String method_string = method_enum_to_string(methodName);
     execNum = ResultsID::instance().increment_id(method_string, method_id());
 
     initialize_run();
     if (summaryOutputFlag)
-      s << "\n>>>>> Running "  << method_string <<" iterator.\n";
+      Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
     if (parallelLib.command_line_pre_run()) {
       if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
-	s << "\n>>>>> " << method_string <<": pre-run phase.\n";
+	Cout << "\n>>>>> " << method_string <<": pre-run phase.\n";
       pre_run();
       pre_output(); // for now, the helper manages whether output is needed
     }
     if (parallelLib.command_line_run()) {
       //core_input();
       if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
-	s << "\n>>>>> " << method_string <<": core run phase.\n";
+	Cout << "\n>>>>> " << method_string <<": core run phase.\n";
       core_run();
       //core_output();
     }
     if (parallelLib.command_line_post_run()) {
       post_input();
       if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
-	s << "\n>>>>> " << method_string <<": post-run phase.\n";
-      post_run(s);
+	Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
+      post_run(Cout); // stream could be passed through run() API if needed
     }
     if (summaryOutputFlag)
-      s << "\n<<<<< Iterator " << method_string <<" completed.\n";
+      Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
     finalize_run();
-
-    //parallelLib.parallel_configuration_iterator(prev_pc); // reset
   }
 }
 

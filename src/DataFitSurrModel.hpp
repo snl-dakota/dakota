@@ -501,6 +501,9 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 inline void DataFitSurrModel::
 serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
+  // don't recurse, as actualModel.serve() will set actualModel comms
+  set_communicators(pl_iter, max_eval_concurrency, false);
+
   if (!actualModel.is_null())
     actualModel.serve_run(pl_iter,
 			  daceIterator.maximum_evaluation_concurrency());

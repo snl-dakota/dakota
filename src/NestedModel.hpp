@@ -505,6 +505,9 @@ inline size_t NestedModel::mi_parallel_level_index() const
 inline void NestedModel::
 serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
+  // don't recurse, as subModel.serve() will set subModel comms
+  set_communicators(pl_iter, max_eval_concurrency, false);
+
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;
   while (componentParallelMode) {

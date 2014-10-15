@@ -427,7 +427,7 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
   Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // replace the current points for each approximation
-  //daceIterator.run(pl_iter, Cout);
+  //daceIterator.run(pl_iter);
   const IntResponseMap& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
     approxInterface.update_approximation(daceIterator.all_samples(),  all_resp);
@@ -521,7 +521,7 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
   Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  //daceIterator.run(pl_iter, Cout);
+  //daceIterator.run(pl_iter);
   const IntResponseMap& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
     approxInterface.append_approximation(daceIterator.all_samples(),  all_resp);
@@ -951,7 +951,8 @@ void DataFitSurrModel::build_global()
 	daceIterator.eval_tag_prefix(eval_tag);
       }
       // run the iterator
-      daceIterator.run(Cout);
+      ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
+      daceIterator.run(pl_iter);
 
       // Append vars/resp arrays to the approximation.  If actualModel evals
       // are not already cached, cache them now to provide persistence (thereby

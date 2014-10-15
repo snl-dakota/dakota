@@ -52,9 +52,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
-
   // Global surrogate-based methods cannot yet accept multiple initial points
   //bool accepts_multiple_points() const;
   /// Global surrogate-based methods can return multiple points

@@ -621,7 +621,12 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 inline void RecastModel::
 serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
-{ subModel.serve_run(pl_iter, max_eval_concurrency); } // sets subModel comms
+{
+  // don't recurse, as subModel.serve() will set subModel comms
+  set_communicators(pl_iter, max_eval_concurrency, false);
+
+  subModel.serve_run(pl_iter, max_eval_concurrency); // sets subModel comms
+}
 
 
 inline void RecastModel::stop_servers()

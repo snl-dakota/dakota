@@ -398,8 +398,7 @@ void GaussProcApproximation::optimize_theta_global()
   nll_optimizer.assign_rep(
     new NCSUOptimizer(theta_lbnds,theta_ubnds,max_iterations,max_fn_evals,
 		      negloglikNCSU),false);
-  // no summary output since on-the-fly constructed:
-  nll_optimizer.run(Cout);
+  nll_optimizer.run(); // no pl_iter needed for this optimization
   const Variables& vars_star = nll_optimizer.variables_results();
   const Response&  resp_star = nll_optimizer.response_results();
   copy_data(vars_star.continuous_variables(), thetaParams);
@@ -834,8 +833,7 @@ void GaussProcApproximation::optimize_theta_multipoint()
 	lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs,
 	lin_eq_targets, nln_ineq_lower_bnds, nln_ineq_upper_bnds,
 	nln_eq_targets, negloglik, constraint_eval), false);
-    // no summary output since on-the-fly constructed:
-    nll_optimizer.run(Cout);
+    nll_optimizer.run(); // no pl_iter needed for this optimization
     const Variables& vars_star = nll_optimizer.variables_results();
     const Response&  resp_star = nll_optimizer.response_results();
     copy_data(vars_star.continuous_variables(), thetaParams);

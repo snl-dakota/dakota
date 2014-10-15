@@ -96,15 +96,15 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // construct emulatorModel, if needed
   //NonDBayesCalibration::quantify_uncertainty();
  
-  Cout << "import points file "<< approxImportFile;
-  Cout << "import points annotated " << approxImportAnnotated;
+  Cout << "import points file "<< approxImportFile
+       << "import points annotated " << approxImportAnnotated;
   if (approxImportFile.empty())
-    lhsIter.run(Cout);
+    lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
   NonDGPMSAInstance=this;
-  Cout << "Rejection type  "<< rejectionType << '\n';
-  Cout << "Metropolis type " << metropolisType << '\n';
-  Cout << "Num Samples " << numSamples << '\n';
+  Cout << "Rejection type  "<< rejectionType
+       << "\nMetropolis type " << metropolisType
+       << "\nNum Samples " << numSamples << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;
 
@@ -157,9 +157,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   const RealVector& lower_bounds = iteratedModel.continuous_lower_bounds();
   const RealVector& upper_bounds = iteratedModel.continuous_upper_bounds();
   const RealVector& init_point = iteratedModel.continuous_variables();
-  Cout << "Initial Points " << init_point << '\n';
-  Cout << "lower_bounds " << lower_bounds << '\n';
-  //Cout << "emulatorType " << emulatorType << '\n';
+  Cout << "Initial Points " << init_point << "\nlower_bounds " << lower_bounds
+       << '\n'; // << "emulatorType " << emulatorType << '\n';
 
   for (size_t i=0;i<numUncertainVars;i++) {
     paramMins[i]=0.;//lower_bounds[i];

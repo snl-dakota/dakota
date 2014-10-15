@@ -372,6 +372,13 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 }
 
 
+void NonD::derived_set_communicators(ParLevLIter pl_iter)
+{
+  miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+  iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+}
+
+
 int NonD::generate_system_seed()
 {
   // Generate initial seed from a system clock.  NOTE: the system clock

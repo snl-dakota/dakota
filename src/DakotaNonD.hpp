@@ -90,6 +90,8 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void derived_set_communicators(ParLevLIter pl_iter);
+
   void initialize_run();
   void core_run();
   void finalize_run();
@@ -369,6 +371,9 @@ protected:
   /// final statistics from the uncertainty propagation used in strategies:
   /// response means, standard deviations, and probabilities of failure
   Response finalStatistics;
+
+  /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
+  size_t miPLIndex;
 
 private:
 

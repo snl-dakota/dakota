@@ -17,6 +17,7 @@
 #include "dakota_system_defs.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp" 
+#include "ParallelLibrary.hpp" 
 #include "pecos_stat_util.hpp"
 
 //#define DEBUG
@@ -71,8 +72,8 @@ void NonDLHSInterval::quantify_uncertainty()
   initialize();
 
   // Evaluate a set of random samples
-  // no summary output since on-the-fly constructed:
-  lhsSampler.run(Cout);
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  lhsSampler.run(pl_iter);
 
   // Use the sample set generated above to determine the maximum and minimum 
   // of each function within each input interval combination

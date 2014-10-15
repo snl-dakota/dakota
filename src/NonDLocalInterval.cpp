@@ -183,6 +183,8 @@ void NonDLocalInterval::quantify_uncertainty()
 
   initialize(); // virtual fn for initializing loop controls
 
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
 
     primary_resp_map[0][0] = respFnCntr;
@@ -201,8 +203,7 @@ void NonDLocalInterval::quantify_uncertainty()
       Cout << "\n>>>>> Initiating local minimization\n";
       truncate_to_cell_bounds(min_initial_pt);
       minMaxModel.continuous_variables(min_initial_pt); // set starting pt
-      // no summary output since on-the-fly constructed:
-      minMaxOptimizer.run(Cout);
+      minMaxOptimizer.run(pl_iter);
       if (numCells>1 && cellCntr<numCells-1)            // warm start next min
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
 		  min_initial_pt);
@@ -215,8 +216,7 @@ void NonDLocalInterval::quantify_uncertainty()
       Cout << "\n>>>>> Initiating local maximization\n";
       truncate_to_cell_bounds(max_initial_pt);
       minMaxModel.continuous_variables(max_initial_pt); // set starting point
-      // no summary output since on-the-fly constructed:
-      minMaxOptimizer.run(Cout); 
+      minMaxOptimizer.run(pl_iter); 
       if (numCells>1 && cellCntr<numCells-1)            // warm start next max
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
 		  max_initial_pt);

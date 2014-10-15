@@ -193,8 +193,10 @@ public:
   /// free the communicators associated with this Iterator instance
   void free_communicators(ParLevLIter pl_iter);
 
+  /// invoke set_communicators(pl_iter) prior to run()
+  void run(ParLevLIter pl_iter);
   /// orchestrate initialize/pre/core/post/finalize phases
-  void run(std::ostream& s);
+  void run();
 
   /// replaces existing letter with a new one
   void assign_rep(Iterator* iterator_rep, bool ref_count_incr = true);
