@@ -1,0 +1,9 @@
+Blurb::
+Ensure that the samples of discrete variables with finite support are unique.
+Description::
+Traditional LHS can generate replicate samples when applied to discrete variables. This keyword enforces uniqueness, which can be useful when applying discrete LHS to simulations without noise. Uniqueness is determined only over the set of discrete variables with finite support. This allows one to generate LHS for a mixed set of continuous and discrete variables whilst still enforcing that the set of discrete LHS components of all the samples are unique. 
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	method-sampling-sample_type-lhs
