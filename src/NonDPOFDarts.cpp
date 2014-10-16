@@ -62,7 +62,7 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   Cout << "Surrogate order " << emulatorOrder << '\n';
   Cout << "Emulator Type " << emulatorType << '\n';
  
-  if (emulatorType == GP_EMULATOR) { 
+  if ((emulatorType == GP_EMULATOR) || ( emulatorType == NO_EMULATOR)) { 
     initialize_surrogates(); // initialize one GP surrogate per function
     _use_vor_surrogate = false; // true = use VPS , false = use GP
   }
@@ -782,7 +782,7 @@ void NonDPOFDarts::quantify_uncertainty()
         //double pof_exact = 0.0;
         
         double isample = 0.0;
-        double num_MC_samples(1E7);
+        double num_MC_samples(1E6);
         double* tmp_pnt = new double[_n_dim];
         while (isample < num_MC_samples)
         {
