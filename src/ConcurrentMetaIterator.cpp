@@ -173,6 +173,8 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     probDescDB.set_db_model_nodes(model_ptr);
   }
 
+  iterSched.update(methodPCIter);
+
   // It is not practical to estimate the evaluation concurrency without 
   // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
   // have a circular dependency: we need the evaluation concurrency from the
@@ -230,7 +232,7 @@ void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
       mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
-  iterSched.update(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
@@ -247,7 +249,7 @@ void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   // free the communicators for selectedIterator
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
       mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
-  iterSched.update(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);

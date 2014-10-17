@@ -70,6 +70,8 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   Model& local_model  = (new_model(local_method_ptr, local_model_ptr)) ?
     localModel  : iteratedModel;
 
+  iterSched.update(methodPCIter);
+
   std::pair<int, int> g_ppi = (!global_method_ptr.empty()) ?
     estimate_by_pointer(global_method_ptr, globalIterator, global_model) :
     estimate_by_name(global_method_name, global_model_ptr,
@@ -106,7 +108,7 @@ void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
   // free the communicators for selectedIterators
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
       mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
-  iterSched.update(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
@@ -124,7 +126,7 @@ void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   // free the communicators for globalIterator and localIterator
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
       mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
-  iterSched.update(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);

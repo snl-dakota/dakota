@@ -84,7 +84,9 @@ init_iterator_parallelism(int max_iterator_concurrency,
     max_procs_per_iterator, max_iterator_concurrency, default_config,
     iteratorScheduling, false);// peer_dynamic not available prior to threading
 
-  update(parallelLib.parallel_configuration().mi_parallel_level_last_index());
+  // new level has been appended to ParallelLibrary::currPCIter
+  ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+  update(pc_iter->mi_parallel_level_last_index());
 
   // Manage ostream output and binary restart input/output.  If concurrent
   // iterators, use tagged files.
@@ -129,31 +131,10 @@ free_iterator_parallelism(ParallelLibrary& parallel_lib)//, size_t index)
 
 void IteratorScheduler::free_iterator_parallelism()
 {
-  parallelLib.pop_output_tag(
-    parallelLib.parallel_configuration().mi_parallel_level(miPLIndex));
+  parallelLib.pop_output_tag(schedPCIter->mi_parallel_level(miPLIndex));
 
   // deallocate the mi_pl parallelism level
   parallelLib.free_iterator_communicators(miPLIndex);
-}
-
-
-void IteratorScheduler::update(size_t index)
-{
-  miPLIndex = index;
-  const ParallelLevel& mi_pl
-    = parallelLib.parallel_configuration().mi_parallel_level(index);
-
-  // retrieve the partition data
-  //dedicatedMaster = mi_pl.dedicated_master();
-  messagePass        = mi_pl.message_pass();
-  iteratorCommRank   = mi_pl.server_communicator_rank();
-  iteratorCommSize   = mi_pl.server_communicator_size();
-  iteratorServerId   = mi_pl.server_id();
-
-  // update requests with actual
-  numIteratorServers = mi_pl.num_servers();
-  iteratorScheduling = (mi_pl.dedicated_master())
-                     ? MASTER_SCHEDULING : PEER_SCHEDULING;
 }
 
 
@@ -168,8 +149,7 @@ init_evaluation_concurrency(ProblemDescDB& problem_db, Iterator& the_iterator,
   // the world pl) for the concurrency estimation.  If this is not the
   // correct reference point, the calling code must increment the parallel
   // configuration prior to invocation of this fn.
-  const ParallelLevel& mi_pl
-    = parallelLib.parallel_configuration().mi_parallel_level(); // last level
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
 
   //if (mi_pl.dedicated_master() && mi_pl.server_id() == 0) // ded master proc
   //  return;
@@ -199,8 +179,7 @@ init_evaluation_concurrency(const String& method_string, Iterator& the_iterator,
   // the world pl) for the concurrency estimation.  If this is not the
   // correct reference point, the calling code must increment the parallel
   // configuration prior to invocation of this fn.
-  const ParallelLevel& mi_pl
-    = parallelLib.parallel_configuration().mi_parallel_level(); // last level
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
 
   //if (mi_pl.dedicated_master() && mi_pl.server_id() == 0) // ded master proc
   //  return;
@@ -387,8 +366,7 @@ void IteratorScheduler::stop_iterator_servers()
   // partitions which have interComms from server 0 to servers 1-n:
   // > dedicated master: server_id = #servers+1 -> interComm[#servers]
   // > peer:             server_id = #servers   -> interComm[#servers-1]
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-  if (pc.mi_parallel_level(miPLIndex).idle_partition()) {
+  if (schedPCIter->mi_parallel_level(miPLIndex).idle_partition()) {
     parallelLib.isend_mi(send_buffer, server_id, term_tag,
 			 send_request, miPLIndex);
     parallelLib.free(send_request); // no test/wait on send_request

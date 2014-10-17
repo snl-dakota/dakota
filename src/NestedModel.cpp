@@ -551,6 +551,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
          model_index  = probDescDB.get_db_model_node();  // for restoration
   probDescDB.set_db_list_nodes(subMethodPointer);
   // > init_eval_concurrency instantiates subIterator on previous pl ranks
+  subIteratorSched.update(modelPCIter);
   int max_subiter_eval_conc
     = subIteratorSched.init_evaluation_concurrency(probDescDB, subIterator,
 						   subModel);
@@ -611,7 +612,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
 		     max_eval_concurrency);
     size_t mi_pl_index = miPLIndexMap[key]; // same or one beyond pl_iter
-    subIteratorSched.update(mi_pl_index);
+    subIteratorSched.update(modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
       ParLevLIter si_pl_iter
@@ -632,7 +633,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     }
     else
       subIteratorSched.set_iterator(subIterator, pl_iter);
-    subIteratorSched.update(mi_pl_index);
+    subIteratorSched.update(modelPCIter, mi_pl_index);
     */
 
     // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
@@ -659,7 +660,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
 		     max_eval_concurrency);
     size_t mi_pl_index = miPLIndexMap[key]; // same or one beyond pl_iter
-    subIteratorSched.update(mi_pl_index);
+    subIteratorSched.update(modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
       ParLevLIter si_pl_iter

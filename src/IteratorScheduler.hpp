@@ -139,8 +139,13 @@ public:
   void peer_static_schedule_iterators(MetaType& meta_object,
 				      Iterator& sub_iterator);
 
-  /// update settings for concurrent iterator scheduling using miPL[index]
+  /// update schedPCIter
+  void update(ParConfigLIter pc_iter);
+  /// update miPLIndex as well as associated settings for
+  /// concurrent iterator scheduling from the corresponding ParallelLevel
   void update(size_t index);
+  /// invoke update(ParConfigLIter) and update(size_t) in sequence
+  void update(ParConfigLIter pc_iter, size_t index);
 
   /// update paramsMsgLen and resultsMsgLen
   void iterator_message_lengths(int params_msg_len, int results_msg_len);
@@ -167,6 +172,7 @@ public:
   short iteratorScheduling;  ///< {DEFAULT,MASTER,PEER}_SCHEDULING
   //int maxIteratorConcurrency; // max concurrency possible in meta-algorithm
 
+  ParConfigLIter schedPCIter; ///< iterator for active parallel configuration
   size_t miPLIndex;          ///< index of active parallel level (corresponding
                              ///< to ParallelConfiguration::miPLIters) to use
                              ///< for parallelLib send/recv
@@ -199,9 +205,8 @@ inline void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 	      Model& the_model)
 {
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
   init_iterator(problem_db, the_iterator, the_model,
-		pc.mi_parallel_level_iterator(miPLIndex));
+		schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
@@ -209,31 +214,59 @@ inline void IteratorScheduler::
 init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model)
 {
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
   init_iterator(method_string, the_iterator, the_model,
-		pc.mi_parallel_level_iterator(miPLIndex));
+		schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
 inline void IteratorScheduler::set_iterator(Iterator& the_iterator)
 {
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-  set_iterator(the_iterator, pc.mi_parallel_level_iterator(miPLIndex));
+  set_iterator(the_iterator,
+	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
 inline void IteratorScheduler::run_iterator(Iterator& the_iterator)
 {
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-  run_iterator(the_iterator, pc.mi_parallel_level_iterator(miPLIndex));
+  run_iterator(the_iterator,
+	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
 inline void IteratorScheduler::free_iterator(Iterator& the_iterator)
 {
-  const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-  free_iterator(the_iterator, pc.mi_parallel_level_iterator(miPLIndex));
+  free_iterator(the_iterator,
+		schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
+
+
+inline void IteratorScheduler::update(ParConfigLIter pc_iter)
+{ schedPCIter = pc_iter; }
+
+
+inline void IteratorScheduler::update(size_t index)
+{
+  // Note: update(ParConfigLIter) must precede this update for access to mi_pl
+
+  miPLIndex = index;
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(index);
+
+  // retrieve the partition data
+  //dedicatedMaster = mi_pl.dedicated_master();
+  messagePass        = mi_pl.message_pass();
+  iteratorCommRank   = mi_pl.server_communicator_rank();
+  iteratorCommSize   = mi_pl.server_communicator_size();
+  iteratorServerId   = mi_pl.server_id();
+
+  // update requests with actual
+  numIteratorServers = mi_pl.num_servers();
+  iteratorScheduling = (mi_pl.dedicated_master())
+                     ? MASTER_SCHEDULING : PEER_SCHEDULING;
+}
+
+
+inline void IteratorScheduler::update(ParConfigLIter pc_iter, size_t index)
+{ update(pc_iter); update(index); }
 
 
 /** This implementation supports the scheduling of multiple jobs using

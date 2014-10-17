@@ -106,6 +106,8 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (!lightwtCtor || models) // this test is conservative
     selectedModels.resize(num_iterators);
 
+  iterSched.update(methodPCIter);
+
   int min_ppi = INT_MAX, max_ppi = 0,
     pl_rank = pl_iter->server_communicator_rank();
   std::pair<int, int> ppi_pr; String empty_str; BitArray new_mod(num_iterators);
@@ -234,7 +236,7 @@ void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
       mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
-  iterSched.update(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
@@ -253,7 +255,7 @@ void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   // free the communicators for selectedIterators
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
       mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
-  iterSched.update(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
