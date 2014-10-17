@@ -1,22 +1,14 @@
 Blurb::
 Pointer to sub-method to apply to surrogate
 Description::
+The \c method_pointer keyword is used to specify a pointer to an optimization 
+or least-squares sub-method to apply to the surrogate model. 
 
-The \c surrogate_based_local and \c surrogate_based_global methods
-must specify an optimization or least squares sub-method to apply to
-the surrogate model.
+Any \c model_pointer identified in the sub-method specification is ignored. 
+Instead, the parent method is responsible for selecting a surrogate model
+using its \c model_pointer.
 
-Option 1 is using \c approx_method_pointer (e.g., 'NLP1') which
-identifies a full sub-method specification for the sub-problem
-minimizer (which allows non-default minimizer settings).
-
-Any \c model_pointer identified in an approximate sub-method
-specification is ignored. The surrogate model is pointed from the \c
-model_pointer keyword in the \c surrogate_based_local and \c
-surrogate_based_global \c method block.
-
-
-Topics::	block_pointer, problem
+Topics::	block_pointer
 Examples::
 Theory::
 Faq::

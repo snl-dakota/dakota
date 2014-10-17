@@ -1,21 +1,6 @@
 Blurb::
 Local Surrogate Based Optimization
 Description::
-In addition to the method independent controls for \c max_iterations
-and \c convergence_tolerance
-
-
-For surrogate_based_local problems with nonlinear constraints, a
-number of algorithm formulations exist as described in [\cite Eld06b
-"Eldred and Dunlavy, 2006"] and as summarized in the Advanced Examples
-section of the Models chapter of the Users Manual [\cite UsersMan
-"Adams et al., 2010"].
-
-
-
-Topics::	surrogate_based_optimization_methods
-Examples::
-Theory::
 In surrogate-based optimization (SBO) and surrogate-based nonlinear
 least squares (SBNLS), minimization occurs using a set of one or more
 approximations, defined from a surrogate model, that are built and
@@ -47,5 +32,13 @@ construction of a new surrogate model, a minimization, and another
 test for sufficient decrease in the truth model. This cycle continues
 until convergence is attained.
 
+Topics::	surrogate_based_optimization_methods
+Examples::
+Theory::
+For surrogate_based_local problems with nonlinear constraints, a
+number of algorithm formulations exist as described in [\cite Eld06b
+"Eldred and Dunlavy, 2006"] and as summarized in the Advanced Examples
+section of the Models chapter of the Users Manual [\cite UsersMan
+"Adams et al., 2010"].
 Faq::
 See_Also::	method-efficient_global, method-surrogate_based_global
