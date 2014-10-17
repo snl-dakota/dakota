@@ -62,8 +62,6 @@ protected:
   bool expDataFileAnnotated;
   /// number of experiments to read from data file
   size_t numExperiments;
-  /// number of replicates per experiment
-  IntVector numReplicates;
   /// number of columns in data file which are state variables
   size_t numExpConfigVars;
   /// how many sigmas to read from the data file (1 or numFunctions)

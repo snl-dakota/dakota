@@ -1663,8 +1663,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<IntVector, DataResponsesRep> IVdr[] = {	// must be sorted
 	{"lengths", P fieldLengths},
-	{"num_coordinates_per_field", P numCoordsPerField},
-	{"num_replicates", P numReplicates}};
+	{"num_coordinates_per_field", P numCoordsPerField}};
     #undef P
     KW<IntVector, DataResponsesRep> *kw;
     if ((kw = (KW<IntVector, DataResponsesRep>*)Binsearch(IVdr, L)))
@@ -2172,7 +2171,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{ "nonlinear_equality_scale_types", P nonlinearEqScaleTypes},
 	{ "nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes},
 	{ "primary_response_fn_scale_types", P primaryRespFnScaleTypes},
-	{ "primary_response_fn_sense", P primaryRespFnSense}};
+	{ "primary_response_fn_sense", P primaryRespFnSense},
+	{ "sigma_type", P sigmaType}};
     #undef P
 
     KW<StringArray, DataResponsesRep> *kw;
@@ -2343,16 +2343,20 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	Locked_db();
     #define P &DataResponsesRep::
     static KW<String, DataResponsesRep> Sdr[] = {	// must be sorted
+	{"config_data_file", P configDataFileName},
 	{"coord_data_filename", P coordDataFileName},
 	{"exp_data_filename", P expDataFileName},
 	{"fd_gradient_step_type", P fdGradStepType},
 	{"fd_hessian_step_type", P fdHessStepType},
+	{"field_coord_data", P fieldCoordDataFileName},
+	{"field_data_file", P fieldDataFileName},
 	{"gradient_type", P gradientType},
 	{"hessian_type", P hessianType},
 	{"id", P idResponses},
 	{"interval_type", P intervalType},
 	{"method_source", P methodSource},
-	{"quasi_hessian_type", P quasiHessianType}};
+	{"quasi_hessian_type", P quasiHessianType},
+	{"sigma_data_file", P sigmaDataFileName}};
     #undef P
 
     KW<String, DataResponsesRep> *kw;

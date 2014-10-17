@@ -303,28 +303,11 @@ bool Minimizer::data_transform_model(bool weight_flag)
   // These may be promoted to members once we use state vars / sigma
   // TODO: need better validation of these sizes and data with error msgs
   numExperiments = probDescDB.get_sizet("responses.num_experiments");
-  numReplicates = probDescDB.get_iv("responses.num_replicates");
-  if (numReplicates.length() != numExperiments) {
-    if (numReplicates.length() == 0) {
-      numReplicates.resize(numExperiments);
-      // default is 1 replicate
-      numReplicates = 1;
-    }
-    // expand replicates for each experiment, if needed
-    // resize should preserve zeroth entry
-    else if (numReplicates.length() == 1) {
-      numReplicates.resize(numExperiments);
-      for (size_t i=1; i<numExperiments; ++i) 
-	numReplicates[i] = numReplicates[0];
-    }
-    else {
-      Cerr << "Error in replicate length" << std::endl;
+  if (numExperiments < 1) {
+      Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);
-    }
   }
-  numRowsExpData = 0;
-  for (size_t i=0; i<numExperiments; i++)
-      numRowsExpData+=numReplicates(i);
+  numRowsExpData = numExperiments;
   size_t total_calib_terms = numRowsExpData*numUserPrimaryFns;
   Cout << "numTotalCalibTerms  " << total_calib_terms;
 
@@ -342,7 +325,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
   bool calc_sigma_from_data = true; //calculate sigma if not provided 
   expData.load_scalar(obsDataFilename, "Least Squares",
-                      numExperiments, numReplicates,
+                      numExperiments,
                       num_config_vars_read, numFunctions, num_sigma_read,
                       annotated, calc_sigma_from_data ,
                       outputLevel);
@@ -357,8 +340,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
     Cout << "\nUsing calibration data from " << obsDataFilename << ":\n";
     for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) 
       for (int j = 0; j < numExperiments; j++)
-        for (int k = 0; k < numReplicates(j); k++) 
-        Cout <<  expData.scalar_data(y_ind,j,k) << '\n';
+        Cout <<  expData.scalar_data(y_ind,j) << '\n';
     Cout << std::endl;
   }
 
@@ -439,11 +421,9 @@ bool Minimizer::data_transform_model(bool weight_flag)
     for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) {
       size_t counter=0;
       for (int j = 0; j < numExperiments; j++){
-	for (int k = 0; k < numReplicates(j); k++) {
 	  lsq_weights(y_ind*numRowsExpData+counter) = 
-	    std::pow(expData.scalar_sigma(y_ind,j,k),-2.);
+	    std::pow(expData.scalar_sigma(y_ind,j),-2.);
 	  counter++;
-	}
       }
     }
 
@@ -1026,11 +1006,9 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     if (asv[i] & 1) {
       counter = 0;
       for (size_t j = 0; j < numExperiments; ++j) {
-        for (size_t k = 0; k < numReplicates(j); ++k) {
           residual_response.function_value(fn_vals[i] - 
-				       minimizerInstance->expData.scalar_data(i,j,k),i*numRowsExpData+counter);
+				       minimizerInstance->expData.scalar_data(i,j),i*numRowsExpData+counter);
           counter++;
-        }
       }
     }
     if (asv[i] & 2) {

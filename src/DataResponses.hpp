@@ -129,9 +129,6 @@ public:
 
   /// number of distinct experiments in experimental data
   size_t numExperiments;
-  /// number of replicates in experimental data (e.g. one experiment 
-  /// run many times at the same configuration gives replicates)
-  IntVector numReplicates;
   /// number of experimental configuration vars (state variables) in
   /// each row of data
   size_t numExpConfigVars;
@@ -223,7 +220,21 @@ public:
   RealVector coordsPerField;
   /// data file which contains the values of the coordinates per field
   String coordDataFileName;
-
+  /// Field data related storage:  data file which contains values of 
+  /// configuration variables for experiments.
+  String configDataFileName;
+  /// Field data related storage:  data file which contains values of 
+  /// field responses for experiments.
+  String fieldDataFileName;
+  /// Field data related storage:  data file which contains values of 
+  /// coordinates of field responses for experiments.
+  String fieldCoordDataFileName;
+  /// Field data related storage:  data file which contains values of 
+  /// measurement error for field responses for experiments.
+  String sigmaDataFileName;
+  /// Array which specifies the sigma type per response (none, one 
+  /// constant value, one per response (vector) or a full covariance matrix
+  StringArray sigmaType; 
 
 private:
 

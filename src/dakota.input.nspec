@@ -2053,15 +2053,16 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
     [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
     [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
+    [ scalar_calibration_terms ALIAS num_scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
     [ calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,expDataFileName)}
       [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
-      [ num_replicates INTEGERLIST {N_rem(ivec,numReplicates)} ]
       [ 
         annotated {N_rem(true,expDataFileAnnotated)}
         |
         freeform {N_rem(false,expDataFileAnnotated)}
        ]
       [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
+      [ sigma_type STRINGLIST LEN1 calibration_terms {N_rem(strL,sigmaType)} ]
       [ num_std_deviations INTEGER >= 0 {N_rem(sizet,numExpStdDeviations)} ]
      ]
     [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
@@ -2075,7 +2076,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
       [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
      ]
-    [ scalar_calibration_terms ALIAS num_scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
     [ field_calibration_terms ALIAS num_field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
@@ -2083,6 +2083,20 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
         coordinate_list REALLIST {N_rem(RealL,coordsPerField)}
         |
         coordinate_data_file STRING {N_rem(str,coordDataFileName)}
+       ]
+      [ field_data {0}
+        [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
+        [ 
+          annotated {N_rem(true,expDataFileAnnotated)}
+          |
+          freeform {N_rem(false,expDataFileAnnotated)}
+         ]
+        [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
+        [ sigma_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,sigmaType)} ]
+        [ field_data_file STRING {N_rem(str,fieldDataFileName)} ]
+        [ config_data_file STRING {N_rem(str,configDataFileName)} ]
+        [ field_coordinate_data_file STRING {N_rem(str,fieldCoordDataFileName)} ]
+        [ sigma_data_file STRING {N_rem(str,sigmaDataFileName)} ]
        ]
      ]
    )

@@ -626,12 +626,11 @@ void Optimizer::post_run(std::ostream& s)
       const RealVector& fn_vals = best_resp.function_values();
       size_t fn_index = 0;
       for (size_t i=0; i<numUserPrimaryFns; ++i)
-        for (size_t j=0; j<numExperiments; ++j)
-          for (size_t k=0; k<numReplicates(j); ++k) {
-	    best_resp.function_value
-	      (fn_vals[fn_index] - expData.scalar_data(i,j,k), fn_index);
-	    ++fn_index;
-	  }
+        for (size_t j=0; j<numExperiments; ++j){
+	  best_resp.function_value
+	    (fn_vals[fn_index] - expData.scalar_data(i,j), fn_index);
+	  ++fn_index;
+	}
     }
 
   }

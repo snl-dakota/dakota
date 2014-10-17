@@ -29,15 +29,14 @@ using boost::extents;
 void read_historical_data(const std::string& expDataFileName,
 			  const std::string& context_message,
 			  size_t numExperiments,
-			  IntVector& numReplicates,
 			  size_t numExpConfigVars,
 			  size_t numFunctions,
 			  size_t numExpStdDeviationsRead,
 			  bool expDataFileAnnotated,
 			  bool calc_sigma_from_data,
 			  RealMatrix& xObsData,
-                          RealMatrixArray& yObsData,
-			  RealMatrixArray& yStdData);
+                          RealMatrix& yObsData,
+			  RealMatrix& yStdData);
   
 /// special values for sigma_type 
 enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };
@@ -58,9 +57,9 @@ public:
   { /* empty ctor */ }                                ///< constructor
 
   /// construct a single experiment from passed data
-  SingleExperiment(int num_repl, const RealVector& real_config_vars,
-		   int sigma_type, const RealVector& sigma_scalar,
-		   const RealVector& scalar_data);
+  SingleExperiment(const RealVector& real_config_vars,
+		   int sigma_type, const Real& sigma_scalar,
+		   const Real& scalar_data);
 
 
   //SingleExperiment(const SingleExperiment&);         ///< copy constructor
@@ -71,10 +70,6 @@ public:
   //
   //- Heading: Member methods
   //
-
-  /// return number of replicates per experiment.  To be consistent 
-  /// with the previous notation, we need this per experiment, per response
-  int numReplicates;
 
   /// return int configuration variables.  There will be just one set of 
   /// configuration variables per experiment.
@@ -88,7 +83,7 @@ public:
   int sigmaType;
  
   /// return sigma scalar if sigma_type = SCALAR
-  RealVector sigmaScalar;
+  Real sigmaScalar;
 
   /// return sigma covariance if sigma_type = COVARIANCE_MATRIX
   RealMatrix sigmaCovariance;
@@ -97,7 +92,7 @@ public:
   /// at least with num_replicates per experiment. Each replicate within 
   /// this experiment returns one scalar value, all of the replicates are 
   /// in the vector
-  RealVector experimentScalarData;
+  Real experimentScalarData;
 
   /// return functional data.  Each element of the array is one vector of f(x) 
   /// values, the array represents the aggregation of replicates
@@ -177,7 +172,7 @@ public:
     (currently from user-specified files and/or the input spec)
     relating to experimental (physical observations) data for 
     the purposes of calibration.  Such data may include (for example): 
-    number of experiments, number of replicates, configuration variables, 
+    number of experiments, configuration variables, 
     type of data (scalar vs. functional), treatment of sigma (experimental
     uncertainties).  This class also provides an interpolation capability to 
     interpolate between simulation or experimental data so that the 
@@ -200,7 +195,6 @@ public:
   void load_scalar(const std::string& expDataFilename,
 		   const std::string& context_message,
 		   size_t numExperiments,
-		   IntVector& numReplicates,
 		   size_t numExpConfigVars,
 		   size_t numFunctions,
 		   size_t numExpStdDeviationsRead,
@@ -222,12 +216,12 @@ public:
   const RealVector& config_vars(size_t response, size_t experiment);
 
   /// retrieve the data value for the given response, for the given
-  /// experiment and replicate
-  Real scalar_data(size_t response, size_t experiment, size_t replicate);
+  /// experiment 
+  Real scalar_data(size_t response, size_t experiment);
 
   /// retrieve the standard deviation value for the given response, for
-  /// the given experiment and replicate
-  Real scalar_sigma(size_t response, size_t experiment, size_t replicate);
+  /// the given experiment
+  Real scalar_sigma(size_t response, size_t experiment);
 
   /// At the outer level, ExperimentData will just be a vector of ExpDataPerResponse;
   std::vector<ExpDataPerResponse> allExperiments;

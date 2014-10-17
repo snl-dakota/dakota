@@ -110,11 +110,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
     Cout << "number of experiments used in Bayes calibration " 
          << numExperiments << '\n';
-    Cout << "number of experimental replicates " << numReplicates << '\n';
     Cout << " File name for experimental data " << expDataFileName << '\n';
   }
   expData.load_scalar(expDataFileName, "QUESO Bayes Calibration",
-		      numExperiments, numReplicates, 
+		      numExperiments, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
 		      expDataFileAnnotated, calc_sigma_from_data,
 		      outputLevel);
@@ -173,8 +172,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // calibrateSigmaFlag is true
   if (calibrateSigmaFlag) {
     for (int j=0; j<numFunctions; j++){
-      int replicate = 0;
-      Real std_0_j = expData.scalar_sigma(j, 0, replicate);
+      Real std_0_j = expData.scalar_sigma(j, 0);
       paramMins[numContinuousVars+j]=0.01*std_0_j;
       paramMaxs[numContinuousVars+j]=2.0*std_0_j;
     }
@@ -381,9 +379,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
 {
   
   double result = 0.;
-  size_t i,j,k;
+  size_t i,j;
   int num_exp = NonDQUESOInstance->numExperiments;
-  IntVector num_replicates = NonDQUESOInstance->numReplicates;
   int num_funcs = NonDQUESOInstance->numFunctions;
   int num_cont = NonDQUESOInstance->numContinuousVars; 
   RealVector x(num_cont);
@@ -450,21 +447,19 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // calculate the likelihood. 
   if (NonDQUESOInstance->calibrateSigmaFlag) {
     for (j=0; j<num_funcs; j++)
-      for (i=0; i<num_exp; i++) 
-        for (k=0; k<num_replicates(i); k++){
-	  Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i, k);
+      for (i=0; i<num_exp; i++) {
+	  Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i);
 	  result = result+pow((fn_vals(j)-data_i_j)/paramValues[num_cont+j],2.0);
-        }
+      }
   }
   else {	
     for (j=0; j<num_funcs; j++)
-      for (i=0; i<num_exp; i++) 
-        for (k=0; k<num_replicates(i); k++){
-	  Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i, k);
-	  Real std_i_j = NonDQUESOInstance->expData.scalar_sigma(j, i, k);
+      for (i=0; i<num_exp; i++) { 
+	  Real data_i_j = NonDQUESOInstance->expData.scalar_data(j, i);
+	  Real std_i_j = NonDQUESOInstance->expData.scalar_sigma(j, i);
           result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
           //result = result+pow((fn_vals(j)-data_i_j),2.0);
-        }
+      }
   }
 
   result = (result/(NonDQUESOInstance->likelihoodScale));

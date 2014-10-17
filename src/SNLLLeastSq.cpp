@@ -598,8 +598,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
     //size_t num_experiments = obsData.numRows();
     for (size_t i=0; i<numUserPrimaryFns; ++i)
       for (size_t j=0; j<numExperiments; ++j)
-        for (size_t k=0; k<numReplicates(j); ++k)
-          best_fns[i] -= expData.scalar_data(i,j,k);
+          best_fns[i] -= expData.scalar_data(i,j);
   }
 
   bestResponseArray.front().function_values(best_fns);

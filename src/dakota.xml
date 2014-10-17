@@ -3480,14 +3480,15 @@
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
                #  	    ( 
            -->
+          <keyword  id="scalar_calibration_terms" name="scalar_calibration_terms" code="{N_rem(sizet,numScalarLeastSqTerms)}" label="scalar_calibration_terms" help="" minOccurs="0" >
+            <alias name="num_scalar_calibration_terms"/>
+            <param type="INTEGER" constraint=">= 0" />
+          </keyword>
           <keyword  id="calibration_data_file" name="calibration_data_file" code="{N_rem(str,expDataFileName)}" label="Calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
             <alias name="least_squares_data_file"/>
             <param type="STRING" />
             <keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
               <param type="INTEGER" constraint=">= 0" />
-            </keyword>
-            <keyword  id="num_replicates" name="num_replicates" code="{N_rem(ivec,numReplicates)}" label="Replicates per each experiment in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
-              <param type="INTEGERLIST" />
             </keyword>
             <optional>
               <oneOf>
@@ -3497,6 +3498,9 @@
             </optional>
             <keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
               <param type="INTEGER" constraint=">= 0" />
+            </keyword>
+            <keyword  id="sigma_type" name="sigma_type" code="{N_rem(strL,sigmaType)}" label="Type of measurement error (constant, vector, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+              <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
             </keyword>
             <keyword  id="num_std_deviations" name="num_std_deviations" code="{N_rem(sizet,numExpStdDeviations)}" label="Standard deviation columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
               <param type="INTEGER" constraint=">= 0" />
@@ -3541,10 +3545,6 @@
               <param type="REALLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
           </keyword>
-          <keyword  id="scalar_calibration_terms" name="scalar_calibration_terms" code="{N_rem(sizet,numScalarLeastSqTerms)}" label="scalar_calibration_terms" help="" minOccurs="0" >
-            <alias name="num_scalar_calibration_terms"/>
-            <param type="INTEGER" constraint=">= 0" />
-          </keyword>
           <keyword  id="field_calibration_terms" name="field_calibration_terms" code="{N_rem(sizet,numFieldLeastSqTerms)}" label="field_calibration_terms" help="" minOccurs="0" >
             <alias name="num_field_calibration_terms"/>
             <param type="INTEGER" constraint=">= 0" />
@@ -3564,6 +3564,35 @@
                 </keyword>
               </oneOf>
             </optional>
+            <keyword  id="field_data1" name="field_data" code="{0}" label="field_data" help="" minOccurs="0" >
+              <keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                <param type="INTEGER" constraint=">= 0" />
+              </keyword>
+              <optional>
+                <oneOf>
+                  <keyword  id="annotated25" name="annotated" code="{N_rem(true,expDataFileAnnotated)}" label="Data file in annotated format" help="RespCommands.html#RespFnLS"  />
+                  <keyword  id="freeform25" name="freeform" code="{N_rem(false,expDataFileAnnotated)}" label="Data file in freeform format" help="RespCommands.html#RespFnLS"  />
+                </oneOf>
+              </optional>
+              <keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                <param type="INTEGER" constraint=">= 0" />
+              </keyword>
+              <keyword  id="sigma_type" name="sigma_type" code="{N_rem(strL,sigmaType)}" label="Type of measurement error (constant, vector, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+              </keyword>
+              <keyword  id="field_data_file" name="field_data_file" code="{N_rem(str,fieldDataFileName)}" label="Field data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                <param type="STRING" />
+              </keyword>
+              <keyword  id="config_data_file" name="config_data_file" code="{N_rem(str,configDataFileName)}" label="Configuration variable data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                <param type="STRING" />
+              </keyword>
+              <keyword  id="field_coordinate_data_file1" name="field_coordinate_data_file" code="{N_rem(str,fieldCoordDataFileName)}" label="coordinate_data_file" help="" minOccurs="0"  >
+                <param type="STRING" />
+              </keyword>
+              <keyword  id="sigma_data_file1" name="sigma_data_file" code="{N_rem(str,sigmaDataFileName)}" label="sigma_data_file" help="" minOccurs="0"  >
+                <param type="STRING" />
+              </keyword>
+            </keyword>
           </keyword>
         </keyword>
         <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses" help="RespCommands.html#RespFnGen" minOccurs="1" >

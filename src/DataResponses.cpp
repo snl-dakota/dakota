@@ -44,7 +44,7 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
-    << numExperiments << numReplicates << numExpConfigVars << numExpStdDeviations
+    << numExperiments << numExpConfigVars << numExpStdDeviations
     << expConfigVars << expObservations << expStdDeviations << expDataFileName
     << expDataFileAnnotated
     // derivative settings
@@ -58,7 +58,9 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << numScalarLeastSqTerms << numFieldLeastSqTerms 
     << numScalarResponseFunctions << numFieldResponseFunctions 
     << fieldLengths << numCoordsPerField << coordsPerField
-    << coordDataFileName;
+    << coordDataFileName << configDataFileName << fieldCoordDataFileName
+    << fieldDataFileName << sigmaDataFileName << sigmaType;
+
 }
 
 
@@ -75,7 +77,7 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> primaryRespFnScaleTypes >> primaryRespFnScales >> nonlinearIneqScaleTypes
     >> nonlinearIneqScales >> nonlinearEqScaleTypes >> nonlinearEqScales 
     // experimental data
-    >> numExperiments >> numReplicates >> numExpConfigVars >> numExpStdDeviations
+    >> numExperiments  >> numExpConfigVars >> numExpStdDeviations
     >> expConfigVars >> expObservations >> expStdDeviations >> expDataFileName
     >> expDataFileAnnotated
     // derivative settings
@@ -89,7 +91,9 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> numScalarLeastSqTerms >> numFieldLeastSqTerms 
     >> numScalarResponseFunctions >> numFieldResponseFunctions 
     >> fieldLengths >> numCoordsPerField >> coordsPerField
-    >> coordDataFileName;
+    >> coordDataFileName >> configDataFileName >> fieldCoordDataFileName
+    >> fieldDataFileName >> sigmaDataFileName >>sigmaType;
+
 }
 
 
@@ -106,7 +110,7 @@ void DataResponsesRep::write(std::ostream& s) const
     << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
-    << numExperiments << numReplicates << numExpConfigVars << numExpStdDeviations
+    << numExperiments << numExpConfigVars << numExpStdDeviations
     << expConfigVars << expObservations << expStdDeviations << expDataFileName
     << expDataFileAnnotated
     // derivative settings
@@ -120,7 +124,8 @@ void DataResponsesRep::write(std::ostream& s) const
     << numScalarLeastSqTerms << numFieldLeastSqTerms 
     << numScalarResponseFunctions << numFieldResponseFunctions 
     << fieldLengths << numCoordsPerField << coordsPerField
-    << coordDataFileName;
+    << coordDataFileName << configDataFileName << fieldCoordDataFileName 
+    << fieldDataFileName << sigmaDataFileName << sigmaType;
 }
 
 

@@ -6866,8 +6866,7 @@ static IntSet
 
 static IntVector
 	MP_(fieldLengths),
-	MP_(numCoordsPerField),
-	MP_(numReplicates);
+	MP_(numCoordsPerField);
 
 static RealVector
 	MP_(coordsPerField),
@@ -6909,16 +6908,21 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
+	MP_(configDataFileName),
 	MP_(coordDataFileName),
 	MP_(expDataFileName),
-        MP_(idResponses);
+	MP_(fieldCoordDataFileName),
+	MP_(fieldDataFileName),
+        MP_(idResponses),
+	MP_(sigmaDataFileName);
 
 static StringArray
 	MP_(nonlinearEqScaleTypes),
 	MP_(nonlinearIneqScaleTypes),
 	MP_(primaryRespFnScaleTypes),
 	MP_(primaryRespFnSense),
-	MP_(responseLabels);
+	MP_(responseLabels),
+	MP_(sigmaType);
 
 static bool
 	MP_(centralHess),

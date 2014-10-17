@@ -266,8 +266,6 @@ protected:
   ExperimentData expData;
   /// number of experiments
   size_t numExperiments; 
-  /// number of replicates
-  IntVector numReplicates; 
   /// number of total rows of data since we are allowing varying 
   /// numbers of experiments and replicates per experiment 
   size_t numRowsExpData; 

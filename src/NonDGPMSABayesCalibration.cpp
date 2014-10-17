@@ -136,7 +136,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_scalar(expDataFileName, "QUESO/GPMSA Bayes Calibration",
-		      numExperiments, numReplicates, 
+		      numExperiments, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
 		      expDataFileAnnotated, calc_sigma_from_data,
 		      outputLevel);
@@ -557,8 +557,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 
   for (unsigned int i = 0; i < numExperiments; ++i) {
     for (unsigned int j = 0; j < experimentDims[i]; ++j) { 
-      size_t replicate = 0;
-      Real yobs = expData.scalar_data(j, i, replicate);
+      Real yobs = expData.scalar_data(j,i);
       (*(experimentVecs_original[i]))[j] = yobs;
     }
     Cout << *(experimentVecs_original[i]) << '\n';

@@ -32,7 +32,6 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   expDataFileAnnotated(
     probDescDB.get_bool("responses.exp_data_file_annotated")),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
-  numReplicates(probDescDB.get_iv("responses.num_replicates")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
   numExpStdDeviationsRead(probDescDB.get_sizet("responses.num_std_deviations")),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
@@ -57,25 +56,6 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
     found_error = true;
   }
 
-  // for backward compatibility with single experiment data files:
-  // numExperiments defaults to 1 in DataResponses, but may need to
-  // set the replicates
-  if (numReplicates.length() == 0) {
-    numReplicates.resize(numExperiments);
-    // default is 1 replicate
-    numReplicates = 1;
-  }
-  // expand replicates for each experiment, if needed
-  // resize should preserve zeroth entry
-  else if (numReplicates.length() == 1) {
-    numReplicates.resize(numExperiments);
-    for (size_t i=1; i<numExperiments; ++i) 
-      numReplicates[i] = numReplicates[0];
-  }
-  else {
-    Cerr << "Error in replicate length" << std::endl;
-    found_error = true;
-  }
 
   if (numExpConfigVars > 0) {
 

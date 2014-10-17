@@ -2123,12 +2123,13 @@ KEYWORD12 responses
 	  [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST ]
 	  [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST ]
 	  [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST ]
+	  [ scalar_calibration_terms ALIAS num_scalar_calibration_terms INTEGER >= 0 ]
 	  [ calibration_data_file ALIAS least_squares_data_file STRING
 	    [ num_experiments INTEGER >= 0 ]
-	    [ num_replicates INTEGERLIST ]
 	    [ annotated
 	    | freeform ]
 	    [ num_config_variables INTEGER >= 0 ]
+	    [ sigma_type STRINGLIST ]
 	    [ num_std_deviations INTEGER >= 0 ]
 	    ]
 	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0
@@ -2142,12 +2143,22 @@ KEYWORD12 responses
 	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
 	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
-	  [ scalar_calibration_terms ALIAS num_scalar_calibration_terms INTEGER >= 0 ]
 	  [ field_calibration_terms ALIAS num_field_calibration_terms INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
 	    [ coordinate_list REALLIST
 	    | coordinate_data_file STRING ]
+	    [ field_data
+	      [ num_experiments INTEGER >= 0 ]
+	      [ annotated
+	      | freeform ]
+	      [ num_config_variables INTEGER >= 0 ]
+	      [ sigma_type STRINGLIST ]
+	      [ field_data_file STRING ]
+	      [ config_data_file STRING ]
+	      [ field_coordinate_data_file STRING ]
+	      [ sigma_data_file STRING ]
+	      ]
 	    ]
 	  )
 	|
