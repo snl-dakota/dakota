@@ -32,8 +32,7 @@ responses,
 	calibration_terms = 2
         calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
           freeform
-          num_experiments = 1
-          num_replicates = 10
+          num_experiments = 10
           num_std_deviations = 2 
   	descriptors = 'stress' 'displacement'
  	no_gradients							
