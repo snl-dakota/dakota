@@ -304,7 +304,7 @@ public:
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init() on other iteratorComm processors
-  void stop_configurations(ParLevLIter pl_iter);
+  void stop_init(ParLevLIter pl_iter);
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
   int serve_init(ParLevLIter pl_iter);

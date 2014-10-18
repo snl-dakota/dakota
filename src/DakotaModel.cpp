@@ -3085,10 +3085,10 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
-void Model::stop_configurations(ParLevLIter pl_iter)
+void Model::stop_init(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->stop_configurations(pl_iter);
+    modelRep->stop_init(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int term_code = 0;
     parallelLib.bcast(term_code, *pl_iter);

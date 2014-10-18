@@ -218,7 +218,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
     if (the_iterator.is_null())
       the_iterator = problem_db.get_iterator(the_model);
     the_iterator.init_communicators(pl_iter);
-    if (multiproc) the_model.stop_configurations(pl_iter);
+    if (multiproc) the_model.stop_init(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
@@ -258,7 +258,7 @@ init_iterator(const String& method_string, Iterator& the_iterator,
     if (the_iterator.is_null())
       the_iterator = Iterator(method_string, the_model);
     the_iterator.init_communicators(pl_iter);
-    if (multiproc) the_model.stop_configurations(pl_iter);
+    if (multiproc) the_model.stop_init(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator

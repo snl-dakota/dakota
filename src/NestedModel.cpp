@@ -577,8 +577,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
   // > now that subIterator is constructed, perform downstream updates
-  if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers
-      && subIteratorSched.iteratorCommRank == 0) {
+  if (subIteratorSched.iteratorCommRank == 0 &&
+      subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers){
     // follows DB restore since extracts DB data from nested model spec:
     update_sub_iterator(); // TO DO: any of these updates needed on all ranks?
     if (subIteratorSched.messagePass) {
