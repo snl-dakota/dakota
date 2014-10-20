@@ -82,6 +82,11 @@ public:
                                                ///< return hubServerInterComms
   int server_id() const;                       ///< return serverId
 
+  /// read a ParallelLevel object from a packed MPI buffer
+  void read(MPIUnpackBuffer& s);
+  /// write a ParallelLevel object to a packed MPI buffer
+  void write(MPIPackBuffer& s) const;
+
 private:
 
   //
@@ -200,6 +205,40 @@ inline MPI_Comm* ParallelLevel::hub_server_inter_communicators() const
 
 inline int ParallelLevel::server_id() const
 { return serverId; }
+
+inline void ParallelLevel::read(MPIUnpackBuffer& s)
+{
+  // pass configuration settings (which are relevant on other procs),
+  // but not specific comm/rank/size/id
+  s >> dedicatedMasterFlag >> commSplitFlag >> serverMasterFlag >> messagePass
+    >> idlePartition >> numServers >> procsPerServer >> procRemainder;
+  //>> serverIntraComm >> serverCommRank >> serverCommSize
+  //>> hubServerIntraComm >> hubServerCommRank >> hubServerCommSize
+  //>> hubServerInterComm >> hubServerInterComms >> serverId;
+}
+
+inline void ParallelLevel::write(MPIPackBuffer& s) const
+{
+  // pass configuration settings (which are relevant on other procs),
+  // but not specific comm/rank/size/id
+  s << dedicatedMasterFlag << commSplitFlag << serverMasterFlag << messagePass
+    << idlePartition << numServers << procsPerServer << procRemainder;
+  //<< serverIntraComm << serverCommRank << serverCommSize
+  //<< hubServerIntraComm << hubServerCommRank << hubServerCommSize
+  //<< hubServerInterComm << hubServerInterComms << serverId;
+}
+
+/// MPIUnpackBuffer extraction operator for ParallelLevel.  Calls
+/// read(MPIUnpackBuffer&).
+inline MPIUnpackBuffer& 
+operator>>(MPIUnpackBuffer& s, ParallelLevel& pl)
+{ pl.read(s); return s; }
+
+/// MPIPackBuffer insertion operator for ParallelLevel.  Calls
+/// write(MPIPackBuffer&).
+inline MPIPackBuffer& 
+operator<<(MPIPackBuffer& s, const ParallelLevel& pl)
+{ pl.write(s); return s; }
 
 
 /// Container class for a set of ParallelLevel list iterators that

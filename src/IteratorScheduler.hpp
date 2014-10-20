@@ -159,23 +159,23 @@ public:
 
   ParallelLibrary& parallelLib; ///< reference to the ParallelLibrary instance
 
-  int   numIteratorJobs;     ///< number of iterator executions to schedule
-  int   numIteratorServers;  ///< number of concurrent iterator partitions
-  int   procsPerIterator;    ///< partition size request
-  //int minProcsPerIterator; //   lower bound on iterator partition size
-  //int maxProcsPerIterator; //   upper bound on iterator partition size
-  int   iteratorCommRank;    ///< processor rank in iteratorComm
-  int   iteratorCommSize;    ///< number of processors in iteratorComm
-  int   iteratorServerId;    ///< identifier for an iterator server
+  int   numIteratorJobs;    ///< number of iterator executions to schedule
+  int   numIteratorServers; ///< number of concurrent iterator partitions
+  int   procsPerIterator;   ///< partition size request
+  //int minProcsPerIterator; //  lower bound on iterator partition size
+  //int maxProcsPerIterator; //  upper bound on iterator partition size
+  int   iteratorCommRank;   ///< processor rank in iteratorComm
+  int   iteratorCommSize;   ///< number of processors in iteratorComm
+  int   iteratorServerId;   ///< identifier for an iterator server
 
-  bool  messagePass;         ///< flag for message passing at si level
-  short iteratorScheduling;  ///< {DEFAULT,MASTER,PEER}_SCHEDULING
+  bool  messagePass;        ///< flag for message passing among iterator servers
+  short iteratorScheduling; ///< {DEFAULT,MASTER,PEER}_SCHEDULING
   //int maxIteratorConcurrency; // max concurrency possible in meta-algorithm
 
   ParConfigLIter schedPCIter; ///< iterator for active parallel configuration
-  size_t miPLIndex;          ///< index of active parallel level (corresponding
-                             ///< to ParallelConfiguration::miPLIters) to use
-                             ///< for parallelLib send/recv
+  size_t miPLIndex;         ///< index of active parallel level (corresponding
+                            ///< to ParallelConfiguration::miPLIters) to use
+                            ///< for parallelLib send/recv
 
 private:
 

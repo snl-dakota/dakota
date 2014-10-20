@@ -518,12 +518,14 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       optionalInterface.serve_evaluations();
     }
     else if (componentParallelMode == SUB_MODEL) {
-      // servers procs have participated in derived_init_comms and have
-      // access to subIteratorSched.miPLIndex
-      ParLevLIter si_pl_iter // inner context (same or one past)
-	= modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
-      subModel.serve_run(si_pl_iter,
-			 subIterator.maximum_evaluation_concurrency());
+      if (subIteratorSched.messagePass) // serve concurrent subIterator execs
+	subIteratorSched.schedule_iterators(*this, subIterator);
+      else { // service the subModel for a single subIterator execution
+	ParLevLIter si_pl_iter // inner context (same or one past)
+	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
+	subModel.serve_run(si_pl_iter,
+			   subIterator.maximum_evaluation_concurrency());
+      }
     }
   }
 }
