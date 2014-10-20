@@ -178,6 +178,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_rbdo_steel_column_analytic2.in # abort: LAPACK error
       dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
       dakota_uq_timeseries_sop_optinterf.in # workdir issue?
+      dakota_uq_cantilever_ivp_exp.in       # mysteriously hangs when run by Jenkins
       dakota_rosenbrock_importance.in       # File IO/performance issue?
       dakota_workdir.in                     # workdir issue?
       dakota_win_ext.in                     # stability?
