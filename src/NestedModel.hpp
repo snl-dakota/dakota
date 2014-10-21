@@ -249,6 +249,8 @@ private:
   /// the model using the primaryCoeffs/secondaryCoeffs mappings
   void iterator_response_overlay(const Response& sub_iterator_response,
 				 Response& mapped_response);
+  /// locate existing or allocate new entry in nestedResponseMap
+  Response& find_nested_response(int nested_cntr);
   /// check function counts for the mapped_asv
   void check_response_map(const ShortArray& mapped_asv);
 
@@ -295,13 +297,12 @@ private:
   IteratorScheduler subIteratorSched;
   /// tracks the miPLIndex for use at runtime, as keyed by max_eval_concurrency
   std::map<SizetIntPair, size_t> miPLIndexMap;
-  // subIterator evaluation counter (since Iterator::execNum
-  // increments at run time rather than queue load time)
-  //int subIteratorEvalId;
-  // mapping from subIterator evaluation counter to nested model counter
-  // (different when subIterator evaluations do not occur on every nested
-  // model evaluation due to variable ASV content)
-  //IntIntMap subIteratorIdMap;
+  /// subIterator job counter since last synchronize()
+  int subIteratorJobCntr;
+  /// mapping from subIterator evaluation counter to nested model counter
+  /// (different when subIterator evaluations do not occur on every nested
+  /// model evaluation due to variable ASV content)
+  IntIntMap subIteratorIdMap;
   /// number of sub-iterator response functions prior to mapping
   size_t numSubIterFns;
   /// number of top-level inequality constraints mapped from the
@@ -534,6 +535,20 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
 inline void NestedModel::stop_servers()
 { component_parallel_mode(0); }
+
+
+inline Response& NestedModel::find_nested_response(int nested_cntr)
+{
+  IntRespMIter r_it = nestedResponseMap.find(nested_cntr);
+  if (r_it == nestedResponseMap.end()) {
+    //nestedVarsMap[nestedModelEvalCntr] = currentVariables.copy();
+    Response& nested_resp = nestedResponseMap[nested_cntr]; // empty handle
+    nested_resp = currentResponse.copy(); nested_resp.reset();
+    return nested_resp;
+  }
+  else
+    return r_it->second;
+}
 
 
 /** In the OUU case,

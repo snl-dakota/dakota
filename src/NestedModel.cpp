@@ -32,6 +32,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 		   problem_db.get_int("model.nested.sub_method_servers"),
 		   problem_db.get_int("model.nested.sub_method_processors"),
 		   problem_db.get_short("model.nested.sub_method_scheduling")),
+  subIteratorJobCntr(0),
   optInterfacePointer(problem_db.get_string("model.interface_pointer")),
   subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer"))
 {
@@ -1407,10 +1408,6 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
   set_mapping(set, opt_interface_set, opt_interface_map,
 	           sub_iterator_set,  sub_iterator_map);
 
-  //nestedVarsMap[nestedModelEvalCntr] = currentVariables.copy();
-  Response& nested_resp = nestedResponseMap[nestedModelEvalCntr];
-  nested_resp = currentResponse.copy(); nested_resp.reset();
-
   // Perform optionalInterface map (opt_interface_set is updated within
   // optInterfaceResponse by map):
   if (opt_interface_map) {
@@ -1437,13 +1434,13 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
     // > use the subIterator's method id as the PRP interface id
     // > the subIterator's execNum cannot be used as the execution counter for
     //   mapping since it doesn't increment until run time (see Iterator::run())
-    //++subIteratorEvalId;
     subIterator.response_results_active_set(sub_iterator_set);
+    ++subIteratorJobCntr;
     ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
 				   subIterator.response_results(),
-				   nestedModelEvalCntr);//subIteratorEvalId);
+				   subIteratorJobCntr);
     subIteratorPRPQueue.insert(current_pair);
-    //subIteratorIdMap[subIteratorEvalId] = nestedModelEvalCntr;
+    subIteratorIdMap[subIteratorJobCntr] = nestedModelEvalCntr;
   }
 }
 
@@ -1464,7 +1461,8 @@ const IntResponseMap& NestedModel::derived_synchronize()
     // overlay response sets
     for (rit=opt_int_resp_map.begin(); rit!=opt_int_resp_map.end(); ++rit) {
       int nested_cntr = optInterfaceIdMap[rit->first];
-      interface_response_overlay(rit->second, nestedResponseMap[nested_cntr]);
+      Response& nested_resp = find_nested_response(nested_cntr);
+      interface_response_overlay(rit->second, nested_resp);
     }
     // update bookkeeping
     optInterfaceIdMap.clear();
@@ -1477,11 +1475,14 @@ const IntResponseMap& NestedModel::derived_synchronize()
     subIteratorSched.schedule_iterators(*this, subIterator);
     // overlay response sets
     for (PRPQueueIter qit=subIteratorPRPQueue.begin();
-	 qit!=subIteratorPRPQueue.end(); ++qit)
-      iterator_response_overlay(qit->prp_response(),
-				nestedResponseMap[qit->eval_id()]);
+	 qit!=subIteratorPRPQueue.end(); ++qit) {
+      int nested_cntr = subIteratorIdMap[qit->eval_id()];
+      Response& nested_resp = find_nested_response(nested_cntr);
+      iterator_response_overlay(qit->prp_response(), nested_resp);
+    }
     // update bookkeeping
-    subIteratorPRPQueue.clear();
+    subIteratorPRPQueue.clear(); subIteratorIdMap.clear();
+    subIteratorJobCntr = 0;
   }
 
   //nestedVarsMap.clear();
