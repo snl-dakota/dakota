@@ -204,27 +204,31 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators (empty selectedIterator
-  // envelope is adequate) or initialize, so return now.
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
-    return;
-
-  // Instantiate the iterator.
-  if (lightwtCtor) {
-    iterSched.init_iterator(method_name, selectedIterator, iteratedModel);
-    if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-      Cout << "Concurrent Iterator = " << method_name << std::endl;
-    if (!model_ptr.empty())
-      probDescDB.set_db_model_nodes(model_index); // restore
+  // envelope is adequate) or initialize, so return now.  A dedicated
+  // master processor is managed in IteratorScheduler::init_iterator().
+  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+    // Instantiate the iterator
+    if (lightwtCtor) {
+      iterSched.init_iterator(method_name, selectedIterator, iteratedModel);
+      if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+	Cout << "Concurrent Iterator = " << method_name << std::endl;
+    }
+    else {
+      iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
+      if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+	Cout << "Concurrent Iterator = "
+	     << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
+	     << std::endl;
+    }
   }
-  else {
-    iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
-    if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-      Cout << "Concurrent Iterator = "
-	   << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
-	   << std::endl;
+
+  // Restore the DB list nodes
+  if (!lightwtCtor) {
     probDescDB.set_db_method_node(method_index); // restore
     probDescDB.set_db_model_nodes(model_index);  // restore
   }
+  else if (!model_ptr.empty())
+    probDescDB.set_db_model_nodes(model_index); // restore
 }
 
 

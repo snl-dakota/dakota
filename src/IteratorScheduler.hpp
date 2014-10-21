@@ -304,10 +304,6 @@ schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 template <typename MetaType> void IteratorScheduler::
 master_dynamic_schedule_iterators(MetaType& meta_object)
 {
-  // init_communicators() is called on the iterator servers, but not on
-  // the strategy master.  Therefore, match collective communications.
-  parallelLib.print_configuration(); // matches call within init_communicators()
-
   int i, j, num_sends = std::min(numIteratorServers, numIteratorJobs);
   Cout << "Master dynamic schedule: first pass assigning " << num_sends
        << " iterator jobs among " << numIteratorServers << " servers\n";

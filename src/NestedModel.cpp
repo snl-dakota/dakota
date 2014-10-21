@@ -572,6 +572,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   // > now augment prev subIterator instantiations for additional mi_pl ranks
   //   (new mi_pl is used via miPLIndex update in init_iterator_parallelism())
+  // > idle server is managed here; a dedicated master processor is managed
+  //   within IteratorScheduler::init_iterator().
   if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
     subIteratorSched.init_iterator(probDescDB, subIterator, subModel);
 

@@ -133,7 +133,8 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
-  // envelopes are adequate for serve_iterators()), so return now.
+  // envelopes are adequate for serve_iterators()), so return now.  A dedicated
+  // master processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
