@@ -59,6 +59,17 @@ void NonDLHSInterval::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDLHSInterval::derived_set_communicators(ParLevLIter pl_iter)
+{
+  miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+  //iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+
+  // lhsSampler uses NoDBBaseConstructor, so no need to manage DB list
+  // nodes at this level
+  lhsSampler.set_communicators(pl_iter);
+}
+
+
 void NonDLHSInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
   lhsSampler.free_communicators(pl_iter);

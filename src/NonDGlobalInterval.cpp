@@ -227,15 +227,26 @@ void NonDGlobalInterval::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDGlobalInterval::derived_set_communicators(ParLevLIter pl_iter)
+{
+  NonD::derived_set_communicators(pl_iter);
+
+  //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
+  //fHatModel.set_communicators(pl_iter, fHatMaxConcurrency);
+
+  // intervalOptimizer uses NoDBBaseConstructor, so no need to manage
+  // DB list nodes at this level
+  intervalOptimizer.set_communicators(pl_iter);
+}
+
+
 void NonDGlobalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
-  // deallocate communicators for DIRECT on intervalOptModel
+  // intervalOptimizer uses NoDBBaseConstructor, so no need to manage
+  // DB list nodes at this level
   intervalOptimizer.free_communicators(pl_iter);
 
-  // intervalOptModel.free_communicators() recursion is currently sufficient
-  // for fHatModel.  An additional fHatModel.free_communicators() call would
-  // be motivated by special parallel usage of fHatModel below that is not
-  // otherwise covered by the recursion.
+  //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //fHatModel.free_communicators(pl_iter, fHatMaxConcurrency);
 
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);

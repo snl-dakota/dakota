@@ -88,21 +88,21 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /*
   /// initialize the iterator about to be executed within a parallel iterator
   /// scheduling function (serve_iterators() or static_schedule_iterators())
-  virtual void initialize_iterator(int index);
+  void initialize_iterator(int index);
   /// pack a send_buffer for assigning an iterator job to a server
-  virtual void pack_parameters_buffer(MPIPackBuffer& send_buffer,
-				      int job_index);
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
   /// unpack a recv_buffer for accepting an iterator job from the scheduler
-  virtual void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer);
+  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
   /// pack a send_buffer for returning iterator results from a server
-  virtual void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
+  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   /// unpack a recv_buffer for accepting iterator results from a server
-  virtual void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
-				     int job_index);
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   /// update local PRP results arrays with current iteration results
-  virtual void update_local_results(int job_index);
+  void update_local_results(int job_index);
+  */
 
   //
   //- Heading: Convenience/Helper functions
@@ -418,41 +418,42 @@ inline const Model& Minimizer::algorithm_space_model() const
 { return iteratedModel; }
 
 
-inline void Minimizer::initialize_iterator(int job_index)
-{ } // default = no-op
+//inline void Minimizer::initialize_iterator(int job_index)
+//{ } // default = no-op
 
 
 /** This virtual function redefinition is executed on the dedicated master
     processor for self scheduling.  It is not used for peer partitions. */
-inline void Minimizer::
-pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
-{ } // default = no-op
+//inline void Minimizer::
+//pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
+//{ } // default = no-op
 
 
 /** This virtual function redefinition is executed on an iterator server for
     dedicated master self scheduling.  It is not used for  peer partitions. */
-inline void Minimizer::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
-{ } // default = no-op
+//inline void Minimizer::
+//unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
+//{ } // default = no-op
 
 
 /** This virtual function redefinition is executed either on an iterator
     server for dedicated master self scheduling or on peers 2 through n
     for static scheduling. */
-inline void Minimizer::
-pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
-{ } // default = no-op
+//inline void Minimizer::
+//pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
+//{ } // default = no-op
 
 
 /** This virtual function redefinition is executed on an environment master
     (either the dedicated master processor for self scheduling or peer 1
     for static scheduling). */
-inline void Minimizer::
-unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
-{ } // default = no-op
+//inline void Minimizer::
+//unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+//{ } // default = no-op
 
 
-inline void Minimizer::update_local_results(int job_index)
-{ } // default = no-op
+//inline void Minimizer::update_local_results(int job_index)
+//{ } // default = no-op
 
 } // namespace Dakota
 

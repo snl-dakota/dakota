@@ -135,11 +135,11 @@ void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
-  // set communicators for approxSubProbModel/iteratedModel
-  approxSubProbMinimizer.set_communicators(pl_iter);
-
   // iteratedModel is evaluated to add truth data (single compute_response())
   iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+
+  // set communicators for approxSubProbModel/iteratedModel
+  approxSubProbMinimizer.set_communicators(pl_iter);
 }
 
 

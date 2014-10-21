@@ -81,7 +81,7 @@ protected:
 
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer);
+  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
@@ -103,7 +103,7 @@ private:
   void extract_parameter_sets(int job_index,VariablesArray& partial_param_sets);
   /// update the partial set of final results from the local iterator execution
   void update_local_results(PRPArray& prp_results, int job_id);
-  /// called by unpack_parameters_buffer(MPIUnpackBuffer) and
+  /// called by unpack_parameters_initialize(MPIUnpackBuffer) and
   /// initialize_iterator(int) to update the active Model and Iterator
   void initialize_iterator(const VariablesArray& param_sets);
 
@@ -223,7 +223,7 @@ pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 
 
 inline void SeqHybridMetaIterator::
-unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
 {
   if (seqCount) { // else default initialization is used
     VariablesArray param_sets;

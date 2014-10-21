@@ -73,20 +73,30 @@ NonDGPMSABayesCalibration::~NonDGPMSABayesCalibration()
 { }
 
 
-void NonDGPMSABayesCalibration::derived_init_communicators()
+void NonDGPMSABayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
   // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
   // at this level
-  lhsIter.init_communicators();
+  lhsIter.init_communicators(pl_iter);
 
-  NonDBayesCalibration::derived_init_communicators();
+  NonDBayesCalibration::derived_init_communicators(pl_iter);
 }
 
 
-void NonDGPMSABayesCalibration::derived_free_communicators()
+void NonDGPMSABayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 {
-  NonDBayesCalibration::derived_free_communicators();
-  lhsIter.free_communicators();
+  // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
+  // at this level
+  lhsIter.set_communicators(pl_iter);
+
+  NonDBayesCalibration::derived_set_communicators(pl_iter);
+}
+
+
+void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
+{
+  NonDBayesCalibration::derived_free_communicators(pl_iter);
+  lhsIter.free_communicators(pl_iter);
 }
 
 

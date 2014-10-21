@@ -155,6 +155,22 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
+{
+  miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+  //iteratedModel.set_communicators(maxEvalConcurrency);
+
+  // stochExpIterator and emulatorModel use NoDBBaseConstructor,
+  // so no need to manage DB list nodes at this level
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR:
+    stochExpIterator.set_communicators(pl_iter);                  break;
+  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+    emulatorModel.set_communicators(pl_iter, maxEvalConcurrency); break;
+  }
+}
+
+
 void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
   switch (emulatorType) {

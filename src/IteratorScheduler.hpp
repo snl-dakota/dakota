@@ -44,8 +44,8 @@ public:
   // default constructor
   //IteratorScheduler();
   /// constructor
-  IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers = 0,
-		    int procs_per_iterator = 0,
+  IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
+		    int num_servers = 0, int procs_per_iterator = 0,
 		    short scheduling = DEFAULT_SCHEDULING);
   /// destructor
   ~IteratorScheduler();
@@ -171,6 +171,8 @@ public:
   bool  messagePass;        ///< flag for message passing among iterator servers
   short iteratorScheduling; ///< {DEFAULT,MASTER,PEER}_SCHEDULING
   //int maxIteratorConcurrency; // max concurrency possible in meta-algorithm
+  bool peerAssignJobs;      ///< flag indicating need for peer 1 to assign jobs
+                            ///< to peers 2-n
 
   ParConfigLIter schedPCIter; ///< iterator for active parallel configuration
   size_t miPLIndex;         ///< index of active parallel level (corresponding
@@ -382,11 +384,35 @@ master_dynamic_schedule_iterators(MetaType& meta_object)
 template <typename MetaType> void IteratorScheduler::
 peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
+  // Assign jobs, if needed.
+  bool rank0 = (iteratorCommRank == 0);
+  if (rank0 && peerAssignJobs) {
+    parallelLib.bcast_mi(numIteratorJobs, miPLIndex);
+    if (iteratorServerId > 1) { // peers 2-n: recv job from peer 1
+      for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+	MPI_Status status;
+	MPIUnpackBuffer recv_buffer(paramsMsgLen);
+	parallelLib.recv_mi(recv_buffer, 0, i+1, status, miPLIndex);
+	meta_object.unpack_parameters_buffer(recv_buffer);
+      }
+    }
+    else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
+      for (int i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
+	int dest = i%numIteratorServers;
+	if (dest) { // parameter set assigned to peers 2-n
+	  MPIPackBuffer send_buffer;//(paramsMsgLen);
+	  meta_object.pack_parameters_buffer(send_buffer, i);
+	  parallelLib.send_mi(send_buffer, dest, i+1, miPLIndex);
+	}
+      }
+    }
+  }
+
   for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
 
     // Set starting point or obj fn weighting set
     Real iterator_start_time;
-    if (iteratorCommRank == 0) {
+    if (rank0) {
       meta_object.initialize_iterator(i);
       if (messagePass)
         iterator_start_time = parallelLib.parallel_time();
@@ -396,7 +422,7 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
     run_iterator(sub_iterator);
 
     // collect results on peer 1
-    if (iteratorCommRank == 0) {
+    if (rank0) {
       // report iterator timings (to tagged output if concurrent iterators)
       if (messagePass) {
         Real iterator_end_time = parallelLib.parallel_time();
@@ -413,7 +439,7 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
   // ParallelLibrary destructor timings are valid (all parameter sets have
   // completed).  If no synchronization was applied, then the timings would
   // reflect only the completion of the first iterator server.
-  if (iteratorCommRank == 0) {
+  if (rank0) {
     if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
       for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
 	MPIPackBuffer send_buffer;//(resultsMsgLen);
@@ -452,7 +478,7 @@ serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
       parallelLib.recv_mi(recv_buffer, 0, MPI_ANY_TAG, status, miPLIndex);
       job_id = status.MPI_TAG;
       if (job_id)
-	meta_object.unpack_parameters_buffer(recv_buffer);
+	meta_object.unpack_parameters_initialize(recv_buffer);
     }
     if (iteratorCommSize > 1) // must Bcast job_id over iteratorComm
       parallelLib.bcast_i(job_id, miPLIndex);

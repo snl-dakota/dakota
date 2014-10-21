@@ -73,7 +73,7 @@ protected:
 
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer);
+  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
@@ -86,7 +86,7 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// called by unpack_parameters_buffer(MPIUnpackBuffer) and
+  /// called by unpack_parameters_initialize(MPIUnpackBuffer) and
   /// initialize_iterator(int) to update iteratedModel and selectedIterator
   void initialize_iterator(const RealVector& param_set);
 
@@ -165,7 +165,7 @@ pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 
 
 inline void ConcurrentMetaIterator::
-unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
 {
   RealVector param_set;
   recv_buffer >> param_set;

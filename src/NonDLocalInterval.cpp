@@ -153,6 +153,16 @@ void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDLocalInterval::derived_set_communicators(ParLevLIter pl_iter)
+{
+  NonD::derived_set_communicators(pl_iter);
+
+  // minMaxOptimizer uses NoDBBaseConstructor, so no need to manage DB
+  // list nodes at this level
+  minMaxOptimizer.set_communicators(pl_iter);
+}
+
+
 void NonDLocalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
   minMaxOptimizer.free_communicators(pl_iter);

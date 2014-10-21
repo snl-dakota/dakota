@@ -115,6 +115,8 @@ public:
   const IntStringPair& eval_interface_ids() const;
   /// return the parameters object
   const Variables& prp_parameters() const;
+  /// set the parameters object
+  void prp_parameters(const Variables& vars);
   /// return the response object
   const Response& prp_response() const;
   /// set the response object
@@ -222,6 +224,10 @@ inline const IntStringPair& ParamResponsePair::eval_interface_ids() const
 
 inline const Variables& ParamResponsePair::prp_parameters() const
 { return prPairParameters; }
+
+
+inline void ParamResponsePair::prp_parameters(const Variables& vars)
+{ prPairParameters = vars; }
 
 
 inline const Response& ParamResponsePair::prp_response() const

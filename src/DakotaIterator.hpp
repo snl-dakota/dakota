@@ -112,6 +112,9 @@ public:
 				      int job_index);
   /// used by IteratorScheduler to unpack starting data for an iterator run
   virtual void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer);
+  /// used by IteratorScheduler to unpack starting data and initialize
+  /// an iterator run
+  virtual void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
   /// used by IteratorScheduler to pack results data from an iterator run
   virtual void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   /// used by IteratorScheduler to unpack results data from an iterator run

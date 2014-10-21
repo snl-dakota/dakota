@@ -24,13 +24,13 @@ namespace Dakota {
     components, which are requests subject to override by
     ParallelLibrary::init_iterator_communicators(). */
 IteratorScheduler::
-IteratorScheduler(ParallelLibrary& parallel_lib, int num_servers,
-		  int procs_per_iterator, short scheduling):
+IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
+		  int num_servers, int procs_per_iterator, short scheduling):
   parallelLib(parallel_lib), numIteratorJobs(1),
   numIteratorServers(num_servers), procsPerIterator(procs_per_iterator),
   iteratorCommRank(0), iteratorCommSize(1), iteratorServerId(0),
   messagePass(false), iteratorScheduling(scheduling),//maxIteratorConcurrency(1)
-  paramsMsgLen(0), resultsMsgLen(0)
+  peerAssignJobs(peer_assign_jobs), paramsMsgLen(0), resultsMsgLen(0)
 {
   // Supported examples of a single level of concurrent iterators:
   //   ConcurrentMinimizer (multi_start, pareto_set), BranchBndMinimizer

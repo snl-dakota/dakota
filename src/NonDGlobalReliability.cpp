@@ -330,6 +330,20 @@ void NonDGlobalReliability::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDGlobalReliability::derived_set_communicators(ParLevLIter pl_iter)
+{
+  NonD::derived_set_communicators(pl_iter);
+
+  //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
+  //uSpaceModel.set_communicators(pl_iter, uSpaceMaxConcurrency);
+
+  // mppOptimizer and importanceSampler use NoDBBaseConstructor, so no
+  // need to manage DB list nodes at this level
+  mppOptimizer.set_communicators(pl_iter);
+  importanceSampler.set_communicators(pl_iter);
+}
+
+
 void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 {
   // deallocate communicators for MMAIS on uSpaceModel
@@ -338,10 +352,7 @@ void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
   // deallocate communicators for DIRECT on mppModel
   mppOptimizer.free_communicators(pl_iter);
 
-  // mppModel.free_communicators() recursion is currently sufficient for
-  // uSpaceModel.  An additional uSpaceModel.free_communicators() call would
-  // be motivated by special parallel usage of uSpaceModel below that is not
-  // otherwise covered by the recursion.
+  //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //uSpaceModel.free_communicators(pl_iter, uSpaceMaxConcurrency);
 
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);

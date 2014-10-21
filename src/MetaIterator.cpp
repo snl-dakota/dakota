@@ -23,6 +23,7 @@ namespace Dakota {
 MetaIterator::MetaIterator(ProblemDescDB& problem_db):
   Iterator(BaseConstructor(), problem_db),
   iterSched(problem_db.parallel_library(),
+	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
 	    problem_db.get_short("method.iterator_scheduling"))
@@ -35,6 +36,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db),
   iterSched(problem_db.parallel_library(),
+	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
 	    problem_db.get_short("method.iterator_scheduling"))

@@ -428,13 +428,26 @@ void NonDLocalReliability::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDLocalReliability::derived_set_communicators(ParLevLIter pl_iter)
+{
+  NonD::derived_set_communicators(pl_iter);
+
+  if (mppSearchType) {
+    uSpaceModel.set_communicators(pl_iter, maxEvalConcurrency);
+    mppOptimizer.set_communicators(pl_iter);
+    if (integrationRefinement)
+      importanceSampler.set_communicators(pl_iter);
+  }
+}
+
+
 void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 {
   if (mppSearchType) {
-    mppOptimizer.free_communicators(pl_iter);
-    uSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);
     if (integrationRefinement)
       importanceSampler.free_communicators(pl_iter);
+    mppOptimizer.free_communicators(pl_iter);
+    uSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);
   }
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }

@@ -28,6 +28,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   nestedModelEvalCntr(0), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
+		   true, // peer 1 must assign jobs to peers 2-n
 		   problem_db.get_int("model.nested.sub_method_servers"),
 		   problem_db.get_int("model.nested.sub_method_processors"),
 		   problem_db.get_short("model.nested.sub_method_scheduling")),
@@ -580,11 +581,15 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (subIteratorSched.iteratorCommRank == 0 &&
       subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers){
     // follows DB restore since extracts DB data from nested model spec:
-    update_sub_iterator(); // TO DO: any of these updates needed on all ranks?
+    update_sub_iterator();
     if (subIteratorSched.messagePass) {
-      // msg lengths: vars/set from this model, final results from subIterator
-      MPIPackBuffer buff; buff << subIterator.response_results();
-      subIteratorSched.iterator_message_lengths(messageLengths[1], buff.size());
+      // msg lengths: vars from this model, set & final results from subIterator
+      MPIPackBuffer buff; int eval_id = 0;
+      const Response& si_resp = subIterator.response_results();
+      buff << currentVariables << si_resp.active_set() << eval_id;
+      int params_buff_len = buff.size(); buff.reset();
+      buff << si_resp;
+      subIteratorSched.iterator_message_lengths(params_buff_len, buff.size());
     }
   }
 }
@@ -1468,6 +1473,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
   if (!subIteratorPRPQueue.empty()) {
     // schedule subIteratorPRPQueue jobs
     component_parallel_mode(SUB_MODEL);
+    subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
     subIteratorSched.schedule_iterators(*this, subIterator);
     // overlay response sets
     for (PRPQueueIter qit=subIteratorPRPQueue.begin();
@@ -1829,7 +1835,7 @@ void NestedModel::component_parallel_mode(short mode)
     parallelLib.parallel_configuration_iterator(modelPCIter);
   }
   else if (mode == SUB_MODEL) {
-    // activation delegated to subModel
+    // ParallelLibrary::currPCIter activation delegated to subModel
   }
 
   // activate new serve mode (matches NestedModel::serve_run(pl_iter)).  This

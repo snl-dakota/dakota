@@ -168,6 +168,16 @@ namespace Dakota
     gpFinalEval.init_communicators(pl_iter);
   }
 
+  void NonDAdaptiveSampling::derived_set_communicators(ParLevLIter pl_iter)
+  {
+    NonD::derived_set_communicators(pl_iter);
+
+    // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
+    // manage DB list nodes at this level
+    gpEval.set_communicators(pl_iter);
+    gpFinalEval.set_communicators(pl_iter);
+  }
+
   void NonDAdaptiveSampling::derived_free_communicators(ParLevLIter pl_iter)
   {
     gpFinalEval.free_communicators(pl_iter);

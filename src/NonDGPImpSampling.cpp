@@ -101,12 +101,23 @@ void NonDGPImpSampling::derived_init_communicators(ParLevLIter pl_iter)
 } 
 
 
+void NonDGPImpSampling::derived_set_communicators(ParLevLIter pl_iter)
+{
+  NonD::derived_set_communicators(pl_iter);
+
+  // gpBuild and gpEval use NoDBBaseConstructor, so no need to
+  // manage DB list nodes at this level
+  //gpBuild.set_communicators(pl_iter);
+  gpEval.set_communicators(pl_iter);
+} 
+
+
 void NonDGPImpSampling::derived_free_communicators(ParLevLIter pl_iter)
 {
   gpEval.free_communicators(pl_iter);
   //gpBuild.free_communicators(pl_iter);
 
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

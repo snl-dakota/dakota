@@ -386,6 +386,16 @@ void NonDPolynomialChaos::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDPolynomialChaos::derived_set_communicators(ParLevLIter pl_iter)
+{
+  // this is redundant with Model recursions except for PCE coeff import case
+  if (!expansionImportFile.empty())
+    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+
+  NonDExpansion::derived_set_communicators(pl_iter);
+}
+
+
 void NonDPolynomialChaos::derived_free_communicators(ParLevLIter pl_iter)
 {
   NonDExpansion::derived_free_communicators(pl_iter);

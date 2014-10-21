@@ -97,6 +97,16 @@ void NonDAdaptImpSampling::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDAdaptImpSampling::derived_set_communicators(ParLevLIter pl_iter)
+{
+  miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+  if (initLHS)
+    uSpaceModel.set_communicators(pl_iter, numSamples);
+  else
+    uSpaceModel.set_communicators(pl_iter, refineSamples);
+}
+
+
 void NonDAdaptImpSampling::derived_free_communicators(ParLevLIter pl_iter)
 {
   uSpaceModel.free_communicators(pl_iter, refineSamples);
