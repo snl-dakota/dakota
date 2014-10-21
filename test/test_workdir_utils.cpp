@@ -36,7 +36,7 @@ void test_save_current_path(const std::string& pwd_str,
 
   if( bfs::exists(wd) && is_directory(wd) ) {
     WorkdirHelper::change_directory(wd);
-    std::string new_pwd_str = Dakota::get_cwd();
+    std::string new_pwd_str = boost::filesystem::current_path().string();
     BOOST_CHECK( pwd_str != new_pwd_str );
 
     //WorkdirHelper::prepend_preferred_env_path( wd.string() );
@@ -50,7 +50,7 @@ void test_save_current_path(const std::string& pwd_str,
     // change back to original rundir
     bfs::path rundir(pwd_str);
     WorkdirHelper::change_directory(rundir);
-    new_pwd_str = Dakota::get_cwd();
+    new_pwd_str = boost::filesystem::current_path().string();
     BOOST_CHECK( pwd_str == new_pwd_str );
 
     // verify that PATH no longer has '.' prepended
