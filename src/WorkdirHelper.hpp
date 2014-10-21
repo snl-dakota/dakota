@@ -26,44 +26,6 @@ namespace bfs = boost::filesystem;
 
 #include <boost/function.hpp>
 
-/// BEGIN: Section to be cleaned up and hopefully moved to .cpp file
-/// after dakota_filesystem_utils is retired
-#if defined(_WIN32) || defined(_WIN64)
-
-  #define NOMINMAX
-  #include <io.h>
-  #include "dakota_windows.h"
-  #include <direct.h>               // remove when _mkdir no longer needed
-  // consider using _chdir if appropriate, since has same API?
-  #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
-//  #define DAK_MKDIR(a,b) _mkdir(a)  // to be removed
-  #define DAK_MAXPATHLEN MAX_PATH
-  #define DAK_PATH_ENV_NAME "Path"
-  #define DAK_PATH_SEP ';'
-  #define DAK_SLASH '\\'            // likely not needed with BFS
-
-#elif defined(HAVE_UNISTD_H) 
-  // probably not necessary to tie conditional compilation to build 
-  //#if defined(HAVE_UNISTD_H) 
-  #include <unistd.h>
-  //#endif
-  #include <sys/param.h>             // for MAXPATHLEN?
-  #define DAK_CHDIR chdir
-//  #define DAK_MKDIR(a,b) mkdir(a,b)  // to be removed
-  #define DAK_MAXPATHLEN MAXPATHLEN
-  #define DAK_PATH_ENV_NAME "PATH"
-  #define DAK_PATH_SEP ':'
-  #define DAK_SLASH '/'              // likely not needed with BFS
-
-#endif // _WIN32 or _WIN64
-
-#include <sys/stat.h>
-//#include <string>
-//#include <utility>
-//#include <vector>
-
-/// END: Section to be cleaned up and hopefully moved to .cpp file
-
 
 namespace Dakota {
 
@@ -141,18 +103,6 @@ typedef boost::filter_iterator<MatchesWC, bfs::directory_iterator> glob_iterator
 
 class WorkdirHelper
 {
-  //
-  //- Heading: Friends
-  //
-
-  /// Treat get_npath as a legacy, "blackbox" utility
-#ifdef DEBUG_GET_NPATH
-  /** get_npath "shuffles" the string representing the current $PATH variable
-      definition so that '.' is first in the $PATH.  It then returns the new
-      string as the result (last arg in the call). */
-  friend void get_npath(int,std::string*);         // dakPreferredEnvPath access
-#endif
-
 public:
 
   /// initialize paths in the workdir helper at runtime
@@ -293,12 +243,6 @@ private:
   /// Tokenizes $PATH environment variable into a "list" of directories
   static std::vector<std::string> tokenize_env_path(const std::string& path);
 
-#ifdef DEBUG_LEGACY_WORKDIR
-  static const char** arg_adjust(bool cmd_line_args,
-                                 const std::vector<std::string>& args,
-                                 const char **av, const std::string& workdir);
-#endif
-
   //
   //- Heading: Data
   //
@@ -327,20 +271,6 @@ private:
   /// assignment operator
   WorkdirHelper& operator=(const WorkdirHelper&);
 };
-
-
-#ifdef DEBUG_LEGACY_WORKDIR
-/// Utility function from legacy, "not_executable" module -- DO NOT TOUCH!
-const char** arg_list_adjust(const char **, void **);
-#endif
-
-/// Helper for "which" - sets complete_filepath from dir_path/file_name combo
-inline bool contains(const bfs::path& dir_path, const std::string& file_name,
-                     boost::filesystem::path& complete_filepath)
-{
-  complete_filepath = dir_path; complete_filepath /= file_name;
-  return boost::filesystem::is_regular_file(complete_filepath);
-}
 
 } // namespace Dakota
 

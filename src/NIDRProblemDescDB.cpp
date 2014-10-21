@@ -16,7 +16,7 @@
 
 #include "NIDRProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#include "WorkdirHelper.hpp"     // for DAK_MKDIR, prepend_preferred_env_path
+#include "WorkdirHelper.hpp"     // for copy/link file op utilities
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
 #include <functional>
@@ -592,7 +592,9 @@ iface_true(const char *keyname, Values *val, void **g, void *v)
 }
 
 
-#ifdef DEBUG_NOT_EXECUTABLE
+#ifdef DEBUG_LEGACY_WORKDIR
+
+extern const char** arg_list_adjust(const char **, void **);
 
 /*
  *  not_executable(const char *driver_name) checks whether driver_name is an 
@@ -610,7 +612,7 @@ int not_executable(const char *driver_name, const char *tdir)
   int rc, sv;
   size_t clen, dlen, plen, tlen;
   void *a0;
-  std::string cwd;  // decalre here before any possible "goto"
+  std::string cwd = boost::filesystem::current_path().string();
 
 #ifdef _WIN32
   char dbuf[128];
@@ -672,7 +674,7 @@ int not_executable(const char *driver_name, const char *tdir)
     goto ret;
 #endif
 
-  cwd = get_cwd();
+  cwd = boost::filesystem::current_path().string();
   clen = cwd.size();
   dlen = std::strlen(driver_name);
   tlen = std::strlen(tdir);
@@ -773,7 +775,7 @@ int not_executable(const char *driver_name, const char *tdir)
   return rc;
 }
 
-#endif  // DEBUG_NOT_EXECUTABLE
+#endif  // DEBUG_LEGACY_WORKDIR
 
 
 void NIDRProblemDescDB::

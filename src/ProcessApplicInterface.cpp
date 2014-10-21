@@ -16,7 +16,6 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
-#include "dakota_filesystem_utils.hpp"
 #include <algorithm>
 #include <boost/filesystem/fstream.hpp>
 

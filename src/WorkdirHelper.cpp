@@ -13,14 +13,36 @@
 #include "WorkdirHelper.hpp"
 #include "dakota_data_util.hpp"  // for strcontains
 #include "dakota_global_defs.hpp"
-#include "dakota_filesystem_utils.hpp" // undesirable dependency for workdir_adjust
-                              // WJB: wd_adjust has a MAJOR dependency on statics in dakota_filesystem_utils.cpp
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <boost/version.hpp>
 #include <cassert>
+
+#if defined(_WIN32) || defined(_WIN64)
+
+  #define NOMINMAX
+  #include <io.h>
+  #include "dakota_windows.h"
+  // consider using _chdir if appropriate, since has same API?
+  #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
+  #define DAK_MAXPATHLEN MAX_PATH
+  #define DAK_PATH_ENV_NAME "Path"
+  #define DAK_PATH_SEP ';'
+  #define DAK_SLASH '\\'            // likely not needed with BFS
+
+#elif defined(HAVE_UNISTD_H)
+  // probably not necessary to tie conditional compilation to build
+  #include <unistd.h>
+  #include <sys/param.h>             // for MAXPATHLEN
+  #define DAK_CHDIR chdir
+  #define DAK_MAXPATHLEN MAXPATHLEN
+  #define DAK_PATH_ENV_NAME "PATH"
+  #define DAK_PATH_SEP ':'
+  #define DAK_SLASH '/'              // likely not needed with BFS
+
+#endif // _WIN32 or _WIN64
 
 // BMA TODO: Boost versions <= 1.49 do not include these mappings,
 // perhaps due to conflicts with v2?
@@ -41,10 +63,22 @@ std::string WorkdirHelper::startupPATH         = ".";
 std::string WorkdirHelper::dakPreferredEnvPath = ".";
 
 
+/* Portability adapter: return the cwd string in OS-native
+   format.  TODO: change paths throughout code to use bfs::path where
+   possible, since Windows (and Cygwin) use wchar_t instead of
+   char_t. */
+std::string get_cwd_str()
+{
+  // Get the native path and return as a string, using locale-specific
+  // conversion from wchar to char if needed.
+  return boost::filesystem::current_path().string();
+}
+
+
 /// Initialize defers calls to Boost filesystem utilities until runtime
 void WorkdirHelper::initialize()
 {
-  startupPWD          = get_cwd();
+  startupPWD          = get_cwd_str();
   startupPATH         = init_startup_path();
   dakPreferredEnvPath = init_preferred_env_path();
 }
@@ -55,13 +89,13 @@ void WorkdirHelper::change_directory(const bfs::path& new_dir)
   // TODO: check DAK_MAXPATHLEN? (advice varies on practicality)
   //  bfs::path::string_type new_dir_str = new_dir.native();
   // path::c_str() should return right width string...
-  int retcode = -1;
+  int err_code = -1;
 #if defined(_WIN32) || defined(_WIN64)
-  retcode = _wchdir(new_dir.c_str());  // path::value_type is wchar on Windows
+  err_code = _wchdir(new_dir.c_str());  // path::value_type is wchar on Windows
 #else
-  retcode = chdir(new_dir.c_str());
+  err_code = chdir(new_dir.c_str());
 #endif
-  if (retcode) {
+  if (err_code) {
     Cerr << "\nError: failed to change directory to " << new_dir << std::endl;
     abort_handler(-1);
   }
@@ -81,10 +115,22 @@ std::string WorkdirHelper::init_preferred_env_path()
 
   // Go ahead and prepend '.' to the preferred $PATH since it can't hurt
 
-  preferred_env_path += "." + path_sep_string + get_cwd() + path_sep_string;
+  preferred_env_path += "." + path_sep_string + get_cwd_str() + path_sep_string;
   preferred_env_path += init_startup_path();
 
   return preferred_env_path;
+}
+
+
+/** Utility function from borrowed from boost/test
+ */
+void putenv_impl(const char* name_and_value)
+{
+  if ( putenv( (char*)name_and_value) ) {
+    Cerr << "\nError: putenv(" << name_and_value
+         << ") failed in putenv_impl()" << std::endl;
+    abort_handler(-1);
+  }
 }
 
 
@@ -116,15 +162,13 @@ void WorkdirHelper::set_environment(const std::string& env_name,
 				    bool overwrite)
 {
   // revert to legacy implementation if needed
-  //std::string putenv_str(env_name + '=' + env_val);
-  //putenv_impl(putenv_str.c_str());
-  int retcode = -1;
+  int err_code = -1;
 #if defined(_WIN32) || defined(_WIN64)
-  retcode = SetEnvironmentVariable(env_name.c_str(), env_val.c_str()) ? 0 : -1;
+  err_code = SetEnvironmentVariable(env_name.c_str(), env_val.c_str()) ? 0 : -1;
 #else
-  retcode = setenv(env_name.c_str(), env_val.c_str(), overwrite);
+  err_code = setenv(env_name.c_str(), env_val.c_str(), overwrite);
 #endif
-  if (retcode)
+  if (err_code)
     Cout << "\nWarning: set_environment " << env_name << " = " << env_val 
          << "failed."<< std::endl;
 }
@@ -185,6 +229,29 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 }
 
 
+/** Utility function for executable file search algorithms
+ *
+ */
+std::vector<std::string> get_pathext()
+{
+  // Get the possible filename extensions from the system environment variable
+
+  char* env_ext_str_list = std::getenv("PATHEXT");
+
+  // Create a SringArray of viable extensions for use in executable
+  // detection algorithms
+
+  StringArray ext_list;
+
+  if ( env_ext_str_list )
+    boost::split( ext_list, env_ext_str_list, boost::is_any_of(";") );
+
+  ext_list.push_back("");  // Backward compatibility:  Some users may
+                           // already be explicit and specify filename.ext
+  return ext_list;
+}
+
+
 /** Uses string representing $PATH to locate an analysis driver on the host
  *  computer.  Returns the path to the driver (as a string)
  *
@@ -230,6 +297,17 @@ bfs::path WorkdirHelper::which(const std::string& driver_name)
   // "Plain ol" POSIX case was reliable, so just call it if NOT native Windows
   return po_which(driver_name);
 #endif // _WIN32
+}
+
+
+/** Utility function for "which"
+ *  sets complete_filepath from dir_path/file_name combo
+ */
+inline bool contains(const bfs::path& dir_path, const std::string& file_name,
+                     boost::filesystem::path& complete_filepath)
+{
+  complete_filepath = dir_path; complete_filepath /= file_name;
+  return boost::filesystem::is_regular_file(complete_filepath);
 }
 
 /** Uses string representing $PATH to locate an analysis driver on the host
@@ -286,63 +364,15 @@ void WorkdirHelper::reset()
 }
 
 
-#ifdef DEBUG_LEGACY_WORKDIR
 /* The following routines assume ASCII or UTF-encoded Unicode. */
 
 void find_env_token(const char *s0, const char **s1,
                     const char **s2, const char **s3)
 {
-  boost::array<char, DAK_MAXPATHLEN> ebuf;
-  const char *t;
-  const unsigned char *s;
-  int q;
-  size_t i, n;
-
-top:
-  for(s = (const unsigned char*)s0; *s <= ' '; ++s)
-    if (!*s) {
-      *s1 = *s2 = *s3 = (const char*)s;
-      return;
-    }
-
-  *s1 = t = (const char*)s;
-  if ((q = *s) == '"' || q == '\'') {
-    for(*s1 = (const char*)++s; *s != q; ++s) {
-      if (!*s) {
-        *s2 = *s3 = (const char*)s;
-        return;
-      }
-    }
-
-    *s2 = (const char*)s;
-    *s3 = (const char*)s + 1;
-    return;
-  }
-
-  while((q = *++s) > ' ' && q != '"' && q != '\'' && q != '$');
-
-  *s2 = *s3 = (const char*)s;
-  if (*t == '$' && (n = *s2 - t) <= DAK_MAXPATHLEN) {
-    --n;
-    for(i = 0; i < n; ++i)
-      ebuf[i] = *++t;
-
-    ebuf[n] = 0;
-
-    if ((t = std::getenv(ebuf.c_array()))) {
-      *s1 = t;
-      while(*t)
-        ++t;
-      *s2 = t;
-    }
-    else {
-      s0 = *s3;
-      goto top;
-    }
-  }
 }
 
 
+#ifdef DEBUG_LEGACY_WORKDIR
 // WJB:  The majority of the code below I DO NOT WANT TO TOUCH!
 //       (legacy "utilities" from the "not_executable" module)
 
@@ -350,72 +380,7 @@ top:
  const char**
 arg_list_adjust(const char **arg_list, void **a0)
 {
-        const char **al, *s, *s1, *s2, *s3;
-        char *t;
-        int n, n0;
-        size_t L;
-
-        s = arg_list[0];
-        find_env_token(s = arg_list[0], &s1, &s2, &s3);
-
-        if (!*s3 && s == s1) {
-                if (a0)
-                        *a0 = 0;
-                return arg_list;
-        }
-        n = 0;
-        while(arg_list[n++]);
-
-        n0 = n;
-        L = s2 - s1 + 1;
-        while(*s3) {
-                find_env_token(s3, &s1, &s2, &s3);
-                if (s1 == s3)
-                        break;
-                L += s2 - s1 + 1;
-                if (*(unsigned char*)s3 <= ' ')
-                        ++n;
-        }
-
-        // WJB:  NOTE boost::shared_array comment in the header file
-        al = (const char**)std::malloc(n*sizeof(const char*) + L); /* freed implicitly by execvp */
-        if (a0)
-                *a0 = (void*)al;
-        if (!al)
-                return arg_list; /* should not happen */
-        t = (char*)(al + n);
-        find_env_token(s = arg_list[0], &s1, &s2, &s3);
-
-        for(n = 0;;) {
-                al[n++] = t;
-                while(s1 < s2)
-                        *t++ = *s1++;
-                while(*(unsigned char*)s3 > ' ') {
-                        find_env_token(s3, &s1, &s2, &s3);
-                        while(s1 < s2)
-                                *t++ = *s1++;
-                        }
-                *t++ = 0;
-                if (!*s3)
-                        break;
-                find_env_token(s3, &s1, &s2, &s3);
-                if (s1 == s3)
-                        break;
-        }
-
-        n0 = 0;
-        while((al[n] = arg_list[++n0]))
-                ++n;
-        for(n0 = 0; n0 < n && std::strchr(al[n0], '='); ++n0);
-        if (n0 && n0 < n) {
-                if (!a0) {
-                        for(n = 0; n < n0; ++n)
-                                putenv_impl((char*)(al[n]));
-                        }
-                al += n0;
-        }
-
-        return al;
+return 0;
 }
 
 
@@ -423,9 +388,9 @@ arg_list_adjust(const char **arg_list, void **a0)
 //       should workdir arg be an actual BoostFS "path" object?
 //       retVal:  std::vector<std::string>?!
 const char**
-WorkdirHelper::arg_adjust(bool cmd_line_args,
-                          const std::vector<std::string>& args,
-                          const char** av, const std::string& workdir)
+arg_adjust(bool cmd_line_args,
+           const std::vector<std::string>& args,
+           const char** av, const std::string& workdir)
 {
   av[0] = args[0].c_str();
 
@@ -438,7 +403,7 @@ WorkdirHelper::arg_adjust(bool cmd_line_args,
   av = arg_list_adjust(av, 0);
 
   if ( !workdir.empty() ) {
-    change_cwd(workdir);
+    WorkdirHelper::change_directory(workdir);
     size_t len = workdir.size();
     const char* s = workdir.c_str();
     const char* t;
