@@ -39,7 +39,7 @@
 #include "SurrBasedGlobalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
 #include "NonlinearCGOptimizer.hpp"
-#ifdef DAKOTA_DDACE
+#ifdef HAVE_DDACE
 #include "DDACEDesignCompExp.hpp"
 #endif
 #ifdef HAVE_FSUDACE
@@ -461,7 +461,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case CONMIN_FRCG: case CONMIN_MFD:
     return new CONMINOptimizer(problem_db, model); break;
 #endif
-#ifdef DAKOTA_DDACE
+#ifdef HAVE_DDACE
   case DACE: return new DDACEDesignCompExp(problem_db, model); break;
 #endif
 #ifdef HAVE_FSUDACE

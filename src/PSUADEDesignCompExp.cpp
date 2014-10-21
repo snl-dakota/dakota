@@ -13,7 +13,7 @@
 #include "PSUADEDesignCompExp.hpp"
 #include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
-#ifdef DAKOTA_DDACE
+#ifdef HAVE_DDACE
 #include "Distribution.h"
 #elif defined(DAKOTA_UTILIB)
 #include <utilib/seconds.h>
@@ -194,7 +194,7 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 	// user-specified case.  This has the additional benefit that a random
 	// run can be recreated by specifying the clock-generated seed in the
 	// input file.
-#ifdef DAKOTA_DDACE
+#ifdef HAVE_DDACE
 	randomSeed = 1 + DistributionBase::timeSeed(); // microsecs, time of day
 #elif defined(DAKOTA_UTILIB)
         randomSeed = 1 + (int)CurrentTime(); // secs, time of day

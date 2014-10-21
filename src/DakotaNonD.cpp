@@ -19,7 +19,7 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_tabular_io.hpp"
 #include "pecos_stat_util.hpp"
-#ifdef DAKOTA_DDACE
+#ifdef HAVE_DDACE
 #include "Distribution.h"
 #elif defined(DAKOTA_UTILIB)
 #include <utilib/seconds.h>
@@ -390,7 +390,7 @@ int NonD::generate_system_seed()
   // case.  This has the additional benefit that a random run can be
   // recreated by specifying the clock-generated seed in the input file.
   int seed = 1;
-#ifdef DAKOTA_DDACE
+#ifdef HAVE_DDACE
   seed += DistributionBase::timeSeed(); // microsecs, time of day
 #elif defined(DAKOTA_UTILIB)
   seed += (int)CurrentTime();           // secs, time of day
