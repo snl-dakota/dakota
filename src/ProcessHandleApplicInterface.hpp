@@ -8,7 +8,7 @@
 
 //- Class:        ProcessHandleApplicInterface
 //- Description:  Derived class for the case when analysis code simulators use
-//-               vfork\exec\wait to provide the function evaluations
+//-               fork\exec\wait to provide the function evaluations
 //- Owner:        Mike Eldred
 //- Version: $Id: ProcessHandleApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 

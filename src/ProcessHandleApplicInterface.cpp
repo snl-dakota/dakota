@@ -221,16 +221,14 @@ pid_t ProcessHandleApplicInterface::create_evaluation_process(bool block_flag)
     // o_filter with ()'s and ;'s, but this is not supported by the exec family
     // of functions (see exec man pages).
 
-    // vfork should only be used when followed immediately by an exec since 
-    // vfork borrows the parent process and only returns control to the parent
-    // when one of the functions from the exec() or exit() family is 
-    // encountered.  Therefore, since we want this intermediate process to be 
-    // able to execute concurrently with the parent dakota and other asynch
-    // processes, fork should be used here since there is no matching exec().
+    // Since we want this intermediate process to be able to execute
+    // concurrently with the parent dakota and other asynch processes,
+    // fork() should be used here since there is no matching exec().
+    // (NOTE: vfork should NOT be used since exec doesn't immediately follow!)
     if (!block_flag) {
 #ifdef HAVE_WORKING_FORK
       // Note: working fork is necessary but not sufficient.
-      // Need a better autoconf test for reforking of a forked process.
+      // Need a better configure-time probe for reforking of a forked process.
       pid = fork();
 #else
       // Note: Windows spawn does not currently support this asynch mode.

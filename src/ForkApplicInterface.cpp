@@ -124,9 +124,10 @@ create_analysis_process(bool block_flag, bool new_group)
   int status = 0;
   pid_t pid = 0;
 
-  // vfork() should be used here since there is an immediate execvp(). This 
-  // conserves memory over fork().  If some platforms have problems with a
-  // hybrid fork/vfork approach, add #ifdef's but make vfork the default.
+  // fork() should be used here since it is considered BEST PRACTICE on modern
+  // computers/OS's.  If some platforms have problems with fork and there is a
+  // temptation to use vfork instead please consider reading about fork vs. vfork
+  // (via internet searches on best practices) prior to hand-editting of this file
 
 #if defined(HAVE_WORKING_FORK) && !defined(DAKOTA_USE_VFORK)
   pid = fork(); // replicate this process

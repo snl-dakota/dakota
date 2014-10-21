@@ -17,7 +17,6 @@
 #include "NIDRProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"     // for DAK_MKDIR, prepend_preferred_env_path
-#include "dakota_filesystem_utils.hpp"  // for get_cwd()
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
 #include <functional>
