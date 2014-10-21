@@ -22,7 +22,7 @@
 #include "ResultsManager.hpp"
 
 // Toggle for MPI debug hold
-#define MPI_DEBUG
+//#define MPI_DEBUG
 
 #if defined(MPI_DEBUG) && defined(MPICH2)
 #include <sys/types.h> 
