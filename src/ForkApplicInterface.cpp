@@ -126,15 +126,14 @@ create_analysis_process(bool block_flag, bool new_group)
 
   // fork() should be used here since it is considered BEST PRACTICE on modern
   // computers/OS's.  If some platforms have problems with fork and there is a
-  // temptation to use vfork instead please consider reading about fork vs. vfork
-  // (via internet searches on best practices) prior to hand-editting of this file
+  // temptation to use vfork instead, please consider reading about fork vs.
+  // vfork.  If there is still a need to test vfork as an alternate approach,
+  // simply change the fork() call to vfork() and rebuild dakota.
 
-#if defined(HAVE_WORKING_FORK) && !defined(DAKOTA_USE_VFORK)
+#if defined(HAVE_WORKING_FORK)
   pid = fork(); // replicate this process
-#elif defined(HAVE_WORKING_VFORK) && defined(DAKOTA_USE_VFORK)
-  pid = vfork(); // replicate this process
 #else
-  Cerr << "Error: fork/vfork are not supported under this OS." << std::endl;
+  Cerr << "Error: fork not supported under this OS." << std::endl;
   abort_handler(-1);
 #endif
   if (pid == -1) {
