@@ -128,9 +128,12 @@ create_analysis_process(bool block_flag, bool new_group)
   // computers/OS's.  If some platforms have problems with fork and there is a
   // temptation to use vfork instead, please consider reading about fork vs.
   // vfork.  If there is still a need to test vfork as an alternate approach,
-  // simply change the fork() call to vfork() and rebuild dakota.
+  // simply define the DAKOTA_VFORK_OVERRIDE macro and rebuild dakota.
 
-#if defined(HAVE_WORKING_FORK)
+#if defined(DAKOTA_VFORK_OVERRIDE) // not currently active
+  // NOTE: vfork() should NOT be used since exec() does NOT immediately follow!
+  pid = vfork(); // replicate this process
+#elif defined(HAVE_WORKING_FORK) && !defined(DAKOTA_VFORK_OVERRIDE)
   pid = fork(); // replicate this process
 #else
   Cerr << "Error: fork not supported under this OS." << std::endl;
