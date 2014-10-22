@@ -6,13 +6,11 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description:  Filesystem_utils (to be replaced by Boost, eventually)
+//- Description:  Misc utilities
 //-
 //- Version: $Id$
 
-#include "dakota_filesystem_utils.hpp"
 #include "dakota_global_defs.hpp"
-#include "WorkdirHelper.hpp" // for WorkdirHelper::dakPreferredEnvPath
 #include <boost/array.hpp>
 
 #include <sys/types.h>
@@ -20,7 +18,6 @@
 
 #undef Want_Heartbeat
 
-// WJB - ToDo, next iteration: evaluate dependencies; are posix includes needed??
 #ifndef _WIN32 /*{{*/
 #ifndef NO_HEARTBEAT /*{*/
 #define Want_Heartbeat
