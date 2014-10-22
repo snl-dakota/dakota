@@ -208,7 +208,10 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 	      Model& the_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) {
+  // if dedicated master overload, no iterator jobs can run on master, so no
+  // init/set/free --> need to match init_comms() on iterator servers
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0) {
     parallelLib.parallel_configuration_iterator(schedPCIter);
     parallelLib.print_configuration(); // match init_comms() on iterator servers
   }
@@ -222,9 +225,12 @@ init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) {
+  // if dedicated master overload, no iterator jobs can run on master, so no
+  // init/set/free --> need to match init_comms() on iterator servers
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0) {
     parallelLib.parallel_configuration_iterator(schedPCIter);
-    parallelLib.print_configuration(); // match init_comms() on iterator servers
+    parallelLib.print_configuration();
   }
   else
     init_iterator(method_string, the_iterator, the_model, pl_iter);

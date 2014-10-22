@@ -205,7 +205,11 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 	      Model& the_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in init_iterator_parallelism()
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) // ded master
+
+  // check for dedicated master overload -> no iterator jobs can run
+  // on master, so no need to init
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0)
     return;
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
@@ -243,7 +247,11 @@ init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in init_iterator_parallelism()
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) // ded master
+
+  // check for dedicated master overload -> no iterator jobs can run
+  // on master, so no need to init
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0)
     return;
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
@@ -281,7 +289,10 @@ init_iterator(const String& method_string, Iterator& the_iterator,
 void IteratorScheduler::
 set_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 {
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0)//ded master proc
+  // check for dedicated master overload -> no iterator jobs can run
+  // on master, so no need to init
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0)
     return;
 
   // iterator rank 0: set the iterator communicators
@@ -302,7 +313,10 @@ set_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 void IteratorScheduler::
 run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 {
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0)//ded master proc
+  // check for dedicated master overload -> no iterator jobs can run
+  // on master, so no need to init
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0)
     return;
 
   // for iterator ranks > 0, the_model is stored in the empty iterator
@@ -324,7 +338,10 @@ run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 void IteratorScheduler::
 free_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 {
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0)//ded master proc
+  // check for dedicated master overload -> no iterator jobs can run
+  // on master, so no need to init
+  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+      pl_iter->server_id() == 0)
     return;
 
   // iterator rank 0: free the iterator communicators

@@ -468,8 +468,8 @@ inline short NestedModel::local_eval_synchronization()
     is used for setting evaluationCapacity within subModel. */
 inline int NestedModel::local_eval_concurrency()
 {
-  return ( !optInterfacePointer.empty() ) ?
-    optionalInterface.asynch_local_evaluation_concurrency() : 0;
+  return ( optInterfacePointer.empty() ) ? 0 :
+    optionalInterface.asynch_local_evaluation_concurrency();
 }
 
 
@@ -477,9 +477,13 @@ inline int NestedModel::local_eval_concurrency()
     subModel.compute_response() within subIterator.run(). */
 inline bool NestedModel::derived_master_overload() const
 {
-  return ( !optInterfacePointer.empty() &&
-           optionalInterface.iterator_eval_dedicated_master() && 
-           optionalInterface.multi_proc_eval() );
+  bool oi_overload = ( !optInterfacePointer.empty() &&
+		       optionalInterface.iterator_eval_dedicated_master() && 
+		       optionalInterface.multi_proc_eval() ),
+    si_overload = ( !subIterator.is_null() &&
+		    subIteratorSched.iteratorScheduling == MASTER_SCHEDULING && 
+		    subIteratorSched.procsPerIterator > 1 );
+  return (oi_overload || si_overload);
 }
 
 
