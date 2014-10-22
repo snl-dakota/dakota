@@ -531,10 +531,9 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // initialize optionalInterface for parallel operations
   if (!optInterfacePointer.empty()) {
-    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
-    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
   }
 
   if (!recurse_flag)
@@ -606,15 +605,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   outerMIPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
 
   if (!optInterfacePointer.empty()) {
-    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
-
     optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
     // initial setting for asynchEvalFlag & evaluationCapacity based on
     // optInterface (may be updated below)
     set_ie_asynchronous_mode(max_eval_concurrency);
-
-    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
   }
   if (recurse_flag) {
     // Inner context: set comms for subIterator
@@ -661,10 +657,9 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   if (!optInterfacePointer.empty()) {
-    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.free_communicators();
-    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
   }
   if (recurse_flag) {
     // finalize comms for subIterator
