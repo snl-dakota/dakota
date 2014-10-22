@@ -25,9 +25,6 @@
   #define NOMINMAX
   #include <io.h>
   #include "dakota_windows.h"
-  // consider using _chdir if appropriate, since has same API?
-  #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
-  #define DAK_MAXPATHLEN MAX_PATH
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
   #define DAK_SLASH '\\'            // likely not needed with BFS
@@ -36,8 +33,6 @@
   // probably not necessary to tie conditional compilation to build
   #include <unistd.h>
   #include <sys/param.h>             // for MAXPATHLEN
-  #define DAK_CHDIR chdir
-  #define DAK_MAXPATHLEN MAXPATHLEN
   #define DAK_PATH_ENV_NAME "PATH"
   #define DAK_PATH_SEP ':'
   #define DAK_SLASH '/'              // likely not needed with BFS
@@ -355,26 +350,16 @@ void WorkdirHelper::set_preferred_path()
 
 void WorkdirHelper::reset()
 {
-  if (DAK_CHDIR( startupPWD.c_str() )) {
-    Cerr << "\nError: chdir(" << startupPWD
-         << ") failed in workdir_reset()" << std::endl;
-    abort_handler(-1);
-  }
+  WorkdirHelper::change_directory(startupPWD);
   set_preferred_path();
-}
-
-
-/* The following routines assume ASCII or UTF-encoded Unicode. */
-
-void find_env_token(const char *s0, const char **s1,
-                    const char **s2, const char **s3)
-{
 }
 
 
 #ifdef DEBUG_LEGACY_WORKDIR
 // WJB:  The majority of the code below I DO NOT WANT TO TOUCH!
 //       (legacy "utilities" from the "not_executable" module)
+
+/* The following routines assume ASCII or UTF-encoded Unicode. */
 
 /* adjust for quoted strings in arg_list[0] */
  const char**
