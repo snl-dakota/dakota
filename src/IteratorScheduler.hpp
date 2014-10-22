@@ -404,31 +404,42 @@ master_dynamic_schedule_iterators(MetaType& meta_object)
 template <typename MetaType> void IteratorScheduler::
 peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
-  // Assign jobs, if needed.
-  bool rank0 = (iteratorCommRank == 0);
-  if (rank0 && peerAssignJobs) {
-    parallelLib.bcast_mi(numIteratorJobs, miPLIndex);
-    if (iteratorServerId > 1) { // peers 2-n: recv job from peer 1
-      for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
-	MPI_Status status;
-	MPIUnpackBuffer recv_buffer(paramsMsgLen);
-	parallelLib.recv_mi(recv_buffer, 0, i+1, status, miPLIndex);
-	meta_object.unpack_parameters_buffer(recv_buffer);
+  bool rank0 = (iteratorCommRank == 0); int i;
+
+  // Some clients require job assignment, whereas other define jobs from a
+  // shared specification (or a combination in case of spec + random jobs)
+  if (peerAssignJobs) {
+    if (rank0) {
+      // transmit number of jobs to all peer leaders
+      parallelLib.bcast_mi(numIteratorJobs, miPLIndex);
+      // Assign jobs 
+      if (iteratorServerId > 1) { // peers 2-n: recv job from peer 1
+	for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+	  MPI_Status status;
+	  MPIUnpackBuffer recv_buffer(paramsMsgLen);
+	  parallelLib.recv_mi(recv_buffer, 0, i+1, status, miPLIndex);
+	  meta_object.unpack_parameters_buffer(recv_buffer);
+	}
       }
-    }
-    else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
-      for (int i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
-	int dest = i%numIteratorServers;
-	if (dest) { // parameter set assigned to peers 2-n
-	  MPIPackBuffer send_buffer;//(paramsMsgLen);
-	  meta_object.pack_parameters_buffer(send_buffer, i);
-	  parallelLib.send_mi(send_buffer, dest, i+1, miPLIndex);
+      else if (numIteratorServers > 1) { // peer 1: recv results from peers 2-n
+	for (i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
+	  int dest = i%numIteratorServers;
+	  if (dest) { // parameter set assigned to peers 2-n
+	    MPIPackBuffer send_buffer;//(paramsMsgLen);
+	    meta_object.pack_parameters_buffer(send_buffer, i);
+	    parallelLib.send_mi(send_buffer, dest, i+1, miPLIndex);
+	  }
 	}
       }
     }
+    // now transmit number of jobs from iterator comm leaders to other ranks
+    // (needed for proper execution of loop by all ranks)
+    if (iteratorCommSize > 1)
+      parallelLib.bcast_i(numIteratorJobs, miPLIndex);
   }
 
-  for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+  // Execute the iterator jobs using round robin assignment
+  for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
 
     // Set starting point or obj fn weighting set
     Real iterator_start_time;
@@ -461,14 +472,14 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
   // reflect only the completion of the first iterator server.
   if (rank0) {
     if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
-      for (int i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
+      for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
 	MPIPackBuffer send_buffer;//(resultsMsgLen);
 	meta_object.pack_results_buffer(send_buffer, i);
 	parallelLib.send_mi(send_buffer, 0, i+1, miPLIndex);
       }
     }
     else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
-      for (int i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
+      for (i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
 	int source = i%numIteratorServers;
 	if (source) { // parameter set evaluated on peers 2-n
 	  MPI_Status status;

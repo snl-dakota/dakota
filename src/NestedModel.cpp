@@ -1381,9 +1381,18 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     }
     // For derived_compute_response(), partitioning for iterator concurrency 
     // would not normally be expected, but singleton jobs could use this fn.
-    ParLevLIter pl_iter
-      = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
-    subIterator.run(pl_iter);
+    if (subIteratorSched.messagePass) {
+      subIteratorSched.numIteratorJobs = 1;
+      ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
+				     subIterator.response_results(), 1);
+      subIteratorPRPQueue.insert(current_pair);
+      subIteratorSched.schedule_iterators(*this, subIterator);
+    }
+    else {
+      ParLevLIter pl_iter
+	= modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
+      subIterator.run(pl_iter);
+    }
     const Response& sub_iter_resp = subIterator.response_results();
     Cout << "\nActive response data from sub_iterator:\n"<< sub_iter_resp<<'\n';
     // map subIterator results into their contribution to currentResponse
@@ -1836,7 +1845,10 @@ void NestedModel::component_parallel_mode(short mode)
 	parallelLib.parallel_configuration_iterator(pc_iter); // restore
       }
     }
-    else if (componentParallelMode == SUB_MODEL) {
+    // concurrent subIterator scheduling exits on its own (see IteratorScheduler
+    // ::schedule_iterators(), but subModel eval scheduling is terminated here.
+    else if (componentParallelMode == SUB_MODEL &&
+	     !subIteratorSched.messagePass) {
       ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
       size_t index = subModel.mi_parallel_level_index();
       if (pc_it->mi_parallel_level_defined(index) && 
@@ -1856,8 +1868,12 @@ void NestedModel::component_parallel_mode(short mode)
 
   // activate new serve mode (matches NestedModel::serve_run(pl_iter)).  This
   // bcast matches the outer parallel context prior to subIterator partitioning.
-  if (componentParallelMode != mode &&
-      modelPCIter->mi_parallel_level_defined(outerMIPLIndex)) {
+  // > OPTIONAL_INTERFACE & subModel eval scheduling only bcast if mode change
+  // > concurrent subIterator scheduling rebroadcasts every time since this
+  //   scheduling exits on its own (see IteratorScheduler::schedule_iterators())
+  if ( ( componentParallelMode != mode ||
+	 ( mode == SUB_MODEL && subIteratorSched.messagePass ) ) &&
+       modelPCIter->mi_parallel_level_defined(outerMIPLIndex) ) {
     const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(outerMIPLIndex);
     if (mi_pl.server_communicator_size() > 1)
       parallelLib.bcast(mode, mi_pl);

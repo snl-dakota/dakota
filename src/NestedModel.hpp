@@ -521,7 +521,8 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   // manage optionalInterface and subModel servers
   componentParallelMode = 1;
   while (componentParallelMode) {
-    parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
+    // outer context: matches bcast at bottom of component_parallel_mode()
+    parallelLib.bcast(componentParallelMode, *pl_iter);
     if (componentParallelMode == OPTIONAL_INTERFACE &&
 	!optInterfacePointer.empty()) {
       // store/set/restore the ParallelLibrary::currPCIter
