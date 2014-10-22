@@ -289,6 +289,13 @@ void SeqHybridMetaIterator::run_sequential()
   size_t num_iterators = methodList.size();
   int server_id =  iterSched.iteratorServerId;
   bool    rank0 = (iterSched.iteratorCommRank == 0);
+
+  // use methodPCIter rather than relying on ParallelLibrary::currPCIter
+  const ParallelLevel& mi_pl
+    = methodPCIter->mi_parallel_level(iterSched.miPLIndex);
+  const ParallelLevel& parent_pl = (iterSched.miPLIndex) ? 
+    methodPCIter->mi_parallel_level(iterSched.miPLIndex - 1) : mi_pl;
+
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
     // each of these is safe for all processors
@@ -326,11 +333,11 @@ void SeqHybridMetaIterator::run_sequential()
 	  // send curr_accepts_multi from 1st iterator master to strategy master
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
-	    parallelLib.send_mi(multi_flag, 0, 0, iterSched.miPLIndex);
+	    parallelLib.send(multi_flag, 0, 0, parent_pl, mi_pl);
 	  }
 	  else if (server_id == 0) {
 	    int multi_flag; MPI_Status status;
-	    parallelLib.recv_mi(multi_flag, 1, 0, status, iterSched.miPLIndex);
+	    parallelLib.recv(multi_flag, 1, 0, status, parent_pl, mi_pl);
 	    curr_accepts_multi = (bool)multi_flag; // int -> bool
 	    iterSched.numIteratorJobs
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
@@ -342,7 +349,7 @@ void SeqHybridMetaIterator::run_sequential()
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  // bcast numIteratorJobs over iteratorComm
 	  if (iterSched.iteratorCommSize > 1)
-	    parallelLib.bcast_i(iterSched.numIteratorJobs, iterSched.miPLIndex);
+	    parallelLib.bcast(iterSched.numIteratorJobs, mi_pl);
 	}
       }
       // --------------------------
@@ -425,14 +432,14 @@ void SeqHybridMetaIterator::run_sequential()
 	  MPIPackBuffer send_buffer;
 	  send_buffer << parameterSets;
 	  int buffer_len = send_buffer.size();
-	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
-	  parallelLib.bcast_mi(send_buffer, iterSched.miPLIndex);
+	  parallelLib.bcast_hs(buffer_len, mi_pl);
+	  parallelLib.bcast_hs(send_buffer, mi_pl);
 	}
 	else { // replace partial list
 	  int buffer_len;
-	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
+	  parallelLib.bcast_hs(buffer_len, mi_pl);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallelLib.bcast_mi(recv_buffer, iterSched.miPLIndex);
+	  parallelLib.bcast_hs(recv_buffer, mi_pl);
 	  recv_buffer >> parameterSets;
 	}
       }
@@ -471,33 +478,32 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
     if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
       curr_iterator.initialize_graphics(server_id);
 
-    if (summaryOutputFlag) {
+    if (summaryOutputFlag)
       Cout << "\n>>>>> Running adaptive Sequential Hybrid with iterator "
 	   << methodList[seqCount] << '\n';
 
-      curr_iterator.initialize_run();
-      while (progress_metric >= progressThreshold) {
-        //selectedIterators[seqCount]++;
-        const Response& resp_star = curr_iterator.response_results();
-        //progress_metric = compute_progress(resp_star);
-      }
-      curr_iterator.finalize_run();
+    curr_iterator.initialize_run();
+    while (progress_metric >= progressThreshold) {
+      //++selectedIterators[seqCount];
+      const Response& resp_star = curr_iterator.response_results();
+      //progress_metric = compute_progress(resp_star);
+    }
+    curr_iterator.finalize_run();
+
+    if (summaryOutputFlag)
       Cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
 	   << "  Progress metric has fallen below threshold.\n";
 
-      // Set the starting point for the next iterator.
-      if (seqCount+1 < num_iterators) {//prevent index out of range on last pass
-        // Get best pt. from completed iteration.
-        Variables vars_star = curr_iterator.variables_results();
-        // Set best pt. as starting point for subsequent iterator
-        selectedModels[seqCount+1].active_variables(vars_star);
-      }
-
-      // Send the termination message to the servers for this iterator/model
-      selectedModels[seqCount].stop_servers();
+    // Set the starting point for the next iterator.
+    if (seqCount+1 < num_iterators) {//prevent index out of range on last pass
+      // Get best pt. from completed iteration.
+      Variables vars_star = curr_iterator.variables_results();
+      // Set best pt. as starting point for subsequent iterator
+      selectedModels[seqCount+1].active_variables(vars_star);
     }
-    else
-      iterSched.run_iterator(curr_iterator);
+
+    // Send the termination message to the servers for this iterator/model
+    selectedModels[seqCount].stop_servers();
   }
 }
 

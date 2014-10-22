@@ -205,12 +205,8 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 	      Model& the_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in init_iterator_parallelism()
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) {// master proc
-    // init_communicators() is called on the iterator servers, but not on
-    // the dedicated master.  Match collective communications here.
-    problem_db.parallel_library().print_configuration(); // matches init_comms()
+  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) // ded master
     return;
-  }
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
   // Logic below based on iteratorCommSize could be more efficient with use of
@@ -247,12 +243,8 @@ init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in init_iterator_parallelism()
-  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) {// master proc
-    // init_communicators() is called on the iterator servers, but not on
-    // the dedicated master.  Match collective communications here.
-    the_model.parallel_library().print_configuration(); // matches init_comms()
+  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) // ded master
     return;
-  }
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
   // Logic below based on iteratorCommSize could be more efficient with use of
@@ -310,6 +302,9 @@ set_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 void IteratorScheduler::
 run_iterator(Iterator& the_iterator, ParLevLIter pl_iter)
 {
+  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0)//ded master proc
+    return;
+
   // for iterator ranks > 0, the_model is stored in the empty iterator
   // envelope in IteratorScheduler::init_iterator()
   Model& the_model = the_iterator.iterated_model();

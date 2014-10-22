@@ -130,6 +130,7 @@ extern ResultsManager  iterator_results_db;
     set to NULL (an uninitialized pointer causes problems in ~Iterator). */
 Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  methodPCIter(parallelLib.parallel_configuration_iterator()),
   methodName(probDescDB.get_ushort("method.algorithm")),
   convergenceTol(probDescDB.get_real("method.convergence_tolerance")),
   maxIterations(probDescDB.get_int("method.max_iterations")),
@@ -172,6 +173,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
 Iterator::
 Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  methodPCIter(parallelLib.parallel_configuration_iterator()),
   iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
@@ -933,19 +935,8 @@ void Iterator::run(ParLevLIter pl_iter)
   if (iteratorRep)
     iteratorRep->run(pl_iter); // envelope fwd to letter
   else {
-
-    // Since iterator executions are mixed with direct model evaluations in
-    // some methods (e.g., SBO and local/global reliability), avoid having to
-    // reset the parallel configuration for the direct model evals by
-    // eliminating configuration modifications within an iterator execution.
-    //ParConfigLIter prev_pc = parallelLib.parallel_configuration_iterator();
-
     set_communicators(pl_iter);
-
-    // invoke overloaded version
-    run();
-
-    //parallelLib.parallel_configuration_iterator(prev_pc); // reset
+    run(); // invoke overloaded version
   }
 }
 

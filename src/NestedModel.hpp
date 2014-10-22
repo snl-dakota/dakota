@@ -516,8 +516,11 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode == OPTIONAL_INTERFACE &&
 	!optInterfacePointer.empty()) {
+      // store/set/restore the ParallelLibrary::currPCIter
+      ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
       parallelLib.parallel_configuration_iterator(modelPCIter);
       optionalInterface.serve_evaluations();
+      parallelLib.parallel_configuration_iterator(pc_iter); // restore
     }
     else if (componentParallelMode == SUB_MODEL) {
       if (subIteratorSched.messagePass) // serve concurrent subIterator execs

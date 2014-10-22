@@ -531,8 +531,10 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // initialize optionalInterface for parallel operations
   if (!optInterfacePointer.empty()) {
+    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
+    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
   }
 
   if (!recurse_flag)
@@ -581,10 +583,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
   // > now that subIterator is constructed, perform downstream updates
-  if (subIteratorSched.iteratorCommRank == 0 &&
-      subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers){
-    // follows DB restore since extracts DB data from nested model spec:
-    update_sub_iterator();
+  if (!subIterator.is_null()) {
+    update_sub_iterator(); // follow DB restore: extracts data from nested spec
     if (subIteratorSched.messagePass) {
       // msg lengths: vars from this model, set & final results from subIterator
       MPIPackBuffer buff; int eval_id = 0;
@@ -606,12 +606,15 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   outerMIPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
 
   if (!optInterfacePointer.empty()) {
+    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
 
+    optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
     // initial setting for asynchEvalFlag & evaluationCapacity based on
     // optInterface (may be updated below)
     set_ie_asynchronous_mode(max_eval_concurrency);
+
+    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
   }
   if (recurse_flag) {
     // Inner context: set comms for subIterator
@@ -658,8 +661,10 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   if (!optInterfacePointer.empty()) {
+    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.free_communicators();
+    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
   }
   if (recurse_flag) {
     // finalize comms for subIterator
@@ -1354,8 +1359,13 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
       bool append_iface_tag = false;
       optionalInterface.eval_tag_prefix(eval_tag, append_iface_tag);
     }
+
+    ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
+    parallelLib.parallel_configuration_iterator(pc_iter); // restore
+
     // map optInterface results into their contribution to currentResponse
     interface_response_overlay(optInterfaceResponse, currentResponse);
   }
@@ -1459,7 +1469,12 @@ const IntResponseMap& NestedModel::derived_synchronize()
   IntRespMCIter rit;
   if (!optInterfacePointer.empty()) {
     component_parallel_mode(OPTIONAL_INTERFACE);
+
+    ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    parallelLib.parallel_configuration_iterator(modelPCIter);
     const IntResponseMap& opt_int_resp_map = optionalInterface.synch();
+    parallelLib.parallel_configuration_iterator(pc_iter); // restore
+
     // overlay response sets
     for (rit=opt_int_resp_map.begin(); rit!=opt_int_resp_map.end(); ++rit) {
       int nested_cntr = optInterfaceIdMap[rit->first];
@@ -1820,8 +1835,10 @@ void NestedModel::component_parallel_mode(short mode)
       size_t index = subIteratorSched.miPLIndex;
       if (modelPCIter->mi_parallel_level_defined(index) && 
 	  modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
+	ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
 	parallelLib.parallel_configuration_iterator(modelPCIter);
 	optionalInterface.stop_evaluation_servers();
+	parallelLib.parallel_configuration_iterator(pc_iter); // restore
       }
     }
     else if (componentParallelMode == SUB_MODEL) {
@@ -1833,21 +1850,23 @@ void NestedModel::component_parallel_mode(short mode)
     }
   }
 
+  /* Moved up a level so that config can be restored after optInterface usage
   // set ParallelConfiguration for new mode
-  if (mode == OPTIONAL_INTERFACE) {
+  if (mode == OPTIONAL_INTERFACE)
     parallelLib.parallel_configuration_iterator(modelPCIter);
-  }
   else if (mode == SUB_MODEL) {
     // ParallelLibrary::currPCIter activation delegated to subModel
   }
+  */
 
   // activate new serve mode (matches NestedModel::serve_run(pl_iter)).  This
   // bcast matches the outer parallel context prior to subIterator partitioning.
   if (componentParallelMode != mode &&
-      modelPCIter->mi_parallel_level_defined(outerMIPLIndex) &&
-      modelPCIter->
-        mi_parallel_level(outerMIPLIndex).server_communicator_size() > 1)
-    parallelLib.bcast_i(mode, outerMIPLIndex);
+      modelPCIter->mi_parallel_level_defined(outerMIPLIndex)) {
+    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(outerMIPLIndex);
+    if (mi_pl.server_communicator_size() > 1)
+      parallelLib.bcast(mode, mi_pl);
+  }
 
   componentParallelMode = mode;
 }

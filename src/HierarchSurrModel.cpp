@@ -949,11 +949,13 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   // activate new serve mode (matches HierarchSurrModel::serve_run(pl_iter)).
   // These bcasts match the outer parallel context (pl_iter).
   if (componentParallelMode != mode &&
-      modelPCIter->mi_parallel_level_defined(miPLIndex) &&
-      modelPCIter->mi_parallel_level(miPLIndex).server_communicator_size() > 1){
-    parallelLib.bcast_i(mode, miPLIndex);
-    if (mode == HF_MODEL)
-      parallelLib.bcast_i(responseMode, miPLIndex);
+      modelPCIter->mi_parallel_level_defined(miPLIndex)) {
+    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
+    if (mi_pl.server_communicator_size() > 1) {
+      parallelLib.bcast(mode, mi_pl);
+      if (mode == HF_MODEL)
+	parallelLib.bcast(responseMode, mi_pl);
+    }
   }
 
   componentParallelMode = mode;

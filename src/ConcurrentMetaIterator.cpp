@@ -332,20 +332,22 @@ void ConcurrentMetaIterator::pre_run()
 
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	  iterSched.numIteratorServers > 1) {
+	const ParallelLevel& mi_pl
+	  = methodPCIter->mi_parallel_level(iterSched.miPLIndex);
 	// For static scheduling, bcast all random jobs over mi_intra_comm (not 
 	// necessary for self-scheduling as jobs are assigned from the master).
 	if (iterSched.lead_rank()) {
 	  MPIPackBuffer send_buffer;
 	  send_buffer << random_jobs;
 	  int buffer_len = send_buffer.size();
-	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
-	  parallelLib.bcast_mi(send_buffer, iterSched.miPLIndex);
+	  parallelLib.bcast_hs(buffer_len, mi_pl);
+	  parallelLib.bcast_hs(send_buffer, mi_pl);
 	}
 	else {
 	  int buffer_len;
-	  parallelLib.bcast_mi(buffer_len, iterSched.miPLIndex);
+	  parallelLib.bcast_hs(buffer_len, mi_pl);
 	  MPIUnpackBuffer recv_buffer(buffer_len);
-	  parallelLib.bcast_mi(recv_buffer, iterSched.miPLIndex);
+	  parallelLib.bcast_hs(recv_buffer, mi_pl);
 	  recv_buffer >> random_jobs;
 	}
       }

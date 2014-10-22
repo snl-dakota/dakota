@@ -196,6 +196,11 @@ public:
   /// free the communicators associated with this Iterator instance
   void free_communicators(ParLevLIter pl_iter);
 
+  /// set methodPCIter
+  void parallel_configuration_iterator(ParConfigLIter pc_iter);
+  /// return methodPCIter
+  ParConfigLIter parallel_configuration_iterator() const;
+
   /// invoke set_communicators(pl_iter) prior to run()
   void run(ParLevLIter pl_iter);
   /// orchestrate initialize/pre/core/post/finalize phases
@@ -349,6 +354,15 @@ protected:
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
 
+  /// the active ParallelConfiguration used by this Iterator instance
+  ParConfigLIter methodPCIter;
+  // index for the active ParallelLevel within ParallelConfiguration::miPLIters
+  //size_t miPLIndex;
+  /// track the available configurations that have been created
+  /// (init_communicators) and are available for activation at run
+  /// time (set_communicators)
+  std::map<size_t, ParConfigLIter> methodPCIterMap;
+
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
   Model iteratedModel;
@@ -358,15 +372,6 @@ protected:
   Real convergenceTol;  ///< iteration convergence tolerance
   int maxIterations;    ///< maximum number of iterations for the iterator
   int maxFunctionEvals; ///< maximum number of fn evaluations for the iterator
-
-  /// the active ParallelConfiguration used by this Iterator instance
-  ParConfigLIter methodPCIter;
-  // index for the active ParallelLevel within ParallelConfiguration::miPLIters
-  //size_t miPLIndex;
-  /// track the available configurations that have been created
-  /// (init_communicators) and are available for activation at run
-  /// time (set_communicators)
-  std::map<size_t, ParConfigLIter> methodPCIterMap;
 
   /// maximum number of concurrent model evaluations
   /** This is important for parallel configuration init/set/free and may be
@@ -456,6 +461,17 @@ private:
   /// number of objects sharing iteratorRep
   int referenceCount;
 };
+
+
+inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
+{
+  if (iteratorRep) iteratorRep->methodPCIter = pc_iter;
+  else             methodPCIter = pc_iter;
+}
+
+
+inline ParConfigLIter Iterator::parallel_configuration_iterator() const
+{ return (iteratorRep) ? iteratorRep->methodPCIter : methodPCIter; }
 
 
 inline void Iterator::iterated_model(const Model& model)

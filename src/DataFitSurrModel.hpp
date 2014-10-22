@@ -462,8 +462,15 @@ inline void DataFitSurrModel::
 derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			  bool recurse_flag)
 {
+  //ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.set_communicators(messageLengths);
+
+  // asynchEvalFlag and evaluationCapacity updates not required for DFS
+  // (refer to {Recast,HierarchSurr}Model::derived_set_communicators())
+  //set_ie_asynchronous_mode(max_eval_concurrency);
+
+  //parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
@@ -474,10 +481,6 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       actualModel.init_communicators(pl_iter,
 	daceIterator.maximum_evaluation_concurrency()); // set in init_comms
   }
-
-  // asynchEvalFlag and evaluationCapacity updates not required for DFS
-  // (refer to {Recast,HierarchSurr}Model::derived_set_communicators())
-  //set_ie_asynchronous_mode(max_eval_concurrency);
 }
 
 
@@ -485,8 +488,10 @@ inline void DataFitSurrModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
+  //ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.free_communicators();
+  //parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 
   if (recurse_flag) {
     if (!daceIterator.is_null())

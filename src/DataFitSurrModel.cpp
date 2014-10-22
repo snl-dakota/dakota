@@ -1117,6 +1117,8 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
 
     // compute the approximate response
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    //parallelLib.parallel_configuration_iterator(modelPCIter);
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet approx_set = set;
@@ -1128,6 +1130,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);        break;
     }
+    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     // export data (optional)
     export_point(surrModelEvalCntr, currentVariables, approx_response);
@@ -1294,10 +1297,14 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    //parallelLib.parallel_configuration_iterator(modelPCIter);
 
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
     derived_synchronize_approx(approxInterface.synch(), approx_resp_map_rekey);
+
+    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     surrIdMap.clear();
     if (!actual_evals)        // return ref to non-temporary
@@ -1392,11 +1399,15 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+    //parallelLib.parallel_configuration_iterator(modelPCIter);
 
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
     derived_synchronize_approx(approxInterface.synch_nowait(),
 			       approx_resp_map_rekey);
+
+    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     if (!actual_evals) {      // return ref to non-temporary
       surrIdMap.clear();      // approx_resp_map is complete
@@ -1656,15 +1667,15 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   //if (componentParallelMode == mode)
   //  return; // already in correct parallel mode
 
-  // setting the parallel config iterator is now the responsibility of
-  // actualModel (occurs if its derived model type contains an interface)
-  //if (mode == ACTUAL_MODEL)
-  //  parallelLib.parallel_configuration_iterator(
-  //    actualModel.parallel_configuration_iterator());
+  /* Moved up a level so that config can be restored after optInterface usage
+  //if (mode == ACTUAL_MODEL) {
+    // ParallelLibrary::currPCIter activation delegated to subModel
+  //}
   //else 
   if (mode == APPROX_INTERFACE)
     parallelLib.parallel_configuration_iterator(modelPCIter);
   //else if (mode == 0)
+  */
 
   componentParallelMode = mode;
 }

@@ -151,8 +151,13 @@ inline Interface& SingleModel::derived_interface()
 
 inline void SingleModel::derived_compute_response(const ActiveSet& set)
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
+
   userDefinedInterface.map(currentVariables, set, currentResponse);
+
+  parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 
@@ -162,15 +167,27 @@ inline void SingleModel::derived_asynch_compute_response(const ActiveSet& set)
 
 inline const IntResponseMap& SingleModel::derived_synchronize()
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  return userDefinedInterface.synch();
+
+  const IntResponseMap& resp_map = userDefinedInterface.synch();
+
+  parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
+  return resp_map;
 }
 
 
 inline const IntResponseMap& SingleModel::derived_synchronize_nowait()
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  return userDefinedInterface.synch_nowait();
+
+  const IntResponseMap& resp_map = userDefinedInterface.synch_nowait();
+
+  parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
+  return resp_map;
 }
 
 
@@ -196,8 +213,11 @@ inline void SingleModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  //ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.init_communicators(messageLengths, max_eval_concurrency);
+  //parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 
@@ -209,10 +229,12 @@ inline void SingleModel::
 derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			  bool recurse_flag)
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  //ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.set_communicators(messageLengths, max_eval_concurrency);
-  // assign asynchEvalFlag & evaluationCapacity:
-  set_ie_asynchronous_mode(max_eval_concurrency);
+  set_ie_asynchronous_mode(max_eval_concurrency);// asynchEvalFlag, evalCapacity
+  //parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 
@@ -220,8 +242,11 @@ inline void SingleModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  //ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.free_communicators();
+  //parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 
@@ -236,8 +261,13 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
 inline void SingleModel::stop_servers()
 {
+  // store/set/restore ParallelLibrary::currPCIter to simplify recursion
+  ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
+
   userDefinedInterface.stop_evaluation_servers();
+
+  parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 

@@ -305,8 +305,6 @@ void RecastModel::derived_compute_response(const ActiveSet& set)
   ActiveSet sub_model_set;
   transform_set(currentVariables, set, sub_model_set);
 
-  //parallelLib.parallel_configuration_iterator(
-  //  subModel.parallel_configuration_iterator());
   // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
   subModel.compute_response(sub_model_set);
@@ -356,8 +354,6 @@ void RecastModel::derived_asynch_compute_response(const ActiveSet& set)
 
 const IntResponseMap& RecastModel::derived_synchronize()
 {
-  //parallelLib.parallel_configuration_iterator(
-  //  subModel.parallel_configuration_iterator());
   const IntResponseMap& orig_resp_map = subModel.synchronize();
   if (respMapping) {
     recastResponseMap.clear();
@@ -386,8 +382,6 @@ const IntResponseMap& RecastModel::derived_synchronize()
 
 const IntResponseMap& RecastModel::derived_synchronize_nowait()
 {
-  //parallelLib.parallel_configuration_iterator(
-  //  subModel.parallel_configuration_iterator());
   const IntResponseMap& orig_resp_map = subModel.synchronize_nowait();
   if (respMapping) {
     recastResponseMap.clear();

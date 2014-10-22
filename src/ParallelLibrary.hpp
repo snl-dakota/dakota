@@ -551,25 +551,59 @@ public:
   const String& command_line_post_run_input() const;  ///< postRunInput filename
   const String& command_line_post_run_output() const; ///< postRunOutput fname
 
+  /// blocking buffer send at the current communication level
+  void  send(MPIPackBuffer& send_buff, int dest, int tag,
+	     const ParallelLevel& parent_pl, const ParallelLevel& child_pl);
+  /// blocking integer send at the current communication level
+  void  send(int& send_int, int dest, int tag,
+	     const ParallelLevel& parent_pl, const ParallelLevel& child_pl);
+
+  /// nonblocking buffer send at the current communication level
+  void isend(MPIPackBuffer& send_buff, int dest, int tag,
+	     MPI_Request& send_req, const ParallelLevel& parent_pl,
+	     const ParallelLevel& child_pl);
+  /// nonblocking integer send at the current communication level
+  void isend(int& send_int, int dest, int tag,
+	     MPI_Request& send_req, const ParallelLevel& parent_pl,
+	     const ParallelLevel& child_pl);
+
+  /// blocking buffer receive at the current communication level
+  void  recv(MPIUnpackBuffer& recv_buff, int source, int tag,
+	     MPI_Status& status, const ParallelLevel& parent_pl,
+	     const ParallelLevel& child_pl);
+  /// blocking integer receive at the current communication level
+  void  recv(int& recv_int, int source, int tag,
+	     MPI_Status& status, const ParallelLevel& parent_pl,
+	     const ParallelLevel& child_pl);
+
+  /// nonblocking buffer receive at the current communication level
+  void irecv(MPIUnpackBuffer& recv_buff, int source, int tag,
+	     MPI_Request& recv_req, const ParallelLevel& parent_pl,
+	     const ParallelLevel& child_pl);
+  /// nonblocking integer receive at the current communication level
+  void irecv(int& recv_int, int source, int tag,
+	     MPI_Request& recv_req, const ParallelLevel& parent_pl,
+	     const ParallelLevel& child_pl);
+
   /// process _NPOS default and perform error checks
   void check_mi_index(size_t& index) const;
 
-  /// blocking send at the strategy-iterator communication level
+  /// blocking send at the metaiterator-iterator communication level
   void  send_mi(int& send_int, int dest, int tag, size_t index = _NPOS);
-  /// blocking receive at the strategy-iterator communication level
+  /// blocking receive at the metaiterator-iterator communication level
   void  recv_mi(int& recv_int, int source, int tag, MPI_Status& status,
 		size_t index = _NPOS);
 
-  /// blocking send at the strategy-iterator communication level
+  /// blocking send at the metaiterator-iterator communication level
   void  send_mi(MPIPackBuffer& send_buff, int dest, int tag,
 		size_t index = _NPOS);
-  /// nonblocking send at the strategy-iterator communication level
+  /// nonblocking send at the metaiterator-iterator communication level
   void isend_mi(MPIPackBuffer& send_buff, int dest, int tag, 
 		MPI_Request& send_req, size_t index = _NPOS);
-  /// blocking receive at the strategy-iterator communication level
+  /// blocking receive at the metaiterator-iterator communication level
   void  recv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, 
 		MPI_Status& status, size_t index = _NPOS);
-  /// nonblocking receive at the strategy-iterator communication level
+  /// nonblocking receive at the metaiterator-iterator communication level
   void irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, 
 		MPI_Request& recv_req, size_t index = _NPOS);
 
@@ -598,6 +632,14 @@ public:
   void bcast(int& data, const ParallelLevel& pl);
   /// broadcast an integer across the serverIntraComm of a ParallelLevel
   void bcast(short& data, const ParallelLevel& pl);
+  /// broadcast an integer across the hubServerIntraComm of a ParallelLevel
+  void bcast_hs(int& data, const ParallelLevel& pl);
+  /// broadcast a MPIPackBuffer across the hubServerIntraComm of a ParallelLevel
+  void bcast_hs(MPIPackBuffer& send_buff, const ParallelLevel& pl);
+  /// broadcast a MPIUnpackBuffer across the hubServerIntraComm of a
+  /// ParallelLevel
+  void bcast_hs(MPIUnpackBuffer& recv_buff, const ParallelLevel& pl);
+
   /// broadcast an integer across MPI_COMM_WORLD
   void bcast_w(int& data);
   /// broadcast an integer across an iterator communicator
@@ -608,7 +650,7 @@ public:
   void bcast_e(int& data);
   /// broadcast an integer across an analysis communicator
   void bcast_a(int& data);
-  /// broadcast an integer across a strategy-iterator intra communicator
+  /// broadcast an integer across a metaiterator-iterator intra communicator
   void bcast_mi(int& data, size_t index = _NPOS);
   /// broadcast a packed buffer across MPI_COMM_WORLD
   void bcast_w(MPIPackBuffer& send_buff);
@@ -618,7 +660,8 @@ public:
   void bcast_e(MPIPackBuffer& send_buff);
   /// broadcast a packed buffer across an analysis communicator
   void bcast_a(MPIPackBuffer& send_buff);
-  /// broadcast a packed buffer across a strategy-iterator intra communicator
+  /// broadcast a packed buffer across a metaiterator-iterator intra
+  /// communicator
   void bcast_mi(MPIPackBuffer& send_buff, size_t index = _NPOS);
   /// matching receive for packed buffer broadcast across MPI_COMM_WORLD
   void bcast_w(MPIUnpackBuffer& recv_buff);
@@ -628,7 +671,8 @@ public:
   void bcast_e(MPIUnpackBuffer& recv_buff);
   /// matching receive for packed buffer bcast across an analysis communicator
   void bcast_a(MPIUnpackBuffer& recv_buff);
-  /// matching recv for packed buffer bcast across a strat-iterator intra comm
+  /// matching recv for packed buffer bcast across a
+  /// metaiterator-iterator intra comm
   void bcast_mi(MPIUnpackBuffer& recv_buff, size_t index = _NPOS);
 
   /// enforce MPI_Barrier on MPI_COMM_WORLD
@@ -760,40 +804,6 @@ private:
 		      short default_config, short scheduling_override,
 		      bool peer_dynamic_avail, bool print_rank);
 
-  /// blocking buffer send at the current communication level
-  void  send(MPIPackBuffer& send_buff, int dest, int tag,
-	     ParallelLevel& parent_pl, ParallelLevel& child_pl);
-  /// blocking integer send at the current communication level
-  void  send(int& send_int, int dest, int tag,
-	     ParallelLevel& parent_pl, ParallelLevel& child_pl);
-
-  /// nonblocking buffer send at the current communication level
-  void isend(MPIPackBuffer& send_buff, int dest, int tag,
-	     MPI_Request& send_req, ParallelLevel& parent_pl,
-	     ParallelLevel& child_pl);
-  /// nonblocking integer send at the current communication level
-  void isend(int& send_int, int dest, int tag,
-	     MPI_Request& send_req, ParallelLevel& parent_pl,
-	     ParallelLevel& child_pl);
-
-  /// blocking buffer receive at the current communication level
-  void  recv(MPIUnpackBuffer& recv_buff, int source, int tag,
-	     MPI_Status& status, ParallelLevel& parent_pl,
-	     ParallelLevel& child_pl);
-  /// blocking integer receive at the current communication level
-  void  recv(int& recv_int, int source, int tag,
-	     MPI_Status& status, ParallelLevel& parent_pl,
-	     ParallelLevel& child_pl);
-
-  /// nonblocking buffer receive at the current communication level
-  void irecv(MPIUnpackBuffer& recv_buff, int source, int tag,
-	     MPI_Request& recv_req, ParallelLevel& parent_pl,
-	     ParallelLevel& child_pl);
-  /// nonblocking integer receive at the current communication level
-  void irecv(int& recv_int, int source, int tag,
-	     MPI_Request& recv_req, ParallelLevel& parent_pl,
-	     ParallelLevel& child_pl);
-
   /// broadcast an integer across a communicator
   void bcast(int& data, const MPI_Comm& comm);
   /// broadcast a short integer across a communicator
@@ -914,7 +924,7 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
   for (i=1; i<num_mipl; ++i) { // skip w_pl (dedicated master not supported)
     const ParallelLevel& mi_pl = *currPCIter->miPLIters[i];
     if (mi_pl.dedicatedMasterFlag && prev_pl_rank0)
-      return true; // PC complete at mi level for strategy ded master
+      return true; // PC complete at mi level for ded master
     else
       prev_pl_rank0 = (mi_pl.serverCommRank == 0);
   }
@@ -932,8 +942,7 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
 
 /** Called from the ParallelLibrary ctor and from Model::init_communicators().
     An increment is performed for each Model initialization except the first
-    (which inherits the world and strategy-iterator parallel levels from the
-    first partial configuration). */
+    (which inherits the world level from the first partial configuration). */
 inline void ParallelLibrary::
 increment_parallel_configuration(ParLevLIter mi_pl_iter)
 {
@@ -1245,7 +1254,7 @@ check_error(const String& err_source, int err_code)
 
 inline void ParallelLibrary::
 send(MPIPackBuffer& send_buff, int dest, int tag,
-     ParallelLevel& parent_pl, ParallelLevel& child_pl)
+     const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1264,8 +1273,8 @@ send(MPIPackBuffer& send_buff, int dest, int tag,
 
 
 inline void ParallelLibrary::
-send(int& send_int, int dest, int tag, ParallelLevel& parent_pl,
-     ParallelLevel& child_pl)
+send(int& send_int, int dest, int tag, const ParallelLevel& parent_pl,
+     const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1304,7 +1313,7 @@ inline void ParallelLibrary::
 send_mi(int& send_int, int dest, int tag, size_t index)
 {
   check_mi_index(index);
-  ParallelLevel& parent_pl = (index) ?
+  const ParallelLevel& parent_pl = (index) ?
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   send(send_int, dest, tag, parent_pl, *currPCIter->miPLIters[index]);
 }
@@ -1314,7 +1323,7 @@ inline void ParallelLibrary::
 send_mi(MPIPackBuffer& send_buff, int dest, int tag, size_t index)
 {
   check_mi_index(index);
-  ParallelLevel& parent_pl = (index) ?
+  const ParallelLevel& parent_pl = (index) ?
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   send(send_buff, dest, tag, parent_pl, *currPCIter->miPLIters[index]);
 }
@@ -1334,7 +1343,8 @@ inline void ParallelLibrary::send_ea(int& send_int, int dest, int tag)
 
 inline void ParallelLibrary::
 isend(MPIPackBuffer& send_buff, int dest, int tag,
-      MPI_Request& send_req, ParallelLevel& parent_pl, ParallelLevel& child_pl)
+      MPI_Request& send_req, const ParallelLevel& parent_pl,
+      const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1354,7 +1364,7 @@ isend(MPIPackBuffer& send_buff, int dest, int tag,
 
 inline void ParallelLibrary::
 isend(int& send_int, int dest, int tag, MPI_Request& send_req,
-      ParallelLevel& parent_pl, ParallelLevel& child_pl)
+      const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1377,7 +1387,7 @@ isend_mi(MPIPackBuffer& send_buff, int dest, int tag, MPI_Request& send_req,
 	 size_t index)
 {
   check_mi_index(index);
-  ParallelLevel& parent_pl = (index) ?
+  const ParallelLevel& parent_pl = (index) ?
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   isend(send_buff, dest, tag, send_req, parent_pl,
 	*currPCIter->miPLIters[index]);
@@ -1402,7 +1412,7 @@ isend_ea(int& send_int, int dest, int tag, MPI_Request& send_req)
 
 inline void ParallelLibrary::
 recv(MPIUnpackBuffer& recv_buff, int source, int tag,
-     MPI_Status& status, ParallelLevel& parent_pl, ParallelLevel& child_pl)
+     MPI_Status& status, const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1422,7 +1432,7 @@ recv(MPIUnpackBuffer& recv_buff, int source, int tag,
 
 inline void ParallelLibrary::
 recv(int& recv_int, int source, int tag, MPI_Status& status,
-     ParallelLevel& parent_pl, ParallelLevel& child_pl)
+     const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1444,7 +1454,7 @@ inline void ParallelLibrary::
 recv_mi(int& recv_int, int source, int tag, MPI_Status& status, size_t index)
 {
   check_mi_index(index);
-  ParallelLevel& parent_pl = (index) ?
+  const ParallelLevel& parent_pl = (index) ?
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   recv(recv_int, source, tag, status, parent_pl, *currPCIter->miPLIters[index]);
 }
@@ -1455,7 +1465,7 @@ recv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status,
 	size_t index)
 {
   check_mi_index(index);
-  ParallelLevel& parent_pl = (index) ?
+  const ParallelLevel& parent_pl = (index) ?
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   recv(recv_buff, source, tag, status, parent_pl,
        *currPCIter->miPLIters[index]);
@@ -1480,7 +1490,8 @@ recv_ea(int& recv_int, int source, int tag, MPI_Status& status)
 
 inline void ParallelLibrary::
 irecv(MPIUnpackBuffer& recv_buff, int source, int tag,
-      MPI_Request& recv_req, ParallelLevel& parent_pl, ParallelLevel& child_pl)
+      MPI_Request& recv_req, const ParallelLevel& parent_pl,
+      const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1500,7 +1511,7 @@ irecv(MPIUnpackBuffer& recv_buff, int source, int tag,
 
 inline void ParallelLibrary::
 irecv(int& recv_int, int source, int tag, MPI_Request& recv_req,
-      ParallelLevel& parent_pl, ParallelLevel& child_pl)
+      const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1523,7 +1534,7 @@ irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Request& recv_req,
 	 size_t index)
 {
   check_mi_index(index);
-  ParallelLevel& parent_pl = (index) ?
+  const ParallelLevel& parent_pl = (index) ?
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   irecv(recv_buff, source, tag, recv_req, parent_pl,
 	*currPCIter->miPLIters[index]);
@@ -1573,6 +1584,20 @@ inline void ParallelLibrary::bcast(short& data, const ParallelLevel& pl)
 { bcast(data, pl.serverIntraComm); }
 
 
+inline void ParallelLibrary::bcast_hs(int& data, const ParallelLevel& pl)
+{ bcast(data, pl.hubServerIntraComm); }
+
+
+inline void ParallelLibrary::
+bcast_hs(MPIPackBuffer& send_buff, const ParallelLevel& pl)
+{ bcast(send_buff, pl.hubServerIntraComm); }
+
+
+inline void ParallelLibrary::
+bcast_hs(MPIUnpackBuffer& recv_buff, const ParallelLevel& pl)
+{ bcast(recv_buff, pl.hubServerIntraComm); }
+
+
 inline void ParallelLibrary::bcast_w(int& data)
 { bcast(data, currPCIter->miPLIters.front()->serverIntraComm); }
 
@@ -1602,7 +1627,7 @@ inline void ParallelLibrary::bcast_a(int& data)
 inline void ParallelLibrary::bcast_mi(int& data, size_t index)
 {
   check_mi_index(index);
-  bcast(data, currPCIter->miPLIters[index]->hubServerIntraComm);
+  bcast_hs(data, *currPCIter->miPLIters[index]);
 }
 
 
@@ -1639,7 +1664,7 @@ inline void ParallelLibrary::bcast_a(MPIPackBuffer& send_buff)
 inline void ParallelLibrary::bcast_mi(MPIPackBuffer& send_buff, size_t index)
 {
   check_mi_index(index);
-  bcast(send_buff, currPCIter->miPLIters[index]->hubServerIntraComm);
+  bcast_hs(send_buff, *currPCIter->miPLIters[index]);
 }
 
 
@@ -1676,7 +1701,7 @@ inline void ParallelLibrary::bcast_a(MPIUnpackBuffer& recv_buff)
 inline void ParallelLibrary::bcast_mi(MPIUnpackBuffer& recv_buff, size_t index)
 {
   check_mi_index(index);
-  bcast(recv_buff, currPCIter->miPLIters[index]->hubServerIntraComm);
+  bcast_hs(recv_buff, *currPCIter->miPLIters[index]);
 }
 
 

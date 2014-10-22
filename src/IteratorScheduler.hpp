@@ -207,8 +207,13 @@ inline void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 	      Model& the_model)
 {
-  init_iterator(problem_db, the_iterator, the_model,
-		schedPCIter->mi_parallel_level_iterator(miPLIndex));
+  ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
+  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) {
+    parallelLib.parallel_configuration_iterator(schedPCIter);
+    parallelLib.print_configuration(); // match init_comms() on iterator servers
+  }
+  else
+    init_iterator(problem_db, the_iterator, the_model, pl_iter);
 }
 
 
@@ -216,8 +221,13 @@ inline void IteratorScheduler::
 init_iterator(const String& method_string, Iterator& the_iterator,
 	      Model& the_model)
 {
-  init_iterator(method_string, the_iterator, the_model,
-		schedPCIter->mi_parallel_level_iterator(miPLIndex));
+  ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
+  if (pl_iter->dedicated_master() && pl_iter->server_id() == 0) {
+    parallelLib.parallel_configuration_iterator(schedPCIter);
+    parallelLib.print_configuration(); // match init_comms() on iterator servers
+  }
+  else
+    init_iterator(method_string, the_iterator, the_model, pl_iter);
 }
 
 
@@ -277,6 +287,12 @@ inline void IteratorScheduler::update(ParConfigLIter pc_iter, size_t index)
 template <typename MetaType> void IteratorScheduler::
 schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
+  // As for invocations of an Interface (see SingleModel.hpp and
+  // NestedModel.[ch]pp), we wrap job scheduling with store/set/restore
+  ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
+  parallelLib.parallel_configuration_iterator(
+    meta_object.parallel_configuration_iterator());
+
   if (iteratorScheduling == MASTER_SCHEDULING) { //(dedicatedMaster) {
     if (lead_rank()) { // strategy master
       master_dynamic_schedule_iterators(meta_object);
@@ -296,6 +312,8 @@ schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
     else // for occupying an idle server partition (no jobs)
       serve_iterators(meta_object, sub_iterator);
   }
+
+  parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 
