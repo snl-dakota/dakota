@@ -1383,8 +1383,10 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     // would not normally be expected, but singleton jobs could use this fn.
     if (subIteratorSched.messagePass) {
       subIteratorSched.numIteratorJobs = 1;
+      // can use shallow copy for queue of 1 job (avoids need to copy updated
+      // entry in subIteratorPRPQueue back to subIterator.response_results())
       ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
-				     subIterator.response_results(), 1);
+				     subIterator.response_results(), 1, false);
       subIteratorPRPQueue.insert(current_pair);
       subIteratorSched.schedule_iterators(*this, subIterator);
     }

@@ -4895,28 +4895,36 @@ Partial Rank Correlation Matrix between input and output:
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
-           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
-cdf_beta:  Min = -2.1873426619e+00  Max = 1.1590040921e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
-           area: 310 val (310 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-    limit_state: 341 val (341 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_area:  Min = 7.5000188168e+01  Max = 3.7499887099e+02
-cdf_beta:  Min = -2.1873457070e+00  Max = 1.1590048509e+01
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873394681e+00  Max = 1.1590048509e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
-           area: 124 val (93 n, 31 d), 124 grad (93 n, 31 d), 0 Hess (0 n, 0 d)
-    limit_state: 372 val (341 n, 31 d), 372 grad (341 n, 31 d), 0 Hess (0 n, 0 d)
 mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
 cdf_beta:  Min = -2.1873457813e+00  Max = 1.1590066274e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 496 total (434 new, 62 duplicate)
-           area: 124 val (93 n, 31 d), 124 grad (93 n, 31 d), 0 Hess (0 n, 0 d)
-    limit_state: 372 val (341 n, 31 d), 372 grad (341 n, 31 d), 0 Hess (0 n, 0 d)
 mean_area:  Min = 7.5000000000e+01  Max = 3.7500000000e+02
 cdf_beta:  Min = -2.1873488264e+00  Max = 1.1590073862e+01
+Test Number 4 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
+Test Number 5 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 0 total (0 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
+Test Number 6 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 341 total (341 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
+Test Number 7 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 0 total (0 new, 0 duplicate)
+mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
+cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
