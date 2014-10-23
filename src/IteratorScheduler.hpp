@@ -547,10 +547,9 @@ iterator_message_lengths(int params_msg_len, int results_msg_len)
 
 inline bool IteratorScheduler::lead_rank() const
 {
-  return
-    ( iteratorCommRank == 0 &&
-      ( ( iteratorScheduling == MASTER_SCHEDULING && iteratorServerId == 0 ) ||
-	( iteratorScheduling == PEER_SCHEDULING   && iteratorServerId == 1 )));
+  return ( iteratorCommRank == 0 && ( !messagePass ||
+    ( iteratorScheduling == MASTER_SCHEDULING && iteratorServerId == 0 ) ||
+    ( iteratorScheduling == PEER_SCHEDULING   && iteratorServerId == 1 ) ) );
 }
 
 } // namespace Dakota
