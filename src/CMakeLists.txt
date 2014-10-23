@@ -894,9 +894,9 @@ if(DAKOTA_DLL_API)
   endif()
   add_executable(dll_tester dll_tester.cpp)
   
-  target_link_libraries(dll_tester dll_api)
+  target_link_libraries(dll_tester dakota_dll_api)
   if (DAKOTA_MODELCENTER)
-    # likely not needed due to CMake dependency management of dll_api library
+    # likely not needed due to CMake dependency management of dakota_dll_api library
     target_link_libraries(dll_tester PHXCppApi)
   endif()
 endif()
@@ -978,9 +978,9 @@ if(NOT MSVC)
 endif()
 
 if (DAKOTA_DLL_API)
-  add_library(dll_api dakota_dll_api.cpp)
-  target_link_libraries(dll_api ${DAKOTA_ALL_LIBS})
-  install(TARGETS dll_api DESTINATION lib)
+  add_library(dakota_dll_api dakota_dll_api.cpp)
+  target_link_libraries(dakota_dll_api ${DAKOTA_ALL_LIBS})
+  install(TARGETS dakota_dll_api DESTINATION lib)
 endif()
 
 # Install dyanamic deps, omitting standard system libs
