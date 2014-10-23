@@ -504,7 +504,7 @@ public:
     short analysis_scheduling, bool peer_dynamic_avail);
 
   /// deallocate iterator communicators
-  void free_iterator_communicators(size_t index = _NPOS);
+  void free_iterator_communicators(ParLevLIter mi_pl_iter);
   /// deallocate evaluation communicators
   void free_evaluation_communicators();
   /// deallocate analysis communicators
@@ -1118,28 +1118,6 @@ init_evaluation_communicators(int evaluation_servers, int procs_per_evaluation,
 			      short default_config, short evaluation_scheduling,
 			      bool peer_dynamic_avail)
 {
-  // handle case where there is a new parallel configuration instance, but
-  // init_iterator_communicators has not been called again.
-  if ( currPCIter->miPLIters.empty() ) {
-    /*
-    if (parallelConfigurations.size() > 1) {
-      // if used, then this needs to be replaced with a while loop,
-      // since the valid miPLIter could be several PC's back
-      ParConfigLIter prev_pc_iter = currPCIter; --prev_pc_iter;
-      currPCIter->miPLIters = prev_pc_iter->miPLIters;
-      for (pl_iter =currPCIter->miPLIters.begin();
-           pl_iter!=currPCIter->miPLIters.end(); ++pl_iter)
-        if (pl_iter->message_pass())
-          ++currPCIter->numParallelLevels;
-    }
-    else {
-    */
-      Cerr << "Error: init_evaluation_communicators() called without preceding "
-	   << "init_iterator_communicators() call." << std::endl;
-      abort_handler(-1);
-    //}
-  }
-
   init_communicators(*currPCIter->miPLIters.back(), evaluation_servers,
 		     procs_per_evaluation, min_procs_per_eval,
 		     max_procs_per_eval, max_evaluation_concurrency,
@@ -1169,11 +1147,8 @@ init_analysis_communicators(int analysis_servers, int procs_per_analysis,
 }
 
 
-inline void ParallelLibrary::free_iterator_communicators(size_t index)
-{
-  if (index == _NPOS) free_communicators(*currPCIter->miPLIters.back());
-  else                free_communicators(*currPCIter->miPLIters[index]);
-}
+inline void ParallelLibrary::free_iterator_communicators(ParLevLIter mi_pl_iter)
+{ free_communicators(*mi_pl_iter); }
 
 
 inline void ParallelLibrary::free_evaluation_communicators()
