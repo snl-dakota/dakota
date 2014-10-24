@@ -105,8 +105,10 @@ void ParallelLibrary::init_mpi_comm()
 	 << std::endl;
     abort_handler(-1);
   }
-  else // default ParallelLevel values apply
+  else { // most default ParallelLevel values apply
+    pl.serverId = pl.numServers = pl.procsPerServer = 1;
     start_msg = "Running serial Dakota executable in serial mode.";
+  }
 #endif // DAKOTA_HAVE_MPI
   outputManager.startup_message(start_msg);
 
