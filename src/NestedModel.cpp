@@ -1379,9 +1379,32 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
 	boost::lexical_cast<String>(nestedModelEvalCntr);
       subIterator.eval_tag_prefix(eval_tag);
     }
-    // For derived_compute_response(), partitioning for iterator concurrency 
-    // would not normally be expected, but singleton jobs could use this fn.
+
+    ParLevLIter pl_iter
+      = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
     if (subIteratorSched.messagePass) {
+      // For derived_compute_response(), subIterator scheduling would not
+      // normally be expected, but singleton jobs could use this fn assuming
+      // no dedicated master overload (enforced in Model::compute_response()).
+      // Given this protection, don't schedule the job -- execute it locally.
+      if (subIteratorSched.iteratorScheduling == PEER_SCHEDULING &&
+	  subIteratorSched.peerAssignJobs) {
+	// match 2 bcasts in IteratorScheduler::peer_static_schedule_iterators()
+	// needed by procs in NestedModel::serve_run()
+	int num_jobs = 1;
+	parallelLib.bcast_hs(num_jobs, *pl_iter); // over pl.hubServerIntraComm
+	if (subIteratorSched.iteratorCommSize > 1)
+	  parallelLib.bcast(num_jobs, *pl_iter);  // over pl.serverIntraComm
+      }
+      // run_iterator() is used since we stop subModel servers for consistency
+      // with fall through behavior of schedule_iterators()
+      subIteratorSched.run_iterator(subIterator, pl_iter);
+      if (subIteratorSched.iteratorScheduling == MASTER_SCHEDULING)
+	subIteratorSched.stop_iterator_servers();
+
+      /* This approach has 2 issues: (1) a single-processor subIterator job is
+	 always assigned by master to server 1 (ded master overload bypassed),
+	 (2) peer static init/update bookkeeping is redundant of above/below.
       subIteratorSched.numIteratorJobs = 1;
       // can use shallow copy for queue of 1 job (avoids need to copy updated
       // entry in subIteratorPRPQueue back to subIterator.response_results())
@@ -1389,12 +1412,12 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
 				     subIterator.response_results(), 1, false);
       subIteratorPRPQueue.insert(current_pair);
       subIteratorSched.schedule_iterators(*this, subIterator);
+      */
     }
-    else {
-      ParLevLIter pl_iter
-	= modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
+    else // run_iterator() is not used since we don't stop subModel servers
+         // until change in component_parallel_mode
       subIterator.run(pl_iter);
-    }
+
     const Response& sub_iter_resp = subIterator.response_results();
     Cout << "\nActive response data from sub_iterator:\n"<< sub_iter_resp<<'\n';
     // map subIterator results into their contribution to currentResponse
