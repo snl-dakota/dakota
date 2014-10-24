@@ -39410,34 +39410,6 @@ response_fn_1 Sobol' indices:
                       1.0697834732546499e-07 uuv_1 uuv_2 uuv_8 uuv_10 
                       1.1051309091994926e-06 uuv_3 uuv_4 uuv_9 uuv_10 
                       1.3913762488695247e-07 uuv_1 uuv_7 uuv_9 uuv_10 
-Test Number 8 succeeded
-<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
-Moment-based statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  7.1999640073788851e-01  1.3946993690354245e-01
-response_fn_1 Sobol' indices:
-                                  Main             Total
-                      9.9999998912007071e-01  9.9999998979993110e-01 x1
-                      1.0200068998736595e-08  1.0879929394153621e-08 x2
-                      6.7986039541702556e-10 x1 x2 
-Test Number 9 succeeded
-<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-Moment-based statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.3249715671383240e-01  1.9880593699144056e-01
-response_fn_1 Sobol' indices:
-                                  Main             Total
-                      9.6190876302818751e-01  9.7287057435138413e-01 uuv_1
-                      2.6447811124331904e-02  3.7146265055245507e-02 uuv_2
-                      6.5935841548661763e-04  9.3057241060961939e-04 uuv_3
-                      1.5687184960626548e-05  2.2128530647749932e-05 uuv_4
-                      4.2471714360227094e-07  4.2471714360227094e-07 uuv_5
-                      1.0690300189079825e-02  0.0000000000000000e+00 uuv_6
-                      2.6306025328921997e-04  0.0000000000000000e+00 uuv_7
-                      6.1442066933437361e-06  0.0000000000000000e+00 uuv_8
-                      6.4413456871233863e-06  0.0000000000000000e+00 uuv_9
-                      0.0000000000000000e+00  0.0000000000000000e+00 uuv_10
-                      2.0095351404380270e-06 uuv_1 uuv_2 uuv_3 
 dakota_uq_gerstner_adapt_gsg.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 65 total (65 new, 0 duplicate)
@@ -54676,26 +54648,6 @@ response_fn_1 Sobol' indices:
                       2.0616659945543378e-01 x1 x2 
 dakota_uq_rosenbrock_pce_lls_adapted.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
-  response_fn_1: 14 val (14 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  4.5566666666666691e+02   P0   P0
-  -3.9999999999998863e+00   P1   P0
-  9.1695238095238096e+02   P2   P0
-  -5.3333333333333326e+02   P0   P1
-  2.6666666666666646e+02   P0   P2
-  3.6571428571428544e+02   P4   P0
-  -1.0666666666666652e+03   P2   P1
-  8.3071464685576437e-13   P1   P2
-Moment-based statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666691e+02  6.0656024184257797e+02
-response_fn_1 Sobol' indices:
-                                  Main             Total
-                      4.9746891382737790e-01  7.0363551328281226e-01 x1
-                      2.9636448671718774e-01  5.0253108617262221e-01 x2
-                      2.0616659945543442e-01 x1 x2 
-Test Number 1 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
   response_fn_1: 14 val (14 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:

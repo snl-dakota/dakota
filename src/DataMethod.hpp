@@ -832,9 +832,9 @@ public:
   /// flag indicating the use of cross-validation across expansion orders
   /// (given a prescribed maximum order) and, for some methods, noise tolerances
   bool crossValidation;
-  /// initial grid level for the ADAPTED_BASIS_GENERALIZED approach to
-  /// defining the candidate basis for sparse recovery (compressed sensing)
-  unsigned short adaptedBasisInitLevel;
+  // initial grid level for the ADAPTED_BASIS_GENERALIZED approach to
+  // defining the candidate basis for sparse recovery (compressed sensing)
+  //unsigned short adaptedBasisInitLevel;
   /// initial grid level for the ADAPTED_BASIS_EXPANDING_FRONT approach to
   /// defining the candidate basis for sparse recovery (compressed sensing)
   unsigned short adaptedBasisAdvancements;

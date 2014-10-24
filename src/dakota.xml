@@ -1014,7 +1014,8 @@
                                       <oneOf>
                                         <keyword  id="tensor_product" name="tensor_product" code="{N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}" label="tensor_product" help=""  />
                                         <keyword  id="total_order" name="total_order" code="{N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}" label="total_order" help=""  />
-                                        <keyword  id="adapted" name="adapted" code="{0}" label="adapted" help="" minOccurs="1" >
+					<keyword  id="adapted" name="adapted" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}" label="adapted" help="" minOccurs="1" >
+                                        <!-- <keyword  id="adapted" name="adapted" code="{0}" label="adapted" help="" minOccurs="1" >
                                           <oneOf>
                                             <keyword  id="generalized1" name="generalized" code="{N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}" label="generalized" help="" minOccurs="1" >
                                               <keyword  id="initial_level" name="initial_level" code="{N_mdm(ushint,adaptedBasisInitLevel)}" label="initial_level" help="" minOccurs="0" >
@@ -1026,7 +1027,10 @@
                                                 <param type="INTEGER" />
                                               </keyword>
                                             </keyword>
-                                          </oneOf>
+                                          </oneOf> -->
+                                          <keyword  id="advancements" name="advancements" code="{N_mdm(ushint,adaptedBasisAdvancements)}" label="advancements" help="" minOccurs="0" >
+                                            <param type="INTEGER" />
+                                          </keyword>
                                           <keyword  id="soft_convergence_limit1" name="soft_convergence_limit" code="{N_mdm(ushint,softConvLimit)}" label="soft_convergence_limit" help="" minOccurs="0" >
                                             <param type="INTEGER" />
                                           </keyword>

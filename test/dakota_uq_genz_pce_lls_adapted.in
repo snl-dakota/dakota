@@ -12,19 +12,19 @@ method,
  	  expansion_order   = 4
 # 	  expansion_order   = 2
 #	  collocation_ratio = 0.9
-	  collocation_points = 70		#0,#1,#2,#3,#4,#8
-#	  collocation_points = 100		#5,#6,#7,#9
+	  collocation_points = 70		#0,#1,#2,#3,#4
+#	  collocation_points = 100		#5,#6,#7
 # Basis adaptation algorithm:
 	  basis_type
-#	    adapted generalized			#8,#9
-#	      initial_level = 0			#8,#9
-	    adapted expanding_front		#0,#1,#2,#3,#4,#5,#6,#7
+#	    adapted generalized
+#	      initial_level = 0
+	    adapted #expanding_front		#0,#1,#2,#3,#4,#5,#6,#7
 	      advancements = 3			#0,#1,#2,#3,#4,#5,#6,#7
 	  soft_convergence_limit = 1
 # CV settings:
 	  seed = 1234567
 # CS and VBD settings:
-	  omp					#0,#5,#8,#9
+	  omp					#0,#5
 #	  lars					#1,#6
 #	  lasso					#2,#7
 #	  basis_pursuit	  			#3
@@ -33,14 +33,14 @@ method,
 	  output silent
 
 variables,
-	uniform_uncertain = 2			#0,#1,#2,#3,#4,#8
-	  lower_bounds = 0. 0.			#0,#1,#2,#3,#4,#8
-	  upper_bounds = 1. 1. 			#0,#1,#2,#3,#4,#8
-	  descriptors  = 'x1' 'x2'		#0,#1,#2,#3,#4,#8
+	uniform_uncertain = 2			#0,#1,#2,#3,#4
+	  lower_bounds = 0. 0.			#0,#1,#2,#3,#4
+	  upper_bounds = 1. 1. 			#0,#1,#2,#3,#4
+	  descriptors  = 'x1' 'x2'		#0,#1,#2,#3,#4
 
-#	uniform_uncertain = 10			#5,#6,#7,#9
-#	  lower_bounds = 10*0.			#5,#6,#7,#9
-#	  upper_bounds = 10*1. 			#5,#6,#7,#9
+#	uniform_uncertain = 10			#5,#6,#7
+#	  lower_bounds = 10*0.			#5,#6,#7
+#	  upper_bounds = 10*1. 			#5,#6,#7
 
 interface,
 	direct

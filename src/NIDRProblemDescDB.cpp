@@ -6441,7 +6441,7 @@ static RealVectorArray
 
 static unsigned short
 	MP_(adaptedBasisAdvancements),
-	MP_(adaptedBasisInitLevel),
+//	MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
 	MP_(softConvLimit),
 	MP_(vbdOrder);

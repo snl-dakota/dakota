@@ -2667,7 +2667,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     static KW<unsigned short, DataMethodRep> UShdmo[] = { // must be sorted
 	{"algorithm", P methodName},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
-	{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
+      //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.cubature_integrand", P cubIntOrder},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.reliability_search_type", P reliabilitySearchType},

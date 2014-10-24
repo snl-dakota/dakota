@@ -122,9 +122,9 @@ private:
   /// L2 penalty for LASSO algorithm (elastic net variant)
   Real l2Penalty;
 
-  /// initial grid level for adapted expansions with the
-  /// ADAPTED_BASIS_GENERALIZED approach
-  unsigned short initSGLevel;
+  // initial grid level for adapted expansions with the
+  // ADAPTED_BASIS_GENERALIZED approach
+  //unsigned short initSGLevel;
   /// number of frontier expansions per iteration with the
   /// ADAPTED_BASIS_EXPANDING_FRONT approach
   unsigned short numAdvance;

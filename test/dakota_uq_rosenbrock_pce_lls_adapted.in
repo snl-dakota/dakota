@@ -15,10 +15,12 @@ method,
 	  collocation_points = 14
 # Basis adaptation algorithm:
 	  basis_type
-	    adapted generalized			#0
-	      initial_level = 0			#0
-#	    adapted expanding_front		#1
-#	      advancements = 3			#1
+# Inactive algorithm option:
+#	    adapted generalized
+#	      initial_level = 0
+# Active algorithm option no longer requires expanding_front selection:
+	    adapted #expanding_front		#0
+	      advancements = 3			#0
 	  soft_convergence_limit = 2
 # CV settings:
 	  seed = 1234567

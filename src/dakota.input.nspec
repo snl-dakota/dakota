@@ -631,14 +631,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     |
                     total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
                     |
-                    ( adapted {0}
-                      ( generalized {N_mdm(type,expansionBasisType_ADAPTED_BASIS_GENERALIZED)}
-                        [ initial_level INTEGER {N_mdm(ushint,adaptedBasisInitLevel)} ]
-                       )
-                      |
-                      ( expanding_front {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
-                        [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
-                       )
+                    ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+                      [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
                       [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                      )
                    ]
