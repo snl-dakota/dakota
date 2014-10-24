@@ -1718,7 +1718,9 @@ void NonDExpansion::compute_statistics()
 	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
       bool x_data_flag = false;
 
-      //imp_sampler_rep->initialize_random_variables(natafTransform);
+      // This is needed if export_points_file:
+      imp_sampler_rep->initialize_random_variables(natafTransform);
+
       // since importanceSampler uses an ALEATORY_UNCERTAIN sampling mode,
       // we must set the unsampled variables to their u-space values.
       //if (numContDesVars || numContEpistUncVars || numContStateVars)
