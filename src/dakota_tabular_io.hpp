@@ -77,32 +77,27 @@ void open_file(std::ofstream& data_file, const std::string& output_filename,
 //- Utilities for tabular write
 //
 
-// TODO: consider separate prototype without Response for false case
-// and annotated vs. non-annotated case?
-
-//
-// Uses: tabular graphics data and pre-run output
-//
-/// output the header row (labels) for a tabular data file
-/// used by Analyzer and Graphics
+/// Output the header row (labels) for a tabular data file, with
+/// variables in input spec order.  Conditionally include interface
+/// ID.  Primary uses: environment tabular data, pre-run output,
+/// surrogate approx evals
 void write_header_tabular(std::ostream& tabular_ostream, 
-  const Variables& vars, const Response& response,
-  const std::string& counter_label, bool active_only = false,
-  bool response_labels = true);
+			  const Variables& vars, const Response& response,
+			  const std::string& counter_label);
 
+/// Write the leading column with eval ID and conditionally, the interface ID
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
+			   const String& iface_id);
 
-// TODO: counter doesn't make sense when not annotated!
-// (would like to avoid default parameters if possible)
-
-//
-// Uses: tabular graphics data and pre-run output
-//
-/// output a row of tabular data from variables and response object
-/// used by graphics to append to tabular file during iteration
+/// Output a row of tabular data from variables and response object
+/// used by graphics to append to tabular file during iteration.  All
+/// active/inactive variables written in input spec order.
+/// Conditionally include interface ID.  Primary uses: environment
+/// tabular data, pre-run output, surrogate approx evals.
 void write_data_tabular(std::ostream& tabular_ostream, 
-  const Variables& vars, const Response& response, size_t counter = _NPOS,
-  bool active_only = false, bool write_responses = true);
-
+			const Variables& vars, const String& iface, 
+			const Response& response, size_t counter,
+			bool annotated);
 
 /// PCE export: write freeform format file with whitespace-separated
 /// data where each row has num_fns reals from coeffs, followed
@@ -121,7 +116,10 @@ void write_data_tabular(const std::string& output_filename,
 bool exists_extra_data(std::istream& tabular_file);
 
 /// read and discard header line from the stream
-void read_header_tabular(std::istream& input_stream);
+void read_header_tabular(std::istream& input_stream, bool annotated);
+
+/// read leading columns [ int eval_id [ String iface_id ] ]
+size_t read_leading_columns(std::istream& input_stream, bool annotated);
 
 
 // TODO: The following need review, rework, and consolidation
@@ -138,14 +136,14 @@ void read_data_tabular(const std::string& input_filename,
 		       RealVector& input_data, size_t num_entries,
 		       bool annotated);
 
-/// read possibly header-annotated whitespace-separated data into a
-/// dynamic vector with minimal error checking 
+/// read possibly header-annotated whitespace-separated data of
+/// Variables, followed by num_fns, into a dynamic vector with minimal
+/// error checking
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       RealArray& input_vector, bool annotated,
-		       size_t num_vars);
+		       Variables vars, size_t num_fns,
+		       RealArray& input_vector, bool annotated, bool active_only);
 
-// BMA TODO: pre/post run need to treat strings and use correct order...
 
 /// PCE import: read possibly header-annotated whitespace-separated
 /// data of unknown length where each row has num_fns reals followed
@@ -160,17 +158,16 @@ void read_data_tabular(const std::string& input_filename,
 //
 // Uses: DataFitSurrModel (highly specialized)
 //
-/// read whitespace-separated data with optional row and column headers into 
-/// lists of Variables (using provided SVD) and Responses until out of data;
+/// read whitespace-separated data with optional row and column
+/// headers into lists of Variables and Responses until out of data;
 /// continuous variables only
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
+		       Variables vars, Response resp,
 		       VariablesList& input_vars, ResponseList& input_resp,
-		       const SharedVariablesData& svd,
-		       size_t num_c_vars,
-		       const ActiveSet& temp_set,
 		       bool annotated,
-		       bool verbose=false);
+		       bool verbose=false,
+		       bool active_only=false);
 
 
 //
@@ -192,10 +189,9 @@ void read_data_tabular(const std::string& input_filename,
 /// by the passed vc_totals array; used in ParamStudy
 size_t read_data_tabular(const std::string& input_filename, 
 			 const std::string& context_message,
-			 const SizetArray& vc_totals,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 bool annotated);
+			 bool annotated, Variables vars);
 
 } // namespace TabularIO
 

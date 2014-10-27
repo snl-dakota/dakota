@@ -130,7 +130,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
-    problem_db.get_bool("model.surrogate.import_points_file_annotated"));
+    problem_db.get_bool("model.surrogate.import_points_file_annotated"),
+    //    problem_db.get_bool("model.surrogate.import_points_file_active_only")
+    false
+		);
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
@@ -1496,35 +1499,34 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 
 
 /** Constructor helper to read the points file once, if provided, and
-    then reuse its data as appropriate within build_global() */
-void DataFitSurrModel::import_points(bool annotated)
+    then reuse its data as appropriate within build_global().
+    Surrogate data imports default to active/inactive variables, but
+    user can override to active only */
+void DataFitSurrModel::import_points(bool annotated, bool active_only)
 {
   if (importPointsFile.empty())
     return;
 
-  // Data needed to reconstruct the variables and responses
-  const SharedVariablesData& svd = (actualModel.is_null()) ?
-    currentVariables.shared_data() :
-    actualModel.current_variables().shared_data();	
-  size_t num_c_vars = (actualModel.is_null()) ? 
-    currentVariables.cv() :
-    actualModel.cv();
-  SizetMultiArrayConstView cv_ids = (actualModel.is_null()) ?
-    currentVariables.continuous_variable_ids() :
-    actualModel.continuous_variable_ids();
-  ActiveSet temp_set(numFns); // function values only
-  temp_set.derivative_vector(cv_ids);
+  // Temporary objects to use to read correct size vars/resp
+  const Variables& vars = actualModel.is_null() ? currentVariables : 
+    actualModel.current_variables(); 
+  const Response& resp =actualModel.is_null() ? currentResponse : 
+    actualModel.current_response();
+  size_t num_vars = active_only ? 
+    (vars.cv() + vars.div() + vars.dsv() + vars.drv()) : vars.tv();
 
-  // read the data into continuous variables and responses
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Surrogate model retrieving points with " << num_c_vars 
-	 << " continuous variables and " << numFns 
+    Cout << "Surrogate model retrieving points with " << num_vars 
+	 << " variables and " << numFns 
 	 << " response functions from file " << importPointsFile << '\n';
   bool verbose = (outputLevel > NORMAL_OUTPUT);
+
+  // Deep copy of variables/response so data in model isn't changed during read
   TabularIO::read_data_tabular(importPointsFile, 
-			       "DataFitSurrModel samples file", 
-			       reuseFileVars, reuseFileResponses, svd, 
-			       num_c_vars, temp_set, annotated, verbose);
+			       "DataFitSurrModel samples file", vars, resp,
+			       reuseFileVars, reuseFileResponses, annotated, 
+			       verbose, active_only);
+
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << reuseFileVars.size()
 	 << " total points." << std::endl;
@@ -1541,7 +1543,7 @@ void DataFitSurrModel::initialize_export()
 		       "DataFitSurrModel export");
   if (exportAnnotated)
     TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				    currentResponse, "eval id");
+				    currentResponse, "eval_id");
 }
 
 
@@ -1570,14 +1572,15 @@ void DataFitSurrModel::manage_data_recastings()
 }
 
 
-/** Constructor helper to export approximation-based evaluations to a file. */
+/** Constructor helper to export approximation-based evaluations to a
+    file. Exports all variables, so it's clear at what values of
+    inactive it was built at */
 void DataFitSurrModel::
 export_point(int eval_id, const Variables& vars, const Response& resp)
 {
   if (exportPointsFile.empty())
     return;
 
-  size_t export_id = (exportAnnotated) ? eval_id : _NPOS;
   if (manageRecasting) {
     // create vars envelope & resp handle to manage the instances to be exported
     Variables export_vars(vars); Response export_resp(resp); // shallow copies
@@ -1602,11 +1605,12 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
 	export_vars = user_vars; export_resp = user_resp;
       }
 
-    TabularIO::write_data_tabular(exportFileStream, export_vars,
-				  export_resp, export_id);
+    TabularIO::write_data_tabular(exportFileStream, export_vars, interface_id(),
+				  export_resp, eval_id, exportAnnotated);
   }
   else
-    TabularIO::write_data_tabular(exportFileStream, vars, resp, export_id);
+    TabularIO::write_data_tabular(exportFileStream, vars, interface_id(), resp, 
+				  eval_id, exportAnnotated);
 }
 
 

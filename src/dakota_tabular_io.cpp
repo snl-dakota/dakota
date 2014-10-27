@@ -57,52 +57,46 @@ void open_file(std::ofstream& data_file, const std::string& output_filename,
 //
 
 void write_header_tabular(std::ostream& tabular_ostream, 
-  const Variables& vars, const Response& response,
-  const std::string& counter_label, bool active_only, bool response_labels)
+			  const Variables& vars, const Response& response,
+			  const std::string& counter_label)
 {
-  tabular_ostream << '%' << counter_label << ' '; // matlab comment syntax
-  if (active_only) {
-    // output active variable labels
-    Dakota::write_data_tabular(tabular_ostream, 
-			       vars.continuous_variable_labels());
-    Dakota::write_data_tabular(tabular_ostream, 
-			       vars.discrete_int_variable_labels());
-    Dakota::write_data_tabular(tabular_ostream, 
-			       vars.discrete_real_variable_labels());
-  }
-  else {
-    // output all variable labels
-    vars.write_tabular_labels(tabular_ostream);
-  }
-  if (response_labels)
-    Dakota::write_data_tabular(tabular_ostream, response.function_labels());
-  tabular_ostream << std::endl;
+  // headers use Matlab comment syntax
+  tabular_ostream << "%" << counter_label;
+  if (TABULAR_IFACE_ID)
+    tabular_ostream << " interface ";
+  vars.write_tabular_labels(tabular_ostream);
+  response.write_tabular_labels(tabular_ostream);
 }
 
 
-// BMA: This writer needs to be updated to mirror other tabular write ordering
-// possibly reviewed for removal...
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
+			   const String& iface_id)
+{
+  tabular_ostream << std::setw(8) << eval_id << ' ';
+  if (TABULAR_IFACE_ID) {
+    // write the interface ID string, EMPTY for empty
+    if (iface_id.empty())
+      tabular_ostream << std::setw(9) << "EMPTY";
+    else 
+      tabular_ostream << std::setw(9) << iface_id << ' ';
+  }
+}
+
+
 void write_data_tabular(std::ostream& tabular_ostream, 
-  const Variables& vars, const Response& response, size_t counter, 
-  bool active_only, bool write_responses)
+			const Variables& vars, const String& iface_id, 
+			const Response& response, size_t counter,
+			bool annotated)
 {
-  if (active_only) {
-    if (counter != _NPOS)
-      tabular_ostream << std::setw(8) << counter << ' ';
-    Dakota::write_data_tabular(tabular_ostream, vars.continuous_variables());
-    Dakota::write_data_tabular(tabular_ostream, vars.discrete_int_variables());
-    Dakota::write_data_tabular(tabular_ostream, vars.discrete_real_variables());
-  }
-  else {
-    if (counter != _NPOS)
-      tabular_ostream << std::setw(8) << counter << ' ';
-    vars.write_tabular(tabular_ostream);
-  }
-  if (write_responses)
-    response.write_tabular(tabular_ostream);
+  // write evaluation ID and interface ID
+  if (annotated)
+    write_leading_columns(tabular_ostream, counter, iface_id);
+  vars.write_tabular(tabular_ostream);
+  response.write_tabular(tabular_ostream);
 }
 
 
+// PCE export 
 void write_data_tabular(const std::string& output_filename, 
 			const std::string& context_message,
 			const RealVectorArray& output_coeffs, 
@@ -154,35 +148,53 @@ void write_data_tabular(const std::string& output_filename,
 
 
 //
-// Tabular read helpers
+//- Utilities for tabular read
 //
+
 
 /** Discard header row from tabular file; alternate could read into a
     string array.  Requires header to be delimited by a newline. */
-void read_header_tabular(std::istream& input_stream)
+void read_header_tabular(std::istream& input_stream, bool annotated)
 {
-  String discard_labels;
-  getline(input_stream, discard_labels);
+  if (annotated) {
+    String discard_labels;
+    getline(input_stream, discard_labels);
+  }
+}
+
+
+/**  for now we discard the interface data; later will return for validation */
+size_t read_leading_columns(std::istream& input_stream, bool annotated)
+{
+  size_t row_label = _NPOS;
+  if (annotated) {
+    input_stream >> row_label;
+    if (TABULAR_IFACE_ID) {
+      String iface_id;
+      input_stream >> iface_id;
+      if (iface_id == "EMPTY")
+	iface_id.clear();
+    }
+  }
+  // else no-op
+  return row_label;
 }
 
 
 bool exists_extra_data(std::istream& input_stream)
 {
-  // TODO: verify we need to check for non-whitespace
-  //       shouldn't need both good and eof checks
-  std::string extra_data;
+  input_stream >> std::ws;
   while (input_stream.good() && !input_stream.eof()) {
     try {
+      std::string extra_data;
       input_stream >> extra_data;
+      if (!extra_data.empty())
+	return true;
     }
     catch (const std::ios_base::failure& failorbad_except) {
+      // TODO: report error in this branch
       return false;
     }
-    std::string::const_iterator it = extra_data.begin();
-    std::string::const_iterator it_end = extra_data.end();
-    for( ; it != it_end; ++it)
-      if (!std::isspace(*it))
-	return true;
   }
   return false;
 }
@@ -190,27 +202,30 @@ bool exists_extra_data(std::istream& input_stream)
 
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       RealVector& input_vector, size_t num_rows,
+		       RealVector& input_vector, size_t num_entries,
 		       bool annotated)
 {
   // TODO: handle both row and col vectors in the text?
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
 
-  if (annotated)
-    read_header_tabular(input_stream);
+  if (annotated) {
+    input_stream >> std::ws;
+    read_header_tabular(input_stream, annotated);
+  }
 
-  input_vector.resize(num_rows);
+  input_vector.resize(num_entries);
   try {
     if (annotated) {
-      for (size_t row_ind = 0; row_ind < num_rows; ++row_ind) {
-	// discard the row label (typically eval or data ID)
-	size_t discard_row_label;
-	input_stream >> discard_row_label;
+      for (size_t row_ind = 0; row_ind < num_entries; ++row_ind) {
+	input_stream >> std::ws;
+	// discard the leading cols (typically eval or data ID, iface ID)
+	read_leading_columns(input_stream, annotated);
 	input_stream >> input_vector[row_ind];
       } 
     } else {
-      // read raw whitespace separated data into vector
+      // read raw whitespace separated data into (sized) vector
+      input_stream >> std::ws;
       read_data(input_stream, input_vector);
     }
   }
@@ -218,12 +233,12 @@ void read_data_tabular(const std::string& input_filename,
     Cout << "\nError (" << context_message << "): could not read file.";
     if (annotated) {
       Cout << "\nExpected header-annotated tabular file:"
-	   << "\n  * header row with labels and " << num_rows << " data rows"
+	   << "\n  * header row with labels and " << num_entries << " data rows"
 	   << "\n  * leading column with counter and 1 data column";
     }
     else {
       Cout << "\nExpected free-form tabular file: no leading row nor column; "
-	   << num_rows << " whitespace-separated numeric data.";
+	   << num_entries << " whitespace-separated numeric data.";
     }
     Cout << std::endl;
     abort_handler(-1);
@@ -241,33 +256,50 @@ void read_data_tabular(const std::string& input_filename,
 
 
   // BMA TODO: use a helper to read each line.
+  // BMA TODO: what to do about discrete vars, esp string?
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
+		       Variables vars, size_t num_fns,
 		       RealArray& input_vector, bool annotated,
-		       size_t num_vars)
+		       bool active_only)
 {
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
 
+  size_t num_vars = active_only ? 
+    vars.cv() + vars.div() + vars.dsv() + vars.drv() : vars.tv();
+
   //  input_vector.resize(num_rows);
   try {
 
-    if (annotated)
-      read_header_tabular(input_stream);
+    if (annotated) {
+      input_stream >> std::ws;
+      read_header_tabular(input_stream, annotated);
+    }
 
+    input_stream >> std::ws;
     while (input_stream.good() && !input_stream.eof()) {
-      if (annotated) {
-	// discard the row label (typically eval or data ID)
-	size_t discard_row_label;
-	if (!(input_stream >> discard_row_label))
-	  break;
+
+      // discard any leading columns
+      read_leading_columns(input_stream, annotated);
+
+      // use a variables object because it knows how to read active vs. all
+      vars.read_tabular(input_stream, active_only);
+
+      // Extract the continuous variables
+      // TODO: handle discrete variable types
+      const RealVector& c_vars = active_only ? vars.continuous_variables() :
+	vars.all_continuous_variables();
+      std::copy(c_vars.values(), c_vars.values()+c_vars.length(), 
+		std::back_inserter(input_vector));
+
+      // read the raw function data
+      for (size_t fi = 0; fi < num_fns; ++fi) {
+	double read_value = std::numeric_limits<double>::quiet_NaN();
+	if (input_stream >> read_value)
+	  input_vector.push_back(read_value);
       }
-      for (size_t vi = 0; vi < num_vars; ++vi) {
-	double read_value;
-	if (!(input_stream >> read_value))
-	  break;
-	input_vector.push_back(read_value);
-      }
+      input_stream >> std::ws;
     }
   }
   catch (const std::ios_base::failure& failorbad_except) {
@@ -312,29 +344,28 @@ void read_data_tabular(const std::string& input_filename,
 
   try {
 
-    if (annotated)
-      read_header_tabular(input_stream);
+    if (annotated) {
+      input_stream >> std::ws;
+      read_header_tabular(input_stream, annotated);
+    }
 
+    input_stream >> std::ws;
     while (input_stream.good() && !input_stream.eof()) {
-      if (annotated) {
-	// discard the row label (typically eval or data ID)
-	size_t discard_row_label;
-	if (!(input_stream >> discard_row_label))
-	  break;
-      }
-      RealArray read_coeffs(num_fns);
+
+      // discard any leading columns; annotated is unlikely in this case
+      read_leading_columns(input_stream, annotated);
+
+      // read the (required) coefficients of length num_fns
+      RealArray read_coeffs(num_fns, std::numeric_limits<double>::quiet_NaN());
       if (!(input_stream >> read_coeffs)) {
-	if (annotated) {
-	  // token required to exist
-	  Cerr << "\nError (" << context_message << "): unexpected coeff read "
-	       << "error in file " << input_filename << "." << std::endl;
-	  abort_handler(-1);
-	}
-	else
-	  // reached end of data (or TODO: other error)
-	  break;
+	Cout << "read: " << read_coeffs << std::endl;
+	Cerr << "\nError (" << context_message << "): unexpected coeff read "
+	     << "error in file " << input_filename << "." << std::endl;
+	abort_handler(-1);
       }
+      Cout << "read: " << read_coeffs << std::endl;
       coeffs_tmp.push_back(read_coeffs);
+
       // read the (required) indices of length num_vars
       UShortArray index_set(num_vars, 0);
       // don't break as these are required data
@@ -345,6 +376,8 @@ void read_data_tabular(const std::string& input_filename,
 	abort_handler(-1);
       }
       input_indices.push_back(index_set);
+      Cout << "index set: " << index_set << std::endl;
+      input_stream >> std::ws;
     }
   }
   catch (const std::ios_base::failure& failorbad_except) {
@@ -382,37 +415,34 @@ void read_data_tabular(const std::string& input_filename,
   }
 }
 
+
+// Data fit surrogate import, which might only read active variables
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
+		       Variables vars, Response resp,
 		       VariablesList& input_vars, ResponseList& input_resp,
-		       const SharedVariablesData& svd,
-		       size_t num_c_vars,
-		       const ActiveSet& temp_set,
 		       bool annotated,
-		       bool verbose)
+		       bool verbose, bool active_only
+		       )
 {
   std::ifstream data_file;
   open_file(data_file, input_filename, context_message);
 
-  if (annotated)
-    read_header_tabular(data_file);
+  if (annotated) {
+    data_file >> std::ws;
+    read_header_tabular(data_file, annotated);
+  }
 
   // shouldn't need both good and eof checks
+  data_file >> std::ws;
   while (data_file.good() && !data_file.eof()) {
-    // vars/responses must already be sized for istream read
-    RealVector reuse_file_c_vars(num_c_vars);
-    Response   reuse_file_responses(temp_set);
     try {
-      if (annotated) {
-	// discard the row label (typically eval or data ID)
-	size_t discard_row_label;
-	data_file >> discard_row_label;
-      }
-      // read_data() lacks eof checks
-      Dakota::read_data_tabular(data_file, reuse_file_c_vars);
-      reuse_file_responses.read_tabular(data_file);
+      // discard the leading columns 
+      read_leading_columns(data_file, annotated);
+      vars.read_tabular(data_file, active_only);
+      resp.read_tabular(data_file);
     }
-    // TODO: catch any
+    // TODO: catch any; don't break on these errors!
     catch (const std::ios_base::failure& failorbad_except) {
       break; // out of while loop
     }
@@ -420,13 +450,14 @@ void read_data_tabular(const std::string& input_filename,
       //Cerr << "Warning: " << err_msg << std::endl;
       break; // out of while loop
     }
-    Variables reuse_file_vars(svd); // instantiate-on-the-fly
-    reuse_file_vars.continuous_variables(reuse_file_c_vars);
+
     if (verbose)
-      Cout << "Variables and responses read:\n" 
-	   << reuse_file_c_vars << reuse_file_responses;
-    input_vars.push_back(reuse_file_vars);       // shallow copy
-    input_resp.push_back(reuse_file_responses);  // shallow copy
+      Cout << "Variables and responses read:\n" << vars << resp;
+    input_vars.push_back(vars.copy());       // deep copy
+    input_resp.push_back(resp.copy());  // deep copy
+
+    // advance so EOF can detect properly
+    data_file >> std::ws;
   }
 
 }
@@ -450,12 +481,15 @@ void read_data_tabular(const std::string& input_filename,
 	 << " file " << input_filename << "..." << std::endl;
   }
 
-  if (annotated)
-    read_header_tabular(input_stream);
-  
+  if (annotated) {
+    input_stream >> std::ws;
+    read_header_tabular(input_stream, annotated);
+  }
+
   input_matrix.shapeUninitialized(num_rows, num_cols);	
   for (size_t row_ind = 0; row_ind < num_rows; ++row_ind) {
     try {
+      // experiment data would never have an interface ID
       if (annotated) {
 	// discard the row label (typically eval or data ID)
 	size_t discard_row_label;
@@ -490,45 +524,25 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
+// special reader for list parameter studies: probably move back to ParamStudy
 size_t read_data_tabular(const std::string& input_filename, 
 			 const std::string& context_message,
-			 const SizetArray& vc_totals,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 bool annotated)
+			 bool annotated, Variables vars)
 {
-  size_t num_evals = 0;
+  size_t num_evals = 0, num_vars = vars.tv();
+  // temporary dynamic container to read string variables
+  std::vector<StringMultiArray> list_dsv_points;
 
-  // Consider passing this info in?
-  //  size_t num_vars = numContinuousVars     + numDiscreteIntVars
-  //  + numDiscreteStringVars + numDiscreteRealVars;
-  size_t num_cv  = 
-    vc_totals[TOTAL_CDV]   + vc_totals[TOTAL_CAUV] + 
-    vc_totals[TOTAL_CEUV]  + vc_totals[TOTAL_CSV];
-  size_t num_div = 
-    vc_totals[TOTAL_DDIV]  + vc_totals[TOTAL_DAUIV] + 
-    vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DSIV];
-  size_t num_dsv = 
-    vc_totals[TOTAL_DDSV]  + vc_totals[TOTAL_DAUSV] + 
-    vc_totals[TOTAL_DEUSV] + vc_totals[TOTAL_DSSV];
-  size_t num_drv = 
-    vc_totals[TOTAL_DDRV]  + vc_totals[TOTAL_DAURV] +
-    vc_totals[TOTAL_DEURV] + vc_totals[TOTAL_DSRV];
-  size_t num_vars = num_cv + num_div + num_dsv + num_drv;
-
-  RealVector        cv(num_cv);
-  IntVector        div(num_div);
-  StringMultiArray dsv(boost::extents[num_dsv]);      
-  RealVector       drv(num_drv);
-  
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
-
+ 
   try {
 
     if (annotated) {
       input_stream >> std::ws;
-      read_header_tabular(input_stream);
+      read_header_tabular(input_stream, annotated);
     }
 
     input_stream >> std::ws;  // advance to next readable input
@@ -539,18 +553,15 @@ size_t read_data_tabular(const std::string& input_filename,
 	if (!(input_stream >> discard_row_label))
 	  break;
       }
-      
-      // free function from Variables to read in input spec order into arrays
-      read_vars_tabular(input_stream, vc_totals, cv, div, dsv, drv);
 
+      // read all, but set only the active variables into the lists
+      vars.read_tabular(input_stream);
       ++num_evals;
 
-      cva.push_back(cv);
-      diva.push_back(div);
-      // opting for linear growth for now instead of a temporary...
-      dsva.resize(boost::extents[num_evals][num_dsv]);
-      dsva[num_evals-1] = dsv;
-      drva.push_back(drv);
+      cva.push_back(vars.continuous_variables());
+      diva.push_back(vars.discrete_int_variables());
+      list_dsv_points.push_back(vars.discrete_string_variables());
+      drva.push_back(vars.discrete_real_variables());
 
       input_stream >> std::ws;  // advance to next readable input
     }
@@ -582,6 +593,14 @@ size_t read_data_tabular(const std::string& input_filename,
 	 << input_filename << " (unknown error)." << std::endl;
     abort_handler(-1);
   }
+
+
+  // copy into the string multiarray
+  size_t num_dsv = vars.dsv();
+  dsva.resize(boost::extents[num_evals][num_dsv]);
+  for (size_t i=0; i<num_evals; ++i)
+    dsva[i] = list_dsv_points[i];
+  list_dsv_points.clear();
 
   return num_evals;
 }

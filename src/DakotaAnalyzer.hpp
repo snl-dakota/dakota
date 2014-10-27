@@ -80,6 +80,10 @@ protected:
   /// update model's current variables with data from vars
   virtual void update_model_from_variables(Model& model, const Variables& vars);
 
+  /// convert column of samples array to variables; derived classes
+  /// may reimplement for more than active continuous variables
+  virtual void sample_to_variables(const Real* sample_vars, Variables& vars);
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -125,10 +129,11 @@ protected:
   void print_sobol_indices(std::ostream& s) const;
 
   /// convert samples array to variables array; e.g., allSamples to allVariables
-  void sample_to_variables(const Real* sample_c_vars, Variables& vars);
-  /// convert samples array to variables array; e.g., allSamples to allVariables
   void samples_to_variables_array(const RealMatrix& sample_matrix,
 				  VariablesArray& vars_array);
+  /// convert the active continuous variables into a column of allSamples
+  virtual void variables_to_sample(const Variables& vars, Real* sample_c_vars);
+
   /// convert variables array to samples array; e.g., allVariables to allSamples
   void variables_array_to_samples(const VariablesArray& vars_array,
 				  RealMatrix& sample_matrix);

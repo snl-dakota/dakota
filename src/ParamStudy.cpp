@@ -480,16 +480,20 @@ load_distribute_points(const String& points_filename, bool annotated)
   // don't know the size until the file is read, so the reader grows
   // the containers as the read takes place
 
-  // read only the active variables from the points_file
-  const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
-  const SizetArray& active_totals = svd.active_components_totals();
+  // the easiest way to read is with a variables object
+  // read all variables in spec order into a temporary Variables
+  Variables vars(iteratedModel.current_variables().copy());
+
+  // then map the active data from that variables object into the
+  // list*Points arrays and validate it
+ 
+  // TODO: validate the read values of inactive variables
 
   // Could read into these dynamically or into a temporary and then allocate
   numEvals = TabularIO::
     read_data_tabular(points_filename, "List Parameter Study", 
-		      active_totals, listCVPoints, listDIVPoints, 
-		      listDSVPoints, listDRVPoints, annotated);
+		      listCVPoints, listDIVPoints, listDSVPoints, listDRVPoints,
+		      annotated, iteratedModel.current_variables().copy());
   if (numEvals == 0) err = true;
 
 

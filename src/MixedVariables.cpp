@@ -283,23 +283,72 @@ void MixedVariables::write_aprepro(std::ostream& s) const
 }
 
 
-/** Presumes variables object is already appropriately sized to receive! */
-void MixedVariables::read_tabular(std::istream& s)
+/** Tabular reader that reads data in order design, aleatory,
+    epistemic, state according to counts in vc_totals (extract in
+    order: cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv,
+    csv/dsiv/dsrv, which might reflect active or all depending on
+    context. Assumes container sized, since might be a view into a
+    larger array. */
+void MixedVariables::read_tabular(std::istream& s, bool active_only)
 {
   // ASCII version for tabular file I/O
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
 
-  // make use of free function in Variables since multiple clients
-  // need this prototype
-  read_vars_tabular(s, vc_totals, allContinuousVars, allDiscreteIntVars, 
-		    allDiscreteStringVars, allDiscreteRealVars);
+  const SizetArray& vc_totals = active_only ? 
+    sharedVarsData.active_components_totals() : 
+    sharedVarsData.components_totals(); 
+
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+
+  // read design variables
+  read_data_partial_tabular(s, acv_offset,  num_cdv,  allContinuousVars);
+  read_data_partial_tabular(s, adiv_offset, num_ddiv, allDiscreteIntVars);
+  read_data_partial_tabular(s, adsv_offset, num_ddsv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_ddrv, allDiscreteRealVars);  
+  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
+  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
+
+  // read aleatory uncertain variables
+  read_data_partial_tabular(s, acv_offset,  num_cauv,  allContinuousVars);    
+  read_data_partial_tabular(s, adiv_offset, num_dauiv, allDiscreteIntVars);   
+  read_data_partial_tabular(s, adsv_offset, num_dausv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_daurv, allDiscreteRealVars);  
+  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
+  adsv_offset += num_dausv; adrv_offset += num_daurv;
+
+  // read epistemic uncertain variables
+  read_data_partial_tabular(s, acv_offset,  num_ceuv,  allContinuousVars);    
+  read_data_partial_tabular(s, adiv_offset, num_deuiv, allDiscreteIntVars);   
+  read_data_partial_tabular(s, adsv_offset, num_deusv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_deurv, allDiscreteRealVars);  
+  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
+  adsv_offset += num_deusv; adrv_offset += num_deurv;
+
+  // read state variables
+  read_data_partial_tabular(s, acv_offset,  num_csv,  allContinuousVars);    
+  read_data_partial_tabular(s, adiv_offset, num_dsiv, allDiscreteIntVars);   
+  read_data_partial_tabular(s, adsv_offset, num_dssv, allDiscreteStringVars);
+  read_data_partial_tabular(s, adrv_offset, num_dsrv, allDiscreteRealVars);  
+  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
+  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
 }
 
 
-void MixedVariables::write_tabular(std::ostream& s) const
+  void MixedVariables::write_tabular(std::ostream& s, bool active_only) const
 {
   // ASCII version for tabular file I/O
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
+
+  const SizetArray& vc_totals = active_only ? 
+    sharedVarsData.active_components_totals() : 
+    sharedVarsData.components_totals(); 
+
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
     num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],

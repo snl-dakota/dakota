@@ -772,10 +772,10 @@ void Variables::write_annotated(std::ostream& s) const
 }
 
 
-void Variables::read_tabular(std::istream& s)
+void Variables::read_tabular(std::istream& s, bool active_only)
 {
   if (variablesRep)
-    variablesRep->read_tabular(s); // envelope fwd to letter
+    variablesRep->read_tabular(s, active_only); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual read_tabular "
          << "function.\nNo default defined at base class." << std::endl;
@@ -783,10 +783,10 @@ void Variables::read_tabular(std::istream& s)
   }
 }
 
-void Variables::write_tabular(std::ostream& s) const
+void Variables::write_tabular(std::ostream& s, bool active_only) const
 {
   if (variablesRep)
-    variablesRep->write_tabular(s); // envelope fwd to letter
+    variablesRep->write_tabular(s, active_only); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write_tabular "
          << "function.\nNo default defined at base class." << std::endl;
@@ -797,14 +797,17 @@ void Variables::write_tabular(std::ostream& s) const
 
 /** Tabular output is always in input specification order, so can
     write labels independent of Mixed vs. Relaxed */
-void Variables::write_tabular_labels(std::ostream& s) const
+void Variables::write_tabular_labels(std::ostream& s, bool active_only) const
 {
   if (variablesRep)
     variablesRep->write_tabular_labels(s); // envelope fwd to letter
   else {
 
     // ASCII version for tabular file I/O
-    const SizetArray& vc_totals = sharedVarsData.components_totals();
+    const SizetArray& vc_totals = active_only ? 
+      sharedVarsData.active_components_totals() : 
+      sharedVarsData.components_totals(); 
+
     size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
       num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
       num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],

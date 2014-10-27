@@ -89,6 +89,9 @@ private:
   /// write functionValues to an std::ostream (tabular format)
   void write_tabular(std::ostream& s) const;
 
+  /// write the labels to a tabular data stream
+  void write_tabular_labels(std::ostream& s) const;
+
   /// read a responseRep object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
   /// write a responseRep object to a packed MPI buffer
@@ -366,6 +369,9 @@ public:
   void read_tabular(std::istream& s);
   /// write responseRep::functionValues in tabular format to an std::ostream
   void write_tabular(std::ostream& s) const;
+
+  /// write the labels to a tabular data stream
+  void write_tabular_labels(std::ostream& s) const;
 
   /// read a response object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
@@ -739,6 +745,10 @@ inline void Response::read_tabular(std::istream& s)
 
 inline void Response::write_tabular(std::ostream& s) const
 { if (responseRep) responseRep->write_tabular(s); }
+
+
+inline void Response::write_tabular_labels(std::ostream& s) const
+{ if (responseRep) responseRep->write_tabular_labels(s); }
 
 
 inline void Response::read(MPIUnpackBuffer& s)

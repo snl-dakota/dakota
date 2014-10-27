@@ -511,7 +511,8 @@ void Model::compute_response()
 
     if (modelAutoGraphicsFlag) {
       OutputManager& output_mgr = parallelLib.output_manager();
-      output_mgr.add_datapoint(currentVariables, currentResponse);
+      output_mgr.add_datapoint(currentVariables, interface_id(), 
+			       currentResponse);
     }
   }
 }
@@ -557,7 +558,8 @@ void Model::compute_response(const ActiveSet& set)
 
     if (modelAutoGraphicsFlag) {
       OutputManager& output_mgr = parallelLib.output_manager();
-      output_mgr.add_datapoint(currentVariables, currentResponse);
+      output_mgr.add_datapoint(currentVariables, interface_id(), 
+			       currentResponse);
     }
   }
 }
@@ -703,7 +705,7 @@ const IntResponseMap& Model::synchronize()
       OutputManager& output_mgr = parallelLib.output_manager();
       for (r_cit  = responseMap.begin(), v_it = varsList.begin();
 	   r_cit != responseMap.end(); ++r_cit, ++v_it)
-	output_mgr.add_datapoint(*v_it, r_cit->second);
+	output_mgr.add_datapoint(*v_it, interface_id(), r_cit->second);
     }
     // reset bookkeeping lists
     numFDEvalsMap.clear();
@@ -770,7 +772,8 @@ const IntResponseMap& Model::synchronize_nowait()
 	if (g_it == graphicsRespMap.end())
 	  found = false;
 	else {
-	  output_mgr.add_datapoint(varsList.front(), g_it->second);
+	  output_mgr.add_datapoint(varsList.front(), interface_id(), 
+				   g_it->second);
 	  varsList.pop_front();
 	  graphicsRespMap.erase(g_it);
 	}

@@ -503,6 +503,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // Update graphics for iteration 0 (initial guess).
       if (sbIterNum == 0)
 	output_mgr.add_datapoint(iteratedModel.current_variables(),
+				 iteratedModel.interface_id(),
 				 responseCenterTruth.second);
 
       if (!convergenceFlag) {
@@ -603,6 +604,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // record the iteration results (irregardless of new center)
       iteratedModel.continuous_variables(varsCenter.continuous_variables());
       output_mgr.add_datapoint(iteratedModel.current_variables(),
+			       iteratedModel.interface_id(),
 			       responseCenterTruth.second);
 
       // If the soft convergence criterion is satisfied for a user-specified

@@ -93,8 +93,12 @@ public:
   /// write a ParamResponsePair object in annotated format to an std::ostream
   void write_annotated(std::ostream& s) const;
 
-  /// write a ParamResponsePair object in tabular format to an std::ostream
+  /// write a ParamResponsePair object in tabular format (all
+  /// variables active/inactive) to an std::ostream
   void write_tabular(std::ostream& s)   const;
+
+  /// write PRP labels in tabular format to an std::ostream
+  void write_tabular_labels(std::ostream& s) const;
 
   /// read a ParamResponsePair object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
@@ -261,14 +265,6 @@ inline void ParamResponsePair::write(std::ostream& s) const
   if (!evalInterfaceIds.second.empty())
     Cout << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
   s << "\nActive response data:\n"<< prPairResponse << std::endl;
-}
-
-
-inline void ParamResponsePair::write_tabular(std::ostream& s) const
-{
-  s << std::setw(8) << evalInterfaceIds.first << ' ';
-  prPairParameters.write_tabular(s);
-  prPairResponse.write_tabular(s);
 }
 
 

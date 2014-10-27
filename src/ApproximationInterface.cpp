@@ -625,9 +625,12 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
       // for user-provided challenge data, we assume there are
       // function values for all functions in the analysis, not just
       // the indices for which surrogates are being built
+
+      // BMA TODO: can this move to ctor?
+      bool active_only = false;
       if (!challengeFile.empty()) {
 	if (challengePoints.empty())
-	  read_challenge_points();
+	  read_challenge_points(active_only);
 	functionSurfaces[index].challenge_diagnostics(challengePoints, index);
       }
     }
@@ -805,17 +808,26 @@ approximation_variances(const Variables& vars)
   return functionSurfaceVariances;
 }
 
-void ApproximationInterface::read_challenge_points()
-{
-  size_t num_vars = actualModelVars.cv()  + actualModelVars.div()
-                  + actualModelVars.dsv() + actualModelVars.drv(),
-    num_fns = functionSurfaces.size(), num_cols = num_vars + num_fns;
 
+// TODO: What does it even mean to challenge at index or string
+// data?!?  Is a Response object available too?
+/** Challenge data defaults to active/inactive, but user can override
+    to active only.  */
+void ApproximationInterface::read_challenge_points(bool active_only)
+{
+  size_t num_vars = active_only ? actualModelVars.cv() + actualModelVars.div()
+    + actualModelVars.dsv() + actualModelVars.drv() : actualModelVars.tv();
+  size_t num_fns = functionSurfaces.size();
+  size_t num_cols = num_vars + num_fns;
+
+  // use a Variables object to easily read active vs. all
   RealArray pts_array;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
-			       pts_array, challengeAnnotated, num_cols);
+			       actualModelVars.copy(), num_fns, pts_array, 
+			       challengeAnnotated, active_only);
+  
+  // translate to the matrix, using real vector only for convenience
   size_t num_points = pts_array.size()/num_cols;
-  // use a real vector for convenience
   RealVector pts_vec(Teuchos::View, &pts_array[0], pts_array.size());
   copy_data(pts_vec, challengePoints, num_points, num_cols);
 }

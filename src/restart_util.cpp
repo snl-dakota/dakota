@@ -358,15 +358,23 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-  size_t i, j, num_evals = 0;
+  size_t num_evals = 0;
   cout << "Writing tabular text file " << argv[3] << '\n';
   std::ofstream tabular_text(argv[3]);
+  // to track changes in interface and/or labels
   String curr_interf;
+  StringMultiArray curr_acv_labels;
+  StringMultiArray curr_adiv_labels;
+  StringMultiArray curr_adsv_labels;
+  StringMultiArray curr_adrv_labels;
+  StringArray curr_resp_labels;
 
-  // override default to output data in full precision (double = 16 digits).
+  // Note: tabular not written in maximum precision; need command-line option).
+  // Override default to output data in full precision (double = 16 digits).
   // Note: setprecision(write_precision) and std::ios::floatfield are embedded
   // in write_data_tabular() functions.
-  //write_precision = 16;
+
+  //write_precision = 16;  // extern defined in dakota_global_defs.cpp
 
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
@@ -384,27 +392,33 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
       break;
     }
 
-    // TODO: print an interface column when multiple are present
+    // The number of variables or responses may differ across
+    // different interfaces.  Output the header when needed due to
+    // label or length changes.
     const String& new_interf = current_pair.interface_id();
-    if (num_evals == 0 || new_interf != curr_interf) {
+    if (new_interf != curr_interf) {
       curr_interf = new_interf;
-      // Header (note: use matlab comment syntax "%"):
-      if (!curr_interf.empty())
-	tabular_text << "%Interface = " << curr_interf << '\n';
-      tabular_text << "%eval_id ";
-
-      const Variables& vars = current_pair.prp_parameters();
-      vars.write_tabular_labels(tabular_text);
-
-      const StringArray& fn_labels
-	= current_pair.prp_response().function_labels();
-      size_t num_fns = fn_labels.size();
-      for (j=0; j<num_fns; ++j)
-	tabular_text << setw(14) << fn_labels[j].data() << ' ';
-      tabular_text << '\n';
+      const Variables& curr_vars = current_pair.prp_parameters();
+      if (curr_vars.all_continuous_variable_labels() != curr_acv_labels ||
+	  curr_vars.all_discrete_int_variable_labels() != curr_adiv_labels ||
+	  curr_vars.all_discrete_string_variable_labels() != curr_adsv_labels ||
+	  curr_vars.all_discrete_real_variable_labels() != curr_adrv_labels ||
+	  current_pair.prp_response().function_labels() != curr_resp_labels) {
+	// update the current copy of the labels, sizing first
+	curr_acv_labels.resize(boost::extents[curr_vars.acv()]);
+	curr_acv_labels = curr_vars.all_continuous_variable_labels();
+	curr_adiv_labels.resize(boost::extents[curr_vars.adiv()]);
+	curr_adiv_labels = curr_vars.all_discrete_int_variable_labels();
+	curr_adsv_labels.resize(boost::extents[curr_vars.adsv()]);
+	curr_adsv_labels = curr_vars.all_discrete_string_variable_labels();
+	curr_adrv_labels.resize(boost::extents[curr_vars.adrv()]);
+	curr_adrv_labels = curr_vars.all_discrete_real_variable_labels();
+	curr_resp_labels = current_pair.prp_response().function_labels();
+	// write the new header
+	current_pair.write_tabular_labels(tabular_text);
+      }
     }
-    // Data: (note: not maximum precision)
-    current_pair.write_tabular(tabular_text);
+    current_pair.write_tabular(tabular_text);  // also writes IDs
     ++num_evals;
 
     // peek to force EOF if the last restart record was read

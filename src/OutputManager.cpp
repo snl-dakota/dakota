@@ -274,6 +274,8 @@ create_tabular_datastream(const Variables& vars, const Response& response)
   // For output/restart/tabular data, all Iterator masters stream
   // output so tabular graphics files need to be tagged
 
+  // TODO: with multiple tags, this will be wrong (last pushed tag)
+
   // tabular data file set up
   // prevent multiple opens of tabular_data_file
   if (!tabularDataFStream.is_open()) {
@@ -282,13 +284,9 @@ create_tabular_datastream(const Variables& vars, const Response& response)
 			 "DakotaGraphics");
   }
 
-  bool active_only = false;
-  bool response_labels = true;
-  bool annotated = true;  // tabular graphics data only supports annotated
-  if (annotated)
-    TabularIO::write_header_tabular(tabularDataFStream, vars, response,
-				    tabularCntrLabel, active_only,
-				    response_labels);
+  // tabular graphics data only supports annotated format, active AND inactive
+  // TODO: only write header if newly opened?
+  TabularIO::write_header_tabular(tabularDataFStream, vars, response, "eval_id");
 }
 
 
@@ -297,7 +295,8 @@ create_tabular_datastream(const Variables& vars, const Response& response)
     graphicsCntr is used for the x axis in the graphics and the first
     column in the tabular data.  */
 void OutputManager::
-add_datapoint(const Variables& vars, const Response& response)
+add_datapoint(const Variables& vars, const String& iface,
+	      const Response& response)
 {
   // If the response data only contains derivative info, then there are no
   // response function values to record in either the graphics window or the
@@ -314,22 +313,24 @@ add_datapoint(const Variables& vars, const Response& response)
   if (!plot_data)
     return;
   
-  // post to the X graphics plots
+  // post to the X graphics plots (active variables only)
   dakotaGraphics.add_datapoint(graphicsCntr, vars, response);
   
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open()) {
-    // In the tabular graphics file, only the *active* variables are tabulated
-    // for top level evaluations/iterations in the strategy.  This differs from
-    // the "to_tabular" option of dakota_restart_util, which tabulates all
-    // variables for all application interface evaluations.
 
-    // NOTE: could add ability to monitor response data subsets based on
-    // user specification.
-    bool active_only = false;
-    bool write_responses = true;
-    TabularIO::write_data_tabular(tabularDataFStream, vars, response,
-				  graphicsCntr, active_only, write_responses);
+    // Historically, only active variables were tabulated, for top
+    // level evaluations/iterations in the strategy.  Now, all
+    // (active/inactive) are written out to improve usability of
+    // re-import and to sync with the "to_tabular" option of
+    // dakota_restart_util, which tabulates all variables for all
+    // application interface evaluations.
+
+    // Since this tabular data file is used for multiple top-level
+    // Iterator outputs, the counter may not be that from an interface
+
+    TabularIO::write_data_tabular(tabularDataFStream, vars, iface, response,
+     				  graphicsCntr, true);
   }
 
   // Only increment the graphics counter if posting data (incrementing on every

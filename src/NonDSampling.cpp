@@ -388,6 +388,80 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 }
 
 
+// BMA TODO: consolidate with other use cases
+void NonDSampling::
+sample_to_variables(const Real* sample_vars, Variables& vars)
+{
+  size_t i, cntr = 0, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+    drv_start, num_drv;
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+	      drv_start, num_drv);
+
+  // BMA TODO: make sure inactive get updated too as needed?
+
+  // sampled continuous vars (by value)
+  size_t end = cv_start + num_cv;
+  for (i=cv_start; i<end; ++i, ++cntr)
+    vars.all_continuous_variable(sample_vars[cntr], i);
+  // sampled discrete int vars (by value cast from Real)
+  end = div_start + num_div;
+  for (i=div_start; i<end; ++i, ++cntr)
+    vars.all_discrete_int_variable((int)sample_vars[cntr], i);
+  // sampled discrete string vars (by index cast from Real)
+  short active_view = vars.view().first;
+  bool relax = (active_view == RELAXED_ALL ||
+    ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
+  short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
+  const StringSetArray& all_dss_values
+    = iteratedModel.discrete_set_string_values(all_view);
+  end = dsv_start + num_dsv;
+  for (i=dsv_start; i<end; ++i, ++cntr)
+    vars.all_discrete_string_variable(set_index_to_value(
+      (size_t)sample_vars[cntr], all_dss_values[i]), i);
+  // sampled discrete real vars (by value)
+  end = drv_start + num_drv;
+  for (i=drv_start; i<end; ++i, ++cntr)
+    vars.all_discrete_real_variable(sample_vars[cntr], i);
+}
+
+
+// BMA TODO: consolidate with other use cases
+/** Map the active variables from vars to sample_vars (column in allSamples) */
+void NonDSampling::
+variables_to_sample(const Variables& vars, Real* sample_vars)
+{
+  size_t cntr = 0;
+
+  const RealVector& c_vars = vars.continuous_variables();
+  for (size_t j=0; j<numContinuousVars; ++j, ++cntr)
+    sample_vars[cntr] = c_vars[j]; // jth row of samples_matrix
+
+  const IntVector& di_vars = vars.discrete_int_variables();
+  for (size_t j=0; j<numDiscreteIntVars; ++j, ++cntr)
+    sample_vars[cntr] = (Real) di_vars[j]; // jth row of samples_matrix
+
+  // to help with mapping string variables
+  // sampled discrete string vars (by index cast from Real)
+  short active_view = vars.view().first;
+  bool relax = (active_view == RELAXED_ALL ||
+    ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
+  short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
+  const StringSetArray& all_dss_values
+    = iteratedModel.discrete_set_string_values(all_view);
+
+  // is care needed to manage active vs. all string variables?
+
+  StringMultiArrayConstView ds_vars = vars.discrete_string_variables();
+  for (size_t j=0; j<numDiscreteStringVars; ++j, ++cntr)
+    sample_vars[cntr] = 
+      (Real) set_value_to_index(ds_vars[j], all_dss_values[j]); // jth row of samples_matrix
+
+  const RealVector& dr_vars = vars.discrete_real_variables();
+  for (size_t j=0; j<numDiscreteRealVars; ++j, ++cntr)
+    sample_vars[cntr] = (Real) dr_vars[j]; // jth row of samples_matrix
+}
+
+
 /** This function and its helpers to follow are needed since NonDSampling
     supports a richer set of sampling modes than just the active variable 
     subset.  mode_counts() manages the samplingVarsMode setting, while its

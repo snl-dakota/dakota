@@ -238,7 +238,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(bool annotated);
+  void import_points(bool annotated, bool active_only = false);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// initialize manageRecasting and recastFlags for data import/export

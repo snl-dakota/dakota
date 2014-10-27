@@ -229,6 +229,7 @@ void Analyzer::update_model_from_sample(Model& model, const Real* sample_vars)
 }
 
 
+/** Default mapping that maps into continuous part of Variables only */
 void Analyzer::
 sample_to_variables(const Real* sample_c_vars, Variables& vars)
 {
@@ -239,6 +240,8 @@ sample_to_variables(const Real* sample_c_vars, Variables& vars)
     vars = Variables(model_vars.shared_data());
   for (j=0; j<numContinuousVars; ++j)
     vars.continuous_variable(sample_c_vars[j], j); // jth row
+  // BMA: this may be needed if vars wasn't initialized off the model
+  vars.inactive_continuous_variables(model_vars.inactive_continuous_variables());
   // preserve any active discrete vars (unsupported by sample_matrix)
   if (num_adiv)
     vars.all_discrete_int_variables(model_vars.all_discrete_int_variables());
@@ -260,6 +263,16 @@ samples_to_variables_array(const RealMatrix& sample_matrix,
 }
 
 
+/** Default implementation maps active continuous variables only */
+void Analyzer::
+variables_to_sample(const Variables& vars, Real* sample_c_vars)
+{
+  const RealVector& c_vars = vars.continuous_variables();
+  for (size_t j=0; j<numContinuousVars; ++j)
+    sample_c_vars[j] = c_vars[j]; // jth row of samples_matrix
+}
+
+
 void Analyzer::
 variables_array_to_samples(const VariablesArray& vars_array,
 			   RealMatrix& sample_matrix)
@@ -269,13 +282,9 @@ variables_array_to_samples(const VariablesArray& vars_array,
   if (sample_matrix.numRows() != numContinuousVars ||
       sample_matrix.numCols() != num_samples)
     sample_matrix.reshape(numContinuousVars, num_samples); // #vars by #samples
-  const Variables& vars = iteratedModel.current_variables();
-  for (i=0; i<num_samples; ++i) {
-    const RealVector& c_vars_i = vars_array[i].continuous_variables();
-    Real* sample_c_vars = sample_matrix[i]; // ith column
-    for (j=0; j<numContinuousVars; ++j)
-      sample_c_vars[j] = c_vars_i[j]; // jth row
-  }
+  // populate each colum of the sample matrix (one col per sample)
+  for (i=0; i<num_samples; ++i)
+    variables_to_sample(vars_array[i], sample_matrix[i]);
 }
 
 
@@ -627,41 +636,46 @@ void Analyzer::pre_output()
   // try to mitigate errors resulting from lack of precision in output
   // the full 17 digits might surprise users, but will reduce
   // numerical errors between pre/post phases
-  // consider passing precision to helper functions instead of using global
+  // TODO: consider passing precision to helper functions instead of using global
   int save_precision;
   if (writePrecision == 0) {
     save_precision = write_precision;
     write_precision = 17;
   }
- 
-  bool active_only = compactMode;  // compactMode uses only active
-  bool response_labels = true;     // write response labels for user
-  bool annotated = true;           // pre/post only supports annotated
-  if (annotated)
-    TabularIO::write_header_tabular(tabular_file,
-				    iteratedModel.current_variables(), 
-				    iteratedModel.current_response(),
-				    "eval_id", active_only,
-				    response_labels);
+
+  // Write all variables in input spec ordering; always annotated.
+  // When in compactMode, get the inactive variables off the Model and
+  // use sample_to_variables to set the discrete variables not treated
+  // by allSamples.
+  TabularIO::write_header_tabular(tabular_file,
+				  iteratedModel.current_variables(), 
+				  iteratedModel.current_response(),
+				  "eval_id");
+
   tabular_file << std::setprecision(write_precision) 
 	       << std::resetiosflags(std::ios::floatfield);
 
-  // TODO: consider helper to output allSamples or allVariables directly
-  // TODO: consider supplementing compactMode with inactive vars from model
+  Variables vars = iteratedModel.current_variables().copy();
   for (size_t eval_index = 0; eval_index < num_evals; eval_index++) {
-    if (annotated)
-      tabular_file << std::setw(8) << eval_index + 1 << ' ';
+
+    TabularIO::write_leading_columns(tabular_file, eval_index+1, 
+				     iteratedModel.interface_id());
     if (compactMode) {
       // allSamples num_vars x num_evals, so each col becomes tabular file row
-      write_data_tabular(tabular_file, 
-			 getCol(Teuchos::View, allSamples, (int) eval_index));
+      // populate the active discrete variables that aren't in sample_matrix
+      size_t num_vars = allSamples.numRows();
+      sample_to_variables(allSamples[eval_index], vars);
+      vars.write_tabular(tabular_file);
     }
     else
       allVariables[eval_index].write_tabular(tabular_file);
+    // no response data, so terminate the record
     tabular_file << '\n';
   }
+
   tabular_file.flush();
   tabular_file.close();
+
   if (writePrecision == 0)
     write_precision = save_precision;
   if (outputLevel > QUIET_OUTPUT)
@@ -694,17 +708,23 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   std::ifstream tabular_file;
   TabularIO::open_file(tabular_file, filename, "post-run input");
-  bool annotated = true;  // pre/post only supports annotated
+  bool annotated = true;  // pre/post only supports annotated; could detect
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nAttempting to read " << num_evals << " samples from file "
 	 << filename << "..." << std::endl;
   
-  if (annotated)
-    TabularIO::read_header_tabular(tabular_file); // discard header with labels
+  if (annotated) {
+    tabular_file >> std::ws;
+    // discard header with labels
+    TabularIO::read_header_tabular(tabular_file, annotated); 
+  }
 
-  if (compactMode)
+  Variables vars;  // temporary container to use for read in compact case
+  if (compactMode) {
+    vars = iteratedModel.current_variables().copy();
     allSamples.shapeUninitialized(num_vars, num_evals);
+  }
   else 
     allVariables.resize(num_evals);
   allResponses.clear();
@@ -714,11 +734,12 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   for (i=0, cntr=1; i<num_evals; ++i, ++cntr) {
 
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "   reading sample " << i << std::endl;
+      Cout << "   reading sample " << (i + 1) << std::endl;
 
     try {
+      tabular_file >> std::ws;
       if (annotated) {
-	tabular_file >> eval_id;
+	eval_id = TabularIO::read_leading_columns(tabular_file, annotated);
 	if (eval_id != cntr) {
 	  Cerr << "\nError in post-run input: unexpected eval_id from leading "
 	       << "column in file." << std::endl;
@@ -726,17 +747,22 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 	  abort_handler(-1);
 	}
       }
+      // Previous rationale:
       // use negative ids for file import in this context, since repeated use
       // of 0 is not acceptable for the allResponses IntResponseMap below.  As
       // a result, this differs from the logic for approximation data import.
-      eval_id = -cntr;
+      //      eval_id = -cntr;
+      // Currently:
+      // Until we review uses of post-run in conjunction with restart
+      // and possibly change how the array of Variables and Responses
+      // are stored, we use positive ids so order of the Variables and
+      // Response lists are consistent for statistics calculation.
       if (compactMode) {
-	// this doesn't work because getCol is returning a copy;
-	// could construct a View...
-	//read_data_tabular(tabular_file, 
-	//		  Teuchos::getCol(Teuchos::View, allSamples, (int)i));
-	for (size_t var_index = 0; var_index < num_vars; ++var_index) 
-	  tabular_file >> allSamples(var_index, i);
+	// read a Variables object; copy it into the i-th column in allSamples
+	vars.read_tabular(tabular_file);
+	variables_to_sample(vars, allSamples[i]);
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << vars;
       }
       else {
 	allVariables[i] = iteratedModel.current_variables().copy();
@@ -744,6 +770,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
       }
       allResponses[eval_id] = iteratedModel.current_response().copy();
       allResponses[eval_id].read_tabular(tabular_file);
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << allResponses[eval_id];
     }
     catch (const std::ios_base::failure& failorbad_except) {
       Cerr << "\nError: insufficient data in post-run input file;\n       "

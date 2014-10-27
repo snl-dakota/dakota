@@ -77,6 +77,10 @@ inline bool operator!=(const StringArray& dsa1, const StringArray& dsa2)
 inline bool operator!=(const SizetArray& sa, SizetMultiArrayConstView smav)
 { return !(sa == smav); }
 
+/// inequality operator for StringMultiArray view vs. container
+bool operator!=(const StringMultiArrayView& sma1, 
+		const StringMultiArray& sma2);
+
 
 // ---------------------------------
 // miscellaneous numerical utilities

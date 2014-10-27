@@ -463,9 +463,12 @@ void RelaxedVariables::write_aprepro(std::ostream& s) const
 
 
 /** Presumes variables object is appropriately sized to receive data */
-void RelaxedVariables::read_tabular(std::istream& s)
+void RelaxedVariables::read_tabular(std::istream& s, bool active_only)
 {
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
+  const SizetArray& vc_totals = active_only ? 
+    sharedVarsData.active_components_totals() : 
+    sharedVarsData.components_totals(); 
+
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
     num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
@@ -545,9 +548,12 @@ void RelaxedVariables::read_tabular(std::istream& s)
 }
 
 
-void RelaxedVariables::write_tabular(std::ostream& s) const
+void RelaxedVariables::write_tabular(std::ostream& s, bool active_only) const
 {
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
+  const SizetArray& vc_totals = active_only ? 
+    sharedVarsData.active_components_totals() : 
+    sharedVarsData.components_totals(); 
+
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
     num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],

@@ -10,6 +10,7 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
+#include "dakota_tabular_io.hpp"
 #include "ParamResponsePair.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -44,6 +45,25 @@ void ParamResponsePair::write_annotated(std::ostream& s) const
     s << evalInterfaceIds.second << ' ';
   prPairResponse.write_annotated(s);
   s << evalInterfaceIds.first << '\n';
+}
+
+
+void ParamResponsePair::write_tabular(std::ostream& s) const
+{
+  TabularIO::
+    write_leading_columns(s, evalInterfaceIds.first, evalInterfaceIds.second);
+  // write variables in input spec order
+  prPairParameters.write_tabular(s);
+  prPairResponse.write_tabular(s);
+}
+
+
+/** When the eval id or interface isn't needed, directly appeal to
+    Variables and Response write_tabular_labels... */
+void ParamResponsePair::write_tabular_labels(std::ostream& s) const
+{
+  TabularIO::
+    write_header_tabular(s, prPairParameters, prPairResponse, "eval_id");
 }
 
 

@@ -626,11 +626,21 @@ void ResponseRep::write_tabular(std::ostream& s) const
       s << std::setw(write_precision+4) << functionValues[i] << ' ';
     else
       s << "               "; // blank field for inactive data
+    // BMA TODO: write something that can be read back in for tabular...
+    //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
+    //s << "EMPTY"; // inactive data
   }
   s << std::endl; // table row completed
 }
 
 
+void ResponseRep::write_tabular_labels(std::ostream& s) const
+{
+  size_t num_fns = functionLabels.size();
+  for (size_t j=0; j<num_fns; ++j)
+    s << std::setw(14) << functionLabels[j] << ' ';
+  s << std::endl; // table row completed
+}
 
 
 /** UnpackBuffer version differs from BiStream version in the omission

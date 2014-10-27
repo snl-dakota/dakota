@@ -231,7 +231,8 @@ public:
 
   /// adds data to each window in the 2d graphics and adds a row to
   /// the tabular data file based on the results of a model evaluation
-  void add_datapoint(const Variables& vars, const Response& response);
+  void add_datapoint(const Variables& vars, const String& iface, 
+		     const Response& response);
   
   /// initialize the tabular datastream on iterator leaders
   void create_tabular_datastream(const Variables& vars, const Response& resp);

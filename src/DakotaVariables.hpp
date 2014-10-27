@@ -102,12 +102,12 @@ public:
   virtual void write_annotated(std::ostream& s) const;
 
   /// read a variables object in tabular format from an istream
-  virtual void read_tabular(std::istream& s);
+  virtual void read_tabular(std::istream& s, bool active_only = false);
   /// write a variables object in tabular format to an std::ostream
-  virtual void write_tabular(std::ostream& s) const;
+  virtual void write_tabular(std::ostream& s, bool active_only = false) const;
 
   /// write the labels in input spec order to a std::ostream
-  void write_tabular_labels(std::ostream& s) const;
+  void write_tabular_labels(std::ostream& s, bool active_only = false) const;
 
   /// read a variables object from a packed MPI buffer
   virtual void read(MPIUnpackBuffer& s);
@@ -1572,68 +1572,6 @@ inline void write_ordered(std::ostream& s, const SizetArray& comp_totals,
   //cv_cntr  += num_csv;  div_cntr += num_dsiv;
   //dsv_cntr += num_dssv; drv_cntr += num_dsrv;
 }
-
-
-
-/** Tabular reader that reads data in order design, aleatory,
-    epistemic, state according to counts in vc_totals (extract in
-    order: cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv,
-    csv/dsiv/dsrv, which might reflect active or all depending on
-    context. Assumes container sized, since might be a view into a
-    larger array.
-
-    Used in MixedVariables:read_tabular and in TabularIO for ParamStudy, 
-    but placed here for maintenance with other Variables I/O.
-*/
-inline void read_vars_tabular(std::istream& s, const SizetArray& vc_totals,
-			      RealVector& cv, IntVector& div, 
-			      StringMultiArray& dsv, RealVector& drv)
-{
-
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
-
-  // read design variables
-  read_data_partial_tabular(s, acv_offset,  num_cdv,  cv);
-  read_data_partial_tabular(s, adiv_offset, num_ddiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_ddsv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_ddrv, drv);
-  acv_offset  += num_cdv;  adiv_offset += num_ddiv;
-  adsv_offset += num_ddsv; adrv_offset += num_ddrv;
-
-  // read aleatory uncertain variables
-  read_data_partial_tabular(s, acv_offset,  num_cauv,  cv); 
-  read_data_partial_tabular(s, adiv_offset, num_dauiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_dausv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_daurv, drv);
-  acv_offset  += num_cauv;  adiv_offset += num_dauiv;
-  adsv_offset += num_dausv; adrv_offset += num_daurv;
-
-  // read epistemic uncertain variables
-  read_data_partial_tabular(s, acv_offset,  num_ceuv,  cv); 
-  read_data_partial_tabular(s, adiv_offset, num_deuiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_deusv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_deurv, drv);
-  acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
-  adsv_offset += num_deusv; adrv_offset += num_deurv;
-
-  // read state variables
-  read_data_partial_tabular(s, acv_offset,  num_csv,  cv); 
-  read_data_partial_tabular(s, adiv_offset, num_dsiv, div);
-  read_data_partial_tabular(s, adsv_offset, num_dssv, dsv);
-  read_data_partial_tabular(s, adrv_offset, num_dsrv, drv);
-  //acv_offset  += num_csv;  adiv_offset += num_dsiv;
-  //adsv_offset += num_dssv; adrv_offset += num_dsrv;
-
-}
-
 
 } // namespace Dakota
 

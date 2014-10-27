@@ -26,6 +26,9 @@ namespace Dakota {
 /// special value returned by index() when entry not found
 const size_t _NPOS = ~(size_t)0; // one's complement
 
+/// whether to write/read interface IDs in tabular data
+const bool TABULAR_IFACE_ID = true;
+
 // --------------
 // Global objects
 // --------------

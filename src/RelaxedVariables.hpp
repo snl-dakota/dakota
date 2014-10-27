@@ -57,8 +57,8 @@ protected:
   void read(std::istream& s);
   void write(std::ostream& s) const;
   void write_aprepro(std::ostream& s) const;
-  void read_tabular(std::istream& s);
-  void write_tabular(std::ostream& s) const;
+  void read_tabular(std::istream& s, bool active_only = false);
+  void write_tabular(std::ostream& s, bool active_only = false) const;
 
 private:
 

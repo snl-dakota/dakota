@@ -149,7 +149,7 @@ private:
   void update_pop_counts(const IntResponseMap& resp_map);
 
   /// Load approximation test points from user challenge points file
-  void read_challenge_points();
+  void read_challenge_points(bool active_only);
 
   //
   //- Heading: Data

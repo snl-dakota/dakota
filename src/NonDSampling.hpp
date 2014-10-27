@@ -102,6 +102,13 @@ protected:
   /// Override default update of continuous vars only
   void update_model_from_sample(Model& model, const Real* sample_vars);
 
+  /// override default mapping of continuous variables only
+  void sample_to_variables(const Real* sample_vars, Variables& vars);
+
+
+  void variables_to_sample(const Variables& vars, Real* sample_vars);
+
+
   //
   //- Heading: Convenience member functions for derived classes
   //
