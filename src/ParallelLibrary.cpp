@@ -893,8 +893,9 @@ void ParallelLibrary::print_configuration()
   // ParallelConfiguration instance.
 
   const std::vector<ParLevLIter>& mi_iters = currPCIter->miPLIters;
-  ParLevLIter ie_iter = currPCIter->iePLIter;
-  ParLevLIter ea_iter = currPCIter->eaPLIter;
+  ParLevLIter ie_iter  = currPCIter->iePLIter;
+  ParLevLIter ea_iter  = currPCIter->eaPLIter;
+  short dak_par_levels = currPCIter->numParallelLevels;
 
   // --------------------------------------------------
   // Send partition info up the chain to worldRank == 0
@@ -913,7 +914,6 @@ void ParallelLibrary::print_configuration()
   int num_anal_srv = ea_iter->numServers, p_per_anal = ea_iter->procsPerServer,
       anal_remainder = ea_iter->procRemainder;
   bool  eval_ded_master_flag = ea_iter->dedicatedMasterFlag;
-  short dak_par_levels = currPCIter->numParallelLevels;
 
   // NEED A MIX OF TOP DOWN: RESTRICTION OF LOGIC TO SERVER IDS = 1
   //          AND BOTTOM UP: MESSAGES CASCADE FROM LOWEST LEVELS TO HIGHEST
@@ -982,38 +982,29 @@ void ParallelLibrary::print_configuration()
 
   // use local copies for settings from other processors
   // (do not update parallel settings on message recipients).
-  int num_anal_srv = ea_iter->numServers, p_per_anal = ea_iter->procsPerServer,
-      anal_remainder = ea_iter->procRemainder;
-  bool  eval_ded_master_flag = ea_iter->dedicatedMasterFlag;
-  short dak_par_levels = currPCIter->numParallelLevels;
+  ParallelLevel ea_pl;
   if (mi_iter->serverId == 1) {
+    // EA SEND: eval server 1 master sends ea data to iterator server 1 master
     if ( ie_iter->dedicatedMasterFlag && ie_iter->serverId == 1 &&
 	 ie_iter->serverCommRank == 0 ) {
-      // *** EA SEND ***
-      // eval server 1 master sends analysis info to iterator server 1 master
-      MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
-      send_buffer << ea_iter->numServers    << ea_iter->procsPerServer
-		  << ea_iter->procRemainder << ea_iter->dedicatedMasterFlag
-		  << currPCIter->numParallelLevels;
+      MPIPackBuffer send_buffer(128);
+      send_buffer << *ea_iter << dak_par_levels;
       send_ie(send_buffer, 0, 1001);
     }
     if (mi_iter->serverCommRank == 0) {
+      // EA RECV: iter server 1 master recvs ea data from eval server 1 master
       if (ie_iter->dedicatedMasterFlag) {
-	// *** EA RECV ***
-	// iter server 1 master recv's analysis info from eval server 1 master
-	MPIUnpackBuffer recv_buffer(64);
+	MPIUnpackBuffer recv_buffer(128);
 	MPI_Status status;
 	recv_ie(recv_buffer, 1, 1001, status);
-	recv_buffer >> num_anal_srv >> p_per_anal >> anal_remainder
-		    >> eval_ded_master_flag >> dak_par_levels;
+	recv_buffer >> ea_pl >> dak_par_levels;
       }
+      else
+	ea_pl = *ea_iter;
+      // IE+EA SEND: iter server 1 master sends ie+ea data to meta-iter master
       if (mi_iter->dedicatedMasterFlag) {
-	// *** IE + EA SEND ***
-	// iterator server 1 master sends combined info to meta-iterator master
-	MPIPackBuffer send_buffer(64);
-	send_buffer << ie_iter->numServers << ie_iter->procsPerServer
-		    << ie_iter->dedicatedMasterFlag << num_anal_srv <<p_per_anal
-		    << anal_remainder << eval_ded_master_flag << dak_par_levels;
+	MPIPackBuffer send_buffer(128);
+	send_buffer << *ie_iter << ea_pl << dak_par_levels;
 	send_mi(send_buffer, 0, 1002);
       }
     }
@@ -1023,19 +1014,16 @@ void ParallelLibrary::print_configuration()
   // worldRank == 0 prints configuration
   // -----------------------------------
   if (mpiManager.world_rank() == 0) { // does all output
-    int num_eval_srv = ie_iter->numServers,
-        p_per_eval   = ie_iter->procsPerServer;
-    bool iterator_ded_master_flag = ie_iter->dedicatedMasterFlag;
+    ParallelLevel ie_pl;
+    // IE + EA RECV: meta-iter master recvs ie+ea data from iter server 1 master
     if (mi_iter->dedicatedMasterFlag) {
-      // *** IE + EA RECV ***
-      // meta-iterator master recv combined info from iterator server 1 master
-      MPIUnpackBuffer recv_buffer(64); // 5 ints+1 short+2 bools < ~22 bytes
+      MPIUnpackBuffer recv_buffer(128);
       MPI_Status status;
       recv_mi(recv_buffer, 1, 1002, status);
-      recv_buffer >> num_eval_srv >> p_per_eval >> iterator_ded_master_flag
-                  >> num_anal_srv >> p_per_anal >> anal_remainder
-		  >> eval_ded_master_flag >> dak_par_levels;
+      recv_buffer >> ie_pl >> ea_pl >> dak_par_levels;
     }
+    else
+      ie_pl = *ie_iter;
 
     // Meta-iterator diagnostics
     Cout << "\n---------------------------------------------------------------"
@@ -1049,20 +1037,21 @@ void ParallelLibrary::print_configuration()
     else                              Cout << "peer\n";
 
     // Iterator diagnostics
-    Cout << "concurrent evaluations\t  " << std::setw(4) << num_eval_srv
-	 << "\t\t   " << std::setw(4) << p_per_eval << "\t\t   ";
-    if (iterator_ded_master_flag)  Cout << "ded. master\n";
+    Cout << "concurrent evaluations\t  " << std::setw(4) << ie_pl.numServers
+	 << "\t\t   " << std::setw(4) << ie_pl.procsPerServer << "\t\t   ";
+    if (ie_pl.dedicatedMasterFlag) Cout << "ded. master\n";
     else                           Cout << "peer\n";
 
     // Evaluation diagnostics
-    Cout << "concurrent analyses\t  " << std::setw(4) << num_anal_srv
-	 << "\t\t   " << std::setw(4) << p_per_anal << "\t\t   ";
-    if (eval_ded_master_flag)      Cout << "ded. master\n";
+    Cout << "concurrent analyses\t  " << std::setw(4) << ea_pl.numServers
+	 << "\t\t   " << std::setw(4) << ea_pl.procsPerServer << "\t\t   ";
+    if (ea_pl.dedicatedMasterFlag) Cout << "ded. master\n";
     else                           Cout << "peer\n";
 
     // Analysis diagnostics
-    int anal_par_levels = (p_per_anal > 1 || anal_remainder) ? 1 : 0;
-    Cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
+    int anal_par_levels
+      = (ea_pl.procsPerServer > 1 || ea_pl.procRemainder) ? 1 : 0;
+    Cout << "multiprocessor analysis\t  " << std::setw(4)<< ea_pl.procsPerServer
          << "\t\t     N/A\t   N/A\n\nTotal parallelism levels =   " 
          << dak_par_levels + anal_par_levels << " (" << dak_par_levels
 	 << " dakota, " << anal_par_levels << " analysis)\n"
