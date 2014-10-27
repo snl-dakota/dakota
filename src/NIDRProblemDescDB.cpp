@@ -835,7 +835,7 @@ int NIDRProblemDescDB::check_driver(const String& an_driver,
 
   StringArray driver_and_args;  // to hold tokens of the driver
 
-  // tokenize on whistespace, preserving quoted strings and escapes,
+  // tokenize on whitespace, preserving quoted strings and escapes,
   // so the outermost quoted strings become single command-line args
   escaped_list_separator<char> els("\\", " \t", "\"'");
   tokenizer<escaped_list_separator<char> > tok(an_driver, els);
@@ -857,7 +857,7 @@ int NIDRProblemDescDB::check_driver(const String& an_driver,
 
       // check PATH and RUNDIR (since . is already on the search path)
       bfs::path driver_found = WorkdirHelper::which(program_name);
-      if ( is_regular_file(driver_found) )
+      if ( !driver_found.empty() )
 	return 0;
 
       // check against link/copy files that will appear in workdir

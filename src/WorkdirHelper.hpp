@@ -33,7 +33,8 @@ namespace Dakota {
 enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
 
 
-// define a function type that maps src to dest with option to overwrite
+/// define a function type that operates from src to dest, with option
+/// to overwrite
 typedef 
 boost::function<bool (const bfs::path& src_path, 
 		      const bfs::path& dest_path, bool overwrite)> 
@@ -100,12 +101,20 @@ struct MatchesWC {
 typedef boost::filter_iterator<MatchesWC, bfs::directory_iterator> glob_iterator;
 
 
+/* RATIONALE on path management: only update PATH when needed, for
+   example, adjust working directory, PATH, and other environment
+   variables when starting an external process, reset when done. */
 
+/** Utility class for cross-platform management of environment and
+    paths.  Including directory and file operations.  On
+    initialization, this class does not manipulate the present working
+    directory, nor the PATH environment variable, but stores context
+    to manipulate them later. */
 class WorkdirHelper
 {
 public:
 
-  /// initialize paths in the workdir helper at runtime
+  /// initialize (at runtime) cached values for paths and environment
   static void initialize();
 
   /// Query for dakota's startup $PWD
@@ -114,7 +123,8 @@ public:
   /// change current directory 
   static void change_directory(const bfs::path& new_dir);
 
-  /// Prepend $PATH environment variable with an extra_path
+  /// Prepend cached preferredEnvPath with extra_path and update $PATH
+  /// environment variable
   static void prepend_preferred_env_path(const std::string& extra_path);
 
   /// Set an environment variable
@@ -122,8 +132,8 @@ public:
 			      const std::string& env_val, 
 			      bool overwrite_flag = true);
 
-  /// Returns the bfs::path for the analysis driver,
-  //  supporting typical windows filename extensions
+  /// Returns the bfs::path for the analysis driver, supporting
+  /// typical windows filename extensions, or empty if not found
   static bfs::path which(const std::string& driver_name);
 
   /// get a valid absolute bfs::path to a subdirectory relative to rundir
@@ -172,7 +182,8 @@ public:
 			 bool overwrite);
 
   /// prepend any directories (including wildcards) found in
-  /// source_items to the preferred environment path
+  /// source_items to the preferred environment path; this will update
+  /// cached preferred path and PATH
   static void prepend_path_items(const StringArray& source_items);
 
   /// check whether any of the passed source items are filesystem
@@ -201,7 +212,9 @@ public:
   static bool recursive_copy(const bfs::path& src_path, 
 			     const bfs::path& dest_dir, bool overwrite);
  
-  /// prepend the env path with source path if it's a directory
+  /// prepend the preferred env path with source path if it's a
+  /// directory; this will update cached preferred path and manipulate
+  /// PATH
   static bool prepend_path_item(const bfs::path& src_path, 
 				const bfs::path& dest_dir, bool overwrite);
 
@@ -231,7 +244,8 @@ public:
 
 private:
 
-  /// Returns the bfs::path for the analysis driver - POSIX-style implementation
+  /// Returns the bfs::path for the analysis driver - POSIX-style
+  /// implementation, returns empty if not found
   static bfs::path po_which(const std::string& driver_name);
 
   /// Initializes class member, startupPATH
@@ -253,7 +267,7 @@ private:
   /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
   static std::string startupPATH;
 
-  /// PATH=".:startupPWD:startupPATH"
+  /// Dakota preferred search PATH = ".:startupPWD:startupPATH"
   static std::string dakPreferredEnvPath;
 
   //

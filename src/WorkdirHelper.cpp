@@ -70,7 +70,8 @@ std::string get_cwd_str()
 }
 
 
-/// Initialize defers calls to Boost filesystem utilities until runtime
+/** Initialize defers calls to Boost filesystem utilities until
+    runtime (required on some operating systems. */
 void WorkdirHelper::initialize()
 {
   startupPWD          = get_cwd_str();
@@ -110,7 +111,7 @@ std::string WorkdirHelper::init_preferred_env_path()
 
   // Go ahead and prepend '.' to the preferred $PATH since it can't hurt
 
-  preferred_env_path += "." + path_sep_string + get_cwd_str() + path_sep_string;
+  preferred_env_path += "." + path_sep_string + startupPWD + path_sep_string;
   preferred_env_path += init_startup_path();
 
   return preferred_env_path;
@@ -141,6 +142,7 @@ void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
                                extra_path;
 
   std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
+  // get the trailing part of the old path (after the =)
   std::string old_preferred_path
     = dakPreferredEnvPath.substr(preferred_env_path.size());
 
@@ -230,7 +232,7 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 std::vector<std::string> get_pathext()
 {
   // Get the possible filename extensions from the system environment variable
-
+  // (getenv is not case-sensitive on Windows)
   char* env_ext_str_list = std::getenv("PATHEXT");
 
   // Create a SringArray of viable extensions for use in executable
@@ -255,43 +257,52 @@ std::vector<std::string> get_pathext()
  */
 bfs::path WorkdirHelper::which(const std::string& driver_name)
 {
-  StringArray extensions = get_pathext(); // expect empty vector on posix
+  boost::filesystem::path driver_found;
 
 #if defined(_WIN32)
+
+  // TODO: consider skipping this if the user gave an explicit
+  // extension (use bfs::path::extension())
+
+  // get list of valid extensions for executables
+  StringArray extensions = get_pathext();
+  // always check these as a fallback
   extensions.push_back(".com"); extensions.push_back(".exe");
-  
-  std::string driver_path;
 
   BOOST_FOREACH(const std::string& e, extensions) {
 
     // check with extension as given (potentially mixed case), lower, and upper
+    // don't bother checking all possible case variants
     std::string driver_name_we = driver_name;
+
     driver_name_we += e;
-    driver_path = po_which(driver_name_we).string();
+    driver_found = po_which(driver_name_we);
+    if( !driver_found.empty() ) break;
 
     driver_name_we = driver_name;
     driver_name_we += boost::algorithm::to_lower_copy(e);
-    driver_path = po_which(driver_name_we).string();
+    driver_found = po_which(driver_name_we);
+    if( !driver_found.empty() ) break;
 
     driver_name_we = driver_name;
     driver_name_we += boost::algorithm::to_upper_copy(e);
-    driver_path = po_which(driver_name_we).string();
+    driver_found = po_which(driver_name_we);
+    if( !driver_found.empty() ) break;
 
-    if( !driver_path.empty() ) {
-#if defined(DEBUG)
-      Cout << driver_path << " FOUND when " << e << " appended" << std::endl;
-#endif
-      break;
-    }
   }
+#if defined(DEBUG)
+  if( !driver_found.empty() )
+    Cout << driver_found << " FOUND when " << e << " appended" << std::endl;
+#endif
 
-  return bfs::path(driver_path);
-
-#else
+#else  // _WIN32
 
   // "Plain ol" POSIX case was reliable, so just call it if NOT native Windows
-  return po_which(driver_name);
-#endif // _WIN32
+  driver_found = po_which(driver_name);
+
+#endif  // _WIN32
+
+  return driver_found;
 }
 
 
@@ -305,28 +316,31 @@ inline bool contains(const bfs::path& dir_path, const std::string& file_name,
   return boost::filesystem::is_regular_file(complete_filepath);
 }
 
-/** Uses string representing $PATH to locate an analysis driver on the host
- *  computer.  Returns the path to the driver (as a string)
+/** For absolute driver_name, validates that is regular file.  For
+ *  relative, uses string representing $PATH (preferred path) to
+ *  locate an analysis driver on the host computer.  Returns the path
+ *  to the driver, or empty if not found.
  *
  *  This is the "plain ol' which" impl that worked well, historically, on POSIX.
  */
 bfs::path WorkdirHelper::po_which(const std::string& driver_name)
 {
-  std::string driver_path_str;
-  bfs::path driver_path(driver_name);
+  bfs::path driver_path_spec(driver_name);
+  bfs::path driver_path_found;
 
-  if( !driver_path.is_absolute() ) {
+  if( !driver_path_spec.is_absolute() ) {
     //Cout << "RELATIVE path to driver case" << '\n';
     std::vector<std::string> search_dirs =
       tokenize_env_path(dakPreferredEnvPath);
 
     BOOST_FOREACH(const std::string& d, search_dirs) {
-      boost::filesystem::path f;
-      boost::filesystem::path d_path(d);
+      boost::filesystem::path complete_path_to_driver;
+      boost::filesystem::path search_dir_path(d);
 
-      if( contains(d_path, driver_name, f) ) {
-        //Cout << driver_name << " FOUND in: " << d << std::endl;
-        driver_path_str = f.string();
+      if( contains(search_dir_path, driver_name, complete_path_to_driver) ) {
+        //Cout << driver_name << " FOUND in: " << d << "; complete path is: " 
+	//     << complete_path_to_driver << std::endl;
+        driver_path_found = complete_path_to_driver;
         break;
       }
     }
@@ -334,11 +348,11 @@ bfs::path WorkdirHelper::po_which(const std::string& driver_name)
   }
   else {
     //Cout << "ABSOLUTE path to driver was specified" << std::endl;
-    if (bfs::is_regular_file(driver_path))
-      driver_path_str = driver_name;
+    if (bfs::is_regular_file(driver_path_spec))
+      driver_path_found = driver_path_spec;
   }
 
-  return driver_path;
+  return driver_path_found;
 }
 
 
