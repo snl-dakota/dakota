@@ -18,9 +18,6 @@
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
 
-/// Use NIDR to add exedir and . to $PATH
-extern "C" int nidr_save_exedir(const char*, int);
-
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
 using std::cout;
@@ -89,12 +86,6 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 
   // these data were previously statically initialized, so perform first
   WorkdirHelper::initialize();
-
-  // Add both the directory containing this binary and . to the end of
-  // $PATH if not already on $PATH.
-  unsigned short exedir2path = 1;
-  unsigned short dot2path = 2;
-  nidr_save_exedir(argv[0], exedir2path | dot2path);
 
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::Environment(BaseConstructor, int, char*) called "
