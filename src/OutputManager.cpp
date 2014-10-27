@@ -274,8 +274,6 @@ create_tabular_datastream(const Variables& vars, const Response& response)
   // For output/restart/tabular data, all Iterator masters stream
   // output so tabular graphics files need to be tagged
 
-  // TODO: with multiple tags, this will be wrong (last pushed tag)
-
   // tabular data file set up
   // prevent multiple opens of tabular_data_file
   if (!tabularDataFStream.is_open()) {
@@ -284,9 +282,13 @@ create_tabular_datastream(const Variables& vars, const Response& response)
 			 "DakotaGraphics");
   }
 
-  // tabular graphics data only supports annotated format, active AND inactive
-  // TODO: only write header if newly opened?
-  TabularIO::write_header_tabular(tabularDataFStream, vars, response, "eval_id");
+  bool active_only = false;
+  bool response_labels = true;
+  bool annotated = true;  // tabular graphics data only supports annotated
+  if (annotated)
+    TabularIO::write_header_tabular(tabularDataFStream, vars, response,
+				    tabularCntrLabel, active_only,
+				    response_labels);
 }
 
 
@@ -295,8 +297,7 @@ create_tabular_datastream(const Variables& vars, const Response& response)
     graphicsCntr is used for the x axis in the graphics and the first
     column in the tabular data.  */
 void OutputManager::
-add_datapoint(const Variables& vars, const String& iface,
-	      const Response& response)
+add_datapoint(const Variables& vars, const Response& response)
 {
   // If the response data only contains derivative info, then there are no
   // response function values to record in either the graphics window or the
@@ -313,24 +314,22 @@ add_datapoint(const Variables& vars, const String& iface,
   if (!plot_data)
     return;
   
-  // post to the X graphics plots (active variables only)
+  // post to the X graphics plots
   dakotaGraphics.add_datapoint(graphicsCntr, vars, response);
   
   // whether the file is open, not whether the user asked
   if (tabularDataFStream.is_open()) {
+    // In the tabular graphics file, only the *active* variables are tabulated
+    // for top level evaluations/iterations in the strategy.  This differs from
+    // the "to_tabular" option of dakota_restart_util, which tabulates all
+    // variables for all application interface evaluations.
 
-    // Historically, only active variables were tabulated, for top
-    // level evaluations/iterations in the strategy.  Now, all
-    // (active/inactive) are written out to improve usability of
-    // re-import and to sync with the "to_tabular" option of
-    // dakota_restart_util, which tabulates all variables for all
-    // application interface evaluations.
-
-    // Since this tabular data file is used for multiple top-level
-    // Iterator outputs, the counter may not be that from an interface
-
-    TabularIO::write_data_tabular(tabularDataFStream, vars, iface, response,
-     				  graphicsCntr, true);
+    // NOTE: could add ability to monitor response data subsets based on
+    // user specification.
+    bool active_only = false;
+    bool write_responses = true;
+    TabularIO::write_data_tabular(tabularDataFStream, vars, response,
+				  graphicsCntr, active_only, write_responses);
   }
 
   // Only increment the graphics counter if posting data (incrementing on every
@@ -594,6 +593,56 @@ void RestartWriter::append_prp(const ParamResponsePair& prp_in)
 void RestartWriter::flush()
 { restartOutputFS.flush(); }
 
+
+#ifdef Want_Heartbeat /*{*/
+ static time_t start_time;
+
+extern "C" void dak_sigcatch(int sig)
+{
+        struct rusage ru, ruc;
+        unsigned long elapsed;
+
+        if (getrusage(RUSAGE_SELF, &ru))
+                std::memset(&ru, 0, sizeof(ru));
+        if (getrusage(RUSAGE_SELF, &ruc))
+                std::memset(&ruc, 0, sizeof(ru));
+        elapsed = time(0) - start_time;
+        std::printf("\n<<<<DAKOTA_HEARTBEAT seconds: elapsed %lu, cpu %.3g, child %.3g>>>>\n",
+                elapsed, ru.ru_utime.tv_sec + ru.ru_stime.tv_sec
+                        + 1e-6*(ru.ru_utime.tv_usec + ru.ru_stime.tv_usec),
+                        ruc.ru_utime.tv_sec + ruc.ru_stime.tv_sec
+                        + 1e-6*(ruc.ru_utime.tv_usec + ruc.ru_stime.tv_usec));
+        std::fflush(stdout);
+        signal(SIGALRM, dak_sigcatch);
+}
+#endif /*Want_Heartbeat }*/
+
+void start_dakota_heartbeat(int seconds)
+{
+#ifdef Want_Heartbeat /*{*/
+        char *s;
+        struct itimerval itv;
+        static void(*oldsig)(int);
+        void (*oldsig1)(int);
+
+        start_time = time(0);
+
+        if (seconds <= 0 && (s = std::getenv("DAKOTA_HEARTBEAT")))
+                seconds = (int)std::strtol(s,0,10);
+        if (seconds > 0) {
+                std::memset(&itv, 0, sizeof(itv));
+                itv.it_interval.tv_sec = itv.it_value.tv_sec = seconds;
+                setitimer(ITIMER_REAL, &itv, 0);
+                oldsig1 = signal(SIGALRM, dak_sigcatch);
+                if (!oldsig)
+                        oldsig = oldsig1;
+        }
+        else if (oldsig) {
+                signal(SIGALRM, oldsig);
+                oldsig = 0;
+        }
+#endif /*Want_Heartbeat }*/
+}
 
 } //namespace Dakota
 
