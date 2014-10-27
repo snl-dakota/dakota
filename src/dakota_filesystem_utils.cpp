@@ -41,8 +41,6 @@
 namespace Dakota {
 
 
-#ifdef DEBUG_LEGACY_WORKDIR
-
 #ifdef Want_Heartbeat /*{*/
  static time_t start_time;
 
@@ -93,6 +91,8 @@ void start_dakota_heartbeat(int seconds)
 #endif /*Want_Heartbeat }*/
 	}
 
+
+#ifdef DEBUG_LEGACY_WORKDIR
 
 
 /* Adding sftw.c, sftw.h and rec_cp, rec_rm here for simplicity... */
