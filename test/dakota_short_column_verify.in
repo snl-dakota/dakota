@@ -1,3 +1,5 @@
+#timeout override: 0=TD500
+
 method,
 	sampling
 	  samples = 100000 seed = 1234567

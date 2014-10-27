@@ -4,7 +4,7 @@
 # (2) efficient_global for constrained, global NLS  with mean random vars
 # (3) global_reliability for UQ at the nominal design
 
-# timeout overrides: 0=TD120, 1=TD120, 2=TD120, 3=TD300
+# timeout overrides: 0=TD120, 1=TD120, 2=TD120, 3=TD900
 
 method,
 	efficient_global					#0,#1,#2

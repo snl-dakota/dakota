@@ -1,4 +1,4 @@
-
+#timeouts: 0=TD360, 1=TD360, 2=TD360, 3=TD360
 method,
 	sampling			#0,#1
 #	polynomial_chaos		#2,#3
