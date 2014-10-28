@@ -1,0 +1,21 @@
+Blurb::  Number of field responses functions
+Description::
+This keyword describes the number of field response functions. 
+Note that if there is one \c field_response, but it has length 100 (meaning 100 values), then 
+the user's simulation code must return 100 values.  
+Also, if there are both scalar and field responses, the user should specify 
+the number of scalar responses as \c scalar_responses.  If there are only field responses, 
+it still is necessary to specify both \c response_functions = NN and \c field_responses = NN, 
+where NN is the number of field responses.
+
+Topics::	
+Examples::
+Theory::
+This type of data set is used by uncertainty
+quantification methods, in which the effect of parameter uncertainty
+on response functions is quantified, and can also be used in parameter
+study and design of experiments methods (although these methods are
+not restricted to this data set), in which the effect of parameter
+variations on response functions is evaluated. 
+Faq::
+See_Also::	responses-scalar_responses
