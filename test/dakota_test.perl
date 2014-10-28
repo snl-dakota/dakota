@@ -625,7 +625,9 @@ sub parse_dakota_command {
 
   # allow optional dakota command arguments with 
   # DA='-with_args'
-  if ( $line =~ /(#|\s+)$pq_cnt=DA\'([\w\-]*)\'/ ) {
+  # pre/post run might have [ :._]
+  # consider allowing anything between the single quotes...
+  if ( $line =~ /(#|\s+)$pq_cnt=DA\'([\w\s\-\.:]*)\'/ ) {
     ${$ref_dakota_args} = $2;
     print "Using alternate dakota args \'${$ref_dakota_args}\'\n";
   }
