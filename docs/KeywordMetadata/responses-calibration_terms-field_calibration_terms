@@ -1,0 +1,28 @@
+Blurb::  Number of field calibration terms
+Description::
+This keyword describes the number of field calibration terms
+Note that if there is one \c field_calibration_terms, but it has length 100 (meaning 100 values), then 
+the user's simulation code must return 100 values.  
+Also, if there are both scalar and field calibration, the user should specify 
+the number of scalar terms as \c scalar_calibration_terms.  If there are only field calibration terms, 
+it still is necessary to specify both \c field_calibration_terms = NN and \c calibration_terms = NN, 
+where NN is the number of field calibration terms.
+
+Topics::	
+Examples::
+Theory::  Calibration terms are responses that are used with calibration
+methods in Dakota, such as least squares optimizers.  Currently, each scalar term is added
+to the total sum-of-squares error function presented to the optimizer. However,
+each individual field value is added as well.   For example,
+if you have one field calibration term with length 100 (e.g. a time-temperature trace
+with 100 time points and 100 temperature points), the 100 temperature values
+will be added to create the overall sum-of-squares error function used in
+calibration.  NOTE: We plan to add a capability to interpolate the field data 
+from the user's simulation to the experimental data.  For example, if the user
+has thermocouple readings at 20 time points, it will be an experimental field response 
+with 20 time points and 20 temperature values.  We plan to take the 100 simulation time-temperature 
+values (from the example above) and interpolate those to the 20 experimental points, to create 
+20 residual terms (simulation minus experimental data points) that will be used in calibration. 
+As of release 6.1, however, this capability is not yet available in Dakota. 
+Faq::
+See_Also::	calibration_terms-scalar_calibration_terms
