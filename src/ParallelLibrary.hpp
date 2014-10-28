@@ -590,8 +590,14 @@ public:
 
   /// blocking send at the metaiterator-iterator communication level
   void  send_mi(int& send_int, int dest, int tag, size_t index = _NPOS);
+  /// nonblocking send at the metaiterator-iterator communication level
+  void isend_mi(int& send_int, int dest, int tag, MPI_Request& send_req,
+		size_t index = _NPOS);
   /// blocking receive at the metaiterator-iterator communication level
   void  recv_mi(int& recv_int, int source, int tag, MPI_Status& status,
+		size_t index = _NPOS);
+  /// nonblocking receive at the metaiterator-iterator communication level
+  void irecv_mi(int& recv_int, int source, int tag, MPI_Request& recv_req,
 		size_t index = _NPOS);
 
   /// blocking send at the metaiterator-iterator communication level
@@ -606,6 +612,15 @@ public:
   /// nonblocking receive at the metaiterator-iterator communication level
   void irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, 
 		MPI_Request& recv_req, size_t index = _NPOS);
+
+  /// blocking send at the iterator-evaluation communication level
+  void  send_ie(int& send_int, int dest, int tag);
+  /// nonblocking send at the iterator-evaluation communication level
+  void isend_ie(int& send_int, int dest, int tag, MPI_Request& send_req);
+  /// blocking receive at the iterator-evaluation communication level
+  void  recv_ie(int& recv_int, int source, int tag, MPI_Status& status);
+  /// nonblocking receive at the iterator-evaluation communication level
+  void irecv_ie(int& recv_int, int source, int tag, MPI_Request& recv_req);
 
   /// blocking send at the iterator-evaluation communication level
   void  send_ie(MPIPackBuffer& send_buff, int dest, int tag);
@@ -1304,6 +1319,13 @@ send_mi(MPIPackBuffer& send_buff, int dest, int tag, size_t index)
 }
 
 
+inline void ParallelLibrary::send_ie(int& send_int, int dest, int tag)
+{
+  send(send_int, dest, tag, *currPCIter->miPLIters.back(),
+       *currPCIter->iePLIter);
+}
+
+
 inline void ParallelLibrary::
 send_ie(MPIPackBuffer& send_buff, int dest, int tag)
 {
@@ -1358,6 +1380,17 @@ isend(int& send_int, int dest, int tag, MPI_Request& send_req,
 
 
 inline void ParallelLibrary::
+isend_mi(int& send_int, int dest, int tag, MPI_Request& send_req, size_t index)
+{
+  check_mi_index(index);
+  const ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  isend(send_int, dest, tag, send_req, parent_pl,
+	*currPCIter->miPLIters[index]);
+}
+
+
+inline void ParallelLibrary::
 isend_mi(MPIPackBuffer& send_buff, int dest, int tag, MPI_Request& send_req,
 	 size_t index)
 {
@@ -1366,6 +1399,14 @@ isend_mi(MPIPackBuffer& send_buff, int dest, int tag, MPI_Request& send_req,
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   isend(send_buff, dest, tag, send_req, parent_pl,
 	*currPCIter->miPLIters[index]);
+}
+
+
+inline void ParallelLibrary::
+isend_ie(int& send_int, int dest, int tag, MPI_Request& send_req)
+{
+  isend(send_int, dest, tag, send_req, *currPCIter->miPLIters.back(),
+	*currPCIter->iePLIter);
 }
 
 
@@ -1386,8 +1427,8 @@ isend_ea(int& send_int, int dest, int tag, MPI_Request& send_req)
 
 
 inline void ParallelLibrary::
-recv(MPIUnpackBuffer& recv_buff, int source, int tag,
-     MPI_Status& status, const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
+recv(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status,
+     const ParallelLevel& parent_pl, const ParallelLevel& child_pl)
 {
 #ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
@@ -1444,6 +1485,14 @@ recv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status,
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   recv(recv_buff, source, tag, status, parent_pl,
        *currPCIter->miPLIters[index]);
+}
+
+
+inline void ParallelLibrary::
+recv_ie(int& recv_int, int source, int tag, MPI_Status& status)
+{
+  recv(recv_int, source, tag, status, *currPCIter->miPLIters.back(),
+       *currPCIter->iePLIter);
 }
 
 
@@ -1505,6 +1554,18 @@ irecv(int& recv_int, int source, int tag, MPI_Request& recv_req,
 
 
 inline void ParallelLibrary::
+irecv_mi(int& recv_int, int source, int tag, MPI_Request& recv_req,
+	 size_t index)
+{
+  check_mi_index(index);
+  const ParallelLevel& parent_pl = (index) ?
+    *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
+  irecv(recv_int, source, tag, recv_req, parent_pl,
+	*currPCIter->miPLIters[index]);
+}
+
+
+inline void ParallelLibrary::
 irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Request& recv_req,
 	 size_t index)
 {
@@ -1513,6 +1574,14 @@ irecv_mi(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Request& recv_req,
     *currPCIter->miPLIters[index-1] : *parallelLevels.begin();
   irecv(recv_buff, source, tag, recv_req, parent_pl,
 	*currPCIter->miPLIters[index]);
+}
+
+
+inline void ParallelLibrary::
+irecv_ie(int& recv_int, int source, int tag, MPI_Request& recv_req)
+{
+  irecv(recv_int, source, tag, recv_req, *currPCIter->miPLIters.back(),
+	*currPCIter->iePLIter);
 }
 
 

@@ -900,112 +900,83 @@ void ParallelLibrary::print_configuration()
   // --------------------------------------------------
   // Send partition info up the chain to worldRank == 0
   // --------------------------------------------------
-  // If a meta-iterator has a dedicated master, then only iterator servers 
-  // participate in evaluation partitioning.  And if iterator servers have a
-  // dedicated master, then only evaluation servers participate in analysis
-  // partitioning.  This requires up to two messages (within the confines of
-  // the existing communicator and send/recv structure) to jump these two gaps
-  // in partitioning participation.
-
-  size_t i, num_mi = mi_iters.size();
-
-  // ***************************************************************************
-  /*
-  int num_anal_srv = ea_iter->numServers, p_per_anal = ea_iter->procsPerServer,
-      anal_remainder = ea_iter->procRemainder;
-  bool  eval_ded_master_flag = ea_iter->dedicatedMasterFlag;
-
-  // NEED A MIX OF TOP DOWN: RESTRICTION OF LOGIC TO SERVER IDS = 1
-  //          AND BOTTOM UP: MESSAGES CASCADE FROM LOWEST LEVELS TO HIGHEST
+  // If meta-iterator, iterator, or evaluation scheduling has a dedicated
+  // master, then only the servers for these parallelism levels participate
+  // in server partitioning.  This may require multiple messages to jump
+  // these gaps in partitioning participation.  Logic involves a combination
+  // of top-down restriction to server ids = 1 and bottom-up messaging to 
+  // cascade from lowest levels to highest.
 
   // top down restriction to server id = 1
-  bool ie_ea_messaging = true;
-  for (i=1; i<num_mi; ++i) // skip w_pl
+  bool server1_messaging = true;
+  size_t i, j, num_mi = mi_iters.size(), last_index = num_mi - 1;
+  ParLevLIter mi_iter = mi_iters[0]; // w_pl
+  for (i=1; i<num_mi; ++i) { // skip w_pl
+    mi_iter = mi_iters[i];
     if (mi_iter->serverId != 1)
-      { ie_ea_messaging = false; break; }
+      { server1_messaging = false; break; }
+  }
   // bottom up messaging for ie and ea levels
-  if (ie_ea_messaging) {
-    if ( ie_iter->dedicatedMasterFlag && ie_iter->serverId == 1 &&
-	 ie_iter->serverCommRank == 0 ) {
-      // *** EA SEND ***
-      // eval server 1 master sends analysis info to iterator server 1 master
-      MPIPackBuffer send_buffer(64); // 3 ints+1 short+1 bool < ~16 bytes
-      send_buffer << *ea_iter << currPCIter->numParallelLevels;
-      send_ie(send_buffer, 0, 1001);
-    }
-    if (mi_iter->serverCommRank == 0) {
-      if (ie_iter->dedicatedMasterFlag) {
-	// *** EA RECV ***
-	// iter server 1 master recv's analysis info from eval server 1 master
-	MPIUnpackBuffer recv_buffer(64);
+  // use local copies for settings from other processors
+  // (do not update parallel settings on message recipients).
+  ParallelLevel ea_pl, ie_pl; int buffer_len;
+  int tag = 1001;
+  if (server1_messaging) {
+    ie_pl = *ie_iter;
+    if (ie_iter->dedicatedMasterFlag) {
+      // EA SEND: eval server 1 master sends ea data to iterator server 1 master
+      if (ie_iter->serverId == 1 && ie_iter->serverCommRank == 0) {
+	MPIPackBuffer send_buffer;
+	send_buffer << dak_par_levels << *ea_iter;
+	buffer_len = send_buffer.size();
+	send_ie(buffer_len,  0, tag);
+	send_ie(send_buffer, 0, tag+1);
+      }
+      // EA RECV: iter server 1 master recvs ea data from eval server 1 master
+      else if (ie_iter->serverId == 0) { // last mi_iter
 	MPI_Status status;
-	recv_ie(recv_buffer, 1, 1001, status);
-	recv_buffer >> remote_ea_pl >> dak_par_levels;
-      }
-      if (mi_iter->dedicatedMasterFlag) {
-	// *** IE + EA SEND ***
-	// iterator server 1 master sends combined info to meta-iterator master
-	MPIPackBuffer send_buffer(64);
-	send_buffer << *ie_iter << remote_ea_pl << dak_par_levels;
-	send_mi(send_buffer, 0, 1002);
+	recv_ie(buffer_len,  1, tag,   status);
+	MPIUnpackBuffer recv_buffer(buffer_len);
+	recv_ie(recv_buffer, 1, tag+1, status);
+	recv_buffer >> dak_par_levels >> ea_pl;
       }
     }
+    else
+      ea_pl = *ea_iter;
   }
 
   // Now cascade messages up mi_iters in reverse order
-
-  for (i=num_mi-1; i>=0; --i) { // skip w_pl
-    ParLevLIter mi_iter = mi_iters[i];
-    if (mi_iter->serverId == 0) { // RECV
-      // if ded master, must receive data from serverId 1
-      MPIUnpackBuffer recv_buffer(len); // TO DO: receive len
-      MPI_Status status;
-      recv_mi(recv_buffer, 1, 1002, status);
-      recv_buffer >> remote_ea_pl >> remote_ia_pl >> dak_par_levels;
-      for (j=0; j<i; ++j) // TO DO
-	recv_buffer >> remote_mi_pl[j];
-    }
-    else if (mi_iter->dedicatedMasterFlag && mi_iter->serverId == 1 &&
-	     mi_iter->serverCommRank == 0) { // SEND
-      // iterator server 1 master sends combined info to meta-iterator master
-      MPIPackBuffer send_buffer(len);
-      send_buffer << remote_ea_pl << remote_ia_pl << dak_par_levels;
-      for (j=0; j<i; ++j) // TO DO
-	send_buffer << *mi_iters[j];
-      send_mi(send_buffer, 0, 1002); // TO DO: send len
-    }
-  }
-  */
-  // ***************************************************************************
-
-  ParLevLIter mi_iter = mi_iters[num_mi-1]; // last level for now
-
-  // use local copies for settings from other processors
-  // (do not update parallel settings on message recipients).
-  ParallelLevel ea_pl;
-  if (mi_iter->serverId == 1) {
-    // EA SEND: eval server 1 master sends ea data to iterator server 1 master
-    if ( ie_iter->dedicatedMasterFlag && ie_iter->serverId == 1 &&
-	 ie_iter->serverCommRank == 0 ) {
-      MPIPackBuffer send_buffer(128);
-      send_buffer << *ea_iter << dak_par_levels;
-      send_ie(send_buffer, 0, 1001);
-    }
-    if (mi_iter->serverCommRank == 0) {
-      // EA RECV: iter server 1 master recvs ea data from eval server 1 master
-      if (ie_iter->dedicatedMasterFlag) {
-	MPIUnpackBuffer recv_buffer(128);
-	MPI_Status status;
-	recv_ie(recv_buffer, 1, 1001, status);
-	recv_buffer >> ea_pl >> dak_par_levels;
-      }
-      else
-	ea_pl = *ea_iter;
-      // IE+EA SEND: iter server 1 master sends ie+ea data to meta-iter master
+  std::vector<ParallelLevel> mi_pls(num_mi);
+  for (i=last_index; i>0; --i) {
+    server1_messaging = true;
+    for (j=1; j<i; ++j) // stop one short of mi_iter[i] (see serverId==0 below)
+      if (mi_iters[j]->serverId != 1)
+	{ server1_messaging = false; break; }
+    if (server1_messaging) {
+      ParLevLIter mi_iter = mi_iters[i];
+      mi_pls[i] = *mi_iter;
+      // SEND: iter server 1 master sends combined info to meta-iter master
       if (mi_iter->dedicatedMasterFlag) {
-	MPIPackBuffer send_buffer(128);
-	send_buffer << *ie_iter << ea_pl << dak_par_levels;
-	send_mi(send_buffer, 0, 1002);
+	tag += 2;
+	if (mi_iter->serverId == 1 && mi_iter->serverCommRank == 0) {
+	  MPIPackBuffer send_buffer;
+	  send_buffer << dak_par_levels << ea_pl << ie_pl;
+	  for (j=last_index; j>i; --j)
+	    send_buffer <<  mi_pls[j];
+	  buffer_len = send_buffer.size();
+	  send_mi(buffer_len,  0, tag,   i);
+	  send_mi(send_buffer, 0, tag+1, i);
+	}
+	// RECV: if ded master, must receive data from serverId 1
+	else if (mi_iter->serverId == 0) {
+	  MPI_Status status;
+	  recv_mi(buffer_len,  1, tag,   status, i);
+	  MPIUnpackBuffer recv_buffer(buffer_len);
+	  recv_mi(recv_buffer, 1, tag+1, status, i);
+	  recv_buffer >> dak_par_levels >> ea_pl >> ie_pl;
+	  for (j=last_index; j>i; --j)
+	    recv_buffer >> mi_pls[j];
+	}
       }
     }
   }
@@ -1014,27 +985,19 @@ void ParallelLibrary::print_configuration()
   // worldRank == 0 prints configuration
   // -----------------------------------
   if (mpiManager.world_rank() == 0) { // does all output
-    ParallelLevel ie_pl;
-    // IE + EA RECV: meta-iter master recvs ie+ea data from iter server 1 master
-    if (mi_iter->dedicatedMasterFlag) {
-      MPIUnpackBuffer recv_buffer(128);
-      MPI_Status status;
-      recv_mi(recv_buffer, 1, 1002, status);
-      recv_buffer >> ie_pl >> ea_pl >> dak_par_levels;
-    }
-    else
-      ie_pl = *ie_iter;
-
-    // Meta-iterator diagnostics
     Cout << "\n---------------------------------------------------------------"
 	 << "--------------\nDAKOTA parallel configuration:\n\n"
 	 << "Level\t\t\tnum_servers    procs_per_server    partition\n"
-	 << "-----\t\t\t-----------    ----------------    ---------\n"
-	 << "concurrent iterators\t  " << std::setw(4)
-         << mi_iter->numServers << "\t\t   " << std::setw(4)
-	 << mi_iter->procsPerServer << "\t\t   ";
-    if (mi_iter->dedicatedMasterFlag) Cout << "ded. master\n";
-    else                              Cout << "peer\n";
+	 << "-----\t\t\t-----------    ----------------    ---------\n";
+
+    // Meta-iterator diagnostics
+    for (i=1; i<num_mi; ++i) {
+      const ParallelLevel& mi_pl = mi_pls[i];
+      Cout << "concurrent iterators\t  " << std::setw(4) << mi_pl.numServers
+	   << "\t\t   " << std::setw(4) << mi_pl.procsPerServer << "\t\t   ";
+      if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
+      else                           Cout << "peer\n";
+    }
 
     // Iterator diagnostics
     Cout << "concurrent evaluations\t  " << std::setw(4) << ie_pl.numServers
