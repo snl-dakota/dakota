@@ -696,6 +696,7 @@ KEYWORD12 method
 	  [ import_points_file STRING
 	    [ annotated
 	    | freeform ]
+	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
@@ -781,6 +782,7 @@ KEYWORD12 method
 	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    )
 	  |
@@ -792,6 +794,7 @@ KEYWORD12 method
 	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    )
 	  | import_expansion_file STRING
@@ -1030,6 +1033,7 @@ KEYWORD12 method
 	  [ import_points_file STRING
 	    [ annotated
 	    | freeform ]
+	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
@@ -1082,6 +1086,7 @@ KEYWORD12 method
 	  [ import_points_file STRING
 	    [ annotated
 	    | freeform ]
+	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
@@ -1189,6 +1194,7 @@ KEYWORD12 method
 	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
@@ -1238,6 +1244,7 @@ KEYWORD12 method
 	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
@@ -1265,6 +1272,7 @@ KEYWORD12 method
 		[ import_points_file STRING
 		  [ annotated
 		  | freeform ]
+		  [ active_only ]
 		  ]
 		[ export_points_file STRING
 		  [ annotated
@@ -1305,6 +1313,7 @@ KEYWORD12 method
 	    [ import_points_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
@@ -1344,6 +1353,7 @@ KEYWORD12 method
 		[ import_points_file STRING
 		  [ annotated
 		  | freeform ]
+		  [ active_only ]
 		  ]
 		[ export_points_file STRING
 		  [ annotated
@@ -1505,6 +1515,7 @@ KEYWORD12 method
 	  [ import_points_file STRING
 	    [ annotated
 	    | freeform ]
+	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
@@ -1569,6 +1580,7 @@ KEYWORD12 method
 	  ( import_points_file STRING
 	    [ annotated
 	    | freeform ]
+	    [ active_only ]
 	    )
 	  [ model_pointer STRING ]
 	  )
@@ -1678,6 +1690,7 @@ KEYWORD model
 	    [ import_points_file ALIAS samples_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
@@ -1702,6 +1715,7 @@ KEYWORD model
 	    [ challenge_points_file STRING
 	      [ annotated
 	      | freeform ]
+	      [ active_only ]
 	      ]
 	    )
 	  |

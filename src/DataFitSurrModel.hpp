@@ -61,7 +61,8 @@ public:
 		   const String& export_points_file = String(),
 		   bool export_annotated = true,
 		   const String& import_points_file = String(),
-		   bool import_annotated = true);
+		   bool import_annotated = true,
+		   bool import_active_only = false);
   /// destructor
   ~DataFitSurrModel();
 
@@ -238,7 +239,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(bool annotated, bool active_only = false);
+  void import_points(bool annotated, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// initialize manageRecasting and recastFlags for data import/export

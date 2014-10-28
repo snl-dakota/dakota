@@ -853,6 +853,7 @@ void ProcessApplicInterface::prepare_process_environment()
   WorkdirHelper::set_environment("DAKOTA_RESULTS_FILE", resultsFileName);
 
   // prepend env path with run dir (already on path) and startup dir
+  // BMA TODO: Caution as this will repeatedly prepend to PATH
   if (useWorkdir && curWorkdir.is_absolute())
     WorkdirHelper::prepend_path_item(curWorkdir, bfs::path(), false);
 }

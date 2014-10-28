@@ -108,7 +108,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	probDescDB.get_string("method.export_points_file"),
 	probDescDB.get_bool("method.export_points_file_annotated"),
 	import_pts_file,
-	probDescDB.get_bool("method.import_points_file_annotated")), false);
+        probDescDB.get_bool("method.import_points_file_annotated"),
+        probDescDB.get_bool("method.import_points_file_active")), false);
     }
     else {
       lhsIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
@@ -119,7 +120,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	probDescDB.get_string("method.export_points_file"),
 	probDescDB.get_bool("method.export_points_file_annotated"),
 	import_pts_file,
-	probDescDB.get_bool("method.import_points_file_annotated")), false);
+        probDescDB.get_bool("method.import_points_file_annotated"),
+	probDescDB.get_bool("method.import_points_file_active")), false);
     }
     break;
   }

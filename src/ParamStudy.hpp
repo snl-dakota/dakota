@@ -78,7 +78,8 @@ private:
 
   /// load list of points from data file and distribute among
   /// listCVPoints, listDIVPoints, listDSVPoints, and listDRVPoints
-  bool load_distribute_points(const String& points_filename, bool annotated);
+  bool load_distribute_points(const String& points_filename, bool annotated,
+			      bool active_only);
 
   /// distributes incoming all vector in standard variable ordering among
   /// continuous, discrete int, discrete string, and discrete real vectors

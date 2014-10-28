@@ -35,6 +35,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
   challengeAnnotated(
     problem_db.get_bool("model.surrogate.challenge_points_file_annotated")),
+  challengeActiveOnly(
+    problem_db.get_bool("model.surrogate.challenge_points_file_active")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {
@@ -125,7 +127,8 @@ ApproximationInterface(const String& approx_type,
 		       const String& am_interface_id, size_t num_fns,
 		       short data_order, short output_level):
   Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
-  challengeAnnotated(true), actualModelVars(am_vars.copy()),
+  challengeAnnotated(true), challengeActiveOnly(false), 
+  actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
   interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
@@ -824,7 +827,7 @@ void ApproximationInterface::read_challenge_points(bool active_only)
   RealArray pts_array;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
 			       actualModelVars.copy(), num_fns, pts_array, 
-			       challengeAnnotated, active_only);
+			       challengeAnnotated, challengeActiveOnly);
   
   // translate to the matrix, using real vector only for convenience
   size_t num_points = pts_array.size()/num_cols;

@@ -127,7 +127,8 @@ namespace Dakota
 						  approx_order, corr_type, corr_order, data_order,
 						  outputLevel, sample_reuse, probDescDB.get_string("method.export_points_file"),
 						  probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
-						  probDescDB.get_bool("method.import_points_file_annotated")), false);
+							probDescDB.get_bool("method.import_points_file_annotated"),
+							probDescDB.get_bool("method.import_points_file_active")), false);
 
 		vary_pattern = true; // allow seed to run among multiple approx sample sets
 							 // need to add to input spec

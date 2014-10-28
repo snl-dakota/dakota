@@ -59,6 +59,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   approxImportFile(probDescDB.get_string("method.import_points_file")),
   approxImportAnnotated(
     probDescDB.get_bool("method.import_points_file_annotated")),
+  approxImportActiveOnly(
+    probDescDB.get_bool("method.import_points_file_active")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
 {   
   const String& rng = probDescDB.get_string("method.random_number_generator");
@@ -107,7 +109,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   //NonDBayesCalibration::quantify_uncertainty();
  
   Cout << "import points file "<< approxImportFile
-       << "import points annotated " << approxImportAnnotated;
+       << "import points annotated " << approxImportAnnotated
+       << "import points active " << approxImportActive;
   if (approxImportFile.empty())
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
@@ -344,6 +347,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   else {
     bool verbose=(outputLevel>NORMAL_OUTPUT);
     RealMatrix the_data;
+    // BMA TODO: allow active only on point import?
+    // approxImportActiveOnly
     TabularIO::read_data_tabular(approxImportFile,"GPMSA input points",the_data,num_simulations,(numUncertainVars+numFunctions),approxImportAnnotated,verbose); 
     RealVector temp_resp(numFunctions);
     for (i = 0; i < num_simulations; ++i) {

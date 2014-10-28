@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1318 distinct keywords (plus 207 aliases) **/
+/** 1331 distinct keywords (plus 207 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -173,7 +173,8 @@ static KeyWord
 		{"gradient",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessMetricType_gradient)},
 		{"predicted_variance",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessMetricType_predicted_variance)}
 		},
-	kw_32[2] = {
+	kw_32[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -199,7 +200,7 @@ static KeyWord
 		{"emulator_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,6,0,kw_30,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"fitness_metric",8,3,2,0,kw_31},
-		{"import_points_file",11,2,5,0,kw_32,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,5,0,kw_32,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"misc_options",15,0,8,0,0,0.,0.,0,N_mdm(strL,miscOptions)},
 		{"response_levels",14,2,7,0,kw_35,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
@@ -244,7 +245,8 @@ static KeyWord
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxExportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxExportAnnotated)}
 		},
-	kw_42[2] = {
+	kw_42[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -252,7 +254,7 @@ static KeyWord
 		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
 		{"emulator_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,4,0,kw_41,0.,0.,0,N_mdm(str,approxExportFile)},
-		{"import_points_file",11,2,3,0,kw_42,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,3,0,kw_42,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
 	kw_44[1] = {
@@ -304,7 +306,8 @@ static KeyWord
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxExportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxExportAnnotated)}
 		},
-	kw_55[2] = {
+	kw_55[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -312,13 +315,14 @@ static KeyWord
 		{0,0,3,0,0,kw_53},
 		{"emulator_samples",9,0,1,1,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,3,0,kw_54,0.,0.,0,N_mdm(str,approxExportFile)},
-		{"import_points_file",11,2,2,0,kw_55,0.,0.,0,N_mdm(str,approxImportFile)}
+		{"import_points_file",11,3,2,0,kw_55,0.,0.,0,N_mdm(str,approxImportFile)}
 		},
 	kw_57[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxExportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxExportAnnotated)}
 		},
-	kw_58[2] = {
+	kw_58[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -326,7 +330,7 @@ static KeyWord
 		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
 		{"emulator_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,4,0,kw_57,0.,0.,0,N_mdm(str,approxExportFile)},
-		{"import_points_file",11,2,3,0,kw_58,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,3,0,kw_58,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
 	kw_60[1] = {
@@ -529,7 +533,8 @@ static KeyWord
 		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
-	kw_92[2] = {
+	kw_92[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -537,7 +542,7 @@ static KeyWord
 		{0,0,1,0,0,kw_22},
 		{"export_points_file",11,2,4,0,kw_90,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"gaussian_process",8,2,1,0,kw_91},
-		{"import_points_file",11,2,3,0,kw_92,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,3,0,kw_92,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"kriging",0,2,1,0,kw_91,0.,0.,-2},
 		{"seed",0x19,0,5,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
@@ -587,7 +592,8 @@ static KeyWord
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxExportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxExportAnnotated)}
 		},
-	kw_101[2] = {
+	kw_101[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -610,7 +616,7 @@ static KeyWord
 		{0,0,4,0,0,kw_28},
 		{"emulator_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,3,0,kw_100,0.,0.,0,N_mdm(str,approxExportFile)},
-		{"import_points_file",11,2,2,0,kw_101,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,2,0,kw_101,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"response_levels",14,2,4,0,kw_104,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
 	kw_106[2] = {
@@ -638,14 +644,15 @@ static KeyWord
 		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
-	kw_112[2] = {
+	kw_112[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
 	kw_113[5] = {
 		{"export_points_file",11,2,4,0,kw_110,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"gaussian_process",8,2,1,0,kw_111},
-		{"import_points_file",11,2,3,0,kw_112,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,3,0,kw_112,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"kriging",0,2,1,0,kw_111,0.,0.,-2},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
@@ -671,14 +678,15 @@ static KeyWord
 		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
-	kw_118[2] = {
+	kw_118[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
 	kw_119[5] = {
 		{"export_points_file",11,2,4,0,kw_116,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"gaussian_process",8,2,1,0,kw_117},
-		{"import_points_file",11,2,3,0,kw_118,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,3,0,kw_118,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"kriging",0,2,1,0,kw_117,0.,0.,-2},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
@@ -710,7 +718,8 @@ static KeyWord
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxExportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxExportAnnotated)}
 		},
-	kw_126[2] = {
+	kw_126[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
@@ -736,7 +745,7 @@ static KeyWord
 		{0,0,3,0,0,kw_124},
 		{"dakota",8,0,2,0,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
 		{"export_points_file",11,2,4,0,kw_125,0.,0.,0,N_mdm(str,approxExportFile)},
-		{"import_points_file",11,2,3,0,kw_126,0.,0.,0,N_mdm(str,approxImportFile)},
+		{"import_points_file",11,3,3,0,kw_126,0.,0.,0,N_mdm(str,approxImportFile)},
 		{"response_levels",14,2,8,0,kw_129,0.,0.,0,N_mdm(resplevs,responseLevels)},
 		{"rng",8,2,7,0,kw_130},
 		{"seed",0x19,0,6,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
@@ -814,13 +823,14 @@ static KeyWord
 		{"refinement_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,refineSamples)},
 		{"response_levels",14,2,3,0,kw_144,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
-	kw_146[2] = {
+	kw_146[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,pstudyFileActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,pstudyFileAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,pstudyFileAnnotated)}
 		},
 	kw_147[3] = {
 		{0,0,1,0,0,kw_22},
-		{"import_points_file",11,2,1,1,kw_146,0.,0.,0,N_mdm(str,pstudyFilename)},
+		{"import_points_file",11,3,1,1,kw_146,0.,0.,0,N_mdm(str,pstudyFilename)},
 		{"list_of_points",14,0,1,1,0,0.,0.,0,N_mdm(RealDL,listOfPoints)}
 		},
 	kw_148[2] = {
@@ -1082,12 +1092,13 @@ static KeyWord
 	kw_196[1] = {
 		{"fixed_seed",8,0,1,0,0,0.,0.,0,N_mdm(true,fixedSeedFlag)}
 		},
-	kw_197[2] = {
+	kw_197[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
 	kw_198[1] = {
-		{"import_points_file",11,2,1,0,kw_197,0.,0.,0,N_mdm(str,approxImportFile)}
+		{"import_points_file",11,3,1,0,kw_197,0.,0.,0,N_mdm(str,approxImportFile)}
 		},
 	kw_199[2] = {
 		{"advancements",9,0,1,0,0,0.,0.,0,N_mdm(ushint,adaptedBasisAdvancements)},
@@ -1605,7 +1616,8 @@ static KeyWord
 	kw_268[1] = {
 		{"interface_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,interfacePointer)}
 		},
-	kw_269[2] = {
+	kw_269[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mom(true,approxChallengeActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxChallengeAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mom(false,approxChallengeAnnotated)}
 		},
@@ -1657,7 +1669,8 @@ static KeyWord
 		{"dakota",8,2,1,1,kw_275,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
 		{"surfpack",8,7,1,1,kw_277,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
 		},
-	kw_279[2] = {
+	kw_279[3] = {
+		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(true,approxImportAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mom(false,approxImportAnnotated)}
 		},
@@ -1701,13 +1714,13 @@ static KeyWord
 		{"region",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_region)}
 		},
 	kw_287[21] = {
-		{"challenge_points_file",11,2,10,0,kw_269,0.,0.,0,N_mom(str,approxChallengeFile)},
+		{"challenge_points_file",11,3,10,0,kw_269,0.,0.,0,N_mom(str,approxChallengeFile)},
 		{"correction",8,6,8,0,kw_270},
 		{"dace_method_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,subMethodPointer)},
 		{"diagnostics",7,2,9,0,kw_272,0.,0.,6,N_mom(strL,diagMetrics)},
 		{"export_points_file",11,2,6,0,kw_273,0.,0.,0,N_mom(str,approxExportFile)},
 		{"gaussian_process",8,2,1,1,kw_278},
-		{"import_points_file",11,2,5,0,kw_279,0.,0.,0,N_mom(str,approxImportFile)},
+		{"import_points_file",11,3,5,0,kw_279,0.,0.,0,N_mom(str,approxImportFile)},
 		{"kriging",0,2,1,1,kw_278,0.,0.,-2},
 		{"mars",8,3,1,1,kw_281,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
 		{"metrics",15,2,9,0,kw_272,0.,0.,0,N_mom(strL,diagMetrics)},
@@ -1719,7 +1732,7 @@ static KeyWord
 		{"recommended_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},
 		{"reuse_points",8,3,4,0,kw_286},
 		{"reuse_samples",0,3,4,0,kw_286,0.,0.,-1},
-		{"samples_file",3,2,5,0,kw_279,0.,0.,-12,N_mom(str,approxImportFile)},
+		{"samples_file",3,3,5,0,kw_279,0.,0.,-12,N_mom(str,approxImportFile)},
 		{"total_points",9,0,2,0,0,0.,0.,0,N_mom(int,pointsTotal)},
 		{"use_derivatives",8,0,7,0,0,0.,0.,0,N_mom(true,modelUseDerivsFlag)}
 		},

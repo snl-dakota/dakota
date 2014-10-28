@@ -529,7 +529,7 @@ size_t read_data_tabular(const std::string& input_filename,
 			 const std::string& context_message,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 bool annotated, Variables vars)
+			 bool annotated, bool active_only, Variables vars)
 {
   size_t num_evals = 0, num_vars = vars.tv();
   // temporary dynamic container to read string variables
@@ -552,8 +552,8 @@ size_t read_data_tabular(const std::string& input_filename,
 	read_leading_columns(input_stream, annotated);
       }
 
-      // read all, but set only the active variables into the lists
-      vars.read_tabular(input_stream);
+      // read all or active, but set only the active variables into the lists
+      vars.read_tabular(input_stream, active_only);
       ++num_evals;
 
       cva.push_back(vars.continuous_variables());

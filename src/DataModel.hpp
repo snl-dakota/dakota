@@ -119,6 +119,8 @@ public:
   String approxImportFile;
   /// whether the point import file is annotated (default true)
   bool approxImportAnnotated;
+  /// whether to import active variables only
+  bool approxImportActive;
   /// the file name from the \c export_points_file specification in
   /// \ref ModelSurrG
   String approxExportFile;
@@ -205,7 +207,8 @@ public:
   String approxChallengeFile;
   /// whether the challenge data file is annotated (default true)
   bool approxChallengeAnnotated;
-
+  /// whether to import active variables only
+  bool approxChallengeActive;
 
   // nested models
 

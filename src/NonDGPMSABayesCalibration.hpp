@@ -75,8 +75,10 @@ public:
   bool calibrateSigmaFlag;
   /// name of file from which to import build points to build GP
   String approxImportFile;
-  ///  annotate flag
+  /// annotate flag
   bool approxImportAnnotated;
+  /// import active variables only
+  bool approxImportActiveOnly;
 
 protected:
 

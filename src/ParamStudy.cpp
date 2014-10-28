@@ -41,7 +41,8 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     if (pt_list.empty()) {
       const String& pt_fname = probDescDB.get_string("method.pstudy.filename");
       bool annotated = probDescDB.get_bool("method.pstudy.file_annotated");
-      if (load_distribute_points(pt_fname, annotated))
+      bool active_only = probDescDB.get_bool("method.pstudy.file_active");
+      if (load_distribute_points(pt_fname, annotated, active_only))
 	err_flag = true;
     }
     else if (distribute_list_of_points(pt_list))
@@ -473,7 +474,8 @@ void ParamStudy::multidim_loop()
     points_file is valued-based (reals, integers, strings) so file
     input matches tabular data output.  Return false on success. */
 bool ParamStudy::
-load_distribute_points(const String& points_filename, bool annotated)
+load_distribute_points(const String& points_filename, bool annotated,
+		       bool active_only)
 {
   bool err = false;
 
@@ -493,7 +495,7 @@ load_distribute_points(const String& points_filename, bool annotated)
   numEvals = TabularIO::
     read_data_tabular(points_filename, "List Parameter Study", 
 		      listCVPoints, listDIVPoints, listDSVPoints, listDRVPoints,
-		      annotated, iteratedModel.current_variables().copy());
+		      annotated, active_only, iteratedModel.current_variables().copy());
   if (numEvals == 0) err = true;
 
 

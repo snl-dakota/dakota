@@ -136,11 +136,12 @@ DataMethodRep::DataMethodRep():
   batchSize(0),calibrateSigmaFlag(false), numChains(3), numCR(3),
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5),
   // Parameter Study
-  numSteps(0), pstudyFileAnnotated(true),
+  numSteps(0), pstudyFileAnnotated(true), pstudyFileActive(false), 
   // Verification
   refinementRate(2.),
   // Point import/export files
-  approxImportAnnotated(true), approxExportAnnotated(true), referenceCount(1)
+  approxImportAnnotated(true), approxImportActive(false), approxExportAnnotated(true),
+  referenceCount(1)
 { }
 
 
@@ -259,13 +260,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << pstudyFilename << pstudyFileAnnotated << varPartitions;
+    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive << varPartitions;
 
   // Verification
   s << refinementRate;
  
   // Point import/export files
-  s << approxImportFile << approxImportAnnotated
+  s << approxImportFile << approxImportAnnotated << approxImportActive
     << approxExportFile << approxExportAnnotated;
 }
 
@@ -386,13 +387,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
-    >> pstudyFilename >> pstudyFileAnnotated >> varPartitions;
+    >> pstudyFilename >> pstudyFileAnnotated >> pstudyFileActive >> varPartitions;
 
   // Verification
   s >> refinementRate;
 
   // Point import/export files
-  s >> approxImportFile >> approxImportAnnotated
+  s >> approxImportFile >> approxImportAnnotated >> approxImportActive
     >> approxExportFile >> approxExportAnnotated;
 }
 
@@ -513,13 +514,13 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << pstudyFilename << pstudyFileAnnotated << varPartitions;
+    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive << varPartitions;
 
   // Verification
   s << refinementRate;
 
   // Point import/export files
-  s << approxImportFile << approxImportAnnotated
+  s << approxImportFile << approxImportAnnotated << approxImportActive
     << approxExportFile << approxExportAnnotated;
 }
 

@@ -188,6 +188,8 @@ private:
   String challengeFile;
   /// whether the points file is annotated
   bool challengeAnnotated;
+  /// whether to import active only
+  bool challengeActiveOnly;
   /// container for the challenge points data
   RealMatrix challengePoints;
 

@@ -6489,6 +6489,7 @@ static StringArray
 
 static bool
 	MP_(approxExportAnnotated),
+	MP_(approxImportActive),
 	MP_(approxImportAnnotated),
 	MP_(backfillFlag),
 	MP_(calibrateSigmaFlag),
@@ -6504,6 +6505,7 @@ static bool
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
 	MP_(printPopFlag),
+	MP_(pstudyFileActive),
 	MP_(pstudyFileAnnotated),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
@@ -6823,8 +6825,10 @@ static StringArray
         MP_(diagMetrics);
 
 static bool
+	MP_(approxChallengeActive),
 	MP_(approxChallengeAnnotated),
 	MP_(approxExportAnnotated),
+	MP_(approxImportActive),
 	MP_(approxImportAnnotated),
 	MP_(crossValidateFlag),
 	MP_(hierarchicalTags),

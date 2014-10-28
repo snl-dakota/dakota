@@ -191,7 +191,7 @@ size_t read_data_tabular(const std::string& input_filename,
 			 const std::string& context_message,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 bool annotated, Variables vars);
+			 bool annotated, bool active_only, Variables vars);
 
 } // namespace TabularIO
 

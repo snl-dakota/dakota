@@ -2861,6 +2861,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"export_points_file_annotated", P approxExportAnnotated},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
+	{"import_points_file_active", P approxImportActive},
 	{"import_points_file_annotated", P approxImportAnnotated},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
@@ -2873,6 +2874,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"print_each_pop", P printPopFlag},
+	{"pstudy.file_active", P pstudyFileActive},
 	{"pstudy.file_annotated", P pstudyFileAnnotated},
 	{"quality_metrics", P volQualityFlag},
 	{"sbg.replace_points", P surrBasedGlobalReplacePts},
@@ -2892,11 +2894,12 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
 	{"hierarchical_tags", P hierarchicalTags},
-	{"surrogate.challenge_points_file_annotated",
-	 P approxChallengeAnnotated},
+	{"surrogate.challenge_points_file_active", P approxChallengeActive},
+	{"surrogate.challenge_points_file_annotated", P approxChallengeAnnotated},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
 	{"surrogate.export_points_file_annotated", P approxExportAnnotated},
+	{"surrogate.import_points_file_active", P approxImportActive},
 	{"surrogate.import_points_file_annotated", P approxImportAnnotated},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};

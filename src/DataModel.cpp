@@ -21,14 +21,14 @@ DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), 
-  approxImportAnnotated(true), approxExportAnnotated(true),
+  approxImportAnnotated(true), approxImportActive(false), approxExportAnnotated(true),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsPolyOrder(0), mlsWeightFunction(0),
   rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
   annRandomWeight(0), annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
   pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.0),
-  pressFlag(false), approxChallengeAnnotated(true),
+  pressFlag(false), approxChallengeAnnotated(true), approxChallengeActive(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), referenceCount(1)
 { }
@@ -41,7 +41,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
-    << approxImportAnnotated << approxExportFile << approxExportAnnotated
+    << approxImportAnnotated << approxImportActive << approxExportFile << approxExportAnnotated
     << approxExportModelFile 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
@@ -51,7 +51,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder 
     << pointSelection << diagMetrics << crossValidateFlag << numFolds 
     << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
-    << optionalInterfRespPointer << primaryVarMaps
+    << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs
     << subMethodServers << subMethodProcs << subMethodScheduling;
 }
@@ -64,7 +64,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateFnIndices
     >> surrogateType >> truthModelPointer >> lowFidelityModelPointer
     >> pointsTotal >> pointsManagement >> approxPointReuse >> approxImportFile
-    >> approxImportAnnotated >> approxExportFile >> approxExportAnnotated
+    >> approxImportAnnotated >> approxImportActive >> approxExportFile >> approxExportAnnotated
     >> approxExportModelFile 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
@@ -74,7 +74,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> marsInterpolation >> annRandomWeight >> annNodes >> annRange >> trendOrder 
     >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds 
     >> percentFold >> pressFlag  >> approxChallengeFile >> approxChallengeAnnotated 
-    >> optionalInterfRespPointer >> primaryVarMaps
+    >> approxChallengeActive >> optionalInterfRespPointer >> primaryVarMaps
     >> secondaryVarMaps >> primaryRespCoeffs >> secondaryRespCoeffs
     >> subMethodServers >> subMethodProcs >> subMethodScheduling;
 }
@@ -87,7 +87,7 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
-    << approxImportAnnotated << approxExportFile << approxExportAnnotated
+    << approxImportAnnotated << approxImportActive << approxExportFile << approxExportAnnotated
     << approxExportModelFile
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
@@ -97,7 +97,7 @@ void DataModelRep::write(std::ostream& s) const
     << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder
     << pointSelection << diagMetrics << crossValidateFlag << numFolds 
     << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
-    << optionalInterfRespPointer << primaryVarMaps
+    << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs
     << subMethodServers << subMethodProcs << subMethodScheduling;
 }

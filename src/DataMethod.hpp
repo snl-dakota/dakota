@@ -950,6 +950,8 @@ public:
   String pstudyFilename;
   /// whether the parameter study points file is annotated
   bool pstudyFileAnnotated;
+  /// whether to import active variables only
+  bool pstudyFileActive;
   /// the \c partitions specification for PStudy method in \ref MethodPSMPS
   UShortArray varPartitions;
 
@@ -964,6 +966,8 @@ public:
   String approxImportFile;
   /// whether the point import file is annotated (default true)
   bool approxImportAnnotated;
+  /// whether to import active variables only
+  bool approxImportActive;
   /// the file name for point export in surrogate-based methods
   String approxExportFile;
   /// whether the point export file is annotated (default true)

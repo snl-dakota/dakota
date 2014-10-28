@@ -931,6 +931,7 @@
                     <keyword  id="freeform" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                   </oneOf>
                 </optional>
+	        <keyword  id="active_only" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
               <keyword  id="export_points_file" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodEG" minOccurs="0" >
                 <param type="OUTPUT_FILE" />
@@ -1132,6 +1133,7 @@
                                       <keyword  id="freeform2" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                                     </oneOf>
                                   </optional>
+				  <keyword  id="active_only1" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                                 </keyword>
                               </required>
                               <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,expansionImportFile)}" label="File name for importing expansion values and multi index to build a PCE" help="MethodCommands.html#MethodNonDPCE"  >
@@ -1386,6 +1388,7 @@
                             <keyword  id="freeform5" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                           </oneOf>
                         </optional>
+			<keyword  id="active_only2" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                       </keyword>
                       <keyword  id="export_points_file3" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="File name for exporting approximation-based samples from evaluating the emulator" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" >
                         <param type="OUTPUT_FILE" />
@@ -1446,6 +1449,7 @@
                             <keyword  id="freeform7" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                           </oneOf>
                         </optional>
+			<keyword  id="active_only3" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                       </keyword>
                       <keyword  id="export_points_file4" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" >
                         <param type="OUTPUT_FILE" />
@@ -1543,6 +1547,7 @@
                                   <keyword  id="freeform9" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                                 </oneOf>
                               </optional>
+			      <keyword  id="active_only4" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                             </keyword>
                             <keyword  id="export_points_file5" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" >
                               <param type="OUTPUT_FILE" />
@@ -1628,6 +1633,7 @@
                               <keyword  id="freeform11" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                             </oneOf>
                           </optional>
+			  <keyword  id="active_only5" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                         </keyword>
                         <keyword  id="export_points_file6" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" >
                           <param type="OUTPUT_FILE" />
@@ -1675,6 +1681,7 @@
                                       <keyword  id="freeform13" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                                     </oneOf>
                                   </optional>
+				  <keyword  id="active_only6" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                                 </keyword>
                                 <keyword  id="export_points_file7" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" >
                                   <param type="OUTPUT_FILE" />
@@ -1711,6 +1718,7 @@
                                 <keyword  id="freeform15" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                               </oneOf>
                             </optional>
+			    <keyword  id="active_only7" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                           </keyword>
                           <keyword  id="export_points_file8" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" >
                             <param type="OUTPUT_FILE" />
@@ -1787,6 +1795,7 @@
                                   <keyword  id="freeform17" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                                 </oneOf>
                               </optional>
+			      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                             </keyword>
                             <keyword  id="export_points_file9" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" >
                               <param type="OUTPUT_FILE" />
@@ -2019,6 +2028,7 @@
                         <keyword  id="freeform19" name="freeform" code="{N_mdm(false,approxImportAnnotated)}" label="freeform" help=""  />
                       </oneOf>
                     </optional>
+		    <keyword  id="active_only9" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                   </keyword>
                   <keyword  id="export_points_file10" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" >
                     <param type="OUTPUT_FILE" />
@@ -2130,6 +2140,7 @@
                       <keyword  id="freeform21" name="freeform" code="{N_mdm(false,pstudyFileAnnotated)}" label="freeform" help=""  />
                     </oneOf>
                   </optional>
+		  <keyword  id="active_only10" name="active_only" code="{N_mdm(true,pstudyFileActive)}" label="Active variables only" help="" minOccurs="0" />
                 </keyword>
               </oneOf>
             </keyword>
@@ -2341,6 +2352,7 @@
                     <keyword  id="freeform22" name="freeform" code="{N_mom(false,approxImportAnnotated)}" label="Challenge file in freeform format" help="ModelCommands.html#ModelSurrG"  />
                   </oneOf>
                 </optional>
+		<keyword  id="active_only11" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
               <keyword  id="export_points_file11" name="export_points_file" code="{N_mom(str,approxExportFile)}" label="File export of global approximation-based sample results" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
                 <param type="OUTPUT_FILE" />
@@ -2389,6 +2401,7 @@
                     <keyword  id="freeform24" name="freeform" code="{N_mom(false,approxChallengeAnnotated)}" label="freeform" help=""  />
                   </oneOf>
                 </optional>
+		<keyword  id="active_only15" name="active_only" code="{N_mom(true,approxChallengeActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
             </keyword>
             <required>

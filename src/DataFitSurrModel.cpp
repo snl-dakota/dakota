@@ -131,8 +131,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   import_points(
     problem_db.get_bool("model.surrogate.import_points_file_annotated"),
-    //    problem_db.get_bool("model.surrogate.import_points_file_active_only")
-    false
+    problem_db.get_bool("model.surrogate.import_points_file_active")
 		);
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
@@ -147,7 +146,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 short corr_type, short corr_order, short data_order,
 		 short output_level, const String& point_reuse,
 		 const String& export_points_file, bool export_annotated,
-		 const String& import_points_file, bool import_annotated):
+		 const String& import_points_file, bool import_annotated,
+		 bool import_active_only):
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
@@ -243,7 +243,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     }
   }
 
-  import_points(import_annotated);
+  import_points(import_annotated, import_active_only);
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
