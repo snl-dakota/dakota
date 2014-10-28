@@ -548,10 +548,8 @@ size_t read_data_tabular(const std::string& input_filename,
     input_stream >> std::ws;  // advance to next readable input
     while (input_stream.good() && !input_stream.eof()) {
       if (annotated) {
-	// discard the row label (typically eval or data ID)
-	size_t discard_row_label;
-	if (!(input_stream >> discard_row_label))
-	  break;
+	// discard the row labels (typically eval and iface ID)
+	read_leading_columns(input_stream, annotated);
       }
 
       // read all, but set only the active variables into the lists
