@@ -140,6 +140,16 @@ public:
   static bfs::path rel_to_abs(const std::string& subdir_str)
   { return ( startupPWD / bfs::path(subdir_str) ); }
 
+  /// tokenize a white-space separated analysis driver, respecting
+  /// escapes and nested quotes
+  static StringArray tokenize_driver(const String& user_an_driver);
+
+  /// parse off the first whitespace-separated entry in the user's
+  /// analysis_driver, and convert it to an absolute path if it begins
+  /// with ./ or ../, replacing the passed string if needed.  Returns
+  /// true if the first token was modified.
+  static bool resolve_driver_path(String& an_driver);
+
   /// given a string with an optional path and a wildcard, e.g.,
   /// /tmp/D*.?pp, parse it into the search path /tmp (default .) and
   /// the wildcard D*.?pp.  Return wild_card as path to reduce wstring

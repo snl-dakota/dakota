@@ -116,6 +116,21 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   analysisComponents(
     problem_db.get_s2a("interface.application.analysis_components"))
 {
+  // When using work directory, relative analysis drivers starting
+  // with . or .. may need to be converted to absolute so they work
+  // from the work directory.  While inefficient, we convert them in
+  // place as strings (could leave tokenized for Fork/Spawn, but
+  // assemble the string for SysCall Interfaces
+  if (useWorkdir) {
+    StringArray::iterator pn_it = programNames.begin();
+    StringArray::iterator pn_end = programNames.end();
+    for ( ; pn_it != pn_end; ++pn_it)
+      if (WorkdirHelper::resolve_driver_path(*pn_it) && 
+	  outputLevel >= DEBUG_OUTPUT)
+	Cout << "Adjusted relative analysis_driver to absolute path:\n  " 
+	     << *pn_it << std::endl;
+  }
+
   size_t num_programs = programNames.size();
   if (num_programs > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;

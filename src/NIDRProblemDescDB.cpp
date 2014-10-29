@@ -23,7 +23,6 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 #ifdef HAVE_OPTPP
 #include "globals.h"
@@ -830,17 +829,7 @@ int NIDRProblemDescDB::check_driver(const String& an_driver,
 				    const StringArray& link_files,
 				    const StringArray& copy_files)
 {
-  using boost::escaped_list_separator;
-  using boost::tokenizer;
-
-  StringArray driver_and_args;  // to hold tokens of the driver
-
-  // tokenize on whitespace, preserving quoted strings and escapes,
-  // so the outermost quoted strings become single command-line args
-  escaped_list_separator<char> els("\\", " \t", "\"'");
-  tokenizer<escaped_list_separator<char> > tok(an_driver, els);
-  std::copy(tok.begin(), tok.end(), std::back_inserter(driver_and_args));
-
+  StringArray driver_and_args = WorkdirHelper::tokenize_driver(an_driver);
   if (driver_and_args.size() == 0)
     squawk("Empty analysis_driver string");
   else {

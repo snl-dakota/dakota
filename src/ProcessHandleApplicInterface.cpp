@@ -15,9 +15,8 @@
 #include "ProcessHandleApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include "WorkdirHelper.hpp"
 #include <algorithm>
-#include <boost/algorithm/string.hpp>  // for split
-#include <boost/tokenizer.hpp>
 
 namespace Dakota {
 
@@ -524,14 +523,7 @@ pid_t ProcessHandleApplicInterface::analysis_process_group_id() const
 void ProcessHandleApplicInterface::
 create_command_arguments(const char** & av, StringArray& driver_and_args)
 {
-  using boost::escaped_list_separator;
-  using boost::tokenizer;
-
-  // tokenize on whistespace, preserving quoted strings and escapes,
-  // so the outermost quoted strings become single command-line args
-  escaped_list_separator<char> els("\\", " \t", "\"'");
-  tokenizer<escaped_list_separator<char> > tok(argList[0], els);
-  std::copy(tok.begin(), tok.end(), std::back_inserter(driver_and_args));
+  driver_and_args = WorkdirHelper::tokenize_driver(argList[0]);
 
   // if commandLineArgs, include params/results files at end
   size_t nargs = driver_and_args.size();

@@ -27,7 +27,7 @@
   #include "dakota_windows.h"
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
-  #define DAK_SLASH '\\'            // likely not needed with BFS
+  #define DAK_SLASH '\\'
 
 #elif defined(HAVE_UNISTD_H)
   // probably not necessary to tie conditional compilation to build
@@ -35,7 +35,7 @@
   #include <sys/param.h>             // for MAXPATHLEN
   #define DAK_PATH_ENV_NAME "PATH"
   #define DAK_PATH_SEP ':'
-  #define DAK_SLASH '/'              // likely not needed with BFS
+  #define DAK_SLASH '/'
 
 #endif // _WIN32 or _WIN64
 
@@ -304,6 +304,58 @@ bfs::path WorkdirHelper::which(const std::string& driver_name)
 
   return driver_found;
 }
+
+
+StringArray WorkdirHelper::tokenize_driver(const String& user_an_driver)
+{
+  using boost::escaped_list_separator;
+  using boost::tokenizer;
+
+  StringArray driver_and_args;  // to hold tokens of the driver
+
+  // tokenize on whitespace, preserving quoted strings and escapes,
+  // so the outermost quoted strings become single command-line args
+  escaped_list_separator<char> els("\\", " \t", "\"'");
+  tokenizer<escaped_list_separator<char> > tok(user_an_driver, els);
+  std::copy(tok.begin(), tok.end(), std::back_inserter(driver_and_args));
+
+  return driver_and_args;
+}
+
+
+bool WorkdirHelper::resolve_driver_path(String& an_driver)
+{
+  // tokenize to get first entry
+  StringArray driver_and_args = WorkdirHelper::tokenize_driver(an_driver);
+  if (driver_and_args.empty()) {
+    Cerr << "\nError: unexpected empty analysis_driver in resolve_driver_path"
+	 << std::endl;
+    abort_handler(-1);
+  }
+  const String& driver0 = driver_and_args[0];
+
+  // see if relative (with ., .., not bare filename)
+  String dot_str(".");      
+  dot_str += DAK_SLASH;
+  String dotdot_str("..");  
+  dotdot_str += DAK_SLASH;
+  if ( strbegins(driver0, dot_str) || strbegins(driver0, dotdot_str) ) {
+    // append startupPWD
+    an_driver = rel_to_abs(driver0).string();
+    // append the rest of the driver (arguments)
+    // TODO: consider boost::algorithm::join to rebuild the string, or
+    // just don't fully tokenize it.
+    //    user_options = boost::algorithm::join(driver_and_args, " ");
+    StringArray::const_iterator daa_it = ++driver_and_args.begin();
+    StringArray::const_iterator daa_end = driver_and_args.end();
+    for ( ; daa_it != daa_end; ++daa_it)
+      an_driver += " " + *daa_it;
+    return true;
+  }
+  // else no conversion to absolute necessary; leave source alone
+  return false;
+}
+
 
 
 /** Utility function for "which"
