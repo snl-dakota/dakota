@@ -1,0 +1,15 @@
+Blurb::
+Add main file name identifying where the experimental measurement error information will be located. 
+Description::
+The measurement error will be specified in \c sigma_data_file.  If there is more 
+than one experiment, there will need to be K data files, where K = \c num_experiments. 
+The sigma_data_files will contain one number in the case of constant measurement error
+for all field data, a vector in the case of separate, independent measurement errors 
+for each field data point, and a full covariance matrix for correlated measurement error.
+See \ref responses-calibration_terms-field_calibration_terms-field_data
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

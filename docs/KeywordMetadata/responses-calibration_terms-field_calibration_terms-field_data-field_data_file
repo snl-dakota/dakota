@@ -1,0 +1,14 @@
+Blurb::
+Add main file name identifying where the experimental field data will be located. 
+Description::
+The field data will be specified in \c field_data_file.  If there is more 
+than one experiment, there will need to be K data files, where K = \c num_experiments. 
+If \c field_data_file = 'response.dat', each experimental data file should be 
+named response.dat.1, response.dat.2,...response.dat.K.
+See \ref responses-calibration_terms-field_calibration_terms-field_data
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

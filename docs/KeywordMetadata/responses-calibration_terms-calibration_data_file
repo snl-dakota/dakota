@@ -6,7 +6,7 @@ Description::
 Dakota will attempt to match by calibrating the model variables. The
 options for it related to either:
   \li format: whether the data file is in \c annotated, or \c freeform format
-  \li content: where \c num_experiments, \c num_replicates, \c
+  \li content: where \c num_experiments, \c
     num_config_variables, and \c num_std_deviations indicate which
     columns appear in the data.
 
@@ -19,7 +19,10 @@ index | configuration xvars | y data observations | y data std devs
 
 Here each such row in the file corresponds to an experiment or
 replicate observation of an experiment to be compared to the model
-output.
+output.  NOTE:  the \c calibration_data_file is ONLY meant when 
+you have scalar calibration terms.  If you have field calibration 
+terms, you should use \c field_data and the associated specification 
+below it.
 
 <b> Simple case </b>
 
@@ -68,15 +71,9 @@ defaults are described below.
 
     This indicates that the data represents multiple experiments,
     where each experiment might be conducted with different values of
-    configuration variables.
-  </li>
-  <li> \c num_replicates ( \f$ N_{rep}\f$ )
-
-    Default: \f$ N_{rep} = [1 \times N_{exp} ] \f$ vector of 1's
-
-    This indicates the number of replicates for each experiment.
-    Replicates are all conducted at the same values of configuration
-    varaibles. It is a vector of length \f$ N_{exp} \f$.
+    configuration variables.  An experiment can also be thought 
+    of as a replicate, where the experiments are 
+    run at the same values of the configuration variables. 
   </li>
   <li> \c num_config_variables ( \f$ N_{cfg} \f$ )
 
@@ -117,26 +114,20 @@ deviations are used to weight the residuals in the sum-of-squares
 objective.
 
 A more advanced use of the \c calibration_data_file might specify \c
-num_experiments \f$ N_E \f$ and \c num_replicates \f$ N_R \f$,
-indicating that there are multiple experiments, each with 1 or more
-replicates to inform each residual term. When multiple experiments or
-replicates are present, %Dakota will expand the number of residuals
+num_experiments \f$ N_E \f$ 
+indicating that there are multiple experiments.
+When multiple experiments are present, %Dakota will expand the number of residuals
 for the repeat measurement data and difference with the data
-accordingly. For example, if the user has one experiment but five
-replicates were taken, in the example above with three calibration
+accordingly. For example, if the user has five experiments
+in the example above with three calibration
 terms, the \c calibration_data_file would need to contain five rows
-(one for each replicate), and each row should contain three
+(one for each experiment), and each row should contain three
 experimental data values that will be differenced with respect to the
-appropriate model response. In this example, \f$ N_E = 1 \f$, and \f$
-N_R = 5\f$. One can have varying numbers of experiments and
-replicates, such as two experiments, one with 3 replicates and one
-with 7 replicates. In this example, \c num_experiments = 2, and the
-number of replicates would be given as an integer vector: \c
-num_replicates = 3 7. In this example, there would be a total of 10
-rows of data in the experimental data file. To summarize, %Dakota
+appropriate model response. In this example, \f$ N_E = 5 \f$.
+To summarize, %Dakota
 will calculate the sum of the squared residuals as: \f[f =
-\sum_{i=1}^{N_E}\sum_{j=1}^{{N_R}_i}R_{i,j}^2\f] where the residuals
-now are calculated as: \f[R_{i,j} = y^{Model}_i(\theta) - y^{Data}_{i,j}. \f]
+\sum_{i=1}^{N_E}R_{i}^2\f] where the residuals
+now are calculated as: \f[R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. \f]
 
 
 Topics::	

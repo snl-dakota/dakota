@@ -1,0 +1,13 @@
+Blurb::
+Add context to field data: identify the number of different experiments
+Description::
+\c num_experiments defines how many experiments will be used in the calibration. 
+For field data, each experiment needs to have one or more files provided that 
+contain the field values, the coordinate values, the sigma values, and the 
+configuration variable values. 
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

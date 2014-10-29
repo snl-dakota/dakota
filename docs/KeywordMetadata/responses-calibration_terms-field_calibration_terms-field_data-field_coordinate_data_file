@@ -1,0 +1,16 @@
+Blurb::
+Add main file name identifying where the experimental coordinate data will be located. 
+Description::
+The coordinate data will be specified in \c field_coordinate_data_file.  If there is more 
+than one experiment, there will need to be K data files, where K = \c num_experiments. 
+Each coordinate data should contain \c num_coordinates_per_field columns, 
+where each column represents an independent coordinate which the field data is a function of. 
+For example, the independent coordinate in time-temperature field data is time, and 
+the field data itself is temperature.
+See \ref responses-calibration_terms-field_calibration_terms-field_data
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	
