@@ -521,7 +521,8 @@ pid_t ProcessHandleApplicInterface::analysis_process_group_id() const
     will contain pointers into its c_str()'s when done.
 */
 void ProcessHandleApplicInterface::
-create_command_arguments(const char** & av, StringArray& driver_and_args)
+create_command_arguments(boost::shared_array<const char*>& av, 
+			 StringArray& driver_and_args)
 {
   driver_and_args = WorkdirHelper::tokenize_driver(argList[0]);
 
@@ -530,7 +531,7 @@ create_command_arguments(const char** & av, StringArray& driver_and_args)
   if (commandLineArgs)
     nargs += 2;
   // ideally would use char *const argv[],
-  av = new const char*[nargs+1];  // need extra NULL
+  av.reset(new const char*[nargs+1]);  // need extra NULL
 
   size_t i = 0;
   for ( ; i<driver_and_args.size(); ++i)

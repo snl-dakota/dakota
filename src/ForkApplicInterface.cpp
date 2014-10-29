@@ -120,8 +120,25 @@ size_t ForkApplicInterface::test_local_analyses_send(int analysis_id)
 pid_t ForkApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
-  // BMA TODO: use array of pointers
-  const char** av;
+  // Guidance: Do as little between fork/exec as possible to avoid
+  // memory issues and overhead from copy-on-write.  Guidance from
+  // various sources leads to:
+  //  * chdir, getpid, setpgid should be safe (async-signal-safe in man signal)
+  //  * setenv is likely not (allocates memory); for now do before
+  //    fork, consider execve in future
+  //  * create_command_arguments allocates memory, so do before fork
+
+  // Convert argList StringArray to an array of const char*'s.  av
+  // will point to tokens in driver_and_args, so both get passed in.
+  // Perform this operation before fork as it allocates memory
+  boost::shared_array<const char*> av;  // delete[] called when av out of scope
+  StringArray driver_and_args;
+  create_command_arguments(av, driver_and_args);
+
+  // Set PATH, environment, and change directory; perform this
+  // operation before fork as setenv allocates memory
+  prepare_process_environment();
+
   int status = 0;
   pid_t pid = 0;
 
@@ -146,32 +163,15 @@ create_analysis_process(bool block_flag, bool new_group)
     abort_handler(-1);
   }
 
-  // BMA TODO: do as little between fork/exec as possible to avoid copy on write
-
   if (pid == 0) { // this is the child: replace process & execute analysis
 
     if (!block_flag) // only child sets group id -> avoids race with execvp
       join_analysis_process_group(new_group);
 
-    // Set PATH, environment, and change directory
-    // Only the child changes directory; shouldn't have to restore with reset
-    prepare_process_environment();
-
-    // Convert argList StringArray to an array of const char*'s. 
-    // This fails if done earlier in this block, which begs the question:
-    // Are these operations safe in the child before exec?
-    // av will point to tokens in driver_and_args, so both get passed in
-    StringArray driver_and_args;
-    create_command_arguments(av, driver_and_args);
-
     // replace the child process with the fork target defined in arg_list
-    status = execvp(av[0], (char*const*)av);
+    status = execvp(av[0], (char*const*)av.get());
 
     // if execvp returns then it failed; exit gracefully. 
-    // old comment: child never returns to here; no need to free
-    //memory (implicit cleanup)?
-    delete[] av;
-
     // since this is a copy of the parent, use _exit
     // so that the parent i/o stream is not prematurely flushed and closed.
     _exit(status); 
@@ -194,6 +194,8 @@ create_analysis_process(bool block_flag, bool new_group)
       //setpgid(pid, analysisProcGroupId); // race condition with execvp
     }
   }
+
+  reset_process_environment();
 
   return(pid);
 }

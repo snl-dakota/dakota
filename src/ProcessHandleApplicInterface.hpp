@@ -16,7 +16,7 @@
 #define PROCESS_HANDLE_APPLIC_INTERFACE_H
 
 #include "ProcessApplicInterface.hpp"
-
+#include <boost/shared_array.hpp>
 
 namespace Dakota {
 
@@ -113,7 +113,8 @@ protected:
   /// parse argList into argument array av suitable for passing to
   /// execvp, appending parameters and results filenames if requested
   /// by commandLineArgs
-  void create_command_arguments(const char** & av, StringArray& driver_and_args); 
+  void create_command_arguments(boost::shared_array<const char*>& av, 
+				StringArray& driver_and_args); 
 
 
   //
