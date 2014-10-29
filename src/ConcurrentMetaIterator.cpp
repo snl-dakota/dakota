@@ -192,8 +192,8 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     iterSched.init_evaluation_concurrency(probDescDB, selectedIterator,
 					  iteratedModel);
   // min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = probDescDB.get_min_procs_per_iterator(),
-      max_ppi = probDescDB.get_max_procs_per_iterator(max_eval_conc);
+  int min_ppi = probDescDB.min_procs_per_mi(),
+      max_ppi = probDescDB.max_procs_per_mi(max_eval_conc);
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   // > store the miPLIndex for this parallel config to restore in set_comms()

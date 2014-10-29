@@ -29,9 +29,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   nestedModelEvalCntr(0), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
 		   true, // peer 1 must assign jobs to peers 2-n
-		   problem_db.get_int("model.nested.sub_method_servers"),
-		   problem_db.get_int("model.nested.sub_method_processors"),
-		   problem_db.get_short("model.nested.sub_method_scheduling")),
+		   problem_db.get_int("model.nested.iterator_servers"),
+		   problem_db.get_int("model.nested.processors_per_iterator"),
+		   problem_db.get_short("model.nested.iterator_scheduling")),
   subIteratorJobCntr(0),
   optInterfacePointer(problem_db.get_string("model.interface_pointer")),
   subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer"))
@@ -559,8 +559,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     = subIteratorSched.init_evaluation_concurrency(probDescDB, subIterator,
 						   subModel);
   // > min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = probDescDB.get_min_procs_per_iterator(),
-      max_ppi = probDescDB.get_max_procs_per_iterator(max_subiter_eval_conc);
+  int min_ppi = probDescDB.min_procs_per_mi(),
+      max_ppi = probDescDB.max_procs_per_mi(max_subiter_eval_conc);
   // > leave default_config as PUSH_DOWN since sub-iterator run times will
   //   tend to be heterogeneous
   // > incoming max_eval_concurrency is the nested model's concurrency

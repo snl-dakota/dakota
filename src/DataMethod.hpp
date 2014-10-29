@@ -26,8 +26,9 @@ namespace Dakota {
 // Iterator
 // --------
 // unsigned short 16 bits are apportioned as [Minimizer,Opt,LSq,SurrBased,
-// Analyzer,NonD,PStudyDACE,Verif,Meta,...] where the trailing 7 bits are
-// available for up to 128 methods within a particular classification.
+// Analyzer,NonD,PStudyDACE,Verif,Meta,...] where the trailing 6 bits are
+// available for up to 64 methods within a particular classification.
+#define    PARALLEL_BIT     64
 #define        META_BIT    128
 #define       VERIF_BIT    256
 #define  PSTUDYDACE_BIT    512
@@ -41,7 +42,8 @@ namespace Dakota {
 // identification of method groupings based on the value.
 enum { DEFAULT_METHOD=0,
        // Meta-Iterators:
-       HYBRID=META_BIT, PARETO_SET, MULTI_START, BRANCH_AND_BOUND,
+       HYBRID=(META_BIT | PARALLEL_BIT), PARETO_SET, MULTI_START,
+       BRANCH_AND_BOUND,
        // Verification Analyzers:
        RICHARDSON_EXTRAP=(ANALYZER_BIT | VERIF_BIT),
        // PStudyDACE Analyzers:
@@ -55,6 +57,8 @@ enum { DEFAULT_METHOD=0,
        BAYES_CALIBRATION, GPAIS, POF_DARTS, EFFICIENT_SUBSPACE,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, RANDOM_SAMPLING,
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
+       //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
+       //BRANCH_AND_BOUND=(MINIMIZER_BIT | PARALLEL_BIT),
        // SurrBased Minimizers:
        SURROGATE_BASED_LOCAL=(MINIMIZER_BIT | SURRBASED_BIT),
        SURROGATE_BASED_GLOBAL, EFFICIENT_GLOBAL,

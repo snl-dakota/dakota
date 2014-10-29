@@ -151,7 +151,6 @@ protected:
   ProblemDescDB   probDescDB;  ///< the parser database instance
 
   Iterator topLevelIterator;  ///< the top level (meta-)iterator
-  //Model  topLevelModel;     //   the top level Model for non-meta-iteration
 
   /// tool for Dakota usage tracking (this is a thin wrapper class)
   UsageTracker usageTracker;

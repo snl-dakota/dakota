@@ -65,6 +65,10 @@ public:
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
   static void init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
+			    ParLevLIter pl_iter);
+  /// convenience function for allocation of an iterator and (parallel)
+  /// initialization of its comms
+  static void init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
 			    Model& the_model, ParLevLIter pl_iter);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms

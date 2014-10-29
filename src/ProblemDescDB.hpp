@@ -302,20 +302,36 @@ public:
   // to locate within the DB in terms of parallel existence & code reuse
 
   /// compute minimum evaluation partition size based on passed overrides
-  static int get_min_procs_per_evaluation(int ppa_spec, int num_a_serv_spec);
+  static int min_procs_per_ea(int ppa_spec, int num_a_serv_spec);
   /// compute maximum evaluation partition size based on passed overrides
-  static int get_max_procs_per_evaluation(int num_drivers, int num_a_serv_spec,
-					  short a_sched_spec, int alac_spec);
+  static int max_procs_per_ea(int num_drivers, int num_a_serv_spec,
+			      short a_sched_spec, int alac_spec);
 
   /// compute minimum evaluation partition size based on lower level overrides
-  int get_min_procs_per_evaluation();
+  int min_procs_per_ea();
   /// compute maximum evaluation partition size based on lower level concurrency
-  int get_max_procs_per_evaluation();
+  int max_procs_per_ea();
 
   /// compute minimum iterator partition size based on lower level overrides
-  int get_min_procs_per_iterator();
+  int min_procs_per_ie();
   /// compute maximum iterator partition size based on lower level concurrency
-  int get_max_procs_per_iterator(int max_eval_concurrency);
+  int max_procs_per_ie(int max_eval_concurrency);
+
+  /// compute minimum meta-iterator partition size based on lower
+  /// level overrides
+  int min_procs_per_mi(int min_procs_per_iter, int ppi_spec,
+		       int num_i_serv_spec);//, short i_sched_spec)
+  /// compute minimum meta-iterator partition size based on lower
+  /// level overrides
+  int min_procs_per_mi();
+
+  /// compute maximum meta-iterator partition size based on lower
+  /// level overrides
+  int max_procs_per_mi(int max_procs_per_iter, int ppi_spec,
+		       int num_i_serv_spec, short i_sched_spec);
+  /// compute maximum meta-iterator partition size based on lower
+  /// level concurrency
+  int max_procs_per_mi(int max_eval_concurrency); // TO DO
 
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
@@ -485,6 +501,15 @@ inline void ProblemDescDB::unlock()
   else
     methodDBLocked = modelDBLocked = variablesDBLocked = interfaceDBLocked
       = responsesDBLocked = false;
+}
+
+
+inline int ProblemDescDB::min_procs_per_ea()
+{
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
+
+  return min_procs_per_ea(get_int("interface.direct.processors_per_analysis"),
+			  get_int("interface.analysis_servers"));
 }
 
 

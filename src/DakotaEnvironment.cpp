@@ -370,25 +370,24 @@ void Environment::construct()
   if (method_ptr.empty()) probDescDB.resolve_top_method(false); // no model set
   else                    probDescDB.set_db_method_node(method_ptr);
 
-  // Instantiate topLevelIterator in parallel (invoke ProblemDescDB ctor chain
-  // on all procs).  Note that w_pl is the same for all parallel configurations.
+  // w_pl is the same for all parallel configurations
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-  if (probDescDB.get_ushort("method.algorithm") & META_BIT) {
-    topLevelIterator = probDescDB.get_iterator(); // all procs
-    // init_communicators() manages IteratorScheduler::init_iterator() and
-    // IteratorScheduler::init_iterator_parallelism()
-    topLevelIterator.init_communicators(w_pl_iter);
+  if (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT) {
+    // no-op at this time
   }
-  else {
+  else { // this case has a Model: augment setting of method node above
     //IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
-    parallelLib.push_output_tag(*w_pl_iter);// from init_serial_iterators
     probDescDB.set_db_model_nodes(
       probDescDB.get_string("method.model_pointer"));
-    //topLevelModel = probDescDB.get_model(); // if access needed downstream
-    Model top_level_model = probDescDB.get_model();
-    IteratorScheduler::init_iterator(probDescDB, topLevelIterator,
-				     top_level_model, w_pl_iter);
   }
+
+  // initialize/increment hierarchical output/restart streams
+  // (w_pl does not induce a tag)
+  parallelLib.push_output_tag(*w_pl_iter);// from init_serial_iterators
+
+  // Instantiate topLevelIterator in parallel
+  // (invoke ProblemDescDB ctor chain on all processors)
+  IteratorScheduler::init_iterator(probDescDB, topLevelIterator, w_pl_iter);
 }
 
 
@@ -408,23 +407,16 @@ void Environment::execute()
 
     probDescDB.lock(); // prevent run-time DB queries
 
-    ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
     // topLevelIterator's methodName must be defined on all ranks
-    if (topLevelIterator.method_name() & META_BIT) {
-      // graphics initialization delegated by MetaIterator
-      // set_communicators() occurs inside run()
-
-      // Iterator executes on all processors
-      topLevelIterator.run(w_pl_iter);
+    if (topLevelIterator.method_name() & PARALLEL_BIT) {
+      // no-op: graphics initialization delegated within MetaIterator
     }
-    else {
-      if (output_rank) // set up plotting and data tabulation
-	topLevelIterator.initialize_graphics(); // default to server_id = 1
+    else if (output_rank) // set up plotting and data tabulation
+      topLevelIterator.initialize_graphics(); // default to server_id = 1
 
-      // segregates parallel execution: run() if rank 0, else serve_run()
-      IteratorScheduler::run_iterator(topLevelIterator, //topLevelModel,
-				      w_pl_iter);
-    }
+    ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
+    IteratorScheduler::run_iterator(topLevelIterator, w_pl_iter);
+
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
   
@@ -455,19 +447,19 @@ void Environment::destruct()
 {
   // Called only by letter instances, no Rep forward required
 
-  ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
   if (topLevelIterator.is_null()) // help and version invocations
     return;
-  else if (topLevelIterator.method_name() & META_BIT) {
-    // free_iterator() manages IteratorScheduler::free_iterator() and
-    // IteratorScheduler::free_iterator_parallelism()
-    topLevelIterator.free_communicators(w_pl_iter);
-  }
-  else { // deallocate communicator partitions for topLevelIterator
-    IteratorScheduler::free_iterator(topLevelIterator, //topLevelModel,
-				     w_pl_iter);
-    parallelLib.pop_output_tag(*w_pl_iter);
-  }
+
+  ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
+  IteratorScheduler::free_iterator(topLevelIterator, w_pl_iter);
+
+  //if (topLevelIterator.method_name() & PARALLEL_BIT)
+    // no-op at this time
+  //else
+    // no-op at this time
+
+  // decrement hierarchical output/restart streams (w_pl does not induce a tag)
+  parallelLib.pop_output_tag(*w_pl_iter);
 }
 
 } // namespace Dakota

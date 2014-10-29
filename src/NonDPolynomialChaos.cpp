@@ -515,7 +515,7 @@ void NonDPolynomialChaos::compute_expansion()
 
     // post coefficients to the OrthogPolyApproximation instances (also calls
     // OrthogPolyApproximation::allocate_arrays())
-    uSpaceModel.approximation_coefficients(coeffs_array);
+    uSpaceModel.approximation_coefficients(coeffs_array);//normalizedCoeffOutput
   }
 }
 
@@ -683,7 +683,7 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
       PecosApproximation* approx_rep
 	= (PecosApproximation*)poly_approxs[i].approx_rep();
       // default returns a vector view; sparse returns a copy
-      coeffs_array[i] = approx_rep->dense_coefficients();
+      coeffs_array[i] = approx_rep->dense_coefficients();//normalizedCoeffOutput
     }
   }
 
