@@ -851,27 +851,47 @@ bfs::path ProcessApplicInterface::get_workdir_name()
 }
 
 
+/** Guidance: environment (PATH, current directory) should be set
+    immediately before Dakota spawns a process and reset immediately
+    afterwards (except fork which never returns) */
 void ProcessApplicInterface::prepare_process_environment()
 {
-  // TODO: consider whether to do this per eval or only at startup...
-  WorkdirHelper::set_preferred_path();
-
+  // If not using workdir, just put . and startupPWD on PATH.  If
+  // using workdir, also put the absolute path to the workdir on the
+  // PATH (. should suffice; this is conservative).  It doesn't help
+  // to prepend a relative workdir path, since we will change
+  // directory into it, so the helper makes the path absolute.
   if (useWorkdir) {
-    // BMA: Is this output safe in the child?  Maybe should do in parent?
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Prepending environment PATH with work_directory " 
+	   << curWorkdir << "." << std::endl;
+    WorkdirHelper::set_preferred_path(curWorkdir);
     if (outputLevel >= VERBOSE_OUTPUT)
       Cout << "Changing directory to " << curWorkdir << std::endl;
     WorkdirHelper::change_directory(curWorkdir);
   }
+  else
+    WorkdirHelper::set_preferred_path();
 
-  // setenv()/putenv() of DAKOTA_PARAMETERS_FILE/DAKOTA_RESULTS_FILE
   WorkdirHelper::set_environment("DAKOTA_PARAMETERS_FILE", paramsFileName);
   WorkdirHelper::set_environment("DAKOTA_RESULTS_FILE", resultsFileName);
-
-  // prepend env path with run dir (already on path) and startup dir
-  // BMA TODO: Caution as this will repeatedly prepend to PATH
-  if (useWorkdir && curWorkdir.is_absolute())
-    WorkdirHelper::prepend_path_item(curWorkdir, bfs::path(), false);
 }
 
+/** Undo anything done prior to spawn */
+void ProcessApplicInterface::reset_process_environment()
+{
+  // BMA TODO: consider unsetting environment variables previously set
+
+  // No need to reset in non-workdir case, as long as PATH doesn't get
+  // multiply appended to
+  if (useWorkdir) {
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Changing directory back to " << WorkdirHelper::startup_pwd()
+	   << std::endl;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Resetting environment PATH." << std::endl;
+    WorkdirHelper::reset();
+  }
+}
 
 } // namespace Dakota

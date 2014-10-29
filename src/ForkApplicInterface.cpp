@@ -120,6 +120,7 @@ size_t ForkApplicInterface::test_local_analyses_send(int analysis_id)
 pid_t ForkApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
+  // BMA TODO: use array of pointers
   const char** av;
   int status = 0;
   pid_t pid = 0;
@@ -144,6 +145,8 @@ create_analysis_process(bool block_flag, bool new_group)
 	 << std::strerror(errno) << ")" << std::endl;
     abort_handler(-1);
   }
+
+  // BMA TODO: do as little between fork/exec as possible to avoid copy on write
 
   if (pid == 0) { // this is the child: replace process & execute analysis
 

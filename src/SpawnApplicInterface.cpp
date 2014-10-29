@@ -176,12 +176,7 @@ create_analysis_process(bool block_flag, bool new_group)
 
   // Spawn returns control here, so free memory and change directory back
   delete[] av;
-  if (useWorkdir) {
-    if (outputLevel >= VERBOSE_OUTPUT)
-      Cout << "Changing directory back to " << WorkdirHelper::startup_pwd()
-	   << std::endl;
-    WorkdirHelper::reset();
-  }
+  reset_process_environment();
 
   return(pid);
 }

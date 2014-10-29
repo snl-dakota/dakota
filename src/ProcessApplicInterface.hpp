@@ -119,8 +119,12 @@ protected:
   /// construct a work directory name (tmp or named), with optional tag
   bfs::path get_workdir_name();
   
-  /// set PATH, environment variables, and change directory prior to fork/system
+  /// set PATH, environment variables, and change directory prior to
+  /// fork/system/spawn
   void prepare_process_environment();
+
+  /// reset PATH and current directory after system/spawn (workdir case)
+  void reset_process_environment();
 
   //
   //- Heading: Data

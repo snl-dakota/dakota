@@ -338,7 +338,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
 
   prepare_process_environment();
   shell << flush;
-  if (useWorkdir)  WorkdirHelper::reset();
+  reset_process_environment();
 }
 
 
@@ -360,7 +360,7 @@ void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
 
   prepare_process_environment();
   shell << flush;
-  if (useWorkdir)  WorkdirHelper::reset();
+  reset_process_environment();
 }
 
 
@@ -392,7 +392,7 @@ spawn_analysis_to_shell(int analysis_id, bool block_flag)
 
   prepare_process_environment();
   shell << flush;
-  if (useWorkdir)  WorkdirHelper::reset();
+  reset_process_environment();
 }
 
 
@@ -414,7 +414,8 @@ void SysCallApplicInterface::spawn_output_filter_to_shell(bool block_flag)
 
   prepare_process_environment();
   shell << flush;
-  if (useWorkdir)  WorkdirHelper::reset();
+  reset_process_environment();
+
 }
 
 } // namespace Dakota

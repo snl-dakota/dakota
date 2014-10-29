@@ -137,8 +137,8 @@ public:
   static bfs::path which(const std::string& driver_name);
 
   /// get a valid absolute bfs::path to a subdirectory relative to rundir
-  static bfs::path rel_to_abs(const std::string& subdir_str)
-  { return ( startupPWD / bfs::path(subdir_str) ); }
+  static bfs::path rel_to_abs(const bfs::path& subdir_path)
+  { return ( startupPWD / subdir_path ); }
 
   /// tokenize a white-space separated analysis driver, respecting
   /// escapes and nested quotes
@@ -248,6 +248,10 @@ public:
   /// set/reset PATH to dakPreferredEnvPath
   static void set_preferred_path();
 
+  /// set PATH to absolute(extra_path):dakPreferredEnvPath, without
+  /// changing cached preferred PATH
+  static void set_preferred_path(const boost::filesystem::path& extra_path);
+
   ///  Resets the working directory "state" to its initial state when
   ///  DAKOTA  was launched
   static void reset();
@@ -274,10 +278,12 @@ private:
   /// Value of $PWD var upon entry to dakota main()
   static std::string startupPWD;
 
-  /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
+  /// Value of $PATH (%PATH% on windows) var upon entry to dakota
+  /// main(), omitting any leading PATH= or Path=
   static std::string startupPATH;
 
-  /// Dakota preferred search PATH = ".:startupPWD:startupPATH"
+  /// Dakota preferred search PATH/Path = ".:startupPWD:startupPATH",
+  /// omitting any leading PATH= or Path=
   static std::string dakPreferredEnvPath;
 
   //

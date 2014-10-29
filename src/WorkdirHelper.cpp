@@ -101,56 +101,36 @@ void WorkdirHelper::change_directory(const bfs::path& new_dir)
 #endif
 }
 
-/** Creates a "PATH=.:$PWD:PATH" string so that analysis driver
- *  detection is (hopefully) more robust
+/** Prepends '.' and the startupPWD to the initial startup $PATH
+ *  string so that analysis driver detection is more robust
  */
 std::string WorkdirHelper::init_preferred_env_path()
 {
   std::string path_sep_string(1, DAK_PATH_SEP);
-  std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
 
-  // Go ahead and prepend '.' to the preferred $PATH since it can't hurt
-
+  std::string preferred_env_path;
   preferred_env_path += "." + path_sep_string + startupPWD + path_sep_string;
-  preferred_env_path += init_startup_path();
+  preferred_env_path += startupPATH;
 
   return preferred_env_path;
 }
 
 
-/** Utility function from borrowed from boost/test
- */
-void putenv_impl(const char* name_and_value)
-{
-  if ( putenv( (char*)name_and_value) ) {
-    Cerr << "\nError: putenv(" << name_and_value
-         << ") failed in putenv_impl()" << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-/** Overwrites $PATH with an additional directory prepended,
- *  typically for the purpose of ensuring templatedir is in the $PATH
+/** Overwrites $PATH with an additional directory prepended, typically
+ *  for the purpose of ensuring templatedir is in the $PATH; updates
+ *  cached preferred PATH and environment PATH, so exercise caution
+ *  with repeated calls.
  */
 void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
 {
   // Assume a relative extra_path arg is relative to dakota's startupPWD
+  std::string abs_extra_path = bfs::path(extra_path).is_absolute() ? extra_path :
+    startupPWD + std::string(1,DAK_SLASH) + extra_path;
 
-  std::string abs_extra_path = !bfs::path(extra_path).is_absolute() ?
-                               startupPWD+std::string(1,DAK_SLASH)+extra_path :
-                               extra_path;
+  std::string path_sep_string(1, DAK_PATH_SEP);
+  dakPreferredEnvPath = abs_extra_path + path_sep_string + dakPreferredEnvPath;
 
-  std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
-  // get the trailing part of the old path (after the =)
-  std::string old_preferred_path
-    = dakPreferredEnvPath.substr(preferred_env_path.size());
-
-  preferred_env_path += abs_extra_path + std::string(1, DAK_PATH_SEP)
-                      + old_preferred_path;
-  dakPreferredEnvPath = preferred_env_path;
-
-  putenv_impl(dakPreferredEnvPath.c_str());
+  set_environment(DAK_PATH_ENV_NAME, dakPreferredEnvPath, true);
 }
 
 
@@ -199,8 +179,7 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
   typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
   boost::char_separator<char> sep( std::string(1, DAK_PATH_SEP).c_str() );
 
-  tokenizer dir_tokens( env_path.begin() + 5,
-                        env_path.end(), sep ); // account for "PATH=" @beginning
+  tokenizer dir_tokens(env_path.begin(), env_path.end(), sep);
 
   for(tokenizer::iterator tok_iter = dir_tokens.begin();
       tok_iter != dir_tokens.end(); ++tok_iter) {
@@ -410,7 +389,24 @@ bfs::path WorkdirHelper::po_which(const std::string& driver_name)
 
 void WorkdirHelper::set_preferred_path()
 {
-  putenv_impl(dakPreferredEnvPath.c_str());
+  set_environment(DAK_PATH_ENV_NAME, dakPreferredEnvPath, true);
+}
+
+
+/** If needed, convert the passed item to an absolute path (while
+    could make sense to prepend a relative path, no current use cases)
+    and prepend when setting environment. Does not update cached
+    preferred path.  */
+void WorkdirHelper::set_preferred_path(const boost::filesystem::path& extra_path)
+{
+  boost::filesystem::path abs_extra_path = extra_path.is_absolute() ? 
+    extra_path : rel_to_abs(extra_path);
+
+  std::string path_sep_string(1, DAK_PATH_SEP);
+  std::string new_preferred_path = 
+    abs_extra_path.string() + path_sep_string + dakPreferredEnvPath;
+
+  set_environment(DAK_PATH_ENV_NAME, new_preferred_path, true);
 }
 
 
@@ -419,60 +415,6 @@ void WorkdirHelper::reset()
   WorkdirHelper::change_directory(startupPWD);
   set_preferred_path();
 }
-
-
-#ifdef DEBUG_LEGACY_WORKDIR
-// WJB:  The majority of the code below I DO NOT WANT TO TOUCH!
-//       (legacy "utilities" from the "not_executable" module)
-
-/* The following routines assume ASCII or UTF-encoded Unicode. */
-
-/* adjust for quoted strings in arg_list[0] */
- const char**
-arg_list_adjust(const char **arg_list, void **a0)
-{
-return 0;
-}
-
-
-// WJB - ToDo: totally rewrite in C++ (perhaps leverage STL)
-//       should workdir arg be an actual BoostFS "path" object?
-//       retVal:  std::vector<std::string>?!
-const char**
-arg_adjust(bool cmd_line_args,
-           const std::vector<std::string>& args,
-           const char** av, const std::string& workdir)
-{
-  av[0] = args[0].c_str();
-
-  int i = 1;
-  if (cmd_line_args)
-    for(; i < 3; ++i)
-      av[i] = args[i].c_str();
-
-  av[i] = 0;
-  av = arg_list_adjust(av, 0);
-
-  if ( !workdir.empty() ) {
-    WorkdirHelper::change_directory(workdir);
-    size_t len = workdir.size();
-    const char* s = workdir.c_str();
-    const char* t;
-    // WJB: more effective STL/Boost.Regex utils for this loop?
-    //      also, how bout a more portable (BstFS) way to manage '/' vs. '\'
-
-    // BMA: I think this is stripping the leading workdir from any
-    // entries in args
-    for(i = 1; (t = av[i]); ++i)
-      if (!std::strncmp(s, t, len) && t[len] == '/')
-        av[i] = t + len + 1;
-  }
-
-  return av;
-}
-
-
-#endif  // DEBUG_LEGACY_WORKDIR
 
 
 /** Input: path_with_wc; Output: search_dir, wild_card */
