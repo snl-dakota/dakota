@@ -329,8 +329,8 @@ void Environment::parse(bool check_bcast_database,
   // (a simple world bcast is sufficient).
 
   // Output/restart management utilizes iterator partitions, so calls to
-  // push_output_tag() follow init_iterator_communicators() within
-  // IteratorScheduler::init_iterator_parallelism().
+  // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
+  // within IteratorScheduler::init_iterator_parallelism().
 
   // ProblemDescDB requires cmd line information, so pass programOptions
 

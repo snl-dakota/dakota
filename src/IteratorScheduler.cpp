@@ -30,8 +30,7 @@ IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
   numIteratorServers(num_servers), procsPerIterator(procs_per_iterator),
   iteratorCommRank(0), iteratorCommSize(1), iteratorServerId(0),
   messagePass(false), iteratorScheduling(scheduling),//maxIteratorConcurrency(1)
-  peerAssignJobs(peer_assign_jobs), ownMIParallelLevel(false),
-  paramsMsgLen(0), resultsMsgLen(0)
+  peerAssignJobs(peer_assign_jobs), paramsMsgLen(0), resultsMsgLen(0)
 {
   // Supported examples of a single level of concurrent iterators:
   //   ConcurrentMinimizer (multi_start, pareto_set), BranchBndMinimizer
@@ -140,24 +139,19 @@ init_iterator_parallelism(int max_iterator_concurrency,
   // Initialize iterator partitions after parsing but prior to output/restart.
   // The default setting for max_iterator_concurrency is the number of specified
   // iterator servers, which will yield a peer partition.
-  ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
-  size_t before_index = pc_iter->mi_parallel_level_last_index();
   const ParallelLevel& mi_pl = parallelLib.init_iterator_communicators(
     numIteratorServers, procsPerIterator, min_procs_per_iterator,
     max_procs_per_iterator, max_iterator_concurrency, default_config,
     iteratorScheduling, false);// peer_dynamic not available prior to threading
-  size_t after_index = pc_iter->mi_parallel_level_last_index();
 
-  // update to the mi_pl level to be used in iterator scheduling
-  update(after_index);
   // track whether this is a newly appended or inherited level
-  ownMIParallelLevel = (after_index > before_index);
+  ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+  update(pc_iter->mi_parallel_level_last_index());
 
   // Manage ostream output and binary restart input/output.  If concurrent
   // iterators, use tagged files.  Must follow iterator partitioning and
   // should precede iterator instantiation to segregate this output.
-  if (ownMIParallelLevel)
-    parallelLib.push_output_tag(mi_pl);
+  parallelLib.push_output_tag(mi_pl);
 }
 
 
@@ -191,8 +185,7 @@ void IteratorScheduler::free_iterator_parallelism()
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // decrement the stream tagging
-  if (ownMIParallelLevel)
-    parallelLib.pop_output_tag(*pl_iter);
+  parallelLib.pop_output_tag(*pl_iter);
   // deallocate the parallelism level
   parallelLib.free_iterator_communicators(pl_iter);
 }

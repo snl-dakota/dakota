@@ -993,10 +993,12 @@ void ParallelLibrary::print_configuration()
     // Meta-iterator diagnostics
     for (i=1; i<num_mi; ++i) {
       const ParallelLevel& mi_pl = mi_pls[i];
-      Cout << "concurrent iterators\t  " << std::setw(4) << mi_pl.numServers
-	   << "\t\t   " << std::setw(4) << mi_pl.procsPerServer << "\t\t   ";
-      if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
-      else                           Cout << "peer\n";
+      if (mi_pl.messagePass) {// commSplitFlag true if 1 server + idle partition
+	Cout << "concurrent iterators\t  " << std::setw(4) << mi_pl.numServers
+	     << "\t\t   " << std::setw(4) << mi_pl.procsPerServer << "\t\t   ";
+	if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
+	else                           Cout << "peer\n";
+      }
     }
 
     // Iterator diagnostics
@@ -1205,6 +1207,9 @@ void ParallelLibrary::abort_helper(int code) {
 
 void ParallelLibrary::free_communicators(ParallelLevel& pl)
 {
+  // TO DO: can we just move this to ParallelLevel::~ParallelLevel() ???
+  // or is there an order dependence with MPI_Finalize ???
+
 #ifdef DAKOTA_HAVE_MPI
   if (pl.commSplitFlag) { // deallocate intra/inter comms.
     MPI_Comm_free(&pl.serverIntraComm);

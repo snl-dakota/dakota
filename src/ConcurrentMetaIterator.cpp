@@ -198,7 +198,7 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   // > store the miPLIndex for this parallel config to restore in set_comms()
   size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-  miPLIndexMap[pl_index] = iterSched.miPLIndex; // same or one beyond pl_iter
+  miPLIndexMap[pl_index] = iterSched.miPLIndex;
 
   summaryOutputFlag = iterSched.lead_rank();
 
@@ -235,7 +235,7 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+      mi_pl_index = miPLIndexMap[pl_index];
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -252,7 +252,7 @@ void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   // free the communicators for selectedIterator
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+      mi_pl_index = miPLIndexMap[pl_index];
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter

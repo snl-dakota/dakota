@@ -537,7 +537,7 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       if (subIteratorSched.messagePass) // serve concurrent subIterator execs
 	subIteratorSched.schedule_iterators(*this, subIterator);
       else { // service the subModel for a single subIterator execution
-	ParLevLIter si_pl_iter // inner context (same or one past)
+	ParLevLIter si_pl_iter // inner context
 	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
 	subModel.serve_run(si_pl_iter,
 			   subIterator.maximum_evaluation_concurrency());

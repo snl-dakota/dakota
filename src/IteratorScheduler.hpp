@@ -182,9 +182,6 @@ public:
   size_t miPLIndex;         ///< index of active parallel level (corresponding
                             ///< to ParallelConfiguration::miPLIters) to use
                             ///< for parallelLib send/recv
-  bool ownMIParallelLevel;  ///< indicates that the ParallelLevel indicated by
-                            ///< miPLIndex was allocated by this scheduler
-                            ///< instance (not reused from higher context)
 
 private:
 

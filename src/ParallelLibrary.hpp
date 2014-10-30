@@ -1113,15 +1113,23 @@ init_iterator_communicators(int iterator_servers, int procs_per_iterator,
 		     iterator_scheduling, peer_dynamic_avail);
   ParLevLIter last = --parallelLevels.end();
 
-  // this approach unconditionally updates miPLIters
-  //currPCIter->miPLIters.push_back(last);
-  //return *last; // same as parallelLevels.back()
+  // unconditionally update miPLIters
+  currPCIter->miPLIters.push_back(last);
+  return *last; // same as parallelLevels.back()
 
-  // update miPLIters iff change from previous partition
+  /*
+  // update miPLIters iff new partition.  This complicates deallocation (the new
+  // ParallelLevel does not correpond to a ParLevLIter) and requires the client
+  // to detect and manage when the higher level config has not been updated
+  // (requiring a serialization step to ensure that the previous level settings
+  // are not adopted).  Therefore, the benefits of this streamlining are dubious
+  // given the need to recreate serial settings from the new parallel level.
   if (last->messagePass || last->idlePartition)
     currPCIter->miPLIters.push_back(last);
-  //else parallelLevels.pop_back(); // leave parallelLevels redundancy for now
+  else
+    parallelLevels.pop_back(); // assuming comm deallocation in pl destructor
   return *currPCIter->miPLIters.back();
+  */
 }
 
 

@@ -107,7 +107,7 @@ void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   // free the communicators for selectedIterators
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+      mi_pl_index = miPLIndexMap[pl_index];
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -125,7 +125,7 @@ void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   // free the communicators for globalIterator and localIterator
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+      mi_pl_index = miPLIndexMap[pl_index];
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter

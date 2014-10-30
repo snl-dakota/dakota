@@ -129,7 +129,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
   size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-  miPLIndexMap[pl_index] = iterSched.miPLIndex; // same or one beyond pl_iter
+  miPLIndexMap[pl_index] = iterSched.miPLIndex;
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
@@ -162,7 +162,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+      mi_pl_index = miPLIndexMap[pl_index];
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -181,7 +181,7 @@ void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   // free the communicators for selectedIterators
   size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index]; // same or one beyond pl_iter
+      mi_pl_index = miPLIndexMap[pl_index];
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter

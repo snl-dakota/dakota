@@ -569,7 +569,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // > store the miPLIndex for this parallel config to restore in set_comms()
   SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
 		   max_eval_concurrency);
-  miPLIndexMap[key] = subIteratorSched.miPLIndex; // same or one beyond pl_iter
+  miPLIndexMap[key] = subIteratorSched.miPLIndex;
 
   // > now augment prev subIterator instantiations for additional mi_pl ranks
   //   (new mi_pl is used via miPLIndex update in init_iterator_parallelism())
@@ -618,7 +618,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // > mi_pl_index reflects the miPL depth after any subIterator partitioning
     SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
 		     max_eval_concurrency);
-    size_t mi_pl_index = miPLIndexMap[key]; // same or one beyond pl_iter
+    size_t mi_pl_index = miPLIndexMap[key];
     subIteratorSched.update(modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
@@ -667,7 +667,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // > mi_pl_index reflects the miPL depth after any subIterator partitioning
     SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
 		     max_eval_concurrency);
-    size_t mi_pl_index = miPLIndexMap[key]; // same or one beyond pl_iter
+    size_t mi_pl_index = miPLIndexMap[key];
     subIteratorSched.update(modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
