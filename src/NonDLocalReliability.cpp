@@ -965,14 +965,17 @@ void NonDLocalReliability::initial_taylor_series()
 	mean = fnValsMeanX[i]; // first-order mean
 	Real v1 = 0., v2 = 0.;
 	for (j=0; j<numUncertainVars; ++j) {
+	  Real fn_grad_ji = fnGradsMeanX(j,i);
 	  if (correlation_flag)
 	    for (k=0; k<numUncertainVars; ++k) {
-	      if (t2nq) v1 += covariance(j,k)*fnHessiansMeanX[i](j,k);
-	      v2 += covariance(j,k) * fnGradsMeanX(j,i) * fnGradsMeanX(k,i);
+	      Real cov_jk = covariance(j,k);
+	      if (t2nq) v1 += cov_jk * fnHessiansMeanX[i](j,k);
+	      v2 += cov_jk * fn_grad_ji * fnGradsMeanX(k,i);
 	    }
 	  else {
-	    if (t2nq) v1 += covariance(j,j)*fnHessiansMeanX[i](j,j);
-	    v2 += covariance(j,j) * std::pow(fnGradsMeanX(j,i), 2);
+	    Real cov_jj = covariance(j,j);
+	    if (t2nq) v1 += cov_jj * fnHessiansMeanX[i](j,j);
+	    v2 += cov_jj * std::pow(fn_grad_ji, 2);
 	  }
 	}
 	if (t2nq) mean += v1/2.;
