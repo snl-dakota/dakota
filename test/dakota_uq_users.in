@@ -7,8 +7,8 @@ method,
 	id_method = 'UQ'
 #       model_pointer = 'SURR'			#4
 	sampling,
-	  samples = 10				#0,#2
-#	  samples = 5				#1,#3
+	  samples = 10				#0,#2,#3
+#	  samples = 5				#1
 #         samples = 1000			#4
 	  seed = 98765 rng rnum2
 	  response_levels = 0.1 0.2 0.6
