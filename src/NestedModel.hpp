@@ -273,6 +273,8 @@ private:
   /// number of calls to derived_compute_response()/
   /// derived_asynch_compute_response()
   int nestedModelEvalCntr;
+  /// boolean to trigger one-time updates on first call to update_sub_model()
+  bool firstUpdate;
 
   /// used to return a map of nested responses (including subIterator
   /// and optionalInterface contributions) for aggregation and rekeying

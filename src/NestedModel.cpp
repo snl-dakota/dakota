@@ -26,7 +26,7 @@ namespace Dakota {
 
 NestedModel::NestedModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
-  nestedModelEvalCntr(0), outerMIPLIndex(0),
+  nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
 		   true, // peer 1 must assign jobs to peers 2-n
 		   problem_db.get_int("model.nested.iterator_servers"),
@@ -2039,7 +2039,6 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   // additional parameter mappings, such as setting the mean of a weibull.
 
   size_t i, num_var_map_2 = active2ACVarMapTargets.size();
-  bool first_eval = (nestedModelEvalCntr == 1);
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   size_t curr_i, num_curr_cv = vars.cv();
@@ -2062,7 +2061,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	if (extraCVarsData[i]) {
 	  subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
 	  subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
-	  if (first_eval)
+	  if (firstUpdate)
 	    subModel.all_continuous_variable_label(curr_c_labels[i],
 						   pacvm_index);
 	}
@@ -2119,7 +2118,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	if (extraDIVarsData[i]) {
 	  subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],padivm_index);
 	  subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],padivm_index);
-	  if (first_eval)
+	  if (firstUpdate)
 	    subModel.all_discrete_int_variable_label(curr_di_labels[i],
 						     padivm_index);
 	}
@@ -2171,7 +2170,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
       if (sadsvm_target == Pecos::NO_TARGET) {
 	subModel.all_discrete_string_variable(curr_ds_vars[i], padsvm_index);
-	if (extraDSVarsData[i] && first_eval)
+	if (extraDSVarsData[i] && firstUpdate)
 	  subModel.all_discrete_string_variable_label(curr_ds_labels[i],
 						      padsvm_index);
       }
@@ -2229,7 +2228,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 						 padrvm_index);
 	  subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
 						 padrvm_index);
-	  if (first_eval)
+	  if (firstUpdate)
 	    subModel.all_discrete_real_variable_label(curr_dr_labels[i],
 						      padrvm_index);
 	}
@@ -2255,7 +2254,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
     subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
     subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
-    if (first_eval)
+    if (firstUpdate)
       subModel.all_continuous_variable_label(curr_ac_labels[curr_i], c1_index);
   }
 
@@ -2273,7 +2272,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
     subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
     subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
-    if (first_eval)
+    if (firstUpdate)
       subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
 					       c1_index);
   }
@@ -2289,7 +2288,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     curr_i = cdsv_index_map(i, vars);
     size_t c1_index = complement1ADSVarMapIndices[i];
     subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
-    if (first_eval)
+    if (firstUpdate)
       subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
 						  c1_index);
   }
@@ -2308,10 +2307,12 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
     subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
     subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
-    if (first_eval)
+    if (firstUpdate)
       subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
 						c1_index);
   }
+
+  firstUpdate = false;
 }
 
 
