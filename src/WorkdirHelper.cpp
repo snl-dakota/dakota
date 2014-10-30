@@ -29,8 +29,7 @@
   #define DAK_PATH_SEP ';'
   #define DAK_SLASH '\\'
 
-#elif defined(HAVE_UNISTD_H)
-  // probably not necessary to tie conditional compilation to build
+#else
   #include <unistd.h>
   #include <sys/param.h>             // for MAXPATHLEN
   #define DAK_PATH_ENV_NAME "PATH"

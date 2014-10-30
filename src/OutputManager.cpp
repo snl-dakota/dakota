@@ -596,5 +596,55 @@ void RestartWriter::flush()
 { restartOutputFS.flush(); }
 
 
+#ifdef Want_Heartbeat /*{*/
+ static time_t start_time;
+
+extern "C" void dak_sigcatch(int sig)
+{
+        struct rusage ru, ruc;
+        unsigned long elapsed;
+
+        if (getrusage(RUSAGE_SELF, &ru))
+                std::memset(&ru, 0, sizeof(ru));
+        if (getrusage(RUSAGE_SELF, &ruc))
+                std::memset(&ruc, 0, sizeof(ru));
+        elapsed = time(0) - start_time;
+        std::printf("\n<<<<DAKOTA_HEARTBEAT seconds: elapsed %lu, cpu %.3g, child %.3g>>>>\n",
+                elapsed, ru.ru_utime.tv_sec + ru.ru_stime.tv_sec
+                        + 1e-6*(ru.ru_utime.tv_usec + ru.ru_stime.tv_usec),
+                        ruc.ru_utime.tv_sec + ruc.ru_stime.tv_sec
+                        + 1e-6*(ruc.ru_utime.tv_usec + ruc.ru_stime.tv_usec));
+        std::fflush(stdout);
+        signal(SIGALRM, dak_sigcatch);
+}
+#endif /*Want_Heartbeat }*/
+
+void start_dakota_heartbeat(int seconds)
+{
+#ifdef Want_Heartbeat /*{*/
+        char *s;
+        struct itimerval itv;
+        static void(*oldsig)(int);
+        void (*oldsig1)(int);
+
+        start_time = time(0);
+
+        if (seconds <= 0 && (s = std::getenv("DAKOTA_HEARTBEAT")))
+                seconds = (int)std::strtol(s,0,10);
+        if (seconds > 0) {
+                std::memset(&itv, 0, sizeof(itv));
+                itv.it_interval.tv_sec = itv.it_value.tv_sec = seconds;
+                setitimer(ITIMER_REAL, &itv, 0);
+                oldsig1 = signal(SIGALRM, dak_sigcatch);
+                if (!oldsig)
+                        oldsig = oldsig1;
+        }
+        else if (oldsig) {
+                signal(SIGALRM, oldsig);
+                oldsig = 0;
+        }
+#endif /*Want_Heartbeat }*/
+}
+
 } //namespace Dakota
 
