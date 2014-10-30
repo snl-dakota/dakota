@@ -355,7 +355,7 @@ add_dependencies(text_book dakota)
 # UNIT TESTS
 
 # WJB - ToDo:  decide on a unit test framework and probe for it
-option(DAKOTA_ENABLE_UNIT_TESTS "Enable unit tests in DAKOTA" ON)
+option(DAKOTA_ENABLE_UNIT_TESTS "Enable unit tests in DAKOTA" OFF)
 if(DAKOTA_ENABLE_UNIT_TESTS)
   # Complete these for each specific test.
 
