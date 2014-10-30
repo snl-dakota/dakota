@@ -2325,6 +2325,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
 	{"jega.postprocessor_type", P postProcessorType},
+	{"lipschitz", P lipschitzType},
 	{"log_file", P logFile},
 	{"mcmc_type", P mcmcType},
 	{"mesh_adaptive_search.display_format", P displayFormat},

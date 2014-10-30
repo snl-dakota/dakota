@@ -53,26 +53,41 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
   emulatorOrder(probDescDB.get_int("method.nond.surrogate_order")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
+  emulatorSamples(probDescDB.get_int("method.nond.emulator_samples")),
+  lipschitzType(probDescDB.get_string("method.lipschitz")),
   samples(probDescDB.get_int("method.samples"))
 {
-  // any initialization is done here.   For now, you should just specify 
+  // any initialization is done here.   For now, you should just specify
   // the number of samples, but eventually we will get that from the input spec
   Cout << "Hello World, POF Darts is coming! " << '\n';
   Cout << "Number of samples " << samples << '\n';
   Cout << "Surrogate order " << emulatorOrder << '\n';
   Cout << "Emulator Type " << emulatorType << '\n';
- 
-  if ((emulatorType == GP_EMULATOR) || ( emulatorType == NO_EMULATOR)) { 
+  Cout << "Emulator Samples " << emulatorSamples << '\n';
+  Cout << "lipschitzType " << lipschitzType << '\n';
+
+  if (lipschitzType == "local") 
+    _use_local_L = true;       // true = Local Lipschitz , false = Global Lipschitz (less sampling time - less accuracy)
+  else if (lipschitzType == "global") 
+    _use_local_L = false;       // true = Local Lipschitz , false = Global Lipschitz (less sampling time - less accuracy
+  _eval_error = false;
+  if (emulatorOrder==0)
+    emulatorOrder = 4;             // order of vps surrogate if used
+  if (emulatorSamples==0)
+    emulatorSamples = 1E6;             // order of vps surrogate if used
+    
+  if ((emulatorType == KRIGING_EMULATOR) || ( emulatorType == NO_EMULATOR)) {
+    Cout << "in initialize loop" << '\n';
     initialize_surrogates(); // initialize one GP surrogate per function
     _use_vor_surrogate = false; // true = use VPS , false = use GP
   }
   else {
     _use_vor_surrogate = true; // true = use VPS , false = use GP
     _vps_order = emulatorOrder;             // order of vps surrogate if used
-  } 
-   /// /*if (!_use_vor_surrogate)*/ initialize_surrogates(); // initialize one GP surrogate per function
+  }
+  /// /*if (!_use_vor_surrogate)*/ initialize_surrogates(); // initialize one GP surrogate per function
 }
-
+    
 
 NonDPOFDarts::~NonDPOFDarts()
 { }
@@ -84,6 +99,8 @@ void NonDPOFDarts::quantify_uncertainty()
     Cout << "I am now computing uncertainty! " << '\n';
     
     if (fabs(seed - 1.0) < 1E-10) seed  = time(0);
+    
+    std::cout<< "seed = " << seed << std::endl;
     
     initiate_random_number_generator(seed);
     
@@ -208,15 +225,15 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         _max_num_successive_misses = ceil(1.0 / p); // successive missed for the line darts algorithm
         
-        size_t max_num_points(_total_budget);
-        
-        _sample_points = new double*[max_num_points];
+        _sample_points = new double*[_total_budget];
+        _sample_neighbors = new size_t*[_total_budget];
+        _sample_vsize = new double[_total_budget];
         _dart = new double[_n_dim];
         
         _line_flat = new size_t[_n_dim];
-        _line_flat_start = new double[max_num_points];
-        _line_flat_end = new double[max_num_points];
-        _line_flat_length = new double[max_num_points];
+        _line_flat_start = new double[_total_budget];
+        _line_flat_end = new double[_total_budget];
+        _line_flat_length = new double[_total_budget];
         
         _xmin = new double[_n_dim];
         _xmax = new double[_n_dim];
@@ -239,8 +256,6 @@ void NonDPOFDarts::quantify_uncertainty()
             _diag += dx * dx;
         }
         _diag = sqrt(_diag);
-        _max_radius = 0.25 * _diag;
-        
         
         _fval = new double*[numFunctions];
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _fval[resp_fn_count] = new double[_total_budget];
@@ -259,8 +274,14 @@ void NonDPOFDarts::quantify_uncertainty()
         delete[] _line_flat_length;
         delete[] _xmin;
         delete[] _xmax;
-        for (size_t isample = 0; isample < _num_inserted_points; isample++) delete[] _sample_points[isample];
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            delete[] _sample_points[isample];
+            if (_sample_neighbors[isample] != 0) delete[] _sample_neighbors[isample];
+        }
         delete[] _sample_points;
+        delete[] _sample_neighbors;
+        delete[] _sample_vsize;
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) delete[] _fval[resp_fn_count];
         
         delete[] _fval;
@@ -285,7 +306,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 _failure_threshold = requestedRespLevels[resp_fn_count][level_count];
                 
                 // adjust prior sphere radii to reflect current response function and threshold
-                for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
+                for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(isample);
                 
                 /*
                 if (resp_fn_count == 1)
@@ -331,6 +352,7 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             std::cout <<  "pof::    Plotting 2d disks ...";
             plot_vertices_2d(true, true);
+            plot_neighbors();
         }
         
         return;
@@ -577,45 +599,57 @@ void NonDPOFDarts::quantify_uncertainty()
     void NonDPOFDarts::add_point(double* x)
     {
         _sample_points[_num_inserted_points] = new double[_n_dim + 1];
+        _sample_neighbors[_num_inserted_points] = 0;
         
         for (size_t idim = 0; idim < _n_dim; idim++) _sample_points[_num_inserted_points][idim] = x[idim];
-        
-        assign_sphere_radius_POF(x, _num_inserted_points);
-        
-        // adjust prior sphere radii to reflect new Lipschitz constant
-        for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(_sample_points[isample], isample);
-        
+        compute_response(x);
         _num_inserted_points++;
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // POF methods
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    void NonDPOFDarts::assign_sphere_radius_POF(double* x, size_t isample)
-    {
-        if (isample == _num_inserted_points)  compute_response_update_Lip(x);
         
-        double fval = _fval[_active_response_function][isample];
-        
-        double r = _max_radius;
-        
-        if (_Lip[_active_response_function] > 1E-10)
+        // Adjusting Spheres radii due to new point
+        if (_use_local_L)
         {
-            r = fabs(fval - _failure_threshold) / _Lip[_active_response_function];
-            if (r > _max_radius)
+            retrieve_neighbors(_num_inserted_points - 1, true);
+            assign_sphere_radius_POF(_num_inserted_points - 1);
+            size_t num_neighbors = 0;
+            if (_sample_neighbors[_num_inserted_points - 1] != 0) num_neighbors = _sample_neighbors[_num_inserted_points - 1][0];
+            for (size_t i = 1; i <= num_neighbors; i++)
             {
-                r = _max_radius;
-                _Lip[_active_response_function] = fabs(fval - _failure_threshold) / r;
+                size_t neighbor = _sample_neighbors[_num_inserted_points - 1][i];
+                assign_sphere_radius_POF(neighbor); // adjusting radius of old disks due to new L
             }
         }
+        else
+        {
+            update_global_L();
+            for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(isample);
+        }
         
-        _sample_points[isample][_n_dim] = r * r;
-        
-        if (fval < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
+        // shrink radii of large Voronoi cells
+        _max_vsize = 0.0;
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            if (_sample_vsize[isample] > _max_vsize) _max_vsize = _sample_vsize[isample];
+        }
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            double rr = fabs(_sample_points[isample][_n_dim]);
+            double rr_max = 0.64 * _sample_vsize[isample] * _sample_vsize[isample];
+            if (_sample_vsize[isample] >  0.8 * _max_vsize && rr > rr_max)
+            {
+                _sample_points[isample][_n_dim] = rr_max;
+                if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
+            }
+            else if (rr > _sample_vsize[isample] * _sample_vsize[isample])
+            {
+                // A disk radius should not exceed the Voronoi size around its seed
+                rr_max = _sample_vsize[isample] * _sample_vsize[isample];
+                _sample_points[isample][_n_dim] = rr_max;
+                if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
+            }
+        }
     }
     
-    void NonDPOFDarts::compute_response_update_Lip(double* x)
+    void NonDPOFDarts::compute_response(double* x)
     {
         RealVector newX(_n_dim);
         for (size_t idim = 0; idim < _n_dim; idim++) newX[idim] = x[idim];
@@ -623,29 +657,260 @@ void NonDPOFDarts::quantify_uncertainty()
         iteratedModel.continuous_variables(newX);
         iteratedModel.compute_response();
         
-        add_surrogate_data(iteratedModel.current_variables(), iteratedModel.current_response());
+        if (!_use_vor_surrogate) add_surrogate_data(iteratedModel.current_variables(), iteratedModel.current_response());
         
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
             double fval = iteratedModel.current_response().function_value(resp_fn_count);
             _fval[resp_fn_count][_num_inserted_points] = fval;
+        }
+    }
+    
+    void NonDPOFDarts::retrieve_neighbors(size_t ipoint, bool update_point_neighbors)
+    {
+        if (_num_inserted_points == 1)
+        {
+            _sample_vsize[0] = 0.5 * _diag;
+            return;
+        }
+        
+        size_t* old_neighbors = _sample_neighbors[ipoint];
+        
+        size_t* tmp_neighbors = new size_t[_total_budget];
+        
+        double* tmp_pnt = new double[_n_dim];    // end of spoke
+        double* qH = new double[_n_dim];         // mid-ppint
+        double* nH = new double[_n_dim];         // normal vector
+        
+        _sample_vsize[ipoint] = 0.0;
+        size_t num_neighbors(0), num_misses(0), max_misses(10);
+        while (num_misses < max_misses)
+        {
+            // sample point uniformly from a unit sphere
+            double sf = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double sum(0.0);
+                // select 12 random numbers from 0.0 to 1.0
+                for (size_t i = 0; i < 12; i++) sum += generate_a_random_number();
+                sum -= 6.0;
+                tmp_pnt[idim] = sum;
+                sf += tmp_pnt[idim] * tmp_pnt[idim];
+            }
+            sf = 1.0 / sqrt(sf);
+            for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] *= sf;
             
+            // scale line spoke to extend outside bounding box
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                tmp_pnt[idim] *= _diag;
+                tmp_pnt[idim] += _sample_points[ipoint][idim];
+            }
+            
+            // trim line spoke with domain boundaries
+            double t_end(1.0);
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                if (tmp_pnt[idim] > _xmax[idim])
+                {
+                    double t = (_xmax[idim] - _sample_points[ipoint][idim]) / (tmp_pnt[idim] - _sample_points[ipoint][idim]);
+                    if (t < t_end) t_end = t;
+                }
+                if (tmp_pnt[idim] < _xmin[idim])
+                {
+                    double t = (_sample_points[ipoint][idim] - _xmin[idim]) / (_sample_points[ipoint][idim] - tmp_pnt[idim]);
+                    if (t < t_end) t_end = t;
+                }
+            }
+            for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] = _sample_points[ipoint][idim] + t_end * (tmp_pnt[idim] - _sample_points[ipoint][idim]);
+            
+            // trim spoke using Voronoi faces
+            size_t ineighbor(ipoint);
+            for (size_t jpoint = 0; jpoint < _num_inserted_points; jpoint++)
+            {
+                if (jpoint == ipoint) continue;
+                
+                // trim line spoke via hyperplane between
+                double norm(0.0);
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    qH[idim] = 0.5 * (_sample_points[ipoint][idim] + _sample_points[jpoint][idim]);
+                    nH[idim] =  _sample_points[jpoint][idim] -  _sample_points[ipoint][idim];
+                    norm+= nH[idim] * nH[idim];
+                }
+                norm = 1.0 / sqrt(norm);
+                for (size_t idim = 0; idim < _n_dim; idim++) nH[idim] *= norm;
+                
+                if (trim_line_using_Hyperplane(_n_dim, _sample_points[ipoint], tmp_pnt, qH, nH))
+                {
+                    ineighbor = jpoint;
+                }
+            }
+            
+            double dst = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = _sample_points[ipoint][idim] - tmp_pnt[idim];
+                dst += dx * dx;
+            }
+            dst = sqrt(dst);
+            if (dst > _sample_vsize[ipoint]) _sample_vsize[ipoint] = dst;
+            
+            if (ineighbor == ipoint) continue; // boundary neighbor
+            
+            // check if new neighbor is found
+            bool new_neighbor(true);
+            for (size_t i = 0; i < num_neighbors; i++)
+            {
+                if (tmp_neighbors[i] == ineighbor)
+                {
+                    new_neighbor = false;
+                    break;
+                }
+            }
+            
+            if (!new_neighbor)
+            {
+                // old neighbor = a miss
+                num_misses++;
+                continue;
+            }
+            
+            // a hit
+            num_misses = 0;
+            tmp_neighbors[num_neighbors] = ineighbor;
+            num_neighbors++;
+        } // end of spoke loop
+        
+        if (old_neighbors != 0)
+        {
+            delete[] old_neighbors;
+        }
+        
+        _sample_neighbors[ipoint] = new size_t[num_neighbors + 1];
+        _sample_neighbors[ipoint][0] = num_neighbors;
+        for (size_t i = 0; i < num_neighbors; i++)  _sample_neighbors[ipoint][i + 1] = tmp_neighbors[i];
+        
+        delete[] tmp_pnt;
+        delete[] qH;
+        delete[] nH;
+        
+        if (update_point_neighbors)
+        {
+            for (size_t i = 0; i < num_neighbors; i++)
+            {
+                retrieve_neighbors(tmp_neighbors[i], false);
+            }
+        }
+        delete[] tmp_neighbors;
+    }
+
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // POF methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    void NonDPOFDarts::update_global_L()
+    {
+        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
+        {
             // update Lipschitz constant
-            for (size_t isample = 0; isample < _num_inserted_points; isample++)
+            size_t last_point = _num_inserted_points - 1;
+            for (size_t isample = 0; isample < last_point; isample++)
             {
                 double dst = 0.0;
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
-                    double dx = x[idim] - _sample_points[isample][idim];
+                    double dx = _sample_points[isample][idim] - _sample_points[last_point][idim];
                     dst += dx * dx;
                 }
                 dst = sqrt(dst);
-                double L = fabs(fval - _fval[resp_fn_count][isample]) / dst;
+                double L = fabs(_fval[resp_fn_count][isample] - _fval[resp_fn_count][last_point]) / dst;
                 if (L > _Lip[resp_fn_count]) _Lip[resp_fn_count] = L;
             }
         }
     }
+
     
+    void NonDPOFDarts::assign_sphere_radius_POF(size_t isample)
+    {
+        double r = _diag;
+        
+        double L = 0.0;
+        
+        if (_use_local_L)
+        {
+            size_t num_neighbors = 0;
+            if (_sample_neighbors[isample]!= 0) num_neighbors = _sample_neighbors[isample][0];
+            
+            double local_L = 0.0;
+            for (size_t i = 1; i <= num_neighbors; i++)
+            {
+                size_t neighbor = _sample_neighbors[isample][i];
+
+                double dst = 0.0;
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    double dx = _sample_points[isample][idim] - _sample_points[neighbor][idim];
+                    dst += dx * dx;
+                }
+                dst = sqrt(dst);
+                double grad = fabs(_fval[_active_response_function][isample] - _fval[_active_response_function][neighbor]) / dst;
+                if (grad > local_L) local_L = grad;
+            }
+            L = local_L;
+        }
+        else
+        {
+            L = _Lip[_active_response_function]; // Global Lipschitz constant
+        }
+        
+        if (L > 1E-10) r = fabs(_fval[_active_response_function][isample]  - _failure_threshold) / L;
+        
+        _sample_points[isample][_n_dim] = r * r;
+        if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
+        
+        if (_use_local_L)
+        {
+            // make sure that last disk does not overlap with a disk of different color
+            for (size_t jsample = 0; jsample < _num_inserted_points; jsample++)
+            {
+                if (_sample_points[isample][_n_dim] * _sample_points[jsample][_n_dim] > 0.0) continue; // same color
+                
+                double dst = 0.0;
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    double dx = _sample_points[isample][idim] - _sample_points[jsample][idim];
+                    dst += dx * dx;
+                }
+                dst = sqrt(dst);
+                
+                double r_i = sqrt(fabs(_sample_points[isample][_n_dim]));
+                double r_j = sqrt(fabs(_sample_points[jsample][_n_dim]));
+                
+                if (r_i + r_j > dst)
+                {
+                    L = fabs(_fval[_active_response_function][isample] - _fval[_active_response_function][jsample]) / dst;
+                    double r_i_new = fabs(_fval[_active_response_function][isample] - _failure_threshold) / L;
+                    double r_j_new = fabs(_fval[_active_response_function][jsample] - _failure_threshold) / L;
+                    if (r_i_new < r_i)
+                    {
+                        _sample_points[isample][_n_dim] = r_i_new * r_i_new;
+                        if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
+                    }
+                    if (r_j_new < r_j)
+                    {
+                        _sample_points[jsample][_n_dim] = r_j_new * r_j_new;
+                        if (_fval[_active_response_function][jsample] < _failure_threshold) _sample_points[jsample][_n_dim] = - _sample_points[jsample][_n_dim];
+                    }
+                }
+            }
+        }
+    }
+    
+       
     void NonDPOFDarts::shrink_big_spheres()
     {
         double rr_max(0.0);
@@ -654,13 +919,12 @@ void NonDPOFDarts::quantify_uncertainty()
             if (fabs(_sample_points[isample][_n_dim]) > rr_max) rr_max = fabs(_sample_points[isample][_n_dim]);
         }
         
-        Cout << "rr_max = " << rr_max << std::endl;
+        Cout << "maximum radius = " << sqrt(rr_max) << std::endl;
         
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
             if (fabs(_sample_points[isample][_n_dim]) > 0.81 * rr_max) _sample_points[isample][_n_dim] *= 0.81;
         }
-        
     }
     
  
@@ -693,7 +957,7 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::add_surrogate_data(const Variables& vars, const Response& resp)
     {
-        for (size_t i=0; i < numFunctions; ++i)
+        for (size_t i = 0; i < numFunctions; ++i)
         {
             bool anchor_flag = false;
             bool deep_copy = true;
@@ -707,47 +971,49 @@ void NonDPOFDarts::quantify_uncertainty()
         gpApproximations[fn_index].build();
     }
     
-    // evaluate at vector of x values in vin
-    Real NonDPOFDarts::eval_surrogate(size_t fn_index, double *vin)
+    Real NonDPOFDarts::eval_surrogate(size_t function_index, double* x)
     {
         if (_use_vor_surrogate)
         {
-            // retrieve closest sample point
-            double min_dst_sq(_diag * _diag);
-            size_t iclosest(_num_inserted_points);
-            for (size_t jsample = 0; jsample < _num_inserted_points; jsample++)
+            size_t iclosest = _num_inserted_points;
+            double dmin = DBL_MAX;
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
             {
-                double dst_sq(0.0);
+                double dd = 0.0;
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
-                    double dx = _sample_points[jsample][idim] - vin[idim];
-                    dst_sq += dx * dx;
+                    double dx = x[idim] - _sample_points[ipoint][idim];
+                    dd += dx * dx;
                 }
-                if (dst_sq < min_dst_sq)
+                if (dd < dmin)
                 {
-                    iclosest = jsample;
-                    min_dst_sq = dst_sq;
+                    dmin = dd;
+                    iclosest = ipoint;
                 }
             }
             
-            // peicewise surrogate using Vornoi Cells
-            double f_surrogate(_fval[fn_index][iclosest]);
-            if (_vor_order > 0)
+            // shift origin and scale
+            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] - _sample_points[iclosest][idim]) / _vps_dfar[iclosest];
+            
+            double f_VPS = _fval[function_index][iclosest];
+            for (size_t i = 0; i < _vps_num_poly_terms; i++)
             {
-                for (size_t idim = 0; idim < _n_dim; idim++)
-                {
-                    double dx = vin[idim] - _sample_points[iclosest][idim];
-                    f_surrogate+= _node_coeff[iclosest][fn_index][idim] * dx;
-                }
+                double ci = _vps_c[iclosest][function_index][i];
+                double yi = vec_pow_vec(_n_dim, x, _vps_t[i]);
+                f_VPS += ci * yi;
             }
-            return f_surrogate;
+            
+            // shift origin and scale back to origin
+            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] * _vps_dfar[iclosest]) + _sample_points[iclosest][idim];
+            
+            return f_VPS;
         }
         
         // this copy could be moved outside the loop for memory efficiency
         for (size_t vi = 0; vi < numContinuousVars; ++vi)
-            gpEvalVars.continuous_variable(vin[vi], vi);
+            gpEvalVars.continuous_variable(x[vi], vi);
         
-        return gpApproximations[fn_index].value(gpEvalVars);
+        return gpApproximations[function_index].value(gpEvalVars);
     }
     
     void NonDPOFDarts::estimate_pof_surrogate()
@@ -779,7 +1045,7 @@ void NonDPOFDarts::quantify_uncertainty()
         
         start_time = clock();
 
-        //double pof_exact = 0.0;
+        double pof_exact = 0.0;
         
         double isample = 0.0;
         double num_MC_samples(1E6);
@@ -792,7 +1058,8 @@ void NonDPOFDarts::quantify_uncertainty()
                 tmp_pnt[idim] = _xmin[idim] + generate_a_random_number() * (_xmax[idim] - _xmin[idim]);
             }
             
-            //double f_exact = f_true(tmp_pnt);
+            double f_exact = 0.0;
+            if (_eval_error) f_exact = f_true(tmp_pnt);
             
             for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
             {
@@ -809,7 +1076,7 @@ void NonDPOFDarts::quantify_uncertainty()
                         num_fMC_samples[resp_fn_count][level_count] += 1.0;
                     }
                     
-                    //if (f_exact <  _failure_threshold) pof_exact+=1.0;
+                    if (_eval_error && f_exact <  _failure_threshold) pof_exact+=1.0;
                 }
             }
             isample+=1.0;
@@ -819,8 +1086,12 @@ void NonDPOFDarts::quantify_uncertainty()
         
         std::cout <<  "pof::    Surrogate evaluated in " << std::fixed << cpu_time << " seconds." << std::endl;
         
-        //std::cout.precision(15);
-        //std::cout <<  "pof::    Surrogate error " << std::fixed << fabs((num_fMC_samples[0][0] - pof_exact) / num_MC_samples) << " seconds." << std::endl;
+        if (_eval_error)
+        {
+            std::cout.precision(15);
+            std::cout <<  "pof::    exact pof " << std::fixed << fabs(pof_exact)/ num_MC_samples << std::endl;
+            std::cout <<  "pof::    Surrogate error " << std::fixed << fabs((num_fMC_samples[0][0] - pof_exact) / num_MC_samples) << " seconds." << std::endl;
+        }
         
         
         // Passing results to gloabl containers
@@ -906,33 +1177,31 @@ void NonDPOFDarts::quantify_uncertainty()
         
         _num_GMRES = 0;
         
-        _vps_num_points = _num_inserted_points;
-        _vps_num_functions = numFunctions;
-        _vps_x = new double*[_vps_num_points];
-		for (size_t i = 0; i < _vps_num_points; i++)
-        {
-            _vps_x[i] = new double[_n_dim];
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-				_vps_x[i][idim] = _sample_points[i][idim];
-            }
-        }
-        
-        _vps_f = new double*[_vps_num_points];
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
-        {
-            _vps_f[ipoint] = new double[_vps_num_functions];
-            
-            for (size_t ifunc = 0; ifunc < _vps_num_functions; ifunc++) _vps_f[ipoint][ifunc] = _fval[ifunc][ipoint];
-        }
-        
-        _vps_dfar = new double[_vps_num_points];
-        
-        VPS_retrieve_neighbors_of_all_points_from_scratch();
+        _vps_dfar = new double[_num_inserted_points];
+        _vps_ext_neighbors = new size_t*[_num_inserted_points];
         
         // retrive powers of the polynomial expansion
         retrieve_permutations(_vps_num_poly_terms, _vps_t, _n_dim, _vps_order, false, true, _vps_order);
         
+        // update neighbors
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            retrieve_neighbors(isample, false);
+        }
+        
+        // initiate extended neighbors with seed neighbors
+        _vps_ext_neighbors = new size_t*[_num_inserted_points];
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            size_t num_neighbors = 0;
+            if (_sample_neighbors[isample] != 0) num_neighbors = _sample_neighbors[isample][0];
+            _vps_ext_neighbors[isample] = new size_t[num_neighbors + 1];
+            _vps_ext_neighbors[isample][0] = num_neighbors;
+            for (size_t ineighbor = 1; ineighbor <= num_neighbors; ineighbor++)
+            {
+                _vps_ext_neighbors[isample][ineighbor] = _sample_neighbors[isample][ineighbor];
+            }
+        }
         
         // extend neighbors for all points to match the desired max power per cell
         VPS_adjust_extend_neighbors_of_all_points();
@@ -949,150 +1218,17 @@ void NonDPOFDarts::quantify_uncertainty()
         return true;
     }
     
-    void NonDPOFDarts::VPS_retrieve_neighbors_of_all_points_from_scratch()
-    {
-        _vps_neighbors = new size_t*[_vps_num_points];
-        _vps_ext_neighbors = new size_t*[_vps_num_points];
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
-        {
-            _vps_neighbors[ipoint] = 0;
-            _vps_ext_neighbors[ipoint] = 0;
-            VPS_retrieve_neighbors(ipoint);
-        }
-    }
-    
-    void NonDPOFDarts::VPS_retrieve_neighbors(size_t ipoint)
-    {
-        size_t* old_neighbors = _vps_neighbors[ipoint];
-        
-        size_t* tmp_neighbors = new size_t[_vps_num_points];
-        
-        double* tmp_pnt = new double[_n_dim];    // end of spoke
-        double* qH = new double[_n_dim];         // mid-ppint
-        double* nH = new double[_n_dim];         // normal vector
-        
-        size_t num_neighbors(0), num_misses(0), max_misses(20);
-        while (num_misses < max_misses)
-        {
-            // sample point uniformly from a unit sphere
-            double sf = 0.0;
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                double sum(0.0);
-                // select 12 random numbers from 0.0 to 1.0
-                for (size_t i = 0; i < 12; i++) sum += generate_a_random_number();
-                sum -= 6.0;
-                tmp_pnt[idim] = sum;
-                sf += tmp_pnt[idim] * tmp_pnt[idim];
-            }
-            sf = 1.0 / sqrt(sf);
-            for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] *= sf;
-            
-            // scale line spoke to extend outside bounding box
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                tmp_pnt[idim] *= _diag;
-                tmp_pnt[idim] += _vps_x[ipoint][idim];
-            }
-            
-            // trim line spoke with domain boundaries
-            double t_end(1.0);
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                if (tmp_pnt[idim] > _xmax[idim])
-                {
-                    double t = (_xmax[idim] - _vps_x[ipoint][idim]) / (tmp_pnt[idim] - _vps_x[ipoint][idim]);
-                    if (t < t_end) t_end = t;
-                }
-                if (tmp_pnt[idim] < _xmin[idim])
-                {
-                    double t = (_vps_x[ipoint][idim] - _xmin[idim]) / (_vps_x[ipoint][idim] - tmp_pnt[idim]);
-                    if (t < t_end) t_end = t;
-                }
-            }
-            for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] = _vps_x[ipoint][idim] + t_end * (tmp_pnt[idim] - _vps_x[ipoint][idim]);
-            
-            // trim spoke using Voronoi faces
-            size_t ineighbor(ipoint);
-            for (size_t jpoint = 0; jpoint < _vps_num_points; jpoint++)
-            {
-                if (jpoint == ipoint) continue;
-                
-                // trim line spoke via hyperplane between
-                double norm(0.0);
-                for (size_t idim = 0; idim < _n_dim; idim++)
-                {
-                    qH[idim] = 0.5 * (_vps_x[ipoint][idim] + _vps_x[jpoint][idim]);
-                    nH[idim] =  _vps_x[jpoint][idim] -  _vps_x[ipoint][idim];
-                    norm+= nH[idim] * nH[idim];
-                }
-                norm = 1.0 / sqrt(norm);
-                for (size_t idim = 0; idim < _n_dim; idim++) nH[idim] *= norm;
-                
-                if (trim_line_using_Hyperplane(_n_dim, _vps_x[ipoint], tmp_pnt, qH, nH))
-                {
-                    ineighbor = jpoint;
-                }
-            }
-            
-            if (ineighbor == ipoint) continue; // boundary neighbor
-            
-            // check if new neighbor is found
-            bool new_neighbor(true);
-            for (size_t i = 0; i < num_neighbors; i++)
-            {
-                if (tmp_neighbors[i] == ineighbor)
-                {
-                    new_neighbor = false;
-                    break;
-                }
-            }
-            
-            if (!new_neighbor)
-            {
-                // old neighbor = a miss
-                num_misses++;
-                continue;
-            }
-            
-            // a hit
-            num_misses = 0;
-            tmp_neighbors[num_neighbors] = ineighbor;
-            num_neighbors++;
-        } // end of spoke loop
-        
-        if (old_neighbors != 0)
-        {
-            delete[] old_neighbors;
-        }
-        
-        _vps_neighbors[ipoint] = new size_t[num_neighbors + 1];
-        _vps_neighbors[ipoint][0] = num_neighbors;
-        _vps_ext_neighbors[ipoint] = new size_t[num_neighbors + 1];
-        _vps_ext_neighbors[ipoint][0] = num_neighbors;
-        for (size_t i = 0; i < num_neighbors; i++)
-        {
-            _vps_neighbors[ipoint][i + 1] = tmp_neighbors[i];
-            _vps_ext_neighbors[ipoint][i + 1] = tmp_neighbors[i];
-        }
-        
-        delete[] tmp_neighbors;
-        delete[] tmp_pnt;
-        delete[] qH;
-        delete[] nH;
-    }
-
     void NonDPOFDarts::VPS_adjust_extend_neighbors_of_all_points()
     {
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            while (_vps_ext_neighbors[ipoint][0] < 2 * _vps_num_poly_terms && _vps_ext_neighbors[ipoint][0] < _vps_num_points - 1)
+            while (_vps_ext_neighbors[ipoint][0] < 2 * _vps_num_poly_terms && _vps_ext_neighbors[ipoint][0] < _num_inserted_points - 1)
             {
                 VPS_extend_neighbors(ipoint);
             }
         }
         
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
             _vps_dfar[ipoint] = 0.0;
             for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++)
@@ -1101,9 +1237,9 @@ void NonDPOFDarts::quantify_uncertainty()
                 double dst = 0.0;
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
-                    double dx = _vps_x[ipoint][idim] - _vps_x[neighbor][idim];
+                    double dx = _sample_points[ipoint][idim] - _sample_points[neighbor][idim];
                     dst += dx * dx;				
-                }	
+                }
                 dst = sqrt(dst);
                 if (dst > _vps_dfar[ipoint]) _vps_dfar[ipoint] = dst;
             }
@@ -1114,15 +1250,15 @@ void NonDPOFDarts::quantify_uncertainty()
     {
         // initiate tmp_neighbors with old extended neighbors
         size_t num_ext_neigbors = _vps_ext_neighbors[ipoint][0];
-        size_t* tmp_neighbors = new size_t[_vps_num_points];
+        size_t* tmp_neighbors = new size_t[_num_inserted_points];
         for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++) tmp_neighbors[i - 1] = _vps_ext_neighbors[ipoint][i];
         
         for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++)
         {
             size_t neighbor = _vps_ext_neighbors[ipoint][i];
-            for (size_t j = 1; j <= _vps_neighbors[neighbor][0]; j++) // extend neighbors of ipoint using direct neighbors of neighbor
+            for (size_t j = 1; j <= _sample_neighbors[neighbor][0]; j++) // extend neighbors of ipoint using direct neighbors of neighbor
             {
-                size_t ext_neighbor = _vps_neighbors[neighbor][j];
+                size_t ext_neighbor = _sample_neighbors[neighbor][j];
                 if (ext_neighbor == ipoint) continue;
                 bool new_neighbor = true;
                 for (size_t k= 0; k < num_ext_neigbors; k++)
@@ -1141,6 +1277,7 @@ void NonDPOFDarts::quantify_uncertainty()
             }
         }
         
+        if (_vps_ext_neighbors[ipoint] != 0) delete[] _vps_ext_neighbors[ipoint];
         _vps_ext_neighbors[ipoint] = new size_t[num_ext_neigbors + 1];
         _vps_ext_neighbors[ipoint][0] = num_ext_neigbors;
         for (size_t i = 0; i < num_ext_neigbors; i++)
@@ -1152,11 +1289,11 @@ void NonDPOFDarts::quantify_uncertainty()
 
     void NonDPOFDarts::VPS_retrieve_poly_coefficients_for_all_points()
     {
-        _vps_c = new double**[_vps_num_points];
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
+        _vps_c = new double**[_num_inserted_points];
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            _vps_c[ipoint] = new double*[_vps_num_functions];
-            for (size_t ifunction = 0; ifunction < _vps_num_functions; ifunction++)
+            _vps_c[ipoint] = new double*[numFunctions];
+            for (size_t ifunction = 0; ifunction < numFunctions; ifunction++)
             {
                 _vps_c[ipoint][ifunction] = new double[_vps_num_poly_terms];
                 VPS_retrieve_poly_coefficients(ipoint, ifunction);
@@ -1192,12 +1329,12 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             size_t neighbor = _vps_ext_neighbors[ipoint][j];
             // shift origin
-            for (size_t idim = 0; idim < _n_dim; idim++) x_neighbor[idim] = (_vps_x[neighbor][idim] - _vps_x[ipoint][idim]) / _vps_dfar[ipoint];
+            for (size_t idim = 0; idim < _n_dim; idim++) x_neighbor[idim] = (_sample_points[neighbor][idim] - _sample_points[ipoint][idim]) / _vps_dfar[ipoint];
             
             for (size_t q = 0; q < _vps_num_poly_terms; q++)
             {
                 double yq = vec_pow_vec(_n_dim, x_neighbor, _vps_t[q]);
-                b[q]+= (_vps_f[neighbor][function_index] - _vps_f[ipoint][function_index]) * yq;
+                b[q]+= (_fval[function_index][neighbor] - _fval[function_index][ipoint]) * yq;
                 for (size_t i = 0; i < _vps_num_poly_terms; i++)
                 {
                     double yi = vec_pow_vec(_n_dim, x_neighbor, _vps_t[i]);
@@ -1226,42 +1363,6 @@ void NonDPOFDarts::quantify_uncertainty()
         delete[] x_neighbor;
     }
     
-    double NonDPOFDarts::VPS_evaluate_VPS_surrogate(size_t function_index, double* x)
-    {
-        size_t iclosest = _vps_num_points;
-        double dmin = DBL_MAX;
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
-        {
-            double dd = 0.0;
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                double dx = x[idim] - _vps_x[ipoint][idim];
-                dd += dx * dx;
-            }
-            if (dd < dmin)
-            {
-                dmin = dd;
-                iclosest = ipoint;
-            }
-        }
-        
-        // shift origin and scale
-        for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] - _vps_x[iclosest][idim]) / _vps_dfar[iclosest];
-        
-        double f_VPS = _vps_f[iclosest][function_index];
-        for (size_t i = 0; i < _vps_num_poly_terms; i++)
-        {
-            double ci = _vps_c[iclosest][function_index][i];
-            double yi = vec_pow_vec(_n_dim, x, _vps_t[i]);
-            f_VPS += ci * yi;
-        }
-        
-        // shift origin and scale back to origin
-        for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] * _vps_dfar[iclosest]) + _vps_x[iclosest][idim];
-        
-        return f_VPS;
-    }
-    
     void NonDPOFDarts::estimate_pof_VPS()
     {
         clock_t start_time, end_time; double cpu_time, total_time(0.0);
@@ -1277,7 +1378,7 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         
         // error report
-        //double pof_exact = 0.0;
+        double pof_exact = 0.0;
     
         double i_dart = 0.0;
         double num_darts = 1.0E7;
@@ -1291,9 +1392,11 @@ void NonDPOFDarts::quantify_uncertainty()
             }
             for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
             {
-                double f_VPS = VPS_evaluate_VPS_surrogate(resp_fn_count, dart);
+                double f_VPS = eval_surrogate(resp_fn_count, dart);
                 
-                //double f_exact = f_true(dart);
+                double f_exact = 0.0;
+                
+                if (_eval_error) f_exact = f_true(dart);
                 
                 size_t num_levels = requestedRespLevels[resp_fn_count].length();
                 for (size_t level_count = 0; level_count < num_levels; level_count++)
@@ -1306,10 +1409,10 @@ void NonDPOFDarts::quantify_uncertainty()
                     }
                     
                     // error report
-                    //if (f_exact < _failure_threshold)
-                    //{
-                    //    pof_exact += 1.0;
-                    //}
+                    if (_eval_error && f_exact < _failure_threshold)
+                    {
+                        pof_exact += 1.0;
+                    }
                 }
             }
             i_dart++;
@@ -1325,7 +1428,7 @@ void NonDPOFDarts::quantify_uncertainty()
             }
         }
         
-        //pof_exact *= sf;
+        if(_eval_error) pof_exact *= sf;
         
         
         end_time = clock();
@@ -1334,35 +1437,30 @@ void NonDPOFDarts::quantify_uncertainty()
         std::cout <<  "pof::    VPS Surrogate evaluated in " << std::fixed << cpu_time << " seconds." << std::endl;
         
         // error report
-        //std::cout.precision(15);
-        //std::cout <<  "pof::    VPS error " << std::fixed << fabs(computedProbLevels[0][0] - pof_exact) << std::endl;
+        if (_eval_error)
+        {
+            std::cout.precision(15);
+            std::cout <<  "pof::    exact pof " << std::fixed << fabs(pof_exact) << std::endl;
+            std::cout <<  "pof::    VPS error " << std::fixed << fabs(computedProbLevels[0][0] - pof_exact) << std::endl;
+        }
         
         delete[] dart;
     }
 
     void NonDPOFDarts::VPS_destroy_global_containers()
     {        
-        for (size_t ipoint = 0; ipoint < _vps_num_points; ipoint++)
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            delete[] _vps_x[ipoint];
-            delete[] _vps_f[ipoint];
-            delete[] _vps_neighbors[ipoint];
             delete[] _vps_ext_neighbors[ipoint];
-            for (size_t ifunc = 0; ifunc < _vps_num_functions; ifunc++)
+            for (size_t ifunc = 0; ifunc < numFunctions; ifunc++)
             {
                 delete[] _vps_c[ipoint][ifunc];
             }
             delete[] _vps_c[ipoint];
         }
-        delete[] _vps_x;
-        delete[] _vps_f;
         delete[] _vps_dfar;
         delete[] _vps_c;
-        delete[] _vps_neighbors;
         delete[] _vps_ext_neighbors;
-        
-        delete[] _xmin;
-        delete[] _xmax;
         
         for (size_t i = 0; i < _vps_num_poly_terms; i++)
         {
@@ -1796,7 +1894,7 @@ void NonDPOFDarts::quantify_uncertainty()
     void NonDPOFDarts::plot_vertices_2d(bool plot_true_function, bool plot_suurogate)
     {
         std::stringstream ss;
-        ss << "mps_spheres_" << _active_response_function << ".ps";
+        ss << "pof_" << _active_response_function << ".ps";
         std::fstream file(ss.str().c_str(), std::ios::out);
         file << "%!PS-Adobe-3.0" << std::endl;
         file << "72 72 scale     % one unit = one inch" << std::endl;
@@ -1964,8 +2062,9 @@ void NonDPOFDarts::quantify_uncertainty()
             double r = sqrt(fabs(_sample_points[index][2]));
             
             file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
-                
-            if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
+            
+            if (_sample_vsize[index] >  0.8 * _max_vsize) file << "bluefcirc"     << std::endl; // large Vcell
+            else if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
             else                              file << "redfcirc"     << std::endl; // non-failure disk
            
         }
@@ -2425,11 +2524,227 @@ void NonDPOFDarts::quantify_uncertainty()
         file << "showpage" << std::endl;
         
     }
+    
+    void NonDPOFDarts::plot_neighbors( )
+    {
+        std::stringstream ss;
+        ss << "pof_neighbors" << _active_response_function << ".ps";
+        std::fstream file(ss.str().c_str(), std::ios::out);
+        file << "%!PS-Adobe-3.0" << std::endl;
+        file << "72 72 scale     % one unit = one inch" << std::endl;
+        
+        double xmin(_xmin[0]);
+        double ymin(_xmin[1]);
+        double Lx(_xmax[0] - _xmin[0]);
+        double Ly(_xmax[1] - _xmin[0]);
+        
+        double scale_x, scale_y, scale;
+        double shift_x, shift_y;
+        
+        scale_x = 6.5 / Lx;
+        scale_y = 9.0 / Ly;
+        
+        if (scale_x < scale_y)
+        {
+            scale = scale_x;
+            shift_x = 1.0 - xmin * scale;
+            shift_y = 0.5 * (11.0 - Ly * scale) - ymin * scale;
+        }
+        else
+        {
+            scale = scale_y;
+            shift_x = 0.5 * (8.5 - Lx * scale) - xmin * scale;
+            shift_y = 1.0 - ymin * scale;
+        }
+        file << shift_x << " " << shift_y << " translate" << std::endl;
+        
+        
+        file << "/redseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/blueseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackquad      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/circ    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " 0.002 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/redfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/bluefcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/quad_white      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1.0 setgray fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/quad_bold      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        // plot filled circles
+        for (size_t index = 0; index < _num_inserted_points; index++)
+        {
+            double r = sqrt(fabs(_sample_points[index][2]));
+            
+            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
+            
+            if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
+            else                              file << "redfcirc"     << std::endl; // non-failure disk
+            
+        }
+        
+        // plot discs boundaries
+        for (size_t index = 0; index < _num_inserted_points; index++)
+        {
+            double r = sqrt(fabs(_sample_points[index][2]));
+            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
+            file << "circ"     << std::endl;
+        }
+        
+        // plot line flat segments
+        
+        
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            size_t num_neighbors = 0;
+            if (_sample_neighbors[isample] != 0) num_neighbors = _sample_neighbors[isample][0];
+            
+            for (size_t i = 1; i <= num_neighbors; i++)
+            {
+                size_t neighbor = _sample_neighbors[isample][i];
+                // draw a line between isample and neighbor
+                file << _sample_points[isample][0] * scale << "  " << _sample_points[isample][1] * scale << "  ";
+                file << _sample_points[neighbor][0] * scale << "  " << _sample_points[neighbor][1] * scale << "  ";
+                file << "blueseg"     << std::endl;
+            }
+        }
+        
+        double s(0.01);
+        for (size_t index = 0; index < _num_inserted_points; index++)
+        {
+            double r = sqrt(fabs(_sample_points[index][2]));
+            s = r * 0.05;
+            
+            // plot vertex
+            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << s * scale << " ";
+            file << "blackfcirc"     << std::endl; // non-failure disk
+        }
+    }
 
     void NonDPOFDarts::print_results(std::ostream& s)
     {
-      s << "\nStatistics based on the importance sampling calculations:\n";
-      print_distribution_mappings(s);
+        //s << "\nStatistics based on the importance sampling calculations:\n";
+        s << "\nStatistics based on MC sampling calculations:\n";
+        print_distribution_mappings(s);
     }
 
 } // namespace Dakota

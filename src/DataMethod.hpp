@@ -921,6 +921,9 @@ public:
   /// The size of the batch (e.g. number of supplemental points added) to be
   /// added to be added to the build points for an emulator at each iteration
   int batchSize;
+  /// the \c Lipschitz type specification in \ref
+  /// MethodNonDPOFDarts (e.g. either local or global estimation)
+  String lipschitzType;
   /// flag to indicate if the sigma terms should be calibrated in 
   /// \ref MethodNonDBayesCalib
   bool calibrateSigmaFlag;

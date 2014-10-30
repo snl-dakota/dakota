@@ -90,13 +90,17 @@ protected:
     
     void add_point(double* x);
     
+    void compute_response(double* x);
+    
+    void retrieve_neighbors(size_t ipoint, bool update_point_neighbors);
+    
     ////////////////////////////////////////////////////////////////
     // POF METHODS
     ////////////////////////////////////////////////////////////////
     
-    void assign_sphere_radius_POF(double* x, size_t isample);
+    void update_global_L();
     
-    void compute_response_update_Lip(double* x);
+    void assign_sphere_radius_POF(size_t isample);
     
     void  shrink_big_spheres(); // shrink all disks by 90% to allow more sampling
     
@@ -121,13 +125,11 @@ protected:
     // VPS METHODS
     //////////////////////////////////////////////////////////////
     bool VPS_execute( );
-    void VPS_retrieve_neighbors_of_all_points_from_scratch();
-    void VPS_retrieve_neighbors(size_t ipoint);
+
     void VPS_adjust_extend_neighbors_of_all_points();
     void VPS_extend_neighbors(size_t ipoint);
     void VPS_retrieve_poly_coefficients_for_all_points();
     void VPS_retrieve_poly_coefficients(size_t ipoint, size_t function_index);
-    double VPS_evaluate_VPS_surrogate(size_t function_index, double* x);
     void estimate_pof_VPS();
     void VPS_destroy_global_containers();
     
@@ -146,6 +148,8 @@ protected:
     
     void plot_vertices_2d(bool plot_true_function, bool plot_suurogate);
     
+    void plot_neighbors();
+    
   //
   //- Heading: Data
   //
@@ -158,10 +162,17 @@ protected:
     
     // emulator order
     int emulatorOrder;
-    
+     
+    // number of samples on emulator  
+    int emulatorSamples;
+
     // emulator type (currently GP or VPS) 
     short emulatorType;
-
+    
+    // type of estimation for Lipschitz constants
+    String lipschitzType;
+ 
+ 
     // variables for Random number generator
     double Q[1220];
     int indx;
@@ -174,6 +185,8 @@ protected:
     
     
     // Variables of the POF dart algorithm
+    
+    bool _eval_error;
     
     size_t _n_dim; // dimension of the problem
     double* _xmin; // lower left corner of the domain
@@ -189,12 +202,14 @@ protected:
     double _max_num_successive_misses;
     
     
-    double _max_radius; // maximum radius of a sphere
     double _accepted_void_ratio; // termination criterion for a maximal sample
     
     // Output
     size_t _num_inserted_points, _total_budget;
     double** _sample_points; // store radius as a last coordinate
+    size_t** _sample_neighbors;
+    double*  _sample_vsize;
+    double   _max_vsize; // size of biggest Voronoi cell
     
     // Darts
     double* _dart; // a dart for inserting a new sample point
@@ -215,23 +230,16 @@ protected:
     std::vector<Approximation> gpApproximations;
     Variables gpEvalVars;
     
-    // LSIV surrogate variables ... to be deleted
+    
     bool _use_vor_surrogate;
-    size_t _vor_order;
-    double*** _node_coeff;
+    bool _use_local_L;
     
     // variables for VPS
-    size_t _vps_num_points, _vps_num_functions, _num_GMRES;
-    double** _vps_x;
-    double** _vps_f;
-    double* _vps_dfar;
-    
-    size_t** _vps_neighbors;
-    size_t** _vps_ext_neighbors;
-    
-    size_t _vps_order, _vps_num_poly_terms;
+    size_t _vps_order, _vps_num_poly_terms, _num_GMRES;
+    double* _vps_dfar; // furthest distance between a seed and its extended neighbors
     size_t**  _vps_t;  // powers of the polynomial expansion
     double*** _vps_c;  // polynomial coeffcients per point function
+    size_t** _vps_ext_neighbors;
 
 };
 

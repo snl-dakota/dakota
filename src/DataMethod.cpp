@@ -129,12 +129,12 @@ DataMethodRep::DataMethodRep():
   sampleType(SUBMETHOD_DEFAULT), reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), refineSamples(0),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
-  responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(1),
+  responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), mcmcType("dram"), likelihoodScale(1.0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   batchSize(0),calibrateSigmaFlag(false), numChains(3), numCR(3),
-  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5),
+  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
   // Parameter Study
   numSteps(0), pstudyFileAnnotated(true), pstudyFileActive(false), 
   // Verification
@@ -256,7 +256,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << mcmcType << rejectionType << metropolisType << proposalCovScale
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep;
+    << grThreshold << jumpStep << lipschitzType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -383,7 +383,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> mcmcType >> rejectionType >> metropolisType >> proposalCovScale
     >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
-    >> grThreshold >> jumpStep;
+    >> grThreshold >> jumpStep >> lipschitzType;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -510,7 +510,7 @@ void DataMethodRep::write(std::ostream& s) const
     << mcmcType << rejectionType << metropolisType << proposalCovScale
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep;
+    << grThreshold << jumpStep << lipschitzType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

@@ -6297,6 +6297,8 @@ static Method_mp_lit
       //MP2(seqHybridType,adaptive),
 	MP2(initializationType,random),
 	MP2(initializationType,unique_random),
+	MP2(lipschitzType,global),
+	MP2(lipschitzType,local),
         MP2(meritFunction,merit_max),
         MP2(meritFunction,merit_max_smooth),
         MP2(meritFunction,merit1),

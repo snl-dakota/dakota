@@ -960,13 +960,19 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( pof_darts ALIAS nond_pof_darts {N_mdm(utype,methodName_POF_DARTS)}
+          [ lipschitz {0}
+            local {N_mdm(lit,lipschitzType_local)}
+            |
+            global {N_mdm(lit,lipschitzType_global)}
+           ]
           [ emulator {0}
-            gaussian_process {N_mdm(type,emulatorType_GP_EMULATOR)}
+            gaussian_process {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
             |
             ( voronoi_surrogate {N_mdm(type,emulatorType_VPS_EMULATOR)}
               [ surrogate_order INTEGER {N_mdm(int,emulatorOrder)} ]
              )
            ]
+          [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
           [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
             [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
             [ compute {0}

@@ -1124,6 +1124,10 @@ KEYWORD12 method
 	  )
 	|
 	( pof_darts ALIAS nond_pof_darts
+	  [ lipschitz
+	    local
+	    | global
+	    ]
 	  [ emulator
 	    gaussian_process
 	    |
@@ -1131,6 +1135,7 @@ KEYWORD12 method
 	      [ surrogate_order INTEGER ]
 	      )
 	    ]
+	  [ emulator_samples INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
