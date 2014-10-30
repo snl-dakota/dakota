@@ -355,7 +355,7 @@ add_dependencies(text_book dakota)
 # UNIT TESTS
 
 # WJB - ToDo:  decide on a unit test framework and probe for it
-option(DAKOTA_ENABLE_UNIT_TESTS "Enable unit tests in DAKOTA" OFF)
+option(DAKOTA_ENABLE_UNIT_TESTS "Enable unit tests in DAKOTA" ON)
 if(DAKOTA_ENABLE_UNIT_TESTS)
   # Complete these for each specific test.
 
@@ -366,7 +366,8 @@ if(DAKOTA_ENABLE_UNIT_TESTS)
   add_executable(container_unit_tests container_unit_tests.cpp)
 
   add_executable(test_workdir_utils test_workdir_utils.cpp)
-  target_link_libraries(test_workdir_utils ${DAKOTA_ALL_LIBS})
+  target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
+                        ${Dakota_TPL_LIBRARIES})
   add_test(test_workdir_utils test_workdir_utils)
 
 endif()
