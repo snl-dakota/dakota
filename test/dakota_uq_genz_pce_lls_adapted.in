@@ -16,8 +16,10 @@ method,
 #	  collocation_points = 100		#5,#6,#7
 # Basis adaptation algorithm:
 	  basis_type
+# Inactive algorithm option:
 #	    adapted generalized
 #	      initial_level = 0
+# Active algorithm option no longer requires expanding_front selection:
 	    adapted #expanding_front		#0,#1,#2,#3,#4,#5,#6,#7
 	      advancements = 3			#0,#1,#2,#3,#4,#5,#6,#7
 	  soft_convergence_limit = 1
