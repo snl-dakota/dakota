@@ -201,7 +201,7 @@ public:
   /// Update the tag to use on files and rebind any streams as needed
   void push_output_tag(const String& iterator_tag, 
 		       const ProgramOptions& prog_opts,
-		       bool force_cout_redirect);
+		       bool force_cout_redirect, bool force_rst_redirect);
 
   /// (Potentially) remove an output context and rebind streams
   void pop_output_tag();

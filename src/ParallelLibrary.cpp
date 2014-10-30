@@ -1042,11 +1042,11 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // issues including broadcast, delegating filename management and
   // redirection to OutputManager (with help from ProgramOptions).
 
-  // If not rank 0 within an iteratorComm or if an idle partition, then no
-  // output handling to manage.  Note that a meta-iterator dedicated master
-  // must participate in the broadcasts, but returns thereafter since it
-  // does not redirect its output, read from restart files, etc.
-  if (pl.serverCommRank > 0 || pl.serverId > pl.numServers)
+  // If an idle partition, then no output handling to manage.  Note that a
+  // meta-iterator dedicated master must participate in the broadcasts, but
+  // returns thereafter since it does not redirect its output, read from
+  // restart files, etc.
+  if (pl.serverId > pl.numServers)
     return;
 
   // BMA TODO: take another pass to minimally broadcast data
@@ -1054,42 +1054,45 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // to all other iterator servers in this ParallelLevel
 
   // Synchronize necessary data from hubServerCommRank 0 to iterator masters
-  bool stdout_redirect_required = false;
-  if (pl.hubServerCommRank == 0) {
+  bool stdout_redirect_required = false, restart_redirect_required = false;
+  if (pl.serverCommRank == 0) {
 
-    // If iterator servers are in use, then always segregate the std
-    // output.  However, for std error, assume that this should remain
-    // directed to the screen unless an explicit "-e" command line
-    // option has been given (managed in OutputManager).
+    // restart is always on for pl leader
+    restart_redirect_required = true;
+    // output redirection is on only if explicit user override or required
+    // for segregation of iterator streams
     stdout_redirect_required = (pl.numServers > 1 || pl.dedicatedMasterFlag);
+    // for std error, assume that this should remain directed to the screen
+    // unless an explicit "-e" command line option has been given (managed
+    // in OutputManager).
 
-    // All in the server comm need the data to manage the files
     if (pl.hubServerCommSize > 1) {
-      MPIPackBuffer send_buffer;
-      send_buffer << stdout_redirect_required
-		  << programOptions
-		  << outputManager.graph2DFlag 
-		  << outputManager.tabularDataFlag 
-		  << outputManager.tabularDataFile
-		  << outputManager.resultsOutputFlag 
-		  << outputManager.resultsOutputFile;
-      int buffer_len = send_buffer.size();
-      bcast(buffer_len,  pl.hubServerIntraComm);
-      bcast(send_buffer, pl.hubServerIntraComm);
+      // All in the server comm need the data to manage the files
+      if (pl.hubServerCommRank == 0) {
+	MPIPackBuffer send_buffer;
+	send_buffer << programOptions
+		    << outputManager.graph2DFlag 
+		    << outputManager.tabularDataFlag 
+		    << outputManager.tabularDataFile
+		    << outputManager.resultsOutputFlag 
+		    << outputManager.resultsOutputFile;
+	int buffer_len = send_buffer.size();
+	bcast(buffer_len,  pl.hubServerIntraComm);
+	bcast(send_buffer, pl.hubServerIntraComm);
+      }
+      else {
+	int buffer_len;
+	bcast(buffer_len, pl.hubServerIntraComm);
+	MPIUnpackBuffer recv_buffer(buffer_len);
+	bcast(recv_buffer, pl.hubServerIntraComm);
+	recv_buffer >> programOptions
+		    >> outputManager.graph2DFlag 
+		    >> outputManager.tabularDataFlag 
+		    >> outputManager.tabularDataFile
+		    >> outputManager.resultsOutputFlag 
+		    >> outputManager.resultsOutputFile;
+      }
     }
-  }
-  else if (pl.hubServerCommSize > 1) {
-    int buffer_len;
-    bcast(buffer_len, pl.hubServerIntraComm);
-    MPIUnpackBuffer recv_buffer(buffer_len);
-    bcast(recv_buffer, pl.hubServerIntraComm);
-    recv_buffer >> stdout_redirect_required 
-		>> programOptions
-		>> outputManager.graph2DFlag 
-		>> outputManager.tabularDataFlag 
-		>> outputManager.tabularDataFile
-		>> outputManager.resultsOutputFlag 
-		>> outputManager.resultsOutputFile;
   }
 
   // After this communication, we can rely on programOptions and certain
@@ -1098,10 +1101,14 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // be hard to preserve.  (May later encapsulate the broadcast there though.)
 
   // This returns a meta-iterator dedicated master processor, if present.
-  if (!pl.serverMasterFlag)
+  if (pl.serverId == 0)
     return;
 
-  // Tag cout/cerr/read_restart/write_restart for case of concurrent iterators
+  // Tag cout/cerr/read_restart/write_restart for case of concurrent iterators.
+  // For pl.serverCommRank > 0, the tags are pushed but the output is not
+  // redirected (yet).  Subsequent partitions may append to these tags and
+  // create new partition leaders that require the hierarchical tag context 
+  // from above to properly redirect.
   String ctr_tag;
   if (pl.numServers > 1 || pl.dedicatedMasterFlag) {
     // could change to numServers>0 since it would still be nice to organize
@@ -1115,8 +1122,9 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // for which there is no output is avoided.
 
   // append tag and manage file open/close as needed
-  outputManager.push_output_tag(ctr_tag, programOptions, 
-				stdout_redirect_required);
+  outputManager.push_output_tag(ctr_tag, programOptions,
+				stdout_redirect_required,
+				restart_redirect_required);
 }
 
 

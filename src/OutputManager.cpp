@@ -133,7 +133,8 @@ void OutputManager::startup_message(const String& start_msg)
 
 void OutputManager::
 push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
-		bool force_cout_redirect) 
+		bool force_cout_redirect,
+		bool force_rst_redirect) // ignored for time being
 {
   fileTags.push_back(iterator_tag); 
 
