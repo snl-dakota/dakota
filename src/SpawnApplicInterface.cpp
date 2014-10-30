@@ -152,21 +152,21 @@ void SpawnApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 pid_t SpawnApplicInterface::
 create_analysis_process(bool block_flag, bool new_group)
 {
-  const char **av;
-  pid_t status = 0;
-  pid_t pid = 0;
+  // Convert argList StringArray to an array of const char*'s.  av
+  // will point to tokens in driver_and_args, so both get passed in.
+  boost::shared_array<const char*> av;  // delete[] called when av out of scope
+  StringArray driver_and_args;
+  create_command_arguments(av, driver_and_args);
 
   // Set PATH, environment, and change directory
   prepare_process_environment();
 
-  // Convert argList StringArray to an array of const char*'s. 
-  // av will point to tokens in driver_and_args, so both get passed in
-  StringArray driver_and_args;
-  create_command_arguments(av, driver_and_args);
+  pid_t status = 0;
+  pid_t pid = 0;
 
   // TODO: consider using exec so we can spawn scripts not just .exe
-  if (block_flag) status = _spawnvp(  _P_WAIT, av[0], av);
-  else               pid = _spawnvp(_P_NOWAIT, av[0], av);
+  if (block_flag) status = _spawnvp(  _P_WAIT, av[0], av.get());
+  else               pid = _spawnvp(_P_NOWAIT, av[0], av.get());
 
   if (status != 0 || pid == -1) {
     Cerr << "\nCould not spawn; error code " << errno << " (" 
@@ -174,8 +174,7 @@ create_analysis_process(bool block_flag, bool new_group)
     abort_handler(-1);
   }
 
-  // Spawn returns control here, so free memory and change directory back
-  delete[] av;
+  // Spawn returns control here, so must change directory back and free memory
   reset_process_environment();
 
   return(pid);
