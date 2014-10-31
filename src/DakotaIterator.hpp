@@ -358,10 +358,6 @@ protected:
   ParConfigLIter methodPCIter;
   // index for the active ParallelLevel within ParallelConfiguration::miPLIters
   //size_t miPLIndex;
-  /// track the available configurations that have been created
-  /// (init_communicators) and are available for activation at run
-  /// time (set_communicators)
-  std::map<size_t, ParConfigLIter> methodPCIterMap;
 
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
@@ -455,6 +451,11 @@ private:
   /// an execution number for this instance of the class, unique
   /// across all instances of same methodName/methodId
   size_t execNum;
+
+  /// track the available configurations that have been created
+  /// (init_communicators) and are available for activation at run
+  /// time (set_communicators)
+  std::map<size_t, ParConfigLIter> methodPCIterMap;
 
   /// pointer to the letter (initialized only for the envelope)
   Iterator* iteratorRep;

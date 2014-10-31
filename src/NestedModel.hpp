@@ -301,8 +301,6 @@ private:
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
   IteratorScheduler subIteratorSched;
-  /// tracks the miPLIndex for use at runtime, as keyed by max_eval_concurrency
-  std::map<SizetIntPair, size_t> miPLIndexMap;
   /// subIterator job counter since last synchronize()
   int subIteratorJobCntr;
   /// mapping from subIterator evaluation counter to nested model counter

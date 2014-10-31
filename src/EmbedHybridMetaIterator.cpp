@@ -84,8 +84,6 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   iterSched.init_iterator_parallelism(maxIteratorConcurrency,
 				      std::min(g_ppi.first,  l_ppi.first),
 				      std::max(g_ppi.second, l_ppi.second));
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-  miPLIndexMap[pl_index] = iterSched.miPLIndex;
   summaryOutputFlag = iterSched.lead_rank();
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
@@ -105,9 +103,7 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  // free the communicators for selectedIterators
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index];
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -115,17 +111,12 @@ void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
     iterSched.set_iterator(globalIterator, si_pl_iter);
     iterSched.set_iterator(localIterator,  si_pl_iter);
   }
-
-  // See notes in NestedModel::derived_set_communicators() for reasons why
-  // a streamlined implementation (no miPLIndexMap) is insufficient.
 }
 
 
 void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  // free the communicators for globalIterator and localIterator
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index];
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -133,13 +124,9 @@ void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
     iterSched.free_iterator(globalIterator, si_pl_iter);
     iterSched.free_iterator(localIterator,  si_pl_iter);
   }
-  // See notes in NestedModel::derived_set_communicators() for reasons why
-  // a streamlined implementation (no miPLIndexMap) is insufficient.
 
   // deallocate the mi_pl parallelism level
   iterSched.free_iterator_parallelism();
-
-  miPLIndexMap.erase(pl_index);
 }
 
 

@@ -566,10 +566,6 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // > incoming max_eval_concurrency is the nested model's concurrency
   subIteratorSched.init_iterator_parallelism(max_eval_concurrency,
 					     min_ppi, max_ppi);
-  // > store the miPLIndex for this parallel config to restore in set_comms()
-  SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
-		   max_eval_concurrency);
-  miPLIndexMap[key] = subIteratorSched.miPLIndex;
 
   // > now augment prev subIterator instantiations for additional mi_pl ranks
   //   (new mi_pl is used via miPLIndex update in init_iterator_parallelism())
@@ -614,11 +610,9 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   }
   if (recurse_flag) {
     // Inner context: set comms for subIterator
-    // > pl_iter is incoming context prior to any subIterator partitioning
-    // > mi_pl_index reflects the miPL depth after any subIterator partitioning
-    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
-		     max_eval_concurrency);
-    size_t mi_pl_index = miPLIndexMap[key];
+    // > pl_iter is incoming context prior to subIterator partitioning
+    // > mi_pl_index reflects the miPL depth after subIterator partitioning
+    size_t mi_pl_index = outerMIPLIndex + 1;
     subIteratorSched.update(modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
@@ -626,22 +620,6 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
       subIteratorSched.set_iterator(subIterator, si_pl_iter);
     }
-
-    /* This approach could eliminate need for miPLIndexMap, except for
-       inability to detect when partitioning has occurred at this level.
-       Note that subIterator's miPLIndex cannot help since it is defined
-       in Iterator::set_communicators() from the passed pl_iter.  The same
-       limitations apply in derived_free_communicators() as well.
-    size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter);
-    if (pl_iter->message_pass() || pl_iter->idle_partition()) { // wrong level!
-      ParLevLIter next_pl_iter
-	= modelPCIter->mi_parallel_level_iterator(++mi_pl_index);
-      subIteratorSched.set_iterator(subIterator, next_pl_iter);
-    }
-    else
-      subIteratorSched.set_iterator(subIterator, pl_iter);
-    subIteratorSched.update(modelPCIter, mi_pl_index);
-    */
 
     // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
     if (subIteratorSched.messagePass)
@@ -663,11 +641,9 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   }
   if (recurse_flag) {
     // finalize comms for subIterator
-    // > pl_iter is incoming context prior to any subIterator partitioning
-    // > mi_pl_index reflects the miPL depth after any subIterator partitioning
-    SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
-		     max_eval_concurrency);
-    size_t mi_pl_index = miPLIndexMap[key];
+    // > pl_iter is incoming context prior to subIterator partitioning
+    // > mi_pl_index reflects the miPL depth after subIterator partitioning
+    size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter) + 1;
     subIteratorSched.update(modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
@@ -675,7 +651,6 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
       subIteratorSched.free_iterator(subIterator, si_pl_iter);
     }
-    miPLIndexMap.erase(key);
     subIteratorSched.free_iterator_parallelism();
   }
 }

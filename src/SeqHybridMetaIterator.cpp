@@ -165,10 +165,6 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // with maxIteratorConcurrency defined, initialize the concurrent
   // iterator parallelism level
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
-  // > store the miPLIndex for this parallel config to restore in set_comms()
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-  miPLIndexMap[pl_index] = iterSched.miPLIndex; // one beyond pl_iter
-
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
@@ -235,8 +231,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index];
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -245,17 +240,12 @@ void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
     for (i=0; i<num_iterators; ++i)
       iterSched.set_iterator(selectedIterators[i], si_pl_iter);
   }
-
-  // See notes in NestedModel::derived_set_communicators() for reasons why
-  // a streamlined implementation (no miPLIndexMap) is insufficient.
 }
 
 
 void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  // free the communicators for selectedIterators
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index];
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
@@ -264,13 +254,9 @@ void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
     for (i=0; i<num_iterators; ++i)
       iterSched.free_iterator(selectedIterators[i], si_pl_iter);
   }
-  // See notes in NestedModel::derived_set_communicators() for reasons why
-  // a streamlined implementation (no miPLIndexMap) is insufficient.
 
   // deallocate the mi_pl parallelism level
   iterSched.free_iterator_parallelism();
-
-  miPLIndexMap.erase(pl_index);
 }
 
 

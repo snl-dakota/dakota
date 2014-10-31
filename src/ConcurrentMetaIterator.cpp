@@ -196,10 +196,6 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
       max_ppi = probDescDB.max_procs_per_mi(max_eval_conc);
 
   iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
-  // > store the miPLIndex for this parallel config to restore in set_comms()
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-  miPLIndexMap[pl_index] = iterSched.miPLIndex;
-
   summaryOutputFlag = iterSched.lead_rank();
 
   // from this point on, we can specialize logic in terms of iterator servers.
@@ -234,38 +230,28 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index];
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     iterSched.set_iterator(selectedIterator, si_pl_iter);
   }
-
-  // See notes in NestedModel::derived_set_communicators() for reasons why
-  // a streamlined implementation (no miPLIndexMap) is insufficient.
 }
 
 
 void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  // free the communicators for selectedIterator
-  size_t pl_index = parallelLib.parallel_level_index(pl_iter),
-      mi_pl_index = miPLIndexMap[pl_index];
+  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     iterSched.free_iterator(selectedIterator, si_pl_iter);
   }
-  // See notes in NestedModel::derived_set_communicators() for reasons why
-  // a streamlined implementation (no miPLIndexMap) is insufficient.
 
   // deallocate the mi_pl parallelism level
   iterSched.free_iterator_parallelism();
-
-  miPLIndexMap.erase(pl_index);
 }
 
 

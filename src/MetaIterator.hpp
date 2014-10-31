@@ -95,10 +95,6 @@ protected:
   /// scheduler for concurrent execution of Iterators
   IteratorScheduler iterSched;
 
-  /// maps from outer parallel level index into index for subordinate
-  /// iterator partitioning
-  std::map<size_t, size_t> miPLIndexMap;
-
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;
 
