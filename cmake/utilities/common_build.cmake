@@ -291,16 +291,7 @@ if ( DAKOTA_DO_PACK )
   # WJB- ToDo: Assess the need for another variable, DAKOTA_DO_SOURCE_PACK
   #            PROBABLY is needed since only need to create source tarball once
 
-  # BuildInfo needs to go into the source distribution, even though at config
-  # or build time, it is desirable to adhere to a read-only source dir policy,
-  # therefore, copy the file into the source tree just prior to packing
-  if ( EXISTS ${CTEST_BINARY_DIRECTORY}/src/DakotaBuildInfo.cpp )
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-      "${CTEST_BINARY_DIRECTORY}/src/DakotaBuildInfo.cpp"
-      "${CTEST_SOURCE_DIRECTORY}/src/"
-      )
-  endif() # DakotaBuildInfo.cpp exists
-
+  
   if ( EXISTS ${CTEST_BINARY_DIRECTORY}/CPackSourceConfig.cmake )
     execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
       --config ${CTEST_BINARY_DIRECTORY}/CPackSourceConfig.cmake
@@ -322,14 +313,6 @@ if ( DAKOTA_DO_PACK )
   endif() # DAKOTA_BUILD_DOCS
 endif() # DAKOTA_DO_PACK
 
-# Packing complete - OK to remove the BuildInfo file from the source tree
-
-if ( EXISTS ${CTEST_SOURCE_DIRECTORY}/src/DakotaBuildInfo.cpp )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E remove
-    ${CTEST_SOURCE_DIRECTORY}/src/DakotaBuildInfo.cpp
-    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/src
-    )
-endif()
 
 ##############################################################################
 # Print all data

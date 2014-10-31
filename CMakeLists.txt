@@ -39,6 +39,55 @@ else()
     "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
 endif()
 
+# Buiding in an SVN checkout or a source package? 
+set(DAKOTA_VERSION_file_path)
+if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
+  set(DAKOTA_SVN_checkout TRUE)
+  # SVN checkout, determine revision level
+
+  if((APPLE AND DEFINED ENV{BUILD_URL}) OR (CYGWIN AND DEFINED ENV{BUILD_URL}))
+    # Workarounds for Jenkins slave shell where svn is different version
+    # than the svn client that performed the 'update' step
+
+    file(STRINGS ${Dakota_SOURCE_DIR}/.svn/entries
+      list_dakota_rev LIMIT_COUNT 4)
+
+    # Get the trailing (or 4th) entry (SVN rev of Dakota)
+    # Would also want to silence CMP0007, or remove blanks
+    list(GET list_dakota_rev -1 Dakota_SVN_REV)
+
+  else()
+    # NOT CYGWIN/jenkins so "assert" that the same svn client is used for
+    # 'update' and 'configure' steps
+    find_package(Subversion)
+
+    if(Subversion_FOUND)
+      # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
+      # and the Dakota/ directory may be symlinked.
+      get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
+      Subversion_WC_INFO(${abs_source_dir} Dakota)
+
+      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
+    endif(Subversion_FOUND) # Subversion_FOUND
+  endif()
+
+  # Create VERSION file
+  file( WRITE ${Dakota_BINARY_DIR}/generated/VERSION/VERSION
+        "DAKOTA Version ${Dakota_VERSION_SRC}
+Built from SVN revision ${Dakota_SVN_REV}
+" )
+  set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")
+  install(FILES ${Dakota_BINARY_DIR}/generated/VERSION/VERSION DESTINATION
+	  .)
+
+  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
+  message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
+
+else() # source tree NOT an SVN checkout
+  set(DAKOTA_SVN_checkout FALSE)
+  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
+  message(STATUS "Appear to building from source package.")
+endif() # .svn directory conditional
 
 # More widely distributed packages exclude more content
 # So smaller number implies less content
@@ -417,7 +466,8 @@ endif()
 add_subdirectory(examples)
 
 # Top-level install rules from source (binary rules are in subdirs)
-install(FILES INSTALL LICENSE COPYRIGHT README 
+install(FILES INSTALL LICENSE COPYRIGHT README
+	${DAKOTA_VERSION_file_path}VERSION
   DESTINATION ${DAKOTA_TOPFILES_INSTALL})
 
 install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
@@ -439,6 +489,16 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
 
 
 # Final CPack settings
+
+# Create Add generated files to source package
+if(DAKOTA_SVN_checkout)
+  SET(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};/") 
+  LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
+	"${Dakota_BINARY_DIR}/generated/src/;/src")
+  LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
+	"${Dakota_BINARY_DIR}/generated/VERSION/;/")
+endif()
+
 if(WIN32)
   set(CPACK_GENERATOR ZIP)
   set(CPACK_SOURCE_GENERATOR ZIP)
@@ -454,6 +514,7 @@ else()
   set(CPACK_GENERATOR TGZ)
   set(CPACK_SOURCE_GENERATOR TGZ)
 endif()
+
 
 include(CPack)
 

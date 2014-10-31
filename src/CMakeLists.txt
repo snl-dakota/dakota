@@ -29,7 +29,7 @@ set(QUESO_EXTPROJ_LIBS)
 # QUESO external LIBS to be linked last
 set(QUESO_TPL_LIBS)
 
-list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/src
+list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/generated ${Dakota_BINARY_DIR}/src
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages)
 
 list(APPEND EXT_TPL_INCDIRS
@@ -64,6 +64,35 @@ else()
   list(APPEND EXT_TPL_LIBDIRS ${Teuchos_LIBRARY_DIRS})
   list(APPEND EXT_TPL_LIBS ${Teuchos_LIBRARIES})
 endif()
+
+#------------------
+# Generat DakotaBuildInfo.src if needed
+
+set(DAKOTA_BUILDINFO_PATH)
+if(DAKOTA_SVN_checkout)
+  file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
+        "// -- AUTO GENERATED FILE; DO NOT EDIT --
+        #include \"DakotaBuildInfo.hpp\"
+        std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
+        std::string Dakota::DakotaBuildInfo::subversionRev=\"${Dakota_SVN_REV}\";
+        std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
+        // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
+        //       Lower priority - a post-5.4 release task
+        " )
+  set(DAKOTA_BUILDINFO_PATH "${Dakota_BINARY_DIR}/generated/src/")
+  
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
+    message(STATUS
+      "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
+  endif() # incorrect location DakotaBuildInfo.cpp
+
+else() # source tree NOT an SVN checkout
+
+  message(STATUS "EXPECTED - DakotaBuildInfo.cpp found in the src tree.")
+
+endif() # .svn directory conditional
+
+# -----------------
 
 
 # -----------------
@@ -336,7 +365,7 @@ endif(HAVE_PECOS)
 
 
 ## DAKOTA library sources.
-set(Dakota_src DakotaBuildInfo.cpp)
+set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
@@ -801,64 +830,6 @@ endif()
 if (DAKOTA_MODELCENTER)
   target_link_libraries(dakota_src PHXCppApi)
 endif()
-
-
-# --- Generated source files
-
-if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
-
-  # SVN checkout, determine revision level
-
-  if((APPLE AND DEFINED ENV{BUILD_URL}) OR (CYGWIN AND DEFINED ENV{BUILD_URL}))
-    # Workarounds for Jenkins slave shell where svn is different version
-    # than the svn client that performed the 'update' step
-
-    file(STRINGS ${Dakota_SOURCE_DIR}/.svn/entries
-      list_dakota_rev LIMIT_COUNT 4)
-
-    # Get the trailing (or 4th) entry (SVN rev of Dakota)
-    # Would also want to silence CMP0007, or remove blanks
-    list(GET list_dakota_rev -1 Dakota_SVN_REV)
-
-  else()
-    # NOT CYGWIN/jenkins so "assert" that the same svn client is used for
-    # 'update' and 'configure' steps
-    find_package(Subversion)
-
-    if(Subversion_FOUND)
-      # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
-      # and the Dakota/ directory may be symlinked.
-      get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
-      Subversion_WC_INFO(${abs_source_dir} Dakota)
-
-      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
-    endif(Subversion_FOUND) # Subversion_FOUND
-  endif()
-
-  message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
-  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
-  file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.cpp
-        "// -- AUTO GENERATED FILE; DO NOT EDIT --
-        #include \"DakotaBuildInfo.hpp\"
-        std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
-        std::string Dakota::DakotaBuildInfo::subversionRev=\"${Dakota_SVN_REV}\";
-        std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
-        // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
-        //       Lower priority - a post-5.4 release task
-        " )
-
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
-    message(STATUS
-      "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
-  endif() # incorrect location DakotaBuildInfo.cpp
-
-else() # source tree NOT an SVN checkout
-
-  # Higher-level Jenkins/PACKAGING job COPIES DakotaBuildInfo.cpp into source tree
-  message(STATUS "EXPECTED - DakotaBuildInfo.cpp found in the src tree.")
-
-endif() # .svn directory conditional
-
 
 if(MSVC)
   # Create "Native Windows dirent" source files in the binary tree so they
