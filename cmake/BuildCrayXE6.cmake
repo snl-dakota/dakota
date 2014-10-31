@@ -10,8 +10,8 @@ set( DAKOTA_CMAKE_PLATFORM "CrayXE6.cmake")
 set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
 
 set( DAKOTA_CTEST_PROJECT_TAG "Continuous" )
-set( CTEST_BUILD_CONFIGURATION None )
 
+set( CTEST_BUILD_CONFIGURATION RelWithDebInfo )
 set( DAKOTA_CTEST_REGEXP "dakota_*" )
 set( DAKOTA_DEBUG ON )
 
