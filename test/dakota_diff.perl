@@ -31,14 +31,23 @@ $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+";
 # invalid numerical field
 $naninf = "-?([Nn][Aa][Nn]|[Ii][Nn][Ff])";
 # numerical field printed as exponential (may contain NaN/Inf)
-$e = "($expo|$naninf)";
+# (?: --> group without capture)
+$e = "(?:$expo|$naninf)";
 # numerical field in integer notation
 $i = "-?\\d+";                     
+
+# Numerical DIFF tolerances
+# Tolerance below which absolute numerical diff will be used
+# Also used as PCE coefficient and Sobol index absolute ignore tolerance
+$SMALL       = 1.e-8;
+# Allow up to a quarter of the total abs() interval in abs diff
+$ABS_EPSILON = 5.e-9; 
+# Relative tolerance for other values
 # get tolerance from environment, if it exists.
 if (exists $ENV{'DAKDIFF_REL_EPSILON'}) {
     $REL_EPSILON = $ENV{'DAKDIFF_REL_EPSILON'};
 } else {
-    $REL_EPSILON = 1.e-4;
+    $REL_EPSILON = 1.e-4 ;# allow up to 0.01% numerical differences
 }
 
 # -----------------
@@ -232,9 +241,26 @@ sub compare_output {
     # Vector extractions
     ####################
 
+    # These extractions read until end of data table, so result in
+    # advancing to next input line when detecting the end.  We
+    # therefore have to loop all of them first, before going on to
+    # non-vector extractions; otherwise we'll go back to top of while
+    # loop and miss a line.
+
+    # This makes the assumption that all of these always occur
+    # together in the output; if not true, output will be missed
+
+    # single quotes must be escaped here:
+    my $best_re = '^<<<<< Best [ \w\(\)]+=$';
+    my $pce_re = 'of Polynomial Chaos Expansion for';
+    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$';
+
+    while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
+	    ($base =~ /${pce_re}/)  && ($test =~ /${pce_re}/)  ||
+	    ($base =~ /${uq_re}/)   && ($test =~ /${uq_re}/)) {
+
     # General
-    while ( ($base =~ /^<<<<< Best [ \w\(\)]+=$/) &&
-	    ($test =~ /^<<<<< Best [ \w\(\)]+=$/) ) {
+    while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ) {
       if ($base != $test) {
 	print "Error: mismatch in data header between baseline and test\n";
 	exit(-1);
@@ -306,8 +332,7 @@ sub compare_output {
     #}
 
     # PCE
-    if ( ($base =~ /of Polynomial Chaos Expansion for/) &&
-	 ($test =~ /of Polynomial Chaos Expansion for/) ) {
+    if ( ($base =~ /${pce_re}/) && ($test =~ /${pce_re}/) ) {
       $b_hdr = $base; # save header in case of diffs
       $t_hdr = $test; # save header in case of diffs
       $first_diff = 0;
@@ -315,43 +340,63 @@ sub compare_output {
       $test = shift @tst_excerpt; # grab next line
       while ( ( ($t_val) = $test =~ /^\s+($e)/ ) &&
 	      ( ($b_val) = $base =~ /^\s+($e)/ ) ) {
-	if (diff($t_val, $b_val)) {
-	  $test_diff = 1;
-	  if ($first_diff == 0) {
-	    $first_diff = 1;
-	    push @base_diffs, $b_hdr;
-	    push @test_diffs, $t_hdr;
+	# Small PCE coefficients appearing in baseline or test, but
+	# not the other, cause skew. Ignore will advance one or both
+	# baselines if needed, then we return to the while test.
+        if (!ignore_small_value($t_val, $b_val, \$test, \$base, 
+				\@tst_excerpt, \@base_excerpt)) 
+	{
+	  if (diff($t_val, $b_val)) {
+	    $test_diff = 1;
+	    if ($first_diff == 0) {
+	      $first_diff = 1;
+	      push @base_diffs, $b_hdr;
+	      push @test_diffs, $t_hdr;
+	    }
+	    push @base_diffs, $base;
+	    push @test_diffs, $test;
 	  }
-	  push @base_diffs, $base;
-	  push @test_diffs, $test;
-	}
-	$base = shift @base_excerpt; # grab next line
-	$test = shift @tst_excerpt; # grab next line
-      }
-
-      # if there's extra data in either file, mark this a DIFF
-      if ( ( ($t_val) = $test =~ /^\s+($e)/ ) ||
-	   ( ($b_val) = $base =~ /^\s+($e)/ ) ) {
-	$test_diff = 1;
-	if ($first_diff == 0) {
-	  push @base_diffs, $b_hdr;
-	  push @test_diffs, $t_hdr;
-	}
-	while ( ($t_val) = $test =~ /^\s+($e)/ ) {
-	  push @test_diffs, $test;
+	  $base = shift @base_excerpt; # grab next line
 	  $test = shift @tst_excerpt; # grab next line
 	}
+      }
+
+      # if there's extra data of sufficiently large magnitude in
+      # either file, mark this a DIFF
+      if ( ( ($t_val) = $test =~ /^\s+($e)/ ) ||
+	   ( ($b_val) = $base =~ /^\s+($e)/ ) ) {
+	# extra test contents
+	while ( ($t_val) = $test =~ /^\s+($e)/ ) {
+	  if (!ignore_small_value_single($t_val, \$test, \@tst_excerpt)) {
+	    $test_diff = 1;
+	    if ($first_diff == 0) {
+	      $first_diff = 1;
+	      push @base_diffs, $b_hdr;
+	      push @test_diffs, $t_hdr;
+	    }
+	    push @test_diffs, $test;
+	    $test = shift @tst_excerpt; # grab next line
+	  }
+	}  
+	# extra base contents
 	while ( ($b_val) = $base =~ /^\s+($e)/ ) {
-	  push @base_diffs, $base;
-	  $base = shift @base_excerpt; # grab next line
-	}
+	  if (!ignore_small_value_single($b_val, \$base, \@base_excerpt)) {
+	    $test_diff = 1;
+	    if ($first_diff == 0) {
+	      $first_diff = 1;
+	      push @base_diffs, $b_hdr;
+	      push @test_diffs, $t_hdr;
+	    }
+	    push @base_diffs, $base;
+	    $base = shift @base_excerpt; # grab next line
+	  }
+	}  
       }
 
     }
 
     # UQ mappings and indices
-    while ( ($base =~ /^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol' indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$/o) &&
-	    ($test =~ /^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol' indices:|(Moment-based statistics|95% confidence intervals) for each response function:)$/o) ) {
+    while ( ($base =~ /${uq_re}/o) && ($test =~ /${uq_re}/o) ) {
       $b_hdr1 = $base;         # save headers in case of diffs
       $b_hdr2 = shift @base_excerpt; # save headers in case of diffs
       $t_hdr1 = $test;         # save headers in case of diffs
@@ -368,10 +413,22 @@ sub compare_output {
 	  $row_diff = 1
 	}
 	else {
-	  for ($count=0; $count<=$#t_val; $count++) {
-	    if (diff($t_val[$count], $b_val[$count])) {
-	      $test_diff = 1;
-	      $row_diff = 1;
+	  # For single Sobol indices, we ignore small values;
+	  # ultimately could do if ALL entries in a row are small...
+	  # unfortnately t_val is matching spaces as separate entries...
+	  # so using < 2 here instead of == 1
+	  if ($#t_val < 2 && ($t_hdr1 =~ /Sobol/) && 
+	      ignore_small_value($t_val[0], $b_val[0], \$test, \$base, 
+				 \@tst_excerpt, \@base_excerpt)) {
+	    # ignore small single Sobol index and go to while test
+	    next;
+	  }
+	  else {
+  	    for ($count=0; $count<=$#t_val; $count++) {
+	      if (diff($t_val[$count], $b_val[$count])) {
+	        $test_diff = 1;
+	        $row_diff = 1;
+	      }
 	    }
 	  }
 	}
@@ -393,25 +450,49 @@ sub compare_output {
       # if there's extra data in either file, mark this a DIFF
       if ( ( (@t_val) = $test =~ /\s+($e)/go ) ||
 	   ( (@b_val) = $base =~ /\s+($e)/go ) ) {
-	$test_diff = 1;
-	if ($first_diff == 0) {
-	  push @base_diffs, $b_hdr1;
-	  push @base_diffs, $b_hdr2;
-	  push @test_diffs, $t_hdr1;
-	  push @test_diffs, $t_hdr2;
-	}
+	# extra test contents
 	while ( (@t_val) = $test =~ /\s+($e)/go ) {
-	  push @test_diffs, $test;
-	  $test = shift @tst_excerpt; # grab next line
+	  if ( $#t_val < 2 && ($t_hdr1 =~ /Sobol/) && 
+	       ignore_small_value_single($t_val[0], \$test, \@tst_excerpt) ) {
+	    # ignore small single Sobol index
+	    ; 
+	  }
+	  else {
+	    $test_diff = 1;
+	    if ($first_diff == 0) {
+	      push @base_diffs, $b_hdr1;
+	      push @base_diffs, $b_hdr2;
+	      push @test_diffs, $t_hdr1;
+	      push @test_diffs, $t_hdr2;
+	    }
+	    push @test_diffs, $test;
+	    $test = shift @tst_excerpt; # grab next line
+	  }
 	}
+        # extra base contents
 	while ( (@b_val) = $base =~ /\s+($e)/go ) {
-	  push @base_diffs, $base;
-	  $base = shift @base_excerpt; # grab next line
+	  if ( $#b_val < 2 && ($b_hdr1 =~ /Sobol/) && 
+	       ignore_small_value_single($b_val[0], \$base, \@base_excerpt) ) {
+	    # ignore small Sobol index
+	    ; 
+	  }
+	  else {
+	    $test_diff = 1;
+	    if ($first_diff == 0) {
+	      push @base_diffs, $b_hdr1;
+	      push @base_diffs, $b_hdr2;
+	      push @test_diffs, $t_hdr1;
+	      push @test_diffs, $t_hdr2;
+	    }
+	    push @base_diffs, $base;
+	    $base = shift @base_excerpt; # grab next line
+	  }
 	}
       }
 
     }
 
+    } # end overall while loop vector extract
 
 
     ###############################################################
@@ -584,6 +665,39 @@ sub compare_output {
 }  # end compare_output
 
 
+# Help avoid skew by ignoring numerical values below $ABS_EPSILON,
+# advancing the baseline, test, or both.  Takes test, base, and
+# corresponding excerpts by reference and updates them if needed.
+# Returns true=1 if a value had to be skipped, else 0.
+sub ignore_small_value {
+
+  my ($t_val, $b_val, $ref_test, $ref_base, 
+      $ref_tst_excerpt, $ref_base_excerpt) = @_;
+
+  my $t_ignore = ignore_small_value_single($t_val, $ref_test, $ref_tst_excerpt);
+  my $b_ignore = ignore_small_value_single($b_val, $ref_base, $ref_base_excerpt);
+  if ($t_ignore || $b_ignore) {
+    return 1;
+  }
+  return 0;
+}
+
+
+sub ignore_small_value_single {
+
+  my ($val, $ref_line, $ref_excerpt) = @_;
+
+  # Technically should probably test NaN/Inf first as strings, then do
+  # this tolerance test.  Also could diff them if BOTH small.
+
+  # For now, just make sure it's a numerical value, and not NaN/Inf
+  if ( ($val =~ /$expo/) && abs($val) < $SMALL) {
+      ${$ref_line} = shift @{$ref_excerpt}; # grab next line
+    return 1;
+  }
+  return 0;
+}
+
 # subroutine diff assesses whether two numbers differ by more than an epsilon
 sub diff {
   # $_[0] = test value
@@ -601,9 +715,6 @@ sub diff {
     }
   }
 
-  $SMALL       = 1.e-8; # use absolute difference for small values
-  $ABS_EPSILON = 5.e-9; # allow up to a quarter of the total abs() interval
-#  $REL_EPSILON = 1.e-4; # allow up to 0.01% numerical differences
   if ( (abs($_[0]) < $SMALL) || (abs($_[1]) < $SMALL) ) {
     $differ = abs($_[0] - $_[1]);     # absolute difference
     if ($differ > $ABS_EPSILON) {
