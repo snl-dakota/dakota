@@ -1048,7 +1048,7 @@ void NonDPOFDarts::quantify_uncertainty()
         double pof_exact = 0.0;
         
         double isample = 0.0;
-        double num_MC_samples(1E6);
+        double num_MC_samples(emulatorSamples);
         double* tmp_pnt = new double[_n_dim];
         while (isample < num_MC_samples)
         {
@@ -1381,10 +1381,10 @@ void NonDPOFDarts::quantify_uncertainty()
         double pof_exact = 0.0;
     
         double i_dart = 0.0;
-        double num_darts = 1.0E7;
+        double num_MC_samples(emulatorSamples);
         double* dart = new double[_n_dim];
         double err = 0.0;
-        while (i_dart < num_darts)
+        while (i_dart < num_MC_samples)
         {
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
@@ -1418,7 +1418,7 @@ void NonDPOFDarts::quantify_uncertainty()
             i_dart++;
         }
     
-        double sf = 1.0 / num_darts;
+        double sf = 1.0 / num_MC_samples;
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
             size_t num_levels = requestedRespLevels[resp_fn_count].length();
