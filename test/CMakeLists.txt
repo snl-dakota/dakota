@@ -100,6 +100,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_logratio_taylor2.in
       dakota_multiobj2.in
       dakota_ouu1_tb.in
+      dakota_pareto_pcbdo_short_column.in
       dakota_pcbdo_cantilever.in
       dakota_pcbdo_cantilever_mf.in
       dakota_pcbdo_cantilever_trsb.in
