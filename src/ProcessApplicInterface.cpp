@@ -438,8 +438,10 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
     // all other cases (including tagged) will overwrite the old files.  Since
     // we don't want to save tmp files, don't bother to check fileSaveFlag.
     // Also don't check allow existing results since they may be bogus.
-    bfs::remove((map_iter->second).get<0>());  // parameters file name
-    bfs::remove((map_iter->second).get<1>());  // results file name
+    const bfs::path& pfile_path = (map_iter->second).get<0>();
+    WorkdirHelper::recursive_remove(pfile_path, FILEOP_WARN);
+    const bfs::path& rfile_path = (map_iter->second).get<1>();
+    WorkdirHelper::recursive_remove(rfile_path, FILEOP_WARN);
     // replace file names in map, avoiding 2nd lookup
     map_iter->second = file_names;
   }
@@ -679,7 +681,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
   if (removing_workdir) {
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "Removing work_directory " << workdir_path << std::endl;
-    WorkdirHelper::recursive_remove(workdir_path);
+    WorkdirHelper::recursive_remove(workdir_path, FILEOP_ERROR);
   }
   // Remove the evaluation which has been processed from the bookkeeping
   fileNameMap.erase(map_iter);
@@ -708,7 +710,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
     if (!multipleParamsFiles || !iFilterName.empty()) {
       if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
 	Cout << "Moving " << params_path << " to " << eval_tagged_params << '\n';
-      bfs::rename(params_path, eval_tagged_params);
+      WorkdirHelper::rename(params_path, eval_tagged_params, FILEOP_WARN);
     }
     if (multipleParamsFiles) { // append program counters to old/new strings
       for (size_t i=0; i<num_programs; ++i) {
@@ -720,7 +722,8 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
 	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
 	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
 	       << '\n';
-	bfs::rename(prog_tagged_old, eval_prog_tagged_new);
+	WorkdirHelper::
+	  rename(prog_tagged_old, eval_prog_tagged_new, FILEOP_WARN);
       }
     }
   }
@@ -733,7 +736,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
       if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
 	Cout << "Moving " << results_path << " to "
 	     << eval_tagged_results << '\n';
-      bfs::rename(results_path, eval_tagged_results);
+      WorkdirHelper::rename(results_path, eval_tagged_results, FILEOP_WARN);
     }
     if (num_programs > 1) { // append program counters to old/new strings
       for (size_t i=0; i<num_programs; ++i) {
@@ -745,7 +748,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
 	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
 	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
 	       << '\n';
-	bfs::rename(prog_tagged_old, eval_prog_tagged_new);
+	WorkdirHelper::rename(prog_tagged_old, eval_prog_tagged_new, FILEOP_WARN);
       }
     }
   }
@@ -775,14 +778,14 @@ remove_params_results_files(const bfs::path& params_path,
   }
 
   if (!multipleParamsFiles || !iFilterName.empty())
-    bfs::remove(params_path);
+    WorkdirHelper::recursive_remove(params_path, FILEOP_WARN);
 
   if (multipleParamsFiles) {
     for (size_t i=0; i<num_programs; ++i) {
       const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
       const bfs::path tagged_params = 
 	WorkdirHelper::concat_path(params_path, prog_num);
-      bfs::remove(tagged_params);
+      WorkdirHelper::recursive_remove(tagged_params, FILEOP_WARN);
     }
   }
 
@@ -794,7 +797,7 @@ remove_params_results_files(const bfs::path& params_path,
       const std::string prog_num("." + boost::lexical_cast<std::string>(i+1));
       const bfs::path tagged_results = 
 	WorkdirHelper::concat_path(results_path, prog_num);
-      bfs::remove(tagged_results);
+      WorkdirHelper::recursive_remove(tagged_results, FILEOP_WARN);
     }
 }
 
@@ -814,23 +817,23 @@ void ProcessApplicInterface::file_cleanup() const
     const bfs::path& wd_path = (file_name_map_it->second).get<2>();
     if (!fileSaveFlag) {
       if (!multipleParamsFiles || !iFilterName.empty()) {
-	bfs::remove(parfile);
-	bfs::remove(resfile);
+	WorkdirHelper::recursive_remove(parfile, FILEOP_SILENT);
+	WorkdirHelper::recursive_remove(resfile, FILEOP_SILENT);
       }
       if (multipleParamsFiles) {
 	size_t i, num_programs = programNames.size();
 	for(i=1; i<=num_programs; ++i) {
 	  std::string prog_num("." + boost::lexical_cast<std::string>(i));
 	  bfs::path pname = WorkdirHelper::concat_path(parfile, prog_num);
-	  bfs::remove(pname);
+	  WorkdirHelper::recursive_remove(pname, FILEOP_SILENT);
 	  bfs::path rname = WorkdirHelper::concat_path(resfile, prog_num);
-	  bfs::remove(rname);
+	  WorkdirHelper::recursive_remove(rname, FILEOP_SILENT);
 	}
       }
     }
     // a non-empty entry here indicates the directory was created for this eval
     if (!dirSave && !wd_path.empty())
-      WorkdirHelper::recursive_remove(wd_path);
+      WorkdirHelper::recursive_remove(wd_path, FILEOP_SILENT);
   }
 }
 

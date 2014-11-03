@@ -488,9 +488,9 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
 {
   bool dir_created = false;  // whether this function created a new directory
 
-  // remove any existing directory if requested
+  // remove any existing directory if requested, error since we test if exists
   if (mkdir_option == DIR_CLEAN && bfs::exists(dir_path))
-    recursive_remove(dir_path);
+    recursive_remove(dir_path, FILEOP_ERROR);
 
    // now conditionally create a new one
   if (bfs::exists(dir_path)) {
@@ -546,16 +546,65 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
 }
 
 
-void WorkdirHelper::recursive_remove(const bfs::path& rm_path)
+void WorkdirHelper::recursive_remove(const bfs::path& rm_path, short fileop_opt)
 {
   try {
     if (bfs::exists(rm_path))
       bfs::remove_all(rm_path);
+    else {
+      if (fileop_opt == FILEOP_WARN) {
+	Cerr << "\nWarning: path " << rm_path << " to remove does not exist." 
+	     << std::endl;
+      }
+      else if (fileop_opt == FILEOP_ERROR) {
+	Cerr << "\nError: path " << rm_path << " to remove does not exist." 
+	     << std::endl;
+	abort_handler(IO_ERROR);
+      }
+    }
   }
   catch (const bfs::filesystem_error& e) {
-    Cerr << "\nError: could not remove path " << rm_path << ";\n" 
-        << e.what() << std::endl;
-    abort_handler(IO_ERROR);
+    if (fileop_opt == FILEOP_WARN) {
+      Cerr << "\nWarning: could not remove path " << rm_path << ";\n" 
+	   << e.what() << std::endl;
+    }
+    else if (fileop_opt == FILEOP_ERROR) {
+      Cerr << "\nError: could not remove path " << rm_path << ";\n" 
+	   << e.what() << std::endl;
+      abort_handler(IO_ERROR);
+    }
+  }
+}
+
+
+void WorkdirHelper::rename(const bfs::path& old_path, const bfs::path& new_path,
+			   short fileop_opt)
+{
+  try {
+    if (bfs::exists(old_path))
+      bfs::rename(old_path, new_path);
+    else {
+      if (fileop_opt == FILEOP_WARN) {
+	Cerr << "\nWarning: path " << old_path << " to rename does not exist." 
+	     << std::endl;
+      }
+      else if (fileop_opt == FILEOP_ERROR) {
+	Cerr << "\nError: path " << old_path << " to rename does not exist." 
+	     << std::endl;
+	abort_handler(IO_ERROR);
+      }
+    }
+  }
+  catch (const bfs::filesystem_error& e) {
+    if (fileop_opt == FILEOP_WARN) {
+      Cerr << "\nWarning: could not rename path " << old_path << " to "
+	   << new_path << ";\n" << e.what() << std::endl;
+    }
+    else if (fileop_opt == FILEOP_ERROR) {
+      Cerr << "\nError: could not rename path " << old_path << " to "
+	   << new_path << ";\n" << e.what() << std::endl;
+      abort_handler(IO_ERROR);
+    }
   }
 }
 

@@ -32,6 +32,8 @@ namespace Dakota {
 /// define directory creation options
 enum { DIR_CLEAN, DIR_PERSIST, DIR_ERROR };
 
+/// enum indicating action on failed file operation
+enum {FILEOP_SILENT, FILEOP_WARN, FILEOP_ERROR};
 
 /// define a function type that operates from src to dest, with option
 /// to overwrite
@@ -172,8 +174,11 @@ public:
 
   /// Remove a path (file, directory, or symlink) without regard to its
   /// type.  Only error if existed and there's an error in the remove.
-  static void recursive_remove(const bfs::path& rm_path);
+  static void recursive_remove(const bfs::path& rm_path, short fileop_option);
 
+  /// Rename a file, catching any errors and optionally warning/erroring.
+  static void rename(const bfs::path& old_path, const bfs::path& new_path,
+		     short fileop_option);
 
   // Convenience functions which invoke file_op_items() with various kernels
 
