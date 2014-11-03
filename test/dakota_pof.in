@@ -10,8 +10,15 @@ environment
 method
    pof_darts
       samples = 100
+	lipschitz global                     #0,#3 
+#	lipschitz local                      #1,#2
+	emulator                             #0,#1,#2,#3 
+	gaussian_process                     #0,#1
+#	emulator_samples = 1.E5              #1        
+#	voronoi_surrogate                    #2,#3
+#	surrogate_order = 4                  #3
       seed = 8493
-      response_levels = -0.9 -0.8 -0.5       #0 
+      response_levels = -0.9 -0.8 -0.5       #0,#2,#3 
       #num_response_levels = 1 1
 #      response_levels = 2.0 0.1             #1 
 
@@ -23,11 +30,11 @@ variables
 
 interface
    direct 
-   analysis_driver = 'smooth_herbie'         #0
+   analysis_driver = 'smooth_herbie'         #0,#2,#3
 #   analysis_driver = 'text_book'            #1
 
 responses,
-   objective_functions = 1               #0
+   objective_functions = 1               #0,#2,#3
 #   objective_functions = 2               #1
    no_gradients
    no_hessians
