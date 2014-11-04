@@ -1,5 +1,5 @@
-Blurb::
-Add context to field data: identify the number of different experiments
+Blurb:: CAPABILITY NOT YET ACTIVE
+Identify the number of different experiments for field data
 Description::
 \c num_experiments defines how many experiments will be used in the calibration. 
 For field data, each experiment needs to have one or more files provided that 

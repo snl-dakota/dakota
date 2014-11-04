@@ -1,4 +1,4 @@
-Blurb::
+Blurb::CAPABILITY NOT YET ACTIVE
 Add main file name identifying where the experimental measurement error information will be located. 
 Description::
 The measurement error will be specified in \c sigma_data_file.  If there is more 

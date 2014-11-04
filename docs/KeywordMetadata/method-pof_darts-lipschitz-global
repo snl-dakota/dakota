@@ -1,0 +1,10 @@
+Blurb::
+Specify global estimation of the Lipschitz estimate
+Description::
+The global approach uses 
+one Lipschitz estimate for the entire domain.  
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

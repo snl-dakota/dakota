@@ -1,4 +1,4 @@
-Blurb::
+Blurb::CAPABILITY NOT YET ACTIVE
 Add main file name identifying where the experimental coordinate data will be located. 
 Description::
 The coordinate data will be specified in \c field_coordinate_data_file.  If there is more 

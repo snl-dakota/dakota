@@ -1,0 +1,11 @@
+Blurb::
+Specify local estimation of the Lipschitz constant
+Description::
+The local approach to estimating the Lipschitz constant calculates
+the Lipschitz estimate separately for each Voronoi region based on nearby points.  
+The local method is more expensive but more accurate than the global method. 
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

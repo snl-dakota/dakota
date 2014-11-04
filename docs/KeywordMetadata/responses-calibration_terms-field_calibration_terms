@@ -1,7 +1,19 @@
 Blurb::  Number of field calibration terms
 Description::
-This keyword describes the number of field calibration terms
-Note that if there is one \c field_calibration_terms, but it has length 100 (meaning 100 values), then 
+This keyword describes the number of field calibration terms.
+A set of field calibration terms is a set of related response values collected over a range of
+independent coordinate values which may or may not be specified by the user.
+For example, voltage over time would be a field function, where voltage is
+the \c field_objective and time is the independent coordinate.
+Similarly, temperature over time and space would be a field response, where the
+independent coordinates would be both time and spatial coordinates such as (x,y) or (x,y,z), depending on the application.
+The main difference between scalar calibration terms and field calibration terms is that for field data, we
+plan to implement methods that take advantage of the correlation or relationship between the field values.
+For example, with calibration, if we want to calibrate parameters that result in a good 
+model fit to a time-temperature curve, we may have to do some interpolation between the experimental 
+data and the simulation data.  That capability requires knowledge of the independent coordinates.
+
+Note that if there is one \c field_calibration_terms, and it has length 100 (meaning 100 values), then 
 the user's simulation code must return 100 values.  
 Also, if there are both scalar and field calibration, the user should specify 
 the number of scalar terms as \c scalar_calibration_terms.  If there are only field calibration terms, 

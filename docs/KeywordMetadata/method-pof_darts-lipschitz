@@ -1,0 +1,13 @@
+Blurb::
+Select the type of Lipschitz estimation (global or local) 
+Description::
+There are two types of Lipschitz estimation used in sizing the disks used in 
+POF Darts:  \c global and \c local.  The global approach uses 
+one Lipschitz estimate for the entire domain.  The local approach calculates
+the Lipschitz estimate separately for each Voronoi region based on nearby points.  
+The local method is more expensive but more accurate. 
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

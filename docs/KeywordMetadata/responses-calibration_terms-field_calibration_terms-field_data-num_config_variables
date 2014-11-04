@@ -1,5 +1,5 @@
-Blurb::
-Add context to experimental data for field data: number of configuration variables.
+Blurb::CAPABILITY NOT YET ACTIVE
+Define the number of configuration variables associated with experimental field data.
 Description::
 See \ref responses-calibration_terms-field_calibration_terms-field_data
 

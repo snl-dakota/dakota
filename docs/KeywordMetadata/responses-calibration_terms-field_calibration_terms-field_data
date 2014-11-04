@@ -1,6 +1,7 @@
-Blurb::
-Start the description of field data from experiments that will be used in calibration. 
-Description::
+Blurb::CAPABILITY NOT YET ACTIVE
+Describe the field data from experiments that will be used in calibration. 
+Description:: CAPABILITY NOT YET ACTIVE
+
 If the user has specified \c field_calibration_terms and wants to provide 
 experiment data with which to calibration the field data from the simulations, 
 the experiment data is specified in a block starting with \c field_data. 
@@ -43,6 +44,7 @@ there may be 2000 time-voltage points from the simulation but only
 To summarize, an example voltage.dat.1 file may look like: 
 
 Time 	Voltage
+
 0.0	0.0
 
 1.0	0.22

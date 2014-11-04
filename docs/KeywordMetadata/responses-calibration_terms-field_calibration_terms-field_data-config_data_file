@@ -1,4 +1,4 @@
-Blurb::
+Blurb::CAPABILITY NOT YET ACTIVE
 Add main file name identifying where the configuration data per experiment will be located. 
 Description::
 The configuration data will be specified in \c config_data_file.  If there is more 

@@ -1,7 +1,17 @@
 Blurb::  Number of field objective functions
 Description::
 This keyword describes the number of field objective functions. 
-Note that if there is one \c field_objective, but it has length 100 (meaning 100 values), then 
+A field function is a set of related response values collected over a range of
+independent coordinate values which may or may not be specified by the user. 
+For example, voltage over time would be a field function, where voltage is 
+the \c field_objective and time is the independent coordinate.  
+Similarly, temperature over time and space would be a field response, where the 
+independent coordinates would be both time and spatial coordinates such as (x,y) or (x,y,z), depending on the application.
+The main difference between scalar objectives and field objectives is that for field data, we 
+plan to implement methods that take advantage of the correlation or relationship between 
+the field values.
+
+Note that if there is one \c field_objective, and it has length 100 (meaning 100 values), then 
 the user's simulation code must return 100 values.  
 Also, if there are both scalar and field objectives, the user should specify 
 the number of scalar objectives as \c scalar_objectives.  If there are only field objectives, 
