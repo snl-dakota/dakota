@@ -28,9 +28,8 @@ CommandShell& CommandShell::flush()
 #if !defined(_MSC_VER)
     sysCommand += " &";
 #else
-    // TODO: review whether there's a better means on Windows that won't
-    // pop a window per start?
-    sysCommand = "start \"SystemInterface-Evaluation\" " + sysCommand;
+    // using /B to keep the started command in the same Command Prompt
+    sysCommand = "start \"SystemInterface-Evaluation\" /B " + sysCommand;
 #endif
   }
 

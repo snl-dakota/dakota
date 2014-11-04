@@ -812,12 +812,24 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
       check_driver(analysis_drivers[i], di->linkFiles, di->copyFiles);
     }
 
+  if (!di->workDir.empty()) {
+
+#if defined(_WIN32) || defined(_WIN64)
+    // Note: some Windows versions may support symlinks, if files and
+    // directories are managed separately.
+    if (!di->linkFiles.empty()) {
+      Cerr << "\nError: link_files not supported on Windows; use copy_files."
+	   << std::endl;
+      ++nerr;
+    }
+#endif
+
   // Check to make sure none of the linkFiles nor copyFiles are the
   // same as the workDir (could combine into single loop with above)
-  if (!di->workDir.empty())
     if (WorkdirHelper::check_equivalent_dest(di->linkFiles, di->workDir) ||
 	WorkdirHelper::check_equivalent_dest(di->copyFiles, di->workDir))
       ++nerr;
+  }
 
   pDDBInstance->dataInterfaceList.push_back(*ii->di_handle);
   delete ii->di_handle;
