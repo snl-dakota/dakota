@@ -1,0 +1,37 @@
+environment
+        tabular_graphics_data
+
+method,
+	  seed = 34785				
+          sampling
+          samples = 10
+        #  ncsu_direct
+        #  max_iterations = 200
+        #   max_function_evaluations = 50
+
+variables,
+	uniform_uncertain = 2
+          #continuous_design = 2
+	  upper_bounds   2.   2.
+	  lower_bounds  -2.  -2.
+	  descriptors   'x1' 'x2'
+
+interface,
+        fork	
+	  analysis_driver = 'text_book'
+          #parameters_file = 'params.in'
+          #results_file = 'results.out'
+          #file_tag file_save
+
+responses,
+	response_functions = 6 
+        scalar_responses = 1
+        field_responses = 2
+        lengths = 2 3
+        #calibration_terms =  7 
+        #scalar_calibration_terms = 0
+        #field_calibration_terms = 2
+        #lengths = 3 4
+	no_gradients	
+	no_hessians
+

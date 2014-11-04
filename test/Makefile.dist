@@ -30,6 +30,7 @@ EXTRA_DIST = container_alt.c \
 	     dakota_cyl_head.in \
 	     dakota_dace.in \
 	     dakota_drivers.in \
+             dakota_field.in \
 	     dakota_graphics1.in \
 	     dakota_graphics2.in \
 	     dakota_graphics3.in \
