@@ -2524,14 +2524,14 @@ Test Number 0 succeeded
        24    2.764180354   -1.737997008   0.7483021135    4.840234383    3.313656488    4.946997472    4.326941026    0.913953884    3.577856757  -0.1885163917   0.1912369683   0.3634809907     4.61637813    4.128686446   -4.608713306    2.129929461    4.284976485   -1.259545868   -1.466972841   -4.296555398   0.7462892301   -1.493756901   -3.236794716    3.753540157   -2.467425938    1.896710324    -1.47912233   -1.838039716   -3.623490537   0.7580283287  -0.6280794907    4.411025509    4.887596995   -2.536204241    1.396875856   -3.401850092   -1.607851241   -3.353182269   0.4181620871    2.600283449  -0.5239799187    3.500657768   -0.525329228    2.799279609    1.789646899    1.345035365  0.09134063643    3.112723195   0.2980033492   -1.426388401   -4.046412461    1.033654035   0.1808785735   -3.032407814    3.390797773   -4.688519968   -4.611676136   -4.579929042   -0.723886415   -4.931237621   -3.082066569   -4.238199547   -3.098269445    1.573083193    1.728651456    1.982186846    2.259030287    4.356694003   -3.833047858  -0.9240176774    3.049045869    3.468277243    1.319798533   -4.823229551  -0.4435954397    4.527119232   -1.869678096    3.373855176   0.9078851544    3.149005113    4.200159153  -0.7951227537    4.832070095     4.19585097   -1.854916414    4.921082082   -4.872092394     1.55194236    3.018791812    2.247398982   0.3611181556  -0.5937179192   -2.735581216    4.879222668   0.2695371238   0.8943474066    2.764180354   -1.737997008   0.7483021135    4.840234383    3.313656488    4.946997472    4.326941026    0.913953884    3.577856757  -0.1885163917   0.1912369683   0.3634809907     4.61637813    4.128686446   -4.608713306    2.129929461    4.284976485   -1.259545868   -1.466972841   -4.296555398   0.7462892301   -1.493756901   -3.236794716    3.753540157   -2.467425938    1.896710324    -1.47912233   -1.838039716   -3.623490537   0.7580283287  -0.6280794907    4.411025509    4.887596995   -2.536204241    1.396875856   -3.401850092   -1.607851241   -3.353182269   0.4181620871    2.600283449  -0.5239799187    3.500657768   -0.525329228    2.799279609    1.789646899    1.345035365  0.09134063643    3.112723195   0.2980033492   -1.426388401   -4.046412461    1.033654035   0.1808785735   -3.032407814    3.390797773   -4.688519968   -4.611676136   -4.579929042   -0.723886415   -4.931237621   -3.082066569   -4.238199547   -3.098269445    1.573083193    1.728651456    1.982186846    2.259030287    4.356694003   -3.833047858  -0.9240176774    3.049045869    3.468277243    1.319798533   -4.823229551  -0.4435954397    4.527119232   -1.869678096    3.373855176   0.9078851544    3.149005113    4.200159153  -0.7951227537    4.832070095     4.19585097   -1.854916414    4.921082082   -4.872092394     1.55194236    3.018791812    2.247398982   0.3611181556  -0.5937179192   -2.735581216    4.879222668   0.2695371238   0.8943474066    16565.13448    8.509691533    1.638543422 
 dakota_apps.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+<<<<< Function evaluation summary: 61 total (61 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
                       1.0000000000e+00 x3
 <<<<< Best objective function  =
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 24
+<<<<< Best data captured at function evaluation 25
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 287 total (287 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2542,7 +2542,7 @@ Test Number 1 succeeded
                       6.2598446631e-02
 <<<<< Best constraint values   =
                      -2.0019531250e-01
-<<<<< Best data captured at function evaluation 216
+<<<<< Best data captured at function evaluation 215
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2599,7 +2599,7 @@ Test Number 6 succeeded
                       2.0210210234e-02
 <<<<< Best constraint values   =
                      -2.0092773438e-01
-<<<<< Best data captured at function evaluation 142
+<<<<< Best data captured at function evaluation 143
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 80 total (80 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2651,7 +2651,7 @@ Test Number 11 succeeded
                       7.8765434761e-02
 <<<<< Best constraint values   =
                      -2.0045627808e-01
-<<<<< Best data captured at function evaluation 103
+<<<<< Best data captured at function evaluation 102
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2660,7 +2660,7 @@ Test Number 12 succeeded
                       1.0000000000e+00 x3
 <<<<< Best objective function  =
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 32
+<<<<< Best data captured at function evaluation 34
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 244 total (244 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2672,7 +2672,7 @@ Test Number 13 succeeded
 <<<<< Best constraint values   =
                       1.0945025633e-03
                       1.0631667211e-03
-<<<<< Best data captured at function evaluation 244
+<<<<< Best data captured at function evaluation 241
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2684,7 +2684,7 @@ Test Number 14 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best data captured at function evaluation 32
+<<<<< Best data captured at function evaluation 31
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 71 total (71 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2697,16 +2697,16 @@ Test Number 15 succeeded
                       6.7530292906e-01
                       6.7674799344e-01
                       4.5177319986e-01
-<<<<< Best data captured at function evaluation 53
+<<<<< Best data captured at function evaluation 51
 Test Number 16 succeeded
-<<<<< Function evaluation summary: 210 total (210 new, 0 duplicate)
+<<<<< Function evaluation summary: 206 total (206 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9264820337e-01 x1
                       1.0073128318e+00 x2
                       1.0073907615e+00 x3
 <<<<< Best objective function  =
                       8.7648399372e-09
-<<<<< Best data captured at function evaluation 210
+<<<<< Best data captured at function evaluation 206
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 224 total (224 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2731,7 +2731,7 @@ Test Number 18 succeeded
                       6.9092792906e-01
                       6.0837200851e-01
                       4.9475855980e-01
-<<<<< Best data captured at function evaluation 24
+<<<<< Best data captured at function evaluation 26
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
 <<<<< Best parameters          =

@@ -211,6 +211,7 @@ void APPSOptimizer::set_apps_parameters()
 	 "blocking");
     if (blocking_synch) {
       mediatorParams->setParameter("Synchronous Evaluations", true);
+      citizenParams->setParameter("Use Random Order", false);
       evalMgr->set_blocking_synch(true);
     }
     else
