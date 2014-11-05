@@ -342,8 +342,18 @@ bool WorkdirHelper::resolve_driver_path(String& an_driver)
 inline bool contains(const bfs::path& dir_path, const std::string& file_name,
                      boost::filesystem::path& complete_filepath)
 {
-  complete_filepath = dir_path; complete_filepath /= file_name;
-  return boost::filesystem::is_regular_file(complete_filepath);
+  try {
+    complete_filepath = dir_path;
+    complete_filepath /= file_name;
+    return boost::filesystem::is_regular_file(complete_filepath);
+  }
+  catch(const bfs::filesystem_error&) {
+#if defined(DEBUG)
+    Cout << "\nWarning: unable to perform search for analysis driver"
+         << " using a directory in $PATH:  " << dir_path << std::endl;
+#endif
+    return false;
+  }
 }
 
 /** For absolute driver_name, validates that is regular file.  For
