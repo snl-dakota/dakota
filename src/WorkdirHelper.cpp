@@ -65,7 +65,16 @@ std::string get_cwd_str()
 {
   // Get the native path and return as a string, using locale-specific
   // conversion from wchar to char if needed.
-  return boost::filesystem::current_path().string();
+  bfs::path curr_path;
+  try {
+    curr_path = boost::filesystem::current_path();
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not get current directory path;\n       " 
+	 << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  return curr_path.string();
 }
 
 
@@ -456,17 +465,20 @@ void WorkdirHelper::split_wildcard(const std::string& path_with_wc,
 }
 
 
-bfs::path WorkdirHelper::system_tmp_name(const std::string& prefix)
+bfs::path WorkdirHelper::system_tmp_file(const std::string& prefix)
 {
-  // TODO: split into a separate filename and directory portion to
-  // migrate sooner than later for param file name generation.
-  // TODO: tmp files in . or /tmp?   Could offer option.
-  // TODO: try/catch
-  bfs::path temp_directory = bfs::temp_directory_path();
-  // generate a 6 hex character unique name
-  std::string temp_name_pattern(prefix + "_%%%%%%%%");
-  bfs::path temp_name = bfs::unique_path(temp_name_pattern);
-  return (temp_directory / temp_name);
+  bfs::path temp_filename;
+  try {
+    // generate an 8 hex character unique name
+    std::string temp_name_pattern(prefix + "_%%%%%%%%");
+    temp_filename = bfs::unique_path(temp_name_pattern);
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not generate temporary filename with prefix "
+	 << prefix << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  return temp_filename;
 
 // OLD RATIONALE:
 //#ifdef LINUX
@@ -490,6 +502,22 @@ bfs::path WorkdirHelper::system_tmp_name(const std::string& prefix)
 }
 
 
+bfs::path WorkdirHelper::system_tmp_path()
+{
+  // TODO: tmp files in . or /tmp?   Could offer option.
+  bfs::path temp_directory;
+  try {
+    temp_directory = bfs::temp_directory_path();
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not determine temporary directory path;\n       " 
+	 << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  return temp_directory;
+}
+
+
 /** mkdir_option is DIR_CLEAN (remove and recreate), DIR_PERSIST
     (leave existing), or DIR_ERROR (don't allow existing) returns
     whether a new directory was created. */
@@ -502,54 +530,60 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
   if (mkdir_option == DIR_CLEAN && bfs::exists(dir_path))
     recursive_remove(dir_path, FILEOP_ERROR);
 
-   // now conditionally create a new one
-  if (bfs::exists(dir_path)) {
+  try {
+    // now conditionally create a new one
+    if (bfs::exists(dir_path)) {
 
-    if (mkdir_option == DIR_ERROR) {
-      // DIR_ERROR or failure in removal
-      Cerr << "\nError: Directory " << dir_path << " exists (disallowed).\n"
-	   << std::endl;
-      abort_handler(-1);
+      if (mkdir_option == DIR_ERROR) {
+	// DIR_ERROR or failure in removal
+	Cerr << "\nError: Directory " << dir_path << " exists (disallowed).\n"
+	     << std::endl;
+	abort_handler(-1);
+      }
+
+      // DIR_PERSIST case
+      if (!bfs::is_directory(dir_path)) {
+	Cerr << "\nError: Directory " << dir_path << " exists (permitted), but "
+	     << "is not a directory." << std::endl;
+	abort_handler(-1);
+      }
+
+      // check permissions; syntax requires Boost 1.49 or newer
+      bfs::perms dir_perms = bfs::status(dir_path).permissions();
+      // TODO: verify owner_all on Windows?
+      //      if ( !(dir_perms & owner_all) ) {
+      if ( !(dir_perms & bfs::owner_write) ) {
+	// BMA: Make this a warning until we get permission checking fixed
+	Cout << "\nWarning: Directory " << dir_path << " exists (permitted), but "
+	     << "not writable." << std::endl;
+      }
+
     }
+    else {
 
-    // DIR_PERSIST case
-    if (!bfs::is_directory(dir_path)) {
-      Cerr << "\nError: Directory " << dir_path << " exists (permitted), but "
-	   << "is not a directory." << std::endl;
-      abort_handler(-1);
+      try {
+	// directory does not exist, create recursively (as if mkdir -p, we hope)
+	bfs::create_directories(dir_path);
+	dir_created = true;
+
+	// Shouldn't need this as create_directory is probably already more
+	// permissive than we want...
+
+	// make sure new directory has at least rwx (might also have s)
+	// TODO: make sure any intermediate paths have right permissions
+	//bfs::permissions(dir_path, bfs::add_perms | bfs::owner_all);
+      }
+      catch (const bfs::filesystem_error& e) {
+	Cerr << "\nError: could not create directory " << dir_path 
+	     << ";\n       " << e.what() << std::endl;
+	abort_handler(IO_ERROR);
+      }
     }
-
-    // check permissions; syntax requires Boost 1.49 or newer
-    bfs::perms dir_perms = bfs::status(dir_path).permissions();
-    // TODO: verify owner_all on Windows?
-    //      if ( !(dir_perms & owner_all) ) {
-    if ( !(dir_perms & bfs::owner_write) ) {
-      Cerr << "\nError: Directory " << dir_path << " exists (permitted), but "
-	   << "not writable." << std::endl;
-      abort_handler(-1);
-    }
-
   }
-  else {
-
-    try {
-      // directory does not exist, create recursively (as if mkdir -p, we hope)
-      bfs::create_directories(dir_path);
-      dir_created = true;
-
-      // Shouldn't need this as create_directory is probably already more
-      // permissive than we want...
-
-      // make sure new directory has at least rwx (might also have s)
-      // TODO: make sure any intermediate paths have right permissions
-      //bfs::permissions(dir_path, bfs::add_perms | bfs::owner_all);
-    }
-    catch (const bfs::filesystem_error& e) {
-      Cerr << "\nError: could not create directory " << dir_path << ";\n" 
-	   << e.what() << std::endl;
-      abort_handler(IO_ERROR);
-    }
-
+  catch  (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not get status of directory " << dir_path 
+	 << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
   }
 
   return dir_created;
@@ -738,23 +772,31 @@ bool WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_dir,
 {
   // symlink facilities require a qualifed source and destination
   // name, be absolute for now
-  
   bfs::path dest_link = dest_dir / src_path.filename();
 
-  // when relative, assume relative to current path
-  bfs::path fq_src_path(src_path);
-  if (src_path.is_relative())
-    fq_src_path = bfs::current_path() / src_path;
+  try {
 
-  if (overwrite && bfs::exists(dest_link))
-    bfs::remove_all(dest_link);
+    // when relative, assume relative to current path
+    bfs::path fq_src_path(src_path);
+    if (src_path.is_relative())
+      fq_src_path = bfs::current_path() / src_path;
 
-  // now, only make the link if the dest doesn't exist
-  if (!bfs::exists(dest_link)) {
-    if (bfs::is_directory(fq_src_path))
-      bfs::create_directory_symlink(fq_src_path, dest_link);
-    else
-      bfs::create_symlink(fq_src_path, dest_link);
+    if (overwrite && bfs::exists(dest_link))
+      bfs::remove_all(dest_link);
+
+    // now, only make the link if the dest doesn't exist
+    if (!bfs::exists(dest_link)) {
+      if (bfs::is_directory(fq_src_path))
+	bfs::create_directory_symlink(fq_src_path, dest_link);
+      else
+	bfs::create_symlink(fq_src_path, dest_link);
+    }
+
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not create symlink from " << dest_dir 
+	 << " to " << src_path << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
   }
 
   return false;
@@ -767,34 +809,43 @@ bool WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_dir,
 bool WorkdirHelper::recursive_copy(const bfs::path& src_path, 
 				   const bfs::path& dest_dir, bool overwrite)
 {
-  // precondition: dest exists and is a dir
-  if (!bfs::exists(dest_dir) || !bfs::is_directory(dest_dir))
-    abort_handler(-1);
+  try {
+    // precondition: dest exists and is a dir
+    if (!bfs::exists(dest_dir) || !bfs::is_directory(dest_dir)) {
+      Cerr << "\nError: destination directory " << dest_dir 
+	   << " must exist for recursive_copy." << std::endl;
+      abort_handler(IO_ERROR);
+    }
 
-  bfs::path dest_path = dest_dir / src_path.filename();
+    bfs::path dest_path = dest_dir / src_path.filename();
   
-  // TODO: gentler overwrite of contents, not top-level paths
-  if (overwrite && bfs::exists(dest_path))
-    bfs::remove_all(dest_path);
+    // TODO: gentler overwrite of contents, not top-level paths
+    if (overwrite && bfs::exists(dest_path))
+      bfs::remove_all(dest_path);
 
-  if (!bfs::exists(dest_path)) {
+    if (!bfs::exists(dest_path)) {
 
-    // non-recursive copy of file or directory or symlink into dest
-    bfs::copy(src_path, dest_path);
-    //bfs::create_directory(dest_path);
-    //bfs::copy_directory(src_path, dest_path);
+      // non-recursive copy of file or directory or symlink into dest
+      bfs::copy(src_path, dest_path);
+      //bfs::create_directory(dest_path);
+      //bfs::copy_directory(src_path, dest_path);
 
-    if (bfs::is_directory(src_path)) {
-      bfs::directory_iterator dir_it(src_path);
-      bfs::directory_iterator dir_end;
-      for ( ; dir_it != dir_end; ++dir_it) {
-	// TODO: try/catch
-	bfs::path src_item(dir_it->path());
-	recursive_copy(src_item, dest_path, overwrite);
+      if (bfs::is_directory(src_path)) {
+	bfs::directory_iterator dir_it(src_path);
+	bfs::directory_iterator dir_end;
+	for ( ; dir_it != dir_end; ++dir_it) {
+	  bfs::path src_item(dir_it->path());
+	  recursive_copy(src_item, dest_path, overwrite);
+	}
       }
     }
-  }
 
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not recursive copy " << src_path 
+	 << " to " << dest_dir << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
   return false;
 }
 
@@ -806,8 +857,15 @@ bool WorkdirHelper::prepend_path_item(const bfs::path& src_path,
 {
   // BMA TODO: this should use wstring vs. string...
   // Change once we upgrade preferred path to a set of BFS paths
-  if (bfs::is_directory(src_path))
-    prepend_preferred_env_path(src_path.string());
+  try {
+    if (bfs::is_directory(src_path))
+      prepend_preferred_env_path(src_path.string());
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not prepend PATH with " << src_path 
+	 << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
 
   return false;
 }
@@ -816,21 +874,36 @@ bool WorkdirHelper::prepend_path_item(const bfs::path& src_path,
 bool WorkdirHelper::check_equivalent(const bfs::path& src_path, 
 				     const bfs::path& dest_dir, bool overwrite)
 {
-  if (bfs::equivalent(src_path, dest_dir)) {
-    Cerr << "Error: specified link/copy_file " << src_path << "\n"
-	 << "       is same as work_directory " << dest_dir << "." << std::endl;
-    return true;
+  try {
+    if (bfs::equivalent(src_path, dest_dir)) {
+      Cerr << "Error: specified link/copy_file " << src_path << "\n"
+	   << "       is same as work_directory " << dest_dir << "." 
+	   << std::endl;
+      return true;
+    }
   }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not determine equivalence of paths " << src_path 
+	 << " and " << dest_dir << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+
   return false;
 }
 
 bool WorkdirHelper::find_file(const bfs::path& src_path, 
 			      const bfs::path& search_file, bool overwrite)
 {
-  if ( bfs::is_regular_file(src_path) && 
-       src_path.filename() == search_file.filename())
-    return true;
-
+  try {
+    if ( bfs::is_regular_file(src_path) && 
+	 src_path.filename() == search_file.filename())
+      return true;
+  }
+  catch (const bfs::filesystem_error& e) {
+    Cerr << "\nError: could not determine equivalence of files " << src_path 
+	 << " and " << search_file << ";\n       " << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
   return false;
 }
 

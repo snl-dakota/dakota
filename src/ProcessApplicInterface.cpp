@@ -323,7 +323,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // no user spec -> use temp files, possibly in workdir; generate relative
     if (specifiedParamsFileName.empty())
-      params_path = bfs::unique_path("dakota_params_%%%%%%%%");
+      params_path = WorkdirHelper::system_tmp_file("dakota_params");
 
     // append tag for all cases (previously temp files weren't tagged)
     if (fileTagFlag)
@@ -347,7 +347,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
       }
       else if (specifiedParamsFileName.empty()) {
 	// historically temp files go in /tmp or C:\temp, not rundir
-	paramsFileName = (bfs::temp_directory_path() / params_path).string();
+	paramsFileName = (WorkdirHelper::system_tmp_path()/params_path).string();
 	paramsFileWritten = paramsFileName;
       }
       else
@@ -363,7 +363,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // no user spec -> use temp files, possibly in workdir; generate relative
     if (specifiedResultsFileName.empty())
-      results_path = bfs::unique_path("dakota_results_%%%%%%%%");
+      results_path = WorkdirHelper::system_tmp_file("dakota_results");
 
     // append tag for all cases (previously temp files weren't tagged)
     if (fileTagFlag)
@@ -381,7 +381,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
       }
       else if (specifiedResultsFileName.empty()) {
 	// historically temp files go in /tmp or C:\temp, not rundir
-	resultsFileName = (bfs::temp_directory_path() / results_path).string();
+	resultsFileName = (WorkdirHelper::system_tmp_path()/results_path).string();
 	resultsFileWritten = resultsFileName;
       }
       else
@@ -790,7 +790,7 @@ remove_params_results_files(const bfs::path& params_path,
   }
 
   if (num_programs == 1 || !oFilterName.empty())
-    bfs::remove(results_path);
+    WorkdirHelper::recursive_remove(results_path, FILEOP_WARN);
 
   if (num_programs > 1)
     for (size_t i=0; i<num_programs; ++i) {
@@ -843,7 +843,8 @@ bfs::path ProcessApplicInterface::get_workdir_name()
 {
   // PDH suggets making in rundir instead of tmp area...
   bfs::path wd_name = workDirName.empty() ? 
-    WorkdirHelper::system_tmp_name("dakota_work") :
+    ( WorkdirHelper::system_tmp_path() / 
+      WorkdirHelper::system_tmp_file("dakota_work") ) :
     workDirName;
 
   // we allow tagging of tmp dirs in case the user's script needs the tag
