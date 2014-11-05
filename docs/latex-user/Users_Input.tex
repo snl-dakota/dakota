@@ -38,7 +38,8 @@ data.  The formats are:
 \begin{itemize}
 \item {\bf Annotated Matrix} (default for all tabular I/O; specified
   via {\tt annotated}): text file with one leading row of
-  comments/column labels and one leading column of evaluation/row IDs
+  comments/column labels and two leading columns of evaluation IDs and 
+  interface IDs
   surrounding num\_rows x num\_cols whitespace-separated numeric data,
   (newlines separating rows are not currently required, but may be in
   the future).  The numeric data in a row may correspond to variables,
@@ -61,6 +62,15 @@ will be generated if a specific number of data are expected, but extra
 is found and an error generated when there is insufficient data.  Some
 TPLs like SCOLIB and JEGA manage their own file I/O and only support
 the free-form option.
+
+Also, as of Dakota 6.1, the \texttt{annotated} option requires TWO 
+leading columns, one for the evaluation ID and one for the interface ID. 
+This format is shown in Figure~\ref{output:tabcont}.  Previously, 
+the annotated format required only one leading column, but now requires two. 
+Finally, the annotated format will require columns for all of the variables, 
+not only the active variables as in previous versions.  To suppress 
+this and only have active variable columns in the import file, use
+the keyword \texttt{active\_only} when specifying the import file. 
 
 \section{Data Imports}\label{input:import}
 

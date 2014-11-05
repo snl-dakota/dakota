@@ -315,32 +315,52 @@ optimization problem is shown in Figure~\ref{output:tabcont}. This
 annotated tabular format (see Section~\ref{input:tabularformat}) file
 contains the complete history of data requests from NPSOL (8 requests
 map into a total of 40 function evaluations when including the central
-finite differencing). The first column is the data request number, the
-second and third columns are the design parameter values (labeled in
-the example as ``\texttt{H}'' and ``\texttt{D}''), the fourth column
+finite differencing). The first column is the data request number, 
+the second column is the interface ID (which is EMPTY if the user 
+does not specify a name for the interface), the
+third and fourth columns are the design parameter values (labeled in
+the example as ``\texttt{H}'' and ``\texttt{D}''), the fifth column
 is the objective function (labeled ``\texttt{obj\_fn}''), and the
-fifth column is the nonlinear equality constraint (labeled
+sixth column is the nonlinear equality constraint (labeled
 ``\texttt{nln\_eq\_con\_1}'').
 
 \begin{figure}
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
-%eval_id              H              D         obj_fn   nln_eq_con_1 
-       1            4.5            4.5    107.1314511     8.04440764 
-       2    5.801246882    3.596476363    94.33737399    -4.59103645 
-       3    5.197920019    3.923577479     97.7797214  -0.6780884711 
-       4    4.932877133    4.044776216    98.28930566  -0.1410680284 
-       5    4.989328733    4.026133158     98.4270019 -0.005324671422 
-       6    4.987494493    4.027041977    98.43249058 -7.307058453e-06 
-       7    4.987391669     4.02708372    98.43249809 -2.032538049e-08 
-       8    4.987389423    4.027084627    98.43249812 -9.691802916e-12 
+%eval_id interface             H              D         obj_fn   nln_eq_con_1 
+       1     EMPTY           4.5            4.5    107.1314511     8.04440764 
+       2     EMPTY   5.801246882    3.596476363    94.33737399    -4.59103645 
+       3     EMPTY   5.197920019    3.923577479     97.7797214  -0.6780884711 
+       4     EMPTY   4.932877133    4.044776216    98.28930566  -0.1410680284 
+       5     EMPTY   4.989328733    4.026133158     98.4270019 -0.005324671422 
+       6     EMPTY   4.987494493    4.027041977    98.43249058 -7.307058453e-06 
+       7     EMPTY   4.987391669     4.02708372    98.43249809 -2.032538049e-08 
+       8     EMPTY   4.987389423    4.027084627    98.43249812 -9.691802916e-12 
 \end{verbatim}
 \end{small}
 \end{bigbox}
 \caption{Dakota's tabular output file showing the iteration history of
 the ``container'' optimization problem.} \label{output:tabcont}
 \end{figure}
+
+Note that as of Dakota 6.1, we have added the second column labeled ``\texttt{interface}.''
+The purpose of this is to clearly identify which interface results are being 
+shown on each line of the tabular file (recall that the interface 
+defines which simulation is being run though the \texttt{analysis\_driver} specification).
+Identifying the interface is important for users performing hybrid methods, 
+multi-fidelity methods, or nested models.  However, it does involve the addition 
+of an extra column of output which might not be useful for simpler analyses. 
+In many cases, when users open the ``\texttt{dakota\_tabular.dat}'' file 
+in Excel or Matlab, they ignore the first two columns and only focus on the 
+columns of inputs and outputs. 
+
+Also, as of Dakota 6.1, the tabular file will have all of the variables (both active and inactive) printed as columns.
+Previously, Dakota only wrote the ``active'' variables.  Recall that some variables may be inactive 
+if they are not activated for a particular method (e.g. uncertain variables might not be 
+active in an optimization, design variables may not be active in a sampling study). 
+The order of the variables printed out will be in Dakota's standard ordering, which is 
+given in the Dakota Reference manual. 
 
 \section{Graphics Output}\label{output:graphics}
 
