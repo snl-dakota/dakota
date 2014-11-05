@@ -145,6 +145,7 @@ void print_restart(int argc, char** argv, String print_dest)
   write_precision = 16;
 
   int cntr = 0;
+  restart_input_fs.peek();  // peek to force EOF if no records in restart file
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
@@ -203,6 +204,7 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
 
   size_t i, j, num_evals = 0;
   PRPCache read_pairs;
+  restart_input_fs.peek();  // peek to force EOF if no records in restart file
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
@@ -372,6 +374,7 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 
   //write_precision = 16;  // extern defined in dakota_global_defs.cpp
 
+  restart_input_fs.peek();  // peek to force EOF if no records in restart file
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
@@ -451,6 +454,7 @@ void read_neutral(int argc, char** argv)
   cout << "Writing new restart file " << argv[3] << '\n';
 
   int cntr = 0;
+  neutral_file_stream >> std::ws;
   while (neutral_file_stream.good() && !neutral_file_stream.eof()) {
     ParamResponsePair current_pair;
     try { current_pair.read_annotated(neutral_file_stream); }
@@ -460,6 +464,7 @@ void read_neutral(int argc, char** argv)
     }
     restart_output_archive & current_pair;
     cntr++;
+    neutral_file_stream >> std::ws;
   }
   cout << "Neutral file processing completed: " << cntr
        << " evaluations retrieved.\n";
@@ -531,6 +536,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
   cout << "Writing new restart file " << write_restart_filename << '\n';
 
   int cntr = 0, good_cntr = 0;
+  restart_input_fs.peek();  // peek to force EOF if no records in restart file
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
@@ -607,6 +613,7 @@ void concatenate_restart(int argc, char** argv)
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
     int cntr = 0;
+    restart_input_fs.peek();  // peek to force EOF if no records in restart file
     while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
       ParamResponsePair current_pair;

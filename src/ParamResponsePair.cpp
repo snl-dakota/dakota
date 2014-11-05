@@ -29,7 +29,7 @@ void ParamResponsePair::read_annotated(std::istream& s)
 {
   prPairParameters.read_annotated(s);
   s >> evalInterfaceIds.second;
-  if (evalInterfaceIds.second == "NULL")
+  if (evalInterfaceIds.second == "EMPTY")
     evalInterfaceIds.second.clear();
   prPairResponse.read_annotated(s);
   s >> evalInterfaceIds.first;
@@ -40,7 +40,7 @@ void ParamResponsePair::write_annotated(std::ostream& s) const
 {
   prPairParameters.write_annotated(s);
   if (evalInterfaceIds.second.empty())
-    s << "NULL "; // read_annotated cannot detect an empty string
+    s << "EMPTY "; // read_annotated cannot detect an empty string
   else 
     s << evalInterfaceIds.second << ' ';
   prPairResponse.write_annotated(s);

@@ -119,6 +119,9 @@ private:
 class RestartWriter {
 
 public:
+  /// optional default ctor allowing a non-outputting RestartWriter
+  RestartWriter();
+
   /// typical ctor taking a filename
   RestartWriter(const String& write_restart_filename);
   
@@ -134,9 +137,6 @@ public:
   void flush();
 
 private:
-  /// default constructor is disallowed as archive has no default ctor
-  /// (and since noncopyable)
-  RestartWriter();
   /// copy constructor is disallowed due to file stream
   RestartWriter(const RestartWriter&);
   /// assignment is disallowed due to file stream
@@ -148,8 +148,9 @@ private:
   /// Binary stream to which restart data is written
   std::ofstream restartOutputFS;
 
-  /// Binary output archive to which data is written
-  boost::archive::binary_oarchive restartOutputArchive;
+  /// Binary output archive to which data is written (pointer since no
+  /// default ctor for oarchive and may not be initialized); 
+  boost::scoped_ptr<boost::archive::binary_oarchive> restartOutputArchive;
 
 };  // class RestartWriter
 
@@ -271,7 +272,7 @@ private:
   
   /// conditionally import evaluations from restart file, then always
   /// create or overwrite restart file
-  void read_write_restart(bool read_restart_flag,
+  void read_write_restart(bool restart_requested, bool read_restart_flag,
 			  const String& read_restart_filename,
 			  size_t stop_restart_eval,
 			  const String& write_restart_filename);

@@ -134,7 +134,7 @@ void OutputManager::startup_message(const String& start_msg)
 void OutputManager::
 push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
 		bool force_cout_redirect,
-		bool force_rst_redirect) // ignored for time being
+		bool force_rst_redirect)
 {
   fileTags.push_back(iterator_tag); 
 
@@ -158,7 +158,7 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
   // if first time encountering this name
   // TODO: review whether all read/write should be tagged
   bool read_restart_flag = !prog_opts.read_restart_file().empty();
-  read_write_restart(read_restart_flag, 
+  read_write_restart(force_rst_redirect, read_restart_flag, 
 		     prog_opts.read_restart_file() + file_tag,
 		     prog_opts.stop_restart_evals(),
 		     prog_opts.write_restart_file() + file_tag);
@@ -352,13 +352,24 @@ int OutputManager::graphics_counter() const
 { return graphicsCntr; }
 
 
-void OutputManager::read_write_restart(bool read_restart_flag,
+void OutputManager::read_write_restart(bool restart_requested,
+				       bool read_restart_flag,
 				       const String& read_restart_filename,
 				       size_t stop_restart_evals,
 				       const String& write_restart_filename)
 {
-  // true if this filename has already been read and opened for writing
-  // this restart name has already been processed, push it again
+  // If no restart requested, push back a level that doesn't open
+  // files so we can later pop it
+  if (!restart_requested) {
+    boost::shared_ptr<RestartWriter> rst_writer(new RestartWriter());
+    restartDestinations.push_back(rst_writer);
+    return;
+  }
+
+  // True if this filename has already been read and opened for
+  // writing (this restart name has already been processed), so push
+  // it again; for now this assumes that if called twice with the same
+  // filename, it is in immediate succession, i.e. no new tag added
   if ( !restartDestinations.empty() &&
        write_restart_filename == restartDestinations.back()->filename() ) {
     restartDestinations.push_back(restartDestinations.back());
@@ -389,6 +400,7 @@ void OutputManager::read_write_restart(bool read_restart_flag,
 	   << stop_restart_evals << " evaluations." << std::endl;
 
     int cntr = 0;
+    restart_input_fs.peek(); // peek to force EOF if the last record was read
     while ( restart_input_fs.good() && !restart_input_fs.eof() && 
             (!stop_restart_evals ||
 	     cntr < stop_restart_evals) ) {
@@ -399,9 +411,9 @@ void OutputManager::read_write_restart(bool read_restart_flag,
 	restart_input_archive & current_pair;
       }
       catch(const boost::archive::archive_exception& e) {
-	Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	     << e.what() << std::endl;
-	abort_handler(-1);
+	Cerr << "\nError reading restart file '" << read_restart_filename 
+	     << "' (boost::archive exception):\n      " << e.what() << std::endl;
+	abort_handler(IO_ERROR);
       }
       catch(const std::string& err_msg) {
         Cout << "\nWarning reading restart file: " << err_msg << std::endl;
@@ -577,10 +589,14 @@ void ConsoleRedirector::pop_back()
 }
 
 
+RestartWriter::RestartWriter()
+{  /* empty ctor */  }
+
+
 RestartWriter::RestartWriter(const String& write_restart_filename):
   restartOutputFilename(write_restart_filename),
   restartOutputFS(restartOutputFilename.c_str(), std::ios::binary),
-  restartOutputArchive(restartOutputFS)
+  restartOutputArchive(new boost::archive::binary_oarchive(restartOutputFS))
 {  /* empty ctor */  }
 
 
@@ -589,8 +605,14 @@ const String& RestartWriter::filename()
 
 
 void RestartWriter::append_prp(const ParamResponsePair& prp_in)
-{ restartOutputArchive & prp_in; }
-
+{ 
+  if (restartOutputArchive)  // equivalent to NULL check
+    restartOutputArchive->operator&(prp_in);
+  else {
+    Cerr << "\nError: attempt to write to invalid restart file." << std::endl;
+    abort_handler(IO_ERROR);
+  }
+}
 
 void RestartWriter::flush()
 { restartOutputFS.flush(); }
