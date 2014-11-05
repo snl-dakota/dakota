@@ -7,6 +7,12 @@ import subprocess
 # Test work_directory named trydir
 workdir_basename="trydir"
 
+#if len(sys.argv) == 5:
+    # testing with environment variables
+#    mode = None
+#    paramsfile = sys.argv[2]
+#    resultsfile = sys.argv[4]
+#elif len(sys.argv) == 4:
 if len(sys.argv) > 3:
     mode = sys.argv[1]
     paramsfile = sys.argv[2]
