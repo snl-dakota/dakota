@@ -14,6 +14,11 @@ project("Dakota" NONE)
 set(Dakota_VERSION_MAJOR 6)
 set(Dakota_VERSION_MINOR 0)
 set(Dakota_VERSION_PATCH 0)
+# TODO?: set(Dakota_VERSION_TWEAK SVNREV)
+set(Dakota_VERSION_PAIR
+  "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
+set(Dakota_VERSION_TRIPLE
+  "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}")
 
 # --- Release time toggle 
 # Toggle this to append to the version number for stable
@@ -33,10 +38,10 @@ set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dak
 # For now, we don't use .0 for new minor releases, use 5.4 not 5.4.0
 if (${Dakota_VERSION_PATCH} GREATER 0) 
   set(Dakota_VERSION_SRC 
-    "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
+    "${Dakota_VERSION_TRIPLE}${Dakota_VERSION_APPEND_STABLE}")
 else()
   set(Dakota_VERSION_SRC 
-    "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
+    "${Dakota_VERSION_PAIR}${Dakota_VERSION_APPEND_STABLE}")
 endif()
 
 # Buiding in an SVN checkout or a source package? 

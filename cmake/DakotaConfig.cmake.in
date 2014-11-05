@@ -1,0 +1,53 @@
+# - Config file for the Dakota package
+# It defines the following variables
+#  Dakota_INCLUDE_DIRS - include directories for Dakota
+#  Dakota_LIBRARIES    - libraries to link against
+#  Dakota_EXECUTABLE   - the dakota executable
+
+# Compute paths
+get_filename_component(DAKOTA_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${DAKOTA_CMAKE_DIR}/DakotaTargets.cmake")
+
+@PACKAGE_INIT@
+
+# Build tree option not yet working
+if (Dakota_BUILD_TREE)
+  # Dakota's build tree doesn't have a single convenient place for headers
+  set(Dakota_INCLUDE_DIRS_TMP "@DAKOTA_INCDIRS@")
+  # This won't work yet.  Since Dakota is in a build tree the
+  # libraries are scattered, but the import doesn't know where they
+  # are.
+  set(Dakota_LIBRARY_DIRS_TMP "@DAKOTA_LIBDIRS@")
+else()
+  set_and_check(Dakota_INCLUDE_DIRS_TMP "@PACKAGE_Dakota_INCLUDE_INSTALL_DIR@")
+  set_and_check(Dakota_LIB_DIRS_TMP "@PACKAGE_Dakota_LIB_INSTALL_DIR@")
+endif()
+
+# Variables intended for use by other projects
+
+set_and_check(Dakota_DIR ${DAKOTA_CMAKE_DIR})
+
+# TODO: reference in src vs bin
+set(Dakota_EXECUTABLE dakota)
+
+
+set(Dakota_DEFINES "@Dakota_DEFS@")
+
+set(Dakota_INCLUDE_DIRS ${Dakota_INCLUDE_DIRS_TMP})
+
+set(Dakota_LIBRARY_DIRS ${Dakota_LIB_DIRS_TMP})
+
+# These are IMPORTED targets created by DakotaTargets.cmake
+set(Dakota_LIBRARIES "@DAKOTA_LIBS@;@DAKOTA_PKG_LIBS@")
+
+# Not built in Dakota's CMake process
+set(Dakota_EXTPROJ_LIBRARIES "@DAKOTA_EXTPROJ_LIBS@")
+
+# TPLs external to the build
+set(Dakota_TPL_INCLUDE_DIRS "@EXT_TPL_INCDIRS@")
+
+set(Dakota_TPL_LIBRARY_DIRS "@EXT_TPL_LIBDIRS@")
+
+set(Dakota_TPL_LIBRARIES "@EXT_TPL_LIBS@")

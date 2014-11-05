@@ -1080,6 +1080,17 @@ if (BUILD_IN_TRILINOS)
     )
 endif()
 
+
+# Describes where CMake will look during FindPackage
+# http://www.cmake.org/cmake/help/v2.8.9/cmake.html#command:find_package
+if(WIN32 AND NOT CYGWIN)
+  set(DEF_INSTALL_CMAKE_DIR cmake)
+else()
+  set(DEF_INSTALL_CMAKE_DIR lib/cmake/Dakota)
+endif()
+set(Dakota_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+  "Installation directory for Dakota's CMake files")
+
 # Generate export Makefile 
 include(WriteExportMakefile) 
 WriteExportMakefile() 
@@ -1088,12 +1099,38 @@ install(FILES ${Dakota_BINARY_DIR}/src/Makefile.export.Dakota.install
 
 # Unconditionally export targets to detect problems before Trilinos does
 export(TARGETS ${EXPORT_TARGETS} FILE
-  "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
+  "${Dakota_BINARY_DIR}/DakotaTargets.cmake")
 
 # Workaround until we fix Dakota's overall use of exports
 if(ExportTarget STREQUAL DakotaTargets)
-  set(INSTALL_CMAKE_DIR "lib/cmake/Dakota")
   message(STATUS 
-    "Installing Dakota exported targets to ${INSTALL_CMAKE_DIR}")
-  install(EXPORT ${ExportTarget} DESTINATION ${INSTALL_CMAKE_DIR})
+    "Installing Dakota exported targets to ${Dakota_INSTALL_CMAKE_DIR}")
+  install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
 endif()
+
+
+# http://www.cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#package-configuration-file
+# http://www.cmake.org/cmake/help/git-master/module/CMakePackageConfigHelpers.html#module:CMakePackageConfigHelpers
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${Dakota_BINARY_DIR}/DakotaVersion.cmake"
+  VERSION "${Dakota_VERSION_TRIPLE}"
+  COMPATIBILITY AnyNewerVersion
+  )
+
+set(Dakota_INCLUDE_INSTALL_DIR include)
+set(Dakota_LIB_INSTALL_DIR lib)
+
+configure_package_config_file(
+  ${Dakota_SOURCE_DIR}/cmake/DakotaConfig.cmake.in 
+  ${Dakota_BINARY_DIR}/DakotaConfig.cmake
+  INSTALL_DESTINATION ${Dakota_INSTALL_CMAKE_DIR}
+  PATH_VARS Dakota_INCLUDE_INSTALL_DIR Dakota_LIB_INSTALL_DIR
+)
+
+install(
+  FILES 
+  "${CMAKE_CURRENT_BINARY_DIR}/DakotaVersion.cmake" 
+  "${CMAKE_CURRENT_BINARY_DIR}/DakotaConfig.cmake" 
+  DESTINATION "${Dakota_INSTALL_CMAKE_DIR}"
+  )
