@@ -1130,7 +1130,7 @@ configure_package_config_file(
 
 install(
   FILES 
-  "${CMAKE_CURRENT_BINARY_DIR}/DakotaVersion.cmake" 
-  "${CMAKE_CURRENT_BINARY_DIR}/DakotaConfig.cmake" 
+  "${Dakota_BINARY_DIR}/DakotaVersion.cmake" 
+  "${Dakota_BINARY_DIR}/DakotaConfig.cmake" 
   DESTINATION "${Dakota_INSTALL_CMAKE_DIR}"
   )
