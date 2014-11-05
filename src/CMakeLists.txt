@@ -141,6 +141,36 @@ if(HAVE_FORK)
   add_definitions("-DHAVE_WORKING_FORK")
 endif(HAVE_FORK)
 
+check_function_exists(vfork HAVE_VFORK)
+if(HAVE_VFORK)
+  set(HAVE_WORKING_VFORK ${HAVE_VFORK})
+  add_definitions("-DHAVE_WORKING_VFORK")
+endif(HAVE_VFORK)
+
+# Override source code defaults for fork vs. vfork.  On Mac, set
+# DAKOTA_PREFER_VFORK to force use of vfork, on other platforms set
+# DAKOTA_PREFER_FORK to force use of fork
+if(DAKOTA_PREFER_FORK)
+  if(DAKOTA_PREFER_VFORK)
+    message(FATAL_ERROR
+      "Cannot specify both DAKOTA_PREFER_FORK and DAKOTA_PREFER_VFORK")
+  endif()
+  if (NOT HAVE_FORK)
+    message(FATAL_ERROR
+      "Explicit request for DAKOTA_PREFER_FORK, but fork not found")
+  endif()
+  message("Dakota configured to prefer fork over vfork")
+  add_definitions("-DDAKOTA_PREFER_FORK")
+elseif(DAKOTA_PREFER_VFORK)
+  if (NOT HAVE_VFORK)
+    message(FATAL_ERROR
+      "Explicit request for DAKOTA_PREFER_VFORK, but vfork not found")
+  endif()
+  message("Dakota configured to prefer vfork over fork")
+  add_definitions("-DDAKOTA_PREFER_VFORK")
+endif()
+
+
 check_function_exists(wait HAVE_SYS_WAIT_H)
 if(HAVE_SYS_WAIT_H)
   add_definitions("-DHAVE_SYS_WAIT_H")

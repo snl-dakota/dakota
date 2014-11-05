@@ -142,21 +142,42 @@ create_analysis_process(bool block_flag, bool new_group)
   int status = 0;
   pid_t pid = 0;
 
-  // fork() should be used here since it is considered BEST PRACTICE on modern
-  // computers/OS's.  If some platforms have problems with fork and there is a
-  // temptation to use vfork instead, please consider reading about fork vs.
-  // vfork.  If there is still a need to test vfork as an alternate approach,
-  // simply define the DAKOTA_VFORK_OVERRIDE macro and rebuild dakota.
+  // Ideally fork() should always be used since it is considered best
+  // practice on modern computers/OS's.  However, we have observed (1)
+  // unreliable fork on HPC platforms with infiniband, and (2)
+  // unreliable vfork on Mac
 
-#if defined(DAKOTA_VFORK_OVERRIDE) // not currently active
-  // NOTE: vfork() should NOT be used since exec() does NOT immediately follow!
-  pid = vfork(); // replicate this process
-#elif defined(HAVE_WORKING_FORK) && !defined(DAKOTA_VFORK_OVERRIDE)
-  pid = fork(); // replicate this process
+  // The code below is written so that operations between vfork() and
+  // exec() should be safe (no memory allocated/manipulated and system
+  // calls are asynch-signal-safe)
+
+#ifdef __APPLE __
+  // On Mac default to fork unless a user override to vfork;
+  // technically don't need to test for working vfork since verified
+  // at configure time; (could add #elif to finally fall back to vfork)
+#if defined(DAKOTA_PREFER_VFORK) && defined(HAVE_WORKING_VFORK)
+  pid = vfork();
+#elif defined(HAVE_WORKING_FORK)
+  pid = fork();
 #else
   Cerr << "Error: fork not supported under this OS." << std::endl;
   abort_handler(-1);
 #endif
+
+#else  
+  // On other platforms, default to vfork unless a user override to
+  // fork; fall-through to fork if needed
+#if !defined(DAKOTA_PREFER_FORK) && defined(HAVE_WORKING_VFORK)
+  pid = vfork();  // replicate this process
+#elif defined(HAVE_WORKING_FORK)
+  pid = fork();   // replicate this process
+#else
+  Cerr << "Error: fork not supported under this OS." << std::endl;
+  abort_handler(-1);
+#endif
+
+#endif
+
   if (pid == -1) {
     Cerr << "\nCould not fork; error code " << errno << " (" 
 	 << std::strerror(errno) << ")" << std::endl;
