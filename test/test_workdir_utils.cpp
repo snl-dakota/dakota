@@ -31,7 +31,7 @@ void test_save_current_path(const std::string& pwd_str,
 // and
 // 6.	Change to startup PWD (aka rundir) (verify current path is as expected)
 
-  bfs::path wd( WorkdirHelper::system_tmp_name("") );
+  bfs::path wd( WorkdirHelper::system_tmp_path() );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
@@ -191,19 +191,19 @@ void test_ln_template_files_into_wd(bfs::path& wd)
 void test_rmdir(bfs::path& wd)
 {
   // 7.	Remove the directory (verify its gone)
-  WorkdirHelper::recursive_remove(wd);
+  WorkdirHelper::recursive_remove(wd, 0); // 0 indicates silent (appropriate for unit test)
   BOOST_CHECK( !bfs::exists(wd) );
 }
 
 
-void test_create_and_remove_tmpdir(const std::string& dir_name, bool copy=false)
+void test_create_and_remove_tmpdir(bool copy=false)
 {
 // 2.	Use system tmp name (verify non-empty)
 // 3.	Make a directory (verify it exists);
 //		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
 // 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
 
-  bfs::path wd( WorkdirHelper::system_tmp_name(dir_name) );
+  bfs::path wd( WorkdirHelper::system_tmp_path() );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
@@ -260,13 +260,13 @@ int test_main( int argc, char* argv[] )      // note the name!
   std::string env_path_str( std::getenv("PATH") );
   test_save_current_path(pwd_str, env_path_str);
 
-  test_create_and_remove_tmpdir("dak_wd");        // SYM LINKS used by default
+  test_create_and_remove_tmpdir();                // SYM LINKS used by default
   test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
 
   // Repeat create_and_remove, but override the default "link" case by copying
   // files instead
   bool do_copy = true;
-  test_create_and_remove_tmpdir("dak_wd", do_copy);
+  test_create_and_remove_tmpdir(do_copy);
   test_create_and_remove_wd_in_rundir("workdir", do_copy);
 
   //bfs::path fq_search(argv[1]);
