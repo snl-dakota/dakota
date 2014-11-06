@@ -1,0 +1,21 @@
+Blurb::
+Import only active variables from tabular data file
+
+Description::
+By default, files for tabular data imports are expected to contain
+columns for all variables, active and inactive.  The keyword \c
+active_only indicates that the file to import contains only the active
+variables.
+
+This option should only be used in contexts where the inactive
+variables have no influence, for example, building a surrogate over
+active variables, with the state variables held at nominal.  It should
+not be used in more complex nested contexts, where the values of
+inactive variables are relevant to the function evaluations used to
+build the surrogate.
+
+Topics::	file_formats
+Examples::
+Theory::
+Faq::
+See_Also::	
