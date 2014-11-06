@@ -10,14 +10,14 @@ say \c response_functions = 5 and get 5 scalar responses.
 However, if there are three scalar responses and 2 field responses, then 
 \c response_functions = 5 but \c scalar_responses = 3 and \c field_responses = 2. 
 
-Topics::	
-Examples::
-Theory::
 This type of data set is used by uncertainty
 quantification methods, in which the effect of parameter uncertainty
 on response functions is quantified, and can also be used in parameter
 study and design of experiments methods (although these methods are
 not restricted to this data set), in which the effect of parameter
 variations on response functions is evaluated. 
+Topics::	
+Examples::
+Theory::
 Faq::
 See_Also::	responses-field_responses

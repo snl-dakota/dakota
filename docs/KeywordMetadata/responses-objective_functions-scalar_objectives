@@ -10,13 +10,14 @@ say \c objective_functions = 5 and get 5 scalar objectives.
 However, if there are three scalar objectives and 2 field objectives, then 
 \c objective_functions = 5 but \c scalar_objectives = 3 and \c field_objectives = 2. 
 
-Topics::	
-Examples::
-Theory::  Objective functions are responses that are used with optimization 
+Objective functions are responses that are used with optimization 
 methods in Dakota.  Currently, each term in a field objective is added 
 to the total objective function presented to the optimizer.  For example, 
 if you have one field objective with 100 terms (e.g. a time-temperature trace 
 with 100 time points and 100 corresponding temperature points), the 100 temperature values 
 will be added to create the overall objective. 
+Topics::	
+Examples::
+Theory::  
 Faq::
 See_Also::	objective_functions-field_objectives

@@ -10,9 +10,7 @@ say \c calibration_terms = 5 and get 5 scalar terms.
 However, if there are three scalar terms and 2 field terms, then 
 \c calibration_terms = 5 but \c scalar_calibration_terms = 3 and \c field_calibration_terms = 2. 
 
-Topics::	
-Examples::
-Theory::  Calibration terms are responses that are used with calibration 
+Calibration terms are responses that are used with calibration 
 methods in Dakota, such as least squares optimizers.  Currently, each scalar term is added 
 to the total sum-of-squares error function presented to the optimizer. However, 
 each individual field value is added as well.   For example, 
@@ -20,5 +18,8 @@ if you have one field calibration term with length 100 (e.g. a time - temperatur
 with 100 time points and 100 temperature points), the 100 temperature values 
 will be added to create the overall sum-of-squares error function used in 
 calibration. 
+Topics::	
+Examples::
+Theory::  
 Faq::
 See_Also::	calibration-term_responses

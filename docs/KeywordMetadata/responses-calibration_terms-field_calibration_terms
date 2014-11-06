@@ -20,9 +20,7 @@ the number of scalar terms as \c scalar_calibration_terms.  If there are only fi
 it still is necessary to specify both \c field_calibration_terms = NN and \c calibration_terms = NN, 
 where NN is the number of field calibration terms.
 
-Topics::	
-Examples::
-Theory::  Calibration terms are responses that are used with calibration
+Calibration terms are responses that are used with calibration
 methods in Dakota, such as least squares optimizers.  Currently, each scalar term is added
 to the total sum-of-squares error function presented to the optimizer. However,
 each individual field value is added as well.   For example,
@@ -36,5 +34,9 @@ with 20 time points and 20 temperature values.  We plan to take the 100 simulati
 values (from the example above) and interpolate those to the 20 experimental points, to create 
 20 residual terms (simulation minus experimental data points) that will be used in calibration. 
 As of release 6.1, however, this capability is not yet available in Dakota. 
+
+Topics::	
+Examples::
+Theory::  
 Faq::
 See_Also::	calibration_terms-scalar_calibration_terms

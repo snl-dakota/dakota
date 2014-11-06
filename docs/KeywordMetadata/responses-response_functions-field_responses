@@ -17,9 +17,6 @@ the number of scalar responses as \c scalar_responses.  If there are only field 
 it still is necessary to specify both \c response_functions = NN and \c field_responses = NN, 
 where NN is the number of field responses.
 
-Topics::	
-Examples::
-Theory::
 This type of data set is used by uncertainty
 quantification methods, in which the effect of parameter uncertainty
 on response functions is quantified, and can also be used in parameter
@@ -29,5 +26,9 @@ variations on response functions is evaluated.
 As of Dakota 6.1, field response functions will be translated back to scalar responses. 
 So, a field of length 100 will be treated as 100 separate scalar responses.  
 However, in future versions of Dakota, we plan to implement methods which can exploit the nature of field data.
+
+Topics::	
+Examples::
+Theory::
 Faq::
 See_Also::	responses-scalar_responses
