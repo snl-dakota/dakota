@@ -147,9 +147,10 @@ if(HAVE_VFORK)
   add_definitions("-DHAVE_WORKING_VFORK")
 endif(HAVE_VFORK)
 
-# Override source code defaults for fork vs. vfork.  On Mac, set
-# DAKOTA_PREFER_VFORK to force use of vfork, on other platforms set
-# DAKOTA_PREFER_FORK to force use of fork
+# Override source code defaults for fork vs. vfork.  Currently, vfork
+# is the default on all platforms. To override and use fork, set  
+# DAKOTA_PREFER_FORK to true. DAKOTA_PREFER_VFORK does nothing and
+# is reserved for future functionality.
 set(DAKOTA_PREFER_FORK OFF)
 set(DAKOTA_PREFER_VFORK OFF)
 if(DAKOTA_PREFER_FORK)
