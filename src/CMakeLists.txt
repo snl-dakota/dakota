@@ -150,6 +150,8 @@ endif(HAVE_VFORK)
 # Override source code defaults for fork vs. vfork.  On Mac, set
 # DAKOTA_PREFER_VFORK to force use of vfork, on other platforms set
 # DAKOTA_PREFER_FORK to force use of fork
+set(DAKOTA_PREFER_FORK OFF)
+set(DAKOTA_PREFER_VFORK OFF)
 if(DAKOTA_PREFER_FORK)
   if(DAKOTA_PREFER_VFORK)
     message(FATAL_ERROR
