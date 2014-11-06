@@ -181,15 +181,12 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       dakota_uq_timeseries_sop_optinterf.in # workdir issue?
       dakota_uq_cantilever_ivp_exp.in       # mysteriously hangs when run by Jenkins
       dakota_rosenbrock_importance.in       # File IO/performance issue?
-      dakota_workdir.in                     # not sufficiently generic
+      dakota_workdir.in                     # workdir issue?
       dakota_win_ext.in                     # stability?
       )
   else()
-    # Remove windows-specific tests from the UNIX suite
-    list(REMOVE_ITEM dakota_test_input_files
-      dakota_win_ext.in
-      dakota_workdir_windows.in
-      )
+    # Remove windows specific filename extensions test from the UNIX suite
+    list(REMOVE_ITEM dakota_test_input_files dakota_win_ext.in)
   endif()
 
   # Iterate the list of test files and create tests for each
