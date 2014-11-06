@@ -103,16 +103,17 @@ public:
 				     int fn_index);
 
   /// return the coefficient array computed by build()/rebuild()
-  virtual const RealVector& approximation_coefficients() const;
+  virtual RealVector approximation_coefficients(bool normalized) const;
   /// set the coefficient array from external sources, rather than
   /// computing with build()/rebuild()
-  virtual void approximation_coefficients(const RealVector& approx_coeffs);
+  virtual void approximation_coefficients(const RealVector& approx_coeffs,
+					  bool normalized);
 
   /// print the coefficient array computed in build()/rebuild()
   virtual void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   /// print the coefficient array computed in build()/rebuild()
-  virtual void print_coefficients(std::ostream& s, bool normalized = false);
+  virtual void print_coefficients(std::ostream& s, bool normalized);
 
   /// return the minimum number of samples (unknowns) required to
   /// build the derived class approximation type in numVars dimensions

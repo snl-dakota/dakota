@@ -223,9 +223,10 @@ protected:
   /// retrieve the set of Approximations from the subModel
   std::vector<Approximation>& approximations();
   /// retrieve the approximation coefficients from the subModel
-  const RealVectorArray& approximation_coefficients();
+  const RealVectorArray& approximation_coefficients(bool normalized = false);
   /// set the approximation coefficients within the subModel
-  void approximation_coefficients(const RealVectorArray& approx_coeffs);
+  void approximation_coefficients(const RealVectorArray& approx_coeffs,
+				  bool normalized = false);
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
@@ -532,13 +533,15 @@ inline std::vector<Approximation>& RecastModel::approximations()
 { return subModel.approximations(); }
 
 
-inline const RealVectorArray& RecastModel::approximation_coefficients()
-{ return subModel.approximation_coefficients(); }
+inline const RealVectorArray& RecastModel::
+approximation_coefficients(bool normalized)
+{ return subModel.approximation_coefficients(normalized); }
 
 
 inline void RecastModel::
-approximation_coefficients(const RealVectorArray& approx_coeffs)
-{ subModel.approximation_coefficients(approx_coeffs); }
+approximation_coefficients(const RealVectorArray& approx_coeffs,
+			   bool normalized)
+{ subModel.approximation_coefficients(approx_coeffs, normalized); }
 
 
 inline const RealVector& RecastModel::

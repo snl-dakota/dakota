@@ -2854,7 +2854,7 @@ std::vector<Approximation>& Model::approximations()
 }
 
 
-const RealVectorArray& Model::approximation_coefficients()
+const RealVectorArray& Model::approximation_coefficients(bool normalized)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
@@ -2864,14 +2864,16 @@ const RealVectorArray& Model::approximation_coefficients()
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_coefficients();
+  return modelRep->approximation_coefficients(normalized);
 }
 
 
-void Model::approximation_coefficients(const RealVectorArray& approx_coeffs)
+void Model::
+approximation_coefficients(const RealVectorArray& approx_coeffs,
+			   bool normalized)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->approximation_coefficients(approx_coeffs);
+    modelRep->approximation_coefficients(approx_coeffs, normalized);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
          << "coefficients() function.\n       This model does not support "

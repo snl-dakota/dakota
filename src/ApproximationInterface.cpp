@@ -770,7 +770,8 @@ void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 }
 
 
-const RealVectorArray& ApproximationInterface::approximation_coefficients()
+const RealVectorArray& ApproximationInterface::
+approximation_coefficients(bool normalized)
 {
   // only assign the functionSurfaceCoeffs array if it's requested
   // (i.e., do it here rather than in build/update functions above).
@@ -779,18 +780,20 @@ const RealVectorArray& ApproximationInterface::approximation_coefficients()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     functionSurfaceCoeffs[index]
-      = functionSurfaces[index].approximation_coefficients();
+      = functionSurfaces[index].approximation_coefficients(normalized);
   }
   return functionSurfaceCoeffs;
 }
 
 
 void ApproximationInterface::
-approximation_coefficients(const RealVectorArray& approx_coeffs)
+approximation_coefficients(const RealVectorArray& approx_coeffs,
+			   bool normalized)
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
-    functionSurfaces[index].approximation_coefficients(approx_coeffs[index]);
+    functionSurfaces[index].approximation_coefficients(approx_coeffs[index],
+						       normalized);
   }
   //functionSurfaceCoeffs = approx_coeffs;
 }

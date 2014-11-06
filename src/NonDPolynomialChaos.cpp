@@ -515,7 +515,7 @@ void NonDPolynomialChaos::compute_expansion()
 
     // post coefficients to the OrthogPolyApproximation instances (also calls
     // OrthogPolyApproximation::allocate_arrays())
-    uSpaceModel.approximation_coefficients(coeffs_array);//normalizedCoeffOutput
+    uSpaceModel.approximation_coefficients(coeffs_array, normalizedCoeffOutput);
   }
 }
 
@@ -677,14 +677,9 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
     for (j=0; j<numContinuousVars; j++)
       s << " ----";
     poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
-    if (export_pce) {
-      // poly_approxs[i].approximation_coefficients() may be sparse; need
-      // dense coeffs consistent with shared multi-index for tabular export
-      PecosApproximation* approx_rep
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      // default returns a vector view; sparse returns a copy
-      coeffs_array[i] = approx_rep->dense_coefficients();//normalizedCoeffOutput
-    }
+    if (export_pce)
+      coeffs_array[i] // default returns a vector view; sparse returns a copy
+	= poly_approxs[i].approximation_coefficients(normalizedCoeffOutput);
   }
 
   if (export_pce) {
@@ -717,7 +712,10 @@ void NonDPolynomialChaos::archive_coefficients()
 
   for (size_t i=0; i<numFunctions; i++) {
  
-    const RealVector& coeffs = poly_approxs[i].approximation_coefficients();
+    // default returns a vector view; sparse returns a copy
+    RealVector coeffs
+      = poly_approxs[i].approximation_coefficients(normalizedCoeffOutput);
+
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.pce_coeffs, i, coeffs);
 

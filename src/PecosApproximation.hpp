@@ -62,10 +62,6 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// return expansion coefficients in a form consistent witn the
-  /// shared multi-index
-  RealVector dense_coefficients() const;
-
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing component (main and interaction) effects
   void compute_component_effects();
@@ -198,10 +194,15 @@ protected:
   void store();
   void combine(short corr_type);
 
-  void print_coefficients(std::ostream& s, bool normalized = false);
+  void print_coefficients(std::ostream& s, bool normalized);
 
-  const RealVector& approximation_coefficients() const;
-  void approximation_coefficients(const RealVector& approx_coeffs);
+  /// return expansion coefficients in a form consistent with the
+  /// shared multi-index
+  RealVector approximation_coefficients(bool normalized) const;
+  /// set expansion coefficients in a form consistent with the shared
+  /// multi-index
+  void approximation_coefficients(const RealVector& approx_coeffs,
+				  bool normalized);
 
   void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
@@ -515,20 +516,14 @@ print_coefficients(std::ostream& s, bool normalized)
 { pecosBasisApprox.print_coefficients(s, normalized); }
 
 
-inline const RealVector& PecosApproximation::approximation_coefficients() const
-{ return pecosBasisApprox.approximation_coefficients(); }
+inline RealVector PecosApproximation::
+approximation_coefficients(bool normalized) const
+{ return pecosBasisApprox.approximation_coefficients(normalized); }
 
 
 inline void PecosApproximation::
-approximation_coefficients(const RealVector& approx_coeffs)
-{ pecosBasisApprox.approximation_coefficients(approx_coeffs); }
-
-
-inline RealVector PecosApproximation::dense_coefficients() const
-{
-  return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
-    dense_coefficients();
-}
+approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
+{ pecosBasisApprox.approximation_coefficients(approx_coeffs, normalized); }
 
 
 inline void PecosApproximation::

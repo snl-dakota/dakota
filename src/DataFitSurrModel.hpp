@@ -175,10 +175,11 @@ protected:
   std::vector<Approximation>& approximations();
   /// return the approximation coefficients from each Approximation
   /// (request forwarded to approxInterface)
-  const RealVectorArray& approximation_coefficients();
+  const RealVectorArray& approximation_coefficients(bool normalized = false);
   /// set the approximation coefficients within each Approximation
   /// (request forwarded to approxInterface)
-  void approximation_coefficients(const RealVectorArray& approx_coeffs);
+  void approximation_coefficients(const RealVectorArray& approx_coeffs,
+				  bool normalized = false);
   /// return the approximation variance from each Approximation
   /// (request forwarded to approxInterface)
   const RealVector& approximation_variances(const Variables& vars);
@@ -421,14 +422,16 @@ inline std::vector<Approximation>& DataFitSurrModel::approximations()
 { return approxInterface.approximations(); }
 
 
-inline const RealVectorArray& DataFitSurrModel::approximation_coefficients()
-{ return approxInterface.approximation_coefficients(); }
+inline const RealVectorArray& DataFitSurrModel::
+approximation_coefficients(bool normalized)
+{ return approxInterface.approximation_coefficients(normalized); }
 
 
 inline void DataFitSurrModel::
-approximation_coefficients(const RealVectorArray& approx_coeffs)
+approximation_coefficients(const RealVectorArray& approx_coeffs,
+			   bool normalized)
 {
-  approxInterface.approximation_coefficients(approx_coeffs);
+  approxInterface.approximation_coefficients(approx_coeffs, normalized);
 
   // Surrogate data is being imported.  Update state to suppress automatic
   // surrogate construction.

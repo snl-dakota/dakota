@@ -1289,7 +1289,7 @@ const Pecos::SurrogateData& Interface::approximation_data(size_t index)
 }
 
 
-const RealVectorArray& Interface::approximation_coefficients()
+const RealVectorArray& Interface::approximation_coefficients(bool normalized)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
@@ -1299,14 +1299,16 @@ const RealVectorArray& Interface::approximation_coefficients()
   }
   
   // envelope fwd to letter
-  return interfaceRep->approximation_coefficients();
+  return interfaceRep->approximation_coefficients(normalized);
 }
 
 
-void Interface::approximation_coefficients(const RealVectorArray& approx_coeffs)
+void Interface::
+approximation_coefficients(const RealVectorArray& approx_coeffs,
+			   bool normalized)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->approximation_coefficients(approx_coeffs);
+    interfaceRep->approximation_coefficients(approx_coeffs, normalized);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
 	 << "coefficients function.\n       This interface does not support "

@@ -180,10 +180,12 @@ public:
 
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
-  virtual const RealVectorArray& approximation_coefficients();
+  virtual const RealVectorArray&
+    approximation_coefficients(bool normalized = false);
   /// set the approximation coefficients for each Approximation within
   /// a DataFitSurrModel
-  virtual void approximation_coefficients(const RealVectorArray& approx_coeffs);
+  virtual void approximation_coefficients(const RealVectorArray& approx_coeffs,
+					  bool normalized = false);
   /// retrieve the approximation variances from each
   /// Approximation within a DataFitSurrModel
   virtual const RealVector& approximation_variances(const Variables& vars);

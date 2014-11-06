@@ -113,8 +113,9 @@ protected:
   std::vector<Approximation>& approximations();
   const Pecos::SurrogateData& approximation_data(size_t index);
 
-  const RealVectorArray& approximation_coefficients();
-  void approximation_coefficients(const RealVectorArray& approx_coeffs);
+  const RealVectorArray& approximation_coefficients(bool normalized = false);
+  void approximation_coefficients(const RealVectorArray& approx_coeffs,
+				  bool normalized = false);
 
   const RealVector& approximation_variances(const Variables& vars);
 
@@ -168,8 +169,7 @@ private:
       to support it. */
   std::vector<Approximation> functionSurfaces;
 
-  /// array of approximation coefficient vectors, one vector per
-  /// response function
+  /// array of approximation coefficient vectors, one per response function
   RealVectorArray functionSurfaceCoeffs;
   /// vector of approximation variances, one value per response function
   RealVector functionSurfaceVariances;

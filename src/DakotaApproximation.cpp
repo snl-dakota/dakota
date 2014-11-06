@@ -414,28 +414,34 @@ bool Approximation::diagnostics_available()
 
 Real Approximation::diagnostic(const String& metric_type)
 {
-  //if (!approxRep) {
-  //  Cerr << "Error: diagnostic() not available for this approximation type." 
-  //	   << std::endl;
-  //  abort_handler(-1);
-  //}
+  if (!approxRep) {
+    Cerr << "Error: diagnostic() not available for this approximation type." 
+  	   << std::endl;
+    abort_handler(-1);
+  }
 
   return approxRep->diagnostic(metric_type);
 }
 
+
 void Approximation::primary_diagnostics(int fn_index)
 {
-  approxRep->primary_diagnostics(fn_index);
+  if (approxRep)
+    approxRep->primary_diagnostics(fn_index);
+  // else no-op
 }
+
 
 void Approximation::
 challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
 {
-  approxRep->challenge_diagnostics(challenge_points, fn_index);
+  if (approxRep)
+    approxRep->challenge_diagnostics(challenge_points, fn_index);
+  // else no-op
 }
 
 
-const RealVector& Approximation::approximation_coefficients() const
+RealVector Approximation::approximation_coefficients(bool normalized) const
 {
   if (!approxRep) {
     Cerr << "Error: approximation_coefficients() not available for this "
@@ -443,14 +449,15 @@ const RealVector& Approximation::approximation_coefficients() const
     abort_handler(-1);
   }
    
-  return approxRep->approximation_coefficients();
+  return approxRep->approximation_coefficients(normalized);
 }
 
 
-void Approximation::approximation_coefficients(const RealVector& approx_coeffs)
+void Approximation::
+approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 {
   if (approxRep)
-    approxRep->approximation_coefficients(approx_coeffs);
+    approxRep->approximation_coefficients(approx_coeffs, normalized);
   else {
     Cerr << "Error: approximation_coefficients() not available for this "
 	 << "approximation type." << std::endl;

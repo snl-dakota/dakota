@@ -73,9 +73,10 @@ protected:
   void build();
 
   // return #coefficients
-  //const RealVector& approximation_coefficients() const;
+  //RealVector approximation_coefficients(bool normalized) const;
   // set #coefficients
-  //void approximation_coefficients(const RealVector& approx_coeffs);
+  //void approximation_coefficients(const RealVector& approx_coeffs,
+  //                                bool normalized);
 
   /// Return the value of the Surfpack surface for a given parameter vector x
   Real value(const Variables& vars);
@@ -148,13 +149,13 @@ inline bool SurfpackApproximation::diagnostics_available()
 
 /* The value returned from this function is currently meaningless.
    \todo: Provide an appropriate list of coefficients for each surface type */
-//inline const RealVector& SurfpackApproximation::
-//approximation_coefficients() const
+//inline RealVector SurfpackApproximation::
+//approximation_coefficients(bool normalized) const
 //{ return coefficients; }
 
 
 //inline void SurfpackApproximation::
-//approximation_coefficients(const RealVector& approx_coeffs)
+//approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 //{ coefficients = approx_coeffs; }
 
 } // namespace Dakota
