@@ -5,13 +5,28 @@ The surrogate and nested model constructs admit a wide variety of
 multi-iterator, multi-model solution approaches. For example,
 optimization within optimization (for hierarchical multidisciplinary
 optimization), uncertainty quantification within uncertainty
-quantification (for interval-valued or second-order probability), uncertainty
-quantification within optimization (for optimization under
-uncertainty), and optimization within uncertainty quantification (for
-uncertainty of optima) are all supported, with and without surrogate
-model indirection. Three important examples are highlighted:
-second-order probability, optimization under uncertainty, and surrogate-based
-uncertainty quantification.
+quantification (for interval-valued probability, second-order
+probability, or Dempster-Shafer approaches to mixed aleatory-epistemic
+UQ), uncertainty quantification within optimization (for optimization
+under uncertainty), and optimization within uncertainty quantification
+(for uncertainty of optima) are all supported, with and without
+surrogate model indirection. Three important examples are highlighted:
+mixed aleatory-epistemic UQ, optimization under uncertainty, and
+surrogate-based UQ.
+
+Starting with Dakota version 6.1, concurrency can now be exploited
+across sub-iteration instances.  For example, multiple inner loop UQ
+assessments can be performed simultaneously within optimization under
+uncertainty or mixed aleatory-epistemic UQ studies, provided the outer
+loop algorithm supports concurrency in its evaluations.  Both
+meta-iterators and nested models support \texttt{iterator\_servers}, 
+\texttt{processors\_per\_iterator}, and \texttt{iterator\_scheduling}
+specifications which can be used to define a parallel configuration
+that partitions servers for supporting sub-iteration concurrency.
+Refer to Chapter~\ref{parallel} for additional information on parallel
+configurations, and to the Methods and Models chapters of the Reference 
+Manual~\cite{RefMan} for additional information on these specifications.
+
 
 \section{Mixed Aleatory-Epistemic UQ} \label{adv_models:mixed_uq}
 
@@ -31,10 +46,10 @@ each realization of the epistemic parameters. %This ensemble is then
 
 In Dakota, we support interval-valued probability (IVP), second-order
 probability (SOP), and Dempster-Shafer theory of evidence (DSTE)
-approaches to mixed uncertainty. These three approaches differ by how
+approaches to mixed uncertainty. These three approaches differ in how
 they treat the epistemic variables in the outer loop: they are treated
-as intervals in IVP, as subjective probability distributions in SOP,
-and as belief structures in DSTE. This set of techniques provides a
+as intervals in IVP, as belief structures in DSTE, and as subjective
+probability distributions in SOP. This set of techniques provides a
 spectrum of assumed epistemic structure, from strongest assumptions in
 SOP to weakest in IVP.
 
@@ -49,7 +64,7 @@ In interval analysis, it is assumed that nothing is known
 about the uncertain input variables except that they lie within
 certain intervals. The problem of uncertainty propagation then
 becomes an interval analysis problem: given inputs that are defined
-within intervals, what is the corresponding interval on the outputs?
+within intervals, what are the corresponding intervals on the outputs?
 %Although interval analysis is conceptually simple, in practice it can
 %be difficult to determine the more effective solution approach. A direct
 %approach is to use optimization to find the maximum and minimum values
@@ -65,7 +80,9 @@ within intervals, what is the corresponding interval on the outputs?
 Starting from a specification of intervals and probability distributions 
 on the inputs, %(as described in Section~\ref{sec:ssa:io}, 
 the intervals may augment the probability distributions, insert into
-the probability distributions, or some combination. We generate an
+the probability distributions, or some combination (refer to 
+Section~\ref{models:nested} and to the Models chapter of the Reference 
+Manual~\cite{RefMan}). We generate an
 ensemble of cumulative distribution functions (CDF) or Complementary
 Cumulative Distribution Functions (CCDF), one CDF/CCDF result for each
 aleatory analysis. Plotting an entire ensemble of CDFs or CCDFs in a 
@@ -93,11 +110,11 @@ prescribed probability levels. This interval on a statistic is
 interpreted simply as a possible range, where the statistic could take
 any of the possible values in the range.
 
-A sample input file is shown in
-Figure~\ref{adv_models:2ndprob}, in which the outer epistemic level
-variables are defined as intervals. Samples will be generated from
-these intervals to select means for $X$ and $Y$ that are employed in
-an inner level reliability analysis of the cantilever problem (see
+A sample input file is shown in Figure~\ref{adv_models:2ndprob}, in
+which the outer epistemic level variables are defined as
+intervals. Samples will be generated from these intervals to select
+means for $X$ and $Y$ that are employed in an inner level reliability
+analysis of the cantilever problem (see
 Section~\ref{additional:cantilever}).
 Figure~\ref{adv_models:2ndprob_res} shows excerpts from the resulting
 output. In this particular example, the outer loop generates 50
@@ -105,13 +122,13 @@ possible realizations of epistemic variables, which are then sent to
 the inner loop to calculate statistics such as the mean weight, and
 cumulative distribution function for the stress and displacement
 reliability indices. Thus, the outer loop has 50 possible values for
-the mean weight but there is no distribution structure on these 50
-samples. So, only the minimum and maximum value are reported.
+the mean weight, but since there is no distribution structure on these
+observations, only the minimum and maximum value are reported.
 Similarly, the minimum and maximum values of the CCDF for the stress
 and displacement reliability indices are reported.
 
-When performing an epistemic analysis, response levels and 
-probability levels should only be defined in the inner loop. 
+When performing a mixed aleatory-epistemic analysis, response levels and 
+probability levels should only be defined in the (inner) aleatory loop. 
 For example, if one wants to generate an interval around possible 
 CDFs or CCDFS, we suggest defining a number of probability levels 
 in the inner loop (0.1, 0.2, 0.3, etc). For each epistemic instance, 
@@ -190,13 +207,13 @@ in a recent National Academy of Sciences report on the Quantification
 of Margins and Uncertainties (QMU)~\cite{NAS08}.
 
 Rather than employing interval estimation techniques at the outer loop
-in SOP, we can instead rely on the same probabilistic methods for
-aleatory propagation employed for the inner loop. In certain special
-cases, expected values of expected values can be computed in closed
-form (selected statistics for combined variable stochastic expansions,
-refer to the Dakota Theory Manual~\cite{TheoMan}), without need for a
-separate outer loop method.
-
+in SOP, we instead apply probabilistic methods, potentially the same
+ones as used for the aleatory propagation on the inner loop. 
+% MSE: this is not currently supported in implementation to my knowledge:
+%In certain special cases, expected values of expected values can be
+%computed in closed form (selected statistics for combined variable
+%stochastic expansions, refer to the Dakota Theory
+%Manual~\cite{TheoMan}), without need for a separate outer loop method.
 The previous example in Figure~\ref{adv_models:2ndprob} can be
 modified to define the epistemic outer loop using uniform variables
 instead of interval variables (annotated test \texttt{\#1} in
@@ -214,7 +231,8 @@ reported as statistics (such as mean and standard deviation) and not
 merely intervals. It is important to emphasize that these outer level
 output statistics are only meaningful to the extent that the outer
 level input probability specifications are meaningful (i.e., to the
-extent that the epistemic variables are known to be uniform).
+extent that uniform distributions are believed to be representative 
+of the epistemic variables).
 
 In \texttt{dakota/test}, additional test input files such as
 \texttt{dakota\_uq\_cantilever\_sop\_exp.in} and\\
@@ -237,7 +255,7 @@ than a basic output interval.
 
 The single-level DSTE approach for propagating epistemic uncertainties
 is described in Section~\ref{uq:dempshaf} and in the Dakota Theory
-Manual~\cite{TheoMan}. Examples of nested DSTE for propagating mixed
+Manual~\cite{TheoMan}. An example of nested DSTE for propagating mixed
 uncertainties can be seen in \texttt{dakota/test} in the input file
 \texttt{dakota\_uq\_ishigami\_dste\_exp.in}.
 
