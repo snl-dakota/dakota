@@ -9,7 +9,7 @@ estimated from data using a variant of the Zimmerman direct training
 approach \cite Zim96.
 
 This typically yields lower training cost than traditional neural
-networks yet, good out-of-sample performance.  This is helpful in
+networks, yet good out-of-sample performance.  This is helpful in
 surrogate-based optimization and optimization under uncertainty, where
 multiple surrogates may be repeatedly constructed during the
 optimization process, e.g., a surrogate per response function, and a
@@ -44,8 +44,8 @@ random input layer weight matrix and bias vector, respectively; and
 respectively, estimated from training data.  These coefficients are
 analogous to the polynomial coefficients obtained from regression to
 training data.  The neural network uses a cross validation-based
-orthogonal matching pursuit solver to solver for the weights and
-offsets.
+orthogonal matching pursuit solver to determine the optimal number of
+nodes and to solve for the weights and offsets.
 
 Faq::
 See_Also::	

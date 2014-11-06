@@ -47,8 +47,7 @@ support:
 
  - One set of nested quotes, for arguments with spaces 
  
- - Environment variables to be evaluated before the child process is
-   started.  Dakota will define special environment variables \c
+ - Dakota will define special environment variables \c
    DAKOTA_PARAMETERS_FILE and \c DAKOTA_RESULTS_FILE which can be used
    in the driver script.
 
@@ -73,13 +72,16 @@ Examples:
 \endverbatim
 
 Theory::
+
 Faq::
+
 <b>Where will Dakota look for the analysis_driver?</b> Dakota will
-locate analysis_driver programs first in the system PATH environment
-variable, then the present working directory (the
+locate analysis_driver programs first in (or relative to) the present
+working directory (".", the
 interface-analysis_drivers-fork-work_directory if used, otherwise the
 directory in which Dakota is started), then the directory from which
-Dakota is started.
+Dakota is started, then using the system $PATH environment variable
+(%Path% on Windows).
 
 <b>Where should the driver be located?</b> When the driver is a script
 it is most commonly placed in the same directory as the Dakota input
@@ -94,6 +96,7 @@ Dakota finds them.
 
 <b>What if Dakota fails to run my analysis_driver?</b> Prepend the
 absolute location of the driver to the PATH environment variable
-before running Dakota.
+before running Dakota, or specify an absolute path to the driver in
+the Dakota input file.
 
 See_Also::	

@@ -19,7 +19,7 @@ will create copies
 \verbatim
   workdir/siminput*.in  # links to each of rundir / siminput*.in
   workdir/simdir1/      # whole directory simdir1 linked
-  workdir/*		# each entry in directory simdir2 linked
+  workdir/*             # each entry in directory simdir2 linked
 \endverbatim
 
 Theory::
