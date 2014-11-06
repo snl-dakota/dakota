@@ -22,55 +22,57 @@ separate GUI documentation, and installation tips.
 
 \subsection{Tabular Data Formats}\label{input:tabularformat}
 
-The Dakota input file and/or command line may identify additional
-files for data import as described in Section~\ref{input:import}.
-Some of these files are in tabular data format.
+The Dakota input file and/or command line may identify additional text
+files for tabular data import in contexts described in
+Section~\ref{input:import}.  Examples include data from which to build
+a surrogate, points at which to run a list parameter study, post-run
+input data, and least squares and Bayesian calibration data. Dakota
+writes and reads tabular data with C++ stream operators/conversions,
+so most integer and floating point formats are acceptable for imported
+numeric data.
 
-Dakota versions 5.1+ (October 2011) and newer use two formats for
-tabular data file input and output.  Tabular data refer to numeric
-data in text form related to, e.g., tabular graphics data, least
-squares and Bayesian calibration data, samples/points files for
-constructing surrogates, pre-run output, and post-run input.  Both
-formats are written/read with C++ stream operators/conversions, so
-most integer and floating point formats are acceptable for numeric
-data.  The formats are:
+By default, Dakota tabular import data must be formatted similarly to
+its tabular output~\ref{output:tabular}; in an annotated columnar
+format.  Annotated tabular input (default for all tabular I/O and
+explicitly specified via {\tt annotated}) is given in a text file with
+one leading row (header) of comments/column labels and two leading
+columns (identifiers), one for evaluation ID and one for interface ID.
+These leading labels surround num\_rows x num\_cols of
+whitespace-separated numeric data, (newlines separating rows are not
+currently required, but may be in the future).  The numeric data in a
+row may correspond to variables, variables followed by responses, data
+point for calibration, etc., depending on context.  {\bf Notes:}
+\begin{enumerate}
+\item As of Dakota 6.1, the default/\texttt{annotated} option requires
+  two leading columns, one for the evaluation ID and one for the
+  interface ID.  This format is shown in Figure~\ref{output:tabcont}.
+  Prior to Dakota 6.1, the annotated format required only one leading
+  column, but now requires two.
 
-\begin{itemize}
-\item {\bf Annotated Matrix} (default for all tabular I/O; specified
-  via {\tt annotated}): text file with one leading row of
-  comments/column labels and two leading columns of evaluation IDs and 
-  interface IDs
-  surrounding num\_rows x num\_cols whitespace-separated numeric data,
-  (newlines separating rows are not currently required, but may be in
-  the future).  The numeric data in a row may correspond to variables,
-  variables followed by responses, data point for calibration, etc.,
-  depending on context.
+\item Variables should appear in input specification order as
+  documented in the reference manual.  As of Dakota 6.1, the annotated
+  format requires columns for all of the variables (active and
+  inactive), not only the active variables as in previous versions.
+  To import data corresponding only to the active variables, use the
+  keyword \texttt{active\_only} when specifying the import file.
+\end{enumerate}
 
-\item {\bf Free-form Matrix} (optional; previously default for samples
-  files and least squares data; specified via {\tt freeform}): text
-  file with no leading row and no leading column.  The num\_rows x
-  num\_cols total numeric data entries may appear separated with any
-  whitespace including arbitrary spaces, tabs, and newlines.  In this
-  format, vectors may therefore appear as a single row or single
-  column (or mixture; entries will populate the vector in order).
-\end{itemize}
+When optionally specifying \texttt{freeform} for a given tabular
+import, the data file must be provided in a free-form format, omitting
+the leading one row and two columns. The raw num\_rows x num\_cols
+numeric data entries may appear separated with any whitespace
+including arbitrary spaces, tabs, and newlines.  In this format,
+vectors may therefore appear as a single row or single column (or
+mixture; entries will populate the vector in order).
 
-{\bf Attention:} Prior to October 2011, calibration and surrogate data
-files were free-form format.  They now default to annotated format,
-though {\tt freeform} remains an option.  For both formats, a warning
-will be generated if a specific number of data are expected, but extra
-is found and an error generated when there is insufficient data.  Some
-TPLs like SCOLIB and JEGA manage their own file I/O and only support
-the free-form option.
+{\bf Attention:} Prior to October 2011, samples, calibration, and
+surrogate data files were free-form format.  They now default to
+annotated format, though {\tt freeform} remains an option.  For both
+formats, a warning will be generated if a specific number of data are
+expected, but extra is found and an error generated when there is
+insufficient data.  Some TPLs like SCOLIB and JEGA manage their own
+file I/O and only support the free-form option.
 
-Also, as of Dakota 6.1, the \texttt{annotated} option requires TWO 
-leading columns, one for the evaluation ID and one for the interface ID. 
-This format is shown in Figure~\ref{output:tabcont}.  Previously, 
-the annotated format required only one leading column, but now requires two. 
-Finally, the annotated format will require columns for all of the variables, 
-not only the active variables as in previous versions.  To suppress 
-this and only have active variable columns in the import file, use
-the keyword \texttt{active\_only} when specifying the import file. 
 
 \section{Data Imports}\label{input:import}
 
@@ -137,29 +139,31 @@ from a known response expansion.  Refer to the Method Specification
 chapter in the Dakota Reference Manual~\cite{RefMan} for additional
 information on this specification.
 
-\subsection{Surrogate construction from data files}
+\subsection{Surrogate construction and evaluation data}
 
 Global data fit surrogates, including some stochastic expansions, may
 be constructed from a variety of data sources.  One of these sources
 is an auxiliary data file, as specified by the keyword \texttt{import\
   points\_file = \emph{STRING}}.  The file may be in annotated
 (default) or free-form format with columns corresponding to variables
-and responses.  Refer to the Model Specification chapter in the Dakota
-Reference Manual~\cite{RefMan} for additional information on this
-specification.
+and responses.  Surfpack global surrogate models may also be evaluated
+at a user-provided file containing \texttt{challenge\_points}.  Refer
+to the Model Specification chapter in the Dakota Reference
+Manual~\cite{RefMan} for additional information on this specification.
 
 \subsection{Variables/responses import to post-run}
 
 The post-run mode (supported only for sampling, parameter study, and
 DACE methods) requires specification of a file containing parameter
 and response data in annotated tabular format (see Section
-~\ref{input:tabularformat}; free-form is not supported).  An
-evaluation ID column is followed by columns for variables, then those
-for responses, with an ignored header row of labels and then one row
-per evaluation.  Typically this file would be generated by executing
-\texttt{dakota -i dakota.in -pre\_run ::variables.dat} and then adding
-columns of response data to variables.dat to make varsresponses.dat.
-The file is specified at the command line with:
+~\ref{input:tabularformat}; free-form is not supported).  Leading
+columns for evaluation and interface IDs are followed by columns for
+variables (active and inactive by default), then those for responses,
+with an ignored header row of labels and then one row per evaluation.
+Typically this file would be generated by executing \texttt{dakota -i
+  dakota.in -pre\_run ::variables.dat} and then adding columns of
+response data to variables.dat to make varsresponses.dat.  The file is
+specified at the command line with:
 \begin{small}
 \begin{verbatim}
     dakota -i dakota.in -post_run varsresponses.dat::
@@ -167,4 +171,4 @@ The file is specified at the command line with:
 \end{small}
 
 % LocalWords:  WordPad pre num whitespace freeform TPLs SCOLIB JEGA AMPL nl GAs
-% LocalWords:  PCE multi dakota dat varsresponses
+% LocalWords:  PCE multi dakota dat varsresponses Surfpack

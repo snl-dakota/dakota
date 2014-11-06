@@ -3,28 +3,31 @@
 \section{Overview of Output Formats}\label{output:overview}
 
 While Dakota primarily targets complex numerical simulation codes run
-on massively parallel supercomputers, Dakota's output aims to provide
-a succinct, text-based reporting of the progress of the iterations and
-function evaluations performed by an algorithm. In addition, Dakota
-provides a tabular output format that is useful for data visualization
-with external tools and a basic graphical output capability that is
-useful as a monitoring tool. The JAGUAR Dakota GUI is an emerging
-capability that will provide more advanced visualization facilities in
-time.  Dakota also has a number of export capabilities described in
-the latter part of this chapter.
+on massively parallel supercomputers, Dakota's output focuses on
+succinct, text-based reporting of the iterations and function
+evaluations performed by an algorithm. In a number of contexts, Dakota
+generates tabular output useful for data analysis and visualization
+with external tools.  Unix versions of Dakota have a basic graphical
+output capability that is useful as a monitoring tool.  The JAGUAR
+Dakota GUI is an emerging capability that will provide more advanced
+visualization facilities in time.
 
 \section{Standard Output}\label{output:standard}
 
-Dakota outputs basic information to standard out (screen, terminal,
-or console) for each function evaluation, consisting of an evaluation
-number, parameter values, execution syntax, the active set vector, and
-the response data set. To describe the standard output of Dakota,
-optimization of the ``container'' problem (see
-Chapter~\ref{additional} for problem formulation) is used as an
-example. The input file for this example is shown in
-Figure~\ref{output:incont}. In this example, there is one equality
-constraint, and Dakota's finite difference algorithm is used to
-provide central difference numerical gradients to the NPSOL optimizer.
+Dakota prints information on algorithm progress, function evaluations,
+and summary results to standard out and error (screen, terminal, or
+console) as it runs.  Detailed information for a function evaluation
+may include an evaluation number, parameter values, execution syntax,
+the active set vector, and the response data set.  This output may be
+redirected to a file using the command-line options described in
+Section~\ref{tutorial:installation:running}.
+
+Here, optimization of the ``container'' problem (see
+Chapter~\ref{additional}) is used as an example to describe Dakota
+output. The input file shown in Figure~\ref{output:incont} specifies
+one equality constraint, and that Dakota's finite difference algorithm
+will provide central difference numerical gradients to the NPSOL
+optimizer.
 \begin{figure}
   \begin{small}
     \begin{bigbox}
@@ -293,36 +296,31 @@ written to the Fortran device 9 file (e.g., \texttt{fort.9} or
 
 \section{Tabular Output Data}\label{output:tabular}
 
-Dakota has the capability to print the iteration history in tabular
-form to a file. The keyword\\
-\texttt{tabular\_graphics\_data} needs to be included in the
-environment specification (see Figure~\ref{output:incont}). The
-primary intent of this capability is to facilitate the transfer of
-Dakota's iteration history data to an external mathematical analysis
-and/or graphics plotting package (e.g., MATLAB, TECplot, Excel,
-S-plus, Minitab). Any evaluations from Dakota's internal finite
-differencing are suppressed, to facilitate rapid plotting of the most
-critical data.  This suppression of lower level data is consistent
-with the data that is sent to the graphics windows, as described in
-Section~\ref{output:graphics}. If this data suppression is
-undesirable, Section~\ref{restart:utility:tabular} describes an
-approach where every function evaluation, even the ones from finite
-differencing, can be saved to a file in tabular format.
+In a number of contexts, Dakota can output information in a
+whitespace-separated columnar data file, a tabular data file.  The
+most common usage, to capture the iteration history in a tabular file,
+is enabled by including the keyword \texttt{tabular\_data} in the
+\texttt{environment} specification (see
+Figure~\ref{output:incont}). This output format facilitates the
+transfer of Dakota's iteration history data to external mathematical
+analysis and/or graphics plotting packages (e.g., MATLAB, TECplot,
+Excel, S-plus, Minitab).
 
-The default file name for the tabular output data is
-``\texttt{dakota\_tabular.dat}'' and the output from the ``container''
-optimization problem is shown in Figure~\ref{output:tabcont}. This
-annotated tabular format (see Section~\ref{input:tabularformat}) file
-contains the complete history of data requests from NPSOL (8 requests
-map into a total of 40 function evaluations when including the central
-finite differencing). The first column is the data request number, 
-the second column is the interface ID (which is EMPTY if the user 
-does not specify a name for the interface), the
-third and fourth columns are the design parameter values (labeled in
-the example as ``\texttt{H}'' and ``\texttt{D}''), the fifth column
-is the objective function (labeled ``\texttt{obj\_fn}''), and the
-sixth column is the nonlinear equality constraint (labeled
-``\texttt{nln\_eq\_con\_1}'').
+The default file name for the top-level tabular output data is
+``\texttt{dakota\_tabular.dat},'' though \texttt{tabular\_data\_file}
+allows specification of an alternate name.  Example tabular output
+from the ``container'' optimization problem is shown in
+Figure~\ref{output:tabcont}. This annotated tabular format (see
+Section~\ref{input:tabularformat}) file contains the complete history
+of data requests from NPSOL (8 requests map into a total of 40
+function evaluations when including the central finite
+differencing). The first column is the data request number, the second
+column is the interface ID (which is EMPTY if the user does not
+specify a name for the interface), the third and fourth columns are
+the design parameter values (labeled in the example as ``\texttt{H}''
+and ``\texttt{D}''), the fifth column is the objective function
+(labeled ``\texttt{obj\_fn}''), and the sixth column is the nonlinear
+equality constraint (labeled ``\texttt{nln\_eq\_con\_1}'').
 
 \begin{figure}
 \begin{bigbox}
@@ -344,23 +342,36 @@ sixth column is the nonlinear equality constraint (labeled
 the ``container'' optimization problem.} \label{output:tabcont}
 \end{figure}
 
-Note that as of Dakota 6.1, we have added the second column labeled ``\texttt{interface}.''
-The purpose of this is to clearly identify which interface results are being 
-shown on each line of the tabular file (recall that the interface 
-defines which simulation is being run though the \texttt{analysis\_driver} specification).
-Identifying the interface is important for users performing hybrid methods, 
-multi-fidelity methods, or nested models.  However, it does involve the addition 
-of an extra column of output which might not be useful for simpler analyses. 
-In many cases, when users open the ``\texttt{dakota\_tabular.dat}'' file 
-in Excel or Matlab, they ignore the first two columns and only focus on the 
-columns of inputs and outputs. 
+{\bf Attention:} The second column labeled ``\texttt{interface}'' is
+new as of Dakota 6.1.  It identifies which interface was used to map
+the variables to responses on each line of the tabular file (recall
+that the interface defines which simulation is being run though the
+\texttt{analysis\_driver} specification).  Disambiguating the
+interface is important when using hybrid methods, multi-fidelity
+methods, or nested models.  In more common, simpler analyses, users
+typically ignore the first two columns and only focus on the columns
+of inputs (variables) and outputs (responses).
 
-Also, as of Dakota 6.1, the tabular file will have all of the variables (both active and inactive) printed as columns.
-Previously, Dakota only wrote the ``active'' variables.  Recall that some variables may be inactive 
-if they are not activated for a particular method (e.g. uncertain variables might not be 
-active in an optimization, design variables may not be active in a sampling study). 
-The order of the variables printed out will be in Dakota's standard ordering, which is 
-given in the Dakota Reference manual. 
+{\bf Attention:} As of Dakota 6.1, the tabular file will include
+columns for all of the variables (both active and inactive) present in
+a given interface.  Previously, Dakota only wrote the ``active''
+variables.  Recall that some variables may be inactive if they are not
+operated on by a particular method (e.g. uncertain variables might not
+be active in an optimization, design variables may not be active in a
+sampling study).  The order of the variables printed out will be in
+Dakota's standard variable ordering, which is indicated by the input
+specification order, and summarized in the Dakota Reference Manual.
+
+Any evaluations from Dakota's internal finite differencing are
+suppressed, to facilitate rapid plotting of the most critical data.
+This suppression of lower level data is consistent with the data that
+is sent to the graphics windows, as described in
+Section~\ref{output:graphics}. If this data suppression is
+undesirable, Section~\ref{restart:utility:tabular} describes an
+approach where every function evaluation, even the ones from finite
+differencing, can be saved to a file in tabular format by using the
+Dakota restart utility.
+
 
 \section{Graphics Output}\label{output:graphics}
 
@@ -475,7 +486,7 @@ support mechanisms described on the
 \href{http://dakota.sandia.gov/}{Dakota website}.
 
 
-\section{PCE coefficient export}\label{sec:output:pce}
+\section{Stochastic expansion exports}\label{sec:output:pce}
 
 Polynomial chaos expansion (PCE) methods compute coefficients for
 response expansions which employ a basis of multivariate orthogonal
@@ -487,16 +498,27 @@ file using the keyword \texttt{export\_expansion\_file =
 coefficient, followed by the multi-index indicating which basis terms
 correspond to it.
 
+When using numerical integration schemes with structured rules, Dakota
+can also output the integration points and corresponding weights to a
+tabular file.  This output is generated when \texttt{method output} is
+\texttt{verbose} or higher.  Weights and points are printed to a file
+\texttt{dakota\_quadrature\_tabular.dat} (tensor product quadrature),
+\texttt{dakota\_sparse\_tabular.dat} (sparse grids), or
+\texttt{dakota\_cubature\_tabular.dat} (cubature methods), with one
+line per integration point.
+
 \section{Surrogate Model Exports}
 
-A number of Dakota surrogate models, including some stochastic
-expansion approaches support the keyword \texttt{export\_points\_file
-  = \emph{STRING}}.  When specified, any approximate evaluations
-performed on the surrogate model will be output to the specified data
-file.  This facilitates plotting or external diagnostics of the
-surrogate model.
+Most Dakota surrogate models, including all those implemented in
+Surfpack and some stochastic expansion approaches support the keyword
+\texttt{export\_points\_file = \emph{STRING}}.  When specified, any
+approximate evaluations performed on the surrogate model will be
+output to the specified data file.  The data file will be exported in
+the same format as top-level tabular output data described in
+Section~\ref{output:tabular}.  This facilitates plotting or external
+diagnostics of the surrogate model.
 
-In addition the Surfpak family of global surrogate models supports
+In addition, the Surfpack family of global surrogate models supports
 export (serialization) of surrogate models to text ({\tt .sps}) or
 binary ({\tt .bsps}) model files.  These files are not human readable
 (and don't contain an explicit algebraic form of the response surface
@@ -508,17 +530,20 @@ of the surrogate model from build data.
 
 The pre-run mode (supported only for select methods) permits
 specification of an output file to which Dakota will write parameter
-(variables) data in annotated format (see
-Section~\ref{input:tabularformat}) with data columns corresponding to
-each variable.  This file can be generated with sampling, parameter
-study, and DACE methods by invoking
+(variables) data in tabular format (see Section~\ref{output:tabular})
+with data columns corresponding to each variable.  This file can be
+generated with sampling, parameter study, and DACE methods by invoking
 \begin{small}
 \begin{verbatim}
     dakota -i dakota.in -pre_run ::variables.dat
 \end{verbatim}
 \end{small}
-for example, to output the variables (samples) in an LHS study.
+for example, to output the variables (samples) in an LHS study.  If a
+user adds the corresponding response values to this file, it may then
+be imported using Dakota's post-run mode.
 
 % LocalWords:  NPSOL npsol sqp fn nln eq infeasible differencing Majr Minr gZ
 % LocalWords:  Violtn nZ Conv Fortran Fortran ftn09 MATLAB TECplot Minitab dat
-% LocalWords:  dakota 2D EPS eps numericl combinations PCE multi Pre pre LHS
+% LocalWords:  dakota 2D EPS eps numericl combinations PCE multi Pre pre LHS 2D
+% LocalWords:  Fortran Fortran whitespace Disambiguating analyses Surfpack sps
+% LocalWords:  bsps surfpack API

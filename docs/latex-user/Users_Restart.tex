@@ -138,7 +138,7 @@ for managing restart files from Dakota executions. The executable
 program name is \texttt{dakota\_restart\_util} and it has the
 following options, as shown by the usage message returned when
 executing the utility without any options:
-\begin{small}
+\begin{tiny}
 \begin{verbatim}
 Usage: "dakota_restart_util print <restart_file>"
        "dakota_restart_util to_neutral <restart_file> <neutral_file>"
@@ -152,24 +152,26 @@ Usage: "dakota_restart_util print <restart_file>"
        "dakota_restart_util cat <restart_file_1> ... <restart_file_n>
           <new_restart_file>"
 \end{verbatim}
-\end{small}
+\end{tiny}
 
 Several of these functions involve format conversions. In particular,
 the binary format used for restart files can be converted to ASCII
 text and printed to the screen, converted to and from a neutral file
 format, converted to a PDB format for use at Lawrence Livermore
-National Laboratory, or converted to a tabular format for importing
-into 3rd-party graphics programs. In addition, a restart file with
-corrupted data can be repaired by value or id, and multiple restart
-files can be combined to create a master database.
+National Laboratory (if enabled at compile time), or converted to a
+tabular format for importing into 3rd-party graphics programs. In
+addition, a restart file with corrupted data can be repaired by value
+or id, and multiple restart files can be combined to create a master
+database.
 
 \subsection{Print}\label{restart:utility:print}
 
-The \texttt{print} option is quite useful for interrogating the
-contents of a particular restart file, since the binary format is not
+The \texttt{print} option outputs the contents of a particular restart
+file in human-readable format, since the binary format is not
 convenient for direct inspection. The restart data is printed in full
-precision, so that exact matching of points is possible for restarted
-runs or corrupted data removals. For example, the following command
+precision, so that (near-)exact matching of points is possible for
+restarted runs or corrupted data removals. For example, the following
+command
 \begin{small}
 \begin{verbatim}
     dakota_restart_util print dakota.rst
@@ -289,16 +291,16 @@ were insufficient).
 
 Conversion of a binary restart file to a tabular format enables
 convenient import of this data into 3rd-party post-processing tools
-such as Matlab, TECplot, Excel, etc. This facility is nearly identical
-to the \texttt{tabular\_graphics\_data} option in the Dakota input
-file specification (described in Section~\ref{output:tabular}), but
-with two important differences:
+such as Matlab, TECplot, Excel, etc. This facility is similar to the
+\texttt{tabular\_data} option in the Dakota input file specification
+(described in Section~\ref{output:tabular}), but with two important
+differences:
 \begin{enumerate}
 \item No function evaluations are suppressed as they are with
-  \texttt{tabular\_graphics\_data} (i.e., any internal finite
-  difference evaluations are included).
-\item The conversion can be performed posthumously, i.e., for Dakota
-  runs executed previously.
+  \texttt{tabular\_data} (i.e., any internal finite difference
+  evaluations are included).
+\item The conversion can be performed after Dakota completion, i.e.,
+  for Dakota runs executed previously.
 \end{enumerate}
 
 An example command for converting a restart file to tabular format is:
@@ -319,18 +321,18 @@ evaluations are not reported (since they do not readily fit within a
 compact tabular format):
 \begin{small}
 \begin{verbatim}
-%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2
-       1            0.9            1.1         0.0002           0.26           0.76
-       2   0.6433962264   0.6962264151   0.0246865569  0.06584549662   0.1630331079
-       3   0.5310576935   0.5388046558  0.09360081618  0.01261994597  0.02478161031
-       4    0.612538853   0.6529854907  0.03703861037  0.04871110113   0.1201206246
-       5   0.5209215947   0.5259311717   0.1031862798  0.00839372202  0.01614279999
-       6   0.5661606434   0.5886684401  0.06405197568  0.02620365411  0.06345021064
-       7   0.5083873357    0.510239856   0.1159458957 0.003337755086 0.006151042802
-       8   0.5001577143   0.5001800249   0.1248312163 6.772666885e-05 0.0001012002012
-       9   0.5000000547   0.5000000598   0.1249999428 2.485652461e-08 3.238746073e-08
-      10            0.5            0.5          0.125 2.942091015e-15 3.60822483e-15
-\end{verbatim}
+%eval_id interface             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
+       1     EMPTY           0.9            1.1         0.0002           0.26           0.76 
+       2     EMPTY    0.58256179   0.4772224441   0.1050555937   0.1007670171 -0.06353963386 
+       3     EMPTY           0.5   0.4318131566   0.1667232695  0.03409342169 -0.06353739777 
+       4     EMPTY           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
+       5     EMPTY           0.5   0.3757758727   0.2143316122  0.06211206365  -0.1087924935 
+       6     EMPTY           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
+       7     EMPTY  0.5005468682  -0.5204065326    5.405888123   0.5107504335  0.02054952507 
+       8     EMPTY  0.5000092554   0.4156974409   0.1790558059  0.04216053506 -0.07720026537 
+       9     EMPTY   0.500000919   0.4302129149   0.1679019175   0.0348944616  -0.0649173074 
+      10     EMPTY    0.50037519  -0.2214765079    2.288391116   0.3611135847  -0.2011357515 
+ \end{verbatim}
 \end{small}
 
 \subsection{Concatenation of Multiple Restart Files}\label{restart:utility:concatenation}
