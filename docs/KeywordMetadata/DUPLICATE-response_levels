@@ -1,16 +1,25 @@
 Blurb::
-Specify the response values at which to estimate relevant statistics
+Values at which to estimate desired statistics for each response
+
 Description::
 The \c response_levels specification provides the target response
 values for which to compute probabilities, reliabilities, or generalized
 reliabilities (forward mapping).
 
-The particular statistics depend on the method, and they include:
+<b> Default Behavior </b>
+
+If \c response_levels are not specified, no statistics will be computed.  If they are, probabilities will be computed by default.
+
+<b> Expected Outputs </b>
+
+The particular statistics reported for each response level depend on the method, and they include:
  -# Reliabilities
  -# CDF probabilities
  -# CCDF probabilities
 
-\c num_response_levels is used to specify which arguments of the \c response_level
+<b> Usage Tips </b>
+
+The \c num_response_levels is used to specify which arguments of the \c response_level
 correspond to which response.
 
 Topics::	
