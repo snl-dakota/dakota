@@ -1,5 +1,6 @@
 Blurb::
-Parameter study - samples points along a vector
+Samples variables along a user-defined vector
+
 Description::
 Dakota's vector parameter study computes response data sets at
 selected intervals along a vector in parameter space. It is often used
@@ -8,6 +9,18 @@ single variable on a response set), but it can be used more generally
 for multiple coordinate vector studies (to investigate the response
 variations along some n-dimensional vector such as an optimizer search
 direction).
+
+<b> Default Behavior </b>
+
+By default, the multidimensional parameter study operates over all
+types of variables.
+
+<b> Expected Outputs </b>
+
+A multidimensional parameter study produces a set of responses for
+each parameter set that is generated.
+
+<b> Usage Tips </b>
 
 <b> Group 1 </b> is used to define the vector along which the parameters are 
 varied. Both cases also rely on the variables specification of an

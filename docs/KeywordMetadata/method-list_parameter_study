@@ -1,15 +1,27 @@
 Blurb::
-Parameter study specified by a list of variable values
+Samples variables as a specified values
+
 Description::
 Dakota's list parameter study allows for evaluations at user selected
 points of interest.
+
+<b> Default Behavior </b>
+
+By default, the list parameter study operates over all types of
+variables.
 
 The number of real values in the \c list_of_points specification or
 file referenced by \c import_points_file must be a multiple of the
 total number of variables (including continuous and discrete types)
 contained in the variables specification. 
 
-<b> Notes </b>
+<b> Expected Outputs </b>
+
+A list parameter study produces a set of responses for each parameter
+set that is specified.
+
+<b> Usage Tips </b>
+
 \li This parameter study simply
   performs simulations for the first parameter set (the first \c n
   entries in the list), followed by the next parameter set (the next \c

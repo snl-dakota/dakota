@@ -1,5 +1,6 @@
 Blurb::
-Parameter study - points moving out from a center point
+Samples variables along points moving out from a center point
+
 Description::
 Dakota's centered parameter study computes response data sets along
 multiple coordinate-based vectors, one per parameter, centered about
@@ -7,14 +8,22 @@ the initial values from the variables specification. This is useful
 for investigation of function contours with respect to each parameter
 individually in the vicinity of a specific point (e.g.,
 post-optimality analysis for verification of a minimum), thereby
-avoiding the cost associated with a multidimensional grid. 
+avoiding the cost associated with a multidimensional grid.
 
-In contrast to the \c vector_parameter_study, where steps
-are taken along a vector, the \c centered_parameter_study
-takes steps along each orthogonal dimension. Each dimension
-is treated independently.
+<b> Default Behavior </b>
 
-The number of steps are taken in each direction, so that the total number of points in the parameter study is \f$1+ 2\sum{n}  \f$.
+By default, the centered parameter study operates over all types of
+variables.
+
+The \c centered_parameter_study takes steps along each orthogonal
+dimension. Each dimension is treated independently.  The number of
+steps are taken in each direction, so that the total number of points
+in the parameter study is \f$1+ 2\sum{n} \f$.
+
+<b> Expected Outputs </b>
+
+A centered parameter study produces a set of responses for each
+parameter set that is generated.
 
 Topics::	parameter_studies
 Examples::

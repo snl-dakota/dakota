@@ -1,16 +1,23 @@
 Blurb::
-(Default) Specified file is in the annotated format
-Description::
-Annotated Matrix (default for all I/O; specified via 
-\c annotated): text file with one leading row of comments/column 
-labels and one leading column of evaluation/row IDs surrounding 
-num\_rows x num\_cols whitespace-separated numeric data, (newlines 
-separating rows are not currently required, but may be in the 
-future). The numeric data in a row may correspond to variables, 
-variables followed by responses, data point for calibration, etc., 
-depending on context. 
+Denotes annotated file format
 
-<b> Important Notes </b>
+Description::
+An annotated file is a text file with one leading row of
+comments/column labels and one leading column of evaluation/row IDs
+surrounding num\_rows x num\_cols whitespace-separated numeric data,
+(newlines separating rows are not currently required, but may be in
+the future). The numeric data in a row may correspond to variables,
+variables followed by responses, data point for calibration, etc.,
+depending on context.
+
+<b> Default Behavior </b>
+
+By default, Dakota expects point files to be in annotated format.  To
+explicitly specify this in the Dakota input file, however, the \c
+annotated keyword must be used in conjunction with the \c
+import_points_file keyword.
+
+<b> Usage Tips </b>
 
 \li Prior to October 2011, calibration and surrogate data files were
 free-form format. They now default to annotated format, though \c
@@ -23,6 +30,12 @@ support the free-form option.
 
 Topics::	file_formats
 Examples::
+\verbatim
+method
+  list_parameter_study
+    import_points_file = 'dakota_pstudy.3.dat'
+    annotated
+\endverbatim
 Theory::
 Faq::
 See_Also::	
