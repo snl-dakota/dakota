@@ -21,7 +21,7 @@ interface,
 	  parameters_file = 'params.in'
 	  results_file    = 'results.out'
 	  work_directory directory_tag
-	  template_directory = 'templatedir'
+	  copy_files = 'templatedir/*'
 # uncomment to leave params.in and results.out files in work_dir subdirectories
 # 	  named 'workdir' file_save  directory_save
 	  aprepro

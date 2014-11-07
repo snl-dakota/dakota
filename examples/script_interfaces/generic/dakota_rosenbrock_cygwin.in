@@ -23,10 +23,8 @@ interface,
 	  parameters_file = 'params.in'
 	  results_file    = 'results.out'
 	  work_directory directory_tag  named 'workdir'
-	  template_directory = 'templatedir'
+	  copy_files = 'templatedir/*'
 	    # must specify copy when running Cygwin binary at Windows command
-	    # alternately could use relative paths in driver script
-	    copy
 
 # Could omit "named 'workdir'" after adding dprepro to templatedir or
 # putting dprepro on the PATH and changing "../dprepro" to
