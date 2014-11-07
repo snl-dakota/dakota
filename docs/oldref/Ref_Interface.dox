@@ -620,7 +620,7 @@ to avoid conflicts.  When the \c work_directory feature is enabled,
 optional tagging and saving as with files), and execute the analysis
 driver from that working directory.  The directory may be \c named
 with a string, or left anonymous to use temporary file space.  If an
-optional \c template_directory and/or list of \c template_files is
+optional \c link_files and/or list of \c copy_files is
 specified, %Dakota will link (or copy) those files into each working
 directory. For additional details, see the User's Manual.
 
@@ -714,29 +714,17 @@ Additional specifications for fork (and system call) interfaces
 <td>Optional
 <td>remove work directory
 <tr>
-<td>Template directory
-<td>\c template_directory
-<td>string path
-<td>Optional
-<td>no template directory
-<tr>
-<td>Template files
-<td>\c template_files
+<td>link files
+<td>\c link_files
 <td>list of strings
-<td>Optional
-<td>no template files
 <tr>
-<td>Copy template files
-<td>\c copy
-<td>none
-<td>Optional
-<td>link template files
+<td>copy files
+<td>\c copy_files
+<td>list of strings
 <tr>
-<td>Replace existing files
-<td>\c replace
+<td>Overwrite existing files
+<td>\c overwrite
 <td>none
-<td>Optional
-<td>do not overwrite files
 </table>
 
 \subsection InterfApplicSC System call interface
