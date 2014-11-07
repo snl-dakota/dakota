@@ -17,8 +17,8 @@ surface, at least dim+1 samples should be used, where "dim" is the
 number of variables.  For sensitivities to quadratic terms or
 quadratic response surfaces, at least (dim+1)(dim+2)/2 samples are
 needed.  For uncertainty quantification, we recommend at least 10*dim
-samples.  For \ref variance_based_decomp, we recommend hundreds to
-thousands of samples.  Note that for \ref variance_based_decomp, the
+samples.  For \c variance_based_decomp, we recommend hundreds to
+thousands of samples.  Note that for \c variance_based_decomp, the
 number of simulations performed will be N*(dim+2).
 
 

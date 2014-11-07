@@ -9,7 +9,7 @@ used to perform the function evaluations needed by the Dakota method.
 
 If not specified, a Dakota method will use the last model block
 parsed.  If specified, there must be a \ref model block in the Dakota
-input file that has a corresponding \ref id_model with the same name.
+input file that has a corresponding \c id_model with the same name.
 
 <b> Usage Tips </b>
 

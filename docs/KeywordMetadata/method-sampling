@@ -14,7 +14,7 @@ quantification.
 By default, \c sampling methods operate on aleatory and epistemic
 uncertain variables.  The types of variables can be restricted or
 expanded (to include design or state variables) through use of the
-\ref active keyword in the \ref variables block in the Dakota input
+\c active keyword in the \ref variables block in the Dakota input
 file.  If continuous design and/or state variables are designated as
 active, the sampling algorithm will treat them as parameters with
 uniform probability distributions between their upper and lower
