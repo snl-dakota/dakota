@@ -1236,28 +1236,18 @@ Sometimes it can be helpful for the simulator and filters to start in a
 new directory populated with some files.  Adding
 \begin{small}
 \begin{verbatim}
-       template_directory 'my/template'
+       link_files 'templatedir/*'
 \end{verbatim}
 \end{small}
 to the work directory specification would cause the
-contents of directory \texttt{my/template} to be linked recursively
+contents of directory \texttt{templatedir} to be linked
 into the work directory.  Linking makes sense if files are large,
 but when practical, it is far more reliable to have
-copies of the files; adding \texttt{copy} to the specification
+copies of the files; adding \texttt{copy\_files} to the specification
 would cause the contents of the template directory to be copied
-recursively to the work directory.  The linking or copying does
-not replace existing files unless \texttt{replace} also appears
-in the specification.  Instead of \texttt{template\_directory} $...$,
-you can specify \texttt{template\_files}, followed by one or more
-quoted strings, as in
-\begin{small}
-\begin{verbatim}
-       template_files 'zip' 'zap' 'foo/zot'
-\end{verbatim}
-\end{small}
-which would cause \texttt{zip}, \texttt{zap}, and \texttt{foo/zot} to
-be linked (or, with \texttt{copy}, copied) recursively to the work
-directory.
+to the work directory.  The linking or copying does
+not overwrite existing files unless \texttt{overwrite} also appears
+in the specification.
 
 Here is a summary of possibilities for a work directory specification,
 with {\tt\verb=[=$...$\verb=]=} denoting that $...$ is optional:
@@ -1266,9 +1256,8 @@ with {\tt\verb=[=$...$\verb=]=} denoting that $...$ is optional:
         work_directory [ named '...' ]
           [ directory_tag ]     # or dir_tag
           [ directory_save ]    # or dir_save
-          [ template_directory '...' # or template_files '...' '...' ...
-             [ copy ]
-             [ replace ]
+          [ link_files '...' # or copy_files '...' '...' ...
+             [ overwrite ]
              ]
 \end{verbatim}
 \end{small}
