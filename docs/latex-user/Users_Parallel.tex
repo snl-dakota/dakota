@@ -303,14 +303,15 @@ parallelism are:
 solution points between methods, single-point minimizers will be executed
 concurrently using each of the transferred solution points.
 
-%\item Branch and bound: optimization strategy for mixed-integer nonlinear
-%programming with noncategorical discrete variables.
+%\item Branch and bound: optimization meta-iterator for mixed-integer
+%nonlinear programming with noncategorical discrete variables.
 
-\item Pareto-set optimization: multiobjective optimization strategy for
-computing sets of points on the Pareto front of nondominated solutions.
+\item Pareto-set optimization: a meta-iterator for multiobjective
+  optimization using the simple weighted-sum approach for computing
+  sets of points on the Pareto front of nondominated solutions.
 
-\item Multi-start iteration: strategy for executing multiple instances
-of an iterator from different starting points.
+\item Multi-start iteration: a meta-iterator for executing multiple
+  instances of an iterator from different starting points.
 \end{itemize}
 
 %In the branch and bound case, the available iterator concurrency grows
@@ -837,7 +838,7 @@ message passing parallelism:
 
 %In addition, the following scheduling approach is provided by PICO for
 %the scheduling of concurrent optimizations within the branch and bound
-%strategy:
+%minimizer:
 
 %\begin{itemize}
 % TO DO: this could become multipoint nondedicated dynamic scheduling
@@ -1161,39 +1162,34 @@ the power of these machines for performing design, uncertainty
 quantification, and other systems analyses, parallel algorithms are
 needed which are scalable to thousands of processors.
 
-Dakota supports a total of three tiers of scheduling and four levels
-of parallelism which, in combination, can minimize efficiency losses
-and achieve near linear scaling on MP computers. The four levels are:
-\begin{enumerate}
-\item concurrent iterators within a meta-iterator (scheduling performed by
-  Dakota)
-
-\item concurrent function evaluations within each iterator (scheduling
-  performed by Dakota)
-
-\item concurrent analyses within each function evaluation (scheduling
-  performed by Dakota)
-
-\item multiprocessor analyses (work distributed by a parallel
-  analysis code)
-\end{enumerate}
-for which the first two are classified as algorithmic coarse-grained
-parallelism, the third is function evaluation coarse-grained
-parallelism, and the fourth is function evaluation fine-grained
-parallelism (see Section~\ref{parallel:overview:cat}). Algorithmic
-fine-grained parallelism is not currently supported, although the
-development of large-scale parallel SAND techniques is a current
-research direction~\cite{Bar01b}.
+Dakota supports an open-ended number of levels of nested parallelism
+which, as described in Section~\ref{parallel:overview}, can be
+categorized into three types of concurrent job scheduling and four
+types of parallelism: (a) concurrent iterators within a meta-iterator
+(scheduled by Dakota), (b) concurrent function evaluations within each
+iterator (scheduled by Dakota), (c) concurrent analyses within each
+function evaluation (scheduled by Dakota), and (d) multiprocessor
+analyses (work distributed by a parallel analysis code).  In
+combination, these parallelism levels can minimize efficiency losses
+and achieve near linear scaling on MP computers.  Types (a) and (b)
+are classified as algorithmic coarse-grained parallelism, type (c) is
+function evaluation coarse-grained parallelism, and type (d) is
+function evaluation fine-grained parallelism (see
+Section~\ref{parallel:overview:cat}). Algorithmic fine-grained
+parallelism is not currently supported in Dakota, although this 
+picture is rapidly evolving. 
+%the development of large-scale parallel SAND techniques is an ongoing
+%research focus~\cite{Bar01b}.
 
 A particular application may support one or more of these parallelism
 types, and Dakota provides for convenient selection and combination of
-each of the supported levels. If multiple types of parallelism can be
-exploited, then the question may arise as to how the amount of
-parallelism at each level should be selected so as to maximize the
-overall parallel efficiency of the study. For performance analysis of
-multilevel parallelism formulations and detailed discussion of these
-issues, refer to~\cite{Eld00}.  In many cases, \emph{the user may
-simply employ Dakota's automatic parallelism configuration facilities,}
+multiple levels. If multiple types of parallelism can be exploited,
+then the question may arise as to how the amount of parallelism at
+each level should be selected so as to maximize the overall parallel
+efficiency of the study. For performance analysis of multilevel
+parallelism formulations and detailed discussion of these issues,
+refer to~\cite{Eld00}.  In many cases, \emph{the user may simply
+  employ Dakota's automatic parallelism configuration facilities,}
 which implement the recommendations from the aforementioned paper.
 
 Figure~\ref{fig:mlp_scaling} shows typical fixed-size scaling
@@ -1201,19 +1197,20 @@ performance using a modified version of the extended
 \texttt{text\_book} problem (see Section~\ref{additional:textbook}).
 Three levels of parallelism (concurrent evaluations within an
 iterator, concurrent analyses within each evaluation, and
-multiprocessor analyses) are exercised.  Despite the use of a fixed
-problem size and the presence of some idleness within the scheduling
-at multiple levels, the efficiency is still reasonably
-high\footnote{Note that overhead is reduced in these scaling studies
-by deactivating the evaluation cache and restart file logging.}.
-Greater efficiencies are obtainable for scaled speedup studies (or for
-larger problems in fixed-size studies) and for problems optimized for
-minimal scheduler idleness (by, e.g., managing all concurrency in as
-few scheduling levels as possible).  Note that speedup and efficiency
-are measured relative to the case of a single instance of a
-multiprocessor analysis, since it was desired to investigate the
-effectiveness of the Dakota schedulers independent from the efficiency
-of the parallel analysis.
+multiprocessor analyses) are exercised within a modest partition of
+processors (circa year 2000).  Despite the use of a fixed problem size
+and the presence of some idleness within the scheduling at multiple
+levels, the efficiency is still reasonably high\footnote{Note that
+  overhead is reduced in these scaling studies by deactivating the
+  evaluation cache and restart file logging.}.  Greater efficiencies
+are obtainable for scaled speedup studies (or for larger problems in
+fixed-size studies) and for problems optimized for minimal scheduler
+idleness (by, e.g., managing all concurrency in as few scheduling
+levels as possible).  Note that speedup and efficiency are measured
+relative to the case of a single instance of a multiprocessor
+analysis, since it was desired to investigate the effectiveness of the
+Dakota schedulers independent from the efficiency of the parallel
+analysis.
 \begin{figure}[ht]
   \centering
   \subfigure[Relative speedup.]
@@ -1232,16 +1229,17 @@ of the parallel analysis.
 
 In most cases, the use of asynchronous local parallelism is the
 termination point for multilevel parallelism, in that any level of
-parallelism lower than an asynchronous local level will be serialized.
-The exception to this rule is reforking of forked processes for
-concurrent analyses within forked evaluations.  In this case, a new
-process is created using fork for one of several concurrent
-evaluations; however, the new process is not replaced immediately
-using exec.  Rather, the new process is reforked to create additional
-child processes for executing concurrent analyses within each
-concurrent evaluation process.  This capability is not supported by
-system calls and provides one of the key advantages to using fork over
-system (see Section~\ref{interfaces:which}).
+parallelism lower than an asynchronous local level will be serialized
+(see discussion in Section~\ref{parallel:MLP:hybrid}).  The exception
+to this rule is reforking of forked processes for concurrent analyses
+within forked evaluations.  In this case, a new process is created
+using fork for one of several concurrent evaluations; however, the new
+process is not replaced immediately using exec.  Rather, the new
+process is reforked to create additional child processes for executing
+concurrent analyses within each concurrent evaluation process.  This
+capability is not supported by system calls and provides one of the
+key advantages to using fork over system (see
+Section~\ref{interfaces:which}).
 
 \subsection{Message Passing Parallelism}\label{parallel:MLP:message}
 
@@ -1263,17 +1261,17 @@ been designed, or can be modified, to be modular on a communicator
 intra-communicators are created with the \texttt{MPI\_Comm\_split}
 routine, and in order to send messages between these
 intra-communicators, new inter-communicators are created with calls to
-\texttt{MPI\_Intercomm\_create}. To minimize overhead, Dakota creates
-new intra- and inter-communicators only when the parent communicator
-provides insufficient context for the scheduling at a particular
-level. In addition, multiple parallel configurations (containing a set
-of communicator partitions) can be allocated for use in studies with
-multiple iterators and models (e.g., 16 servers of 64 processors each
-could be used for iteration on a lower fidelity model, followed by two
-servers of 512 processors each for subsequent iteration on a higher
-fidelity model).  Each of the parallel configurations are allocated
-at object construction time and are reported at the beginning of the
-Dakota output.
+\texttt{MPI\_Intercomm\_create}. %To minimize overhead, Dakota creates
+%new intra- and inter-communicators only when the parent communicator
+%provides insufficient context for the scheduling at a particular level. 
+Multiple parallel configurations (containing a set of communicator
+partitions) are allocated for use in studies with multiple iterators
+and models (e.g., 16 servers of 64 processors each could be used for
+iteration on a lower fidelity model, followed by two servers of 512
+processors each for subsequent iteration on a higher fidelity model),
+and can be alternated at run time.  Each of the parallel
+configurations are allocated at object construction time and are
+reported at the beginning of the Dakota output.
 
 Each tier within Dakota's nested parallelism hierarchy can use the
 dedicated master and peer partition approaches described in
@@ -1301,8 +1299,8 @@ scheduling option, and certain external libraries may provide custom options.
 %(e.g., PICO supports distributed scheduling in peer partitions).
 As an
 example, Figure~\ref{parallel:figure02} shows a case in which a branch
-and bound strategy employs peer partition/distributed scheduling at
-level 1, each optimizer partition employs concurrent function
+and bound meta-iterator employs peer partition/distributed scheduling 
+at level 1, each optimizer partition employs concurrent function
 evaluations in a dedicated master partition/dynamic scheduling model at
 level 2, and each function evaluation partition employs concurrent
 multiprocessor analyses in a peer partition/static scheduling model at
@@ -1311,8 +1309,8 @@ level 3. In this case, \texttt{MPI\_COMM\_WORLD} is subdivided into
 subdivided into \texttt{evalCOMM0} (master) and
 \texttt{evalCOMM1/2/3/.../$\tau_{2}$} (slaves), and each slave
 \texttt{evalCOMM} is further subdivided into
-\texttt{analCOMM1/2/3/.../$\tau_{3}$}.  Logic for selection of $\tau_i$
-is discussed in~\cite{Eld00}.
+\texttt{analCOMM1/2/3/.../$\tau_{3}$}.  Logic for selecting the
+$\tau_i$ that maximize overall efficiency is discussed in~\cite{Eld00}.
 
 
 \subsection{Hybrid Parallelism}\label{parallel:MLP:hybrid}
@@ -1388,10 +1386,9 @@ direct interface restrictions are present since multithreading in not
 yet supported and the system call interface restrictions result from
 the inability to manage concurrent analyses within a nonblocking
 function evaluation system call.  Finally, nonblocking synchronization
-is only currently supported for asynchronous local parallelism at the
-concurrent function evaluation level.  In time, message passing and
-hybrid parallelism approaches will also support nonblocking
-synchronization at this level.
+is only supported at the concurrent function evaluation level,
+although it spans asynchronous local, message passing, and hybrid
+parallelism options.
 
 \begin{table}
   \centering
@@ -1466,9 +1463,9 @@ selecting them from a default system resources file and the latter
 specifying particular machines in a machine file (see~\cite{Gro96} for
 details).
 
-On a massively parallel computer such as ASCI Red, similar facilities
-are available from the Cougar operating system via the \texttt{yod}
-executable loading facility:
+On a massively parallel computer, the familiar mpirun/mpiexec options
+may be replaced with other launch scripts as dictated by the
+particular software stack, e.g.:
 \begin{small}
 \begin{verbatim}
     yod -sz 512 dakota -i dakota.in > dakota.out
@@ -1478,27 +1475,27 @@ executable loading facility:
 In each of these cases, MPI command line arguments are used by MPI
 (extracted first in the call to \texttt{MPI\_Init}) and Dakota command
 line arguments are used by Dakota (extracted second by Dakota's
-command line handler). An issue that can arise with these command line
-arguments is that the mpirun script distributed with MPICH has been
-observed to have problems with certain file path specifications (e.g.,
-a relative path such as ``\texttt{../some\_file}''). These path
-problems are most easily resolved by using local linkage (all
-referenced files or soft links to these files appear in the same
-directory).
+command line handler). %An issue that can arise with these command line
+%arguments is that the mpirun script distributed with MPICH has been
+%observed to have problems with certain file path specifications (e.g.,
+%a relative path such as ``\texttt{../some\_file}''). These path
+%problems are most easily resolved by using local linkage (all
+%referenced files or soft links to these files appear in the same
+%directory).
 
-Finally, when running on computer resources that employ NQS/PBS batch
-schedulers, the single-processor \texttt{dakota} command syntax or the
+Finally, when running on computer resources that employ NQS/PBS 
+batch schedulers, the single-processor \texttt{dakota} command syntax or the
 multiprocessor \texttt{mpirun} command syntax might be contained
 within an executable script file which is submitted to the batch
-queue. For example, on Cplant, the command
+queue. For example, a command
 \begin{small}
 \begin{verbatim}
     qsub -l size=512 run_dakota
 \end{verbatim}
 \end{small}
 
-could be submitted to the PBS queue for execution. On ASCI Red, the
-NQS syntax is similar:
+could be submitted to a PBS queue for execution. The NQS syntax is 
+similar:
 \begin{small}
 \begin{verbatim}
     qsub -q snl -lP 512 -lT 6:00:00 run_dakota
@@ -1543,20 +1540,27 @@ selections for each of the parallelism levels. This logic accounts for
 problem size, the concurrency supported by particular iterative
 algorithms, and any user inputs or overrides. 
 
-With the exception of the concurrent-iterator parallelism level (iterator 
-executions tend to have high variability in duration), concurrency is 
-pushed up. That is, available processors will be assigned to concurrency 
-at the higher parallelism levels first. If more processors are available 
-than needed for concurrency at a level, then the server size is 
-increased to support concurrency in the next lower level of parallelism. 
-This process is continued until all available processors have been 
-assigned. These assignments can be overridden by the user by specifying 
-a number of servers, processors per server, or both, for the concurrent 
-iterator, evaluation, and analysis parallelism levels. For example, if 
-it is desired to parallelize concurrent analyses within each function 
-evaluation, then an \texttt{evaluation\_servers = 1} override would 
-serialize the concurrent function evaluations level and assure 
-processor availability for concurrent analyses.
+Concurrency is pushed up for most parallelism levels. That is,
+available processors will be assigned to concurrency at the higher
+parallelism levels first as we partition from the top down.  If more
+processors are available than needed for concurrency at a level, then
+the server size is increased to support concurrency in the next lower
+level of parallelism.  This process is continued until all available
+processors have been assigned. These assignments can be overridden by
+the user by specifying a number of servers, processors per server, or
+both, for the concurrent iterator, evaluation, and analysis
+parallelism levels. For example, if it is desired to parallelize
+concurrent analyses within each function evaluation, then an
+\texttt{evaluation\_servers = 1} override would serialize the
+concurrent function evaluations level and ensure processor
+availability for concurrent analyses.
+
+The exception to this push up of concurrency occurs for
+concurrent-iterator parallelism levels, since iterator executions tend
+to have high variability in duration whenever they utilize feedback of
+results.  For these levels, concurrency is pushed down since it is
+generally best to serialize the levels with the highest job variation
+and exploit concurrency elsewhere.
 
 Partition type (master or peer) may also be specified for each level, 
 and peer scheduling type (dynamic or static) may be specified at the 
@@ -1604,31 +1608,37 @@ to a processor (i.e., asynchronous local parallelism). This
 
 In both cases, the scheduling of local evaluations is dynamic by
 default, but may be explicitly selected or overriden using
-\texttt{local\_evaluation\_scheduling dyanmic} or \texttt{static}.
+\texttt{local\_evaluation\_scheduling dynamic} or \texttt{static}.
 
 In addition, \texttt{evaluation\_servers},
 \texttt{processors\_per\_evaluation}, and
-\texttt{evaluation\_scheduling} keywords can be used to
-override the automatic parallel configuration for concurrent
-function evaluations. When \texttt{evaluation\_scheduling peer} is
-specified, additional specification of \texttt{dynamic} or
-\texttt{static} is required. To override the automatic parallelism
-configuration for concurrent analyses, the \texttt{analysis\_servers} 
-and \texttt{analysis\_scheduling} keywords may be specified, and
-the \texttt{processors\_per\_analysis} keyword can be used to override
-the automatic parallelism configuration for the size of multiprocessor
-analyses used in a direct function simulation interface. Each of these
-keywords appears as part of the interface commands specification in
-the Dakota Reference Manual~\cite{RefMan}.
+\texttt{evaluation\_scheduling} keywords can be used to override the
+automatic parallel configuration for concurrent function
+evaluations. Evaluation scheduling may be selected to be
+\texttt{master} or \texttt{peer}, where the latter must be further
+specified to be \texttt{dynamic} or \texttt{static}. 
 
-\subsection{The meta-iterator specification}\label{parallel:spec:strategy}
+To override the automatic parallelism configuration for concurrent
+analyses, the \texttt{analysis\_servers} and
+\texttt{analysis\_scheduling} keywords may be specified, and the
+\texttt{processors\_per\_analysis} keyword can be used to override the
+automatic parallelism configuration for the size of multiprocessor
+analyses used in a direct function simulation interface. Scheduling
+options for this level include \texttt{master} or \texttt{peer}, where
+the latter is static (no dynamic peer option supported).  Each of
+these keywords appears as part of the interface commands specification
+in the Dakota Reference Manual~\cite{RefMan}.
 
-To specify concurrency in iterator executions, the
-\texttt{iterator\_servers}, \texttt{processors\_per\_iteration}, and
-\texttt{iterator\_scheduling} keywords are used to override the 
-automatic parallelism configuration. See the method commands 
-specification in the Dakota Reference Manual~\cite{RefMan} for 
-additional information.
+\subsection{The meta-iterator and nested model specifications}\label{parallel:spec:meta}
+
+To specify concurrency in sub-iterator executions within
+meta-iterators and nested models, the \texttt{iterator\_servers},
+\texttt{processors\_per\_iterator}, and \texttt{iterator\_scheduling}
+keywords are used to override the automatic parallelism configuration.
+For this level, the available scheduling options are \texttt{master}
+or \texttt{peer}, where the latter is static (no dynamic peer option
+supported).  See the method and model commands specification in the
+Dakota Reference Manual~\cite{RefMan} for additional details.
 
 \subsection{Single-processor Dakota specification}\label{parallel:spec:single}
 
@@ -1833,7 +1843,7 @@ specification as was used for the single-processor examples, e.g.:
 With 3 function evaluations concurrent on each server, the capacity of
 a 4 processor Dakota execution (syntax: \texttt{mpirun -np 4 dakota -i
   dakota.in}) has increased to 12 evaluations. Since all 11 jobs can
-now be scheduled in a single pass, which run concurrently.
+now be scheduled in a single pass, a peer static scheduler is sufficient.
 
 \begin{small}
 \begin{verbatim}
@@ -1961,7 +1971,7 @@ processor Dakota run \\
 An important point to recognize is that, since each of the parallel
 configuration inputs has been tied to the interface specification up
 to this point, these parallel configurations can be reallocated for
-each interface in a multi-iterator/multi-model strategy. For example,
+each interface in a multi-iterator/multi-model study. For example,
 a Dakota execution on 40 processors might involve the following two
 interface specifications:
 \begin{small}
@@ -1987,9 +1997,9 @@ processors each and the fine model would employ 4 evaluation servers
 of 10 processors each.
 
 Next, consider the following 4-level parallel case that employs the
-Pareto set optimization strategy. In this case,
+Pareto set optimization meta-iterator. In this case,
 \texttt{iterator\_servers} and \texttt{iterator\_scheduling peer}
-requests are included in the strategy specification:
+requests are included in the method specification:
 \begin{small}
 \begin{verbatim}
     method,
@@ -2028,7 +2038,7 @@ file \texttt{dakota.out.1} because of the use of concurrent iterators.
 \subsubsection{Example 5}\label{parallel:spec:multi:example5}
 
 As a final example, consider a multi-start optimization conducted on
-384 processors of ASCI Red. A job of this size must be submitted to
+384 processors. A job of this size must be submitted to
 the batch queue, using syntax similar to:
 \begin{small}
 \begin{verbatim}
