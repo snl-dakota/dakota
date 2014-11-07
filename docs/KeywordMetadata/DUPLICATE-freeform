@@ -1,14 +1,21 @@
 Blurb::
-Specified file is in the freeform format
+Denotes freeform file format
+
 Description::
-Free-form Matrix: text file with no leading row and no leading
+A freeform file is text file with no leading row and no leading
 column. The num_rows x num_cols total numeric data entries may appear
 separated with any whitespace including arbitrary spaces, tabs, and
 newlines. In this format, vectors may therefore appear as a single row
 or single column (or mixture; entries will populate the vector in
 order).
 
-<b> Important Notes </b>
+<b> Default Behavior </b>
+
+The freeform format is not used by Dakota by default.  To change this
+behavior, the \c freeform keyword must be used in conjunction with the
+\c import_points_file keyword.
+
+<b> Usage Tips </b>
 
 \li Prior to October 2011, calibration and surrogate data files were
 free-form format. They now default to annotated format, though \c
@@ -21,6 +28,12 @@ support the free-form option.
 
 Topics::	file_formats
 Examples::
+\verbatim
+method
+  list_parameter_study
+    import_points_file = 'dakota_pstudy.7.dat'
+    freeform
+\endverbatim
 Theory::
 Faq::
 See_Also::	

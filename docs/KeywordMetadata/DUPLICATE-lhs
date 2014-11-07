@@ -1,10 +1,33 @@
 Blurb::
-Use LHS method
+Uses Latin Hypercube Sampling (LHS) to sample variables
+
 Description::
-Use Latin Hypercube Sampling
+The \c lhs keyword invokes Latin Hypercube Sampling as the means of
+drawing samples of uncertain variables according to their probability
+distributions.  This is a stratified, space-filling approach that
+selects variable values from a set of equi-probable bins.
+
+<b> Default Behavior </b>
+
+By default, Latin Hypercube Sampling is used.  To explicitly specify
+this in the Dakota input file, however, the \c lhs keyword must appear
+in conjunction with the \c sample_type keyword.
+
+<b> Usage Tips </b>
+
+Latin Hypercube Sampling is very robust and can be applied to any
+problem.  It is fairly effective at estimating the mean of model
+responses and linear correlations with a reasonably small number of
+samples relative to the number of variables.
 
 Topics::	
 Examples::
+\verbatim
+method
+  sampling
+    sample_type lhs
+    samples = 20
+\endverbatim
 Theory::
 Faq::
 See_Also::	

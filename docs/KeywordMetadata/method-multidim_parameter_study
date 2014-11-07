@@ -1,5 +1,6 @@
 Blurb::
-Parameter study - make a full factorial grid of study points
+Samples variables on full factorial grid of study points
+
 Description::
 Dakota's multidimensional parameter study computes response data sets
 for an n-dimensional grid of points. Each continuous and discrete
@@ -9,9 +10,20 @@ into equally spaced index intervals. The partition boundaries in
 n-dimensional space define a grid of points, and every point is 
 evaluated.
 
-Since the initial values from the
-variables specification will not be used, they need not be
-specified.
+<b> Default Behavior </b>
+
+By default, the multidimensional parameter study operates over all
+types of variables.
+
+<b> Expected Outputs </b>
+
+A multidimensional parameter study produces a set of responses for
+each parameter set that is generated.
+
+<b> Usage Tips </b>
+
+Since the initial values from the variables specification will not be
+used, they need not be specified.
 
 Topics::	parameter_studies
 Examples::

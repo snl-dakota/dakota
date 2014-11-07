@@ -1,13 +1,35 @@
 Blurb::
-Define the vector with the inital point plus direction and magnitude of each step
-Description::
-The step vector defines the change in value for every variable, for a single step.
-Step \f$n+1\f$ is step \f$n\f$ plus the step vector.
+Number of sampling steps along the vector in a vector parameter study
 
-The points are determined by this step vector, plus the number of steps.
+Description::
+\c num_steps defines the number of steps that are taken in the
+direction of the vector. The magnitude of each step is determined in
+conjuction with the rest of the method specification.
+
+<b> Default Behavior </b>
+
+The user is required to specify \c num_steps for a vector parameter
+study.  There is no default value.
+
+This study performs function evaluations at both ends, making the
+total number of evaluations equal to \c num_steps+1.
+
+<b> Usage Tips </b>
+
+The study has stringent requirements on performing appropriate steps
+with any discrete range and discrete set variables.  A \c num_steps
+specification must result in discrete range and set index steps that
+are integers: no remainder is currently permitted in the integer step
+calculation and no rounding to integer steps will occur.
 
 Topics::	
 Examples::
+\verbatim
+method
+  vector_parameter_study
+    num_steps = 10
+    final_point =    2.0      2.0
+\endverbatim
 Theory::
 Faq::
 See_Also::	

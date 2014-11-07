@@ -436,8 +436,8 @@ are visible in Dakota's directory will also be visible in the work directory.
 Relative path names ---
 involving an intermediate slash but not an initial one,
 such as \texttt{./rosenbrock\_bb} or \texttt{a/bc/rosenbrock\_bb} ---
-will only be visible in the work directory if a \texttt{template\_directory}
-or \texttt{template\_files} specification (see \S\ref{interfaces:workdir})
+will only be visible in the work directory if a \texttt{link\_files}
+or \texttt{copy\_files} specification (see \S\ref{interfaces:workdir})
 has made them visible there.
 
 As an example of the data flow on a particular function evaluation,
@@ -1082,33 +1082,33 @@ model context, see {\tt
 \subsection{Temporary Files}\label{interfaces:file:temporary}
 
 If \texttt{parameters\_file} and \texttt{results\_file} are not
-specified by the user, temporary files having generated names are used.
-For example, a system call to
-a single analysis driver might appear as:
+specified by the user, temporary files having generated names are
+used.  For example, a system call to a single analysis driver might
+appear as:
 \begin{small}
 \begin{verbatim}
-    driver /usr/tmp/aaaa20305 /usr/tmp/baaa20305
+    driver /tmp/dakota_params_aaaa2035 /tmp/dakota_results_baaa2030
 \end{verbatim}
 \end{small}
 
 and a system call to an analysis driver with filter programs might appear as:
 \begin{small}
 \begin{verbatim}
-    ifilter /usr/tmp/aaaa22490 usr/tmp/baaa22490;
-         driver /usr/tmp/aaaa22490 usr/tmp/baaa22490;
-         ofilter /usr/tmp/aaaa22490 /usr/tmp/baaa22490
+    ifilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baaa2490;
+         driver /tmp/dakota_params_aaaa2490 tmp/dakota_results_baaa2490;
+         ofilter /tmp/dakota_params_aaaa2490 /tmp/dakota_results_baa22490
 \end{verbatim}
 \end{small}
 
-These files have unique names created by the \texttt{tmpnam}
-utility from the C standard library~\cite{Ker88}. This uniqueness requires
-the user's interface to get the names of
-these files from the command line. File tagging with evaluation number
-is unnecessary with temporary files (since they are already
-unique); thus, \texttt{file\_tag} requests will be ignored. A
-\texttt{file\_save} request will be honored, but it should be used
-with care since the temporary file directory could easily become
-cluttered without the user noticing.
+These files have unique names created by Boost filesystem
+utilities. This uniqueness requires the user's interface to get the
+names of these files from the command line. File tagging with
+evaluation number is unnecessary with temporary files, but can be
+helpful for the user workflow to identify the evaluation number.  Thus
+\texttt{file\_tag} requests will be honored. A \texttt{file\_save}
+request will be honored, but it should be used with care since the
+temporary file directory could easily become cluttered without the
+user noticing.
 
 \subsection{File Tagging for Analysis Drivers}\label{interfaces:file:tagging2}
 

@@ -1,20 +1,31 @@
 Blurb::
-Specify file containing points (variable and response values)
+File containing variable values and corresponding responses
 
 Description::
-File of points (variable and response values) that will be used by the
-method in place of model evaluations.
+The \c import_points_file allows the user to specify a file that
+contains a list of variable values and the model responses computed at
+those values.  These can be used by a number of methods in place of
+model evaluations.  When used to construct surrogate models or
+emulators these are often called build points or training data.
 
-When used to construct surrogate models or emulators these are often
-called build points or training data.
+<b> Default Behavior </b>
+
+Be default, methods do not import points from a file.
+
+<b> Usage Tips </b>
 
 Although Dakota parses input files without regard to whitespace, the
 import_points_file must be in one of two formats:
 \li \c annotated (default)
-\li \c freeform 
+\li \c freeform
 
 Topics::	
 Examples::
+\verbatim
+method
+  list_parameter_study
+    import_points_file = 'dakota_pstudy.3.dat'
+\endverbatim
 Theory::
 Faq::
 See_Also::	

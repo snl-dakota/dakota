@@ -1,10 +1,19 @@
 Blurb::
-Specifies the name and behavior of a method
+Begins Dakota method selection and behavioral settings.
+
 Description::
-The method block(s) in a Dakota input file each specify 
-the various keywords to select a method and control its behavior.
-The terms "method" and "iterator" can be 
-used interchangeably.
+The \c method keyword signifies the start of a block in the Dakota
+input file.  Said block contains the various keywords necessary to
+specify a method and to control its behavior.
+
+<b> Method Block Requirements </b>
+
+At least one \c method block must appear in the Dakota input
+file.  Multiple \c method blocks may be needed to fully define
+advanced analysis approaches.
+
+Each \c method block must specify one method and, optionally, any
+associated keywords that govern the behavior of the method.
 
 <b> The Methods </b>
 

@@ -1,17 +1,29 @@
 Blurb::
-Choose the sampling algorithm
-Description::
-There are only two types of sampling:
-\li Monte Carlo (pure random)
-\li Latin Hypercube Sampling
+Selection of sampling strategy
 
-However, some methods allow an existing study to be augmented with additional or incremental sampling.
-This is used to get better estimates of mean, variance, and percentiles.
-The incremental study must use the same type of sampling 
-as the existing study.
+Description::
+The \c sample_type keyword allows the user to select between multiple
+random sampling approaches.  There are two primary types of sampling:
+Monte Carlo (pure random) and Latin Hypercube Sampling.  Additionally,
+these methods have incremental variants that allow an existing study
+to be augmented with additional samples to get better estimates of
+mean, variance, and percentiles.
+
+<b> Default Behavior </b>
+
+If the \c sample_type keyword is present, it must be accompanied by \c
+lhs, \c random, \c incremental_lhs, or \c incremental_random.
+Otherwise, \c lhs will be used by default.
+
 
 Topics::	
 Examples::
+\verbatim
+method
+  sampling
+    sample_type lhs
+    samples = 20
+\endverbatim
 Theory::
 Faq::
 See_Also::	

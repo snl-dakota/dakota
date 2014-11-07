@@ -105,9 +105,5 @@ accurate GEK models than when pivoted Cholesky or
 whole-point-block pivoted Cholesky was performed on GEK's 
 correlation matrix.
 
-
-
-?? This correlation 
-function results in a response surface that is \f$C^\infty\f$-continuous.
 Faq::
 See_Also::	
