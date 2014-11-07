@@ -21,33 +21,46 @@ serial and parallel simulation codes.
 Some engineering design applications call for the use of multiple
 simulation code executions (different disciplinary codes, the same
 code for different load cases or environments, etc.) in order to
-evaluate a single response data set (e.g., objective functions and
+evaluate a single response data set\footnote{the term ``function 
+evaluation'' is used broadly to mean any individual data request 
+from an iterative algorithm} (e.g., objective functions and
 constraints) for a single set of parameters. If these simulation code
 executions are independent (or if coupling is enforced at a higher
-level), Dakota can perform them in parallel.
+level), Dakota can perform them concurrently.
 
-\textbf{Concurrent Execution of Function Evaluations within an Iterator}:
+\textbf{Concurrent Execution of Function Evaluations within an Iterator}: 
 With very few exceptions, the iterative algorithms described in
-Section~\ref{ps} through
-Section~\ref{nls} all provide opportunities for the
-concurrent evaluation of response data sets for different parameter
-sets. Whenever there exists a set of design point evaluations that are
-independent, Dakota can perform them in parallel.
+Chapters~\ref{ps}--\ref{nls} all provide opportunities
+for the concurrent evaluation of response data sets for different
+parameter sets. Whenever there exists a set of function evaluations
+that are independent, Dakota can perform them in parallel.
 
-\textbf{Concurrent Execution of Iterators within a Meta-iterator}: 
-The advanced Dakota methods described in Section~\ref{adv_meth}
-are examples of meta-iterators, which generate a sequence of iterator 
-subproblems. For example, the Pareto-set and multi-start strategies 
-generate sets of optimization subproblems. Similarly, optimization 
-under uncertainty (\ref{adv_models:ouu}) generates sets of 
-uncertainty quantification subproblems. Whenever these
-subproblems are independent, Dakota can perform them in parallel.
+\textbf{Concurrent Execution of Sub-Iterators within a Meta-iterator
+  or Nested Model}: The advanced methods described in
+Chapter~\ref{adv_meth} are examples of meta-iterators, and the
+advanced model recursions described in
+Sections~\ref{adv_models:mixed_uq}--\ref{adv_models:ouu} all utilize
+nested models. Both of these cases generate sets of iterator
+subproblems that can be executed concurrently. For example, the
+Pareto-set and multi-start strategies generate sets of optimization
+subproblems. Similarly, optimization under uncertainty
+(\ref{adv_models:ouu}) generates sets of uncertainty quantification
+subproblems. Whenever these subproblems are independent, Dakota can
+perform them in parallel.
 
-It is important to recognize that these four parallelism levels are
-nested, in that a meta-iterator can schedule and manage concurrent
-iterators, each of which may manage concurrent function evaluations,
-each of which may manage concurrent analyses, each of which may
-execute on multiple processors. 
+It is important to recognize that these four parallelism sources can
+be combined recursively.  For example, a meta-iterator can schedule
+and manage concurrent iterators, each of which may manage concurrent
+function evaluations, each of which may manage concurrent analyses,
+each of which may execute on multiple processors.  Moreover, more than
+one source of sub-iteration concurrency can be exploited when
+combining meta-iteration and nested model sources.  In an extreme
+example, defining the Pareto frontier for mixed-integer nonlinear
+programming under mixed aleatory-epistemic uncertainty might exploit
+up to four levels of nested sub-iterator concurrency in addition to
+available levels from function evaluation concurrency, analysis
+concurrency, and simulation parallelism.  The majority of application
+scenarios, however, will employ one to two levels of parallelism.
 
 Navigating the body of this chapter: The range of capabilities is
 extensive and can be daunting at first; therefore, this chapter takes
@@ -98,7 +111,7 @@ function evaluations:
   \item \emph{Approximate methods}: design of computer experiments for
     building surrogate models.
 
-  \item \emph{Concurrent iterators}: optimization under
+  \item \emph{Concurrent sub-iteration}: optimization under
     uncertainty, branch and bound, multi-start local search, Pareto
     set optimization, island-model GAs.
   \end{itemize}
@@ -120,10 +133,10 @@ function evaluations:
 
 \item \emph{Function evaluation fine-grained parallelism}: This
   involves parallelization of the solution steps within a single
-  analysis code.  The DOE laboratories have developed parallel
-  analysis codes in the areas of nonlinear mechanics, structural
-  dynamics, heat transfer, computational fluid dynamics, shock
-  physics, and many others.
+  analysis code.  Support for massively parallel simulation continues
+  to grow in areas of nonlinear mechanics, structural dynamics, heat
+  transfer, computational fluid dynamics, shock physics, and many
+  others.
 \end{enumerate}
 
 By definition, coarse-grained parallelism requires very little
@@ -132,7 +145,7 @@ parallel,'' meaning that there is little loss in parallel efficiency
 due to communication as the number of processors increases. However,
 it is often the case that there are not enough separable computations
 on each algorithm cycle to utilize the thousands of processors
-available on MP machines. For example, a thermal safety
+available on massively parallel machines. For example, a thermal safety
 application~\cite{Eld96a} demonstrated this limitation with a pattern
 search optimization in which the maximum speedup exploiting
 \emph{only} coarse-grained algorithmic parallelism was shown to be
@@ -164,23 +177,24 @@ parallelism, in particular the combination of coarse-grained and
 fine-grained approaches. This will allow us to execute fine-grained
 parallel simulations on sets of processors where they are most
 efficient and then replicate this efficiency with many coarse-grained
-instances.  From a software perspective, coarse-grained parallelism by
-itself (many instances of a single-processor simulation) and
-fine-grained parallelism by itself (a single instance of a large
-multiprocessor simulation) can be considered to cover two ends of a
-spectrum, and we are interested in also supporting anywhere in between
-(any number of instances of any size simulation).  Single-level
-parallelism approaches are described in Section~\ref{parallel:SLP},
-and multilevel parallelism approaches are discussed in
-Section~\ref{parallel:MLP}.
+instances involving one or more levels of nested job scheduling.  
+%From a software perspective, coarse-grained parallelism by
+%itself (many instances of a single-processor simulation) and
+%fine-grained parallelism by itself (a single instance of a large
+%multiprocessor simulation) can be considered to cover two ends of a
+%spectrum, and we are interested in also supporting anywhere in between
+%(any number of instances of any size simulation).  Single-level
+%parallelism approaches (the extremes of this spectrum) are described
+%in Section~\ref{parallel:SLP}, and multilevel parallelism approaches
+%(middle of the spectrum) are discussed in Section~\ref{parallel:MLP}.
 
-The available concurrency in function evaluation parallelism is
-determined by the aspects of a particular systems analysis
-application, and is therefore highly application-dependent.
-Algorithmic parallelism, on the other hand, is largely determined by
-the selection and configuration of a particular algorithm.  These
-selection possibilities within Dakota are outlined in the following
-section.
+%The available concurrency in function evaluation parallelism is
+%determined by the aspects of a particular systems analysis
+%application, and is therefore highly application-dependent.
+%Algorithmic parallelism, on the other hand, is largely determined by
+%the selection and configuration of a particular algorithm.  These
+%selection possibilities within Dakota are outlined in the following
+%section.
 
 
 \subsection{Parallel Dakota algorithms} \label{parallel:algorithms}
@@ -212,6 +226,8 @@ parallelism) may still be available.
   approach is superseded by NPSOL's gradient-based line search in
   user-supplied derivative mode.  NLPQL also supports a distributed
   line search capability for generating concurrency~\cite{Sch04}.
+  Finally, finite-difference Newton algorithms can exploit additional
+  concurrency in numerically evaluating Hessian matrices. % TO DO: which?
 
 \item Nongradient-based optimizers: HOPSPACK, JEGA methods, and most
   SCOLIB methods support parallelism.  HOPSPACK and SCOLIB methods
@@ -265,18 +281,15 @@ parallelism) may still be available.
   parallelism.
 
 \item Uncertainty quantification: all nondeterministic methods
-  (\texttt{sampling}, \texttt{local\_reliability},
-  \texttt{global\_reliability}, \texttt{polynomial\_chaos},
-  \texttt{stoch\_collocation},\texttt{local\_interval\_est}, 
-  \texttt{global\_interval\_est},\texttt{local\_evidence} and 
-  \texttt{global\_evidence})
-  support parallelism. In the case of
-  \texttt{local\_reliability}, gradient-based optimization is
-  involved and parallelism can be exploited through the use of
-  Dakota's native finite differencing routine.  In the case of
-  \texttt{global\_reliability}, EGRA methods support parallelism
-  in the initial surrogate construction, but subsequently only
-  generate a single point for evaluation per cycle.
+  (sampling, reliability, stochastic expansion, and epistemic) support
+  parallelism. In the case of gradient-based methods (local
+  reliability, local interval estimation), parallelism can be exploited
+  through the use of Dakota's native finite differencing routine for
+  computing gradients.  In the case of many global methods (e.g.,
+  global reliability, global interval estimation, polynomial chaos),
+  initial surrogate construction is highly parallel, but any subsequent
+  (adaptive) refinement may have greater concurrency restrictions
+  (including a single point per refinement cycle in some cases).
 \end{itemize}
 
 \subsubsection{Advanced methods}\label{parallel:algorithms:adv_meth}
@@ -303,7 +316,7 @@ of an iterator from different starting points.
 %In the branch and bound case, the available iterator concurrency grows
 %as the tree develops more branches, so some of the iterator servers
 %may be idle in the initial phases. Similarly, 
-Hybrid minimization case will display varying levels of iterator 
+The hybrid minimization case will display varying levels of iterator 
 concurrency based on differing support of multipoint solution input/output 
 between iterators; however, the use of multiple parallel configurations 
 among the iterator sequence should prevent parallel inefficiencies.  On 
@@ -313,54 +326,59 @@ perform and should exhibit good load balancing.
 \subsubsection{Parallel models}\label{parallel:algorithms:models}
 
 Parallelism support in model classes (see Chapter~\ref{models}) is an
-important issue for variable scaling (see
-Section~\ref{opt:additional:scaling}) and advanced model recursions
-such as surrogate-based minimization, optimization under uncertainty,
-and second-order probability (see Chapters~\ref{adv_meth}
-and~\ref{adv_models}).  Support is as follows:
+important issue for 
+%variable scaling (see Section~\ref{opt:additional:scaling}) and 
+advanced model recursions such as surrogate-based minimization,
+optimization under uncertainty, and mixed aleatory-epistemic UQ (see
+Chapters~\ref{adv_meth} and~\ref{adv_models}).  Support is as follows:
 
 \begin{itemize}
-\item Single model: any parallelism is managed as specified in the
-model's associated \texttt{interface} instance.
+\item Single model: parallelism is managed as specified in the model's
+  associated \texttt{interface} instance.
 
 \item Recast model: most parallelism is forwarded on to the sub-model.
-An exception to this is finite differencing in the presence of
-variable scaling.  Since it is desirable to perform offsets in the
-scaled space (and avoid minimum step size tolerances), this
-parallelism is not forwarded to the sub-model, instead being enacted
-at the recast level.
+  An exception to this is finite differencing in the presence of
+  variable scaling.  Since it is desirable to perform offsets in the
+  scaled space (and avoid minimum step size tolerances), this
+  parallelism is not forwarded to the sub-model, instead being enacted
+  at the recast level.
 
 \item Data fit surrogate model: parallelism is supported in the
-construction of global surrogate models via the concurrent evaluation
-of points generated by design of experiments methods.  Local and
-multipoint approximations evaluate only a single point at a time, so
-concurrency is available only from any numerical differencing required
-for gradient and Hessian data.  Since the top-level iterator is
-interfaced only with the (inexpensive) surrogate, no parallelism is
-exploited here.  Load balancing can be an important issue when
-performing evaluations for update of existing surrogate models.
+  construction of global surrogate models via the concurrent
+  evaluation of points generated by design of experiments methods.
+  Local and multipoint approximations evaluate only a single point at
+  a time, so concurrency is available only from any numerical
+  differencing required for gradient and Hessian data.  Since the
+  top-level iterator is interfaced only with the (inexpensive)
+  surrogate, no parallelism is exploited there.  Load balancing can be
+  an important issue when performing evaluations to (adaptively)
+  update existing surrogate models.
 
-\item Hierarchical surrogate model: parallelism is supported for the 
-low or the high fidelity models, and in some contexts, for both models
-at the same time.  In the multifidelity optimization context, the
-optimizer is interfaced only with the low-fidelity model, and the
-high-fidelity model is used only for verifications and correction
-updating.  For this case, the algorithmic coarse-grained parallelism
-supported by the optimizer is enacted on the low fidelity model and
-the only parallelism available for high fidelity executions arises
-from any numerical differencing required for high-fidelity gradient
-and Hessian data.  In contexts that compute model discrepancies, such
-as multifidelity UQ, the algorithmic concurrency involves evaluation
-of both low and high fidelity models, so parallel schedulers can
-exploit simultaneous concurrency for both models.
+\item Hierarchical surrogate model: parallelism is supported for the
+  low or the high fidelity models, and in some contexts, for both
+  models at the same time.  In the multifidelity optimization context,
+  the optimizer is interfaced only with the low-fidelity model, and
+  the high-fidelity model is used only for verifications and
+  correction updating.  For this case, the algorithmic coarse-grained
+  parallelism supported by the optimizer is enacted on the low
+  fidelity model and the only parallelism available for high fidelity
+  executions arises from any numerical differencing required for
+  high-fidelity gradient and Hessian data.  In contexts that compute
+  model discrepancies, such as multifidelity UQ, the algorithmic
+  concurrency involves evaluation of both low and high fidelity
+  models, so parallel schedulers can exploit simultaneous concurrency
+  for both models.
 
-\item Nested model: Currently, nested models only support concurrency
-in the sub-iterator execution on the sub-model.  This means that the
-top-level iterator interfaced with the nested model is serialized.  In
-future releases, concurrency will be supported at this top level,
-allowing techniques such as optimization under uncertainty and
-second-order probability (see Section~\ref{models:nested}) to support
-concurrent iterator parallelism.
+\item Nested model: concurrent executions of the optional interface
+  and concurrent executions of the sub-iterator are supported and are
+  synchronized in succession.  Currently, synchronization is blocking
+  (all concurrent evaluations are completed before new batches are
+  scheduled); nonblocking schedulers (see~\ref{parallel:SLP}) may be
+  supported in time.  Nested model concurrency and meta-iterator
+  concurrency (Section~\ref{parallel:algorithms:adv_meth}) may be
+  combined within an arbitrary number of levels of recursion.  Primary
+  clients for this capability include optimization under uncertainty
+  and mixed aleatory-epistemic UQ (see Section~\ref{models:nested}).
 \end{itemize}
 
 
@@ -369,13 +387,13 @@ concurrent iterator parallelism.
 
 Dakota's parallel facilities support a broad range of computing
 hardware, from custom massively parallel supercomputers on the high
-end, to clusters and networks of workstations (NOWs) in the middle
-range, to desktop multiprocessors on the low end. Given the reduced
-scale in the middle to low ranges, it is more common to exploit only
-one of the levels of parallelism; however, this can still be quite
-effective in reducing the time to obtain a solution.  Three
-single-level parallelism models will be discussed, and are depicted
-in Figure~\ref{parallel:figure03}:
+end, to clusters and networks of workstations in the middle range, to
+desktop multiprocessors on the low end. Given the reduced scale in the
+middle to low ranges, it is more common to exploit only one of the
+levels of parallelism; however, this can still be quite effective in
+reducing the time to obtain a solution.  Three single-level
+parallelism models will be discussed, and are depicted in
+Figure~\ref{parallel:figure03}:
 
 \begin{figure}[ht]
   \centering
@@ -767,7 +785,6 @@ partitioning models:
 \item \emph{Dedicated master}: a single processor is dedicated to
 scheduling operations and the remaining processors are split into
 server partitions.
-
 \item \emph{Peer partition}: all processors are allocated to server
 partitions and the loss of a processor to scheduling is avoided.
 \end{itemize}
@@ -809,7 +826,6 @@ message passing parallelism:
   synchronization of its local evaluations.  This allows it to balance
   its local work with servicing job assignments and returns from the
   other peers.
-
 \item \emph{Static scheduling}: if scheduling is statically determined
   at start-up, then no master processor is needed to direct traffic
   and a peer partitioning approach is applicable. If the static
@@ -845,20 +861,22 @@ message passing parallelism:
 %\end{itemize}
 
 Message passing schedulers may be used for managing concurrent
-iterator executions within a strategy, concurrent evaluations within
-an iterator, or concurrent analyses within an evaluation.  In each of
-these cases, the message passing scheduler is currently restricted to
-blocking synchronization, in that all jobs in the queue are completed
-before exiting the scheduler and returning the set of results to the
-algorithm. Nonblocking message-passing schedulers are under
-development for the iterator/evaluation concurrency level in support
-of fully asynchronous algorithms which do not contain synchronization
-points (e.g., \texttt{asynch\_pattern\_search} and
-\texttt{coliny\_pattern\_search}).  Message passing is also used within
-a fine-grained parallel analysis code, although this does not involve
-the use of Dakota schedulers (Dakota may, at most, pass a communicator
-partition to the simulation).  The ``Message Passing'' column in
-Table~\ref{parallel:table01} summarizes these capabilities.
+sub-iterator executions within a meta-iterator, concurrent evaluations
+within an iterator, or concurrent analyses within an evaluation.  In
+the former and latter cases, the message passing scheduler is
+currently restricted to blocking synchronization, in that all jobs in
+the queue are completed before exiting the scheduler and returning the
+set of results to the algorithm. Nonblocking message-passing
+scheduling is supported for the iterator--evaluation concurrency level
+in support of fully asynchronous algorithms (e.g.,
+\texttt{asynch\_pattern\_search} and \texttt{coliny\_pattern\_search})
+that avoid synchronization points that can harm scaling.
+
+Message passing is also used within a fine-grained parallel simulation
+code, although this is separate from Dakota's capabilities (Dakota
+may, at most, pass a communicator partition to the simulation).  The
+``Message Passing'' column in Table~\ref{parallel:table01} summarizes
+these capabilities.
 
 \subsubsection{Message Passing Example}\label{parallel:SLP:message:ex}
 
@@ -893,12 +911,11 @@ following:
     -----------------------------------------------------------------------------
     DAKOTA parallel configuration:
     
-    Level			num_servers    procs_per_server    partition
-    -----			-----------    ----------------    ---------
-    concurrent iterators	     1		      5		   peer
-    concurrent evaluations	     5		      1		   peer
-    concurrent analyses	     1		      1		   peer
-    multiprocessor analysis	     1		     N/A	   N/A
+    Level                       num_servers    procs_per_server    partition
+    -----                       -----------    ----------------    ---------
+    concurrent evaluations           5                1            peer
+    concurrent analyses	             1                1            peer
+    multiprocessor analysis          1               N/A           N/A
     
     Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
@@ -1023,10 +1040,8 @@ comparison to a pure message-passing approach over all processors.
 
 Hybrid schedulers may be used for managing concurrent evaluations
 within an iterator or concurrent analyses within an evaluation.  In
-both of these cases, the scheduler is currently restricted to blocking
-synchronization, although as for message-passing schedulers described
-in Section~\ref{parallel:SLP:message:sched}, nonblocking schedulers
-are under development for the iterator/evaluation concurrency level.
+the former case, blocking or nonblocking synchronization can be used,
+whereas the latter case is restricted to blocking synchronization.
 The ``Hybrid'' column in Table~\ref{parallel:table01} summarizes these
 capabilities.
 
@@ -1071,10 +1086,9 @@ to the following:
     
     Level			num_servers    procs_per_server    partition
     -----			-----------    ----------------    ---------
-    concurrent iterators	     1		      5		   peer
-    concurrent evaluations	     5		      1		   peer
-    concurrent analyses	     1		      1		   peer
-    multiprocessor analysis	     1		     N/A	   N/A
+    concurrent evaluations           5                1            peer
+    concurrent analyses              1                1            peer
+    multiprocessor analysis          1               N/A           N/A
     
     Total parallelism levels =   1 (1 dakota, 0 analysis)
     -----------------------------------------------------------------------------
@@ -1390,18 +1404,19 @@ synchronization at this level.
     \textbf{Parallelism Level} & \textbf{Asynchronous Local} &
     \textbf{Message Passing} & \textbf{Hybrid} \\
     \hline \hline
-    concurrent iterators & & \textbf{X}      & \\
-    within a strategy    & & (blocking only) & \\
+    concurrent iterators within a & & \textbf{X}      & \\
+    meta-iterator or nested model & & (blocking synch) & \\
     \hline
     concurrent function evaluations & \textbf{X} & \textbf{X} & \textbf{X} \\
     within an iterator          & (system, fork) & (system, fork, direct) &
     (system, fork) \\
-    & (blocking, nonblocking) & (blocking only) & (blocking only) \\
+    & (blocking, nonblocking) & (blocking, nonblocking) &
+      (blocking, nonblocking) \\
     \hline
     concurrent analyses & \textbf{X} & \textbf{X} & \textbf{X} \\
     within a function evaluation & (fork only) & (system, fork, direct) &
     (fork only) \\
-    & (blocking only) & (blocking only) & (blocking only) \\
+    & (blocking synch) & (blocking synch) & (blocking synch) \\
     \hline
     fine-grained parallel analysis & & \textbf{X} & \\
     \hline
@@ -1755,7 +1770,6 @@ report from the Dakota output:
 
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
-    concurrent iterators         1                4            peer
     concurrent evaluations       4                1            peer
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
@@ -1788,7 +1802,6 @@ configuration report:
 
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
-    concurrent iterators         1                4            peer
     concurrent evaluations       3                1            ded. master
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
@@ -1829,7 +1842,6 @@ now be scheduled in a single pass, which run concurrently.
 
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
-    concurrent iterators         1                4            peer
     concurrent evaluations       4                1            peer
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
@@ -1861,7 +1873,6 @@ configuration report:
 
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
-    concurrent iterators         1                6            peer
     concurrent evaluations       6                1            peer
     concurrent analyses          1                1            peer
     multiprocessor analysis      1               N/A           N/A
@@ -1893,7 +1904,6 @@ which results in the following 2-level parallel configuration:
 
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
-    concurrent iterators         1                6            peer
     concurrent evaluations       2                3            peer
     concurrent analyses          3                1            peer
     multiprocessor analysis      1               N/A           N/A
@@ -1939,7 +1949,6 @@ processor Dakota run \\
 
     Level                   num_servers    procs_per_server    partition
     -----                   -----------    ----------------    ---------
-    concurrent iterators         1               12            peer
     concurrent evaluations       2                6            peer
     concurrent analyses          3                2            peer
     multiprocessor analysis      2               N/A           N/A
