@@ -13,27 +13,26 @@ characterizations which are used to compute corresponding
 distribution/interval characterizations for response functions. To
 accommodate these and other types of studies, Dakota supports design,
 uncertain, and state variable types for continuous and discrete
-variable domains, where uncertain types can be further categorized as
-either aleatory or epistemic and discrete domains can be further
-categorized as discrete range, discrete integer set, or discrete real
-set.
+variable domains.  Uncertain types can be further categorized as
+either aleatory or epistemic, and discrete domains can include
+discrete range, discrete integer set, discrete string set, and
+discrete real set.
 
-This chapter will present a brief overview of the types of variables
-and their uses, as well as cover some user issues relating to file
-formats and the active set vector.  For a detailed description of
-variables section syntax and example specifications, refer to the
-Variables Commands chapter in the Dakota Reference Manual~\cite{RefMan}.
+This chapter will present a brief overview of the main types of
+variables and their uses, as well as cover some user issues relating
+to file formats and the active set vector.  For a detailed description
+of variables section syntax and example specifications, refer to the
+variables keywords in the Dakota Reference Manual~\cite{RefMan}.
 
 
 \section{Design Variables}\label{variables:design}
 
-
-Design variables are those variables which are modified for the
-purposes of computing an optimal design. These variables may be
-continuous (real-valued between bounds), discrete range
-(integer-valued between bounds), discrete set of integers
-(integer-valued from finite set), and discrete set of reals
-(real-valued from finite set).
+Design variables are those variables which are modified in the course
+of determining an optimal design. These variables may be continuous
+(real-valued between bounds), discrete range (integer-valued between
+bounds), discrete set of integers (integer-valued from finite set),
+discrete set of strings (string-valued from finite set), and discrete
+set of reals (real-valued from finite set).
 
 \subsection{Continuous Design Variables}\label{variables:design:cdv}
 
@@ -47,13 +46,15 @@ Dakota support continuous design variables exclusively.
 
 Engineering design problems may contain discrete variables such as
 material types, feature counts, stock gauge selections, etc. These
-variables may assume only a fixed number of values, as compared to
-a continuous variable which has an uncountable number of possible 
-values within its range.  Discrete variables may involve a range 
-of consecutive integers ($x$ can be any integer between 
-\texttt{1} and \texttt{10}), a set of integer values ($x$ can 
-be \texttt{101}, \texttt{212}, or \texttt{355}), or a set of real 
-values (e.g., $x$ can be \texttt{4.2}, \texttt{6.4}, or \texttt{8.5}).
+variables may assume only a fixed number of values, as compared to a
+continuous variable which has an uncountable number of possible values
+within its range.  Discrete variables may involve a range of
+consecutive integers ($x$ can be any integer between \texttt{1} and
+\texttt{10}), a set of integer values ($x$ can be \texttt{101},
+\texttt{212}, or \texttt{355}), a set of string values ($x$ can be
+\texttt{'direct'}, \texttt{'gmres'}, or \texttt{'jacobi'}), or a set
+of real values (e.g., $x$ can be identically \texttt{4.2},
+\texttt{6.4}, or \texttt{8.5}).
 
 Discrete variables may be classified as either ``categorical'' or
 ``noncategorical.''  In the latter noncategorical case, the discrete
@@ -68,8 +69,11 @@ the discrete requirement cannot be relaxed since the model cannot
 obtain a solution for values outside the range or set. For example,
 feature counts are generally categorical discrete variables, since
 most computational models will not support a non-integer value for the
-number of instances of some feature (e.g., number of support brackets).
-
+number of instances of some feature (e.g., number of support
+brackets).  Dakota supports a \texttt{categorical} specification to
+indicate which discrete real and discrete integer variables are
+restricted vs. relaxable.  String variables cannot be relaxed.
+  
 Gradient-based optimization methods cannot be directly applied to
 problems with discrete variables since derivatives only exist for a
 variable continuum. For problems with noncategorical variables, branch
@@ -102,8 +106,8 @@ Dakota.
 range of consecutive integers between specified \texttt{lower\_bounds}
 and \texttt{upper\_bounds}.
 
-\item The \texttt{discrete\_design\_set\_integer} specification supports 
-a set of enumerated integer values through the \texttt{set\_values} 
+\item The \texttt{discrete\_design\_set integer} specification supports 
+a set of enumerated integer values through the \texttt{elements} 
 specification.  The set of values specified is stored internally as an 
 STL set container, which enforces an ordered, unique representation of 
 the integer data.  Underlying this set of ordered, unique integers is a 
@@ -115,6 +119,25 @@ parameter studies, this index representation is exposed through certain
 step and partition control specifications (see Chapter~\ref{ps}).
 
 \end{itemize}
+
+\subsubsection{Discrete Design String Variables}\label{variables:design:ddsv}
+
+There is one type of discrete design string variable supported by
+Dakota.
+\begin{itemize}
+
+\item The \texttt{discrete\_design\_set string} specification
+supports a set of enumerated string values through the
+\texttt{elements} specification.  As for the discrete integer
+set variables described in Section~\ref{variables:design:ddiv},
+internal storage of the set values is ordered and unique and an
+underlying index representation is exposed for the specification of
+some iterative algorithms.
+
+\end{itemize}
+Each string element value must be quoted in the Dakota input file and
+may contain alphanumeric, dash, underscore, and colon. White space,
+quote characters, and backslash/meta-characters are not permitted.
 
 \subsubsection{Discrete Design Real Variables}\label{variables:design:ddrv}
 
@@ -141,7 +164,7 @@ capture the behavior of the input variables in all situations. In many
 cases, the exact value of a model parameter is not precisely known. An
 example of such an input variable is the thickness of a heat treatment
 coating on a structural steel I-beam used in building construction.
-Due to variabilities and tolerances in the coating process, the
+Due to variability and tolerances in the coating process, the
 thickness of the layer is known to follow a normal distribution with a
 certain mean and standard deviation as determined from experimental
 data. The inclusion of the uncertainty in the coating thickness is
@@ -240,9 +263,11 @@ The following types of discrete aleatory uncertain variables are available:
   of failures observed in a set of tests that has a known proportion of 
   failures.
 
-\item Histogram Point: an empirically-based probability distribution 
-  characterized by a set of real-valued $(x,y)$ pairs that map out
-  histogram points (a discrete point value with associated count).
+\item Histogram Point (integer, string, real): an empirically-based
+  probability distribution characterized by a set of integer-valued
+  $(i,c)$, string-valued $(s,c)$, and/or real-valued ${r,c}$ pairs
+  that map out histogram points (each a discrete point value $i$, $s$,
+  or $r$, with associated count $c$).
 
 \end{itemize}
 
@@ -252,23 +277,39 @@ The following types of discrete aleatory uncertain variables are available:
 Epistemic uncertainties are reducible uncertainties resulting from a
 lack of knowledge.  For epistemic uncertainties, data is generally
 sparse, making the use of probability theory questionable and leading
-to nonprobabilistic methods based on interval specifications.  Dakota
-currently supports one epistemic uncertain variable type.
+to nonprobabilistic methods based on interval or fuzzy specifications.  Dakota
+currently supports the following epistemic uncertain variable types.
 
 \subsubsection{Continuous Epistemic Uncertain Variables}\label{variables:uncertain:ceuv}
 
 \begin{itemize}
 
-\item Interval: an interval-based specification characterized by sets of
-  lower and upper bounds and Basic Probability Assignments (BPAs)
-  associated with each interval.  The intervals may be overlapping,
-  contiguous, or disjoint, and a single interval (with probability =
-  1) per variable is an important special case.  The interval
-  distribution is not a probability distribution, as the exact
-  structure of the probabilities within each interval is not known.
-  It is commonly used with epistemic uncertainty methods.
+\item Continuous Interval: a real-valued interval-based specification
+  characterized by sets of lower and upper bounds and Basic
+  Probability Assignments (BPAs) associated with each interval.  The
+  intervals may be overlapping, contiguous, or disjoint, and a single
+  interval (with probability = 1) per variable is an important special
+  case.  The interval distribution is not a probability distribution,
+  as the exact structure of the probabilities within each interval is
+  not known.  It is commonly used with epistemic uncertainty methods.
 
 \end{itemize}
+
+
+\subsubsection{Discrete Epistemic Uncertain Variables}\label{variables:uncertain:deuv}
+
+\begin{itemize}
+
+\item Discrete Interval: an integer-valued variant of the Continuous
+  Interval described above (~\ref{variables:uncertain:ceuv}).
+
+\item Discrete Set (integer, string, and real): Similar to discrete
+  design set variables~\ref{variables:design:ddv}, these epistemic
+  variables admit a finite number of values (elements) for type
+  integer, string, or real, each with an associated probability.
+
+\end{itemize}
+
 
 \section{State Variables}\label{variables:state}
 
@@ -283,10 +324,10 @@ parameters. For additional model parameterizations involving strings
 described in Section~\ref{variables:parameters:standard} and in the
 Interface Commands chapter of the Dakota Reference
 Manual~\cite{RefMan}.  Similar to the design variables discussed in
-Section~\ref{variables:design}, state variables can be a continuous
-range (real-valued between bounds), a discrete range (integer-valued
-between bounds), a discrete integer-valued set, or a discrete
-real-valued set.
+Section~\ref{variables:design}, state variables can be specified with
+a continuous range (real-valued between bounds), a discrete range
+(integer-valued between bounds), a discrete integer-valued set, a
+discrete string-valued set, or a discrete real-valued set.
 
 State variables, as with other types of variables, are viewed
 differently depending on the method in use. Since these variables are
@@ -346,7 +387,7 @@ Specifying one of these subsets of variables will allow the
 Dakota method to operate on the specified variable types and override 
 the defaults.  For example, the default behavior for a 
 nondeterministic sampling method is to sample the uncertain 
-variables.  However, if the user specifed \texttt{active}  \texttt{all} 
+variables.  However, if the user specified \texttt{active}  \texttt{all} 
 in the variables specification block, the sampling would be performed 
 over all variables (e.g. design and state variables as well as 
 uncertain variables).  This may be desired in situations such as 
@@ -442,15 +483,19 @@ Figure~\ref{variables:figure01}.
     <int>    variables
     <double> <label_cdv\(\sb{i}\)>         (i = 1 to n\(\sb{cdv}\))
     <int>    <label_ddiv\(\sb{i}\)>        (i = 1 to n\(\sb{ddiv}\))
+    <string> <label_ddsv\(\sb{i}\)>        (i = 1 to n\(\sb{ddsv}\))
     <double> <label_ddrv\(\sb{i}\)>        (i = 1 to n\(\sb{ddrv}\))
     <double> <label_cauv\(\sb{i}\)>        (i = 1 to n\(\sb{cauv}\))
     <int>    <label_dauiv\(\sb{i}\)>       (i = 1 to n\(\sb{dauiv}\))
+    <string> <label_dausv\(\sb{i}\)>       (i = 1 to n\(\sb{dausv}\))
     <double> <label_daurv\(\sb{i}\)>       (i = 1 to n\(\sb{daurv}\))
     <double> <label_ceuv\(\sb{i}\)>        (i = 1 to n\(\sb{ceuv}\))
     <int>    <label_deuiv\(\sb{i}\)>       (i = 1 to n\(\sb{deuiv}\))
+    <string> <label_deusv\(\sb{i}\)>       (i = 1 to n\(\sb{deusv}\))
     <double> <label_deurv\(\sb{i}\)>       (i = 1 to n\(\sb{deurv}\))
     <double> <label_csv\(\sb{i}\)>         (i = 1 to n\(\sb{csv}\))
     <int>    <label_dsiv\(\sb{i}\)>        (i = 1 to n\(\sb{dsiv}\))
+    <string> <label_dssv\(\sb{i}\)>        (i = 1 to n\(\sb{dssv}\))
     <double> <label_dsrv\(\sb{i}\)>        (i = 1 to n\(\sb{dsrv}\)) \color{blue}
     <int>    functions
     <int>    ASV_i:label_response\(\sb{i}\)       (i = 1 to m) \color{red}
@@ -479,25 +524,27 @@ variables (\texttt{n}) with its identifier string
 ``\texttt{variables}.''  The next \texttt{n} lines specify the current
 values and descriptors of all of the variables within the parameter
 set \emph{in the following order}: continuous design, discrete integer
-design (integer range, integer set), discrete real design (real set),
-continuous aleatory uncertain (normal, lognormal, uniform, loguniform,
-triangular, exponential, beta, gamma, gumbel, frechet, weibull,
-histogram bin), discrete integer aleatory uncertain (poisson,
-binomial, negative binomial, geometric, hypergeometric), discrete real
-aleatory uncertain (histogram point), continuous epistemic uncertain
-(interval), discrete integer epistemic uncertain (none at this time),
-discrete real epistemic uncertain (none at this time), continuous
-state, discrete integer state (integer range, integer set), and
-discrete real state (real set) variables. This ordering is consistent
-with the lists in
+design (integer range, integer set), discrete string design (string
+set), discrete real design (real set), continuous aleatory uncertain
+(normal, lognormal, uniform, loguniform, triangular, exponential,
+beta, gamma, gumbel, frechet, weibull, histogram bin), discrete
+integer aleatory uncertain (poisson, binomial, negative binomial,
+geometric, hypergeometric, histogram point integer), discrete string
+aleatory uncertain (histogram point string), discrete real aleatory
+uncertain (histogram point real), continuous epistemic uncertain (real
+interval), discrete integer epistemic uncertain (interval, then set),
+discrete string epistemic uncertain (set), discrete real epistemic
+uncertain (set), continuous state, discrete integer state (integer
+range, integer set), discrete string state, and discrete real state
+(real set) variables. This ordering is consistent with the lists in
 Sections~\ref{variables:design:ddiv}, \ref{variables:uncertain:cauv}
-and~\ref{variables:uncertain:dauv}
-and the specification order in dakota.input.txt.  The lengths of these
-vectors add to a total of $n$ (that is, $n = n_{cdv} + n_{ddiv} +
-n_{ddrv} + n_{cauv} + n_{dauiv} + n_{daurv} + n_{ceuv} + n_{deuiv} +
-n_{deurv} + n_{csv} + n_{dsiv} + n_{dsrv}$).  If any of the variable
-types are not present in the problem, then its block is omitted
-entirely from the parameters file.  The tags are the variable
+and~\ref{variables:uncertain:dauv} and the specification order in
+dakota.input.summary.  The lengths of these vectors add to a total of
+$n$ (that is, $n = n_{cdv} + n_{ddiv} + n_{ddsv} + n_{ddrv} + n_{cauv}
++ n_{dauiv} + n_{dausv} + n_{daurv} + n_{ceuv} + n_{deuiv} + n_{deusv}
++ n_{deurv} + n_{csv} + n_{dsiv} + n_{dssv} + n_{dsrv}$).  If any of
+the variable types are not present in the problem, then its block is
+omitted entirely from the parameters file.  The tags are the variable
 descriptors specified in the user's Dakota input file, or if no
 descriptors have been specified, default descriptors are used.
 
@@ -577,15 +624,19 @@ with the variables data.
     \{ DAKOTA_VARS = <int> \}
     \{ <label_cdv\(\sb{i}\)> = <double> \}         (i = 1 to n\(\sb{cdv}\))
     \{ <label_ddiv\(\sb{i}\)> = <int> \}           (i = 1 to n\(\sb{ddiv}\))
+    \{ <label_ddsv\(\sb{i}\)> = <string> \}        (i = 1 to n\(\sb{ddsv}\))
     \{ <label_ddrv\(\sb{i}\)> = <double> \}        (i = 1 to n\(\sb{ddrv}\))
     \{ <label_cauv\(\sb{i}\)> = <double> \}        (i = 1 to n\(\sb{cauv}\))
     \{ <label_dauiv\(\sb{i}\)> = <int> \}          (i = 1 to n\(\sb{dauiv}\))
+    \{ <label_dausv\(\sb{i}\)> = <string> \}       (i = 1 to n\(\sb{dausv}\))
     \{ <label_daurv\(\sb{i}\)> = <double> \}       (i = 1 to n\(\sb{daurv}\))
     \{ <label_ceuv\(\sb{i}\)> = <double> \}        (i = 1 to n\(\sb{ceuv}\))
     \{ <label_deuiv\(\sb{i}\)> = <int> \}          (i = 1 to n\(\sb{deuiv}\))
+    \{ <label_deusv\(\sb{i}\)> = <string> \}       (i = 1 to n\(\sb{deusv}\))
     \{ <label_deurv\(\sb{i}\)> = <double> \}       (i = 1 to n\(\sb{deurv}\))
     \{ <label_csv\(\sb{i}\)> = <double> \}         (i = 1 to n\(\sb{csv}\))
     \{ <label_dsiv\(\sb{i}\)> = <int> \}           (i = 1 to n\(\sb{dsiv}\))
+    \{ <label_dssv\(\sb{i}\)> = <string> \}        (i = 1 to n\(\sb{dssv}\))
     \{ <label_dsrv\(\sb{i}\)> = <double> \}        (i = 1 to n\(\sb{dsrv}\)) \color{blue}
     \{ DAKOTA_FNS = <int> \}
     \{ ASV_i:label_response\(\sb{i}\) = <int> \}              (i = 1 to m) \color{red}
@@ -649,3 +700,12 @@ active\_set\_vector}).  Of course, this option trades some efficiency
 for simplicity and is most appropriate for those cases in which only a
 relatively small penalty occurs when computing and returning more data
 than may be needed on a particular function evaluation.
+
+% LocalWords:  epistemic 735e gmres jacobi noncategorical relaxable subproblems
+% LocalWords:  nongradient coliny STL indices SCOLIB variabilities Lognormal
+% LocalWords:  lognormal Loguniform loguniform Frechet Weibull Hypergeometric
+% LocalWords:  nonprobabilistic BPAs parameterizing parameterizations mesh1 exo
+% LocalWords:  adaptivity optimizers nondeterministic combinations psuade fsu
+% LocalWords:  APREPRO DPrePro BPREPRO JPrePost cdv ddiv ddrv cauv dauiv daurv
+% LocalWords:  ceuv deuiv deurv csv dsiv dsrv ASV DVV eval gumbel frechet pre
+% LocalWords:  weibull poisson hypergeometric parameterization Sandia FNS DER
