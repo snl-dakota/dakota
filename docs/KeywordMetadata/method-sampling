@@ -1,12 +1,24 @@
 Blurb::
-Uncertainty quantification based on random sampling of the variables
-Description::
-This method draws samples from the
-specified uncertain variable probability distributions and propagates
-them through the model to obtain statistics on the distributions of 
-the responses. 
+Randomly samples variables according to their distributions
 
-<b> Method Behavior </b>
+Description::
+This method generates parameter values by drawing samples from the
+specified uncertain variable probability distributions. The
+computational model is executed over all generated parameter values to
+compute the responses for which statistics are computed. The
+statistics support sensitivity analysis and uncertainty
+quantification.
+
+<b> Default Behavior </b>
+
+By default, \c sampling methods operate on aleatory and epistemic
+uncertain variables.  The types of variables can be restricted or
+expanded (to include design or state variables) through use of the
+\ref active keyword in the \ref variables block in the Dakota input
+file.  If continuous design and/or state variables are designated as
+active, the sampling algorithm will treat them as parameters with
+uniform probability distributions between their upper and lower
+bounds.
 
 The following keywords change how the samples are selected:
 \li sample_type
@@ -16,7 +28,7 @@ The following keywords change how the samples are selected:
 \li seed
 \li variance_based_decomp
 
-<b> Method Outputs </b>
+<b> Expected Outputs </b>
 
 As a default, %Dakota provides correlation analyses when running LHS.
 Correlation tables are printed with the simple, partial, and rank
@@ -38,6 +50,14 @@ estimate the corresponding response value.
 
 \c distribution is used to specify whether the statistic values are 
 from cumulative or complementary cumulative functions.
+
+<b> Usage Tips </b>
+
+\c sampling is a robust approach to doing sensitivity analysis and
+uncertainty quantification that can be applied to any problem.  It
+requires more simulations than newer, advanced methods.  Thus, an
+alternative may be preferable if the simulation is computationally
+expensive.
 
 <!---
 Normally, \c sampling generates samples only for the 

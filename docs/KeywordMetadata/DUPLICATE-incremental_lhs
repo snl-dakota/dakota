@@ -1,20 +1,28 @@
 Blurb::
-Augment an existing LHS study
+Augments an existing Latin Hypercube Sampling (LHS) study
+
 Description::
-\c incremental_lhs will augment an existing LHS sampling study with more
-samples to get better estimates of mean, variance, and percentiles.
+\c incremental_lhs will augment an existing LHS sampling study with
+more samples to get better estimates of mean, variance, and
+percentiles.  The number of samples in the second set MUST currently
+be 2 times the number of previous samples, although incremental
+sampling based on any power of two may be supported in future
+releases.
 
-The number of samples in the second
-set MUST currently be 2 times the number of previous samples, although
-incremental sampling based on any power of two may be supported in
-future releases.
+<b> Default Behavior </b>
 
-To use this \c sample_type, a previous LHS (or incremental LHS)
-sampling study with sample size
-\f$ N \f$ must have already been performed, and
-<b> the dakota restart file must be available from this previous study. </b>
-The variables and 
-responses specifications must be the same in both studies.
+Incremental Latin Hypercube Sampling is not used by default.  To
+change this behavior, the \c incremental_lhs keyword must be specified
+in conjuction with the \c sample_type keyword.  Additionally, a
+previous LHS (or incremental LHS) sampling study with sample size \f$
+N \f$ must have already been performed, and <b> the dakota restart
+file must be available from this previous study.</b> The variables
+and responses specifications must be the same in both studies.
+
+<b> Usage Tips </b>
+
+The incremental approach is useful if it is uncertain how many
+simulations can be completed within available time.
 
 See the examples below and 
 the \ref running_dakota-usage and \ref dakota_restart pages.

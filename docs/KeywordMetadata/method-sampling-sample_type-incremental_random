@@ -1,27 +1,28 @@
 Blurb::
-Augment an existing random sampling study
+Augments an existing random sampling study
+
 Description::
-\c incremental_random will augment an existing random sampling study with more
-samples to get better estimates of mean, variance, and percentiles.
+\c incremental_random will augment an existing random sampling study
+with more samples to get better estimates of mean, variance, and
+percentiles.  The number of samples in the second set MUST currently
+be 2 times the number of previous samples, although incremental
+sampling based on any power of two may be supported in future
+releases.
 
-To use this \c sample_type, a previous random sampling study with sample size N must have
-already been performed, and the dakota restart file must be
-available from this previous study. The variables and 
-responses specifications must be the same in both studies.
+<b> Default Behavior </b>
 
-The syntax for
-running the second sample set is: 
-\verbatim 
-dakota -i input2.in -r dakota.rst
-\endverbatim
-where \c input2.in is the file which specifies
-incremental sampling and dakota.rst is the restart
-file containing the results of the previous study. 
+Incremental random sampling is not used by default.  To change this
+behavior, the \c incremental_random keyword must be specified in
+conjuction with the \c sample_type keyword.  Additionally, a previous
+random sampling study with sample size N must have already been
+performed, and the dakota restart file must be available from this
+previous study. The variables and responses specifications must be the
+same in both studies.
 
-The number of samples in the second
-set MUST currently be 2 times the number of previous samples, although
-incremental sampling based on any power of two may be supported in
-future releases.
+<b> Usage Tips </b>
+
+The incremental approach is useful if it is uncertain how many
+simulations can be completed within available time.
 
 Topics::	
 Examples::
@@ -33,6 +34,23 @@ incremental_random, and \c previous_samples is
 specified to be 50, the user will get 50 new random samples. 
 The N new samples will be combined with the N previous
 samples to generate a combined sample of size 2N. 
+
+The method block would be the following:
+\verbatim
+method
+  sampling
+    sample_type incremental_random
+    samples = 100
+    previous_samples = 50
+\endverbatim
+The syntax for
+running the second sample set is: 
+\verbatim 
+dakota -i input2.in -r dakota.rst
+\endverbatim
+where \c input2.in is the file which specifies
+incremental sampling and dakota.rst is the restart
+file containing the results of the previous study. 
 
 Theory::
 Faq::
