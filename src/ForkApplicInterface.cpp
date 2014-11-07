@@ -151,22 +151,8 @@ create_analysis_process(bool block_flag, bool new_group)
   // exec() should be safe (no memory allocated/manipulated and system
   // calls are asynch-signal-safe)
 
-#ifdef __APPLE __
-  // On Mac default to fork unless a user override to vfork;
-  // technically don't need to test for working vfork since verified
-  // at configure time; (could add #elif to finally fall back to vfork)
-#if defined(DAKOTA_PREFER_VFORK) && defined(HAVE_WORKING_VFORK)
-  pid = vfork();
-#elif defined(HAVE_WORKING_FORK)
-  pid = fork();
-#else
-  Cerr << "Error: fork not supported under this OS." << std::endl;
-  abort_handler(-1);
-#endif
-
-#else  
-  // On other platforms, default to vfork unless a user override to
-  // fork; fall-through to fork if needed
+  // Default to vfork unless a user override to fork; fall-through to fork 
+  // if needed
 #if !defined(DAKOTA_PREFER_FORK) && defined(HAVE_WORKING_VFORK)
   pid = vfork();  // replicate this process
 #elif defined(HAVE_WORKING_FORK)
@@ -176,7 +162,6 @@ create_analysis_process(bool block_flag, bool new_group)
   abort_handler(-1);
 #endif
 
-#endif
 
   if (pid == -1) {
     Cerr << "\nCould not fork; error code " << errno << " (" 
