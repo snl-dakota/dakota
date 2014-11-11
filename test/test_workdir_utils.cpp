@@ -8,7 +8,6 @@
 
 #include "WorkdirHelper.hpp"
 #include "dakota_global_defs.hpp"
-#include "dakota_filesystem_utils.hpp"
 
 // Boost.Test
 #include <boost/test/minimal.hpp>
@@ -26,20 +25,20 @@ namespace TestWorkdir {
 void test_save_current_path(const std::string& pwd_str,
                             const std::string& env_path_str)
 {
-// 1.	Save current path
-// 4.	Change directory into newly created dir (verify current path is as expected)
-// and
-// 6.	Change to startup PWD (aka rundir) (verify current path is as expected)
+  // NOTE: current path is passed in as a argument
 
-  bfs::path wd( WorkdirHelper::system_tmp_path() );
+  bfs::path tmp_dir( WorkdirHelper::system_tmp_path() );
+  bfs::path temp_name = bfs::unique_path("daktst_%%%%%%%%");
+  bfs::path wd( tmp_dir/temp_name );
+
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
+    // Change directory into newly created dir (verify current path is as expected)
     WorkdirHelper::change_directory(wd);
     std::string new_pwd_str = boost::filesystem::current_path().string();
     BOOST_CHECK( pwd_str != new_pwd_str );
 
-    //WorkdirHelper::prepend_preferred_env_path( wd.string() );
     WorkdirHelper::set_preferred_path();
 
     // verify that PATH has been updated; i.e. '.' is prepended
@@ -47,6 +46,7 @@ void test_save_current_path(const std::string& pwd_str,
     BOOST_CHECK( env_path_str != new_env_path_str );
     BOOST_CHECK( new_env_path_str[0] == '.' );
 
+    // Change to startup PWD (aka rundir) (verify current path is as expected)
     // change back to original rundir
     bfs::path rundir(pwd_str);
     WorkdirHelper::change_directory(rundir);
@@ -54,7 +54,6 @@ void test_save_current_path(const std::string& pwd_str,
     BOOST_CHECK( pwd_str == new_pwd_str );
 
     // verify that PATH no longer has '.' prepended
-    //WorkdirHelper::set_preferred_path();
     WorkdirHelper::prepend_preferred_env_path( pwd_str );
 
     std::string newest_env_path_str( std::getenv("PATH") );
@@ -150,7 +149,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
 
 void test_ln_template_files_into_wd(bfs::path& wd)
 {
-  std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
+  //std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
   std::string template_path_str( std::getenv("PWD") );
   template_path_str += "/../test/dakota_workdir.templatedir/*";
 
@@ -203,7 +202,10 @@ void test_create_and_remove_tmpdir(bool copy=false)
 //		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
 // 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
 
-  bfs::path wd( WorkdirHelper::system_tmp_path() );
+  bfs::path tmp_dir( WorkdirHelper::system_tmp_path() );
+  bfs::path temp_name = bfs::unique_path("daktst_%%%%%%%%");
+  bfs::path wd( tmp_dir/temp_name );
+
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
   if( bfs::exists(wd) && is_directory(wd) ) {
