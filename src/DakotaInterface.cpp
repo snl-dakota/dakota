@@ -959,14 +959,16 @@ void Interface::set_communicators(const IntArray& message_lengths,
 }
 
 
+/*
 void Interface::free_communicators()
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->free_communicators();
   else { // letter lacking redefinition of virtual fn.
-    // ApproximationInterfaces: do nothing
+    // default is no-op
   }
 }
+*/
 
 
 void Interface::init_serial()

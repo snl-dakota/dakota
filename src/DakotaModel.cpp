@@ -3329,12 +3329,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (modelRep) // envelope fwd to letter
     modelRep->
       derived_free_communicators(pl_iter, max_eval_concurrency, recurse_flag);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual derived_free_"
-	 << "communicators() function.\nThis model does not support "
-	 << "communicator operations." << std::endl;
-    abort_handler(-1);
-  }
+  // else default is nothing additional beyond free_communicators()
 }
 
 

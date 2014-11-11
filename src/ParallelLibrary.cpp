@@ -922,7 +922,7 @@ void ParallelLibrary::print_configuration()
   ParallelLevel ea_pl, ie_pl; int buffer_len;
   int tag = 1001;
   if (server1_messaging) {
-    ie_pl = *ie_iter;
+    ie_pl = *ie_iter; // *** failure in MPI_Comm_dup of 0x0 (not MPI_COMM_NULL)
     if (ie_iter->dedicatedMasterFlag) {
       // EA SEND: eval server 1 master sends ea data to iterator server 1 master
       if (ie_iter->serverId == 1 && ie_iter->serverCommRank == 0) {
@@ -1205,48 +1205,18 @@ void ParallelLibrary::abort_helper(int code) {
 }
 
 
-void ParallelLibrary::free_communicators(ParallelLevel& pl)
-{
-  // TO DO: can we just move this to ParallelLevel::~ParallelLevel() ???
-  // or is there an order dependence with MPI_Finalize ???
-
-#ifdef DAKOTA_HAVE_MPI
-  if (pl.commSplitFlag) { // deallocate intra/inter comms.
-    MPI_Comm_free(&pl.serverIntraComm);
-    MPI_Comm_free(&pl.hubServerIntraComm);
-    if (pl.dedicatedMasterFlag) { // master-slave interComms
-      if (pl.serverId == 0) { // if dedicated master
-	int i;
-        for(i=0; i<pl.numServers; ++i) 
-          MPI_Comm_free(&pl.hubServerInterComms[i]);
-	if (pl.idlePartition) // trailing server of idle processors
-          MPI_Comm_free(&pl.hubServerInterComms[i]);
-        delete [] pl.hubServerInterComms;
-      }
-      else // servers 1 through n
-        MPI_Comm_free(&pl.hubServerInterComm);
-    }
-    else { // peer interComms
-      if (pl.serverId == 1) { // 1st peer
-	int i;
-        for(i=0; i<pl.numServers-1; ++i) 
-          MPI_Comm_free(&pl.hubServerInterComms[i]);
-	if (pl.idlePartition) // trailing server of idle processors
-          MPI_Comm_free(&pl.hubServerInterComms[i]);
-        delete [] pl.hubServerInterComms;
-      }
-      else // peers 2 through n
-        MPI_Comm_free(&pl.hubServerInterComm);
-    }
-  }
-#endif // DAKOTA_HAVE_MPI (else no finalization needed)
-}
-
-
 ParallelLibrary::~ParallelLibrary()
 {
   if (!dummyFlag) { // protect some finalizations in case of dummy_lib
 
+    // deallocate comms for all ParallelLevels prior to the list going
+    // out of scope (see rationale in ~ParallelLevel()).  This
+    // approach is simpler than a previous approach that invoked
+    // free_communicators() on active ParallelConfiguration iterators.
+    for (ParLevLIter pl_iter=parallelLevels.begin();
+	 pl_iter!=parallelLevels.end(); ++pl_iter)
+      pl_iter->clear();
+ 
     // Output timings before closing streams, in case of redirection
     output_timers();
 

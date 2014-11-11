@@ -65,14 +65,14 @@ static GuiKeyWord
 		{"numpy",8,0,1,0,2391,0,0.,0.,0.,0,"{Python NumPy dataflow} InterfCommands.html#InterfApplicMSP"}
 		},
 	kw_13[8] = {
-		{"copy_files",15,0,5,0,2379},
+		{"copy_files",15,0,5,0,2379,0,0.,0.,0.,0,"{copy files} InterfCommands.html#InterfApplicF"},
 		{"dir_save",0,0,3,0,2374},
 		{"dir_tag",0,0,2,0,2372},
 		{"directory_save",8,0,3,0,2375,0,0.,0.,0.,0,"{Save work directory} InterfCommands.html#InterfApplicF"},
 		{"directory_tag",8,0,2,0,2373,0,0.,0.,0.,0,"{Tag work directory} InterfCommands.html#InterfApplicF"},
-		{"link_files",15,0,4,0,2377},
+		{"link_files",15,0,4,0,2377,0,0.,0.,0.,0,"{link files} InterfCommands.html#InterfApplicF"},
 		{"named",11,0,1,0,2371,0,0.,0.,0.,0,"{Name of work directory} InterfCommands.html#InterfApplicF"},
-		{"replace",8,0,6,0,2381,0,0.,0.,0.,0,"{Replace existing files} InterfCommands.html#InterfApplicF"}
+		{"replace",8,0,6,0,2381}
 		},
 	kw_14[9] = {
 		{"allow_existing_results",8,0,3,0,2359,0,0.,0.,0.,0,"{Allow existing results files} InterfCommands.html#InterfApplicF"},

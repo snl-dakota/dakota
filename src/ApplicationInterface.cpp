@@ -393,17 +393,8 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 }
 
 
-void ApplicationInterface::free_communicators()
-{
-  // Deallocate partitions of evalComm.  This call is protected from an
-  // iterator dedicated master in cases where local evaluations are precluded
-  // (see comments in init_communicators()).
-  if (!ieDedMasterFlag || iteratorCommRank || !multiProcEvalFlag)
-    parallelLib.free_analysis_communicators();
-
-  // Deallocate partitions of iteratorComm
-  parallelLib.free_evaluation_communicators();
-}
+//void ApplicationInterface::free_communicators()
+//{ }
 
 
 /** The function evaluator for application interfaces.  Called from

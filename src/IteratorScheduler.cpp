@@ -174,20 +174,14 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
 // Static version:
 void IteratorScheduler::
 free_iterator_parallelism(ParallelLibrary& parallel_lib)//, ParLevLIter pl_iter)
-{
-  // deallocate the mi_pl parallelism level (static version)
-  parallel_lib.free_iterator_communicators();//(pl_iter);
-}
+{ }
 */
 
 
 void IteratorScheduler::free_iterator_parallelism()
 {
-  ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // decrement the stream tagging
-  parallelLib.pop_output_tag(*pl_iter);
-  // deallocate the parallelism level
-  parallelLib.free_iterator_communicators(pl_iter);
+  parallelLib.pop_output_tag(schedPCIter->mi_parallel_level(miPLIndex));
 }
 
 

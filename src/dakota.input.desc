@@ -2259,10 +2259,12 @@ TAG "interface/analysis_drivers/system/work_directory/directory_save"
 	DESC "{Save work directory} InterfCommands.html#InterfApplicF"
 
 TAG "interface/analysis_drivers/system/work_directory/link_files"
-TAG "interface/analysis_drivers/system/work_directory/copy_files"
-TAG "interface/analysis_drivers/system/work_directory/replace"
-	DESC "{Replace existing files} InterfCommands.html#InterfApplicF"
+	DESC "{link files} InterfCommands.html#InterfApplicF"
 
+TAG "interface/analysis_drivers/system/work_directory/copy_files"
+	DESC "{copy files} InterfCommands.html#InterfApplicF"
+
+TAG "interface/analysis_drivers/system/work_directory/replace"
 TAG "interface/analysis_drivers/direct"
 	DESC "[CHOOSE interface type]{Direct function interface } InterfCommands.html#InterfApplicDF"
 

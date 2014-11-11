@@ -65,7 +65,7 @@ protected:
 			  int max_eval_concurrency);
   void set_communicators(const IntArray& message_lengths,
 			 int max_eval_concurrency);
-  void free_communicators();
+  //void free_communicators();
 
   void init_serial();
 

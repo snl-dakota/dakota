@@ -103,9 +103,9 @@ public:
   virtual void set_communicators(const IntArray& message_lengths,
 				 int max_eval_concurrency);
 
-  /// deallocate communicator partitions for concurrent evaluations within an
-  /// iterator and concurrent multiprocessor analyses within an evaluation.
-  virtual void free_communicators();
+  // deallocate communicator partitions for concurrent evaluations within an
+  // iterator and concurrent multiprocessor analyses within an evaluation.
+  //virtual void free_communicators();
 
   /// reset certain defaults for serial interface objects.
   virtual void init_serial();

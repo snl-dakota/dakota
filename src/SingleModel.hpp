@@ -92,10 +92,11 @@ protected:
   /// (request forwarded to userDefinedInterface)
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				 bool recurse_flag = true);
-  /// deallocate communicator partitions for the SingleModel
-  /// (request forwarded to userDefinedInterface)
-  void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+  // deallocate communicator partitions for the SingleModel
+  // (request forwarded to userDefinedInterface)
+  //void derived_free_communicators(ParLevLIter pl_iter,
+  //                                int max_eval_concurrency,
+  //                                bool recurse_flag = true);
 
   /// Service userDefinedInterface job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
@@ -234,6 +235,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
+/*
 inline void SingleModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
@@ -242,6 +244,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.free_communicators();
 }
+*/
 
 
 inline void SingleModel::

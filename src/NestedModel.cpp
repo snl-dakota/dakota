@@ -634,11 +634,13 @@ void NestedModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
+  /*
   if (!optInterfacePointer.empty()) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface.free_communicators();
   }
+  */
   if (recurse_flag) {
     // finalize comms for subIterator
     // > pl_iter is incoming context prior to subIterator partitioning
