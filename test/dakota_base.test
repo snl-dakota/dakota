@@ -1,4 +1,4 @@
-dakota_3pc.in 
+akota_3pc.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -53598,6 +53598,74 @@ response_fn_1 Sobol' indices:
                       4.9746891377e-01  7.0363551308e-01 x1
                       2.9636448692e-01  5.0253108623e-01 x2
                       2.0616659931e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
+Normalized coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.5566666667e+02   P0   P0
+  -2.3094010451e+00   P1   P0
+  -3.0792014361e+02   P0   P1
+   4.1007357108e+02   P2   P0
+   1.7301912885e-08   P1   P1
+   1.1925695876e+02   P0   P2
+   5.4446020237e-09   P3   P0
+  -2.7541214899e+02   P2   P1
+  -5.6213759235e-08   P1   P2
+   8.7038578394e-08   P0   P3
+   1.2190476181e+02   P4   P0
+   9.8191191664e-09   P3   P1
+  -4.3253800186e-08   P2   P2
+  -5.3346047657e-09   P1   P3
+  -5.1175153004e-08   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024173e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891371e-01  7.0363551313e-01 x1
+                      2.9636448687e-01  5.0253108629e-01 x2
+                      2.0616659942e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
+Normalized coefficients of Polynomial Chaos Expansion for response_fn_1:
+   4.5566666670e+02   P0   P0
+  -2.3094010450e+00   P1   P0
+  -3.0792014360e+02   P0   P1
+   4.1007357110e+02   P2   P0
+   1.7301912890e-08   P1   P1
+   1.1925695880e+02   P0   P2
+   5.4446020240e-09   P3   P0
+  -2.7541214900e+02   P2   P1
+  -5.6213759240e-08   P1   P2
+   8.7038578390e-08   P0   P3
+   1.2190476180e+02   P4   P0
+   9.8191191660e-09   P3   P1
+  -4.3253800190e-08   P2   P2
+  -5.3346047660e-09   P1   P3
+  -5.1175153000e-08   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666670e+02  6.0656024175e+02
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      4.9746891371e-01  7.0363551314e-01 x1
+                      2.9636448686e-01  5.0253108629e-01 x2
+                      2.0616659942e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
