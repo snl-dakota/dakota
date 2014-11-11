@@ -355,9 +355,20 @@ add_dependencies(text_book dakota)
 
 # UNIT TESTS
 
+option(DAKOTA_ENABLE_BOOST_MIN_TESTS
+         "Enable Boost.Minimal tests in DAKOTA" ON)
+if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
+
+  add_executable(test_workdir_utils test_workdir_utils.cpp)
+  target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
+                        ${Dakota_TPL_LIBRARIES})
+  add_test(test_workdir_utils test_workdir_utils)
+
+endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
+
 # WJB - ToDo:  decide on a unit test framework and probe for it
-option(DAKOTA_ENABLE_UNIT_TESTS "Enable unit tests in DAKOTA" OFF)
-if(DAKOTA_ENABLE_UNIT_TESTS)
+option(DAKOTA_ENABLE_CPPUNIT_TESTS "Enable unit tests in DAKOTA" OFF)
+if(DAKOTA_ENABLE_CPPUNIT_TESTS)
   # Complete these for each specific test.
 
   add_executable(stream_unit_tests stream_unit_tests.cpp)
@@ -366,15 +377,10 @@ if(DAKOTA_ENABLE_UNIT_TESTS)
 
   add_executable(container_unit_tests container_unit_tests.cpp)
 
-  add_executable(test_workdir_utils test_workdir_utils.cpp)
-  target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
-                        ${Dakota_TPL_LIBRARIES})
-  add_test(test_workdir_utils test_workdir_utils)
-
-endif()
+endif() # DAKOTA_ENABLE_CPPUNIT_TESTS
 
 if(DAKOTA_HAVE_HDF5 
-    #AND DAKOTA_ENABLE_UNIT_TESTS
+    #AND DAKOTA_ENABLE_BOOST_MIN_TESTS
     )
   # BinaryIO tester depends on Teuchos and HDF5
   include_directories(${HDF5_INCLUDE_DIRS})
