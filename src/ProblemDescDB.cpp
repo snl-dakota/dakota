@@ -1063,14 +1063,14 @@ get_iterator(const String& method_name, Model& model)
                    boost::bind(&Iterator::method_string, _1) == method_name);
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorList.end()) {
-    Iterator new_iterator(*this, model);
+    Iterator new_iterator(method_name, model);
     dbRep->iteratorByNameList.push_back(new_iterator);
     i_it = --dbRep->iteratorByNameList.end();
   }
   // method_name already exists, but check for same model. If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
   else if (model != i_it->iterated_model()) {
-    Iterator new_iterator(*this, model);
+    Iterator new_iterator(method_name, model);
     dbRep->iteratorByNameList.push_back(new_iterator);
     i_it = --dbRep->iteratorByNameList.end();
   }
