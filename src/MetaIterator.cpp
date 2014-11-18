@@ -127,13 +127,13 @@ allocate_by_name(const String& method_string, const String& model_ptr,
   }
   if (the_model.is_null())
     the_model = probDescDB.get_model();
-  iterSched.init_iterator(method_string, the_iterator, the_model);
+  iterSched.init_iterator(probDescDB, method_string, the_iterator, the_model);
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
 }
 
 
-std::pair<int, int> MetaIterator::
+IntIntPair MetaIterator::
 estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 		    Model& the_model)
 {
@@ -146,20 +146,15 @@ estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
   if (the_model.is_null())
     the_model = probDescDB.get_model();
 
-  int max_eval_concurrency =
-    iterSched.init_evaluation_concurrency(probDescDB, the_iterator, the_model);
-
-  // needs to follow set_db_list_nodes
-  int min_ppi = probDescDB.min_procs_per_mi(),
-      max_ppi = probDescDB.max_procs_per_mi(max_eval_concurrency);
+  IntIntPair ppi_pr = iterSched.configure(probDescDB, the_iterator, the_model);
 
   probDescDB.set_db_method_node(method_index);          // restore
   probDescDB.set_db_model_nodes(model_index);           // restore
-  return std::pair<int, int>(min_ppi, max_ppi);
+  return ppi_pr;
 }
 
 
-std::pair<int, int> MetaIterator::
+IntIntPair MetaIterator::
 estimate_by_name(const String& method_string, const String& model_ptr,
 		 Iterator& the_iterator, Model& the_model)
 {
@@ -173,17 +168,12 @@ estimate_by_name(const String& method_string, const String& model_ptr,
   if (the_model.is_null())
     the_model = probDescDB.get_model();
 
-  int max_eval_concurrency
-    = iterSched.init_evaluation_concurrency(method_string, the_iterator,
-					    the_model);
-
-  // needs to follow set_db_list_nodes
-  int min_ppi = probDescDB.min_procs_per_mi(),
-      max_ppi = probDescDB.max_procs_per_mi(max_eval_concurrency);
+  IntIntPair ppi_pr
+    = iterSched.configure(probDescDB, method_string, the_iterator, the_model);
 
   if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
-  return std::pair<int, int>(min_ppi, max_ppi);
+  return ppi_pr;
 }
 
 

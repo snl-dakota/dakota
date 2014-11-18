@@ -107,27 +107,27 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   iterSched.update(methodPCIter);
 
-  int min_ppi = INT_MAX, max_ppi = 0;
-  std::pair<int, int> ppi_pr; String empty_str; BitArray new_mod(num_iterators);
+  IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
+  String empty_str; BitArray new_mod(num_iterators);
   for (i=0; i<num_iterators; ++i) {
     if (lightwtCtor) {
       const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
       new_mod[i] = new_model(empty_str, model_ptr);
       Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      ppi_pr = estimate_by_name(methodList[i], model_ptr,
-				selectedIterators[i], selected_model);
+      ppi_pr_i = estimate_by_name(methodList[i], model_ptr,
+				  selectedIterators[i], selected_model);
     }
     else {
       new_mod[i] = new_model(methodList[i], empty_str);
       Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      ppi_pr = estimate_by_pointer(methodList[i], selectedIterators[i],
-				   selected_model);
+      ppi_pr_i = estimate_by_pointer(methodList[i], selectedIterators[i],
+				     selected_model);
     }
-    if (ppi_pr.first  < min_ppi) min_ppi = ppi_pr.first;
-    if (ppi_pr.second > max_ppi) max_ppi = ppi_pr.second;
+    if (ppi_pr_i.first  < ppi_pr.first)  ppi_pr.first  = ppi_pr_i.first;
+    if (ppi_pr_i.second > ppi_pr.second) ppi_pr.second = ppi_pr_i.second;
   }
 
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
+  iterSched.partition(maxIteratorConcurrency, ppi_pr);
   summaryOutputFlag = iterSched.lead_rank();
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator

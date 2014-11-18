@@ -553,29 +553,24 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node();  // for restoration
   probDescDB.set_db_list_nodes(subMethodPointer);
+
   // > init_eval_concurrency instantiates subIterator on previous pl ranks
   subIteratorSched.update(modelPCIter);
-  int max_subiter_eval_conc
-    = subIteratorSched.init_evaluation_concurrency(probDescDB, subIterator,
-						   subModel);
-  // > min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = probDescDB.min_procs_per_mi(),
-      max_ppi = probDescDB.max_procs_per_mi(max_subiter_eval_conc);
-  // > leave default_config as PUSH_DOWN since sub-iterator run times will
-  //   tend to be heterogeneous
-  // > incoming max_eval_concurrency is the nested model's concurrency
-  subIteratorSched.init_iterator_parallelism(max_eval_concurrency,
-					     min_ppi, max_ppi);
-
+  // > define min and max processors per iterator
+  IntIntPair ppi_pr
+    = subIteratorSched.configure(probDescDB, subIterator, subModel);
+  // > passed in max_eval_concurrency is the outer nested model concurrency
+  subIteratorSched.partition(max_eval_concurrency, ppi_pr);
   // > now augment prev subIterator instantiations for additional mi_pl ranks
-  //   (new mi_pl is used via miPLIndex update in init_iterator_parallelism())
+  //   (new mi_pl is used via miPLIndex update in partition())
   // > idle server is managed here; a dedicated master processor is managed
   //   within IteratorScheduler::init_iterator().
   if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
     subIteratorSched.init_iterator(probDescDB, subIterator, subModel);
 
-  probDescDB.set_db_method_node(method_index); // restore method only
-  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
+  // > restore all DB nodes
+  probDescDB.set_db_method_node(method_index);
+  probDescDB.set_db_model_nodes(model_index);
 
   // > now that subIterator is constructed, perform downstream updates
   if (!subIterator.is_null()) {

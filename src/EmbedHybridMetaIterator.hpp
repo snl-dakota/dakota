@@ -59,6 +59,9 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
+  int estimate_min_processors();
+  int estimate_max_processors();
+
   /// return the final solution from the embedded hybrid (variables)
   const Variables& variables_results() const;
   /// return the final solution from the embedded hybrid (response)
@@ -84,6 +87,87 @@ private:
   /// phases of the global minimization for tightly-coupled hybrids
   Real localSearchProb;
 };
+
+
+inline int EmbedHybridMetaIterator::estimate_min_processors()
+{
+  // Note: EmbedHybridMetaIterator::derived_init_communicators() calls
+  // IteratorScheduler::configure() to estimate_{min,max}_processors() on the
+  // subIterator, not the MetaIterator.  When EmbedHybridMetaIterator is a
+  // sub-iterator, we augment the subIterator concurrency with the MetaIterator
+  // concurrency.  [Thus, this is not redundant with configure().]
+
+  const String& global_method_ptr
+    = probDescDB.get_string("method.hybrid.global_method_pointer");
+  const String& global_model_ptr
+    = probDescDB.get_string("method.hybrid.global_model_pointer");
+  const String& local_method_ptr
+    = probDescDB.get_string("method.hybrid.local_method_pointer");
+  const String& local_model_ptr
+    = probDescDB.get_string("method.hybrid.local_model_pointer");
+
+  Model& global_model = (new_model(global_method_ptr, global_model_ptr)) ?
+    globalModel : iteratedModel;
+  Model& local_model  = (new_model(local_method_ptr, local_model_ptr)) ?
+    localModel  : iteratedModel;
+
+  iterSched.construct_sub_iterator(probDescDB, globalIterator, global_model,
+    global_method_ptr,probDescDB.get_string("method.hybrid.global_method_name"),
+    global_model_ptr);
+  iterSched.construct_sub_iterator(probDescDB, localIterator, local_model,
+    local_method_ptr, probDescDB.get_string("method.hybrid.local_method_name"),
+    local_model_ptr);
+
+  int min_procs = std::min(globalIterator.estimate_min_processors(),
+			    localIterator.estimate_min_processors());
+
+  // now apply scheduling data for this level (recursion is complete)
+  return ProblemDescDB::
+    min_procs_per_level(min_procs, iterSched.procsPerIterator,
+			iterSched.numIteratorServers);
+                    //, iterSched.iteratorScheduling);
+}
+
+
+inline int EmbedHybridMetaIterator::estimate_max_processors()
+{
+  // Note: EmbedHybridMetaIterator::derived_init_communicators() calls
+  // IteratorScheduler::configure() to estimate_{min,max}_processors() on the
+  // subIterator, not the MetaIterator.  When EmbedHybridMetaIterator is a
+  // sub-iterator, we augment the subIterator concurrency with the MetaIterator
+  // concurrency.  [Thus, this is not redundant with configure().]
+
+  const String& global_method_ptr
+    = probDescDB.get_string("method.hybrid.global_method_pointer");
+  const String& global_model_ptr
+    = probDescDB.get_string("method.hybrid.global_model_pointer");
+  const String& local_method_ptr
+    = probDescDB.get_string("method.hybrid.local_method_pointer");
+  const String& local_model_ptr
+    = probDescDB.get_string("method.hybrid.local_model_pointer");
+
+  Model& global_model = (new_model(global_method_ptr, global_model_ptr)) ?
+    globalModel : iteratedModel;
+  Model& local_model  = (new_model(local_method_ptr,  local_model_ptr)) ?
+    localModel  : iteratedModel;
+
+  iterSched.construct_sub_iterator(probDescDB, globalIterator, global_model,
+    global_method_ptr,probDescDB.get_string("method.hybrid.global_method_name"),
+    global_model_ptr);
+  iterSched.construct_sub_iterator(probDescDB, localIterator, local_model,
+    local_method_ptr, probDescDB.get_string("method.hybrid.local_method_name"),
+    local_model_ptr);
+
+  int max_procs = std::max(globalIterator.estimate_max_processors(),
+			   localIterator.estimate_max_processors());
+
+  // now apply scheduling data for this level (recursion is complete)
+  return ProblemDescDB::
+    max_procs_per_level(max_procs, iterSched.procsPerIterator,
+			iterSched.numIteratorServers,
+			iterSched.iteratorScheduling, 1, false,
+			maxIteratorConcurrency);
+}
 
 
 inline const Variables& EmbedHybridMetaIterator::variables_results() const

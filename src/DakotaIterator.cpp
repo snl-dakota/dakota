@@ -1510,6 +1510,22 @@ bool Iterator::compact_mode() const
 { return (iteratorRep) ? iteratorRep->compact_mode() : false; }
 
 
+int Iterator::estimate_min_processors()
+{
+  return (iteratorRep) ?
+    iteratorRep->estimate_min_processors() : // MetaIterators
+    iteratedModel.estimate_min_processors(); // default defn for most Iterators
+}
+
+
+int Iterator::estimate_max_processors()
+{
+  return (iteratorRep) ?
+    iteratorRep->estimate_max_processors() :                   // MetaIterators
+    iteratedModel.estimate_max_processors(maxEvalConcurrency); // default defn
+}
+
+
 void Iterator::sub_iterator_flag(bool si_flag)
 {
   // Implementation in .cpp due to need for DataMethod.hpp

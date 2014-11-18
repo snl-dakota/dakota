@@ -67,7 +67,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);
-  if (!coreMappings && !algebraicMappings && interfaceType > DEFAULT_INTERFACE) {
+  if (!coreMappings && !algebraicMappings && interfaceType > DEFAULT_INTERFACE){
     Cerr << "\nError: no parameter to response mapping defined in "
 	 << "ApplicationInterface.\n" << std::endl;
     abort_handler(-1);
@@ -117,20 +117,16 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   bool direct_int         = (interfaceType & DIRECT_INTERFACE_BIT);
   // Peer dynamic requires asynch local executions and dynamic job assignment
   bool peer_dynamic_avail = (!direct_int && !asynchLocalEvalStatic);
-
-  // Define a min_procs_per_eval which captures overrides at the analysis level
-  // This is managed separately from procsPerEvalSpec to avoid overconstraining
-  // the evaluation partition (passing in procsPerAnalysis for procsPerEval
-  // would serialize the analysis level).  The min_procs lower bounds are
-  // defined bottom up and counter the top-down allocation of resources. 
-  int min_procs_per_eval = ProblemDescDB::min_procs_per_ea(
-    procsPerAnalysisSpec, numAnalysisServersSpec);
-  // max_procs_per_eval captures available concurrency and explicit user
-  // overrides at the analysis level (user overrides for the evaluation
+  // min_procs_per_eval captures overrides at the analysis level.  This lower
+  // bound is defined bottom up and counters the top-down allocation of
+  // resources.  max_procs_per_eval captures available concurrency and explicit
+  // user overrides at the analysis level (user overrides for the evaluation
   // level can be managed by resolve_inputs()).
-  int max_procs_per_eval = (direct_int) ? worldSize :
-    ProblemDescDB::max_procs_per_ea(numAnalysisDrivers,
-      numAnalysisServersSpec, analysisScheduling, asynchLocalAnalysisConcSpec);
+  int min_procs_per_eval = ProblemDescDB::
+    min_procs_per_level(1, procsPerAnalysisSpec, numAnalysisServersSpec);
+  int max_procs_per_eval = (direct_int) ? worldSize : ProblemDescDB::
+    max_procs_per_level(1, 0, numAnalysisServersSpec, analysisScheduling,
+			asynchLocalAnalysisConcSpec, false, numAnalysisDrivers);
 
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, procsPerEvalSpec, min_procs_per_eval,

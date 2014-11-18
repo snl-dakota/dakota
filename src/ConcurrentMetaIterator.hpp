@@ -71,6 +71,9 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
+  int estimate_min_processors();
+  int estimate_max_processors();
+
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
@@ -124,6 +127,57 @@ private:
 
 inline const Model& ConcurrentMetaIterator::algorithm_space_model() const
 { return iteratedModel; }
+
+
+inline int ConcurrentMetaIterator::estimate_min_processors()
+{
+  // Note: ConcurrentMetaIterator::derived_init_communicators() calls
+  // IteratorScheduler::configure() to estimate_{min,max}_processors() on the
+  // subIterator, not the MetaIterator.  When ConcurrentMetaIterator is a
+  // sub-iterator, we augment the subIterator concurrency with the MetaIterator
+  // concurrency.  [Thus, this is not redundant with configure().]
+
+  // This function is already rank protected as far as partitioning has occurred
+  // to this point.  However, this call may precede derived_init_communicators
+  // when the ConcurrentMetaIterator is a sub-iterator.
+  iterSched.construct_sub_iterator(probDescDB, selectedIterator, iteratedModel,
+    probDescDB.get_string("method.sub_method_pointer"),
+    probDescDB.get_string("method.sub_method_name"),
+    probDescDB.get_string("method.sub_model_pointer"));
+  int min_procs = selectedIterator.estimate_min_processors();
+
+  // now apply scheduling data for this level (recursion is complete)
+  return ProblemDescDB::
+    min_procs_per_level(min_procs, iterSched.procsPerIterator,
+			iterSched.numIteratorServers);
+                    //, iterSched.iteratorScheduling);
+}
+
+
+inline int ConcurrentMetaIterator::estimate_max_processors()
+{
+  // Note: ConcurrentMetaIterator::derived_init_communicators() calls
+  // IteratorScheduler::configure() to estimate_{min,max}_processors() on the
+  // subIterator, not the MetaIterator.  When ConcurrentMetaIterator is a
+  // sub-iterator, we augment the subIterator concurrency with the MetaIterator
+  // concurrency.  [Thus, this is not redundant with configure().]
+
+  // This function is already rank protected as far as partitioning has occurred
+  // to this point.  However, this call may precede derived_init_communicators
+  // when the ConcurrentMetaIterator is a sub-iterator.
+  iterSched.construct_sub_iterator(probDescDB, selectedIterator, iteratedModel,
+    probDescDB.get_string("method.sub_method_pointer"),
+    probDescDB.get_string("method.sub_method_name"),
+    probDescDB.get_string("method.sub_model_pointer"));
+  int max_procs = selectedIterator.estimate_max_processors();
+
+  // now apply scheduling data for this level (recursion is complete)
+  return ProblemDescDB::
+    max_procs_per_level(max_procs, iterSched.procsPerIterator,
+			iterSched.numIteratorServers,
+			iterSched.iteratorScheduling, 1, false,
+			maxIteratorConcurrency);
+}
 
 
 inline void ConcurrentMetaIterator::initialize_model()

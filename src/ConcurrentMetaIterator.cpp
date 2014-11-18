@@ -186,16 +186,11 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // as through the lookup in problem_db_get_iterator() (method_ptr case); this
   // requires that no calls to init_comms occur at construct time, since the
   // mi_pl basis for this is not yet available.
-  int max_eval_conc = (lightwtCtor) ?
-    iterSched.init_evaluation_concurrency(method_name, selectedIterator,
-					  iteratedModel):
-    iterSched.init_evaluation_concurrency(probDescDB, selectedIterator,
-					  iteratedModel);
-  // min and max ppi need DB list nodes set to sub-iterator/sub-model
-  int min_ppi = probDescDB.min_procs_per_mi(),
-      max_ppi = probDescDB.max_procs_per_mi(max_eval_conc);
-
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency, min_ppi, max_ppi);
+  IntIntPair ppi_pr = (lightwtCtor) ?
+    iterSched.configure(probDescDB, method_name,
+			selectedIterator, iteratedModel) :
+    iterSched.configure(probDescDB, selectedIterator, iteratedModel);
+  iterSched.partition(maxIteratorConcurrency, ppi_pr);
   summaryOutputFlag = iterSched.lead_rank();
 
   // from this point on, we can specialize logic in terms of iterator servers.
@@ -205,7 +200,8 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     // Instantiate the iterator
     if (lightwtCtor) {
-      iterSched.init_iterator(method_name, selectedIterator, iteratedModel);
+      iterSched.init_iterator(probDescDB, method_name, selectedIterator,
+			      iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
 	Cout << "Concurrent Iterator = " << method_name << std::endl;
     }

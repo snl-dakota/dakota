@@ -27,11 +27,12 @@ class Model;
 class ProblemDescDB;
 
 
-/// Environment corresponding to execution as a stand-alone application.
+/// This class encapsulates scheduling operations for concurrent
+/// sub-iteration within an outer level context (e.g., meta-iteration,
+/// nested models).
 
-/** This environment corresponds to a stand-alone executable program,
-    e.g., main.cpp.  It sets up the ParallelLibrary,
-    and ProblemDescDB objects based on access to command line arguments. */
+/** In time, a Scheduler class hierarchy is envisioned, but for now,
+    this class is not part of a hierarchy. */
 
 class IteratorScheduler //: public Scheduler
 {
@@ -58,66 +59,66 @@ public:
   // parallelism level
   //static void init_serial_iterators(ParallelLibrary& parallel_lib);
 
-  // convenience function for deallocating the concurrent iterator
-  // parallelism level
-  //static void free_iterator_parallelism(ParallelLibrary& parallel_lib);
-
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
+  static void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 			    ParLevLIter pl_iter);
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
-			    Model& the_model, ParLevLIter pl_iter);
+  static void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+			    Model& sub_model, ParLevLIter pl_iter);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms
-  static void init_iterator(const String& method_string, Iterator& the_iterator,
-			    Model& the_model, ParLevLIter pl_iter);
+  static void init_iterator(ProblemDescDB& problem_db,
+			    const String& method_string, Iterator& sub_iterator,
+			    Model& sub_model, ParLevLIter pl_iter);
 
   /// convenience function for setting comms prior to running an iterator
-  static void set_iterator(Iterator& the_iterator, ParLevLIter pl_iter);
+  static void set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter);
 
   /// Convenience function for invoking an iterator and managing parallelism.
   /// This version omits communicator repartitioning. Function must be public
   /// due to use by MINLPNode.
-  static void run_iterator(Iterator& the_iterator, ParLevLIter pl_iter);
+  static void run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter);
 
   /// convenience function for deallocating comms after running an iterator
-  static void free_iterator(Iterator& the_iterator, ParLevLIter pl_iter);
+  static void free_iterator(Iterator& sub_iterator, ParLevLIter pl_iter);
 
   //
   //- Heading: Member functions
   //
 
+  /// instantiate sub_iterator on the current rank if not already constructed
+  void construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+			      Model& sub_model, const String& method_ptr,
+			      const String& method_name,
+			      const String& model_ptr);
+
+  /// performs sufficient initialization to define partitioning controls
+  /// (min and max processors per iterator server)
+  IntIntPair configure(ProblemDescDB& problem_db, Iterator& sub_iterator,
+		       Model& sub_model);
+  /// performs sufficient initialization to define partitioning controls
+  /// (min and max processors per iterator server)
+  IntIntPair configure(ProblemDescDB& problem_db, const String& method_string,
+		       Iterator& sub_iterator, Model& sub_model);
+
   /// convenience function for initializing iterator communicators, setting
   /// parallel configuration attributes, and managing outputs and restart.
-  void init_iterator_parallelism(int max_iterator_concurrency,
-				 int min_procs_per_iterator = 1,
-				 int max_procs_per_iterator = 0, // dummy
-				 short default_config = PUSH_DOWN);
-
-  /// convenience function for performing sufficient initialization to
-  /// define the maximum evaluation concurrency
-  int init_evaluation_concurrency(ProblemDescDB& problem_db,
-				  Iterator& the_iterator, Model& the_model);
-  /// convenience function for performing sufficient initialization to
-  /// define the maximum evaluation concurrency
-  int init_evaluation_concurrency(const String& method_string,
-				  Iterator& the_iterator, Model& the_model);
+  void partition(int max_iterator_concurrency, IntIntPair& ppi_pr);
 
   /// invokes static version of this function with appropriate parallelism level
-  void init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
-		     Model& the_model);
+  void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+		     Model& sub_model);
   /// invokes static version of this function with appropriate parallelism level
-  void init_iterator(const String& method_string, Iterator& the_iterator,
-		     Model& the_model);
+  void init_iterator(ProblemDescDB& problem_db, const String& method_string,
+		     Iterator& sub_iterator, Model& sub_model);
   /// invokes static version of this function with appropriate parallelism level
-  void set_iterator(Iterator& the_iterator);
+  void set_iterator(Iterator& sub_iterator);
   /// invokes static version of this function with appropriate parallelism level
-  void run_iterator(Iterator& the_iterator);
+  void run_iterator(Iterator& sub_iterator);
   /// invokes static version of this function with appropriate parallelism level
-  void free_iterator(Iterator& the_iterator);
+  void free_iterator(Iterator& sub_iterator);
 
   /// convenience function for deallocating the concurrent iterator
   /// parallelism level
@@ -208,8 +209,8 @@ inline IteratorScheduler::~IteratorScheduler()
 
 
 inline void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
-	      Model& the_model)
+init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+	      Model& sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated master overload, no iterator jobs can run on master, so no
@@ -220,13 +221,13 @@ init_iterator(ProblemDescDB& problem_db, Iterator& the_iterator,
     parallelLib.print_configuration(); // match init_comms() on iterator servers
   }
   else
-    init_iterator(problem_db, the_iterator, the_model, pl_iter);
+    init_iterator(problem_db, sub_iterator, sub_model, pl_iter);
 }
 
 
 inline void IteratorScheduler::
-init_iterator(const String& method_string, Iterator& the_iterator,
-	      Model& the_model)
+init_iterator(ProblemDescDB& problem_db, const String& method_string,
+	      Iterator& sub_iterator, Model& sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated master overload, no iterator jobs can run on master, so no
@@ -237,27 +238,27 @@ init_iterator(const String& method_string, Iterator& the_iterator,
     parallelLib.print_configuration();
   }
   else
-    init_iterator(method_string, the_iterator, the_model, pl_iter);
+    init_iterator(problem_db, method_string, sub_iterator, sub_model, pl_iter);
 }
 
 
-inline void IteratorScheduler::set_iterator(Iterator& the_iterator)
+inline void IteratorScheduler::set_iterator(Iterator& sub_iterator)
 {
-  set_iterator(the_iterator,
+  set_iterator(sub_iterator,
 	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
-inline void IteratorScheduler::run_iterator(Iterator& the_iterator)
+inline void IteratorScheduler::run_iterator(Iterator& sub_iterator)
 {
-  run_iterator(the_iterator,
+  run_iterator(sub_iterator,
 	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
-inline void IteratorScheduler::free_iterator(Iterator& the_iterator)
+inline void IteratorScheduler::free_iterator(Iterator& sub_iterator)
 {
-  free_iterator(the_iterator,
+  free_iterator(sub_iterator,
 		schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 

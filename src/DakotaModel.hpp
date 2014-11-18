@@ -207,6 +207,11 @@ public:
   /// or 2 (SUB_MODEL/ACTUAL_MODEL/HF_MODEL/TRUTH_MODEL)].
   virtual void component_parallel_mode(short mode);
 
+  /// estimate the minimum partition size that can be utilized by this Model
+  virtual int estimate_min_processors();
+  /// estimate the maximum partition size that can be utilized by this Model
+  virtual int estimate_max_processors(int max_eval_concurrency);
+
   /// return the index for the metaiterator-iterator parallelism level within
   /// ParallelConfiguration::miPLIters that is active for use in a particular
   /// Model at runtime

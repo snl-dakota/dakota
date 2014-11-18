@@ -2954,6 +2954,30 @@ void Model::component_parallel_mode(short mode)
 }
 
 
+int Model::estimate_min_processors()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual "
+	 << "estimate_min_processors() function.\n." << std::endl;
+    abort_handler(-1);
+  }
+
+  return modelRep->estimate_min_processors();
+}
+
+
+int Model::estimate_max_processors(int max_eval_concurrency)
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual "
+	 << "estimate_max_processors() function.\n." << std::endl;
+    abort_handler(-1);
+  }
+
+  return modelRep->estimate_max_processors(max_eval_concurrency);
+}
+
+
 size_t Model::mi_parallel_level_index() const
 {
   return (modelRep) ?
@@ -3026,12 +3050,12 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     modelRep->init_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   else { // not a virtual function: base class definition for all letters
 
-    // Undefined mi_pl can happen for IteratorScheduler::
-    // init_evaluation_concurrency(), as estimation of concurrency involves
-    // instantiation of Iterators prior to init_iterator_parallelism, and some
-    // Iterators invoke init_communicators() for contained helper iterators.
-    // Abandoning a parallel configuration means that these iterator instances
-    // should be discarded and replaced once the mi_pl context is available.
+    // Undefined mi_pl can happen for IteratorScheduler::configure(), as
+    // estimation of concurrency involves instantiation of Iterators
+    // prior to IteratorScheduler::partition(), and some Iterators invoke
+    // init_communicators() for contained helper iterators.  Abandoning a
+    // parallel configuration means that these iterator instances should
+    // be discarded and replaced once the mi_pl context is available.
     //if (!parallelLib.mi_parallel_level_defined())
     //  return;
     // Note for updated design: could replace with check miPLIters.size() <= 1,

@@ -1046,6 +1046,38 @@ const Iterator& ProblemDescDB::get_iterator(Model& model)
 }
 
 
+const Iterator& ProblemDescDB::
+get_iterator(const String& method_name, Model& model)
+{
+  // ProblemDescDB::get_<object> functions operate at the envelope level
+  // so that any passing of *this provides the envelope object.
+  if (!dbRep) {
+    Cerr << "Error: ProblemDescDB::get_iterator() called for letter object."
+	 << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+
+  IterLIter i_it
+    = std::find_if(dbRep->iteratorByNameList.begin(),
+		   dbRep->iteratorByNameList.end(),
+                   boost::bind(&Iterator::method_string, _1) == method_name);
+  // if Iterator does not already exist, then create it
+  if (i_it == dbRep->iteratorList.end()) {
+    Iterator new_iterator(*this, model);
+    dbRep->iteratorByNameList.push_back(new_iterator);
+    i_it = --dbRep->iteratorByNameList.end();
+  }
+  // method_name already exists, but check for same model. If !same, instantiate
+  // new rather than update (i_it->iterated_model(model)) all shared instances.
+  else if (model != i_it->iterated_model()) {
+    Iterator new_iterator(*this, model);
+    dbRep->iteratorByNameList.push_back(new_iterator);
+    i_it = --dbRep->iteratorByNameList.end();
+  }
+  return *i_it;
+}
+
+
 const Model& ProblemDescDB::get_model()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
@@ -1208,53 +1240,13 @@ const Response& ProblemDescDB::get_response(const Variables& vars)
 }
 
 
-int ProblemDescDB::
-min_procs_per_ea(int ppa_spec, int num_a_serv_spec)
+inline int ProblemDescDB::min_procs_per_ea()
 {
-  // Note: valid for envelope (intended) or letter (should not happen)
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
 
-  // Define min_procs_per_eval to accomodate any lower level overrides
-  // (ppe_spec handled elsewhere).
-  // With default_config = PUSH_DOWN, this is less critical.
-  int min_procs_per_eval = std::max(1, ppa_spec);
-  if (num_a_serv_spec)
-    min_procs_per_eval *= num_a_serv_spec;
-  //if (a_sched_spec == MASTER_SCHEDULING) ++min_procs_per_eval;
-
-  return min_procs_per_eval;
-}
-
-
-int ProblemDescDB::
-max_procs_per_ea(int num_drivers, int num_a_serv_spec, short a_sched_spec,
-		 int alac_spec)
-{
-  // Notes:
-  // > compute max_procs_per_eval, incorporating all lower level (analysis) 
-  //   overrides (ppe_spec handled within ParallelLibrary::resolve_inputs())
-  // > the direct_int case is handled outside of this static function to
-  //   avoid pushing static requirements onto MPIManager
-
-  //if (direct_int)
-  //  return MPIManager::world_size(); // if static data/accessor
-  //else { // ppa = 1 for system/fork
-
-    int max_procs_per_eval;
-    if (num_a_serv_spec) {
-      max_procs_per_eval = num_a_serv_spec;
-      int alac = std::max(1, alac_spec);
-      if (num_a_serv_spec * alac < num_drivers && num_a_serv_spec > 1 &&
-	  a_sched_spec != PEER_SCHEDULING) //&& !peer_dynamic_analysis
-	++max_procs_per_eval;
-    }
-    else { // assume peer partition unless explicit override to master
-      max_procs_per_eval = std::max(1, num_drivers);
-      if (a_sched_spec == MASTER_SCHEDULING)
-	++max_procs_per_eval;
-    }
-
-    return max_procs_per_eval;
-  //}
+  return min_procs_per_level(1,
+    get_int("interface.direct.processors_per_analysis"),
+    get_int("interface.analysis_servers"));
 }
 
 
@@ -1264,27 +1256,20 @@ int ProblemDescDB::max_procs_per_ea()
 
   return (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
     parallelLib.world_size() :
-    max_procs_per_ea(get_sa("interface.application.analysis_drivers").size(),
-		     get_int("interface.analysis_servers"),
-		     get_short("interface.analysis_scheduling"),
-		     get_int("interface.asynch_local_analysis_concurrency"));
+    // system/fork/spawn: max_ppa = 1, no ppa_spec, peer dynamic not supported
+    max_procs_per_level(1, 0, get_int("interface.analysis_servers"),
+      get_short("interface.analysis_scheduling"),
+      get_int("interface.asynch_local_analysis_concurrency"), false,
+      get_sa("interface.application.analysis_drivers").size());
 }
 
 
 int ProblemDescDB::min_procs_per_ie()
 {
-  // Note: requires envelope execution (throws error if !dbRep)
-
-  // Define min_procs_per_iterator to accomodate any lower level overrides
-  // (ppi_spec handled elsewhere).
-  // Note: with default_config = PUSH_DOWN, this logic is less critical.
-  int ppe_spec = get_int("interface.processors_per_evaluation"),
-      num_e_serv_spec = get_int("interface.evaluation_servers");
-  int min_procs_per_iterator = (ppe_spec) ? ppe_spec : min_procs_per_ea();
-  if (num_e_serv_spec)
-    min_procs_per_iterator *= num_e_serv_spec;
-  //if (e_sched_spec == MASTER_SCHEDULING) ++min_procs_per_iterator;
-  return min_procs_per_iterator;
+  return min_procs_per_level(min_procs_per_ea(),
+			     get_int("interface.processors_per_evaluation"),
+			     get_int("interface.evaluation_servers"));
+			   //get_short("interface.evaluation_scheduling"));
 }
 
 
@@ -1302,121 +1287,71 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
   if (get_ushort("interface.type") & DIRECT_INTERFACE_BIT)
     return parallelLib.world_size();
   else { // processors_per_analysis = 1 for system/fork
-    int ppe_spec = get_int("interface.processors_per_evaluation"),
-        max_procs_per_eval = (ppe_spec) ? ppe_spec : max_procs_per_ea();
-    int max_procs_per_iterator,
-        num_e_serv_spec = get_int("interface.evaluation_servers");
-    short e_sched_spec = get_short("interface.evaluation_scheduling");
-    // compute max_procs_per_iterator, incorporating all lower level overrides
-    // (ppi_spec handled within ParallelLibrary::resolve_inputs())
-    if (num_e_serv_spec) {
-      max_procs_per_iterator = max_procs_per_eval * num_e_serv_spec;
-      int alec
-	= std::max(1, get_int("interface.asynch_local_evaluation_concurrency"));
-      // for peer dynamic, max_procs_per_eval == 1 is imperfect in that it
-      // does not capture all possibilities, but this is conservative and
-      // hopefully close enough for this context (an upper bound estimate).
-      bool peer_dynamic_avail
-	= (get_short("interface.local_evaluation_scheduling") !=
-	   STATIC_SCHEDULING && max_procs_per_eval == 1);
-      if (num_e_serv_spec * alec < max_eval_concurrency &&
-	  num_e_serv_spec > 1 &&
-	  e_sched_spec != PEER_DYNAMIC_SCHEDULING &&
-	  e_sched_spec != PEER_STATIC_SCHEDULING  && !peer_dynamic_avail)
-	++max_procs_per_iterator;
-    }
-    else { // assume peer partition unless explicit override to master
-      max_procs_per_iterator = max_procs_per_eval * max_eval_concurrency;
-      if (e_sched_spec == MASTER_SCHEDULING)
-	++max_procs_per_iterator;
-    }
 
-    return max_procs_per_iterator;
+    // for peer dynamic, max_procs_per_server == 1 is imperfect in that it
+    // does not capture all possibilities, but this is conservative and
+    // hopefully close enough for this context (an upper bound estimate).
+    int max_ea = max_procs_per_ea(),
+      ppe_spec = get_int("interface.processors_per_evaluation"),
+      max_pps  = (ppe_spec) ? ppe_spec : max_ea;
+    bool peer_dynamic_avail
+      = (get_short("interface.local_evaluation_scheduling") !=
+	 STATIC_SCHEDULING && max_pps == 1);
+
+    return max_procs_per_level(max_ea, ppe_spec,
+      get_int("interface.evaluation_servers"),
+      get_short("interface.evaluation_scheduling"),
+      get_int("interface.asynch_local_evaluation_concurrency"),
+      peer_dynamic_avail, max_eval_concurrency);
   }
 }
 
 
 int ProblemDescDB::
-min_procs_per_mi(int min_procs_per_iter, int ppi_spec, int num_i_serv_spec)
-                 //, short i_sched_spec)
+min_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator)
 {
-  int min_procs_per_meta = (ppi_spec) ? ppi_spec : min_procs_per_iter;
-  if (num_i_serv_spec)
-    min_procs_per_meta *= num_i_serv_spec;
-  //if (i_sched_spec == MASTER_SCHEDULING) ++min_procs_per_meta;
-  return min_procs_per_meta;
-}
+  int min_procs;
+  if (mi_pl.server_communicator_rank() == 0) {
+    // Incoming context: DB list nodes for (sub)method/(sub)model have been set
+    size_t method_index = get_db_method_node(); // for restoration
+    size_t model_index  = get_db_model_node();  // for restoration
 
+    min_procs = sub_iterator.estimate_min_processors();
 
-int ProblemDescDB::min_procs_per_mi()
-{
-  // Incoming context is DB list nodes for (sub)method/(sub)model have been set
-  short method_name = get_ushort("method.algorithm");
+    set_db_method_node(method_index); // restore method only
+    set_db_model_nodes(model_index);  // restore all model nodes
 
-  // TO DO: may need to expand for meta-iterator, but assume a model for now
-  //const String& model_ptrs = get_string("method.x.model_pointers"); // if meta
-  const String& model_type = get_string("model.type"); // for now
-
-  // Only one level deep for now...
-  // TO DO: Dive to detect subIterator & PARALLEL_BIT and modelType == "nested"
-  int min_procs_per_iter = min_procs_per_ie();
-  if (method_name & PARALLEL_BIT)
-    return min_procs_per_mi(min_procs_per_iter,
-			    get_int("method.processors_per_iterator"),
-			    get_int("method.iterator_servers"));//,
-		          //get_short("method.iterator_scheduling"));
-  else if (model_type == "nested")
-    return min_procs_per_mi(min_procs_per_iter,
-			    get_int("model.nested.processors_per_iterator"),
-			    get_int("model.nested.iterator_servers"));//,
-		          //get_short("model.nested.iterator_scheduling"));
+    if (mi_pl.server_communicator_size() > 1)
+      parallelLib.bcast(min_procs, mi_pl);
+  }
   else
-    return min_procs_per_iter;
+    parallelLib.bcast(min_procs, mi_pl);
+
+  return min_procs;
 }
 
 
 int ProblemDescDB::
-max_procs_per_mi(int max_procs_per_iter, int ppi_spec, int num_i_serv_spec,
-		 short i_sched_spec)
+max_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator)
 {
-  int max_procs_per_meta = (ppi_spec) ? ppi_spec : max_procs_per_iter;
-  if (num_i_serv_spec)
-    max_procs_per_meta *= num_i_serv_spec;
-  if (i_sched_spec == MASTER_SCHEDULING) ++max_procs_per_meta;
-  return max_procs_per_meta;
-}
+  int max_procs;
+  if (mi_pl.server_communicator_rank() == 0) {
+    // Incoming context: DB list nodes for (sub)method/(sub)model have been set
+    size_t method_index = get_db_method_node(); // for restoration
+    size_t model_index  = get_db_model_node();  // for restoration
 
+    max_procs = sub_iterator.estimate_max_processors();
 
-int ProblemDescDB::max_procs_per_mi(int max_eval_concurrency) // TO DO: max_iterator_concurrency
-{
-  // Incoming context is DB list nodes for (sub)method/(sub)model have been set
-  short method_name = get_ushort("method.algorithm");
+    set_db_method_node(method_index); // restore method only
+    set_db_model_nodes(model_index);  // restore all model nodes
 
-  // TO DO: may need to expand for meta-iterator, but assume a model for now
-  //const String& model_ptrs = get_string("method.x.model_pointers"); // if meta
-  const String& model_type = get_string("model.type"); // for now
-
-  // Only one level deep for now...
-  // TO DO: Dive to detect subIterator & PARALLEL_BIT and modelType == "nested"
-  int max_procs_per_meta,
-      max_procs_per_iter = max_procs_per_ie(max_eval_concurrency); // TO DO: push down to bottom of recursion with appropriate subIterator concurrency value
-  short mi_sched_spec = DEFAULT_SCHEDULING;
-  if (method_name & PARALLEL_BIT)
-    max_procs_per_meta
-      = max_procs_per_mi(max_procs_per_iter,
-			 get_int("method.processors_per_iterator"),
-			 get_int("method.iterator_servers"),
-			 get_short("method.iterator_scheduling"));
-  else if (model_type == "nested")
-    max_procs_per_meta
-      = max_procs_per_mi(max_procs_per_iter,
-			 get_int("model.nested.processors_per_iterator"),
-			 get_int("model.nested.iterator_servers"),
-			 get_short("model.nested.iterator_scheduling"));
+    if (mi_pl.server_communicator_size() > 1)
+      parallelLib.bcast(max_procs, mi_pl);
+  }
   else
-    max_procs_per_meta = max_procs_per_iter;
+    parallelLib.bcast(max_procs, mi_pl);
 
-  return std::min(max_procs_per_meta, parallelLib.world_size());
+  return std::min(max_procs, parallelLib.world_size());
 }
 
 

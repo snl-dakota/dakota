@@ -247,6 +247,9 @@ protected:
   /// evaluation (request forwarded to subModel)
   bool derived_master_overload() const;
 
+  int estimate_min_processors();
+  int estimate_max_processors(int max_eval_concurrency);
+
   /// set up RecastModel for parallel operations (request forwarded to subModel)
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
@@ -583,6 +586,14 @@ inline int RecastModel::local_eval_concurrency()
 
 inline bool RecastModel::derived_master_overload() const
 { return subModel.derived_master_overload(); }
+
+
+inline int RecastModel::estimate_min_processors()
+{ return subModel.estimate_min_processors(); }
+
+
+inline int RecastModel::estimate_max_processors(int max_eval_concurrency)
+{ return subModel.estimate_max_processors(max_eval_concurrency); }
 
 
 inline void RecastModel::

@@ -72,18 +72,18 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   iterSched.update(methodPCIter);
 
-  std::pair<int, int> g_ppi = (!global_method_ptr.empty()) ?
+  IntIntPair g_ppi_pr = (!global_method_ptr.empty()) ?
     estimate_by_pointer(global_method_ptr, globalIterator, global_model) :
     estimate_by_name(global_method_name, global_model_ptr,
 		     globalIterator, global_model);
-  std::pair<int, int> l_ppi = (!local_method_ptr.empty()) ?
+  IntIntPair l_ppi_pr = (!local_method_ptr.empty()) ?
     estimate_by_pointer(local_method_ptr, localIterator, local_model) :
     estimate_by_name(local_method_name, local_model_ptr,
 		     localIterator, local_model);
+  IntIntPair ppi_pr(std::min(g_ppi_pr.first,  l_ppi_pr.first),
+		    std::max(g_ppi_pr.second, l_ppi_pr.second));
 
-  iterSched.init_iterator_parallelism(maxIteratorConcurrency,
-				      std::min(g_ppi.first,  l_ppi.first),
-				      std::max(g_ppi.second, l_ppi.second));
+  iterSched.partition(maxIteratorConcurrency, ppi_pr);
   summaryOutputFlag = iterSched.lead_rank();
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;

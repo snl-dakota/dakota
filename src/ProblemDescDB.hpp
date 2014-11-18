@@ -298,40 +298,38 @@ public:
   /// set a StringArray within the database based on an identifier string
   void set(const String& entry_name, const StringArray& sa);
 
-  // These functions use values out of the database and are more convenient
-  // to locate within the DB in terms of parallel existence & code reuse
+  // These functions are more convenient to locate within the DB in
+  // terms of data access, parallel existence, and code reuse:
 
-  /// compute minimum evaluation partition size based on passed overrides
-  static int min_procs_per_ea(int ppa_spec, int num_a_serv_spec);
-  /// compute maximum evaluation partition size based on passed overrides
-  static int max_procs_per_ea(int num_drivers, int num_a_serv_spec,
-			      short a_sched_spec, int alac_spec);
+  /// compute minimum partition size for a parallel level based on lower
+  /// level overrides
+  static int min_procs_per_level(int min_procs_per_server, int pps_spec,
+				 int num_serv_spec);//, short sched_spec)
+  /// compute maximum partition size for a parallel level based on lower
+  /// level overrides
+  static int max_procs_per_level(int max_procs_per_server, int pps_spec,
+				 int num_serv_spec, short sched_spec,
+				 int asynch_local_conc, bool peer_dynamic_avail,
+				 int max_concurrency);
 
   /// compute minimum evaluation partition size based on lower level overrides
   int min_procs_per_ea();
-  /// compute maximum evaluation partition size based on lower level concurrency
+  /// compute maximum evaluation partition size based on lower level overrides
+  /// and concurrency levels
   int max_procs_per_ea();
 
   /// compute minimum iterator partition size based on lower level overrides
   int min_procs_per_ie();
-  /// compute maximum iterator partition size based on lower level concurrency
+  /// compute maximum iterator partition size based on lower level overrides
+  /// and concurrency levels
   int max_procs_per_ie(int max_eval_concurrency);
 
-  /// compute minimum meta-iterator partition size based on lower
-  /// level overrides
-  int min_procs_per_mi(int min_procs_per_iter, int ppi_spec,
-		       int num_i_serv_spec);//, short i_sched_spec)
-  /// compute minimum meta-iterator partition size based on lower
-  /// level overrides
-  int min_procs_per_mi();
-
-  /// compute maximum meta-iterator partition size based on lower
-  /// level overrides
-  int max_procs_per_mi(int max_procs_per_iter, int ppi_spec,
-		       int num_i_serv_spec, short i_sched_spec);
-  /// compute maximum meta-iterator partition size based on lower
-  /// level concurrency
-  int max_procs_per_mi(int max_eval_concurrency); // TO DO
+  /// compute minimum meta-iterator partition size based on lower level
+  /// overrides
+  int min_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator);
+  /// compute maximum meta-iterator partition size based on lower level
+  /// overrides and concurrency levels
+  int max_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator);
 
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
@@ -395,10 +393,15 @@ private:
 
   // These functions avoid multiple instantiations of the same specification.
 
-  /// retrieve an existing Iterator, if it exists, or instantiate a new one
+  /// retrieve an existing Iterator, if it exists in iteratorList, or
+  /// instantiate a new one
   const Iterator& get_iterator();
-  /// retrieve an existing Iterator, if it exists, or instantiate a new one
+  /// retrieve an existing Iterator, if it exists in iteratorList, or
+  /// instantiate a new one
   const Iterator& get_iterator(Model& model);
+  /// retrieve an existing Iterator, if it exists in iteratorByNameList,
+  /// or instantiate a new one
+  const Iterator& get_iterator(const String& method_name, Model& model);
   /// retrieve an existing Model, if it exists, or instantiate a new one
   const Model& get_model();
   /// retrieve an existing Variables, if it exists, or instantiate a new one
@@ -449,6 +452,8 @@ private:
 
   /// list of iterator objects, one for each method specification
   IteratorList iteratorList;
+  /// list of iterator objects, one for each lightweight instantiation by name
+  IteratorList iteratorByNameList;
   /// list of model objects, one for each model specification
   ModelList modelList;
   /// list of variables objects, one for each variables specification
@@ -501,15 +506,6 @@ inline void ProblemDescDB::unlock()
   else
     methodDBLocked = modelDBLocked = variablesDBLocked = interfaceDBLocked
       = responsesDBLocked = false;
-}
-
-
-inline int ProblemDescDB::min_procs_per_ea()
-{
-  // Note: get_*() requires envelope execution (throws error if !dbRep)
-
-  return min_procs_per_ea(get_int("interface.direct.processors_per_analysis"),
-			  get_int("interface.analysis_servers"));
 }
 
 
@@ -617,6 +613,44 @@ inline void ProblemDescDB::insert_node(const DataResponses& data_responses)
 
 inline bool ProblemDescDB::is_null() const
 { return (dbRep) ? false : true; }
+
+
+inline int ProblemDescDB::
+min_procs_per_level(int min_procs_per_server, int pps_spec, int num_serv_spec)
+                    //, short sched_spec)
+{
+  int min_procs_per_lev = (pps_spec) ? pps_spec : min_procs_per_server;
+  if (num_serv_spec)
+    min_procs_per_lev *= num_serv_spec;
+  //if (sched_spec == MASTER_SCHEDULING) ++min_procs_per_lev;
+  return min_procs_per_lev;
+}
+
+
+inline int ProblemDescDB::
+max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
+		    short sched_spec, int asynch_local_conc,
+		    bool peer_dynamic_avail, int max_concurrency)
+{
+  int max_procs_per_lev, max_pps = (pps_spec) ? pps_spec : max_procs_per_server;
+
+  if (num_serv_spec) { // check for dedicated master
+    max_procs_per_lev = max_pps * num_serv_spec;
+    if (sched_spec != PEER_SCHEDULING         &&
+	sched_spec != PEER_STATIC_SCHEDULING  &&
+	sched_spec != PEER_DYNAMIC_SCHEDULING && !peer_dynamic_avail &&
+	num_serv_spec > 1 &&
+	num_serv_spec * std::max(1, asynch_local_conc) < max_concurrency)
+      ++max_procs_per_lev;
+  }
+  else { // assume peer partition unless explicit override to master
+    max_procs_per_lev = max_pps * max_concurrency;
+    if (sched_spec == MASTER_SCHEDULING)
+      ++max_procs_per_lev;
+  }
+
+  return max_procs_per_lev;
+}
 
 
 inline bool ProblemDescDB::model_has_interface(DataModelRep* model_rep) const

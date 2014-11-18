@@ -330,7 +330,7 @@ void Environment::parse(bool check_bcast_database,
 
   // Output/restart management utilizes iterator partitions, so calls to
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
-  // within IteratorScheduler::init_iterator_parallelism().
+  // within IteratorScheduler::partition().
 
   // ProblemDescDB requires cmd line information, so pass programOptions
 
@@ -369,18 +369,13 @@ void Environment::construct()
   // nodes separately within else block below.
   if (method_ptr.empty()) probDescDB.resolve_top_method(false); // no model set
   else                    probDescDB.set_db_method_node(method_ptr);
+  // non-meta-iterators construct a Model: augment setting of method node
+  if ( (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT) == 0)
+    probDescDB.set_db_model_nodes(
+      probDescDB.get_string("method.model_pointer"));
 
   // w_pl is the same for all parallel configurations
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-  if (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT) {
-    // no-op at this time
-  }
-  else { // this case has a Model: augment setting of method node above
-    //IteratorScheduler::init_serial_iterators(parallelLib); // serialize mi_pl
-    probDescDB.set_db_model_nodes(
-      probDescDB.get_string("method.model_pointer"));
-  }
-
   // initialize/increment hierarchical output/restart streams
   // (w_pl does not induce a tag)
   parallelLib.push_output_tag(*w_pl_iter);// from init_serial_iterators
@@ -407,11 +402,10 @@ void Environment::execute()
 
     probDescDB.lock(); // prevent run-time DB queries
 
-    // topLevelIterator's methodName must be defined on all ranks
-    if (topLevelIterator.method_name() & PARALLEL_BIT) {
-      // no-op: graphics initialization delegated within MetaIterator
-    }
-    else if (output_rank) // set up plotting and data tabulation
+    // set up plotting and data tabulation
+    // > MetaIterators delegate graphics initialization
+    // > topLevelIterator's methodName must be defined on all ranks
+    if ( (topLevelIterator.method_name() & PARALLEL_BIT) == 0 && output_rank )
       topLevelIterator.initialize_graphics(); // default to server_id = 1
 
     ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
@@ -452,11 +446,6 @@ void Environment::destruct()
 
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
   IteratorScheduler::free_iterator(topLevelIterator, w_pl_iter);
-
-  //if (topLevelIterator.method_name() & PARALLEL_BIT)
-    // no-op at this time
-  //else
-    // no-op at this time
 
   // decrement hierarchical output/restart streams (w_pl does not induce a tag)
   parallelLib.pop_output_tag(*w_pl_iter);

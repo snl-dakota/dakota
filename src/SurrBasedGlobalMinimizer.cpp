@@ -77,7 +77,8 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
   else if (!approx_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
-    approxSubProbMinimizer = Iterator(approx_method_name, iteratedModel);
+    approxSubProbMinimizer
+      = probDescDB.get_iterator(approx_method_name, iteratedModel);
 }
 
 

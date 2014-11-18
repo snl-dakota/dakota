@@ -77,10 +77,13 @@ protected:
   short local_eval_synchronization();
   /// return userDefinedInterface asynchronous evaluation concurrency
   int local_eval_concurrency();
-
   /// flag which prevents overloading the master with a multiprocessor
   /// evaluation (request forwarded to userDefinedInterface)
   bool derived_master_overload() const;
+
+  int estimate_min_processors();
+  int estimate_max_processors(int max_eval_concurrency);
+
   /// set up SingleModel for parallel operations (request forwarded to
   /// userDefinedInterface)
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -207,6 +210,24 @@ inline bool SingleModel::derived_master_overload() const
 {
   return ( userDefinedInterface.iterator_eval_dedicated_master() && 
            userDefinedInterface.multi_proc_eval() ) ? true : false;
+}
+
+
+inline int SingleModel::estimate_min_processors()
+{
+  // Note: accesses DB data
+  // > for use at construct/init_comms time
+  // > DB list nodes set by calling context
+  return probDescDB.min_procs_per_ie();
+}
+
+
+inline int SingleModel::estimate_max_processors(int max_eval_concurrency)
+{
+  // Note: accesses DB data
+  // > for use at construct/init_comms time
+  // > DB list nodes set by calling context
+  return probDescDB.max_procs_per_ie(max_eval_concurrency);
 }
 
 
