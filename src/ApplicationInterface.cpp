@@ -126,7 +126,8 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
     min_procs_per_level(1, procsPerAnalysisSpec, numAnalysisServersSpec);
   int max_procs_per_eval = (direct_int) ? worldSize : ProblemDescDB::
     max_procs_per_level(1, 0, numAnalysisServersSpec, analysisScheduling,
-			asynchLocalAnalysisConcSpec, false, numAnalysisDrivers);
+			asynchLocalAnalysisConcSpec, false,
+			std::max(1, numAnalysisDrivers));
 
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
     numEvalServersSpec, procsPerEvalSpec, min_procs_per_eval,
