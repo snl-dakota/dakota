@@ -75,48 +75,73 @@ construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 }
 
 
-/** This is a convenience function for computing the maximum
-    evaluation concurrency prior to concurrent iterator partitioning. */
+/** This is a convenience function for computing the minimum and maximum
+    partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
 configure(ProblemDescDB& problem_db, Iterator& sub_iterator, Model& sub_model)
 {
-  // Prior to IteratorScheduler::partition(), we utilize the trailing mi_pl
-  // (often the world pl) for the concurrency estimation.  If this is not the
-  // correct reference point, the calling code must increment the parallel
-  // configuration prior to invocation of this fn.
-  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
-
   // minimally instantiate the sub_iterator for concurrency estimation
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
   if (mi_pl.server_communicator_rank() == 0)
     sub_iterator = problem_db.get_iterator(sub_model); // reused downstream
 
-  // TO DO: aggregate ProblemDescDB code if not doing much DB stuff
-  return IntIntPair(problem_db.min_procs_per_mi(mi_pl, sub_iterator),
-		    problem_db.max_procs_per_mi(mi_pl, sub_iterator));
+  return configure(problem_db, sub_iterator);
 }
 
 
-/** This is a convenience function for computing the maximum
-    evaluation concurrency prior to concurrent iterator partitioning. */
+/** This is a convenience function for computing the minimum and maximum
+    partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
 configure(ProblemDescDB& problem_db, const String& method_string,
 	  Iterator& sub_iterator, Model& sub_model)
 {
+  // minimally instantiate the sub_iterator (reused downstream on some ranks)
+  // for concurrency estimation
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
+  if (mi_pl.server_communicator_rank() == 0)
+    sub_iterator = problem_db.get_iterator(method_string, sub_model);
+
+  return configure(problem_db, sub_iterator);
+}
+
+
+/** This is a convenience function for computing the minimum and maximum
+    partition size prior to concurrent iterator partitioning. */
+IntIntPair IteratorScheduler::
+configure(ProblemDescDB& problem_db, Iterator& sub_iterator)
+{
   // Prior to IteratorScheduler::partition(), we utilize the trailing mi_pl
   // (often the world pl) for the concurrency estimation.  If this is not the
   // correct reference point, the calling code must increment the parallel
   // configuration prior to invocation of this fn.
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
 
-  // minimally instantiate the sub_iterator (reused downstream on some ranks)
-  // for concurrency estimation
-  if (mi_pl.server_communicator_rank() == 0)
-    sub_iterator = problem_db.get_iterator(method_string, sub_model);
+  // sub_iterator has been minimally instantiated by calling context
+  IntIntPair min_max_procs;
+  if (mi_pl.server_communicator_rank() == 0) {
 
-  // TO DO: aggregate ProblemDescDB code if not doing much DB stuff
-  return
-    IntIntPair(problem_db.min_procs_per_mi(mi_pl, sub_iterator),
-	       problem_db.max_procs_per_mi(mi_pl, sub_iterator));
+    // Incoming context: DB list nodes for (sub)method/(sub)model have been set
+    size_t method_index = problem_db.get_db_method_node(); // for restoration
+    size_t model_index  = problem_db.get_db_model_node();  // for restoration
+
+    min_max_procs = sub_iterator.estimate_partition_bounds();
+
+    problem_db.set_db_method_node(method_index); // restore method only
+    problem_db.set_db_model_nodes(model_index);  // restore all model nodes
+
+    if (mi_pl.server_communicator_size() > 1) {
+      MPIPackBuffer send_buffer;
+      send_buffer << min_max_procs;
+      parallelLib.bcast(send_buffer, mi_pl);
+    }
+  }
+  else {
+    MPIUnpackBuffer recv_buffer(32); // two 64-bit ints = 16 bytes
+    parallelLib.bcast(recv_buffer, mi_pl);
+    recv_buffer >> min_max_procs;
+  }
+
+  return min_max_procs;
 }
 
 

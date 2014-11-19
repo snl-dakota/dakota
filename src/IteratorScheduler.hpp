@@ -102,6 +102,9 @@ public:
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, const String& method_string,
 		       Iterator& sub_iterator, Model& sub_model);
+  /// performs sufficient initialization to define partitioning controls
+  /// (min and max processors per iterator server)
+  IntIntPair configure(ProblemDescDB& problem_db, Iterator& sub_iterator);
 
   /// convenience function for initializing iterator communicators, setting
   /// parallel configuration attributes, and managing outputs and restart.

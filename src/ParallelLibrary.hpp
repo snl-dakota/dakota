@@ -761,6 +761,10 @@ public:
   void bcast(int& data, const ParallelLevel& pl);
   /// broadcast an integer across the serverIntraComm of a ParallelLevel
   void bcast(short& data, const ParallelLevel& pl);
+  /// broadcast a MPIPackBuffer across the serverIntraComm of a ParallelLevel
+  void bcast(MPIPackBuffer& send_buff, const ParallelLevel& pl);
+  /// broadcast a MPIUnpackBuffer across the serverIntraComm of a ParallelLevel
+  void bcast(MPIUnpackBuffer& recv_buff, const ParallelLevel& pl);
   /// broadcast an integer across the hubServerIntraComm of a ParallelLevel
   void bcast_hs(int& data, const ParallelLevel& pl);
   /// broadcast a MPIPackBuffer across the hubServerIntraComm of a ParallelLevel
@@ -1733,6 +1737,16 @@ inline void ParallelLibrary::bcast(int& data, const ParallelLevel& pl)
 
 inline void ParallelLibrary::bcast(short& data, const ParallelLevel& pl)
 { bcast(data, pl.serverIntraComm); }
+
+
+inline void ParallelLibrary::
+bcast(MPIPackBuffer& send_buff, const ParallelLevel& pl)
+{ bcast(send_buff, pl.serverIntraComm); }
+
+
+inline void ParallelLibrary::
+bcast(MPIUnpackBuffer& recv_buff, const ParallelLevel& pl)
+{ bcast(recv_buff, pl.serverIntraComm); }
 
 
 inline void ParallelLibrary::bcast_hs(int& data, const ParallelLevel& pl)

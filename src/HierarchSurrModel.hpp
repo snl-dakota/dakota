@@ -97,8 +97,7 @@ protected:
   /// lowFidelityModel and highFidelityModel
   void component_parallel_mode(short mode);
 
-  int estimate_min_processors();
-  int estimate_max_processors(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
 
   /// set up lowFidelityModel and highFidelityModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -235,38 +234,24 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 { surrogateFnIndices = surr_fn_indices; }
 
 
-inline int HierarchSurrModel::estimate_min_processors()
-{
-  probDescDB.set_db_model_nodes(
-    probDescDB.get_string("model.surrogate.low_fidelity_model_pointer"));
-  int lf_min_procs = lowFidelityModel.estimate_min_processors();
-
-  probDescDB.set_db_model_nodes(
-    probDescDB.get_string("model.surrogate.high_fidelity_model_pointer"));
-  int hf_min_procs = highFidelityModel.estimate_min_processors();
-
-  return std::min(lf_min_procs, hf_min_procs);
-
-  // list nodes are reset at the calling level after completion of recursion
-}
-
-
-inline int HierarchSurrModel::estimate_max_processors(int max_eval_concurrency)
+inline IntIntPair HierarchSurrModel::
+estimate_partition_bounds(int max_eval_concurrency)
 {
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
   probDescDB.set_db_model_nodes(
     probDescDB.get_string("model.surrogate.low_fidelity_model_pointer"));
-  int lf_max_procs
-    = lowFidelityModel.estimate_max_processors(max_eval_concurrency);
+  IntIntPair lf_min_max
+    = lowFidelityModel.estimate_partition_bounds(max_eval_concurrency);
 
   probDescDB.set_db_model_nodes(
     probDescDB.get_string("model.surrogate.high_fidelity_model_pointer"));
-  int hf_max_procs
-    = highFidelityModel.estimate_max_processors(max_eval_concurrency);
+  IntIntPair hf_min_max
+    = highFidelityModel.estimate_partition_bounds(max_eval_concurrency);
 
-  return std::max(lf_max_procs, hf_max_procs);
+  return IntIntPair(std::min(lf_min_max.first,  hf_min_max.first),
+		    std::max(lf_min_max.second, hf_min_max.second));
 
   // list nodes are reset at the calling level after completion of recursion
 }

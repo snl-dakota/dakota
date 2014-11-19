@@ -1510,19 +1510,11 @@ bool Iterator::compact_mode() const
 { return (iteratorRep) ? iteratorRep->compact_mode() : false; }
 
 
-int Iterator::estimate_min_processors()
+IntIntPair Iterator::estimate_partition_bounds()
 {
   return (iteratorRep) ?
-    iteratorRep->estimate_min_processors() : // MetaIterators
-    iteratedModel.estimate_min_processors(); // default defn for most Iterators
-}
-
-
-int Iterator::estimate_max_processors()
-{
-  return (iteratorRep) ?
-    iteratorRep->estimate_max_processors() :                   // MetaIterators
-    iteratedModel.estimate_max_processors(maxEvalConcurrency); // default defn
+    iteratorRep->estimate_partition_bounds() : // MetaIterators
+    iteratedModel.estimate_partition_bounds(maxEvalConcurrency); // default defn
 }
 
 

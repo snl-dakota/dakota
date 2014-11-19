@@ -190,8 +190,7 @@ protected:
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
 
-  int estimate_min_processors();
-  int estimate_max_processors(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
 
   /// set up actualModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -456,37 +455,22 @@ approximation_data(size_t index)
 { return approxInterface.approximation_data(index); }
 
 
-inline int DataFitSurrModel::estimate_min_processors()
+inline IntIntPair DataFitSurrModel::
+estimate_partition_bounds(int max_eval_concurrency)
 {
   // support DB-based and on-the-fly instantiations for DataFitSurrModel
   if (!daceIterator.is_null()) {
     probDescDB.set_db_list_nodes(daceIterator.method_id());
-    return daceIterator.estimate_min_processors();
-  }
-  else if (!actualModel.is_null()) {
-    probDescDB.set_db_model_nodes(actualModel.model_id());
-    return actualModel.estimate_min_processors();
-  }
-  else
-    return 1;
-}
-
-
-inline int DataFitSurrModel::estimate_max_processors(int max_eval_concurrency)
-{
-  // support DB-based and on-the-fly instantiations for DataFitSurrModel
-  if (!daceIterator.is_null()) {
-    probDescDB.set_db_list_nodes(daceIterator.method_id());
-    return daceIterator.estimate_max_processors();
+    return daceIterator.estimate_partition_bounds();
   }
   else if (!actualModel.is_null()) {
     int am_max_conc = approxInterface.minimum_points(false)
                     * actualModel.derivative_concurrency(); // local/multipt
     probDescDB.set_db_model_nodes(actualModel.model_id());
-    return actualModel.estimate_max_processors(am_max_conc);
+    return actualModel.estimate_partition_bounds(am_max_conc);
   }
   else
-    return 1;
+    return IntIntPair(1, 1);
 }
 
 

@@ -185,10 +185,9 @@ public:
   /// returns Analyzer::compactMode
   virtual bool compact_mode() const;
 
-  /// estimate the minimum partition size that can be utilized by this Iterator
-  virtual int estimate_min_processors();
-  /// estimate the maximum partition size that can be utilized by this Iterator
-  virtual int estimate_max_processors();
+  /// estimate the minimum and maximum partition sizes that can be
+  /// utilized by this Iterator
+  virtual IntIntPair estimate_partition_bounds();
 
   //
   //- Heading: Member functions

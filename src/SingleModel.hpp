@@ -81,8 +81,7 @@ protected:
   /// evaluation (request forwarded to userDefinedInterface)
   bool derived_master_overload() const;
 
-  int estimate_min_processors();
-  int estimate_max_processors(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
 
   /// set up SingleModel for parallel operations (request forwarded to
   /// userDefinedInterface)
@@ -213,21 +212,14 @@ inline bool SingleModel::derived_master_overload() const
 }
 
 
-inline int SingleModel::estimate_min_processors()
+inline IntIntPair SingleModel::
+estimate_partition_bounds(int max_eval_concurrency)
 {
   // Note: accesses DB data
   // > for use at construct/init_comms time
   // > DB list nodes set by calling context
-  return probDescDB.min_procs_per_ie();
-}
-
-
-inline int SingleModel::estimate_max_processors(int max_eval_concurrency)
-{
-  // Note: accesses DB data
-  // > for use at construct/init_comms time
-  // > DB list nodes set by calling context
-  return probDescDB.max_procs_per_ie(max_eval_concurrency);
+  return IntIntPair(probDescDB.min_procs_per_ie(), 
+		    probDescDB.max_procs_per_ie(max_eval_concurrency));
 }
 
 

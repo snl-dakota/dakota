@@ -1307,54 +1307,6 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
 }
 
 
-int ProblemDescDB::
-min_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator)
-{
-  int min_procs;
-  if (mi_pl.server_communicator_rank() == 0) {
-    // Incoming context: DB list nodes for (sub)method/(sub)model have been set
-    size_t method_index = get_db_method_node(); // for restoration
-    size_t model_index  = get_db_model_node();  // for restoration
-
-    min_procs = sub_iterator.estimate_min_processors();
-
-    set_db_method_node(method_index); // restore method only
-    set_db_model_nodes(model_index);  // restore all model nodes
-
-    if (mi_pl.server_communicator_size() > 1)
-      parallelLib.bcast(min_procs, mi_pl);
-  }
-  else
-    parallelLib.bcast(min_procs, mi_pl);
-
-  return min_procs;
-}
-
-
-int ProblemDescDB::
-max_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator)
-{
-  int max_procs;
-  if (mi_pl.server_communicator_rank() == 0) {
-    // Incoming context: DB list nodes for (sub)method/(sub)model have been set
-    size_t method_index = get_db_method_node(); // for restoration
-    size_t model_index  = get_db_model_node();  // for restoration
-
-    max_procs = sub_iterator.estimate_max_processors();
-
-    set_db_method_node(method_index); // restore method only
-    set_db_model_nodes(model_index);  // restore all model nodes
-
-    if (mi_pl.server_communicator_size() > 1)
-      parallelLib.bcast(max_procs, mi_pl);
-  }
-  else
-    parallelLib.bcast(max_procs, mi_pl);
-
-  return std::min(max_procs, parallelLib.world_size());
-}
-
-
  static void*
 binsearch(void *kw, size_t kwsize, size_t n, const char* key)
 {

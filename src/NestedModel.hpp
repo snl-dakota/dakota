@@ -107,8 +107,7 @@ protected:
   /// evaluation (forwarded to optionalInterface)
   bool derived_master_overload() const;
 
-  int estimate_min_processors();
-  int estimate_max_processors(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
 
   /// set up optionalInterface and subModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -490,47 +489,34 @@ inline bool NestedModel::derived_master_overload() const
 }
 
 
-inline int NestedModel::estimate_min_processors()
-{
-  // extract scheduling data for this level prior to dive
-  int ppi     = probDescDB.get_int("model.nested.processors_per_iterator"),
-    i_servers = probDescDB.get_int("model.nested.iterator_servers");
-  //short i_sched = probDescDB.get_short("model.nested.iterator_scheduling");
-
-  int oi_min_procs = (optInterfacePointer.empty()) ? 1 :
-    probDescDB.min_procs_per_ie();
-
-  String empty_str;
-  subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
-					  subMethodPointer,empty_str,empty_str);
-  int si_min_procs = subIterator.estimate_min_processors();
-
-  // apply multiplier from concurrent iterator scheduling overrides
-  return ProblemDescDB::
-    min_procs_per_level(std::min(oi_min_procs, si_min_procs), ppi, i_servers);
-                      //, i_sched
-}
-
-
-inline int NestedModel::estimate_max_processors(int max_eval_concurrency)
+inline IntIntPair NestedModel::
+estimate_partition_bounds(int max_eval_concurrency)
 {
   // extract scheduling data for this level prior to dive
   int ppi       = probDescDB.get_int("model.nested.processors_per_iterator"),
     i_servers   = probDescDB.get_int("model.nested.iterator_servers");
   short i_sched = probDescDB.get_short("model.nested.iterator_scheduling");
 
-  int oi_max_procs = (optInterfacePointer.empty()) ? 1 :
-    probDescDB.max_procs_per_ie(max_eval_concurrency);
+  int oi_min_procs, oi_max_procs;
+  if (optInterfacePointer.empty())
+    oi_min_procs = oi_max_procs = 1;
+  else {
+    oi_min_procs = probDescDB.min_procs_per_ie();
+    oi_max_procs = probDescDB.max_procs_per_ie(max_eval_concurrency);
+  }
 
   String empty_str;
   subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
-					  subMethodPointer,empty_str,empty_str);
-  int si_max_procs = subIterator.estimate_max_processors();
+    subMethodPointer, empty_str, empty_str);
+  IntIntPair min_max, si_min_max = subIterator.estimate_partition_bounds();
 
   // apply multiplier from concurrent iterator scheduling overrides
-  return ProblemDescDB::
-    max_procs_per_level(std::max(oi_max_procs, si_max_procs), ppi, i_servers,
-			i_sched, 1, false, max_eval_concurrency);
+  min_max.first = ProblemDescDB::min_procs_per_level(
+    std::min(oi_min_procs, si_min_max.first), ppi, i_servers);
+  min_max.second = ProblemDescDB::max_procs_per_level(
+    std::max(oi_max_procs, si_min_max.second), ppi, i_servers, i_sched, 1,
+    false, max_eval_concurrency);
+  return min_max;
 }
 
 

@@ -2954,27 +2954,15 @@ void Model::component_parallel_mode(short mode)
 }
 
 
-int Model::estimate_min_processors()
+IntIntPair Model::estimate_partition_bounds(int max_eval_concurrency)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual "
-	 << "estimate_min_processors() function.\n." << std::endl;
+	 << "estimate_partition_bounds() function.\n." << std::endl;
     abort_handler(-1);
   }
 
-  return modelRep->estimate_min_processors();
-}
-
-
-int Model::estimate_max_processors(int max_eval_concurrency)
-{
-  if (!modelRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual "
-	 << "estimate_max_processors() function.\n." << std::endl;
-    abort_handler(-1);
-  }
-
-  return modelRep->estimate_max_processors(max_eval_concurrency);
+  return modelRep->estimate_partition_bounds(max_eval_concurrency);
 }
 
 

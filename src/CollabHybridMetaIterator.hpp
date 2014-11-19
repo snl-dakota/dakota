@@ -56,8 +56,7 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  int estimate_min_processors();
-  int estimate_max_processors();
+  IntIntPair estimate_partition_bounds();
 
   /// return the final solution from the collaborative iteration (variables)
   const Variables& variables_results() const;
@@ -87,7 +86,7 @@ private:
 };
 
 
-inline int CollabHybridMetaIterator::estimate_min_processors()
+inline IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
 {
   const StringArray& method_ptrs
     = probDescDB.get_sa("method.hybrid.method_pointers");
@@ -96,46 +95,9 @@ inline int CollabHybridMetaIterator::estimate_min_processors()
   const StringArray& model_ptrs
     = probDescDB.get_sa("method.hybrid.model_pointers");
   String empty_str; bool models = !model_ptrs.empty();
-  int min_procs = INT_MAX, min_i;
+  int min_procs = INT_MAX, max_procs = 0; IntIntPair min_max;
   size_t i, num_meth = selectedIterators.size();
-  for (i=0; i<num_meth; ++i) {
-    if (lightwtCtor) {
-      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
-      Model& model = (new_model(empty_str, model_ptr)) ?
-	selectedModels[i] : iteratedModel;
-      iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
-				       empty_str, methodList[i], model_ptr);
-    }
-    else {
-      Model& model = (new_model(methodList[i], empty_str)) ?
-	selectedModels[i] : iteratedModel;
-      iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
-				       methodList[i], empty_str, empty_str);
-    }
-    min_i = selectedIterators[i].estimate_min_processors();
-    if (min_i < min_procs) min_procs = min_i;
-  }
-
-  // now apply scheduling data for this level (recursion is complete)
-  return ProblemDescDB::
-    min_procs_per_level(min_procs, iterSched.procsPerIterator,
-			iterSched.numIteratorServers);
-                    //, iterSched.iteratorScheduling);
-}
-
-
-inline int CollabHybridMetaIterator::estimate_max_processors()
-{
-  const StringArray& method_ptrs
-    = probDescDB.get_sa("method.hybrid.method_pointers");
-  const StringArray& method_names
-    = probDescDB.get_sa("method.hybrid.method_names");
-  const StringArray& model_ptrs
-    = probDescDB.get_sa("method.hybrid.model_pointers");
-  String empty_str; bool models = !model_ptrs.empty();
-  int max_procs = 0, max_i;
-  size_t i, num_meth = selectedIterators.size();
-  for (i=0; i<num_meth; ++i) {
+  for (i=0; i<num_meth; ++i)  {
     if (lightwtCtor) {
       const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
       Model& model = (new_model(empty_str, model_ptr)) ?
@@ -150,16 +112,18 @@ inline int CollabHybridMetaIterator::estimate_max_processors()
 				       methodList[i], empty_str, empty_str);
     }
 
-    max_i = selectedIterators[i].estimate_max_processors();
-    if (max_i > max_procs) max_procs = max_i;
+    min_max = selectedIterators[i].estimate_partition_bounds();
+    if (min_max.first  < min_procs) min_procs = min_max.first;
+    if (min_max.second > max_procs) max_procs = min_max.second;
   }
 
   // now apply scheduling data for this level (recursion is complete)
-  return ProblemDescDB::
-    max_procs_per_level(max_procs, iterSched.procsPerIterator,
-			iterSched.numIteratorServers,
-			iterSched.iteratorScheduling, 1, false,
-			maxIteratorConcurrency);
+  min_max.first = ProblemDescDB::min_procs_per_level(min_procs,
+    iterSched.procsPerIterator, iterSched.numIteratorServers);
+  min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
+    iterSched.procsPerIterator, iterSched.numIteratorServers,
+    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+  return min_max;
 }
 
 

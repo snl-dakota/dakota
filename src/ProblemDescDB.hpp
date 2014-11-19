@@ -324,13 +324,6 @@ public:
   /// and concurrency levels
   int max_procs_per_ie(int max_eval_concurrency);
 
-  /// compute minimum meta-iterator partition size based on lower level
-  /// overrides
-  int min_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator);
-  /// compute maximum meta-iterator partition size based on lower level
-  /// overrides and concurrency levels
-  int max_procs_per_mi(const ParallelLevel& mi_pl, Iterator& sub_iterator);
-
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 
