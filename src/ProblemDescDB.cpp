@@ -1062,7 +1062,7 @@ get_iterator(const String& method_name, Model& model)
 		   dbRep->iteratorByNameList.end(),
                    boost::bind(&Iterator::method_string, _1) == method_name);
   // if Iterator does not already exist, then create it
-  if (i_it == dbRep->iteratorList.end()) {
+  if (i_it == dbRep->iteratorByNameList.end()) {
     Iterator new_iterator(method_name, model);
     dbRep->iteratorByNameList.push_back(new_iterator);
     i_it = --dbRep->iteratorByNameList.end();
