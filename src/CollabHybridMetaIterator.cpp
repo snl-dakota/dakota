@@ -36,7 +36,7 @@ CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
 
   maxIteratorConcurrency = methodList.size();
   if (!maxIteratorConcurrency) { // verify at least one method in list
-    if (parallelLib.world_rank() == 0)
+    if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: hybrid method list must have a least one entry."
 	   << std::endl;
     abort_handler(-1);
@@ -61,7 +61,7 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
   size_t i, num_iterators = methodList.size();
   if (!num_iterators) { // verify at least one method in list
-    if (parallelLib.world_rank() == 0)
+    if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: hybrid method list must have a least one entry."
 	   << std::endl;
     abort_handler(-1);

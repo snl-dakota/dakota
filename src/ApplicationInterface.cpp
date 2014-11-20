@@ -122,11 +122,14 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // resources.  max_procs_per_eval captures available concurrency and explicit
   // user overrides at the analysis level (user overrides for the evaluation
   // level can be managed by resolve_inputs()).
+  // > procsPerAnalysisSpec defaults to zero, which is the result when the
+  //   processors_per_analysis spec is unreachable (system/fork/spawn)
+  int min_ppa = 1, max_ppa = (direct_int) ? worldSize : 1;
   int min_procs_per_eval = ProblemDescDB::
-    min_procs_per_level(1, procsPerAnalysisSpec, numAnalysisServersSpec);
-  int max_procs_per_eval = (direct_int) ? worldSize : ProblemDescDB::
-    max_procs_per_level(1, 0, numAnalysisServersSpec, analysisScheduling,
-			asynchLocalAnalysisConcSpec, false,
+    min_procs_per_level(min_ppa, procsPerAnalysisSpec, numAnalysisServersSpec);
+  int max_procs_per_eval = ProblemDescDB::
+    max_procs_per_level(max_ppa, procsPerAnalysisSpec, numAnalysisServersSpec,
+			analysisScheduling, asynchLocalAnalysisConcSpec, false,
 			std::max(1, numAnalysisDrivers));
 
   const ParallelLevel& ie_pl = parallelLib.init_evaluation_communicators(
@@ -146,12 +149,10 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
   else {
-    int min_procs_per_analysis = 1,
-        max_procs_per_analysis = (direct_int) ? worldSize : 1;
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
-      numAnalysisServersSpec, procsPerAnalysisSpec, min_procs_per_analysis,
-      max_procs_per_analysis, numAnalysisDrivers, asynchLocalAnalysisConcSpec,
-      PUSH_UP, analysisScheduling, false); // peer_dynamic is not available
+      numAnalysisServersSpec, procsPerAnalysisSpec, min_ppa, max_ppa,
+      numAnalysisDrivers, asynchLocalAnalysisConcSpec, PUSH_UP,
+      analysisScheduling, false); // peer_dynamic is not available
 
     set_analysis_communicators();
   }
@@ -687,9 +688,9 @@ const IntResponseMap& ApplicationInterface::synch()
 	// (even if hybrid mode not specified) unless precluded by direct
 	// interface, multiProcEvalFlag (includes single proc analysis cases),
 	// static scheduling override, or static asynch local specification.
-	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
-	    interfaceType & DIRECT_INTERFACE_BIT ||
-	    evalScheduling == PEER_STATIC_SCHEDULING)
+	if ( asynchLocalEvalStatic || multiProcEvalFlag ||
+	     (interfaceType & DIRECT_INTERFACE_BIT) ||
+	     evalScheduling == PEER_STATIC_SCHEDULING )
 	  peer_static_schedule_evaluations();
 	else // utilizes asynch local evals even if hybrid mode not specified
 	  peer_dynamic_schedule_evaluations();
@@ -773,9 +774,9 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       if (ieDedMasterFlag)
 	master_dynamic_schedule_evaluations_nowait();
       else {
-	if (asynchLocalEvalStatic     || multiProcEvalFlag ||
-	    interfaceType & DIRECT_INTERFACE_BIT ||
-	    evalScheduling == PEER_STATIC_SCHEDULING) {
+	if ( asynchLocalEvalStatic || multiProcEvalFlag ||
+	     (interfaceType & DIRECT_INTERFACE_BIT) ||
+	     evalScheduling == PEER_STATIC_SCHEDULING ) {
 	  //peer_static_schedule_evaluations_nowait(); // needed for override?
 	  Cerr << "Error: message passing requires nonblocking scheduler."
 	       << std::endl;

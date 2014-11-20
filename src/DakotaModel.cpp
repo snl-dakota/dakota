@@ -3239,7 +3239,7 @@ void Model::estimate_message_lengths()
     // currently, every processor does this estimation (no Bcast needed)
     messageLengths.assign(4, 0);
 
-    if (parallelLib.world_size() > 1) {
+    if (parallelLib.mpirun_flag()) {
       MPIPackBuffer buff;
       buff << currentVariables;
       messageLengths[0] = buff.size(); // length of message containing vars

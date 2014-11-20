@@ -139,13 +139,9 @@ std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data)
 template <typename U, typename V>
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::pair<U,V>& data)
 {
-  U first;
-  V second;
-  s >> first; 
-  s >> second;
-  data.first = first;
-  data.second = second;
-
+  U first; V second;
+  s >> first >> second;
+  data.first = first; data.second = second;
   return s;
 }
 

@@ -1244,28 +1244,39 @@ inline int ProblemDescDB::min_procs_per_ea()
 {
   // Note: get_*() requires envelope execution (throws error if !dbRep)
 
-  return min_procs_per_level(1,
-    get_int("interface.direct.processors_per_analysis"),
+  // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
+  // when the processors_per_analysis spec is unreachable (system/fork/spawn)
+  return min_procs_per_level(1, // min_ppa
+    get_int("interface.direct.processors_per_analysis"), // 0 for non-direct
     get_int("interface.analysis_servers"));
 }
 
 
 int ProblemDescDB::max_procs_per_ea()
 {
-  // Note: requires envelope execution (throws error if !dbRep)
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
 
-  return (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
-    parallelLib.world_size() :
-    // system/fork/spawn: max_ppa = 1, no ppa_spec, peer dynamic not supported
-    max_procs_per_level(1, 0, get_int("interface.analysis_servers"),
-      get_short("interface.analysis_scheduling"),
-      get_int("interface.asynch_local_analysis_concurrency"), false,
-      get_sa("interface.application.analysis_drivers").size());
+  // TO DO: can we be more fine grained on parallel testers?
+  //        default tester could get hidden by plug-in...
+
+  int max_ppa = (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
+    parallelLib.world_size() : 1; // system/fork/spawn
+  // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
+  // when the processors_per_analysis spec is unreachable (system/fork/spawn)
+  return max_procs_per_level(max_ppa,
+    get_int("interface.direct.processors_per_analysis"), // 0 for non-direct
+    get_int("interface.analysis_servers"),
+    get_short("interface.analysis_scheduling"),
+    get_int("interface.asynch_local_analysis_concurrency"),
+    false, // peer dynamic not supported
+    std::max(1, (int)get_sa("interface.application.analysis_drivers").size()));
 }
 
 
 int ProblemDescDB::min_procs_per_ie()
 {
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
+
   return min_procs_per_level(min_procs_per_ea(),
 			     get_int("interface.processors_per_evaluation"),
 			     get_int("interface.evaluation_servers"));
@@ -1275,7 +1286,7 @@ int ProblemDescDB::min_procs_per_ie()
 
 int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
 {
-  // Note: requires envelope execution (throws error if !dbRep)
+  // Note: get_*() requires envelope execution (throws error if !dbRep)
 
   // Define max_procs_per_iterator to estimate maximum processor usage
   // from all lower levels.  With default_config = PUSH_DOWN, this is
@@ -1284,26 +1295,20 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
   // explicit user overrides for _lower_ levels (user overrides for the
   // current level can be managed by resolve_inputs()).
 
-  if (get_ushort("interface.type") & DIRECT_INTERFACE_BIT)
-    return parallelLib.world_size();
-  else { // processors_per_analysis = 1 for system/fork
-
-    // for peer dynamic, max_procs_per_server == 1 is imperfect in that it
-    // does not capture all possibilities, but this is conservative and
-    // hopefully close enough for this context (an upper bound estimate).
-    int max_ea = max_procs_per_ea(),
+  int max_ea   = max_procs_per_ea(),
       ppe_spec = get_int("interface.processors_per_evaluation"),
       max_pps  = (ppe_spec) ? ppe_spec : max_ea;
-    bool peer_dynamic_avail
-      = (get_short("interface.local_evaluation_scheduling") !=
-	 STATIC_SCHEDULING && max_pps == 1);
+  // for peer dynamic, max_pps == 1 is imperfect in that it does not capture
+  // all possibilities, but this is conservative and hopefully close enough
+  // for this context (an upper bound estimate).
+  bool peer_dynamic_avail = (get_short("interface.local_evaluation_scheduling")
+			     != STATIC_SCHEDULING && max_pps == 1);
 
-    return max_procs_per_level(max_ea, ppe_spec,
-      get_int("interface.evaluation_servers"),
-      get_short("interface.evaluation_scheduling"),
-      get_int("interface.asynch_local_evaluation_concurrency"),
-      peer_dynamic_avail, max_eval_concurrency);
-  }
+  return max_procs_per_level(max_ea, ppe_spec,
+    get_int("interface.evaluation_servers"),
+    get_short("interface.evaluation_scheduling"),
+    get_int("interface.asynch_local_evaluation_concurrency"),
+    peer_dynamic_avail, max_eval_concurrency);
 }
 
 
