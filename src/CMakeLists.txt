@@ -905,37 +905,6 @@ if(DAKOTA_DLL_API)
   endif()
 endif()
 
-
-if(DAKOTA_ENABLE_TESTS)
-  # Copy test executables to test/
-  add_custom_command(TARGET dakota POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dakota>"
-                                       "${Dakota_BINARY_DIR}/test"
-    DEPENDS "$<TARGET_FILE:dakota>"
-    )
-  add_custom_command(TARGET dakota_library_mode POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dakota_library_mode>"
-                                       "${Dakota_BINARY_DIR}/test"
-    DEPENDS "$<TARGET_FILE:dakota_library_mode>"
-    )
-
-  if(DAKOTA_HAVE_MPI)
-    add_custom_command(TARGET dakota_library_split POST_BUILD
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dakota_library_split>"
-                                         "${Dakota_BINARY_DIR}/test"
-      DEPENDS "$<TARGET_FILE:dakota_library_split>"
-      )
-  endif()
-
-  if(DAKOTA_DLL_API)
-    add_custom_command(TARGET dll_tester POST_BUILD
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:dll_tester>"
-                                         "${Dakota_BINARY_DIR}/test"
-      DEPENDS "$<TARGET_FILE:dll_tester>"
-      )
-  endif()
-
-endif()
   
 if(DAKOTA_SCILAB)
   set_target_properties(dakota PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")

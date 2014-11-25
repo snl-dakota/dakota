@@ -1,5 +1,24 @@
 # CMakeLists.txt for DAKOTA tests
 
+# Macro: DakotaCopyTarget
+# Copy the executable given by target_name to the current binary dir
+# and add to provided list of dependencies
+macro(DakotaCopyTarget target_name deplist_varname)
+  set(executable_name ${target_name}${CMAKE_EXECUTABLE_SUFFIX})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${executable_name}
+    COMMAND ${CMAKE_COMMAND} 
+      -E copy $<TARGET_FILE:${target_name}> ${CMAKE_CURRENT_BINARY_DIR}/
+    # Since we pass it a target name, DEPENDS will create a file-level 
+    # dependency so this command gets run whenever the executable is rebuilt.
+    DEPENDS ${target_name}
+    COMMENT "Copying ${executable_name} to ${CMAKE_CURRENT_BINARY_DIR}/"
+  )
+  list(APPEND ${deplist_varname}
+    ${CMAKE_CURRENT_BINARY_DIR}/${executable_name})
+endmacro()
+
+
 include_directories(
   ${Dakota_SOURCE_DIR}/src
   ${Boost_INCLUDE_DIRS}
@@ -266,11 +285,27 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   endforeach() # foreach test_input_file
 
+  # Copy targets from src/ to test/ to facilitate testing.  We place
+  # the rules for copying executables from src/ in the test/
+  # directory, so they get rebuilt when make-ing in test/.  Previously
+  # these were POST_BUILD actions on targets in src/.  CMake generator
+  # expressions don't work in OUTPUTs, so use a manually specified
+  # executable name with the CMake exe suffix
+  set(test_exe_deps)
+  DakotaCopyTarget(dakota test_exe_deps)
+  DakotaCopyTarget(dakota_library_mode test_exe_deps)
+  if(DAKOTA_HAVE_MPI)
+    DakotaCopyTarget(dakota_library_split test_exe_deps)
+  endif()
+  if(DAKOTA_DLL_API)
+    DakotaCopyTarget(dll_tester test_exe_deps)
+  endif()
+
   # Create a single target to copy all the testing files
   add_custom_target(dakota_test_files ALL 
-    DEPENDS ${copied_test_files_abs}
+    DEPENDS ${copied_test_files_abs} ${test_exe_deps}
     COMMENT 
-      "Copy DAKOTA test inputs and aux files to binary test/ and subdirectories"
+      "Copy DAKOTA test inputs, aux files, and executables to binary test/ and subdirectories"
     )
 
   # Clean up test dir
