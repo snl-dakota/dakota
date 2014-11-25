@@ -22,13 +22,15 @@
 namespace Dakota {
 
 #ifndef DAKOTA_HAVE_MPI
+// These are constants in the Dakota namespace instead of preprocessor
+// defines to avoid collisions with symbols defined by library clients.
 typedef int MPI_Comm;
 typedef struct { int MPI_SOURCE; int MPI_TAG; int MPI_ERROR; } MPI_Status;
 typedef void* MPI_Request;
-#define MPI_COMM_WORLD   0
-#define MPI_COMM_NULL    0
-#define MPI_ANY_TAG      0
-#define MPI_REQUEST_NULL 0
+static const int MPI_COMM_WORLD   =  1;
+static const int MPI_COMM_NULL    =  0;
+static const int MPI_ANY_TAG      = -1;
+static const int MPI_REQUEST_NULL =  0;
 #endif // not DAKOTA_HAVE_MPI
 
 
