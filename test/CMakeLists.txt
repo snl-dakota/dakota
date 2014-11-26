@@ -396,22 +396,24 @@ add_dependencies(text_book dakota)
 option(DAKOTA_ENABLE_BOOST_MIN_TESTS
          "Enable Boost.Minimal tests in DAKOTA" ON)
 if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
+  # Complete these for each specific test.
 
   add_executable(test_workdir_utils test_workdir_utils.cpp)
   target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
                         ${Dakota_TPL_LIBRARIES})
   add_test(test_workdir_utils test_workdir_utils)
 
+  # WJB - ToDo: Enable MPI build for pack/unpack test
+  add_executable(stream_unit_tests stream_unit_tests.cpp)
+  target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
+                        ${Dakota_TPL_LIBRARIES})
+  add_test(stream_unit_tests stream_unit_tests)
+
 endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
 
-# WJB - ToDo:  decide on a unit test framework and probe for it
+# WJB - ToDo:  complete migration to Boost.Test
 option(DAKOTA_ENABLE_CPPUNIT_TESTS "Enable unit tests in DAKOTA" OFF)
 if(DAKOTA_ENABLE_CPPUNIT_TESTS)
-  # Complete these for each specific test.
-
-  add_executable(stream_unit_tests stream_unit_tests.cpp)
-  #target_link_libraries(stream_unit_tests dakota_src)
-  add_test(stream_unit_tests stream_unit_tests)
 
   add_executable(container_unit_tests container_unit_tests.cpp)
 

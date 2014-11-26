@@ -6,140 +6,146 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "stream_unit_tests.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_global_defs.hpp"
 
-CPPUNIT_TEST_SUITE_REGISTRATION( DakotaBinStreamTest );
+// Boost.Test
+#include <boost/test/minimal.hpp>
 
-void DakotaBinStreamTest::setUp() {
-  ch = 'c';
-  strcpy(cstr,"this is a char string!!\n");
-  dbl = 1234567.89;
-  flt = 1.23;
-  nt = 16;
-  lng = 890123;
-  shrt = 1;
-  uch = 'u';
-  uin = 32;
-  uln = 654321;
-  ush = 4321;
-}
-
-void DakotaBinStreamTest::testEquality() {
-  // Open a file for binary output
-  BoStream bostream("data_test.bin", ios::out);
-  CPPUNIT_ASSERT( bostream.good() );
-
-  // Write binary data to file and close it
-  bostream << ch << cstr << dbl << flt << nt << lng << shrt << uch
-	   << uin << uln << ush;
-  bostream.close();
-
-  // Open the binary file for input
-  BiStream bistream;
-  bistream.open("data_test.bin", ios::in);
-
-  // Read binary data from file and close it
-  bistream >> ch2 >> cstr2 >> dbl2 >> flt2 >> nt2 >> lng2 >> shrt2 >> uch2
-	   >> uin2 >> uln2 >> ush2;
-
-  // Check that it opened correctly, then close it.
-  CPPUNIT_ASSERT( bistream.good() );
-  bistream.close();
-
-  CPPUNIT_ASSERT( ch == ch2 );
-  CPPUNIT_ASSERT( dbl == dbl2 );
-  CPPUNIT_ASSERT( flt == flt2 );
-  CPPUNIT_ASSERT( nt == nt2 );
-  CPPUNIT_ASSERT( lng == lng2 );
-  CPPUNIT_ASSERT( shrt == shrt2 );
-  CPPUNIT_ASSERT( uch == uch2 );
-  CPPUNIT_ASSERT( uin == uin2 );
-  CPPUNIT_ASSERT( uln == uln2 );
-  CPPUNIT_ASSERT( ush == ush2 );
-}
-
-void DakotaBinStreamTest::tearDown() {}
-
-#ifdef USE_MPI
-CPPUNIT_TEST_SUITE_REGISTRATION( DakotaPackBufferTest );
-
-void DakotaPackBufferTest::setUp() {
-  ch   = 'c';
-  dbl  = 1234567.89;
-  flt  = 1.23;
-  nt   = 16;
-  lng  = 890123;
-  shrt = 1;
-  uch = 'u';
-  uin = 32;
-  uln = 654321;
-  ush = 4321;
-  send_buffer; // buffer to be shared between methods
-}
-
-void DakotaPackBufferTest::testEquality() {
-  // Create a send buffer and pack the data into it
-  MPIPackBuffer send_buffer;
-  send_buffer << ch << dbl << flt << nt << lng << shrt << uch
-	      << uin << uln << ush;
+#include <sstream>
 
 
-  // Create a buffer to unpack that is a copy of send_buffer
-  MPIUnpackBuffer recv_buffer(const_cast<char*>(send_buffer.buf()),
-			      send_buffer.size(), false);
-    
-  // Unpack the data
-  recv_buffer >> ch2 >> dbl2 >> flt2 >> nt2 >> lng2 >> shrt2 >> uch2
-	      >> uin2 >> uln2 >> ush2; // >> cstr2 >> str2;
+namespace Dakota {
+namespace TestBinStream {
+
+struct DataBundle
+{
+  //static std::string astr;
+  static char ch;
+  static double dbl;
+  static float flt;
+  static int nt;
+  static long lng;
+  static short shrt;
+  static unsigned char uch;
+  static unsigned int uin;
+  static unsigned long uln;
+  static unsigned short ush;
+};
+
+
+// DataBundle initialization (pre-main); in old cppUnit done in setUp()
+  //std::strcpy(cstr,"this is a char string!!\n");
+//std::string DataBundle::astr = std::string("this is a standard string!!");
+char DataBundle::ch = 'c';
+double DataBundle::dbl = 1234567.89;
+float DataBundle::flt = 1.23;
+int DataBundle::nt = 16;
+long DataBundle::lng = 890123;
+short DataBundle::shrt = 1;
+unsigned char DataBundle::uch = 'u';
+unsigned int DataBundle::uin = 32;
+unsigned long DataBundle::uln = 654321;
+unsigned short DataBundle::ush = 4321;
+
+
+void test_write_read()
+{
+  // WJB:  question the value of this test; already performed by Boost!
+  DataBundle dat_bundle;
+  std::stringstream io_sstream;
+
+  // Output archive stream to serialize data
+  boost::archive::binary_oarchive oa(io_sstream);
+
+  oa << dat_bundle.ch << dat_bundle.dbl << dat_bundle.flt << dat_bundle.nt
+     << dat_bundle.lng << dat_bundle.shrt << dat_bundle.uch
+     << dat_bundle.uin << dat_bundle.uln << dat_bundle.ush;
+
+  // Input archive stream to unserialize data
+  boost::archive::binary_iarchive ia(io_sstream);
+
+  char ch2; double dbl2; float flt2; int nt2; long lng2; short shrt2;
+  unsigned char uch2; unsigned int uin2; unsigned long uln2; unsigned short ush2;
+
+  // Unserialize the data
+  ia >> ch2 >> dbl2 >> flt2 >> nt2 >> lng2 >> shrt2 >> uch2
+     >> uin2 >> uln2 >> ush2;
 
   // check for data matches using assert
-  CPPUNIT_ASSERT( ch == ch2 );
-  CPPUNIT_ASSERT( dbl == dbl2 );
-  CPPUNIT_ASSERT( flt == flt2 );
-  CPPUNIT_ASSERT( nt == nt2 );
-  CPPUNIT_ASSERT( lng == lng2 );
-  CPPUNIT_ASSERT( shrt == shrt2 );
-  CPPUNIT_ASSERT( uch == uch2 );
-  CPPUNIT_ASSERT( uin == uin2 );
-  CPPUNIT_ASSERT( uln == uln2 );
-  CPPUNIT_ASSERT( ush == ush2 );
+  BOOST_CHECK( dat_bundle.ch == ch2 );
+  BOOST_CHECK( dat_bundle.dbl == dbl2 );
+  BOOST_CHECK( dat_bundle.flt == flt2 );
+  BOOST_CHECK( dat_bundle.nt == nt2 );
+  BOOST_CHECK( dat_bundle.lng == lng2 );
+  BOOST_CHECK( dat_bundle.shrt == shrt2 );
+  BOOST_CHECK( dat_bundle.uch == uch2 );
+  BOOST_CHECK( dat_bundle.uin == uin2 );
+  BOOST_CHECK( dat_bundle.uln == uln2 );
+  BOOST_CHECK( dat_bundle.ush == ush2 );
 }
 
-void DakotaPackBufferTest::tearDown() {}
+
+#ifdef DAKOTA_HAVE_MPI
+void test_mpi_send_receive()
+{
+  DataBundle dat_bundle;
+
+  // Create a send buffer and pack the data into it
+  Dakota::MPIPackBuffer send_buffer;
+  send_buffer << dat_bundle.ch << dat_bundle.dbl << dat_bundle.flt
+              << dat_bundle.nt << dat_bundle.lng << dat_bundle.shrt
+              << dat_bundle.uch << dat_bundle.uin << dat_bundle.uln
+              << dat_bundle.ush;
+
+  // Create a buffer to unpack that is a copy of send_buffer
+  Dakota::MPIUnpackBuffer recv_buffer(const_cast<char*>(send_buffer.buf()),
+                                      send_buffer.size(), false);
+
+  char ch2; double dbl2; float flt2; int nt2; long lng2; short shrt2;
+  unsigned char uch2; unsigned int uin2; unsigned long uln2; unsigned short ush2;
+
+  // Unpack the data
+  recv_buffer >> ch2 >> dbl2 >> flt2 >> nt2 >> lng2 >> shrt2 >> uch2
+              >> uin2 >> uln2 >> ush2;
+
+  // check for data matches using assert
+  BOOST_CHECK( dat_bundle.ch == ch2 );
+  BOOST_CHECK( dat_bundle.dbl == dbl2 );
+  BOOST_CHECK( dat_bundle.flt == flt2 );
+  BOOST_CHECK( dat_bundle.nt == nt2 );
+  BOOST_CHECK( dat_bundle.lng == lng2 );
+  BOOST_CHECK( dat_bundle.shrt == shrt2 );
+  BOOST_CHECK( dat_bundle.uch == uch2 );
+  BOOST_CHECK( dat_bundle.uin == uin2 );
+  BOOST_CHECK( dat_bundle.uln == uln2 );
+  BOOST_CHECK( dat_bundle.ush == ush2 );
+}
 #endif
 
-/** Main program executes each of the container unit tests. */
-int main(int argc, char **argv) {
-#ifdef HAVE_MPI
-  // required for use of MPI_Pack()/MPI_Unpack()
+} // end namespace TestBinStream
+} // end namespace Dakota
+
+
+#ifdef DAKOTA_HAVE_MPI
+#include "mpi.h"
+#endif
+
+// NOTE: Boost.Test framework provides the main program driver
+
+//____________________________________________________________________________//
+
+int test_main( int argc, char* argv[] )      // note the name!
+{
+  using namespace Dakota::TestBinStream;
+
+#ifdef DAKOTA_HAVE_MPI
   MPI_Init(&argc, &argv);
-#endif
-
-  // Create the event manager and test controller...
-  CppUnit::TestResult controller;
- 
-  // Add a listener that collects test results...
-  CppUnit::TestResultCollector result;
-  controller.addListener( &result );        
- 
-  // Add a listener that prints detailed status as test runs...
-  CppUnit::BriefTestProgressListener progress;
-  controller.addListener( &progress );      
- 
-  // Add the top suite to the test runner...
-  CppUnit::TestRunner runner;
-  runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-  runner.run(controller, "");
- 
-  // Print test in a compiler compatible format...
-  CppUnit::CompilerOutputter outputter( &result, std::cerr );
-  outputter.write();                      
-
-#ifdef HAVE_MPI
-  // use of MPI_Pack()/MPI_Unpack() is complete
+  test_mpi_send_receive();
   MPI_Finalize();
 #endif
 
-  // Return error code 1 if even one of the tests fail...
-  return result.wasSuccessful() ? 0 : 1;
+  test_write_read();
+  return boost::exit_success;
 }
+
