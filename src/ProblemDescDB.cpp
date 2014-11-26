@@ -2488,7 +2488,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
         {"surrogate.folds", P numFolds},
-        {"surrogate.points_total", P pointsTotal}};
+        {"surrogate.points_total", P pointsTotal},
+        {"surrogate.surrogate_order", P surrogateOrder}};
     #undef P
 
     KW<int, DataModelRep> *kw;

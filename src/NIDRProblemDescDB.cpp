@@ -6769,6 +6769,7 @@ static Model_mp_lit
 	MP2(surrogateType,global_neural_network),
 	MP2(surrogateType,global_polynomial),
 	MP2(surrogateType,global_radial_basis),
+	MP2(surrogateType,global_voronoi_surrogate),
 	MP2(surrogateType,local_taylor),
         MP2(surrogateType,multipoint_tana),
         MP2(trendOrder,constant),
@@ -6853,10 +6854,11 @@ static short
 	MP_(rbfMinPartition);
 
 static int
-	MP_(numFolds),
+        MP_(numFolds),
         MP_(pointsTotal),
         MP_(subMethodProcs),
-        MP_(subMethodServers);
+        MP_(subMethodServers),
+	MP_(surrogateOrder);
 
 #undef MP2s
 #undef MP2

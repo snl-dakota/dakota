@@ -1597,6 +1597,8 @@ TAG "model/surrogate/global/polynomial/cubic"
 	DESC "[CHOOSE polynomial order]"
 
 TAG "model/surrogate/global/polynomial/export_model_file"
+TAG "model/surrogate/global/voronoi_surrogate"
+TAG "model/surrogate/global/voronoi_surrogate/surrogate_order"
 TAG "model/surrogate/global/total_points"
 TAG "model/surrogate/global/minimum_points"
 TAG "model/surrogate/global/recommended_points"

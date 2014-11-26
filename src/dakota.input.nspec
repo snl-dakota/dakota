@@ -1561,6 +1561,10 @@ KEYWORD model {N_mom3(start,0,stop)}
         cubic {N_mom(order,polynomialOrder_3)}
         [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
        )
+      |
+      ( voronoi_surrogate {N_mom(lit,surrogateType_global_voronoi_surrogate)}
+        [ surrogate_order INTEGER {N_mom(int,surrogateOrder)} ]
+       )
       [ 
         total_points INTEGER {N_mom(int,pointsTotal)}
         |

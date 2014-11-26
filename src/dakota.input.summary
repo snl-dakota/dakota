@@ -1683,6 +1683,10 @@ KEYWORD model
 	      | cubic
 	      [ export_model_file STRING ]
 	      )
+	    |
+	    ( voronoi_surrogate
+	      [ surrogate_order INTEGER ]
+	      )
 	    [ total_points INTEGER
 	    | minimum_points
 	    | recommended_points ]

@@ -28,6 +28,7 @@ DataModelRep::DataModelRep():
   rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
   annRandomWeight(0), annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
   pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.0),
+  surrogateOrder(2),
   pressFlag(false), approxChallengeAnnotated(true), approxChallengeActive(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), referenceCount(1)
@@ -49,7 +50,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases 
     << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder 
-    << pointSelection << diagMetrics << crossValidateFlag << numFolds 
+    << pointSelection << diagMetrics << crossValidateFlag << numFolds << surrogateOrder  
     << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
     << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs
@@ -72,7 +73,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> krigingNugget >> krigingFindNugget >> mlsPolyOrder >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases
     >> marsInterpolation >> annRandomWeight >> annNodes >> annRange >> trendOrder 
-    >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds 
+    >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds >> surrogateOrder 
     >> percentFold >> pressFlag  >> approxChallengeFile >> approxChallengeAnnotated 
     >> approxChallengeActive >> optionalInterfRespPointer >> primaryVarMaps
     >> secondaryVarMaps >> primaryRespCoeffs >> secondaryRespCoeffs
@@ -95,7 +96,7 @@ void DataModelRep::write(std::ostream& s) const
     << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
     << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder
-    << pointSelection << diagMetrics << crossValidateFlag << numFolds 
+    << pointSelection << diagMetrics << crossValidateFlag << numFolds << surrogateOrder  
     << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
     << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs

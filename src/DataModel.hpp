@@ -209,6 +209,8 @@ public:
   bool approxChallengeAnnotated;
   /// whether to import active variables only
   bool approxChallengeActive;
+  /// polynomial order for Voronoi Piecewise Surrogate 
+  int surrogateOrder;
 
   // nested models
 

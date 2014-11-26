@@ -2331,6 +2331,11 @@
                     <param type="OUTPUT_FILE" />
                   </keyword>
                 </keyword>
+                <keyword  id="voronoi_surrogate2" name="voronoi_surrogate" code="{N_mom(lit,surrogateType_global_voronoi_surrogate)}" label="voronoi_surrogate" help="" minOccurs="1" >
+		  <keyword  id="surrogate_order2" name="surrogate_order" code="{N_mom(int,surrogateOrder)}" label="surrogate_order" help="" minOccurs="0">
+		    <param type="INTEGER" />
+		  </keyword>
+                </keyword>
               </oneOf>
               <optional>
                 <oneOf>

@@ -444,7 +444,8 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
 ## Interface sources.
 set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
     DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
-    GaussProcApproximation.cpp PecosApproximation.cpp SharedApproxData.cpp
+    GaussProcApproximation.cpp VPSApproximation.cpp 
+    PecosApproximation.cpp SharedApproxData.cpp
     SharedPecosApproxData.cpp SharedSurfpackApproxData.cpp
     ApplicationInterface.cpp ProcessApplicInterface.cpp
     ProcessHandleApplicInterface.cpp SysCallApplicInterface.cpp
