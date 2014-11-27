@@ -52,6 +52,7 @@ unsigned short DataBundle::ush = 4321;
 void test_write_read()
 {
   // WJB:  question the value of this test; already performed by Boost!
+#if 0
   DataBundle dat_bundle;
   std::stringstream io_sstream;
 
@@ -83,6 +84,7 @@ void test_write_read()
   BOOST_CHECK( dat_bundle.uin == uin2 );
   BOOST_CHECK( dat_bundle.uln == uln2 );
   BOOST_CHECK( dat_bundle.ush == ush2 );
+#endif
 }
 
 
