@@ -359,7 +359,7 @@ void ResponseRep::read(std::istream& s)
 
   // Get fn. values as governed by ASV requests
   std::string token;
-  boost::regex reg_exp("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff]([Ii][Nn][Ii][Tt][Yy])?");
+  boost::regex reg_exp("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|-?[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff]([Ii][Nn][Ii][Tt][Yy])?");
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t nf = asv.size();
   for (i=0; i<nf; i++) {
@@ -370,7 +370,12 @@ void ResponseRep::read(std::istream& s)
 	//Cout << "Debug read: token = " << token << '\n';
 	//Cout << "Debug read: atof of token = " << atof(token) << '\n';
 	//Cout << "Debug read: strtod of token = " << strtod(token, NULL)<<'\n';
-	functionValues[i] = std::atof(token.c_str()); // handles NaN and +/-Inf
+	// On error, atof returns 0.0. Must verify token is a number.
+	if(token == re_match(token, reg_exp))
+	  functionValues[i] = std::atof(token.c_str()); // handles NaN and +/-Inf
+	else
+	  throw std::string( "Response format error with functionValue "
+			      + boost::lexical_cast<std::string>(i+1) );
       }
       else
         throw std::string( "At EOF: insufficient data for functionValue "
