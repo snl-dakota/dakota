@@ -405,7 +405,7 @@ if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
 
   # WJB - ToDo: Enable MPI build for pack/unpack test
   add_executable(stream_unit_tests stream_unit_tests.cpp)
-  target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
+  target_link_libraries(stream_unit_tests ${Dakota_LIBRARIES}
                         ${Dakota_TPL_LIBRARIES})
   add_test(stream_unit_tests stream_unit_tests)
 
