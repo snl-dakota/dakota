@@ -1,0 +1,21 @@
+method,
+	optpp_q_newton
+	  max_iterations = 50
+	  convergence_tolerance = 1e-4
+
+variables,
+	continuous_design = 1
+	  initial_point  -1.2 
+	  lower_bounds   -2.5 
+	  upper_bounds    2.0 
+	  descriptors     'x'
+
+interface,
+	direct
+	  analysis_driver = 'plugin_dart'
+
+responses,
+	objective_functions = 1
+	numerical_gradients
+	no_hessians
+
