@@ -24,7 +24,7 @@ interface,
           #file_tag file_save
 
 responses,
-	response_functions = 6 
+	response_functions = 3
         scalar_responses = 1
         field_responses = 2
         lengths = 2 3
