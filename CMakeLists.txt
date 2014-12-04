@@ -455,6 +455,10 @@ if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
+if(BUILD_TESTING)
+  add_subdirectory(unit_test)
+endif()
+
 option(ENABLE_SPEC_MAINT "Enable DAKOTA specification maintenance mode."
   OFF)
 if(ENABLE_SPEC_MAINT AND NOT UNIX)
