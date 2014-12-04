@@ -53,8 +53,7 @@ set(EXPORT_TARGETS dakota_src nidr)
 # tree.  However, when building under Trilinos, targets like pecos_src
 # and dakota_src need to see these libraries in the exports list at
 # this point as Trilinos hasn't exported them yet.
-if (BUILD_IN_TRILINOS OR 
-    Teuchos_DIR MATCHES "${Dakota_BINARY_DIR}/packages/teuchos")
+if (BUILD_IN_TRILINOS OR DAKOTA_BUILDING_TEUCHOS)
   list(APPEND DAKOTA_INCDIRS ${Teuchos_INCLUDE_DIRS})
   list(APPEND DAKOTA_LIBDIRS ${Teuchos_LIBRARY_DIRS})
   list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
@@ -994,6 +993,14 @@ set(Dakota_TPL_INCLUDE_DIRS ${EXT_TPL_INCDIRS} CACHE INTERNAL
   "Dakota external TPL include directories") 
 
 # Paths to libraries in the build tree (will be installed)
+# Generate a list of build tree lib dirs; this will duplicate motif,
+# teuchos, queso, potentially
+##foreach(dpl ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS})
+##  get_target_property(dpl_loc ${dpl} LOCATION)
+##  get_filename_component(dpl_path ${dpl_loc} PATH)
+##  list(APPEND DAKOTA_LIBDIRS ${dpl_path})
+##endforeach()
+
 set(Dakota_LIBRARY_DIRS ${DAKOTA_LIBDIRS} CACHE INTERNAL 
   "Dakota build-time library directories") 
 # External libraries

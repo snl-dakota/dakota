@@ -365,11 +365,14 @@ if (NOT BUILD_IN_TRILINOS)
         set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
       endif() # tribits source directory EXISTS
 
-      message( "Setting Teuchos_DIR to ${Teuchos_DIR}" )
+      message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}" )
+      set(DAKOTA_BUILDING_TEUCHOS TRUE CACHE BOOL
+        "Dakota is building Teuchos in its build tree" FORCE)
       add_subdirectory(packages/teuchos)
 
     else()
-      message("in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR is: ${Teuchos_DIR}")
+      message(STATUS
+	"In ${CMAKE_CURRENT_BINARY_DIR} using Teuchos_DIR: ${Teuchos_DIR}")
     endif() # NOT Teuchos_DIR
 
     # Additional setting to prevent multiple targets with the same name
