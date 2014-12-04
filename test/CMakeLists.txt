@@ -390,9 +390,6 @@ add_dependencies(cantilever dakota)
 add_dependencies(morris dakota)
 add_dependencies(text_book dakota)
 
-
-# UNIT TESTS
-
 option(DAKOTA_ENABLE_BOOST_MIN_TESTS
          "Enable Boost.Minimal tests in DAKOTA" ON)
 if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
@@ -408,6 +405,11 @@ if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
   target_link_libraries(stream_unit_tests ${Dakota_LIBRARIES}
                         ${Dakota_TPL_LIBRARIES})
   add_test(stream_unit_tests stream_unit_tests)
+
+  add_executable(test_field_covariance_utils test_field_covariance_utils.cpp)
+  target_link_libraries(test_field_covariance_utils ${Dakota_LIBRARIES}
+    ${Dakota_TPL_LIBRARIES})
+  add_test(test_field_covariance_utils test_field_covariance_utils )
 
 endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
 
