@@ -136,6 +136,9 @@ private:
   /// retrieve the count within variablesComponents corresponding to key
   size_t vc_lookup(unsigned short key) const;
 
+  /// copy the data from svd_rep to the current representation
+  void copy_rep(SharedVariablesDataRep* svd_rep);
+
   //
   //- Heading: Data
   //
@@ -707,16 +710,6 @@ inline SharedVariablesData::SharedVariablesData(const SharedVariablesData& svd)
 }
 
 
-inline SharedVariablesData::~SharedVariablesData()
-{
-  if (svdRep) { // Check for NULL
-    --svdRep->referenceCount; // decrement
-    if (svdRep->referenceCount == 0)
-      delete svdRep;
-  }
-}
-
-
 inline SharedVariablesData& SharedVariablesData::
 operator=(const SharedVariablesData& svd)
 {
@@ -725,13 +718,25 @@ operator=(const SharedVariablesData& svd)
     if (svdRep) // Check for NULL
       if ( --svdRep->referenceCount == 0 ) 
 	delete svdRep;
-    // Assign new
+    // Assign and increment new
     svdRep = svd.svdRep;
+    if (svdRep) // Check for an assignment of NULL
+      ++svdRep->referenceCount;
   }
-  // Increment new
-  if (svdRep) // Check for an assignment of NULL
-    ++svdRep->referenceCount;
+  // else if assigning same rep, then do nothing since referenceCount
+  // should already be correct
+
   return *this;
+}
+
+
+inline SharedVariablesData::~SharedVariablesData()
+{
+  if (svdRep) { // Check for NULL
+    --svdRep->referenceCount; // decrement
+    if (svdRep->referenceCount == 0)
+      delete svdRep;
+  }
 }
 
 

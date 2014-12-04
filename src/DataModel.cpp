@@ -118,7 +118,7 @@ DataModel::DataModel(const DataModel& data_model)
   // Increment new (no old to decrement)
   dataModelRep = data_model.dataModelRep;
   if (dataModelRep) // Check for an assignment of NULL
-    dataModelRep->referenceCount++;
+    ++dataModelRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataModel::DataModel(DataModel&)" << std::endl;
@@ -139,7 +139,7 @@ DataModel& DataModel::operator=(const DataModel& data_model)
     // Assign and increment new
     dataModelRep = data_model.dataModelRep;
     if (dataModelRep) // Check for NULL
-      dataModelRep->referenceCount++;
+      ++dataModelRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

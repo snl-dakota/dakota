@@ -191,7 +191,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     if (coreMappings) { // both mappings
       ActiveSet algebraic_set;
       asv_mapping(set, algebraic_set, core_set);
-      algebraic_response = Response(algebraic_set);
+      algebraic_response = Response(SIMULATION_RESPONSE, algebraic_set);
       algebraic_mappings(vars, algebraic_set, algebraic_response);
       // separate core_response from response
       core_response = response.copy();

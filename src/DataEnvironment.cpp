@@ -76,7 +76,7 @@ DataEnvironment::DataEnvironment(const DataEnvironment& data_env)
   // Increment new (no old to decrement)
   dataEnvRep = data_env.dataEnvRep;
   if (dataEnvRep) // Check for an assignment of NULL
-    dataEnvRep->referenceCount++;
+    ++dataEnvRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataEnvironment::DataEnvironment(DataEnvironment&)" << endl;
@@ -97,7 +97,7 @@ DataEnvironment& DataEnvironment::operator=(const DataEnvironment& data_env)
     // Assign and increment new
     dataEnvRep = data_env.dataEnvRep;
     if (dataEnvRep) // Check for NULL
-      dataEnvRep->referenceCount++;
+      ++dataEnvRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

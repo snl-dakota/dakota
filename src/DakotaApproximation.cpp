@@ -204,7 +204,7 @@ Approximation::Approximation(const Approximation& approx)
   // Increment new (no old to decrement)
   approxRep = approx.approxRep;
   if (approxRep) // Check for an assignment of NULL
-    approxRep->referenceCount++;
+    ++approxRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(Approximation&)" << std::endl;
@@ -227,7 +227,7 @@ Approximation Approximation::operator=(const Approximation& approx)
     // Assign and increment new
     approxRep = approx.approxRep;
     if (approxRep) // Check for NULL
-      approxRep->referenceCount++;
+      ++approxRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

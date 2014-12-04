@@ -86,7 +86,7 @@ void NonDInterval::initialize_final_statistics()
   // in subIterator.response_results_active_set(sub_iterator_set)
   ActiveSet stats_set(num_final_stats);
   stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
-  finalStatistics = Response(stats_set);
+  finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful fn labels to final stats (appear in NestedModel output)
   size_t i, j, num_levels, cntr = 0;

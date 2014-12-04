@@ -60,7 +60,8 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   currentVariables(problem_db.get_variables()),
   numDerivVars(currentVariables.cv()),
-  currentResponse(problem_db.get_response(currentVariables)),
+  currentResponse(
+    problem_db.get_response(SIMULATION_RESPONSE, currentVariables)),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
   modelType(problem_db.get_string("model.type")),
@@ -267,10 +268,10 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
       const ActiveSet& set, short output_level):
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
-  currentResponse(set), numFns(set.request_vector().size()),
-  userDefinedConstraints(svd), fdGradStepType("relative"),
-  fdHessStepType("relative"), supportsEstimDerivs(true),
-  probDescDB(problem_db), parallelLib(parallel_lib),
+  currentResponse(SIMULATION_RESPONSE, set),
+  numFns(set.request_vector().size()), userDefinedConstraints(svd),
+  fdGradStepType("relative"), fdHessStepType("relative"),
+  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),
@@ -380,7 +381,7 @@ Model::Model(const Model& model): probDescDB(model.problem_description_db()),
   // Increment new (no old to decrement)
   modelRep = model.modelRep;
   if (modelRep) // Check for an assignment of NULL
-    modelRep->referenceCount++;
+    ++modelRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(Model&)" << std::endl;
@@ -403,7 +404,7 @@ Model Model::operator=(const Model& model)
     // Assign and increment new
     modelRep = model.modelRep;
     if (modelRep) // Check for NULL
-      modelRep->referenceCount++;
+      ++modelRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

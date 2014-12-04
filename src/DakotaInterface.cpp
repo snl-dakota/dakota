@@ -324,7 +324,7 @@ Interface::Interface(const Interface& interface_in)
   // Increment new (no old to decrement)
   interfaceRep = interface_in.interfaceRep;
   if (interfaceRep) // Check for an assignment of NULL
-    interfaceRep->referenceCount++;
+    ++interfaceRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Interface::Interface(Interface&)" << std::endl;
@@ -347,7 +347,7 @@ Interface Interface::operator=(const Interface& interface_in)
     // Assign and increment new
     interfaceRep = interface_in.interfaceRep;
     if (interfaceRep) // Check for NULL
-      interfaceRep->referenceCount++;
+      ++interfaceRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

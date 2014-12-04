@@ -2231,10 +2231,8 @@ inline const StringArray& Model::response_labels() const
 
 inline void Model::response_labels(const StringArray& resp_labels)
 {
-  if (modelRep)
-    modelRep->currentResponse.function_labels(resp_labels);
-  else
-    currentResponse.function_labels(resp_labels);
+  if (modelRep) modelRep->currentResponse.function_labels(resp_labels);
+  else          currentResponse.function_labels(resp_labels);
 }
 
 

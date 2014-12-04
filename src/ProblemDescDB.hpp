@@ -402,7 +402,7 @@ private:
   /// retrieve an existing Interface, if it exists, or instantiate a new one
   const Interface& get_interface();
   /// retrieve an existing Response, if it exists, or instantiate a new one
-  const Response& get_response(const Variables& vars);
+  const Response& get_response(short type, const Variables& vars);
 
   /// Used by the envelope constructor to instantiate the correct letter class
   ProblemDescDB* get_db(ParallelLibrary& parallel_lib);
@@ -635,7 +635,7 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
     //case PEER_SCHEDULING: case PEER_STATIC_SCHEDULING:
     //case PEER_DYNAMIC_SCHEDULING:
     //  break;
-    case DEFAULT_SCHEDULING: // replicate auto-config logic for master
+    case DEFAULT_SCHEDULING: // emulate auto-config logic for master scheduling
       if (!peer_dynamic_avail && num_serv_spec > 1 &&
 	  num_serv_spec * std::max(1, asynch_local_conc) < max_concurrency)
 	++max_procs_per_lev;

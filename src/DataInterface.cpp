@@ -102,7 +102,7 @@ DataInterface::DataInterface(const DataInterface& data_resp)
   // Increment new (no old to decrement)
   dataIfaceRep = data_resp.dataIfaceRep;
   if (dataIfaceRep) // Check for an assignment of NULL
-    dataIfaceRep->referenceCount++;
+    ++dataIfaceRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataInterface::DataInterface(DataInterface&)" << std::endl;
@@ -123,7 +123,7 @@ DataInterface& DataInterface::operator=(const DataInterface& data_interface)
     // Assign and increment new
     dataIfaceRep = data_interface.dataIfaceRep;
     if (dataIfaceRep) // Check for NULL
-      dataIfaceRep->referenceCount++;
+      ++dataIfaceRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

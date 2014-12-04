@@ -69,10 +69,12 @@ public:
 
   /// default constructor
   Variables();
-  /// standard constructor
-  Variables(const ProblemDescDB& problem_db);
-  /// alternate constructor for instantiations on the fly
-  Variables(const SharedVariablesData& svd);
+  /// standard constructor (explicit disallows its use for implicit
+  /// type conversion)
+  explicit Variables(const ProblemDescDB& problem_db);
+  /// alternate constructor for instantiations on the fly (explicit
+  /// disallows its use for implicit type conversion)
+  explicit Variables(const SharedVariablesData& svd);
   /// copy constructor
   Variables(const Variables& vars);
 
@@ -407,7 +409,8 @@ public:
   /// return all continuous variable position identifiers
   SizetMultiArrayConstView all_continuous_variable_ids() const;
 
-  /// for use when a deep copy is needed (the representation is _not_ shared)
+  /// a deep variables copy for use in history mechanisms
+  /// (SharedVariablesData uses a shallow copy by default)
   Variables copy(bool deep_svd = false) const;
 
   /// returns variablesView

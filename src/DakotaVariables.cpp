@@ -259,12 +259,13 @@ Variables Variables::operator=(const Variables& vars)
     if (variablesRep) // Check for NULL
       if (--variablesRep->referenceCount == 0) 
 	delete variablesRep;
-    // Assign new
+    // Assign and increment new
     variablesRep = vars.variablesRep;
+    if (variablesRep) // Check for NULL
+      ++variablesRep->referenceCount;
   }
-  // Increment new (either case: old == new or old != new)
-  if (variablesRep) // Check for NULL
-    ++variablesRep->referenceCount;
+  // else if assigning same rep, then do nothing since referenceCount
+  // should already be correct
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Variables::operator=(Variables&)" << std::endl;

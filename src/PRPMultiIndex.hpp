@@ -264,7 +264,7 @@ inline PRPCacheHIter
 lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
 	      const Variables& search_vars,  const ActiveSet& search_set)
 {
-  Response search_resp(search_set);
+  Response search_resp(SIMULATION_RESPONSE, search_set);
   ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
   return lookup_by_val(prp_cache, search_pr);
 }
@@ -476,7 +476,7 @@ inline PRPQueueHIter
 lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
 	      const Variables& search_vars,  const ActiveSet& search_set)
 {
-  Response search_resp(search_set);
+  Response search_resp(SIMULATION_RESPONSE, search_set);
   ParamResponsePair search_pr(search_vars, search_interface_id, search_resp);
   return lookup_by_val(prp_queue, search_pr);
 }

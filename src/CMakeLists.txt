@@ -424,7 +424,8 @@ endif(DAKOTA_USAGE_TRACKING)
 
 ## EVALDATA sources.
 set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
-    SharedVariablesData.cpp DakotaActiveSet.cpp DakotaResponse.cpp 
+    SharedVariablesData.cpp DakotaActiveSet.cpp DakotaResponse.cpp
+    SimulationResponse.cpp ExperimentResponse.cpp SharedResponseData.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.

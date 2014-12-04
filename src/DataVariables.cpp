@@ -332,7 +332,7 @@ DataVariables::DataVariables(const DataVariables& data_vars)
   // Increment new (no old to decrement)
   dataVarsRep = data_vars.dataVarsRep;
   if (dataVarsRep) // Check for an assignment of NULL
-    dataVarsRep->referenceCount++;
+    ++dataVarsRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataVariables::DataVariables(DataVariables&)" << std::endl;
@@ -353,7 +353,7 @@ DataVariables DataVariables::operator=(const DataVariables& data_vars)
     // Assign and increment new
     dataVarsRep = data_vars.dataVarsRep;
     if (dataVarsRep) // Check for NULL
-      dataVarsRep->referenceCount++;
+      ++dataVarsRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

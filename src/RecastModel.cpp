@@ -770,7 +770,7 @@ void RecastModel::update_from_sub_model()
       - userDefinedConstraints.num_nonlinear_eq_constraints()
       - userDefinedConstraints.num_nonlinear_ineq_constraints();
     for (i=0; i<num_primary; i++)
-      currentResponse.function_label(sm_resp_labels[i], i);
+      currentResponse.shared_data().function_label(sm_resp_labels[i], i);
   }
 
   if (secondaryRespMapping) {
@@ -787,8 +787,8 @@ void RecastModel::update_from_sub_model()
       num_primary    = numFns - num_nln_con,
       num_sm_primary = subModel.num_functions() - num_nln_con;
     for (i=0; i<num_nln_con; i++)
-      currentResponse.function_label(sm_resp_labels[num_sm_primary+i],
-				     num_primary+i);
+      currentResponse.shared_data().function_label(
+	sm_resp_labels[num_sm_primary+i], num_primary+i);
 
     // nonlinear constraint bounds/targets
     if (subModel.num_nonlinear_ineq_constraints()) {

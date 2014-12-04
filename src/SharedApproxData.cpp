@@ -275,7 +275,7 @@ SharedApproxData::SharedApproxData(const SharedApproxData& shared_data)
   // Increment new (no old to decrement)
   dataRep = shared_data.dataRep;
   if (dataRep) // Check for an assignment of NULL
-    dataRep->referenceCount++;
+    ++dataRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(SharedApproxData&)" << std::endl;
@@ -299,7 +299,7 @@ operator=(const SharedApproxData& shared_data)
     // Assign and increment new
     dataRep = shared_data.dataRep;
     if (dataRep) // Check for NULL
-      dataRep->referenceCount++;
+      ++dataRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

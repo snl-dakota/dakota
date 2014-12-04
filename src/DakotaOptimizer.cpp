@@ -196,7 +196,7 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
   activeSet.reshape(numFunctions, numContinuousVars);
   activeSet.request_values(1); activeSet.derivative_start_value(1);
-  bestResponseArray.push_back(Response(activeSet));
+  bestResponseArray.push_back(Response(SIMULATION_RESPONSE, activeSet));
 }
 
 

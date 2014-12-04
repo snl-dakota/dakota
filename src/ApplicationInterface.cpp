@@ -450,7 +450,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // requested set and response.
     ActiveSet algebraic_set;
     asv_mapping(set, algebraic_set, core_set);
-    algebraic_resp = Response(algebraic_set);
+    algebraic_resp = Response(SIMULATION_RESPONSE, algebraic_set);
     if (asynch_flag) {
       ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
       beforeSynchAlgPRPQueue.insert(prp);
@@ -734,7 +734,7 @@ const IntResponseMap& ApplicationInterface::synch()
 	// doesn't have a valid Response to update
 	ActiveSet total_set(alg_prp_it->active_set());
 	asv_mapping(alg_prp_it->active_set(), total_set);
-	Response total_response = Response(total_set);
+	Response total_response = Response(SIMULATION_RESPONSE, total_set);
 	response_mapping(alg_response, total_response, total_response);
 	rawResponseMap[alg_prp_it->eval_id()] = total_response;
       }
@@ -844,7 +844,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       // valid Response to update
       ActiveSet total_set(alg_prp_it->active_set());
       asv_mapping(alg_prp_it->active_set(), total_set);
-      Response total_response = Response(total_set);
+      Response total_response = Response(SIMULATION_RESPONSE, total_set);
       response_mapping(algebraic_resp, total_response, total_response);
       rawResponseMap[alg_prp_it->eval_id()] = total_response;
     }
@@ -1926,7 +1926,7 @@ void ApplicationInterface::serve_evaluations_synch()
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(set); // special constructor
+      Response local_response(SIMULATION_RESPONSE, set); // special constructor
 
       // slaves invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } // synch local
@@ -1988,7 +1988,7 @@ void ApplicationInterface::serve_evaluations_synch_peer()
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(set); // special constructor
+      Response local_response(SIMULATION_RESPONSE, set); // special constructor
 
       // slaves invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } //synch local
@@ -2067,7 +2067,7 @@ void ApplicationInterface::serve_evaluations_asynch()
           Variables vars; ActiveSet set;
           recv_buffer >> vars >> set;
 	  recv_buffer.reset();
-	  Response local_response(set); // special constructor
+	  Response local_response(SIMULATION_RESPONSE, set); // special ctor
           ParamResponsePair prp(vars, interfaceId, local_response,
 				fn_eval_id, false); // shallow copy
           asynchLocalActivePRPQueue.insert(prp);
@@ -2157,7 +2157,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 	Variables vars;	ActiveSet set;
 	recv_buffer >> vars >> set;
 	recv_buffer.reset();
-	Response local_response(set); // special constructor
+	Response local_response(SIMULATION_RESPONSE, set); // special ctor
 	ParamResponsePair prp(vars, interfaceId, local_response,
 			      fn_eval_id, false); // shallow copy
 	asynchLocalActivePRPQueue.insert(prp);

@@ -539,7 +539,7 @@ DataMethod::DataMethod(const DataMethod& data_method)
   // Increment new (no old to decrement)
   dataMethodRep = data_method.dataMethodRep;
   if (dataMethodRep) // Check for an assignment of NULL
-    dataMethodRep->referenceCount++;
+    ++dataMethodRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataMethod::DataMethod(DataMethod&)" << std::endl;
@@ -560,7 +560,7 @@ DataMethod& DataMethod::operator=(const DataMethod& data_method)
     // Assign and increment new
     dataMethodRep = data_method.dataMethodRep;
     if (dataMethodRep) // Check for NULL
-      dataMethodRep->referenceCount++;
+      ++dataMethodRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

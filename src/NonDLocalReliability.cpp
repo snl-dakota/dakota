@@ -1669,7 +1669,7 @@ void NonDLocalReliability::update_limit_state_surrogate()
   ActiveSet set;//(numFunctions, numUncertainVars);
   set.request_vector(asv);
   set.derivative_vector(iteratedModel.continuous_variable_ids());
-  Response response(set);
+  Response response(SIMULATION_RESPONSE, set);
   response.function_value(computedRespLevel, respFnCount);
   if (x_space) {
     response.function_gradient(fnGradX, respFnCount);

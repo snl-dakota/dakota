@@ -22,6 +22,9 @@
 
 namespace Dakota {
 
+// special values for derived Response type
+enum { BASE_RESPONSE=0, SIMULATION_RESPONSE, EXPERIMENT_RESPONSE };
+
 
 /// Body class for responses specification data.
 
@@ -58,28 +61,45 @@ public:
   /// number of objective functions (from the \c
   /// num_objective_functions specification in \ref RespFnOpt)
   size_t numObjectiveFunctions;
+  /// number of least squares terms (from the \c
+  /// num_least_squares_terms specification in \ref RespFnLS)
+  size_t numLeastSqTerms;
   /// number of nonlinear inequality constraints (from the \c
   /// num_nonlinear_inequality_constraints specification in \ref RespFnOpt)
   size_t numNonlinearIneqConstraints;
   /// number of nonlinear equality constraints (from the \c
   /// num_nonlinear_equality_constraints specification in \ref RespFnOpt)
   size_t numNonlinearEqConstraints;
-  /// number of least squares terms (from the \c
-  /// num_least_squares_terms specification in \ref RespFnLS)
-  size_t numLeastSqTerms;
   /// number of generic response functions (from the \c
   /// num_response_functions specification in \ref RespFnGen)
   size_t numResponseFunctions;
+
   ///  scalar_objectives:  number of objective functions which are scalar
   size_t numScalarObjectiveFunctions;
-  ///  field_objectives:  number of objective functions which are field-valued
-  size_t numFieldObjectiveFunctions;
   ///  scalar_calibration_terms:  number of calibration terms which are scalar
   size_t numScalarLeastSqTerms;
-  ///  field_calibration_terms:  number of calibration terms which are field-valued
-  size_t numFieldLeastSqTerms;
+  /// number of scalar nonlinear inequality constraints (from the \c
+  /// num_scalar_nonlinear_inequality_constraints specification in
+  /// \ref RespFnOpt)
+  size_t numScalarNonlinearIneqConstraints;
+  /// number of scalar nonlinear equality constraints (from the \c
+  /// num_scalar_nonlinear_equality_constraints specification in \ref RespFnOpt)
+  size_t numScalarNonlinearEqConstraints;
   ///  scalar_responses:  number of response functions which are scalar
   size_t numScalarResponseFunctions;
+
+  ///  field_objectives:  number of objective functions which are field-valued
+  size_t numFieldObjectiveFunctions;
+  ///  field_calibration_terms: number of calibration terms which are
+  ///  field-valued
+  size_t numFieldLeastSqTerms;
+  /// number of field nonlinear inequality constraints (from the \c
+  /// num_scalar_nonlinear_inequality_constraints specification in
+  /// \ref RespFnOpt)
+  size_t numFieldNonlinearIneqConstraints;
+  /// number of field nonlinear equality constraints (from the \c
+  /// num_scalar_nonlinear_equality_constraints specification in \ref RespFnOpt)
+  size_t numFieldNonlinearEqConstraints;
   ///  field_responses:  number of response functions which are field-valued
   size_t numFieldResponseFunctions;
 

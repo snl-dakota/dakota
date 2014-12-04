@@ -17,17 +17,18 @@
 namespace Dakota {
 
 // Default constructor:
-DataResponsesRep::DataResponsesRep(): numObjectiveFunctions(0),
-  numNonlinearIneqConstraints(0), numNonlinearEqConstraints(0),
-  numLeastSqTerms(0), numResponseFunctions(0), numExperiments(1),
-  numExpConfigVars(0), numExpStdDeviations(0), 
+DataResponsesRep::DataResponsesRep():
+  numObjectiveFunctions(0), numLeastSqTerms(0), numNonlinearIneqConstraints(0),
+  numNonlinearEqConstraints(0), numResponseFunctions(0),
+  numScalarObjectiveFunctions(0), numScalarLeastSqTerms(0),
+  numScalarNonlinearIneqConstraints(0), numScalarNonlinearEqConstraints(0),
+  numScalarResponseFunctions(0), numFieldObjectiveFunctions(0),
+  numFieldLeastSqTerms(0), numFieldNonlinearIneqConstraints(0),
+  numFieldNonlinearEqConstraints(0), numFieldResponseFunctions(0),
+  numExperiments(1), numExpConfigVars(0), numExpStdDeviations(0), 
   expDataFileAnnotated(true), ignoreBounds(false), centralHess(false), 
   methodSource("dakota"), intervalType("forward"), 
-  fdGradStepType("relative"), fdHessStepType("relative"), 
-  numScalarObjectiveFunctions(0), numFieldObjectiveFunctions(0),
-  numScalarLeastSqTerms(0), numFieldLeastSqTerms(0),
-  numScalarResponseFunctions(0), numFieldResponseFunctions(0),
-  referenceCount(1)
+  fdGradStepType("relative"), fdHessStepType("relative"), referenceCount(1)
 { }
 
 
@@ -35,8 +36,13 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
 {
   s << idResponses << responseLabels
     // counts
-    << numObjectiveFunctions << numNonlinearIneqConstraints
-    << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
+    << numObjectiveFunctions << numLeastSqTerms << numNonlinearIneqConstraints
+    << numNonlinearEqConstraints << numResponseFunctions
+    << numScalarObjectiveFunctions << numScalarLeastSqTerms
+    << numScalarNonlinearIneqConstraints << numScalarNonlinearEqConstraints
+    << numScalarResponseFunctions << numFieldObjectiveFunctions
+    << numFieldLeastSqTerms << numFieldNonlinearIneqConstraints
+    << numFieldNonlinearEqConstraints << numFieldResponseFunctions
     // weights, bounds, targets
     << primaryRespFnSense << primaryRespFnWeights << nonlinearIneqLowerBnds
     << nonlinearIneqUpperBnds << nonlinearEqTargets
@@ -54,13 +60,9 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
-    << numScalarObjectiveFunctions << numFieldObjectiveFunctions 
-    << numScalarLeastSqTerms << numFieldLeastSqTerms 
-    << numScalarResponseFunctions << numFieldResponseFunctions 
     << fieldLengths << numCoordsPerField << coordsPerField
     << coordDataFileName << configDataFileName << fieldCoordDataFileName
     << fieldDataFileName << sigmaDataFileName << sigmaType;
-
 }
 
 
@@ -68,8 +70,13 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
 {
   s >> idResponses >> responseLabels
     // counts
-    >> numObjectiveFunctions >> numNonlinearIneqConstraints
-    >> numNonlinearEqConstraints >> numLeastSqTerms >> numResponseFunctions
+    >> numObjectiveFunctions >> numLeastSqTerms >> numNonlinearIneqConstraints
+    >> numNonlinearEqConstraints >> numResponseFunctions
+    >> numScalarObjectiveFunctions >> numScalarLeastSqTerms
+    >> numScalarNonlinearIneqConstraints >> numScalarNonlinearEqConstraints
+    >> numScalarResponseFunctions >> numFieldObjectiveFunctions
+    >> numFieldLeastSqTerms >> numFieldNonlinearIneqConstraints
+    >> numFieldNonlinearEqConstraints >> numFieldResponseFunctions
     // weights, bounds, targets
     >> primaryRespFnSense >> primaryRespFnWeights >> nonlinearIneqLowerBnds
     >> nonlinearIneqUpperBnds >> nonlinearEqTargets
@@ -87,9 +94,6 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> idNumericalGrads >> idAnalyticGrads
     >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
     // field data
-    >> numScalarObjectiveFunctions >> numFieldObjectiveFunctions 
-    >> numScalarLeastSqTerms >> numFieldLeastSqTerms 
-    >> numScalarResponseFunctions >> numFieldResponseFunctions 
     >> fieldLengths >> numCoordsPerField >> coordsPerField
     >> coordDataFileName >> configDataFileName >> fieldCoordDataFileName
     >> fieldDataFileName >> sigmaDataFileName >>sigmaType;
@@ -101,8 +105,13 @@ void DataResponsesRep::write(std::ostream& s) const
 {
   s << idResponses << responseLabels
     // counts
-    << numObjectiveFunctions << numNonlinearIneqConstraints
-    << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
+    << numObjectiveFunctions << numLeastSqTerms << numNonlinearIneqConstraints
+    << numNonlinearEqConstraints << numResponseFunctions
+    << numScalarObjectiveFunctions << numScalarLeastSqTerms
+    << numScalarNonlinearIneqConstraints << numScalarNonlinearEqConstraints
+    << numScalarResponseFunctions << numFieldObjectiveFunctions
+    << numFieldLeastSqTerms << numFieldNonlinearIneqConstraints
+    << numFieldNonlinearEqConstraints << numFieldResponseFunctions
     // weights, bounds, targets
     << primaryRespFnSense << primaryRespFnWeights << nonlinearIneqLowerBnds
     << nonlinearIneqUpperBnds << nonlinearEqTargets
@@ -120,9 +129,6 @@ void DataResponsesRep::write(std::ostream& s) const
     << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
-    << numScalarObjectiveFunctions << numFieldObjectiveFunctions 
-    << numScalarLeastSqTerms << numFieldLeastSqTerms 
-    << numScalarResponseFunctions << numFieldResponseFunctions 
     << fieldLengths << numCoordsPerField << coordsPerField
     << coordDataFileName << configDataFileName << fieldCoordDataFileName 
     << fieldDataFileName << sigmaDataFileName << sigmaType;
@@ -143,7 +149,7 @@ DataResponses::DataResponses(const DataResponses& data_resp)
   // Increment new (no old to decrement)
   dataRespRep = data_resp.dataRespRep;
   if (dataRespRep) // Check for an assignment of NULL
-    dataRespRep->referenceCount++;
+    ++dataRespRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "DataResponses::DataResponses(DataResponses&)" << std::endl;
@@ -164,7 +170,7 @@ DataResponses& DataResponses::operator=(const DataResponses& data_resp)
     // Assign and increment new
     dataRespRep = data_resp.dataRespRep;
     if (dataRespRep) // Check for NULL
-      dataRespRep->referenceCount++;
+      ++dataRespRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

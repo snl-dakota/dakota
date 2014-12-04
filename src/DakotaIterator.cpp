@@ -600,7 +600,7 @@ Iterator::Iterator(const Iterator& iterator):
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
   if (iteratorRep) // Check for an assignment of NULL
-    iteratorRep->referenceCount++;
+    ++iteratorRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Iterator&)" << std::endl;
@@ -623,7 +623,7 @@ Iterator Iterator::operator=(const Iterator& iterator)
     // Assign and increment new
     iteratorRep = iterator.iteratorRep;
     if (iteratorRep) // Check for NULL
-      iteratorRep->referenceCount++;
+      ++iteratorRep->referenceCount;
   }
   // else if assigning same rep, then do nothing since referenceCount
   // should already be correct

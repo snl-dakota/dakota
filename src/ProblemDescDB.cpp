@@ -1200,7 +1200,7 @@ const Interface& ProblemDescDB::get_interface()
 }
 
 
-const Response& ProblemDescDB::get_response(const Variables& vars)
+const Response& ProblemDescDB::get_response(short type, const Variables& vars)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1229,10 +1229,10 @@ const Response& ProblemDescDB::get_response(const Variables& vars)
   // with peer relationships, but are questionable for use among nested/layered
   // levels.  Need a way to detect peer vs. nested/layered relationships.
   RespLIter r_it;
-  // = dbRep->responseList.find(responses_id_compare,&id_responses);
+  // = dbRep->responseList.find(responses_id_compare, &id_responses);
   //if (r_it == dbRep->responseList.end()) { // ||
     //r_it->active_set_derivative_vector() != vars.continuous_variable_ids()) {
-    Response new_response(vars, *this);
+    Response new_response(type, vars, *this);
     dbRep->responseList.push_back(new_response);
     r_it = --dbRep->responseList.end();
   //}}
@@ -2767,6 +2767,10 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"config_vars", P numExpConfigVars},
 	{"experiments", P numExperiments},
 	{"field_calibration_terms", P numFieldLeastSqTerms},
+	{"field_nonlinear_equality_constraints",
+	 P numFieldNonlinearEqConstraints},
+	{"field_nonlinear_inequality_constraints",
+	 P numFieldNonlinearIneqConstraints},
 	{"field_objectives", P numFieldObjectiveFunctions},
 	{"field_responses", P numFieldResponseFunctions},
 	{"least_squares_terms", P numLeastSqTerms},
@@ -2775,6 +2779,10 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"objective_functions", P numObjectiveFunctions},
 	{"response_functions", P numResponseFunctions},
 	{"scalar_calibration_terms", P numScalarLeastSqTerms},
+	{"scalar_nonlinear_equality_constraints",
+	 P numScalarNonlinearEqConstraints},
+	{"scalar_nonlinear_inequality_constraints",
+	 P numScalarNonlinearIneqConstraints},
 	{"scalar_objectives", P numScalarObjectiveFunctions},
 	{"scalar_responses", P numScalarResponseFunctions},
 	{"std_deviations", P numExpStdDeviations}};

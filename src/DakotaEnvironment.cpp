@@ -238,7 +238,7 @@ Environment::Environment(const Environment& env)
   // Increment new (no old to decrement)
   environmentRep = env.environmentRep;
   if (environmentRep) // Check for an assignment of NULL
-    environmentRep->referenceCount++;
+    ++environmentRep->referenceCount;
 
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::Environment(Environment&)" << std::endl;
@@ -259,12 +259,13 @@ Environment Environment::operator=(const Environment& env)
     if (environmentRep) // Check for NULL
       if ( --environmentRep->referenceCount == 0 ) 
 	delete environmentRep;
-    // Assign new
+    // Assign and increment new
     environmentRep = env.environmentRep;
+    if (environmentRep) // Check for NULL
+      ++environmentRep->referenceCount;
   }
-  // Increment new (either case: old == new or old != new)
-  if (environmentRep) // Check for NULL
-    environmentRep->referenceCount++;
+  // else if assigning same rep, then do nothing since referenceCount
+  // should already be correct
 
 #ifdef REFCOUNT_DEBUG
   cout << "Environment::operator=(Environment&)" << std::endl;

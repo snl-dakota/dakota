@@ -1294,6 +1294,58 @@ void SharedVariablesDataRep::initialize_inactive_components()
 
 /** Deep copies are used when recasting changes the nature of a
     Variables set. */
+void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
+{
+  variablesId             = svd_rep->variablesId;
+  variablesComponents     = svd_rep->variablesComponents;
+  variablesCompsTotals    = svd_rep->variablesCompsTotals;
+  activeVarsCompsTotals   = svd_rep->activeVarsCompsTotals;
+  inactiveVarsCompsTotals = svd_rep->inactiveVarsCompsTotals;
+  variablesView           = svd_rep->variablesView;
+
+  cvStart   = svd_rep->cvStart;   numCV   = svd_rep->numCV;
+  divStart  = svd_rep->divStart;  numDIV  = svd_rep->numDIV;
+  dsvStart  = svd_rep->dsvStart;  numDSV  = svd_rep->numDSV;
+  drvStart  = svd_rep->drvStart;  numDRV  = svd_rep->numDRV;
+  icvStart  = svd_rep->icvStart;  numICV  = svd_rep->numICV;
+  idivStart = svd_rep->idivStart; numIDIV = svd_rep->numIDIV;
+  idsvStart = svd_rep->idsvStart; numIDSV = svd_rep->numIDSV;
+  idrvStart = svd_rep->idrvStart; numIDRV = svd_rep->numIDRV;
+
+  // Boost MultiArrays must be resized prior to operator= assignment
+  size_t num_acv  = svd_rep->allContinuousLabels.size(),
+         num_adiv = svd_rep->allDiscreteIntLabels.size(),
+         num_adsv = svd_rep->allDiscreteStringLabels.size(),
+         num_adrv = svd_rep->allDiscreteRealLabels.size();
+
+  allContinuousLabels.resize(boost::extents[num_acv]);
+  allContinuousLabels = svd_rep->allContinuousLabels;
+  allDiscreteIntLabels.resize(boost::extents[num_adiv]);
+  allDiscreteIntLabels = svd_rep->allDiscreteIntLabels;
+  allDiscreteStringLabels.resize(boost::extents[num_adsv]);
+  allDiscreteStringLabels = svd_rep->allDiscreteStringLabels;
+  allDiscreteRealLabels.resize(boost::extents[num_adrv]);
+  allDiscreteRealLabels = svd_rep->allDiscreteRealLabels;
+
+  allContinuousTypes.resize(boost::extents[num_acv]);
+  allContinuousTypes = svd_rep->allContinuousTypes;
+  allDiscreteIntTypes.resize(boost::extents[num_adiv]);
+  allDiscreteIntTypes = svd_rep->allDiscreteIntTypes;
+  allDiscreteStringTypes.resize(boost::extents[num_adsv]);
+  allDiscreteStringTypes = svd_rep->allDiscreteStringTypes;
+  allDiscreteRealTypes.resize(boost::extents[num_adrv]);
+  allDiscreteRealTypes = svd_rep->allDiscreteRealTypes;
+
+  allContinuousIds.resize(boost::extents[num_acv]);
+  allContinuousIds = svd_rep->allContinuousIds;
+
+  allRelaxedDiscreteInt  = svd_rep->allRelaxedDiscreteInt;
+  allRelaxedDiscreteReal = svd_rep->allRelaxedDiscreteReal;
+}
+
+
+/** Deep copies are used when recasting changes the nature of a
+    Variables set. */
 SharedVariablesData SharedVariablesData::copy() const
 {
   // the handle class instantiates a new handle and a new body and copies
@@ -1308,63 +1360,37 @@ SharedVariablesData SharedVariablesData::copy() const
 
   if (svdRep) {
     svd.svdRep = new SharedVariablesDataRep();
-
-    svd.svdRep->variablesId             = svdRep->variablesId;
-    svd.svdRep->variablesComponents     = svdRep->variablesComponents;
-    svd.svdRep->variablesCompsTotals    = svdRep->variablesCompsTotals;
-    svd.svdRep->activeVarsCompsTotals   = svdRep->activeVarsCompsTotals;
-    svd.svdRep->inactiveVarsCompsTotals = svdRep->inactiveVarsCompsTotals;
-    svd.svdRep->variablesView           = svdRep->variablesView;
-
-    svd.svdRep->cvStart   = svdRep->cvStart;
-    svd.svdRep->divStart  = svdRep->divStart;
-    svd.svdRep->dsvStart  = svdRep->dsvStart;
-    svd.svdRep->drvStart  = svdRep->drvStart;
-    svd.svdRep->icvStart  = svdRep->icvStart;
-    svd.svdRep->idivStart = svdRep->idivStart;
-    svd.svdRep->idsvStart = svdRep->idsvStart;
-    svd.svdRep->idrvStart = svdRep->idrvStart;
-
-    svd.svdRep->numCV     = svdRep->numCV;
-    svd.svdRep->numDIV    = svdRep->numDIV;
-    svd.svdRep->numDSV    = svdRep->numDSV;
-    svd.svdRep->numDRV    = svdRep->numDRV;
-    svd.svdRep->numICV    = svdRep->numICV;
-    svd.svdRep->numIDIV   = svdRep->numIDIV;
-    svd.svdRep->numIDSV   = svdRep->numIDSV;
-    svd.svdRep->numIDRV   = svdRep->numIDRV;
-
-    // Boost MultiArrays must be resized prior to operator= assignment
-    size_t num_acv  = svdRep->allContinuousLabels.size(),
-           num_adiv = svdRep->allDiscreteIntLabels.size(),
-           num_adsv = svdRep->allDiscreteStringLabels.size(),
-           num_adrv = svdRep->allDiscreteRealLabels.size();
-    svd.svdRep->allContinuousLabels.resize(boost::extents[num_acv]);
-    svd.svdRep->allContinuousLabels = svdRep->allContinuousLabels;
-    svd.svdRep->allDiscreteIntLabels.resize(boost::extents[num_adiv]);
-    svd.svdRep->allDiscreteIntLabels = svdRep->allDiscreteIntLabels;
-    svd.svdRep->allDiscreteStringLabels.resize(boost::extents[num_adsv]);
-    svd.svdRep->allDiscreteStringLabels = svdRep->allDiscreteStringLabels;
-    svd.svdRep->allDiscreteRealLabels.resize(boost::extents[num_adrv]);
-    svd.svdRep->allDiscreteRealLabels = svdRep->allDiscreteRealLabels;
-
-    svd.svdRep->allContinuousTypes.resize(boost::extents[num_acv]);
-    svd.svdRep->allContinuousTypes = svdRep->allContinuousTypes;
-    svd.svdRep->allDiscreteIntTypes.resize(boost::extents[num_adiv]);
-    svd.svdRep->allDiscreteIntTypes = svdRep->allDiscreteIntTypes;
-    svd.svdRep->allDiscreteStringTypes.resize(boost::extents[num_adsv]);
-    svd.svdRep->allDiscreteStringTypes = svdRep->allDiscreteStringTypes;
-    svd.svdRep->allDiscreteRealTypes.resize(boost::extents[num_adrv]);
-    svd.svdRep->allDiscreteRealTypes = svdRep->allDiscreteRealTypes;
-
-    svd.svdRep->allContinuousIds.resize(boost::extents[num_acv]);
-    svd.svdRep->allContinuousIds = svdRep->allContinuousIds;
-
-    svd.svdRep->allRelaxedDiscreteInt  = svdRep->allRelaxedDiscreteInt;
-    svd.svdRep->allRelaxedDiscreteReal = svdRep->allRelaxedDiscreteReal;
+    svd.svdRep->copy_rep(svdRep);
   }
 
   return svd;
 }
+
+
+/* TO DO: create load and save for Shared{Variables,Response}Data
+template<class Archive> 
+void SharedVariablesData::load(Archive& ar, const unsigned int version)
+{
+  std::pair<short,short> view;
+  ar & view;
+  SizetArray vars_comps_totals;
+  ar & vars_comps_totals;
+
+  StringMultiArrayView acvl = all_continuous_variable_labels();
+  ar & acvl;
+  StringMultiArrayView adivl = all_discrete_int_variable_labels();
+  ar & adivl;
+  StringMultiArrayView adsvl = all_discrete_string_variable_labels();
+  ar & adsvl;
+  StringMultiArrayView adrvl = all_discrete_real_variable_labels();
+  ar & adrvl;
+
+  BitArray all_relax_di, all_relax_dr;
+  ar & all_relax_di; ar & all_relax_dr;
+
+  // invoke additional construction updates from raw data:
+  //SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
+}
+*/
 
 } // namespace Dakota
