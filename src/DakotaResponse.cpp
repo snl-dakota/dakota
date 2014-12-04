@@ -84,12 +84,10 @@ Response(BaseConstructor, const Variables& vars,
 /** BaseConstructor must build the base class data for all derived
     classes.  This version is used for building a response object of
     the correct size on the fly (e.g., by slave analysis servers
-    performing execute() on a local_response).  functionLabels is not
-    needed for this purpose since it's not passed in the MPI send/recv
-    buffers. However, NPSOLOptimizer's user-defined functions option
-    uses this constructor to build bestResponseArray.front() and
-    bestResponseArray.front() needs functionLabels for I/O, so
-    construction of functionLabels has been added. */
+    performing execute() on a local_response).
+    SharedResponseData::functionLabels is not needed for MPI send/recv
+    buffers, but is needed for NPSOLOptimizer's user-defined functions
+    option to support I/O in bestResponseArray.front(). */
 Response::Response(BaseConstructor, const ActiveSet& set):
                    //, const SharedResponseData& srd):
   sharedRespData(set),//sharedRespData(srd),
@@ -573,12 +571,12 @@ void Response::write(std::ostream& s) const
   else
     s << "}\n";
 
-  // Make sure a valid set of functionLabels exists. This has been a problem
+  // Make sure a valid set of function labels exists. This has been a problem
   // since there is no way to build these labels in the default Response
   // constructor (used by lists & vectors of Response objects).
   const StringArray& fn_labels = sharedRespData.function_labels();
   if (fn_labels.size() != nf) {
-    Cerr << "Error with functionLabels in Response::write." << std::endl;
+    Cerr << "Error with function labels in Response::write." << std::endl;
     abort_handler(-1);
   }
 
@@ -687,7 +685,7 @@ void Response::write_annotated_rep(std::ostream& s) const
   s << num_fns   << ' ' << num_params << ' '
     << grad_flag << ' ' << hess_flag  << ' ';
 
-  // Write responseActiveSet and functionLabels.  Don't separately annotate
+  // Write responseActiveSet and function labels.  Don't separately annotate
   // arrays with sizing data since Response handles this all at once.
   responseActiveSet.write_annotated(s);
   array_write_annotated(s, sharedRespData.function_labels(), false);
@@ -809,27 +807,30 @@ void Response::write(MPIPackBuffer& s) const
     and communicates asv and response data only with slaves. */
 void Response::read_rep(MPIUnpackBuffer& s)
 {
-  size_t i, num_fns, num_params;
   bool grad_flag, hess_flag;
 
-  // Read sizing data and responseActiveSet (reshape not needed)
-  s >> num_fns >> num_params >> grad_flag >> hess_flag
-    >> responseActiveSet; // >> functionLabels;
+  // Read derivative sizing data and responseActiveSet
+  s >> grad_flag >> hess_flag >> responseActiveSet;
+
+  // build shared counts and (default) functionLabels
+  sharedRespData = SharedResponseData(responseActiveSet); // not shared
 
   // reshape response arrays and reset all data to zero
-  reshape(num_fns, num_params, grad_flag, hess_flag);
+  const ShortArray& asv = responseActiveSet.request_vector();
+  size_t i, num_fns = asv.size();
+  reshape(num_fns, responseActiveSet.derivative_vector().size(),
+	  grad_flag, hess_flag);
   reset();
 
   // Get fn. values as governed by ASV requests
-  const ShortArray& asv = responseActiveSet.request_vector();
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
       s >> functionValues[i];
 
   // Get function gradients as governed by ASV requests
-  for (int i=0; i<num_fns; ++i)
+  for (i=0; i<num_fns; ++i)
     if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      read_col_vector_trans(s, i, functionGradients);
+      read_col_vector_trans(s, (int)i, functionGradients);
 
   // Get function Hessians as governed by ASV requests
   for (i=0; i<num_fns; ++i)
@@ -843,15 +844,14 @@ void Response::read_rep(MPIUnpackBuffer& s)
     and ids and communicates asv and response data only with slaves. */
 void Response::write_rep(MPIPackBuffer& s) const
 {
-  const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, num_fns = asv.size(),
-    num_params = responseActiveSet.derivative_vector().size();
   bool grad_flag = !functionGradients.empty(),
        hess_flag = !functionHessians.empty();
 
   // Write sizing data and responseActiveSet
-  s << num_fns << num_params << grad_flag << hess_flag
-    << responseActiveSet; // << functionLabels;
+  s << grad_flag << hess_flag << responseActiveSet;
+
+  const ShortArray& asv = responseActiveSet.request_vector();
+  size_t i, num_fns = asv.size();
 
   // Write the function values if present
   for (i=0; i<num_fns; ++i)
@@ -859,9 +859,9 @@ void Response::write_rep(MPIPackBuffer& s) const
       s << functionValues[i];
 
   // Write the function gradients if present
-  for (int i=0; i<num_fns; ++i)
+  for (i=0; i<num_fns; ++i)
     if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      write_col_vector_trans(s, i, functionGradients);
+      write_col_vector_trans(s, (int)i, functionGradients);
 
   // Write the function Hessians if present
   for (i=0; i<num_fns; ++i)

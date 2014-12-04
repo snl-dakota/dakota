@@ -47,9 +47,9 @@ private:
   /// default constructor
   SharedResponseDataRep();
   /// standard constructor
-  explicit SharedResponseDataRep(const ProblemDescDB& problem_db);
+  SharedResponseDataRep(const ProblemDescDB& problem_db);
   /// alternate on-the-fly constructor
-  explicit SharedResponseDataRep(const ActiveSet& set);
+  SharedResponseDataRep(const ActiveSet& set);
   /// destructor
   ~SharedResponseDataRep();
 
