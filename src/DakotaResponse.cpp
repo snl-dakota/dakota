@@ -641,9 +641,10 @@ void Response::read_annotated_rep(std::istream& s)
 
   // Read responseActiveSet and SharedResponseData::functionLabels
   responseActiveSet.reshape(num_fns, num_params);
+  s >> responseActiveSet;
   if (sharedRespData.is_null())
     sharedRespData = SharedResponseData(responseActiveSet);
-  s >> responseActiveSet >> sharedRespData.function_labels();
+  s >> sharedRespData.function_labels();
 
   // reshape response arrays and reset all data to zero
   reshape(num_fns, num_params, grad_flag, hess_flag);
@@ -804,9 +805,8 @@ void Response::write(MPIPackBuffer& s) const
     and communicates asv and response data only with slaves. */
 void Response::read_rep(MPIUnpackBuffer& s)
 {
-  bool grad_flag, hess_flag;
-
   // Read derivative sizing data and responseActiveSet
+  bool grad_flag, hess_flag;
   s >> grad_flag >> hess_flag >> responseActiveSet;
 
   // build shared counts and (default) functionLabels
@@ -1344,6 +1344,8 @@ void Response::load_rep(Archive& ar, const unsigned int version)
   ar & grad_flag;
   ar & hess_flag;
   ar & responseActiveSet;
+  if (sharedRespData.is_null())
+    sharedRespData = SharedResponseData(responseActiveSet);
   ar & sharedRespData.function_labels(); // TO DO
 
   // reshape response arrays and reset all data to zero
