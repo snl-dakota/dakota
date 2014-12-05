@@ -100,7 +100,7 @@ inline bool id_vars_exact_compare(const ParamResponsePair& database_pr,
     return false;
 
   // For Boost hashing, need exact binary equality (not tolerance-based)
-  if ( search_pr.prp_parameters() != database_pr.prp_parameters() )
+  if ( search_pr.variables() != database_pr.variables() )
     return false;
 
   // For Boost hashing, a post-processing step is used to manage the ActiveSet
@@ -118,7 +118,7 @@ inline std::size_t hash_value(const ParamResponsePair& prp)
   boost::hash_combine(seed, prp.interface_id());
 
   // Now, hash values of variables using Variables hash_value friend function
-  boost::hash_combine(seed, prp.prp_parameters());
+  boost::hash_combine(seed, prp.variables());
 
   return seed;
 }
@@ -316,7 +316,7 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const String& search_interface_id,
   PRPCacheHIter prp_hash_it
     = lookup_by_val(prp_cache, search_interface_id, search_vars, search_set);
   if (prp_hash_it != prp_cache.get<hashed>().end()) {
-    found_resp = prp_hash_it->prp_response();
+    found_resp = prp_hash_it->response();
     return true;
   }
   else
@@ -334,7 +334,7 @@ lookup_by_nearby_val(PRPMultiIndexCache& prp_cache,
   PRPCacheOIter cache_it;
   for (cache_it=prp_cache.begin(); cache_it!=prp_cache.end(); ++cache_it)
     if (cache_it->interface_id() == search_interface_id      && // exact
-	nearby(cache_it->prp_parameters(), search_vars, tol) && // tolerance
+	nearby(cache_it->variables(), search_vars, tol) && // tolerance
 	set_compare(*cache_it, search_set))                     // subset
       return cache_it; // Duplication detected.
   return prp_cache.end();
@@ -402,7 +402,7 @@ lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids,
     case 1: return prp_it0;                        break;
     default:
       while (prp_it0 != prp_it1) {
-	if (prp_it0->prp_parameters() == search_pr.prp_parameters() && // exact
+	if (prp_it0->variables() == search_pr.variables() && // exact
 	    set_compare(*prp_it0, search_pr.active_set()))            // subset
 	  return prp_it0;
 	++prp_it0;
@@ -528,7 +528,7 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const String& search_interface_id,
   PRPQueueHIter prp_hash_it
     = lookup_by_val(prp_queue, search_interface_id, search_vars, search_set);
   if (prp_hash_it != prp_queue.get<hashed>().end()) {
-    found_resp = prp_hash_it->prp_response();
+    found_resp = prp_hash_it->response();
     return true;
   }
   else

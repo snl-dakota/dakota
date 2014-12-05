@@ -305,8 +305,8 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
     abort_handler(-1);
   }
   int fail_code = 0, id = queue_it->eval_id();
-  Variables vars    = queue_it->prp_parameters(); // shallow copy
-  Response response = queue_it->prp_response();   // shallow copy
+  Variables    vars = queue_it->variables(); // shallow copy
+  Response response = queue_it->response();  // shallow copy
 
   // pthread_join/thr_join(target_thread, ..., status) recovers threads.
   // status provides a mechanism to return failure codes from analyses.
@@ -322,7 +322,7 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
     manage_failure(vars, response.active_set(), response, id);
 
   Cout << "Thread for evaluation " << id << " captured.\n";
-  queue_it->prp_response(response);
+  queue_it->response(response);
   */
 }
 

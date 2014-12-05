@@ -314,13 +314,13 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
   else if (obsDataFlag) {
-    const RealVector& desired_fns = cache_it->prp_response().function_values();
+    const RealVector& desired_fns = cache_it->response().function_values();
     for (size_t i=0; i<numUserPrimaryFns; i++)
       for (size_t j=0; j<numRowsExpData; j++)
 	response.function_value(desired_fns[i], i*numRowsExpData+j);
   }
   else
-    response.update(cache_it->prp_response());
+    response.update(cache_it->response());
 }
 
 

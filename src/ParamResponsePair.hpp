@@ -118,13 +118,13 @@ public:
   /// return the aggregate eval/interface identifier from the response object
   const IntStringPair& eval_interface_ids() const;
   /// return the parameters object
-  const Variables& prp_parameters() const;
+  const Variables& variables() const;
   /// set the parameters object
-  void prp_parameters(const Variables& vars);
+  void variables(const Variables& vars);
   /// return the response object
-  const Response& prp_response() const;
+  const Response& response() const;
   /// set the response object
-  void prp_response(const Response& response);
+  void response(const Response& resp);
   /// return the active set object from the response object
   const ActiveSet& active_set() const;
   /// set the active set object within the response object
@@ -141,9 +141,9 @@ private:
   //
 
   /// the set of parameters for the function evaluation
-  Variables prPairParameters;
+  Variables prpVariables;
   /// the response set for the function evaluation
-  Response  prPairResponse;
+  Response  prpResponse;
 
   /// the evalInterfaceIds aggregate
   /** the function evaluation identifier (assigned from Interface::evalIdCntr)
@@ -171,8 +171,8 @@ inline ParamResponsePair::ParamResponsePair()
 inline ParamResponsePair::
 ParamResponsePair(const Variables& vars, const String& interface_id, 
 		  const Response& response, bool deep_copy):
-  prPairParameters( (deep_copy) ? vars.copy()     : vars     ),
-  prPairResponse(   (deep_copy) ? response.copy() : response ),
+  prpVariables( (deep_copy) ? vars.copy()     : vars     ),
+  prpResponse(  (deep_copy) ? response.copy() : response ),
   evalInterfaceIds(0, interface_id)
 { }
 
@@ -183,14 +183,14 @@ ParamResponsePair(const Variables& vars, const String& interface_id,
 inline ParamResponsePair::
 ParamResponsePair(const Variables& vars, const String& interface_id,
 		  const Response& response, const int eval_id, bool deep_copy):
-  prPairParameters( (deep_copy) ? vars.copy()     : vars     ),
-  prPairResponse(   (deep_copy) ? response.copy() : response ),
+  prpVariables( (deep_copy) ? vars.copy()     : vars     ),
+  prpResponse(  (deep_copy) ? response.copy() : response ),
   evalInterfaceIds(eval_id, interface_id)
 { }
 
 
 inline ParamResponsePair::ParamResponsePair(const ParamResponsePair& pair):
-  prPairParameters(pair.prPairParameters), prPairResponse(pair.prPairResponse),
+  prpVariables(pair.prpVariables), prpResponse(pair.prpResponse),
   evalInterfaceIds(pair.evalInterfaceIds)
 { }
 
@@ -198,8 +198,8 @@ inline ParamResponsePair::ParamResponsePair(const ParamResponsePair& pair):
 inline ParamResponsePair&
 ParamResponsePair::operator=(const ParamResponsePair& pair)
 {
-  prPairParameters = pair.prPairParameters;
-  prPairResponse   = pair.prPairResponse;
+  prpVariables     = pair.prpVariables;
+  prpResponse      = pair.prpResponse;
   evalInterfaceIds = pair.evalInterfaceIds;
 
   return *this;
@@ -226,28 +226,28 @@ inline const IntStringPair& ParamResponsePair::eval_interface_ids() const
 { return evalInterfaceIds; }
 
 
-inline const Variables& ParamResponsePair::prp_parameters() const
-{ return prPairParameters; }
+inline const Variables& ParamResponsePair::variables() const
+{ return prpVariables; }
 
 
-inline void ParamResponsePair::prp_parameters(const Variables& vars)
-{ prPairParameters = vars; }
+inline void ParamResponsePair::variables(const Variables& vars)
+{ prpVariables = vars; }
 
 
-inline const Response& ParamResponsePair::prp_response() const
-{ return prPairResponse; }
+inline const Response& ParamResponsePair::response() const
+{ return prpResponse; }
 
 
-inline void ParamResponsePair::prp_response(const Response& response)
-{ prPairResponse = response; }
+inline void ParamResponsePair::response(const Response& resp)
+{ prpResponse = resp; }
 
 
 inline const ActiveSet& ParamResponsePair::active_set() const
-{ return prPairResponse.active_set(); }
+{ return prpResponse.active_set(); }
 
 
 inline void ParamResponsePair::active_set(const ActiveSet& set)
-{ prPairResponse.active_set(set); }
+{ prpResponse.active_set(set); }
 
 
 // The binary read and write operators are used to read from and write to the 
@@ -256,15 +256,15 @@ inline void ParamResponsePair::active_set(const ActiveSet& set)
 // ASCII read operator is not currently used. The MPIPackBuffer/MPIUnpackBuffer
 // operators are used to pass a source point for the continuation algorithm.
 inline void ParamResponsePair::read(std::istream& s)
-{ s >> prPairParameters >> prPairResponse; }
+{ s >> prpVariables >> prpResponse; }
 
 
 inline void ParamResponsePair::write(std::ostream& s) const
 {
-  s << "Parameters:\n" << prPairParameters;
+  s << "Parameters:\n" << prpVariables;
   if (!evalInterfaceIds.second.empty())
     Cout << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
-  s << "\nActive response data:\n"<< prPairResponse << std::endl;
+  s << "\nActive response data:\n"<< prpResponse << std::endl;
 }
 
 
@@ -281,13 +281,13 @@ inline std::ostream& operator<<(std::ostream& s, const ParamResponsePair& pair)
 /** interfaceId is omitted since master processor retains interface
     ids and communicates asv and response data only with slaves. */
 inline void ParamResponsePair::read(MPIUnpackBuffer& s)
-{ s >> prPairParameters >> prPairResponse >> evalInterfaceIds.first; }
+{ s >> prpVariables >> prpResponse >> evalInterfaceIds.first; }
 
 
 /** interfaceId is omitted since master processor retains interface
     ids and communicates asv and response data only with slaves. */
 inline void ParamResponsePair::write(MPIPackBuffer& s) const
-{ s << prPairParameters << prPairResponse << evalInterfaceIds.first; }
+{ s << prpVariables << prpResponse << evalInterfaceIds.first; }
 
 
 /// MPIUnpackBuffer extraction operator for ParamResponsePair
@@ -305,9 +305,9 @@ inline bool operator==(const ParamResponsePair& pair1,
 		       const ParamResponsePair& pair2)
 {
   // equality check includes interfaceId; evalId need not match
-  return (pair1.prPairParameters        == pair2.prPairParameters &&
+  return (pair1.prpVariables            == pair2.prpVariables &&
 	  pair1.evalInterfaceIds.second == pair2.evalInterfaceIds.second &&
-	  pair1.prPairResponse          == pair2.prPairResponse);
+	  pair1.prpResponse             == pair2.prpResponse);
 }
 
 

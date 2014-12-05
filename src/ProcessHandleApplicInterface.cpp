@@ -54,7 +54,7 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
 	 << "::process_local_evaluation()." << std::endl;
     abort_handler(-1);
   }
-  Response response = queue_it->prp_response(); // shallow copy
+  Response response = queue_it->response(); // shallow copy
   try { 
     read_results_files(response, fn_eval_id, final_eval_id_tag(fn_eval_id));
   }
@@ -70,12 +70,12 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
     // failure and populate response, or (2) abort the run.  NOTE: this 
     // destroys load balancing but trying to load balance failure recovery 
     // would be more difficult than it is worth.
-    manage_failure(queue_it->prp_parameters(), response.active_set(), response,
+    manage_failure(queue_it->variables(), response.active_set(), response,
 		   fn_eval_id);
   }
 
   // bookkeep the completed job
-  //queue_it->prp_response(response);                    // not needed (shallow)
+  //queue_it->response(response);                        // not needed (shallow)
   //replace_by_eval_id(prp_queue, fn_eval_id, *queue_it);// not needed (shallow)
   completionSet.insert(fn_eval_id);
   evalProcessIdMap.erase(pid);

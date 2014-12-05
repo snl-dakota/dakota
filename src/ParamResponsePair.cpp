@@ -27,23 +27,23 @@ namespace Dakota {
 
 void ParamResponsePair::read_annotated(std::istream& s)
 {
-  prPairParameters.read_annotated(s);
+  prpVariables.read_annotated(s);
   s >> evalInterfaceIds.second;
   if (evalInterfaceIds.second == "EMPTY")
     evalInterfaceIds.second.clear();
-  prPairResponse.read_annotated(s);
+  prpResponse.read_annotated(s);
   s >> evalInterfaceIds.first;
 }
 
 
 void ParamResponsePair::write_annotated(std::ostream& s) const
 {
-  prPairParameters.write_annotated(s);
+  prpVariables.write_annotated(s);
   if (evalInterfaceIds.second.empty())
     s << "EMPTY "; // read_annotated cannot detect an empty string
   else 
     s << evalInterfaceIds.second << ' ';
-  prPairResponse.write_annotated(s);
+  prpResponse.write_annotated(s);
   s << evalInterfaceIds.first << '\n';
 }
 
@@ -53,8 +53,8 @@ void ParamResponsePair::write_tabular(std::ostream& s) const
   TabularIO::
     write_leading_columns(s, evalInterfaceIds.first, evalInterfaceIds.second);
   // write variables in input spec order
-  prPairParameters.write_tabular(s);
-  prPairResponse.write_tabular(s);
+  prpVariables.write_tabular(s);
+  prpResponse.write_tabular(s);
 }
 
 
@@ -63,16 +63,16 @@ void ParamResponsePair::write_tabular(std::ostream& s) const
 void ParamResponsePair::write_tabular_labels(std::ostream& s) const
 {
   TabularIO::
-    write_header_tabular(s, prPairParameters, prPairResponse, "eval_id");
+    write_header_tabular(s, prpVariables, prpResponse, "eval_id");
 }
 
 
 template<class Archive>
 void ParamResponsePair::serialize(Archive& ar, const unsigned int version)
 {
-  ar & prPairParameters;
+  ar & prpVariables;
   ar & evalInterfaceIds.second;
-  ar & prPairResponse;
+  ar & prpResponse;
   ar & evalInterfaceIds.first;
 }
 

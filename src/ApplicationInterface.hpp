@@ -598,10 +598,7 @@ synchronous_local_analysis(int analysis_id)
 
 inline void ApplicationInterface::
 broadcast_evaluation(const ParamResponsePair& pair)
-{
-  broadcast_evaluation(pair.eval_id(), pair.prp_parameters(),
-		       pair.active_set());
-}
+{ broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
 
 
 inline void ApplicationInterface::
@@ -614,7 +611,7 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
     //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
     recvBuffers[buff_index].resize(lenResponseMessage);
   }
-  sendBuffers[buff_index] << prp_it->prp_parameters() << prp_it->active_set();
+  sendBuffers[buff_index] << prp_it->variables() << prp_it->active_set();
 
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {

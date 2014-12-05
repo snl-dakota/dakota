@@ -123,7 +123,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   RealVectorArray sample_values_first(numSamples); // views OK
   PRPCacheCIter prp_iter;
   for (i=0, prp_iter = data_pairs.begin(); i<numSamples; ++i, ++prp_iter)
-    sample_values_first[i] = prp_iter->prp_parameters().continuous_variables();
+    sample_values_first[i] = prp_iter->variables().continuous_variables();
 #ifdef DEBUG
   Cout << "\nsample1\n" << sample_values_first << '\n';
 #endif

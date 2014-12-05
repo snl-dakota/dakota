@@ -75,8 +75,8 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
   for (Dakota::PRPQueueIter prp_iter = prp_queue.begin();
        prp_iter != prp_queue.end(); prp_iter++) {
     // set local variable/set data, but update resp directly for efficiency
-    set_local_data(prp_iter->prp_parameters(), prp_iter->active_set());
-    Dakota::Response           resp     = prp_iter->prp_response();// shared rep
+    set_local_data(prp_iter->variables(), prp_iter->active_set());
+    Dakota::Response           resp     = prp_iter->response();// shared rep
     Dakota::RealVector         fn_vals  = resp.function_values_view();
     Dakota::RealMatrix         fn_grads = resp.function_gradients_view();
     Dakota::RealSymMatrixArray fn_hessians = resp.function_hessians_view();

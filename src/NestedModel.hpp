@@ -702,7 +702,7 @@ inline void NestedModel::initialize_iterator(int job_index)
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  initialize_iterator(prp_it->prp_parameters(), prp_it->active_set(),
+  initialize_iterator(prp_it->variables(), prp_it->active_set(),
 		      prp_it->eval_id());
 }
 
@@ -729,7 +729,7 @@ pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  send_buffer << prp_it->prp_parameters() << prp_it->active_set()
+  send_buffer << prp_it->variables() << prp_it->active_set()
 	      << prp_it->eval_id();
 }
 
@@ -742,7 +742,7 @@ unpack(MPIUnpackBuffer& recv_buffer, Variables& vars,
   PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, eval_id);
   if (prp_it != subIteratorPRPQueue.end()) {
     // Can't do this since it affects Queue hash-by-value ordering
-    //prp_it->prp_parameters(vars);
+    //prp_it->variables(vars);
     //prp_it->active_set(set);
 
     subIteratorPRPQueue.erase(prp_it); // remove and reinsert below
@@ -779,7 +779,7 @@ pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  send_buffer << prp_it->prp_response();
+  send_buffer << prp_it->response();
 }
 
 
@@ -794,7 +794,7 @@ unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
   }
   // Bypassing PRPQueue const-ness is OK for the PRP response since this
   // should not affect hash-by-value ordering
-  Response resp = prp_it->prp_response(); // shallow copy
+  Response resp = prp_it->response(); // shallow copy
   recv_buffer >> resp;
 }
 
@@ -809,11 +809,11 @@ inline void NestedModel::update_local_results(int job_index)
   }
   else {
     // Can't do this since it affects Queue hash-by-value ordering
-    //prp_it->prp_parameters(subIterator.variables_results());
+    //prp_it->variables(subIterator.variables_results());
 
     // Bypassing PRPQueue const-ness is OK for the PRP response since
     // this should not affect hash-by-value ordering
-    Response resp = prp_it->prp_response(); // shallow copy
+    Response resp = prp_it->response(); // shallow copy
     resp.update(subIterator.response_results());
   }
 }

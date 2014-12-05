@@ -402,7 +402,7 @@ void SeqHybridMetaIterator::run_sequential()
 	const PRPArray& prp_results_i = prpResults[i];
 	num_prp_i = prp_results_i.size();
 	for (j=0; j<num_prp_i; ++j, ++cntr)
-	  parameterSets[cntr] = prp_results_i[j].prp_parameters();
+	  parameterSets[cntr] = prp_results_i[j].variables();
       }
       // migrate results among procs as required for parallel scheduling, e.g.,
       // from multiple single-point iterators to a single multi-point iterator
@@ -545,8 +545,8 @@ void SeqHybridMetaIterator::print_results(std::ostream& s)
       const PRPArray& prp_i = prpResults[i];
       num_prp_i = prp_i.size();
       for (j=0; j<num_prp_i; ++j, ++cntr) {
-	const Variables& vars = prp_i[j].prp_parameters();
-	const Response&  resp = prp_i[j].prp_response();
+	const Variables& vars = prp_i[j].variables();
+	const Response&  resp = prp_i[j].response();
 	if (!vars.is_null())
 	  s << "<<<<< Best parameters          (set " << cntr+1 << ") =\n"
 	    << vars;

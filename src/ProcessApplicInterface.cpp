@@ -247,8 +247,8 @@ void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 
   int fn_eval_id = pair.eval_id();
   define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
-  write_parameters_files(pair.prp_parameters(), pair.active_set(),
-			 pair.prp_response(),   fn_eval_id);
+  write_parameters_files(pair.variables(), pair.active_set(),
+			 pair.response(),  fn_eval_id);
  
   // execute the simulator application -- nonblocking call
   pid_t pid = create_evaluation_process(FALL_THROUGH);

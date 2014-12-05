@@ -990,8 +990,8 @@ void Analyzer::print_results(std::ostream& s)
   size_t i, offset, num_fns, num_best_map = bestVarsRespMap.size();
   for (i=1; it!=bestVarsRespMap.end(); ++i, ++it) {
     const ParamResponsePair& best_pr = it->second;
-    const Variables&  best_vars = best_pr.prp_parameters();
-    const RealVector& best_fns  = best_pr.prp_response().function_values();
+    const Variables&  best_vars = best_pr.variables();
+    const RealVector& best_fns  = best_pr.response().function_values();
     s << "<<<<< Best parameters          ";
     if (num_best_map > 1) s << "(set " << i << ") ";
     s << "=\n" << best_vars;

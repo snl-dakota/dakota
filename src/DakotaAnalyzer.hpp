@@ -240,7 +240,7 @@ inline const Model& Analyzer::algorithm_space_model() const
 
 
 inline const Variables& Analyzer::variables_results() const
-{ return bestVarsRespMap.begin()->second.prp_parameters(); }
+{ return bestVarsRespMap.begin()->second.variables(); }
 
 
 inline const VariablesArray& Analyzer::variables_array_results()
@@ -249,13 +249,13 @@ inline const VariablesArray& Analyzer::variables_array_results()
   bestVariablesArray.resize(bestVarsRespMap.size());
   RealPairPRPMultiMap::const_iterator cit; size_t i;
   for (cit=bestVarsRespMap.begin(), i=0; cit!=bestVarsRespMap.end(); ++cit, ++i)
-    bestVariablesArray[i] = cit->second.prp_parameters();
+    bestVariablesArray[i] = cit->second.variables();
   return bestVariablesArray;
 }
 
 
 inline const Response& Analyzer::response_results() const
-{ return bestVarsRespMap.begin()->second.prp_response(); }
+{ return bestVarsRespMap.begin()->second.response(); }
 
 
 inline const ResponseArray& Analyzer::response_array_results()
@@ -264,7 +264,7 @@ inline const ResponseArray& Analyzer::response_array_results()
   bestResponseArray.resize(bestVarsRespMap.size());
   RealPairPRPMultiMap::const_iterator cit; size_t i;
   for (cit=bestVarsRespMap.begin(), i=0; cit!=bestVarsRespMap.end(); ++cit, ++i)
-    bestResponseArray[i] = cit->second.prp_response();
+    bestResponseArray[i] = cit->second.response();
   return bestResponseArray;
 }
 

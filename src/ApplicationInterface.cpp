@@ -612,7 +612,7 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 				  response.active_set(), nearbyTolerance);
     cache_hit = (ord_it != data_pairs.end());
     if (cache_hit) { // ordered-specific updates (shared updates below)
-      response.update(ord_it->prp_response());
+      response.update(ord_it->response());
       cache_eval_id = ord_it->eval_id();
       if (cache_eval_id <= 0)
 	{ cache_pr = *ord_it; data_pairs.erase(ord_it); }
@@ -623,7 +623,7 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
 			    response.active_set());
     cache_hit = (hash_it != data_pairs.get<hashed>().end());
     if (cache_hit) { // hashed-specific updates (shared updates below)
-      response.update(hash_it->prp_response());
+      response.update(hash_it->response());
       cache_eval_id = hash_it->eval_id();
       if (cache_eval_id <= 0)
 	{ cache_pr = *hash_it; data_pairs.get<hashed>().erase(hash_it); }
@@ -709,7 +709,7 @@ const IntResponseMap& ApplicationInterface::synch()
     // of the beforeSynchCorePRPQueue duplicate response -> use update().
     rawResponseMap[bsd_iter->first] = (bsd_iter->second).second;
     rawResponseMap[bsd_iter->first].update(
-      (bsd_iter->second).first->prp_response());
+      (bsd_iter->second).first->response());
   }
   beforeSynchDuplicateMap.clear();
   beforeSynchCorePRPQueue.clear();
@@ -718,9 +718,9 @@ const IntResponseMap& ApplicationInterface::synch()
   if (algebraicMappings) { // complete all algebraic jobs and overlay
     for (PRPQueueIter alg_prp_it = beforeSynchAlgPRPQueue.begin();
 	 alg_prp_it != beforeSynchAlgPRPQueue.end(); alg_prp_it++) {
-      Response alg_response = alg_prp_it->prp_response();
-      algebraic_mappings(alg_prp_it->prp_parameters(),
-			 alg_prp_it->active_set(), alg_response);
+      Response alg_response = alg_prp_it->response();
+      algebraic_mappings(alg_prp_it->variables(), alg_prp_it->active_set(),
+			 alg_response);
       if (coreMappings) {
 	Response& response = rawResponseMap[alg_prp_it->eval_id()];
 	response_mapping(alg_response, response, response);
@@ -802,7 +802,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       // due to id_vars_set_compare, the desired response set could be
       // a subset of the duplicate response -> use update().
       Response& response = (bsd_iter->second).second;
-      response.update(scheduled_pr.prp_response());
+      response.update(scheduled_pr.response());
       rawResponseMap[bsd_iter->first] = response;
     }
   }
@@ -822,9 +822,9 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 	 rr_iter != rawResponseMap.end(); ++rr_iter) {
       PRPQueueIter alg_prp_it
 	= lookup_by_eval_id(beforeSynchAlgPRPQueue, rr_iter->first);
-      Response alg_response = alg_prp_it->prp_response();         // shared rep
-      algebraic_mappings(alg_prp_it->prp_parameters(),
-			 alg_prp_it->active_set(), alg_response); // update rep
+      Response alg_response = alg_prp_it->response(); // shared rep
+      algebraic_mappings(alg_prp_it->variables(), alg_prp_it->active_set(),
+			 alg_response);               // update rep
       response_mapping(alg_response, rr_iter->second, rr_iter->second);
       beforeSynchAlgPRPQueue.erase(alg_prp_it);
     }
@@ -833,9 +833,9 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
     for (PRPQueueIter alg_prp_it = beforeSynchAlgPRPQueue.begin();
 	 alg_prp_it != beforeSynchAlgPRPQueue.end(); alg_prp_it++) {
 
-      Response algebraic_resp = alg_prp_it->prp_response();        // shared rep
-      algebraic_mappings(alg_prp_it->prp_parameters(),
-			 alg_prp_it->active_set(), algebraic_resp);// update rep
+      Response algebraic_resp = alg_prp_it->response(); // shared rep
+      algebraic_mappings(alg_prp_it->variables(), alg_prp_it->active_set(),
+			 algebraic_resp);               // update rep
       // call response_mapping even when no coreMapping, as even with
       // algebraic only, the functions may have to be reordered
 
@@ -1033,8 +1033,8 @@ void ApplicationInterface::peer_static_schedule_evaluations()
   // synch(), but is now unnecessary due to handle-body response representation
   // sharing between local_prp_queue and beforeSynchCorePRPQueue.
   //for (i=0; i<num_peer1_jobs; ++i)
-  //  beforeSynchCorePRPQueue[core_index].prp_response(
-  //    local_prp_queue[i].prp_response());
+  //  beforeSynchCorePRPQueue[core_index].response(
+  //    local_prp_queue[i].response());
 
   if (num_sends) { // Retrieve results from peers
     if (outputLevel > SILENT_OUTPUT)
@@ -1814,9 +1814,9 @@ synchronous_local_evaluations(PRPQueue& local_prp_queue)
   for (PRPQueueIter local_prp_iter = local_prp_queue.begin();
        local_prp_iter != local_prp_queue.end(); ++local_prp_iter) {
     currEvalId              = local_prp_iter->eval_id();
-    const Variables& vars   = local_prp_iter->prp_parameters();
+    const Variables& vars   = local_prp_iter->variables();
     const ActiveSet& set    = local_prp_iter->active_set();
-    Response local_response = local_prp_iter->prp_response(); // shared rep
+    Response local_response = local_prp_iter->response(); // shared rep
 
     // bcast the job to other processors within peer 1 (if required)
     if (multiProcEvalFlag)
@@ -2105,7 +2105,7 @@ void ApplicationInterface::serve_evaluations_asynch()
 	    // of sendBuffers would vary with completionSet length).  The eval
 	    // scheduler processor should have pre-posted corresponding recv's.
 	    MPIPackBuffer send_buffer(lenResponseMessage);
-	    send_buffer << q_it->prp_response();
+	    send_buffer << q_it->response();
 	    parallelLib.send_ie(send_buffer, 0, completed_eval_id);
 	  }
 	  asynchLocalActivePRPQueue.erase(q_it);
@@ -2518,7 +2518,7 @@ ApplicationInterface::get_source_pair(const Variables& target_vars)
   for (prp_iter = data_pairs.begin(); prp_iter != prp_end_iter; ++prp_iter) {
     //if (interfaceId == prp_iter->interface_id()) {
       const RealVector& xc_source 
-	= prp_iter->prp_parameters().continuous_variables();
+	= prp_iter->variables().continuous_variables();
       Real sum_of_squares = 0.;
       for (i=0; i<num_vars; ++i)
         sum_of_squares += std::pow( xc_source[i] - xc_target[i], 2);
@@ -2547,7 +2547,7 @@ continuation(const Variables& target_vars, const ActiveSet& set,
 	     int failed_eval_id)
 {
   // TO DO: should use both continuous_variables and discrete_variables
-  const Variables&     source_vars = source_pair.prp_parameters();
+  const Variables& source_vars = source_pair.variables();
   const RealVector& source_pt = source_vars.continuous_variables();
   const RealVector& target_pt = target_vars.continuous_variables();
 
@@ -2652,7 +2652,7 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   recvBuffers[buff_index] >> remote_response; // lightweight response
   // share the rep among between rawResponseMap and the processing queue, but
   // don't trample raw response sizing with lightweight remote response
-  Response raw_response = rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  Response raw_response = rawResponseMap[fn_eval_id] = prp_it->response();
   raw_response.update(remote_response);
 
   // insert into restart and eval cache ASAP
@@ -2677,7 +2677,7 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
     Cout << fn_eval_id << " has completed\n";
   }
 
-  rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  rawResponseMap[fn_eval_id] = prp_it->response();
   if (evalCacheFlag)   data_pairs.insert(*prp_it);
   if (restartFileFlag) parallelLib.write_restart(*prp_it);
 
@@ -2698,7 +2698,7 @@ void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
     if (!interfaceId.empty()) Cout << interfaceId << ' ';
     Cout << "evaluation " << fn_eval_id << std::endl;
   }
-  rawResponseMap[fn_eval_id] = prp_it->prp_response();
+  rawResponseMap[fn_eval_id] = prp_it->response();
   if (evalCacheFlag)   data_pairs.insert(*prp_it);
   if (restartFileFlag) parallelLib.write_restart(*prp_it);
 }

@@ -70,9 +70,9 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
        prp_iter != prp_queue.end(); prp_iter++) {
     // For each job in the processing queue, evaluate the response
     int fn_eval_id = prp_iter->eval_id();
-    const Dakota::Variables& vars = prp_iter->prp_parameters();
+    const Dakota::Variables& vars = prp_iter->variables();
     const Dakota::ActiveSet& set  = prp_iter->active_set();
-    Dakota::Response         resp = prp_iter->prp_response(); // shared rep
+    Dakota::Response         resp = prp_iter->response(); // shared rep
     if (outputLevel > Dakota::SILENT_OUTPUT)
       Cout << "SerialDirectApplicInterface:: evaluating function evaluation "
 	   << fn_eval_id << " in batch mode." << std::endl;

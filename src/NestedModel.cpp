@@ -1497,7 +1497,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
 	 qit!=subIteratorPRPQueue.end(); ++qit) {
       int nested_cntr = subIteratorIdMap[qit->eval_id()];
       Response& nested_resp = find_nested_response(nested_cntr);
-      iterator_response_overlay(qit->prp_response(), nested_resp);
+      iterator_response_overlay(qit->response(), nested_resp);
     }
     // update bookkeeping
     subIteratorPRPQueue.clear(); subIteratorIdMap.clear();

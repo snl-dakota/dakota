@@ -880,21 +880,21 @@ void SurrBasedLocalMinimizer::find_center_approx()
       = lookup_by_val(data_pairs, search_id, search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
       responseCenterApprox.function_values(
-	cache_it->prp_response().function_values());
+	cache_it->response().function_values());
       if (approxGradientFlag) {
 	search_set.request_values(2);
 	cache_it
 	  = lookup_by_val(data_pairs, search_id, search_vars, search_set);
 	if (cache_it != data_pairs.get<hashed>().end()) {
 	  responseCenterApprox.function_gradients(
-	    cache_it->prp_response().function_gradients());
+	    cache_it->response().function_gradients());
 	  if (approxHessianFlag) {
 	    search_set.request_values(4);
 	    cache_it
 	      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
 	    if (cache_it != data_pairs.get<hashed>().end()) {
 	      responseCenterApprox.function_hessians(
-		cache_it->prp_response().function_hessians());
+		cache_it->response().function_hessians());
 	      found = true;
 	    }
 	  }

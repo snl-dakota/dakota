@@ -115,7 +115,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     abort_handler(-1);
   }
   wait_local_evaluations(prp_queue); // rebuilds completionSet
-  response = prp_queue.front().prp_response();
+  response = prp_queue.front().response();
   completionSet.clear();
 #if 0
   //
@@ -149,8 +149,8 @@ void GridApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   //
   int fn_eval_id = pair.eval_id();
   define_filenames(fn_eval_id);
-  write_parameters_files(pair.prp_parameters(), pair.active_set(),
-			 pair.prp_response(),   fn_eval_id);
+  write_parameters_files(pair.variables(), pair.active_set(),
+			 pair.response(),  fn_eval_id);
   //
   // Launch the grid solver
   //
@@ -192,7 +192,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 	     << "test_local_evaluations()." << std::endl;
 	abort_handler(-1);
       }
-      Response response = queue_it->prp_response(); // shallow copy
+      Response response = queue_it->response(); // shallow copy
 
       try { read_results_files(response, fn_eval_id); }
       catch(String& err_msg) {
@@ -235,7 +235,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 	// call manage_failure which will either (1) repair the failure and
 	// populate response, or (2) abort the run.
 	//
-	manage_failure(queue_it->prp_parameters(), response.active_set(),
+	manage_failure(queue_it->variables(), response.active_set(),
 		       response, fn_eval_id);
       }
       //
@@ -244,7 +244,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       // add evaluation id to completion set.
       //
       if (!err_msg_caught) {
-	//queue_it->prp_response(response);                    // not needed
+	//queue_it->response(response);                    // not needed
 	//replace_by_eval_id(prp_queue, fn_eval_id, *queue_it);// not needed
 	completionSet.insert(fn_eval_id);
 	failCountMap.erase(fn_eval_id); // if present

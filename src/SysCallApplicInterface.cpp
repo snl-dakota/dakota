@@ -154,7 +154,7 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 	     << "Interface::test_local_evaluations()." << std::endl;
 	abort_handler(-1);
       }
-      Response response = queue_it->prp_response(); // shallow copy
+      Response response = queue_it->response(); // shallow copy
 
       try {
 	read_results_files(response, fn_eval_id, final_eval_id_tag(fn_eval_id));
@@ -201,7 +201,7 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       catch(int fail_code) { // implemented at the derived class level since 
                              // DirectApplicInterface can do this w/o exceptions
         //Cout << "Caught int in test_local_evaluations()." << std::endl;
-        manage_failure(queue_it->prp_parameters(), response.active_set(),
+        manage_failure(queue_it->variables(), response.active_set(),
 		       response, fn_eval_id);
       }
 
@@ -210,7 +210,7 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
         // the response within the PRPair, remove entry in failCountMap, and
         // add evaluation id to completion set.
         //Cout << "Evaluation " << fn_eval_id << " captured.\n";
-	//queue_it->prp_response(response); // not needed for shallow copy
+	//queue_it->response(response); // not needed for shallow copy
 	//replace_by_eval_id(prp_queue, fn_eval_id, *queue_it); // not needed
         completionSet.insert(fn_eval_id);
 	failCountMap.erase(fn_eval_id); // if present

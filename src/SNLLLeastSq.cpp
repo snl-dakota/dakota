@@ -566,7 +566,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
     //abort_handler(-1);
   }
   else // unscaled -> user/native
-    copy_data_partial(cache_it->prp_response().function_values(), (size_t)0,
+    copy_data_partial(cache_it->response().function_values(), (size_t)0,
 		      numLeastSqTerms, best_fns, (size_t)0);
   activeSet.request_values(1); // restore
 

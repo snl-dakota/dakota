@@ -665,7 +665,7 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
     return surrModel.current_response();
   }
   else
-    return cache_it->prp_response();
+    return cache_it->response();
 }
 
 } // namespace Dakota

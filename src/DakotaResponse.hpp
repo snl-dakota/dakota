@@ -198,9 +198,9 @@ public:
 
   /// return the number of doubles active in response.  Used for sizing 
   /// double* response_data arrays passed into read_data and write_data.
-  int  data_size();
+  int data_size();
   /// read from an incoming double* array
-  void  read_data(double* response_data);
+  void read_data(double* response_data);
   /// write to an incoming double* array
   void write_data(double* response_data);
   /// add incoming response to functionValues/Gradients/Hessians

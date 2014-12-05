@@ -389,12 +389,12 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
 
   // Table header:
   StringMultiArrayConstView cv_labels
-    = prpResults[0].prp_parameters().continuous_variable_labels();
+    = prpResults[0].variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
-    = prpResults[0].prp_parameters().discrete_int_variable_labels();
+    = prpResults[0].variables().discrete_int_variable_labels();
   StringMultiArrayConstView drv_labels
-    = prpResults[0].prp_parameters().discrete_real_variable_labels();
-  const StringArray& fn_labels = prpResults[0].prp_response().function_labels();
+    = prpResults[0].variables().discrete_real_variable_labels();
+  const StringArray& fn_labels = prpResults[0].response().function_labels();
   size_t i, num_cv  = cv_labels.size(),  num_div = div_labels.size(),
     num_drv = drv_labels.size(), num_fns = fn_labels.size();
   s << "   set_id "; // matlab comment syntax
@@ -434,12 +434,12 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
          << setw(9) << prp_result.eval_id() << ' ';
     for (size_t j=0; j<paramSetLen; ++j)
       s << setw(14) << parameterSets[i][j] << ' ';
-    const Variables& prp_vars = prp_result.prp_parameters();
+    const Variables& prp_vars = prp_result.variables();
     //prp_vars.write_tabular(s) not used since active vars, not all vars
     write_data_tabular(s, prp_vars.continuous_variables());
     write_data_tabular(s, prp_vars.discrete_int_variables());
     write_data_tabular(s, prp_vars.discrete_real_variables());
-    prp_result.prp_response().write_tabular(s);
+    prp_result.response().write_tabular(s);
   }
   s << '\n';
 }

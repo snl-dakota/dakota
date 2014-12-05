@@ -816,7 +816,7 @@ void DataFitSurrModel::build_global()
     // order so VariablesArray and IntResponseMap are correctly aligned.
     for (PRPCacheCIter prp_iter = data_pairs.begin();
 	 prp_iter != data_pairs.end(); ++prp_iter) {
-      const Variables&  db_vars    = prp_iter->prp_parameters();
+      const Variables&  db_vars    = prp_iter->variables();
       const RealVector& db_c_vars  = db_vars.continuous_variables();
       const IntVector&  db_di_vars = db_vars.discrete_int_variables();
       const RealVector& db_dr_vars = db_vars.discrete_real_variables();
@@ -828,7 +828,7 @@ void DataFitSurrModel::build_global()
 	     db_c_vars != anchor_vars.continuous_variables() ) &&
 	   inside(db_c_vars, db_di_vars, db_dr_vars) ) {
 	reuse_vars.push_back(db_vars);
-	reuse_responses[prp_iter->eval_id()] = prp_iter->prp_response();
+	reuse_responses[prp_iter->eval_id()] = prp_iter->response();
       }
     }
 

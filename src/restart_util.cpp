@@ -230,13 +230,13 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
 
   PRPCacheCIter prp_iter = read_pairs.begin();
   StringMultiArrayConstView cv_labels
-    = prp_iter->prp_parameters().continuous_variable_labels();
+    = prp_iter->variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
-    = prp_iter->prp_parameters().discrete_int_variable_labels();
+    = prp_iter->variables().discrete_int_variable_labels();
   StringMultiArrayConstView drv_labels
-    = prp_iter->prp_parameters().discrete_real_variable_labels();
+    = prp_iter->variables().discrete_real_variable_labels();
   const StringArray& fn_labels
-    = prp_iter->prp_response().function_labels();
+    = prp_iter->response().function_labels();
   size_t num_cv = cv_labels.size(), num_div = div_labels.size(),
     num_drv = drv_labels.size(), num_fns = fn_labels.size();
 
@@ -249,7 +249,7 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
 
   for (i=0; i<num_evals; ++i, ++prp_iter) {
     // Extract variables related data
-    const Variables&  local_vars    = prp_iter->prp_parameters();
+    const Variables&  local_vars    = prp_iter->variables();
     const RealVector& local_c_vars  = local_vars.continuous_variables();
     const IntVector&  local_di_vars = local_vars.discrete_int_variables();
     const RealVector& local_dr_vars = local_vars.discrete_real_variables();
@@ -261,7 +261,7 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
       tabular_rdata[j+num_cv][i] = local_dr_vars[j];
 
     // Extract response related data
-    const Response&   local_response = prp_iter->prp_response();
+    const Response&   local_response = prp_iter->response();
     const RealVector& local_fns      = local_response.function_values();
     //const ShortArray& local_asv =local_response.active_set_request_vector();
     //const RealMatrix& local_grads = local_response.function_gradients();
@@ -397,12 +397,12 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
     const String& new_interf = current_pair.interface_id();
     if (new_interf != curr_interf) {
       curr_interf = new_interf;
-      const Variables& curr_vars = current_pair.prp_parameters();
+      const Variables& curr_vars = current_pair.variables();
       if (curr_vars.all_continuous_variable_labels() != curr_acv_labels ||
 	  curr_vars.all_discrete_int_variable_labels() != curr_adiv_labels ||
 	  curr_vars.all_discrete_string_variable_labels() != curr_adsv_labels ||
 	  curr_vars.all_discrete_real_variable_labels() != curr_adrv_labels ||
-	  current_pair.prp_response().function_labels() != curr_resp_labels) {
+	  current_pair.response().function_labels() != curr_resp_labels) {
 	// update the current copy of the labels, sizing first
 	curr_acv_labels.resize(boost::extents[curr_vars.acv()]);
 	curr_acv_labels = curr_vars.all_continuous_variable_labels();
@@ -412,7 +412,7 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 	curr_adsv_labels = curr_vars.all_discrete_string_variable_labels();
 	curr_adrv_labels.resize(boost::extents[curr_vars.adrv()]);
 	curr_adrv_labels = curr_vars.all_discrete_real_variable_labels();
-	curr_resp_labels = current_pair.prp_response().function_labels();
+	curr_resp_labels = current_pair.response().function_labels();
 	// write the new header
 	current_pair.write_tabular_labels(tabular_text);
       }
@@ -558,7 +558,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
     // detect if current_pair is to be removed
     bool bad_flag = false;
     if (by_value) {
-      const Response& resp      = current_pair.prp_response();
+      const Response& resp      = current_pair.response();
       const RealVector& fn_vals = resp.function_values();
       const ShortArray& asv     = resp.active_set_request_vector();
       for (size_t j=0; j<fn_vals.length(); ++j) {

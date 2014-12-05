@@ -961,7 +961,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     if (cache_it != data_pairs.get<hashed>().end()) {
       if (outputLevel > SILENT_OUTPUT)
 	Cout << ">>>>> map at X performed previously and results retrieved\n\n";
-      initial_map_response.update(cache_it->prp_response());
+      initial_map_response.update(cache_it->response());
       initial_map = false; // reset
       if (asynch_flag) {
 	db_capture = true;

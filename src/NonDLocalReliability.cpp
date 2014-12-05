@@ -1487,7 +1487,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       PRPCacheHIter cache_it = lookup_by_val(data_pairs,
 	iteratedModel.interface_id(), search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
-	fnGradX = cache_it->prp_response().function_gradient_copy(respFnCount);
+	fnGradX = cache_it->response().function_gradient_copy(respFnCount);
 	found_mode |= 2;
       }
     }
@@ -1507,7 +1507,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       PRPCacheHIter cache_it = lookup_by_val(data_pairs,
 	iteratedModel.interface_id(), search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
-        fnHessX = cache_it->prp_response().function_hessian(respFnCount);
+        fnHessX = cache_it->response().function_hessian(respFnCount);
 	found_mode |= 4;
       }
     }

@@ -368,7 +368,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, true);
     else                          // shallow copies of cached vars/resp data
-      shallow_add(p_it->prp_parameters(), p_it->prp_response(), true);
+      shallow_add(p_it->variables(), p_it->response(), true);
   }
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, true);
@@ -413,7 +413,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
+	shallow_add(p_it->variables(), p_it->response(), false);
     }
   }
   else                              // deep response copies with vars sharing
@@ -459,7 +459,7 @@ update_approximation(const VariablesArray& vars_array,
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
+	shallow_add(p_it->variables(), p_it->response(), false);
     }
   }
   else                            // deep response copies with vars sharing
@@ -495,7 +495,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, false);
     else                          // shallow copies of cached vars/resp data
-      shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
+      shallow_add(p_it->variables(), p_it->response(), false);
   }
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, false);
@@ -545,7 +545,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
+	shallow_add(p_it->variables(), p_it->response(), false);
     }
   }
   else                            // deep response copies with vars sharing
@@ -592,7 +592,7 @@ append_approximation(const VariablesArray& vars_array,
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
       else                          // shallow copies of cached vars/resp data
-	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
+	shallow_add(p_it->variables(), p_it->response(), false);
     }
   }
   else                            // deep response copies with vars sharing
