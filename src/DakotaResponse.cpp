@@ -639,11 +639,11 @@ void Response::read_annotated_rep(std::istream& s)
   bool grad_flag, hess_flag;
   s >> num_fns >> num_params >> grad_flag >> hess_flag;
 
-  // Reshape and read responseActiveSet and functionLabels.
+  // Read responseActiveSet and SharedResponseData::functionLabels
   responseActiveSet.reshape(num_fns, num_params);
-  StringArray& fn_labels = sharedRespData.function_labels();
-  fn_labels.resize(num_fns);
-  s >> responseActiveSet >> fn_labels;
+  if (sharedRespData.is_null())
+    sharedRespData = SharedResponseData(responseActiveSet);
+  s >> responseActiveSet >> sharedRespData.function_labels();
 
   // reshape response arrays and reset all data to zero
   reshape(num_fns, num_params, grad_flag, hess_flag);
@@ -676,14 +676,11 @@ void Response::read_annotated_rep(std::istream& s)
 void Response::write_annotated_rep(std::ostream& s) const
 {
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, num_fns = asv.size(),
-    num_params = responseActiveSet.derivative_vector().size();
-  bool grad_flag = !functionGradients.empty(),
-       hess_flag = !functionHessians.empty();
+  size_t i, num_fns = asv.size() ;
 
   // Write Response sizing data
-  s << num_fns   << ' ' << num_params << ' '
-    << grad_flag << ' ' << hess_flag  << ' ';
+  s << num_fns << ' ' << responseActiveSet.derivative_vector().size() << ' '
+    << !functionGradients.empty() << ' ' << !functionHessians.empty() << ' ';
 
   // Write responseActiveSet and function labels.  Don't separately annotate
   // arrays with sizing data since Response handles this all at once.
@@ -813,7 +810,8 @@ void Response::read_rep(MPIUnpackBuffer& s)
   s >> grad_flag >> hess_flag >> responseActiveSet;
 
   // build shared counts and (default) functionLabels
-  sharedRespData = SharedResponseData(responseActiveSet); // not shared
+  if (sharedRespData.is_null())
+    sharedRespData = SharedResponseData(responseActiveSet); // not shared
 
   // reshape response arrays and reset all data to zero
   const ShortArray& asv = responseActiveSet.request_vector();
@@ -844,11 +842,9 @@ void Response::read_rep(MPIUnpackBuffer& s)
     and ids and communicates asv and response data only with slaves. */
 void Response::write_rep(MPIPackBuffer& s) const
 {
-  bool grad_flag = !functionGradients.empty(),
-       hess_flag = !functionHessians.empty();
-
   // Write sizing data and responseActiveSet
-  s << grad_flag << hess_flag << responseActiveSet;
+  s << !functionGradients.empty() << !functionHessians.empty()
+    << responseActiveSet;
 
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size();

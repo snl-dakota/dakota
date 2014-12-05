@@ -670,7 +670,7 @@ update_partial(size_t start_index_target, size_t num_items,
 
 
 inline bool Response::is_null() const
-{ return (responseRep) ? false : true; }
+{ return (responseRep == NULL); }
 
 
 /// global comparison function for Response

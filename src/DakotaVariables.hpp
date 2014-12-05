@@ -1374,7 +1374,7 @@ inline const SizetArray& Variables::variables_components_totals() const
 
 
 inline bool Variables::is_null() const
-{ return (variablesRep) ? false : true; }
+{ return (variablesRep == NULL); }
 
 
 inline void Variables::build_views()

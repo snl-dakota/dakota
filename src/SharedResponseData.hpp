@@ -175,6 +175,9 @@ public:
   /// reshape the data, disconnecting a shared rep if necessary
   void reshape(size_t num_fns);
 
+  /// return true if empty handle with null representation
+  bool is_null() const;
+
 private:
 
   //
@@ -297,6 +300,10 @@ inline void SharedResponseData::function_label(const String& label, size_t i)
 
 inline void SharedResponseData::function_labels(const StringArray& labels)
 { srdRep->functionLabels = labels; }
+
+
+inline bool SharedResponseData::is_null() const
+{ return (srdRep == NULL); }
 
 } // namespace Dakota
 
