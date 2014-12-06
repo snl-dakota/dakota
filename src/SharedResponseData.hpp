@@ -85,7 +85,11 @@ private:
 };
 
 
-inline SharedResponseDataRep::SharedResponseDataRep(): referenceCount(1)
+inline SharedResponseDataRep::SharedResponseDataRep():
+  // copy and reshape immediately apply copy_rep, so don't initialize anything:
+  //responseType(BASE_RESPONSE), // overridden in derived class ctors
+  //responsesId("NO_SPECIFICATION"), numScalarResponses(0),
+  referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedResponseDataRep::SharedResponseDataRep() called to build "

@@ -325,6 +325,8 @@ private:
   Response* get_response(short type, const ActiveSet& set) const;
   /// Used by copy() to instantiate a new letter class
   Response* get_response(const SharedResponseData& srd) const;
+  /// Used by read functions to instantiate a new letter class
+  Response* get_response(short type) const;
 
   /// read a letter object in annotated format from an std::istream
   void read_annotated_rep(std::istream& s);

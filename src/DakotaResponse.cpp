@@ -176,34 +176,6 @@ Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
 }
 
 
-/** Initializes responseRep to the appropriate derived type, as given
-    by problem_db attributes.  The standard derived class constructors
-    are invoked.  */
-Response* Response::
-get_response(short type, const Variables& vars,
-	     const ProblemDescDB& problem_db) const
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response(short, Variables&, "
-       << "ProblemDescDB&)." << std::endl;
-#endif
-
-  // This get_response version invokes the standard constructor.
-  switch (type) {
-  case SIMULATION_RESPONSE:
-    return new SimulationResponse(vars, problem_db); break;
-  case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(vars, problem_db); break;
-  case BASE_RESPONSE:
-    return new Response(BaseConstructor(), vars, problem_db); break;
-  default:
-    Cerr << "Response type " << type << " not currently supported in derived "
-	 << "Response classes." << std::endl;
-    return NULL; break;
-  }
-}
-
-
 /** This is an alternate envelope constructor for instantiations on
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
@@ -222,30 +194,6 @@ Response::Response(short type, const ActiveSet& set):
 }
 
 
-/** Initializes responseRep to the appropriate derived class, as given
-    by type. */
-Response* Response::get_response(short type, const ActiveSet& set) const
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response(short, ActiveSet&)."
-       << std::endl;
-#endif
-
-  switch (type) {
-  case SIMULATION_RESPONSE:
-    return new SimulationResponse(set); break;
-  case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(set); break;
-  case BASE_RESPONSE:
-    return new Response(BaseConstructor(), set); break;
-  default:
-    Cerr << "Response type " << type << " not currently supported in derived "
-	 << "Response classes." << std::endl;
-    return NULL; break;
-  }
-}
-
-
 /** This is an alternate envelope constructor for instantiations on
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
@@ -261,29 +209,6 @@ Response::Response(const SharedResponseData& srd):
   responseRep = get_response(srd);
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
-}
-
-
-/** Initializes responseRep to the appropriate derived type, as given
-    by SharedResponseData::responseType. */
-Response* Response::get_response(const SharedResponseData& srd) const
-{
-#ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter in get_response()." << std::endl;
-#endif
-
-  switch (srd.response_type()) {
-  case SIMULATION_RESPONSE:
-    return new SimulationResponse(srd); break;
-  case EXPERIMENT_RESPONSE:
-    return new ExperimentResponse(srd); break;
-  case BASE_RESPONSE:
-    return new Response(BaseConstructor(), srd); break;
-  default:
-    Cerr << "Response type " << srd.response_type() << " not currently "
-	 << "supported in derived Response classes." << std::endl;
-    return NULL; break;
-  }
 }
 
 
@@ -350,6 +275,104 @@ Response::~Response()
 #endif
       delete responseRep;
     }
+  }
+}
+
+
+/** Initializes responseRep to the appropriate derived type, as given
+    by problem_db attributes.  The standard derived class constructors
+    are invoked.  */
+Response* Response::
+get_response(short type, const Variables& vars,
+	     const ProblemDescDB& problem_db) const
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "Envelope instantiating letter in get_response(short, Variables&, "
+       << "ProblemDescDB&)." << std::endl;
+#endif
+
+  // This get_response version invokes the standard constructor.
+  switch (type) {
+  case SIMULATION_RESPONSE:
+    return new SimulationResponse(vars, problem_db); break;
+  case EXPERIMENT_RESPONSE:
+    return new ExperimentResponse(vars, problem_db); break;
+  case BASE_RESPONSE:
+    return new Response(BaseConstructor(), vars, problem_db); break;
+  default:
+    Cerr << "Response type " << type << " not currently supported in derived "
+	 << "Response classes." << std::endl;
+    return NULL; break;
+  }
+}
+
+
+/** Initializes responseRep to the appropriate derived class, as given
+    by type. */
+Response* Response::get_response(short type, const ActiveSet& set) const
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "Envelope instantiating letter in get_response(short, ActiveSet&)."
+       << std::endl;
+#endif
+
+  switch (type) {
+  case SIMULATION_RESPONSE:
+    return new SimulationResponse(set); break;
+  case EXPERIMENT_RESPONSE:
+    return new ExperimentResponse(set); break;
+  case BASE_RESPONSE:
+    return new Response(BaseConstructor(), set); break;
+  default:
+    Cerr << "Response type " << type << " not currently supported in derived "
+	 << "Response classes." << std::endl;
+    return NULL; break;
+  }
+}
+
+
+/** Initializes responseRep to the appropriate derived type, as given
+    by SharedResponseData::responseType. */
+Response* Response::get_response(const SharedResponseData& srd) const
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "Envelope instantiating letter in get_response()." << std::endl;
+#endif
+
+  switch (srd.response_type()) {
+  case SIMULATION_RESPONSE:
+    return new SimulationResponse(srd); break;
+  case EXPERIMENT_RESPONSE:
+    return new ExperimentResponse(srd); break;
+  case BASE_RESPONSE:
+    return new Response(BaseConstructor(), srd); break;
+  default:
+    Cerr << "Response type " << srd.response_type() << " not currently "
+	 << "supported in derived Response classes." << std::endl;
+    return NULL; break;
+  }
+}
+
+
+/** Initializes responseRep to the appropriate derived type, as given
+    by type. */
+Response* Response::get_response(short type) const
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "Envelope instantiating letter in get_response()." << std::endl;
+#endif
+
+  switch (type) {
+  case SIMULATION_RESPONSE:
+    return new SimulationResponse(); break;
+  case EXPERIMENT_RESPONSE:
+    return new ExperimentResponse(); break;
+  case BASE_RESPONSE:
+    return new Response();           break;
+  default:
+    Cerr << "Response type " << type << " not currently supported in "
+	 << "derived Response classes." << std::endl;
+    return NULL; break;
   }
 }
 
@@ -463,7 +486,7 @@ void Response::read(std::istream& s)
 	//Cout << "Debug read: strtod of token = " << strtod(token, NULL)<<'\n';
 	// On error, atof returns 0.0. Must verify token is a number.
 	if(token == re_match(token, reg_exp))
-	  functionValues[i] = std::atof(token.c_str()); // handles NaN and +/-Inf
+	  functionValues[i] = std::atof(token.c_str());// handles NaN and +/-Inf
 	else
 	  throw std::string( "Response format error with functionValue "
 			      + boost::lexical_cast<std::string>(i+1) );
@@ -610,22 +633,32 @@ void Response::write(std::ostream& s) const
 
 void Response::read_annotated(std::istream& s)
 {
-  if (responseRep) // should not occur in current usage
-    responseRep->read_annotated_rep(s); // fwd to existing rep
-    // an alternate design would be to decrement responseRep's reference
-    // count and delete if zero, then allocate a new responseRep and invoke
-    // read_annotated_rep() on it as below
-  else { // read from neutral file: responseRep must be instantiated
-    responseRep = new SimulationResponse(); // for now
-    responseRep->read_annotated_rep(s); // fwd to new rep
+  short type;
+  s >> type;
+  if (responseRep) { // should not occur in current usage
+    if (responseRep->sharedRespData.is_null() ||
+	type != responseRep->sharedRespData.response_type()) {
+      if (--responseRep->referenceCount == 0)
+	delete responseRep;
+      responseRep = get_response(type);
+    }
   }
+  else // read into empty envelope: responseRep must be instantiated
+    responseRep = get_response(type);
+
+  responseRep->read_annotated_rep(s); // fwd to new/existing rep
+  responseRep->sharedRespData.response_type(type);
 }
 
 
 void Response::write_annotated(std::ostream& s) const
 {
-  if (responseRep) responseRep->write_annotated_rep(s);
-  else             write_annotated_rep(s);
+  if (responseRep)
+    responseRep->write_annotated(s);
+  else {
+    s << sharedRespData.response_type();
+    write_annotated_rep(s);
+  }
 }
 
 
@@ -780,9 +813,21 @@ void Response::read(MPIUnpackBuffer& s)
   bool has_rep;
   s >> has_rep;
   if (has_rep) { // response is not an empty handle
-    if (!responseRep) // responseRep should not be defined in current usage
-      responseRep = new SimulationResponse(); // for now
+    short type;
+    s >> type;
+    if (responseRep) { // responseRep should not be defined in current usage
+      if (responseRep->sharedRespData.is_null() ||
+	  type != responseRep->sharedRespData.response_type()) {
+	if (--responseRep->referenceCount == 0)
+	  delete responseRep;
+	responseRep = get_response(type);
+      }
+    }
+    else
+      responseRep = get_response(type);
+
     responseRep->read_rep(s); // fwd to rep
+    responseRep->sharedRespData.response_type(type);
   }
   else if (responseRep) {
     if (--responseRep->referenceCount == 0)
@@ -795,8 +840,10 @@ void Response::read(MPIUnpackBuffer& s)
 void Response::write(MPIPackBuffer& s) const
 {
   s << !is_null();
-  if (responseRep)
+  if (responseRep) {
+    s << responseRep->sharedRespData.response_type();
     responseRep->write_rep(s);
+  }
 }
 
 
@@ -1304,15 +1351,21 @@ void Response::active_set_derivative_vector(const SizetArray& asdv)
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)
 {
-  if (responseRep) // should not occur in current usage
-    responseRep->load_rep(ar, version); // fwd to existing rep
-    // an alternate design would be to decrement responseRep's reference
-    // count and delete if zero, then allocate a new responseRep and invoke
-    // read_annotated_rep() on it as below
-  else { // read from restart: responseRep must be instantiated
-    responseRep = new SimulationResponse(); // for now
-    responseRep->load_rep(ar, version); // fwd to new rep
+  short type;
+  ar & type;
+  if (responseRep) { // should not occur in current usage
+    if (responseRep->sharedRespData.is_null() ||
+	type != responseRep->sharedRespData.response_type()) {
+      if (--responseRep->referenceCount == 0)
+	delete responseRep;
+      responseRep = get_response(type);
+    }
   }
+  else // read from restart: responseRep must be instantiated
+    responseRep = get_response(type);
+
+  responseRep->load_rep(ar, version); // fwd to new/existing rep
+  responseRep->sharedRespData.response_type(type);
 }
 
 
@@ -1320,8 +1373,13 @@ void Response::load(Archive& ar, const unsigned int version)
 template<class Archive>
 void Response::save(Archive& ar, const unsigned int version) const
 {
-  if (responseRep) responseRep->save_rep(ar, version);
-  else             save_rep(ar, version);
+  if (responseRep)
+    responseRep->save(ar, version);
+  else {
+    short type = sharedRespData.response_type();
+    ar & type;
+    save_rep(ar, version);
+  }
 }
 
 
