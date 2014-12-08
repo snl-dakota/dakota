@@ -425,6 +425,18 @@ if(DAKOTA_ENABLE_CPPUNIT_TESTS)
 
 endif() # DAKOTA_ENABLE_CPPUNIT_TESTS
 
+# RWH - Introducing another unit testing option which may or may not be embraced
+#       but serves as a demo
+option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" OFF)
+if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
+  set(dakota_sample_unit_tests
+    file_reader.cpp
+    )
+  add_executable(sample_reader_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
+  target_link_libraries(sample_reader_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
+  add_test(sample_reader_unit_tests sample_reader_unit_tests)
+endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
+
 if(DAKOTA_HAVE_HDF5 
     #AND DAKOTA_ENABLE_BOOST_MIN_TESTS
     )

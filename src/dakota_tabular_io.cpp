@@ -123,6 +123,7 @@ void write_data_tabular(const std::string& output_filename,
 
   size_t num_coeff_rows = output_coeffs[0].length();
   size_t num_vars = output_indices[0].size();
+  std::cout << num_coeff_rows << " <---> " << num_ind_rows << std::endl;
   if (num_coeff_rows != num_ind_rows) {
     Cerr << "\nError (write_data_tabular): mismatch in PCE coefficient and "
 	 << "index lengths." << std::endl;

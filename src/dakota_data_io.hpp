@@ -571,6 +571,21 @@ void read_data_annotated(std::istream& s,
     s >> v[i] >> label_array[i];
 }
 
+/// istream extraction operator for configuration data of known dim and length
+void read_configuration_data(std::istream& s,
+                             RealVectorArray& va,
+                             size_t num_experiments,
+                             int num_state_variables);
+
+/// istream extraction operator for response data of known dim and unknown length
+void read_functional_data(std::istream& s,
+                          RealVectorArray& va,
+                          int num_responses);
+
+/// istream extraction operator for coordinate data of unknown dim and unknown length
+void read_coordinate_data(std::istream& s,
+                          RealVectorArray& va);
+
 
 /// annotated istream extraction operator for StringMultiArray with labels
 inline void read_data_annotated(std::istream& s, StringMultiArray& v,
