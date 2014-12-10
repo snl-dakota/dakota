@@ -431,10 +431,11 @@ option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" OFF)
 if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   set(dakota_sample_unit_tests
     file_reader.cpp
+    data_conversions.cpp
     )
-  add_executable(sample_reader_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
-  target_link_libraries(sample_reader_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
-  add_test(sample_reader_unit_tests sample_reader_unit_tests)
+  add_executable(sample_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
+  target_link_libraries(sample_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
+  add_test(sample_unit_tests sample_unit_tests)
 endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
 
 if(DAKOTA_HAVE_HDF5 

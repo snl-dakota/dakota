@@ -22,7 +22,7 @@ namespace {
 
       for( int i = 0; i < num_entries; ++i ) {
         RealVector & test_vec = test_array[i];
-        test_vec.size(dim);
+        test_vec.sizeUninitialized(dim);
         if( rand )
           test_vec.random();
         // For now, just fill values using counting numbers - user can modify afterward
@@ -62,7 +62,19 @@ namespace {
        if( remove(used_filenames[i].c_str()) != 0 )
         std::cout << "Error removing test data file \"" << used_filenames[i] << "\"" << std::endl; 
     }
+
+  class Cleanup_Helper {
+    public:
+      Cleanup_Helper() { }
+
+      ~Cleanup_Helper() { 
+        remove_field_data_files();
+      }
+  };
+
 }
+
+//Cleanup_Helper cleanup_helper;
 
 //----------------------------------------------------------------
 
@@ -153,10 +165,87 @@ TEUCHOS_UNIT_TEST(file_reader, read_coordinate_data)
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
     TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+}
 
-  // The last can call this to remove the test data files (or perhaps
-  // leave them if verbose flag is on...)
-  remove_field_data_files();
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(file_reader, read_sigma_scalar)
+{
+  const int NUM_RESP = 1;
+  const int RESP_DIM = 1;
+  const std::string filename("test_sigma_scalar_data");
+  RealVectorArray field_data = create_test_array(NUM_RESP, RESP_DIM, true);
+  create_field_data_file(filename, field_data);
+
+  std::ifstream in_file;
+  TabularIO::open_file(in_file, filename, "unit test test_sigma_scalar_data");
+
+  RealVectorArray test_vec_array;
+  /////////////////  What we want to test
+  read_coordinate_data(in_file, test_vec_array);
+  /////////////////  What we want to test
+
+  // Verify we obtained the correct number of rows and cols (responses)
+  TEST_EQUALITY( NUM_RESP, test_vec_array.size() );
+  TEST_EQUALITY( RESP_DIM, test_vec_array[0].length() );
+
+  // Verify contents of what we wrote and what we read
+  TEST_FLOATING_EQUALITY( field_data[0][0], test_vec_array[0][0], 1.e-14 );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_row)
+{
+  const int NUM_ROW = 1;
+  const int NUM_COL = 7;
+  const std::string filename("test_sigma_vector_row_data");
+  RealVectorArray field_data = create_test_array(NUM_ROW, NUM_COL, true);
+  create_field_data_file(filename, field_data);
+
+  std::ifstream in_file;
+  TabularIO::open_file(in_file, filename, "unit test test_sigma_vector_row_data");
+
+  RealVectorArray test_vec_array;
+  /////////////////  What we want to test
+  read_coordinate_data(in_file, test_vec_array);
+  /////////////////  What we want to test
+
+  // Verify we obtained the correct number of rows and cols (responses)
+  TEST_EQUALITY( NUM_ROW, test_vec_array.size() );
+  TEST_EQUALITY( NUM_COL, test_vec_array[0].length() );
+
+  // Verify contents of what we wrote and what we read
+  for( size_t i=0; i<test_vec_array.size(); ++i )
+    for( int j=0; j<test_vec_array[i].length(); ++j )
+      TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_col)
+{
+  const int NUM_ROW = 7;
+  const int NUM_COL = 1;
+  const std::string filename("test_sigma_vector_col_data");
+  RealVectorArray field_data = create_test_array(NUM_ROW, NUM_COL, true);
+  create_field_data_file(filename, field_data);
+
+  std::ifstream in_file;
+  TabularIO::open_file(in_file, filename, "unit test test_sigma_vector_col_data");
+
+  RealVectorArray test_vec_array;
+  /////////////////  What we want to test
+  read_coordinate_data(in_file, test_vec_array);
+  /////////////////  What we want to test
+
+  // Verify we obtained the correct number of rows (responses)
+  TEST_EQUALITY( NUM_ROW, test_vec_array.size() );
+
+  // Verify contents of what we wrote and what we read
+  for( size_t i=0; i<test_vec_array.size(); ++i )
+    for( int j=0; j<test_vec_array[i].length(); ++j )
+      TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
 }
 
 //----------------------------------------------------------------

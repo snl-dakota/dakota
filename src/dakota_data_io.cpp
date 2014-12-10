@@ -80,4 +80,41 @@ read_coordinate_data(std::istream& s,
   read_functional_data(s, va, num_tokens);
 }
 
+// ----------------------------------------
+// Assignment/Copy functions for data types
+// ----------------------------------------
+
+void copy_data(const RealMatrix& rmat, RealVectorArray& rvarray)
+{
+  rvarray.clear();
+  int num_rows = rmat.numRows();
+  int num_cols = rmat.numCols();
+  rvarray.resize(num_rows);
+
+  for( int i=0; i<num_rows; ++i )
+  {
+    RealVector & row_vec = rvarray[i];
+    row_vec.sizeUninitialized(num_cols);
+    for( int j=0; j<num_cols; ++j )
+      rvarray[i][j] = rmat(i,j);
+  }
+}
+
+//----------------------------------------------------------------
+
+void copy_data(const RealVectorArray& rvarray, RealMatrix& rmat)
+{
+  if( rvarray.empty() )
+    return;
+
+  size_t num_rows = rvarray.size();
+  int num_cols = rvarray[0].length();
+  rmat.shapeUninitialized(num_rows, num_cols);
+
+  for( int i=0; i<num_rows; ++i )
+    for( int j=0; j<num_cols; ++j )
+      rmat(i,j) = rvarray[i][j];
+}
+
+
 } // namespace Dakota
