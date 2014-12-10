@@ -249,3 +249,56 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_col)
 }
 
 //----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(file_reader, read_sigma_matrix)
+{
+  const int NUM_ROW = 5;
+  const int NUM_COL = 5;
+  const std::string filename("test_sigma_matrix_data");
+  RealVectorArray field_data = create_test_array(NUM_ROW, NUM_COL, true);
+  create_field_data_file(filename, field_data);
+
+  std::ifstream in_file;
+  TabularIO::open_file(in_file, filename, "unit test test_sigma_matrix_data");
+
+  RealVectorArray test_vec_array;
+  /////////////////  What we want to test
+  read_coordinate_data(in_file, test_vec_array);
+  /////////////////  What we want to test
+
+  // Verify we obtained the correct number of rows (responses)
+  TEST_EQUALITY( NUM_ROW, test_vec_array.size() );
+  TEST_EQUALITY( NUM_COL, test_vec_array[0].length() );
+
+  // Verify contents of what we wrote and what we read
+  for( int i=0; i<NUM_ROW; ++i )
+    for( int j=0; j<NUM_COL; ++j )
+      TEST_FLOATING_EQUALITY( field_data[i][j], test_vec_array[i][j], 1.e-14 );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(file_reader, read_bad_data1)
+{
+  const int NUM_ROW = 5;
+  const int NUM_COL = 3;
+  const std::string filename("test_bad_data1");
+  RealVectorArray field_data = create_test_array(NUM_ROW, NUM_COL, true);
+
+  // Modify by adding another row of too large length (# cols)
+  // We should get a thrown exception which we test for later
+  RealVector extra_vec(NUM_COL+1);
+  extra_vec.random();
+  field_data.push_back(extra_vec);
+  create_field_data_file(filename, field_data);
+
+  std::ifstream in_file;
+  TabularIO::open_file(in_file, filename, "unit test test_bad_data1");
+
+  RealVectorArray test_vec_array;
+  /////////////////  What we want to test
+  TEST_THROW(read_coordinate_data(in_file, test_vec_array), std::runtime_error);
+  /////////////////  What we want to test
+}
+
+//----------------------------------------------------------------

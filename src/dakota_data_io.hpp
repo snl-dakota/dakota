@@ -480,7 +480,7 @@ void read_data_tabular(std::istream& s,
       char err[80];
       std::sprintf(err,
 	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
-      throw String(err);
+      throw std::runtime_error(err);
     }
   }
 }
