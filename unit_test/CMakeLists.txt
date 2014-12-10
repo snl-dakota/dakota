@@ -1,5 +1,5 @@
 #include(FindBoost)
-#include_directories(${Dakota_SOURCE_DIR}/src)
+include_directories(${Dakota_SOURCE_DIR}/src)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # TODO: Understand leveraging BOOST_DISABLE_ASSERTS wrt to Unit Testing
@@ -13,6 +13,11 @@ endif(BOOST_DISABLE_ASSERTS)
 # Unit test targets
 
 add_executable(min_unit_test min_unit_test.cpp)
+# It is desirable to split-up dakota into packages of re-useable components
+# but that is a significant re-factoring effort in its own right, so
+# link with the whole dakota library (for now)
+target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
+  ${Dakota_TPL_LIBRARIES} )
 add_test(min_unit_test min_unit_test)
 
 
