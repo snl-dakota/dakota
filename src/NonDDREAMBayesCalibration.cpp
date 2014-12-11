@@ -197,11 +197,11 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  expData.load_scalar(expDataFileName, "DREAM Bayes Calibration",
+  expData.load_data(expDataFileName, "DREAM Bayes Calibration",
 		      numExperiments, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
 		      expDataFileAnnotated, calc_sigma_from_data,
-		      outputLevel);
+		      outputLevel,iteratedModel.current_response().shared_data());
 
 
   ////////////////////////////////////////////////////////

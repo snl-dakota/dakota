@@ -18,6 +18,8 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "DakotaResponse.hpp"
+#include "ExperimentDataUtils.hpp"
+#include "dakota_global_defs.hpp"
 
 namespace Dakota {
 
@@ -61,6 +63,9 @@ public:
   /// destructor
   ~ExperimentResponse();
 
+  void set_scalar_covariance(RealVector scalars);
+  Real get_scalar_covariance(int this_response);
+
 protected:
 
   //
@@ -74,7 +79,7 @@ private:
   //
 
   /// sigma terms... 
-  RealSymMatrixArray expDataCovariance;
+ ExperimentCovariance expDataCovariance;
 };
 
 

@@ -324,11 +324,11 @@ bool Minimizer::data_transform_model(bool weight_flag)
 	 << "will be read from file, but ignored." << std::endl;
   bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
   bool calc_sigma_from_data = true; //calculate sigma if not provided 
-  expData.load_scalar(obsDataFilename, "Least Squares",
+  expData.load_data(obsDataFilename, "Least Squares",
                       numExperiments,
                       num_config_vars_read, numFunctions, num_sigma_read,
                       annotated, calc_sigma_from_data ,
-                      outputLevel);
+                      outputLevel,iteratedModel.current_response().shared_data());
   // copy the y portion of the data to obsData
   //obsData.reshape(num_experiments, numUserPrimaryFns);
   //for (int j = 0; j < num_experiments; ++j) {

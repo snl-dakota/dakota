@@ -19,6 +19,8 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_tabular_io.hpp"
+#include "ExperimentResponse.hpp"
+#include "SharedResponseData.hpp"
 
 namespace Dakota {
 
@@ -44,129 +46,21 @@ enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };
 enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
 
 
-class SingleExperiment 
-{
-
-public:
-
-  //
-  //- Heading: Constructors, destructor, operators
-  //
-
-  SingleExperiment()
-  { /* empty ctor */ }                                ///< constructor
-
-  /// construct a single experiment from passed data
-  SingleExperiment(const RealVector& real_config_vars,
-		   int sigma_type, const Real& sigma_scalar,
-		   const Real& scalar_data);
-
-
-  //SingleExperiment(const SingleExperiment&);         ///< copy constructor
-  //~SingleExperiment();                               ///< destructor
- 
-  //SingleExperiment& operator=(const SingleExperiment&);   ///< assignment operator
-
-  //
-  //- Heading: Member methods
-  //
-
-  /// return int configuration variables.  There will be just one set of 
-  /// configuration variables per experiment.
-  IntVector intConfigVars;
-
-  /// return real configuration variables
-  RealVector realConfigVars;
-   
-  /// return sigma_type. I think this should be per experiment, though it 
-  /// could be per response function. 
-  int sigmaType;
- 
-  /// return sigma scalar if sigma_type = SCALAR
-  Real sigmaScalar;
-
-  /// return sigma covariance if sigma_type = COVARIANCE_MATRIX
-  RealMatrix sigmaCovariance;
- 
-  /// return the scalar data.  I am assuming we need a data structure 
-  /// at least with num_replicates per experiment. Each replicate within 
-  /// this experiment returns one scalar value, all of the replicates are 
-  /// in the vector
-  Real experimentScalarData;
-
-  /// return functional data.  Each element of the array is one vector of f(x) 
-  /// values, the array represents the aggregation of replicates
-  /// experimentFunctionalData[replicate][data element f(x_i)]
-  RealVectorArray experimentFunctionalData;
-
-  /// return coordinates corresponding to functional data. 
-  //  I have set this up to be a RealVector2DArray for now.  
-  //  This should allow for something like
-  //  coordinates[replicate][data element x_i] which returns a vector [x_i]
-  RealVector2DArray coordinates;
-  // BMA NOTE: the coordinate array should probably allow for slicing all the x points instead of segregating by data element first... Multiarray?
-
-
   /// Interpolation method for interpolating between experimental and model data. 
   /// I need to work on inputs/outputs to this method.  For now, this assumes
   /// interpolation of functional data. 
-  void interpolate(RealVector2DArray& functionalCoordinates, RealVectorArray& 
-    experimentFunctionalData, RealVector2DArray& modelCoordinates, RealVectorArray&
-    modelFunctionalData, RealVectorArray& interpolatedResults); 
+  /* void interpolate(RealVector2DArray& functionalCoordinates, RealVectorArray& 
+     experimentFunctionalData, RealVector2DArray& modelCoordinates, RealVectorArray&
+     modelFunctionalData, RealVectorArray& interpolatedResults);
+  */ 
   /// As Brian suggested, thsi class has the experimental data (coordinates and 
   // functional data) and can store the interpolated results.  So, we may want a
   // simpler interpolate definition given in the line below: 
-  void interpolate(RealVector2DArray& modelCoordinates, RealVectorArray&
+  /*void interpolate(RealVector2DArray& modelCoordinates, RealVectorArray&
     modelFunctionalData); 
-
-  RealVectorArray interpolatedResults; 
+  */
+  /// RealVectorArray interpolatedResults; 
   
-};
-
-
-
-class ExpDataPerResponse{ 
-
-public:
-
-  //
-  //- Heading: Constructors, destructor, operators
-  //
-
-  ExpDataPerResponse()
-  { /* empty ctor */ } ;                                ///< constructor
-
-  /// Constructor for legacy data, where each experiment has the same
-  /// number of replicates = 1, same sigma type, etc.
-  ExpDataPerResponse(int num_exp, int exp_type);
-
-
-  //ExpDataPerResponse(const ExpDataPerResponse&);         ///< copy constructor
-  //~ExpDataPerResponse();                               ///< destructor
- 
-  //ExpDataPerResponse& operator=(const ExpDataPerResponse&);   ///< assignment operator
-
-  //
-  //- Heading: Member methods
-  //
-
-  /// return the number of experiments for this response 
-  int numExperiments;
- 
-  /// return the experimental type for this response. 
-  /// Only one type (scalar or functional, enumerated type) is allowed per response 
-  int experimentType;
-
-  /// vector containing all of the single experiments for this response
-  std::vector<SingleExperiment> dataThisResponse;
-
-  //dataThisResponse.resize(numExperiments);
-};
-
-
-
-
-
 
 /** The ExperimentData class is used to read and populate data 
     (currently from user-specified files and/or the input spec)
@@ -192,7 +86,7 @@ public:
   { /* empty ctor */ } ;                                ///< constructor
 
   /// Constructor from legacy file format
-  void load_scalar(const std::string& expDataFilename,
+  void load_data(const std::string& expDataFilename,
 		   const std::string& context_message,
 		   size_t numExperiments,
 		   size_t numExpConfigVars,
@@ -200,7 +94,8 @@ public:
 		   size_t numExpStdDeviationsRead,
 		   bool expDataFileAnnotated,
 		   bool calc_sigma_from_data,
-		   short verbosity);
+		   short verbosity, 
+                   const SharedResponseData& shared_resp_data);
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
@@ -212,8 +107,8 @@ public:
   //
 
   /// retrieve the vector of configuration variables for the given
-  /// response and experiment number
-  const RealVector& config_vars(size_t response, size_t experiment);
+  /// experiment number
+  const RealVector& config_vars(size_t experiment);
 
   /// retrieve the data value for the given response, for the given
   /// experiment 
@@ -223,8 +118,11 @@ public:
   /// the given experiment
   Real scalar_sigma(size_t response, size_t experiment);
 
-  /// At the outer level, ExperimentData will just be a vector of ExpDataPerResponse;
-  std::vector<ExpDataPerResponse> allExperiments;
+  /// ExperimentData will contain a vector of ExperimentResponses.  The size of this vector is numExperiments.
+  std::vector<Response> allExperiments;
+
+  /// ExperimentData will contain a vector of configVars.  The size of this vector is numExperiments.
+  std::vector<RealVector> allConfigVars;
 
 private:
 
@@ -232,9 +130,14 @@ private:
   //
   //- Heading: Data
   //
-  
-  /// allExperiments.resize(numResponseFunctions);
 
+  /// return the number of experiments for this response 
+  /// int numExperiments;
+ 
+  /// return the experimental type for this response. 
+  /// Only one type (scalar or functional, enumerated type) is allowed per response 
+  //int experimentType;
+  RealMatrix sigmaScalarValues;
 
 };
 

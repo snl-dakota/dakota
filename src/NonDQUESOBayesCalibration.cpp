@@ -112,11 +112,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
          << numExperiments << '\n';
     Cout << " File name for experimental data " << expDataFileName << '\n';
   }
-  expData.load_scalar(expDataFileName, "QUESO Bayes Calibration",
+  expData.load_data(expDataFileName, "QUESO Bayes Calibration",
 		      numExperiments, 
 		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
 		      expDataFileAnnotated, calc_sigma_from_data,
-		      outputLevel);
+		      outputLevel,iteratedModel.current_response().shared_data());
   
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms

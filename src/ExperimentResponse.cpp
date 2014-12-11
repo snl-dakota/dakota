@@ -45,4 +45,34 @@ ExperimentResponse::ExperimentResponse(const ActiveSet& set):
   // initialize the response covariance data...
 }
 
+void ExperimentResponse::set_scalar_covariance(RealVector scalarSigmas)
+{
+  std::vector<RealMatrix> matrices;
+  std::vector<RealVector> diagonals;
+  //RealVector scalars;
+  IntVector matrix_map_indices, diagonal_map_indices, scalar_map_indices;
+
+  int num_scalars = scalarSigmas.length() ;
+  //Real scalar_array[] = {1.,2.,4.};
+  //int scalar_map_index_array[] = {0, 1, 2};
+  //scalars.sizeUninitialized(num_scalars);
+  scalar_map_indices.sizeUninitialized(num_scalars);
+  for ( int i=0; i<num_scalars; i++ ){
+    //scalars[i] = scalar_array[i];
+    scalar_map_indices[i] = i;
+  }
+
+  expDataCovariance.set_covariance_matrices( matrices, diagonals, scalarSigmas,
+                                     matrix_map_indices,
+                                     diagonal_map_indices,
+                                     scalar_map_indices );
+  expDataCovariance.print_cov();
+}
+
+Real ExperimentResponse::get_scalar_covariance(int this_response)
+{
+  RealMatrix thisCovariance;
+  //expDataCovariance.get_covariance(thisCovariance);
+}
+
 } // namespace Dakota

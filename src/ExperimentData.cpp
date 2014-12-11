@@ -136,31 +136,8 @@ read_historical_data(const std::string& expDataFileName,
   }
 }
 
-// Need to be careful not to get a view here...
-SingleExperiment::
-SingleExperiment(const RealVector& real_config_vars,
-		 int sigma_type, const Real& sigma_scalar,
-		 const Real& scalar_data)
-  : realConfigVars(real_config_vars),
-    sigmaType(sigma_type), 
-    sigmaScalar(sigma_scalar),
-    experimentScalarData(scalar_data)
-{
-  
-
-}
-
-
-
-ExpDataPerResponse::ExpDataPerResponse(int num_exp, int exp_type)
-  :numExperiments(num_exp), experimentType(exp_type) 
-{
-  //dataThisResponse.resize(numExperiments);
-}
-
-
-void ExperimentData::
-load_scalar(const std::string& expDataFileName,
+void ExperimentData:: 
+load_data(const std::string& expDataFileName,
 	    const std::string& context_message,
 	    size_t numExperiments,
 	    size_t numExpConfigVars,
@@ -168,89 +145,94 @@ load_scalar(const std::string& expDataFileName,
 	    size_t numExpStdDeviationsRead,
 	    bool expDataFileAnnotated,
 	    bool calc_sigma_from_data,
-	    short verbosity)
+	    short verbosity, 
+            const SharedResponseData& sim_shared_data)
 {
+  
+  // allExperiments.resize(numExperiments);
+  allConfigVars.resize(numExperiments);
+
+  //TO DO:  Change the argument list to load_data, account for reading 
+  //scalar data and field data.  This currently reads only scalar data 
+  //in the old-style format.
   RealMatrix xObsData;
   RealMatrix yObsData, yStdData;
-  //using boost::multi_array;
-  //using boost::extents;
-  //multi_array<Real,3> yObsFull(); 
   
   read_historical_data(expDataFileName, context_message,
 		       numExperiments,
 		       numExpConfigVars, numFunctions, numExpStdDeviationsRead,
 		       expDataFileAnnotated, calc_sigma_from_data,
 		       xObsData, yObsData, yStdData);
-
+  sigmaScalarValues=yStdData;
+  
   if (verbosity > VERBOSE_OUTPUT) {
     Cout << "xobs_data" << xObsData << '\n';
-    for (size_t j = 0; j<numFunctions; j++){ 
       Cout << "yobs_data" << yObsData << '\n';
       Cout << "ystd_data" << yStdData << '\n';
+      Cout << "ytemp_sigma" << sigmaScalarValues << '\n';
+  }
+  // Get a copy of the simulation SRD to use in contructing the
+  // experiment response
+  SharedResponseData exp_srd = sim_shared_data.copy();
+
+  // change the type of response
+  exp_srd.response_type(EXPERIMENT_RESPONSE);
+  std::cout << "Construct experiment response" << std::endl;
+  Response exp_resp(exp_srd);
+  exp_resp.write(std::cout);
+
+  // this is the main loop which we will augment as we add capability
+  for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
+    //READ ONE ROW OF SCALAR DATA 
+    //allConfigVars[exp_index]=xObsData[exp_index];
+   
+    for (size_t fn_index = 0; fn_index < numFunctions; ++fn_index) {
+      exp_resp.function_value(yObsData(exp_index, fn_index),fn_index); 
     }
+    //NEED TO SET COVARIANCE MATRIX CORRECTLY.  The following case is for scalars
+    //exp_resp.set_scalar_covariance(curr_sigmas);
+
+    // READ ONE FIELD DATA RECORD and set the corresponding field data values
+    //for (size_t fn_index = 0; fn_index < numFields; ++fn_index) {
+    //  exp_resp.field_value(proper indexing);
+    //}yObsData(exp_index, fn_index),fn_index); 
+    Cout << "CurrExp " << exp_resp.function_values() << '\n';
+    allExperiments.push_back(exp_resp.copy());
+  }
+  // verify that the two experiments have different data
+  for (size_t i=0; i<numExperiments; ++i) {
+     std::cout << "vec_exp #" << i << std::endl;
+     allExperiments[i].write(std::cout);
   }
 
-  // do in phases for now to avoid confusion: add a sized, but empty
-  // data object for this response
-  int exp_type = SCALAR_DATA;
-  ExpDataPerResponse data1response(numExperiments, exp_type);
-  allExperiments.assign(numFunctions, data1response);
-
-  // parse each row of the read matrices (each experiment)
-  for (size_t f_ind=0; f_ind<numFunctions; ++f_ind) {
-    for (size_t exp_ind=0; exp_ind<numExperiments; ++exp_ind) {
-      int sigma_type = SCALAR_SIGMA;
-      
-      // BMA TODO: write a copy_data function?
-      
-      RealVector real_config_vars(numExpConfigVars);
-      for (int i=0; i<numExpConfigVars; ++i)
-	real_config_vars[i] = xObsData(exp_ind, i);
-
-      // scalar data for a single function
-      Real scalar_data;
-      scalar_data = yObsData(exp_ind,f_ind);
-
-      // sigma data for a single function 
-      Real sigma_scalar;
-      sigma_scalar = yStdData(exp_ind,f_ind);
-
-      // SingleExperiment should be constructible from a single row of the
-      // data, but we can't slice it that way easily
-      SingleExperiment single_exp(real_config_vars, sigma_type, 
-				  sigma_scalar, scalar_data);
-
-      allExperiments[f_ind].dataThisResponse.push_back(single_exp);
-    }
-  }
+ 
 }
 
 const RealVector& ExperimentData::
-config_vars(size_t response, size_t experiment)
+config_vars(size_t experiment)
 {
-  return(allExperiments[response].dataThisResponse[experiment].realConfigVars);
+  return(allConfigVars[experiment]);
 }
-
-
 
 Real ExperimentData::
 scalar_data(size_t response, size_t experiment)
 {
-  if (allExperiments[response].experimentType != SCALAR_DATA) {
-    Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
-    abort_handler(-1);
-  }
-  return(allExperiments[response].dataThisResponse[experiment].experimentScalarData);
+  //if (allExperiments[response].experimentType != SCALAR_DATA) {
+  //  Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
+  //  abort_handler(-1);
+  //}
+  return(allExperiments[experiment].function_value(response));
 }
 
 Real ExperimentData::
 scalar_sigma(size_t response, size_t experiment)
 {
-  if (allExperiments[response].experimentType != SCALAR_DATA) {
-    Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
-    abort_handler(-1);
-  }
-  return(allExperiments[response].dataThisResponse[experiment].sigmaScalar);
+  //if (allExperiments[response].experimentType != SCALAR_DATA) {
+  //  Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
+  //  abort_handler(-1);
+  //}
+  //return(allExperiments[experiment].get_scalar_covariance(response));
+  return(sigmaScalarValues(experiment, response));
 }
 
 

@@ -1,4 +1,5 @@
 #include "ExperimentDataUtils.hpp"
+#include <iostream>
 
 namespace Dakota {
 
@@ -152,6 +153,18 @@ int CovarianceMatrix::num_dof() const{
   return numDOF_;
 }
 
+void CovarianceMatrix::print() {
+  if ( covIsDiagonal_ ) {
+    std::cout << " Covariance is Diagonal " << '\n';
+    covDiagonal_.print(std::cout);
+  }
+  else {  
+    std::cout << " Covariance is Full " << '\n';
+    covMatrix_.print(std::cout);
+  }
+}
+
+
 void ExperimentCovariance::set_covariance_matrices( 
 std::vector<RealMatrix> &matrices, 
 std::vector<RealVector> &diagonals,
@@ -211,6 +224,14 @@ Real ExperimentCovariance::apply_experiment_covariance( RealVector &vector ){
     RealVector sub_vector( Teuchos::View, vector.values()+shift, num_dof );
     result += covMatrices_[i].apply_covariance_inverse( sub_vector );
     shift += num_dof;
+  }
+}
+
+void ExperimentCovariance::print_cov() {
+  
+  for (int i=0; i<covMatrices_.size(); i++ ){
+    std::cout << "Covariance Matrix " << i << '\n';
+    covMatrices_[i].print();
   }
 }
 

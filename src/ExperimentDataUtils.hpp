@@ -117,6 +117,9 @@ public:
 
   // Return the number of rows in the covariance matrix
   int num_dof() const;
+
+  // Print a covariance matrix
+  void print();
 };
 
 
@@ -148,6 +151,9 @@ public:
 
   /// Compute the triple product v'*inv(C)*v
   Real apply_experiment_covariance( RealVector &vector );
+  
+  void print_cov();
+
 };
 
 } // namespace dakota
