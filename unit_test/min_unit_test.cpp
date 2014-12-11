@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <boost/test/minimal.hpp>     // header-only minimal testing
-//#include <boost/test/unit_test.hpp> // requires linkage -lboost_unit_test_framework
+#define BOOST_TEST_ALTERNATIVE_INIT_API
+#include <boost/test/included/unit_test.hpp> // header-only, Boost.Test framework
 
 #include "DakotaBuildInfo.hpp"
 
@@ -36,10 +36,10 @@ void rev_test()
 
     std::string rev_str = Dakota::DakotaBuildInfo::get_rev_number();
     short rev = lexical_cast<short>(rev_str);
-    BOOST_CHECK(rev > 2852);
+    BOOST_CHECK(rev > 2452);
   }
-  catch (const boost::bad_lexical_cast &) {
-    boost::exit_failure;
+  catch (const boost::bad_lexical_cast& e) {
+    std::cerr << '\n' << e.what() << std::endl;
   }
 }
 
@@ -50,11 +50,13 @@ void rev_test()
 // NOTE: Boost.Test framework provides the main program driver
 //____________________________________________________________________________//
 
-int test_main( int argc, char* argv[] )      // note the name!
+bool init_unit_test()
 {
-  DakotaUnitTest::MinTest::my_test0();
-  DakotaUnitTest::MinTest::rev_test();
+  boost::unit_test::framework::master_test_suite().add(
+    BOOST_TEST_CASE( &DakotaUnitTest::MinTest::my_test0 ) );
+  boost::unit_test::framework::master_test_suite().add(
+    BOOST_TEST_CASE( &DakotaUnitTest::MinTest::rev_test ) );
 
-  return boost::exit_success;
+  return true;
 }
 
