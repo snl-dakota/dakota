@@ -147,12 +147,16 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
+  expData.shared_data(iteratedModel.current_response().shared_data());
+  expData.num_experiments(numExperiments);
+  expData.num_config_vars(numExpConfigVars);
+  expData.num_sigma(numExpStdDeviationsRead);
+  // BMA TODO: Can't do DB query here; need to cache
+  //  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
+
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_data(expDataFileName, "QUESO/GPMSA Bayes Calibration",
-		      numExperiments, 
-		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
-		      expDataFileAnnotated, calc_sigma_from_data,
-		      outputLevel,iteratedModel.current_response().shared_data());
+		      expDataFileAnnotated, calc_sigma_from_data, outputLevel);
 
   //***********************************************************************
   //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv

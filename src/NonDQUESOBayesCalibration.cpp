@@ -112,11 +112,16 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
          << numExperiments << '\n';
     Cout << " File name for experimental data " << expDataFileName << '\n';
   }
+
+  expData.shared_data(iteratedModel.current_response().shared_data());
+  expData.num_experiments(numExperiments);
+  expData.num_config_vars(numExpConfigVars);
+  expData.num_sigma(numExpStdDeviationsRead);
+  // BMA TODO: Can't do DB query here; need to cache
+  //  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
+
   expData.load_data(expDataFileName, "QUESO Bayes Calibration",
-		      numExperiments, 
-		      numExpConfigVars, numFunctions, numExpStdDeviationsRead,
-		      expDataFileAnnotated, calc_sigma_from_data,
-		      outputLevel,iteratedModel.current_response().shared_data());
+		    expDataFileAnnotated, calc_sigma_from_data, outputLevel);
   
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms

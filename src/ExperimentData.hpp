@@ -26,20 +26,7 @@ namespace Dakota {
 
 using boost::multi_array;
 using boost::extents;
-// free function for now; to be encapsulated
-/// Read data in historical format into x, y, sigma matrices
-void read_historical_data(const std::string& expDataFileName,
-			  const std::string& context_message,
-			  size_t numExperiments,
-			  size_t numExpConfigVars,
-			  size_t numFunctions,
-			  size_t numExpStdDeviationsRead,
-			  bool expDataFileAnnotated,
-			  bool calc_sigma_from_data,
-			  RealMatrix& xObsData,
-                          RealMatrix& yObsData,
-			  RealMatrix& yStdData);
-  
+
 /// special values for sigma_type 
 enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };
 /// special values for experimental data type 
@@ -85,26 +72,38 @@ public:
   ExperimentData()
   { /* empty ctor */ } ;                                ///< constructor
 
-  /// Constructor from legacy file format
-  void load_data(const std::string& expDataFilename,
-		   const std::string& context_message,
-		   size_t numExperiments,
-		   size_t numExpConfigVars,
-		   size_t numFunctions,
-		   size_t numExpStdDeviationsRead,
-		   bool expDataFileAnnotated,
-		   bool calc_sigma_from_data,
-		   short verbosity, 
-                   const SharedResponseData& shared_resp_data);
-
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
- 
-  //ExperimentData& operator=(const ExperimentData&);   ///< assignment operator
+   //ExperimentData& operator=(const ExperimentData&);   ///< assignment operator
 
   //
   //- Heading: Member methods
   //
+
+
+  // sizing methods
+
+  /// set the shared response data
+  void shared_data(const SharedResponseData& srd);
+
+  /// set the number of experiments
+  void num_experiments(size_t num_experiments_in);
+
+  /// set the number of configuration (state) variables to be read
+  void num_config_vars(size_t num_config_vars_in);
+
+  /// (DEPRECATED) set the number of sigma terms to read
+  void num_sigma(size_t num_sigma_in);
+  
+  /// set the array of sigmas, one per scalar response / field response group
+  void sigma_type(const StringArray& sigma_type_in);
+
+  /// Load experiments from legacy file format
+  void load_data(const std::string& expDataFilename,
+		 const std::string& context_message,
+		 bool expDataFileAnnotated,
+		 bool calc_sigma_from_data,
+		 short verbosity);
 
   /// retrieve the vector of configuration variables for the given
   /// experiment number
@@ -118,25 +117,51 @@ public:
   /// the given experiment
   Real scalar_sigma(size_t response, size_t experiment);
 
-  /// ExperimentData will contain a vector of ExperimentResponses.  The size of this vector is numExperiments.
-  std::vector<Response> allExperiments;
-
-  /// ExperimentData will contain a vector of configVars.  The size of this vector is numExperiments.
-  std::vector<RealVector> allConfigVars;
-
 private:
 
-
+  /// Read data in historical format into x, y, sigma matrices
+  void read_historical_data(const std::string& expDataFileName,
+			    const std::string& context_message,
+			    bool expDataFileAnnotated,
+			    bool calc_sigma_from_data,
+			    RealMatrix& xObsData,
+			    RealMatrix& yObsData,
+			    RealMatrix& yStdData);
+  
   //
   //- Heading: Data
   //
 
-  /// return the number of experiments for this response 
-  /// int numExperiments;
+  /// archived shared data for use in sizing fields, total functions
+  /// (historically we read all functions, including constraints,
+  /// which might not be correct)
+  SharedResponseData simulationSRD;
+
+  /// the total number of experiments
+  size_t numExperiments;
  
-  /// return the experimental type for this response. 
-  /// Only one type (scalar or functional, enumerated type) is allowed per response 
-  //int experimentType;
+  /// number of configuration (state) variables to read for each experiment
+  size_t numConfigVars;
+
+  // TO REMOVE
+  /// Number of sigma values characterizing the experimental error
+  size_t numSigma;
+
+  /// the type of sigma characterizing experimental error for each
+  /// scalar response / field response group
+  StringArray sigmaType;
+
+  /// Vector of numExperiments ExperimentResponses, holding the
+  /// observed data and error (sigma/covariance) for each experiment.
+  std::vector<Response> allExperiments;
+
+  /// Vector of numExperiments configurations at which data were
+  /// gathered; empty if no configurations specified.
+  std::vector<RealVector> allConfigVars;
+
+  // TO REMOVE
+  /// Temporary container to hold sigma data while migrating to
+  /// ExperimentCovariance
   RealMatrix sigmaScalarValues;
 
 };

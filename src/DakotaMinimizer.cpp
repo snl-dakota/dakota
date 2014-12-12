@@ -316,6 +316,13 @@ bool Minimizer::data_transform_model(bool weight_flag)
   size_t num_sigma_read = 
     probDescDB.get_sizet("responses.num_std_deviations");
 
+  // cache some sizes from problem database and shared data
+  expData.shared_data(iteratedModel.current_response().shared_data());
+  expData.num_experiments(numExperiments);
+  expData.num_config_vars(num_config_vars_read);
+  expData.num_sigma(num_sigma_read);
+  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
+
   //if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
   //  Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
   //	 << "only first will be used." << std::endl;
@@ -325,10 +332,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
   bool calc_sigma_from_data = true; //calculate sigma if not provided 
   expData.load_data(obsDataFilename, "Least Squares",
-                      numExperiments,
-                      num_config_vars_read, numFunctions, num_sigma_read,
-                      annotated, calc_sigma_from_data ,
-                      outputLevel,iteratedModel.current_response().shared_data());
+		    annotated, calc_sigma_from_data, outputLevel);
   // copy the y portion of the data to obsData
   //obsData.reshape(num_experiments, numUserPrimaryFns);
   //for (int j = 0; j < num_experiments; ++j) {

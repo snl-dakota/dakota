@@ -16,7 +16,6 @@
 #define NOND_QUESO_BAYES_CALIBRATION_H
 
 #include "NonDBayesCalibration.hpp"
-#include "ExperimentData.hpp"
 
 // forward declare isolate QUESO includes to Dakota .cpp files
 namespace QUESO {
