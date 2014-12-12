@@ -225,6 +225,7 @@ Real ExperimentCovariance::apply_experiment_covariance( RealVector &vector ){
     result += covMatrices_[i].apply_covariance_inverse( sub_vector );
     shift += num_dof;
   }
+  return result;
 }
 
 void ExperimentCovariance::print_cov() {
