@@ -45,7 +45,7 @@ ExperimentResponse::ExperimentResponse(const ActiveSet& set):
   // initialize the response covariance data...
 }
 
-void ExperimentResponse::set_scalar_covariance(RealVector scalarSigmas)
+void ExperimentResponse::set_scalar_covariance(RealVector& scalarSigmas)
 {
   std::vector<RealMatrix> matrices;
   std::vector<RealVector> diagonals;
@@ -69,7 +69,7 @@ void ExperimentResponse::set_scalar_covariance(RealVector scalarSigmas)
   expDataCovariance.print_cov();
 }
 
-Real ExperimentResponse::get_scalar_covariance(int this_response)
+Real ExperimentResponse::get_scalar_covariance(const int this_response)
 {
   RealMatrix thisCovariance;
   //expDataCovariance.get_covariance(thisCovariance);

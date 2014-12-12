@@ -63,8 +63,8 @@ public:
   /// destructor
   ~ExperimentResponse();
 
-  void set_scalar_covariance(RealVector scalars);
-  Real get_scalar_covariance(int this_response);
+  void set_scalar_covariance(RealVector& scalars);
+  Real get_scalar_covariance(const int this_response);
 
 protected:
 

@@ -1347,6 +1347,28 @@ void Response::active_set_derivative_vector(const SizetArray& asdv)
   }
 }
 
+void Response::set_scalar_covariance(RealVector& scalars)
+{
+  if (responseRep)
+    responseRep->set_scalar_covariance(scalars);
+  else {
+    Cerr << "\nError: set_scalar_covaraince() not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
+Real Response::get_scalar_covariance(const int this_response)
+{
+  if (responseRep)
+    responseRep->get_scalar_covariance(this_response);
+  else {
+    Cerr << "\nError: get_scalar_covaraince() not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
 /** Implementation of serialization load for the Response handle */
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)

@@ -78,7 +78,7 @@ private:
   IntVector fieldRespGroupLengths;
 
   /// dimensions of each function
-  IntVectorArray numCoordsPerField;
+  IntVector numCoordsPerField;
   
   /// number of handle objects sharing srdRep
   int referenceCount;
@@ -152,8 +152,10 @@ public:
 
   /// index of field lengths for field data 
   const IntVector& field_lengths() const;
+  /// set field lengths (if experiment different from simulation)
+  void field_lengths(const IntVector& field_lengths);
   /// dimensions of each function
-  const IntVectorArray& num_coords_per_field();
+  const IntVector& num_coords_per_field() const;
 
   /// return a response function identifier string
   const String& function_label(size_t i) const;
@@ -266,11 +268,13 @@ inline size_t SharedResponseData::num_functions() const
 { return srdRep->numScalarResponses + srdRep->fieldRespGroupLengths.normOne(); }
 
 
-inline const IntVector& SharedResponseData::field_lengths() const
+inline const IntVector& SharedResponseData::field_lengths() const 
 { return srdRep->fieldRespGroupLengths; }
 
+inline void SharedResponseData::field_lengths(const IntVector& field_lens) 
+{ srdRep->fieldRespGroupLengths = field_lens; }
 
-inline const IntVectorArray& SharedResponseData::num_coords_per_field()
+inline const IntVector& SharedResponseData::num_coords_per_field() const
 { return srdRep->numCoordsPerField; }
   
 

@@ -164,6 +164,17 @@ public:
   /// set a field value
   void field_values(const RealVector& field_val, size_t i);
 
+  /// return the field lengths from sharedRespData
+  const IntVector& field_lengths() const;
+  /// set the field lengths within sharedRespData
+  void field_lengths(const IntVector& field_lens);
+  /// return the num_coords_per_field from sharedRespData
+  const IntVector& num_coords_per_field() const;
+  /// set the coordinate values per field 
+  void set_coord_values(const RealMatrix& coord_values, const size_t i);
+  /// return the coordinate values per field 
+  const RealMatrix& get_coord_values(const size_t i) const;
+
   /// return the response function identifier strings from sharedRespData
   const StringArray& function_labels() const;
   /// set the response function identifier strings within sharedRespData
@@ -239,6 +250,12 @@ public:
 
   /// function to check responseRep (does this handle contain a body)
   bool is_null() const;
+ 
+  /// method to set the covariance matrix defined for ExperimentResponse
+  virtual void set_scalar_covariance(RealVector& scalars);
+  /// method to get the covariance matrix defined for ExperimentResponse
+  virtual Real get_scalar_covariance(const int this_response);
+
 
 protected:
 
@@ -282,7 +299,7 @@ protected:
   ActiveSet responseActiveSet;
 
   /// independent coordinate values 
-  RealVectorArray coordsValuesPerField;
+  RealMatrixArray coordValuesPerField;
 
 private:
 
@@ -604,6 +621,41 @@ function_hessians(const RealSymMatrixArray& function_hessians)
 {
   if (responseRep) responseRep->functionHessians = function_hessians;
   else             functionHessians = function_hessians;
+}
+
+
+inline const IntVector& Response::field_lengths() const
+{
+  if (responseRep) return responseRep->sharedRespData.field_lengths();
+  else             return sharedRespData.field_lengths();
+}
+
+
+inline void Response::field_lengths(const IntVector& field_lens)
+{
+  if (responseRep) responseRep->sharedRespData.field_lengths(field_lens);
+  else             sharedRespData.field_lengths(field_lens);
+}
+
+
+inline const IntVector& Response::num_coords_per_field() const
+{
+  if (responseRep) return responseRep->sharedRespData.num_coords_per_field();
+  else             return sharedRespData.num_coords_per_field();
+}
+
+
+inline void Response::set_coord_values(const RealMatrix& coord_vals_per_field, const size_t field_num)
+{
+  if (responseRep) responseRep->coordValuesPerField[field_num] = coord_vals_per_field;
+  else             coordValuesPerField[field_num] = coord_vals_per_field;
+}
+
+
+inline const RealMatrix& Response::get_coord_values(const size_t field_num) const
+{
+  if (responseRep) return responseRep->coordValuesPerField[field_num];
+  else             return coordValuesPerField[field_num];
 }
 
 
