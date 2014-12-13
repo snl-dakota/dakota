@@ -417,13 +417,6 @@ if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
 
 endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
 
-# WJB - ToDo:  complete migration to Boost.Test
-option(DAKOTA_ENABLE_CPPUNIT_TESTS "Enable unit tests in DAKOTA" OFF)
-if(DAKOTA_ENABLE_CPPUNIT_TESTS)
-
-  add_executable(container_unit_tests container_unit_tests.cpp)
-
-endif() # DAKOTA_ENABLE_CPPUNIT_TESTS
 
 # RWH - Introducing another unit testing option which may or may not be embraced
 #       but serves as a demo
