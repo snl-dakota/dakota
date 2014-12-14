@@ -405,11 +405,6 @@ if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
     add_definitions("-DDAKOTA_HAVE_MPI")
   endif()
 
-  add_executable(stream_unit_tests stream_unit_tests.cpp)
-  target_link_libraries(stream_unit_tests ${Dakota_LIBRARIES}
-                        ${Dakota_TPL_LIBRARIES})
-  add_test(stream_unit_tests stream_unit_tests)
-
   add_executable(test_field_covariance_utils test_field_covariance_utils.cpp)
   target_link_libraries(test_field_covariance_utils ${Dakota_LIBRARIES}
     ${Dakota_TPL_LIBRARIES})
