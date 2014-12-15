@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "dakota_data_io.hpp"
+#include "dakota_tabular_io.hpp"
 
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
@@ -16,6 +17,18 @@ namespace Dakota {
 //
 //- Utilities for reading functional data
 //
+
+//----------------------------------------------------------------
+
+// A utility that might be generally useful ... ? RWH
+template <typename T>
+  inline std::string convert_to_string(const T &value) {
+    std::ostringstream out;
+    out << value;
+    return out.str();
+  }
+
+//----------------------------------------------------------------
 
 void 
 read_sized_data(std::istream& s,
@@ -79,6 +92,37 @@ read_unsized_data(std::istream& s,
   s.seekg(0);
   read_fixed_rowsize_data(s, va, num_tokens);
 }
+
+//----------------------------------------------------------------
+
+// This version uses multiple configuration files
+void 
+read_config_vars_multifile(const std::string& basename, int num_expts, int ncv, RealVectorArray& config_vars){
+
+  config_vars.resize(num_expts);
+
+  for( int i = 0; i < num_expts; ++i ) {
+    std::ifstream s;
+    std::string filename = basename + "." + convert_to_string(i+1) + ".config";
+    TabularIO::open_file(s, filename, "read_config_vars_multifile");
+    RealVector & var = config_vars[i];
+    var.sizeUninitialized(ncv);
+    read_data_tabular(s, var);
+  }
+}
+
+//----------------------------------------------------------------
+
+// This version uses a single configuration file adhering to an expected num_expts X ncv format
+void 
+read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv, RealVectorArray& config_vars){
+
+  std::ifstream s;
+  std::string filename = basename + ".config";
+  TabularIO::open_file(s, filename, "read_config_vars_singlefile");
+  read_sized_data(s, config_vars, num_expts, ncv);
+}
+
 
 // ----------------------------------------
 // Assignment/Copy functions for data types

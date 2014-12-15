@@ -17,39 +17,6 @@ namespace {
   const int NUM_EXPTS = 3;
   const int NCV = 4;
 
-  // A utility that might be more generally useful ... ?
-  template <typename T>
-    inline std::string convert_to_string(const T &value) {
-      std::ostringstream out;
-      out << value;
-      return out.str();
-    }
-
-  // This version uses multiple files
-  void 
-    read_config_vars_multifile(const std::string& basename, int num_expts, int ncv, RealVectorArray& config_vars){
-
-      config_vars.resize(num_expts);
-
-      for( int i = 0; i < num_expts; ++i ) {
-        std::ifstream s;
-        std::string filename = basename + "." + convert_to_string(i+1) + ".config";
-        TabularIO::open_file(s, filename, "read_config_vars_multifile");
-        RealVector & var = config_vars[i];
-        var.sizeUninitialized(ncv);
-        read_data_tabular(s, var);
-      }
-    }
-
-  // This version uses a single file adhering to an expected num_expts X ncv format
-  void 
-    read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv, RealVectorArray& config_vars){
-
-      std::ifstream s;
-      std::string filename = basename + ".config";
-      TabularIO::open_file(s, filename, "read_config_vars_singlefile");
-      read_sized_data(s, config_vars, num_expts, ncv);
-    }
 }
 
 //----------------------------------------------------------------

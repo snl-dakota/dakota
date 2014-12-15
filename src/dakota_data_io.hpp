@@ -586,6 +586,18 @@ void read_fixed_rowsize_data(std::istream& s,
 void read_unsized_data(std::istream& s,
                        RealVectorArray& va);
 
+/// file reader for configuration data supplied via multiple files
+void read_config_vars_multifile(const std::string& basename,
+                                int num_expts,
+                                int ncv,
+                                RealVectorArray& config_vars);
+
+/// file reader for configuration data supplied via a single file
+void read_config_vars_singlefile(const std::string& basename,
+                                 int num_expts,
+                                 int ncv,
+                                 RealVectorArray& config_vars);
+
 // -----------------------------
 // Copy functions for data types
 // -----------------------------
