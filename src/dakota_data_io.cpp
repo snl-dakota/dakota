@@ -18,19 +18,19 @@ namespace Dakota {
 //
 
 void 
-read_configuration_data(std::istream& s,
-                        RealVectorArray& va,
-                        size_t num_experiments,
-                        int num_state_variables)
+read_sized_data(std::istream& s,
+                RealVectorArray& va,
+                size_t num_rows,
+                int num_cols)
 {
-  if( va.size() != num_experiments )
-    va.resize(num_experiments);
+  if( va.size() != num_rows )
+    va.resize(num_rows);
 
-  for(size_t i=0; i<num_experiments; ++i)
+  for(size_t i=0; i<num_rows; ++i)
   {
     RealVector & v = va[i];
-    if( v.length() != num_state_variables )
-      v.sizeUninitialized(num_state_variables);
+    if( v.length() != num_cols )
+      v.sizeUninitialized(num_cols);
     read_data_tabular(s, v);
   }
 }
@@ -38,9 +38,9 @@ read_configuration_data(std::istream& s,
 //----------------------------------------------------------------
 
 void 
-read_functional_data(std::istream& s,
-                     RealVectorArray& va,
-                     int num_responses)
+read_fixed_rowsize_data(std::istream& s,
+                        RealVectorArray& va,
+                        int num_rows)
 {
   if( !va.empty() )
     va.clear();
@@ -49,7 +49,7 @@ read_functional_data(std::istream& s,
   s >> std::ws;
   while ( !s.eof() )
   {
-    v.sizeUninitialized(num_responses);
+    v.sizeUninitialized(num_rows);
     read_data_tabular(s, v);
     va.push_back(v);
     s >> std::ws;
@@ -59,8 +59,8 @@ read_functional_data(std::istream& s,
 //----------------------------------------------------------------
 
 void 
-read_coordinate_data(std::istream& s,
-                     RealVectorArray& va)
+read_unsized_data(std::istream& s,
+                  RealVectorArray& va)
 {
   if( !va.empty() )
     va.clear();
@@ -77,7 +77,7 @@ read_coordinate_data(std::istream& s,
 
   // Rewind input stream 
   s.seekg(0);
-  read_functional_data(s, va, num_tokens);
+  read_fixed_rowsize_data(s, va, num_tokens);
 }
 
 // ----------------------------------------

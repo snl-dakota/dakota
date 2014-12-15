@@ -572,19 +572,19 @@ void read_data_annotated(std::istream& s,
 }
 
 /// istream extraction operator for configuration data of known dim and length
-void read_configuration_data(std::istream& s,
-                             RealVectorArray& va,
-                             size_t num_experiments,
-                             int num_state_variables);
+void read_sized_data(std::istream& s,
+                     RealVectorArray& va,
+                     size_t num_experiments,
+                     int num_state_variables);
 
 /// istream extraction operator for response data of known dim and unknown length
-void read_functional_data(std::istream& s,
-                          RealVectorArray& va,
-                          int num_responses);
+void read_fixed_rowsize_data(std::istream& s,
+                             RealVectorArray& va,
+                             int num_responses);
 
 /// istream extraction operator for coordinate data of unknown dim and unknown length
-void read_coordinate_data(std::istream& s,
-                          RealVectorArray& va);
+void read_unsized_data(std::istream& s,
+                       RealVectorArray& va);
 
 // -----------------------------
 // Copy functions for data types

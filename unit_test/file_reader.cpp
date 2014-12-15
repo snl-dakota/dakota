@@ -74,7 +74,9 @@ namespace {
 
 }
 
-//Cleanup_Helper cleanup_helper;
+// Automatically deletes generated test data files
+// Could make deletion optional to allow the files to remain if running with verbosity enabled
+Cleanup_Helper cleanup_helper;
 
 //----------------------------------------------------------------
 
@@ -91,20 +93,20 @@ TEUCHOS_UNIT_TEST(file_reader, basic_write)
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_config_data)
+TEUCHOS_UNIT_TEST(file_reader, read_sized_data)
 {
   const int DATA_PTS = 10;
   const int DATA_DIM = 3;
-  const std::string filename("test_config_data");
+  const std::string filename("test_sized_data");
   RealVectorArray field_data = create_test_array(DATA_PTS, DATA_DIM, true);
   create_field_data_file(filename, field_data);
 
   std::ifstream in_file;
-  TabularIO::open_file(in_file, filename, "unit test read_config_data");
+  TabularIO::open_file(in_file, filename, "unit test read_sized_data");
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_configuration_data(in_file, test_vec_array, DATA_PTS, DATA_DIM);
+  read_sized_data(in_file, test_vec_array, DATA_PTS, DATA_DIM);
   /////////////////  What we want to test
 
   // Verify contents of what we wrote and what we read
@@ -115,20 +117,20 @@ TEUCHOS_UNIT_TEST(file_reader, read_config_data)
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_functional_data)
+TEUCHOS_UNIT_TEST(file_reader, read_fixed_rowsize_data)
 {
   const int NUM_RESP = 7;
   const int RESP_DIM = 2;
-  const std::string filename("test_function_data");
+  const std::string filename("test_rowsized_data");
   RealVectorArray field_data = create_test_array(NUM_RESP, RESP_DIM, true);
   create_field_data_file(filename, field_data);
 
   std::ifstream in_file;
-  TabularIO::open_file(in_file, filename, "unit test test_function_data");
+  TabularIO::open_file(in_file, filename, "unit test test_rowsized_data");
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_functional_data(in_file, test_vec_array, RESP_DIM);
+  read_fixed_rowsize_data(in_file, test_vec_array, RESP_DIM);
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
@@ -142,20 +144,20 @@ TEUCHOS_UNIT_TEST(file_reader, read_functional_data)
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(file_reader, read_coordinate_data)
+TEUCHOS_UNIT_TEST(file_reader, read_unsized_data)
 {
   const int NUM_RESP = 9;
   const int RESP_DIM = 4;
-  const std::string filename("test_coordinate_data");
+  const std::string filename("test_unsized_data");
   RealVectorArray field_data = create_test_array(NUM_RESP, RESP_DIM, true);
   create_field_data_file(filename, field_data);
 
   std::ifstream in_file;
-  TabularIO::open_file(in_file, filename, "unit test test_coordinate_data");
+  TabularIO::open_file(in_file, filename, "unit test test_unsized_data");
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_coordinate_data(in_file, test_vec_array);
+  read_unsized_data(in_file, test_vec_array);
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
@@ -182,7 +184,7 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_scalar)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_coordinate_data(in_file, test_vec_array);
+  read_unsized_data(in_file, test_vec_array);
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows and cols (responses)
@@ -208,7 +210,7 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_row)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_coordinate_data(in_file, test_vec_array);
+  read_unsized_data(in_file, test_vec_array);
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows and cols (responses)
@@ -236,7 +238,7 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_vector_col)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_coordinate_data(in_file, test_vec_array);
+  read_unsized_data(in_file, test_vec_array);
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
@@ -263,7 +265,7 @@ TEUCHOS_UNIT_TEST(file_reader, read_sigma_matrix)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  read_coordinate_data(in_file, test_vec_array);
+  read_unsized_data(in_file, test_vec_array);
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
@@ -297,7 +299,7 @@ TEUCHOS_UNIT_TEST(file_reader, read_bad_data1)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  TEST_THROW(read_coordinate_data(in_file, test_vec_array), std::runtime_error);
+  TEST_THROW(read_unsized_data(in_file, test_vec_array), std::runtime_error);
   /////////////////  What we want to test
 }
 
