@@ -40,3 +40,14 @@ TEUCHOS_UNIT_TEST(expt_data_reader, read_config_vars)
 }
 
 //----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(expt_data_reader, read_bad_config_vars_size)
+{
+  const std::string base_name = "expt_data_test_files/voltage";
+
+  RealVectorArray config_data;
+  TEST_THROW( read_config_vars_multifile( base_name, NUM_EXPTS, NCV+1, config_data), std::runtime_error );
+  TEST_THROW( read_config_vars_singlefile(base_name, NUM_EXPTS, NCV+1, config_data), std::runtime_error );
+}
+
+//----------------------------------------------------------------

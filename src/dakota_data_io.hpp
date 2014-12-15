@@ -473,9 +473,12 @@ void read_data_tabular(std::istream& s,
 {
   // differs from read_data(std::istream& s) only in exception handling
   OrdinalType i, len = v.length();
+  s >> std::ws;
   for (i=0; i<len; ++i) {
-    if (s)
+    if (s && !s.eof()) {
       s >> v[i];
+      s >> std::ws;
+    }
     else {
       char err[80];
       std::sprintf(err,
