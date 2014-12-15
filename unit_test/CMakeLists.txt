@@ -33,6 +33,30 @@ target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
 #target_link_libraries(auto_unit_test boost_unit_test_framework) # need team buy-in
 add_test(auto_unit_test auto_unit_test)
 
-
 # TODO: MORE Unit test targets
+
+
+# RWH - Introducing another unit testing option which may or may not be embraced
+#       but serves as a demo
+remove_definitions("-DHAVE_CONFIG_H")
+
+check_include_file(unistd.h HAVE_UNISTD_H)
+if(HAVE_UNISTD_H)
+  add_definitions("-DHAVE_UNISTD_H")
+endif(HAVE_UNISTD_H)
+
+include_directories(
+  ${Teuchos_INCLUDE_DIRS}
+)
+
+option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" OFF)
+if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
+  set(dakota_sample_unit_tests
+    file_reader.cpp
+    data_conversions.cpp
+    )
+  add_executable(sample_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
+  target_link_libraries(sample_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
+  add_test(sample_unit_tests sample_unit_tests)
+endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
 
