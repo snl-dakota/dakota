@@ -161,6 +161,19 @@ read_field_values(const std::string& basename, int expt_num, RealVector& field_v
   field_vars = va[0];
 }
 
+//----------------------------------------------------------------
+
+void 
+read_coord_values(const std::string& basename, int expt_num, RealMatrix& coords){
+
+  std::ifstream s;
+  std::string filename = basename + "." + convert_to_string(expt_num) + ".coords";
+  TabularIO::open_file(s, filename, "read_coord_values");
+  RealVectorArray va;
+  read_unsized_data(s, va);
+  copy_data(va, coords);
+}
+
 
 // ----------------------------------------
 // Assignment/Copy functions for data types

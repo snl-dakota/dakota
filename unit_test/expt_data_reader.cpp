@@ -100,3 +100,20 @@ TEUCHOS_UNIT_TEST(expt_data_reader, read_field_values_vector)
 }
 
 //----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(expt_data_reader, read_coord_values)
+{
+  const std::string base_name = "expt_data_test_files/voltage";
+
+  RealMatrix coords;
+  read_coord_values(base_name, 2 /* expt number */, coords);
+
+  // Verify equality of field data
+  TEST_EQUALITY( coords.numCols(), VECTOR_FIELD_DIM );
+  TEST_EQUALITY( coords.numRows(), NUM_FIELD_VALUES );
+  for( int i=0; i<VECTOR_FIELD_DIM; ++i )
+    for( int j=0; j<NUM_FIELD_VALUES; ++j )
+      TEST_FLOATING_EQUALITY( coords[i][j], double(i)+double(j+1)*0.1, 1.e-14 );
+}
+
+//----------------------------------------------------------------

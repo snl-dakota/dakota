@@ -613,6 +613,11 @@ void read_field_values(const std::string& basename,
                        int expt_num,
                        RealVector& field_vars);
 
+/// file reader for coordinate data
+void read_coord_values(const std::string& basename,
+                       int expt_num,
+                       RealMatrix& coords);
+
 // -----------------------------
 // Copy functions for data types
 // -----------------------------
