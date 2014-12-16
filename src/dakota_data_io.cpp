@@ -53,19 +53,34 @@ read_sized_data(std::istream& s,
 void 
 read_fixed_rowsize_data(std::istream& s,
                         RealVectorArray& va,
-                        int num_rows)
+                        int num_cols,
+                        bool row_major)
 {
   if( !va.empty() )
     va.clear();
 
+  RealVectorArray working_va;
   RealVector v;
   s >> std::ws;
   while ( !s.eof() )
   {
-    v.sizeUninitialized(num_rows);
+    v.sizeUninitialized(num_cols);
     read_data_tabular(s, v);
-    va.push_back(v);
+    working_va.push_back(v);
     s >> std::ws;
+  }
+
+  if( row_major )
+    va = working_va;
+  else {
+    int num_rows = (int) working_va.size();
+    va.resize(num_cols);
+    for( int i=0; i<num_cols; ++i ) {
+      v.sizeUninitialized(num_rows);
+      for( int j=0; j<num_rows; ++j )
+        v[j] = working_va[j][i];
+      va[i] = v;
+    }
   }
 }
 
@@ -73,7 +88,8 @@ read_fixed_rowsize_data(std::istream& s,
 
 void 
 read_unsized_data(std::istream& s,
-                  RealVectorArray& va)
+                  RealVectorArray& va,
+                  bool row_major)
 {
   if( !va.empty() )
     va.clear();
@@ -90,7 +106,7 @@ read_unsized_data(std::istream& s,
 
   // Rewind input stream 
   s.seekg(0);
-  read_fixed_rowsize_data(s, va, num_tokens);
+  read_fixed_rowsize_data(s, va, num_tokens, row_major);
 }
 
 //----------------------------------------------------------------
@@ -121,6 +137,28 @@ read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv,
   std::string filename = basename + ".config";
   TabularIO::open_file(s, filename, "read_config_vars_singlefile");
   read_sized_data(s, config_vars, num_expts, ncv);
+}
+
+//----------------------------------------------------------------
+
+void 
+read_field_values(const std::string& basename, int expt_num, RealVectorArray& field_vars){
+
+  std::ifstream s;
+  std::string filename = basename + "." + convert_to_string(expt_num) + ".dat";
+  TabularIO::open_file(s, filename, "read_field_values");
+  bool row_major = false;
+  read_unsized_data(s, field_vars, row_major);
+}
+
+//----------------------------------------------------------------
+
+void 
+read_field_values(const std::string& basename, int expt_num, RealVector& field_vars){
+
+  RealVectorArray va;
+  read_field_values(basename, expt_num, va);
+  field_vars = va[0];
 }
 
 

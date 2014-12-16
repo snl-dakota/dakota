@@ -583,11 +583,13 @@ void read_sized_data(std::istream& s,
 /// istream extraction operator for response data of known dim and unknown length
 void read_fixed_rowsize_data(std::istream& s,
                              RealVectorArray& va,
-                             int num_responses);
+                             int num_responses,
+                             bool row_major = true);
 
 /// istream extraction operator for coordinate data of unknown dim and unknown length
 void read_unsized_data(std::istream& s,
-                       RealVectorArray& va);
+                       RealVectorArray& va,
+                       bool row_major = true);
 
 /// file reader for configuration data supplied via multiple files
 void read_config_vars_multifile(const std::string& basename,
@@ -600,6 +602,16 @@ void read_config_vars_singlefile(const std::string& basename,
                                  int num_expts,
                                  int ncv,
                                  RealVectorArray& config_vars);
+
+/// file reader for vector field (response) data
+void read_field_values(const std::string& basename,
+                       int expt_num,
+                       RealVectorArray& field_vars);
+
+/// file reader for scalar field (response) data
+void read_field_values(const std::string& basename,
+                       int expt_num,
+                       RealVector& field_vars);
 
 // -----------------------------
 // Copy functions for data types
