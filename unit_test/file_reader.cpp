@@ -101,6 +101,10 @@ TEUCHOS_UNIT_TEST(file_reader, read_sized_data)
   TabularIO::open_file(in_file, filename, "unit test read_sized_data");
 
   RealVectorArray test_vec_array;
+  // This tests the ability for the reader to handle formerly populated arrays
+  RealVector dummy_vec(DATA_PTS+5);
+  dummy_vec.random();
+  test_vec_array.push_back(dummy_vec);
   /////////////////  What we want to test
   read_sized_data(in_file, test_vec_array, DATA_PTS, DATA_DIM);
   /////////////////  What we want to test
@@ -125,6 +129,10 @@ TEUCHOS_UNIT_TEST(file_reader, read_fixed_rowsize_data)
   TabularIO::open_file(in_file, filename, "unit test test_rowsized_data");
 
   RealVectorArray test_vec_array;
+  // This tests the ability for the reader to handle formerly populated arrays
+  RealVector dummy_vec(NUM_RESP+5);
+  dummy_vec.random();
+  test_vec_array.push_back(dummy_vec);
   /////////////////  What we want to test
   read_fixed_rowsize_data(in_file, test_vec_array, RESP_DIM);
   /////////////////  What we want to test
@@ -152,6 +160,10 @@ TEUCHOS_UNIT_TEST(file_reader, read_unsized_data)
   TabularIO::open_file(in_file, filename, "unit test test_unsized_data");
 
   RealVectorArray test_vec_array;
+  // This tests the ability for the reader to handle formerly populated arrays
+  RealVector dummy_vec(NUM_RESP+5);
+  dummy_vec.random();
+  test_vec_array.push_back(dummy_vec);
   /////////////////  What we want to test
   read_unsized_data(in_file, test_vec_array);
   /////////////////  What we want to test
