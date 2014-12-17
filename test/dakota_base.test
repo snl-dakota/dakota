@@ -64972,6 +64972,56 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3
           x1 -8.51067e-01  9.74931e-01 -9.12444e-01
           x2 -8.41553e-01 -9.11376e-01  9.73051e-01
+Test Number 5 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 10 total (10 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797326e-01
+ response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
+ response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
+ response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
+ response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   3.0000000000e-01
+   2.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   7.0000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   5.0000000000e-01
+   2.0000000000e-01   7.0000000000e-01
+   6.0000000000e-01   9.0000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   6.0000000000e-01
+   2.0000000000e-01   6.0000000000e-01
+   6.0000000000e-01   9.0000000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2 -7.22482e-02  1.00000e+00 
+response_fn_1 -7.04965e-01 -6.27351e-01  1.00000e+00 
+response_fn_2  8.61628e-01 -5.31298e-01 -2.60486e-01  1.00000e+00 
+response_fn_3 -5.83075e-01  8.33989e-01 -1.23374e-01 -8.92771e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -9.65994e-01  9.74285e-01 -9.49997e-01 
+          x2 -9.58854e-01 -9.26578e-01  9.77252e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2 -6.66667e-02  1.00000e+00 
+response_fn_1 -6.60606e-01 -5.27273e-01  1.00000e+00 
+response_fn_2  8.18182e-01 -6.00000e-01 -2.36364e-01  1.00000e+00 
+response_fn_3 -6.24242e-01  7.93939e-01 -5.45455e-02 -9.27273e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -8.20657e-01  9.74896e-01 -9.41760e-01 
+          x2 -7.62704e-01 -9.50799e-01  9.65145e-01
 dakota_users_cantilever_opt_npsol.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)

@@ -5,9 +5,9 @@ environment
 
 method,
 	id_method = 'UQ'
-#       model_pointer = 'SURR'			#4
+#       model_pointer = 'SURR'			#4,#5
 	sampling,
-	  samples = 10				#0,#2,#3
+	  samples = 10				#0,#2,#3,#5
 #	  samples = 5				#1
 #         samples = 1000			#4
 	  seed = 98765 rng rnum2
@@ -18,26 +18,27 @@ method,
 #	  sample_type random			#2,#3
 	  distribution cumulative
 
-# model,                                         #4
-#        id_model = 'SURR'    			 #4
-#        surrogate global,			 #4
-#          dace_method_pointer = 'DACE'		 #4
-#          reuse_samples all			 #4
+# model,                                         #4,#5
+#        id_model = 'SURR'    			 #4,#5
+#        surrogate global,			 #4,#5
+#          dace_method_pointer = 'DACE'		 #4,#5
+#          reuse_samples all			 #4,#5
 ###       polynomial quadratic          	 #4
 ###       neural_network                	 #4
 ###       gaussian_process surfpack   		 #4
 #          mars                         	 #4 
+#          voronoi_surrogate                     #5
+          
+# method,                                        #4,#5
+#        id_method = 'DACE'			 #4,#5
+#        model_pointer = 'DACE_M'		 #4,#5
+#        sampling sample_type lhs		 #4,#5
+#        samples = 121 seed = 5034 rng rnum2	 #4,#5
 
-# method,                                        #4
-#        id_method = 'DACE'			 #4
-#        model_pointer = 'DACE_M'		 #4
-#        sampling sample_type lhs		 #4
-#        samples = 121 seed = 5034 rng rnum2	 #4
-
-#model,						#4
-#        id_model = 'DACE_M'			#4
-#        single					#4
-#          interface_pointer = 'I1'		#4
+#model,						#4,#5
+#        id_model = 'DACE_M'			#4,#5
+#        single					#4,#5
+#          interface_pointer = 'I1'		#4,#5
 
 variables,
 	uniform_uncertain = 2
