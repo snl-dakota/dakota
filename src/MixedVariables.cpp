@@ -341,7 +341,7 @@ void MixedVariables::read_tabular(std::istream& s, bool active_only)
 }
 
 
-  void MixedVariables::write_tabular(std::ostream& s, bool active_only) const
+void MixedVariables::write_tabular(std::ostream& s, bool active_only) const
 {
   // ASCII version for tabular file I/O
 

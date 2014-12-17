@@ -29,7 +29,8 @@ void ParamResponsePair::read_annotated(std::istream& s)
 {
   prpVariables.read_annotated(s);
   s >> evalInterfaceIds.second;
-  if (evalInterfaceIds.second == "EMPTY")
+  // (Dakota 6.1 used EMPTY for missing ID)
+  if (evalInterfaceIds.second == "NO_ID" || evalInterfaceIds.second == "EMPTY")
     evalInterfaceIds.second.clear();
   prpResponse.read_annotated(s);
   s >> evalInterfaceIds.first;
@@ -40,7 +41,7 @@ void ParamResponsePair::write_annotated(std::ostream& s) const
 {
   prpVariables.write_annotated(s);
   if (evalInterfaceIds.second.empty())
-    s << "EMPTY "; // read_annotated cannot detect an empty string
+    s << "NO_ID "; // read_annotated cannot detect an empty string
   else 
     s << evalInterfaceIds.second << ' ';
   prpResponse.write_annotated(s);

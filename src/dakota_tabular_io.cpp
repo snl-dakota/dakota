@@ -61,9 +61,9 @@ void write_header_tabular(std::ostream& tabular_ostream,
 			  const std::string& counter_label)
 {
   // headers use Matlab comment syntax
-  tabular_ostream << "%" << counter_label;
+  tabular_ostream << "%" << counter_label << ' ';
   if (TABULAR_IFACE_ID)
-    tabular_ostream << " interface ";
+    tabular_ostream << "interface ";
   vars.write_tabular_labels(tabular_ostream);
   response.write_tabular_labels(tabular_ostream);
 }
@@ -74,9 +74,10 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 {
   tabular_ostream << std::setw(8) << eval_id << ' ';
   if (TABULAR_IFACE_ID) {
-    // write the interface ID string, EMPTY for empty
+    // write the interface ID string, NO_ID for empty
+    // (Dakota 6.1 used EMPTY for missing ID)
     if (iface_id.empty())
-      tabular_ostream << std::setw(9) << "EMPTY";
+      tabular_ostream << std::setw(9) << "NO_ID" << ' ';
     else 
       tabular_ostream << std::setw(9) << iface_id << ' ';
   }
@@ -172,7 +173,8 @@ size_t read_leading_columns(std::istream& input_stream, bool annotated)
     if (TABULAR_IFACE_ID) {
       String iface_id;
       input_stream >> iface_id;
-      if (iface_id == "EMPTY")
+      // (Dakota 6.1 used EMPTY for missing ID)
+      if (iface_id == "NO_ID" || iface_id == "EMPTY")
 	iface_id.clear();
     }
   }
