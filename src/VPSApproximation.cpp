@@ -49,10 +49,14 @@ VPSApproximation* VPSApproximation::VPSinstance(NULL);
 VPSApproximation::
 VPSApproximation(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data)
+  Approximation(BaseConstructor(), problem_db, shared_data),
+  surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order"))
 {
+  Cout << "Surrogate order " << surrogateOrder << '\n';
 
 }
+
+
 
 
 int VPSApproximation::min_coefficients() const

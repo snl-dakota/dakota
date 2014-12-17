@@ -146,7 +146,8 @@ private:
   RealMatrix trainValues;
   /// The number of observations on which the GP surface is built.
   size_t numObs;
-    
+  /// The order of the polynomial in each Voronoi cell
+  int surrogateOrder;  
     
     // variables for Random number generator
     double Q[1220];
