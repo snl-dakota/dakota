@@ -70,7 +70,9 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
     _use_local_L = true;       // true = Local Lipschitz , false = Global Lipschitz (less sampling time - less accuracy)
   else if (lipschitzType == "global") 
     _use_local_L = false;       // true = Local Lipschitz , false = Global Lipschitz (less sampling time - less accuracy
-  _eval_error = false;
+  
+    _eval_error = true;
+    
   if (emulatorOrder==0)
     emulatorOrder = 4;             // order of vps surrogate if used
   if (emulatorSamples==0)
@@ -81,9 +83,11 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
     initialize_surrogates(); // initialize one GP surrogate per function
     _use_vor_surrogate = false; // true = use VPS , false = use GP
   }
-  else {
-    _use_vor_surrogate = true; // true = use VPS , false = use GP
-    _vps_order = emulatorOrder;             // order of vps surrogate if used
+  else
+  {
+      initialize_surrogates();
+      _use_vor_surrogate = true; // true = use VPS , false = use GP
+      _vps_order = emulatorOrder;             // order of vps surrogate if used
   }
   /// /*if (!_use_vor_surrogate)*/ initialize_surrogates(); // initialize one GP surrogate per function
 }
@@ -103,6 +107,14 @@ void NonDPOFDarts::quantify_uncertainty()
     std::cout<< "seed = " << seed << std::endl;
     
     initiate_random_number_generator(seed);
+    
+    /* testing in-house rng
+    for (size_t i = 0; i < 20; i++)
+    {
+        std::cout<< "Random number " << i << " = " << generate_a_random_number()<<std::endl;
+    }
+    */
+    
     
     init_pof_darts(); // prepare global variables and containers
     
@@ -341,12 +353,7 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         
         std::cout <<  "pof:: Building Surrogates ..." << std::endl;
-        if (_use_vor_surrogate)
-        {
-            VPS_execute();
-            estimate_pof_VPS();
-        }
-        else estimate_pof_surrogate();
+        estimate_pof_surrogate();
         
         if (_n_dim == 2 && false)
         {
@@ -657,7 +664,7 @@ void NonDPOFDarts::quantify_uncertainty()
         iteratedModel.continuous_variables(newX);
         iteratedModel.compute_response();
         
-        if (!_use_vor_surrogate) add_surrogate_data(iteratedModel.current_variables(), iteratedModel.current_response());
+        add_surrogate_data(iteratedModel.current_variables(), iteratedModel.current_response());
         
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
@@ -941,7 +948,12 @@ void NonDPOFDarts::quantify_uncertainty()
     {
         // create the data to configure the surrogate
         // String approx_type("global_gaussian");  // Dakota GP
-        String approx_type("global_kriging");  // Surfpack GP
+        String approx_type;
+        
+        if (_use_vor_surrogate)   approx_type = "global_voronoi_surrogate";  // VPS
+        else                      approx_type = "global_kriging";  // Surfpack GP
+        
+        
         UShortArray approx_order;
         short data_order = 1;  // assume only function values
         short output_level = QUIET_OUTPUT;
@@ -954,6 +966,7 @@ void NonDPOFDarts::quantify_uncertainty()
         // setup a variables object for evaluating the model
         gpEvalVars = iteratedModel.current_variables().copy();
     }
+
     
     void NonDPOFDarts::add_surrogate_data(const Variables& vars, const Response& resp)
     {
@@ -973,42 +986,6 @@ void NonDPOFDarts::quantify_uncertainty()
     
     Real NonDPOFDarts::eval_surrogate(size_t function_index, double* x)
     {
-        if (_use_vor_surrogate)
-        {
-            size_t iclosest = _num_inserted_points;
-            double dmin = DBL_MAX;
-            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-            {
-                double dd = 0.0;
-                for (size_t idim = 0; idim < _n_dim; idim++)
-                {
-                    double dx = x[idim] - _sample_points[ipoint][idim];
-                    dd += dx * dx;
-                }
-                if (dd < dmin)
-                {
-                    dmin = dd;
-                    iclosest = ipoint;
-                }
-            }
-            
-            // shift origin and scale
-            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] - _sample_points[iclosest][idim]) / _vps_dfar[iclosest];
-            
-            double f_VPS = _fval[function_index][iclosest];
-            for (size_t i = 0; i < _vps_num_poly_terms; i++)
-            {
-                double ci = _vps_c[iclosest][function_index][i];
-                double yi = vec_pow_vec(_n_dim, x, _vps_t[i]);
-                f_VPS += ci * yi;
-            }
-            
-            // shift origin and scale back to origin
-            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] * _vps_dfar[iclosest]) + _sample_points[iclosest][idim];
-            
-            return f_VPS;
-        }
-        
         // this copy could be moved outside the loop for memory efficiency
         for (size_t vi = 0; vi < numContinuousVars; ++vi)
             gpEvalVars.continuous_variable(x[vi], vi);
@@ -1065,6 +1042,8 @@ void NonDPOFDarts::quantify_uncertainty()
             {
                 // evaluate sample point using surrogate
                 double surrogate_value = eval_surrogate(resp_fn_count, tmp_pnt);
+                
+                
 
                 size_t num_levels = requestedRespLevels[resp_fn_count].length();
                 for (size_t level_count = 0; level_count < num_levels; level_count++)
@@ -1076,7 +1055,7 @@ void NonDPOFDarts::quantify_uncertainty()
                         num_fMC_samples[resp_fn_count][level_count] += 1.0;
                     }
                     
-                    if (_eval_error && f_exact <  _failure_threshold) pof_exact+=1.0;
+                    if (_eval_error && f_exact <  _failure_threshold) pof_exact += 1.0;
                 }
             }
             isample+=1.0;
@@ -1090,7 +1069,7 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             std::cout.precision(15);
             std::cout <<  "pof::    exact pof " << std::fixed << fabs(pof_exact)/ num_MC_samples << std::endl;
-            std::cout <<  "pof::    Surrogate error " << std::fixed << fabs((num_fMC_samples[0][0] - pof_exact) / num_MC_samples) << " seconds." << std::endl;
+            std::cout <<  "pof::    Surrogate error " << std::fixed << fabs((num_fMC_samples[0][0] - pof_exact) / num_MC_samples) << std::endl;
         }
         
         
@@ -1164,700 +1143,6 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         return false;
     }
-    
-    //////////////////////////////////////////////////////////////
-    // VPS METHODS
-    //////////////////////////////////////////////////////////////
-    
-    bool NonDPOFDarts::VPS_execute()
-    {
-        clock_t start_time, end_time; double cpu_time, total_time(0.0);
-        
-        start_time = clock();
-        
-        _num_GMRES = 0;
-        
-        _vps_dfar = new double[_num_inserted_points];
-        _vps_ext_neighbors = new size_t*[_num_inserted_points];
-        
-        // retrive powers of the polynomial expansion
-        retrieve_permutations(_vps_num_poly_terms, _vps_t, _n_dim, _vps_order, false, true, _vps_order);
-        
-        // update neighbors
-        for (size_t isample = 0; isample < _num_inserted_points; isample++)
-        {
-            retrieve_neighbors(isample, false);
-        }
-        
-        // initiate extended neighbors with seed neighbors
-        _vps_ext_neighbors = new size_t*[_num_inserted_points];
-        for (size_t isample = 0; isample < _num_inserted_points; isample++)
-        {
-            size_t num_neighbors = 0;
-            if (_sample_neighbors[isample] != 0) num_neighbors = _sample_neighbors[isample][0];
-            _vps_ext_neighbors[isample] = new size_t[num_neighbors + 1];
-            _vps_ext_neighbors[isample][0] = num_neighbors;
-            for (size_t ineighbor = 1; ineighbor <= num_neighbors; ineighbor++)
-            {
-                _vps_ext_neighbors[isample][ineighbor] = _sample_neighbors[isample][ineighbor];
-            }
-        }
-        
-        // extend neighbors for all points to match the desired max power per cell
-        VPS_adjust_extend_neighbors_of_all_points();
-        
-        VPS_retrieve_poly_coefficients_for_all_points();
-        
-        end_time = clock();
-        cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
-        
-        std::cout << "pof::    Number of polynomial coeffcients = " << std::fixed << _vps_num_poly_terms << std::endl;
-        std::cout << "pof::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
-        std::cout << "pof::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
-        
-        return true;
-    }
-    
-    void NonDPOFDarts::VPS_adjust_extend_neighbors_of_all_points()
-    {
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-        {
-            while (_vps_ext_neighbors[ipoint][0] < 2 * _vps_num_poly_terms && _vps_ext_neighbors[ipoint][0] < _num_inserted_points - 1)
-            {
-                VPS_extend_neighbors(ipoint);
-            }
-        }
-        
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-        {
-            _vps_dfar[ipoint] = 0.0;
-            for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++)
-            {
-                size_t neighbor = _vps_ext_neighbors[ipoint][i];
-                double dst = 0.0;
-                for (size_t idim = 0; idim < _n_dim; idim++)
-                {
-                    double dx = _sample_points[ipoint][idim] - _sample_points[neighbor][idim];
-                    dst += dx * dx;				
-                }
-                dst = sqrt(dst);
-                if (dst > _vps_dfar[ipoint]) _vps_dfar[ipoint] = dst;
-            }
-        }
-    }
-    
-    void NonDPOFDarts::VPS_extend_neighbors(size_t ipoint)
-    {
-        // initiate tmp_neighbors with old extended neighbors
-        size_t num_ext_neigbors = _vps_ext_neighbors[ipoint][0];
-        size_t* tmp_neighbors = new size_t[_num_inserted_points];
-        for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++) tmp_neighbors[i - 1] = _vps_ext_neighbors[ipoint][i];
-        
-        for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++)
-        {
-            size_t neighbor = _vps_ext_neighbors[ipoint][i];
-            for (size_t j = 1; j <= _sample_neighbors[neighbor][0]; j++) // extend neighbors of ipoint using direct neighbors of neighbor
-            {
-                size_t ext_neighbor = _sample_neighbors[neighbor][j];
-                if (ext_neighbor == ipoint) continue;
-                bool new_neighbor = true;
-                for (size_t k= 0; k < num_ext_neigbors; k++)
-                {
-                    if (ext_neighbor == tmp_neighbors[k])
-                    {
-                        new_neighbor = false;
-                        break;
-                    }
-                }
-                if (new_neighbor)
-                {
-                    tmp_neighbors[num_ext_neigbors] = ext_neighbor;
-                    num_ext_neigbors++;
-                }
-            }
-        }
-        
-        if (_vps_ext_neighbors[ipoint] != 0) delete[] _vps_ext_neighbors[ipoint];
-        _vps_ext_neighbors[ipoint] = new size_t[num_ext_neigbors + 1];
-        _vps_ext_neighbors[ipoint][0] = num_ext_neigbors;
-        for (size_t i = 0; i < num_ext_neigbors; i++)
-        {
-            _vps_ext_neighbors[ipoint][i + 1] = tmp_neighbors[i];
-        }	
-        delete[] tmp_neighbors;
-    }
-
-    void NonDPOFDarts::VPS_retrieve_poly_coefficients_for_all_points()
-    {
-        _vps_c = new double**[_num_inserted_points];
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-        {
-            _vps_c[ipoint] = new double*[numFunctions];
-            for (size_t ifunction = 0; ifunction < numFunctions; ifunction++)
-            {
-                _vps_c[ipoint][ifunction] = new double[_vps_num_poly_terms];
-                VPS_retrieve_poly_coefficients(ipoint, ifunction);
-            }
-        }
-    }
-    
-    void NonDPOFDarts::VPS_retrieve_poly_coefficients(size_t ipoint, size_t function_index)
-    {
-        double** A = new double*[_vps_num_poly_terms];
-        double** LD = new double*[_vps_num_poly_terms];
-        double* b = new double[_vps_num_poly_terms];
-        
-        double* x_neighbor = new double[_n_dim];
-        
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
-        {
-            A[q] = new double[_vps_num_poly_terms];
-            LD[q] = new double[_vps_num_poly_terms];
-        }
-        
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
-        {
-            b[q] = 0.0;
-            for (size_t i = 0; i < _vps_num_poly_terms; i++)
-            {
-                A[q][i] = 0.0;
-                LD[q][i] = 0.0;
-            }
-        }
-        
-        for (size_t j = 1; j <= _vps_ext_neighbors[ipoint][0]; j++) // loop over neighbors
-        {
-            size_t neighbor = _vps_ext_neighbors[ipoint][j];
-            // shift origin
-            for (size_t idim = 0; idim < _n_dim; idim++) x_neighbor[idim] = (_sample_points[neighbor][idim] - _sample_points[ipoint][idim]) / _vps_dfar[ipoint];
-            
-            for (size_t q = 0; q < _vps_num_poly_terms; q++)
-            {
-                double yq = vec_pow_vec(_n_dim, x_neighbor, _vps_t[q]);
-                b[q]+= (_fval[function_index][neighbor] - _fval[function_index][ipoint]) * yq;
-                for (size_t i = 0; i < _vps_num_poly_terms; i++)
-                {
-                    double yi = vec_pow_vec(_n_dim, x_neighbor, _vps_t[i]);
-                    A[q][i] += yi * yq;
-                }
-            }
-        }
-        
-        if (Cholesky(_vps_num_poly_terms, A, LD))
-            Cholesky_solver(_vps_num_poly_terms, LD, b, _vps_c[ipoint][function_index]);
-        else
-        {
-            GMRES(_vps_num_poly_terms, A, b, _vps_c[ipoint][function_index], 1E-6);
-            _num_GMRES++;
-        }
-        
-        for (size_t q = 0; q < _vps_num_poly_terms; q++) 
-        {
-            delete[] A[q];
-            delete[] LD[q];
-        }
-        
-        delete[] A;
-        delete[] LD;
-        delete[] b;
-        delete[] x_neighbor;
-    }
-    
-    void NonDPOFDarts::estimate_pof_VPS()
-    {
-        clock_t start_time, end_time; double cpu_time, total_time(0.0);
-        
-        start_time = clock();
-        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
-        {
-            size_t num_levels = requestedRespLevels[resp_fn_count].length();
-            for (size_t level_count = 0; level_count < num_levels; level_count++)
-            {
-                computedProbLevels[resp_fn_count][level_count] = 0.0;
-            }
-        }
-        
-        // error report
-        double pof_exact = 0.0;
-    
-        double i_dart = 0.0;
-        double num_MC_samples(emulatorSamples);
-        double* dart = new double[_n_dim];
-        double err = 0.0;
-        while (i_dart < num_MC_samples)
-        {
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                dart[idim] = _xmin[idim] + generate_a_random_number() * (_xmax[idim] - _xmin[idim]);
-            }
-            for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
-            {
-                double f_VPS = eval_surrogate(resp_fn_count, dart);
-                
-                double f_exact = 0.0;
-                
-                if (_eval_error) f_exact = f_true(dart);
-                
-                size_t num_levels = requestedRespLevels[resp_fn_count].length();
-                for (size_t level_count = 0; level_count < num_levels; level_count++)
-                {
-                    _failure_threshold = requestedRespLevels[resp_fn_count][level_count];
-                    
-                    if (f_VPS < _failure_threshold)
-                    {
-                        computedProbLevels[resp_fn_count][level_count] += 1.0;
-                    }
-                    
-                    // error report
-                    if (_eval_error && f_exact < _failure_threshold)
-                    {
-                        pof_exact += 1.0;
-                    }
-                }
-            }
-            i_dart++;
-        }
-    
-        double sf = 1.0 / num_MC_samples;
-        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
-        {
-            size_t num_levels = requestedRespLevels[resp_fn_count].length();
-            for (size_t level_count = 0; level_count < num_levels; level_count++)
-            {
-                computedProbLevels[resp_fn_count][level_count] *= sf;
-            }
-        }
-        
-        if(_eval_error) pof_exact *= sf;
-        
-        
-        end_time = clock();
-        cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
-        
-        std::cout <<  "pof::    VPS Surrogate evaluated in " << std::fixed << cpu_time << " seconds." << std::endl;
-        
-        // error report
-        if (_eval_error)
-        {
-            std::cout.precision(15);
-            std::cout <<  "pof::    exact pof " << std::fixed << fabs(pof_exact) << std::endl;
-            std::cout <<  "pof::    VPS error " << std::fixed << fabs(computedProbLevels[0][0] - pof_exact) << std::endl;
-        }
-        
-        delete[] dart;
-    }
-
-    void NonDPOFDarts::VPS_destroy_global_containers()
-    {        
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-        {
-            delete[] _vps_ext_neighbors[ipoint];
-            for (size_t ifunc = 0; ifunc < numFunctions; ifunc++)
-            {
-                delete[] _vps_c[ipoint][ifunc];
-            }
-            delete[] _vps_c[ipoint];
-        }
-        delete[] _vps_dfar;
-        delete[] _vps_c;
-        delete[] _vps_ext_neighbors;
-        
-        for (size_t i = 0; i < _vps_num_poly_terms; i++)
-        {
-            delete[] _vps_t[i];
-        }
-        delete[] _vps_t;
-        
-    }
-    
-    void NonDPOFDarts::retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint)
-    {        
-        size_t* t = new size_t[num_dim];
-        for (size_t idim = 0; idim < num_dim; idim++) t[idim] = 0;
-        
-        // count output
-        m = 0;
-        bool origin(true);
-        size_t k_dim(num_dim - 1);
-        while (true)
-        {
-            while (t[k_dim] <= upper_bound)
-            {
-                bool valid(true);
-                
-                if (!include_origin && origin)
-                {
-                    valid = false; origin = false;
-                }
-                if (force_sum_constraint)
-                {
-                    size_t s_const(0);
-                    for (size_t idim = 0; idim < num_dim; idim++) s_const += t[idim];
-                    
-                    if (s_const > upper_bound)
-                    {
-                        valid = false; origin = false;
-                    }
-                }
-                if (valid) m++;
-                
-                t[k_dim]++; // move to the next enumeration
-            }
-            
-            
-            size_t kk_dim(k_dim - 1);
-            
-            bool done(false);
-            while (true)
-            {
-                t[kk_dim]++;
-                if (t[kk_dim] > upper_bound)
-                {
-                    t[kk_dim] = 0;
-                    if (kk_dim == 0)
-                    {
-                        done = true;
-                        break;
-                    }
-                    kk_dim--;
-                }
-                else break;
-            }
-            if (done) break;
-            t[k_dim] = 0;
-        }
-        
-        // std::cout<< "Numer of permutations = " << m << std::endl;
-        
-        perm = new size_t*[m];
-        for (size_t i = 0; i < m; i++)
-        {
-            perm[i] = new size_t[num_dim];
-            for (size_t idim = 0; idim < num_dim; idim++) perm[i][idim] = 0;
-        }
-        
-        // Taxi Counter to evaluate the surrogate
-        origin = true;
-        for (size_t idim = 0; idim < num_dim; idim++) t[idim] = 0;
-        k_dim = num_dim - 1;
-        m = 0; // index of alpha
-        
-        while (true)
-        {
-            while (t[k_dim] <= upper_bound)
-            {
-                bool valid(true);
-                
-                if (!include_origin && origin)
-                {
-                    valid = false; origin = false;
-                }
-                if (force_sum_constraint)
-                {
-                    size_t s_const(0);
-                    for (size_t idim = 0; idim < num_dim; idim++) s_const += t[idim];
-                    
-                    if (s_const > upper_bound)
-                    {
-                        valid = false; origin = false;				
-                    }
-                }
-                if (valid) 
-                {
-                    // store t in t_alpha of counter
-                    for (size_t idim = 0; idim < num_dim; idim++) perm[m][idim] = t[idim];
-                    
-                    //for (size_t idim = 0; idim < num_dim; idim++) std::cout << perm[m][idim] << " ";
-                    //std::cout << std::endl;
-                    
-                    m++;
-                }
-                
-                t[k_dim]++; // move to the next enumeration
-            }
-            
-            
-            size_t kk_dim(k_dim - 1);
-            
-            bool done(false);
-            while (true)
-            {
-                t[kk_dim]++;
-                if (t[kk_dim] > upper_bound)
-                {
-                    t[kk_dim] = 0;
-                    if (kk_dim == 0)
-                    {
-                        done = true;
-                        break;
-                    }
-                    kk_dim--;
-                }
-                else break;
-            }
-            if (done) break;
-            t[k_dim] = 0;
-        }
-        
-        delete[] t;
-    }
-
-    double NonDPOFDarts::vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b)
-    {
-        double ans = 1.0;
-        for (size_t idim = 0; idim < num_dim; idim++)
-        {
-            ans *= pow(vec_a[idim], (int) vec_b[idim]);
-        }
-        return ans;
-    }
-
-    bool NonDPOFDarts::Cholesky(int n, double** A, double** LD)
-    {
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j <= i; j++)
-            {
-                double sum = 0.0;
-                for (int k = 0; k < j; k++) sum += LD[i][k] * LD[j][k];
-                
-                if (i == j)
-                {
-                    if (A[i][i] < sum + 1E-8)
-                    {
-                        return false;
-                    }
-                    LD[i][j] = sqrt(A[i][i] - sum);
-                }
-                else        LD[i][j] = 1.0 / LD[j][j] * (A[i][j] - sum);
-                
-                LD[j][i] = LD[i][j];
-            }		
-        }
-        return true;
-    }
-    
-    void NonDPOFDarts::Cholesky_solver(int n, double** LD, double* b, double* x)
-    {
-        double* y = new double[n];
-        for(int i = 0; i < n; i++)
-        {
-            double sum = 0.;
-            for(int k = 0; k < i; k++) sum+= LD[i][k] * y[k];
-            y[i] = (b[i] - sum) / LD[i][i];
-        }
-        for(int i = n - 1; i >= 0; i--)
-        {
-            double sum = 0.;
-            for(int k = i + 1; k < n; ++k) sum += LD[i][k] * x[k];
-            x[i] = (y[i] - sum) / LD[i][i];
-        }
-        delete[] y;
-    }
-    
-    void NonDPOFDarts::GMRES(size_t n, double** A, double* b, double* x, double eps)
-    {        
-        size_t im = 0;
-        
-        for (size_t i = 0; i < n; i++) x[i] = 0.0;
-        
-        double* r = new double[n];
-        
-        double* rr = new double[n + 1];
-        double* bh = new double[n + 1];
-        double* c = new double[n + 1];
-        double* s = new double[n + 1];
-        
-        double* w = new double[n];
-        
-        double** v = new double*[n + 1];
-        for (size_t i = 0; i < n + 1; i++) v[i] = new double[n];
-        double** HT = new double*[n];
-        double** RT = new double*[n];
-        double** QT = new double*[n];
-        for (im = 0; im < n; im++)
-        {
-            HT[im] = new double[im + 2];
-            RT[im] = new double[im + 1];
-            QT[im] = new double[im + 2];
-        }
-        
-        double ro = 0.0;
-        double rNorm = 0.0;
-        
-        // Calculating residual:
-        double beta = 0.0;
-        for (size_t i = 0; i < n; i++)
-        {
-            r[i] = b[i];
-            beta += r[i] * r[i];
-        }
-        beta = sqrt(beta);
-        
-        rNorm = beta;
-        ro = beta;
-        
-        for (size_t i = 0; i < n + 1; i++)
-        {
-            rr[i] = 0.0;
-            bh[i] = 0.0;
-            c[i] = 0.0;
-            s[i] = 0.0;
-        }
-        rr[0] = 1.0;
-        bh[0] = beta;
-        
-        // Calculating vo:
-        v[0] = new double[n];
-        for (size_t i = 0; i < n; i++)
-        {
-            v[0][i] = r[i] / beta;
-        }
-        
-        for (im = 0; im < n; im++)
-        {
-            // Calculating w = A v_i :
-            
-            double wNorm = 0.0;
-            for (size_t i = 0; i < n; i++)
-            {
-                w[i] = 0.0;
-                for (size_t j = 0; j < n; j++)
-                {
-                    w[i] += A[i][j] * v[im][j];
-                }
-            }
-            
-            // Updating HT:
-            for (size_t ik = 0; ik <= im; ik++)
-            {
-                HT[im][ik] = 0.0;
-                for (size_t j = 0; j < n; j++)
-                {
-                    HT[im][ik] += v[ik][j] * w[j];
-                }
-                for (size_t j = 0; j < n; j++)
-                {
-                    w[j] -= HT[im][ik] * v[ik][j];
-                }
-            }
-            
-            wNorm = 0.0;
-            for (size_t i = 0; i < n; i++)
-            {
-                wNorm += w[i] * w[i];
-            }
-            wNorm = sqrt(wNorm);
-            HT[im][im + 1] = wNorm;
-            
-            for (size_t i = 0; i < n; i++)
-            {
-                v[im + 1][i] = w[i] / wNorm;
-            }
-            
-            // Updating RT:
-            RT[im][0] = HT[im][0];
-            for (size_t ik = 1; ik <= im; ik++)
-            {
-                double gamma = c[ik - 1] * RT[im][ik - 1] + s[ik - 1] * HT[im][ik];
-                RT[im][ik] = -s[ik - 1] * RT[im][ik - 1] + c[ik - 1] * HT[im][ik];
-                RT[im][ik - 1] = gamma;
-            }
-            
-            double delta = sqrt(pow(RT[im][im], 2) + pow(HT[im][im + 1], 2));
-            c[im] = RT[im][im] / delta;
-            s[im] = HT[im][im + 1] / delta;
-            RT[im][im] = c[im] * RT[im][im] + s[im] * HT[im][im + 1];
-            
-            
-            // Updating QT:
-            QT[im][im + 1] = HT[im][im + 1] / RT[im][im];
-            size_t ik = im;
-            while (true)
-            {
-                double sum = 0.0;
-                for (size_t j = 0; j < im; j++)
-                {
-                    if (ik >= j + 2)
-                        continue;
-                    
-                    sum += QT[j][ik] * RT[im][j];
-                }
-                QT[im][ik] = (HT[im][ik] - sum) / RT[im][im];
-                if (ik == 0) break;
-                ik--;
-            }
-            
-            // Calculating new Norm:
-            rNorm = 0.0;
-            for (size_t i = 0; i < im + 2; i++)
-            {
-                rr[i] -= QT[im][0] * QT[im][i];
-                rNorm += rr[i] * rr[i];
-            }
-            rNorm = sqrt(rNorm);
-            
-            if (rNorm < eps * ro && rNorm < eps)
-                break;
-        }
-        
-        // Calculating y and x :
-        if (im == n) im--;
-        
-        double* yy = new double[im + 1];
-        for (size_t j = 0; j < im + 1; j++) yy[j] = beta * QT[j][0];
-        
-        
-        size_t nn = im + 1;
-        double* y = new double[nn];                
-        y[nn - 1] = yy[nn - 1] / RT[nn - 1][nn - 1];
-        
-        size_t i = nn - 2;
-        while (true)       
-        {
-            double ss = yy[i];
-            for (size_t j = i + 1; j < nn; j++)
-            {
-                ss -= RT[j][i] * y[j];
-            }
-            y[i] = ss / RT[i][i];                
-            if (i == 0) break;
-            i--;
-        }
-        for (size_t i = 0; i < n; i++)
-        {
-            for (size_t j = 0; j < nn; j++)
-            {
-                x[i] += v[j][i] * y[j];
-            }
-        } 
-        
-        delete[] yy;
-        delete[] y;
-        
-        delete[] r;	
-        delete[] rr;
-        delete[] bh;
-        delete[] c;
-        delete[] s;
-        
-        delete[] w;
-        
-        for (size_t im = 0; im < n + 1; im++) delete[] v[im];
-        delete[] v;
-        
-        for (size_t im = 0; im < n; im++)
-        {
-            delete[] HT[im];
-            delete[] RT[im];
-            delete[] QT[im];
-        }
-        delete[] HT;
-        delete[] RT;
-        delete[] QT;
-    }
-    
-    
     
     ////////////////////////////////////////////////////////////////
     // OUTPUT METHODS

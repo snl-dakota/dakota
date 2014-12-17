@@ -19,6 +19,8 @@
 #include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
 #include "DakotaApproximation.hpp"
+#include "VPSApproximation.hpp"
+
 
 
 namespace Dakota {
@@ -120,26 +122,6 @@ protected:
                                     double* qH, double* nH);                      // a point on the hyperplane and it normal
     
     
-    
-    //////////////////////////////////////////////////////////////
-    // VPS METHODS
-    //////////////////////////////////////////////////////////////
-    bool VPS_execute( );
-
-    void VPS_adjust_extend_neighbors_of_all_points();
-    void VPS_extend_neighbors(size_t ipoint);
-    void VPS_retrieve_poly_coefficients_for_all_points();
-    void VPS_retrieve_poly_coefficients(size_t ipoint, size_t function_index);
-    void estimate_pof_VPS();
-    void VPS_destroy_global_containers();
-    
-    void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint);
-    double vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b);
-    bool Cholesky(int n, double** A, double** LD);
-    void Cholesky_solver(int n, double** LD, double* b, double* x);
-    void GMRES(size_t n, double** A, double* b, double* x, double eps);
-    
-    
     ////////////////////////////////////////////////////////////////
     // OUTPUT METHODS
     ////////////////////////////////////////////////////////////////
@@ -230,16 +212,10 @@ protected:
     std::vector<Approximation> gpApproximations;
     Variables gpEvalVars;
     
-    
     bool _use_vor_surrogate;
     bool _use_local_L;
     
-    // variables for VPS
-    size_t _vps_order, _vps_num_poly_terms, _num_GMRES;
-    double* _vps_dfar; // furthest distance between a seed and its extended neighbors
-    size_t**  _vps_t;  // powers of the polynomial expansion
-    double*** _vps_c;  // polynomial coeffcients per point function
-    size_t** _vps_ext_neighbors;
+    size_t _vps_order;
 
 };
 

@@ -55,6 +55,38 @@ public:
   /// destructor
   ~VPSApproximation();
 
+
+    //////////////////////////////////////////////////////////////
+    // VPS METHODS
+    //////////////////////////////////////////////////////////////
+    bool VPS_execute();
+    double evaluate_surrogate(double* x);
+
+    
+    void retrieve_neighbors(size_t ipoint, bool update_point_neighbors);
+    void VPS_adjust_extend_neighbors_of_all_points();
+    void VPS_extend_neighbors(size_t ipoint);
+    void VPS_retrieve_poly_coefficients_for_all_points();
+    void VPS_retrieve_poly_coefficients(size_t ipoint);
+    void VPS_destroy_global_containers();
+    
+    void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint);
+    
+    
+    void initiate_random_number_generator(unsigned long x);
+    double generate_a_random_number();
+    
+    
+    bool trim_line_using_Hyperplane(size_t num_dim,                               // number of dimensions
+                                    double* st, double *end,                      // line segmenet end points
+                                    double* qH, double* nH);                      // a point on the hyperplane and it normal
+    
+    double vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b);
+    bool Cholesky(int n, double** A, double** LD);
+    void Cholesky_solver(int n, double** LD, double* b, double* x);
+    void GMRES(size_t n, double** A, double* b, double* x, double eps);
+
+    
 protected:
 
   //
@@ -114,7 +146,38 @@ private:
   RealMatrix trainValues;
   /// The number of observations on which the GP surface is built.
   size_t numObs;
- 
+    
+    
+    // variables for Random number generator
+    double Q[1220];
+    int indx;
+    double cc;
+    double c; /* current CSWB */
+    double zc;	/* current SWB `borrow` */
+    double zx;	/* SWB seed1 */
+    double zy;	/* SWB seed2 */
+    size_t qlen;/* length of Q array */
+    
+    size_t _n_dim; // dimension of the problem
+    double* _xmin; // lower left corner of the domain
+    double* _xmax; // Upper right corner of the domain
+    double  _diag; // diagonal of the domain
+    
+    // variables for VPS
+    size_t _num_inserted_points, _total_budget;
+    double** _sample_points; // store radius as a last coordinate
+    size_t** _sample_neighbors;
+    double* _fval;
+    
+    size_t _vps_order, _vps_num_poly_terms, _num_GMRES;
+    double* _vps_dfar; // furthest distance between a seed and its extended neighbors
+    size_t**  _vps_t;  // powers of the polynomial expansion
+    double** _vps_c;  // polynomial coeffcients per point function
+    
+    size_t** _vps_ext_neighbors;
+    
+    double*  _sample_vsize;
+    double   _max_vsize; // size of biggest Voronoi cell
 
 };
 
