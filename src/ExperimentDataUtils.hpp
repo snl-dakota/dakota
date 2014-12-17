@@ -85,6 +85,11 @@ private:
 
 public:
 
+  /// Specification for covariance type
+  enum FORMAT   {  CONSTANT,
+                   VECTOR,
+                   MATRIX };
+
   /// Default Constructor
   CovarianceMatrix();
 

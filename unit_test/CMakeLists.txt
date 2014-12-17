@@ -52,6 +52,7 @@ include_directories(
 option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" OFF)
 if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   set(dakota_sample_unit_tests
+    covariance_reader.cpp
     expt_data_reader.cpp
     file_reader.cpp
     data_conversions.cpp

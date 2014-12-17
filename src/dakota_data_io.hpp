@@ -12,6 +12,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr, write_precision
 #include "dakota_data_types.hpp"
+#include "ExperimentDataUtils.hpp"
 #include "MPIPackBuffer.hpp"
 #include <boost/foreach.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -618,6 +619,18 @@ void read_coord_values(const std::string& basename,
                        int expt_num,
                        RealMatrix& coords);
 
+/// file reader for CONSTANT covariance data
+void read_covariance(const std::string& basename,
+                     int expt_num,
+                     RealMatrix& cov_vals);
+
+/// file reader for VECTOR and MATRIX covariance data
+void read_covariance(const std::string& basename,
+                     int expt_num,
+                     Dakota::CovarianceMatrix::FORMAT,
+                     int num_vals,
+                     RealMatrix& cov_vals);
+//
 // -----------------------------
 // Copy functions for data types
 // -----------------------------

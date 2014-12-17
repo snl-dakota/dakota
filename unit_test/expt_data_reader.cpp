@@ -6,10 +6,6 @@
 
 #include <Teuchos_UnitTestHarness.hpp> 
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-namespace bfs = boost::filesystem;
-
 using namespace Dakota;
 
 namespace {
@@ -108,7 +104,7 @@ TEUCHOS_UNIT_TEST(expt_data_reader, read_coord_values)
   RealMatrix coords;
   read_coord_values(base_name, 2 /* expt number */, coords);
 
-  // Verify equality of field data
+  // Verify equality of coord data
   TEST_EQUALITY( coords.numCols(), VECTOR_FIELD_DIM );
   TEST_EQUALITY( coords.numRows(), NUM_FIELD_VALUES );
   for( int i=0; i<VECTOR_FIELD_DIM; ++i )

@@ -174,7 +174,40 @@ read_coord_values(const std::string& basename, int expt_num, RealMatrix& coords)
   copy_data(va, coords);
 }
 
+//----------------------------------------------------------------
 
+void 
+read_covariance(const std::string& basename, int expt_num, RealMatrix& cov_vals){
+
+  std::ifstream s;
+  std::string filename = basename + "." + convert_to_string(expt_num) + ".sigma";
+  TabularIO::open_file(s, filename, "read_sigma_values");
+  RealVectorArray va;
+  read_sized_data(s, va, 1, 1);
+  cov_vals.shapeUninitialized(1,1);
+  cov_vals[0][0] = va[0][0];
+}
+
+//----------------------------------------------------------------
+
+void 
+read_covariance(const std::string& basename, int expt_num,
+                Dakota::CovarianceMatrix::FORMAT format, int num_vals,
+                RealMatrix& cov_vals){
+
+  std::ifstream s;
+  std::string filename = basename + "." + convert_to_string(expt_num) + ".sigma";
+  TabularIO::open_file(s, filename, "read_sigma_values");
+  RealVectorArray va;
+  if( format == Dakota::CovarianceMatrix::VECTOR )
+    read_sized_data(s, va, 1, num_vals);
+  else
+    read_sized_data(s, va, num_vals, num_vals);
+  copy_data(va, cov_vals);
+}
+
+
+/// file reader for VECTOR and MATRIX covariance data
 // ----------------------------------------
 // Assignment/Copy functions for data types
 // ----------------------------------------

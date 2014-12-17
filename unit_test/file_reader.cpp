@@ -6,10 +6,6 @@
 
 #include <Teuchos_UnitTestHarness.hpp> 
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-namespace bfs = boost::filesystem;
-
 using namespace Dakota;
 
 namespace {
