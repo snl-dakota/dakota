@@ -49,7 +49,7 @@ include_directories(
   ${Teuchos_INCLUDE_DIRS}
 )
 
-option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" OFF)
+option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" ON)
 if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   set(dakota_sample_unit_tests
     covariance_reader.cpp
