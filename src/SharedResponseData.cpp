@@ -10,14 +10,24 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
+// #define REFCOUNT_DEBUG 1
+// #define SERIALIZE_DEBUG 1
+
 #include "SharedResponseData.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_util.hpp"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
-//#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: SharedResponseData.cpp 6886 2010-08-02 19:13:01Z mseldre $";
+
+BOOST_CLASS_EXPORT(Dakota::SharedResponseDataRep)
+BOOST_CLASS_EXPORT(Dakota::SharedResponseData)
 
 namespace Dakota {
 
@@ -26,7 +36,7 @@ SharedResponseDataRep::
 SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   responsesId(problem_db.get_string("responses.id")), 
-  functionLabels(problem_db.get_sa("responses.labels")), referenceCount(1)
+  functionLabels(problem_db.get_sa("responses.labels"))
 {
   // scalar response data types:
   size_t num_scalar_resp_fns
@@ -109,7 +119,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
 SharedResponseDataRep::SharedResponseDataRep(const ActiveSet& set):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   responsesId("NO_SPECIFICATION"),
-  numScalarResponses(set.request_vector().size()), referenceCount(1)
+  numScalarResponses(set.request_vector().size())
 {
   // Build a default functionLabels array (currently only used for
   // bestResponse by NPSOLOptimizer's user-defined functions option).
@@ -139,6 +149,38 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
 }
 
 
+template<class Archive>
+void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
+{
+  ar & responseType;
+  ar & responsesId;
+  ar & functionLabels;
+  ar & numScalarResponses;
+  ar & fieldRespGroupLengths;
+  ar & numCoordsPerField;
+#ifdef SERIALIZE_DEBUG  
+  Cout << "Serializing SharedResponseDataRep:\n"
+       << responseType << '\n'
+       << responsesId << '\n'
+       << functionLabels
+       << numScalarResponses
+       << fieldRespGroupLengths
+       << std::endl;
+#endif
+}
+
+
+bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
+{
+  return (responseType == other.responseType &&
+	  responsesId == other.responsesId &&
+	  functionLabels == other.functionLabels &&
+	  numScalarResponses == other.numScalarResponses &&
+	  fieldRespGroupLengths == other.fieldRespGroupLengths &&
+	  numCoordsPerField == other.numCoordsPerField);
+}
+
+
 /** Deep copies are used when recasting changes the nature of a
     Response set. */
 SharedResponseData SharedResponseData::copy() const
@@ -148,16 +190,21 @@ SharedResponseData SharedResponseData::copy() const
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedResponseData::copy() called to generate a deep copy with no "
-       << "representation sharing." << std::endl;
+       << "representation sharing.\n";
+  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
 #endif
 
-  SharedResponseData srd; // new handle: referenceCount=1, srdRep=NULL
-
+  SharedResponseData srd; // new handle: srdRep=NULL
   if (srdRep) {
-    srd.srdRep = new SharedResponseDataRep();
-    srd.srdRep->copy_rep(srdRep);
+    srd.srdRep.reset(new SharedResponseDataRep());
+    srd.srdRep->copy_rep(srdRep.get());
   }
 
+#ifdef REFCOUNT_DEBUG
+  Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n';
+  Cout << "  new srd use_count after  = " << srd.srdRep.use_count() << std::endl;
+#endif
+ 
   return srd;
 }
 
@@ -166,12 +213,20 @@ void SharedResponseData::reshape(size_t num_fns)
 {
   if (num_functions() != num_fns) {
     // separate sharing if needed
-    if (srdRep->referenceCount > 1) { // shared rep: separate
-      SharedResponseDataRep* old_rep = srdRep;
-      --old_rep->referenceCount;            // decrement old
-      srdRep = new SharedResponseDataRep(); // create new srdRep
-      srdRep->copy_rep(old_rep);            // copy old data to new
-    }
+    //    if (srdRep->referenceCount > 1) { // shared rep: separate
+
+#ifdef REFCOUNT_DEBUG
+    Cout << "SharedResponseData::reshape() called.\n";
+    Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
+#endif
+      boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+      srdRep.reset(new SharedResponseDataRep()); // create new srdRep
+      srdRep->copy_rep(old_rep.get());            // copy old data to new
+#ifdef REFCOUNT_DEBUG
+    Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n'
+	 << "  old_rep use_count after = " << old_rep.use_count() << std::endl;
+#endif
+      //    }
     // reshape function labels
     srdRep->functionLabels.resize(num_fns);
     build_labels(srdRep->functionLabels, "f");
@@ -179,5 +234,44 @@ void SharedResponseData::reshape(size_t num_fns)
     srdRep->numScalarResponses = num_fns - num_field_functions();
   }
 }
+
+bool SharedResponseData::operator==(const SharedResponseData& other)
+{
+  // test pointer equality
+  //  return(srdRep->get() == other.srdRep->get());
+  // test data equality
+  return(*srdRep == *other.srdRep);
+}
+
+
+template<class Archive>
+void SharedResponseData::serialize(Archive& ar, const unsigned int version)
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "SRD serializing with pointer " << srdRep.get() << '\n'
+       << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
+#endif
+  // load will default construct and load through the pointer
+  ar & srdRep;
+#ifdef REFCOUNT_DEBUG
+  Cout << "  srdRep pointer after  = " << srdRep.get() << std::endl;
+  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
+#endif
+}
+
+
+long SharedResponseData::reference_count() const
+{  return srdRep.use_count();  }
+
+
+// explicit instantions needed due to serialization through pointer,
+// which won't instantate the above template?
+template void SharedResponseData::serialize<boost::archive::binary_iarchive>
+(boost::archive::binary_iarchive& ar, const unsigned int version);
+
+template void SharedResponseData::serialize<boost::archive::binary_oarchive>
+(boost::archive::binary_oarchive& ar, const unsigned int version);
+
+
 
 } // namespace Dakota

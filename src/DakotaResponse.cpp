@@ -10,6 +10,8 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
+//#define REFCOUNT_DEBUG 1
+
 #include "DakotaResponse.hpp"
 #include "SimulationResponse.hpp"
 #include "ExperimentResponse.hpp"
@@ -761,6 +763,8 @@ void Response::read_tabular(std::istream& s)
 			   + boost::lexical_cast<std::string>(i) + "]" );
   }
 }
+// throw TabularDataTruncated("At EOF: insufficient data for RealVector["
+// 			   + boost::lexical_cast<std::string>(i) + "]");
 
 
 /** write_tabular is used for output of functionValues in a tabular
@@ -1415,24 +1419,23 @@ void Response::save(Archive& ar, const unsigned int version) const
 template<class Archive> 
 void Response::load_rep(Archive& ar, const unsigned int version)
 {
-  size_t i, num_fns, num_params;
-  bool grad_flag, hess_flag;
-    
-  // Read sizing data, responseActiveSet, and functionLabels
-  ar & num_fns;
-  ar & num_params;
+  // First read sharedRespData.  The shared data is serialized through
+  // the SRD handle, with pointer tracking for the SRD body (rep)
+  ar & sharedRespData;
+
+  // Read responseActiveSet and flags for sizing the response
+  ar & responseActiveSet;
+  bool grad_flag = false, hess_flag = false;
   ar & grad_flag;
   ar & hess_flag;
-  ar & responseActiveSet;
-  if (sharedRespData.is_null())
-    sharedRespData = SharedResponseData(responseActiveSet);
-  ar & sharedRespData.function_labels(); // TO DO
 
   // reshape response arrays and reset all data to zero
+  const ShortArray& asv = responseActiveSet.request_vector();
+  size_t num_fns = asv.size();
+  size_t num_params = responseActiveSet.derivative_vector().size();
+
   reshape(num_fns, num_params, grad_flag, hess_flag);
   reset();
-
-  const ShortArray& asv = responseActiveSet.request_vector();
 
   // Get fn. values as governed by ASV requests
   for (size_t i=0; i<num_fns; ++i)
@@ -1460,19 +1463,19 @@ void Response::load_rep(Archive& ar, const unsigned int version)
 template<class Archive> 
 void Response::save_rep(Archive& ar, const unsigned int version) const
 {    
-  const ShortArray& asv = responseActiveSet.request_vector();
-  size_t num_fns = asv.size(),
-    num_params = responseActiveSet.derivative_vector().size();
-  bool grad_flag = !functionGradients.empty(),
+  // First write sharedRespData.  The shared data is serialized through 
+  // the SRD handle, with pointer tracking for the SRD body (rep)
+  ar & sharedRespData;
+
+  // Write responseActiveSet and flags for sizing the response
+  ar & responseActiveSet;
+  bool grad_flag = !functionGradients.empty(), 
     hess_flag = !functionHessians.empty();
-    
-  // Write sizing data, responseActiveSet, and functionLabels
-  ar & num_fns;
-  ar & num_params;
   ar & grad_flag;
   ar & hess_flag;
-  ar & responseActiveSet;
-  ar & sharedRespData.function_labels(); // TO DO
+
+  const ShortArray& asv = responseActiveSet.request_vector();
+  size_t num_fns = asv.size();
 
   // Write the function values if present
   for (size_t i=0; i<num_fns; ++i)

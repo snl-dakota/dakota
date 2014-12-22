@@ -16,7 +16,9 @@
 #define SHARED_RESPONSE_DATA_H
 
 #include "dakota_data_types.hpp"
-
+#include "dakota_global_defs.hpp"
+#include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
 
 namespace Dakota {
 
@@ -38,6 +40,14 @@ class SharedResponseDataRep
 
   friend class SharedResponseData;
 
+  /// allow boost access to serialize this class
+  friend class boost::serialization::access;
+
+public:
+
+  /// destructor must be public for shared_ptr
+  ~SharedResponseDataRep();
+
 private:
 
   //
@@ -50,8 +60,6 @@ private:
   SharedResponseDataRep(const ProblemDescDB& problem_db);
   /// alternate on-the-fly constructor
   SharedResponseDataRep(const ActiveSet& set);
-  /// destructor
-  ~SharedResponseDataRep();
 
   //
   //- Heading: Member functions
@@ -59,6 +67,15 @@ private:
 
   /// copy the data from srd_rep to the current representation
   void copy_rep(SharedResponseDataRep* srd_rep);
+
+  /// serialize the core shared response data: write and read are
+  /// symmetric for this class
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
+  /// experimental operator== for use in unit testing
+  bool operator==(const SharedResponseDataRep& other);
+
 
   //
   //- Heading: Data
@@ -80,16 +97,13 @@ private:
   /// dimensions of each function
   IntVector numCoordsPerField;
   
-  /// number of handle objects sharing srdRep
-  int referenceCount;
 };
 
 
-inline SharedResponseDataRep::SharedResponseDataRep():
+inline SharedResponseDataRep::SharedResponseDataRep()
   // copy and reshape immediately apply copy_rep, so don't initialize anything:
   //responseType(BASE_RESPONSE), // overridden in derived class ctors
   //responsesId("NO_SPECIFICATION"), numScalarResponses(0),
-  referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedResponseDataRep::SharedResponseDataRep() called to build "
@@ -116,6 +130,14 @@ class SharedResponseData
 public:
 
   //
+  //- Heading: Friends
+  //
+
+  /// allow boost access to serialize this class
+  friend class boost::serialization::access;
+
+
+  //
   //- Heading: Constructors, destructor, and operators
   //
 
@@ -133,6 +155,10 @@ public:
 
   /// assignment operator
   SharedResponseData& operator=(const SharedResponseData& srd);
+ 
+  /// experimental operator== for use in unit testing
+  bool operator==(const SharedResponseData& other);
+
 
   //
   //- Heading: member functions
@@ -184,67 +210,90 @@ public:
   /// return true if empty handle with null representation
   bool is_null() const;
 
+  /// how many handles (including this) are sharing this
+  /// representation (body); for debugging/testing only
+  long reference_count() const;
+
 private:
+
+  /// serialize through the pointer, which requires object tracking:
+  /// write and read are symmetric for this class
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version);
 
   //
   //- Heading: Private data members
   //
- 
+
   /// pointer to the body (handle-body idiom)
-  SharedResponseDataRep* srdRep;
+  boost::shared_ptr<SharedResponseDataRep> srdRep;
 };
 
 
-inline SharedResponseData::SharedResponseData(): srdRep(NULL)
-{ }
-
+inline SharedResponseData::SharedResponseData()
+{ 
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedResponseData::SRD(); default constructed handle.\n";
+  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
+#endif
+}
 
 inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   srdRep(new SharedResponseDataRep(problem_db))
-{ }
-
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedResponseData::SRD(PDB) problem DB constructed handle.\n";
+  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
+#endif
+}
 
 inline SharedResponseData::SharedResponseData(const ActiveSet& set):
   srdRep(new SharedResponseDataRep(set))
-{ }
+{ 
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedResponseData::SRD(AS) ActiveSet constructed handle.\n";
+  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
+#endif
+}
 
 
 inline SharedResponseData::SharedResponseData(const SharedResponseData& srd)
 {
-  // Increment new (no old to decrement)
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedResponseData::SRD(SRD) copy constructor.\n";
+  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
+#endif
+  // share the representation (body)
   srdRep = srd.srdRep;
-  if (srdRep) // Check for an assignment of NULL
-    ++srdRep->referenceCount;
+#ifdef REFCOUNT_DEBUG
+  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
+#endif
 }
 
 
 inline SharedResponseData& SharedResponseData::
 operator=(const SharedResponseData& srd)
 {
-  if (srdRep != srd.srdRep) { // normal case: old != new
-    // Decrement old
-    if (srdRep) // Check for NULL
-      if ( --srdRep->referenceCount == 0 ) 
-	delete srdRep;
-    // Assign and increment new
-    srdRep = srd.srdRep;
-    if (srdRep) // Check for an assignment of NULL
-      ++srdRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedResponseData::operator=.\n";
+  Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
+#endif
+  // share the inbound representation (body) by copying the pointer
+  srdRep = srd.srdRep;
+#ifdef REFCOUNT_DEBUG
+  Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
+#endif
   return *this;
 }
 
 
 inline SharedResponseData::~SharedResponseData()
-{
-  if (srdRep) { // Check for NULL
-    --srdRep->referenceCount; // decrement
-    if (srdRep->referenceCount == 0)
-      delete srdRep;
-  }
+{ 
+  /* empty dtor in case we add virtual functions */
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedResponseData::~SRD called.\n";
+  Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
+#endif
 }
 
 
@@ -314,5 +363,12 @@ inline bool SharedResponseData::is_null() const
 { return (srdRep == NULL); }
 
 } // namespace Dakota
+
+// BMA: review whether needed
+// Must be outside Dakota namespace...
+// BOOST_CLASS_IMPLEMENTATION(Dakota::SharedResponseData, 
+// 			   boost::serialization::object_serializable)
+// BOOST_CLASS_TRACKING(Dakota::SharedResponseData, 
+//  		     boost::serialization::track_never)
 
 #endif
