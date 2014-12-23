@@ -57,39 +57,43 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   lipschitzType(probDescDB.get_string("method.lipschitz")),
   samples(probDescDB.get_int("method.samples"))
 {
-  // any initialization is done here.   For now, you should just specify
-  // the number of samples, but eventually we will get that from the input spec
-  Cout << "Hello World, POF Darts is coming! " << '\n';
-  Cout << "Number of samples " << samples << '\n';
-  Cout << "Surrogate order " << emulatorOrder << '\n';
-  Cout << "Emulator Type " << emulatorType << '\n';
-  Cout << "Emulator Samples " << emulatorSamples << '\n';
-  Cout << "lipschitzType " << lipschitzType << '\n';
+    // any initialization is done here.   For now, you should just specify
+    // the number of samples, but eventually we will get that from the input spec
+    /*
+    Cout << "Hello World, POF Darts is coming! " << '\n';
+    Cout << "Number of samples " << samples << '\n';
+    Cout << "Surrogate order " << emulatorOrder << '\n';
+    Cout << "Emulator Type " << emulatorType << '\n';
+    Cout << "Emulator Samples " << emulatorSamples << '\n';
+    Cout << "lipschitzType " << lipschitzType << '\n';
+    */
 
-  if (lipschitzType == "local") 
-    _use_local_L = true;       // true = Local Lipschitz , false = Global Lipschitz (less sampling time - less accuracy)
-  else if (lipschitzType == "global") 
-    _use_local_L = false;       // true = Local Lipschitz , false = Global Lipschitz (less sampling time - less accuracy
+    if (lipschitzType == "local")
+        _use_local_L = true;
+    else if (lipschitzType == "global")
+        _use_local_L = false;       // Global Lipschitz: less sampling time - less accuracy
   
-    _eval_error = true;
+    _eval_error = false;
     
-  if (emulatorOrder==0)
-    emulatorOrder = 4;             // order of vps surrogate if used
-  if (emulatorSamples==0)
-    emulatorSamples = 1E6;             // order of vps surrogate if used
+  
+    if (emulatorOrder==0)
+        emulatorOrder = 4;             // order of vps surrogate if used
+    if (emulatorSamples==0)
+        emulatorSamples = 1E6;         // number of samples to evaluate surrogate
     
-  if ((emulatorType == KRIGING_EMULATOR) || ( emulatorType == NO_EMULATOR)) {
-    Cout << "in initialize loop" << '\n';
-    initialize_surrogates(); // initialize one GP surrogate per function
-    _use_vor_surrogate = false; // true = use VPS , false = use GP
-  }
-  else
-  {
-      initialize_surrogates();
-      _use_vor_surrogate = true; // true = use VPS , false = use GP
-      _vps_order = emulatorOrder;             // order of vps surrogate if used
-  }
-  /// /*if (!_use_vor_surrogate)*/ initialize_surrogates(); // initialize one GP surrogate per function
+  
+    if ((emulatorType == KRIGING_EMULATOR) || ( emulatorType == NO_EMULATOR))
+    {
+        _use_vor_surrogate = false; // true = use VPS , false = use GP
+    }
+    else
+    {
+        _use_vor_surrogate = true; // true = use VPS , false = use GP
+        _vps_order = emulatorOrder;             // order of vps surrogate if used
+    }
+    
+    //Cout << "in initialize loop" << '\n';
+    initialize_surrogates(); // initialize one surrogate per function
 }
     
 
@@ -957,9 +961,15 @@ void NonDPOFDarts::quantify_uncertainty()
         UShortArray approx_order;
         short data_order = 1;  // assume only function values
         short output_level = QUIET_OUTPUT;
+        
+        if (_use_vor_surrogate)
+        {
+            for (size_t i = 0; i < numContinuousVars; ++i) approx_order.push_back(_vps_order);
+        }
+        
         sharedData = SharedApproxData(approx_type, approx_order, numContinuousVars, data_order, output_level);
         //gpApproximations.resize(numFunctions, Approximation(sharedData));
-        for (size_t i=0; i < numFunctions; ++i)
+        for (size_t i = 0; i < numFunctions; ++i)
         {
             gpApproximations.push_back(Approximation(sharedData));
         }

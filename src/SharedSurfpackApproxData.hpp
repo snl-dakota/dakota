@@ -41,6 +41,8 @@ class SharedSurfpackApproxData: public SharedApproxData
   //
 
   friend class SurfpackApproximation;
+    
+    friend class VPSApproximation;  // Mohamed Ebeida
 
 public:
 

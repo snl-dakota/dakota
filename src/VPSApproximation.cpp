@@ -52,10 +52,8 @@ VPSApproximation(const ProblemDescDB& problem_db,
   Approximation(BaseConstructor(), problem_db, shared_data),
   surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order"))
 {
-  Cout << "Surrogate order " << surrogateOrder << '\n';
-
+    std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
 }
-
 
 
 
@@ -77,20 +75,25 @@ int VPSApproximation::num_constraints() const
 
 void VPSApproximation::build()
 {
-    _num_inserted_points = 0; _vps_order = 5;
-    
-  // base class implementation checks data set against min required
-  Approximation::build();
 
-  size_t j, offset = 0, num_v = sharedDataRep->numVars;
-  numObs = approxData.points(); // number of points
+    _num_inserted_points = 0;
+    _vps_order = surrogateOrder;
+  
+    // base class implementation checks data set against min required
+    Approximation::build();
+
+  
+    size_t j, offset = 0, num_v = sharedDataRep->numVars;
+    numObs = approxData.points(); // number of points
     
   
-    std::cout<< "*** Building VPS: Number of sample points = " << numObs << std::endl;
+    std::cout<< "VPS::    Number of sample points = " << numObs << std::endl;
     _num_inserted_points = numObs;
   
-    std::cout<< "*** Building VPS: Number of dimensions = " << num_v << std::endl;
+    std::cout<< "VPS::    Number of dimensions = " << num_v << std::endl;
     _n_dim = num_v;
+    
+    std::cout<< "VPS::    Surrogate Order = " << _vps_order << std::endl;
   
     _xmin = new double[_n_dim];
     _xmax = new double[_n_dim];
@@ -134,9 +137,6 @@ void VPSApproximation::build()
 
     // Build a VPS surrogate model using the sampled data
     VPS_execute();
-    
-
-    //VPSmodel_build();
 }
 
 
@@ -169,7 +169,6 @@ void VPSApproximation::VPSmodel_build()
     for (size_t idim = 0; idim < _n_dim; idim++)
     {
         x[idim] = approx_pt[idim];
-        std::cout << "x[idim] = " << x[idim] << std::endl;
     }
     approxValue = evaluate_surrogate(x);
     delete[] x;
@@ -334,10 +333,10 @@ void VPSApproximation::VPSmodel_build()
         
         // retrive powers of the polynomial expansion
         retrieve_permutations(_vps_num_poly_terms, _vps_t, _n_dim, _vps_order, false, true, _vps_order);
-        //std::cout<< "num poly terms = " << _vps_num_poly_terms << std::endl;
+        //std::cout<< "VPS::    Number of poly terms = " << _vps_num_poly_terms << std::endl;
         
         // update neighbors
-        std::cout << "updating neighbors!" << std::endl;
+        //std::cout << "updating neighbors!" << std::endl;
         _sample_neighbors = new size_t*[_num_inserted_points];
         _sample_vsize = new double[_num_inserted_points];
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
@@ -348,7 +347,7 @@ void VPSApproximation::VPSmodel_build()
         }
         
         // initiate extended neighbors with seed neighbors
-        std::cout << "extending neighbors!" << std::endl;
+        //std::cout << "extending neighbors!" << std::endl;
         _vps_ext_neighbors = new size_t*[_num_inserted_points];
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
@@ -363,18 +362,18 @@ void VPSApproximation::VPSmodel_build()
         }
         
         // extend neighbors for all points to match the desired max power per cell
-        std::cout << "adjusting extending neighbors!" << std::endl;
+        //std::cout << "adjusting extending neighbors!" << std::endl;
         VPS_adjust_extend_neighbors_of_all_points();
         
-        std::cout << "retrieving coefficients!" << std::endl;
+        //std::cout << "retrieving coefficients!" << std::endl;
         VPS_retrieve_poly_coefficients_for_all_points();
         
         end_time = clock();
         cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
         
-        std::cout << "pof::    Number of polynomial coeffcients = " << std::fixed << _vps_num_poly_terms << std::endl;
-        std::cout << "pof::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
-        std::cout << "pof::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
+        std::cout << "VPS::    Number of polynomial coeffcients = " << std::fixed << _vps_num_poly_terms << std::endl;
+        std::cout << "VPS::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
+        std::cout << "VPS::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
         
         return true;
     }
@@ -701,12 +700,21 @@ void VPSApproximation::VPSmodel_build()
 
     void VPSApproximation::VPS_destroy_global_containers()
     {
+        delete[] _xmin;
+        delete[] _xmax;
+        delete[] _fval;
+        delete[] _vps_dfar;
+        delete[] _sample_vsize;
+        
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            delete[] _vps_ext_neighbors[ipoint];
+            delete[] _sample_points[ipoint];
+            delete[] _sample_neighbors[ipoint];
             delete[] _vps_c[ipoint];
+            delete[] _vps_ext_neighbors[ipoint];
         }
-        delete[] _vps_dfar;
+        delete[] _sample_points;
+        delete[] _sample_neighbors;
         delete[] _vps_c;
         delete[] _vps_ext_neighbors;
         
@@ -715,7 +723,6 @@ void VPSApproximation::VPSmodel_build()
             delete[] _vps_t[i];
         }
         delete[] _vps_t;
-        
     }
     
     void VPSApproximation::retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint)
@@ -775,7 +782,7 @@ void VPSApproximation::VPSmodel_build()
             t[k_dim] = 0;
         }
         
-        std::cout<< "Number of permutations = " << m << std::endl;
+        //std::cout<< "Number of permutations = " << m << std::endl;
         
         perm = new size_t*[m];
         for (size_t i = 0; i < m; i++)

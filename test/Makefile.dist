@@ -48,6 +48,7 @@ EXTRA_DIST = container_alt.c \
 	     dakota_multistart.in \
 	     dakota_mv.in \
 	     dakota_nl2test.in \
+	     dakota_nomad.in \
 	     dakota_nondevid.in \
 	     dakota_optdarts.in \
 	     dakota_ouu1_cantilever.in \

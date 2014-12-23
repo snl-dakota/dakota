@@ -253,7 +253,9 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
 	   approx_type == "global_radial_basis"   ||
 	   approx_type == "global_mars"           ||
-	   approx_type == "global_moving_least_squares")
+	   approx_type == "global_moving_least_squares" ||
+       approx_type == "global_voronoi_surrogate"
+           )
     approx = new SharedSurfpackApproxData(approx_type, approx_order, num_vars,
 					  data_order, output_level);
 #endif // HAVE_SURFPACK

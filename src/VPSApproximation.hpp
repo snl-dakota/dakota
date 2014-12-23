@@ -17,6 +17,7 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaApproximation.hpp"
+#include "SharedSurfpackApproxData.hpp"
 
 #include "Teuchos_SerialSpdDenseSolver.hpp"
 
@@ -192,10 +193,25 @@ inline VPSApproximation::VPSApproximation()
 inline VPSApproximation::
 VPSApproximation(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
-{ }
+{
+
+    std::cout << "**** Toto 1 "  << surrogateOrder << std::endl;
+    
+    SharedSurfpackApproxData* dat = dynamic_cast<SharedSurfpackApproxData*> (shared_data.data_rep());
+    
+    if (dat == 0) std::cout<< "Casting failed"<< std::endl;
+    else std::cout<< "Casting suceeded"<< std::endl;
+    
+    surrogateOrder = dat->approxOrder;
+    
+     std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+
+}
 
 inline VPSApproximation::~VPSApproximation()
-{ }
+{
+    VPS_destroy_global_containers();
+}
 
 } // namespace Dakota
 
