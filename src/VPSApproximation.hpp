@@ -194,17 +194,15 @@ inline VPSApproximation::
 VPSApproximation(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data)
 {
-
-    std::cout << "**** Toto 1 "  << surrogateOrder << std::endl;
     
     SharedSurfpackApproxData* dat = dynamic_cast<SharedSurfpackApproxData*> (shared_data.data_rep());
     
-    if (dat == 0) std::cout<< "Casting failed"<< std::endl;
-    else std::cout<< "Casting suceeded"<< std::endl;
+    //if (dat == 0) std::cout<< "Casting failed"<< std::endl;
+    //else std::cout<< "Casting succeeded"<< std::endl;
     
     surrogateOrder = dat->approxOrder;
     
-     std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+    std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
 
 }
 
