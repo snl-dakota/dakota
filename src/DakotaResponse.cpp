@@ -1365,11 +1365,12 @@ void Response::set_scalar_covariance(RealVector& scalars)
 Real Response::get_scalar_covariance(const int this_response)
 {
   if (responseRep)
-    responseRep->get_scalar_covariance(this_response);
+    return responseRep->get_scalar_covariance(this_response);
   else {
     Cerr << "\nError: get_scalar_covaraince() not defined for this response "
          << std::endl;
     abort_handler(-1);
+    return 0;
   }
 }
 

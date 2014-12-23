@@ -73,6 +73,11 @@ Real ExperimentResponse::get_scalar_covariance(const int this_response)
 {
   RealMatrix thisCovariance;
   //expDataCovariance.get_covariance(thisCovariance);
+
+  // TODO: inquire about the proper return (SCALAR?) value
+  //return thisCovariance[0][0];
+  // BUT, in the meantime, properly satisfy the interface (return a Real)
+  return 0;
 }
 
 } // namespace Dakota
