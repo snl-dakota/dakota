@@ -35,6 +35,8 @@ using OPTPP::NLPGradient;
 //#define DEBUG
 //#define DEBUG_FULL
 
+//#define DEBUG_TEST_FUNCTION
+
 
 namespace Dakota {
 
@@ -50,9 +52,20 @@ VPSApproximation::
 VPSApproximation(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data):
   Approximation(BaseConstructor(), problem_db, shared_data),
-  surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order"))
+  surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order")),
+  _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_threshold"))
 {
     std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+    
+    if (_disc_min_grad < 1E-10)
+    {
+        _disc_min_grad = DBL_MAX;
+        std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+    }
+    else
+    {
+        std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+    }
 }
 
 
@@ -75,8 +88,8 @@ int VPSApproximation::num_constraints() const
 
 void VPSApproximation::build()
 {
-
     _num_inserted_points = 0;
+    
     _vps_order = surrogateOrder;
   
     // base class implementation checks data set against min required
@@ -107,7 +120,8 @@ void VPSApproximation::build()
     _sample_points = new double*[_num_inserted_points];
     _fval = new double[_num_inserted_points];
     
-    // process currentPoints
+    
+    // process currentPoints from approx data
     for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
     {
         const RealVector& c_vars = approxData.continuous_variables(ipoint);
@@ -118,16 +132,27 @@ void VPSApproximation::build()
             if (_sample_points[ipoint][idim] < _xmin[idim]) _xmin[idim] = _sample_points[ipoint][idim];
             if (_sample_points[ipoint][idim] > _xmax[idim]) _xmax[idim] = _sample_points[ipoint][idim];
         }
+        
+#ifdef DEBUG_TEST_FUNCTION
+        _fval[ipoint] = f_test(_sample_points[ipoint]);
+        _xmin[0] = 0.0; _xmin[1] = 0.0;
+        _xmax[0] = 1.0; _xmax[1] = 1.0;
+#else
+        // response from approxData
         _fval[ipoint] = approxData.response_function(ipoint);
+#endif
+        
     }
-    
+        
     _diag = 0.0;
     for (size_t idim = 0; idim < _n_dim; idim++)
     {
         double DX = _xmax[idim] - _xmin[idim];
+#ifndef DEBUG_TEST_FUNCTION
         _xmax[idim]+= 0.5 * DX;
         _xmin[idim]-= 0.5 * DX;
         DX = _xmax[idim] - _xmin[idim];
+#endif   
         _diag += DX * DX;
     }
     _diag = sqrt(_diag);
@@ -144,35 +169,43 @@ void VPSApproximation::build()
     Real VPSApproximation::value(const Variables& vars)
     {
         
-        VPSmodel_apply(vars.continuous_variables(),false,false); return approxValue;
+        VPSmodel_apply(vars.continuous_variables(),false,false);
+        return approxValue;
     }
 
 
-const RealVector& VPSApproximation::gradient(const Variables& vars)
-{ VPSmodel_apply(vars.continuous_variables(),false,true); return approxGradient;}
+
+    const RealVector& VPSApproximation::gradient(const Variables& vars)
+    {
+        VPSmodel_apply(vars.continuous_variables(),false,true);
+        return approxGradient;
+    }
 
 
-Real VPSApproximation::prediction_variance(const Variables& vars)
-{ VPSmodel_apply(vars.continuous_variables(),true,false); return approxVariance;}
+    Real VPSApproximation::prediction_variance(const Variables& vars)
+    {
+        VPSmodel_apply(vars.continuous_variables(),true,false);
+        return approxVariance;
+    }
 
 
-void VPSApproximation::VPSmodel_build()
-{
-}
 
-
+    void VPSApproximation::VPSmodel_build()
+    {
+        
+    }
 
     void VPSApproximation::VPSmodel_apply(const RealVector& approx_pt, bool variance_flag, bool gradients_flag)
-{
-   
-    double* x = new double[_n_dim];
-    for (size_t idim = 0; idim < _n_dim; idim++)
     {
-        x[idim] = approx_pt[idim];
+        double* x = new double[_n_dim];
+    
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            x[idim] = approx_pt[idim];
+        }
+        approxValue = evaluate_surrogate(x);
+        delete[] x;
     }
-    approxValue = evaluate_surrogate(x);
-    delete[] x;
-}
     
     
     
@@ -375,6 +408,16 @@ void VPSApproximation::VPSmodel_build()
         std::cout << "VPS::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
         std::cout << "VPS::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
         
+#ifdef DEBUG_TEST_FUNCTION
+        std::vector<double> contours;
+        for (size_t i = 0; i < 10; i++) contours.push_back(0.1 * i);
+        //isocontouring("test_function_surrogate.ps", true, true, contours);
+        isocontouring_solid("surrogate.ps", false, true, contours);
+        isocontouring_solid("test_function.ps", true, false, contours);
+        plot_neighbors();
+#endif
+        
+        
         return true;
     }
     
@@ -526,10 +569,22 @@ void VPSApproximation::VPSmodel_build()
                 continue;
             }
             
+            double h(0.0);
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = _sample_points[ipoint][idim] - _sample_points[ineighbor][idim];
+                h += dx * dx;
+            }
+            h = sqrt(h);
+            double grad = fabs(_fval[ipoint] - _fval[ineighbor]) / h;
+            
+            if (grad > _disc_min_grad) continue; // gradient of two point exceeds threshold
+            
             // a hit
             num_misses = 0;
             tmp_neighbors[num_neighbors] = ineighbor;
             num_neighbors++;
+            
         } // end of spoke loop
         
         if (old_neighbors != 0)
@@ -1112,6 +1167,1048 @@ void VPSApproximation::VPSmodel_build()
         delete[] QT;
     }
     
+    double VPSApproximation::f_test(double* x)
+    {
+        // step function in sphere
+        double h = 0.0;
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            double dx = x[idim];
+            h += dx * dx;
+        }
+        h = sqrt(h);
+        if (h < 0.5) return 1.0;
+        return 0.0;
+    }
+    
+    void VPSApproximation::isocontouring(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours)
+    {
+        std::fstream file(file_name.c_str(), std::ios::out);
+        file << "%!PS-Adobe-3.0" << std::endl;
+        file << "72 72 scale     % one unit = one inch" << std::endl;
+        
+        double xmin(_xmin[0]);
+        double ymin(_xmin[1]);
+        double Lx(_xmax[0] - _xmin[0]);
+        double Ly(_xmax[1] - _xmin[0]);
+        
+        double scale_x, scale_y, scale;
+        double shift_x, shift_y;
+        
+        scale_x = 6.5 / Lx;
+        scale_y = 9.0 / Ly;
+        
+        if (scale_x < scale_y)
+        {
+            scale = scale_x;
+            shift_x = 1.0 - xmin * scale;
+            shift_y = 0.5 * (11.0 - Ly * scale) - ymin * scale;
+        }
+        else
+        {
+            scale = scale_y;
+            shift_x = 0.5 * (8.5 - Lx * scale) - xmin * scale;
+            shift_y = 1.0 - ymin * scale;
+        }
+        file << shift_x << " " << shift_y << " translate" << std::endl;
+        
+        
+        file << "/redseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/blueseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackquad      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/circ    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " 0.002 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/redfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/bluefcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/quad_white      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1.0 setgray fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/quad_bold      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        double* xx = new double[2];
+        double sx = 0.001 * (_xmax[0] - _xmin[0]);
+        double sy = 0.001 * (_xmax[1] - _xmin[1]);
+        for (size_t i = 0; i < 1000; i++)
+        {
+            double xo = _xmin[0] + i * sx;
+            for (size_t j = 0; j < 1000; j++)
+            {
+                for (size_t ifunc = 0; ifunc < 2; ifunc++)
+                {
+                    double fo(0.0), f1(0.0), f2(0.0), f3(0.0);
+                
+                    double yo = _xmin[1] + j * sy;
+                    xx[0] = xo; xx[1] = yo;
+                    if (plot_test_function && ifunc != 1)  fo = f_test(xx);
+                    else if (plot_surrogate) fo = evaluate_surrogate(xx);
+                    xx[0] = xo+sx; xx[1] = yo;
+                    if (plot_test_function && ifunc != 1)  f1 = f_test(xx);
+                    else if (plot_surrogate) f1 = evaluate_surrogate(xx);
+                    xx[0] = xo + sx; xx[1] = yo + sy;
+                    if (plot_test_function && ifunc != 1)  f2 = f_test(xx);
+                    else if (plot_surrogate) f2 = evaluate_surrogate(xx);
+                    xx[0] = xo; xx[1] = yo + sy;
+                    if (plot_test_function && ifunc != 1)  f3 = f_test(xx);
+                    else if (plot_surrogate) f3 = evaluate_surrogate(xx);
+                
+                    size_t num_isocontours = contours.size();
+                    for (size_t icont = 0; icont < num_isocontours; icont++)
+                    {
+                        double contour = contours[icont];
+                    
+                        size_t num_points(0);
+                        double x1, y1, x2, y2;
+
+                        if ((fo > contour && f1 < contour) || (fo < contour && f1 > contour))
+                        {
+                            double h = sx * (contour - fo) / (f1 - fo);
+                            x1 = xo + h;
+                            y1 = yo; num_points++;
+                        }
+                        if ((f1 > contour && f2 < contour) || (f1 < contour && f2 > contour))
+                        {
+                            double h = sy * (contour - f1) / (f2 - f1);
+                            if (num_points == 0)
+                            {
+                                x1 = xo + sx;
+                                y1 = yo + h;
+                            }
+                            else
+                            {
+                                x2 = xo + sx;
+                                y2 = yo + h;
+                            }
+                            num_points++;
+                        }
+                        if ((f2 > contour && f3 < contour) || (f2 < contour && f3 > contour))
+                        {
+                            double h = sx * (contour - f2) / (f3 - f2);
+                            if (num_points == 0)
+                            {
+                                x1 = xo + sx - h;
+                                y1 = yo + sy;
+                            }
+                            else
+                            {
+                                x2 = xo + sx - h;
+                                y2 = yo + sy;
+                            }
+                            num_points++;
+                        }
+                        if ((f3 > contour && fo < contour) || (f3 < contour && fo > contour))
+                        {
+                            double h = sy * (contour - f3) / (fo - f3);
+                            if (num_points == 0)
+                            {
+                                x1 = xo;
+                                y1 = yo + sy - h;
+                            }
+                            else
+                            {
+                                x2 = xo;
+                                y2 = yo + sy - h;
+                            }
+                            num_points++;
+                        }
+                    
+                        if (num_points == 2)
+                        {
+                            if (ifunc == 0)
+                            {
+                                file << "newpath" << std::endl;
+                                file << x1 * scale << " " << y1 * scale << " moveto" << std::endl;
+                                file << x2 * scale << " " << y2 * scale << " lineto" << std::endl;
+                                file << "closepath" << std::endl;
+                                file << "gsave" << std::endl;
+                                file << "grestore" << std::endl;
+                                file << "0 0 0" << " setrgbcolor" << std::endl;
+                                file << "0.02 setlinewidth" << std::endl;
+                                file << "stroke" << std::endl;
+                            }
+                            else
+                            {
+                                double gs = icont * 1.0 / num_isocontours;
+                                file << "newpath" << std::endl;
+                                file << x1 * scale << " " << y1 * scale << " moveto" << std::endl;
+                                file << x2 * scale << " " << y2 * scale << " lineto" << std::endl;
+                                file << "closepath" << std::endl;
+                                file << "gsave" << std::endl;
+                                file << "grestore" << std::endl;
+                                if (gs < 0.5)
+                                {
+                                    file << 1.0 - 2 * gs << " " << 2 * gs << " " << 0.0 << " setrgbcolor" << std::endl;
+                                }
+                                else
+                                {
+                                    file << 0.0 << " " << 2.0 - 2 * gs << " " << 2 * gs - 1.0 << " setrgbcolor" << std::endl;
+                                }
+                                file << "0.02 setlinewidth" << std::endl;
+                                file << "stroke" << std::endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        delete[] xx;
+        
+        double DX = _xmax[0] - _xmin[0];
+        double DY = _xmax[1] - _xmin[1];
+        
+        // plot domain boundaries
+        file << (_xmin[0] - DX) * scale << "  "  << _xmin[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  _xmin[1]       * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  << (_xmin[1] - DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  << (_xmin[1] - DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file << (_xmin[0] - DX) * scale << "  "  <<  _xmax[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  _xmax[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file <<  _xmax[0]       * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file <<  _xmax[0]       * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file <<  _xmin[0]       * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file <<  _xmin[0]       * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        
+        // plot domain boundaries
+        file << _xmin[0] * scale << "  " << _xmin[1] * scale << "  ";
+        file << _xmax[0] * scale << "  " << _xmin[1] * scale << "  ";
+        file << _xmax[0] * scale << "  " << _xmax[1] * scale << "  ";
+        file << _xmin[0] * scale << "  " << _xmax[1] * scale << "  ";
+        file << "quad_bold"      << std::endl;
+        
+        file << "showpage" << std::endl;
+        
+    }
+    
+    void VPSApproximation::isocontouring_solid(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours)
+    {
+        std::fstream file(file_name.c_str(), std::ios::out);
+        file << "%!PS-Adobe-3.0" << std::endl;
+        file << "72 72 scale     % one unit = one inch" << std::endl;
+        
+        double xmin(_xmin[0]);
+        double ymin(_xmin[1]);
+        double Lx(_xmax[0] - _xmin[0]);
+        double Ly(_xmax[1] - _xmin[0]);
+        
+        double scale_x, scale_y, scale;
+        double shift_x, shift_y;
+        
+        scale_x = 6.5 / Lx;
+        scale_y = 9.0 / Ly;
+        
+        if (scale_x < scale_y)
+        {
+            scale = scale_x;
+            shift_x = 1.0 - xmin * scale;
+            shift_y = 0.5 * (11.0 - Ly * scale) - ymin * scale;
+        }
+        else
+        {
+            scale = scale_y;
+            shift_x = 0.5 * (8.5 - Lx * scale) - xmin * scale;
+            shift_y = 1.0 - ymin * scale;
+        }
+        file << shift_x << " " << shift_y << " translate" << std::endl;
+        
+        
+        file << "/redseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/blueseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackquad      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/circ    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " 0.002 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/redfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/bluefcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/quad_white      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1.0 setgray fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/quad_bold      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        std::vector<double> poly_x;
+        std::vector<double> poly_y;
+        
+        contours.push_back(100.00);
+        
+        size_t num_cells(1000);
+        double* xx = new double[2];
+        double sx = 1.0 * (_xmax[0] - _xmin[0]) / num_cells;
+        double sy = 1.0 * (_xmax[1] - _xmin[1]) / num_cells;
+        for (size_t i = 0; i < num_cells; i++)
+        {
+            double xo = _xmin[0] + i * sx;
+            for (size_t j = 0; j < num_cells; j++)
+            {
+                double fo(0.0), f1(0.0), f2(0.0), f3(0.0);
+                
+                double yo = _xmin[1] + j * sy;
+                xx[0] = xo; xx[1] = yo;
+                if (plot_test_function)  fo = f_test(xx);
+                else                     fo = evaluate_surrogate(xx);
+                xx[0] = xo+sx; xx[1] = yo;
+                if (plot_test_function)  f1 = f_test(xx);
+                else                     f1 = evaluate_surrogate(xx);
+                xx[0] = xo + sx; xx[1] = yo + sy;
+                if (plot_test_function)  f2 = f_test(xx);
+                else                     f2 = evaluate_surrogate(xx);
+                xx[0] = xo; xx[1] = yo + sy;
+                if (plot_test_function)  f3 = f_test(xx);
+                else                     f3 = evaluate_surrogate(xx);
+                
+                //std::cout << "fo = " << fo << " , f1 = " << f1 << " , f2 = " << f2 << " , f3 = " << f3 << std::endl;
+                
+                size_t num_isocontours = contours.size();
+                for (size_t icont = 0; icont < num_isocontours; icont++)
+                {
+                    double contour = contours[icont];
+                    double contour_m = - 1000.00;
+                    if (icont > 0) contour_m = contours[icont - 1];
+                    
+                    //std::cout<< "contour_m = " << contour_m << " , contour = " << contour << std::endl;
+                    
+                    poly_x.clear(); poly_y.clear();
+                    
+                    // moving right
+                    if (fo >= contour_m - 1E-10 && fo < contour + 1E-10)
+                    {
+                        poly_x.push_back(xo);
+                        poly_y.push_back(yo);
+                        if ((fo > contour && f1 < contour) || (fo < contour && f1 > contour))
+                        {
+                            double h = sx * (contour - fo) / (f1 - fo);
+                            poly_x.push_back(xo + h);
+                            poly_y.push_back(yo);
+                        }
+                        else if ((fo > contour_m && f1 < contour_m) || (fo < contour_m && f1 > contour_m))
+                        {
+                            double h = sx * (contour_m - fo) / (f1 - fo);
+                            poly_x.push_back(xo + h);
+                            poly_y.push_back(yo);
+                        }
+                    }
+                    else if ((fo > contour_m && f1 < contour_m) || (fo < contour_m && f1 > contour_m))
+                    {
+                        double hm = sx * (contour_m - fo) / (f1 - fo);
+                        double h = hm;
+                        if ((fo > contour && f1 < contour) || (fo < contour && f1 > contour))
+                        {
+                            h = sx * (contour - fo) / (f1 - fo);
+                        }
+                        if (h < hm)
+                        {
+                            double tmp = h; h = hm; hm = tmp;
+                        }
+                        poly_x.push_back(xo + hm);
+                        poly_y.push_back(yo);
+                        
+                        if (h - hm > 1E-10)
+                        {
+                            poly_x.push_back(xo + h);
+                            poly_y.push_back(yo);
+                        }
+                    }
+                    else if ((fo > contour && f1 < contour) || (fo < contour && f1 > contour))
+                    {
+                        double h = sx * (contour - fo) / (f1 - fo);
+                        poly_x.push_back(xo + h);
+                        poly_y.push_back(yo);
+                    }
+                    
+                    // moving up
+                    if (f1 >= contour_m - 1E-10 && f1 < contour + 1E-10)
+                    {
+                        poly_x.push_back(xo + sx);
+                        poly_y.push_back(yo);
+                        if ((f1 > contour && f2 < contour) || (f1 < contour && f2 > contour))
+                        {
+                            double h = sy * (contour - f1) / (f2 - f1);
+                            poly_x.push_back(xo + sx);
+                            poly_y.push_back(yo + h);
+                        }
+                        else if ((f1 > contour_m && f2 < contour_m) || (f1 < contour_m && f2 > contour_m))
+                        {
+                            double h = sy * (contour_m - f1) / (f2 - f1);
+                            poly_x.push_back(xo + sx);
+                            poly_y.push_back(yo + h);
+                        }
+
+                    }
+                    else if ((f1 > contour_m && f2 < contour_m) || (f1 < contour_m && f2 > contour_m))
+                    {
+                        double hm = sy * (contour_m - f1) / (f2 - f1);
+                        double h = hm;
+                        if ((f1 > contour && f2 < contour) || (f1 < contour && f2 > contour))
+                        {
+                            h = sy * (contour - f1) / (f2 - f1);
+                        }
+                        if (h < hm)
+                        {
+                            double tmp = h; h = hm; hm = tmp;
+                        }
+                        poly_x.push_back(xo + sx);
+                        poly_y.push_back(yo + hm);
+
+                        if (h - hm > 1E-10)
+                        {
+                            poly_x.push_back(xo + sx);
+                            poly_y.push_back(yo + h);
+                        }
+                    }
+                    else if ((f1 > contour && f2 < contour) || (f1 < contour && f2 > contour))
+                    {
+                        double h = sy * (contour - f1) / (f2 - f1);
+                        poly_x.push_back(xo + sx);
+                        poly_y.push_back(yo + h);
+                    }
+                    
+                    // moving left
+                    if (f2 >= contour_m - 1E-10 && f2 < contour + 1E-10)
+                    {
+                        poly_x.push_back(xo + sx);
+                        poly_y.push_back(yo + sy);
+                        if ((f2 > contour && f3 < contour) || (f2 < contour && f3 > contour))
+                        {
+                            double h = sx * (contour - f2) / (f3 - f2);
+                            poly_x.push_back(xo + sx - h);
+                            poly_y.push_back(yo + sy);
+                        }
+                        else if ((f2 > contour_m && f3 < contour_m) || (f2 < contour_m && f3 > contour_m))
+                        {
+                            double h = sx * (contour_m - f2) / (f3 - f2);
+                            poly_x.push_back(xo + sx - h);
+                            poly_y.push_back(yo + sy);
+                        }
+                    }
+                    else if ((f2 > contour_m && f3 < contour_m) || (f2 < contour_m && f3 > contour_m))
+                    {
+                        double hm = sx * (contour_m - f2) / (f3 - f2);
+                        double h = hm;
+                        if ((f2 > contour && f3 < contour) || (f2 < contour && f3 > contour))
+                        {
+                            h = sx * (contour - f2) / (f3 - f2);
+                        }
+                        if (h < hm)
+                        {
+                            double tmp = h; h = hm; hm = tmp;
+                        }
+                        poly_x.push_back(xo + sx - hm);
+                        poly_y.push_back(yo + sy);
+                        
+                        if (h - hm > 1E-10)
+                        {
+                            poly_x.push_back(xo + sx - h);
+                            poly_y.push_back(yo + sy);
+                        }
+                    }
+                    else if ((f2 > contour && f3 < contour) || (f2 < contour && f3 > contour))
+                    {
+                        double h = sx * (contour - f2) / (f3 - f2);
+                        poly_x.push_back(xo + sx - h);
+                        poly_y.push_back(yo + sy);
+                    }
+                    
+                    // moving down
+                    if (f3 >= contour_m - 1E-10 && f3 < contour + 1E-10)
+                    {
+                        poly_x.push_back(xo);
+                        poly_y.push_back(yo + sy);
+                        if ((f3 > contour && fo < contour) || (f3 < contour && fo > contour))
+                        {
+                            double h = sy * (contour - f3) / (fo - f3);
+                            poly_x.push_back(xo);
+                            poly_y.push_back(yo + sy - h);
+                        }
+                        else if ((f3 > contour_m && fo < contour_m) || (f3 < contour_m && fo > contour_m))
+                        {
+                            double h = sy * (contour_m - f3) / (fo - f3);
+                            poly_x.push_back(xo);
+                            poly_y.push_back(yo + sy - h);
+                        }
+                    }
+                    else if ((f3 > contour_m && fo < contour_m) || (f3 < contour_m && fo > contour_m))
+                    {
+                        double hm = sy * (contour_m - f3) / (fo - f3);
+                        double h = hm;
+                        if ((f3 > contour && fo < contour) || (f3 < contour && fo > contour))
+                        {
+                            h = sy * (contour - f3) / (fo - f3);
+                        }
+                        if (h < hm)
+                        {
+                            double tmp = h; h = hm; hm = tmp;
+                        }
+                        poly_x.push_back(xo);
+                        poly_y.push_back(yo + sy - hm);
+                        
+                        if (h - hm > 1E-10)
+                        {
+                            poly_x.push_back(xo);
+                            poly_y.push_back(yo + sy - h);
+                        }
+                    }
+                    else if ((f3 > contour && fo < contour) || (f3 < contour && fo > contour))
+                    {
+                        double h = sy * (contour - f3) / (fo - f3);
+                        poly_x.push_back(xo);
+                        poly_y.push_back(yo + sy - h);
+                    }
+                    
+                    
+                    size_t num_corners(poly_x.size());
+                    if (num_corners > 1)
+                    {
+                        double gs = 1.0 - icont * 1.0 / num_isocontours;
+                        file << "newpath" << std::endl;
+                        file << poly_x[0] * scale << " " << poly_y[0] * scale << " moveto" << std::endl;
+                        //std::cout<< "*** x = " <<  poly_x[0] << ", y = " << poly_y[0] << std::endl;
+                        for (size_t icorner = 1; icorner < num_corners; icorner++)
+                        {
+                            file << poly_x[icorner] * scale << " " << poly_y[icorner] * scale << " lineto" << std::endl;
+                            //std::cout << "*** x = " <<  poly_x[icorner] << ", y = " << poly_y[icorner] << std::endl;
+                        }
+                        //std::cout << std::endl;
+                        
+                        file << "closepath" << std::endl;
+                        file << "gsave" << std::endl;
+                        file << "grestore" << std::endl;
+                        if (gs < 0.5)
+                        {
+                            file << 1.0 - 2 * gs << " " << 2 * gs << " " << 0.0 << " setrgbcolor" << std::endl;
+                        }
+                        else
+                        {
+                            file << 0.0 << " " << 2.0 - 2 * gs << " " << 2 * gs - 1.0 << " setrgbcolor" << std::endl;
+                        }
+                        file << " fill" << std::endl;
+                    }
+                }
+            }
+        }
+        delete[] xx;
+        
+        double DX = _xmax[0] - _xmin[0];
+        double DY = _xmax[1] - _xmin[1];
+        
+        // plot domain boundaries
+        file << (_xmin[0] - DX) * scale << "  "  << _xmin[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  _xmin[1]       * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  << (_xmin[1] - DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  << (_xmin[1] - DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file << (_xmin[0] - DX) * scale << "  "  <<  _xmax[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  _xmax[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file <<  _xmax[0]       * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file <<  _xmax[0]       * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file <<  _xmin[0]       * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file <<  _xmin[0]       * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        
+        // plot domain boundaries
+        file << _xmin[0] * scale << "  " << _xmin[1] * scale << "  ";
+        file << _xmax[0] * scale << "  " << _xmin[1] * scale << "  ";
+        file << _xmax[0] * scale << "  " << _xmax[1] * scale << "  ";
+        file << _xmin[0] * scale << "  " << _xmax[1] * scale << "  ";
+        file << "quad_bold"      << std::endl;
+        
+        file << "showpage" << std::endl;
+        
+    }
+    
+    
+    void VPSApproximation::plot_neighbors()
+    {
+        std::stringstream ss;
+        ss << "vps_neighbors.ps";
+        std::fstream file(ss.str().c_str(), std::ios::out);
+        file << "%!PS-Adobe-3.0" << std::endl;
+        file << "72 72 scale     % one unit = one inch" << std::endl;
+        
+        double xmin(_xmin[0]);
+        double ymin(_xmin[1]);
+        double Lx(_xmax[0] - _xmin[0]);
+        double Ly(_xmax[1] - _xmin[0]);
+        
+        double scale_x, scale_y, scale;
+        double shift_x, shift_y;
+        
+        scale_x = 6.5 / Lx;
+        scale_y = 9.0 / Ly;
+        
+        if (scale_x < scale_y)
+        {
+            scale = scale_x;
+            shift_x = 1.0 - xmin * scale;
+            shift_y = 0.5 * (11.0 - Ly * scale) - ymin * scale;
+        }
+        else
+        {
+            scale = scale_y;
+            shift_x = 0.5 * (8.5 - Lx * scale) - xmin * scale;
+            shift_y = 1.0 - ymin * scale;
+        }
+        file << shift_x << " " << shift_y << " translate" << std::endl;
+        
+        
+        file << "/redseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/blueseg      % stack: x1 y1 x2 y2" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " 0.005 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackquad      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.02 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/circ    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " 0.002 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/blackfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/redfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1 0 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/bluefcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 0 1 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/greenfcirc    % stack: x y r" << std::endl;
+        file << "{0 360 arc" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 0 1 0 setrgbcolor" << std::endl;
+        file << " fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << " 0 0 0 setrgbcolor" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        
+        file << "/quad_white      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " gsave" << std::endl;
+        file << " 1.0 setgray fill" << std::endl;
+        file << " grestore" << std::endl;
+        file << "} def" << std::endl;
+        
+        file << "/quad_bold      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
+        file << "{newpath" << std::endl;
+        file << " moveto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " lineto" << std::endl;
+        file << " closepath" << std::endl;
+        file << " 0.01 setlinewidth" << std::endl;
+        file << " stroke" << std::endl;
+        file << "} def" << std::endl;
+        
+        for (size_t isample = 0; isample < _num_inserted_points; isample++)
+        {
+            size_t num_neighbors = 0;
+            if (_sample_neighbors[isample] != 0) num_neighbors = _sample_neighbors[isample][0];
+            
+            for (size_t i = 1; i <= num_neighbors; i++)
+            {
+                size_t neighbor = _sample_neighbors[isample][i];
+                // draw a line between isample and neighbor
+                file << _sample_points[isample][0] * scale << "  " << _sample_points[isample][1] * scale << "  ";
+                file << _sample_points[neighbor][0] * scale << "  " << _sample_points[neighbor][1] * scale << "  ";
+                file << "blueseg"     << std::endl;
+            }
+        }
+        
+        double s(0.002 * _diag);
+        for (size_t index = 0; index < _num_inserted_points; index++)
+        {
+            // plot vertex
+            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << s * scale << " ";
+            file << "blackfcirc"     << std::endl; // non-failure disk
+        }
+        
+        double DX = _xmax[0] - _xmin[0];
+        double DY = _xmax[1] - _xmin[1];
+        
+        // plot domain boundaries
+        file << (_xmin[0] - DX) * scale << "  "  << _xmin[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  _xmin[1]       * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  << (_xmin[1] - DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  << (_xmin[1] - DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file << (_xmin[0] - DX) * scale << "  "  <<  _xmax[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  _xmax[1]        * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file <<  _xmax[0]       * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file << (_xmax[0] + DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file <<  _xmax[0]       * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file <<  _xmin[0]       * scale << "  "  <<  (_xmin[1] - DY) * scale << "  ";
+        file <<  _xmin[0]       * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << (_xmin[0] - DX) * scale << "  "  <<  (_xmax[1] + DY) * scale << "  ";
+        file << "quad_white"      << std::endl;
+        
+        
+        // plot domain boundaries
+        file << _xmin[0] * scale << "  " << _xmin[1] * scale << "  ";
+        file << _xmax[0] * scale << "  " << _xmin[1] * scale << "  ";
+        file << _xmax[0] * scale << "  " << _xmax[1] * scale << "  ";
+        file << _xmin[0] * scale << "  " << _xmax[1] * scale << "  ";
+        file << "quad_bold"      << std::endl;
+        
+        file << "showpage" << std::endl;
+
+        
+    }
+
     
     
 

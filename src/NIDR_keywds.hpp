@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1337 distinct keywords (plus 207 aliases) **/
+/** 1338 distinct keywords (plus 207 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -1719,7 +1719,8 @@ static KeyWord
 		{"none",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_none)},
 		{"region",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_region)}
 		},
-	kw_288[1] = {
+	kw_288[2] = {
+		{"discont_grad_threshold",10,0,2,0,0,0.,0.,0,N_mom(Real,discontGradThreshold)},
 		{"surrogate_order",9,0,1,0,0,0.,0.,0,N_mom(int,surrogateOrder)}
 		},
 	kw_289[22] = {
@@ -1744,7 +1745,7 @@ static KeyWord
 		{"samples_file",3,3,5,0,kw_280,0.,0.,-12,N_mom(str,approxImportFile)},
 		{"total_points",9,0,2,0,0,0.,0.,0,N_mom(int,pointsTotal)},
 		{"use_derivatives",8,0,7,0,0,0.,0.,0,N_mom(true,modelUseDerivsFlag)},
-		{"voronoi_surrogate",8,1,1,1,kw_288,0.,0.,0,N_mom(lit,surrogateType_global_voronoi_surrogate)}
+		{"voronoi_surrogate",8,2,1,1,kw_288,0.,0.,0,N_mom(lit,surrogateType_global_voronoi_surrogate)}
 		},
 	kw_290[6] = {
 		{"additive",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)},

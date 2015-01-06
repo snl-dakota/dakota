@@ -2406,6 +2406,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     #define P &DataModelRep::
     static KW<Real, DataModelRep> Rdmo[] = {	// must be sorted
       {"surrogate.neural_network_range", P annRange},
+      {"surrogate.discont_grad_threshold", P discontGradThreshold},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold}};
     #undef P

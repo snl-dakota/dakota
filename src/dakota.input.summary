@@ -1686,6 +1686,7 @@ KEYWORD model
 	    |
 	    ( voronoi_surrogate
 	      [ surrogate_order INTEGER ]
+	      [ discont_grad_threshold REAL ]
 	      )
 	    [ total_points INTEGER
 	    | minimum_points

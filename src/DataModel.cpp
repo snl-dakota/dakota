@@ -26,7 +26,7 @@ DataModelRep::DataModelRep():
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsPolyOrder(0), mlsWeightFunction(0),
   rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
-  annRandomWeight(0), annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
+  annRandomWeight(0), annNodes(0), annRange(0.0), discontGradThreshold(0.0), trendOrder("reduced_quadratic"),
   pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.0),
   surrogateOrder(2),
   pressFlag(false), approxChallengeAnnotated(true), approxChallengeActive(false),
@@ -49,7 +49,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases 
-    << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder 
+    << marsInterpolation << annRandomWeight << annNodes << annRange << discontGradThreshold << trendOrder
     << pointSelection << diagMetrics << crossValidateFlag << numFolds << surrogateOrder  
     << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
     << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
@@ -72,7 +72,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
     >> krigingNugget >> krigingFindNugget >> mlsPolyOrder >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases
-    >> marsInterpolation >> annRandomWeight >> annNodes >> annRange >> trendOrder 
+    >> marsInterpolation >> annRandomWeight >> annNodes >> annRange >> discontGradThreshold >> trendOrder
     >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds >> surrogateOrder 
     >> percentFold >> pressFlag  >> approxChallengeFile >> approxChallengeAnnotated 
     >> approxChallengeActive >> optionalInterfRespPointer >> primaryVarMaps
@@ -95,7 +95,7 @@ void DataModelRep::write(std::ostream& s) const
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
-    << marsInterpolation << annRandomWeight << annNodes << annRange << trendOrder
+    << marsInterpolation << annRandomWeight << annNodes << annRange << discontGradThreshold << trendOrder
     << pointSelection << diagMetrics << crossValidateFlag << numFolds << surrogateOrder  
     << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
     << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps

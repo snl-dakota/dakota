@@ -6798,6 +6798,7 @@ static Model_mp_type
 
 static Real
 	MP_(annRange),
+    MP_(discontGradThreshold),
 	MP_(krigingNugget),
 	MP_(percentFold);
 

@@ -86,6 +86,16 @@ public:
     bool Cholesky(int n, double** A, double** LD);
     void Cholesky_solver(int n, double** LD, double* b, double* x);
     void GMRES(size_t n, double** A, double* b, double* x, double eps);
+    
+    
+    double f_test(double* x);
+    
+    void isocontouring(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
+    
+    void isocontouring_solid(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
+    
+    void plot_neighbors();
+    
 
     
 protected:
@@ -180,6 +190,9 @@ private:
     
     double*  _sample_vsize;
     double   _max_vsize; // size of biggest Voronoi cell
+    
+    double _disc_min_grad; // minimum gradient for discontinuity detection
+    
 
 };
 
@@ -203,6 +216,8 @@ VPSApproximation(const SharedApproxData& shared_data):
     surrogateOrder = dat->approxOrder;
     
     std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+    
+    _disc_min_grad = DBL_MAX;
 
 }
 

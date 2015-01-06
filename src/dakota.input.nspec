@@ -1564,6 +1564,7 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       ( voronoi_surrogate {N_mom(lit,surrogateType_global_voronoi_surrogate)}
         [ surrogate_order INTEGER {N_mom(int,surrogateOrder)} ]
+        [ discont_grad_threshold REAL {N_mom(Real,discontGradThreshold)} ]
        )
       [ 
         total_points INTEGER {N_mom(int,pointsTotal)}

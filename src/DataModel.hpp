@@ -185,6 +185,8 @@ public:
   short annNodes;
   /// range for artificial neural network approximation
   Real annRange;
+  /// gradient threshold for discontinuity detection in VPS
+  Real discontGradThreshold;
   /// scalar integer indicating the order of the Gaussian process mean
   /// (0= constant, 1=linear, 2=quadratic, 3=cubic); from the
   /// \c gaussian_process specification  in \ref ModelSurrG)
