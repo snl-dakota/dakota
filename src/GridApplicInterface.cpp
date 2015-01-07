@@ -125,12 +125,13 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     if (evalCommRank == 0)
       read_results_files(response, fn_eval_id);
   }
-  catch(String& err_msg) {
-    // a String exception involves detection of an incomplete file/data
-    // set.  In the synchronous case, there is no potential for an incomplete
-    // file resulting from a race condition -> echo the error and abort.
-    Cerr << err_msg << std::endl;
-    abort_handler(-1);
+  catch(const FileReadException& fr_except) {
+    // a FileReadException exception involves detection of an
+    // incomplete file/data set.  In the synchronous case, there is no
+    // potential for an incomplete file resulting from a race
+    // condition -> echo the error and abort.
+    Cerr << "\nError reading results file:\n  " << fr_except.what() << std::endl;
+    abort_handler(INTERFACE_ERROR);
   }
   catch(int fail_code) {
     // The approach here is to have catch(int) rethrow the exception to an 
@@ -184,7 +185,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       // File exists; test for complete/valid set of results (an incomplete
       // set can result from a race condition in which Dakota is reading a
       // file that a simulator has not finished writing).  Response::read
-      // throws a String exception if data is missing/misformatted.
+      // throws a FileReadException if data is missing/misformatted.
       //
       PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
       if (queue_it == prp_queue.end()) {
@@ -195,9 +196,9 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       Response response = queue_it->response(); // shallow copy
 
       try { read_results_files(response, fn_eval_id); }
-      catch(String& err_msg) {
+      catch(const FileReadException& fr_except) {
 	//
-	// If a String exception (incomplete file) is caught, set
+	// If a FileReadException exception (incomplete file) is caught, set
 	// err_msg_caught to true so that processing is not performed below.
 	// The for loop will then cycle through the other active asynch. evals.
 	// before coming back to the one with the exception.  This should allow
@@ -209,8 +210,10 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 	IntShMIter map_iter = failCountMap.find(fn_eval_id);
 	if (map_iter != failCountMap.end()) {
 	  if (++map_iter->second > 100) {
-	    Cerr << "Error: too many failed reads for file " << file_to_test
-		 << "\n       check data format and completeness" << std::endl;
+	    Cerr << "Error: too many failed reads for results file " 
+		 << file_to_test
+		 << "\n       check data format and completeness;\n       " 
+		 << fr_except.what() << std::endl;
 	    abort_handler(-1);
 	  }
 	}
@@ -224,7 +227,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 #endif // HAVE_UNISTD_H
 #ifdef ASYNCH_DEBUG
 	Cerr << "Warning: exception caught in reading response file "
-	     << file_to_test << "\nException = \"" << err_msg
+	     << file_to_test << "\nException = \"" << fr_except.what()
 	     << "\"\nException recovery: returning " << file_to_test
 	     << " to processing queue.\n";
 #endif

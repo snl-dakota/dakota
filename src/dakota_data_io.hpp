@@ -15,9 +15,11 @@
 #include "ExperimentDataUtils.hpp"
 #include "MPIPackBuffer.hpp"
 #include <boost/foreach.hpp>
+// including lexical_cast.hpp breaks a number of (mostly RBDO) tests...
+//#include <boost/lexical_cast.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include "boost/serialization/split_free.hpp"
+#include <boost/serialization/split_free.hpp>
 
 namespace boost {
 namespace serialization {
@@ -484,7 +486,11 @@ void read_data_tabular(std::istream& s,
       char err[80];
       std::sprintf(err,
 	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
-      throw std::runtime_error(err);
+      // TODO: enable this code once we can safely include lexical_cast.hpp
+      // std::string err;
+      // err += "At EOF: insufficient tabular data for SerialDenseVector[";
+      // err += boost::lexical_cast<std::string>(i) + "]";
+      throw TabularDataTruncated(err);
     }
   }
 }
@@ -509,7 +515,11 @@ void read_data_partial_tabular(std::istream& s,
       char err[80];
       std::sprintf(err,
 	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
-      throw String(err);
+      // TODO: enable this code once we can safely include lexical_cast.hpp
+      // std::string err;
+      // err += "At EOF: insufficient tabular data for SerialDenseVector[";
+      // err += boost::lexical_cast<std::string>(i) + "]";
+      throw TabularDataTruncated(err);
     }
   }
 }
@@ -533,7 +543,11 @@ void read_data_partial_tabular(std::istream& s, OrdinalType start_index,
       char err[80];
       std::sprintf(err,
 	      "At EOF: insufficient tabular data for StringMultiArray[%d]", i);
-      throw String(err);
+      // TODO: enable this code once we can safely include lexical_cast.hpp
+      // std::string err;
+      // err += "At EOF: insufficient tabular data for StringMultiArray[";
+      // err += boost::lexical_cast<std::string>(i) + "]";
+      throw TabularDataTruncated(err);
     }
   }
 }

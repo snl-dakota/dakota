@@ -17,6 +17,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 
@@ -124,9 +125,7 @@ inline bool strcontains(const std::string& input, const std::string& test)
 /// create a label by appending a numerical tag to the root_label
 inline void build_label(String& label, const String& root_label, size_t tag)
 {
-  char string[10];
-  std::sprintf(string, "%i", (int)tag);
-  label = root_label + String(string); // append tag to root label
+  label = root_label + boost::lexical_cast<std::string>(tag);
 }
 
 /// create an array of labels by tagging root_label for each entry in

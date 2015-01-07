@@ -415,10 +415,7 @@ void OutputManager::read_write_restart(bool restart_requested,
 	     << "' (boost::archive exception):\n      " << e.what() << std::endl;
 	abort_handler(IO_ERROR);
       }
-      catch(const std::string& err_msg) {
-        Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-        break;
-      }
+      // serialization functions no longer throw strings
 
       read_pairs.insert(current_pair); 
       ++cntr;

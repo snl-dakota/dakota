@@ -683,7 +683,7 @@ void Variables::read_annotated(std::istream& s)
   // exception handling since EOF may not be captured properly; shouldn't get 
   // hit if loops wrapping this read whitespace before reading Variables...
   if (s.eof())
-    throw String("Empty record in Variables::read_annotated(std::istream&)");
+    throw FileReadException("Empty record in Variables::read_annotated()");
   s >> view.second;
   size_t i;
   SizetArray vars_comps_totals(NUM_VC_TOTALS);

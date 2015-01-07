@@ -16,7 +16,7 @@
 #define GLOBAL_DEFS_H
 
 #include "dakota_system_defs.hpp"
-
+#include <stdexcept>
 
 namespace Dakota {
 
@@ -63,6 +63,33 @@ extern short abort_mode;
 
 /// throw or exit depending on abort_mode
 void abort_throw_or_exit(int code);
+
+
+/// base class for Dakota file read exceptions (to allow catching both
+/// tabular and general file truncation issues)
+class FileReadException: public std::runtime_error
+{
+public:
+  FileReadException(const std::string& msg): std::runtime_error(msg)
+  { /* empty ctor */ }
+};
+
+/// exception thrown when data read truncated 
+class TabularDataTruncated: public FileReadException
+{ 
+public:
+  TabularDataTruncated(const std::string& msg): FileReadException(msg)
+  { /* empty ctor */ }
+};
+
+/// exception throw for other results file read error
+class ResultsFileError: public FileReadException 
+{
+public:
+  ResultsFileError(const std::string& msg): FileReadException(msg)
+  { /* empty ctor */ }			    
+};
+
 
 extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;

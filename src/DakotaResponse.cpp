@@ -445,7 +445,7 @@ void Response::read(std::istream& s)
   // "fail" or "FAIL" then it resets the stream pointer to the beginning.  This
   // works for ifstreams, but may be problematic for other istreams.  Once 
   // failure is detected, an exception of type int is thrown (to distinguish 
-  // from std::string exceptions) that will be caught after try{ execute() }.
+  // from FileReadExceptions) that will be caught after try{ execute() }.
   // NOTE: s.peek() triggering on 'f' or 'F' would be another possibility.
   // NOTE: reading the first token using "s >> fail_string;" should work for a
   //       file having less than four characters.
@@ -490,12 +490,12 @@ void Response::read(std::istream& s)
 	if(token == re_match(token, reg_exp))
 	  functionValues[i] = std::atof(token.c_str());// handles NaN and +/-Inf
 	else
-	  throw std::string( "Response format error with functionValue "
-			      + boost::lexical_cast<std::string>(i+1) );
+	  throw ResultsFileError( "Response format error with functionValue "
+				  + boost::lexical_cast<std::string>(i+1) );
       }
       else
-        throw std::string( "At EOF: insufficient data for functionValue "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "At EOF: insufficient data for functionValue "
+				+ boost::lexical_cast<std::string>(i+1) );
 
       if (s) { // get optional tag
 	//s.ignore(256, '\n'); // simple soln., but requires consistent '\n'
@@ -522,20 +522,20 @@ void Response::read(std::istream& s)
       if (s)
         s >> l_bracket;
       else
-        throw std::string( "At EOF: insufficient data for functionGradient "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "At EOF: insufficient data for functionGradient "
+				+ boost::lexical_cast<std::string>(i+1) );
 
       read_col_vector_trans(s, (int)i, functionGradients); // fault tolerant
 
       if (s)
         s >> r_bracket;
       else {
-        throw std::string( "At EOF: insufficient data for functionGradient "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "At EOF: insufficient data for functionGradient "
+				+ boost::lexical_cast<std::string>(i+1) );
       }
       if (l_bracket != '[' || r_bracket != ']') {
-        throw std::string( "Response format error with functionGradient "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "Response format error with functionGradient "
+				+ boost::lexical_cast<std::string>(i+1) );
       }
     }
   }
@@ -548,21 +548,21 @@ void Response::read(std::istream& s)
       if (s)
         s >> l_brackets[0] >> l_brackets[1];
       else
-        throw std::string( "At EOF: insufficient data for functionHessian "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "At EOF: insufficient data for functionHessian "
+				+ boost::lexical_cast<std::string>(i+1) );
 
       Dakota::read_data(s, functionHessians[i]); // fault tolerant
 
       if (s)
         s >> r_brackets[0] >> r_brackets[1];
       else {
-        throw std::string( "At EOF: insufficient data for functionHessian "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "At EOF: insufficient data for functionHessian "
+				+ boost::lexical_cast<std::string>(i+1) );
       }
       if ((l_brackets[0] != '[' || l_brackets[1] != '[')  ||
 	  (r_brackets[0] != ']' || r_brackets[1] != ']')) {
-        throw std::string( "Response format error with functionHessian "
-                           + boost::lexical_cast<std::string>(i+1) );
+        throw ResultsFileError( "Response format error with functionHessian "
+				+ boost::lexical_cast<std::string>(i+1) );
       }
     }
   }
@@ -759,12 +759,10 @@ void Response::read_tabular(std::istream& s)
       if (s)
 	{ s >> token; functionValues[i] = std::atof(token.c_str()); }
       else
-	throw std::string( "At EOF: insufficient data for RealVector["
-			   + boost::lexical_cast<std::string>(i) + "]" );
+	throw TabularDataTruncated("At EOF: insufficient data for RealVector["
+				   + boost::lexical_cast<std::string>(i) + "]");
   }
 }
-// throw TabularDataTruncated("At EOF: insufficient data for RealVector["
-// 			   + boost::lexical_cast<std::string>(i) + "]");
 
 
 /** write_tabular is used for output of functionValues in a tabular

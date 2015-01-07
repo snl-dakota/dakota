@@ -319,6 +319,12 @@ void read_data_tabular(const std::string& input_filename,
     Cout << std::endl;
     abort_handler(-1);
   }
+  catch (const TabularDataTruncated& tdtrunc) {
+    // this will be thrown if Variables was truncated
+    Cerr << "\nError (" << context_message << "): could not read variables from "
+	 << "file " << input_filename << ";\n  " << tdtrunc.what() << std::endl;
+    abort_handler(-1);
+  }
   catch(...) {
     Cerr << "\nError (" << context_message << "): could not read file " 
 	 << input_filename << " (unknown error).";
@@ -444,15 +450,18 @@ void read_data_tabular(const std::string& input_filename,
       vars.read_tabular(data_file, active_only);
       resp.read_tabular(data_file);
     }
-    // TODO: catch any; don't break on these errors!
-    catch (const std::ios_base::failure& failorbad_except) {
-      break; // out of while loop
+    catch (const TabularDataTruncated& tdtrunc) {
+      // this will be thrown if either Variables or Response was truncated
+      Cerr << "\nError (" << context_message << "): could not read variables or "
+	   << "responses from file " << input_filename << ";\n  " 
+	   << tdtrunc.what() << std::endl;
+      abort_handler(-1);
     }
-    catch(String& err_msg) {
-      //Cerr << "Warning: " << err_msg << std::endl;
-      break; // out of while loop
+    catch(...) {
+      Cerr << "\nError (" << context_message << "): could not read file " 
+	   << input_filename << " (unknown error).";
+      abort_handler(-1);
     }
-
     if (verbose)
       Cout << "Variables and responses read:\n" << vars << resp;
     input_vars.push_back(vars.copy());       // deep copy
@@ -582,11 +591,11 @@ size_t read_data_tabular(const std::string& input_filename,
     Cout << std::endl;
     abort_handler(-1);
   }
-  catch(const String& str_except) {
-    Cerr << "\nError (" << context_message << "): could not read file " 
-	 << input_filename << ";\n  " << str_except << "." << std::endl;
+  catch (const TabularDataTruncated& tdtrunc) {
+    // this will be thrown if Variables was truncated
+    Cerr << "\nError (" << context_message << "): could not read variables from "
+	 << "file " << input_filename << ";\n  " << tdtrunc.what() << std::endl;
     abort_handler(-1);
-
   }
   catch(...) {
     Cerr << "\nError (" << context_message << "): could not read file " 

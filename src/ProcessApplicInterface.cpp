@@ -216,11 +216,13 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
       read_results_files(response, fn_eval_id, final_eval_id_tag(fn_eval_id));
   }
 
-  catch(std::string& err_msg) {
-    // a std::string exception involves detection of an incomplete file/data
+  // catch exception for ResultsFileError or TabularDataTruncated;
+  // TODO: need to verify that tabular failure can happen
+  catch(const FileReadException& fr_except) {
+    // a FileReadException means detection of an incomplete file/data
     // set.  In the synchronous case, there is no potential for an incomplete 
     // file resulting from a race condition -> echo the error and abort.
-    Cerr << err_msg << std::endl;
+    Cerr << "\nError reading results file:\n  " << fr_except.what() << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -230,10 +232,10 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   // the catch within manage_failure or a catch that calls manage_failure).  An
   // alternative solution would be to eliminate the try block above and move 
   // all catches to the higher level of try { derived_map() } - this would be
-  // simpler to understand but would replicate catch(std::string) in map, 
-  // manage_failure, and serve.  By having catch(std::string) here and having
-  // catch(int) rethrow, we eliminate unnecessary proliferation of 
-  // catch(std::string).
+  // simpler to understand but would replicate catch(FileReadException) in map, 
+  // manage_failure, and serve.  By having catch(FileReadException) here and 
+  // having catch(int) rethrow, we eliminate unnecessary proliferation of 
+  // catch(FileReadException).
   catch(int fail_code) { // failure capture exception thrown by response.read()
     //Cout << "Rethrowing int." << std::endl;
     throw; // from this catch to the outer one in manage_failure

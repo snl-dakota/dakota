@@ -157,10 +157,7 @@ void print_restart(int argc, char** argv, String print_dest)
 	   << e.what() << std::endl;
       abort_handler(-1);
     }
-    catch(const std::string& err_msg) {
-      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-      break;
-    }
+    // serialization functions no longer throw strings
 
     cntr++;
     if (print_dest == "stdout")
@@ -216,10 +213,7 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
 	   << e.what() << std::endl;
       abort_handler(-1);
     }
-    catch(const std::string& err_msg) {
-      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-      break;
-    }
+    // serialization functions no longer throw strings
 
     read_pairs.insert(current_pair);
     ++num_evals;
@@ -386,10 +380,7 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 	   << e.what() << std::endl;
       abort_handler(-1);
     }
-    catch(const std::string& err_msg) {
-      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-      break;
-    }
+    // serialization functions no longer throw strings
 
     // The number of variables or responses may differ across
     // different interfaces.  Output the header when needed due to
@@ -457,10 +448,14 @@ void read_neutral(int argc, char** argv)
   neutral_file_stream >> std::ws;
   while (neutral_file_stream.good() && !neutral_file_stream.eof()) {
     ParamResponsePair current_pair;
-    try { current_pair.read_annotated(neutral_file_stream); }
-    catch(String& err_msg) {
-      //Cerr << "Warning: " << err_msg << endl;
-      break; // out of while loop
+    try { 
+      current_pair.read_annotated(neutral_file_stream); 
+    }
+    // shouldn't need to allow failed partial reads throwing string anymore
+    catch(const FileReadException& fr_except) {
+      Cerr << "\nError reading neutral file:\n  " << fr_except.what() 
+	   << std::endl;
+      abort_handler(-1);
     }
     restart_output_archive & current_pair;
     cntr++;
@@ -548,10 +543,7 @@ void repair_restart(int argc, char** argv, String identifier_type)
 	   << e.what() << std::endl;
       abort_handler(-1);
     }
-    catch(const std::string& err_msg) {
-      Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-      break;
-    }
+    // serialization functions no longer throw strings
 
     cntr++;
 
@@ -625,10 +617,7 @@ void concatenate_restart(int argc, char** argv)
 	     << e.what() << std::endl;
 	abort_handler(-1);
       }
-      catch(const std::string& err_msg) {
-        Cout << "\nWarning reading restart file: " << err_msg << std::endl;
-        break;
-      }
+      // serialization functions no longer throw strings
       restart_output_archive & current_pair;
       cntr++;
  
