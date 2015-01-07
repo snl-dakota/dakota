@@ -69,6 +69,18 @@ void ExperimentResponse::set_scalar_covariance(RealVector& scalarSigmas)
   expDataCovariance.print_cov();
 }
 
+void ExperimentResponse::set_full_covariance(std::vector<RealMatrix> &matrices,
+                           std::vector<RealVector> &diagonals,                                                RealVector &scalars,                                                               IntVector matrix_map_indices,
+                           IntVector diagonal_map_indices,
+                           IntVector scalar_map_indices )
+{
+  expDataCovariance.set_covariance_matrices( matrices, diagonals, scalars,
+                                     matrix_map_indices,
+                                     diagonal_map_indices,
+                                     scalar_map_indices );
+  expDataCovariance.print_cov();
+}
+
 Real ExperimentResponse::get_scalar_covariance(const int this_response)
 {
   RealMatrix thisCovariance;
@@ -78,6 +90,11 @@ Real ExperimentResponse::get_scalar_covariance(const int this_response)
   //return thisCovariance[0][0];
   // BUT, in the meantime, properly satisfy the interface (return a Real)
   return 0;
+}
+ 
+Real ExperimentResponse::apply_covariance(RealVector &residual)
+{
+  expDataCovariance.apply_experiment_covariance(residual);
 }
 
 } // namespace Dakota

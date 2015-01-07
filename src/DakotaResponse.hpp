@@ -255,7 +255,13 @@ public:
   virtual void set_scalar_covariance(RealVector& scalars);
   /// method to get the covariance matrix defined for ExperimentResponse
   virtual Real get_scalar_covariance(const int this_response);
-
+  /// method to set the full covariance matrices for ExperimentResponse
+  virtual void set_full_covariance(std::vector<RealMatrix> &matrices, 
+                           std::vector<RealVector> &diagonals,                                           RealVector &scalars,                                                          IntVector matrix_map_indices,                      
+                           IntVector diagonal_map_indices, 
+                           IntVector scalar_map_indices ); 
+  /// method to compute the triple product v'*inv(C)*v.
+  virtual Real apply_covariance(RealVector &residuals);
 
 protected:
 

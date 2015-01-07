@@ -1362,12 +1362,37 @@ void Response::set_scalar_covariance(RealVector& scalars)
   }
 }
 
+void Response::set_full_covariance(std::vector<RealMatrix> &matrices, 
+                                   std::vector<RealVector> &diagonals,                                           RealVector &scalars,                                                          IntVector matrix_map_indices,                                                 IntVector diagonal_map_indices, 
+                                   IntVector scalar_map_indices )
+{
+  if (responseRep)
+    responseRep->set_full_covariance(matrices, diagonals, scalars, matrix_map_indices, diagonal_map_indices, scalar_map_indices);
+  else {
+    Cerr << "\nError: set_full_covariance() not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
 Real Response::get_scalar_covariance(const int this_response)
 {
   if (responseRep)
     return responseRep->get_scalar_covariance(this_response);
   else {
-    Cerr << "\nError: get_scalar_covaraince() not defined for this response "
+    Cerr << "\nError: get_scalar_covariance() not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+    return 0;
+  }
+}
+
+Real Response::apply_covariance(RealVector &residual)
+{
+  if (responseRep)
+    return responseRep->apply_covariance(residual);
+  else {
+    Cerr << "\nError: apply_covariance not defined for this response "
          << std::endl;
     abort_handler(-1);
     return 0;
