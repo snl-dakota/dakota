@@ -1392,7 +1392,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	Locked_db();
 
     #define P &DataMethodRep::
-    static KW<RealVector, DataMethodRep> RVdme[] = {	// must be sorted
+    static KW<RealVector, DataMethodRep> RVdme[] = {
+      // must be sorted by string (key)
 	{"concurrent.parameter_sets", P concurrentParameterSets},
 	{"jega.distance_vector", P distanceVector},
 	{"jega.niche_vector", P nicheVector},
@@ -1420,7 +1421,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	Locked_db();
 
     #define P &DataModelRep::
-    static KW<RealVector, DataModelRep> RVdmo[] = {	// must be sorted
+    static KW<RealVector, DataModelRep> RVdmo[] = {	
+      // must be sorted by string (key)
 	{"nested.primary_response_mapping", P primaryRespCoeffs},
 	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
 	{"surrogate.kriging_correlations", P krigingCorrelations},
@@ -1435,7 +1437,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
   else if ((L = Begins(entry_name, "variables."))) {
 
     #define P &DataVariablesRep::
-    static KW<RealVector, DataVariablesRep> RVdv[] = {	// must be sorted
+    static KW<RealVector, DataVariablesRep> RVdv[] = {	
+      // must be sorted by string (key)
 	{"beta_uncertain.alphas", P betaUncAlphas},
 	{"beta_uncertain.betas", P betaUncBetas},
 	{"beta_uncertain.lower_bounds", P betaUncLowerBnds},
@@ -1530,7 +1533,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	Locked_db();
 
     #define P &DataResponsesRep::
-    static KW<RealVector, DataResponsesRep> RVdr[] = {	// must be sorted
+    static KW<RealVector, DataResponsesRep> RVdr[] = {	
+      // must be sorted by string (key)
 	{"coordinate_list", P coordsPerField},
 	{"exp_config_variables", P expConfigVars},
 	{"exp_observations", P expObservations},
@@ -1565,7 +1569,8 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntVector, DataVariablesRep> IVdv[] = {	// must be sorted
+    static KW<IntVector, DataVariablesRep> IVdv[] = {	
+      // must be sorted by string (key)
 	{"binomial_uncertain.num_trials", P binomialUncNumTrials},
 	{"discrete_aleatory_uncertain_int.initial_point",
 	 P discreteIntAleatoryUncVars},
@@ -1608,7 +1613,8 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 	if (dbRep->methodDBLocked)
 		Locked_db();
     #define P &DataMethodRep::
-    static KW<IntVector, DataMethodRep> IVdme[] = {	// must be sorted
+    static KW<IntVector, DataMethodRep> IVdme[] = {	
+      // must be sorted by string (key)
 	{"fsu_quasi_mc.primeBase", P primeBase},
 	{"fsu_quasi_mc.sequenceLeap", P sequenceLeap},
 	{"fsu_quasi_mc.sequenceStart", P sequenceStart},
@@ -1622,7 +1628,8 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if (dbRep->responsesDBLocked)
       Locked_db();
     #define P &DataResponsesRep::
-    static KW<IntVector, DataResponsesRep> IVdr[] = {	// must be sorted
+    static KW<IntVector, DataResponsesRep> IVdr[] = {	
+      // must be sorted by string (key)
 	{"lengths", P fieldLengths},
 	{"num_coordinates_per_field", P numCoordsPerField}};
     #undef P
@@ -1645,7 +1652,8 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<BitArray, DataVariablesRep> BAdv[] = { // must be sorted
+    static KW<BitArray, DataVariablesRep> BAdv[] = { 
+      // must be sorted by string (key)
 	{"binomial_uncertain.categorical", P binomialUncCat},
 	{"discrete_design_range.categorical", P discreteDesignRangeCat},
 	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
@@ -1686,7 +1694,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<SizetArray, DataMethodRep> SZAdme[] = {	// must be sorted
+    static KW<SizetArray, DataMethodRep> SZAdme[] = {	
+      // must be sorted by string (key)
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.expansion_samples", P expansionSamples}};
     #undef P
@@ -1711,7 +1720,8 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<UShortArray, DataMethodRep> USAdme[] = {	// must be sorted
+    static KW<UShortArray, DataMethodRep> USAdme[] = {	
+      // must be sorted by string (key)
 	{"nond.expansion_order", P expansionOrder},
 	{"nond.quadrature_order", P quadratureOrder},
 	{"nond.sparse_grid_level", P sparseGridLevel},
@@ -1754,7 +1764,8 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<RealVectorArray, DataMethodRep> RVAdme[] = { // must be sorted
+    static KW<RealVectorArray, DataMethodRep> RVAdme[] = { 
+      // must be sorted by string (key)
 	{"nond.gen_reliability_levels", P genReliabilityLevels},
 	{"nond.probability_levels", P probabilityLevels},
 	{"nond.reliability_levels", P reliabilityLevels},
@@ -1799,7 +1810,8 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<IntSet, DataResponsesRep> ISdr[] = {	// must be sorted
+    static KW<IntSet, DataResponsesRep> ISdr[] = {	
+      // must be sorted by string (key)
 	{"gradients.mixed.id_analytic", P idAnalyticGrads},
 	{"gradients.mixed.id_numerical", P idNumericalGrads},
 	{"hessians.mixed.id_analytic", P idAnalyticHessians},
@@ -1826,7 +1838,8 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntSetArray, DataVariablesRep> ISAdv[] = { // must be sorted
+    static KW<IntSetArray, DataVariablesRep> ISAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_design_set_int.values", P discreteDesignSetInt},
 	{"discrete_state_set_int.values", P discreteStateSetInt}};
     #undef P
@@ -1849,7 +1862,8 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<StringSetArray, DataVariablesRep> SSAdv[] = { // must be sorted
+    static KW<StringSetArray, DataVariablesRep> SSAdv[] = { 
+      // must be sorted by string (key)
       {"discrete_design_set_string.values", P discreteDesignSetStr},
       {"discrete_state_set_string.values", P discreteStateSetStr}};
     #undef P
@@ -1873,7 +1887,8 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<RealSetArray, DataVariablesRep> RSAdv[] = { // must be sorted
+    static KW<RealSetArray, DataVariablesRep> RSAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_design_set_real.values", P discreteDesignSetReal},
 	{"discrete_state_set_real.values", P discreteStateSetReal}};
     #undef P
@@ -1897,7 +1912,8 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { // must be sorted
+    static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_uncertain_set_int.values_probs",
 	 P discreteUncSetIntValuesProbs},
 	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
@@ -1921,7 +1937,8 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
+    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_uncertain_set_string.values_probs",
 	 P discreteUncSetStrValuesProbs},
 	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
@@ -1946,7 +1963,8 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = { // must be sorted
+    static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_uncertain_set_real.values_probs",
 	 P discreteUncSetRealValuesProbs},
 	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
@@ -1974,7 +1992,8 @@ get_rrrma(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = {
-      // must be sorted
+      
+      // must be sorted by string (key)
       {"continuous_interval_uncertain.basic_probs",
        P continuousIntervalUncBasicProbs}};
     #undef P
@@ -2001,7 +2020,8 @@ get_iirma(const String& entry_name) const
 	Locked_db();
     #define P &DataVariablesRep::
     static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = {
-      // must be sorted
+      
+      // must be sorted by string (key)
       {"discrete_interval_uncertain.basic_probs",
        P discreteIntervalUncBasicProbs}};
     #undef P
@@ -2026,7 +2046,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<StringArray, DataMethodRep> SAds[] = {	// must be sorted
+    static KW<StringArray, DataMethodRep> SAds[] = {	
+      // must be sorted by string (key)
 	{"coliny.misc_options", P miscOptions},
 	{"hybrid.method_names", P hybridMethodNames},
 	{"hybrid.method_pointers", P hybridMethodPointers},
@@ -2043,7 +2064,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<StringArray, DataModelRep> SAdmo[] = {	// must be sorted
+    static KW<StringArray, DataModelRep> SAdmo[] = {	
+      // must be sorted by string (key)
 	{"metrics", P diagMetrics},
 	{"nested.primary_variable_mapping", P primaryVarMaps},
 	{"nested.secondary_variable_mapping", P secondaryVarMaps}};
@@ -2057,7 +2079,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<StringArray, DataVariablesRep> SAdv[] = {	// must be sorted
+    static KW<StringArray, DataVariablesRep> SAdv[] = {	
+      // must be sorted by string (key)
 	{"continuous_aleatory_uncertain.labels", P continuousAleatoryUncLabels},
 	{"continuous_design.labels", P continuousDesignLabels},
 	{"continuous_design.scale_types", P continuousDesignScaleTypes},
@@ -2113,7 +2136,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<StringArray, DataInterfaceRep> SAdi[] = {	// must be sorted
+    static KW<StringArray, DataInterfaceRep> SAdi[] = {	
+      // must be sorted by string (key)
 	{ "application.analysis_drivers", P analysisDrivers},
 	{ "copyFiles", P copyFiles},
 	{ "linkFiles", P linkFiles}};
@@ -2127,7 +2151,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<StringArray, DataResponsesRep> SAdr[] = {	// must be sorted
+    static KW<StringArray, DataResponsesRep> SAdr[] = {	
+      // must be sorted by string (key)
 	{ "labels", P responseLabels},
 	{ "nonlinear_equality_scale_types", P nonlinearEqScaleTypes},
 	{ "nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes},
@@ -2168,7 +2193,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	Null_rep("get_string");
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
-    static KW<String, DataEnvironmentRep> Sde[] = { // must be sorted
+    static KW<String, DataEnvironmentRep> Sde[] = { 
+      // must be sorted by string (key)
 	{"error_file", P errorFile},
 	{"output_file", P outputFile},
 	{"post_run_input", P postRunInput},
@@ -2192,7 +2218,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<String, DataMethodRep> Sdme[] = {	// must be sorted
+    static KW<String, DataMethodRep> Sdme[] = {	
+      // must be sorted by string (key)
 	{"asynch_pattern_search.merit_function", P meritFunction},
 	{"batch_selection", P batchSelectionType},
 	{"coliny.beta_solver_name", P betaSolverName},
@@ -2250,7 +2277,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<String, DataModelRep> Sdmo[] = {	// must be sorted
+    static KW<String, DataModelRep> Sdmo[] = {	
+      // must be sorted by string (key)
 	{"id", P idModel},
 	{"interface_pointer", P interfacePointer},
 	{"nested.sub_method_pointer", P subMethodPointer},
@@ -2285,7 +2313,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<String, DataInterfaceRep> Sdi[] = {	// must be sorted
+    static KW<String, DataInterfaceRep> Sdi[] = {	
+      // must be sorted by string (key)
 	{"algebraic_mappings", P algebraicMappings},
 	{"application.input_filter", P inputFilter},
 	{"application.output_filter", P outputFilter},
@@ -2304,7 +2333,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<String, DataResponsesRep> Sdr[] = {	// must be sorted
+    static KW<String, DataResponsesRep> Sdr[] = {	
+      // must be sorted by string (key)
 	{"config_data_file", P configDataFileName},
 	{"coord_data_filename", P coordDataFileName},
 	{"exp_data_filename", P expDataFileName},
@@ -2341,7 +2371,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<Real, DataMethodRep> Rdme[] = {	// must be sorted
+    static KW<Real, DataMethodRep> Rdme[] = {	
+      // must be sorted by string (key)
 	{"asynch_pattern_search.constraint_penalty", P constrPenalty},
 	{"asynch_pattern_search.contraction_factor", P contractStepLength},
 	{"asynch_pattern_search.initial_delta", P initStepLength},
@@ -2404,9 +2435,10 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<Real, DataModelRep> Rdmo[] = {	// must be sorted
-      {"surrogate.neural_network_range", P annRange},
+    static KW<Real, DataModelRep> Rdmo[] = {	
+      // must be sorted by string (key)
       {"surrogate.discont_grad_threshold", P discontGradThreshold},
+      {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold}};
     #undef P
@@ -2432,7 +2464,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	Null_rep("get_int");
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
-    static KW<int, DataEnvironmentRep> Ide[] = { // must be sorted
+    static KW<int, DataEnvironmentRep> Ide[] = { 
+      // must be sorted by string (key)
         {"output_precision", P outputPrecision},
         {"stop_restart", P stopRestart}};
     #undef P
@@ -2445,7 +2478,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<int, DataMethodRep> Idme[] = {	// must be sorted
+    static KW<int, DataMethodRep> Idme[] = {	
+      // must be sorted by string (key)
 	{"coliny.contract_after_failure", P contractAfterFail},
 	{"coliny.expand_after_success", P expandAfterSuccess},
 	{"coliny.mutation_range", P mutationRange},
@@ -2485,7 +2519,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<int, DataModelRep> Idmo[] = {	// must be sorted
+    static KW<int, DataModelRep> Idmo[] = {	
+      // must be sorted by string (key)
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
         {"surrogate.folds", P numFolds},
@@ -2501,7 +2536,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<int, DataInterfaceRep> Idi[] = {	// must be sorted
+    static KW<int, DataInterfaceRep> Idi[] = {	
+      // must be sorted by string (key)
 	{"analysis_servers", P analysisServers},
 	{"asynch_local_analysis_concurrency", P asynchLocalAnalysisConcurrency},
 	{"asynch_local_evaluation_concurrency", P asynchLocalEvalConcurrency},
@@ -2530,7 +2566,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<short, DataMethodRep> Shdme[] = {	// must be sorted
+    static KW<short, DataMethodRep> Shdme[] = {	
+      // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
@@ -2562,7 +2599,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<short, DataModelRep> Shdmo[] = {	// must be sorted
+    static KW<short, DataModelRep> Shdmo[] = {	
+      // must be sorted by string (key)
 	{"nested.iterator_scheduling", P subMethodScheduling},
 	{"surrogate.correction_order", P approxCorrectionOrder},
 	{"surrogate.correction_type", P approxCorrectionType},
@@ -2589,7 +2627,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<short, DataVariablesRep> Shdv[] = { // must be sorted
+    static KW<short, DataVariablesRep> Shdv[] = { 
+      // must be sorted by string (key)
 	{"domain", P varsDomain},
 	{"view", P varsView}};
     #undef P
@@ -2602,7 +2641,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<short, DataInterfaceRep> Shdi[] = { // must be sorted
+    static KW<short, DataInterfaceRep> Shdi[] = { 
+      // must be sorted by string (key)
 	{"analysis_scheduling", P analysisScheduling},
 	{"evaluation_scheduling", P evalScheduling},
 	{"local_evaluation_scheduling", P asynchLocalEvalScheduling},
@@ -2628,7 +2668,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<unsigned short, DataMethodRep> UShdmo[] = { // must be sorted
+    static KW<unsigned short, DataMethodRep> UShdmo[] = { 
+      // must be sorted by string (key)
 	{"algorithm", P methodName},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
@@ -2649,7 +2690,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<unsigned short, DataInterfaceRep> UShdi[] = { // must be sorted
+    static KW<unsigned short, DataInterfaceRep> UShdi[] = { 
+      // must be sorted by string (key)
         {"type", P interfaceType}};
     #undef P
 
@@ -2672,7 +2714,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<size_t, DataMethodRep> Szdmo[] = { // must be sorted
+    static KW<size_t, DataMethodRep> Szdmo[] = { 
+      // must be sorted by string (key)
 	{"final_solutions", P numFinalSolutions},
 	{"jega.num_cross_points", P numCrossPoints},
 	{"jega.num_designs", P numDesigns},
@@ -2705,7 +2748,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
     // normal DB lookups
     #define P &DataVariablesRep::
-    static KW<size_t, DataVariablesRep> Szdv[] = {	// must be sorted
+    static KW<size_t, DataVariablesRep> Szdv[] = {	
+      // must be sorted by string (key)
 	{"beta_uncertain", P numBetaUncVars},
 	{"binomial_uncertain", P numBinomialUncVars},
 	{"continuous_design", P numContinuousDesVars},
@@ -2764,7 +2808,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<size_t, DataResponsesRep> Szdr[] = {	// must be sorted
+    static KW<size_t, DataResponsesRep> Szdr[] = {	
+      // must be sorted by string (key)
 	{"config_vars", P numExpConfigVars},
 	{"experiments", P numExperiments},
 	{"field_calibration_terms", P numFieldLeastSqTerms},
@@ -2805,7 +2850,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	Null_rep("get_bool");
   if ((L = Begins(entry_name, "environment."))) {
     #define P &DataEnvironmentRep::
-    static KW<bool, DataEnvironmentRep> Bde[] = { // must be sorted
+    static KW<bool, DataEnvironmentRep> Bde[] = { 
+      // must be sorted by string (key)
 	{"check", P checkFlag},
 	{"graphics", P graphicsFlag},
 	{"post_run", P postRunFlag},
@@ -2823,7 +2869,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<bool, DataMethodRep> Bdme[] = {	// must be sorted
+    static KW<bool, DataMethodRep> Bdme[] = {	
+      // must be sorted by string (key)
 	{"backfill", P backfillFlag},
 	{"coliny.constant_penalty", P constantPenalty},
 	{"coliny.expansion", P expansionFlag},
@@ -2864,7 +2911,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
+    static KW<bool, DataModelRep> Bdmo[] = {	
+      // must be sorted by string (key)
 	{"hierarchical_tags", P hierarchicalTags},
 	{"surrogate.challenge_points_file_active", P approxChallengeActive},
 	{"surrogate.challenge_points_file_annotated", P approxChallengeAnnotated},
@@ -2885,7 +2933,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<bool, DataVariablesRep> Bdv[] = {	// must be sorted
+    static KW<bool, DataVariablesRep> Bdv[] = {	
+      // must be sorted by string (key)
 	{"uncertain.initial_point_flag", P uncertainVarsInitPt}};
     #undef P
 
@@ -2897,7 +2946,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if (dbRep->interfaceDBLocked)
 	Locked_db();
     #define P &DataInterfaceRep::
-    static KW<bool, DataInterfaceRep> Bdi[] = {	// must be sorted
+    static KW<bool, DataInterfaceRep> Bdi[] = {	
+      // must be sorted by string (key)
 	{"active_set_vector", P activeSetVectorFlag},
 	{"allow_existing_results", P allowExistingResultsFlag},
 	{"application.aprepro", P apreproFlag},
@@ -2922,7 +2972,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<bool, DataResponsesRep> Bdr[] = {	// must be sorted
+    static KW<bool, DataResponsesRep> Bdr[] = {	
+      // must be sorted by string (key)
 	{"central_hess", P centralHess},
 	{"exp_data_file_annotated", P expDataFileAnnotated},
 	{"ignore_bounds", P ignoreBounds}};
@@ -2956,7 +3007,8 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<RealVector, DataMethodRep> RVdme[] = {	// must be sorted
+    static KW<RealVector, DataMethodRep> RVdme[] = {	
+      // must be sorted by string (key)
 	{"equality_constraints", P linearEqConstraintCoeffs},
 	{"equality_scales", P linearEqScales},
 	{"equality_targets", P linearEqTargets},
@@ -2976,7 +3028,8 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<RealVector, DataModelRep> RVdmo[] = {	// must be sorted
+    static KW<RealVector, DataModelRep> RVdmo[] = {	
+      // must be sorted by string (key)
 	{"primary_response_mapping", P primaryRespCoeffs},
 	{"secondary_response_mapping", P secondaryRespCoeffs}};
     #undef P
@@ -2991,7 +3044,8 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<RealVector, DataVariablesRep> RVdv[] = {	// must be sorted
+    static KW<RealVector, DataVariablesRep> RVdv[] = {	
+      // must be sorted by string (key)
 	{"beta_uncertain.alphas", P betaUncAlphas},
 	{"beta_uncertain.betas", P betaUncBetas},
 	{"beta_uncertain.lower_bounds", P betaUncLowerBnds},
@@ -3077,7 +3131,8 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<RealVector, DataResponsesRep> RVdr[] = {	// must be sorted
+    static KW<RealVector, DataResponsesRep> RVdr[] = {	
+      // must be sorted by string (key)
 	{"nonlinear_equality_scales", P nonlinearEqScales},
 	{"nonlinear_equality_targets", P nonlinearEqTargets},
 	{"nonlinear_inequality_lower_bounds", P nonlinearIneqLowerBnds},
@@ -3106,7 +3161,8 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntVector, DataVariablesRep> IVdv[] = {	// must be sorted
+    static KW<IntVector, DataVariablesRep> IVdv[] = {	
+      // must be sorted by string (key)
 	{"binomial_uncertain.num_trials", P binomialUncNumTrials},
 	{"discrete_aleatory_uncertain_int.initial_point",
 	 P discreteIntAleatoryUncVars},
@@ -3154,7 +3210,8 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<BitArray, DataVariablesRep> BAdv[] = {	// must be sorted
+    static KW<BitArray, DataVariablesRep> BAdv[] = {	
+      // must be sorted by string (key)
 	{"binomial_uncertain.categorical", P binomialUncCat},
 	{"discrete_design_range.categorical", P discreteDesignRangeCat},
 	{"discrete_design_set_int.categorical", P discreteDesignSetIntCat},
@@ -3210,7 +3267,8 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
     if (dbRep->methodDBLocked)
       Locked_db();
     #define P &DataMethodRep::
-    static KW<RealVectorArray, DataMethodRep> RVAdme[] = { // must be sorted
+    static KW<RealVectorArray, DataMethodRep> RVAdme[] = { 
+      // must be sorted by string (key)
 	{"gen_reliability_levels", P genReliabilityLevels},
 	{"probability_levels", P probabilityLevels},
 	{"reliability_levels", P reliabilityLevels},
@@ -3246,7 +3304,8 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntSetArray, DataVariablesRep> ISAdv[] = { // must be sorted
+    static KW<IntSetArray, DataVariablesRep> ISAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_design_set_int.values", P discreteDesignSetInt},
 	{"discrete_state_set_int.values",  P discreteStateSetInt}};
     #undef P
@@ -3270,7 +3329,8 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<RealSetArray, DataVariablesRep> RSAdv[] = { // must be sorted
+    static KW<RealSetArray, DataVariablesRep> RSAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_design_set_real.values", P discreteDesignSetReal},
 	{"discrete_state_set_real.values",  P discreteStateSetReal}};
     #undef P
@@ -3294,7 +3354,8 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { // must be sorted
+    static KW<IntRealMapArray, DataVariablesRep> IRMAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_uncertain_set_int.values_probs",
 	 P discreteUncSetIntValuesProbs},
 	{"histogram_uncertain.point_int_pairs", P histogramUncPointIntPairs}};
@@ -3319,7 +3380,8 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { // must be sorted
+    static KW<StringRealMapArray, DataVariablesRep> SRMAdv[] = { 
+      // must be sorted by string (key)
 	{"histogram_uncertain.point_string_pairs", P histogramUncPointStrPairs}};
     #undef P
 
@@ -3342,7 +3404,8 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = { // must be sorted
+    static KW<RealRealMapArray, DataVariablesRep> RRMAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_uncertain_set_real.values_probs",
 	 P discreteUncSetRealValuesProbs}};
     #undef P
@@ -3366,7 +3429,8 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = { // must be sorted
+    static KW<RealRealPairRealMapArray, DataVariablesRep> RRRMAdv[] = { 
+      // must be sorted by string (key)
 	{"continuous_interval_uncertain.basic_probs",
 	 P continuousIntervalUncBasicProbs}};
     #undef P
@@ -3390,7 +3454,8 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
     if (dbRep->variablesDBLocked)
       Locked_db();
     #define P &DataVariablesRep::
-    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = { // must be sorted
+    static KW<IntIntPairRealMapArray, DataVariablesRep> IIRMAdv[] = { 
+      // must be sorted by string (key)
 	{"discrete_interval_uncertain.basic_probs",
 	 P discreteIntervalUncBasicProbs}};
     #undef P
@@ -3414,7 +3479,8 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<StringArray, DataMethodRep> SAdme[] = {	// must be sorted
+    static KW<StringArray, DataMethodRep> SAdme[] = {	
+      // must be sorted by string (key)
 	{"equality_scale_types", P linearEqScaleTypes},
 	{"inequality_scale_types", P linearIneqScaleTypes}};
     #undef P
@@ -3429,7 +3495,8 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
-    static KW<StringArray, DataModelRep> SAdmo[] = {	// must be sorted
+    static KW<StringArray, DataModelRep> SAdmo[] = {	
+      // must be sorted by string (key)
 	{"diagnostics", P diagMetrics},
 	{"nested.primary_variable_mapping", P primaryVarMaps},
 	{"nested.secondary_variable_mapping", P secondaryVarMaps}};
@@ -3445,7 +3512,8 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     if (dbRep->variablesDBLocked)
 	Locked_db();
     #define P &DataVariablesRep::
-    static KW<StringArray, DataVariablesRep> SAdv[] = {	// must be sorted
+    static KW<StringArray, DataVariablesRep> SAdv[] = {	
+      // must be sorted by string (key)
 	{"continuous_aleatory_uncertain.labels", P continuousAleatoryUncLabels},
 	{"continuous_design.labels", P continuousDesignLabels},
 	{"continuous_design.scale_types", P continuousDesignScaleTypes},
@@ -3479,7 +3547,8 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     if (dbRep->responsesDBLocked)
 	Locked_db();
     #define P &DataResponsesRep::
-    static KW<StringArray, DataResponsesRep> SAdr[] = {	// must be sorted
+    static KW<StringArray, DataResponsesRep> SAdr[] = {	
+      // must be sorted by string (key)
 	{"labels", P responseLabels },
 	{"nonlinear_equality_scale_types", P nonlinearEqScaleTypes },
 	{"nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes },
