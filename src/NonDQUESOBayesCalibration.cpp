@@ -121,7 +121,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   //  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
 
   expData.load_data(expDataFileName, "QUESO Bayes Calibration",
-		    expDataFileAnnotated, calc_sigma_from_data, outputLevel);
+		    expDataFileAnnotated, calc_sigma_from_data);
   
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms

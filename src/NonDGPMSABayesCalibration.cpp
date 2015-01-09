@@ -156,7 +156,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_data(expDataFileName, "QUESO/GPMSA Bayes Calibration",
-		      expDataFileAnnotated, calc_sigma_from_data, outputLevel);
+		      expDataFileAnnotated, calc_sigma_from_data);
 
   //***********************************************************************
   //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv

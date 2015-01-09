@@ -44,6 +44,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   minimizerRecasts(0),
   obsDataFilename(probDescDB.get_string("responses.exp_data_filename")),
   obsDataFlag(!obsDataFilename.empty()),
+  expData(outputLevel),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
@@ -332,7 +333,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
   bool calc_sigma_from_data = true; //calculate sigma if not provided 
   expData.load_data(obsDataFilename, "Least Squares",
-		    annotated, calc_sigma_from_data, outputLevel);
+		    annotated, calc_sigma_from_data);
   // copy the y portion of the data to obsData
   //obsData.reshape(num_experiments, numUserPrimaryFns);
   //for (int j = 0; j < num_experiments; ++j) {

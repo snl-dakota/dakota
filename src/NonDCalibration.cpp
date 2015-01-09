@@ -34,6 +34,7 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
   numExpStdDeviationsRead(probDescDB.get_sizet("responses.num_std_deviations")),
+  expData(outputLevel),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
   continuousConfigStart(0), discreteIntConfigStart(0),
   discreteRealConfigStart(0)

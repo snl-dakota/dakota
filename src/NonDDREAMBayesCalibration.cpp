@@ -205,7 +205,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_data(expDataFileName, "DREAM Bayes Calibration",
-		      expDataFileAnnotated, calc_sigma_from_data, outputLevel);
+		      expDataFileAnnotated, calc_sigma_from_data);
 
 
   ////////////////////////////////////////////////////////

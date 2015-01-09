@@ -69,8 +69,12 @@ public:
   //- Heading: Constructors, destructor, operators
   //
 
+  /// default constructor
   ExperimentData()
-  { /* empty ctor */ } ;                                ///< constructor
+  { /* empty ctor */ }                                
+
+  /// typical constructor
+  ExperimentData(short output_level);
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
@@ -102,8 +106,7 @@ public:
   void load_data(const std::string& expDataFilename,
 		 const std::string& context_message,
 		 bool expDataFileAnnotated,
-		 bool calc_sigma_from_data,
-		 short verbosity);
+		 bool calc_sigma_from_data);
 
   /// retrieve the vector of configuration variables for the given
   /// experiment number
@@ -127,7 +130,13 @@ private:
 			    RealMatrix& xObsData,
 			    RealMatrix& yObsData,
 			    RealMatrix& yStdData);
-  
+
+  /// Load a single experiment exp_index into exp_resp
+  void load_experiment(size_t exp_index, const RealMatrix& yobs_data, 
+		       const RealMatrix& ystd_data, size_t num_sigma_matrices, 
+		       size_t num_sigma_diagonals, size_t num_sigma_scalars,
+		       Response& exp_resp);
+
   //
   //- Heading: Data
   //
@@ -154,7 +163,8 @@ private:
   /// Vector of numExperiments ExperimentResponses, holding the
   /// observed data and error (sigma/covariance) for each experiment.
   std::vector<Response> allExperiments;
-
+  
+  // TODO: migrate this to a vector of Variables?
   /// Vector of numExperiments configurations at which data were
   /// gathered; empty if no configurations specified.
   std::vector<RealVector> allConfigVars;
@@ -163,6 +173,9 @@ private:
   /// Temporary container to hold sigma data while migrating to
   /// ExperimentCovariance
   RealMatrix sigmaScalarValues;
+
+  /// output verbosity level
+  short outputLevel;
 
 };
 
