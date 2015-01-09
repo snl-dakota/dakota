@@ -235,6 +235,27 @@ void SharedResponseData::reshape(size_t num_fns)
   }
 }
 
+
+// TODO: unify with reshape
+void SharedResponseData::field_lengths(const IntVector& field_lens) 
+{ 
+  // when the field lengths change, need a new rep
+  if (field_lengths() != field_lens) {
+    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    srdRep.reset(new SharedResponseDataRep());  // create new srdRep
+    srdRep->copy_rep(old_rep.get());            // copy old data to new
+    
+    // update the field lengths
+    srdRep->fieldRespGroupLengths = field_lens;
+
+    // reshape function labels, using updated num_functions()
+    srdRep->functionLabels.resize(num_functions());
+    build_labels(srdRep->functionLabels, "f");
+    // no change in number of scalar functions
+  }
+}
+
+
 bool SharedResponseData::operator==(const SharedResponseData& other)
 {
   // test pointer equality

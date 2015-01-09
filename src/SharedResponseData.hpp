@@ -17,6 +17,7 @@
 
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
+//#include "DataResponses.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 
@@ -102,7 +103,7 @@ private:
 
 inline SharedResponseDataRep::SharedResponseDataRep()
   // copy and reshape immediately apply copy_rep, so don't initialize anything:
-  //responseType(BASE_RESPONSE), // overridden in derived class ctors
+  //:responseType(BASE_RESPONSE)//, // overridden in derived class ctors
   //responsesId("NO_SPECIFICATION"), numScalarResponses(0),
 {
 #ifdef REFCOUNT_DEBUG
@@ -320,8 +321,6 @@ inline size_t SharedResponseData::num_functions() const
 inline const IntVector& SharedResponseData::field_lengths() const 
 { return srdRep->fieldRespGroupLengths; }
 
-inline void SharedResponseData::field_lengths(const IntVector& field_lens) 
-{ srdRep->fieldRespGroupLengths = field_lens; }
 
 inline const IntVector& SharedResponseData::num_coords_per_field() const
 { return srdRep->numCoordsPerField; }

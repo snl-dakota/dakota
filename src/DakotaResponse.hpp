@@ -360,6 +360,10 @@ private:
   /// write a letter object to a packed MPI buffer
   void write_rep(MPIPackBuffer& s) const;
 
+  /// core implementation of reshape that resizes the containers
+  void reshape_containers(size_t num_fns, size_t num_params, 
+			  bool grad_flag, bool hess_flag);
+
   //
   //- Heading: Private data members
   //
@@ -634,13 +638,6 @@ inline const IntVector& Response::field_lengths() const
 {
   if (responseRep) return responseRep->sharedRespData.field_lengths();
   else             return sharedRespData.field_lengths();
-}
-
-
-inline void Response::field_lengths(const IntVector& field_lens)
-{
-  if (responseRep) responseRep->sharedRespData.field_lengths(field_lens);
-  else             sharedRespData.field_lengths(field_lens);
 }
 
 

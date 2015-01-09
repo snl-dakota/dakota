@@ -1223,6 +1223,34 @@ reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
   else {
     // resizes scalars for now (needs additional data for field reshape)
     sharedRespData.reshape(num_fns);
+    reshape_containers(num_fns, num_params, grad_flag, hess_flag);
+  }
+}
+
+
+void Response::field_lengths(const IntVector& field_lens)
+{
+  if (responseRep) 
+    responseRep->field_lengths(field_lens);
+  else {
+    // resize shared data based on new field lengths
+    sharedRespData.field_lengths(field_lens);
+
+    // then resize my arrays using *new* num_functions, only
+    // allocating grad, hess if already sized
+    reshape_containers(sharedRespData.num_functions(), 
+		       responseActiveSet.derivative_vector().size(),
+		       false, false);
+  }
+}
+
+
+void Response::reshape_containers(size_t num_fns, size_t num_params, 
+				  bool grad_flag, bool hess_flag)
+{
+  if (responseRep) 
+    responseRep->reshape_containers(num_fns, num_params, grad_flag, hess_flag);
+  else {
 
     if (responseActiveSet.request_vector().size()    != num_fns || 
 	responseActiveSet.derivative_vector().size() != num_params)
@@ -1249,6 +1277,7 @@ reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
     }
     else if (!functionHessians.empty())
       functionHessians.clear();
+
   }
 }
 

@@ -253,12 +253,9 @@ load_data(const std::string& expDataFileName,
 
 }
 
-// The field length is given by the data read. This is awkward as the
-// full response size won't be known until the whole read is
-// complete....  (field length is given by Response, not Shared,
-// probably)
-/** Load an experiment from a mixture of legacy format data passed in,
-    and field data format files read in during this function call */
+
+/** Load an experiment from a mixture of legacy format data and field
+    data format files */
 void ExperimentData::
 load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
 		size_t num_sigma_matrices, size_t num_sigma_diagonals,
@@ -278,6 +275,13 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   // -----
   // Data to populate from files for a single experiment
   // -----
+
+  // Since the field lengths aren't known until all reads are
+  // complete, use temporary storage to read them all, then resize the
+  // Response object.  
+  //
+  // TODO: May want to have field lengths managed in Response instead
+  // of SharedResponse and generate labels on the fly when needed.
   
   // scalar or field values; the RealVectors for scalars will have
   // length 1; the length of RealVectors for fields will be determined
@@ -381,32 +385,20 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 
   }
 
+
   // -----
-  // Reshape the experiment
+  // Reshape and map in the data
   // -----
 
-  // now that we've read, we know the total length and can resize and populate
-  // TODO: reshape that accepts just function resizing, or better,
-  // just field resizing... There's a chicken and egg problem because
-  // reshape() for SharedResponseData needs field lengths, but also
-  // uses its current value.  Probably add a reshape that take the lengths.
-  // size_t total_field_length = 
-  //   std::accumulate(field_lengths.begin(), field_lengths.end());
-  // exp_resp.reshape(num_scalars + total_field_length);
+  // Reshape the experiment, now that we know total size
+  exp_resp.field_lengths(field_lengths);
 
-  
-  // -----
-  // Map in the data
-  // -----
-
-  for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
+  for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index)
     exp_resp.function_value(exp_values[fn_index][0], fn_index);
-  }
 
-  for (size_t field_ind = 0; field_ind < num_fields; ++field_ind) {
+  for (size_t field_ind = 0; field_ind < num_fields; ++field_ind)
     exp_resp.field_values(exp_values[num_scalars + field_ind], 
 			  num_scalars + field_ind);
-  }
 
   exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
 			       matrix_map_indices, diagonal_map_indices, 
