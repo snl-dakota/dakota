@@ -115,9 +115,12 @@ int MatlabInterface::derived_map_ac(const String& ac_name)
   int fail_code = matlab_engine_run(ac_name);
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
-
+  if (fail_code) {
+    std::string err_msg("Error evaluating Matlab analysis_driver ");
+    err_msg += ac_name;
+    throw FunctionEvalFailure(err_msg);
+  }
+  
   return 0;
 }
 

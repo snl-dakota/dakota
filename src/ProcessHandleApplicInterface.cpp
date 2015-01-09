@@ -66,7 +66,8 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
     abort_handler(INTERFACE_ERROR);
   }
 
-  catch(int fail_code) { // If an int exception ("fail" detected in results 
+  catch(const FunctionEvalFailure& fneval_except) { 
+    // If a FunctionEvalFailure exception ("fail" detected in results 
     // file) is caught, call manage_failure which will either (1) repair the 
     // failure and populate response, or (2) abort the run.  NOTE: this 
     // destroys load balancing but trying to load balance failure recovery 

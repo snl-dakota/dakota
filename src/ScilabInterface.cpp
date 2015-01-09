@@ -78,8 +78,11 @@ int ScilabInterface::derived_map_ac(const String& ac_name)
 
   int fail_code = scilab_engine_run(ac_name);
 
-  if (fail_code)
-    throw fail_code;
+  if (fail_code) {
+    std::string err_msg("Error evaluating Scilab analysis_driver ");
+    err_msg += ac_name;
+    throw FunctionEvalFailure(err_msg);
+  }
 
   return 0;
 }

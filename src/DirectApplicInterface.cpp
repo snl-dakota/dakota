@@ -199,8 +199,11 @@ int DirectApplicInterface::derived_map_if(const String& if_name)
   //}
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
+    if (fail_code) {
+      std::string err_msg("Error evaluating direct input filter ");
+      err_msg += if_name;
+      throw FunctionEvalFailure(err_msg);
+    }
 
   return 0;
 }
@@ -232,9 +235,12 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
   abort_handler(INTERFACE_ERROR);
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
-
+  if (fail_code)  {
+    std::string err_msg("Error evaluating direct analysis_driver ");
+    err_msg += ac_name;
+    throw FunctionEvalFailure(err_msg);
+  }
+  
   return 0;
 }
 
@@ -263,9 +269,12 @@ int DirectApplicInterface::derived_map_of(const String& of_name)
   //}
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
-
+  if (fail_code) {
+    std::string err_msg("Error evaluating direct output filter ");
+    err_msg += of_name;
+    throw FunctionEvalFailure(err_msg);
+  }
+ 
   return 0;
 }
 

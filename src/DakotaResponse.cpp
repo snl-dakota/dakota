@@ -444,13 +444,13 @@ void Response::read(std::istream& s)
   // problems by doing a read of 4 characters.  If these characters are not 
   // "fail" or "FAIL" then it resets the stream pointer to the beginning.  This
   // works for ifstreams, but may be problematic for other istreams.  Once 
-  // failure is detected, an exception of type int is thrown (to distinguish 
+  // failure is detected, a FunctionEvalFailure is thrown (to distinguish 
   // from FileReadExceptions) that will be caught after try{ execute() }.
   // NOTE: s.peek() triggering on 'f' or 'F' would be another possibility.
   // NOTE: reading the first token using "s >> fail_string;" should work for a
   //       file having less than four characters.
   size_t i, j, k;
-  int fail_code = 1;
+  bool failure_detected = true;
   char fail_chars[4] = {0,0,0,0};
   std::string fail_string("fail");
   // Old version failed for fewer than 4 characters in results file:
@@ -459,14 +459,16 @@ void Response::read(std::istream& s)
     s >> fail_chars[i];
     //Cout << "fail_char[" << i << "] = " << fail_chars[i] << std::endl;
     if (tolower(fail_chars[i]) != fail_string[i]) { // FAIL, Fail, fail, etc.
-      fail_code = 0; // No failure communicated from results file 
+      failure_detected = false; // No failure communicated from results file 
       s.seekg(0); // Reset stream to beginning
       break; // exit for loop
     }
   }
-  if (fail_code) {
-    //Cerr << "Failure captured with string = " << fail_chars << std::endl;
-    throw fail_code;
+  if (failure_detected) {
+    std::string failure_message = "Failure captured with string = ";
+    failure_message += fail_chars;
+    //Cerr << failure_message << std::endl;
+    throw FunctionEvalFailure(failure_message);
   }
 
   // Destroy old values and set to zero (so that else assignments are not needed

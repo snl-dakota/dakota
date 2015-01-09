@@ -133,10 +133,10 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     Cerr << "\nError reading results file:\n  " << fr_except.what() << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  catch(int fail_code) {
-    // The approach here is to have catch(int) rethrow the exception to an 
-    // outer catch (either the catch within manage_failure or a catch that 
-    // calls manage_failure).
+  catch(const FunctionEvalFailure& fneval_except) {
+    // The approach here is to have catch(FunctionEvalFailure) rethrow
+    // the exception to an outer catch (either the catch within
+    // manage_failure or a catch that calls manage_failure).
     throw;
   }
 #endif
@@ -232,9 +232,9 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 	     << " to processing queue.\n";
 #endif
       }
-      catch(int fail_code) {
+      catch(const FunctionEvalFailure& fneval_except) {
 	//
-	// If an int exception ("fail" detected in results file) is caught,
+	// If a FunctionEvalFailure ("fail" detected in results file) is caught,
 	// call manage_failure which will either (1) repair the failure and
 	// populate response, or (2) abort the run.
 	//

@@ -269,8 +269,11 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
   }
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
+  if (fail_code) {
+    std::string err_msg("Error evaluating direct analysis_driver ");
+    err_msg += ac_name;
+    throw FunctionEvalFailure(err_msg);
+  }
 
   return 0;
 }

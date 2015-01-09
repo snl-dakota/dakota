@@ -195,14 +195,17 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 #endif
       }
 
-      // If an int exception ("fail" detected in results file) is caught, 
-      // call manage_failure which will either (1) repair the failure and 
-      // populate response, or (2) abort the run.  NOTE: this destroys load 
-      // balancing but trying to load balance failure recovery would be more
-      // difficult than it is worth.
-      catch(int fail_code) { // implemented at the derived class level since 
-                             // DirectApplicInterface can do this w/o exceptions
-        //Cout << "Caught int in test_local_evaluations()." << std::endl;
+      // If a FunctionEvalFailure exception ("fail" detected in
+      // results file) is caught, call manage_failure which will
+      // either (1) repair the failure and populate response, or (2)
+      // abort the run.  NOTE: this destroys load balancing but trying
+      // to load balance failure recovery would be more difficult than
+      // it is worth.
+      catch(const FunctionEvalFailure& fneval_except) { 
+	// implemented at the derived class level since 
+	// DirectApplicInterface can do this w/o exceptions
+        //Cout << "Caught FunctionEvalFailure in test_local_evaluations(); "
+	//     << "message: " << fneval_except.what() << std::endl;
         manage_failure(queue_it->variables(), response.active_set(),
 		       response, fn_eval_id);
       }

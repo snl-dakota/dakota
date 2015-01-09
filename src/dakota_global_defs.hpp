@@ -91,6 +91,16 @@ public:
 };
 
 
+/// exception class for function evaluation failures
+class FunctionEvalFailure: public std::runtime_error
+{
+public:
+  FunctionEvalFailure(const std::string& msg): std::runtime_error(msg)
+  { /* empty ctor */ }
+};
+
+
+
 extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;
 extern int write_precision;

@@ -513,8 +513,9 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	currEvalId = evalIdCntr;
 	try { derived_map(vars, core_set, core_resp, currEvalId); }
 
-	catch(int fail_code) { // value of fail_code not currently used.
-	  //Cout << "Caught int in map" << std::endl;
+	catch(const FunctionEvalFailure& fneval_except) {
+	  //Cout << "Caught FunctionEvalFailure in map; message: " 
+	  //<< fneval_except.what() << std::endl;
 	  manage_failure(vars, core_set, core_resp, currEvalId);
 	}
 
@@ -1824,7 +1825,7 @@ synchronous_local_evaluations(PRPQueue& local_prp_queue)
 
     try { derived_map(vars, set, local_response, currEvalId); } // synch. local
 
-    catch(int fail_code) {
+    catch(const FunctionEvalFailure& fneval_except) {
       manage_failure(vars, set, local_response, currEvalId);
     }
 
@@ -1931,8 +1932,9 @@ void ApplicationInterface::serve_evaluations_synch()
       // slaves invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } // synch local
 
-      catch(int fail_code) { // value of fail_code not currently used.
-        //Cerr<< "Slave has caught exception from local derived_map"<<std::endl;
+      catch(const FunctionEvalFailure& fneval_except) {
+        //Cerr<< "Slave has caught exception from local derived_map; message: "
+	//<< fneval_except.what() << std::endl;
         manage_failure(vars, set, local_response, currEvalId);
       }
 
@@ -1993,8 +1995,9 @@ void ApplicationInterface::serve_evaluations_synch_peer()
       // slaves invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } //synch local
 
-      catch(int fail_code) { // value of fail_code not currently used.
-        //Cerr<< "Slave has caught exception from local derived_map"<<std::endl;
+      catch(const FunctionEvalFailure& fneval_except) {
+        //Cerr<< "Slave has caught exception from local derived_map; message: "
+	//<< fneval_except.what() << std::endl;
         manage_failure(vars, set, local_response, currEvalId);
       }
     }
@@ -2414,14 +2417,16 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
 	       int failed_eval_id)
 {
   // SysCall/Fork application interface exception handling:
-  // When a simulation failure is detected w/i Response::read(istream), 
-  // an int exception is thrown which is first caught by catch(int fail_code) 
-  // within derived_map or wait_local_evaluations, depending on whether the
-  // simulation was synch or asynch.  In the case of derived_map, it rethrows
-  // the exception to an outer catch in map or serve which then invokes 
-  // manage_failure.  In the case of wait_local_evaluations, it invokes
-  // manage_failure directly.  manage_failure can then catch subsequent
-  // exceptions resulting from the try blocks below.
+  // When a simulation failure is detected w/i
+  // Response::read(istream), a FunctionEvalFailure exception is
+  // thrown which is first caught by catch(FunctionEvalFailure) within
+  // derived_map or wait_local_evaluations, depending on whether the
+  // simulation was synch or asynch.  In the case of derived_map, it
+  // rethrows the exception to an outer catch in map or serve which
+  // then invokes manage_failure.  In the case of
+  // wait_local_evaluations, it invokes manage_failure directly.
+  // manage_failure can then catch subsequent exceptions resulting
+  // from the try blocks below.
 
   // DirectFn application interface exception handling:
   // The DirectFn case is simpler than SysCall since (1) synch case: the 
@@ -2440,8 +2445,9 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
       ++retries;
       Cout << failureMessage << ": retry attempt number " << retries << ".\n";
       try { derived_map(vars, set, response, failed_eval_id); }
-      catch(int fail_code) { 
-        //Cout << "Caught int in manage_failure" << std::endl;
+      catch(const FunctionEvalFailure& fneval_except) { 
+        //Cout << "Caught FunctionEvalFailure in manage_failure; message: "
+	// fneval_except.what() << std::endl;
         fail_flag = 1;
 	if (retries >= failRetryLimit) {
 	  Cerr << "Retry limit exceeded.  Aborting..." << std::endl;
@@ -2580,7 +2586,7 @@ continuation(const Variables& target_vars, const ActiveSet& set,
 
     bool fail_flag = 0;
     try { derived_map(current_vars, set, response, failed_eval_id); }
-    catch(int fail_code) { 
+    catch(const FunctionEvalFailure& fneval_except) { 
       fail_flag = 1;
     }
 

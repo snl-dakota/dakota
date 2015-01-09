@@ -50,8 +50,11 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   }
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
+  if (fail_code) {
+    std::string err_msg("Error evaluating plugin analysis_driver ");
+    err_msg += ac_name;
+    throw Dakota::FunctionEvalFailure(err_msg);
+  }
 
   return 0;
 }

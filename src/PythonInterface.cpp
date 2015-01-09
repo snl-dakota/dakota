@@ -91,8 +91,11 @@ int PythonInterface::derived_map_ac(const String& ac_name)
   int fail_code = python_run(ac_name);
 
   // Failure capturing
-  if (fail_code)
-    throw fail_code;
+  if (fail_code) {
+    std::string err_msg("Error evaluating Python analysis_driver ");
+    err_msg += ac_name;
+    throw FunctionEvalFailure(err_msg);
+  }
 
   return 0;
 }
@@ -211,9 +214,10 @@ int PythonInterface::python_run(const String& ac_name)
     }
     // abort_handler manages exit vs. throw
     //    abort_handler(INTERFACE_ERROR);
-    // by throwing an int, we allow manage_failures to try again if desired
-    fail_code = INTERFACE_ERROR;
-    throw(fail_code);
+    // by throwing, we allow manage_failures to try again if desired
+    std::string err_msg("Error evaluating Python analysis_driver ");
+    err_msg += ac_name;
+    throw FunctionEvalFailure(err_msg);
   }
 
 

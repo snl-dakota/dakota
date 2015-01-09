@@ -226,18 +226,22 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     abort_handler(INTERFACE_ERROR);
   }
 
-  // Do not call manage_failure() from the following catch since the recursion 
-  // of calling derived_map again would be confusing at best.  The approach 
-  // here is to have catch(int) rethrow the exception to an outer catch (either
-  // the catch within manage_failure or a catch that calls manage_failure).  An
-  // alternative solution would be to eliminate the try block above and move 
-  // all catches to the higher level of try { derived_map() } - this would be
-  // simpler to understand but would replicate catch(FileReadException) in map, 
-  // manage_failure, and serve.  By having catch(FileReadException) here and 
-  // having catch(int) rethrow, we eliminate unnecessary proliferation of 
-  // catch(FileReadException).
-  catch(int fail_code) { // failure capture exception thrown by response.read()
-    //Cout << "Rethrowing int." << std::endl;
+  // Do not call manage_failure() from the following catch since the
+  // recursion of calling derived_map again would be confusing at
+  // best.  The approach here is to have catch(FunctionEvalFailure)
+  // rethrow the exception to an outer catch (either the catch within
+  // manage_failure or a catch that calls manage_failure).  An
+  // alternative solution would be to eliminate the try block above
+  // and move all catches to the higher level of try { derived_map() }
+  // - this would be simpler to understand but would replicate
+  // catch(FileReadException) in map, manage_failure, and serve.  By
+  // having catch(FileReadException) here and having
+  // catch(FunctionEvalFailure) rethrow, we eliminate unnecessary
+  // proliferation of catch(FileReadException).
+  catch(const FunctionEvalFailure& fneval_except) { 
+    // failure capture exception thrown by response.read()
+    //Cout << "Rethrowing FunctionEvalFailure; message: " 
+    //     << fneval_except.what() << std::endl;
     throw; // from this catch to the outer one in manage_failure
   }
 }
