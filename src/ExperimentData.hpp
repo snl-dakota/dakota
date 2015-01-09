@@ -27,8 +27,8 @@ namespace Dakota {
 using boost::multi_array;
 using boost::extents;
 
-/// special values for sigma_type 
-enum sigtype { NO_SIGMA, SCALAR_SIGMA, COVARIANCE_MATRIX };
+/// special values for sigmaType 
+enum sigtype { NO_SIGMA, SCALAR_SIGMA, DIAGONAL_SIGMA, MATRIX_SIGMA };
 /// special values for experimental data type 
 enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
 
@@ -96,9 +96,6 @@ public:
   /// set the number of configuration (state) variables to be read
   void num_config_vars(size_t num_config_vars_in);
 
-  /// (DEPRECATED) set the number of sigma terms to read
-  void num_sigma(size_t num_sigma_in);
-  
   /// set the array of sigmas, one per scalar response / field response group
   void sigma_type(const StringArray& sigma_type_in);
 
@@ -122,20 +119,22 @@ public:
 
 private:
 
-  /// Read data in historical format into x, y, sigma matrices
-  void read_historical_data(const std::string& expDataFileName,
-			    const std::string& context_message,
-			    bool expDataFileAnnotated,
-			    bool calc_sigma_from_data,
-			    RealMatrix& xObsData,
-			    RealMatrix& yObsData,
-			    RealMatrix& yStdData);
+  // initialization helpers
+
+  /// parse user-provided sigma type strings and populate enums
+  void parse_sigma_types(const StringArray& sigma_types);
+
+  // data loading helpers
 
   /// Load a single experiment exp_index into exp_resp
-  void load_experiment(size_t exp_index, const RealMatrix& yobs_data, 
-		       const RealMatrix& ystd_data, size_t num_sigma_matrices, 
-		       size_t num_sigma_diagonals, size_t num_sigma_scalars,
-		       Response& exp_resp);
+  void load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
+		       size_t num_sigma_matrices, size_t num_sigma_diagonals, 
+		       size_t num_sigma_scalars, Response& exp_resp);
+
+  /// read or default populate the scalar sigma
+  void read_scalar_sigma(std::ifstream& scalar_data_stream, 
+			 RealVector& sigma_scalars, 
+			 IntVector& scalar_map_indices);
 
   //
   //- Heading: Data
@@ -152,13 +151,12 @@ private:
   /// number of configuration (state) variables to read for each experiment
   size_t numConfigVars;
 
-  // TO REMOVE
-  /// Number of sigma values characterizing the experimental error
-  size_t numSigma;
+  // empty sigmaType indicates none specified?!?
+  /// type of sigma specified for each variable, one per response group
+  UShortArray sigmaTypes;
 
-  /// the type of sigma characterizing experimental error for each
-  /// scalar response / field response group
-  StringArray sigmaType;
+  /// number of sigma values to read from each row in simple data file format
+  size_t scalarSigmaPerRow;
 
   /// Vector of numExperiments ExperimentResponses, holding the
   /// observed data and error (sigma/covariance) for each experiment.

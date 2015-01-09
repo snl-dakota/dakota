@@ -13,10 +13,97 @@ namespace Dakota {
 
 ExperimentData::ExperimentData(short output_level): 
   outputLevel(output_level)
-{ /* empty ctor */ }                                
+{ 
+  // TODO: don't initialize if no calibration data...
+  //  if (calibrationData)
+}                                
+
+
+/** Validate user-provided sigma specifcation. User can specify 0, 1,
+    or num_response_groups sigmas.  If specified, sigma types must be
+    the same for all scalar responses. */
+void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
+{
+  // TODO: flow from input spec
+  bool scalar_data_file = true;
+
+  // leave array empty if not needed (could have many responses and no sigmas)
+  if (sigma_types.size() == 0)
+    return;
+
+  // valid options for sigma_type, and mapping to enum
+  std::map<String, unsigned short> sigma_map;
+  sigma_map["none"] = NO_SIGMA;
+  sigma_map["scalar"] = SCALAR_SIGMA;
+  sigma_map["diagonal"] = DIAGONAL_SIGMA;
+  sigma_map["matrix"] = MATRIX_SIGMA;
+
+  // expand sigma if 0 or 1 given, without validation
+  size_t num_resp_groups = simulationSRD.num_response_groups();
+  size_t num_scalar = simulationSRD.num_scalar_responses();
+  sigmaTypes.resize(num_resp_groups, NO_SIGMA);
+  if (sigma_types.size() == 1) {
+    // assign all sigmas to the specified one
+    if (sigma_map.find(sigma_types[0]) != sigma_map.end())
+      sigmaTypes.assign(num_resp_groups, sigma_map[sigma_types[0]]);
+    else {
+      Cerr << "\nError: invalid sigma_type '" << sigma_types[0] 
+	   << "' specified." << std::endl;
+      abort_handler(PARSE_ERROR);
+    }
+  }
+  else if (sigma_types.size() == num_resp_groups) {
+    // initialize one sigma type per 
+    for (size_t resp_ind = 0; resp_ind < num_resp_groups; ++resp_ind) {
+      if (sigma_map.find(sigma_types[resp_ind]) != sigma_map.end())
+	sigmaTypes[resp_ind] = sigma_map[sigma_types[resp_ind]];
+      else {
+	Cerr << "\nError: invalid sigma_type '" << sigma_types[resp_ind] 
+	     << "' specified." << std::endl;
+	abort_handler(PARSE_ERROR);
+      }
+    }
+  }
+  else  {
+    Cerr << "\nError: sigma_types must have length 1 or number of "
+	 << "calibration_terms." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+
+  // when using simple scalar data format, must validate that all
+  // scalar are the same and valid (when using separate files, can
+  // differ)
+  
+  // scalar sigma must be 0 or scalar
+  for (size_t scalar_ind = 0; scalar_ind < num_scalar; ++scalar_ind) {
+    if (sigmaTypes[scalar_ind] != NO_SIGMA && 
+	sigmaTypes[scalar_ind] != SCALAR_SIGMA) {
+      Cerr << "\nError: sigma_type must be 'none' or 'scalar' for scalar "
+	   << "responses." << std::endl;
+      abort_handler(PARSE_ERROR);
+    }
+    if (scalar_data_file) {
+      if (sigmaTypes[scalar_ind] != sigmaTypes[0]) {
+	Cerr << "\nError: sigma_type must be the same for all scalar responses "
+	     << "when using scalar data file." 
+	     << std::endl;
+	abort_handler(PARSE_ERROR);
+      }
+    }
+  }
+  // numberof sigma to read from simple data file(0 or num_scalar)
+  if (scalar_data_file && sigmaTypes.size() > 0 && sigmaTypes[0] == SCALAR_SIGMA)
+    scalarSigmaPerRow = num_scalar;
+
+}
+
 
 void ExperimentData::shared_data(const SharedResponseData& srd)
-{ simulationSRD = srd.copy(); }
+{ 
+  // copy in case any recasting between construct and read; don't want
+  // to share a rep?
+  simulationSRD = srd.copy();
+}
 
 void ExperimentData::num_experiments(size_t num_experiments_in)
 { numExperiments = num_experiments_in; }
@@ -24,107 +111,120 @@ void ExperimentData::num_experiments(size_t num_experiments_in)
 void ExperimentData::num_config_vars(size_t num_config_vars_in)
 { numConfigVars = num_config_vars_in; }
 
-void ExperimentData::num_sigma(size_t num_sigma_in)
-{ numSigma = num_sigma_in; }
-
 void ExperimentData::sigma_type(const StringArray& sigma_type_in)
-{ sigmaType = sigma_type_in; }
+{ 
+  // TODO: move this to construct time
+  parse_sigma_types(sigma_type_in);
+}
 
 
-/* For the historical case:
-     One experiment replicate per line, containing all responses in one line
-     can't allow different sigma for each response and the 
-     config vars are repeated per experiment. */
-void ExperimentData::read_historical_data(const std::string& expDataFileName,
-					  const std::string& context_message,
-					  bool expDataFileAnnotated,
-					  bool calc_sigma_from_data,
-					  RealMatrix& xObsData,
-					  RealMatrix& yObsData, 
-					  RealMatrix& yStdData)
+void ExperimentData:: 
+load_data(const std::string& expDataFileName,
+	  const std::string& context_message,
+	  bool expDataFileAnnotated,
+	  bool calc_sigma_from_data)
 {
-  //using boost::multi_array;
-  //using boost::extents;
-  size_t i,j,k, total_num_rows = 0;
-  size_t num_functions = simulationSRD.num_scalar_responses();
-  //for now, numExperiments are the same for all functions
-  total_num_rows=numExperiments;
-  Cout << "\nReading Experimental Data." << '\n';
-  Cout << "Total number of rows " << total_num_rows << '\n';
-  Cout << "Number of Response Functions " << num_functions << '\n';
-  //yObsFull(extents[num_functions][numExperiments][max_replicates]);
+  
+  // TODO: Change the argument list to load_data, account for reading
+  // scalar data and field data; get all needed data from the problem
+  // DB, likely at construct time, delaying read.
+  bool scalar_data_file = true;   // hard-wired to read scalar data
+  bool read_field_coords = false;
 
-  // Read from a matrix with numExperiments rows and a number of cols
-  // columns:  numConfigVars X, num_functions Y, [num_functions Sigma]
-  RealMatrix experimental_data;
+  // Get a copy of the simulation SRD to use in contructing the
+  // experiment response; won't be able to share the core data since
+  // different experiments may have different sizes...
+  SharedResponseData exp_srd = simulationSRD.copy();
 
-  size_t num_cols = numConfigVars + num_functions + numSigma;
-
-  TabularIO::read_data_tabular(expDataFileName, context_message, 
-			       experimental_data, total_num_rows, num_cols, 
-			       expDataFileAnnotated);
-
-  // Get views of the data in 3 matrices for convenience
-
-  size_t start_row, start_col;
-  if (numConfigVars > 0) {
-    start_row = 0;
-    start_col = 0;
-    RealMatrix x_obs_data(Teuchos::View, experimental_data,
-			  total_num_rows, numConfigVars,
-			  start_row, start_col);
-    xObsData.reshape(total_num_rows, numConfigVars);
-    for (i=0; i<total_num_rows; i++)
-      for (j=0; j<numConfigVars; j++)
-        xObsData(i,j) = x_obs_data(i,j);
+  // change the type of response
+  // TODO: new ctor for experiment response
+  exp_srd.response_type(EXPERIMENT_RESPONSE);
+  Response exp_resp(exp_srd);
+  if (outputLevel > NORMAL_OUTPUT) {
+    std::cout << "Construct experiment response" << std::endl;
+    exp_resp.write(std::cout);
   }
- 
-  start_row = 0;
-  start_col = numConfigVars;
-  RealMatrix y_obs_data(Teuchos::View, experimental_data,
-			total_num_rows, num_functions,
-			start_row, start_col);
-  yObsData.reshape(numExperiments,num_functions); 
-  for (i=0; i<numExperiments; i++){
-    for (j=0; j<num_functions; j++){
-        yObsData(i,j) = y_obs_data(i,j);
-        Cout << yObsData(i,j) << "\n";
+
+  if (numConfigVars > 0)
+    allConfigVars.resize(numExperiments);
+
+  // Count number of each sigma type for sizing
+  //
+  // TODO: If "none" is specified, map to appropriate type.  For field
+  // data, if "scalar" or "none" is specified, need to convert to a
+  // diagonal the length of the actual data
+  size_t num_sigma_matrices = 
+    std::count(sigmaTypes.begin(), sigmaTypes.end(), MATRIX_SIGMA);
+  size_t num_sigma_diagonals = 
+    std::count(sigmaTypes.begin(), sigmaTypes.end(), DIAGONAL_SIGMA);
+  size_t num_sigma_scalars = 
+    std::count(sigmaTypes.begin(), sigmaTypes.end(), SCALAR_SIGMA);
+
+  // TODO: temporary duplication until necessary covariance APIs are updated
+  size_t num_scalar = simulationSRD.num_scalar_responses();
+  sigmaScalarValues.reshape(numExperiments,num_scalar);
+
+  // setup for reading historical format, one experiment per line,
+  // each consisting of [ [config_vars] fn values [ fn variance ] ]
+  std::ifstream scalar_data_stream;
+  if (scalar_data_file) {
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "\nReading scalar experimental data from file" << expDataFileName;
+      Cout << "\n  " << numExperiments << " experiments for";
+      Cout << "\n  " << num_scalar << " scalar responses." << std::endl;
     }
+    TabularIO::open_file(scalar_data_stream, expDataFileName, context_message);
+    TabularIO::read_header_tabular(scalar_data_stream, expDataFileAnnotated);
   }
-  // BMA TODO: The number of experimental functions may not match the
-  // user functions, so can't assume num_functions
-  yStdData.reshape(numExperiments,num_functions);
-  if (numSigma > 0) {
-    start_row = 0;
-    start_col = numConfigVars + num_functions;
-    RealMatrix y_std_data(Teuchos::View, experimental_data,
-			  total_num_rows, numSigma,
-			  start_row, start_col);
-    // We allow 1 or num_functions sigmas
-    for (i=0; i<numExperiments; i++){
-      for (j=0; j<num_functions; j++){
-	  if (numSigma == 1)
-            yStdData(i,j) = y_std_data(i,0);
-          else 
-            yStdData(i,j) = y_std_data(i,j);
-          //Cout << yStdData[j];
+
+  for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
+
+    // TODO: error handling
+    if (expDataFileAnnotated) {
+      size_t discard_row_label;
+	scalar_data_stream >> discard_row_label;
+    }
+
+    // -----
+    // Read and set the configuration variables
+    // -----
+
+    if (numConfigVars > 0) {
+      allConfigVars[exp_index].sizeUninitialized(numConfigVars);
+      if (scalar_data_file) {
+	// TODO: try/catch
+	scalar_data_stream >> allConfigVars[exp_index];
+      }
+      else {
+	// load configuration variables from field data formatted files
+	// response_label.exp_num.config (ideally do both if present and
+	// validate against scalar if discrepancies)
+	// TODO: read_config_vars_multifile(); ?!?
       }
     }
+
+    // read one file per field response, resize, and populate the
+    // experiment (values, sigma, coords)
+    load_experiment(exp_index, scalar_data_stream, num_sigma_matrices, 
+		    num_sigma_diagonals, num_sigma_scalars, exp_resp);
+
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "CurrExp values " << exp_resp.function_values() << '\n';
+    allExperiments.push_back(exp_resp.copy());
   }
-    // user values?  Commenting out as we don't currently support
-    // input file-specified errors.
-    // if (expStdDeviations.length()==1) {
-    //   for (int i=0; i<numExperiments; i++)
-    //     for (int j=0; j<num_functions; j++)
-    //       yStdData(i,j) = expStdDeviations(0);
-    // }
-    // else if (expStdDeviations.length()==num_functions) {
-    //   for (int i=0; i<numExperiments; i++)
-    //     for (int j=0; j<num_functions; j++)
-    //       yStdData(i,j) = expStdDeviations(j);
-    // }
+
+  if (outputLevel > VERBOSE_OUTPUT) {
+    Cout << "All config vars:\n" << allConfigVars;
+    Cout << "\nSigma values:\n" << sigmaScalarValues << std::endl;
+  }
+  
+  // historically we calculated sigma from data by default if not
+  // provided; might want a user option for this However, is counter
+  // to loading one experiment at a time; would have to be done
+  // afterwards.  Also, not clear about what to do in interpolating
+  // field data case...
+  /*
   else if (calc_sigma_from_data) {
-    // calculate sigma terms
     Real mean_est, var_est;
     for (j=0; j<num_functions; j++){
       mean_est = 0.0;
@@ -141,117 +241,16 @@ void ExperimentData::read_historical_data(const std::string& expDataFileName,
         Cout << yStdData(i,j) << "\n";
     }
   }
-  else {
-    // Default: use 1.0 in the likelihood (no weight)
-    for (i=0; i<numExperiments; i++)
-      for (j=0; j<num_functions; j++){
-        yStdData(i,j) = 1.0;
-        Cout << yStdData(i,j) << "\n";
-      }
-  }
-}
+  */
 
-
-void ExperimentData:: 
-load_data(const std::string& expDataFileName,
-	  const std::string& context_message,
-	  bool expDataFileAnnotated,
-	  bool calc_sigma_from_data)
-{
-  
-  // TODO: Change the argument list to load_data, account for reading
-  // scalar data and field data; get all needed data from the problem
-  // DB, likely at construct time, delaying read.
-  bool scalar_data_file = true;   // hard-wire to read scalar data
-  bool read_field_coords = false;
-
-
-  // For now, read historical data in the old-style format.
-  // TODO: Read one row of scalar data at a time in the experiment loop below
-  RealMatrix xObsData, yObsData, yStdData;
-  if (scalar_data_file) {
-    read_historical_data(expDataFileName, context_message,
-			 expDataFileAnnotated, calc_sigma_from_data,
-			 xObsData, yObsData, yStdData);
-    // sigmaScalarValues will be replaced by scalar entries in ExperimentCovariance
-    sigmaScalarValues = yStdData;
-    if (outputLevel > VERBOSE_OUTPUT) {
-      Cout << "xobs_data" << xObsData << '\n';
-      Cout << "yobs_data" << yObsData << '\n';
-      Cout << "ystd_data" << yStdData << '\n';
-      Cout << "ytemp_sigma" << sigmaScalarValues << '\n';
-    }
-  }
-
-  // Get a copy of the simulation SRD to use in contructing the
-  // experiment response; won't be able to share the core data since
-  // different experiments may have different sizes...
-  SharedResponseData exp_srd = simulationSRD.copy();
-
-  // change the type of response
-  exp_srd.response_type(EXPERIMENT_RESPONSE);
-  std::cout << "Construct experiment response" << std::endl;
-  Response exp_resp(exp_srd);
-  exp_resp.write(std::cout);
-
-  if (numConfigVars > 0)
-    allConfigVars.resize(numExperiments);
-
-  // Count number of each sigma type for sizing
-  //
-  // TODO: If "none" is specified, map to appropriate type.  For field
-  // data, if "scalar" or "none" is specified, need to convert to a
-  // diagonal the length of the actual data
-  size_t num_sigma_matrices = 0, num_sigma_diagonals = 0, num_sigma_scalars = 0;
-  StringArray::const_iterator st_it = sigmaType.begin();
-  StringArray::const_iterator st_end = sigmaType.end();
-  for ( ; st_it != st_end; ++st_it) {
-    if (*st_it == "matrix")
-      ++num_sigma_matrices;
-    else if (*st_it == "diagonal")
-      ++num_sigma_diagonals;
-    else if (*st_it == "scalar")
-      ++num_sigma_scalars;
-  }
-
-  for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
-
-    // TODO: Read one row of scalar data at a time, instead of reading all above
-
-    // -----
-    // Read and set the configuration variables
-    // -----
-
-    if (numConfigVars > 0) {
-      allConfigVars[exp_index].sizeUninitialized(numConfigVars);
-      if (scalar_data_file) {
-	for (int var_i=0; var_i<numConfigVars; ++var_i)
-	  allConfigVars[exp_index][var_i] = xObsData(exp_index, var_i);
-      }
-      else {
-	// load configuration variables from field data formatted files
-	// response_label.exp_num.config (ideally do both if present and
-	// validate against scalar if discrepancies)
-	// TODO: read_config_vars_multifile(); ?!?
-      }
-    }
-
-    // read one file per field response, resize, and populate the
-    // experiment (values, sigma, coords)
-    load_experiment(exp_index, yObsData, yStdData, 
-		    num_sigma_matrices, num_sigma_diagonals, num_sigma_scalars,
-		    exp_resp);
-
-    Cout << "CurrExp " << exp_resp.function_values() << '\n';
-    allExperiments.push_back(exp_resp.copy());
-  }
   // verify that the two experiments have different data
   for (size_t i=0; i<numExperiments; ++i) {
      std::cout << "vec_exp #" << i << std::endl;
      allExperiments[i].write(std::cout);
   }
  
- 
+  // TODO: exists extra data in scalar_data_stream
+
 }
 
 // The field length is given by the data read. This is awkward as the
@@ -261,10 +260,9 @@ load_data(const std::string& expDataFileName,
 /** Load an experiment from a mixture of legacy format data passed in,
     and field data format files read in during this function call */
 void ExperimentData::
-load_experiment(size_t exp_index, const RealMatrix& yobs_data, 
-		const RealMatrix& ystd_data, size_t num_sigma_matrices, 
-		size_t num_sigma_diagonals, size_t num_sigma_scalars,
-		Response& exp_resp)
+load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
+		size_t num_sigma_matrices, size_t num_sigma_diagonals,
+		size_t num_sigma_scalars, Response& exp_resp)
 {
   bool scalar_data_file = true;
 
@@ -292,7 +290,8 @@ load_experiment(size_t exp_index, const RealMatrix& yobs_data,
   // coordinates for fields only
   RealMatrixArray exp_coords(num_fields);
 
-  // Data for sigma 
+  // Data for sigma
+  // TODO: field become 
   std::vector<RealMatrix> sigma_matrices(num_sigma_matrices);
   std::vector<RealVector> sigma_diagonals(num_sigma_diagonals);
   RealVector sigma_scalars(num_sigma_scalars);
@@ -313,8 +312,14 @@ load_experiment(size_t exp_index, const RealMatrix& yobs_data,
   if (scalar_data_file) {
     for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
       exp_values[fn_index].resize(1);
-      exp_values[fn_index][0] = yobs_data(exp_index, fn_index);
-      sigma_scalars[fn_index] = ystd_data(exp_index, fn_index);
+      scalar_data_stream >> exp_values[fn_index];
+    }
+    if (scalarSigmaPerRow > 0)
+      read_scalar_sigma(scalar_data_stream, sigma_scalars, scalar_map_indices);
+    else {
+      sigma_scalars = 1.0;  // historically these defaulted to 1.0
+      for (size_t i = 0; i<scalarSigmaPerRow; ++i)
+	scalar_map_indices[i] = i;
     }
   }
   else {
@@ -328,13 +333,17 @@ load_experiment(size_t exp_index, const RealMatrix& yobs_data,
       if (sigma_type[fn_index] == SCALAR_SIGMA) {
 	Real sigma_val; // = TODO: read sigma data (single value) from fn_name.exp_num.sigma
 	sigma_scalars[fn_index] = sigma_val; 
-	scalar_map_indices[fn_index] = fn_index;
       }
       else {
-	// TODO: if none, default population
+	sigma_scalars = 1.0;  // historically these defaulted to 1.0
       }
+      scalar_map_indices[fn_index] = fn_index;
     }
   }
+
+  // TODO: temporary duplication until necessary covariance APIs are updated
+  for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index)
+    sigmaScalarValues(exp_index, fn_index) = sigma_scalars[fn_index];
 
   // populate field data, sigma, and coordinates from separate files
   for (size_t field_index = 0; field_index < num_fields; ++field_index) {
@@ -358,12 +367,12 @@ load_experiment(size_t exp_index, const RealMatrix& yobs_data,
       // field_index to scalar map
       break;
 
-      //    case VECTOR_SIGMA:
+    case DIAGONAL_SIGMA:
       // read N values, add to sigma_diagonals and add num_scalars +
       // field_index to diagonals map
-      //      break;
+      break;
 
-    case COVARIANCE_MATRIX:
+    case MATRIX_SIGMA:
       // read N^2 values, add to sigma_matrices and add num_scalars +
       // field_index to matrices map
       break;
@@ -395,14 +404,31 @@ load_experiment(size_t exp_index, const RealMatrix& yobs_data,
   }
 
   for (size_t field_ind = 0; field_ind < num_fields; ++field_ind) {
-    exp_resp.field_values(exp_values[num_scalars + field_ind], num_scalars + field_ind);
+    exp_resp.field_values(exp_values[num_scalars + field_ind], 
+			  num_scalars + field_ind);
   }
 
   exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
-			       matrix_map_indices, diagonal_map_indices, scalar_map_indices);
+			       matrix_map_indices, diagonal_map_indices, 
+			       scalar_map_indices);
 
 }
 
+
+
+void ExperimentData::read_scalar_sigma(std::ifstream& scalar_data_stream,
+				       RealVector& sigma_scalars,
+				       IntVector& scalar_map_indices)
+{
+  // currently no longer allow 1 sigma to apply to all scalar responses
+  // always read 0, or N
+  RealVector sigma_row(scalarSigmaPerRow);
+  scalar_data_stream >> sigma_row;
+  for (size_t i = 0; i<scalarSigmaPerRow; ++i) {
+    sigma_scalars[i] = sigma_row[i];
+    scalar_map_indices[i] = i;
+  }
+}
 
 
 const RealVector& ExperimentData::
