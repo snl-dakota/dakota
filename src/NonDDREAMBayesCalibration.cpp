@@ -199,9 +199,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   expData.shared_data(iteratedModel.current_response().shared_data());
   expData.num_experiments(numExperiments);
   expData.num_config_vars(numExpConfigVars);
-  //  expData.num_sigma(numExpStdDeviationsRead);
-  // BMA TODO: Can't do DB query here; need to cache
-  //  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
+  expData.sigma_type(varianceTypesRead);
 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_data(expDataFileName, "DREAM Bayes Calibration",

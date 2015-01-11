@@ -28,12 +28,12 @@ namespace Dakota {
 NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
   expStdDeviations(probDescDB.get_rv("responses.exp_std_deviations")),
-  expDataFileName(probDescDB.get_string("responses.exp_data_filename")),
+  expDataFileName(probDescDB.get_string("responses.scalar_data_filename")),
   expDataFileAnnotated(
-    probDescDB.get_bool("responses.exp_data_file_annotated")),
+    probDescDB.get_bool("responses.scalar_data_file_annotated")),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
-  numExpStdDeviationsRead(probDescDB.get_sizet("responses.num_std_deviations")),
+  varianceTypesRead(probDescDB.get_sa("responses.variance_type")),
   expData(outputLevel),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
   continuousConfigStart(0), discreteIntConfigStart(0),

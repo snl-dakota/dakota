@@ -55,6 +55,9 @@ protected:
 
   /// 1 or numFunctions standard deviations
   RealVector expStdDeviations;
+
+  // TODO: Update from expData to scalarData and handle field data
+
   /// filename from which to read experimental data; optionally
   /// configuration vars x and standard deviations sigma
   String expDataFileName;
@@ -65,7 +68,7 @@ protected:
   /// number of columns in data file which are state variables
   size_t numExpConfigVars;
   /// how many sigmas to read from the data file (1 or numFunctions)
-  size_t numExpStdDeviationsRead;
+  StringArray varianceTypesRead;
 
   /// Container for experimental data to which to calibrate model
   ExperimentData expData;

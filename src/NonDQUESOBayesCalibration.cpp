@@ -116,16 +116,15 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   expData.shared_data(iteratedModel.current_response().shared_data());
   expData.num_experiments(numExperiments);
   expData.num_config_vars(numExpConfigVars);
-  //  expData.num_sigma(numExpStdDeviationsRead);
-  // BMA TODO: Can't do DB query here; need to cache
-  //  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
+  expData.sigma_type(varianceTypesRead);
 
   expData.load_data(expDataFileName, "QUESO Bayes Calibration",
 		    expDataFileAnnotated, calc_sigma_from_data);
   
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms
-  if ((numExpStdDeviationsRead > 0) && !(calibrateSigmaFlag))
+  // BMA TODO: this is wrong logic: need to check for != "none"
+  if (!varianceTypesRead.empty() && !calibrateSigmaFlag)
     calibrateSigmaFlag = false;
   
   ////////////////////////////////////////////////////////

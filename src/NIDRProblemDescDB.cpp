@@ -1614,9 +1614,8 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
-  if ( dr->primaryRespFnWeights.length() > 0 && 
-       (dr->expStdDeviations.length() > 0 || dr->numExpStdDeviations > 0) ) {
-    squawk("Specify calibration weights or experimental standard deviations, not both.");
+  if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
+    squawk("Specify calibration weights or experimental errors, not both.");
   }
   if ((n = dr->responseLabels.size()) > 0) {
     if (!(k = dr->numResponseFunctions)) {
@@ -6880,10 +6879,9 @@ static IntVector
 	MP_(numCoordsPerField);
 
 static RealVector
-	MP_(coordsPerField),
+	MP_(coordList),
 	MP_(expConfigVars),
 	MP_(expObservations),
-	MP_(expStdDeviations),
 	MP_(primaryRespFnWeights),
 	MP_(nonlinearEqTargets),
 	MP_(nonlinearIneqLowerBnds),
@@ -6919,13 +6917,9 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
-	MP_(configDataFileName),
 	MP_(coordDataFileName),
-	MP_(expDataFileName),
-	MP_(fieldCoordDataFileName),
-	MP_(fieldDataFileName),
-        MP_(idResponses),
-	MP_(sigmaDataFileName);
+	MP_(scalarDataFileName),
+        MP_(idResponses);
 
 static StringArray
 	MP_(nonlinearEqScaleTypes),
@@ -6933,15 +6927,16 @@ static StringArray
 	MP_(primaryRespFnScaleTypes),
 	MP_(primaryRespFnSense),
 	MP_(responseLabels),
-	MP_(sigmaType);
+	MP_(varianceType);
 
 static bool
+	MP_(calibrationDataFlag),
 	MP_(centralHess),
-	MP_(expDataFileAnnotated),
-	MP_(ignoreBounds);
+	MP_(scalarDataFileAnnotated),
+        MP_(ignoreBounds),
+        MP_(readFieldCoords);
 
 static size_t
-	MP_(numExpStdDeviations),
 	MP_(numExpConfigVars),
         MP_(numExperiments),
 	MP_(numFieldLeastSqTerms),

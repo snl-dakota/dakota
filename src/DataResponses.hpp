@@ -147,25 +147,27 @@ public:
 
   // experimental data (for least squares and Bayesian algorithms)
 
+  /// whether calibration data was specified
+  bool calibrationDataFlag;
   /// number of distinct experiments in experimental data
   size_t numExperiments;
   /// number of experimental configuration vars (state variables) in
   /// each row of data
   size_t numExpConfigVars;
-  /// whether to read num_responses standard deviations from each row
-  /// of data file
-  size_t numExpStdDeviations;
   /// list of num_experiments x num_config_vars configuration variable values
   RealVector expConfigVars;
+
+  // next two can be retired?
   /// list of num_calibration_terms observation data
   RealVector expObservations;
   /// list of 1 or num_calibration_terms observation standard deviations
   RealVector expStdDeviations;
+
   /// name of experimental data file containing response data (with
   /// optional state variable and sigma data) to read
-  String expDataFileName;
+  String scalarDataFileName;
   /// whether the experimental data is in annotated format
-  bool expDataFileAnnotated;
+  bool scalarDataFileAnnotated;
 
   // derivative settings
 
@@ -237,24 +239,14 @@ public:
   /// number of coordinates per field
   IntVector numCoordsPerField;
   /// values of coordinates per field
-  RealVector coordsPerField;
-  /// data file which contains the values of the coordinates per field
+  RealVector coordList;
+  /// data file which contains the values of the simulation coordinates per field
   String coordDataFileName;
-  /// Field data related storage:  data file which contains values of 
-  /// configuration variables for experiments.
-  String configDataFileName;
-  /// Field data related storage:  data file which contains values of 
-  /// field responses for experiments.
-  String fieldDataFileName;
-  /// Field data related storage:  data file which contains values of 
-  /// coordinates of field responses for experiments.
-  String fieldCoordDataFileName;
-  /// Field data related storage:  data file which contains values of 
-  /// measurement error for field responses for experiments.
-  String sigmaDataFileName;
-  /// Array which specifies the sigma type per response (none, one 
+  /// Field data related storage:  whether to read experimental field coordinates
+  bool readFieldCoords;
+   /// Array which specifies the sigma type per response (none, one 
   /// constant value, one per response (vector) or a full covariance matrix
-  StringArray sigmaType; 
+  StringArray varianceType; 
 
 private:
 

@@ -1535,7 +1535,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<RealVector, DataResponsesRep> RVdr[] = {	
       // must be sorted by string (key)
-	{"coordinate_list", P coordsPerField},
+	{"coordinate_list", P coordList},
 	{"exp_config_variables", P expConfigVars},
 	{"exp_observations", P expObservations},
 	{"exp_std_deviations", P expStdDeviations},
@@ -2158,7 +2158,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{ "nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes},
 	{ "primary_response_fn_scale_types", P primaryRespFnScaleTypes},
 	{ "primary_response_fn_sense", P primaryRespFnSense},
-	{ "sigma_type", P sigmaType}};
+	{ "variance_type", P varianceType}};
     #undef P
 
     KW<StringArray, DataResponsesRep> *kw;
@@ -2335,20 +2335,16 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<String, DataResponsesRep> Sdr[] = {	
       // must be sorted by string (key)
-	{"config_data_file", P configDataFileName},
 	{"coord_data_filename", P coordDataFileName},
-	{"exp_data_filename", P expDataFileName},
 	{"fd_gradient_step_type", P fdGradStepType},
 	{"fd_hessian_step_type", P fdHessStepType},
-	{"field_coord_data", P fieldCoordDataFileName},
-	{"field_data_file", P fieldDataFileName},
 	{"gradient_type", P gradientType},
 	{"hessian_type", P hessianType},
 	{"id", P idResponses},
 	{"interval_type", P intervalType},
 	{"method_source", P methodSource},
-	{"quasi_hessian_type", P quasiHessianType},
-	{"sigma_data_file", P sigmaDataFileName}};
+	{"quasi_hessian_type", P quasiHessianType},	
+	{"scalar_data_filename", P scalarDataFileName}};
     #undef P
 
     KW<String, DataResponsesRep> *kw;
@@ -2830,8 +2826,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"scalar_nonlinear_inequality_constraints",
 	 P numScalarNonlinearIneqConstraints},
 	{"scalar_objectives", P numScalarObjectiveFunctions},
-	{"scalar_responses", P numScalarResponseFunctions},
-	{"std_deviations", P numExpStdDeviations}};
+	{"scalar_responses", P numScalarResponseFunctions}};
     #undef P
 
     KW<size_t, DataResponsesRep> *kw;
@@ -2974,9 +2969,11 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<bool, DataResponsesRep> Bdr[] = {	
       // must be sorted by string (key)
+	{"calibration_data", P calibrationDataFlag},
 	{"central_hess", P centralHess},
-	{"exp_data_file_annotated", P expDataFileAnnotated},
-	{"ignore_bounds", P ignoreBounds}};
+	{"ignore_bounds", P ignoreBounds},
+	{"read_field_coords", P readFieldCoords},
+	{"scalar_data_file_annotated", P scalarDataFileAnnotated}};
     #undef P
 
     KW<bool, DataResponsesRep> *kw;

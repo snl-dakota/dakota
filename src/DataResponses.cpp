@@ -25,10 +25,11 @@ DataResponsesRep::DataResponsesRep():
   numScalarResponseFunctions(0), numFieldObjectiveFunctions(0),
   numFieldLeastSqTerms(0), numFieldNonlinearIneqConstraints(0),
   numFieldNonlinearEqConstraints(0), numFieldResponseFunctions(0),
-  numExperiments(1), numExpConfigVars(0), numExpStdDeviations(0), 
-  expDataFileAnnotated(true), ignoreBounds(false), centralHess(false), 
+  calibrationDataFlag(false), numExperiments(1), numExpConfigVars(0),
+  scalarDataFileAnnotated(true), ignoreBounds(false), centralHess(false), 
   methodSource("dakota"), intervalType("forward"), 
-  fdGradStepType("relative"), fdHessStepType("relative"), referenceCount(1)
+  fdGradStepType("relative"), fdHessStepType("relative"), readFieldCoords(false),
+  referenceCount(1)
 { }
 
 
@@ -50,9 +51,9 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
-    << numExperiments << numExpConfigVars << numExpStdDeviations
-    << expConfigVars << expObservations << expStdDeviations << expDataFileName
-    << expDataFileAnnotated
+    << calibrationDataFlag << numExperiments << numExpConfigVars
+    << expConfigVars << expObservations << expStdDeviations << scalarDataFileName
+    << scalarDataFileAnnotated
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << fdGradStepSize
@@ -60,9 +61,8 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
-    << fieldLengths << numCoordsPerField << coordsPerField
-    << coordDataFileName << configDataFileName << fieldCoordDataFileName
-    << fieldDataFileName << sigmaDataFileName << sigmaType;
+    << fieldLengths << numCoordsPerField << coordList
+    << coordDataFileName << readFieldCoords << varianceType;
 }
 
 
@@ -84,9 +84,9 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> primaryRespFnScaleTypes >> primaryRespFnScales >> nonlinearIneqScaleTypes
     >> nonlinearIneqScales >> nonlinearEqScaleTypes >> nonlinearEqScales 
     // experimental data
-    >> numExperiments  >> numExpConfigVars >> numExpStdDeviations
-    >> expConfigVars >> expObservations >> expStdDeviations >> expDataFileName
-    >> expDataFileAnnotated
+    >> calibrationDataFlag >> numExperiments  >> numExpConfigVars
+    >> expConfigVars >> expObservations >> expStdDeviations >> scalarDataFileName
+    >> scalarDataFileAnnotated
     // derivative settings
     >> gradientType >> hessianType >> ignoreBounds >> centralHess
     >> quasiHessianType >> methodSource >> intervalType >> fdGradStepSize
@@ -94,9 +94,8 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> idNumericalGrads >> idAnalyticGrads
     >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
     // field data
-    >> fieldLengths >> numCoordsPerField >> coordsPerField
-    >> coordDataFileName >> configDataFileName >> fieldCoordDataFileName
-    >> fieldDataFileName >> sigmaDataFileName >>sigmaType;
+    >> fieldLengths >> numCoordsPerField >> coordList
+    >> coordDataFileName >> readFieldCoords >> varianceType;
 
 }
 
@@ -119,9 +118,9 @@ void DataResponsesRep::write(std::ostream& s) const
     << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
-    << numExperiments << numExpConfigVars << numExpStdDeviations
-    << expConfigVars << expObservations << expStdDeviations << expDataFileName
-    << expDataFileAnnotated
+    << calibrationDataFlag << numExperiments << numExpConfigVars
+    << expConfigVars << expObservations << expStdDeviations << scalarDataFileName
+    << scalarDataFileAnnotated
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << fdGradStepSize
@@ -129,9 +128,8 @@ void DataResponsesRep::write(std::ostream& s) const
     << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
-    << fieldLengths << numCoordsPerField << coordsPerField
-    << coordDataFileName << configDataFileName << fieldCoordDataFileName 
-    << fieldDataFileName << sigmaDataFileName << sigmaType;
+    << fieldLengths << numCoordsPerField << coordList
+    << coordDataFileName << readFieldCoords << varianceType;
 }
 
 

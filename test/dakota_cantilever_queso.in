@@ -33,7 +33,8 @@ responses,
         calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
           freeform
           num_experiments = 10
-          num_std_deviations = 2 
+	  # read two scalar sigma values in each row
+	  variance_type = 'scalar'
   	descriptors = 'stress' 'displacement'
  	no_gradients							
 	no_hessians

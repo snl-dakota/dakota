@@ -3475,7 +3475,7 @@
             </keyword>
             <optional>
               <oneOf>
-                <keyword  id="coordinate_list" name="coordinate_list" code="{N_rem(RealL,coordsPerField)}" label="coordinate_list" help=""  >
+                <keyword  id="coordinate_list" name="coordinate_list" code="{N_rem(RealL,coordList)}" label="coordinate_list" help=""  >
                   <param type="REALLIST" />
                 </keyword>
                 <keyword  id="coordinate_data_file" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >
@@ -3489,6 +3489,28 @@
           <alias name="least_squares_terms"/>
           <alias name="num_least_squares_terms"/>
           <param type="INTEGER" constraint=">= 0" />
+          <keyword  id="scalar_calibration_terms" name="scalar_calibration_terms" code="{N_rem(sizet,numScalarLeastSqTerms)}" label="scalar_calibration_terms" help="" minOccurs="0" >
+            <param type="INTEGER" constraint=">= 0" />
+          </keyword>
+          <keyword  id="field_calibration_terms" name="field_calibration_terms" code="{N_rem(sizet,numFieldLeastSqTerms)}" label="field_calibration_terms" help="" minOccurs="0" >
+            <param type="INTEGER" constraint=">= 0" />
+            <keyword  id="lengths1" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths" help=""  >
+              <param type="INTEGERLIST" constraint="LEN calibration_terms"/>
+            </keyword>
+            <keyword  id="num_coordinates_per_field1" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field" help="" minOccurs="0" >
+              <param type="INTEGERLIST" />
+            </keyword>
+            <optional>
+              <oneOf>
+                <keyword  id="coordinate_list1" name="coordinate_list" code="{N_rem(RealL,coordList)}" label="coordinate_list" help=""  >
+                  <param type="REALLIST" />
+                </keyword>
+                <keyword  id="coordinate_data_file1" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >
+                  <param type="STRING" />
+                </keyword>
+              </oneOf>
+            </optional>
+	  </keyword>
           <keyword  id="primary_scale_types1" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Calibration scaling types" help="RespCommands.html#RespFnLS" minOccurs="0" >
             <alias name="calibration_term_scale_types"/>
             <alias name="least_squares_term_scale_types"/>
@@ -3514,32 +3536,57 @@
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
                #  	    ( 
            -->
-          <keyword  id="scalar_calibration_terms" name="scalar_calibration_terms" code="{N_rem(sizet,numScalarLeastSqTerms)}" label="scalar_calibration_terms" help="" minOccurs="0" >
-            <alias name="num_scalar_calibration_terms"/>
-            <param type="INTEGER" constraint=">= 0" />
-          </keyword>
-          <keyword  id="calibration_data_file" name="calibration_data_file" code="{N_rem(str,expDataFileName)}" label="Calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
-            <alias name="least_squares_data_file"/>
-            <param type="STRING" />
-            <keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
-              <param type="INTEGER" constraint=">= 0" />
-            </keyword>
-            <optional>
-              <oneOf>
-                <keyword  id="annotated25" name="annotated" code="{N_rem(true,expDataFileAnnotated)}" label="Data file in annotated format" help="RespCommands.html#RespFnLS"  />
-                <keyword  id="freeform25" name="freeform" code="{N_rem(false,expDataFileAnnotated)}" label="Data file in freeform format" help="RespCommands.html#RespFnLS"  />
-              </oneOf>
-            </optional>
-            <keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
-              <param type="INTEGER" constraint=">= 0" />
-            </keyword>
-            <keyword  id="sigma_type" name="sigma_type" code="{N_rem(strL,sigmaType)}" label="Type of measurement error (constant, vector, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" >
-              <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
-            </keyword>
-            <keyword  id="num_std_deviations" name="num_std_deviations" code="{N_rem(sizet,numExpStdDeviations)}" label="Standard deviation columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
-              <param type="INTEGER" constraint=">= 0" />
-            </keyword>
-          </keyword>
+	  <optional>
+	    <oneOf>
+              <keyword  id="calibration_data1" name="calibration_data" code="{N_rem(true,calibrationDataFlag)}" label="calibration data" help="" >
+		<keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                  <param type="INTEGER" constraint=">= 0" />
+		</keyword>
+
+		<keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                  <param type="INTEGER" constraint=">= 0" />
+		</keyword>
+
+		<keyword  id="variance_type1" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+                  <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+		</keyword>
+
+		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
+		  <param type="STRING" />
+		  <optional>
+                    <oneOf>
+                      <keyword  id="annotated25" name="annotated" code="{N_rem(true,scalarDataFileAnnotated)}" label="Data file in annotated format" help="RespCommands.html#RespFnLS"  />
+                      <keyword  id="freeform25" name="freeform" code="{N_rem(false,scalarDataFileAnnotated)}" label="Data file in freeform format" help="RespCommands.html#RespFnLS"  />
+                    </oneOf>
+		  </optional>
+		</keyword>
+
+		<keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
+		
+              </keyword>
+	      <!-- Legacy data specification option -->
+	      <keyword  id="calibration_data_file" name="calibration_data_file" code="{N_rem(str,scalarDataFileName)}" label="Calibration data file name" help="RespCommands.html#RespFnLS" >
+		<alias name="least_squares_data_file"/>
+		<param type="STRING" />
+		<optional>
+		  <oneOf>
+                    <keyword  id="annotated25" name="annotated" code="{N_rem(true,scalarDataFileAnnotated)}" label="Data file in annotated format" help="RespCommands.html#RespFnLS"  />
+                    <keyword  id="freeform25" name="freeform" code="{N_rem(false,scalarDataFileAnnotated)}" label="Data file in freeform format" help="RespCommands.html#RespFnLS"  />
+		  </oneOf>
+		</optional>
+		<keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
+		  <param type="INTEGER" constraint=">= 0" />
+		</keyword>
+	
+		<keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
+		  <param type="INTEGER" constraint=">= 0" />
+		</keyword>
+		<keyword  id="variance_type" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+		  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
+		</keyword>
+              </keyword>
+	    </oneOf>
+	  </optional>
           <!-- #              )
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
             -->
@@ -3579,55 +3626,6 @@
               <param type="REALLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
           </keyword>
-          <keyword  id="field_calibration_terms" name="field_calibration_terms" code="{N_rem(sizet,numFieldLeastSqTerms)}" label="field_calibration_terms" help="" minOccurs="0" >
-            <alias name="num_field_calibration_terms"/>
-            <param type="INTEGER" constraint=">= 0" />
-            <keyword  id="lengths1" name="lengths" code="{N_rem(ivec,fieldLengths)}" label="lengths" help=""  >
-              <param type="INTEGERLIST" />
-            </keyword>
-            <keyword  id="num_coordinates_per_field1" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field" help="" minOccurs="0" >
-              <param type="INTEGERLIST" />
-            </keyword>
-            <optional>
-              <oneOf>
-                <keyword  id="coordinate_list1" name="coordinate_list" code="{N_rem(RealL,coordsPerField)}" label="coordinate_list" help=""  >
-                  <param type="REALLIST" />
-                </keyword>
-                <keyword  id="coordinate_data_file1" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >
-                  <param type="STRING" />
-                </keyword>
-              </oneOf>
-            </optional>
-            <keyword  id="field_data1" name="field_data" code="{0}" label="field_data" help="" minOccurs="0" >
-              <keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
-                <param type="INTEGER" constraint=">= 0" />
-              </keyword>
-              <optional>
-                <oneOf>
-                  <keyword  id="annotated25" name="annotated" code="{N_rem(true,expDataFileAnnotated)}" label="Data file in annotated format" help="RespCommands.html#RespFnLS"  />
-                  <keyword  id="freeform25" name="freeform" code="{N_rem(false,expDataFileAnnotated)}" label="Data file in freeform format" help="RespCommands.html#RespFnLS"  />
-                </oneOf>
-              </optional>
-              <keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" >
-                <param type="INTEGER" constraint=">= 0" />
-              </keyword>
-              <keyword  id="sigma_type" name="sigma_type" code="{N_rem(strL,sigmaType)}" label="Type of measurement error (constant, vector, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" >
-                <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
-              </keyword>
-              <keyword  id="field_data_file" name="field_data_file" code="{N_rem(str,fieldDataFileName)}" label="Field data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
-                <param type="STRING" />
-              </keyword>
-              <keyword  id="config_data_file" name="config_data_file" code="{N_rem(str,configDataFileName)}" label="Configuration variable data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
-                <param type="STRING" />
-              </keyword>
-              <keyword  id="field_coordinate_data_file1" name="field_coordinate_data_file" code="{N_rem(str,fieldCoordDataFileName)}" label="coordinate_data_file" help="" minOccurs="0"  >
-                <param type="STRING" />
-              </keyword>
-              <keyword  id="sigma_data_file1" name="sigma_data_file" code="{N_rem(str,sigmaDataFileName)}" label="sigma_data_file" help="" minOccurs="0"  >
-                <param type="STRING" />
-              </keyword>
-            </keyword>
-          </keyword>
         </keyword>
         <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses" help="RespCommands.html#RespFnGen" minOccurs="1" >
           <alias name="num_response_functions"/>
@@ -3647,7 +3645,7 @@
             </keyword>
             <optional>
               <oneOf>
-                <keyword  id="coordinate_list2" name="coordinate_list" code="{N_rem(RealL,coordsPerField)}" label="coordinate_list" help=""  >
+                <keyword  id="coordinate_list2" name="coordinate_list" code="{N_rem(RealL,coordList)}" label="coordinate_list" help=""  >
                   <param type="REALLIST" />
                 </keyword>
                 <keyword  id="coordinate_data_file2" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >

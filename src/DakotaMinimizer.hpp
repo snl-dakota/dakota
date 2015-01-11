@@ -257,6 +257,8 @@ protected:
 
   bool speculativeFlag; ///< flag for speculative gradient evaluations
 
+  // TODO: Update from expData to scalarData and handle field data
+
   /// filename from which to read observed data
   String obsDataFilename;
   /// flag indicating whether user-supplied data is active

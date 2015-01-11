@@ -42,7 +42,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   minimizerRecasts(0),
-  obsDataFilename(probDescDB.get_string("responses.exp_data_filename")),
+  obsDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
   obsDataFlag(!obsDataFilename.empty()),
   expData(outputLevel),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
@@ -319,7 +319,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   expData.shared_data(iteratedModel.current_response().shared_data());
   expData.num_experiments(numExperiments);
   expData.num_config_vars(num_config_vars_read);
-  expData.sigma_type(probDescDB.get_sa("responses.sigma_type"));
+  expData.sigma_type(probDescDB.get_sa("responses.variance_type"));
 
   //if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
   //  Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
@@ -327,7 +327,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
     Cout << "\nWarning (least squares): experimental_config_variables " 
 	 << "will be read from file, but ignored." << std::endl;
-  bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
+  bool annotated = probDescDB.get_bool("responses.scalar_data_file_annotated");
   // TODO: for now we always calculate sigma, but need toggle for when to apply;
   // doesn't make sense to have a weighting transformation for sigma = 1.0...
   bool calc_sigma_from_data = true; //calculate sigma if not provided 
@@ -411,7 +411,7 @@ bool Minimizer::data_transform_model(bool weight_flag)
   // weight the terms with sigma from the file if active
   // BMA TODO: Data reader must validate specification of 0, 1, or N sigma
   // TODO: needs to treat scalar vs. field case... and use apply
-  if (probDescDB.get_sa("responses.sigma_type").size() > 0) {
+  if (probDescDB.get_sa("responses.variance_type").size() > 0) {
 
     if (weight_flag) {
       Cerr << "\nError: both weights and experimental standard deviations "
