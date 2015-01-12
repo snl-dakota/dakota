@@ -107,19 +107,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
-    Cout << "number of experiments used in Bayes calibration " 
-         << numExperiments << '\n';
-    Cout << " File name for experimental data " << expDataFileName << '\n';
-  }
-
-  expData.shared_data(iteratedModel.current_response().shared_data());
-  expData.num_experiments(numExperiments);
-  expData.num_config_vars(numExpConfigVars);
-  expData.sigma_type(varianceTypesRead);
-
-  expData.load_data(expDataFileName, "QUESO Bayes Calibration",
-		    expDataFileAnnotated, calc_sigma_from_data);
+  expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
   
   // for now, assume that if you are reading in experimental 
   // standard deviations, you do NOT want to calibrate sigma terms

@@ -42,9 +42,9 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   minimizerRecasts(0),
-  obsDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
-  obsDataFlag(!obsDataFilename.empty()),
-  expData(outputLevel),
+  calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
+		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
+  expData(probDescDB, model.current_response().shared_data(), outputLevel),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
@@ -65,7 +65,7 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0),
-  obsDataFlag(false), scaleFlag(false), varsScaleFlag(false),
+  calibrationDataFlag(false), scaleFlag(false), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
   update_from_model(iteratedModel); // variable,constraint counts & checks
@@ -83,7 +83,7 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
-  speculativeFlag(false), minimizerRecasts(0), obsDataFlag(false),
+  speculativeFlag(false), minimizerRecasts(0), calibrationDataFlag(false),
   scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false), 
   secondaryRespScaleFlag(false)
 { }
@@ -308,45 +308,24 @@ bool Minimizer::data_transform_model(bool weight_flag)
       Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);
   }
+
+  // TODO: consider whether both numRowsExpData and numExperiments are needed
   numRowsExpData = numExperiments;
   size_t total_calib_terms = numRowsExpData*numUserPrimaryFns;
-  Cout << "numTotalCalibTerms  " << total_calib_terms;
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Adjusted number of calibration terms: " << total_calib_terms 
+	 << std::endl;
 
   size_t num_config_vars_read = 
     probDescDB.get_sizet("responses.num_config_vars");
-
-  // cache some sizes from problem database and shared data
-  expData.shared_data(iteratedModel.current_response().shared_data());
-  expData.num_experiments(numExperiments);
-  expData.num_config_vars(num_config_vars_read);
-  expData.sigma_type(probDescDB.get_sa("responses.variance_type"));
-
-  //if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
-  //  Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
-  //	 << "only first will be used." << std::endl;
   if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
     Cout << "\nWarning (least squares): experimental_config_variables " 
 	 << "will be read from file, but ignored." << std::endl;
-  bool annotated = probDescDB.get_bool("responses.scalar_data_file_annotated");
+
   // TODO: for now we always calculate sigma, but need toggle for when to apply;
   // doesn't make sense to have a weighting transformation for sigma = 1.0...
-  bool calc_sigma_from_data = true; //calculate sigma if not provided 
-  expData.load_data(obsDataFilename, "Least Squares",
-		    annotated, calc_sigma_from_data);
-  // copy the y portion of the data to obsData
-  //obsData.reshape(num_experiments, numUserPrimaryFns);
-  //for (int j = 0; j < num_experiments; ++j) {
-  //  for (int y_ind = 0; y_ind < numUserPrimaryFns; ++y_ind) {
-  //    obsData(j,y_ind) = expData.scalar_data(y_ind,j,0);//need to handle replicates
-  //  }
-  //}
-  if (outputLevel >= VERBOSE_OUTPUT) {
-    Cout << "\nUsing calibration data from " << obsDataFilename << ":\n";
-    for (int y_ind = 0; y_ind < numUserPrimaryFns; y_ind++) 
-      for (int j = 0; j < numExperiments; j++)
-        Cout <<  expData.scalar_data(y_ind,j) << '\n';
-    Cout << std::endl;
-  }
+  bool calc_sigma_from_data = true; // calculate sigma if not provided 
+  expData.load_data("Least Squares", calc_sigma_from_data);
 
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!

@@ -72,7 +72,7 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
   //numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;
   //numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
   
-  if (obsDataFlag) {
+  if (calibrationDataFlag) {
     // this might set weights based on exp std deviations
     weightFlag = data_transform_model(weightFlag);
     ++minimizerRecasts;
@@ -364,7 +364,7 @@ void LeastSq::initialize_run()
   Minimizer::initialize_run();
 
   // pull any late updates into the RecastModel
-  if (scaleFlag || obsDataFlag)
+  if (scaleFlag || calibrationDataFlag)
     iteratedModel.update_from_subordinate_model(false); // recursion not reqd
 
   // Track any previous object instance in case of recursion.  Note that

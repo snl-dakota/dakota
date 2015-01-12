@@ -259,10 +259,8 @@ protected:
 
   // TODO: Update from expData to scalarData and handle field data
 
-  /// filename from which to read observed data
-  String obsDataFilename;
-  /// flag indicating whether user-supplied data is active
-  bool obsDataFlag;
+  /// flag indicating whether user-supplied calibration data is active
+  bool calibrationDataFlag;
   /// Container for experimental data to which to calibrate model 
   /// using least squares or other formulations which minimize SSE
   ExperimentData expData;
@@ -392,7 +390,7 @@ private:
 
 
 inline Minimizer::Minimizer(): 
-  minimizerRecasts(0), obsDataFlag(false), scaleFlag(false)
+  minimizerRecasts(0), calibrationDataFlag(false), scaleFlag(false)
 { }
 
 

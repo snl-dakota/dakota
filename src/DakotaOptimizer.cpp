@@ -138,7 +138,7 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
   // in reduce(scale(data(model)))
 
   // this might set weights based on exp std deviations!
-  if (local_nls_recast && obsDataFlag) {
+  if (local_nls_recast && calibrationDataFlag) {
     data_transform_model(!iteratedModel.primary_response_fn_weights().empty());
     ++minimizerRecasts;
   }
@@ -303,7 +303,7 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
   // expanded by the experimental data replicates
   // BMA TODO: Could have two retrieve functions to avoid extra copies
   ActiveSet lookup_set(response.active_set());
-  if (obsDataFlag) {
+  if (calibrationDataFlag) {
     lookup_set.reshape(numUserPrimaryFns);
     lookup_set.request_values(1);
   }
@@ -313,7 +313,7 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
   if (cache_it == data_pairs.get<hashed>().end())
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;
-  else if (obsDataFlag) {
+  else if (calibrationDataFlag) {
     const RealVector& desired_fns = cache_it->response().function_values();
     for (size_t i=0; i<numUserPrimaryFns; i++)
       for (size_t j=0; j<numRowsExpData; j++)
@@ -351,7 +351,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // responses contributing
   if (local_nls_recast) {
     size_t total_calib_terms; 
-    if (!obsDataFlag)
+    if (!calibrationDataFlag)
       total_calib_terms = numUserPrimaryFns;
     else 
       total_calib_terms = numRowsExpData * numUserPrimaryFns;
@@ -621,7 +621,7 @@ void Optimizer::post_run(std::ostream& s)
     // if looked up in DB, need to reapply the data transformation so
     // user will see final residuals, possibly expanded by experimental data
     if (/* local_nls_recast && (implicit in localObjectiveRecast) */ 
-	localObjectiveRecast && obsDataFlag) {
+	localObjectiveRecast && calibrationDataFlag) {
       //size_t num_experiments = obsData.numRows();
       const RealVector& fn_vals = best_resp.function_values();
       size_t fn_index = 0;

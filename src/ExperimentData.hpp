@@ -70,41 +70,28 @@ public:
   //
 
   /// default constructor
-  ExperimentData()
-  { /* empty ctor */ }                                
+  ExperimentData();
 
-  /// typical constructor
-  ExperimentData(short output_level);
+  /// typical DB-based constructor
+  ExperimentData(const ProblemDescDB& prob_desc_db, 
+		 const SharedResponseData& srd, short output_level);
+
+  /// temporary? constructor for testing
+  ExperimentData(size_t num_experiments, size_t num_config_vars, 
+		 const SharedResponseData& srd, short output_level);
+ 
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
-   //ExperimentData& operator=(const ExperimentData&);   ///< assignment operator
+  //ExperimentData& operator=(const ExperimentData&);  ///< assignment operator
 
   //
   //- Heading: Member methods
   //
-
-
-  // sizing methods
-
-  /// set the shared response data
-  void shared_data(const SharedResponseData& srd);
-
-  /// set the number of experiments
-  void num_experiments(size_t num_experiments_in);
-
-  /// set the number of configuration (state) variables to be read
-  void num_config_vars(size_t num_config_vars_in);
-
-  /// set the array of sigmas, one per scalar response / field response group
-  void sigma_type(const StringArray& sigma_type_in);
-
-  /// Load experiments from legacy file format
-  void load_data(const std::string& expDataFilename,
-		 const std::string& context_message,
-		 bool expDataFileAnnotated,
-		 bool calc_sigma_from_data,
-                 bool scalar_data_file = true);
+ 
+  /// Load experiments from data files (simple scalar or field)
+  void load_data(const std::string& context_message,
+		 bool calc_sigma_from_data);
 
   /// retrieve the vector of configuration variables for the given
   /// experiment number
@@ -122,6 +109,10 @@ private:
 
   // initialization helpers
 
+  /// shared body of constructor initialization
+  void initialize(const StringArray& variance_types, 
+		  const SharedResponseData& srd);
+
   /// parse user-provided sigma type strings and populate enums
   void parse_sigma_types(const StringArray& sigma_types);
 
@@ -130,8 +121,7 @@ private:
   /// Load a single experiment exp_index into exp_resp
   void load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
 		       size_t num_sigma_matrices, size_t num_sigma_diagonals, 
-		       size_t num_sigma_scalars, Response& exp_resp,
-                       bool scalar_data_file = true);
+		       size_t num_sigma_scalars, Response& exp_resp);
 
   /// read or default populate the scalar sigma
   void read_scalar_sigma(std::ifstream& scalar_data_stream, 
@@ -142,10 +132,11 @@ private:
   //- Heading: Data
   //
 
-  /// archived shared data for use in sizing fields, total functions
-  /// (historically we read all functions, including constraints,
-  /// which might not be correct)
-  SharedResponseData simulationSRD;
+
+  // configuration and sizing information
+
+  /// whether the user specified a calibration data block
+  bool calibrationDataFlag;
 
   /// the total number of experiments
   size_t numExperiments;
@@ -153,12 +144,35 @@ private:
   /// number of configuration (state) variables to read for each experiment
   size_t numConfigVars;
 
-  // empty sigmaType indicates none specified?!?
-  /// type of sigma specified for each variable, one per response group
-  UShortArray sigmaTypes;
+  // empty varianceType indicates none specified?!?
+  /// type of variance specified for each variable, one per response group
+  UShortArray varianceTypes;
 
-  /// number of sigma values to read from each row in simple data file format
+  // scalar data config information
+
+  /// the user-specied scalar data filename
+  String scalarDataFilename;
+  
+  /// whether the simple scalar data file is in annotated format 
+  bool scalarDataAnnotated;
+
+  /// number of sigma values to read from each row in simple data file
+  /// format (calculated from variance types strings
   size_t scalarSigmaPerRow;
+
+  /// whether to read coordinate data files for fields
+  bool readFieldCoords;
+
+  /// archived shared data for use in sizing fields, total functions
+  /// (historically we read all functions, including constraints,
+  /// which might not be correct)
+  SharedResponseData simulationSRD;
+
+  /// output verbosity level
+  short outputLevel;
+
+
+  // core data storage
 
   /// Vector of numExperiments ExperimentResponses, holding the
   /// observed data and error (sigma/covariance) for each experiment.
@@ -173,9 +187,6 @@ private:
   /// Temporary container to hold sigma data while migrating to
   /// ExperimentCovariance
   RealMatrix sigmaScalarValues;
-
-  /// output verbosity level
-  short outputLevel;
 
 };
 

@@ -58,11 +58,9 @@ protected:
 
   // TODO: Update from expData to scalarData and handle field data
 
-  /// filename from which to read experimental data; optionally
-  /// configuration vars x and standard deviations sigma
-  String expDataFileName;
-  /// whether the data file is in annotated format
-  bool expDataFileAnnotated;
+  /// whether there is calibration data present
+  bool calibrationDataFlag;
+
   /// number of experiments to read from data file
   size_t numExperiments;
   /// number of columns in data file which are state variables

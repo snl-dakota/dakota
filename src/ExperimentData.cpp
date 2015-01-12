@@ -8,25 +8,71 @@
 
 #include "ExperimentData.hpp"
 #include "DataMethod.hpp"
+#include "ProblemDescDB.hpp"
 
 namespace Dakota {
 
-ExperimentData::ExperimentData(short output_level): 
+
+ExperimentData::ExperimentData():
+  calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
+  scalarDataAnnotated(true), readFieldCoords(false), outputLevel(NORMAL_OUTPUT)
+{  /* empty ctor */  }                                
+
+
+ExperimentData::
+ExperimentData(const ProblemDescDB& pddb, 
+	       const SharedResponseData& srd, short output_level):
+  calibrationDataFlag(pddb.get_bool("responses.calibration_data")),
+  numExperiments(pddb.get_sizet("responses.num_experiments")), 
+  numConfigVars(pddb.get_sizet("responses.num_config_vars")),
+  scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
+  scalarDataAnnotated(pddb.get_bool("responses.scalar_data_file_annotated")),
+  readFieldCoords(pddb.get_bool("responses.read_field_coords")),
   outputLevel(output_level)
 { 
-  // TODO: don't initialize if no calibration data...
-  //  if (calibrationData)
+  initialize(pddb.get_sa("responses.variance_type"), srd);
 }                                
 
+
+ExperimentData::
+ExperimentData(size_t num_experiments, size_t num_config_vars, 
+	       const SharedResponseData& srd, short output_level):
+  calibrationDataFlag(true), 
+  numExperiments(num_experiments), numConfigVars(num_config_vars), 
+  scalarDataAnnotated(true), readFieldCoords(false), outputLevel(NORMAL_OUTPUT)
+{
+  initialize(StringArray(), srd);
+}
+
+
+void ExperimentData::initialize(const StringArray& variance_types, 
+				const SharedResponseData& srd)
+{
+  // only initialize data if needed; TODO: consider always initializing
+  if (calibrationDataFlag || !scalarDataFilename.empty()) {
+
+    if (outputLevel > NORMAL_OUTPUT) {
+      Cout << "Constructing ExperimentData with " << numExperiments 
+	   << " experiment(s).";
+      if (!scalarDataFilename.empty())
+	Cout << "\n  Scalar data file name: '" << scalarDataFilename << "'";
+      Cout << std::endl;
+    }
+
+    // for now, copy in case any recasting between construct and read;
+    // don't want to share a rep, or do we?
+    simulationSRD = srd.copy();
+
+    parse_sigma_types(variance_types);
+
+  }
+}
 
 /** Validate user-provided sigma specifcation. User can specify 0, 1,
     or num_response_groups sigmas.  If specified, sigma types must be
     the same for all scalar responses. */
 void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 {
-  // TODO: flow from input spec
-  bool scalar_data_file = true;
-
   // leave array empty if not needed (could have many responses and no sigmas)
   if (sigma_types.size() == 0)
     return;
@@ -41,11 +87,11 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
   // expand sigma if 0 or 1 given, without validation
   size_t num_resp_groups = simulationSRD.num_response_groups();
   size_t num_scalar = simulationSRD.num_scalar_responses();
-  sigmaTypes.resize(num_resp_groups, NO_SIGMA);
+  varianceTypes.resize(num_resp_groups, NO_SIGMA);
   if (sigma_types.size() == 1) {
     // assign all sigmas to the specified one
     if (sigma_map.find(sigma_types[0]) != sigma_map.end())
-      sigmaTypes.assign(num_resp_groups, sigma_map[sigma_types[0]]);
+      varianceTypes.assign(num_resp_groups, sigma_map[sigma_types[0]]);
     else {
       Cerr << "\nError: invalid sigma_type '" << sigma_types[0] 
 	   << "' specified." << std::endl;
@@ -56,7 +102,7 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
     // initialize one sigma type per 
     for (size_t resp_ind = 0; resp_ind < num_resp_groups; ++resp_ind) {
       if (sigma_map.find(sigma_types[resp_ind]) != sigma_map.end())
-	sigmaTypes[resp_ind] = sigma_map[sigma_types[resp_ind]];
+	varianceTypes[resp_ind] = sigma_map[sigma_types[resp_ind]];
       else {
 	Cerr << "\nError: invalid sigma_type '" << sigma_types[resp_ind] 
 	     << "' specified." << std::endl;
@@ -75,15 +121,16 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
   // differ)
   
   // scalar sigma must be 0 or scalar
+  bool scalar_data_file = !scalarDataFilename.empty(); 
   for (size_t scalar_ind = 0; scalar_ind < num_scalar; ++scalar_ind) {
-    if (sigmaTypes[scalar_ind] != NO_SIGMA && 
-	sigmaTypes[scalar_ind] != SCALAR_SIGMA) {
+    if (varianceTypes[scalar_ind] != NO_SIGMA && 
+	varianceTypes[scalar_ind] != SCALAR_SIGMA) {
       Cerr << "\nError: sigma_type must be 'none' or 'scalar' for scalar "
 	   << "responses." << std::endl;
       abort_handler(PARSE_ERROR);
     }
     if (scalar_data_file) {
-      if (sigmaTypes[scalar_ind] != sigmaTypes[0]) {
+      if (varianceTypes[scalar_ind] != varianceTypes[0]) {
 	Cerr << "\nError: sigma_type must be the same for all scalar responses "
 	     << "when using scalar data file." 
 	     << std::endl;
@@ -92,44 +139,24 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
     }
   }
   // numberof sigma to read from simple data file(0 or num_scalar)
-  if (scalar_data_file && sigmaTypes.size() > 0 && sigmaTypes[0] == SCALAR_SIGMA)
+  if (scalar_data_file && varianceTypes.size() > 0 && 
+      varianceTypes[0] == SCALAR_SIGMA)
     scalarSigmaPerRow = num_scalar;
 
 }
 
 
-void ExperimentData::shared_data(const SharedResponseData& srd)
-{ 
-  // copy in case any recasting between construct and read; don't want
-  // to share a rep?
-  simulationSRD = srd.copy();
-}
-
-void ExperimentData::num_experiments(size_t num_experiments_in)
-{ numExperiments = num_experiments_in; }
-
-void ExperimentData::num_config_vars(size_t num_config_vars_in)
-{ numConfigVars = num_config_vars_in; }
-
-void ExperimentData::sigma_type(const StringArray& sigma_type_in)
-{ 
-  // TODO: move this to construct time
-  parse_sigma_types(sigma_type_in);
-}
-
-
 void ExperimentData:: 
-load_data(const std::string& expDataFileName,
-	  const std::string& context_message,
-	  bool expDataFileAnnotated,
-	  bool calc_sigma_from_data,
-          bool scalar_data_file)
+load_data(const std::string& context_message, bool calc_sigma_from_data)
 {
-  
-  // TODO: Change the argument list to load_data, account for reading
-  // scalar data and field data; get all needed data from the problem
-  // DB, likely at construct time, delaying read.
-  bool read_field_coords = false;
+  // TODO: complete scalar and field cases
+
+  bool scalar_data_file = !scalarDataFilename.empty(); 
+  if (!calibrationDataFlag && !scalar_data_file) {
+    Cerr << "\nError: load_data attempted for empty experiment spec."
+	 << std::endl;
+    abort_handler(-1);
+  }
 
   // Get a copy of the simulation SRD to use in contructing the
   // experiment response; won't be able to share the core data since
@@ -140,8 +167,8 @@ load_data(const std::string& expDataFileName,
   // TODO: new ctor for experiment response
   exp_srd.response_type(EXPERIMENT_RESPONSE);
   Response exp_resp(exp_srd);
-  if (outputLevel > NORMAL_OUTPUT) {
-    std::cout << "Construct experiment response" << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    std::cout << "Constructing experiment response" << std::endl;
     exp_resp.write(std::cout);
   }
 
@@ -154,11 +181,11 @@ load_data(const std::string& expDataFileName,
   // data, if "scalar" or "none" is specified, need to convert to a
   // diagonal the length of the actual data
   size_t num_sigma_matrices = 
-    std::count(sigmaTypes.begin(), sigmaTypes.end(), MATRIX_SIGMA);
+    std::count(varianceTypes.begin(), varianceTypes.end(), MATRIX_SIGMA);
   size_t num_sigma_diagonals = 
-    std::count(sigmaTypes.begin(), sigmaTypes.end(), DIAGONAL_SIGMA);
+    std::count(varianceTypes.begin(), varianceTypes.end(), DIAGONAL_SIGMA);
   size_t num_sigma_scalars = 
-    std::count(sigmaTypes.begin(), sigmaTypes.end(), SCALAR_SIGMA);
+    std::count(varianceTypes.begin(), varianceTypes.end(), SCALAR_SIGMA);
 
   // TODO: temporary duplication until necessary covariance APIs are updated
   size_t num_scalar = simulationSRD.num_scalar_responses();
@@ -169,23 +196,29 @@ load_data(const std::string& expDataFileName,
   std::ifstream scalar_data_stream;
   if (scalar_data_file) {
     if (outputLevel >= NORMAL_OUTPUT) {
-      Cout << "\nReading scalar experimental data from file" << expDataFileName;
-      Cout << "\n  " << numExperiments << " experiments for";
-      Cout << "\n  " << num_scalar << " scalar responses." << std::endl;
+      Cout << "\nReading scalar experimental data from file " 
+	   << scalarDataFilename << ":";
+      Cout << "\n  " << numExperiments << " experiment(s) for";
+      Cout << "\n  " << num_scalar << " scalar responses" << std::endl;
     }
-    TabularIO::open_file(scalar_data_stream, expDataFileName, context_message);
-    TabularIO::read_header_tabular(scalar_data_stream, expDataFileAnnotated);
+    TabularIO::open_file(scalar_data_stream, scalarDataFilename, 
+			 context_message);
+    TabularIO::read_header_tabular(scalar_data_stream, scalarDataAnnotated);
   }
 
-  if (!scalar_data_file) // read all experiment config vars at once
-    // In this context, expDataFileName is the response_label.
-    // Also, may need to flag expDataFileAnnotated - for now assmues not annotated
-    read_config_vars_multifile(expDataFileName, numExperiments, numConfigVars, allConfigVars);
+  if (!scalar_data_file) { 
+    // read all experiment config vars from new field data format files at once
+    // TODO: have the user give a name for this file, since should be
+    // the same for all responses.  Read from foo.<exp_num>.config. 
+    String config_vars_basename("experiment");
+    read_config_vars_multifile(config_vars_basename, numExperiments, 
+			       numConfigVars, allConfigVars);
+  }
 
   for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
 
     // TODO: error handling
-    if (expDataFileAnnotated) {
+    if (scalarDataAnnotated) {
       size_t discard_row_label;
 	scalar_data_stream >> discard_row_label;
     }
@@ -199,23 +232,20 @@ load_data(const std::string& expDataFileName,
       // TODO: try/catch
       scalar_data_stream >> allConfigVars[exp_index];
     }
+    // TODO: else validate scalar vs. field configs?
 
     // read one file per field response, resize, and populate the
     // experiment (values, sigma, coords)
     load_experiment(exp_index, scalar_data_stream, num_sigma_matrices, 
-		    num_sigma_diagonals, num_sigma_scalars, exp_resp,
-                    scalar_data_file);
+		    num_sigma_diagonals, num_sigma_scalars, exp_resp);
 
-    if (outputLevel > NORMAL_OUTPUT)
-      Cout << "CurrExp values\n" << exp_resp.function_values() << '\n';
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Values for experiment " << exp_index + 1 << ": \n" 
+	   << exp_resp.function_values() << std::endl;
+
     allExperiments.push_back(exp_resp.copy());
   }
 
-  if (outputLevel > VERBOSE_OUTPUT) {
-    Cout << "All config vars:\n" << allConfigVars;
-    Cout << "\nSigma values:\n" << sigmaScalarValues << std::endl;
-  }
-  
   // historically we calculated sigma from data by default if not
   // provided; might want a user option for this However, is counter
   // to loading one experiment at a time; would have to be done
@@ -242,11 +272,18 @@ load_data(const std::string& expDataFileName,
   */
 
   // verify that the two experiments have different data
-  for (size_t i=0; i<numExperiments; ++i) {
-     std::cout << "vec_exp #" << i << std::endl;
-     allExperiments[i].write(std::cout);
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Experiment data summary:";
+    if (numConfigVars > 0)
+      Cout << "Values of experiment configuration variables:\n" 
+	   << allConfigVars << "\n";
+    for (size_t i=0; i<numExperiments; ++i) {
+      std::cout << "\n  Data values, experiment " << i << "\n";
+      allExperiments[i].write(std::cout);
+    }
+    Cout << "\nExperiment variance values:\n" << sigmaScalarValues << std::endl;
   }
- 
+
   // TODO: exists extra data in scalar_data_stream
 
 }
@@ -257,10 +294,9 @@ load_data(const std::string& expDataFileName,
 void ExperimentData::
 load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
 		size_t num_sigma_matrices, size_t num_sigma_diagonals,
-		size_t num_sigma_scalars, Response& exp_resp,
-                bool scalar_data_file)
+		size_t num_sigma_scalars, Response& exp_resp)
 {
-
+  bool scalar_data_file = !scalarDataFilename.empty();
   size_t num_scalars = simulationSRD.num_scalar_responses();
   size_t num_fields = simulationSRD.num_field_response_groups();
   size_t num_resp = num_scalars + num_fields;
@@ -359,7 +395,8 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 
     // read coordinates from field_name.exp_num.coords and validate
     // number of rows is field_lengths[field_index]
-    read_coord_values(fn_name, exp_index+1, exp_coords[field_index]);
+    if (readFieldCoords)
+      read_coord_values(fn_name, exp_index+1, exp_coords[field_index]);
     // TODO: check length
          
     // read sigma 1, N (field_lengths[field_index]), or N^2 values

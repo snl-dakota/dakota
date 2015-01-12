@@ -27,36 +27,26 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
-  expStdDeviations(probDescDB.get_rv("responses.exp_std_deviations")),
-  expDataFileName(probDescDB.get_string("responses.scalar_data_filename")),
-  expDataFileAnnotated(
-    probDescDB.get_bool("responses.scalar_data_file_annotated")),
+  calibrationDataFlag(probDescDB.get_bool("calibration_data") ||
+		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
   varianceTypesRead(probDescDB.get_sa("responses.variance_type")),
-  expData(outputLevel),
+  expData(problem_db, iteratedModel.current_response().shared_data(), 
+	  outputLevel),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
   continuousConfigStart(0), discreteIntConfigStart(0),
   discreteRealConfigStart(0)
 { 
   bool found_error = false;
 
-  if (expStdDeviations.length() != 0 && expStdDeviations.length() != 1 && 
-      expStdDeviations.length() != numFunctions) {
-    Cerr << "\nError (NonDCalibration): vector of experimental standard "
-	 << "deviations must have length 0, 1, or " << numFunctions 
-	 << "(number of responses)." << std::endl;
-    found_error = true;
-  }
-
   // input spec may get expanded to allow data via input file, but
   // currently data file is required
-  if (expDataFileName.empty()) {
+  if (!calibrationDataFlag) {
     Cerr << "\nError (NonDCalibration): Bayesian methods require calibration "
 	 << "data file." << std::endl;
     found_error = true;
   }
-
 
   if (numExpConfigVars > 0) {
 
