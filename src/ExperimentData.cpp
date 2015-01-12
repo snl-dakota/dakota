@@ -36,9 +36,11 @@ ExperimentData(const ProblemDescDB& pddb,
 
 ExperimentData::
 ExperimentData(size_t num_experiments, size_t num_config_vars, 
+	       const boost::filesystem::path& data_prefix,
 	       const SharedResponseData& srd, short output_level):
   calibrationDataFlag(true), 
-  numExperiments(num_experiments), numConfigVars(num_config_vars), 
+  numExperiments(num_experiments), numConfigVars(num_config_vars),
+  dataPathPrefix(data_prefix),
   scalarDataAnnotated(true), readFieldCoords(false), outputLevel(NORMAL_OUTPUT)
 {
   initialize(StringArray(), srd);
@@ -210,8 +212,9 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     // read all experiment config vars from new field data format files at once
     // TODO: have the user give a name for this file, since should be
     // the same for all responses.  Read from foo.<exp_num>.config. 
-    String config_vars_basename("experiment");
-    read_config_vars_multifile(config_vars_basename, numExperiments, 
+    //    String config_vars_basename("experiment");
+    boost::filesystem::path config_vars_basepath = dataPathPrefix / "experiment";
+    read_config_vars_multifile(config_vars_basepath.string(), numExperiments, 
 			       numConfigVars, allConfigVars);
   }
 
@@ -365,7 +368,8 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       const String& fn_name = fn_labels[fn_index];
       // TODO: read data directly into values array from
       // fn_name.exp_num.dat
-      read_field_values(fn_name, exp_index+1, exp_values[fn_index]);
+      boost::filesystem::path sigma_base = dataPathPrefix / fn_name;
+      read_field_values(sigma_base.string(), exp_index+1, exp_values[fn_index]);
       // TODO: error if length read != 1
       
       if (sigma_type[fn_index] == SCALAR_SIGMA) {
@@ -390,13 +394,16 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 
     // read a column vector of field values for this field from
     // fn_name.exp_num.dat
-    read_field_values(fn_name, exp_index+1, exp_values[fn_index]);
+    boost::filesystem::path field_base = dataPathPrefix / fn_name;
+    read_field_values(field_base.string(), exp_index+1, exp_values[fn_index]);
     field_lengths[field_index] = exp_values[fn_index].length();
 
     // read coordinates from field_name.exp_num.coords and validate
     // number of rows is field_lengths[field_index]
-    if (readFieldCoords)
-      read_coord_values(fn_name, exp_index+1, exp_coords[field_index]);
+    if (readFieldCoords) {
+      boost::filesystem::path coord_base = dataPathPrefix / fn_name;
+      read_coord_values(coord_base.string(), exp_index+1, exp_coords[field_index]);
+    }
     // TODO: check length
          
     // read sigma 1, N (field_lengths[field_index]), or N^2 values
