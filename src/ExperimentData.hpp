@@ -103,7 +103,8 @@ public:
   void load_data(const std::string& expDataFilename,
 		 const std::string& context_message,
 		 bool expDataFileAnnotated,
-		 bool calc_sigma_from_data);
+		 bool calc_sigma_from_data,
+                 bool scalar_data_file = true);
 
   /// retrieve the vector of configuration variables for the given
   /// experiment number
@@ -129,7 +130,8 @@ private:
   /// Load a single experiment exp_index into exp_resp
   void load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
 		       size_t num_sigma_matrices, size_t num_sigma_diagonals, 
-		       size_t num_sigma_scalars, Response& exp_resp);
+		       size_t num_sigma_scalars, Response& exp_resp,
+                       bool scalar_data_file = true);
 
   /// read or default populate the scalar sigma
   void read_scalar_sigma(std::ifstream& scalar_data_stream, 

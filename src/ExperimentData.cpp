@@ -122,13 +122,13 @@ void ExperimentData::
 load_data(const std::string& expDataFileName,
 	  const std::string& context_message,
 	  bool expDataFileAnnotated,
-	  bool calc_sigma_from_data)
+	  bool calc_sigma_from_data,
+          bool scalar_data_file)
 {
   
   // TODO: Change the argument list to load_data, account for reading
   // scalar data and field data; get all needed data from the problem
   // DB, likely at construct time, delaying read.
-  bool scalar_data_file = true;   // hard-wired to read scalar data
   bool read_field_coords = false;
 
   // Get a copy of the simulation SRD to use in contructing the
@@ -177,6 +177,11 @@ load_data(const std::string& expDataFileName,
     TabularIO::read_header_tabular(scalar_data_stream, expDataFileAnnotated);
   }
 
+  if (!scalar_data_file) // read all experiment config vars at once
+    // In this context, expDataFileName is the response_label.
+    // Also, may need to flag expDataFileAnnotated - for now assmues not annotated
+    read_config_vars_multifile(expDataFileName, numExperiments, numConfigVars, allConfigVars);
+
   for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
 
     // TODO: error handling
@@ -189,27 +194,20 @@ load_data(const std::string& expDataFileName,
     // Read and set the configuration variables
     // -----
 
-    if (numConfigVars > 0) {
+    if ( (numConfigVars > 0) && scalar_data_file ) {
       allConfigVars[exp_index].sizeUninitialized(numConfigVars);
-      if (scalar_data_file) {
-	// TODO: try/catch
-	scalar_data_stream >> allConfigVars[exp_index];
-      }
-      else {
-	// load configuration variables from field data formatted files
-	// response_label.exp_num.config (ideally do both if present and
-	// validate against scalar if discrepancies)
-	// TODO: read_config_vars_multifile(); ?!?
-      }
+      // TODO: try/catch
+      scalar_data_stream >> allConfigVars[exp_index];
     }
 
     // read one file per field response, resize, and populate the
     // experiment (values, sigma, coords)
     load_experiment(exp_index, scalar_data_stream, num_sigma_matrices, 
-		    num_sigma_diagonals, num_sigma_scalars, exp_resp);
+		    num_sigma_diagonals, num_sigma_scalars, exp_resp,
+                    scalar_data_file);
 
     if (outputLevel > NORMAL_OUTPUT)
-      Cout << "CurrExp values " << exp_resp.function_values() << '\n';
+      Cout << "CurrExp values\n" << exp_resp.function_values() << '\n';
     allExperiments.push_back(exp_resp.copy());
   }
 
@@ -259,9 +257,9 @@ load_data(const std::string& expDataFileName,
 void ExperimentData::
 load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
 		size_t num_sigma_matrices, size_t num_sigma_diagonals,
-		size_t num_sigma_scalars, Response& exp_resp)
+		size_t num_sigma_scalars, Response& exp_resp,
+                bool scalar_data_file)
 {
-  bool scalar_data_file = true;
 
   size_t num_scalars = simulationSRD.num_scalar_responses();
   size_t num_fields = simulationSRD.num_field_response_groups();

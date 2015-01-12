@@ -53,10 +53,15 @@ option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" ON)
 if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   set(dakota_sample_unit_tests
     covariance_reader.cpp
+    expt_data.cpp
     expt_data_reader.cpp
     file_reader.cpp
     data_conversions.cpp
     )
+  if(HAVE_PECOS)
+    list(APPEND dakota_sample_unit_tests expt_data.cpp)
+    include_directories(${Pecos_SOURCE_DIR}/src)
+  endif() # HAVE_PECOS
   add_executable(sample_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
   target_link_libraries(sample_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
   add_test(sample_unit_tests sample_unit_tests)
