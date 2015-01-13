@@ -27,7 +27,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
-  calibrationDataFlag(probDescDB.get_bool("calibration_data") ||
+  calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
 		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
