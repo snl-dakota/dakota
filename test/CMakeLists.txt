@@ -395,16 +395,6 @@ option(DAKOTA_ENABLE_BOOST_MIN_TESTS
 if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
   # Complete these for each specific test.
 
-  add_executable(test_workdir_utils test_workdir_utils.cpp)
-  target_link_libraries(test_workdir_utils ${Dakota_LIBRARIES}
-                        ${Dakota_TPL_LIBRARIES})
-  add_test(test_workdir_utils test_workdir_utils)
-
-  # Test packing/unpacking of data for MPI send/recv
-  if (DAKOTA_HAVE_MPI)
-    add_definitions("-DDAKOTA_HAVE_MPI")
-  endif()
-
   add_executable(test_field_covariance_utils test_field_covariance_utils.cpp)
   target_link_libraries(test_field_covariance_utils ${Dakota_LIBRARIES}
     ${Dakota_TPL_LIBRARIES})

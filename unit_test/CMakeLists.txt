@@ -21,6 +21,12 @@ target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
 add_test(min_unit_test min_unit_test)
 
 
+add_executable(test_workdir_utils test_workdir_utils.cpp)
+target_link_libraries( test_workdir_utils ${Dakota_LIBRARIES}
+  ${Dakota_TPL_LIBRARIES} )
+add_test(test_workdir_utils test_workdir_utils)
+
+
 # Next Unit test target (try BOOST_AUTO_TEST_CASE)
 
 #set(auto_unit_test_SRCS
@@ -32,6 +38,7 @@ target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
   ${Dakota_TPL_LIBRARIES} )
 #target_link_libraries(auto_unit_test boost_unit_test_framework) # need team buy-in
 add_test(auto_unit_test auto_unit_test)
+
 
 # TODO: MORE Unit test targets
 
