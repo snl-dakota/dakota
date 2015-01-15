@@ -59,6 +59,17 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
   for( int i=0; i<field_vals_view.length(); ++i )
     TEST_FLOATING_EQUALITY( gold_dat[i], field_vals_view[i], 1.e-14 );
 
+  // Test coords correctness
+  RealMatrix field_coords_view = expt_data.field_coords_view(0, 0);
+  RealMatrix gold_coords;
+  read_coord_values(filename, 1, gold_coords);
+  TEST_EQUALITY( gold_coords.numRows(), field_coords_view.numRows() );
+  TEST_EQUALITY( gold_coords.numCols(), field_coords_view.numCols() );
+  for( int i=0; i<field_coords_view.numRows(); ++i )
+    for( int j=0; j<field_coords_view.numCols(); ++j )
+      TEST_FLOATING_EQUALITY( gold_coords(i,j), field_coords_view(i,j), 1.e-14 );
+
+  // Test config vars correctness
   const RealVector& config_vars = expt_data.config_vars(0);
   TEST_EQUALITY( config_vars.length(), NUM_CONFIG_VARS );
 }
@@ -114,6 +125,25 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
   for( int i=0; i<pressure_vals_view.length(); ++i )
     TEST_FLOATING_EQUALITY( gold_dat2[i], pressure_vals_view[i], 1.e-14 );
 
+  // Test coords correctness
+  RealMatrix field_coords_view1 = expt_data.field_coords_view(0, 0);
+  RealMatrix field_coords_view2 = expt_data.field_coords_view(1, 0);
+  RealMatrix gold_coords1;
+  RealMatrix gold_coords2;
+  read_coord_values(filename1, 1, gold_coords1);
+  read_coord_values(filename2, 1, gold_coords2);
+  TEST_EQUALITY( gold_coords1.numRows(), field_coords_view1.numRows() );
+  TEST_EQUALITY( gold_coords1.numCols(), field_coords_view1.numCols() );
+  TEST_EQUALITY( gold_coords2.numRows(), field_coords_view2.numRows() );
+  TEST_EQUALITY( gold_coords2.numCols(), field_coords_view2.numCols() );
+  for( int i=0; i<field_coords_view1.numRows(); ++i )
+    for( int j=0; j<field_coords_view1.numCols(); ++j )
+      TEST_FLOATING_EQUALITY( gold_coords1(i,j), field_coords_view1(i,j), 1.e-14 );
+  for( int i=0; i<field_coords_view2.numRows(); ++i )
+    for( int j=0; j<field_coords_view2.numCols(); ++j )
+      TEST_FLOATING_EQUALITY( gold_coords2(i,j), field_coords_view2(i,j), 1.e-14 );
+
+  // Test config vars correctness
   const RealVector& config_vars = expt_data.config_vars(0);
   TEST_EQUALITY( config_vars.length(), NUM_CONFIG_VARS );
 }

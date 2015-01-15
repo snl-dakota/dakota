@@ -137,6 +137,7 @@ typedef std::vector<IntRealMap>        IntRealMapArray;
 typedef std::vector<RealRealMap>       RealRealMapArray;
 typedef std::vector<StringRealMap>     StringRealMapArray;
 typedef std::map<int, RealVector>      IntRealVectorMap;
+typedef std::map<int, RealMatrix>      IntRealMatrixMap;
 typedef std::map<int, ActiveSet>       IntActiveSetMap;
 typedef std::map<int, Variables>       IntVariablesMap;
 typedef std::map<int, Response>        IntResponseMap;

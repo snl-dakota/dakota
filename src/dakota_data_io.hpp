@@ -589,6 +589,14 @@ void read_data_annotated(std::istream& s,
     s >> v[i] >> label_array[i];
 }
 
+/// simple utility to convert intrinsics to strings 
+template <typename T>
+  inline std::string convert_to_string(const T &value) {
+    std::ostringstream out;
+    out << value;
+    return out.str();
+  }
+
 /// istream extraction operator for configuration data of known dim and length
 void read_sized_data(std::istream& s,
                      RealVectorArray& va,

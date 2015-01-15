@@ -163,6 +163,10 @@ public:
   RealVector field_values_view(size_t i);
   /// set a field value
   void field_values(const RealVector& field_val, size_t i);
+  /// return a "view" of a field value's coordinates
+  RealMatrix field_coords_view(size_t i);
+  /// set a field value's coordinates
+  void field_coords(const RealMatrix& field_coords, size_t i);
 
   /// return the field lengths from sharedRespData
   const IntVector& field_lengths() const;
@@ -302,6 +306,8 @@ protected:
   RealMatrix functionGradients;
   /// second derivatives of the response functions
   RealSymMatrixArray functionHessians;
+  /// coordinates for the field values
+  IntRealMatrixMap fieldCoords; // not all field have associated coords - RWH
 
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
@@ -427,6 +433,19 @@ inline RealVector Response::field_values_view(size_t i)
 }
 
 
+inline RealMatrix Response::field_coords_view(size_t i)
+{
+  if (responseRep)
+    return responseRep->field_coords_view(i);
+  else {
+    if( fieldCoords.find(i) == fieldCoords.end() )
+      return RealMatrix(); // return empty matrix?  error out? - RWH
+    else
+      return RealMatrix(Teuchos::View, fieldCoords[i], fieldCoords[i].numRows(), fieldCoords[i].numCols());
+  }
+}
+
+
 inline RealVector Response::function_values_view()
 {
   // Caution/Bug: with some compilers the Teuchos::View may be copy
@@ -474,6 +493,15 @@ inline void Response::field_values(const RealVector& field_vals, size_t i)
     for (j=0; j<len_i; ++j, ++cntr)
       functionValues[cntr] = field_vals[j];
   }
+}
+
+
+inline void Response::field_coords(const RealMatrix& coords, size_t i)
+{
+  if (responseRep)
+    responseRep->field_coords(coords, i);
+  else
+    fieldCoords[i] = coords;
 }
 
 

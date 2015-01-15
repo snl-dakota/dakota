@@ -389,6 +389,7 @@ Response Response::copy(bool deep_srd) const
       get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
       get_response(responseRep->sharedRespData);      // shallow SRD copy
     response.responseRep->functionValues    = responseRep->functionValues;
+    response.responseRep->fieldCoords       = responseRep->fieldCoords;
     response.responseRep->functionGradients = responseRep->functionGradients;
     response.responseRep->functionHessians  = responseRep->functionHessians;
     response.responseRep->responseActiveSet = responseRep->responseActiveSet;

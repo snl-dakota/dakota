@@ -20,16 +20,6 @@ namespace Dakota {
 
 //----------------------------------------------------------------
 
-// A utility that might be generally useful ... ? RWH
-template <typename T>
-  inline std::string convert_to_string(const T &value) {
-    std::ostringstream out;
-    out << value;
-    return out.str();
-  }
-
-//----------------------------------------------------------------
-
 void 
 read_sized_data(std::istream& s,
                 RealVectorArray& va,

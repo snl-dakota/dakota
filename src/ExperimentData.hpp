@@ -21,6 +21,7 @@
 #include "dakota_tabular_io.hpp"
 #include "ExperimentResponse.hpp"
 #include "SharedResponseData.hpp"
+#include <boost/filesystem/operations.hpp>
 #include "boost/filesystem/path.hpp"
 
 namespace Dakota {
@@ -120,6 +121,10 @@ public:
   /// retrieve a view of the field data for the given response, for the given
   /// experiment 
   RealVector field_data_view(size_t response, size_t experiment);
+
+  /// retrieve a view of the field data coordinates for the given response, for the given
+  /// experiment 
+  RealMatrix field_coords_view(size_t response, size_t experiment);
 
 private:
 

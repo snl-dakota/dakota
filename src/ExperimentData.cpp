@@ -15,7 +15,7 @@ namespace Dakota {
 
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
-  scalarDataAnnotated(true), readFieldCoords(false), outputLevel(NORMAL_OUTPUT)
+  scalarDataAnnotated(true), outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }                                
 
 
@@ -27,7 +27,6 @@ ExperimentData(const ProblemDescDB& pddb,
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
   scalarDataAnnotated(pddb.get_bool("responses.scalar_data_file_annotated")),
-  readFieldCoords(pddb.get_bool("responses.read_field_coords")),
   outputLevel(output_level)
 { 
   initialize(pddb.get_sa("responses.variance_type"), srd);
@@ -41,7 +40,7 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
   dataPathPrefix(data_prefix),
-  scalarDataAnnotated(true), readFieldCoords(false), outputLevel(NORMAL_OUTPUT)
+  scalarDataAnnotated(true), outputLevel(output_level)
 {
   initialize(StringArray(), srd);
 }
@@ -329,7 +328,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   IntVector field_lengths(num_fields, 0);
 
   // coordinates for fields only
-  RealMatrixArray exp_coords(num_fields);
+  RealMatrix exp_coords;
 
   // Data for sigma
   // TODO: field become 
@@ -398,13 +397,20 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     read_field_values(field_base.string(), exp_index+1, exp_values[fn_index]);
     field_lengths[field_index] = exp_values[fn_index].length();
 
-    // read coordinates from field_name.exp_num.coords and validate
-    // number of rows is field_lengths[field_index]
-    if (readFieldCoords) {
+    // For fields with corresponding coords file, read coordinates
+    // from field_name.exp_num.coords and validate number of rows is
+    // field_lengths[field_index]
+    std::string filename = fn_name + "." + Dakota::convert_to_string(exp_index+1) + ".coords";
+    boost::filesystem::path coord_path_and_file = dataPathPrefix / filename;
+    if ( boost::filesystem::is_regular_file(coord_path_and_file) )
+    {
       boost::filesystem::path coord_base = dataPathPrefix / fn_name;
-      read_coord_values(coord_base.string(), exp_index+1, exp_coords[field_index]);
+      read_coord_values(coord_base.string(), exp_index+1, exp_coords);
+      // Sanity check length
+      if( field_lengths[field_index] != exp_coords.numRows() )
+        throw std::runtime_error("Inconsistent lengths of field data and coordinates.");
+      exp_resp.field_coords(exp_coords, fn_index);
     }
-    // TODO: check length
          
     // read sigma 1, N (field_lengths[field_index]), or N^2 values
     switch(sigma_type[fn_index]) {
@@ -515,5 +521,10 @@ field_data_view(size_t response, size_t experiment)
   return(allExperiments[experiment].field_values_view(response));
 }
 
+RealMatrix ExperimentData::
+field_coords_view(size_t response, size_t experiment)
+{
+  return(allExperiments[experiment].field_coords_view(response));
+}
 
 }  // namespace Dakota
