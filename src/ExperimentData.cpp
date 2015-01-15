@@ -464,6 +464,23 @@ void ExperimentData::read_scalar_sigma(std::ifstream& scalar_data_stream,
   }
 }
 
+size_t ExperimentData::
+num_scalars() const
+{
+  if( simulationSRD.is_null() )
+    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
+
+  return simulationSRD.num_scalar_responses();
+}
+
+size_t ExperimentData::
+num_fields() const
+{
+  if( simulationSRD.is_null() )
+    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
+
+  return  simulationSRD.num_field_response_groups();
+}
 
 const RealVector& ExperimentData::
 config_vars(size_t experiment)
@@ -490,6 +507,12 @@ scalar_sigma(size_t response, size_t experiment)
   //}
   //return(allExperiments[experiment].get_scalar_covariance(response));
   return(sigmaScalarValues(experiment, response));
+}
+
+RealVector ExperimentData::
+field_data_view(size_t response, size_t experiment)
+{
+  return(allExperiments[experiment].field_values_view(response));
 }
 
 

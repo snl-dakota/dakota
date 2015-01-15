@@ -95,6 +95,16 @@ public:
   void load_data(const std::string& context_message,
 		 bool calc_sigma_from_data);
 
+  /// retrieve the number of experiments
+  size_t num_experiments() const
+    { return allExperiments.size(); }
+
+  /// retrieve the number of scalars (applies to all experiments)
+  size_t num_scalars() const;
+
+  /// retrieve the number of fields (applies to all experiments)
+  size_t num_fields() const;
+
   /// retrieve the vector of configuration variables for the given
   /// experiment number
   const RealVector& config_vars(size_t experiment);
@@ -106,6 +116,10 @@ public:
   /// retrieve the standard deviation value for the given response, for
   /// the given experiment
   Real scalar_sigma(size_t response, size_t experiment);
+
+  /// retrieve a view of the field data for the given response, for the given
+  /// experiment 
+  RealVector field_data_view(size_t response, size_t experiment);
 
 private:
 
