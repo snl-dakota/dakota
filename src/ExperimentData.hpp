@@ -81,7 +81,9 @@ public:
   /// temporary? constructor for testing
   ExperimentData(size_t num_experiments, size_t num_config_vars, 
 		 const boost::filesystem::path& data_prefix,
-		 const SharedResponseData& srd, short output_level);
+		 const SharedResponseData& srd,
+                 const StringArray& variance_types,
+                 short output_level);
  
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor

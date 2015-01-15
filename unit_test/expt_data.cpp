@@ -29,6 +29,9 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
   field_lengths[0] = NUM_FIELD_VALUES;
   mock_srd.field_lengths(field_lengths);
 
+  StringArray variance_types(NUM_FIELDS);
+  variance_types[0] = "diagonal";
+
   // convention appears to be field label is filename ?
   const std::string base_name = "new_voltage";
   const std::string working_dir = "expt_data_test_files";
@@ -39,7 +42,7 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
   mock_srd.function_labels(fn_labels);
 
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
-			   mock_srd, 0 /* SILENT_OUTPUT */);
+			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
 
   //  const std::string config_vars_basename = base_name;
   expt_data.load_data("expt_data unit test call", 
@@ -86,6 +89,10 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
   field_lengths[1] = SECOND_NUM_FIELD_VALUES;
   mock_srd.field_lengths(field_lengths);
 
+  StringArray variance_types(NUM_FIELDS+1);
+  variance_types[0] = "diagonal";
+  variance_types[1] = "matrix";
+
   // convention appears to be field label is filename ?
   const std::string first_base_name = "new_voltage";
   const std::string second_base_name = "pressure";
@@ -98,7 +105,7 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
   mock_srd.function_labels(fn_labels);
 
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
-			   mock_srd, 0 /* SILENT_OUTPUT */);
+			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
 
   //  const std::string config_vars_basename = first_base_name;
   expt_data.load_data("expt_data unit test call", 

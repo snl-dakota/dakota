@@ -36,13 +36,15 @@ ExperimentData(const ProblemDescDB& pddb,
 ExperimentData::
 ExperimentData(size_t num_experiments, size_t num_config_vars, 
 	       const boost::filesystem::path& data_prefix,
-	       const SharedResponseData& srd, short output_level):
+	       const SharedResponseData& srd,
+               const StringArray& variance_types,
+               short output_level):
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
   dataPathPrefix(data_prefix),
   scalarDataAnnotated(true), outputLevel(output_level)
 {
-  initialize(StringArray(), srd);
+  initialize(variance_types, srd);
 }
 
 
@@ -139,7 +141,7 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
       }
     }
   }
-  // numberof sigma to read from simple data file(0 or num_scalar)
+  // number of sigma to read from simple data file(0 or num_scalar)
   if (scalar_data_file && varianceTypes.size() > 0 && 
       varianceTypes[0] == SCALAR_SIGMA)
     scalarSigmaPerRow = num_scalar;
@@ -386,6 +388,10 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index)
     sigmaScalarValues(exp_index, fn_index) = sigma_scalars[fn_index];
 
+  size_t count_sigma_scalars   = 0;
+  size_t count_sigma_diagonals = 0;
+  size_t count_sigma_matrices  = 0;
+
   // populate field data, sigma, and coordinates from separate files
   for (size_t field_index = 0; field_index < num_fields; ++field_index) {
     size_t fn_index = num_scalars + field_index;
@@ -413,25 +419,44 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     }
          
     // read sigma 1, N (field_lengths[field_index]), or N^2 values
-    switch(sigma_type[fn_index]) {
+    RealMatrix working_cov_values;
+    switch(varianceTypes[num_scalars + fn_index]) {
     case SCALAR_SIGMA:
       // read single value, add to sigma_scalars and add num_scalars +
       // field_index to scalar map
+      read_covariance(field_base.string(), exp_index+1, working_cov_values);
+      sigma_scalars[count_sigma_scalars++] = working_cov_values(0,0);
       break;
 
     case DIAGONAL_SIGMA:
       // read N values, add to sigma_diagonals and add num_scalars +
       // field_index to diagonals map
+      read_covariance(field_base.string(), exp_index+1, Dakota::CovarianceMatrix::VECTOR,
+                      field_lengths[field_index], working_cov_values);
+      sigma_diagonals[count_sigma_diagonals].sizeUninitialized(field_lengths[field_index]);
+      for( int i=0; i<field_lengths[field_index]; ++i )
+        sigma_diagonals[count_sigma_diagonals](i) = working_cov_values[0][i];
+      count_sigma_diagonals++;
+      //sigma_diagonals[count_sigma_diagonals-1].print(std::cout);
       break;
 
     case MATRIX_SIGMA:
       // read N^2 values, add to sigma_matrices and add num_scalars +
       // field_index to matrices map
+      read_covariance(field_base.string(), exp_index+1, Dakota::CovarianceMatrix::MATRIX,
+                      field_lengths[field_index], working_cov_values);
+      sigma_matrices[count_sigma_matrices++] = working_cov_values;
+      //sigma_matrices[count_sigma_matrices-1].print(std::cout);
       break;
-
     }
-
   }
+  // Sanity check consistency
+  if( count_sigma_scalars != num_sigma_scalars )
+    throw std::runtime_error("Mismatch between specified and actual sigma scalars.");
+  if( count_sigma_diagonals != num_sigma_diagonals )
+    throw std::runtime_error("Mismatch between specified and actual sigma diagonals.");
+  if( count_sigma_matrices != num_sigma_matrices )
+    throw std::runtime_error("Mismatch between specified and actual sigma matrices.");
 
 
   // -----
@@ -448,9 +473,10 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     exp_resp.field_values(exp_values[num_scalars + field_ind], 
 			  num_scalars + field_ind);
 
-  exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
-			       matrix_map_indices, diagonal_map_indices, 
-			       scalar_map_indices);
+  // Not ready for prime-time so skip for now - RWH
+  //exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
+  //      		       matrix_map_indices, diagonal_map_indices, 
+  //      		       scalar_map_indices);
 
 }
 
