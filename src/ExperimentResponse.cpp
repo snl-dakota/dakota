@@ -94,7 +94,7 @@ Real ExperimentResponse::get_scalar_covariance(const int this_response)
  
 Real ExperimentResponse::apply_covariance(RealVector &residual)
 {
-  expDataCovariance.apply_experiment_covariance(residual);
+  return expDataCovariance.apply_experiment_covariance(residual);
 }
 
 } // namespace Dakota
