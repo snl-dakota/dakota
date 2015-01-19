@@ -207,8 +207,9 @@ public:
   /// write a response object to a packed MPI buffer
   void write(MPIPackBuffer& s) const;
 
-  /// a deep response copy for use in history mechanisms
-  /// (SharedResponseData uses a shallow copy by default)
+  /// return a deep response copy of the contained responseRep for use
+  /// in history mechanisms (SharedResponseData uses a shallow copy by
+  /// default)
   Response copy(bool deep_srd = false) const;
 
   /// return the number of doubles active in response.  Used for sizing 
@@ -288,6 +289,17 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Response(BaseConstructor, const SharedResponseData& srd);
+
+
+  //
+  //- Heading: Virtual member functions
+  //
+
+  /// Implementation of data copy for Response letters (specialized by
+  /// some derived letter types); pulls base class data from
+  /// source_resp_rep into the this object.  
+  virtual void copy_rep(Response* source_resp_rep);
+
 
   //
   //- Heading: Protected data members

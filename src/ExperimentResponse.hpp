@@ -75,8 +75,12 @@ public:
 protected:
 
   //
-  //- Heading: member functions
+  //- Heading: virtual member functions redefinitions
   //
+
+  /// Specialization of copy_rep; pulls base class data as well as
+  /// derived specific data from the source rep into the this object.
+  void copy_rep(Response* source_resp_rep);
 
 private:
 

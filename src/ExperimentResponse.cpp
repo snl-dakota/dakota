@@ -97,4 +97,16 @@ Real ExperimentResponse::apply_covariance(RealVector &residual)
   return expDataCovariance.apply_experiment_covariance(residual);
 }
 
+
+void ExperimentResponse::copy_rep(Response* source_resp_rep)
+{
+  // copy base class data
+  Response::copy_rep(source_resp_rep);
+  // specialization for experiment; assume the source and destination
+  // rep are same derived type
+  expDataCovariance = 
+    static_cast<ExperimentResponse*>(source_resp_rep)->expDataCovariance;
+}
+
+
 } // namespace Dakota

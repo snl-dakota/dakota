@@ -388,14 +388,22 @@ Response Response::copy(bool deep_srd) const
     response.responseRep = (deep_srd) ?
       get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
       get_response(responseRep->sharedRespData);      // shallow SRD copy
-    response.responseRep->functionValues    = responseRep->functionValues;
-    response.responseRep->fieldCoords       = responseRep->fieldCoords;
-    response.responseRep->functionGradients = responseRep->functionGradients;
-    response.responseRep->functionHessians  = responseRep->functionHessians;
-    response.responseRep->responseActiveSet = responseRep->responseActiveSet;
+    // allow derived classes to specialize copy_rep if they augment
+    // the base class data
+    response.responseRep->copy_rep(responseRep);
   }
 
   return response;
+}
+
+
+void Response::copy_rep(Response* source_resp_rep)
+{
+  functionValues    = source_resp_rep->functionValues;
+  fieldCoords       = source_resp_rep->fieldCoords;
+  functionGradients = source_resp_rep->functionGradients;
+  functionHessians  = source_resp_rep->functionHessians;
+  responseActiveSet = source_resp_rep->responseActiveSet;
 }
 
 
