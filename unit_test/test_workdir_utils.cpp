@@ -118,7 +118,7 @@ void test_which_driver(bfs::path& wd, const std::string& driver_name)
 void test_cp_template_files_into_wd(bfs::path& wd)
 {
   //std::cout << "OK to COPY template files into EMPTY dir:  " << wd << std::endl;
-  std::string template_path_str( std::getenv("PWD") );
+  std::string template_path_str = WorkdirHelper::startup_pwd();
   template_path_str += "/../test/dakota_workdir.templatedir/*";
 
   StringArray template_items(1, template_path_str);
@@ -168,7 +168,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
 void test_ln_template_files_into_wd(bfs::path& wd)
 {
   //std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
-  std::string template_path_str( std::getenv("PWD") );
+  std::string template_path_str = WorkdirHelper::startup_pwd();
   template_path_str += "/../test/dakota_workdir.templatedir/*";
 
   StringArray template_items(1, template_path_str);
@@ -288,7 +288,7 @@ int test_main( int argc, char* argv[] )      // note the name!
 
   Dakota::WorkdirHelper::initialize();
 
-  std::string pwd_str( std::getenv("PWD") );
+  std::string pwd_str = Dakota::WorkdirHelper::startup_pwd();
   std::string env_path_str( std::getenv("PATH") );
   test_save_current_path(pwd_str, env_path_str);
 
@@ -302,7 +302,7 @@ int test_main( int argc, char* argv[] )      // note the name!
   test_create_and_remove_wd_in_rundir("workdir", do_copy);
 
   //bfs::path fq_search(argv[1]);
-  std::string fq_search(std::getenv("PWD"));
+  std::string fq_search(pwd_str);
   fq_search += "/../test/d*.sh";
   int run_result = 0;
 
