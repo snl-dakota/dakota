@@ -75,6 +75,13 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
   // Test config vars correctness
   const RealVector& config_vars = expt_data.config_vars(0);
   TEST_EQUALITY( config_vars.length(), NUM_CONFIG_VARS );
+
+  // Test covariance correctness
+  RealVector resid_vals(field_vals_view.length());
+  resid_vals = 1.0;
+  Real triple_prod = expt_data.apply_covariance(resid_vals, 0);
+  //std::cout << "triple_prod = " << triple_prod << std::endl;
+  TEST_FLOATING_EQUALITY( triple_prod, 3.06251e+14, 1.e9 );
 }
 
 //----------------------------------------------------------------
@@ -153,5 +160,12 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
   // Test config vars correctness
   const RealVector& config_vars = expt_data.config_vars(0);
   TEST_EQUALITY( config_vars.length(), NUM_CONFIG_VARS );
+  //
+  // Test covariance correctness
+  RealVector resid_vals(voltage_vals_view.length() + pressure_vals_view.length());
+  resid_vals = 1.0;
+  Real triple_prod = expt_data.apply_covariance(resid_vals, 0);
+  //std::cout << "triple_prod = " << triple_prod << std::endl;
+  TEST_FLOATING_EQUALITY( triple_prod, 3.06251e+14, 1.e9 );
 }
 

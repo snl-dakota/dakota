@@ -425,7 +425,8 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       // read single value, add to sigma_scalars and add num_scalars +
       // field_index to scalar map
       read_covariance(field_base.string(), exp_index+1, working_cov_values);
-      sigma_scalars[count_sigma_scalars++] = working_cov_values(0,0);
+      sigma_scalars[count_sigma_scalars] = working_cov_values(0,0);
+      scalar_map_indices[count_sigma_scalars++] = fn_index; // or should it be field_index? - RWH 
       break;
 
     case DIAGONAL_SIGMA:
@@ -436,7 +437,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       sigma_diagonals[count_sigma_diagonals].sizeUninitialized(field_lengths[field_index]);
       for( int i=0; i<field_lengths[field_index]; ++i )
         sigma_diagonals[count_sigma_diagonals](i) = working_cov_values[0][i];
-      count_sigma_diagonals++;
+      diagonal_map_indices[count_sigma_diagonals++] = fn_index; // or should it be field_index? - RWH 
       //sigma_diagonals[count_sigma_diagonals-1].print(std::cout);
       break;
 
@@ -445,7 +446,8 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       // field_index to matrices map
       read_covariance(field_base.string(), exp_index+1, Dakota::CovarianceMatrix::MATRIX,
                       field_lengths[field_index], working_cov_values);
-      sigma_matrices[count_sigma_matrices++] = working_cov_values;
+      sigma_matrices[count_sigma_matrices] = working_cov_values;
+      matrix_map_indices[count_sigma_matrices++] = fn_index; // or should it be field_index? - RWH 
       //sigma_matrices[count_sigma_matrices-1].print(std::cout);
       break;
     }
@@ -473,10 +475,9 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     exp_resp.field_values(exp_values[num_scalars + field_ind], 
 			  num_scalars + field_ind);
 
-  // Not ready for prime-time so skip for now - RWH
-  //exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
-  //      		       matrix_map_indices, diagonal_map_indices, 
-  //      		       scalar_map_indices);
+  exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
+        		       matrix_map_indices, diagonal_map_indices, 
+        		       scalar_map_indices);
 
 }
 
@@ -551,6 +552,12 @@ RealMatrix ExperimentData::
 field_coords_view(size_t response, size_t experiment)
 {
   return(allExperiments[experiment].field_coords_view(response));
+}
+
+Real ExperimentData::
+apply_covariance(RealVector & residuals, size_t experiment)
+{
+  return(allExperiments[experiment].apply_covariance(residuals));
 }
 
 }  // namespace Dakota

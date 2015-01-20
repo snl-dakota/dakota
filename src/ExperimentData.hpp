@@ -128,6 +128,10 @@ public:
   /// experiment 
   RealMatrix field_coords_view(size_t response, size_t experiment);
 
+  /// apply the covariance responses to compute the triple product v'*inv(C)*v for the given
+  /// experiment 
+  Real apply_covariance(RealVector & residuals, size_t experiment);
+
 private:
 
   // initialization helpers

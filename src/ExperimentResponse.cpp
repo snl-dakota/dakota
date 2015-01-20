@@ -70,7 +70,9 @@ void ExperimentResponse::set_scalar_covariance(RealVector& scalarSigmas)
 }
 
 void ExperimentResponse::set_full_covariance(std::vector<RealMatrix> &matrices,
-                           std::vector<RealVector> &diagonals,                                                RealVector &scalars,                                                               IntVector matrix_map_indices,
+                           std::vector<RealVector> &diagonals,
+                           RealVector &scalars,
+                           IntVector matrix_map_indices,
                            IntVector diagonal_map_indices,
                            IntVector scalar_map_indices )
 {
@@ -104,8 +106,11 @@ void ExperimentResponse::copy_rep(Response* source_resp_rep)
   Response::copy_rep(source_resp_rep);
   // specialization for experiment; assume the source and destination
   // rep are same derived type
-  expDataCovariance = 
-    static_cast<ExperimentResponse*>(source_resp_rep)->expDataCovariance;
+  ExperimentResponse * expt_resp_rep = static_cast<ExperimentResponse*>(source_resp_rep);
+  if(expt_resp_rep)
+    expDataCovariance = expt_resp_rep->expDataCovariance;
+  else
+    throw std::runtime_error("Cast to ExperimentResponse failed.");
 }
 
 

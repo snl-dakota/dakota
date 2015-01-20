@@ -60,15 +60,16 @@ void CovarianceMatrix::copy( const CovarianceMatrix &source ){
   if ( source.covDiagonal_.length() > 0 )
     covDiagonal_=source.covDiagonal_;
   else if ( source.covMatrix_.numRows() > 0 )
+  {
     covMatrix_ = source.covMatrix_;
+    // Copy covariance matrix cholesky factor from source.
+    // WARNING: Using Teuchos::SerialDenseSpdSolver prevents copying of
+    // covariance cholesky factor so it must be done again here.
+    factor_covariance_matrix(); // The source has already been factored in-place? RWH
+  }
   else 
     // No covariance matrix is present in source
     return;
-  
-  // Copy covariance matrix cholesky factor from source.
-  // WARNING: Using Teuchos::SerialDenseSpdSolver prevents copying of
-  // covariance cholesky factor so it must be done again here.
-  factor_covariance_matrix();
 }
 
 CovarianceMatrix& CovarianceMatrix::operator=( const CovarianceMatrix &source ){
@@ -165,6 +166,16 @@ void CovarianceMatrix::print() {
 }
 
 
+ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
+{
+  numBlocks_ = source.numBlocks_;
+  covMatrices_.resize(source.covMatrices_.size());
+  for( size_t i=0; i<source.covMatrices_.size(); ++i)
+    covMatrices_[i] = source.covMatrices_[i];
+
+  return *this;
+}
+
 void ExperimentCovariance::set_covariance_matrices( 
 std::vector<RealMatrix> &matrices, 
 std::vector<RealVector> &diagonals,
@@ -214,7 +225,7 @@ IntVector scalar_map_indices ){
       throw( std::runtime_error( "matrix_map_indices was out of bounds." ) );
     covMatrices_[index].set_covariance( scalars[i] );
     }
-  }
+}
 
 Real ExperimentCovariance::apply_experiment_covariance( RealVector &vector ){
   int shift = 0;

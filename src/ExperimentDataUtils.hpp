@@ -59,7 +59,7 @@ private:
   RealVector covDiagonal_;
 
   /// The inverse of the covariance matrix
-  RealMatrix covMatrixInv_;
+  RealSymMatrix covMatrixInv_;
 
   /// Flag specifying if the covariance matrix is diagonal
   bool covIsDiagonal_;
@@ -71,7 +71,8 @@ private:
   /// Compute the inverse of the covariance matrix
   void factor_covariance_matrix()
   {
-    covSlvr_.setMatrix( rcp(&covMatrix_, false) );
+    covMatrixInv_ = covMatrix_;
+    covSlvr_.setMatrix( rcp(&covMatrixInv_, false) );
     covSlvr_.factorWithEquilibration(true);
     int info = covSlvr_.factor();
     if ( info > 0 ){
@@ -142,6 +143,9 @@ public:
 
   /// Default Constructor
   ExperimentCovariance() : numBlocks_(0) {};
+
+  /// Assignment operator
+  ExperimentCovariance & operator=(const ExperimentCovariance& source);
 
   /// Deconstructor
   ~ExperimentCovariance(){};

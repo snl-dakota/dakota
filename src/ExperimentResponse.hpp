@@ -67,7 +67,9 @@ public:
   Real get_scalar_covariance(const int this_response);
   void set_full_covariance(std::vector<RealMatrix> &matrices,
                            std::vector<RealVector> &diagonals,
-                           RealVector &scalars,                                                          IntVector matrix_map_indices,                                                 IntVector diagonal_map_indices,
+                           RealVector &scalars,
+                           IntVector matrix_map_indices,
+                           IntVector diagonal_map_indices,
                            IntVector scalar_map_indices );
   
   Real apply_covariance(RealVector &residual);
