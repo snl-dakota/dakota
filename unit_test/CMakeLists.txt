@@ -21,6 +21,20 @@ target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
 add_test(min_unit_test min_unit_test)
 
 
+# Copy workdir unit_test helper script into the build tree at build time
+# NOTE:  at runtime the workdir test will look for the script in the parent dir
+
+set(ut_helper_script "uthelper")
+set(script_dest_path "${Dakota_BINARY_DIR}")
+if(MSVC)
+  set(script_ext ".bat")
+  set(ut_helper_script ${ut_helper_script}${script_ext})
+  set(script_dest_path ${CMAKE_CURRENT_BINARY_DIR})
+endif(MSVC)
+
+configure_file( ${Dakota_SOURCE_DIR}/unit_test/${ut_helper_script}
+                ${script_dest_path}/${ut_helper_script} COPYONLY )
+
 add_executable(test_workdir_utils test_workdir_utils.cpp)
 target_link_libraries( test_workdir_utils ${Dakota_LIBRARIES}
   ${Dakota_TPL_LIBRARIES} )

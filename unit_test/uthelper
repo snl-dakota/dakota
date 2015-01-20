@@ -1,0 +1,24 @@
+#!/bin/bash
+# inspired by usage-message.sh
+
+# A hack, but should meet the unit_test need..  AND trivial .bat equivalent
+: ${0?"Usage: $0 [ARGUMENT]"}
+
+if [[ $# -eq "0" ]]
+then
+  echo "Verify relative path to driver: $0" > ut_helper.out 2>&1
+  echo "Verify non-existant command-line parameter: $1" >> ut_helper.out 2>&1
+
+  # Basic usage of unit test helper script - clean up
+  rm ut_helper.out
+else
+  echo "These two lines echo only if DBG command-line parameter given."
+  echo "Unit test helper debug file written."
+  echo "Verify command-line parameter:  $0 $1" > ut_helper.out 2>&1
+
+  # Debug usage of unit test helper script - allow file to persist
+  #rm ut_helper.out
+fi
+
+exit 0
+
