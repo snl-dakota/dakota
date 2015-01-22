@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "WorkdirHelper.hpp"
+#include "CommandShell.hpp"
 #include "dakota_global_defs.hpp"
 
 // Boost.Test
@@ -273,6 +274,21 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
     BOOST_ERROR( "Ouch..." );
 }
 
+
+void test_driver_relative_path(const bfs::path& rel_driver_path)
+{
+  std::string rundir_str = Dakota::WorkdirHelper::startup_pwd();
+  Dakota::WorkdirHelper::change_directory(rundir_str);
+
+  BOOST_CHECK( !rel_driver_path.is_absolute() );
+  BOOST_CHECK( bfs::is_regular_file(rel_driver_path) );
+
+  //try {
+  Dakota::CommandShell sys_call_sh;
+  sys_call_sh << rel_driver_path.string();
+  sys_call_sh << Dakota::flush;
+}
+
 } // end namespace TestWorkdir
 } // end namespace Dakota
 
@@ -288,9 +304,9 @@ int test_main( int argc, char* argv[] )      // note the name!
 
   Dakota::WorkdirHelper::initialize();
 
-  std::string pwd_str = Dakota::WorkdirHelper::startup_pwd();
+  std::string rundir_str = Dakota::WorkdirHelper::startup_pwd();
   std::string env_path_str( std::getenv("PATH") );
-  test_save_current_path(pwd_str, env_path_str);
+  test_save_current_path(rundir_str, env_path_str);
 
   test_create_and_remove_tmpdir();                // SYM LINKS used by default
   test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
@@ -301,14 +317,15 @@ int test_main( int argc, char* argv[] )      // note the name!
   test_create_and_remove_tmpdir(do_copy);
   test_create_and_remove_wd_in_rundir("workdir", do_copy);
 
-  //bfs::path fq_search(argv[1]);
-  std::string fq_search(pwd_str);
+  /* WJB: consider refactor count_driver_scripts test -- bfs::path fq_search(argv[1]);
+  std::string fq_search(rundir_str);
   fq_search += "/../test/d*.sh";
   int run_result = 0;
 
   count_driver_scripts(fq_search);
+  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success ); */
 
-  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
+  test_driver_relative_path("../uthelper");
 
   return boost::exit_success;
 }
