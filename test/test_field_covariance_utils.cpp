@@ -39,8 +39,16 @@ void test_multiple_scalar_covariance_matrix()
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
+
+  // Test application of the covariance inverse
   Real prod = exper_cov.apply_experiment_covariance( residual );
   BOOST_CHECK( prod == 7. ); 
+
+  // Test application of the sqrt of the covariance inverse
+  RealVector result;
+  exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
+  prod = result.dot( result );
+  BOOST_CHECK( prod == 7. );
 }
 
 void test_single_diagonal_block_covariance_matrix()
@@ -70,10 +78,16 @@ void test_single_diagonal_block_covariance_matrix()
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
+
+  // Test application of the covariance inverse
   Real prod = exper_cov.apply_experiment_covariance( residual );
   BOOST_CHECK( prod == 7. );
-
   
+  // Test application of the sqrt of the covariance inverse
+  RealVector result;
+  exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
+  prod = result.dot( result );
+  BOOST_CHECK( prod == 7. );
 }
 
 void test_single_full_block_covariance_matrix()
@@ -104,10 +118,16 @@ void test_single_full_block_covariance_matrix()
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
-  Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK( std::abs( prod - 16./3. ) < 
-	       10.*std::numeric_limits<double>::epsilon() );
 
+  // Test application of the covariance inverse
+  Real prod = exper_cov.apply_experiment_covariance( residual );
+
+  // Test application of the sqrt of the covariance inverse
+  RealVector result;
+  exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
+  prod = result.dot( result );
+  BOOST_CHECK( std::abs( prod - 16./3. ) < 
+	       10.*std::numeric_limits<double>::epsilon() ); 
   
 }
 
@@ -166,7 +186,16 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   int num_residuals = 9;
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
+
+  // Test application of the covariance inverse
   Real prod = exper_cov.apply_experiment_covariance( residual );
+  BOOST_CHECK( std::abs( prod - 58./3. ) < 
+	       10.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse
+  RealVector result;
+  exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
+  prod = result.dot( result );
   BOOST_CHECK( std::abs( prod - 58./3. ) < 
 	       10.*std::numeric_limits<double>::epsilon() );
 }

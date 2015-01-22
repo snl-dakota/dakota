@@ -162,6 +162,11 @@ public:
 
   /// Compute the triple product v'*inv(C)*v
   Real apply_experiment_covariance( RealVector &vector );
+
+  /// Compute the product inv(L)*v where L is the Cholesky factor of the 
+  /// covariance matrix C
+  void apply_experiment_covariance_inverse_sqrt( RealVector &vector,
+						 RealVector &result );
   
   void print_cov();
 

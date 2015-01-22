@@ -286,6 +286,21 @@ Real ExperimentCovariance::apply_experiment_covariance( RealVector &vector ){
   return result;
 }
 
+void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt( 
+		  RealVector &vector, RealVector &result ){
+  int shift = 0;
+  result.size( vector.length() ); // initialize to zero
+  for (int i=0; i<covMatrices_.size(); i++ ){
+    int num_dof = covMatrices_[i].num_dof();
+    RealVector sub_vector( Teuchos::View, vector.values()+shift, num_dof );
+    RealVector result_i;
+    covMatrices_[i].apply_covariance_inverse_sqrt( sub_vector, result_i );
+    RealVector sub_result( Teuchos::View, result.values()+shift, num_dof );
+    sub_result += result_i;
+    shift += num_dof;
+  }
+}
+
 void ExperimentCovariance::print_cov() {
   
   for (int i=0; i<covMatrices_.size(); i++ ){
