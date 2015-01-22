@@ -59,7 +59,10 @@ private:
   RealVector covDiagonal_;
 
   /// The inverse of the covariance matrix
-  RealSymMatrix covMatrixInv_;
+  RealSymMatrix covCholFactor_;
+
+  /// The inverse of the Cholesky factor of the covariance matrix
+  RealMatrix cholFactorInv_;
 
   /// Flag specifying if the covariance matrix is diagonal
   bool covIsDiagonal_;
@@ -68,18 +71,11 @@ private:
   /// the covariance matrix
   Teuchos::SerialSpdDenseSolver<int, Real> covSlvr_;
 
-  /// Compute the inverse of the covariance matrix
-  void factor_covariance_matrix()
-  {
-    covMatrixInv_ = covMatrix_;
-    covSlvr_.setMatrix( rcp(&covMatrixInv_, false) );
-    covSlvr_.factorWithEquilibration(true);
-    int info = covSlvr_.factor();
-    if ( info > 0 ){
-      std::string msg = "The covariance matrix is not positive definite\n";
-      throw( std::runtime_error( msg ) );
-    }
-  };
+  /// Compute the Cholesky factorization of the covariance matrix
+  void factor_covariance_matrix();
+
+  /// Compute the inverse of the Cholesky factor of the covariance matrix
+  void invert_cholesky_factor();
 
   /// Copy the values from one existing CovarianceMatrix to another. 
   void copy( const CovarianceMatrix &source );
@@ -118,8 +114,14 @@ public:
   // the field data
   void set_covariance( const RealVector & cov );
 
-  /// Multiply a vector A by the inverse of the covariance matrix
+  /// Compute the triple product of r'*inv(C)*r where r is a vector r and C
+  /// is the covariance matrix
   Real apply_covariance_inverse( RealVector &vector );
+
+  /// Multiply a vector r by the sqrt of the inverse covariance matrix C, i.e.
+  /// compute L'*r where L is the cholesky factor of the positive definite 
+  /// covariance matrix
+  Real apply_covariance_inverse_sqrt( RealVector &vector, RealVector &result );
 
   // Return the number of rows in the covariance matrix
   int num_dof() const;

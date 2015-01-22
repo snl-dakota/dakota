@@ -130,24 +130,71 @@ void CovarianceMatrix::set_covariance( const RealVector & cov )
 
 Real CovarianceMatrix::apply_covariance_inverse( RealVector &vector )
 {
+  RealVector result;
+  apply_covariance_inverse_sqrt( vector, result );
+  return result.dot( result );
+}
+
+void CovarianceMatrix::factor_covariance_matrix()
+  {
+    covCholFactor_ = covMatrix_;
+    covSlvr_.setMatrix( rcp(&covCholFactor_, false) );
+    // Equilibrate must be false (which is the default) when chol factor is
+    // used to compute inverse sqrt
+    //covSlvr_.factorWithEquilibration(true); 
+    int info = covSlvr_.factor();
+    if ( info > 0 ){
+      std::string msg = "The covariance matrix is not positive definite\n";
+      throw( std::runtime_error( msg ) );
+    }
+    invert_cholesky_factor();
+  };
+
+void CovarianceMatrix::invert_cholesky_factor()
+{
+  // covCholFactor is a symmetric matrix so must make a copy
+  // that only copies the correct lower or upper triangular part
+  cholFactorInv_.shape( numDOF_, numDOF_ );
+  if ( covCholFactor_.UPLO()=='L' ){
+      for (int j=0; j<numDOF_; j++)
+	for (int i=j; i<numDOF_; i++)
+	  cholFactorInv_(i,j)=covCholFactor_(i,j);
+    }else{
+      for (int i=0; i<numDOF_; i++)
+	for (int j=i; j<numDOF_; j++)
+	  cholFactorInv_(i,j)=covCholFactor_(i,j);
+    }
+    
+    int info = 0;
+    Teuchos::LAPACK<int, Real> la;
+    // always assume non_unit_diag even if covSlvr_.equilibratedA()==true
+    la.TRTRI( covCholFactor_.UPLO(), 'N', 
+	      numDOF_, cholFactorInv_.values(), 
+	      cholFactorInv_.stride(), &info );
+    if ( info > 0 ){
+      std::string msg = "Inverting the covariance Cholesky factor failed\n";
+      throw( std::runtime_error( msg ) );
+    }
+}
+
+Real CovarianceMatrix::apply_covariance_inverse_sqrt( RealVector &vector,
+						      RealVector &result )
+{
   if ( vector.length() != numDOF_ ){
     std::string msg = "Vector and covariance are incompatible for ";
     msg += "multiplication.";
     throw( std::runtime_error( msg ) );
   }
 
-  RealVector cov_inv_vector( numDOF_, false );
+  result.sizeUninitialized( numDOF_ );
   if ( covIsDiagonal_ ) {
-    cov_inv_vector.assign( vector );
     for (int i=0; i<numDOF_; i++)
-      cov_inv_vector[i] /= covDiagonal_[i];
+      result[i] = vector[i] / std::sqrt( covDiagonal_[i] ); 
   }else{
-    // must copy vector as covSlvr_.solve() changes both arguments to set_vectors
     RealVector vector_copy( vector );
-    covSlvr_.setVectors( rcp(&cov_inv_vector, false), rcp(&vector_copy, false) );
-    covSlvr_.solve();
+    result.multiply( Teuchos::NO_TRANS, Teuchos::NO_TRANS, 
+		     1.0, cholFactorInv_, vector, 0.0 );
   }
-  return vector.dot( cov_inv_vector );
 }
 
 int CovarianceMatrix::num_dof() const{
