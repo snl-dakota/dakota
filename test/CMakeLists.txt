@@ -383,6 +383,7 @@ add_executable(nl2func nl2func.cpp nl2test.cpp)
 if(DAKOTA_HAVE_MPI)
   add_executable(text_book_par text_book_par.cpp)
   list(APPEND dakota_test_executables text_book_par)
+  DakotaApplyMPISettings(text_book_par)
 endif()
 
 # Enforce an "imaginary" dependency

@@ -361,8 +361,8 @@ endif(DAKOTA_MODELCENTER)
 
 if(DAKOTA_HAVE_MPI)
   add_definitions("-DDAKOTA_HAVE_MPI")
-  list(APPEND EXT_TPL_INCDIRS ${MPI_INCLUDE_PATH})
-  list(APPEND EXT_TPL_LIBS ${MPI_LIBRARY} ${MPI_LIBRARIES})
+  list(APPEND EXT_TPL_INCDIRS ${MPI_CXX_INCLUDE_PATH})
+  list(APPEND EXT_TPL_LIBS ${MPI_CXX_LIBRARIES})
 endif(DAKOTA_HAVE_MPI)
 
 if(DAKOTA_HAVE_HDF5)
@@ -824,6 +824,7 @@ list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
 target_link_libraries(dakota_src dakota_src_fortran)
+DakotaApplyMPISettings(dakota_src)
 if(HAVE_AMPL)
   # Enforce AMPL config header creation prior to compiling dakota sources
   add_dependencies(dakota_src amplsolver)
@@ -885,6 +886,7 @@ add_executable(dakota_library_mode library_mode.cpp)
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
   target_link_libraries(dakota_library_split ${DAKOTA_ALL_LIBS})
+  DakotaApplyMPISettings(dakota_library_split)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
@@ -915,11 +917,16 @@ endif()
 
 
 target_link_libraries(dakota ${DAKOTA_ALL_LIBS})
+DakotaApplyMPISettings(dakota)
 target_link_libraries(dakota_restart_util ${DAKOTA_ALL_LIBS})
+DakotaApplyMPISettings(dakota_restart_util)
 target_link_libraries(dakota_library_mode ${DAKOTA_ALL_LIBS})
+DakotaApplyMPISettings(dakota_library_mode)
 if(DAKOTA_DLL_API)
   target_link_libraries(dll_tester ${DAKOTA_ALL_LIBS})
+  DakotaApplyMPISettings(dll_tester)
 endif()
+
 
 #include(InstallRequiredSystemLibraries)
 #include(GetPrerequisites)
@@ -955,6 +962,7 @@ if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)
   target_link_libraries(dakota_dll_api ${DAKOTA_ALL_LIBS})
   install(TARGETS dakota_dll_api DESTINATION lib)
+  DakotaApplyMPISettings(dakota_dll_api)
 endif()
 
 # Install dyanamic deps, omitting standard system libs

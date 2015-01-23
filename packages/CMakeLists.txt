@@ -201,11 +201,20 @@ if(HAVE_SURFPACK)
 endif(HAVE_SURFPACK)
 
 if(HAVE_ACRO)
-  if(NOT DAKOTA_HAVE_MPI)
-    set(ACRO_USING_MPI OFF CACHE BOOL
-        "MPI NOT enabled in DAKOTA so disable in acro as well" FORCE)
-    set(UTILIB_USE_MPI OFF CACHE BOOL
-        "MPI NOT enabled in DAKOTA so disable in utilib as well" FORCE)
+  # Overrides of default MPI settings; may want to always set off
+  # until we're using PEBBL parallel features to minimize configure
+  # time errors
+  if(DAKOTA_HAVE_MPI)
+    # This variable has historically been set when Dakota enables MPI;
+    # needs to be revisted
+    set(USE_MPI "ON")
+  else()
+    # COLIN, PEBBL, and SCOLIB have USE_MPI
+    set(USE_MPI FALSE CACHE BOOL
+      "MPI NOT enabled in DAKOTA so disable in Acro (COLIN, PEBBL, SCOLIB)" 
+      FORCE)
+    set(UTILIB_USE_MPI FALSE CACHE BOOL
+      "MPI NOT enabled in DAKOTA so disable in Acro (Utilib) as well" FORCE)
   endif()
   add_subdirectory(acro)
 endif(HAVE_ACRO)
@@ -242,11 +251,13 @@ if(HAVE_HOPSPACK)
   set(INSTALL_HEADERS ON CACHE BOOL "Install headers")
   set(INSTALL_LIB ON CACHE BOOL "Install libraries")
 
-  if(DAKOTA_HAVE_MPI)
-    # See hopspack/ConfigureMPI.cmake for MPI "help"
-    set(mpi ON CACHE BOOL "MPI requested so enable in HOPSPACK" FORCE)
-    message("HOPSPACK caches the variable mpi = ${mpi}")
-  endif(DAKOTA_HAVE_MPI)
+  # Dakota is not currently using MPI features of HOPSPACK; if we do,
+  # we will need to better sync up our CMake MPI probes
+  #if(DAKOTA_HAVE_MPI)
+  #  # See hopspack/ConfigureMPI.cmake for MPI "help"
+  #  set(mpi ON CACHE BOOL "MPI requested so enable in HOPSPACK" FORCE)
+  #  message("HOPSPACK caches the variable mpi = ${mpi}")
+  #endif(DAKOTA_HAVE_MPI)
 
   # HOPSPACK expects BLAS symbol ddot to be found in LAPACK libs 
   set(LAPACK_ADD_LIBS ${BLAS_LIBS})

@@ -33,9 +33,18 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Set to ON to build DSO libraries" FORCE)
 
 set(DAKOTA_HAVE_MPI ON CACHE BOOL "Always build with MPI enabled" FORCE)
 
-set(MPI_INCLUDE_PATH
-  "/Net/dakota/utils/Linux_x86_64/openmpi-1.4.1.gcc-4.3.2/include" CACHE
-  FILEPATH "Use installed, MPI headers" FORCE)
+# Optionally set compiler wrapper
+set(MPI_CXX_COMPILER
+  "/Net/dakota/utils/Linux_x86_64/openmpi-1.4.1.gcc-4.3.2/bin/mpicxx" CACHE
+  FILEPATH "Use custom mpicxx" FORCE)
+
+# Or optionally set include AND libraries to skip autodetection
+#set(MPI_CXX_INCLUDE_PATH
+#  "/Net/dakota/utils/Linux_x86_64/openmpi-1.4.1.gcc-4.3.2/include" CACHE
+#  FILEPATH "Use installed, MPI headers" FORCE)
+#set(MPI_CXX_LIBRARIES
+#  "/Net/dakota/utils/Linux_x86_64/openmpi-1.4.1.gcc-4.3.2/lib/libmpi_cxx.so 
+#  CACHE FILEPATH "Use installed, MPI headers" FORCE)
 
 ##############################################################################
 #

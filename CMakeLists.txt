@@ -7,7 +7,8 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
   )
 
-# Check for compilers after initializing MPI
+# We delay enabling languages until developer compiler flags are set,
+# even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
 
 # DAKOTA versions for packaging
@@ -179,14 +180,8 @@ elseif (DevDistro)
   include(DakotaDev)
 endif()
 
-# Attempt to detect MPI if not specified
-option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
-if(DAKOTA_HAVE_MPI AND NOT DEFINED MPI_INCLUDE_PATH AND NOT DEFINED MPI_LIBRARY)
-  include(DakotaHaveMPI)
-  DakotaHaveMPI()
-endif()
 
-# Now check languages after MPI compilers are processed
+# Now check languages after compiler flags and options are set
 enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
@@ -195,6 +190,14 @@ if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
     -D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
+
+# Locate MPI compiler and library settings (must be after lanugages enabled)
+include(DakotaMPI)
+option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
+if(DAKOTA_HAVE_MPI)
+  DakotaFindMPI()
+endif()
+
 
 include(FortranCInterface)
 include(CheckFunctionExists)
@@ -351,9 +354,11 @@ if (NOT BUILD_IN_TRILINOS)
           "ENABLE TriBITS build of teuchos" FORCE )
 
         # Map key Dakota variables to TriBITS variables
-        set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
         set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
         set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+	# Dakota doesn't use any Teuchos MPI features; may want to force off
+        #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
+
 
 # This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
 # at all; doesn't just control whether installed!  Want Config.cmake in build

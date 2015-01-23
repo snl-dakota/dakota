@@ -34,14 +34,18 @@ include( RHEL6 )
 #                       *******************************
 # For parallel builds, uncomment lines below and define appropriate paths.
 # If MPI include and lib directories do not have common base directory,
-# see note in Dakota/cmake/DakotaHaveMPI.cmake.
+# see note in Dakota/cmake/DakotaMPI.cmake.
 #                       *******************************
 #set( DAKOTA_HAVE_MPI ON 
 #     CACHE BOOL "Always build with MPI enabled" FORCE)
-#set( MPI_INCLUDE_PATH
+#
+#set( MPI_CXX_COMPILER "/path/to/mpicxx" CACHE FILEPATH "MPI C++ wrapper" 
+#     FORCE )
+# OR
+#set( MPI_CXX_INCLUDE_PATH
 #     "/path/to/MPI/include"
 #     CACHE FILEPATH "Use installed MPI headers" FORCE)
-#set( MPI_LIBRARY
+#set( MPI_CXX_LIBRARIES
 #     "/path/to/MPI/lib/libxxx.so"
 #     CACHE FILEPATH "Use installed MPI library" FORCE)
 
