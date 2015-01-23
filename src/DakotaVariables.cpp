@@ -524,16 +524,13 @@ template<class Archive>
 void Variables::load(Archive& ar, const unsigned int version)
 {
   // Binary version.
-  std::pair<short,short> view;
-  ar & view;
-  SizetArray vars_comps_totals;
-  ar & vars_comps_totals;
-  BitArray all_relax_di, all_relax_dr;
-  ar & all_relax_di; ar & all_relax_dr;
-  SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
+
+  // Can't read into the rep's SVD because there might not be a rep
+  SharedVariablesData svd;
+  ar & svd;
 
   if (variablesRep) { // should not occur in current usage
-    if (sharedVarsData.view() != view) {
+    if (sharedVarsData.view() != svd.view()) {
       // decrement old reference count and replace with new letter
       Cerr << "Warning: variables type mismatch in Variables::load(Archive&)."
 	   << std::endl;
@@ -549,35 +546,9 @@ void Variables::load(Archive& ar, const unsigned int version)
   // (without variablesRep forwards), but we must support creation
   // of new letters above.
   ar & variablesRep->allContinuousVars;
-  StringMultiArrayView acvl = all_continuous_variable_labels();
-  ar & acvl;
   ar & variablesRep->allDiscreteIntVars;
-  StringMultiArrayView adivl = all_discrete_int_variable_labels();
-  ar & adivl;
-
-  // BMA: Approach 1; mirroring save function due to const-correct needs there
-  // This is safe because get_variables will size the array
-  // StringMultiArrayView adsvars = 
-  //   allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
-  // ar & adsvars;
-
-  // Mirror of Approach 2 below
-  // ar & boost::serialization::
-  //   make_array(allDiscreteStringVars.data(), 
-  // 	       allDiscreteStringVars.num_elements());
-
-  // Current implementation
-  size_t len;
-  ar & len;
-  variablesRep->allDiscreteStringVars.resize(boost::extents[len]);
-  for (size_t i=0; i<len; ++i)
-    ar & variablesRep->allDiscreteStringVars[i];
-
-  StringMultiArrayView adsvl = all_discrete_string_variable_labels();
-  ar & adsvl;
+  ar & variablesRep->allDiscreteStringVars;
   ar & variablesRep->allDiscreteRealVars;
-  StringMultiArrayView adrvl = all_discrete_real_variable_labels();
-  ar & adrvl;
 
   // rebuild active/inactive views
   variablesRep->build_views();
@@ -592,38 +563,12 @@ void Variables::save(Archive& ar, const unsigned int version) const
   if (variablesRep)
     variablesRep->save(ar, version); // envelope fwd to letter
   else { // default implementation for letters
-    ar & sharedVarsData.view();
-    ar & sharedVarsData.components_totals();
-    ar & sharedVarsData.all_relaxed_discrete_int();
-    ar & sharedVarsData.all_relaxed_discrete_real();
+    ar & sharedVarsData;
+
     ar & allContinuousVars;
-    StringMultiArrayView acvl = all_continuous_variable_labels();
-    ar & acvl; 
     ar & allDiscreteIntVars;
-    StringMultiArrayView adivl = all_discrete_int_variable_labels();
-    ar & adivl;
-
-    // BMA: Approach 1; not sure why we can't get this const-correct...
-    //StringMultiArrayConstView adsvars = 
-    //  allDiscreteStringVars[boost::indices[idx_range(0, adsv())]];
-    //ar << adsvars;
-
-    // BMA: Approach 2; makes bad alloc
-    // ar & boost::serialization::
-    //   make_array(allDiscreteStringVars.data(), 
-    // 		 allDiscreteStringVars.num_elements());
-
-    // BMA: doing this for now
-    size_t len = allDiscreteStringVars.size();
-    ar & len;
-    for (size_t i=0; i<len; ++i)
-      ar & allDiscreteStringVars[i];
-
-    StringMultiArrayView adsvl = all_discrete_string_variable_labels();
-    ar & adsvl;
+    ar & allDiscreteStringVars;
     ar & allDiscreteRealVars;
-    StringMultiArrayView adrvl = all_discrete_real_variable_labels();
-    ar & adrvl;
     // types/ids not required
   }
 }

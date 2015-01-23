@@ -13,10 +13,20 @@
 #include "SharedVariablesData.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_util.hpp"
+#include "dakota_data_io.hpp" // to serialize BitArray and StringMultiArray
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/utility.hpp>  // for std::pair
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 //#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: SharedVariablesData.cpp 6886 2010-08-02 19:13:01Z mseldre $";
+
+BOOST_CLASS_EXPORT(Dakota::SharedVariablesDataRep)
+BOOST_CLASS_EXPORT(Dakota::SharedVariablesData)
 
 namespace Dakota {
 
@@ -35,7 +45,7 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
   variablesCompsTotals(NUM_VC_TOTALS, 0), variablesView(view), cvStart(0), 
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0), idsvStart(0),
   idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0), numICV(0),
-  numIDIV(0), numIDSV(0), numIDRV(0), referenceCount(1)
+  numIDIV(0), numIDSV(0), numIDRV(0)
 {
   initialize_components_totals(problem_db);
   relax_noncategorical(problem_db); // defines allRelaxedDiscrete{Int,Real}
@@ -60,8 +70,7 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
   idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
   numICV(0), numIDIV(0), numIDSV(0), numIDRV(0),
-  allRelaxedDiscreteInt(all_relax_di), allRelaxedDiscreteReal(all_relax_dr),
-  referenceCount(1)
+  allRelaxedDiscreteInt(all_relax_di), allRelaxedDiscreteReal(all_relax_dr)
 {
   size_all_labels();    // lacking DB, can only size labels
   size_all_types();     // lacking detailed vars_comps, can only size types
@@ -83,8 +92,7 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
   idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
   numICV(0), numIDIV(0), numIDSV(0), numIDRV(0),
-  allRelaxedDiscreteInt(all_relax_di), allRelaxedDiscreteReal(all_relax_dr),
-  referenceCount(1)
+  allRelaxedDiscreteInt(all_relax_di), allRelaxedDiscreteReal(all_relax_dr)
 {
   components_to_totals();
 
@@ -1353,44 +1361,80 @@ SharedVariablesData SharedVariablesData::copy() const
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedVariablesData::copy() called to generate a deep copy with no "
-       << "representation sharing." << std::endl;
+       << "representation sharing.\n";
+  Cout << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
 #endif
 
-  SharedVariablesData svd; // new handle: referenceCount=1, svdRep=NULL
+  SharedVariablesData svd; // new handle: svdRep=NULL
 
   if (svdRep) {
-    svd.svdRep = new SharedVariablesDataRep();
-    svd.svdRep->copy_rep(svdRep);
+    svd.svdRep.reset(new SharedVariablesDataRep());
+    svd.svdRep->copy_rep(svdRep.get());
   }
 
   return svd;
 }
 
 
-/* TO DO: create load and save for Shared{Variables,Response}Data
-template<class Archive> 
-void SharedVariablesData::load(Archive& ar, const unsigned int version)
+template<class Archive>
+void SharedVariablesDataRep::save(Archive& ar, const unsigned int version) const
 {
-  std::pair<short,short> view;
-  ar & view;
-  SizetArray vars_comps_totals;
-  ar & vars_comps_totals;
-
-  StringMultiArrayView acvl = all_continuous_variable_labels();
-  ar & acvl;
-  StringMultiArrayView adivl = all_discrete_int_variable_labels();
-  ar & adivl;
-  StringMultiArrayView adsvl = all_discrete_string_variable_labels();
-  ar & adsvl;
-  StringMultiArrayView adrvl = all_discrete_real_variable_labels();
-  ar & adrvl;
-
-  BitArray all_relax_di, all_relax_dr;
-  ar & all_relax_di; ar & all_relax_dr;
-
-  // invoke additional construction updates from raw data:
-  //SharedVariablesData svd(view, vars_comps_totals, all_relax_di, all_relax_dr);
+  // for now only serializing the essential data needed to reconstruct
+  // (or at least that used historically)
+  // consider storing additional information
+  ar & variablesView;
+  ar & variablesCompsTotals;
+  ar & allRelaxedDiscreteInt;
+  ar & allRelaxedDiscreteReal;
+  ar & allContinuousLabels;
+  ar & allDiscreteIntLabels;
+  ar & allDiscreteStringLabels;
+  ar & allDiscreteRealLabels;
 }
-*/
+
+
+template<class Archive>
+void SharedVariablesDataRep::load(Archive& ar, const unsigned int version)
+{
+  ar & variablesView;
+  ar & variablesCompsTotals;
+  ar & allRelaxedDiscreteInt;
+  ar & allRelaxedDiscreteReal;
+  ar & allContinuousLabels;
+  ar & allDiscreteIntLabels;
+  ar & allDiscreteStringLabels;
+  ar & allDiscreteRealLabels;
+
+  // no need to size labels since they are read: size_all_labels();
+  size_all_types();
+  initialize_all_ids();
+  // TODO: rebuild more sizes and indices if possible
+}
+
+
+template<class Archive>
+void SharedVariablesData::serialize(Archive& ar, const unsigned int version)
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "SVD serializing with pointer " << svdRep.get() << '\n'
+       << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
+#endif
+  // load will default construct and load through the pointer
+  ar & svdRep;
+#ifdef REFCOUNT_DEBUG
+  Cout << "  svdRep pointer after  = " << svdRep.get() << std::endl;
+  Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
+#endif
+}
+
+
+// explicit instantions needed due to serialization through pointer,
+// which won't instantate the above template?
+template void SharedVariablesData::serialize<boost::archive::binary_iarchive>
+(boost::archive::binary_iarchive& ar, const unsigned int version);
+
+template void SharedVariablesData::serialize<boost::archive::binary_oarchive>
+(boost::archive::binary_oarchive& ar, const unsigned int version);
+
 
 } // namespace Dakota

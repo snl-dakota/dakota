@@ -17,7 +17,9 @@
 
 #include "dakota_data_types.hpp"
 #include "DataVariables.hpp"
-
+#include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/split_member.hpp>
 
 namespace Dakota {
 
@@ -38,6 +40,14 @@ class SharedVariablesDataRep
   //
 
   friend class SharedVariablesData;
+
+  /// allow boost access to serialize this class
+  friend class boost::serialization::access;
+
+public:
+
+  /// destructor must be public for shared_ptr
+  ~SharedVariablesDataRep();
 
 private:
 
@@ -60,8 +70,6 @@ private:
 			 const BitArray& all_relax_dr);
   /// default constructor
   SharedVariablesDataRep();
-  /// destructor
-  ~SharedVariablesDataRep();
 
   //
   //- Heading: Member functions
@@ -138,6 +146,17 @@ private:
 
   /// copy the data from svd_rep to the current representation
   void copy_rep(SharedVariablesDataRep* svd_rep);
+
+  /// serialize the core shared variables data
+  template<class Archive>
+  void save(Archive& ar, const unsigned int version) const;
+
+  /// load the core shared variables data and restore class state
+  template<class Archive>
+  void load(Archive& ar, const unsigned int version);
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 
   //
   //- Heading: Data
@@ -227,12 +246,13 @@ private:
   /// DiscreteReal to Continuous) for all specified discrete real variables
   BitArray allRelaxedDiscreteReal;
 
-  /// number of handle objects sharing svdRep
-  int referenceCount;
 };
 
 
-inline SharedVariablesDataRep::SharedVariablesDataRep(): referenceCount(1)
+inline SharedVariablesDataRep::SharedVariablesDataRep():
+  cvStart(0), divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
+  idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
+  numICV(0), numIDIV(0), numIDSV(0), numIDRV(0)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedVariablesDataRep::SharedVariablesDataRep() called to build "
@@ -435,6 +455,14 @@ inline void SharedVariablesDataRep::initialize_inactive_start_counts()
 class SharedVariablesData
 {
 public:
+
+  //
+  //- Heading: Friends
+  //
+
+  /// allow boost access to serialize this class
+  friend class boost::serialization::access;
+
 
   //
   //- Heading: Constructors, destructor, and operators
@@ -663,24 +691,39 @@ public:
 
 private:
 
+  /// serialize through the pointer, which requires object tracking:
+  /// write and read are symmetric for this class
+  template<class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+
   //
   //- Heading: Private data members
   //
  
   /// pointer to the body (handle-body idiom)
-  SharedVariablesDataRep* svdRep;
+  boost::shared_ptr<SharedVariablesDataRep> svdRep;
 };
 
 
-inline SharedVariablesData::SharedVariablesData(): svdRep(NULL)
-{ }
+inline SharedVariablesData::SharedVariablesData()
+{ 
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::SVD(); default constructed handle.\n";
+  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
+#endif
+}
 
 
 inline SharedVariablesData::
 SharedVariablesData(const ProblemDescDB& problem_db,
 		    const std::pair<short,short>& view):
   svdRep(new SharedVariablesDataRep(problem_db, view))
-{ }
+{ 
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::SVD(PDB) problem DB constructed handle.\n";
+  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
+#endif
+}
 
 
 inline SharedVariablesData::
@@ -689,7 +732,12 @@ SharedVariablesData(const std::pair<short,short>& view,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps, all_relax_di,
 				    all_relax_dr))
-{ }
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::SVD() vars_comps constructed handle.\n";
+  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
+#endif
+}
 
 
 inline SharedVariablesData::
@@ -698,45 +746,51 @@ SharedVariablesData(const std::pair<short,short>& view,
 		    const BitArray& all_relax_di, const BitArray& all_relax_dr):
   svdRep(new SharedVariablesDataRep(view, vars_comps_totals, all_relax_di,
 				    all_relax_dr))
-{ }
+{ 
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::SVD() vars_comps_totals constructed handle.\n";
+  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
+#endif
+}
 
 
 inline SharedVariablesData::SharedVariablesData(const SharedVariablesData& svd)
 {
-  // Increment new (no old to decrement)
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::SVD(SVD) copy constructor.\n";
+  Cout << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
+#endif
+  // share the representation (body)
   svdRep = svd.svdRep;
-  if (svdRep) // Check for an assignment of NULL
-    ++svdRep->referenceCount;
+#ifdef REFCOUNT_DEBUG
+  Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
+#endif
 }
 
 
 inline SharedVariablesData& SharedVariablesData::
 operator=(const SharedVariablesData& svd)
 {
-  if (svdRep != svd.svdRep) { // normal case: old != new
-    // Decrement old
-    if (svdRep) // Check for NULL
-      if ( --svdRep->referenceCount == 0 ) 
-	delete svdRep;
-    // Assign and increment new
-    svdRep = svd.svdRep;
-    if (svdRep) // Check for an assignment of NULL
-      ++svdRep->referenceCount;
-  }
-  // else if assigning same rep, then do nothing since referenceCount
-  // should already be correct
-
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::operator=.\n";
+  Cout << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
+#endif
+  // share the inbound representation (body) by copying the pointer
+  svdRep = svd.svdRep;
+#ifdef REFCOUNT_DEBUG
+  Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
+#endif
   return *this;
 }
 
 
 inline SharedVariablesData::~SharedVariablesData()
 {
-  if (svdRep) { // Check for NULL
-    --svdRep->referenceCount; // decrement
-    if (svdRep->referenceCount == 0)
-      delete svdRep;
-  }
+  /* empty dtor in case we add virtual functions */
+#ifdef REFCOUNT_DEBUG
+  Cout << "SharedVariablesData::~SVD called.\n";
+  Cout << "  svdRep use_count = " << svdRep.use_count() << std::endl;
+#endif
 }
 
 
@@ -1162,5 +1216,7 @@ inline void SharedVariablesData::idrv_start(size_t idrvs)
 { svdRep->idrvStart = idrvs; }
 
 } // namespace Dakota
+
+// BMA: review whether we need serialization IMPLEMENTAION and TRACKING
 
 #endif

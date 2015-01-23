@@ -65,15 +65,27 @@ void serialize(Archive& ar,
       ar & sm(i,j);
 }
 
-/// Serialize a pre-sized MultiArrayView to/from an archive
-template<class Archive>
-void serialize(Archive& ar, Dakota::StringMultiArrayView& label_array,
-	       const unsigned int version)
+/// serialization save for 1-D boost::multi_array
+template<typename T, class Archive>
+void save(Archive& ar, const boost::multi_array<T, 1>& ma_1d,
+	  const unsigned int version)
 {
-  size_t len = label_array.size();
-  for (size_t i=0; i<len; ++i)
-      ar & label_array[i];
+  typename boost::multi_array<T, 1>::size_type size0 = ma_1d.shape()[0];
+  ar << size0;
+  ar << boost::serialization::make_array(ma_1d.data(), ma_1d.num_elements()); 
 }
+
+/// serialization load for 1-D boost::multi_array
+template<typename T, class Archive>
+void load(Archive& ar, boost::multi_array<T,1>& ma_1d,
+	  const unsigned int version)
+{
+  typename boost::multi_array<T, 1>::size_type size0;
+  ar >> size0;
+  ma_1d.resize(boost::extents[size0]);
+  ar >> boost::serialization::make_array(ma_1d.data(), ma_1d.num_elements()); 
+}
+
 
 /// save a boost dynamic bitset, size, then contents
 template <class Archive, typename Block, typename Allocator>
@@ -118,6 +130,8 @@ BOOST_SERIALIZATION_SPLIT_FREE(Dakota::IntVector)
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::RealVector)
 /// Register separate load/save for BitArray type
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::BitArray)
+/// Register separate load/save for StringMultiArray type
+BOOST_SERIALIZATION_SPLIT_FREE(Dakota::StringMultiArray)
 
 
 namespace Dakota {
