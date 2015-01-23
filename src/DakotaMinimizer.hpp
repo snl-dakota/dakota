@@ -111,7 +111,7 @@ protected:
   /// Wrap iteratedModel in a RecastModel that subtracts provided
   /// observed data from the primary response functions (variables and
   /// secondary responses are unchanged)
-  bool data_transform_model(bool weight_flag = false);
+  void data_transform_model();
 
   /// Wrap iteratedModel in a RecastModel that performs variable
   /// and/or response scaling

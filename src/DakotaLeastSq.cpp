@@ -74,7 +74,7 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
   
   if (calibrationDataFlag) {
     // this might set weights based on exp std deviations
-    weightFlag = data_transform_model(weightFlag);
+    data_transform_model();
     ++minimizerRecasts;
     numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
     numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;

@@ -139,7 +139,7 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
 
   // this might set weights based on exp std deviations!
   if (local_nls_recast && calibrationDataFlag) {
-    data_transform_model(!iteratedModel.primary_response_fn_weights().empty());
+    data_transform_model();
     ++minimizerRecasts;
   }
   if (scaleFlag) {
