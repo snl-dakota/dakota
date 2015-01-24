@@ -359,14 +359,17 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
       exp_values[fn_index].resize(1);
       scalar_data_stream >> exp_values[fn_index];
-      count_sigma_scalars++;
     }
-    if (scalarSigmaPerRow > 0)
+    if (scalarSigmaPerRow > 0) {
       read_scalar_sigma(scalar_data_stream, sigma_scalars, scalar_map_indices);
+      count_sigma_scalars += num_scalars;
+    }
     else {
       sigma_scalars = 1.0;  // historically these defaulted to 1.0
-      for (size_t i = 0; i<scalarSigmaPerRow; ++i)
+      for (size_t i = 0; i<num_scalars; ++i)
 	scalar_map_indices[i] = i;
+      // BMA: in a mixed case we might want these populated with 1.0
+      // even if data missing
     }
   }
   else {
