@@ -1440,6 +1440,18 @@ Real Response::apply_covariance(RealVector &residual)
   }
 }
 
+RealVector Response::apply_covariance_invsqrt(RealVector &residual)
+{
+  if (responseRep)
+    return responseRep->apply_covariance_invsqrt(residual);
+  else {
+    Cerr << "\nError: apply_covariance_invsqrt not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 /** Implementation of serialization load for the Response handle */
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)

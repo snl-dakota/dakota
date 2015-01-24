@@ -73,6 +73,7 @@ public:
                            IntVector scalar_map_indices );
   
   Real apply_covariance(RealVector &residual);
+  RealVector apply_covariance_invsqrt(RealVector &residual);
 
 protected:
 

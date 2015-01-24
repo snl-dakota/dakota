@@ -131,6 +131,8 @@ public:
   /// apply the covariance responses to compute the triple product v'*inv(C)*v for the given
   /// experiment 
   Real apply_covariance(RealVector & residuals, size_t experiment);
+  /// apply inverse sqrt of the covariance to compute the weighted residuals
+  RealVector apply_covariance_inv_sqrt(RealVector &residuals, size_t experiment);
 
 private:
 

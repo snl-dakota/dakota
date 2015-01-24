@@ -974,6 +974,16 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     functions_req = true;
   }
 
+  for (size_t j = 0; j < numExperiments; ++j) {
+    // LPS:  TO DO.  Check this is fully general for mixtures 
+    // of scalars and field.  Also find more efficient way to call.
+    RealVector tempresids = residual_response.function_values();
+    // Cout << "tempresids " << tempresids << '\n';
+    RealVector tempresults = expData.apply_covariance_inv_sqrt(tempresids,j);
+    // Cout << "tempresults " << tempresults << '\n';
+    residual_response.function_values(tempresults);
+  }
+
   if (minimizerInstance->outputLevel == DEBUG_OUTPUT) {
     for (size_t i=0; i<numRowsExpData*numUserPrimaryFns; i++) {
       if (asv[i] & 1) 

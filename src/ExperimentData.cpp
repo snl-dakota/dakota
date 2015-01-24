@@ -187,8 +187,8 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     std::count(varianceTypes.begin(), varianceTypes.end(), MATRIX_SIGMA);
   size_t num_sigma_diagonals = 
     std::count(varianceTypes.begin(), varianceTypes.end(), DIAGONAL_SIGMA);
-  size_t num_sigma_scalars = 
-    std::count(varianceTypes.begin(), varianceTypes.end(), SCALAR_SIGMA);
+  size_t num_sigma_scalars = simulationSRD.num_scalar_responses(); 
+  //  std::count(varianceTypes.begin(), varianceTypes.end(), SCALAR_SIGMA);
 
   // TODO: temporary duplication until necessary covariance APIs are updated
   size_t num_scalar = simulationSRD.num_scalar_responses();
@@ -347,7 +347,8 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   // Read the data
   // -----
 
-  size_t count_sigma_scalars   = 0;
+  //size_t count_sigma_scalars   = 0;
+  size_t count_sigma_scalars   = num_scalars;
   size_t count_sigma_diagonals = 0;
   size_t count_sigma_matrices  = 0;
 
@@ -366,8 +367,9 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     }
     else {
       sigma_scalars = 1.0;  // historically these defaulted to 1.0
-      for (size_t i = 0; i<num_scalars; ++i)
-	scalar_map_indices[i] = i;
+      for (size_t i = 0; i<num_scalars; ++i) {
+        scalar_map_indices[i] = i;
+      }
       // BMA: in a mixed case we might want these populated with 1.0
       // even if data missing
     }
@@ -382,7 +384,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       // TODO: error if length read != 1
       
       if (sigma_type[fn_index] == SCALAR_SIGMA) {
-	Real sigma_val; // = TODO: read sigma data (single value) from fn_name.exp_num.sigma
+	Real sigma_val = 1.0; // = TODO: read sigma data (single value) from fn_name.exp_num.sigma
 	sigma_scalars[fn_index] = sigma_val; 
       }
       else {
@@ -479,6 +481,9 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   for (size_t field_ind = 0; field_ind < num_fields; ++field_ind)
     exp_resp.field_values(exp_values[num_scalars + field_ind], 
 			  num_scalars + field_ind);
+ 
+  Cout << "Sigma scalars " << sigma_scalars << "\n";
+  Cout << "Scalar map indices" << scalar_map_indices << "\n";
 
   exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
         		       matrix_map_indices, diagonal_map_indices, 
@@ -564,5 +569,12 @@ apply_covariance(RealVector & residuals, size_t experiment)
 {
   return(allExperiments[experiment].apply_covariance(residuals));
 }
+
+RealVector ExperimentData::
+apply_covariance_inv_sqrt(RealVector & residuals, size_t experiment)
+{
+  return(allExperiments[experiment].apply_covariance_invsqrt(residuals));
+}
+
 
 }  // namespace Dakota

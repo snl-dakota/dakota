@@ -99,6 +99,12 @@ Real ExperimentResponse::apply_covariance(RealVector &residual)
   return expDataCovariance.apply_experiment_covariance(residual);
 }
 
+RealVector ExperimentResponse::apply_covariance_invsqrt(RealVector &residual)
+{
+  RealVector temp_result;
+  expDataCovariance.apply_experiment_covariance_inverse_sqrt(residual, temp_result);
+  return temp_result;
+}
 
 void ExperimentResponse::copy_rep(Response* source_resp_rep)
 {
