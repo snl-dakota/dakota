@@ -10,7 +10,7 @@ if (BOOST_DISABLE_ASSERTS)
 endif(BOOST_DISABLE_ASSERTS)
 
 
-# Unit test targets
+# Unit test targets -- note the LABELS PROPERTY!
 
 add_executable(min_unit_test min_unit_test.cpp)
 # It is desirable to split-up dakota into packages of re-useable components
@@ -19,6 +19,7 @@ add_executable(min_unit_test min_unit_test.cpp)
 target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
   ${Dakota_TPL_LIBRARIES} )
 add_test(min_unit_test min_unit_test)
+set_property(TEST min_unit_test PROPERTY LABELS UnitTest)
 
 
 # Copy workdir unit_test helper script into the build tree at build time
@@ -39,6 +40,7 @@ add_executable(test_workdir_utils test_workdir_utils.cpp)
 target_link_libraries( test_workdir_utils ${Dakota_LIBRARIES}
   ${Dakota_TPL_LIBRARIES} )
 add_test(test_workdir_utils test_workdir_utils)
+set_property(TEST test_workdir_utils PROPERTY LABELS UnitTest)
 
 
 # Next Unit test target (try BOOST_AUTO_TEST_CASE)
@@ -52,6 +54,7 @@ target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
   ${Dakota_TPL_LIBRARIES} )
 #target_link_libraries(auto_unit_test boost_unit_test_framework) # need team buy-in
 add_test(auto_unit_test auto_unit_test)
+set_property(TEST auto_unit_test PROPERTY LABELS UnitTest)
 
 
 # TODO: MORE Unit test targets
@@ -86,6 +89,7 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   add_executable(sample_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
   target_link_libraries(sample_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
   add_test(sample_unit_tests sample_unit_tests)
+  set_property(TEST sample_unit_tests PROPERTY LABELS UnitTest)
   file( COPY expt_data_test_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
 

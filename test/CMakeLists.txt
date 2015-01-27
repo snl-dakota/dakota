@@ -400,6 +400,7 @@ if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
   target_link_libraries(test_field_covariance_utils ${Dakota_LIBRARIES}
     ${Dakota_TPL_LIBRARIES})
   add_test(test_field_covariance_utils test_field_covariance_utils )
+  set_property(TEST test_field_covariance_utils PROPERTY LABELS UnitTest)
 
 endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
 
