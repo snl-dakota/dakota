@@ -201,6 +201,9 @@ if ( ${ConfigStatus} EQUAL 0 )
   # Perform tests if requested and build is successful
   if ( DAKOTA_DO_TEST AND ${BuildStatus} EQUAL 0 )
 
+    include("${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake")
+    message("ctest_test: UnitTests populated but not executed: ${CTEST_PROJECT_SUBPROJECTS}\n")
+
     # default tests run are dakota_*
     if ( NOT DEFINED DAKOTA_CTEST_REGEXP )
       set( DAKOTA_CTEST_REGEXP "dakota_*" )
