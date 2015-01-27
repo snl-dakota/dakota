@@ -382,7 +382,8 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
 
   // Compute simulation response to use in likelihood 
   NonDDREAMInstance->emulatorModel.compute_response();
-  RealVector fn_vals = NonDDREAMInstance->emulatorModel.current_response().function_values();
+  const RealVector& fn_vals = 
+    NonDDREAMInstance->emulatorModel.current_response().function_values();
   //Cout << "input is " << x << '\n';
   //Cout << "output is " << fn_vals << '\n';
  
@@ -395,29 +396,24 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   // matrix of standard deviations.  Thus, we just have to iterate over this to 
   // calculate the likelihood. 
   if (NonDDREAMInstance->calibrateSigmaFlag) {
-    for (j=0; j<num_funcs; j++)
-      for (i=0; i<num_exp; i++) {
-	  Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i);
-	  result = result+pow((fn_vals(j)-data_i_j)/zp[num_cont+j],2.0);
-      }
+    for (i=0; i<num_exp; i++) {
+      const RealVector& exp_data = NonDDREAMInstance->expData.all_data(i);
+      for (j=0; j<num_funcs; j++)
+	result += pow((fn_vals(j)-exp_data[j])/zp[num_cont+j],2.0);
+    }
   }
   else {
-    RealVector exp_field_vals = NonDDREAMInstance->expData.field_data_view(0,0);
-    //Cout << " exp_field_vals " << exp_field_vals << '\n';
-    RealVector residuals; 
-    residuals.resize(exp_field_vals.length());
-    for (j=0; j<residuals.length(); j++)
-      residuals[j]=fn_vals[j]-exp_field_vals[j];
-      //residuals[j]=exp_field_vals[j];
-    //Cout << " residuals " << residuals << '\n';
-    result = NonDDREAMInstance->expData.apply_covariance(residuals,0);    
-//    for (j=0; j<num_funcs; j++)
-//      for (i=0; i<num_exp; i++) {
-//	  Real data_i_j = NonDDREAMInstance->expData.scalar_data(j, i);
-//	  Real std_i_j = NonDDREAMInstance->expData.scalar_sigma(j, i);
-//          result = result+pow((fn_vals(j)-data_i_j)/std_i_j,2.0);
-          //result = result+pow((fn_vals(j)-data_i_j),2.0);
-//      }
+    for (i=0; i<num_exp; i++) {
+      // TODO: experiments may vary in length, but functions should be same
+      const RealVector& exp_data = NonDDREAMInstance->expData.all_data(i);
+      //Cout << " exp_data " << exp_data << '\n';
+      RealVector residuals; 
+      residuals.resize(exp_data.length());
+      for (j=0; j<residuals.length(); j++)
+	residuals[j] = fn_vals[j] - exp_data[j];
+      //Cout << " residuals " << residuals << '\n';
+      result += NonDDREAMInstance->expData.apply_covariance(residuals, i);    
+    }
   }
 
   result = (result/(NonDDREAMInstance->likelihoodScale));

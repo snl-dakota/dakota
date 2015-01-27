@@ -974,6 +974,10 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     functions_req = true;
   }
 
+  // BMA TODO: 
+  //  - have to apply to each subset of residuals...
+  //  - need to conditionally apply the covariance in case
+  //    empty (don't want to initialize if not needed)
   for (size_t j = 0; j < numExperiments; ++j) {
     // LPS:  TO DO.  Check this is fully general for mixtures 
     // of scalars and field.  Also find more efficient way to call.
@@ -981,7 +985,8 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     // Cout << "tempresids " << tempresids << '\n';
     RealVector tempresults = expData.apply_covariance_inv_sqrt(tempresids,j);
     // Cout << "tempresults " << tempresults << '\n';
-    residual_response.function_values(tempresults);
+    // BMA: Omitting this until we are ready
+    //    residual_response.function_values(tempresults);
   }
 
   if (minimizerInstance->outputLevel == DEBUG_OUTPUT) {

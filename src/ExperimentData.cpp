@@ -187,8 +187,8 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     std::count(varianceTypes.begin(), varianceTypes.end(), MATRIX_SIGMA);
   size_t num_sigma_diagonals = 
     std::count(varianceTypes.begin(), varianceTypes.end(), DIAGONAL_SIGMA);
-  size_t num_sigma_scalars = simulationSRD.num_scalar_responses(); 
-  //  std::count(varianceTypes.begin(), varianceTypes.end(), SCALAR_SIGMA);
+  size_t num_sigma_scalars = //simulationSRD.num_scalar_responses(); 
+    std::count(varianceTypes.begin(), varianceTypes.end(), SCALAR_SIGMA);
 
   // TODO: temporary duplication until necessary covariance APIs are updated
   size_t num_scalar = simulationSRD.num_scalar_responses();
@@ -347,8 +347,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   // Read the data
   // -----
 
-  //size_t count_sigma_scalars   = 0;
-  size_t count_sigma_scalars   = num_scalars;
+  size_t count_sigma_scalars   = 0;
   size_t count_sigma_diagonals = 0;
   size_t count_sigma_matrices  = 0;
 
@@ -460,8 +459,10 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     }
   }
   // Sanity check consistency
-  if( count_sigma_scalars != num_sigma_scalars )
+  if( count_sigma_scalars != num_sigma_scalars ) {
+    Cout << "Count = " << count_sigma_scalars << " num = " << num_sigma_scalars << std::endl;
     throw std::runtime_error("Mismatch between specified and actual sigma scalars.");
+  }
   if( count_sigma_diagonals != num_sigma_diagonals )
     throw std::runtime_error("Mismatch between specified and actual sigma diagonals.");
   if( count_sigma_matrices != num_sigma_matrices )
@@ -530,6 +531,17 @@ config_vars(size_t experiment)
 {
   return(allConfigVars[experiment]);
 }
+
+
+const RealVector& ExperimentData::all_data(size_t experiment)
+{
+  if (experiment >= allExperiments.size()) {
+    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
+    abort_handler(-1);
+  }
+  return allExperiments[experiment].function_values();
+}
+
 
 Real ExperimentData::
 scalar_data(size_t response, size_t experiment)

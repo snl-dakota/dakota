@@ -112,6 +112,10 @@ public:
   /// experiment number
   const RealVector& config_vars(size_t experiment);
 
+  /// return contiguous vector of all data (scalar, followed by field)
+  /// for the specified experiment
+  const RealVector& all_data(size_t experiment);
+
   /// retrieve the data value for the given response, for the given
   /// experiment 
   Real scalar_data(size_t response, size_t experiment);
