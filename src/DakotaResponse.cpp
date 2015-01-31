@@ -669,7 +669,7 @@ void Response::write_annotated(std::ostream& s) const
   if (responseRep)
     responseRep->write_annotated(s);
   else {
-    s << sharedRespData.response_type();
+    s << sharedRespData.response_type() << ' ';
     write_annotated_rep(s);
   }
 }

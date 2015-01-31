@@ -20,6 +20,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/tracking.hpp>
 
 namespace Dakota {
 
@@ -1217,6 +1218,14 @@ inline void SharedVariablesData::idrv_start(size_t idrvs)
 
 } // namespace Dakota
 
-// BMA: review whether we need serialization IMPLEMENTAION and TRACKING
+
+// Since we may serialize this class through a temporary, force
+// serialization mode and no tracking.  We allow tracking on
+// SharedVariablesDataRep as we want to serialize each unique pointer
+// exactly once (may need to revisit this).
+BOOST_CLASS_IMPLEMENTATION(Dakota::SharedVariablesData, 
+ 			   boost::serialization::object_serializable)
+BOOST_CLASS_TRACKING(Dakota::SharedVariablesData, 
+  		     boost::serialization::track_never)
 
 #endif
