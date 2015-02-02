@@ -191,6 +191,10 @@ if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
 
+# Python is optionally required by Dakota, Teuchos, and Acro; probe
+# for the interpreter here at top-level:
+include(FindPythonInterp)
+
 # Locate MPI compiler and library settings (must be after lanugages enabled)
 include(DakotaMPI)
 option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)

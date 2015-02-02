@@ -404,6 +404,15 @@ if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
 
 endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
 
+if(DAKOTA_ENABLE_TESTS AND PYTHONINTERP_FOUND)
+  # Test restart translation capability.
+  # (Example of system-level test that's not a Dakota study regression.)
+  add_test(NAME sys_restart_neutral COMMAND ${PYTHON_EXECUTABLE} 
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
+    $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
+    )
+endif()
+
 if(DAKOTA_HAVE_HDF5 
     #AND DAKOTA_ENABLE_BOOST_MIN_TESTS
     )

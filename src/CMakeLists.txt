@@ -342,7 +342,6 @@ option(DAKOTA_PYTHON "Toggle Python interface, default is disabled" OFF)
 option(DAKOTA_PYTHON_NUMPY
   "Attempt to link to Python NumPy interface? Default: yes." ON)
 if(DAKOTA_PYTHON)
-  include(FindPythonInterp)
   include(FindPythonLibs)
 
   if(PYTHONLIBS_FOUND)

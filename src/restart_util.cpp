@@ -386,7 +386,7 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
     // different interfaces.  Output the header when needed due to
     // label or length changes.
     const String& new_interf = current_pair.interface_id();
-    if (new_interf != curr_interf) {
+    if (num_evals == 0  || new_interf != curr_interf) {
       curr_interf = new_interf;
       const Variables& curr_vars = current_pair.variables();
       if (curr_vars.all_continuous_variable_labels() != curr_acv_labels ||
