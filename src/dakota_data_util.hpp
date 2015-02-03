@@ -623,7 +623,7 @@ void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
     abort_handler(-1);
   }
   if (num_items != da2.size())
-    da2.reshape(num_items);
+    da2.resize(num_items);
   for (size_t i=0; i<num_items; ++i)
     da2[i] = da1[start_index1+i];
 }

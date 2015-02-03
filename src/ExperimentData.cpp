@@ -308,8 +308,6 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   // TODO: populate from DB
   UShortArray sigma_type(num_resp, NO_SIGMA);
 
-  const StringArray& fn_labels = exp_resp.function_labels();
-
   // -----
   // Data to populate from files for a single experiment
   // -----
@@ -374,6 +372,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     }
   }
   else {
+    const StringArray& fn_labels = exp_resp.function_labels();
     for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
       const String& fn_name = fn_labels[fn_index];
       // TODO: read data directly into values array from
@@ -399,24 +398,25 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     sigmaScalarValues(exp_index, fn_index) = sigma_scalars[fn_index];
 
   // populate field data, sigma, and coordinates from separate files
+  const StringArray& field_labels = exp_resp.field_group_labels();
   for (size_t field_index = 0; field_index < num_fields; ++field_index) {
     size_t fn_index = num_scalars + field_index;
-    const String& fn_name = fn_labels[fn_index];
+    const String& field_name = field_labels[field_index];
 
     // read a column vector of field values for this field from
     // fn_name.exp_num.dat
-    boost::filesystem::path field_base = dataPathPrefix / fn_name;
+    boost::filesystem::path field_base = dataPathPrefix / field_name;
     read_field_values(field_base.string(), exp_index+1, exp_values[fn_index]);
     field_lengths[field_index] = exp_values[fn_index].length();
 
     // For fields with corresponding coords file, read coordinates
     // from field_name.exp_num.coords and validate number of rows is
     // field_lengths[field_index]
-    std::string filename = fn_name + "." + Dakota::convert_to_string(exp_index+1) + ".coords";
+    std::string filename = field_name + "." + Dakota::convert_to_string(exp_index+1) + ".coords";
     boost::filesystem::path coord_path_and_file = dataPathPrefix / filename;
     if ( boost::filesystem::is_regular_file(coord_path_and_file) )
     {
-      boost::filesystem::path coord_base = dataPathPrefix / fn_name;
+      boost::filesystem::path coord_base = dataPathPrefix / field_name;
       read_coord_values(coord_base.string(), exp_index+1, exp_coords);
       // Sanity check length
       if( field_lengths[field_index] != exp_coords.numRows() )

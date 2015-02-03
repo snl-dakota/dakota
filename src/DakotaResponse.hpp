@@ -179,10 +179,16 @@ public:
   /// return the coordinate values per field 
   const RealMatrix& get_coord_values(const size_t i) const;
 
-  /// return the response function identifier strings from sharedRespData
+  /// return the fine-grained (unrolled) response function identifier
+  /// strings from sharedRespData
   const StringArray& function_labels() const;
-  /// set the response function identifier strings within sharedRespData
+  /// set the fine-grained (unrolled) response function identifier
+  /// strings within sharedRespData
   void function_labels(const StringArray& labels);
+
+  /// return the user-provided field group labels instead of the
+  /// unrolled labels available through function_labels()
+  const StringArray& field_group_labels();
 
   /// read a response object from an std::istream
   void read(std::istream& s);
@@ -719,6 +725,13 @@ inline void Response::function_labels(const StringArray& fn_labels)
   else             sharedRespData.function_labels(fn_labels);
 }
 
+inline const StringArray& Response::field_group_labels()
+{
+  if (responseRep) 
+    return responseRep->sharedRespData.field_group_labels();
+  else             
+    return sharedRespData.field_group_labels();
+}
 
 inline const ActiveSet& Response::active_set() const
 { return (responseRep) ? responseRep->responseActiveSet : responseActiveSet; }

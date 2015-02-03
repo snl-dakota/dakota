@@ -79,18 +79,12 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
       abort_handler(-1);
     }
 
-    // unroll field responses to create individual labels
+    // extract the fieldLabels from the functionLabels (one per field group)
+    copy_data_partial(functionLabels, num_scalar_resp_fns, num_field_responses,
+		      fieldLabels);
+    // unroll field response groups to create individual function labels
     fieldRespGroupLengths = problem_db.get_iv("responses.lengths");
-    size_t i, j, len_i, nsr_plus_i, group,
-      unroll_fns = numScalarResponses + fieldRespGroupLengths.normOne();
-    StringArray orig_labels = functionLabels; // one label per field grouping
-    functionLabels.resize(unroll_fns);        // unique label for each QoI
-    for (i=0, group=numScalarResponses; i<num_field_responses; ++i) {
-      len_i = fieldRespGroupLengths[i]; nsr_plus_i = numScalarResponses + i;
-      for (j=0; j<len_i; ++j)
-        build_label(functionLabels[group+j], orig_labels[nsr_plus_i], j+1);
-      group += len_i;
-    }
+    build_field_labels();
   } 
   else if (numScalarResponses) {
     // validate scalar spec versus total spec
@@ -141,6 +135,7 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   responsesId           = srd_rep->responsesId;
 
   functionLabels        = srd_rep->functionLabels;
+  fieldLabels        = srd_rep->fieldLabels;
 
   numScalarResponses    = srd_rep->numScalarResponses;
   fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;
@@ -178,6 +173,19 @@ bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
 	  numScalarResponses == other.numScalarResponses &&
 	  fieldRespGroupLengths == other.fieldRespGroupLengths &&
 	  numCoordsPerField == other.numCoordsPerField);
+}
+
+
+void SharedResponseDataRep::build_field_labels()
+{
+  size_t unroll_fns = numScalarResponses + fieldRespGroupLengths.normOne();
+  if (functionLabels.size() != unroll_fns)
+    functionLabels.resize(unroll_fns);  // unique label for each QoI
+
+  size_t unrolled_index = numScalarResponses;
+  for (size_t i=0; i<fieldRespGroupLengths.length(); ++i)
+    for (size_t j=0; j<fieldRespGroupLengths[i]; ++j)
+      build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1);
 }
 
 
@@ -239,6 +247,7 @@ void SharedResponseData::reshape(size_t num_fns)
 // TODO: unify with reshape
 void SharedResponseData::field_lengths(const IntVector& field_lens) 
 { 
+  // no change in number of scalar functions
   // when the field lengths change, need a new rep
   if (field_lengths() != field_lens) {
     boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
@@ -250,9 +259,32 @@ void SharedResponseData::field_lengths(const IntVector& field_lens)
 
     // reshape function labels, using updated num_functions()
     srdRep->functionLabels.resize(num_functions());
-    build_labels(srdRep->functionLabels, "f");
-    // no change in number of scalar functions
+    if (field_lens.length() != srdRep->fieldLabels.size()) {
+      // can't use existing field labels (could happen in testing); use generic
+      build_labels(srdRep->functionLabels, "f");
+      // update the fieldLabels
+      copy_data_partial(srdRep->functionLabels, num_scalar_responses(),
+			num_field_response_groups(), srdRep->fieldLabels);
+    }
+    else {
+      // no change in number of fields; use existing labels for build
+      srdRep->build_field_labels();
+    }
   }
+}
+
+
+void SharedResponseData::field_group_labels(const StringArray& field_labels)
+{
+  if (field_labels.size() != num_field_response_groups()) {
+    Cerr << "\nError: Attempt to set " << field_labels.size() 
+	 << " labels on Response with " << num_field_response_groups()
+	 << " fields." << std::endl;
+    abort_handler(-1);
+  }
+  srdRep->fieldLabels = field_labels;
+  // rebuild unrolled functionLabels for field values (no size change)
+  srdRep->build_field_labels();
 }
 
 

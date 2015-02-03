@@ -25,6 +25,7 @@ namespace {
 
 TEUCHOS_UNIT_TEST(expt_data, basic)
 {
+  // create an SRD with 0 scalars and 1 field of length NUM_FIELD_VALUES
   IntVector field_lengths(NUM_FIELDS);
   field_lengths[0] = NUM_FIELD_VALUES;
   mock_srd.field_lengths(field_lengths);
@@ -35,11 +36,9 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
   // convention appears to be field label is filename ?
   const std::string base_name = "new_voltage";
   const std::string working_dir = "expt_data_test_files";
-  StringArray fn_labels(NUM_FIELD_VALUES); // note that there must be a label for each field value.
-  // I would have expected a label for each field (1 in this case).
-  // Using 1 instead of NUM_FIELD_VALUES gives the error: Error with function labels in Response::write.
-  fn_labels[0] = base_name;
-  mock_srd.function_labels(fn_labels);
+  StringArray field_labels(NUM_FIELDS); 
+  field_labels[0] = base_name;
+  mock_srd.field_group_labels(field_labels);
 
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
@@ -104,12 +103,10 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
   const std::string first_base_name = "new_voltage";
   const std::string second_base_name = "pressure";
   const std::string working_dir = "expt_data_test_files";
-  StringArray fn_labels(NUM_FIELD_VALUES+SECOND_NUM_FIELD_VALUES); // note that there must be a label for each field value.
-  // I would have expected a label for each field (2 in this case).
-  // Using 1 instead of NUM_FIELD_VALUES gives the error: Error with function labels in Response::write.
-  fn_labels[0] = first_base_name;
-  fn_labels[1] = second_base_name;
-  mock_srd.function_labels(fn_labels);
+  StringArray field_labels(NUM_FIELDS+1);
+  field_labels[0] = first_base_name;
+  field_labels[1] = second_base_name;
+  mock_srd.field_group_labels(field_labels);
 
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);

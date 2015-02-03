@@ -78,6 +78,9 @@ private:
   /// experimental operator== for use in unit testing
   bool operator==(const SharedResponseDataRep& other);
 
+  /// build/update the unrolled field labels based on fieldLabels and
+  /// group lengths
+  void build_field_labels();
 
   //
   //- Heading: Data
@@ -88,8 +91,12 @@ private:
   /// response identifier string from the input file
   String responsesId;
 
-  /// response function identifiers used to improve output readability
+  /// fine-grained (unrolled) set of response function identifiers
+  /// used to improve output readability; length Response::functionValues
   StringArray functionLabels;
+  
+  /// labels for each field group
+  StringArray fieldLabels;
 
   /// number of scalar responses
   size_t numScalarResponses;
@@ -195,6 +202,11 @@ public:
   void function_label(const String& label, size_t i);
   /// set the response function identifier strings
   void function_labels(const StringArray& labels);
+
+  /// return the coarse (per-group) field response labels
+  const StringArray& field_group_labels();
+  /// set the coarse field group labels (must agree with number fields)
+  void field_group_labels(const StringArray& field_labels);
 
   /// return the response identifier
   const String& responses_id() const;
@@ -357,6 +369,10 @@ inline void SharedResponseData::function_label(const String& label, size_t i)
 
 inline void SharedResponseData::function_labels(const StringArray& labels)
 { srdRep->functionLabels = labels; }
+
+
+inline const StringArray& SharedResponseData::field_group_labels()
+{ return srdRep->fieldLabels; }
 
 
 inline bool SharedResponseData::is_null() const
