@@ -69,7 +69,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["salinas"]                = SALINAS;
   driverTypeMap["mc_api_run"]             = MODELCENTER;
   driverTypeMap["modelcenter"]            = MODELCENTER;
-  driverTypeMap["genz"]                  = GENZ;
+  driverTypeMap["genz"]                   = GENZ;
+  driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
 
   // convert strings to enums for analysisDriverTypes, iFilterType, oFilterType
   analysisDriverTypes.resize(numAnalysisDrivers);
@@ -129,7 +130,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case TEXT_BOOK_OUU: case SCALABLE_TEXT_BOOK: case SCALABLE_MONOMIALS:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
-    case GENZ:
+    case GENZ: case DAMPED_OSCILLATOR:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -261,6 +262,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
 #endif // DAKOTA_MODELCENTER
   case GENZ:
     fail_code = genz(); break;
+  case DAMPED_OSCILLATOR:
+    fail_code = damped_oscillator(); break;
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
@@ -1333,6 +1336,83 @@ int TestDriverInterface::genz()
   return 0; // no failure
 }
 
+int TestDriverInterface::damped_oscillator()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: damped oscillator direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if ( numVars < 1 || numVars > 6 || numADIV || numADRV) {
+    Cerr << "Error: Bad variable types in damped oscillator direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns < 1 ) {
+    Cerr << "Error: Bad number of functions in damped oscillator direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: Gradients and Hessians not supported in damped oscillator "
+	 << "direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  Real initial_time = 0.;
+  Real dt = 0.1;
+  int num_time_steps = numFns;
+
+  Real pi = 4.0 * std::atan( 1.0 );
+
+  Real b = 0.1, k = 0.035, F = 0.1, w = 1.0, x0 = 0.5, v0 = 0.;
+  b = xC[0];
+  if ( numVars == 2 )      k  = xC[1];
+  else if ( numVars == 3 ) F  = xC[2];
+  else if ( numVars == 4 ) w  = xC[3];
+  else if ( numVars == 5 ) x0 = xC[4];
+  else v0 = xC[5];
+
+  // **** f:
+  if (directFnASV[0] & 1) {
+    Real kw = ( k-w*w ), bw = b*w;
+    
+    Real g = b / 2.;
+    Real zeta = std::sqrt( bw*bw + kw*kw );
+    Real zeta2 = zeta*zeta;
+    Real phi = std::atan( -bw / kw );
+    Real sqrtk = std::sqrt( k );
+    Real wd = sqrtk*std::sqrt( 1.-g*g / k );
+    if ( kw / zeta2 < 0 ) phi += pi;
+    Real B1 = -F*( bw ) / zeta2;
+    Real B2 = F*kw / zeta2;
+    
+    for ( int i=0; i < numFns; i++ ){
+      Real time = initial_time + dt;
+      // Steady state solution (y_stead) for rhs = 0
+      Real y_stead = F * std::sin( w*time + phi ) / zeta;
+      
+      // Compute transient (y_trans) component of solution
+      Real y_trans = 0.;
+      if ( sqrtk > g ){
+	// Under damped
+	Real A1 = x0-B1;
+	Real A2 = ( v0+g*A1-w*B2 ) / wd;
+	y_trans = std::exp( -g*time )*( A1*std::cos( wd*time ) +
+					  A2*std::sin( wd*time ) );
+      } else {
+	Cerr << "Error: parameters do not result in under-damped solution" 
+	     << std::endl;
+	abort_handler(INTERFACE_ERROR);
+      }
+      fnVals[i] = y_stead + y_trans;
+    }
+  }
+
+  return 0; // no failure
+}
+
+
 
 int TestDriverInterface::log_ratio()
 {
@@ -1751,7 +1831,7 @@ int TestDriverInterface::steel_column_perf()
   // is rather defined as a fn(b, d, h).  Since dCost/dX|_{X=mean} is not the
   // same as dCost/dmean for non-normal X (jacobian_dX_dS is not 1), dCost/dX
   // may not be used and an optional interface must be defined for Cost.
-
+  
   // set effective length s based on assumed boundary conditions
   // actual length of the column is 7500 mm
   Real s = 7500;

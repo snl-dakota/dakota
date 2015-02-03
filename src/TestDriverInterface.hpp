@@ -77,6 +77,7 @@ private:
 			      int c_type, 
 			      RealVector &c, RealVector &w );
   int genz(); ///< scalable test functions from the Genz test suite
+  int damped_oscillator(); ///< 1d-6d that returns field values (ode solution)
 
   int steel_column_cost(); ///< the steel_column_cost UQ/OUU test function
   int steel_column_perf(); ///< the steel_column_perf UQ/OUU test function
