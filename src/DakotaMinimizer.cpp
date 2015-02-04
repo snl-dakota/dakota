@@ -20,6 +20,7 @@
 #include "IteratorScheduler.hpp"
 #include "ParamResponsePair.hpp"
 #include "RecastModel.hpp"
+#include "Teuchos_SerialDenseHelpers.hpp"
 #ifdef __SUNPRO_CC
 #include <math.h>  // for std::log
 #endif // __SUNPRO_CC
@@ -324,6 +325,20 @@ void Minimizer::data_transform_model()
   // don't want to weight by missing sigma all = 1.0
   bool calc_sigma_from_data = true; // calculate sigma if not provided 
   expData.load_data("Least Squares", calc_sigma_from_data);
+
+  if (expData.variance_type_active(MATRIX_SIGMA)) {
+    // can't apply matrix-valued errors due to possibly incomplete
+    // dataset when active set vector is in use (missing residuals)
+    Cout << "\nWarning (least squares): experiment covariance includes one or "
+	 << "more full\n       matrices. Covariance will not be used to weight "
+	 << "residuals." << std::endl;
+    applyCovariance = false;
+  }
+  else if (expData.variance_type_active(SCALAR_SIGMA) || 
+	   expData.variance_type_active(DIAGONAL_SIGMA))
+    applyCovariance = true;
+  else
+    applyCovariance = false;
 
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
@@ -936,57 +951,52 @@ primary_resp_differencer(const Variables& raw_vars,
 bool Minimizer::
 data_difference_core(const Response& raw_response, Response& residual_response) 
 {
-  const ShortArray& asv = residual_response.active_set_request_vector();
   bool functions_req = false; // toggle output on function transformation
-  const RealVector& fn_vals = raw_response.function_values();
-  RealVector current_fn_gradient(numContinuousVars);
-  RealSymMatrix current_fn_hessian(numContinuousVars);
-  size_t counter;
-  //size_t num_experiments = asv.size()/raw_response.active_set_request_vector().size();
-  //residual_response.update(raw_response);
+  const ShortArray& asv = residual_response.active_set_request_vector();
 
-  // BMA LPS TODO: if experiment covariance is present, residuals
-  // rhat, gradients, and Hessians must be transformed as
-  // Sigma^(-1/2)rhat
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
+    
+    // form residuals for this experiment
+    const RealVector& exp_data = minimizerInstance->expData.all_data(exp_ind);
+    RealVector resid_fns = raw_response.function_values();    
+    resid_fns -= exp_data;
+    // initialize copy of gradients and Hessians
+    RealMatrix resid_gradients = raw_response.function_gradients();
+    RealSymMatrixArray resid_hessians = raw_response.function_hessians();
 
-  // if (outputLevel >= DEBUG_OUTPUT)
-  //   Cout << "\nLeast squares: weighting least squares terms with inverse of specified error covariance." << std::endl;
+    // apply inverse covariance
+    if (applyCovariance) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "\nLeast squares: weighting least squares terms with inverse of "
+	     << "specified error covariance." << std::endl;
 
-  for (size_t i=0; i<minimizerInstance->numUserPrimaryFns; i++) {
-    if (asv[i] & 1) {
-      counter = 0;
-      for (size_t j = 0; j < numExperiments; ++j) {
-          residual_response.function_value(fn_vals[i] - 
-				       minimizerInstance->expData.scalar_data(i,j),i*numRowsExpData+counter);
-          counter++;
+      resid_fns = expData.apply_covariance_inv_sqrt(resid_fns, exp_ind);
+
+      // BMA LPS TODO: if experiment covariance is present, gradients,
+      // and Hessians must be transformed as well. 
+
+      // apply cov_inv_sqrt to each row of gradient matrix (add
+      // convenience function to covariance class for transpose apply)
+
+      // Hessian storage not amenable to matrix application; however
+      // since we are only supporting diagonal, could readily do
+    }
+
+    size_t num_fns = minimizerInstance->numUserPrimaryFns;
+    for (size_t i=0; i<num_fns; i++) {
+      if (asv[i] & 1) {
+	residual_response.function_value(resid_fns[i], exp_ind*num_fns+i);
       }
+      if (asv[i] & 2) {
+	RealVector raw_grad_i = 
+	  Teuchos::getCol(Teuchos::View, resid_gradients, (int)i);
+	residual_response.function_gradient(raw_grad_i, exp_ind*num_fns+i);
+      }
+      if (asv[i] & 4) {
+	residual_response.function_hessian(resid_hessians[i], exp_ind*num_fns+i);
+      }
+      functions_req = true;
     }
-    if (asv[i] & 2) {
-      current_fn_gradient=raw_response.function_gradient_copy(i);
-      for (size_t j = 0; j < numRowsExpData; ++j)
-        residual_response.function_gradient(current_fn_gradient, i*numRowsExpData+j);
-    }
-    if (asv[i] & 4) {
-      current_fn_hessian=raw_response.function_hessian(i);
-      for (size_t j = 0; j < numRowsExpData; ++j)
-        residual_response.function_hessian(current_fn_hessian, i*numRowsExpData+j); 
-    }
-    functions_req = true;
-  }
-
-  // BMA TODO: 
-  //  - have to apply to each subset of residuals...
-  //  - need to conditionally apply the covariance in case
-  //    empty (don't want to initialize if not needed)
-  for (size_t j = 0; j < numExperiments; ++j) {
-    // LPS:  TO DO.  Check this is fully general for mixtures 
-    // of scalars and field.  Also find more efficient way to call.
-    RealVector tempresids = residual_response.function_values();
-    // Cout << "tempresids " << tempresids << '\n';
-    RealVector tempresults = expData.apply_covariance_inv_sqrt(tempresids,j);
-    // Cout << "tempresults " << tempresults << '\n';
-    // BMA: Omitting this until we are ready
-    //    residual_response.function_values(tempresults);
   }
 
   if (minimizerInstance->outputLevel == DEBUG_OUTPUT) {

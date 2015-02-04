@@ -576,6 +576,13 @@ field_coords_view(size_t response, size_t experiment)
   return(allExperiments[experiment].field_coords_view(response));
 }
 
+bool ExperimentData::variance_type_active(short variance_type) 
+{
+  UShortArray::const_iterator vt_it = 
+    std::find(varianceTypes.begin(), varianceTypes.end(), variance_type);
+  return vt_it != varianceTypes.end();
+}
+
 Real ExperimentData::
 apply_covariance(RealVector & residuals, size_t experiment)
 {

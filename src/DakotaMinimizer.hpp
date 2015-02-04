@@ -257,8 +257,6 @@ protected:
 
   bool speculativeFlag; ///< flag for speculative gradient evaluations
 
-  // TODO: Update from expData to scalarData and handle field data
-
   /// flag indicating whether user-supplied calibration data is active
   bool calibrationDataFlag;
   /// Container for experimental data to which to calibrate model 
@@ -269,6 +267,9 @@ protected:
   /// number of total rows of data since we are allowing varying 
   /// numbers of experiments and replicates per experiment 
   size_t numRowsExpData; 
+  /// whether to scale residuals by covariance
+  bool applyCovariance;
+
 
   // scaling data follow 
   bool       scaleFlag;              ///< flag for overall scaling status
