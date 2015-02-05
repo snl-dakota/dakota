@@ -61,7 +61,7 @@ void write_header_tabular(std::ostream& tabular_ostream,
 			  const std::string& counter_label)
 {
   // headers use Matlab comment syntax
-  tabular_ostream << "%" << counter_label << ' ';
+  tabular_ostream << " %" << counter_label << ' ';
   if (TABULAR_IFACE_ID)
     tabular_ostream << "interface ";
   vars.write_tabular_labels(tabular_ostream);
@@ -72,7 +72,7 @@ void write_header_tabular(std::ostream& tabular_ostream,
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
 			   const String& iface_id)
 {
-  tabular_ostream << std::setw(8) << eval_id << ' ';
+  tabular_ostream << std::setw(9) << eval_id << ' ';
   if (TABULAR_IFACE_ID) {
     // write the interface ID string, NO_ID for empty
     // (Dakota 6.1 used EMPTY for missing ID)
