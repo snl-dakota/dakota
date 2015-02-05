@@ -83,7 +83,8 @@ public:
 		 const boost::filesystem::path& data_prefix,
 		 const SharedResponseData& srd,
                  const StringArray& variance_types,
-                 short output_level);
+                 short output_level,
+                 std::string scalarDataFilename = "");
  
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor

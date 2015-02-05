@@ -248,3 +248,17 @@ TEUCHOS_UNIT_TEST(expt_data, mixedfield)
   //std::cout << "triple_prod = " << triple_prod << std::endl;
   TEST_FLOATING_EQUALITY( triple_prod, 11.1721, 1.e-4 );
 }
+//
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(expt_data, disallowOldAndNewReads)
+{
+  // Create an invalid ExperimentData object that combines old-style scalar data
+  // and new-style field-data readers. 
+  StringArray variance_types(1);
+  TEST_THROW( 
+      ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, "" /* working_dir */, 
+                               mock_srd, variance_types, 0 /* SILENT_OUTPUT */,
+                               "dummyscalarDataFilename"),
+      std::runtime_error );
+}

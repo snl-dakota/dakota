@@ -38,10 +38,11 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 	       const boost::filesystem::path& data_prefix,
 	       const SharedResponseData& srd,
                const StringArray& variance_types,
-               short output_level):
+               short output_level,
+               std::string scalar_data_filename):
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
-  dataPathPrefix(data_prefix),
+  scalarDataFilename(scalar_data_filename), dataPathPrefix(data_prefix),
   scalarDataAnnotated(true), outputLevel(output_level)
 {
   initialize(variance_types, srd);
@@ -51,6 +52,10 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 void ExperimentData::initialize(const StringArray& variance_types, 
 				const SharedResponseData& srd)
 {
+  // disallow mixed (old and new) data readers
+  if (calibrationDataFlag && !scalarDataFilename.empty())
+    throw std::runtime_error("You cannot combine use of both a scalar data file and field data files.");
+
   // only initialize data if needed; TODO: consider always initializing
   if (calibrationDataFlag || !scalarDataFilename.empty()) {
 
