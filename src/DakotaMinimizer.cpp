@@ -326,19 +326,17 @@ void Minimizer::data_transform_model()
   bool calc_sigma_from_data = true; // calculate sigma if not provided 
   expData.load_data("Least Squares", calc_sigma_from_data);
 
+  applyCovariance = false;
+  matrixCovarianceActive = false;
   if (expData.variance_type_active(MATRIX_SIGMA)) {
     // can't apply matrix-valued errors due to possibly incomplete
     // dataset when active set vector is in use (missing residuals)
-    Cout << "\nWarning (least squares): experiment covariance includes one or "
-	 << "more full\n       matrices. Covariance will not be used to weight "
-	 << "residuals." << std::endl;
-    applyCovariance = false;
+    applyCovariance = true;
+    matrixCovarianceActive = true;
   }
   else if (expData.variance_type_active(SCALAR_SIGMA) || 
 	   expData.variance_type_active(DIAGONAL_SIGMA))
     applyCovariance = true;
-  else
-    applyCovariance = false;
 
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
@@ -952,6 +950,7 @@ bool Minimizer::
 data_difference_core(const Response& raw_response, Response& residual_response) 
 {
   bool functions_req = false; // toggle output on function transformation
+  size_t num_fns = minimizerInstance->numUserPrimaryFns;
   const ShortArray& asv = residual_response.active_set_request_vector();
 
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
@@ -966,23 +965,48 @@ data_difference_core(const Response& raw_response, Response& residual_response)
 
     // apply inverse covariance
     if (applyCovariance) {
+
+      // determine presence and consistency of active set vector requests
+      size_t asv_1 = 0, asv_2 = 0, asv_4 = 0;
+      for (size_t fn_ind = 0; fn_ind < num_fns; ++fn_ind) {
+	if (asv[fn_ind] & 1) ++asv_1;
+	if (asv[fn_ind] & 2) ++asv_2;
+	if (asv[fn_ind] & 4) ++asv_4;
+      }
+      // with matrix covariance, each of fn, grad, Hess must have all
+      // same asv (either none or all)
+      if (matrixCovarianceActive &&
+	  ((asv_1 != 0 && asv_1 != num_fns) ||
+	   (asv_2 != 0 && asv_2 != num_fns) ||
+	   (asv_4 != 0 && asv_4 != num_fns))
+	  ) {  
+	Cerr << "\nError: matrix form of data error covariance cannot be used "
+	     << "with non-uniform\n       active set vector; consider disabling "
+	     << "active set vector or specifying no\n      , scalar, or "
+	     << "diagonal covariance" << std::endl;
+	abort_handler(-1);
+      }
+
       if (outputLevel >= DEBUG_OUTPUT)
 	Cout << "\nLeast squares: weighting least squares terms with inverse of "
 	     << "specified error covariance." << std::endl;
 
-      resid_fns = expData.apply_covariance_inv_sqrt(resid_fns, exp_ind);
+      if (asv_1 > 0)
+	resid_fns = expData.apply_covariance_inv_sqrt(resid_fns, exp_ind);
 
       // BMA LPS TODO: if experiment covariance is present, gradients,
       // and Hessians must be transformed as well. 
 
       // apply cov_inv_sqrt to each row of gradient matrix (add
       // convenience function to covariance class for transpose apply)
+      //if (asv_2 > 0);
 
       // Hessian storage not amenable to matrix application; however
       // since we are only supporting diagonal, could readily do
+      //if (asv_4 > 0);
+
     }
 
-    size_t num_fns = minimizerInstance->numUserPrimaryFns;
     for (size_t i=0; i<num_fns; i++) {
       if (asv[i] & 1) {
 	residual_response.function_value(resid_fns[i], exp_ind*num_fns+i);

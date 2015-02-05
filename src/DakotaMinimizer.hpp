@@ -269,6 +269,8 @@ protected:
   size_t numRowsExpData; 
   /// whether to scale residuals by covariance
   bool applyCovariance;
+  /// whether matrix-valued covariance is present
+  bool matrixCovarianceActive;
 
 
   // scaling data follow 
