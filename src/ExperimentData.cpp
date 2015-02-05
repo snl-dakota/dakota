@@ -305,9 +305,6 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   size_t num_fields = simulationSRD.num_field_response_groups();
   size_t num_resp = num_scalars + num_fields;
 
-  // TODO: populate from DB
-  UShortArray sigma_type(num_resp, NO_SIGMA);
-
   // -----
   // Data to populate from files for a single experiment
   // -----
@@ -330,21 +327,15 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   // coordinates for fields only
   RealMatrix exp_coords;
 
-  // Data for sigma
-  // TODO: field become 
-  std::vector<RealMatrix> sigma_matrices(num_sigma_matrices);
-  std::vector<RealVector> sigma_diagonals(num_sigma_diagonals);
+  // Non-field response sigmas; field response sigma scalars later get expanded into diagonals
   RealVector sigma_scalars(num_sigma_scalars);
-  // indices for the entries in the above data structures
-  IntVector matrix_map_indices(num_sigma_matrices), 
-    diagonal_map_indices(num_sigma_diagonals),
-    scalar_map_indices(num_sigma_scalars);
-
+  IntVector scalar_map_indices(num_sigma_scalars);
 
   // -----
   // Read the data
   // -----
 
+  size_t count_no_sigmas       = 0;
   size_t count_sigma_scalars   = 0;
   size_t count_sigma_diagonals = 0;
   size_t count_sigma_matrices  = 0;
@@ -379,23 +370,38 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       // fn_name.exp_num.dat
       boost::filesystem::path sigma_base = dataPathPrefix / fn_name;
       read_field_values(sigma_base.string(), exp_index+1, exp_values[fn_index]);
-      // TODO: error if length read != 1
+      if( exp_values[fn_index].length() != 1 )
+        throw std::runtime_error("Response for non-field \""+fn_name+"\" must have length 1, not "
+            +convert_to_string(exp_values[fn_index].length()));
       
-      if (sigma_type[fn_index] == SCALAR_SIGMA) {
-	Real sigma_val = 1.0; // = TODO: read sigma data (single value) from fn_name.exp_num.sigma
-	sigma_scalars[fn_index] = sigma_val; 
+      if (varianceTypes[fn_index] == SCALAR_SIGMA) {
+        RealMatrix in_val;
+        read_covariance(sigma_base.string(), exp_index+1, in_val);
+	sigma_scalars[fn_index] = in_val[0][0]; 
+        count_sigma_scalars++; // keep track of how many of num_sigma_scalars are for non-field responses - RWH
       }
       else {
-	sigma_scalars = 1.0;  // historically these defaulted to 1.0
+	sigma_scalars[fn_index] = 1.0;  // historically these defaulted to 1.0
       }
       scalar_map_indices[fn_index] = fn_index;
-      count_sigma_scalars++;
     }
   }
 
   // TODO: temporary duplication until necessary covariance APIs are updated
   for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index)
     sigmaScalarValues(exp_index, fn_index) = sigma_scalars[fn_index];
+
+  // Data for sigma - Note: all fields have matrix, diagonal or none covariance (sigma_ data)
+  //                        and so we dimension accordingly.
+  size_t num_field_no_sigmas = num_fields - (num_sigma_matrices + num_sigma_diagonals + num_sigma_scalars)
+                                          + count_sigma_scalars;
+  int num_field_sigma_scalars = num_sigma_scalars - count_sigma_scalars;
+  std::vector<RealMatrix> sigma_matrices(num_sigma_matrices);
+  std::vector<RealVector> sigma_diagonals(num_sigma_diagonals + num_field_sigma_scalars + num_field_no_sigmas);
+  // indices for the entries in the above data structures
+  IntVector matrix_map_indices(num_sigma_matrices), 
+            diagonal_map_indices(num_sigma_diagonals + num_field_sigma_scalars + num_field_no_sigmas);
+
 
   // populate field data, sigma, and coordinates from separate files
   const StringArray& field_labels = exp_resp.field_group_labels();
@@ -426,13 +432,26 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
          
     // read sigma 1, N (field_lengths[field_index]), or N^2 values
     RealMatrix working_cov_values;
-    switch(varianceTypes[num_scalars + fn_index]) {
+    switch(varianceTypes[fn_index]) {
+    case NO_SIGMA:
+      // expand to a diagonal of 1.0 of appropriate length = field_length and add
+      // field_index to diagonals map
+      sigma_diagonals[count_sigma_diagonals].sizeUninitialized(field_lengths[field_index]);
+      for( int i=0; i<field_lengths[field_index]; ++i )
+        sigma_diagonals[count_sigma_diagonals](i) = 1.0;
+      diagonal_map_indices[count_sigma_diagonals++] = fn_index; // or should it be field_index? - RWH 
+      count_no_sigmas++;
+      break;
+
     case SCALAR_SIGMA:
-      // read single value, add to sigma_scalars and add num_scalars +
-      // field_index to scalar map
+      // read single value, expand to a diagonal of appropriate length = field_length and add
+      // field_index to diagonals map
       read_covariance(field_base.string(), exp_index+1, working_cov_values);
-      sigma_scalars[count_sigma_scalars] = working_cov_values(0,0);
-      scalar_map_indices[count_sigma_scalars++] = fn_index; // or should it be field_index? - RWH 
+      sigma_diagonals[count_sigma_diagonals].sizeUninitialized(field_lengths[field_index]);
+      for( int i=0; i<field_lengths[field_index]; ++i )
+        sigma_diagonals[count_sigma_diagonals](i) = working_cov_values(0,0);
+      diagonal_map_indices[count_sigma_diagonals++] = fn_index; // or should it be field_index? - RWH 
+      count_sigma_scalars++;
       break;
 
     case DIAGONAL_SIGMA:
@@ -459,11 +478,13 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     }
   }
   // Sanity check consistency
+  if( count_no_sigmas != num_field_no_sigmas )
+    throw std::runtime_error("Mismatch between specified and actual fields with no sigma provided.");
   if( count_sigma_scalars != num_sigma_scalars ) {
-    Cout << "Count = " << count_sigma_scalars << " num = " << num_sigma_scalars << std::endl;
+    //Cout << "Count = " << count_sigma_scalars << " num = " << num_sigma_scalars << std::endl;
     throw std::runtime_error("Mismatch between specified and actual sigma scalars.");
   }
-  if( count_sigma_diagonals != num_sigma_diagonals )
+  if( count_sigma_diagonals != (num_sigma_diagonals + num_field_sigma_scalars + num_field_no_sigmas) )
     throw std::runtime_error("Mismatch between specified and actual sigma diagonals.");
   if( count_sigma_matrices != num_sigma_matrices )
     throw std::runtime_error("Mismatch between specified and actual sigma matrices.");
@@ -480,11 +501,10 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     exp_resp.function_value(exp_values[fn_index][0], fn_index);
 
   for (size_t field_ind = 0; field_ind < num_fields; ++field_ind)
-    exp_resp.field_values(exp_values[num_scalars + field_ind], 
-			  num_scalars + field_ind);
+    exp_resp.field_values(exp_values[num_scalars + field_ind], field_ind);
  
-  Cout << "Sigma scalars " << sigma_scalars << "\n";
-  Cout << "Scalar map indices" << scalar_map_indices << "\n";
+  //Cout << "Sigma scalars " << sigma_scalars << "\n";
+  //Cout << "Scalar map indices" << scalar_map_indices << "\n";
 
   exp_resp.set_full_covariance(sigma_matrices, sigma_diagonals, sigma_scalars,
         		       matrix_map_indices, diagonal_map_indices, 

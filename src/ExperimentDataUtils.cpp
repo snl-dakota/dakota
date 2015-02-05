@@ -237,12 +237,12 @@ IntVector scalar_map_indices ){
     throw( std::runtime_error( msg ) );
   }
   if ( diagonals.size() != diagonal_map_indices.length() ){
-    std::string msg = "must specify a index map for each full ";
+    std::string msg = "must specify a index map for each diagonal ";
     msg += "covariance matrix.";
     throw( std::runtime_error( msg ) );
   }
   if ( scalars.length() != scalar_map_indices.length() ){
-    std::string msg = "must specify a index map for each full ";
+    std::string msg = "must specify a index map for each scalar ";
     msg += "covariance matrix.";
     throw( std::runtime_error( msg ) );
   }
@@ -262,14 +262,14 @@ IntVector scalar_map_indices ){
   for (int i=0; i<diagonals.size(); i++){
     int index = diagonal_map_indices[i];
     if ( index >= numBlocks_ )
-      throw( std::runtime_error( "matrix_map_indices was out of bounds." ) );
+      throw( std::runtime_error( "diagonal_map_indices was out of bounds." ) );
     covMatrices_[index].set_covariance( diagonals[i] );
   }
 
   for (int i=0; i<scalars.length(); i++ ){
     int index = scalar_map_indices[i];
     if ( index >= numBlocks_ )
-      throw( std::runtime_error( "matrix_map_indices was out of bounds." ) );
+      throw( std::runtime_error( "scalar_map_indices was out of bounds." ) );
     covMatrices_[index].set_covariance( scalars[i] );
     }
 }
