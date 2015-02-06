@@ -60,15 +60,8 @@ set_property(TEST auto_unit_test PROPERTY LABELS UnitTest)
 # TODO: MORE Unit test targets
 
 
-# RWH - Introducing another unit testing option which may or may not be embraced
-#       but serves as a demo
+# RWH - Ad Teuchos-based testing option
 remove_definitions("-DHAVE_CONFIG_H")
-
-check_include_file(unistd.h HAVE_UNISTD_H)
-if(HAVE_UNISTD_H)
-  add_definitions("-DHAVE_UNISTD_H")
-endif(HAVE_UNISTD_H)
-
 include_directories(
   ${Teuchos_INCLUDE_DIRS}
 )
