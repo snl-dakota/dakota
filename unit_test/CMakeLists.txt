@@ -1,30 +1,37 @@
+include(DakotaAddUnitTest)
 #include(FindBoost)
+
+# List of test files to copy into this directory
+set(dakota_unit_test_copied_files)
+
+# --- Dakota dependencies
+# It is desirable to split-up dakota into packages of re-useable components
+# but that is a significant re-factoring effort in its own right, so
+# link with the whole dakota library (for now)
 include_directories(${Dakota_SOURCE_DIR}/src)
+# TODO: make sure preprocessor defines agree with src/ and test/
+# (manage via variable at top-level)
+
+# --- Boost dependencies
 include_directories(${Boost_INCLUDE_DIRS})
-
 # TODO: Understand leveraging BOOST_DISABLE_ASSERTS wrt to Unit Testing
-
 option(BOOST_DISABLE_ASSERTS "Toggle BoostAssert, default is AssertDisabled" ON)
 if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif(BOOST_DISABLE_ASSERTS)
 
+# ---
+# Unit test targets
+# ---
 
-# Unit test targets -- note the LABELS PROPERTY!
-
-add_executable(min_unit_test min_unit_test.cpp)
-# It is desirable to split-up dakota into packages of re-useable components
-# but that is a significant re-factoring effort in its own right, so
-# link with the whole dakota library (for now)
-target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
-  ${Dakota_TPL_LIBRARIES} )
-add_test(min_unit_test min_unit_test)
-set_property(TEST min_unit_test PROPERTY LABELS UnitTest)
+# Unit test: minimal Dakota unit test example using header-only Boost.Test
+dakota_add_unit_test(NAME min_unit_test SOURCES min_unit_test.cpp
+  LINK_DAKOTA_LIBS)
 
 
+# Unit test: work directory utilities
 # Copy workdir unit_test helper script into the build tree at build time
 # NOTE:  at runtime the workdir test will look for the script in the parent dir
-
 set(ut_helper_script "uthelper")
 set(script_dest_path "${Dakota_BINARY_DIR}")
 if(MSVC)
@@ -33,40 +40,38 @@ if(MSVC)
   set(script_dest_path ${CMAKE_CURRENT_BINARY_DIR})
 endif(MSVC)
 
-configure_file( ${Dakota_SOURCE_DIR}/unit_test/${ut_helper_script}
-                ${script_dest_path}/${ut_helper_script} COPYONLY )
+dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/${ut_helper_script}
+  ${script_dest_path}/${ut_helper_script} dakota_unit_test_copied_files)
 
-add_executable(test_workdir_utils test_workdir_utils.cpp)
-target_link_libraries( test_workdir_utils ${Dakota_LIBRARIES}
-  ${Dakota_TPL_LIBRARIES} )
-add_test(test_workdir_utils test_workdir_utils)
-set_property(TEST test_workdir_utils PROPERTY LABELS UnitTest)
+dakota_add_unit_test(NAME test_workdir_utils 
+  SOURCES test_workdir_utils.cpp LINK_DAKOTA_LIBS)
 
 
-# Next Unit test target (try BOOST_AUTO_TEST_CASE)
-
-#set(auto_unit_test_SRCS
-#  auto_unit_test.cpp
-#)
-#add_executable(auto_unit_test ${auto_unit_test_SRCS})
-add_executable(auto_unit_test auto_unit_test.cpp)
-target_link_libraries( min_unit_test ${Dakota_LIBRARIES}
-  ${Dakota_TPL_LIBRARIES} )
-#target_link_libraries(auto_unit_test boost_unit_test_framework) # need team buy-in
-add_test(auto_unit_test auto_unit_test)
-set_property(TEST auto_unit_test PROPERTY LABELS UnitTest)
+# Unit test: try BOOST_AUTO_TEST_CASE
+dakota_add_unit_test(NAME auto_unit_test 
+  SOURCES auto_unit_test.cpp
+  LINK_DAKOTA_LIBS 
+  # need team buy-in for Boost.Test library deps
+  #LINK_LIBS boost_unit_test_framework
+  )
 
 
-# TODO: MORE Unit test targets
+# Unit test: experiment data covariance utilities
+dakota_add_unit_test(NAME test_field_covariance_utils
+  SOURCES test_field_covariance_utils.cpp
+  LINK_DAKOTA_LIBS
+  )
 
 
-# RWH - Ad Teuchos-based testing option
+# Unit test: experiment data and readers
+# Demonstration of Teuchos test framework to driver several tests related to 
+# ExperimentData and associated file readers
+option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable sample unit tests driver" ON)
 remove_definitions("-DHAVE_CONFIG_H")
-include_directories(
-  ${Teuchos_INCLUDE_DIRS}
-)
+include_directories(${Teuchos_INCLUDE_DIRS})
+# Pecos is an unconditional Dakota dependency
+include_directories(${Pecos_SOURCE_DIR}/src)
 
-option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable Sample unit tests driver" ON)
 if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   set(dakota_sample_unit_tests
     covariance_reader.cpp
@@ -75,14 +80,28 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     file_reader.cpp
     data_conversions.cpp
     )
-  if(HAVE_PECOS)
-    list(APPEND dakota_sample_unit_tests expt_data.cpp)
-    include_directories(${Pecos_SOURCE_DIR}/src)
-  endif() # HAVE_PECOS
-  add_executable(sample_unit_tests sample_unit_test_driver.cpp ${dakota_sample_unit_tests})
-  target_link_libraries(sample_unit_tests ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
-  add_test(sample_unit_tests sample_unit_tests)
-  set_property(TEST sample_unit_tests PROPERTY LABELS UnitTest)
-  file( COPY expt_data_test_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+  dakota_add_unit_test(NAME sample_unit_tests 
+    SOURCES sample_unit_test_driver.cpp ${dakota_sample_unit_tests}
+    LINK_DAKOTA_LIBS
+    )
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
+    "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files" 
+    dakota_unit_test_copied_files
+    )
 endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
 
+
+# Unit test: Dakota output to binary HDF5 (depends on Teuchos and HDF5)
+if(DAKOTA_HAVE_HDF5)
+  include_directories(${HDF5_INCLUDE_DIRS})
+  link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
+  dakota_add_unit_test(binary_io_test SOURCES binary_io_test.cpp
+    LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
+              ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES}
+    )
+endif()
+
+
+# Add a single target for all copied files
+add_custom_target(dakota_unit_test_files ALL 
+  DEPENDS ${dakota_unit_test_copied_files})

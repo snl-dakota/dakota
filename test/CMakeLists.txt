@@ -391,19 +391,6 @@ add_dependencies(cantilever dakota)
 add_dependencies(morris dakota)
 add_dependencies(text_book dakota)
 
-option(DAKOTA_ENABLE_BOOST_MIN_TESTS
-         "Enable Boost.Minimal tests in DAKOTA" ON)
-if(DAKOTA_ENABLE_BOOST_MIN_TESTS)
-  # Complete these for each specific test.
-
-  add_executable(test_field_covariance_utils test_field_covariance_utils.cpp)
-  target_link_libraries(test_field_covariance_utils ${Dakota_LIBRARIES}
-    ${Dakota_TPL_LIBRARIES})
-  add_test(test_field_covariance_utils test_field_covariance_utils )
-  set_property(TEST test_field_covariance_utils PROPERTY LABELS UnitTest)
-
-endif() # DAKOTA_ENABLE_BOOST_MIN_TESTS
-
 if(DAKOTA_ENABLE_TESTS AND PYTHONINTERP_FOUND)
   # Test restart translation capability.
   # (Example of system-level test that's not a Dakota study regression.)
@@ -411,17 +398,6 @@ if(DAKOTA_ENABLE_TESTS AND PYTHONINTERP_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
     $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
     )
-endif()
-
-if(DAKOTA_HAVE_HDF5 
-    #AND DAKOTA_ENABLE_BOOST_MIN_TESTS
-    )
-  # BinaryIO tester depends on Teuchos and HDF5
-  include_directories(${HDF5_INCLUDE_DIRS})
-  add_executable(binary_io_test binary_io_test.cpp)
-  target_link_libraries( binary_io_test ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
-    ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES} )
-  link_directories(binary_io_test ${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
 endif()
 
 # If needed, copy files from test/Debug or test/Release into test/.
