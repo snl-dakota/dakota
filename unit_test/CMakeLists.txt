@@ -1,4 +1,4 @@
-include(DakotaAddUnitTest)
+include(DakotaUnitTest)
 #include(FindBoost)
 
 # List of test files to copy into this directory
