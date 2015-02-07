@@ -5203,6 +5203,57 @@ Partial Rank Correlation Matrix between input and output:
               4.11205e-01 
 <<<<< Function evaluation summary: 125 total (125 new, 0 duplicate)
   response_fn_1: 125 val (125 n, 0 d), 12 grad (12 n, 0 d), 0 Hess (0 n, 0 d)
+dakota_experiment_read.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.9999999052e-01 x1
+                      1.9999999935e-01 x2
+<<<<< Best residual terms      =
+                      0.0000000000e+00
+                      1.4452272712e-11
+                     -9.6124774807e-12
+                      3.3740787941e-12
+                     -4.2932324362e-13
+<<<<< Best data captured at function evaluation 19
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 44 total (42 new, 2 duplicate)
+<<<<< Best parameters          =
+                      4.0865363438e-01 x1
+                      2.0565494186e-01 x2
+<<<<< Best residual terms      =
+                      0.0000000000e+00
+                     -1.2497567322e-04
+                     -3.0661752178e-04
+                     -2.9933647275e-04
+                      1.8715794303e-04
+<<<<< Best data captured at function evaluation 31
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 44 total (42 new, 2 duplicate)
+<<<<< Best parameters          =
+                      4.0865363438e-01 x1
+                      2.0565494186e-01 x2
+<<<<< Best residual terms      =
+                      0.0000000000e+00
+                     -1.2497567322e-04
+                     -3.0661752178e-04
+                     -2.9933647275e-04
+                      1.8715794303e-04
+<<<<< Best data captured at function evaluation 31
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 47 total (45 new, 2 duplicate)
+<<<<< Best parameters          =
+                      3.0000267948e-01 x1
+                      1.9999934257e-01 x2
+<<<<< Best residual terms      =
+                      0.0000000000e+00
+                      2.1543035085e-08
+                      8.6381246412e-08
+                      1.8944988521e-07
+                      3.2445706190e-07
+<<<<< Best data captured at function evaluation 43
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
 dakota_field.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)

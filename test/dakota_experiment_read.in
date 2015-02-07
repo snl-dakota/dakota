@@ -1,0 +1,45 @@
+# Test the experiment data read capability (scalars, field data, mixed) 
+# under a variety of conditions (sigma terms) and specification 
+# options. 
+
+environment
+        tabular_graphics_data
+
+method,
+          nl2sol         			#0,#1,#2,#3,
+#          bayes_calibration dream 		#4
+#          samples = 60				#4
+#          chains = 3				#4
+          output debug
+
+variables,
+          continuous_design = 2
+	  upper_bounds   0.5   0.5
+	  lower_bounds   0.1   0.1
+	  descriptors   'x1' 'x2'
+
+interface,
+        direct	
+	  analysis_driver = 'damped_oscillator'
+
+responses,
+#        calibration_terms = 1             	#2,#3,#4
+        calibration_terms = 5             	#0,#1
+	scalar_calibration_terms = 5      	#0,#1
+	calibration_data_file = 'dakota_experiment_read_A.dat' freeform #0
+#       calibration_data_file = 'dakota_experiment_read_B.dat' freeform #1
+#        calibration_data			#2,#3,#4
+        num_experiments = 1                     
+        #num_config_variables = 1                        
+        variance_type = 'none'			#0
+#        variance_type = 'scalar'		#1
+#        variance_type = 'diagonal'		#2
+#        variance_type = 'matrix'		#3,#4
+#        field_calibration_terms = 1		#2,#3,#4
+#        lengths = 5				#2,#3,#4
+#	response_descriptors = 'oscillator'     #2
+#	response_descriptors = 'oscillatorA'    #3,#4
+        numerical_gradients                     #0,#1,#2,#3	
+#        no_gradients                           #4
+	no_hessians
+
