@@ -211,6 +211,10 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       )
   endif()
 
+  # Load lists of smoke and acceptance tests
+  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_MODULE_PATH})
+  include(TestLabelsAcceptance)
+
   # Iterate the list of test files and create tests for each
   foreach(test_input_file ${dakota_test_input_files})
 
@@ -221,6 +225,16 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*"
       )
 
+    set(test_labels DakotaTest SerialTest)
+    list(FIND dakota_smoke_tests ${test_name} dst_index)
+    if (NOT dst_index EQUAL -1)
+      list(APPEND test_labels SmokeTest)
+    endif()
+    list(FIND dakota_acceptance_tests ${test_name} dst_index)
+    if (NOT dst_index EQUAL -1)
+      list(APPEND test_labels AcceptanceTest)
+    endif()
+ 
     # add serial test, but don't create custom target for copied files
     add_application_test(
       ${test_name}
@@ -233,6 +247,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
         ${test_input_file}
       UNIQUE_DIRECTORY
       NO_TARGET
+      LABELS ${test_labels}
       )
 
     # the test add makes a copy command without target, now track all
@@ -257,6 +272,17 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
       file(STRINGS ${test_input_file} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
       if (NOT ${PTestList} EQUAL "")
+
+	set(test_labels DakotaTest ParallelTest)
+	list(FIND dakota_smoke_tests p${test_name} dst_index)
+	if (NOT dst_index EQUAL -1)
+	  list(APPEND test_labels SmokeTest)
+	endif()
+	list(FIND dakota_acceptance_tests p${test_name} dst_index)
+	if (NOT dst_index EQUAL -1)
+	  list(APPEND test_labels AcceptanceTest)
+	endif()
+ 
 	add_application_test(
 	  p${test_name}
 	  FILE_DEPENDENCIES "${test_all_files}"
@@ -269,6 +295,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 	    ${test_input_file}
 	  UNIQUE_DIRECTORY
 	  NO_TARGET
+	  LABELS ${test_labels}
 	  )
 	# track all the copied files for later addition to a custom target
 	foreach(file ${test_all_files})
@@ -284,6 +311,20 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     #  FAIL_REGULAR_EXPRESSION "fail")
 
   endforeach() # foreach test_input_file
+
+  # Data files that can't follow the auxilliary naming convention due
+  # to field data naming requirements:
+  # TODO: include this use case in test system enhancements
+  set(oscillator_aux_files 
+    oscillator.1.dat  oscillator.1.sigma oscillatorA.1.dat oscillatorA.1.sigma)
+  foreach(file ${oscillator_aux_files})
+    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+      ${CMAKE_CURRENT_BINARY_DIR}/${file})
+    list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
+    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+      ${CMAKE_CURRENT_BINARY_DIR}/dakota_experiment_read/${file})
+    list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/dakota_experiment_read/${file}")  
+  endforeach()
 
   # Copy targets from src/ to test/ to facilitate testing.  We place
   # the rules for copying executables from src/ in the test/

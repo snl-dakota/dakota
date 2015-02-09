@@ -26,8 +26,8 @@ responses,
 #        calibration_terms = 1             	#2,#3,#4
         calibration_terms = 5             	#0,#1
 	scalar_calibration_terms = 5      	#0,#1
-	calibration_data_file = 'dakota_experiment_read_A.dat' freeform #0
-#       calibration_data_file = 'dakota_experiment_read_B.dat' freeform #1
+	calibration_data_file = 'dakota_experiment_read.A.dat' freeform #0
+#       calibration_data_file = 'dakota_experiment_read.B.dat' freeform #1
 #        calibration_data			#2,#3,#4
         num_experiments = 1                     
         #num_config_variables = 1                        
