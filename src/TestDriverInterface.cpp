@@ -1360,7 +1360,7 @@ int TestDriverInterface::damped_oscillator()
   }
 
   Real initial_time = 0.;
-  Real dt = 0.1;
+  Real dt = 0.3;
   int num_time_steps = numFns;
 
   Real pi = 4.0 * std::atan( 1.0 );
@@ -1388,7 +1388,7 @@ int TestDriverInterface::damped_oscillator()
     Real B2 = F*kw / zeta2;
     
     for ( int i=0; i < numFns; i++ ){
-      Real time = initial_time + dt;
+      Real time = initial_time + i*dt;
       // Steady state solution (y_stead) for rhs = 0
       Real y_stead = F * std::sin( w*time + phi ) / zeta;
       
