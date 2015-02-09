@@ -11,6 +11,8 @@
 
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <boost/filesystem/operations.hpp>
+#include "boost/filesystem/path.hpp"
 
 namespace Dakota {
 
@@ -110,6 +112,10 @@ read_config_vars_multifile(const std::string& basename, int num_expts, int ncv, 
   for( int i = 0; i < num_expts; ++i ) {
     std::ifstream s;
     std::string filename = basename + "." + convert_to_string(i+1) + ".config";
+    boost::filesystem::path filepath = basename + "." + convert_to_string(i+1) + ".config";
+    if( !boost::filesystem::exists(filepath) )
+      throw std::runtime_error("Could not find expected experiment config file \""
+          + filepath.string() + "\".");
     TabularIO::open_file(s, filename, "read_config_vars_multifile");
     RealVector & var = config_vars[i];
     var.sizeUninitialized(ncv);

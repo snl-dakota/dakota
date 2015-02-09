@@ -248,7 +248,7 @@ TEUCHOS_UNIT_TEST(expt_data, mixedfield)
   //std::cout << "triple_prod = " << triple_prod << std::endl;
   TEST_FLOATING_EQUALITY( triple_prod, 11.1721, 1.e-4 );
 }
-//
+
 //----------------------------------------------------------------
 
 TEUCHOS_UNIT_TEST(expt_data, disallowOldAndNewReads)
@@ -260,5 +260,21 @@ TEUCHOS_UNIT_TEST(expt_data, disallowOldAndNewReads)
       ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, "" /* working_dir */, 
                                mock_srd, variance_types, 0 /* SILENT_OUTPUT */,
                                "dummyscalarDataFilename"),
+      std::runtime_error );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(expt_data, allowNoConfigFile)
+{
+  // Create an ExperimentData object that expects NUM_CONFIG_VARS > 0 but
+  // that does not have a corresponding experiment.1.confif file.
+  StringArray variance_types;
+  const std::string working_dir = "no_such_dir";
+  ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
+			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
+  TEST_THROW( 
+      expt_data.load_data("expt_data unit test call", 
+        true /* calc_sigma_from_data is N/A with new readers for now */),
       std::runtime_error );
 }

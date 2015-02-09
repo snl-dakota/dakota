@@ -220,8 +220,17 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     // the same for all responses.  Read from foo.<exp_num>.config. 
     //    String config_vars_basename("experiment");
     boost::filesystem::path config_vars_basepath = dataPathPrefix / "experiment";
-    read_config_vars_multifile(config_vars_basepath.string(), numExperiments, 
-			       numConfigVars, allConfigVars);
+    try {
+      read_config_vars_multifile(config_vars_basepath.string(), numExperiments, 
+          numConfigVars, allConfigVars);
+    }
+    catch(std::runtime_error & e)
+    {
+      if( numConfigVars > 0 )
+        throw std::runtime_error("Expected "+convert_to_string(numConfigVars)+" experiemnt "
+            + "config variables but the required file \""+config_vars_basepath.string()
+            +"\" does not exist.");
+    }
   }
 
   for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
