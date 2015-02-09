@@ -177,7 +177,7 @@ void CovarianceMatrix::invert_cholesky_factor()
     }
 }
 
-Real CovarianceMatrix::apply_covariance_inverse_sqrt( RealVector &vector,
+void CovarianceMatrix::apply_covariance_inverse_sqrt( RealVector &vector,
 						      RealVector &result )
 {
   if ( vector.length() != numDOF_ ){
@@ -186,14 +186,68 @@ Real CovarianceMatrix::apply_covariance_inverse_sqrt( RealVector &vector,
     throw( std::runtime_error( msg ) );
   }
 
-  result.sizeUninitialized( numDOF_ );
+  if ( result.length() != numDOF_)
+    result.sizeUninitialized( numDOF_ );
   if ( covIsDiagonal_ ) {
     for (int i=0; i<numDOF_; i++)
       result[i] = vector[i] / std::sqrt( covDiagonal_[i] ); 
   }else{
-    RealVector vector_copy( vector );
     result.multiply( Teuchos::NO_TRANS, Teuchos::NO_TRANS, 
 		     1.0, cholFactorInv_, vector, 0.0 );
+  }
+}
+
+void CovarianceMatrix::apply_covariance_inverse_sqrt_to_gradients( 
+RealMatrix &gradients,
+RealMatrix &result )
+{
+  if ( gradients.numCols() != numDOF_ ){
+    std::string msg = "Gradients and covariance are incompatible for ";
+    msg += "multiplication.";
+    throw( std::runtime_error( msg ) );
+  }
+  int num_grads = gradients.numRows();
+  if ( ( result.numRows() != num_grads ) || ( result.numCols() != numDOF_ ) )
+    result.shapeUninitialized( num_grads, numDOF_ );
+  if ( covIsDiagonal_ ) {
+    for (int j=0; j<numDOF_; j++)
+      for (int i=0; i<num_grads; i++)
+	result(i,j) = gradients(i,j) / std::sqrt( covDiagonal_[j] ); 
+  }else{
+    result.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 
+		     1.0, cholFactorInv_, gradients, 0.0 );
+  }
+}
+
+void CovarianceMatrix::apply_covariance_inverse_sqrt_to_hessian( 
+			  RealSymMatrixArray &hessians, int start )
+{
+  if ( hessians.size() != numDOF_ ){
+    std::string msg = "Hessians and covariance are incompatible for ";
+    msg += "multiplication.";
+    throw( std::runtime_error( msg ) );
+  }
+  int num_grads = hessians[0].numRows();
+  if ( covIsDiagonal_ ) {
+    for (int k=0; k<numDOF_; k++)
+      for (int j=0; j<num_grads; j++)
+	for (int i=0; i<num_grads; i++)
+	  hessians[start+k](i,j) / std::sqrt( covDiagonal_[k] ); 
+  }else{
+    RealVector hess_ij_res( numDOF_, false );
+    RealVector scaled_hess_ij_res( numDOF_, false );
+    for (int j=0; j<num_grads; j++){
+      for (int i=0; i<num_grads; i++){
+	// Extract the ij hessian components for each degree of freedom 
+	for (int k=0; k<numDOF_; k++)
+	  hess_ij_res[k] = hessians[start+k](i,j);
+	// Apply covariance matrix to the extracted hessian components
+	apply_covariance_inverse_sqrt( hess_ij_res, scaled_hess_ij_res );
+	// Copy result back into hessians
+	for (int k=0; k<numDOF_; k++)
+	  hessians[start+k](i,j) = scaled_hess_ij_res[k];
+      }
+    }
   }
 }
 
@@ -289,14 +343,38 @@ Real ExperimentCovariance::apply_experiment_covariance( RealVector &vector ){
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt( 
 		  RealVector &vector, RealVector &result ){
   int shift = 0;
-  result.size( vector.length() ); // initialize to zero
+  result.sizeUninitialized( vector.length() );
   for (int i=0; i<covMatrices_.size(); i++ ){
     int num_dof = covMatrices_[i].num_dof();
     RealVector sub_vector( Teuchos::View, vector.values()+shift, num_dof );
-    RealVector result_i;
-    covMatrices_[i].apply_covariance_inverse_sqrt( sub_vector, result_i );
     RealVector sub_result( Teuchos::View, result.values()+shift, num_dof );
-    sub_result += result_i;
+    covMatrices_[i].apply_covariance_inverse_sqrt( sub_vector, sub_result );
+    shift += num_dof;
+  }
+}
+
+void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt_to_gradients(
+RealMatrix &gradients, RealMatrix &result ){
+
+  int shift = 0;
+  int num_grads = gradients.numRows();
+  result.shape( num_grads, gradients.numCols() );
+  for (int i=0; i<covMatrices_.size(); i++ ){
+    int num_dof = covMatrices_[i].num_dof();
+    RealMatrix sub_matrix( Teuchos::View,gradients,num_grads,num_dof,0,shift );
+    RealMatrix sub_result( Teuchos::View, result, num_grads, num_dof, 0, shift );
+    covMatrices_[i].apply_covariance_inverse_sqrt_to_gradients( sub_matrix, 
+								sub_result );
+    shift += num_dof;
+  }
+}
+
+void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt_to_hessians( 
+	  RealSymMatrixArray hessians ){
+  int shift = 0;
+  for (int i=0; i<covMatrices_.size(); i++ ){
+    int num_dof = covMatrices_[i].num_dof();
+    covMatrices_[i].apply_covariance_inverse_sqrt_to_hessian( hessians, shift );
     shift += num_dof;
   }
 }

@@ -121,7 +121,22 @@ public:
   /// Multiply a vector r by the sqrt of the inverse covariance matrix C, i.e.
   /// compute L'*r where L is the cholesky factor of the positive definite 
   /// covariance matrix
-  Real apply_covariance_inverse_sqrt( RealVector &vector, RealVector &result );
+  void apply_covariance_inverse_sqrt( RealVector &vector, RealVector &result );
+
+  /// Multiply a matrix of gradients g (each column is a gradient vector) 
+  /// by the sqrt of the inverse covariance matrix C, i.e.
+  /// compute L'*g where L is the cholesky factor of the positive definite 
+  /// covariance matrix
+  void apply_covariance_inverse_sqrt_to_gradients( RealMatrix &gradients, 
+						   RealMatrix &result );
+
+  /// Apply the sqrt of the inverse covariance matrix to a list of Hessians.
+  /// the argument hessians is a numDOF_ list of num_grads x num_grads Hessian
+  /// matrices. \param start is an index pointing to the first Hessian to
+  /// consider in the list. This helps avoid copying large Hessian matrix
+  /// when applying block covariances using ExperimentCovariance class
+  void apply_covariance_inverse_sqrt_to_hessian( RealSymMatrixArray &hessians,
+						 int start);
 
   // Return the number of rows in the covariance matrix
   int num_dof() const;
@@ -167,6 +182,18 @@ public:
   /// covariance matrix C
   void apply_experiment_covariance_inverse_sqrt( RealVector &vector,
 						 RealVector &result );
+
+  /// Compute the product inv(L)*G where L is the Cholesky factor of the 
+  /// covariance matrix C and G is a matrix whose columns are gradient vectors
+  /// for each degree of freedom
+  void apply_experiment_covariance_inverse_sqrt_to_gradients(RealMatrix &grads,
+							     RealMatrix &result);
+
+  /// Compute the products inv(L)*H where L is the Cholesky factor of the 
+  /// covariance matrix C and H is a Hessian matrix. The product is computed
+  /// for each Hessian of every degree of freedom.
+  void apply_experiment_covariance_inverse_sqrt_to_hessians( 
+	   RealSymMatrixArray hesians );
   
   void print_cov();
 
