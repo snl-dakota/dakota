@@ -10,9 +10,10 @@ following approximation types:
   <li> MARS </li>
   <li> Moving least squares </li>
   <li> Radial basis function
+  <li> Voronoi Piecewise Surrogate (VPS)
 </ol>
 All these approximations are implemented
-in SurfPack \cite Giunta2006. In addition, a second version of
+in SurfPack \cite Giunta2006, except for VPS. In addition, a second version of
 Gaussian process is implemented directly in %Dakota.
 
 <b> Training Data </b>

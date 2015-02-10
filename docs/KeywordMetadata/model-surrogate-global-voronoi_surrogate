@@ -1,0 +1,15 @@
+Blurb:: 
+Voronoi Piecewise Surrogate (VPS) Models for High-Dimensional Data Fitting
+
+Description:: 
+VPS (Voronoi Piecewise Surrogate) models are used to construct high-dimensional surrogates fitting a few data points. This model works as a local alternative to the global Gaussian process (GP) surrogate model, allowing the user to estimate high-dimensional function values with cheap polynomial evaluations. The core idea in the VPS is to naturally decompose a high-dimensional domain into the corresponding implicit Voronoi tessellation, with the few given data points as Voronoi seeds. Each Voronoi cell the builds its own surrogate. 
+
+The surrogate in its basic Least Squares version is an arbitrary order polynomial that passes through the cell's seed, and optimally fits its local neighbors by minimizing their error in the least squares sense. The piecewise surrogate only needs to save the optimal polynomial coefficients of each Voronoi cell. Therefore, a function evaluation of a new point requires: finding the closest seed, and using its particular polynomial coefficients to find the function value estimate.
+
+Topics::
+Examples::
+Theory::
+ 
+Faq::
+See_Also::
+
