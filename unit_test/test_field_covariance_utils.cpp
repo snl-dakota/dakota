@@ -40,15 +40,73 @@ void test_multiple_scalar_covariance_matrix()
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
 
-  // Test application of the covariance inverse
+  // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK( prod == 7. ); 
+  BOOST_CHECK(  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
 
-  // Test application of the sqrt of the covariance inverse
+  // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
-  BOOST_CHECK( prod == 7. );
+  BOOST_CHECK(  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // gradient vectors
+  RealMatrix scaled_grads;
+  Real grads_array[] = {1.,2.,2.,4.,4.,8.};
+  RealMatrix grads( Teuchos::Copy, grads_array, 2, 2, 3 );
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_gradients( grads, 
+								   scaled_grads);
+
+  RealMatrix grammian( grads.numRows(), grads.numRows(), false );
+  grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
+		     scaled_grads, 0. );
+  BOOST_CHECK(  std::abs( grammian(0,0) - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK(  std::abs( grammian(1,1) - 28. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // Hessian matrices
+  Real hessian_0_array[] = {4., 2., 2., 2.};
+  RealSymMatrix hessian_0( Teuchos::Copy, false, hessian_0_array, 2, 2 );
+  RealSymMatrix hessian_1( hessian_0 );
+  RealSymMatrix hessian_2( hessian_0 );
+  hessian_1 *= 2.;
+  hessian_2 *= 4.;
+
+  RealSymMatrixArray hessians( 3 );
+  hessians[0] = hessian_0;
+  hessians[1] = hessian_1;
+  hessians[2] = hessian_2;
+  RealSymMatrixArray scaled_hessians;
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_hessians( hessians,
+							       scaled_hessians );
+
+  Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
+  Real exact_scaled_hessian_1_array[] = {8./std::sqrt(2),4./std::sqrt(2),
+				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_2_array[] = {8., 4., 4., 4.};
+  RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
+				  exact_scaled_hessian_0_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_1( Teuchos::View, false, 
+				  exact_scaled_hessian_1_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_2( Teuchos::View, false, 
+				  exact_scaled_hessian_2_array, 2, 2 );
+
+  scaled_hessians[0] -= exact_scaled_hessian_0;
+  scaled_hessians[1] -= exact_scaled_hessian_1;
+  scaled_hessians[2] -= exact_scaled_hessian_2;
+
+  BOOST_CHECK( scaled_hessians[0].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[1].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[2].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+
 }
 
 void test_single_diagonal_block_covariance_matrix()
@@ -79,15 +137,72 @@ void test_single_diagonal_block_covariance_matrix()
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
 
-  // Test application of the covariance inverse
+  // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK( prod == 7. );
+  BOOST_CHECK(  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
   
-  // Test application of the sqrt of the covariance inverse
+  // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
-  BOOST_CHECK( prod == 7. );
+  BOOST_CHECK(  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // gradient vectors
+  RealMatrix scaled_grads;
+  Real grads_array[] = {1.,2.,2.,4.,4.,8.};
+  RealMatrix grads( Teuchos::Copy, grads_array, 2, 2, 3 );
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_gradients( grads, 
+								   scaled_grads);
+
+  RealMatrix grammian( grads.numRows(), grads.numRows(), false );
+  grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
+		     scaled_grads, 0. );
+  BOOST_CHECK(  std::abs( grammian(0,0) - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK(  std::abs( grammian(1,1) - 28. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // Hessian matrices
+  Real hessian_0_array[] = {4., 2., 2., 2.};
+  RealSymMatrix hessian_0( Teuchos::Copy, false, hessian_0_array, 2, 2 );
+  RealSymMatrix hessian_1( hessian_0 );
+  RealSymMatrix hessian_2( hessian_0 );
+  hessian_1 *= 2.;
+  hessian_2 *= 4.;
+
+  RealSymMatrixArray hessians( 3 );
+  hessians[0] = hessian_0;
+  hessians[1] = hessian_1;
+  hessians[2] = hessian_2;
+  RealSymMatrixArray scaled_hessians;
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_hessians( hessians,
+							       scaled_hessians );
+
+  Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
+  Real exact_scaled_hessian_1_array[] = {8./std::sqrt(2),4./std::sqrt(2),
+				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_2_array[] = {8., 4., 4., 4.};
+  RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
+				  exact_scaled_hessian_0_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_1( Teuchos::View, false, 
+				  exact_scaled_hessian_1_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_2( Teuchos::View, false, 
+				  exact_scaled_hessian_2_array, 2, 2 );
+
+  scaled_hessians[0] -= exact_scaled_hessian_0;
+  scaled_hessians[1] -= exact_scaled_hessian_1;
+  scaled_hessians[2] -= exact_scaled_hessian_2;
+
+  BOOST_CHECK( scaled_hessians[0].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[1].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[2].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
 }
 
 void test_single_full_block_covariance_matrix()
@@ -119,15 +234,73 @@ void test_single_full_block_covariance_matrix()
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
 
-  // Test application of the covariance inverse
+  // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
+  BOOST_CHECK(  std::abs( prod - 16./3. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
 
-  // Test application of the sqrt of the covariance inverse
+  // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
   BOOST_CHECK( std::abs( prod - 16./3. ) < 
 	       10.*std::numeric_limits<double>::epsilon() ); 
+  
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // gradient vectors
+  RealMatrix scaled_grads;
+  Real grads_array[] = {1.,2.,2.,4.,4.,8.};
+  RealMatrix grads( Teuchos::Copy, grads_array, 2, 2, 3 );
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_gradients( grads, 
+								   scaled_grads);
+
+  RealMatrix grammian( grads.numRows(), grads.numRows(), false );
+  grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
+		     scaled_grads, 0. );
+  BOOST_CHECK(  std::abs( grammian(0,0) - 16./3. ) < 
+		10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK(  std::abs( grammian(1,1) - 64./3. ) < 
+		20.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // Hessian matrices
+  Real hessian_0_array[] = {4., 2., 2., 2.};
+  RealSymMatrix hessian_0( Teuchos::Copy, false, hessian_0_array, 2, 2 );
+  RealSymMatrix hessian_1( hessian_0 );
+  RealSymMatrix hessian_2( hessian_0 );
+  hessian_1 *= 2.;
+  hessian_2 *= 4.;
+
+  RealSymMatrixArray hessians( 3 );
+  hessians[0] = hessian_0;
+  hessians[1] = hessian_1;
+  hessians[2] = hessian_2;
+  RealSymMatrixArray scaled_hessians;
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_hessians( hessians,
+							  scaled_hessians );
+
+  Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
+  Real exact_scaled_hessian_1_array[] = {4.53557367611073,2.26778683805536,
+				   2.26778683805536,2.26778683805536};
+  Real exact_scaled_hessian_2_array[] = {6.98297248755176,3.49148624377588,
+				   3.49148624377588,3.49148624377588};
+  RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
+				  exact_scaled_hessian_0_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_1( Teuchos::View, false, 
+				  exact_scaled_hessian_1_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_2( Teuchos::View, false, 
+				  exact_scaled_hessian_2_array, 2, 2 );
+
+  scaled_hessians[0] -= exact_scaled_hessian_0;
+  scaled_hessians[1] -= exact_scaled_hessian_1;
+  scaled_hessians[2] -= exact_scaled_hessian_2;
+  
+  BOOST_CHECK( scaled_hessians[0].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[1].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[2].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
   
 }
 
@@ -140,6 +313,12 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 
   // Experiment covariance matrix consists of the following blocks
   // scalar_1, diagonal_1, matrix_1, scalar_2, scalar_3,
+
+  // MATLAB CODE: 
+  // A = [1,0.5,0.25;0.5,2,0.5;0.25,0.5,4.]; B = eye(9); B(1,1)=1.; 
+  // B(8,8) = 2.; B(9,9) = 4.; B(3,3) = 2.; B(4,4) = 4.; B(5:7,5:7)=A;
+  // d = [1., 1., 2., 4., 1., 2., 4., 2., 4.]';
+  // chol(inv(B))*d; r'*r
 
   // Generate scalar matrix blocks
   int num_scalars = 3;
@@ -184,20 +363,121 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 				     scalar_map_indices );
 
   int num_residuals = 9;
-  Real residual_array[] = {1.,2.,4.};
+  Real residual_array[] = {1., 1., 2., 4., 1., 2., 4., 2., 4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
 
-  // Test application of the covariance inverse
+  // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
   BOOST_CHECK( std::abs( prod - 58./3. ) < 
-	       10.*std::numeric_limits<double>::epsilon() );
+	       20.*std::numeric_limits<double>::epsilon() );
 
-  // Test application of the sqrt of the covariance inverse
+  // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
   BOOST_CHECK( std::abs( prod - 58./3. ) < 
 	       10.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // gradient vectors
+  RealMatrix scaled_grads;
+  Real grads_array[] = { 1., 2., 1., 2., 2., 4., 4., 8., 1., 2., 2., 4., 4., 8.,
+			 2., 4., 4., 8. };
+  RealMatrix grads( Teuchos::Copy, grads_array, 2, 2, 9 );
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_gradients( grads, 
+								   scaled_grads);
+
+  RealMatrix grammian( grads.numRows(), grads.numRows(), false );
+  grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
+		     scaled_grads, 0. );
+  BOOST_CHECK(  std::abs( grammian(0,0) - 58./3. ) < 
+		20.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK(  std::abs( grammian(1,1) - 232./3. ) < 
+		20.*std::numeric_limits<double>::epsilon() );
+
+  // Test application of the sqrt of the covariance inverse to matrix of 
+  // Hessian matrices
+  Real hessian_0_array[] = {4., 2., 2., 2.};
+  RealSymMatrix hessian_0( Teuchos::Copy, false, hessian_0_array, 2, 2 );
+  RealSymMatrix hessian_1( hessian_0 ), hessian_2( hessian_0 ),
+    hessian_3( hessian_0 ),  hessian_4( hessian_0 ),
+    hessian_5( hessian_0 ),  hessian_6( hessian_0 ),
+    hessian_7( hessian_0 ), hessian_8( hessian_0 );
+  hessian_1 *= 1.;  hessian_2 *= 2.;  hessian_3 *= 4.;  hessian_4 *= 1.;
+  hessian_5 *= 2.;  hessian_6 *= 4.;  hessian_7 *= 2.;  hessian_8 *= 4.;
+
+  RealSymMatrixArray hessians( 9 );
+  hessians[0] = hessian_0;  hessians[1] = hessian_1;
+  hessians[2] = hessian_2;  hessians[3] = hessian_3;
+  hessians[4] = hessian_4;  hessians[5] = hessian_5;
+  hessians[6] = hessian_6;  hessians[7] = hessian_7;
+  hessians[8] = hessian_8;
+
+  RealSymMatrixArray scaled_hessians;
+  exper_cov.apply_experiment_covariance_inverse_sqrt_to_hessians( hessians, 
+							       scaled_hessians );
+
+  Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
+  Real exact_scaled_hessian_1_array[] = {4.,2.,2.,2.};
+  Real exact_scaled_hessian_2_array[] = {8./std::sqrt(2),4./std::sqrt(2),
+				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_3_array[] = {8., 4., 4., 4.};
+  Real exact_scaled_hessian_4_array[] = {4.,2.,2.,2.};
+  Real exact_scaled_hessian_5_array[] = {4.53557367611073,2.26778683805536,
+				   2.26778683805536,2.26778683805536};
+  Real exact_scaled_hessian_6_array[] = {6.98297248755176,3.49148624377588,
+				   3.49148624377588,3.49148624377588};
+  Real exact_scaled_hessian_7_array[] = {8./std::sqrt(2),4./std::sqrt(2),
+				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_8_array[] = {8., 4., 4., 4.};
+
+  RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
+				  exact_scaled_hessian_0_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_1( Teuchos::View, false, 
+				  exact_scaled_hessian_1_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_2( Teuchos::View, false, 
+				  exact_scaled_hessian_2_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_3( Teuchos::View, false, 
+				  exact_scaled_hessian_3_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_4( Teuchos::View, false, 
+				  exact_scaled_hessian_4_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_5( Teuchos::View, false, 
+				  exact_scaled_hessian_5_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_6( Teuchos::View, false, 
+				  exact_scaled_hessian_6_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_7( Teuchos::View, false, 
+				  exact_scaled_hessian_7_array, 2, 2 );
+  RealSymMatrix exact_scaled_hessian_8( Teuchos::View, false, 
+				  exact_scaled_hessian_8_array, 2, 2 );
+
+  scaled_hessians[0] -= exact_scaled_hessian_0;
+  scaled_hessians[1] -= exact_scaled_hessian_1;
+  scaled_hessians[2] -= exact_scaled_hessian_2;
+  scaled_hessians[3] -= exact_scaled_hessian_3;
+  scaled_hessians[4] -= exact_scaled_hessian_4;
+  scaled_hessians[5] -= exact_scaled_hessian_5;
+  scaled_hessians[6] -= exact_scaled_hessian_6;
+  scaled_hessians[7] -= exact_scaled_hessian_7;
+  scaled_hessians[8] -= exact_scaled_hessian_8;
+  
+  BOOST_CHECK( scaled_hessians[0].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[1].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[2].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[3].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[4].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[5].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[6].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[7].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( scaled_hessians[8].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
 }
 
 void test_linear_interpolate_1d_no_extrapolation()
@@ -287,6 +567,7 @@ int test_main( int argc, char* argv[] )      // note the name!
   test_multiple_scalar_covariance_matrix();
   test_single_diagonal_block_covariance_matrix();
   test_single_full_block_covariance_matrix();
+  test_mixed_scalar_diagonal_full_block_covariance_matrix();
 
   // Test field interpolation functions
   test_linear_interpolate_1d_no_extrapolation();
