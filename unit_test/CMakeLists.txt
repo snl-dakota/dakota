@@ -74,6 +74,7 @@ include_directories(${Pecos_SOURCE_DIR}/src)
 
 if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
   set(dakota_sample_unit_tests
+    demo_teuchos.cpp
     covariance_reader.cpp
     expt_data.cpp
     expt_data_reader.cpp

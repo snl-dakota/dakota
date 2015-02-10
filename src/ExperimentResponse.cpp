@@ -66,7 +66,8 @@ void ExperimentResponse::set_scalar_covariance(RealVector& scalarSigmas)
                                      matrix_map_indices,
                                      diagonal_map_indices,
                                      scalar_map_indices );
-  expDataCovariance.print_cov();
+  // Might make this depend on a verbosity output level - RWH
+  //expDataCovariance.print_cov();
 }
 
 void ExperimentResponse::set_full_covariance(std::vector<RealMatrix> &matrices,
@@ -80,7 +81,8 @@ void ExperimentResponse::set_full_covariance(std::vector<RealMatrix> &matrices,
                                      matrix_map_indices,
                                      diagonal_map_indices,
                                      scalar_map_indices );
-  expDataCovariance.print_cov();
+  // Might make this depend on a verbosity output level - RWH
+  //expDataCovariance.print_cov();
 }
 
 Real ExperimentResponse::get_scalar_covariance(const int this_response)
