@@ -163,6 +163,8 @@ MLS is a weighted least squares approach where the weighting is
 ``moved'' or recalculated for every new point where 
 a prediction is desired.~\cite{Nea04} 
 
+\textbf{Voronoi Piecewise Surrogate (VPS)}: VPS models provide a natural approach to decompose a high-dimensional domain using the implicit Voronoi tessellation around the known function evaluations as seeds. This decomposition enables low-order piecewise Least Squares polynomial approximation of the underlying function in each Voronoi cell, independently, using the function values at the seed and its neighbors. 
+
 %\textbf{Orthogonal Polynomials}: This technique involves the use of
 %multivariate orthogonal polynomials as a global basis for surrogate
 %modeling.  These multivariate polynomials are constructed as a product
@@ -869,6 +871,32 @@ is still under development.  We have found that it works well
 in trust region methods where the surrogate model is constructed in 
 a constrained region over a few points.  It does not appear to be working 
 as well globally, at least at this point in time.
+
+
+\subsubsection{Voronoi Piecewise Surrogate (VPS) Models}\label{models:surf:vps}
+
+Voronoi Piecewise Surrogate (VPS) is a new method to build high-dimensional surrogates and consequently solve UQ and optimization problem at the cheap price of a polynomial evaluation. Given a pointset $\{\mathbf{x}_i\}$ in $\mathbb{R}^{d}$, and their function evaluations $f(\mathbf{x}_i)$, VPS aims to estimate the function value elsewhere.
+
+The key building block in the VPS model is to decompose the high-dimensional parameter space using the implicit Voronoi tessellation around the known function evaluations as seeds. Any domain discretization (mesh) subdivides the domain into cells (elements), where any point in the domain is assigned to some cell(s), and each cell identifies its neighbor cells. The VPS approach achieves the former using a simple nearest neighbor search, and the latter using Spoke Darts without constructing an explicit mesh. 
+
+The one-to-one mapping between the number of function evaluations and the number of Voronoi cells, regardless of the number of dimensions, eliminates the curse of dimensionality associated with standard domain decompositions. This Voronoi decomposition enables low-order piecewise polynomial approximation of the underlying function (and the associated error estimate) in the neighborhood of each function evaluation, independently. Moreover, the tessellation is naturally updated with the addition of new function evaluations. Handling functions with discontinuities using VPS is trivial due to its piecewise construction, which traps discontinuities along Voronoi facets. 
+
+In its basic version, VPS uses a Least Squares approach to build the piecewise surrogate, by finding the optimal coefficents of a polynomial with order $p$ such that:
+
+\begin{equation}
+	\hat{f}({\bf x})=\sum_{m=0}^{M-1}c_{m} \prod_{k=1}^{d} x_{k}^{t_{m,k}}
+	\label{models:surf:eq:vps}  
+\end{equation}
+
+where $\sum_{k=1}^{d} t_{m,k} \leq p$, $\forall m$. The LS-optimized vector of polynomial coefficients $\mathbf{c}$ can be found through:
+
+\begin{equation}
+	\mathbf{c} = [ \sum_{j} \mathbf{y} (\mathbf{x}_j) \mathbf{y}^{T}(\mathbf{x}_j)]^{-1} \sum_{j}\mathbf{y}(\mathbf{x}_j)f(\mathbf{x}_j) 
+\end{equation}
+
+where $\mathbf{y}(\mathbf{x}) = \{y_m(\mathbf{x})\} = \prod_{k=1}^{d} x_{k}^{t_{m,k}}$ is the vector of monomial terms in $f({\bf x})$. Apparently, solving for $\mathbf{c}$ implies finding a matrix inverse, and depends on the number of neighbors involved in the surrogate construction, in each Voronoi cell. Therefore, we start with a slightly large number of neighbors; say twice the number of unknowns ($p+1$) and use numerical methods to solve for $\mathbf{c}$, e.g., Cholesky decomposition. When applicable, Cholesky decomposition is roughly twice as efficient as the LU decomposition. In the few cases when Cholesky decomposition failed to converge to a unique solution, the generalized minimal residual method (GMRES), an iterative method that approximates the solution by the vector in a Krylov subspace with minimal residual, is used. This dual approach of using Cholesky-GMRES with the number of neighbors set to twice the number of unknowns for each Voronoi cell has been found stable, even for high-dimensional problems.
+
+Without impacting the core Voronoi decomposition approach, VPS can alternatively use other global surrogates ( e.g., Gaussian processes), locally within each Voronoi cell instead of Least Squares to construct local surrogates. The implementation of VPS based on other surrogates is still under development. 
 
 
 \subsubsection{Surrogate Diagnostic Metrics}\label{models:surf:diagnostics}
