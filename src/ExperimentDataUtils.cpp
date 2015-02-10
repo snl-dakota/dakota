@@ -370,7 +370,7 @@ RealMatrix &gradients, RealMatrix &result ){
 }
 
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt_to_hessians( 
-	  RealSymMatrixArray hessians ){
+	  RealSymMatrixArray& hessians ){
   int shift = 0;
   for (int i=0; i<covMatrices_.size(); i++ ){
     int num_dof = covMatrices_[i].num_dof();

@@ -193,7 +193,7 @@ public:
   /// covariance matrix C and H is a Hessian matrix. The product is computed
   /// for each Hessian of every degree of freedom.
   void apply_experiment_covariance_inverse_sqrt_to_hessians( 
-	   RealSymMatrixArray hesians );
+	   RealSymMatrixArray& hessians );
   
   void print_cov();
 

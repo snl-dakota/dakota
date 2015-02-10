@@ -623,10 +623,26 @@ apply_covariance(RealVector & residuals, size_t experiment)
   return(allExperiments[experiment].apply_covariance(residuals));
 }
 
-RealVector ExperimentData::
-apply_covariance_inv_sqrt(RealVector & residuals, size_t experiment)
+void ExperimentData::
+apply_covariance_inv_sqrt(RealVector& residuals, size_t experiment, 
+			  RealVector& weighted_residuals)
 {
-  return(allExperiments[experiment].apply_covariance_invsqrt(residuals));
+  allExperiments[experiment].apply_covariance_inv_sqrt(residuals, 
+						      weighted_residuals);
+}
+
+void ExperimentData::
+apply_covariance_inv_sqrt(RealMatrix& gradients, size_t experiment, 
+			  RealMatrix& weighted_gradients)
+{
+  allExperiments[experiment].apply_covariance_inv_sqrt(gradients, 
+						      weighted_gradients);
+}
+
+void ExperimentData::
+apply_covariance_inv_sqrt(RealSymMatrixArray& hessians, size_t experiment)
+{
+  allExperiments[experiment].apply_covariance_inv_sqrt(hessians);
 }
 
 

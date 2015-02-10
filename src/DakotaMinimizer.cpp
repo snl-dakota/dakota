@@ -933,37 +933,52 @@ primary_resp_differencer(const Variables& raw_vars,
 	 << std::endl;
   }
 
-  bool functions_req = 
-    minimizerInstance->data_difference_core(raw_response, residual_response);
+  minimizerInstance->data_difference_core(raw_response, residual_response);
 
-  if (minimizerInstance->outputLevel > NORMAL_OUTPUT && functions_req) {
+  if (minimizerInstance->outputLevel > NORMAL_OUTPUT && 
+      minimizerInstance->numUserPrimaryFns > 0) {
     Cout << "Least squares data transformation:\n";
     write_data(Cout, residual_response.function_values(),
 	       residual_response.function_labels());
     Cout << std::endl;
   }
-
+  if (minimizerInstance->outputLevel == DEBUG_OUTPUT && 
+      minimizerInstance->numUserPrimaryFns > 0) {
+    size_t total_calib_terms = 
+      minimizerInstance->numRowsExpData * minimizerInstance->numUserPrimaryFns;
+    const ShortArray& asv = residual_response.active_set_request_vector();
+    for (size_t i=0; i < total_calib_terms; i++) {
+      if (asv[i] & 1) 
+        Cout << " residual_response function " << i << ' ' 
+	     << residual_response.function_value(i) << '\n';
+      if (asv[i] & 2) 
+        Cout << " residual_response gradient " << i << ' ' 
+	     << residual_response.function_gradient_view(i) << '\n';
+      if (asv[i] & 4) 
+        Cout << " residual_response hessian " << i << ' ' 
+	     << residual_response.function_hessian(i) << '\n';
+    }
+  }
 }
 
 
-bool Minimizer::
+void Minimizer::
 data_difference_core(const Response& raw_response, Response& residual_response) 
 {
-  bool functions_req = false; // toggle output on function transformation
   size_t num_fns = minimizerInstance->numUserPrimaryFns;
   const ShortArray& asv = residual_response.active_set_request_vector();
 
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
-    
-    // form residuals for this experiment
+
+    size_t offset = exp_ind*num_fns;
+    // form residuals for this experiment; must make temporary
     const RealVector& exp_data = minimizerInstance->expData.all_data(exp_ind);
     RealVector resid_fns = raw_response.function_values();    
     resid_fns -= exp_data;
-    // initialize copy of gradients and Hessians
-    RealMatrix resid_gradients = raw_response.function_gradients();
-    RealSymMatrixArray resid_hessians = raw_response.function_hessians();
+    // don't need this copy, but the interface to apply() and getCol can't take 
+    // a const object
+    RealMatrix raw_grad = raw_response.function_gradients();
 
-    // apply inverse covariance
     if (applyCovariance) {
 
       // determine presence and consistency of active set vector requests
@@ -990,51 +1005,61 @@ data_difference_core(const Response& raw_response, Response& residual_response)
       if (outputLevel >= DEBUG_OUTPUT)
 	Cout << "\nLeast squares: weighting least squares terms with inverse of "
 	     << "specified error covariance." << std::endl;
-
+ 
+      // BMA TODO: Reduce copies with more granular fn, grad, Hess management
+      RealVector weighted_resid;
       if (asv_1 > 0)
-	resid_fns = expData.apply_covariance_inv_sqrt(resid_fns, exp_ind);
+	expData.apply_covariance_inv_sqrt(resid_fns, exp_ind, weighted_resid);
+      else
+	weighted_resid = resid_fns;
 
-      // BMA LPS TODO: if experiment covariance is present, gradients,
-      // and Hessians must be transformed as well. 
+      // apply cov_inv_sqrt to each row of gradient matrix
+      RealMatrix weighted_grad;
+      if (asv_2 > 0) {
+      	expData.apply_covariance_inv_sqrt(raw_grad, exp_ind, weighted_grad);
+      }
+      else
+	weighted_grad = raw_response.function_gradients();
 
-      // apply cov_inv_sqrt to each row of gradient matrix (add
-      // convenience function to covariance class for transpose apply)
-      //if (asv_2 > 0);
+      // apply cov_inv_sqrt to non-contiguous Hessian matrices
+      RealSymMatrixArray weighted_hess = raw_response.function_hessians();
+      if (asv_4 > 0)
+	expData.apply_covariance_inv_sqrt(weighted_hess, exp_ind);
 
-      // Hessian storage not amenable to matrix application; however
-      // since we are only supporting diagonal, could readily do
-      //if (asv_4 > 0);
-
+      copy_residuals(weighted_resid, weighted_grad, weighted_hess, 
+		     offset, num_fns, residual_response);
+    }
+    else {
+      // copy directly from raw gradients/Hessians into the residual response
+      copy_residuals(resid_fns, raw_grad, raw_response.function_hessians(), 
+		     offset, num_fns, residual_response);
     }
 
-    for (size_t i=0; i<num_fns; i++) {
-      if (asv[i] & 1) {
-	residual_response.function_value(resid_fns[i], exp_ind*num_fns+i);
-      }
-      if (asv[i] & 2) {
-	RealVector raw_grad_i = 
-	  Teuchos::getCol(Teuchos::View, resid_gradients, (int)i);
-	residual_response.function_gradient(raw_grad_i, exp_ind*num_fns+i);
-      }
-      if (asv[i] & 4) {
-	residual_response.function_hessian(resid_hessians[i], exp_ind*num_fns+i);
-      }
-      functions_req = true;
-    }
   }
-
-  if (minimizerInstance->outputLevel == DEBUG_OUTPUT) {
-    for (size_t i=0; i<numRowsExpData*numUserPrimaryFns; i++) {
-      if (asv[i] & 1) 
-        Cout << " residual_response function " << i << ' ' << residual_response.function_value(i) << '\n';
-      if (asv[i] & 2) 
-        Cout << " residual_response gradient " << i << ' ' << residual_response.function_gradient_view(i) << '\n';
-      if (asv[i] & 4) 
-        Cout << " residual_response hessian " << i << ' ' << residual_response.function_hessian(i) << '\n';
-    }
-  }
-  return functions_req;
 }
+
+ 
+void Minimizer::
+copy_residuals(const RealVector& fn_vals, RealMatrix& fn_grad, 
+	       const RealSymMatrixArray& fn_hess, size_t offset, size_t num_fns,
+	       Response& residual_response) 
+{
+  const ShortArray& asv = residual_response.active_set_request_vector();
+  for (size_t i=0; i<num_fns; i++) {
+    if (asv[i] & 1) {
+      residual_response.function_value(fn_vals[i], offset+i);
+    }
+    if (asv[i] & 2) {
+      RealVector raw_grad_i = 
+	Teuchos::getCol(Teuchos::View, fn_grad, (int)i);
+      residual_response.function_gradient(raw_grad_i, offset+i);
+    }
+    if (asv[i] & 4) {
+      residual_response.function_hessian(fn_hess[i], offset+i);
+    }
+  }
+}
+
 
 /** Variables map from iterator/scaled space to user/native space
     using a RecastModel. */

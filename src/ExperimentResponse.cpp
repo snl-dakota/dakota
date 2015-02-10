@@ -101,11 +101,26 @@ Real ExperimentResponse::apply_covariance(RealVector &residual)
   return expDataCovariance.apply_experiment_covariance(residual);
 }
 
-RealVector ExperimentResponse::apply_covariance_invsqrt(RealVector &residual)
+void ExperimentResponse::
+apply_covariance_inv_sqrt(RealVector& residuals, RealVector& weighted_residuals)
 {
-  RealVector temp_result;
-  expDataCovariance.apply_experiment_covariance_inverse_sqrt(residual, temp_result);
-  return temp_result;
+  expDataCovariance.
+    apply_experiment_covariance_inverse_sqrt(residuals, weighted_residuals);
+}
+
+void ExperimentResponse::
+apply_covariance_inv_sqrt(RealMatrix& gradients, RealMatrix& weighted_gradients)
+{
+  expDataCovariance.
+    apply_experiment_covariance_inverse_sqrt_to_gradients(gradients, 
+							  weighted_gradients);
+}
+
+void  ExperimentResponse::
+apply_covariance_inv_sqrt(RealSymMatrixArray& hessians)
+{
+  expDataCovariance.
+    apply_experiment_covariance_inverse_sqrt_to_hessians(hessians); 
 }
 
 void ExperimentResponse::copy_rep(Response* source_resp_rep)

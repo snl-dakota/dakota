@@ -276,7 +276,11 @@ public:
   /// method to compute the triple product v'*inv(C)*v.
   virtual Real apply_covariance(RealVector &residuals);
   /// method to compute (v'*inv(C)^1/2), to compute weighted residual
-  virtual RealVector apply_covariance_invsqrt(RealVector &residuals);
+  virtual void apply_covariance_inv_sqrt(RealVector &residuals, 
+					 RealVector& weighted_residuals);
+  virtual void apply_covariance_inv_sqrt(RealMatrix& gradients, 
+					 RealMatrix& weighted_gradients);
+  virtual void apply_covariance_inv_sqrt(RealSymMatrixArray& hessians);
 
 protected:
 
