@@ -192,8 +192,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # managed via gold standards if they don't pop a Windows error dialog
   if (WIN32)
     list(REMOVE_ITEM dakota_test_input_files
-      dakota_3pc.in                         # abort: Unix shell
-      dakota_container.in                   # abort: Unix shell
+      dakota_3pc.in                         # abort: Unix shell; also refork
       dakota_drivers.in                     # 4-6 abort; refork?
       dakota_rbdo_steel_column_analytic2.in # abort: LAPACK error
       dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
@@ -222,7 +221,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     # These get copied by add_application_test into test/dakota_*/
     get_filename_component(test_name ${test_input_file} NAME_WE)
     file(GLOB test_all_files
-      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*"
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
       )
 
     set(test_labels DakotaTest SerialTest)
