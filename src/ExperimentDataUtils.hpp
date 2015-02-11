@@ -116,19 +116,20 @@ public:
 
   /// Compute the triple product of r'*inv(C)*r where r is a vector r and C
   /// is the covariance matrix
-  Real apply_covariance_inverse( RealVector &vector );
+  Real apply_covariance_inverse( const RealVector &vector ) const;
 
   /// Multiply a vector r by the sqrt of the inverse covariance matrix C, i.e.
   /// compute L'*r where L is the cholesky factor of the positive definite 
   /// covariance matrix
-  void apply_covariance_inverse_sqrt( RealVector &vector, RealVector &result );
+  void apply_covariance_inverse_sqrt( const RealVector &vector, 
+				      RealVector &result ) const;
 
   /// Multiply a matrix of gradients g (each column is a gradient vector) 
   /// by the sqrt of the inverse covariance matrix C, i.e.
   /// compute L'*g where L is the cholesky factor of the positive definite 
   /// covariance matrix
-  void apply_covariance_inverse_sqrt_to_gradients( RealMatrix &gradients, 
-						   RealMatrix &result );
+  void apply_covariance_inverse_sqrt_to_gradients( const RealMatrix &gradients, 
+						   RealMatrix &result ) const;
 
   /// Apply the sqrt of the inverse covariance matrix to a list of Hessians.
   /// the argument hessians is a numDOF_ list of num_grads x num_grads Hessian
@@ -136,13 +137,13 @@ public:
   /// consider in the list. This helps avoid copying large Hessian matrix
   /// when applying block covariances using ExperimentCovariance class
   void apply_covariance_inverse_sqrt_to_hessian( RealSymMatrixArray &hessians,
-						 int start);
+						 int start) const;
 
-  // Return the number of rows in the covariance matrix
+  /// Return the number of rows in the covariance matrix
   int num_dof() const;
 
-  // Print a covariance matrix
-  void print();
+  /// Print a covariance matrix
+  void print() const;
 };
 
 
@@ -176,26 +177,28 @@ public:
 				IntVector scalar_map_indices );
 
   /// Compute the triple product v'*inv(C)*v
-  Real apply_experiment_covariance( RealVector &vector );
+  Real apply_experiment_covariance( const RealVector &vector ) const;
 
   /// Compute the product inv(L)*v where L is the Cholesky factor of the 
   /// covariance matrix C
-  void apply_experiment_covariance_inverse_sqrt( RealVector &vector,
-						 RealVector &result );
+  void apply_experiment_covariance_inverse_sqrt( const RealVector &vector,
+						 RealVector &result ) const;
 
   /// Compute the product inv(L)*G where L is the Cholesky factor of the 
   /// covariance matrix C and G is a matrix whose columns are gradient vectors
   /// for each degree of freedom
-  void apply_experiment_covariance_inverse_sqrt_to_gradients(RealMatrix &grads,
-							     RealMatrix &result);
+  void apply_experiment_covariance_inverse_sqrt_to_gradients(
+           const RealMatrix &grads,
+	   RealMatrix &result) const;
 
   /// Compute the products inv(L)*H where L is the Cholesky factor of the 
   /// covariance matrix C and H is a Hessian matrix. The product is computed
   /// for each Hessian of every degree of freedom.
   void apply_experiment_covariance_inverse_sqrt_to_hessians( 
-	   RealSymMatrixArray& hessians );
+	   const RealSymMatrixArray &hesians, RealSymMatrixArray &result ) const;
   
-  void print_cov();
+  /// Print each block of the covariance matrix
+  void print_covariance_blocks() const;
 
 };
 
