@@ -1,0 +1,25 @@
+Blurb::
+Add context to experiment data description by specifying the type of experimental error. 
+
+Description::
+There are four options for specifying the experimental error (e.g. the measurement 
+error in the data you provide for calibration purposes): 
+'none', 'scalar', 'diagonal', or 'matrix.' 
+
+If the user specifies none, 
+Dakota will calculate a variance (sigma-squared) term.  This will be a constant variance term across all of the data).
+If the user specifies scalar, they can provide a scalar variance per 
+calibration term. 
+Note that for scalar calibration terms, only 'none' or 'scalar' are 
+options for the measurement variance.  However, for field calibration terms, 
+there are two additional options.  'diagonal' allows the user to provide 
+a vector of measurement variances (one for each term in the calibration field).  This vector corresponds to the diagonal of the full covariance matrix of measurement errors.  If the user specifies 'matrix', they can provide a full 
+covariance matrix (not just the diagonal terms), where each 
+element(i,j) of the covariance matrix represents 
+the covariance of the measurement error between the i-th and j-th field values. 
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -1,0 +1,15 @@
+Blurb::
+Add context to data: number of different experiments
+Description::
+The number of different experiments.  Dakota will expand the total 
+number of residual terms based on the number of calibration terms and 
+the number of experiments.  For example, if the number of calibration terms 
+are five scalars, and there are three experiments, the total number of 
+residuals in the least squares formulation will be 15. 
+See \ref responses-calibration_terms-calibration_data or \ref responses-calibration_terms-calibration_data_file.
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

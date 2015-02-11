@@ -1,0 +1,14 @@
+Blurb::
+Add context to data: number of configuration variables.
+Description::
+This is an optional description.  If there are multiple experiments, 
+there can be different configuration variables (e.g. experimental settings, 
+boundary conditions, etc.) per experiment.
+See \ref responses-calibration_terms-calibration_data or 
+\ref responses-calibration_terms-calibration_data_file.
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

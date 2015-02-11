@@ -1,0 +1,67 @@
+Blurb::
+Supply calibration data in the case of field data or mixed data (both scalar and field data).
+
+Description::
+
+\c calibration_data specifies a keyword block that indicates that Dakota 
+should read in various types of experimental data. 
+This block is primarily to support the reading of field calibration data. 
+
+The user will specify the number of experiments, \c num_experiments. 
+If this is not specified, it is assumed there is only one experiment. 
+
+For each experiment, there are four main types of data related to fields: 
+<ul>
+   <li> values.  
+
+   These are the values of the experiment field (e.g. temperature values, voltage levels, etc.) 
+   These MUST be specified in a file named response_descriptor.NUM.dat, where NUM is replaced 
+   by the number of the experiment (1, 2, ...) and response_descriptor is replaced by the actual 
+   \c response_descriptor the user has specified.  For example, if \c response_descriptor = voltage, 
+   then the voltage field values for experiment 1 should be in a file labeled 
+   voltage.1.dat. The field values should be in a column (e.g. one field value per row).
+  
+   </li>
+   <li> field coordinates.  
+
+   Field coordinates specify independent variables (e.g. spatial or temporal coordinates) upon which 
+   the field depends.  For example, the voltage level above might be a function of time, so time is 
+   the field coordinate.  If the user has field coordinates to read, they need to specify 
+   \c read_field_coordinates.  The field coordinates will then be read from a file named 
+   response_descriptor.NUM.coords, similar to the pattern for field values.  The number of columns 
+   in the coords file should be equal to the number of field coordinates.  
+
+   </li>
+   <li> variance terms.  
+
+   The user needs to specify \c variance_type, which defines the type of experimental measurement 
+   error.  This is a string list, with one variance type specified for each scalar and each field.  
+   The available types are 'none' (no variance is specified), 'scalar' (one scalar value is specified 
+   which is applicable to all of the measurements in the field), 'diagonal' (a column vector is 
+   provided which contains the number of elements of the experimental data field.  Each element of the    vector contains the experimental measurement variance corresponding to that particular field 
+   measurement.  For example, for the fifth term in the field, the fifth term in the diagonal 
+   vector would have the variance of that measurement), and 'matrix'.  In the matrix case, a 
+   full covariance matrix is provided, which contains the pairwise correlations between each element 
+   in the field.  For each field, if the \c variance_type is not 'none', a data file must be provided 
+   with the name response_descriptor.NUM.sigma, which contains the appropriate variance data for 
+   that field. 
+  
+   </li>
+   <li> configuration variables.  
+
+   Configuration variables specify the conditions corresponding to different experiments.  
+   This is used when there is more than one experiment.  If \c num_config_variables is positive, 
+   the configuration variables for each experiment should be placed in a file named 
+   experiment.NUM.config, where the number of items in that config file are the 
+   \c num_config_variables.
+
+   </li>
+</ul>
+
+The above description is relevant for field data (with files for field values, field coordinates, 
+field variances).  If the user also has experimental data, it may be entered in the same way (e.g. 
+one file for a scalar experimental value named scalar_response_descriptor.NUM.dat, etc.) 
+However, the user can choose to enter the scalar data in the format that we offer for pure scalar 
+data, where we have just one file, with the number of rows of that file equal to the number 
+of experiments.  In that case, the scalar data is in the file given by the name \c scalar_data_file, 
+and the format of that file is the same as discussed in \ref responses-calibration_terms-calibration_data_file.

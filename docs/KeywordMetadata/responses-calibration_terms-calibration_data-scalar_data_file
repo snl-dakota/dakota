@@ -1,0 +1,16 @@
+Blurb::
+This refers to the specification of scalar data in a mixed-case where the 
+user is calibrating both scalar and field data. 
+Description::
+
+If the user is specifying BOTH scalar and field calibration terms, AND 
+has associated experimental data to provide for each, the scalar data may be provided 
+in the file named by \c scalar_data_file.  This file follows the same format as: 
+\ref responses-calibration_terms-calibration_data_file. 
+
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	
