@@ -138,18 +138,19 @@ public:
 
   /// apply the covariance responses to compute the triple product
   /// v'*inv(C)*v for the given experiment
-  Real apply_covariance(RealVector & residuals, size_t experiment);
+  Real apply_covariance(const RealVector& residuals, size_t experiment);
   /// apply inverse sqrt of the covariance to compute weighted residuals
-  void apply_covariance_inv_sqrt(RealVector& residuals, size_t experiment, 
+  void apply_covariance_inv_sqrt(const RealVector& residuals, 
+				 size_t experiment, 
 				 RealVector& weighted_residuals);
   /// apply inverse sqrt of the covariance to compute weighted gradients
-  void apply_covariance_inv_sqrt(RealMatrix& gradients, size_t experiment, 
+  void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
+				 size_t experiment, 
 				 RealMatrix& weighted_gradients);
   /// apply inverse sqrt of the covariance to compute weighted Hessians
-  void apply_covariance_inv_sqrt(RealSymMatrixArray& hessians, 
-				 size_t experiment);
-
-
+  void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, 
+				 size_t experiment, 
+				 RealSymMatrixArray& weighted_hessians);
 
 private:
 

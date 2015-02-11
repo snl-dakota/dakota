@@ -1428,7 +1428,7 @@ Real Response::get_scalar_covariance(const int this_response)
   }
 }
 
-Real Response::apply_covariance(RealVector &residual)
+Real Response::apply_covariance(const RealVector &residual)
 {
   if (responseRep)
     return responseRep->apply_covariance(residual);
@@ -1440,7 +1440,7 @@ Real Response::apply_covariance(RealVector &residual)
   }
 }
 
-void Response::apply_covariance_inv_sqrt(RealVector& residuals, 
+void Response::apply_covariance_inv_sqrt(const RealVector& residuals, 
 					 RealVector& weighted_residuals)
 {
   if (responseRep)
@@ -1452,7 +1452,7 @@ void Response::apply_covariance_inv_sqrt(RealVector& residuals,
   }
 }
 
-void Response::apply_covariance_inv_sqrt(RealMatrix& gradients, 
+void Response::apply_covariance_inv_sqrt(const RealMatrix& gradients, 
 					 RealMatrix& weighted_gradients)
 {
   if (responseRep)
@@ -1464,10 +1464,11 @@ void Response::apply_covariance_inv_sqrt(RealMatrix& gradients,
   }
 }
 
-void Response::apply_covariance_inv_sqrt(RealSymMatrixArray& hessians)
+void Response::apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
+					 RealSymMatrixArray& weighted_hessians)
 {
   if (responseRep)
-    responseRep->apply_covariance_inv_sqrt(hessians);
+    responseRep->apply_covariance_inv_sqrt(hessians, weighted_hessians);
   else {
     Cerr << "\nError: apply_covariance_invsqrt not defined for this response "
          << std::endl;

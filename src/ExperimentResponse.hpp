@@ -72,12 +72,13 @@ public:
                            IntVector diagonal_map_indices,
                            IntVector scalar_map_indices );
   
-  Real apply_covariance(RealVector &residual);
-  void apply_covariance_inv_sqrt(RealVector& residuals, 
+  Real apply_covariance(const RealVector &residual);
+  void apply_covariance_inv_sqrt(const RealVector& residuals, 
 				 RealVector& weighted_residuals);
-  void apply_covariance_inv_sqrt(RealMatrix& gradients, 
+  void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
 				 RealMatrix& weighted_gradients);
-  void apply_covariance_inv_sqrt(RealSymMatrixArray& hessians);
+  void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
+				 RealSymMatrixArray& weighted_hessians);
 
 protected:
 

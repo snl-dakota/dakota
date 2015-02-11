@@ -975,9 +975,6 @@ data_difference_core(const Response& raw_response, Response& residual_response)
     const RealVector& exp_data = minimizerInstance->expData.all_data(exp_ind);
     RealVector resid_fns = raw_response.function_values();    
     resid_fns -= exp_data;
-    // don't need this copy, but the interface to apply() and getCol can't take 
-    // a const object
-    RealMatrix raw_grad = raw_response.function_gradients();
 
     if (applyCovariance) {
 
@@ -1016,21 +1013,25 @@ data_difference_core(const Response& raw_response, Response& residual_response)
       // apply cov_inv_sqrt to each row of gradient matrix
       RealMatrix weighted_grad;
       if (asv_2 > 0) {
-      	expData.apply_covariance_inv_sqrt(raw_grad, exp_ind, weighted_grad);
+      	expData.apply_covariance_inv_sqrt(raw_response.function_gradients(),
+					  exp_ind, weighted_grad);
       }
       else
 	weighted_grad = raw_response.function_gradients();
 
       // apply cov_inv_sqrt to non-contiguous Hessian matrices
-      RealSymMatrixArray weighted_hess = raw_response.function_hessians();
+      RealSymMatrixArray weighted_hess;
       if (asv_4 > 0)
-	expData.apply_covariance_inv_sqrt(weighted_hess, exp_ind);
+	expData.apply_covariance_inv_sqrt(raw_response.function_hessians(), 
+					  exp_ind, weighted_hess);
 
       copy_residuals(weighted_resid, weighted_grad, weighted_hess, 
 		     offset, num_fns, residual_response);
     }
     else {
       // copy directly from raw gradients/Hessians into the residual response
+      // don't need the grad copy, but the interface to getCol can't take const
+      RealMatrix raw_grad = raw_response.function_gradients();
       copy_residuals(resid_fns, raw_grad, raw_response.function_hessians(), 
 		     offset, num_fns, residual_response);
     }

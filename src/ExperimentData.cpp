@@ -618,21 +618,21 @@ bool ExperimentData::variance_type_active(short variance_type)
 }
 
 Real ExperimentData::
-apply_covariance(RealVector & residuals, size_t experiment)
+apply_covariance(const RealVector& residuals, size_t experiment)
 {
   return(allExperiments[experiment].apply_covariance(residuals));
 }
 
 void ExperimentData::
-apply_covariance_inv_sqrt(RealVector& residuals, size_t experiment, 
+apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment, 
 			  RealVector& weighted_residuals)
 {
   allExperiments[experiment].apply_covariance_inv_sqrt(residuals, 
-						      weighted_residuals);
+						       weighted_residuals);
 }
 
 void ExperimentData::
-apply_covariance_inv_sqrt(RealMatrix& gradients, size_t experiment, 
+apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment, 
 			  RealMatrix& weighted_gradients)
 {
   allExperiments[experiment].apply_covariance_inv_sqrt(gradients, 
@@ -640,9 +640,11 @@ apply_covariance_inv_sqrt(RealMatrix& gradients, size_t experiment,
 }
 
 void ExperimentData::
-apply_covariance_inv_sqrt(RealSymMatrixArray& hessians, size_t experiment)
+apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
+			  RealSymMatrixArray& weighted_hessians)
 {
-  allExperiments[experiment].apply_covariance_inv_sqrt(hessians);
+  allExperiments[experiment].apply_covariance_inv_sqrt(hessians, 
+						       weighted_hessians);
 }
 
 

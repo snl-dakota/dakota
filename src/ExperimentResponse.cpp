@@ -96,20 +96,22 @@ Real ExperimentResponse::get_scalar_covariance(const int this_response)
   return 0;
 }
  
-Real ExperimentResponse::apply_covariance(RealVector &residual)
+Real ExperimentResponse::apply_covariance(const RealVector &residual)
 {
   return expDataCovariance.apply_experiment_covariance(residual);
 }
 
 void ExperimentResponse::
-apply_covariance_inv_sqrt(RealVector& residuals, RealVector& weighted_residuals)
+apply_covariance_inv_sqrt(const RealVector& residuals, 
+			  RealVector& weighted_residuals)
 {
   expDataCovariance.
     apply_experiment_covariance_inverse_sqrt(residuals, weighted_residuals);
 }
 
 void ExperimentResponse::
-apply_covariance_inv_sqrt(RealMatrix& gradients, RealMatrix& weighted_gradients)
+apply_covariance_inv_sqrt(const RealMatrix& gradients, 
+			  RealMatrix& weighted_gradients)
 {
   expDataCovariance.
     apply_experiment_covariance_inverse_sqrt_to_gradients(gradients, 
@@ -117,10 +119,12 @@ apply_covariance_inv_sqrt(RealMatrix& gradients, RealMatrix& weighted_gradients)
 }
 
 void  ExperimentResponse::
-apply_covariance_inv_sqrt(RealSymMatrixArray& hessians)
+apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
+			  RealSymMatrixArray& weighted_hessians)
 {
   expDataCovariance.
-    apply_experiment_covariance_inverse_sqrt_to_hessians(hessians); 
+    apply_experiment_covariance_inverse_sqrt_to_hessians(hessians, 
+							 weighted_hessians); 
 }
 
 void ExperimentResponse::copy_rep(Response* source_resp_rep)
