@@ -2411,6 +2411,7 @@ method,
 #        pce 
 #        sparse_grid_level = 3 
           samples = 5000 #seed = 348                                    
+          mcmc_type dram 
           rejection delayed
           metropolis adaptive
           output verbose
@@ -2431,9 +2432,8 @@ responses,
         calibration_terms = 1
         calibration_data_file = 'dakota_queso.test10.txt'
           freeform
-          num_experiments = 1
-          num_replicates = 10 
-          num_std_deviations = 1
+          num_experiments = 10
+          variance_type = 'scalar'
         no_gradients
         no_hessians
 \end{verbatim}
