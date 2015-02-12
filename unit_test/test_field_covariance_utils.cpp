@@ -86,8 +86,8 @@ void test_multiple_scalar_covariance_matrix()
 							       scaled_hessians );
 
   Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
-  Real exact_scaled_hessian_1_array[] = {8./std::sqrt(2),4./std::sqrt(2),
-				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_1_array[] = {8./std::sqrt(2.),4./std::sqrt(2.),
+				   4./std::sqrt(2.),4./std::sqrt(2.)};
   Real exact_scaled_hessian_2_array[] = {8., 4., 4., 4.};
   RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
 				  exact_scaled_hessian_0_array, 2, 2 );
@@ -183,8 +183,8 @@ void test_single_diagonal_block_covariance_matrix()
 							       scaled_hessians );
 
   Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
-  Real exact_scaled_hessian_1_array[] = {8./std::sqrt(2),4./std::sqrt(2),
-				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_1_array[] = {8./std::sqrt(2.),4./std::sqrt(2.),
+				   4./std::sqrt(2.),4./std::sqrt(2.)};
   Real exact_scaled_hessian_2_array[] = {8., 4., 4., 4.};
   RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
 				  exact_scaled_hessian_0_array, 2, 2 );
@@ -419,16 +419,16 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 
   Real exact_scaled_hessian_0_array[] = {4.,2.,2.,2.};
   Real exact_scaled_hessian_1_array[] = {4.,2.,2.,2.};
-  Real exact_scaled_hessian_2_array[] = {8./std::sqrt(2),4./std::sqrt(2),
-				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_2_array[] = {8./std::sqrt(2.),4./std::sqrt(2.),
+				   4./std::sqrt(2.),4./std::sqrt(2.)};
   Real exact_scaled_hessian_3_array[] = {8., 4., 4., 4.};
   Real exact_scaled_hessian_4_array[] = {4.,2.,2.,2.};
   Real exact_scaled_hessian_5_array[] = {4.53557367611073,2.26778683805536,
 				   2.26778683805536,2.26778683805536};
   Real exact_scaled_hessian_6_array[] = {6.98297248755176,3.49148624377588,
 				   3.49148624377588,3.49148624377588};
-  Real exact_scaled_hessian_7_array[] = {8./std::sqrt(2),4./std::sqrt(2),
-				   4./std::sqrt(2),4./std::sqrt(2)};
+  Real exact_scaled_hessian_7_array[] = {8./std::sqrt(2.),4./std::sqrt(2.),
+				   4./std::sqrt(2.),4./std::sqrt(2.)};
   Real exact_scaled_hessian_8_array[] = {8., 4., 4., 4.};
 
   RealSymMatrix exact_scaled_hessian_0( Teuchos::View, false, 
