@@ -15,6 +15,7 @@
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDGPMSABayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "NonDLHSSampling.hpp"
@@ -110,7 +111,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  
   Cout << "import points file "<< approxImportFile
        << "import points annotated " << approxImportAnnotated
-       << "import points active " << approxImportActive;
+       << "import points active " << approxImportActiveOnly;
   if (approxImportFile.empty())
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
