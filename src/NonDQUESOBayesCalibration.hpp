@@ -8,7 +8,7 @@
 
 //- Class:	 NonDBayesCalibration
 //- Description: Base class for generic Bayesian inference
-//- Owner:       Laura Swiler
+//- Owner:       Laura Swiler, Brian Adams
 //- Checked by:
 //- Version:
 
@@ -21,6 +21,12 @@
 namespace QUESO {
   class GslVector;
   class GslMatrix;
+  class EnvOptionsValues;
+  class FullEnvironment;
+  template<class V, class M> class VectorSpace;
+  template<class V, class M> class BoxSubset;
+  class SipOptionsValues;
+  class MhOptionsValues;
 }
 
 namespace Dakota {
@@ -47,21 +53,6 @@ public:
   NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model);
   /// destructor
   ~NonDQUESOBayesCalibration();
-
-  /// MCMC type (DRAM or Multilevel, both within QUESO) 
-  String mcmcType;
-  /// Rejection type (standard or delayed, in the DRAM framework) 
-  String rejectionType;
-  /// Metropolis type (hastings or adaptive, in the DRAM framework) 
-  String metropolisType;
-  /// number of samples in the chain (e.g. number of MCMC samples)
-  int numSamples;
-  /// scale factor for proposal covariance
-  RealVector proposalCovScale;
-  /// scale factor for likelihood
-  Real likelihoodScale;
-  /// flag to indicated if the sigma terms should be calibrated (default true)
-  bool calibrateSigmaFlag;
          
 protected:
 
@@ -73,7 +64,28 @@ protected:
   void quantify_uncertainty();
   // redefined from DakotaNonD
   //void print_results(std::ostream& s);
-  
+
+  /// initialize the QUESO FullEnvironment on the Dakota MPIComm
+  void init_queso_environment();
+
+  /// intialize the QUESO parameter space, min, max, initial, and domain
+  void init_parameter_domain();
+
+  /// use historical default behavior for setting proposal covariance
+  void default_proposal_covariance();
+
+  /// set proposal covariance from user-provided diagonal or matrix
+  void user_proposal_covariance();
+
+  /// set proposal covariance, e.g., from Hessian of surrogate
+  void proposal_covariance(const RealMatrix& cov_in);
+
+  /// set inverse problem options calIpOptionsValues common to all solvers
+  void set_inverse_problem_options(); 
+
+  /// set MH-specific inverse problem options calIpMhOptionsValues
+  void set_invpb_mh_options();
+
   //The likelihood routine is in the format that QUESO requires, 
   //with a particular argument list that QUESO expects. 
   //We are not using all of these arguments but may in the future.
@@ -90,20 +102,61 @@ protected:
   //- Heading: Data
   //
 
-  /// random seed to pass to QUESO
-  int randomSeed;
+  /// whether QUESO is working in a standardized space
+  bool quesoStandardizedSpace;
+
+  /// MCMC type ("dram" or "multilevel", both within QUESO) 
+  String mcmcType;
+  /// Rejection type ("standard" or "delayed", in the DRAM framework) 
+  String rejectionType;
+  /// Metropolis type ("hastings" or "adaptive", in the DRAM framework) 
+  String metropolisType;
+  /// scale factor for proposal covariance; deprecated
+  RealVector proposalCovScale;
+  /// scale factor for likelihood; deprecated
+  Real likelihoodScale;
+  /// flag to indicated if the sigma terms should be calibrated (default true)
+  bool calibrateSigmaFlag;
 
 private:
   //
   // - Heading: Data
   // 
   //     
-  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
-  short emulatorType;
   
   /// Pointer to current class instance for use in static callback functions
   static NonDQUESOBayesCalibration* NonDQUESOInstance;
   
+  // the following QUESO objects listed in order of construction;
+  // scoped_ptr more appropriate, but don't want to include QUESO
+  // headers here (would be needed for checked delete on scoped_ptr)
+
+  // TODO: see if this can be a local withing init function
+  /// options for setting up the QUESO Environment
+  boost::shared_ptr<QUESO::EnvOptionsValues> envOptionsValues;
+
+  /// top-level QUESO Environment
+  boost::shared_ptr<QUESO::FullEnvironment> quesoEnv;
+  
+  /// QUESO parameter space based on number of calibrated parameters
+  boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> > 
+  paramSpace;
+
+  /// QUESO parameter domain: hypercube based on min/max values
+  boost::shared_ptr<QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix> >
+  paramDomain;
+
+  /// initial parameter values at which to start chain
+  boost::shared_ptr<QUESO::GslVector> paramInitials;
+
+  /// proposal covariance for DRAM
+  boost::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
+
+  /// general inverse problem options
+  boost::shared_ptr<QUESO::SipOptionsValues> calIpOptionsValues;
+
+  /// MH-specific inverse problem options
+  boost::shared_ptr<QUESO::MhOptionsValues> calIpMhOptionsValues;
 };
 
 } // namespace Dakota

@@ -61,13 +61,23 @@ protected:
   //- Heading: Data
   //
 
+  /// number of samples in the chain (e.g. number of MCMC samples)
+  int numSamples;
+ 
+  /// random seed for MCMC process
+  int randomSeed;
+
+  // technically doesn't apply to GPMSA, but leaving here for now
+  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
+  short emulatorType;
+
   /// Model instance employed in the likelihood function; provides response
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
   Model emulatorModel;
 
   /// flag indicating use of a variable transformation to standardized
-  /// probability space
+  /// probability space for the model or emulator
   bool standardizedSpace;
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based emulatorModel
@@ -80,9 +90,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
-  short emulatorType;
 
 };
 

@@ -63,8 +63,6 @@ public:
   String rejectionType;
   /// Metropolis type (hastings or adaptive, in the DRAM framework)
   String metropolisType;
-  /// number of samples in the chain (e.g. number of MCMC samples)
-  int numSamples;
   /// number of samples of the simulation to construct the GP 
   int emulatorSamples;
   /// scale factor for proposal covariance
@@ -103,9 +101,6 @@ protected:
   //- Heading: Data
   //
 
-  /// random seed to pass to QUESO
-  int randomSeed;
-  
 private:
 
   //

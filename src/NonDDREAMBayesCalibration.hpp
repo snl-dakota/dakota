@@ -95,14 +95,8 @@ protected:
   /// scale factor for likelihood
   Real likelihoodScale;
 
-  /// number of samples in the chain (e.g. number of MCMC samples)
-  int numSamples;
-
   /// flag to indicate if the sigma terms should be calibrated (default true)
   bool calibrateSigmaFlag;
-
-  /// random seed to pass to QUESO
-  int randomSeed;
 
   /// lower bounds on calibrated parameters
   RealVector paramMins;
@@ -137,9 +131,6 @@ private:
   // - Heading: Data
   // 
 
-  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
-  short emulatorType;
-  
   /// Pointer to current class instance for use in static callback functions
   static NonDDREAMBayesCalibration* NonDDREAMInstance;
   

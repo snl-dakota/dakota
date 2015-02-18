@@ -94,9 +94,6 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::NonDDREAMInstance(NULL);
 NonDDREAMBayesCalibration::
 NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  numSamples(probDescDB.get_int("method.samples")),
-  emulatorType(probDescDB.get_short("method.nond.emulator")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
   //proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma")),

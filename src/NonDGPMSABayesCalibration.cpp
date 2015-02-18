@@ -50,11 +50,8 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::NonDGPMSAInstance(NULL);
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  numSamples(probDescDB.get_int("method.samples")),
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
-  //emulatorType(probDescDB.get_short("method.nond.emulator")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
   proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_points_file")),

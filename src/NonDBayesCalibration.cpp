@@ -30,8 +30,10 @@ namespace Dakota {
 NonDBayesCalibration::
 NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
-  standardizedSpace(false), // prior to adding to spec
-  emulatorType(probDescDB.get_short("method.nond.emulator"))
+  numSamples(probDescDB.get_int("method.samples")),
+  randomSeed(probDescDB.get_int("method.random_seed")),
+  emulatorType(probDescDB.get_short("method.nond.emulator")),
+  standardizedSpace(false) // prior to adding to spec
 {
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
