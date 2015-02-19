@@ -428,7 +428,10 @@ gradient(const Variables& vars)
 // ignore discrete variables for now
 inline const Pecos::RealSymMatrix& PecosApproximation::
 hessian(const Variables& vars)
-{ return pecosBasisApprox.hessian(vars.continuous_variables()); }
+{
+  //return pecosBasisApprox.hessian(vars.continuous_variables()); // bypass
+  return polyApproxRep->hessian_basis_variables(vars.continuous_variables());
+}
 
 
 inline int PecosApproximation::min_coefficients() const
