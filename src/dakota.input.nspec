@@ -1173,6 +1173,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             rnum2 {N_mdm(lit,rngName_rnum2)}
            ]
+          [ proposal_covariance {0}
+            diagonal {N_mdm(lit,proposalCovType_diagonal)}
+            |
+            matrix {N_mdm(lit,proposalCovType_matrix)}
+            values REALLIST {N_mdm(RealDL,proposalCovData)}
+            |
+            filename STRING {N_mdm(str,proposalCovFile)}
+           ]
           [ proposal_covariance_scale REALLIST {N_mdm(RealDL,proposalCovScale)} ]
          )
         |

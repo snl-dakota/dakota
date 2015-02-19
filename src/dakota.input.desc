@@ -1194,6 +1194,11 @@ TAG "method/bayes_calibration/queso/rng"
 
 TAG "method/bayes_calibration/queso/rng/mt19937"
 TAG "method/bayes_calibration/queso/rng/rnum2"
+TAG "method/bayes_calibration/queso/proposal_covariance"
+TAG "method/bayes_calibration/queso/proposal_covariance/diagonal"
+TAG "method/bayes_calibration/queso/proposal_covariance/matrix"
+TAG "method/bayes_calibration/queso/proposal_covariance/values"
+TAG "method/bayes_calibration/queso/proposal_covariance/filename"
 TAG "method/bayes_calibration/queso/proposal_covariance_scale"
 	DESC "{Proposal covariance scaling} MethodCommands.html#MethodNonDBayesCalib"
 

@@ -78,14 +78,21 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   ////////////////////////////////////////////////////////
   init_parameter_domain();
 
-  // initialize or update the proposal covariance; must be done after
-  // parameter domain is initialized
-  //  const String& variance_type = probDescDB.get_string("method.variance_type");
-  String variance_type;
-  if (variance_type.empty())
+  // initialize or update the proposal covariance; default init must
+  // be done after parameter domain is initialized
+  const String& covariance_type = 
+    probDescDB.get_string("method.nond.proposal_cov_type");
+  if (covariance_type.empty())
     default_proposal_covariance();
-  // else
-  //   user_proposal_covariance(db.get(filename), db.get(vardata))
+  else {
+    // either filename OR data values will be non-empty
+    const RealVector& covariance_data = 
+      probDescDB.get_rv("method.nond.proposal_covariance_data");
+    const String& covariance_filename = 
+      probDescDB.get_string("method.nond.proposal_cov_filename");
+    user_proposal_covariance(covariance_type, covariance_data, 
+			     covariance_filename);
+  }
 }
 
 
@@ -358,6 +365,32 @@ void NonDQUESOBayesCalibration::default_proposal_covariance()
     }
   }
 }
+
+
+void NonDQUESOBayesCalibration::
+user_proposal_covariance(const String& cov_type, 
+			 const RealVector& cov_data, 
+			 const String& cov_filename)
+{
+  // this function will convert user-specified cov_type = "diagonal" |
+  // "matrix" data from either cov_data or cov_filename and populate a
+  // full QUESO::GslMatrix* in proposalCovMatrix with the covariance
+
+  // should validate that provided data is a valid covariance matrix (SPD)
+
+  // default_proposal_covariance shows constructing from covDiag vector
+
+  // see QUESO::GslMatrix for other possible helpful constructors
+}
+
+
+void NonDQUESOBayesCalibration::
+proposal_covariance(const RealSymMatrix& hessian)
+{
+  // set proposalCovMatrix to inv(hessian), validating that it is a
+  // covariance matrix
+}
+
 
 /// set inverse problem options common to all solvers
 void NonDQUESOBayesCalibration::set_inverse_problem_options() 

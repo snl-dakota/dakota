@@ -11,6 +11,16 @@ method,
           metropolis adaptive
           proposal_covariance_scale 1.e+10 1.e-3
           #output debug
+	  # 1. diagonal with values
+#	  proposal_covariance diagonal
+#	    values 1.0e6 1.0e-1
+	  # 2. matrix with values
+#	  proposal_covariance matrix
+#	    values 1.0 0.1
+#                  0.1 2.0
+	  # 3. diagonal or matrix from file
+#	  proposal_covariance diagonal  # OR matrix
+#	    filename 'mycov.dat'
 
 variables,								
         active design 

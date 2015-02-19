@@ -75,10 +75,12 @@ protected:
   void default_proposal_covariance();
 
   /// set proposal covariance from user-provided diagonal or matrix
-  void user_proposal_covariance();
+  void user_proposal_covariance(const String& cov_type, 
+				const RealVector& cov_data, 
+				const String& cov_filename);
 
-  /// set proposal covariance, e.g., from Hessian of surrogate
-  void proposal_covariance(const RealMatrix& cov_in);
+  /// set proposal covariance, e.g., from inverse of surrogate Hessian
+  void proposal_covariance(const RealSymMatrix& hessian);
 
   /// set inverse problem options calIpOptionsValues common to all solvers
   void set_inverse_problem_options(); 

@@ -1765,7 +1765,21 @@
                           <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
                         </oneOf>
                       </keyword>
-                      <keyword  id="proposal_covariance_scale" name="proposal_covariance_scale" code="{N_mdm(RealDL,proposalCovScale)}" label="proposal_covariance_scale" help="" minOccurs="0" >
+                      <keyword  id="proposal_covariance" name="proposal_covariance" code="{0}" label="Proposal covariance type" help="" minOccurs="0" >
+                        <oneOf>
+                          <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovType_diagonal)}" label="Diagonal covariance" help=""  />
+                          <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovType_matrix)}" label="Matrix covariance" help=""  />
+                        </oneOf>
+			<oneOf>
+			  <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="Proposal covariance data values" help="" minOccurs="1" >
+			    <param type="REALLIST"/>
+			  </keyword>
+			  <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="Proposal covariance filename" help="" minOccurs="1" >
+			    <param type="INPUT_FILE"/>
+			  </keyword>
+			</oneOf>
+                      </keyword>
+		      <keyword  id="proposal_covariance_scale" name="proposal_covariance_scale" code="{N_mdm(RealDL,proposalCovScale)}" label="proposal_covariance_scale" help="" minOccurs="0" >
                         <param type="REALLIST" />
                       </keyword>
                     </required>

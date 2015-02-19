@@ -1310,6 +1310,12 @@ KEYWORD12 method
 	      mt19937
 	      | rnum2
 	      ]
+	    [ proposal_covariance
+	      diagonal
+	      | matrix
+	      values REALLIST
+	      | filename STRING
+	      ]
 	    [ proposal_covariance_scale REALLIST ]
 	    )
 	  |
@@ -1340,6 +1346,12 @@ KEYWORD12 method
 	    [ rng
 	      mt19937
 	      | rnum2
+	      ]
+	    [ proposal_covariance
+	      diagonal
+	      | matrix
+	      values REALLIST
+	      | filename STRING
 	      ]
 	    [ proposal_covariance_scale REALLIST ]
 	    )

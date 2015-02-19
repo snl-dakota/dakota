@@ -910,6 +910,12 @@ public:
   String metropolisType;
   /// the \c proposal covariance scale factor in \ref MethodNonDBayesCalib
   RealVector proposalCovScale;
+  /// the type of proposal covariance: diagonal or matrix
+  String proposalCovType;
+  /// raw list of reals data for the covariance
+  RealVector proposalCovData;
+  /// file from which to read covariance diagonal or matrix
+  String proposalCovFile;
   /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;
   /// the \c fitness metric type specification in \ref

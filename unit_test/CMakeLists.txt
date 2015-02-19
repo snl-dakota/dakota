@@ -12,6 +12,9 @@ include_directories(${Dakota_SOURCE_DIR}/src)
 # TODO: make sure preprocessor defines agree with src/ and test/
 # (manage via variable at top-level)
 
+# Needed when linking with QUESO
+link_directories(${Dakota_LIBRARY_DIRS})
+
 # --- Boost dependencies
 include_directories(${Boost_INCLUDE_DIRS})
 # TODO: Understand leveraging BOOST_DISABLE_ASSERTS wrt to Unit Testing
