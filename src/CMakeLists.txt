@@ -603,11 +603,11 @@ if(HAVE_QUESO)
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   endif()
 
-  #list(APPEND DAKOTA_INCDIRS "$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
+  #list(APPEND DAKOTA_INCDIRS "$ENV{QUESO_PREFIX}/include")
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_BINARY_DIR}/packages/queso_ext/include ${GSL_INCLUDE_DIRS})
 
-  #list(APPEND DAKOTA_LIBDIRS "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+  #list(APPEND DAKOTA_LIBDIRS "$ENV{QUESO_PREFIX}/lib")
   # Would prefer to detect 32 vs. 64-bit, but the location is
   # operating system-specific; should be harmless to add the extra
   # directory, but put 64-bit first
@@ -619,21 +619,9 @@ if(HAVE_QUESO)
   # Can't put these in DAKOTA_PKG_LIBS; Trilinos will try to export them
   list(APPEND QUESO_EXTPROJ_LIBS queso)
 
-  if (HAVE_QUESO_GRVY)
-    list(APPEND DAKOTA_INCDIRS 
-      ${Dakota_BINARY_DIR}/packages/grvy_ext/include)
-    list(APPEND DAKOTA_LIBDIRS
-      ${Dakota_BINARY_DIR}/packages/grvy_ext/lib64)
-    list(APPEND DAKOTA_LIBDIRS
-      ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
-    # Can't put these in DAKOTA_PKG_LIBS; Trilinos will try to export them
-    list(APPEND QUESO_EXTPROJ_LIBS grvy)
-    add_dependencies(queso_ext grvy_ext)
-  endif()
-
   # Can't export these as they aren't executables or library targets
-  #list(APPEND EXPORT_TARGETS queso_ext grvy_ext)
-  #list(APPEND EXPORT_TARGETS queso grvy gpmsa_any)
+  #list(APPEND EXPORT_TARGETS queso_ext)
+  #list(APPEND EXPORT_TARGETS queso gpmsa_any)
 
   list(APPEND DAKOTA_EXTPROJ_LIBS ${QUESO_EXTPROJ_LIBS})
 
@@ -882,11 +870,8 @@ if(ENABLE_SPEC_MAINT)
 endif()
 
 if(HAVE_QUESO)
-  # Enforce GRVY/QUESO config header creation prior to compiling dakota sources
+  # Enforce QUESO config header creation prior to compiling dakota sources
   add_dependencies(dakota_src queso_ext)
-  if (HAVE_QUESO_GRVY)
-    add_dependencies(dakota_src grvy_ext)
-  endif()
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
@@ -1107,7 +1092,7 @@ if (BUILD_IN_TRILINOS)
   set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
     "Dakota include directories")
 
-  # Link directories needed for queso, grvy, GSL
+  # Link directories needed for queso, GSL
   set(Dakota_LINK_DIRS ${DAKOTA_LIBDIRS} ${EXT_TPL_LIBDIRS}
     CACHE INTERNAL "Dakota link directories")
 

@@ -108,56 +108,23 @@ if(HAVE_QUESO)
       " but not set.")
   endif()
 
-  # Optionally configure and build GRVY. As of queso-0.46.0, GRVY is optional
-  if (HAVE_QUESO_GRVY)
-
-    set(GRVY_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext)
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${GRVY_EXT_BINARY_DIR} )
-      
-    set(grvy_config_cmd
-      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext-prefix/src/grvy_ext/configure
-      "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
-      "--without-hdf5" "--with-boost=${Boost_INCLUDE_DIR}/.."
-      "--prefix" "${GRVY_EXT_BINARY_DIR}"
-      )
-    externalproject_add(grvy_ext
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/grvy-0.32.0.tar.gz
-      BUILD_IN_SOURCE 1
-      CONFIGURE_COMMAND "${grvy_config_cmd}"
-      )
-
-    #add_library(grvy UNKNOWN IMPORTED GLOBAL)
-    #set_target_properties(grvy PROPERTIES 
-    #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
-
-  endif()
-
-  # Configure and build QUESO
-  set(QUESO_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/queso_ext)
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${QUESO_EXT_BINARY_DIR} )
-
+  # Configure, build, and install QUESO in packages/queso_ext.  Build
+  # is in queso_ext/src; Install is to queso_ext/{bin,examples,include,lib}
   set(queso_config_cmd
-    ${SH} ${CMAKE_CURRENT_BINARY_DIR}/queso_ext-prefix/src/queso_ext/configure
+    ${SH} ${CMAKE_CURRENT_SOURCE_DIR}/queso/configure
     "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
     "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
     "--without-hdf5" "--without-glpk"
     "--with-boost=${Boost_INCLUDE_DIR}/.."
+#    "--disable-shared"
     "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Boost_LIBRARY_DIRS}:${GSL_LIBRARY_DIRS}"
     "CXXFLAGS=${CMAKE_CXX_FLAGS}"
-    "--prefix" "${QUESO_EXT_BINARY_DIR}"
+    "--prefix=${CMAKE_CURRENT_BINARY_DIR}/queso_ext"
     )
-  if (HAVE_QUESO_GRVY)
-    set(queso_config_cmd ${queso_config_cmd} 
-      "--with-grvy=${GRVY_EXT_BINARY_DIR}")
-  endif()
 
   externalproject_add(queso_ext
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.50.0.tar.gz
-    BUILD_IN_SOURCE 1
-#    PATCH_COMMAND 
-#      patch -p0 < ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso.gslcblas.patch
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/queso_ext"
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/queso"
     CONFIGURE_COMMAND "${queso_config_cmd}"
     )
 
@@ -165,10 +132,6 @@ if(HAVE_QUESO)
   #set_target_properties(queso PROPERTIES 
   #  IMPORTED_LOCATION ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
 
-  if (HAVE_QUESO_GRVY)
-    add_dependencies(queso_ext grvy_ext)
-  endif()
-  
   # Install QUESO (and possibly GRVY) libs
   install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallQuesoLibs.cmake")
 

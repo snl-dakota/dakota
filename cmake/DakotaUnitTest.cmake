@@ -25,7 +25,7 @@ function(dakota_add_unit_test)
     target_link_libraries(${exe_target} 
       ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
   endif()
-  if (${DAUT_LINK_LIBS})
+  if (DAUT_LINK_LIBS)
     target_link_libraries(${exe_target} ${DAUT_LINK_LIBS})
   endif()
   # TODO: support dependencies directly in this call with DEPENDS
