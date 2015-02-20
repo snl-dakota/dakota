@@ -102,3 +102,44 @@ function( process_dakota_test_results _build_path )
   create_diff_file( ${_build_path} ${dakota_results_log} "dakota_pdiffs.out" )	
 
 endfunction()
+
+# ***********************************************************************
+# Function: process_unit_test_results
+# ***********************************************************************
+function( process_unit_test_results _build_path ) 
+
+  # remove expected files; files are relative to ${_build_path}
+  set( unit_test_results_log "unit_test_results.log" )
+  list( APPEND removeFiles
+    "${unit_test_results_log}" )
+
+  foreach( file ${removeFiles} )
+    message("Processing ${_build_path}/${file}")
+    if ( EXISTS ${_build_path}/${file} )
+      message("Deleting ${_build_path}/${file}")
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E remove ${file}
+        WORKING_DIRECTORY ${_build_path} )
+    endif()
+  endforeach()
+
+  set( subset_name "UnitTest" )
+  set( subset_out_filename "unit_test/${subset_name}.out" )
+
+  configure_file(
+    ${_build_path}/${subset_out_filename}
+    ${_build_path}/${unit_test_results_log} COPYONLY )
+
+  # PASS/FAIL summary for reporting to team
+  file( STRINGS ${_build_path}/${subset_out_filename} unitPass REGEX "Passed" )
+  file( STRINGS ${_build_path}/${subset_out_filename} unitFail REGEX "Failed" )
+  list( LENGTH unitPass passCount )
+  list( LENGTH unitFail failCount )
+
+  file( APPEND ${_build_path}/${unit_test_results_log}
+    "\nDashboard/Email Reporting.. \n" )
+  file( APPEND ${_build_path}/${unit_test_results_log} "${subset_name} Counts:\n" )
+  file( APPEND ${_build_path}/${unit_test_results_log} "PASS: ${passCount}\n" )
+  file( APPEND ${_build_path}/${unit_test_results_log} "FAIL: ${failCount}\n" )
+
+endfunction()
