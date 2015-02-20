@@ -56,6 +56,10 @@ if ( NOT DAKOTA_TEST_MSUB )
   set( DAKOTA_TEST_MSUB OFF )
 endif()
 
+if ( NOT DEFINED DAKOTA_DO_UNIT )
+  set( DAKOTA_DO_UNIT ON )
+endif()
+
 if ( NOT DEFINED DAKOTA_DO_TEST )
   set( DAKOTA_DO_TEST ON )
 endif()
@@ -198,11 +202,31 @@ if ( ${ConfigStatus} EQUAL 0 )
   file( APPEND ${dakotaCtestResultsFile} "ctest_build errors: ${NumErr}\n" ) 
   file( APPEND ${dakotaCtestResultsFile} "ctest_build warnings: ${NumWarn}\n" ) 
 
+  if ( DAKOTA_DO_UNIT AND ${BuildStatus} EQUAL 0 )
+    include( "${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake" )
+
+    set( unit_test_subset ${CTEST_PROJECT_SUBPROJECTS} )
+    set_property( GLOBAL PROPERTY SubProject ${unit_test_subset} )
+    set_property( GLOBAL PROPERTY Label ${unit_test_subset} )
+    message( "ctest_test: Verifying subset tests by LABEL: ${unit_test_subset}\n" )
+
+    execute_process( COMMAND ${CMAKE_CTEST_COMMAND}
+      -L ${unit_test_subset}
+      -O ${CTEST_BINARY_DIRECTORY}/unit_test/${unit_test_subset}.out
+      WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+      RESULT_VARIABLE CtestStatus
+      )
+
+    file( APPEND ${dakotaCtestResultsFile} "ctest unit_test failures: ${CtestStatus}\n" ) 
+
+    if ( DAKOTA_CDASH_SUBMIT )
+      ctest_submit(PARTS Build Test RETURN_VALUE SubmitStatus)
+    endif()  # DAKOTA_CDASH_SUBMIT
+
+  endif()  # DAKOTA_DO_UNIT
+
   # Perform tests if requested and build is successful
   if ( DAKOTA_DO_TEST AND ${BuildStatus} EQUAL 0 )
-
-    include("${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake")
-    message("ctest_test: UnitTests populated but not executed: ${CTEST_PROJECT_SUBPROJECTS}\n")
 
     # default tests run are dakota_*
     if ( NOT DEFINED DAKOTA_CTEST_REGEXP )
@@ -275,9 +299,10 @@ if ( DAKOTA_CDASH_SUBMIT )
   file( APPEND ${dakotaCtestResultsFile} "ctest_submit: ${SubmitStatus}\n" ) 
 endif()
 
-# Post-process dakota test results. Do this even if testing was not
+# Post-process unit and dakota test results. Do this even if testing was not
 # done to ensure the results from the last build are removed
 message("processing test results")
+process_unit_test_results( ${CTEST_BINARY_DIRECTORY} )
 process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
 message("done processing test results")
 
