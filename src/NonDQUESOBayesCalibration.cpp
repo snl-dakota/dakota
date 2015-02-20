@@ -157,6 +157,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>
     inv_pb("", calIpOptionsValues.get(), priorRv, likelihoodFunctionObj, postRv);
   
+  // To demonstrate retrieving the chain
+  // TODO: Ask QUESO why the MH sequence generator decimates the
+  // in-memory chain when generating final results
+  //calIpMhOptionsValues->m_filteredChainGenerate              = false;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
@@ -167,6 +171,26 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 					    proposalCovMatrix.get());
   else if (mcmcType == "multilevel")
     inv_pb.solveWithBayesMLSampling();
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    // To demonstrate retrieving the chain. Note that the QUESO
+    // VectorSequence class has a number of helpful filtering and
+    // statistics functions.
+    const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
+      mcmc_chain = inv_pb.chain();
+    unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+    Cout << "Final MCMC Samples: " << num_mcmc << std::endl;
+    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+    for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
+      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+      Cout << mcmc_sample << std::endl;
+    }
+
+    // Ask QUESO: appears to be empty, at least after filtering
+    // const QUESO::ScalarSequence<double>&
+    //   loglikelihood_vals = inv_pb.logLikelihoodValues();
+    //    unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+  }
 
   // For testing re-entrancy
   //}
