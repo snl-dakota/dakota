@@ -21,8 +21,9 @@
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaBuildInfo.hpp"
-
 #include "dakota_tabular_io.hpp"
+
+//#define OUTMGR_DEBUG 1
 
 namespace Dakota {
 
@@ -504,7 +505,8 @@ void OutputManager::read_write_restart(bool restart_requested,
 OutputWriter::OutputWriter(std::ostream* output_stream)
 { outputStream = output_stream; }
 
-OutputWriter::OutputWriter(const String& output_filename)
+OutputWriter::OutputWriter(const String& output_filename):
+  outputFilename(output_filename)
 {
   outputFS.open(output_filename.c_str(), std::ios::out);
   if (!outputFS.good()) {
@@ -526,17 +528,31 @@ std::ostream* OutputWriter::output_stream()
 ConsoleRedirector::
 ConsoleRedirector(std::ostream* & dakota_stream, std::ostream* default_dest):
   ostreamHandle(dakota_stream), defaultOStream(default_dest)
-{ /* empty ctor */ }
+{ 
+#ifdef OUTMGR_DEBUG
+  std::cerr << "Constructing ConsoleRedirector with handle " << ostreamHandle
+	    << " and default dest " << defaultOStream << std::endl;
+#endif  
+  /* empty ctor */ 
+}
 
 
 ConsoleRedirector::~ConsoleRedirector()
 {
+#ifdef OUTMGR_DEBUG
+  std::cerr << "Destructing ConsoleRedirector setting handle " << ostreamHandle
+	    << " to default dest " << defaultOStream << std::endl;
+#endif 
   ostreamHandle = defaultOStream;
 }
 
 
 void ConsoleRedirector::push_back()
 {
+#ifdef OUTMGR_DEBUG
+  std::cerr << "ConsoleRedirector appending additional redirect to current " 
+	    << "destination " << std::endl;
+#endif 
   if (ostreamDestinations.empty()) {
     boost::shared_ptr<OutputWriter> 
       out_writer_ptr(new OutputWriter(defaultOStream));
@@ -558,15 +574,33 @@ void ConsoleRedirector::push_back(const String& output_filename)
   // filename, make a new stream, overwriting file contents
   if (ostreamDestinations.empty() || 
       ostreamDestinations.back()->filename() != output_filename) {
+#ifdef OUTMGR_DEBUG
+    if (ostreamDestinations.empty())
+      std::cerr << "ConsoleRedirector appending new OutputWriter to filename "
+		<< output_filename << std::endl;
+    else
+      std::cerr << "ConsoleRedirector appending new OutputWriter. Old filename "
+		<< ostreamDestinations.back()->filename() << ". New filename "
+		<< output_filename << std::endl;
+#endif 
     boost::shared_ptr<OutputWriter> 
       out_writer_ptr(new OutputWriter(output_filename));
     ostreamDestinations.push_back(out_writer_ptr);
   }
   // otherwise keep using the same stream
-  else
+  else {
+#ifdef OUTMGR_DEBUG
+    std::cerr << "ConsoleRedirector appending same OutputWriter " << std::endl;
+#endif 
     ostreamDestinations.push_back(ostreamDestinations.back());
+  }
 
   ostreamHandle = ostreamDestinations.back()->output_stream();
+#ifdef OUTMGR_DEBUG
+  std::cerr << "ConsoleRedirector appending redirect to file " 
+	    << output_filename << ". ostreamHandle now " 
+	    << ostreamHandle << std::endl;
+#endif 
 }
 
 
@@ -583,6 +617,10 @@ void ConsoleRedirector::pop_back()
     ostreamHandle = defaultOStream;
   else
     ostreamHandle = ostreamDestinations.back()->output_stream();
+#ifdef OUTMGR_DEBUG
+  std::cerr << "ConsoleRedirector popping redirect. ostreamHandle now " 
+	    << ostreamHandle << std::endl;
+#endif 
 }
 
 
