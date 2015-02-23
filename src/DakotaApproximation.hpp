@@ -90,6 +90,16 @@ public:
   virtual const RealSymMatrix& hessian(const Variables& vars);
   /// retrieve the variance of the predicted value for a given parameter vector
   virtual Real prediction_variance(const Variables& vars);
+    
+  /// retrieve the approximate function value for a given parameter vector
+  virtual Real value(const RealVector& c_vars);
+  /// retrieve the approximate function gradient for a given parameter vector
+  virtual const RealVector& gradient(const RealVector& c_vars);
+  /// retrieve the approximate function Hessian for a given parameter vector
+  virtual const RealSymMatrix& hessian(const RealVector& c_vars);
+  /// retrieve the variance of the predicted value for a given parameter vector
+  virtual Real prediction_variance(const RealVector& c_vars);
+    
 
   /// check if diagnostics are available for this approximation type
   virtual bool diagnostics_available();

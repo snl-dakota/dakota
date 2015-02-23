@@ -599,6 +599,86 @@ Real SurfpackApproximation::prediction_variance(const Variables& vars)
   }
 }
 
+Real SurfpackApproximation::value(const RealVector& c_vars)
+{
+    //static int times_called = 0;
+    if (!model) {
+        Cerr << "Error: surface is null in SurfpackApproximation::value()"
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    RealArray x_array;
+    size_t num_vars = c_vars.length();
+    for (size_t i = 0; i < num_vars; i++) x_array.push_back(c_vars[i]);
+    return (*model)(x_array);
+}
+    
+    
+const RealVector& SurfpackApproximation::gradient(const RealVector& c_vars)
+{
+    approxGradient.sizeUninitialized(c_vars.length());
+    try {
+        RealArray x_array;
+        size_t num_vars = c_vars.length();
+        for (size_t i = 0; i < num_vars; i++) x_array.push_back(c_vars[i]);
+        
+        VecDbl local_grad = model->gradient(x_array);
+        for (unsigned i = 0; i < surfData->xSize(); i++)
+            approxGradient[i] = local_grad[i];
+    }
+    catch (...) {
+        Cerr << "Error: gradient() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+    return approxGradient;
+}
+    
+    
+const RealSymMatrix& SurfpackApproximation::hessian(const RealVector& c_vars)
+{
+    size_t num_cv = c_vars.length();
+    approxHessian.reshape(num_cv);
+    try {
+        if (sharedDataRep->approxType == "global_moving_least_squares") {
+            Cerr << "Have not implemented analytical hessians in this surfpack class"
+            << std::endl;
+            abort_handler(-1);
+        }
+        RealArray x_array;
+        for (size_t i = 0; i < num_cv; i++) x_array.push_back(c_vars[i]);
+        
+        MtxDbl sm = model->hessian(x_array);
+        ///\todo Make this acceptably efficient
+        for (size_t i = 0; i < num_cv; i++)
+            for(size_t j = 0; j < num_cv; j++)
+                approxHessian(i,j) = sm(i,j);
+    }
+    catch (...) {
+        Cerr << "Error: hessian() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+    return approxHessian;
+}
+    
+    
+Real SurfpackApproximation::prediction_variance(const RealVector& c_vars)
+{
+    try {
+        RealArray x_array;
+        size_t num_vars = c_vars.length();
+        for (size_t i = 0; i < num_vars; i++) x_array.push_back(c_vars[i]);
+        return model->variance(x_array);
+    }
+    catch (...) {
+        Cerr << "Error: prediction_variance() not available for this "
+        << "approximation type." << std::endl;
+        abort_handler(-1);
+    }
+}
+
 
 Real SurfpackApproximation::diagnostic(const String& metric_type)
 { 

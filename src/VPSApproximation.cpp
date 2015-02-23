@@ -13,24 +13,10 @@
 //- Version:
 //-------------------------------------------------------------------------
 #include "VPSApproximation.hpp"
-#include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
-//#include "NPSOLOptimizer.hpp"
-#ifdef HAVE_NCSU
-#include "NCSUOptimizer.hpp"
-#endif
-#include "ProblemDescDB.hpp"
 
-#ifdef HAVE_OPTPP
-#include "SNLLOptimizer.hpp"
-using OPTPP::NLPFunction;
-using OPTPP::NLPGradient;
-#endif
 
-#include "Teuchos_LAPACK.hpp"
-#include "Teuchos_SerialDenseSolver.hpp"
-#include "Teuchos_SerialDenseHelpers.hpp"
 
 //#define DEBUG
 //#define DEBUG_FULL
@@ -38,314 +24,79 @@ using OPTPP::NLPGradient;
 //#define DEBUG_TEST_FUNCTION
 
 
-namespace Dakota {
-
-using Teuchos::rcp;
-
-typedef Teuchos::SerialDenseSolver<int, Real>    RealSolver;
-typedef Teuchos::SerialSpdDenseSolver<int, Real> RealSpdSolver;
-
-//initialization of statics
-VPSApproximation* VPSApproximation::VPSinstance(NULL);
-
-VPSApproximation::
-VPSApproximation(const ProblemDescDB& problem_db,
-		       const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data),
-  surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order")),
-  _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_threshold"))
+namespace Dakota
 {
-    std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+
+    //initialization of statics
+
+    /// default constructor
+    VPSApproximation* VPSApproximation::VPSinstance(NULL);
+
     
-    if (_disc_min_grad < 1E-10)
+    /// standard constructor (to call VPS from an input deck)
+    
+    VPSApproximation::VPSApproximation(const ProblemDescDB& problem_db,
+                                       const SharedApproxData& shared_data):
+                                       Approximation(BaseConstructor(), problem_db, shared_data),
+                                       surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order")),
+                                       _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_threshold"))
     {
+        std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+    
+        _vps_subsurrogate = LS;
+    
+        if (surrogateOrder < 0)
+        {
+            _vps_subsurrogate = GP;
+        }
+    
+        if (_vps_subsurrogate == LS)
+        {
+            std::cout << "*** VPS:: Using LS locally " << surrogateOrder << std::endl;
+        }
+        else if (_vps_subsurrogate == GP)
+        {
+            std::cout << "*** VPS:: Using GP locally " << surrogateOrder << std::endl;
+            surrogateOrder = 0;
+            _vps_num_poly_terms = 5;
+        }
+    
+        if (_disc_min_grad < 1E-10)
+        {
+            _disc_min_grad = DBL_MAX;
+            std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+        }
+        else
+        {
+            std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+        }
+    }
+    
+    /// Alternate constructor (to call VPS from another method like POF-darts)
+    
+    VPSApproximation::VPSApproximation(const SharedApproxData& shared_data):
+                                       Approximation(NoDBBaseConstructor(), shared_data)
+    {
+        
+        SharedSurfpackApproxData* dat = dynamic_cast<SharedSurfpackApproxData*> (shared_data.data_rep());
+        
+        //if (dat == 0) std::cout<< "Casting failed"<< std::endl;
+        //else std::cout<< "Casting succeeded"<< std::endl;
+        
+        surrogateOrder = dat->approxOrder;
+        
+        std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+        
         _disc_min_grad = DBL_MAX;
-        std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+        
     }
-    else
+    
+    /// destructor
+    VPSApproximation::~VPSApproximation()
     {
-        std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
-    }
-}
-
-
-
-int VPSApproximation::min_coefficients() const
-{
-  // min number of samples required to build the network is equal to
-  // the number of design variables + 1
-
-  // Note: Often this is too few samples.  It is better to have about
-  // O(n^2) samples, where 'n' is the number of variables.
-
-  return sharedDataRep->numVars + 1;
-}
-
-
-int VPSApproximation::num_constraints() const
-{ return (approxData.anchor()) ? 1 : 0; }
-
-
-void VPSApproximation::build()
-{
-    _num_inserted_points = 0;
-    
-    _vps_order = surrogateOrder;
-  
-    // base class implementation checks data set against min required
-    Approximation::build();
-
-  
-    size_t j, offset = 0, num_v = sharedDataRep->numVars;
-    numObs = approxData.points(); // number of points
-    
-  
-    std::cout<< "VPS::    Number of sample points = " << numObs << std::endl;
-    _num_inserted_points = numObs;
-  
-    std::cout<< "VPS::    Number of dimensions = " << num_v << std::endl;
-    _n_dim = num_v;
-    
-    std::cout<< "VPS::    Surrogate Order = " << _vps_order << std::endl;
-  
-    _xmin = new double[_n_dim];
-    _xmax = new double[_n_dim];
-
-    for (size_t idim = 0; idim < _n_dim; idim++)
-    {
-        _xmin[idim] = DBL_MAX;
-        _xmax[idim] = -DBL_MAX;
+        VPS_destroy_global_containers();
     }
     
-    _sample_points = new double*[_num_inserted_points];
-    _fval = new double[_num_inserted_points];
-    
-    
-    // process currentPoints from approx data
-    for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-    {
-        const RealVector& c_vars = approxData.continuous_variables(ipoint);
-        _sample_points[ipoint] = new double[_n_dim];
-        for (size_t idim = 0; idim < _n_dim; idim++)
-        {
-            _sample_points[ipoint][idim] = c_vars[idim];
-            if (_sample_points[ipoint][idim] < _xmin[idim]) _xmin[idim] = _sample_points[ipoint][idim];
-            if (_sample_points[ipoint][idim] > _xmax[idim]) _xmax[idim] = _sample_points[ipoint][idim];
-        }
-        
-#ifdef DEBUG_TEST_FUNCTION
-        _fval[ipoint] = f_test(_sample_points[ipoint]);
-        _xmin[0] = 0.0; _xmin[1] = 0.0;
-        _xmax[0] = 1.0; _xmax[1] = 1.0;
-#else
-        // response from approxData
-        _fval[ipoint] = approxData.response_function(ipoint);
-#endif
-        
-    }
-        
-    _diag = 0.0;
-    for (size_t idim = 0; idim < _n_dim; idim++)
-    {
-        double DX = _xmax[idim] - _xmin[idim];
-#ifndef DEBUG_TEST_FUNCTION
-        _xmax[idim]+= 0.5 * DX;
-        _xmin[idim]-= 0.5 * DX;
-        DX = _xmax[idim] - _xmin[idim];
-#endif   
-        _diag += DX * DX;
-    }
-    _diag = sqrt(_diag);
-
-    // default domain is for the Herbie Function
-    
-
-    // Build a VPS surrogate model using the sampled data
-    VPS_execute();
-}
-
-
-
-    Real VPSApproximation::value(const Variables& vars)
-    {
-        
-        VPSmodel_apply(vars.continuous_variables(),false,false);
-        return approxValue;
-    }
-
-
-
-    const RealVector& VPSApproximation::gradient(const Variables& vars)
-    {
-        VPSmodel_apply(vars.continuous_variables(),false,true);
-        return approxGradient;
-    }
-
-
-    Real VPSApproximation::prediction_variance(const Variables& vars)
-    {
-        VPSmodel_apply(vars.continuous_variables(),true,false);
-        return approxVariance;
-    }
-
-
-
-    void VPSApproximation::VPSmodel_build()
-    {
-        
-    }
-
-    void VPSApproximation::VPSmodel_apply(const RealVector& approx_pt, bool variance_flag, bool gradients_flag)
-    {
-        double* x = new double[_n_dim];
-    
-        for (size_t idim = 0; idim < _n_dim; idim++)
-        {
-            x[idim] = approx_pt[idim];
-        }
-        approxValue = evaluate_surrogate(x);
-        delete[] x;
-    }
-    
-    
-    
-    void VPSApproximation::initiate_random_number_generator(unsigned long x)
-    {
-        //assert(sizeof (double) >= 54) ;
-        
-        cc = 1.0 / 9007199254740992.0; // inverse of 2^53rd power
-        size_t i;
-        size_t qlen = indx = sizeof Q / sizeof Q[0];
-        for (i = 0; i < qlen; i++) Q[i] = 0;
-        
-        double c = 0.0, zc = 0.0,	/* current CSWB and SWB `borrow` */
-        zx = 5212886298506819.0 / 9007199254740992.0,	/* SWB seed1 */
-        zy = 2020898595989513.0 / 9007199254740992.0;	/* SWB seed2 */
-        
-        size_t j;
-        double s, t;	 /* Choose 32 bits for x, 32 for y */
-        if (x == 0) x = 123456789; /* default seeds */
-        unsigned long y = 362436069; /* default seeds */
-        
-        /* Next, seed each Q[i], one bit at a time, */
-        for (i = 0; i < qlen; i++)
-        { /* using 9th bit from Cong+Xorshift */
-            s = 0.0;
-            t = 1.0;
-            for (j = 0; j < 52; j++)
-            {
-                t = 0.5 * t; /* make t=.5/2^j */
-                x = 69069 * x + 123;
-                y ^= (y << 13);
-                y ^= (y >> 17);
-                y ^= (y << 5);
-                if (((x + y) >> 23) & 1) s = s + t; /* change bit of s, maybe */
-            }	 /* end j loop */
-            Q[i] = s;
-        } /* end i seed loop, Now generate 10^9 dUNI's: */
-    }
-    
-    double VPSApproximation::generate_a_random_number()
-    {
-        /* Takes 14 nanosecs, Intel Q6600,2.40GHz */
-        int i, j;
-        double t; /* t: first temp, then next CSWB value */
-        /* First get zy as next lag-2 SWB */
-        t = zx - zy - zc;
-        zx = zy;
-        if (t < 0)
-        {
-            zy = t + 1.0;
-            zc = cc;
-        }
-        else
-        {
-            zy = t;
-            zc = 0.0;
-        }
-        
-        /* Then get t as the next lag-1220 CSWB value */
-        if (indx < 1220)
-            t = Q[indx++];
-        else
-        { /* refill Q[n] via Q[n-1220]-Q[n-1190]-c, */
-            for (i = 0; i < 1220; i++)
-            {
-                j = (i < 30) ? i + 1190 : i - 30;
-                t = Q[j] - Q[i] + c; /* Get next CSWB element */
-                if (t > 0)
-                {
-                    t = t - cc;
-                    c = cc;
-                }
-                else
-                {
-                    t = t - cc + 1.0;
-                    c = 0.0;
-                }
-                Q[i] = t;
-            }	 /* end i loop */
-            indx = 1;
-            t = Q[0]; /* set indx, exit 'else' with t=Q[0] */
-        } /* end else segment; return t-zy mod 1 */
-        
-        return ((t < zy) ? 1.0 + (t - zy) : t - zy);
-    }
-
-    
-    bool VPSApproximation::trim_line_using_Hyperplane(size_t num_dim,                               // number of dimensions
-                                                  double* st, double *end,                      // line segmenet end points
-                                                  double* qH, double* nH)                // a point on the hyperplane and it normal
-    {
-        double dotv(0.0), dote(0.0);
-        for (size_t idim = 0; idim < num_dim; idim++)
-        {
-            double dxv = qH[idim] - st[idim];
-            double dxe = end[idim] - st[idim];
-            dotv += dxv * nH[idim];
-            dote += dxe * nH[idim];
-        }
-        
-        if (fabs(dote) < 1E-10) // cos theta_n < 1E-10
-        {
-            // line is either degenerate or parallel to Hyperplane
-            return false;
-        }
-        
-        if (fabs(dote) < fabs(dotv))
-        {
-            // line lie on one side of the Hyperplane
-            if (dotv < 0.0)
-            {
-                for (size_t idim = 0; idim < num_dim; idim++) end[idim] = st[idim];
-            }
-            return false;
-        }
-        
-        double u = dotv / dote;
-        if (u > 0.0 && u < 1.0)
-        {
-            for (size_t idim = 0; idim < num_dim; idim++)
-            {
-                if (dote > 0.0) end[idim] = st[idim] + u * (end[idim] - st[idim]);
-                else st[idim] = st[idim] + u * (end[idim] - st[idim]);
-            }
-            return true;
-        }
-        
-        if (u < 0.0 && dote > 0.0)
-        {
-            for (size_t idim = 0; idim < num_dim; idim++) end[idim] = st[idim];
-            return false;
-        }
-        
-        if (u > 1.0 && dote < 0.0)
-        {
-            for (size_t idim = 0; idim < num_dim; idim++) end[idim] = st[idim];
-            return false;
-        }
-        return false;
-    }
     
     //////////////////////////////////////////////////////////////
     // VPS METHODS
@@ -361,27 +112,19 @@ void VPSApproximation::build()
         
         _num_GMRES = 0;
         
-        _vps_dfar = new double[_num_inserted_points];
-        _vps_ext_neighbors = new size_t*[_num_inserted_points];
         
-        // retrive powers of the polynomial expansion
-        retrieve_permutations(_vps_num_poly_terms, _vps_t, _n_dim, _vps_order, false, true, _vps_order);
-        //std::cout<< "VPS::    Number of poly terms = " << _vps_num_poly_terms << std::endl;
-        
+        // Create and fill in VPS containers
+        VPS_create_containers();
+               
         // update neighbors
         //std::cout << "updating neighbors!" << std::endl;
-        _sample_neighbors = new size_t*[_num_inserted_points];
-        _sample_vsize = new double[_num_inserted_points];
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
-            _sample_neighbors[isample] = new size_t[_num_inserted_points];
-            _sample_neighbors[isample][0] = 0;
-            retrieve_neighbors(isample, false);
+            VPS_retrieve_neighbors(isample, false);
         }
         
         // initiate extended neighbors with seed neighbors
         //std::cout << "extending neighbors!" << std::endl;
-        _vps_ext_neighbors = new size_t*[_num_inserted_points];
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
             size_t num_neighbors = 0;
@@ -398,74 +141,166 @@ void VPSApproximation::build()
         //std::cout << "adjusting extending neighbors!" << std::endl;
         VPS_adjust_extend_neighbors_of_all_points();
         
-        //std::cout << "retrieving coefficients!" << std::endl;
-        VPS_retrieve_poly_coefficients_for_all_points();
+        
+        // build local surrogates
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            VPS_build_local_surrogate(ipoint);
+        }
         
         end_time = clock();
         cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
         
-        std::cout << "VPS::    Number of polynomial coeffcients = " << std::fixed << _vps_num_poly_terms << std::endl;
-        std::cout << "VPS::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
+        if (_vps_subsurrogate == LS)
+        {
+            std::cout << "VPS::    Number of polynomial coeffcients = " << std::fixed << _vps_num_poly_terms << std::endl;
+            std::cout << "VPS::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
+        }
+        
         std::cout << "VPS::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
         
-#ifdef DEBUG_TEST_FUNCTION
+        #ifdef DEBUG_TEST_FUNCTION
         std::vector<double> contours;
-        for (size_t i = 0; i < 10; i++) contours.push_back(0.1 * i);
-        //isocontouring("test_function_surrogate.ps", true, true, contours);
-        isocontouring_solid("surrogate.ps", false, true, contours);
-        isocontouring_solid("test_function.ps", true, false, contours);
-        plot_neighbors();
-#endif
+        for (size_t i = 0; i < 10; i++) contours.push_back(_f_min + 0.1 * i * (_f_max - _f_min));
         
+        isocontouring_solid("surrogate.ps", false, true, contours);
+        //isocontouring_solid("test_function.ps", true, false, contours);
+        plot_neighbors();
+        #endif
         
         return true;
     }
     
-    double VPSApproximation::evaluate_surrogate(double* x)
+    void VPSApproximation::VPS_create_containers()
     {
-        size_t iclosest = _num_inserted_points;
-        double dmin = DBL_MAX;
+        
+        std::cout<< "VPS:: Transfering data to surrogate ... " << std::endl;
+        
+        numObs = approxData.points(); // number of points
+        size_t num_v = sharedDataRep->numVars;  // number of variables
+        
+        
+        std::cout<< "VPS::         Number of sample points = " << numObs << std::endl;
+        _num_inserted_points = numObs;
+        
+        std::cout<< "VPS::    Number of dimensions = " << num_v << std::endl;
+        _n_dim = num_v;
+        
+        std::cout<< "VPS::    Surrogate Order = " << surrogateOrder << std::endl;
+        _vps_order = surrogateOrder;
+        
+        
+        // domain bounds
+        _xmin = new double[_n_dim];
+        _xmax = new double[_n_dim];
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            _xmin[idim] = DBL_MAX;
+            _xmax[idim] = -DBL_MAX;
+        }
+
+        _sample_points = new double*[_num_inserted_points];
+        _fval = new double[_num_inserted_points];
+        
+        _sample_neighbors = new size_t*[_num_inserted_points];
+        _vps_ext_neighbors = new size_t*[_num_inserted_points];
+        
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            double dd = 0.0;
+            _sample_neighbors[ipoint] = 0;
+            _vps_ext_neighbors[ipoint] = 0;
+        }
+        
+        _sample_vsize = new double[_num_inserted_points];
+        _vps_dfar = new double[_num_inserted_points];
+        
+        // process currentPoints from approx data
+        _f_min = DBL_MAX;
+        _f_max = -_f_min;
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            const RealVector& c_vars = approxData.continuous_variables(ipoint);
+            
+            _sample_points[ipoint] = new double[_n_dim];
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
-                double dx = x[idim] - _sample_points[ipoint][idim];
-                dd += dx * dx;
+                _sample_points[ipoint][idim] = c_vars[idim];
+                if (_sample_points[ipoint][idim] < _xmin[idim]) _xmin[idim] = _sample_points[ipoint][idim];
+                if (_sample_points[ipoint][idim] > _xmax[idim]) _xmax[idim] = _sample_points[ipoint][idim];
             }
-            if (dd < dmin)
-            {
-                dmin = dd;
-                iclosest = ipoint;
-            }
+            
+            #ifdef DEBUG_TEST_FUNCTION
+            _fval[ipoint] = f_test(_sample_points[ipoint]);
+            _xmin[0] = 0.0; _xmin[1] = 0.0;
+            _xmax[0] = 1.0; _xmax[1] = 1.0;
+            #else
+            // response from approxData
+            _fval[ipoint] = approxData.response_function(ipoint);
+            #endif
+            
+            if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
+            if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
+            
         }
         
-        // shift origin and scale
-        for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] - _sample_points[iclosest][idim]) / _vps_dfar[iclosest];
-        
-        double f_VPS = _fval[iclosest];
-        for (size_t i = 0; i < _vps_num_poly_terms; i++)
+        _diag = 0.0;
+        for (size_t idim = 0; idim < _n_dim; idim++)
         {
-            double ci = _vps_c[iclosest][i];
-            double yi = vec_pow_vec(_n_dim, x, _vps_t[i]);
-            f_VPS += ci * yi;
+            double DX = _xmax[idim] - _xmin[idim];
+            #ifndef DEBUG_TEST_FUNCTION
+            _xmax[idim]+= 0.5 * DX;
+            _xmin[idim]-= 0.5 * DX;
+            DX = _xmax[idim] - _xmin[idim];
+            #endif
+            _diag += DX * DX;
         }
+        _diag = sqrt(_diag);
         
-        // shift origin and scale back to origin
-        for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] * _vps_dfar[iclosest]) + _sample_points[iclosest][idim];
-        
-        return f_VPS;
+        if (_vps_subsurrogate == LS)
+        {
+            // retrive powers of the polynomial expansion, 
+            retrieve_permutations(_vps_num_poly_terms, _vps_t, _n_dim, _vps_order, false, true, _vps_order);
+            //std::cout<< "VPS::    Number of poly terms = " << _vps_num_poly_terms << std::endl;
+            
+            _vps_c = new double*[_num_inserted_points];
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            {
+                _vps_c[ipoint] = new double[_vps_num_poly_terms];
+            }
+        }
+        else if (_vps_subsurrogate == GP)
+        {
+            // create the data to configure the surrogate
+            // String approx_type("global_gaussian");  // Dakota GP
+            String approx_type;
+            
+            approx_type = "global_kriging";  // Surfpack GP
+            
+            UShortArray approx_order;
+            short data_order = 1;  // assume only function values
+            short output_level = QUIET_OUTPUT;
+            
+            sharedData = SharedApproxData(approx_type, approx_order, _n_dim, data_order, output_level);
+            
+            // build one gp for each Voronoi Cell
+            for (size_t i = 0; i < _num_inserted_points; ++i)
+            {
+                gpApproximations.push_back(Approximation(sharedData));
+            }
+        }
+        else
+        {
+            std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
+        }
     }
     
-    void VPSApproximation::retrieve_neighbors(size_t ipoint, bool update_point_neighbors)
+    void VPSApproximation::VPS_retrieve_neighbors(size_t ipoint, bool update_point_neighbors)
     {
         if (_num_inserted_points == 1)
         {
             _sample_vsize[0] = 0.5 * _diag;
             return;
         }
-        
-        size_t* old_neighbors = _sample_neighbors[ipoint];
         
         size_t* tmp_neighbors = new size_t[_num_inserted_points];
         
@@ -521,7 +356,7 @@ void VPSApproximation::build()
             for (size_t jpoint = 0; jpoint < _num_inserted_points; jpoint++)
             {
                 if (jpoint == ipoint) continue;
-             
+                
                 // trim line spoke via hyperplane between
                 double norm(0.0);
                 for (size_t idim = 0; idim < _n_dim; idim++)
@@ -587,9 +422,9 @@ void VPSApproximation::build()
             
         } // end of spoke loop
         
-        if (old_neighbors != 0)
+        if (_sample_neighbors[ipoint] != 0)
         {
-            delete[] old_neighbors;
+            delete[] _sample_neighbors[ipoint];
         }
         
         _sample_neighbors[ipoint] = new size_t[num_neighbors + 1];
@@ -604,12 +439,13 @@ void VPSApproximation::build()
         {
             for (size_t i = 0; i < num_neighbors; i++)
             {
-                retrieve_neighbors(tmp_neighbors[i], false);
+                VPS_retrieve_neighbors(tmp_neighbors[i], false);
             }
         }
         delete[] tmp_neighbors;
     }
-    
+
+
     void VPSApproximation::VPS_adjust_extend_neighbors_of_all_points()
     {
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
@@ -679,80 +515,78 @@ void VPSApproximation::build()
         delete[] tmp_neighbors;
     }
     
-    void VPSApproximation::VPS_retrieve_poly_coefficients_for_all_points()
+    
+    void VPSApproximation::VPS_build_local_surrogate(size_t cell_index)
     {
-        _vps_c = new double*[_num_inserted_points];
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        const SDVArray& training_vars = approxData.variables_data();
+        const SDRArray& training_resp = approxData.response_data();
+        
+        if (_vps_subsurrogate == LS)
         {
-            _vps_c[ipoint] = new double[_vps_num_poly_terms];
-
-            VPS_retrieve_poly_coefficients(ipoint);
+            VPS_LS_retrieve_poly_coefficients(cell_index);
+        }
+        else if (_vps_subsurrogate == GP)
+        {
+            for (size_t j = 0; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
+            {
+                size_t neighbor = cell_index;
+                if (j > 0) neighbor = _vps_ext_neighbors[cell_index][j];
+                
+                gpApproximations[cell_index].add(training_vars[neighbor], false);
+                
+                gpApproximations[cell_index].add(training_resp[neighbor], false);
+            }
+            gpApproximations[cell_index].build();
+        }
+        else
+        {
+            std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
         }
     }
     
-    void VPSApproximation::VPS_retrieve_poly_coefficients(size_t ipoint)
+    double VPSApproximation::VPS_evaluate_surrogate(double* x)
     {
-        double** A = new double*[_vps_num_poly_terms];
-        double** LD = new double*[_vps_num_poly_terms];
-        double* b = new double[_vps_num_poly_terms];
         
-        double* x_neighbor = new double[_n_dim];
+        size_t iclosest = retrieve_closest_cell(x);
         
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
+        if (_vps_subsurrogate == LS)
         {
-            A[q] = new double[_vps_num_poly_terms];
-            LD[q] = new double[_vps_num_poly_terms];
-        }
-        
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
-        {
-            b[q] = 0.0;
+            // LS Surrogate
+            
+            // shift origin and scale
+            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] - _sample_points[iclosest][idim]) / _vps_dfar[iclosest];
+            
+            double f_VPS = _fval[iclosest];
             for (size_t i = 0; i < _vps_num_poly_terms; i++)
             {
-                A[q][i] = 0.0;
-                LD[q][i] = 0.0;
+                double ci = _vps_c[iclosest][i];
+                double yi = vec_pow_vec(_n_dim, x, _vps_t[i]);
+                f_VPS += ci * yi;
             }
-        }
-
-        
-        for (size_t j = 1; j <= _vps_ext_neighbors[ipoint][0]; j++) // loop over neighbors
-        {
-            size_t neighbor = _vps_ext_neighbors[ipoint][j];
-            // shift origin
-            for (size_t idim = 0; idim < _n_dim; idim++) x_neighbor[idim] = (_sample_points[neighbor][idim] - _sample_points[ipoint][idim]) / _vps_dfar[ipoint];
             
-            for (size_t q = 0; q < _vps_num_poly_terms; q++)
-            {
-                double yq = vec_pow_vec(_n_dim, x_neighbor, _vps_t[q]);
-                b[q]+= (_fval[neighbor] - _fval[ipoint]) * yq;
-                for (size_t i = 0; i < _vps_num_poly_terms; i++)
-                {
-                    double yi = vec_pow_vec(_n_dim, x_neighbor, _vps_t[i]);
-                    A[q][i] += yi * yq;
-                }
-            }
+            // shift origin and scale back to origin
+            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] * _vps_dfar[iclosest]) + _sample_points[iclosest][idim];
+            
+            return f_VPS;
         }
-               
-        if (Cholesky(_vps_num_poly_terms, A, LD))
-            Cholesky_solver(_vps_num_poly_terms, LD, b, _vps_c[ipoint]);
+        else if (_vps_subsurrogate == GP)
+        {
+            // GP Surrogate
+            
+            RealVector c_vars(Teuchos::View, const_cast<Real*>(x), _n_dim);
+            
+            double f_gp = gpApproximations[iclosest].value(c_vars);
+            
+            return f_gp;
+        }
         else
         {
-            GMRES(_vps_num_poly_terms, A, b, _vps_c[ipoint], 1E-6);
-            _num_GMRES++;
+            std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
         }
-
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
-        {
-            delete[] A[q];
-            delete[] LD[q];
-        }
-        
-        delete[] A;
-        delete[] LD;
-        delete[] b;
-        delete[] x_neighbor;
+        return 0.0;
     }
-
+    
+    
     void VPSApproximation::VPS_destroy_global_containers()
     {
         delete[] _xmin;
@@ -765,22 +599,41 @@ void VPSApproximation::build()
         {
             delete[] _sample_points[ipoint];
             delete[] _sample_neighbors[ipoint];
-            delete[] _vps_c[ipoint];
             delete[] _vps_ext_neighbors[ipoint];
+            
+            if (_vps_subsurrogate == LS)
+            {
+                delete[] _vps_c[ipoint];
+            }
         }
         delete[] _sample_points;
         delete[] _sample_neighbors;
-        delete[] _vps_c;
         delete[] _vps_ext_neighbors;
         
-        for (size_t i = 0; i < _vps_num_poly_terms; i++)
+        if (_vps_subsurrogate == LS)
         {
-            delete[] _vps_t[i];
+            delete[] _vps_c;
+            for (size_t i = 0; i < _vps_num_poly_terms; i++)
+            {
+                delete[] _vps_t[i];
+            }
+            delete[] _vps_t;
         }
-        delete[] _vps_t;
+        else if (_vps_subsurrogate == LS)
+        {
+            gpApproximations.clear();
+        }
+        
+        
     }
+
     
-    void VPSApproximation::retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint)
+    //////////////////////////////////////////////////////////////
+    // Least Square Sub Surrogate METHODS
+    //////////////////////////////////////////////////////////////
+    
+    void VPSApproximation::retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin,
+                                                 bool force_sum_constraint, size_t sum_constraint)
     {
         size_t* t = new size_t[num_dim];
         for (size_t idim = 0; idim < num_dim; idim++) t[idim] = 0;
@@ -910,6 +763,69 @@ void VPSApproximation::build()
         }
         
         delete[] t;
+    }
+    
+    void VPSApproximation::VPS_LS_retrieve_poly_coefficients(size_t cell_index)
+    {
+        double** A = new double*[_vps_num_poly_terms];
+        double** LD = new double*[_vps_num_poly_terms];
+        double* b = new double[_vps_num_poly_terms];
+        
+        double* x_neighbor = new double[_n_dim];
+        
+        for (size_t q = 0; q < _vps_num_poly_terms; q++)
+        {
+            A[q] = new double[_vps_num_poly_terms];
+            LD[q] = new double[_vps_num_poly_terms];
+        }
+        
+        for (size_t q = 0; q < _vps_num_poly_terms; q++)
+        {
+            b[q] = 0.0;
+            for (size_t i = 0; i < _vps_num_poly_terms; i++)
+            {
+                A[q][i] = 0.0;
+                LD[q][i] = 0.0;
+            }
+        }
+        
+        
+        for (size_t j = 1; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
+        {
+            size_t neighbor = _vps_ext_neighbors[cell_index][j];
+            // shift origin
+            for (size_t idim = 0; idim < _n_dim; idim++) x_neighbor[idim] = (_sample_points[neighbor][idim] - _sample_points[cell_index][idim]) / _vps_dfar[cell_index];
+            
+            for (size_t q = 0; q < _vps_num_poly_terms; q++)
+            {
+                double yq = vec_pow_vec(_n_dim, x_neighbor, _vps_t[q]);
+                b[q]+= (_fval[neighbor] - _fval[cell_index]) * yq;
+                for (size_t i = 0; i < _vps_num_poly_terms; i++)
+                {
+                    double yi = vec_pow_vec(_n_dim, x_neighbor, _vps_t[i]);
+                    A[q][i] += yi * yq;
+                }
+            }
+        }
+        
+        if (Cholesky(_vps_num_poly_terms, A, LD))
+            Cholesky_solver(_vps_num_poly_terms, LD, b, _vps_c[cell_index]);
+        else
+        {
+            GMRES(_vps_num_poly_terms, A, b, _vps_c[cell_index], 1E-6);
+            _num_GMRES++;
+        }
+        
+        for (size_t q = 0; q < _vps_num_poly_terms; q++)
+        {
+            delete[] A[q];
+            delete[] LD[q];
+        }
+        
+        delete[] A;
+        delete[] LD;
+        delete[] b;
+        delete[] x_neighbor;
     }
     
     double VPSApproximation::vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b)
@@ -1167,6 +1083,172 @@ void VPSApproximation::build()
         delete[] QT;
     }
     
+    //////////////////////////////////////////////////////////////
+    // General METHODS
+    //////////////////////////////////////////////////////////////
+    void VPSApproximation::initiate_random_number_generator(unsigned long x)
+    {
+        //assert(sizeof (double) >= 54) ;
+        
+        cc = 1.0 / 9007199254740992.0; // inverse of 2^53rd power
+        size_t i;
+        size_t qlen = indx = sizeof Q / sizeof Q[0];
+        for (i = 0; i < qlen; i++) Q[i] = 0;
+        
+        double c = 0.0, zc = 0.0,	/* current CSWB and SWB `borrow` */
+        zx = 5212886298506819.0 / 9007199254740992.0,	/* SWB seed1 */
+        zy = 2020898595989513.0 / 9007199254740992.0;	/* SWB seed2 */
+        
+        size_t j;
+        double s, t;	 /* Choose 32 bits for x, 32 for y */
+        if (x == 0) x = 123456789; /* default seeds */
+        unsigned long y = 362436069; /* default seeds */
+        
+        /* Next, seed each Q[i], one bit at a time, */
+        for (i = 0; i < qlen; i++)
+        { /* using 9th bit from Cong+Xorshift */
+            s = 0.0;
+            t = 1.0;
+            for (j = 0; j < 52; j++)
+            {
+                t = 0.5 * t; /* make t=.5/2^j */
+                x = 69069 * x + 123;
+                y ^= (y << 13);
+                y ^= (y >> 17);
+                y ^= (y << 5);
+                if (((x + y) >> 23) & 1) s = s + t; /* change bit of s, maybe */
+            }	 /* end j loop */
+            Q[i] = s;
+        } /* end i seed loop, Now generate 10^9 dUNI's: */
+    }
+    
+    double VPSApproximation::generate_a_random_number()
+    {
+        /* Takes 14 nanosecs, Intel Q6600,2.40GHz */
+        int i, j;
+        double t; /* t: first temp, then next CSWB value */
+        /* First get zy as next lag-2 SWB */
+        t = zx - zy - zc;
+        zx = zy;
+        if (t < 0)
+        {
+            zy = t + 1.0;
+            zc = cc;
+        }
+        else
+        {
+            zy = t;
+            zc = 0.0;
+        }
+        
+        /* Then get t as the next lag-1220 CSWB value */
+        if (indx < 1220)
+            t = Q[indx++];
+        else
+        { /* refill Q[n] via Q[n-1220]-Q[n-1190]-c, */
+            for (i = 0; i < 1220; i++)
+            {
+                j = (i < 30) ? i + 1190 : i - 30;
+                t = Q[j] - Q[i] + c; /* Get next CSWB element */
+                if (t > 0)
+                {
+                    t = t - cc;
+                    c = cc;
+                }
+                else
+                {
+                    t = t - cc + 1.0;
+                    c = 0.0;
+                }
+                Q[i] = t;
+            }	 /* end i loop */
+            indx = 1;
+            t = Q[0]; /* set indx, exit 'else' with t=Q[0] */
+        } /* end else segment; return t-zy mod 1 */
+        
+        return ((t < zy) ? 1.0 + (t - zy) : t - zy);
+    }
+    
+    size_t VPSApproximation::retrieve_closest_cell(double* x)
+    {
+        size_t iclosest = _num_inserted_points;
+        double dmin = DBL_MAX;
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            double dd = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = x[idim] - _sample_points[ipoint][idim];
+                dd += dx * dx;
+            }
+            if (dd < dmin)
+            {
+                dmin = dd;
+                iclosest = ipoint;
+            }
+        }
+        return iclosest;
+    }
+    
+    bool VPSApproximation::trim_line_using_Hyperplane(size_t num_dim,                               // number of dimensions
+                                                      double* st, double *end,                      // line segmenet end points
+                                                      double* qH, double* nH)                // a point on the hyperplane and it normal
+    {
+        double dotv(0.0), dote(0.0);
+        for (size_t idim = 0; idim < num_dim; idim++)
+        {
+            double dxv = qH[idim] - st[idim];
+            double dxe = end[idim] - st[idim];
+            dotv += dxv * nH[idim];
+            dote += dxe * nH[idim];
+        }
+        
+        if (fabs(dote) < 1E-10) // cos theta_n < 1E-10
+        {
+            // line is either degenerate or parallel to Hyperplane
+            return false;
+        }
+        
+        if (fabs(dote) < fabs(dotv))
+        {
+            // line lie on one side of the Hyperplane
+            if (dotv < 0.0)
+            {
+                for (size_t idim = 0; idim < num_dim; idim++) end[idim] = st[idim];
+            }
+            return false;
+        }
+        
+        double u = dotv / dote;
+        if (u > 0.0 && u < 1.0)
+        {
+            for (size_t idim = 0; idim < num_dim; idim++)
+            {
+                if (dote > 0.0) end[idim] = st[idim] + u * (end[idim] - st[idim]);
+                else st[idim] = st[idim] + u * (end[idim] - st[idim]);
+            }
+            return true;
+        }
+        
+        if (u < 0.0 && dote > 0.0)
+        {
+            for (size_t idim = 0; idim < num_dim; idim++) end[idim] = st[idim];
+            return false;
+        }
+        
+        if (u > 1.0 && dote < 0.0)
+        {
+            for (size_t idim = 0; idim < num_dim; idim++) end[idim] = st[idim];
+            return false;
+        }
+        return false;
+    }
+
+    
+    //////////////////////////////////////////////////////////////
+    // Debugging METHODS
+    //////////////////////////////////////////////////////////////
+    
     double VPSApproximation::f_test(double* x)
     {
         // step function in sphere
@@ -1357,29 +1439,29 @@ void VPSApproximation::build()
                 for (size_t ifunc = 0; ifunc < 2; ifunc++)
                 {
                     double fo(0.0), f1(0.0), f2(0.0), f3(0.0);
-                
+                    
                     double yo = _xmin[1] + j * sy;
                     xx[0] = xo; xx[1] = yo;
                     if (plot_test_function && ifunc != 1)  fo = f_test(xx);
-                    else if (plot_surrogate) fo = evaluate_surrogate(xx);
+                    else if (plot_surrogate) fo = VPS_evaluate_surrogate(xx);
                     xx[0] = xo+sx; xx[1] = yo;
                     if (plot_test_function && ifunc != 1)  f1 = f_test(xx);
-                    else if (plot_surrogate) f1 = evaluate_surrogate(xx);
+                    else if (plot_surrogate) f1 = VPS_evaluate_surrogate(xx);
                     xx[0] = xo + sx; xx[1] = yo + sy;
                     if (plot_test_function && ifunc != 1)  f2 = f_test(xx);
-                    else if (plot_surrogate) f2 = evaluate_surrogate(xx);
+                    else if (plot_surrogate) f2 = VPS_evaluate_surrogate(xx);
                     xx[0] = xo; xx[1] = yo + sy;
                     if (plot_test_function && ifunc != 1)  f3 = f_test(xx);
-                    else if (plot_surrogate) f3 = evaluate_surrogate(xx);
-                
+                    else if (plot_surrogate) f3 = VPS_evaluate_surrogate(xx);
+                    
                     size_t num_isocontours = contours.size();
                     for (size_t icont = 0; icont < num_isocontours; icont++)
                     {
                         double contour = contours[icont];
-                    
+                        
                         size_t num_points(0);
                         double x1, y1, x2, y2;
-
+                        
                         if ((fo > contour && f1 < contour) || (fo < contour && f1 > contour))
                         {
                             double h = sx * (contour - fo) / (f1 - fo);
@@ -1431,7 +1513,7 @@ void VPSApproximation::build()
                             }
                             num_points++;
                         }
-                    
+                        
                         if (num_points == 2)
                         {
                             if (ifunc == 0)
@@ -1698,16 +1780,16 @@ void VPSApproximation::build()
                 double yo = _xmin[1] + j * sy;
                 xx[0] = xo; xx[1] = yo;
                 if (plot_test_function)  fo = f_test(xx);
-                else                     fo = evaluate_surrogate(xx);
+                else                     fo = VPS_evaluate_surrogate(xx);
                 xx[0] = xo+sx; xx[1] = yo;
                 if (plot_test_function)  f1 = f_test(xx);
-                else                     f1 = evaluate_surrogate(xx);
+                else                     f1 = VPS_evaluate_surrogate(xx);
                 xx[0] = xo + sx; xx[1] = yo + sy;
                 if (plot_test_function)  f2 = f_test(xx);
-                else                     f2 = evaluate_surrogate(xx);
+                else                     f2 = VPS_evaluate_surrogate(xx);
                 xx[0] = xo; xx[1] = yo + sy;
                 if (plot_test_function)  f3 = f_test(xx);
-                else                     f3 = evaluate_surrogate(xx);
+                else                     f3 = VPS_evaluate_surrogate(xx);
                 
                 //std::cout << "fo = " << fo << " , f1 = " << f1 << " , f2 = " << f2 << " , f3 = " << f3 << std::endl;
                 
@@ -1785,7 +1867,7 @@ void VPSApproximation::build()
                             poly_x.push_back(xo + sx);
                             poly_y.push_back(yo + h);
                         }
-
+                        
                     }
                     else if ((f1 > contour_m && f2 < contour_m) || (f1 < contour_m && f2 > contour_m))
                     {
@@ -1801,7 +1883,7 @@ void VPSApproximation::build()
                         }
                         poly_x.push_back(xo + sx);
                         poly_y.push_back(yo + hm);
-
+                        
                         if (h - hm > 1E-10)
                         {
                             poly_x.push_back(xo + sx);
@@ -2205,13 +2287,82 @@ void VPSApproximation::build()
         file << "quad_bold"      << std::endl;
         
         file << "showpage" << std::endl;
+        
+    }
+    
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
+    ////// Inherited method from parent class
+    //////////////////////////////////////////////////////////////////////////////////////////
 
+
+    int VPSApproximation::min_coefficients() const
+    {
+        // min number of samples required to build the network is equal to
+        // the number of design variables + 1
+
+        // Note: Often this is too few samples.  It is better to have about
+        // O(n^2) samples, where 'n' is the number of variables.
+
+        return sharedDataRep->numVars + 1;
+    }
+
+    int VPSApproximation::num_constraints() const
+    {
+        return (approxData.anchor()) ? 1 : 0;
+    }
+
+
+
+    void VPSApproximation::build()
+    {
+        // base class implementation checks data set against min required
+        Approximation::build();
+
+        // Build a VPS surrogate model using the sampled data
+        VPS_execute();
+    }
+
+
+    Real VPSApproximation::value(const Variables& vars)
+    {
+        
+        VPSmodel_apply(vars.continuous_variables(),false,false);
+        return approxValue;
+    }
+
+
+    const RealVector& VPSApproximation::gradient(const Variables& vars)
+    {
+        VPSmodel_apply(vars.continuous_variables(),false,true);
+        return approxGradient;
+    }
+
+
+    Real VPSApproximation::prediction_variance(const Variables& vars)
+    {
+        VPSmodel_apply(vars.continuous_variables(),true,false);
+        return approxVariance;
+    }
+
+
+
+    void VPSApproximation::VPSmodel_build()
+    {
         
     }
 
+    void VPSApproximation::VPSmodel_apply(const RealVector& approx_pt, bool variance_flag, bool gradients_flag)
+    {
+        double* x = new double[_n_dim];
     
-    
-
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            x[idim] = approx_pt[idim];
+        }
+        approxValue = VPS_evaluate_surrogate(x);
+        delete[] x;
+    }
 
 
 } // namespace Dakota

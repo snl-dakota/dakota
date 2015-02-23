@@ -16,113 +16,136 @@
 #define VPS_APPROXIMATION_H
 
 #include "dakota_data_types.hpp"
+#include "DakotaVariables.hpp"
 #include "DakotaApproximation.hpp"
 #include "SharedSurfpackApproxData.hpp"
+#include "pecos_data_types.hpp" // to identify SDVArrays and SDRArrays
 
-#include "Teuchos_SerialSpdDenseSolver.hpp"
+using namespace Pecos;
 
-#ifdef HAVE_OPTPP
-namespace Teuchos { 
-  template<typename OrdinalType, typename ScalarType> class SerialDenseVector;
-  template<typename OrdinalType, typename ScalarType> class SerialDenseMatrix;
-}
-#endif // HAVE_OPTPP
+namespace Dakota
+{
+    class ProblemDescDB;
+    
+    /// Derived approximation class for VPS implementation
 
-
-namespace Dakota {
-
-class ProblemDescDB;
-
-/// Derived approximation class for VPS implementation
-
-/** The VPSApproximation class provides a set of piecewise surrogate approximations 
+    /** The VPSApproximation class provides a set of piecewise surrogate approximations
     each of which is valid within a Voronoi cell.  */
 
-class VPSApproximation: public Approximation
-{
-public:
+    class VPSApproximation: public Approximation
+    {
 
-  //
-  //- Heading: Constructors and destructor
-  //
+    public:
 
-  /// default constructor
-  VPSApproximation();
-  /// alternate constructor
-  VPSApproximation(const SharedApproxData& shared_data);
-  /// standard constructor
-  VPSApproximation(const ProblemDescDB& problem_db,
-			 const SharedApproxData& shared_data);
-  /// destructor
-  ~VPSApproximation();
+        //
+        //- Heading: Constructors and destructor
+        //
 
+        /// default constructor
+        VPSApproximation();
 
-    //////////////////////////////////////////////////////////////
-    // VPS METHODS
-    //////////////////////////////////////////////////////////////
-    bool VPS_execute();
-    double evaluate_surrogate(double* x);
+        /// standard constructor (to call VPS from an input deck)
+        VPSApproximation(const ProblemDescDB& problem_db,
+                         const SharedApproxData& shared_data);
+    
+        /// Alternate constructor (to call VPS from another method like POF-darts)
+        VPSApproximation(const SharedApproxData& shared_data);
+  
+        /// destructor
+        ~VPSApproximation();
+
 
     
-    void retrieve_neighbors(size_t ipoint, bool update_point_neighbors);
-    void VPS_adjust_extend_neighbors_of_all_points();
-    void VPS_extend_neighbors(size_t ipoint);
-    void VPS_retrieve_poly_coefficients_for_all_points();
-    void VPS_retrieve_poly_coefficients(size_t ipoint);
-    void VPS_destroy_global_containers();
+        //////////////////////////////////////////////////////////////
+        // VPS METHODS
+        //////////////////////////////////////////////////////////////
     
-    void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin, bool force_sum_constraint, size_t sum_constraint);
-    
-    
-    void initiate_random_number_generator(unsigned long x);
-    double generate_a_random_number();
-    
-    
-    bool trim_line_using_Hyperplane(size_t num_dim,                               // number of dimensions
-                                    double* st, double *end,                      // line segmenet end points
-                                    double* qH, double* nH);                      // a point on the hyperplane and it normal
-    
-    double vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b);
-    bool Cholesky(int n, double** A, double** LD);
-    void Cholesky_solver(int n, double** LD, double* b, double* x);
-    void GMRES(size_t n, double** A, double* b, double* x, double eps);
-    
-    
-    double f_test(double* x);
-    
-    void isocontouring(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
-    
-    void isocontouring_solid(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
-    
-    void plot_neighbors();
-    
+        bool VPS_execute();
+        
+        void VPS_create_containers();
+        
+        void VPS_retrieve_neighbors(size_t ipoint, bool update_point_neighbors);
+        
+        void VPS_adjust_extend_neighbors_of_all_points();
+        void VPS_extend_neighbors(size_t ipoint);
+        
+        void VPS_build_local_surrogate(size_t cell_index);
+        
+        double VPS_evaluate_surrogate(double* x);
+        
 
+        void VPS_destroy_global_containers();
+        
+
+        //////////////////////////////////////////////////////////////
+        // Least Square Sub Surrogate METHODS
+        //////////////////////////////////////////////////////////////
+        void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin,
+                                   bool force_sum_constraint, size_t sum_constraint);
+
+        void VPS_LS_retrieve_poly_coefficients(size_t cell_index);
+
+        double vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b);
+        bool Cholesky(int n, double** A, double** LD);
+        void Cholesky_solver(int n, double** LD, double* b, double* x);
+        void GMRES(size_t n, double** A, double* b, double* x, double eps);
     
-protected:
+        //////////////////////////////////////////////////////////////
+        // General METHODS
+        //////////////////////////////////////////////////////////////
+        
+        void initiate_random_number_generator(unsigned long x);
+        double generate_a_random_number();
+        
+        size_t retrieve_closest_cell(double* x);
+        
+        // spoke darts
+        bool trim_line_using_Hyperplane(size_t num_dim,                               // number of dimensions
+                                        double* st, double *end,                      // line segmenet end points
+                                        double* qH, double* nH);                      // a point on the hyperplane and it normal
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
+        
+        //////////////////////////////////////////////////////////////
+        // Debugging METHODS
+        //////////////////////////////////////////////////////////////
+        
+        double f_test(double* x); // some test functions for debugging
+    
+        void isocontouring(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
+    
+        void isocontouring_solid(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
+    
+        void plot_neighbors();
 
-  /// return the minimum number of samples (unknowns) required to
-  /// build the derived class approximation type in numVars dimensions
-  int min_coefficients() const;
+        
+        //////////////////////////////////////////////////////////////////////////////////////////
+        ////// Inherited method from parent class
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-  /// return the number of constraints to be enforced via an anchor point
-  int num_constraints()  const;
+    protected:
+        //
+        //- Heading: Virtual function redefinitions
+        //
 
-  /// builds the approximation from scratch
-  void build();
+        /// return the minimum number of samples (unknowns) required to
+        /// build the derived class approximation type in numVars dimensions
+        int min_coefficients() const;
 
-  /// retrieve the predicted function value for a given parameter set
-  Real value(const Variables& vars);
+        /// return the number of constraints to be enforced via an anchor point
+        int num_constraints()  const;
 
-  /// retrieve the function gradient at the predicted value 
-  /// for a given parameter set
-  const RealVector& gradient(const Variables& vars);
+        /// builds the approximation from scratch
+        void build();
 
-  /// retrieve the variance of the predicted value for a given parameter set
-  Real prediction_variance(const Variables& vars);
+        /// retrieve the predicted function value for a given parameter set
+        Real value(const Variables& vars);
+
+        /// retrieve the function gradient at the predicted value
+        /// for a given parameter set
+        const RealVector& gradient(const Variables& vars);
+
+        /// retrieve the variance of the predicted value for a given parameter set
+        Real prediction_variance(const Variables& vars);
 
 private: 
 
@@ -139,92 +162,80 @@ private:
   void VPSmodel_apply(const RealVector& new_x, bool variance_flag,
 		     bool gradients_flag);
 
-  //
-  //- Heading: Data
-  //
+        //
+        //- Heading: Data
+        //
 
-  /// pointer to the active object instance used within the static evaluator
-  static VPSApproximation* VPSinstance;
+        /// pointer to the active object instance used within the static evaluator
+        static VPSApproximation* VPSinstance;
 
-  /// value of the approximation returned by value()
-  Real approxValue;
-  /// value of the approximation returned by prediction_variance()
-  Real approxVariance;
-  /// A 2-D array (num sample sites = rows, num vars = columns) 
-  /// used to create the Gaussian process
-  RealMatrix trainPoints;
-  /// An array of response values; one response value per sample site
-  RealMatrix trainValues;
-  /// The number of observations on which the GP surface is built.
-  size_t numObs;
-  /// The order of the polynomial in each Voronoi cell
-  int surrogateOrder;  
+        /// value of the approximation returned by value()
+        Real approxValue;
+        /// value of the approximation returned by prediction_variance()
+        Real approxVariance;
+        /// A 2-D array (num sample sites = rows, num vars = columns)
+        /// used to create the Gaussian process
+        RealMatrix trainPoints;
+        /// An array of response values; one response value per sample site
+        RealMatrix trainValues;
+        /// The number of observations on which the GP surface is built.
+        size_t numObs;
+        /// The order of the polynomial in each Voronoi cell
+        int surrogateOrder;
     
-    // variables for Random number generator
-    double Q[1220];
-    int indx;
-    double cc;
-    double c; /* current CSWB */
-    double zc;	/* current SWB `borrow` */
-    double zx;	/* SWB seed1 */
-    double zy;	/* SWB seed2 */
-    size_t qlen;/* length of Q array */
     
-    size_t _n_dim; // dimension of the problem
-    double* _xmin; // lower left corner of the domain
-    double* _xmax; // Upper right corner of the domain
-    double  _diag; // diagonal of the domain
+        enum subsurrogate{LS, GP};
+        subsurrogate _vps_subsurrogate;
     
-    // variables for VPS
-    size_t _num_inserted_points, _total_budget;
-    double** _sample_points; // store radius as a last coordinate
-    size_t** _sample_neighbors;
-    double* _fval;
+        // variables for Random number generator
+        double Q[1220];
+        int indx;
+        double cc;
+        double c; /* current CSWB */
+        double zc;	/* current SWB `borrow` */
+        double zx;	/* SWB seed1 */
+        double zy;	/* SWB seed2 */
+        size_t qlen;/* length of Q array */
     
-    size_t _vps_order, _vps_num_poly_terms, _num_GMRES;
-    double* _vps_dfar; // furthest distance between a seed and its extended neighbors
-    size_t**  _vps_t;  // powers of the polynomial expansion
-    double** _vps_c;  // polynomial coeffcients per point function
+        size_t _n_dim; // dimension of the problem
+        double* _xmin; // lower left corner of the domain
+        double* _xmax; // Upper right corner of the domain
+        double  _diag; // diagonal of the domain
     
-    size_t** _vps_ext_neighbors;
+        // variables for VPS
+        size_t _num_inserted_points;
+        double** _sample_points; // points coordinates
+        double* _fval;           // a single function evaluation at each point
+        
+        size_t** _sample_neighbors;  // cell direct neighbors
+        size_t** _vps_ext_neighbors; // cell extended neighbors
     
-    double*  _sample_vsize;
-    double   _max_vsize; // size of biggest Voronoi cell
     
-    double _disc_min_grad; // minimum gradient for discontinuity detection
-    
+        size_t _vps_order, _vps_num_poly_terms, _num_GMRES;
+        double*  _sample_vsize;  // furthest distance between seed and one of its Voronoi corners
+        double* _vps_dfar;       // furthest distance between a seed and its extended neighbors
+        
+        
+        double _max_vsize;     // size of biggest Voronoi cell
+        double _disc_min_grad; // minimum gradient for discontinuity detection
+        
+        double _f_min, _f_max; //minimum and maximum function values;
+        
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Sub surrogate variables
+        ///////////////////////////////////////////////////////////////////////////////
+        // LS
+        size_t**  _vps_t;  // LS powers of the polynomial expansion
+        double** _vps_c;  // LS polynomial coeffcients per point function
+
+        // GP
+        SharedApproxData sharedData;
+        std::vector<Approximation> gpApproximations; // One approximation for each cell
+        Variables gpEvalVars;
 
 };
 
-
-/** alternate constructor */
-
-inline VPSApproximation::VPSApproximation()
-{
-}
-
-inline VPSApproximation::
-VPSApproximation(const SharedApproxData& shared_data):
-  Approximation(NoDBBaseConstructor(), shared_data)
-{
-    
-    SharedSurfpackApproxData* dat = dynamic_cast<SharedSurfpackApproxData*> (shared_data.data_rep());
-    
-    //if (dat == 0) std::cout<< "Casting failed"<< std::endl;
-    //else std::cout<< "Casting succeeded"<< std::endl;
-    
-    surrogateOrder = dat->approxOrder;
-    
-    std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
-    
-    _disc_min_grad = DBL_MAX;
-
-}
-
-inline VPSApproximation::~VPSApproximation()
-{
-    VPS_destroy_global_containers();
-}
 
 } // namespace Dakota
 

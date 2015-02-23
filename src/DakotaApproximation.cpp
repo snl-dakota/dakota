@@ -407,6 +407,54 @@ Real Approximation::prediction_variance(const Variables& vars)
   return approxRep->prediction_variance(vars);
 }
 
+    
+Real Approximation::value(const RealVector& c_vars)
+{
+    if (!approxRep) {
+        Cerr << "Error: value() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->value(c_vars);
+}
+    
+    
+const RealVector& Approximation::gradient(const RealVector& c_vars)
+{
+    if (!approxRep) {
+        Cerr << "Error: gradient() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->gradient(c_vars);
+}
+    
+    
+const RealSymMatrix& Approximation::hessian(const RealVector& c_vars)
+{
+    if (!approxRep) {
+        Cerr << "Error: hessian() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->hessian(c_vars);
+}
+    
+    
+Real Approximation::prediction_variance(const RealVector& c_vars)
+{
+    if (!approxRep) {
+        Cerr << "Error: prediction_variance() not available for this approximation "
+        << "type." << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->prediction_variance(c_varsD);
+}
+
 
 bool Approximation::diagnostics_available()
 {

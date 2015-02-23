@@ -87,6 +87,16 @@ protected:
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
   Real prediction_variance(const Variables& vars);
+    
+  /// Return the value of the Surfpack surface for a given parameter vector x
+  Real value(const RealVector& c_vars);
+  /// retrieve the approximate function gradient for a given parameter vector x
+  const RealVector& gradient(const RealVector& c_vars);
+  /// retrieve the approximate function Hessian for a given parameter vector x
+  const RealSymMatrix& hessian(const RealVector& c_vars);
+  /// retrieve the variance of the predicted value for a given parameter set x
+  /// (KrigingModel only)
+  Real prediction_variance(const RealVector& c_vars);
 
   /// check if the diagnostics are available (true for the Surfpack types)
   bool diagnostics_available();
