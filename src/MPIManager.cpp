@@ -13,6 +13,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "MPIManager.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 
@@ -154,14 +155,11 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
     mpi_launch = true;
   }
 
-#elif defined(HAVE_MPICH)
-  // alternately could test for preprocessor defines from the compiler
-  // wrappers
-  // MPICH_NAME = 1
-  // MPICH_NAME = 2 || MPICH2
-  //
-  // test for p4 device
-  //char* test = std::getenv("MPIRUN_DEVICE"); // no good: only set on master
+#elif defined(MPICH_NAME) || defined(MPICH_VERSION)
+  // MPICH1 defines MPICH_NAME, MPICH_VERSION
+  // MPICH2 defines MPICH_NAME, MPICH2
+  // MPICH3 defines MPICH_NAME, MPICH_VERSION
+  // test for command-line p4 device arguments
   for (int i=0; i<argc; ++i) {
     std::string test(argv[i]);
     if (test=="-p4pg" || test=="-p4amslave") {
@@ -172,22 +170,31 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
       break;
     }
   }
-  // test for gm device (no command line content, so use GMPI_NP)
-  char* gm_test = std::getenv("GMPI_NP"); // returns NULL if not set
-  // alternate test for mpirun needed on some platforms with myrinet
-  char* mpirun_test = std::getenv("MPIRUN_NPROCS"); // returns NULL if not set
-  // alternate test for MPICH2
-  if (!mpirun_test)
-	mpirun_test = std::getenv("MPICH_INTERFACE_HOSTNAME");
-  // alternate test for MPICH shmem comm
-  // options for testing: MPICH_NP, MPIRUN_DEVICE=ch_shmem (master only?)
-  if (!mpirun_test)
-	mpirun_test = std::getenv("MPICH_NP");
-  if (gm_test || mpirun_test) { // && atoi(gm_test) > 1)
+  if (!mpi_launch) {
+    // Command-line content didn't suffice.  Check environment variables.
+    // MPICH environment variables in preferred order (roughly newest to oldest)
+    StringArray env_vars;
+    env_vars.push_back("PMI_SIZE");                 // MPICH3
+    env_vars.push_back("MPICH_NP");                 // MPICH2, incl shmem
+    env_vars.push_back("MPICH_INTERFACE_HOSTNAME"); // MPICH2, old p4 check
+    env_vars.push_back("MPIRUN_NPROCS");            // MPICH1, Myrinet/all
+    env_vars.push_back("GMPI_NP");                  // MPICH1, Myrinet GM
+    // Also historically validated GMPI_NP > 1.
+    // For MPICH2, can't check MPIRUN_DEVICE; only set on master.
+
+    StringArray::const_iterator ev_it = env_vars.begin();
+    StringArray::const_iterator ev_end = env_vars.end();
+    for ( ; ev_it != ev_end; ++ev_it) {
+      char* env_val = std::getenv(ev_it->c_str());
+      if (env_val) {
 #ifdef MPI_DEBUG
-    Cout << "Parallel run detected via MPICH env test" << std::endl;
+	Cout << "Parallel run detected via MPICH env test: " << env_val 
+		  << std::endl;
 #endif
-    mpi_launch = true;
+	mpi_launch = true;
+	break;
+      }
+    }
   }
 
 #elif defined(HAVE_OSF_MPI) // Digital MPI sets env vars. on all procs.
@@ -212,10 +219,14 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
     mpi_launch = true;
 
 #else
-  // TFLOPS_COMPUTE & CPLANT_COMPUTE (+ other platforms w/o a special detection
-  // routine) have defaults based only on MPI configuration.  Note that
-  // TFLOPS_SERVICE is hardwired above and CPLANT_SERVICE is covered by -DMPICH.
+  // For platforms w/o runtime detection above (e.g., TFLOPS_COMPUTE,
+  // CPLANT_COMPUTE), we historically assumed that if Dakota was built
+  // with DAKOTA_HAVE_MPI, it is run with MPI.  May want to reconsider
+  // this, though may be useful for IBM, Cray.
 #ifdef DAKOTA_HAVE_MPI
+#ifdef MPI_DEBUG
+  Cout << "Parallel run enabled via fall-through default" << std::endl;
+#endif
   mpi_launch = true;
 #endif // DAKOTA_HAVE_MPI
 
