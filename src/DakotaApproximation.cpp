@@ -452,7 +452,7 @@ Real Approximation::prediction_variance(const RealVector& c_vars)
         abort_handler(-1);
     }
         
-    return approxRep->prediction_variance(c_varsD);
+    return approxRep->prediction_variance(c_vars);
 }
 
 
