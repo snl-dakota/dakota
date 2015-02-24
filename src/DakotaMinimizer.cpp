@@ -972,10 +972,12 @@ data_difference_core(const Response& raw_response, Response& residual_response)
 
     size_t offset = exp_ind*num_fns;
     // form residuals for this experiment; must make temporary
-    const RealVector& exp_data = minimizerInstance->expData.all_data(exp_ind);
-    RealVector resid_fns = raw_response.function_values();    
-    resid_fns -= exp_data;
-
+    //const RealVector& exp_data = minimizerInstance->expData.all_data(exp_ind);
+    //RealVector resid_fns = raw_response.function_values();    
+    //resid_fns -= exp_data;
+    RealVector resid_fns;
+    minimizerInstance->expData.form_residuals(raw_response, exp_ind, resid_fns);
+   
     if (applyCovariance) {
 
       // determine presence and consistency of active set vector requests

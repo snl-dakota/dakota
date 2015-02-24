@@ -574,14 +574,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   }
   else {	
     for (i=0; i<num_exp; i++) {
-      // TODO: experiments may vary in length, but functions should be same
-      const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
-      //Cout << " exp_data " << exp_data << '\n';
       RealVector residuals;
-      residuals.resize(exp_data.length());
-      for (j=0; j<residuals.length(); j++)
-        residuals[j] = fn_vals[j] - exp_data[j];
-      //Cout << " residuals " << residuals << '\n';
+      NonDQUESOInstance->expData.form_residuals(NonDQUESOInstance->emulatorModel.current_response(),i,residuals);
       result += NonDQUESOInstance->expData.apply_covariance(residuals, i);
     }
   }

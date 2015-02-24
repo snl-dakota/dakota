@@ -159,6 +159,8 @@ public:
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& function_hessians);
 
+  /// return const field values
+  RealVector field_values_view(size_t i) const;
   /// return a "view" of a field value for updating in place
   RealVector field_values_view(size_t i);
   /// set a field value
@@ -443,6 +445,19 @@ inline const RealVector& Response::function_values() const
   else             return functionValues;
 }
 
+
+inline RealVector Response::field_values_view(size_t i) const
+{
+  if (responseRep)
+    return responseRep->field_values_view(i);
+  else {
+    size_t j, cntr = sharedRespData.num_scalar_responses();
+    const IntVector& field_len = sharedRespData.field_lengths();
+    for (j=0; j<i; j++)
+      cntr += field_len[j];
+    return RealVector(Teuchos::View, const_cast<Real*>(&functionValues[cntr]), field_len[i]);
+  }
+}
 
 inline RealVector Response::field_values_view(size_t i)
 {

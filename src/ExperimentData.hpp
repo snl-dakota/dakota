@@ -20,7 +20,9 @@
 #include "dakota_data_types.hpp"
 #include "dakota_tabular_io.hpp"
 #include "ExperimentResponse.hpp"
+#include "ExperimentDataUtils.hpp"
 #include "SharedResponseData.hpp"
+#include "SimulationResponse.hpp"
 #include <boost/filesystem/operations.hpp>
 #include "boost/filesystem/path.hpp"
 
@@ -151,6 +153,10 @@ public:
   void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, 
 				 size_t experiment, 
 				 RealSymMatrixArray& weighted_hessians);
+
+  /// form residuals and interpolate if necessary 
+  void form_residuals(const Response& sim_resp, size_t experiment, 
+                      RealVector& residuals); 
 
 private:
 

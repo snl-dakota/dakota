@@ -648,4 +648,55 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
 }
 
 
+void ExperimentData::
+form_residuals(const Response& sim_resp, size_t experiment, 
+               RealVector& residuals)
+{
+  size_t res_size = allExperiments[experiment].function_values().length();
+  residuals.resize(res_size);
+
+  RealVector resid_fns = sim_resp.function_values();
+  size_t i,j;
+  size_t cntr=0;
+  bool interpolate = true; 
+  const IntVector simLengths = sim_resp.field_lengths();
+  int numfields = num_fields();
+
+  if ((num_fields() == 0) && (resid_fns.length() == res_size))
+    interpolate = false;
+  else { 
+    for (j=0; j<num_fields(); j++) {
+      if (field_data_view(j,experiment).length() == simLengths(j))
+         interpolate = false;
+    }
+  }
+  if (!interpolate) {
+     resid_fns -= allExperiments[experiment].function_values();
+     residuals = resid_fns;
+  }
+  else {
+    for (i=0; i<num_scalars(); i++) 
+      residuals(i)=resid_fns(i)-allExperiments[experiment].function_value(i);
+
+    cntr=num_scalars();
+
+    for (i=0; i<num_fields(); i++){ 
+      // check for field length or not?
+      RealVector field_pred;
+      RealMatrix sim_coords = sim_resp.get_coord_values(i);
+      RealMatrix exp_coords = field_coords_view(i,experiment);
+      RealVector first_sim_coords(Teuchos::View, sim_coords.values(), sim_coords.numRows());
+      RealVector first_exp_coords(Teuchos::View, exp_coords.values(), exp_coords.numRows());
+      RealVector sim_values;
+      sim_values = sim_resp.field_values_view(i);
+
+      linear_interpolate_1d(sim_coords, sim_values, exp_coords, field_pred);
+
+      for (j=0; j<field_data_view(i,experiment).length(); j++,cntr++)
+          residuals(cntr)=field_pred(j)-field_data_view(i,experiment)[j];
+    }
+  }
+
+}
+
 }  // namespace Dakota
