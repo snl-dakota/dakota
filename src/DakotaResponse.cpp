@@ -76,6 +76,16 @@ Response(BaseConstructor, const Variables& vars,
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
   
+  const String& coord_file = problem_db.get_string("responses.coord_data_filename");
+  Cout << "coord_file " << coord_file;
+  
+  if (!coord_file.empty() ) {
+    RealMatrix coord_values;
+    read_coord_values(coord_file,coord_values);
+    Cout << "coord_values" << coord_values;
+    field_coords(coord_values,0);
+  } 
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(BaseConstructor) called to build base class "
        << "data for letter object." << std::endl;
@@ -1475,7 +1485,6 @@ void Response::apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
     abort_handler(-1);
   }
 }
-
 
 /** Implementation of serialization load for the Response handle */
 template<class Archive>

@@ -173,6 +173,18 @@ read_coord_values(const std::string& basename, int expt_num, RealMatrix& coords)
 //----------------------------------------------------------------
 
 void 
+read_coord_values(const std::string& basename, RealMatrix& coords){
+
+  std::ifstream s;
+  TabularIO::open_file(s, basename, "read_coord_values");
+  RealVectorArray va;
+  read_unsized_data(s, va);
+  copy_data(va, coords);
+}
+
+//----------------------------------------------------------------
+
+void 
 read_covariance(const std::string& basename, int expt_num, RealMatrix& cov_vals){
 
   std::ifstream s;

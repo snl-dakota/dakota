@@ -650,7 +650,11 @@ void read_field_values(const std::string& basename,
                        int expt_num,
                        RealVector& field_vars);
 
-/// file reader for coordinate data
+/// file reader for simulation coordinate data
+void read_coord_values(const std::string& basename,
+                       RealMatrix& coords);
+
+/// file reader for experimental coordinate data
 void read_coord_values(const std::string& basename,
                        int expt_num,
                        RealMatrix& coords);
