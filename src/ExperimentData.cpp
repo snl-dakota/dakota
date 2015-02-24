@@ -690,8 +690,8 @@ form_residuals(const Response& sim_resp, size_t experiment,
       RealVector sim_values;
       sim_values = sim_resp.field_values_view(i);
       Cout << "sim_values " << sim_values << '\n';
-      const RealMatrix& sim_coords = sim_resp.get_coord_values(i);
-      // const RealMatrix& sim_coords = sim_resp.field_coords_view(i);
+      //const RealMatrix& sim_coords = sim_resp.get_coord_values(i);
+       const RealMatrix& sim_coords = sim_resp.field_coords_view(i);
       Cout << "sim_coords " << sim_coords << '\n';
       RealMatrix exp_coords = field_coords_view(i,experiment);
       Cout << "exp_coords " << exp_coords << '\n';

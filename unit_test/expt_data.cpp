@@ -64,7 +64,7 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
     TEST_FLOATING_EQUALITY( gold_dat[i], field_vals_view[i], 1.e-14 );
 
   // Test coords correctness
-  RealMatrix field_coords_view = expt_data.field_coords_view(0, 0);
+  const RealMatrix field_coords_view = expt_data.field_coords_view(0, 0);
   RealMatrix gold_coords;
   read_coord_values(filename, 1, gold_coords);
   TEST_EQUALITY( gold_coords.numRows(), field_coords_view.numRows() );

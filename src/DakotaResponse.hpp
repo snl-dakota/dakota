@@ -167,6 +167,8 @@ public:
   void field_values(const RealVector& field_val, size_t i);
   /// return a "view" of a field value's coordinates
   RealMatrix field_coords_view(size_t i);
+  /// return a const "view" of a field value's coordinates
+  const RealMatrix field_coords_view(size_t i) const;
   /// set a field value's coordinates
   void field_coords(const RealMatrix& field_coords, size_t i);
 
@@ -483,6 +485,13 @@ inline RealMatrix Response::field_coords_view(size_t i)
     else
       return RealMatrix(Teuchos::View, fieldCoords[i], fieldCoords[i].numRows(), fieldCoords[i].numCols());
   }
+}
+
+
+inline const RealMatrix Response::field_coords_view(size_t i) const
+{
+  const RealMatrix matrix = const_cast<Response*>(this)->field_coords_view(i);
+  return matrix;
 }
 
 
