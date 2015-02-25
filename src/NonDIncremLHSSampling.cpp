@@ -121,9 +121,12 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
   size_t i, j, k;
   RealVectorArray sample_values_first(numSamples); // views OK
-  PRPCacheCIter prp_iter;
-  for (i=0, prp_iter = data_pairs.begin(); i<numSamples; ++i, ++prp_iter)
-    sample_values_first[i] = prp_iter->variables().continuous_variables();
+  // Restart records have negative eval IDs in the cache, so walk them
+  // in reverse eval ID order (-1 to -numSamples).  May not work in
+  // context of partial or concatenated restart.
+  PRPCacheCRevIter prp_rev_iter = data_pairs.rbegin();
+  for (i=0; i<numSamples; ++i, ++prp_rev_iter)
+    sample_values_first[i] = prp_rev_iter->variables().continuous_variables();
 #ifdef DEBUG
   Cout << "\nsample1\n" << sample_values_first << '\n';
 #endif

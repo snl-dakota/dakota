@@ -176,8 +176,10 @@ typedef PRPCache::index_iterator<ordered>::type       PRPCacheOIter;
 typedef PRPCache::index_const_iterator<ordered>::type PRPCacheOCIter;
 typedef PRPCache::index_iterator<hashed>::type        PRPCacheHIter;
 typedef PRPCache::index_const_iterator<hashed>::type  PRPCacheHCIter;
-typedef PRPCacheOIter  PRPCacheIter;  // default cache iterator <0>
-typedef PRPCacheOCIter PRPCacheCIter; // default cache const iterator <0>
+typedef PRPCacheOIter  PRPCacheIter;  ///< default cache iterator <0>
+typedef PRPCacheOCIter PRPCacheCIter; ///< default cache const iterator <0>
+/// default cache const reverse iterator <0>
+typedef boost::reverse_iterator<PRPCacheCIter> PRPCacheCRevIter; 
 
 // begin()/end() default to index 0.  These macros support other indices.
 
