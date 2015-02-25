@@ -29,6 +29,7 @@
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
+//#define TEST_HESSIANS
 
 
 namespace Dakota {
@@ -642,18 +643,18 @@ void NonDExpansion::initialize_expansion()
     u_space_sampler.reset();
 
   // store the current design/state vars in u-space
-  size_t i, j, cntr = 0;
-  RealVector initial_pt_x;
-  if (numContDesVars || numContEpistUncVars || numContStateVars ||
-      !subIteratorFlag){
+  if (numContDesVars || numContEpistUncVars || numContStateVars) {
+    RealVector initial_pt_x;
     copy_data(iteratedModel.continuous_variables(), initial_pt_x); // view->copy
     if (numUncertainQuant) { // reset uncertain values to means
       const Pecos::RealVector& x_means = natafTransform.x_means();
-      for (i=numContDesVars; i<numContDesVars + numContAleatUncVars; ++i)
+      for (size_t i=numContDesVars; i<numContDesVars + numContAleatUncVars; ++i)
 	initial_pt_x[i] = x_means[i];
     }
     natafTransform.trans_X_to_U(initial_pt_x, initialPtU);
   }
+  else if (!subIteratorFlag)
+    natafTransform.trans_X_to_U(natafTransform.x_means(), initialPtU);
 }
 
 
@@ -1641,15 +1642,23 @@ void NonDExpansion::compute_statistics()
       // polynomial derivatives.  They are computed for the means of the
       // uncertain varables and are intended to serve as importance factors.
       uSpaceModel.continuous_variables(initialPtU);
-      const RealVector& exp_grad_u_rv
+      const RealVector& exp_grad_u
 	= poly_approxs[i].gradient(uSpaceModel.current_variables());
-      RealVector exp_grad_u_pv, exp_grad_x_pv;
-      copy_data(exp_grad_u_rv, exp_grad_u_pv);
+      RealVector exp_grad_x;
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
       SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-      natafTransform.trans_grad_U_to_X(exp_grad_u_pv, exp_grad_x_pv,
+      natafTransform.trans_grad_U_to_X(exp_grad_u, exp_grad_x,
 				       natafTransform.x_means(), x_dvv, cv_ids);
-      Teuchos::setCol(exp_grad_x_pv, (int)i, expGradsMeanX);
+      Teuchos::setCol(exp_grad_x, (int)i, expGradsMeanX);
+
+#ifdef TEST_HESSIANS
+      const RealSymMatrix& exp_hess_u
+	= poly_approxs[i].hessian(uSpaceModel.current_variables());
+      //RealSymMatrix exp_hess_x;
+      //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x,
+      //			       natafTransform.x_means(), x_dvv, cv_ids);
+      write_data(Cout, exp_hess_u, true, true, true); //exp_hess_x
+#endif // TEST_HESSIANS
     }
 
     // *** global sensitivities:

@@ -2329,7 +2329,7 @@ static void Vchk_NormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 
 static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
 {
-  short bds;
+  short bds = 0; // 2 bits indicated LB and UB specs
   size_t i, j, n;
   Real mean, stdev, nudge, lower, upper;
   RealVector *B, *L, *M, *Sd, *U, *V, *IP;
@@ -2343,13 +2343,12 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
   B = &dv->continuousAleatoryUncLowerBnds;
   if (L->length()) {
     Vcopyup(B, L, offset, n); // global = distribution
-    bds = 1;
+    bds |= 1;
   }
   else {
     Set_rv(L, -DBL_MAX, n); // distribution
     for(j = 0; j < n; ++j)
       (*B)[offset+j] = (*M)[j] - 3.*(*Sd)[j]; // inferred global
-    bds = 0;
   }
 
   // process upper bounds
@@ -2376,8 +2375,10 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
   }
   else { // > bds is 0, 1, 2, or 3 (0 ==> no bounds given, nothing more to do)
 
-    //Vcopyup(V, M, offset, n);
     switch(bds) {
+    case 0: // no bounds
+      Vcopyup(V, M, offset, n);
+      break;
     case 1: // only lower bounds given
       for (i = offset, j = 0; j < n; ++i, ++j)
 	if ((*M)[j] <= (*L)[j]) (*V)[i] = (*L)[j] + 0.5*(*Sd)[j];
