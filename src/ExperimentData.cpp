@@ -689,23 +689,25 @@ form_residuals(const Response& sim_resp, size_t experiment,
       RealVector field_pred;
       RealVector sim_values;
       sim_values = sim_resp.field_values_view(i);
-      Cout << "sim_values " << sim_values << '\n';
-      //const RealMatrix& sim_coords = sim_resp.get_coord_values(i);
-       const RealMatrix& sim_coords = sim_resp.field_coords_view(i);
-      Cout << "sim_coords " << sim_coords << '\n';
+      //Cout << "sim_values " << sim_values << '\n';
+      const RealMatrix& sim_coords = sim_resp.field_coords_view(i);
+      //Cout << "sim_coords " << sim_coords << '\n';
       RealMatrix exp_coords = field_coords_view(i,experiment);
-      Cout << "exp_coords " << exp_coords << '\n';
+      //Cout << "exp_coords " << exp_coords << '\n';
 
-      RealVector first_sim_coords(Teuchos::View, sim_coords.values(), sim_coords.numRows());
-      RealVector first_exp_coords(Teuchos::View, exp_coords.values(), exp_coords.numRows());
-      Cout << "sim_coords " << first_sim_coords << '\n';
-      Cout << "exp_coords " << first_exp_coords << '\n';
+      RealMatrix first_sim_coords(sim_coords, Teuchos::TRANS);
+      RealMatrix first_exp_coords(exp_coords, Teuchos::TRANS);
+
+      Cout << "first_sim_coords " << first_sim_coords << '\n';
+      Cout << "first_exp_coords " << first_exp_coords << '\n';
       
-
       linear_interpolate_1d(first_sim_coords, sim_values, first_exp_coords, field_pred);
+      Cout << "field pred " << field_pred << '\n';
 
       for (j=0; j<field_data_view(i,experiment).length(); j++,cntr++)
           residuals(cntr)=field_pred(j)-field_data_view(i,experiment)[j];
+        
+      Cout << "residuals in exp space" << residuals << '\n';
     }
   }
 
