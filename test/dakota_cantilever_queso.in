@@ -11,8 +11,8 @@ method,
           metropolis adaptive
           #output debug
 	  # 1. diagonal with values
-#	  proposal_covariance diagonal
-#	    values 1.0e6 1.0e-1
+	  proposal_covariance diagonal
+	    values 1.0e6 1.0e-1
 	  # 2. matrix with values
 #	  proposal_covariance matrix
 #	    values 1.0 0.1

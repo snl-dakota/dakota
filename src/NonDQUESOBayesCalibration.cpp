@@ -381,11 +381,107 @@ user_proposal_covariance(const String& cov_type,
   // "matrix" data from either cov_data or cov_filename and populate a
   // full QUESO::GslMatrix* in proposalCovMatrix with the covariance
 
-  // should validate that provided data is a valid covariance matrix (SPD)
+  bool use_file = !cov_filename.empty();
 
-  // default_proposal_covariance shows constructing from covDiag vector
+  // Sanity check
+  if( ("diagonal" != cov_type) &&
+      ("matrix"   != cov_type) )
+    throw std::runtime_error("User-specified covariance must have type of either \"diagonal\" of \"matrix\".  You have \""+cov_type+"\".");
 
-  // see QUESO::GslMatrix for other possible helpful constructors
+  // Sanity check
+  if( cov_data.length() && use_file )
+    throw std::runtime_error("You cannot provide both covariance values and a covariance data filename.");
+
+  // Size our Queso covariance matrix
+  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+
+  // Sanity check
+  int total_num_params = paramSpace->dimGlobal();
+  if( (proposalCovMatrix->numRowsLocal()  != total_num_params) || 
+      (proposalCovMatrix->numRowsGlobal() != total_num_params) || 
+      (proposalCovMatrix->numCols()       != total_num_params)   )
+    throw std::runtime_error("Queso vector space is not consistent with parameter dimension.");
+        
+  // Read in a general way and then check that the data is consistent
+  RealVectorArray values_from_file;
+  if( use_file )
+  {
+    std::ifstream s;
+    TabularIO::open_file(s, cov_filename, "read_queso_covariance_data");
+    bool row_major = false;
+    read_unsized_data(s, values_from_file, row_major);
+  }
+
+  if( "diagonal" == cov_type )
+  {
+    if( use_file ) {
+      // Sanity checks
+      if( values_from_file.size() != 1 ) 
+        throw std::runtime_error("\"diagonal\" Queso covariance file data should have 1 column and "
+                                 +convert_to_string(total_num_params)+" rows.");
+      if( values_from_file[0].length() != total_num_params )
+        throw std::runtime_error("\"diagonal\" Queso covariance file data should have "
+                                 +convert_to_string(total_num_params)+" rows.  Found "
+                                 +convert_to_string(values_from_file[0].length())+" rows.");
+      for( int i=0; i<total_num_params; ++i )
+        (*proposalCovMatrix)(i,i) = values_from_file[0](i);
+    }
+    else {
+      // Sanity check
+      if( total_num_params != cov_data.length() )
+        throw std::runtime_error("Expected num covariance values is "+convert_to_string(total_num_params)
+                                 +" but incoming vector provides "+convert_to_string(cov_data.length())+".");
+      for( int i=0; i<total_num_params; ++i )
+        (*proposalCovMatrix)(i,i) = cov_data(i);
+    }
+  }
+  else // "matrix" == cov_type
+  {
+    if( use_file ) {
+      // Sanity checks
+      if( values_from_file.size() != total_num_params ) 
+        throw std::runtime_error("\"matrix\" Queso covariance file data should have "
+                                 +convert_to_string(total_num_params)+" columns.  Found "
+                                 +convert_to_string(values_from_file.size())+" columns.");
+      if( values_from_file[0].length() != total_num_params )
+        throw std::runtime_error("\"matrix\" Queso covariance file data should have "
+                                 +convert_to_string(total_num_params)+" rows.  Found "
+                                 +convert_to_string(values_from_file[0].length())+" rows.");
+      for( int i=0; i<total_num_params; ++i )
+        for( int j=0; j<total_num_params; ++j )
+          (*proposalCovMatrix)(i,j) = values_from_file[i](j);
+    }
+    else {
+      // Sanity check
+      if( total_num_params*total_num_params != cov_data.length() )
+        throw std::runtime_error("Expected num covariance values is "+convert_to_string(total_num_params*total_num_params)
+            +" but incoming vector provides "+convert_to_string(cov_data.length())+".");
+      int count = 0;
+      for( int i=0; i<total_num_params; ++i )
+        for( int j=0; j<total_num_params; ++j )
+          (*proposalCovMatrix)(i,j) = cov_data[count++];
+    }
+  }
+
+  // validate that provided data is a valid covariance - test symmetry
+  //    Note: I had hoped to have this check occur in the call to chol() below, 
+  //    but chol doesn't seem to mind that matrices are not symmetric... RWH
+  //proposalCovMatrix->print(std::cout);
+  //std::cout << std::endl;
+  QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
+  test_mat -= *proposalCovMatrix;
+  if( test_mat.normMax() > 1.e-14 )
+    throw std::runtime_error("Queso covariance matrix is not symmetric.");
+
+  // validate that provided data is a valid covariance matrix - test PD part of SPD
+  test_mat = *proposalCovMatrix;
+  int ierr = test_mat.chol();
+  if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
+    throw std::runtime_error("Queso covariance data is not SPD.");
+
+  //proposalCovMatrix->print(std::cout);
+  //std::cout << std::endl;
+  //cov_data.print(std::cout);
 }
 
 
