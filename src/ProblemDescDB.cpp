@@ -1406,7 +1406,6 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
 	{"nond.dimension_preference", P anisoDimPref},
 	{"nond.proposal_covariance_data", P proposalCovData},
-	{"nond.proposal_covariance_scale", P proposalCovScale},
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},
 	{"parameter_study.list_of_points", P listOfPoints},

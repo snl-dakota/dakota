@@ -94,7 +94,6 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::NonDDREAMInstance(NULL);
 NonDDREAMBayesCalibration::
 NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  //proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma")),
   numChains(probDescDB.get_int("method.dream.num_chains")),
@@ -275,7 +274,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Step 5 of 5: Solve the inverse problem
   ////////////////////////////////////////////////////////
 
-  // BMA TODO: set initial point and scaled covariance if relevant
+  // BMA TODO: set initial point and proposal covariance if relevant
 
   // uqGslVectorClass paramInitials(paramSpace.zeroVector());
   // uqGslVectorClass covDiag(paramSpace.zeroVector());
@@ -289,19 +288,6 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // for (int i=numContinuousVars;i<total_num_params;i++) {
   //   paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
   // }
-  // Cout << "proposalCovScale " << proposalCovScale << '\n';
-  // if (!proposalCovScale.empty()) {
-  //   for (int i=0;i<total_num_params;i++) {
-  //     covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i])*proposalCovScale[i];
-  //   }
-  // }
-  // else { 
-  //   for (int i=0;i<total_num_params;i++) {
-  //     covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i]);
-  //   }
-  // }
-
-  // Cout << "covDiag " << covDiag << '\n';
   // Cout << "initParams " << paramInitials << '\n';
 
   // uqGslMatrixClass* proposalCovMatrix = postRv.imageSet().vectorSpace().newProposalMatrix(&covDiag,&paramInitials); 

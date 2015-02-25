@@ -6434,7 +6434,6 @@ static RealVector
 	MP_(linearIneqScales),
 	MP_(listOfPoints),
 	MP_(proposalCovData),
-	MP_(proposalCovScale),
 	MP_(regressionNoiseTol),
 	MP_(stepVector);
 

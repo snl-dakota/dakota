@@ -908,8 +908,6 @@ public:
   String rejectionType;
   /// the \c metropolis type specification in \ref MethodNonDBayesCalib
   String metropolisType;
-  /// the \c proposal covariance scale factor in \ref MethodNonDBayesCalib
-  RealVector proposalCovScale;
   /// the type of proposal covariance: diagonal or matrix
   String proposalCovType;
   /// raw list of reals data for the covariance

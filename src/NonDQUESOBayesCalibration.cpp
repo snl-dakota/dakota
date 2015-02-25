@@ -45,12 +45,11 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
 NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  quesoStandardizedSpace(true),
+  quesoStandardizedSpace(false),
   mcmcType(probDescDB.get_string("method.mcmc_type")),
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
   // these two deprecated:
-  proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
 { 
@@ -68,6 +67,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // for now, assume that if you are reading in any experimental 
   // standard deviations, you do NOT want to calibrate sigma terms
   // BMA TODO: this is wrong logic: need to check for != "none"
+  // Also, need to sync up with data available in the covariance class.
   if (!varianceTypesRead.empty() && !calibrateSigmaFlag)
     calibrateSigmaFlag = false;
   // For now, set calcSigmaFlag to true: this should be read from input
@@ -80,6 +80,8 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // initialize or update the proposal covariance; default init must
   // be done after parameter domain is initialized
+  // TODO: In general if user gives proposal covariance; must be
+  // transformed to scaled space in same way as variables
   const String& covariance_type = 
     probDescDB.get_string("method.nond.proposal_cov_type");
   if (covariance_type.empty())
@@ -173,6 +175,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     inv_pb.solveWithBayesMLSampling();
 
   if (outputLevel >= DEBUG_OUTPUT) {
+    // TODO: Need to transform chain back to unscaled space for
+    // reporting to user; possibly also in auxilliary data files for
+    // user consumption.
+
     // To demonstrate retrieving the chain. Note that the QUESO
     // VectorSequence class has a number of helpful filtering and
     // statistics functions.
@@ -273,32 +279,34 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   }
   else { // case PCE_EMULATOR: case SC_EMULATOR:
     Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
-    //Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-    //RealVector lower_u, upper_u;
-    //nataf.trans_X_to_U(lower_bounds,lower_u);
-    //nataf.trans_X_to_U(upper_bounds,upper_u);
+    // TODO: This transformation shouldn't be necessary, but need to
+    // verify that ALL variable types are mapped to new bounds and
+    // initial point when the PCE is constructed in u-space.
     for (size_t i=0; i<numContinuousVars; i++) {
       paramMins[i] = lower_bounds[i];
       paramMaxs[i] = upper_bounds[i];
-//      paramMins[i]=lower_u[i];
-//      paramMaxs[i]=upper_u[i];
     }
   }
   // the parameter domain will now be expanded by sigma terms if 
   // calibrateSigmaFlag is true
   if (calibrateSigmaFlag) {
     for (int j=0; j<numFunctions; j++){
+      // TODO: Need to be able to get sigma from new covariance class.
+      // Also need to sync up this with the logic in the ctor.  Also
+      // need a default if there's no experimental data (may not be
+      // sensible)
       Real std_0_j = expData.scalar_sigma(j, 0);
       paramMins[numContinuousVars+j] = 0.01*std_0_j;
       paramMaxs[numContinuousVars+j] = 2.0*std_0_j;
     }
   }
  
+  // TODO: Update this after we decide how to manage the
+  // transformation to standardized space.
   if (quesoStandardizedSpace){
     for (size_t i=0; i<numContinuousVars; i++) {
       paramMins[i] = 0.0;
       paramMaxs[i] = 1.0;
-      //init_point[i]=(init_point[i]-lower_bounds[i])/(upper_bounds[i]-lower_bounds[i]);
     }
   }
     
@@ -316,72 +324,42 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
   for (int i=0; i<numContinuousVars; i++) {
     if (init_point[i]) 
-      if (!quesoStandardizedSpace)
-        (*paramInitials)[i] = init_point[i];
-      else
+      if (quesoStandardizedSpace)
         (*paramInitials)[i] = (init_point[i]-lower_bounds[i])/(upper_bounds[i]-lower_bounds[i]);
-      //paramInitials[i] = (paramMaxs[i]+paramMins[i])/2.0;
+      else
+        (*paramInitials)[i] = init_point[i];
     else 
       (*paramInitials)[i] = (paramMaxs[i]+paramMins[i])/2.0;
   }
   //for (int i=numContinuousVars;i<total_num_params;i++) {
   //  paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
   //}
-  Cout << "Initial Parameter values sent to QUESO " 
-       << "(may be in scaled space) \n"  << *paramInitials << '\n';
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Initial Parameter values sent to QUESO " 
+	 << "(may be in scaled space) \n"  << *paramInitials << std::endl;
 }
 
 
-/// must be called after paramMins/paramMaxs set above
+/** Must be called after paramMins/paramMaxs set above */
 void NonDQUESOBayesCalibration::default_proposal_covariance()
 {
   int total_num_params = paramSpace->dimGlobal();
   QUESO::GslVector covDiag(paramSpace->zeroVector());
-  //QUESO::GslMatrix proposalCovMatrix(paramSpace.zeroVector());
 
-  // TODO: remove deprecated proposal covariance scale
-
-  if (!proposalCovScale.empty()) {
-    Cout << "Scaling factors for the proposal covariance " 
-         << "in the original space. \n" << proposalCovScale << '\n';
-  }
-  if (!proposalCovScale.empty()) {
-    if (!quesoStandardizedSpace) 
-      for (int i=0; i<total_num_params; i++) {
-        covDiag[i] = proposalCovScale[i];
-      }
-    else {
-      const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
-      const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
-      for (int i=0; i<total_num_params; i++) {
-        covDiag[i] = 
-	  proposalCovScale[i]/
-	  ((upper_bounds[i]-lower_bounds[i])*(upper_bounds[i]-lower_bounds[i]));
-      }
-    }
-  }
-  else { 
-    const QUESO::GslVector& param_min = paramDomain->minValues();
-    const QUESO::GslVector& param_max = paramDomain->maxValues();
-    for (int i=0; i<total_num_params; i++) {
-      covDiag[i] =
-	(1.0/12.0)*(param_max[i]-param_min[i])*(param_max[i]-param_min[i]);
-    }
-  }
+  // default to covariance of independent uniforms (diagonal)
+  const QUESO::GslVector& param_min = paramDomain->minValues();
+  const QUESO::GslVector& param_max = paramDomain->maxValues();
+  for (int i=0; i<total_num_params; i++)
+    covDiag[i] = (param_max[i]-param_min[i])*(param_max[i]-param_min[i])/12.0;
   
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Diagonal elements of the proposal covariance " 
 	 << "sent to QUESO (may be in scaled space) \n" << covDiag << '\n';
 
   proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
-
-  //  QUESO::GslMatrix* proposalCovMatrix = postRv.imageSet().vectorSpace().newProposalMatrix(&covDiag,&paramInitials); 
-  //QUESO::GslMatrix proposalCovMatrix(covDiag);
-  //(*proposalCovMatrix)(0,1)=0.0099;
-  //(*proposalCovMatrix)(1,0)=0.0099;
   
   if (outputLevel > NORMAL_OUTPUT) {
-    Cout << "ProposalCovMatrix " << '\n'; 
+    Cout << "QUESO ProposalCovMatrix " << '\n'; 
     for (size_t i=0; i<total_num_params; i++) {
       for (size_t j=0; j<total_num_params; j++) 
 	Cout <<  (*proposalCovMatrix)(i,j) << "  " ; 
@@ -396,6 +374,9 @@ user_proposal_covariance(const String& cov_type,
 			 const RealVector& cov_data, 
 			 const String& cov_filename)
 {
+  // TODO: Will need to scale user covariance if this method is
+  // applying its own scaling.
+
   // this function will convert user-specified cov_type = "diagonal" |
   // "matrix" data from either cov_data or cov_filename and populate a
   // full QUESO::GslMatrix* in proposalCovMatrix with the covariance
@@ -422,7 +403,7 @@ void NonDQUESOBayesCalibration::set_inverse_problem_options()
   calIpOptionsValues.reset(new QUESO::SipOptionsValues());
   //definitely want to retain computeSolution
   calIpOptionsValues->m_computeSolution      = true;
-  calIpOptionsValues->m_dataOutputFileName   = "outputData/tgaCalOutput";
+  calIpOptionsValues->m_dataOutputFileName   = "outputData/invpb_output";
   calIpOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpOptionsValues->m_dataOutputAllowedSet.insert(1);
 }
@@ -433,7 +414,7 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
 
   calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
 
-  calIpMhOptionsValues->m_dataOutputFileName   = "outputData/tgaCalOutput";
+  calIpMhOptionsValues->m_dataOutputFileName   = "outputData/mh_output";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
@@ -445,7 +426,7 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   //calIpMhOptionsValues->m_rawChainGenerateExtra         = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod         = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes       = true;
-  calIpMhOptionsValues->m_rawChainDataOutputFileName    = "outputData/file_cal_ip_raw";
+  calIpMhOptionsValues->m_rawChainDataOutputFileName    = "outputData/raw_chain";
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(1);
   // NO LONGER SUPPORTED.  calIpMhOptionsValues->m_rawChainComputeStats          = true;
@@ -473,7 +454,7 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   calIpMhOptionsValues->m_filteredChainGenerate              = true;
   calIpMhOptionsValues->m_filteredChainDiscardedPortion      = 0.;
   calIpMhOptionsValues->m_filteredChainLag                   = 20;
-  calIpMhOptionsValues->m_filteredChainDataOutputFileName    = "outputData/file_cal_ip_filt";
+  calIpMhOptionsValues->m_filteredChainDataOutputFileName    = "outputData/filtered_chain";
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
   //calIpMhOptionsValues->m_filteredChainComputeStats          = true;
@@ -505,12 +486,11 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   int num_cont = NonDQUESOInstance->numContinuousVars; 
   RealVector x(num_cont);
   
-  //Cout << "numExpStdDeviationsRead " << NonDQUESOInstance->numExpStdDeviationsRead << '\n';
-
   for (i=0; i<num_cont; i++) 
     x(i)=paramValues[i];
   
   if (NonDQUESOInstance->quesoStandardizedSpace){
+    // TODO: need to transform sigmas back to unscaled space...
     const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
     const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
     if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
@@ -521,50 +501,43 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
       Cout << "Values of theta parameters DAKOTA uses" << x << '\n';
   }
 
-  // FOR NOW:  THE GP and the NO EMULATOR case use an unstandardized 
-  // space (original) and the PCE or SC cases use a more general standardized space.  
+  // The GP/KRIGING/NO EMULATOR case use an unstandardized space
+  // (original) and the PCE or SC cases use a more general
+  // standardized space.
+  //
   // We had discussed having QUESO search in the original space:  this may 
   // difficult for high dimensional spaces depending on the scaling, 
   // because QUESO calculates the volume of the hypercube in which it is 
   // searching and will stop if it is too small (e.g. if one input is 
   // of small magnitude, searching in the original space will not be viable).
-  // 
   if (NonDQUESOInstance->emulatorType == GP_EMULATOR ||
       NonDQUESOInstance->emulatorType == KRIGING_EMULATOR ||
-      NonDQUESOInstance->emulatorType == NO_EMULATOR) {
-    //const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
-    //const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
-    //Cout << "Queso X" << x << '\n';
-    //for (i=0; i<num_cont; i++) 
-    //  x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
+      NonDQUESOInstance->emulatorType == NO_EMULATOR)
+    NonDQUESOInstance->emulatorModel.continuous_variables(x);
+  else  //case PCE_EMULATOR: case SC_EMULATOR: 
     NonDQUESOInstance->emulatorModel.continuous_variables(x); 
-    //Cout << "DAKOTA X" << x << '\n';
-  }
-  else { //case PCE_EMULATOR: case SC_EMULATOR: 
-    NonDQUESOInstance->emulatorModel.continuous_variables(x); 
-      RealVector u(num_cont);
-      for (i=0; i<num_cont; i++) 
-        u(i)=paramValues[i];
-      Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
-      Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-      nataf.trans_U_to_X(u,x);
-    //NonDQUESOInstance->emulatorModel.continuous_variables(x); 
-  } 
 
   // Compute simulation response to use in likelihood 
   NonDQUESOInstance->emulatorModel.compute_response();
-  RealVector fn_vals = NonDQUESOInstance->emulatorModel.current_response().function_values();
-  //Cout << "input is " << x << '\n';
-  //Cout << "output is " << fn_vals << '\n';
- 
-  // Calculate the likelihood depending on what information is available 
-  // for the standard deviations
-  // NOTE:  If the calibration of the sigma terms is included, we assume 
-  // ONE sigma term per function is calibrated. 
-  // Otherwise, we assume that yStdData has already had the correct values 
-  // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
-  // matrix of standard deviations.  Thus, we just have to iterate over this to 
-  // calculate the likelihood. 
+  const RealVector& fn_vals = 
+    NonDQUESOInstance->emulatorModel.current_response().function_values();
+  if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
+    Cout << "input is " << x << '\n';
+    Cout << "output is " << fn_vals << '\n';
+  } 
+
+  // TODO: Update treatment of standard deviations as inference
+  // vs. fixed parameters; also advanced use cases of calibrated
+  // scalar sigma against user-provided covariance structure.
+
+  // Calculate the likelihood depending on what information is
+  // available for the standard deviations NOTE: If the calibration of
+  // the sigma terms is included, we assume ONE sigma term per
+  // function is calibrated.  Otherwise, we assume that yStdData has
+  // already had the correct values placed depending if there is zero,
+  // one, num_funcs, or a full num_exp*num_func matrix of standard
+  // deviations.  Thus, we just have to iterate over this to calculate
+  // the likelihood.
   if (NonDQUESOInstance->calibrateSigmaFlag) {
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
@@ -586,6 +559,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
     Cout << "Likelihood is " << exp(result) << '\n';
   
+  // TODO: open file once and append here, or rely on QUESO to output
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
     std::ofstream QuesoOutput;
     QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);

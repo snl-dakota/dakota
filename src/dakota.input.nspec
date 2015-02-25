@@ -1181,7 +1181,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             filename STRING {N_mdm(str,proposalCovFile)}
            ]
-          [ proposal_covariance_scale REALLIST {N_mdm(RealDL,proposalCovScale)} ]
          )
         |
         ( dream {N_mdm(utype,subMethod_SUBMETHOD_DREAM)}

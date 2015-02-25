@@ -52,7 +52,6 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
-  proposalCovScale(probDescDB.get_rv("method.nond.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_points_file")),
   approxImportAnnotated(

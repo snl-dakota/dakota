@@ -9,7 +9,6 @@ method,
           mcmc_type dram
           rejection delayed
           metropolis adaptive
-          proposal_covariance_scale 1.e+10 1.e-3
           #output debug
 	  # 1. diagonal with values
 #	  proposal_covariance diagonal
@@ -23,8 +22,8 @@ method,
 #	    filename 'mycov.dat'
 
 variables,								
-        active design 
-        continuous_design 2
+	active uncertain
+        uniform_uncertain 2
           upper_bounds  1.e8 10.0
 #  Truth value is 2.85e7 2.5 
           lower_bounds 1.e6 0.1

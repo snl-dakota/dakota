@@ -253,7 +253,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << rejectionType << metropolisType << proposalCovScale
+    << mcmcType << rejectionType << metropolisType
     << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
@@ -381,7 +381,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> emulatorSamples >> emulatorOrder >> emulatorType
-    >> mcmcType >> rejectionType >> metropolisType >> proposalCovScale
+    >> mcmcType >> rejectionType >> metropolisType
     >> proposalCovType >> proposalCovData >> proposalCovFile
     >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
@@ -509,7 +509,7 @@ void DataMethodRep::write(std::ostream& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << rejectionType << metropolisType << proposalCovScale
+    << mcmcType << rejectionType << metropolisType
     << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs

@@ -1316,7 +1316,6 @@ KEYWORD12 method
 	      values REALLIST
 	      | filename STRING
 	      ]
-	    [ proposal_covariance_scale REALLIST ]
 	    )
 	  |
 	  ( gpmsa
@@ -1353,7 +1352,6 @@ KEYWORD12 method
 	      values REALLIST
 	      | filename STRING
 	      ]
-	    [ proposal_covariance_scale REALLIST ]
 	    )
 	  |
 	  ( dream

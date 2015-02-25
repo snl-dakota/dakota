@@ -1779,9 +1779,6 @@
 			  </keyword>
 			</oneOf>
                       </keyword>
-		      <keyword  id="proposal_covariance_scale" name="proposal_covariance_scale" code="{N_mdm(RealDL,proposalCovScale)}" label="proposal_covariance_scale" help="" minOccurs="0" >
-                        <param type="REALLIST" />
-                      </keyword>
                     </required>
                     <keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream" help="" minOccurs="1" >
                       <keyword  id="chains" name="chains" code="{N_mdm(int,numChains)}" label="Number of chains" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" >

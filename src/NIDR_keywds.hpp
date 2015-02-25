@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1340 distinct keywords (plus 205 aliases) **/
+/** 1339 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -303,10 +303,9 @@ static KeyWord
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_54[4] = {
+	kw_54[3] = {
 		{"mcmc_type",8,2,1,0,kw_51},
 		{"proposal_covariance",8,4,3,0,kw_52},
-		{"proposal_covariance_scale",14,0,4,0,0,0.,0.,0,N_mdm(RealDL,proposalCovScale)},
 		{"rng",8,2,2,0,kw_53}
 		},
 	kw_55[2] = {
@@ -319,7 +318,7 @@ static KeyWord
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxImportAnnotated)}
 		},
 	kw_57[4] = {
-		{0,0,4,0,0,kw_54},
+		{0,0,3,0,0,kw_54},
 		{"emulator_samples",9,0,1,1,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,3,0,kw_55,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"import_points_file",11,3,2,0,kw_56,0.,0.,0,N_mdm(str,approxImportFile)}
@@ -353,7 +352,7 @@ static KeyWord
 		{"sc",8,1,1,1,kw_62,0.,0.,0,N_mdm(type,emulatorType_SC_EMULATOR)}
 		},
 	kw_64[2] = {
-		{0,0,4,0,0,kw_54},
+		{0,0,3,0,0,kw_54},
 		{"emulator",8,4,1,0,kw_63}
 		},
 	kw_65[8] = {

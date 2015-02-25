@@ -113,8 +113,6 @@ protected:
   String rejectionType;
   /// Metropolis type ("hastings" or "adaptive", in the DRAM framework) 
   String metropolisType;
-  /// scale factor for proposal covariance; deprecated
-  RealVector proposalCovScale;
   /// scale factor for likelihood; deprecated
   Real likelihoodScale;
   /// flag to indicated if the sigma terms should be calibrated (default true)
