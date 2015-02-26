@@ -642,19 +642,30 @@ void NonDExpansion::initialize_expansion()
       !u_space_sampler.is_null())
     u_space_sampler.reset();
 
-  // store the current design/state vars in u-space
-  if (numContDesVars || numContEpistUncVars || numContStateVars) {
-    RealVector initial_pt_x;
-    copy_data(iteratedModel.continuous_variables(), initial_pt_x); // view->copy
-    if (numUncertainQuant) { // reset uncertain values to means
-      const Pecos::RealVector& x_means = natafTransform.x_means();
-      for (size_t i=numContDesVars; i<numContDesVars + numContAleatUncVars; ++i)
-	initial_pt_x[i] = x_means[i];
+  // set initialPtU which is used for all-variables mode and for local
+  // sensitivity calculations.  In the case of design/epistemic/state vars,
+  // it captures the current values for this UQ execution; for aleatory vars,
+  // it captures the initial values from user specifications or mean defaults.
+  if (numContDesVars || numContEpistUncVars || numContStateVars) { // all vars
+    // store current design/epistemic/state and initial aleatory
+    if (numUncertainQuant == 0) // initial UQ: full update of initialPtU
+      natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
+				  initialPtU);
+    else { // subsequent UQ: partial update of initialPtU
+      RealVector pt_u; size_t i;
+      natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
+      for (i=0; i<numContDesVars; ++i)
+	initialPtU[i] = pt_u[i];
+      for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
+	initialPtU[i] = pt_u[i];
     }
-    natafTransform.trans_X_to_U(initial_pt_x, initialPtU);
   }
-  else if (!subIteratorFlag)
-    natafTransform.trans_X_to_U(natafTransform.x_means(), initialPtU);
+  else if (!subIteratorFlag && numUncertainQuant == 0 &&
+	   outputLevel >= NORMAL_OUTPUT)
+    // store the initial aleatory vars (user spec or mean default) in u-space
+    // for use in local sensitivity calculation
+    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
+				initialPtU);
 }
 
 
