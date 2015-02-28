@@ -3592,7 +3592,7 @@ Partial Rank Correlation Matrix between input and output:
            X -3.96119e-02  9.41307e-01  8.45480e-01 
            Y  1.02100e-01  9.40889e-01  9.55994e-01 
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 437 total (435 new, 2 duplicate)
+<<<<< Function evaluation summary: 442 total (440 new, 2 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -2.8366322206e+02   9.9999999999e-04   3.0902323062e+00   3.0902323062e+00
@@ -7129,8 +7129,8 @@ Test Number 5 succeeded
    1.6999999999e+00   8.3301386856e-01  -9.6614373445e-01  -9.6614373445e-01
    1.7499999999e+00   8.4588021936e-01  -1.0189229205e+00  -1.0189229205e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 53 total (53 new, 0 duplicate)
-  response_fn_1: 53 val (53 n, 0 d), 53 grad (53 n, 0 d), 24 Hess (24 n, 0 d)
+<<<<< Function evaluation summary: 54 total (54 new, 0 duplicate)
+  response_fn_1: 54 val (54 n, 0 d), 54 grad (54 n, 0 d), 24 Hess (24 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000001e-01   4.7624085968e-02   1.6683404019e+00   1.6683404019e+00
@@ -7187,8 +7187,8 @@ Test Number 7 succeeded
    1.6999999999e+00   8.3301386856e-01  -9.6614373445e-01  -9.6614373445e-01
    1.7499999999e+00   8.4588021936e-01  -1.0189229205e+00  -1.0189229205e+00
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 219 total (189 new, 30 duplicate)
-  response_fn_1: 73 val (63 n, 10 d), 219 grad (189 n, 30 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 219 total (198 new, 21 duplicate)
+  response_fn_1: 73 val (66 n, 7 d), 219 grad (198 n, 21 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.9999940903e-01   4.7624085942e-02   1.6683430920e+00   1.6683404022e+00
@@ -7216,8 +7216,8 @@ Test Number 8 succeeded
    1.6999974886e+00   8.3301386861e-01  -9.6614104485e-01  -9.6614373465e-01
    1.7499974152e+00   8.4588021948e-01  -1.0189202312e+00  -1.0189229210e+00
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 150 total (117 new, 33 duplicate)
-  response_fn_1: 50 val (39 n, 11 d), 150 grad (117 n, 33 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 150 total (120 new, 30 duplicate)
+  response_fn_1: 50 val (40 n, 10 d), 150 grad (120 n, 30 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.9999940781e-01   4.7624085390e-02   1.6683430976e+00   1.6683404078e+00
@@ -9864,14 +9864,14 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_steel_column_mf.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 35 total (23 new, 12 duplicate)
- nln_ineq_con_1: 35 val (23 n, 12 d), 32 grad (23 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 863 total (821 new, 42 duplicate)
-  response_fn_1: 863 val (821 n, 42 d), 533 grad (491 n, 42 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 35 total (23 new, 12 duplicate)
- nln_ineq_con_1: 35 val (23 n, 12 d), 32 grad (23 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 863 total (821 new, 42 duplicate)
-  response_fn_1: 863 val (821 n, 42 d), 533 grad (491 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 37 total (25 new, 12 duplicate)
+ nln_ineq_con_1: 37 val (25 n, 12 d), 34 grad (25 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 877 total (835 new, 42 duplicate)
+  response_fn_1: 877 val (835 n, 42 d), 547 grad (505 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 37 total (25 new, 12 duplicate)
+ nln_ineq_con_1: 37 val (25 n, 12 d), 34 grad (25 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 877 total (835 new, 42 duplicate)
+  response_fn_1: 877 val (835 n, 42 d), 547 grad (505 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -9882,14 +9882,14 @@ Test Number 0 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 37 total (26 new, 11 duplicate)
- nln_ineq_con_1: 37 val (26 n, 11 d), 34 grad (26 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 877 total (842 new, 35 duplicate)
-  response_fn_1: 877 val (842 n, 35 d), 547 grad (512 n, 35 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 37 total (26 new, 11 duplicate)
- nln_ineq_con_1: 37 val (26 n, 11 d), 34 grad (26 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 877 total (842 new, 35 duplicate)
-  response_fn_1: 877 val (842 n, 35 d), 547 grad (512 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (27 new, 11 duplicate)
+ nln_ineq_con_1: 38 val (27 n, 11 d), 35 grad (27 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 884 total (849 new, 35 duplicate)
+  response_fn_1: 884 val (849 n, 35 d), 554 grad (519 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (27 new, 11 duplicate)
+ nln_ineq_con_1: 38 val (27 n, 11 d), 35 grad (27 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 884 total (849 new, 35 duplicate)
+  response_fn_1: 884 val (849 n, 35 d), 554 grad (519 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500010720e+01 d
@@ -9900,14 +9900,14 @@ Test Number 1 succeeded
                       4.0000021440e+03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
- nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1418 total (1376 new, 42 duplicate)
-  response_fn_1: 1418 val (1376 n, 42 d), 821 grad (779 n, 42 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
- nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1418 total (1376 new, 42 duplicate)
-  response_fn_1: 1418 val (1376 n, 42 d), 821 grad (779 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 39 total (27 new, 12 duplicate)
+ nln_ineq_con_1: 39 val (27 n, 12 d), 36 grad (27 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1425 total (1383 new, 42 duplicate)
+  response_fn_1: 1425 val (1383 n, 42 d), 828 grad (786 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 39 total (27 new, 12 duplicate)
+ nln_ineq_con_1: 39 val (27 n, 12 d), 36 grad (27 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1425 total (1383 new, 42 duplicate)
+  response_fn_1: 1425 val (1383 n, 42 d), 828 grad (786 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -9918,14 +9918,14 @@ Test Number 2 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 41 total (30 new, 11 duplicate)
- nln_ineq_con_1: 41 val (30 n, 11 d), 38 grad (30 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1439 total (1404 new, 35 duplicate)
-  response_fn_1: 1439 val (1404 n, 35 d), 842 grad (807 n, 35 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 41 total (30 new, 11 duplicate)
- nln_ineq_con_1: 41 val (30 n, 11 d), 38 grad (30 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1439 total (1404 new, 35 duplicate)
-  response_fn_1: 1439 val (1404 n, 35 d), 842 grad (807 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 42 total (31 new, 11 duplicate)
+ nln_ineq_con_1: 42 val (31 n, 11 d), 39 grad (31 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1446 total (1411 new, 35 duplicate)
+  response_fn_1: 1446 val (1411 n, 35 d), 849 grad (814 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 42 total (31 new, 11 duplicate)
+ nln_ineq_con_1: 42 val (31 n, 11 d), 39 grad (31 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1446 total (1411 new, 35 duplicate)
+  response_fn_1: 1446 val (1411 n, 35 d), 849 grad (814 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7499987263e+01 d
@@ -9937,9 +9937,9 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_steel_column_trsb.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 18 total (18 new, 0 duplicate)
-         obj_fn: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 20 total (20 new, 0 duplicate)
+         obj_fn: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 10 total (9 new, 1 duplicate)
  nln_ineq_con_1: 10 val (9 n, 1 d), 5 grad (5 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 1100 total (990 new, 110 duplicate)
@@ -9954,9 +9954,9 @@ Test Number 0 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 24 total (24 new, 0 duplicate)
-         obj_fn: 24 val (24 n, 0 d), 24 grad (24 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 24 val (24 n, 0 d), 24 grad (24 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 26 total (26 new, 0 duplicate)
+         obj_fn: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
  nln_ineq_con_1: 6 val (6 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 660 total (660 new, 0 duplicate)
@@ -10681,8 +10681,8 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 1114 total (1111 new, 3 duplicate)
   response_fn_1: 72 val (71 n, 1 d), 72 grad (71 n, 1 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 509 val (508 n, 1 d), 509 grad (508 n, 1 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 533 val (532 n, 1 d), 533 grad (532 n, 1 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 507 val (506 n, 1 d), 507 grad (506 n, 1 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 535 val (534 n, 1 d), 535 grad (534 n, 1 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.4563087186e+00 w
                       3.8931265964e+00 t
@@ -11003,10 +11003,10 @@ Test Number 1 succeeded
                       1.0783175676e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 200 total (155 new, 45 duplicate)
+<<<<< Function evaluation summary (UQ_I): 200 total (156 new, 44 duplicate)
   response_fn_1: 25 val (14 n, 11 d), 33 grad (22 n, 11 d), 25 Hess (14 n, 11 d)
   response_fn_2: 97 val (69 n, 28 d), 105 grad (77 n, 28 d), 97 Hess (69 n, 28 d)
-  response_fn_3: 104 val (76 n, 28 d), 112 grad (84 n, 28 d), 104 Hess (76 n, 28 d)
+  response_fn_3: 104 val (77 n, 27 d), 112 grad (85 n, 27 d), 104 Hess (77 n, 27 d)
 <<<<< Best parameters          =
                       2.4600865447e+00 w
                       3.8700722037e+00 t
@@ -11017,10 +11017,10 @@ Test Number 2 succeeded
                       3.0297750816e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 407 total (366 new, 41 duplicate)
+<<<<< Function evaluation summary (UQ_I): 409 total (369 new, 40 duplicate)
   response_fn_1: 25 val (14 n, 11 d), 33 grad (22 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 148 val (137 n, 11 d), 156 grad (145 n, 11 d), 25 Hess (18 n, 7 d)
-  response_fn_3: 160 val (149 n, 11 d), 168 grad (157 n, 11 d), 25 Hess (24 n, 1 d)
+  response_fn_2: 152 val (141 n, 11 d), 160 grad (149 n, 11 d), 25 Hess (20 n, 5 d)
+  response_fn_3: 158 val (147 n, 11 d), 166 grad (155 n, 11 d), 25 Hess (23 n, 2 d)
 <<<<< Best parameters          =
                       2.4600867999e+00 w
                       3.8700718421e+00 t
@@ -11031,9 +11031,9 @@ Test Number 3 succeeded
                       3.0297761382e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 222 total (158 new, 64 duplicate)
+<<<<< Function evaluation summary (UQ_I): 222 total (160 new, 62 duplicate)
   response_fn_1: 30 val (21 n, 9 d), 38 grad (29 n, 9 d), 30 Hess (21 n, 9 d)
-  response_fn_2: 113 val (80 n, 33 d), 121 grad (88 n, 33 d), 113 Hess (80 n, 33 d)
+  response_fn_2: 113 val (82 n, 31 d), 121 grad (90 n, 31 d), 113 Hess (82 n, 31 d)
   response_fn_3: 115 val (75 n, 40 d), 123 grad (83 n, 40 d), 115 Hess (75 n, 40 d)
 <<<<< Best parameters          =
                       2.4535571299e+00 w
@@ -11059,10 +11059,10 @@ Test Number 5 succeeded
                      -6.9487841065e-04
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
-<<<<< Function evaluation summary (UQ_I): 222 total (157 new, 65 duplicate)
+<<<<< Function evaluation summary (UQ_I): 222 total (164 new, 58 duplicate)
   response_fn_1: 30 val (21 n, 9 d), 38 grad (29 n, 9 d), 30 Hess (21 n, 9 d)
-  response_fn_2: 113 val (80 n, 33 d), 121 grad (88 n, 33 d), 113 Hess (80 n, 33 d)
-  response_fn_3: 115 val (74 n, 41 d), 123 grad (82 n, 41 d), 115 Hess (74 n, 41 d)
+  response_fn_2: 113 val (86 n, 27 d), 121 grad (94 n, 27 d), 113 Hess (86 n, 27 d)
+  response_fn_3: 115 val (75 n, 40 d), 123 grad (83 n, 40 d), 115 Hess (75 n, 40 d)
 <<<<< Best parameters          =
                       2.4535583262e+00 w
                       3.8804095340e+00 t
@@ -11407,10 +11407,10 @@ Test Number 4 succeeded
          obj_fn: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 125 total (82 new, 43 duplicate)
-  response_fn_1: 16 val (8 n, 8 d), 24 grad (16 n, 8 d), 16 Hess (8 n, 8 d)
-  response_fn_2: 55 val (33 n, 22 d), 63 grad (41 n, 22 d), 55 Hess (33 n, 22 d)
-  response_fn_3: 62 val (33 n, 29 d), 70 grad (41 n, 29 d), 62 Hess (33 n, 29 d)
+<<<<< Function evaluation summary (UQ_I): 126 total (82 new, 44 duplicate)
+  response_fn_1: 16 val (7 n, 9 d), 24 grad (14 n, 10 d), 16 Hess (7 n, 9 d)
+  response_fn_2: 55 val (36 n, 19 d), 63 grad (44 n, 19 d), 55 Hess (36 n, 19 d)
+  response_fn_3: 63 val (31 n, 32 d), 71 grad (38 n, 33 d), 63 Hess (31 n, 32 d)
 <<<<< Best parameters          =
                       2.4591471765e+00 w
                       3.8716602208e+00 t
@@ -11443,10 +11443,10 @@ Test Number 6 succeeded
          obj_fn: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 126 total (79 new, 47 duplicate)
-  response_fn_1: 16 val (7 n, 9 d), 24 grad (14 n, 10 d), 16 Hess (7 n, 9 d)
-  response_fn_2: 55 val (33 n, 22 d), 63 grad (41 n, 22 d), 55 Hess (33 n, 22 d)
-  response_fn_3: 63 val (31 n, 32 d), 71 grad (38 n, 33 d), 63 Hess (31 n, 32 d)
+<<<<< Function evaluation summary (UQ_I): 125 total (82 new, 43 duplicate)
+  response_fn_1: 16 val (8 n, 8 d), 24 grad (16 n, 8 d), 16 Hess (8 n, 8 d)
+  response_fn_2: 55 val (34 n, 21 d), 63 grad (42 n, 21 d), 55 Hess (34 n, 21 d)
+  response_fn_3: 62 val (32 n, 30 d), 70 grad (40 n, 30 d), 62 Hess (32 n, 30 d)
 <<<<< Best parameters          =
                       2.4591479479e+00 w
                       3.8716649345e+00 t
@@ -11461,10 +11461,10 @@ Test Number 7 succeeded
          obj_fn: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 2078 total (2049 new, 29 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2110 total (2080 new, 30 duplicate)
   response_fn_1: 16 val (7 n, 9 d), 24 grad (14 n, 10 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 116 val (107 n, 9 d), 124 grad (114 n, 10 d), 116 Hess (107 n, 9 d)
-  response_fn_3: 1922 val (1913 n, 9 d), 1930 grad (1921 n, 9 d), 1922 Hess (1913 n, 9 d)
+  response_fn_2: 120 val (111 n, 9 d), 128 grad (118 n, 10 d), 120 Hess (111 n, 9 d)
+  response_fn_3: 1950 val (1940 n, 10 d), 1958 grad (1948 n, 10 d), 1950 Hess (1940 n, 10 d)
 <<<<< Best parameters          =
                       2.4591255358e+00 w
                       3.8717003270e+00 t
@@ -11951,9 +11951,9 @@ Test Number 3 succeeded
                       2.5005890008e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 66 total (46 new, 20 duplicate)
+<<<<< Function evaluation summary (UQ_I): 66 total (49 new, 17 duplicate)
   response_fn_1: 15 val (8 n, 7 d), 20 grad (13 n, 7 d), 15 Hess (8 n, 7 d)
-  response_fn_2: 56 val (36 n, 20 d), 61 grad (41 n, 20 d), 56 Hess (36 n, 20 d)
+  response_fn_2: 56 val (39 n, 17 d), 61 grad (44 n, 17 d), 56 Hess (39 n, 17 d)
 <<<<< Best parameters          =
                       8.6491209909e+00 b
                       2.5000000000e+01 h
@@ -11975,9 +11975,9 @@ Test Number 5 succeeded
                       2.5005890032e+00
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
-<<<<< Function evaluation summary (UQ_I): 99 total (66 new, 33 duplicate)
+<<<<< Function evaluation summary (UQ_I): 99 total (69 new, 30 duplicate)
   response_fn_1: 23 val (13 n, 10 d), 30 grad (20 n, 10 d), 23 Hess (13 n, 10 d)
-  response_fn_2: 85 val (52 n, 33 d), 92 grad (59 n, 33 d), 85 Hess (52 n, 33 d)
+  response_fn_2: 85 val (55 n, 30 d), 92 grad (62 n, 30 d), 85 Hess (55 n, 30 d)
 <<<<< Best parameters          =
                       8.6509353849e+00 b
                       2.5000000000e+01 h
@@ -12011,9 +12011,9 @@ Test Number 8 succeeded
                       4.8348865507e-04
 <<<<< Best data not found in evaluation cache
 Test Number 9 succeeded
-<<<<< Function evaluation summary (UQ_I): 99 total (66 new, 33 duplicate)
+<<<<< Function evaluation summary (UQ_I): 99 total (69 new, 30 duplicate)
   response_fn_1: 23 val (13 n, 10 d), 30 grad (20 n, 10 d), 23 Hess (13 n, 10 d)
-  response_fn_2: 85 val (52 n, 33 d), 92 grad (59 n, 33 d), 85 Hess (52 n, 33 d)
+  response_fn_2: 85 val (55 n, 30 d), 92 grad (62 n, 30 d), 85 Hess (55 n, 30 d)
 <<<<< Best parameters          =
                       8.6509625541e+00 b
                       2.5000000000e+01 h
@@ -12340,9 +12340,9 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 64 total (64 new, 0 duplicate)
          obj_fn: 40 val (40 n, 0 d), 24 grad (24 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 40 val (40 n, 0 d), 24 grad (24 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 105 total (43 new, 62 duplicate)
+<<<<< Function evaluation summary (UQ_I): 105 total (44 new, 61 duplicate)
   response_fn_1: 24 val (7 n, 17 d), 36 grad (14 n, 22 d), 24 Hess (7 n, 17 d)
-  response_fn_2: 81 val (29 n, 52 d), 93 grad (36 n, 57 d), 81 Hess (29 n, 52 d)
+  response_fn_2: 81 val (30 n, 51 d), 93 grad (37 n, 56 d), 81 Hess (30 n, 51 d)
 <<<<< Best parameters          =
                       8.6481195084e+00 b
                       2.5000000000e+01 h
@@ -12581,8 +12581,8 @@ Test Number 1 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 49 total (47 new, 2 duplicate)
- nln_ineq_con_1: 49 val (47 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 49 total (48 new, 1 duplicate)
+ nln_ineq_con_1: 49 val (48 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 285 total (285 new, 0 duplicate)
   response_fn_1: 236 val (236 n, 0 d), 285 grad (285 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
@@ -12872,13 +12872,13 @@ Test Number 3 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 25 total (25 new, 0 duplicate)
-         obj_fn: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 12 total (11 new, 1 duplicate)
- nln_ineq_con_1: 12 val (11 n, 1 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 52 total (52 new, 0 duplicate)
-  response_fn_1: 52 val (52 n, 0 d), 52 grad (52 n, 0 d), 52 Hess (52 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 26 total (26 new, 0 duplicate)
+         obj_fn: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 11 total (10 new, 1 duplicate)
+ nln_ineq_con_1: 11 val (10 n, 1 d), 5 grad (5 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 49 total (49 new, 0 duplicate)
+  response_fn_1: 49 val (49 n, 0 d), 49 grad (49 n, 0 d), 49 Hess (49 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -19415,14 +19415,14 @@ Test Number 1 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_steel_column_mf.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
- nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1418 total (1376 new, 42 duplicate)
-  response_fn_1: 1418 val (1376 n, 42 d), 821 grad (779 n, 42 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
- nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1418 total (1376 new, 42 duplicate)
-  response_fn_1: 1418 val (1376 n, 42 d), 821 grad (779 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 41 total (29 new, 12 duplicate)
+ nln_ineq_con_1: 41 val (29 n, 12 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1439 total (1397 new, 42 duplicate)
+  response_fn_1: 1439 val (1397 n, 42 d), 842 grad (800 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 41 total (29 new, 12 duplicate)
+ nln_ineq_con_1: 41 val (29 n, 12 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1439 total (1397 new, 42 duplicate)
+  response_fn_1: 1439 val (1397 n, 42 d), 842 grad (800 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -19433,14 +19433,14 @@ Test Number 0 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 41 total (30 new, 11 duplicate)
- nln_ineq_con_1: 41 val (30 n, 11 d), 38 grad (30 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1439 total (1404 new, 35 duplicate)
-  response_fn_1: 1439 val (1404 n, 35 d), 842 grad (807 n, 35 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 41 total (30 new, 11 duplicate)
- nln_ineq_con_1: 41 val (30 n, 11 d), 38 grad (30 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1439 total (1404 new, 35 duplicate)
-  response_fn_1: 1439 val (1404 n, 35 d), 842 grad (807 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 44 total (33 new, 11 duplicate)
+ nln_ineq_con_1: 44 val (33 n, 11 d), 41 grad (33 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1460 total (1425 new, 35 duplicate)
+  response_fn_1: 1460 val (1425 n, 35 d), 863 grad (828 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 44 total (33 new, 11 duplicate)
+ nln_ineq_con_1: 44 val (33 n, 11 d), 41 grad (33 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1460 total (1425 new, 35 duplicate)
+  response_fn_1: 1460 val (1425 n, 35 d), 863 grad (828 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500012588e+01 d
@@ -20442,9 +20442,9 @@ Test Number 4 succeeded
    2.0000036306e-01   9.9977974933e-01  -3.4952463670e+00  -3.5145490340e+00
    2.4997965389e-01   9.9985615704e-01  -3.6048214220e+00  -3.6261431507e+00
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 250 total (250 new, 0 duplicate)
+<<<<< Function evaluation summary: 254 total (254 new, 0 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 250 val (250 n, 0 d), 250 grad (250 n, 0 d), 43 Hess (43 n, 0 d)
+  response_fn_2: 254 val (254 n, 0 d), 254 grad (254 n, 0 d), 43 Hess (43 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -9.0448274470e+00   4.5775061029e-05   3.9119598832e+00   3.9119598832e+00
@@ -20589,9 +20589,9 @@ Test Number 7 succeeded
    2.0001166127e-01   9.9977973202e-01  -3.4952759045e+00  -3.5145281636e+00
    2.5001240751e-01   9.9985616726e-01  -3.6049003322e+00  -3.6261614980e+00
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 468 total (388 new, 80 duplicate)
+<<<<< Function evaluation summary: 472 total (392 new, 80 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 117 val (97 n, 20 d), 468 grad (388 n, 80 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 118 val (98 n, 20 d), 472 grad (392 n, 80 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -8.9999983768e+00   4.5775060894e-05   3.8955149712e+00   3.9119598839e+00
@@ -20638,9 +20638,9 @@ Test Number 8 succeeded
    2.0000012140e-01   9.9977974933e-01  -3.4952458423e+00  -3.5145490342e+00
    2.5000054338e-01   9.9985618258e-01  -3.6048676647e+00  -3.6261890222e+00
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 460 total (392 new, 68 duplicate)
+<<<<< Function evaluation summary: 464 total (404 new, 60 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 115 val (98 n, 17 d), 460 grad (392 n, 68 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 116 val (101 n, 15 d), 464 grad (404 n, 60 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -8.9999979005e+00   4.5775094079e-05   3.8955147961e+00   3.9119597089e+00
@@ -20736,9 +20736,9 @@ Test Number 10 succeeded
    2.0000240966e-01   9.9977952393e-01  -3.4952508105e+00  -3.5142773619e+00
    2.4991796965e-01   9.9985618258e-01  -3.6046848748e+00  -3.6261890291e+00
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 192 total (157 new, 35 duplicate)
+<<<<< Function evaluation summary: 205 total (171 new, 34 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 192 val (157 n, 35 d), 192 grad (157 n, 35 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 205 val (171 n, 34 d), 205 grad (171 n, 34 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -8.9930905315e+00   4.6289447530e-05   3.8929749444e+00   3.9092610067e+00
@@ -20785,9 +20785,9 @@ Test Number 11 succeeded
    1.9985840089e-01   9.9977973205e-01  -3.4949381503e+00  -3.5145282009e+00
    2.4866903616e-01   9.9985466614e-01  -3.6019208743e+00  -3.6234781861e+00
 Test Number 12 succeeded
-<<<<< Function evaluation summary: 278 total (251 new, 27 duplicate)
+<<<<< Function evaluation summary: 276 total (253 new, 23 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 278 val (251 n, 27 d), 278 grad (251 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 276 val (253 n, 23 d), 276 grad (253 n, 23 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -9.1493558408e+00   4.5501162608e-05   3.9500623266e+00   3.9134086797e+00
@@ -39068,10 +39068,10 @@ Test Number 3 succeeded
    9.0042023089e-01   7.8004920519e-01  -8.1069056988e-01  -7.7235940606e-01
    1.0003947492e+00   9.0321990623e-01  -1.3369805488e+00  -1.3001189972e+00
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 65 total (54 new, 11 duplicate)
+<<<<< Function evaluation summary (UQ_I): 67 total (57 new, 10 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 34 val (26 n, 8 d), 34 grad (26 n, 8 d), 34 Hess (26 n, 8 d)
-  response_fn_3: 32 val (29 n, 3 d), 32 grad (29 n, 3 d), 32 Hess (29 n, 3 d)
+  response_fn_2: 34 val (27 n, 7 d), 34 grad (27 n, 7 d), 34 Hess (27 n, 7 d)
+  response_fn_3: 34 val (31 n, 3 d), 34 grad (31 n, 3 d), 34 Hess (31 n, 3 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -5.9396931817e-14   1.1781223736e-03   3.0412163276e+00   3.0412163276e+00
@@ -39130,10 +39130,10 @@ Test Number 5 succeeded
    9.0044438433e-01   7.7941974833e-01  -8.1081956468e-01  -7.7023500410e-01
    1.0004631313e+00   9.0292950259e-01  -1.3373433993e+00  -1.2984259848e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary (UQ_I): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 103 total (103 new, 0 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 49 val (49 n, 0 d), 49 grad (49 n, 0 d), 11 Hess (11 n, 0 d)
-  response_fn_3: 52 val (52 n, 0 d), 52 grad (52 n, 0 d), 11 Hess (11 n, 0 d)
+  response_fn_2: 46 val (46 n, 0 d), 46 grad (46 n, 0 d), 11 Hess (11 n, 0 d)
+  response_fn_3: 58 val (58 n, 0 d), 58 grad (58 n, 0 d), 11 Hess (11 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -7.7060913206e-11   1.1781223714e-03   3.0412163282e+00   3.0412163282e+00
@@ -39223,10 +39223,10 @@ Test Number 8 succeeded
    9.0042016281e-01   7.8004920496e-01  -8.1069020720e-01  -7.7235940529e-01
    1.0003946789e+00   9.0321990563e-01  -1.3369801845e+00  -1.3001189937e+00
 Test Number 9 succeeded
-<<<<< Function evaluation summary (UQ_I): 325 total (265 new, 60 duplicate)
+<<<<< Function evaluation summary (UQ_I): 330 total (270 new, 60 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 34 val (25 n, 9 d), 170 grad (125 n, 45 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 32 val (29 n, 3 d), 160 grad (145 n, 15 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 34 val (24 n, 10 d), 170 grad (120 n, 50 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 33 val (31 n, 2 d), 165 grad (155 n, 10 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -1.9912332672e-08   1.1781223724e-03   3.0412164725e+00   3.0412163279e+00
@@ -39285,10 +39285,10 @@ Test Number 10 succeeded
    9.0200397238e-01   7.7973007518e-01  -8.1924141146e-01  -7.7128191481e-01
    1.0023183232e+00   9.0310518082e-01  -1.3469572774e+00  -1.2994497191e+00
 Test Number 11 succeeded
-<<<<< Function evaluation summary (UQ_I): 108 total (102 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 114 total (109 new, 5 duplicate)
   response_fn_1: 0 val (0 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 52 val (49 n, 3 d), 52 grad (49 n, 3 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 57 val (54 n, 3 d), 57 grad (54 n, 3 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 56 val (54 n, 2 d), 56 grad (54 n, 2 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 59 val (56 n, 3 d), 59 grad (56 n, 3 d), 0 Hess (0 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    6.0838527324e-05   1.1781223727e-03   3.0407737250e+00   3.0412163279e+00
@@ -45958,7 +45958,7 @@ Test Number 0 succeeded
    5.0000000000e+02   8.1579552168e-01                     -8.9945762587e-01
    1.0000000000e+03   9.0589703240e-01                     -1.3159049856e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 149 total (92 new, 57 duplicate)
+<<<<< Function evaluation summary: 153 total (96 new, 57 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    5.0000000000e-01   1.0163403090e-02                      2.3202601921e+00
