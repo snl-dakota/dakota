@@ -131,8 +131,8 @@ function( process_unit_test_results _build_path )
     ${_build_path}/${unit_test_results_log} COPYONLY )
 
   # PASS/FAIL summary for reporting to team
-  file( STRINGS ${_build_path}/${subset_out_filename} unitPass REGEX "Passed" )
-  file( STRINGS ${_build_path}/${subset_out_filename} unitFail REGEX "Failed" )
+  file( STRINGS ${_build_path}/${subset_out_filename} unitPass REGEX "Passed " )
+  file( STRINGS ${_build_path}/${subset_out_filename} unitFail REGEX "Failed " )
   list( LENGTH unitPass passCount )
   list( LENGTH unitFail failCount )
 
