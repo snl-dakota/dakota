@@ -43,7 +43,9 @@ function(DakotaFindMPI)
     endif()
 
     #if (NOT DAKOTA_MPI_WRAPPER_ONLY)
-    find_package(MPI REQUIRED)
+    # Do not use REQUIRED option since we only need MPI_CXX; instead perform 
+    # our own error check below.
+    find_package(MPI)
     #endif()
 
     message(STATUS "Dakota MPI C++ configuration:")
