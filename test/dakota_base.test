@@ -5217,41 +5217,41 @@ Test Number 0 succeeded
                      -4.2932324362e-13
 <<<<< Best data captured at function evaluation 19
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 44 total (42 new, 2 duplicate)
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
 <<<<< Best parameters          =
-                      4.0865363438e-01 x1
-                      2.0565494186e-01 x2
+                      2.9999998967e-01 x1
+                      1.9999999933e-01 x2
 <<<<< Best residual terms      =
                       0.0000000000e+00
-                     -1.2497567322e-04
-                     -3.0661752178e-04
-                     -2.9933647275e-04
-                      1.8715794303e-04
-<<<<< Best data captured at function evaluation 31
+                      2.3144467475e-11
+                     -1.8160226372e-11
+                      1.9507753376e-12
+                     -2.1971146930e-11
+<<<<< Best data captured at function evaluation 16
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 44 total (42 new, 2 duplicate)
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
 <<<<< Best parameters          =
-                      4.0865363438e-01 x1
-                      2.0565494186e-01 x2
+                      2.9999998967e-01 x1
+                      1.9999999933e-01 x2
 <<<<< Best residual terms      =
                       0.0000000000e+00
-                     -1.2497567322e-04
-                     -3.0661752178e-04
-                     -2.9933647275e-04
-                      1.8715794303e-04
-<<<<< Best data captured at function evaluation 31
+                      2.3144467475e-11
+                     -1.8160226372e-11
+                      1.9507753376e-12
+                     -2.1971146930e-11
+<<<<< Best data captured at function evaluation 16
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 47 total (45 new, 2 duplicate)
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
 <<<<< Best parameters          =
-                      3.0000267948e-01 x1
-                      1.9999934257e-01 x2
+                      2.9999998856e-01 x1
+                      1.9999999923e-01 x2
 <<<<< Best residual terms      =
-                      0.0000000000e+00
-                      2.1543035085e-08
-                      8.6381246412e-08
-                      1.8944988521e-07
-                      3.2445706190e-07
-<<<<< Best data captured at function evaluation 43
+                      1.1102230246e-16
+                      2.2708272116e-11
+                     -1.8318561467e-11
+                      8.7979864927e-12
+                     -1.8415419685e-12
+<<<<< Best data captured at function evaluation 19
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
 dakota_field.in
@@ -65028,12 +65028,12 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797326e-01
+ response_fn_1  3.8373805233e-01  4.0307298396e-01  1.2363043988e+00  6.1420873146e-01
  response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
  response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
+ response_fn_1  9.5397009643e-02  6.7207909501e-01  2.7724778925e-01  7.3585414381e-01
  response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
  response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
@@ -65055,13 +65055,13 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
           x2 -7.22482e-02  1.00000e+00 
-response_fn_1 -7.04965e-01 -6.27351e-01  1.00000e+00 
-response_fn_2  8.61628e-01 -5.31298e-01 -2.60486e-01  1.00000e+00 
-response_fn_3 -5.83075e-01  8.33989e-01 -1.23374e-01 -8.92771e-01  1.00000e+00 
+response_fn_1 -7.07871e-01 -6.25185e-01  1.00000e+00 
+response_fn_2  8.61628e-01 -5.31298e-01 -2.63722e-01  1.00000e+00 
+response_fn_3 -5.83075e-01  8.33989e-01 -1.21225e-01 -8.92771e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          x1 -9.65994e-01  9.74285e-01 -9.49997e-01 
-          x2 -9.58854e-01 -9.26578e-01  9.77252e-01 
+          x1 -9.67374e-01  9.74285e-01 -9.49997e-01 
+          x2 -9.60016e-01 -9.26578e-01  9.77252e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
