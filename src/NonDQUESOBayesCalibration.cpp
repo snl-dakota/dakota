@@ -15,7 +15,9 @@
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDQUESOBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
+#include "DakotaApproximation.hpp"
 #include "ProbabilityTransformation.hpp"
 // then list QUESO headers
 #include "queso/StatisticalInverseProblem.h"
@@ -105,117 +107,57 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::quantify_uncertainty()
 {
-  // construct emulatorModel, if needed
-  // TODO: consider a separate helper function for this 
-  NonDBayesCalibration::quantify_uncertainty();
   // instantiate QUESO objects and execute
   NonDQUESOInstance = this;
 
-  Cout << "Running Bayesian Calibration with QUESO" << std::endl; 
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "using the following settings: " << '\n';
-    Cout << "QUESO standardized space " << quesoStandardizedSpace << '\n';
-    Cout << "MCMC type "<< mcmcType << '\n';
-    Cout << "Rejection type "<< rejectionType << '\n';
-    Cout << "Metropolis type " << metropolisType << '\n';
-    Cout << "Number of samples in the MCMC Chain " << numSamples << '\n';
-    Cout << "Calibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
-  } 
+  // construct emulatorModel and initialize tranformations, as needed
+  initialize_model();
 
-  ////////////////////////////////////////////////////////
-  // Step 3 of 5: Instantiate the likelihood function object
-  ////////////////////////////////////////////////////////
-  // BMA: Left this in quantify_uncertainty since low overhead
-  QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>
-    likelihoodFunctionObj("like_", *paramDomain, &dakotaLikelihoodRoutine,
-                          (void *) NULL, true); // routine computes [ln(function)]
+  // construct likelihoodFunctionObj, prior/posterior random vectors,
+  // and inverse problem
+  init_queso_solver();
 
-  ////////////////////////////////////////////////////////
-  // Step 4 of 5: Instantiate the inverse problem
-  ////////////////////////////////////////////////////////
   // For testing re-entrancy
-  // for (size_t i=0; i<2; ++i) {
-  //   Cout << "QUESO Major Iteration " << i << std::endl;
-  //   quesoEnv->resetSeed(randomSeed);
-    
-  // BMA: Left this in quantify_uncertainty, since may be iteratively updated
-  // TODO: Map other Dakota uncertain types to QUESO priors in
-  // set/update prior functions
-  QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-    priorRv("prior_", *paramDomain);
+  //for (size_t i=0; i<2; ++i) {
+  //  Cout << "QUESO Major Iteration " << i << std::endl;
+  //  quesoEnv->resetSeed(randomSeed);
 
-  // TODO: update with PCE Hessian
-  //  RealMatrix hessian;
-  //  proposal_covariance(hessian);
 
-  QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
-    postRv("post_", *paramSpace);
-
-  // define calIpOptionsValues
-  set_inverse_problem_options();
-  // set options specific to MH algorithm
-  set_invpb_mh_options();
-  // Inverse problem: instantiate it (posterior rv is instantiated internally)
-  QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>
-    inv_pb("", calIpOptionsValues.get(), priorRv, likelihoodFunctionObj, postRv);
-  
-  // To demonstrate retrieving the chain
-  // TODO: Ask QUESO why the MH sequence generator decimates the
-  // in-memory chain when generating final results
-  //calIpMhOptionsValues->m_filteredChainGenerate              = false;
-
-  ////////////////////////////////////////////////////////
-  // Step 5 of 5: Solve the inverse problem
-  ////////////////////////////////////////////////////////
-  if (mcmcType == "dram")
-    inv_pb.solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(),
-					    *paramInitials, 
-					    proposalCovMatrix.get());
-  else if (mcmcType == "multilevel")
-    inv_pb.solveWithBayesMLSampling();
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    // TODO: Need to transform chain back to unscaled space for
-    // reporting to user; possibly also in auxilliary data files for
-    // user consumption.
-
-    // To demonstrate retrieving the chain. Note that the QUESO
-    // VectorSequence class has a number of helpful filtering and
-    // statistics functions.
-    const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
-      mcmc_chain = inv_pb.chain();
-    unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-    Cout << "Final MCMC Samples: " << num_mcmc << std::endl;
-    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
-    for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
-      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
-      Cout << mcmc_sample << std::endl;
+  switch (adaptPosteriorRefine) {
+  case false:
+    if (emulatorType)
+      precondition_proposal();
+    // solve the inverse problem by MCMC sampling
+    run_queso_solver();
+    break;
+  case true:
+    if (!emulatorType) {
+      Cerr << "Error: " << std::endl;
+      abort_handler(-1);
     }
-
-    // Ask QUESO: appears to be empty, at least after filtering
-    // const QUESO::ScalarSequence<double>&
-    //   loglikelihood_vals = inv_pb.logLikelihoodValues();
-    //    unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+    Real conv_metric = DBL_MAX; int num_iter = 0;
+    while (conv_metric > convergenceTol && num_iter < maxIterations) {
+      // use emulator Hessian data to precondition the proposal covariance
+      precondition_proposal();
+      // solve the inverse problem by MCMC sampling on the emulator
+      run_queso_solver();
+      // Assess convergence of the posterior via sample-based K-L divergence:
+      //conv_metric = assess_posterior_convergence();
+      // filter chain -or- extract full chain and sort on likelihood values.
+      // Evaluate these MCMC samples with truth evals
+      filter_chain();
+      // update the emulator surrogate data with new truth evals and
+      // reconstruct surrogate (e.g., via PCE sparse recovery)
+      update_model();
+      // Assess convergence of the posterior via convergence of the PCE coeffs
+      //onv_metric = assess_emulator_convergence();
+      ++num_iter;
+    }
+    break;
   }
 
   // For testing re-entrancy
   //}
-
-  // TODO: move to print_results
-  Cout << "\nThe results of QUESO are in the outputData directory.\n" 
-       <<  "The file display_sub0.txt contains information regarding"
-       <<  " the MCMC process. " << '\n';
-  Cout << "The Matlab files contain the chain values.  The files to " 
-       << "load in Matlab are file_cal_ip_raw.m (the actual chain) " 
-       << "or file_cal_ip_filt.m (the filtered chain, which contains " 
-       << "every 20th step in the chain." << '\n';
-  Cout << "NOTE:  the chain values in these Matlab files are currently " 
-       << "in scaled space. \n  You will have to transform them back to "
-       << "original space by:" << '\n';
-  Cout << "lower_bounds + chain_values * (upper_bounds - lower_bounds)" <<'\n'; 
-  Cout << "The rejection rate is in the tgaCalOutput file. " << '\n';
-  Cout << "We hope to improve the postprocessing of the chains by the " 
-       << "next Dakota release. " << '\n';
 }
 
 void NonDQUESOBayesCalibration::init_queso_environment() {
@@ -245,13 +187,156 @@ void NonDQUESOBayesCalibration::init_queso_environment() {
   }
 }
 
+void NonDQUESOBayesCalibration::init_queso_solver()
+{
+  ////////////////////////////////////////////////////////
+  // Step 3 of 5: Instantiate the likelihood function object
+  ////////////////////////////////////////////////////////
+  // routine computes [ln(function)]
+  likelihoodFunctionObj.reset(new
+    QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>("like_",
+    *paramDomain, &dakotaLikelihoodRoutine, (void *) NULL, true));
+
+  ////////////////////////////////////////////////////////
+  // Step 4 of 5: Instantiate the inverse problem
+  ////////////////////////////////////////////////////////
+  // TODO: Map other Dakota uncertain types to QUESO priors in
+  // set/update prior functions
+  priorRv.reset(new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+		("prior_", *paramDomain));
+
+  postRv.reset(new QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
+	       ("post_", *paramSpace));
+  // Q: are Prior/posterior RVs copied by StatInvProblem, such that these
+  //    instances can be local and allowed to go out of scope?
+
+  // define calIpOptionsValues
+  set_inverse_problem_options();
+  // set options specific to MH algorithm
+  set_invpb_mh_options();
+  // Inverse problem: instantiate it (posterior rv is instantiated internally)
+  inverseProb.reset(new
+    QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>("",
+    calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv));
+
+  // To demonstrate retrieving the chain
+  // TODO: Ask QUESO why the MH sequence generator decimates the
+  // in-memory chain when generating final results
+  //calIpMhOptionsValues->m_filteredChainGenerate = false; // **** HERE!
+}
+
+
+void NonDQUESOBayesCalibration::precondition_proposal()
+{
+  // TO DO: how are Hessians from multiple QoI combined?
+  size_t i = 0; // for now
+  std::vector<Approximation>& poly_approxs = emulatorModel.approximations();
+
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR: {
+    const RealSymMatrix& hess_i
+      = poly_approxs[i].hessian(emulatorModel.continuous_variables());
+    proposal_covariance(hess_i);
+    break;
+  }
+  }
+}
+
+
+void NonDQUESOBayesCalibration::run_queso_solver()
+{
+  Cout << "Running Bayesian Calibration with QUESO" << std::endl; 
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "using the following settings:"
+	 << "\nQUESO standardized space " << quesoStandardizedSpace
+	 << "\nMCMC type "<< mcmcType << "\nRejection type "<< rejectionType
+	 << "\nMetropolis type " << metropolisType
+	 << "\nNumber of samples in the MCMC Chain " << numSamples
+	 << "\nCalibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
+
+  ////////////////////////////////////////////////////////
+  // Step 5 of 5: Solve the inverse problem
+  ////////////////////////////////////////////////////////
+  if (mcmcType == "dram")
+    inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(),
+						  *paramInitials, 
+						  proposalCovMatrix.get());
+  else if (mcmcType == "multilevel")
+    inverseProb->solveWithBayesMLSampling();
+
+  // TODO: move to print_results
+  Cout << "\nThe results of QUESO are in the outputData directory.\nThe file "
+       << "display_sub0.txt contains information regarding the MCMC process.\n"
+       << "The Matlab files contain the chain values.  The files to " 
+       << "load in Matlab are file_cal_ip_raw.m (the actual chain) " 
+       << "or file_cal_ip_filt.m (the filtered chain, which contains " 
+       << "every 20th step in the chain.\n"
+       << "NOTE:  the chain values in these Matlab files are currently " 
+       << "in scaled space. \n  You will have to transform them back to "
+       << "original space by:\n"
+       << "lower_bounds + chain_values * (upper_bounds - lower_bounds)\n"
+       << "The rejection rate is in the tgaCalOutput file.\n"
+       << "We hope to improve the postprocessing of the chains by the " 
+       << "next Dakota release.\n";
+}
+
+
+void NonDQUESOBayesCalibration::filter_chain()
+{
+  if (outputLevel >= DEBUG_OUTPUT) {
+    // TODO: Need to transform chain back to unscaled space for
+    // reporting to user; possibly also in auxilliary data files for
+    // user consumption.
+
+    // To demonstrate retrieving the chain. Note that the QUESO
+    // VectorSequence class has a number of helpful filtering and
+    // statistics functions.
+    const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
+      mcmc_chain = inverseProb->chain();
+    unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+    Cout << "Final MCMC Samples: " << num_mcmc << std::endl;
+    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+    for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
+      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+      Cout << mcmc_sample << std::endl;
+    }
+
+    // from BMA: can get the full acceptance chain (if filter = false) 
+    //           but can't yet get corresponding likelihood values
+
+    // Ask QUESO: appears to be empty, at least after filtering
+    // const QUESO::ScalarSequence<double>&
+    //   loglikelihood_vals = inverseProb->logLikelihoodValues();
+    //    unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+  }
+
+  // TO DO: perform truth evals for selected points (here or below)
+  // May be simplest to combine this fn with update_model()
+}
+
+
+void NonDQUESOBayesCalibration::update_model()
+{
+  // TO DO: perform truth evals for selected points (here or above)
+  // May be simplest to combine this fn with filter_chain()
+
+  //emulatorModel.append_approximation(vars_array, resp_map, rebuild_flag);
+
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR: {
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    stochExpIterator.run(pl_iter); break;
+  }
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    emulatorModel.build_approximation(); break;
+  }
+}
+
+
 void NonDQUESOBayesCalibration::init_parameter_domain()
 {
-  int total_num_params;
-  if (calibrateSigmaFlag) 
-    total_num_params = numContinuousVars + numFunctions;
-  else 
-    total_num_params = numContinuousVars; 
+  int total_num_params = (calibrateSigmaFlag) ?
+    numContinuousVars + numFunctions : numContinuousVars; 
   
   paramSpace.reset(new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
 		   (*quesoEnv, "param_", total_num_params, NULL));
@@ -261,14 +346,11 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
   const RealVector& init_point = emulatorModel.continuous_variables();
-  if (outputLevel > NORMAL_OUTPUT) {
-    Cout << "\nInitial Point in original, unscaled space "  << '\n'
-	 << init_point << '\n';
-    Cout << "Lower bounds of variables in original, unscaled space "  << '\n'
-	 << lower_bounds << '\n';
-    Cout << "Upper bounds of variables in original, unscaled space "  << '\n'
-	 << upper_bounds << '\n';
-  }
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "\nInitial Point in original, unscaled space\n" << init_point
+	 << "\nLower bounds of variables in original, unscaled space\n"
+	 << lower_bounds << "\nUpper bounds of variables in original, "
+	 << "unscaled space\n" << upper_bounds << '\n';
 
   if (emulatorType == GP_EMULATOR || emulatorType == KRIGING_EMULATOR ||
       emulatorType == NO_EMULATOR) {
@@ -310,12 +392,10 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     }
   }
     
-  if (outputLevel > NORMAL_OUTPUT) {
-    Cout << "calibrateSigmaFlag  " << calibrateSigmaFlag << '\n';
-    Cout << "Parameter bounds sent to QUESO (may be scaled): " << '\n'; 
-    Cout << "paramMins  " << paramMins << '\n';
-    Cout << "paramMaxs  " << paramMaxs << '\n';
-  }
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "calibrateSigmaFlag  " << calibrateSigmaFlag
+	 << "\nParameter bounds sent to QUESO (may be scaled):\nparamMins  "
+	 << paramMins << "\nparamMaxs  " << paramMaxs << '\n';
 
   // instantiate QUESO parameters and likelihood
   paramDomain.reset(new QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
@@ -362,7 +442,7 @@ void NonDQUESOBayesCalibration::default_proposal_covariance()
     Cout << "QUESO ProposalCovMatrix " << '\n'; 
     for (size_t i=0; i<total_num_params; i++) {
       for (size_t j=0; j<total_num_params; j++) 
-	Cout <<  (*proposalCovMatrix)(i,j) << "  " ; 
+	Cout <<  (*proposalCovMatrix)(i,j) << "  "; 
       Cout << '\n'; 
     }
   }
@@ -547,9 +627,9 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   calIpMhOptionsValues->m_amEta                     = 2.88;
   calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
 
-  calIpMhOptionsValues->m_filteredChainGenerate              = true;
+  calIpMhOptionsValues->m_filteredChainGenerate              = true; // **** HERE!
   calIpMhOptionsValues->m_filteredChainDiscardedPortion      = 0.;
-  calIpMhOptionsValues->m_filteredChainLag                   = 20;
+  calIpMhOptionsValues->m_filteredChainLag                   = 20; // **** HERE!
   calIpMhOptionsValues->m_filteredChainDataOutputFileName    = "outputData/filtered_chain";
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);

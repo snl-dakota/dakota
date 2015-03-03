@@ -1682,6 +1682,7 @@
                                 <keyword  id="emulator_samples3" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                                   <param type="INTEGER" />
                                 </keyword>
+				<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
                                 <keyword  id="import_points_file6" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" >
                                   <param type="INPUT_FILE" />
                                   <optional>
@@ -1703,12 +1704,21 @@
                                 </keyword>
                               </keyword>
                               <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-                                <keyword  id="sparse_grid_level2" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="0" >
-                                  <param type="INTEGERLIST" />
-                                </keyword>
+				<oneOf>
+				  <keyword  id="sparse_grid_level2" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                                    <param type="INTEGERLIST" />
+				  </keyword>
+				  <keyword  id="expansion_order2" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				    <param type="INTEGERLIST" />
+				    <keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				      <param type="REAL" />
+				    </keyword>
+				    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
+				  </keyword>
+				</oneOf>
                               </keyword>
                               <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-                                <keyword  id="sparse_grid_level3" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="0" >
+                                <keyword  id="sparse_grid_level3" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
                                   <param type="INTEGERLIST" />
                                 </keyword>
                               </keyword>
@@ -1807,6 +1817,7 @@
                             <keyword  id="emulator_samples5" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                               <param type="INTEGER" />
                             </keyword>
+			    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
                             <keyword  id="import_points_file8" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" >
                               <param type="INPUT_FILE" />
                               <optional>
@@ -1827,13 +1838,22 @@
                               </optional>
                             </keyword>
                           </keyword>
-                          <keyword  id="pce1" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-                            <keyword  id="sparse_grid_level4" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="0" >
-                              <param type="INTEGERLIST" />
-                            </keyword>
+                          <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+                            <oneOf>
+                              <keyword  id="sparse_grid_level4" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                                <param type="INTEGERLIST" />
+                              </keyword>
+			      <keyword  id="expansion_order3" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				<param type="INTEGERLIST" />
+				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				  <param type="REAL" />
+				</keyword>
+				<keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
+                              </keyword>
+                            </oneOf>
                           </keyword>
-                          <keyword  id="sc1" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-                            <keyword  id="sparse_grid_level5" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="0" >
+                          <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
+                            <keyword  id="sparse_grid_level5" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
                               <param type="INTEGERLIST" />
                             </keyword>
                           </keyword>

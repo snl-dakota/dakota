@@ -53,9 +53,14 @@ protected:
 
   //void print_results(std::ostream& s);
 
-  void quantify_uncertainty();
-
   const Model& algorithm_space_model() const;
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// initialize emulator model and probability space transformations
+  void initialize_model();
 
   //
   //- Heading: Data
@@ -75,6 +80,10 @@ protected:
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
   Model emulatorModel;
+
+  /// flag indicating usage of adaptive posterior refinement; currently makes
+  /// sense for unstructured grids in GP and PCE least squares/CS
+  bool adaptPosteriorRefine;
 
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator

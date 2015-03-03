@@ -655,9 +655,9 @@ void NonDExpansion::initialize_expansion()
       RealVector pt_u; size_t i;
       natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
       for (i=0; i<numContDesVars; ++i)
-	initialPtU[i] = pt_u[i];
+	initialPtU[i] = pt_u[i]; // design
       for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
-	initialPtU[i] = pt_u[i];
+	initialPtU[i] = pt_u[i]; // epistemic/state
     }
   }
   else if (!subIteratorFlag && numUncertainQuant == 0 &&

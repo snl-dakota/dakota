@@ -1274,6 +1274,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
+		posterior_adaptive
 		[ import_points_file STRING
 		  [ annotated
 		  | freeform ]
@@ -1286,11 +1287,16 @@ KEYWORD12 method
 		)
 	      |
 	      ( pce
-		[ sparse_grid_level INTEGERLIST ]
+		sparse_grid_level INTEGERLIST
+		|
+		( expansion_order INTEGERLIST
+		  collocation_ratio REAL
+		  posterior_adaptive
+		  )
 		)
 	      |
 	      ( sc
-		[ sparse_grid_level INTEGERLIST ]
+		sparse_grid_level INTEGERLIST
 		)
 	      ]
 	    [ mcmc_type
@@ -1365,6 +1371,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
+		posterior_adaptive
 		[ import_points_file STRING
 		  [ annotated
 		  | freeform ]
@@ -1377,11 +1384,16 @@ KEYWORD12 method
 		)
 	      |
 	      ( pce
-		[ sparse_grid_level INTEGERLIST ]
+		sparse_grid_level INTEGERLIST
+		|
+		( expansion_order INTEGERLIST
+		  collocation_ratio REAL
+		  posterior_adaptive
+		  )
 		)
 	      |
 	      ( sc
-		[ sparse_grid_level INTEGERLIST ]
+		sparse_grid_level INTEGERLIST
 		)
 	      ]
 	    )

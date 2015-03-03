@@ -6494,6 +6494,7 @@ static StringArray
         MP_(miscOptions);
 
 static bool
+	MP_(adaptPosteriorRefine),
 	MP_(approxExportAnnotated),
 	MP_(approxImportActive),
 	MP_(approxImportAnnotated),

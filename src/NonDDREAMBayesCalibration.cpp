@@ -162,17 +162,17 @@ NonDDREAMBayesCalibration::~NonDDREAMBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDDREAMBayesCalibration::quantify_uncertainty()
 {
-  // construct emulatorModel, if needed
-  NonDBayesCalibration::quantify_uncertainty();
-
   // instantiate DREAM objects and execute
-  NonDDREAMInstance=this;
+  NonDDREAMInstance = this;
 
   // diagnostic information
   Cout << "INFO (DREAM): Standardized space " << standardizedSpace << '\n';
   Cout << "INFO (DREAM): Num Samples " << numSamples << '\n';
   Cout << "INFO (DREAM): Calibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
  
+  // construct emulatorModel, if needed
+  initialize_model();
+
   // Set seed in both local generator and the one underlying DREAM in RNGLIB
   // BMA TODO: Burkhardt says replace RNGLIB with Dakota RNG
   if (randomSeed) {

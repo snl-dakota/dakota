@@ -33,6 +33,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   numSamples(probDescDB.get_int("method.samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
+  adaptPosteriorRefine(
+    probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
   standardizedSpace(false) // prior to adding to spec
 {
   switch (emulatorType) {
@@ -188,7 +190,7 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
-void NonDBayesCalibration::quantify_uncertainty()
+void NonDBayesCalibration::initialize_model()
 {
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR: {

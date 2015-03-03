@@ -2884,6 +2884,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
+	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
 	{"nond.calibrate_sigma", P calibrateSigmaFlag},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.normalized", P normalizedCoeffs},

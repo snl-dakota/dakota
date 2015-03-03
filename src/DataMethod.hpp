@@ -908,6 +908,9 @@ public:
   String rejectionType;
   /// the \c metropolis type specification in \ref MethodNonDBayesCalib
   String metropolisType;
+  /// flag indicating adaptive refinement of the emulator in regions
+  /// of high posterior probability
+  bool adaptPosteriorRefine;
   /// the type of proposal covariance: diagonal or matrix
   String proposalCovType;
   /// raw list of reals data for the covariance

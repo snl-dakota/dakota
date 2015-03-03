@@ -25,6 +25,10 @@ namespace QUESO {
   class FullEnvironment;
   template<class V, class M> class VectorSpace;
   template<class V, class M> class BoxSubset;
+  template<class V, class M> class GenericScalarFunction;
+  template<class V, class M> class UniformVectorRV;
+  template<class V, class M> class GenericVectorRV;
+  template<class V, class M> class StatisticalInverseProblem;
   class SipOptionsValues;
   class MhOptionsValues;
 }
@@ -67,6 +71,21 @@ protected:
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
+
+  /// 
+  void init_queso_solver();
+
+  /// 
+  void precondition_proposal();
+
+  /// 
+  void run_queso_solver();
+
+  /// 
+  void filter_chain();
+
+  /// 
+  void update_model();
 
   /// intialize the QUESO parameter space, min, max, initial, and domain
   void init_parameter_domain();
@@ -157,6 +176,18 @@ private:
 
   /// MH-specific inverse problem options
   boost::shared_ptr<QUESO::MhOptionsValues> calIpMhOptionsValues;
+
+  boost::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
+    QUESO::GslMatrix> > likelihoodFunctionObj;
+
+  boost::shared_ptr<QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+    priorRv;
+
+  boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+    postRv;
+
+  boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
+    QUESO::GslMatrix> > inverseProb;
 };
 
 } // namespace Dakota
