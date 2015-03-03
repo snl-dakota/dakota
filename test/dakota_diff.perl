@@ -54,19 +54,23 @@ if (exists $ENV{'DAKDIFF_REL_EPSILON'}) {
 # Process TEST file
 # -----------------
 open (my $DAKOTA_TEST, $tst_file)  || die "Error: Cannot open file $tst_file" ;
-# test numbers found, indices of them in output, output text
-# these are references!
-my ($tst_tests_ran, $tst_test_inds, $tst_output) = 
-  extract_test_output($DAKOTA_TEST);
+# determine which subtest numbers are present in the .tst file and
+# compute indices for the start of each subtest
+# TODO: consider a hash from subtest numbers to output
+my @tst_subtest_numbers;  # subtest numbers found in .tst file  
+my @tst_subtest_indices;  # line indices for start of each subtest in .tst file  
+my @tst_output;           # test output for this test file
+extract_test_output($DAKOTA_TEST, \@tst_subtest_numbers, \@tst_subtest_indices,
+		    \@tst_output);
 close ($DAKOTA_TEST);
 
 # -----------------
 # Process BASE file
 # -----------------
 open (my $DAKOTA_BASE, $base_file) || die "Error: Cannot open file $base_file" ;
-# test numbers found, indices of them in output, output text
-# these are references!
-my $base_tests_ran, $base_test_inds, $base_output;
+my @base_subtest_numbers;  # subtest numbers found in base file  
+my @base_subtest_indices;  # line indices for start of each subtest in baseline  
+my @base_output;           # test output baseline excerpt for this test file
 $test_found = 0;
 while ($line = <$DAKOTA_BASE>) {
 
@@ -75,8 +79,8 @@ while ($line = <$DAKOTA_BASE>) {
 
   if ($line =~ /$mod_testin/) {
     $test_found = 1;
-    ($base_tests_ran, $base_test_inds, $base_output) =
-      extract_test_output($DAKOTA_BASE);
+    extract_test_output($DAKOTA_BASE, \@base_subtest_numbers, 
+			\@base_subtest_indices, \@base_output);
   }
 
   # stop processing 
@@ -89,35 +93,42 @@ close ($DAKOTA_BASE);
 # ----------------------
 # Iterate over tst tests
 # ----------------------
-# print the test header, unconditionally
-print "$testin\n";
-foreach (@$tst_tests_ran) {
+# print the test header (dakota_*.in) if the 0-th test was run
+# TODO: would be helpful to always output for users running a single manual test
+if ($#tst_subtest_numbers > 0 && $tst_subtest_numbers[0] == 0) {
+  print "$testin\n";
+}
+foreach my $tst_subtest_index (0 .. $#tst_subtest_numbers) {
 
-  my $test_num = $_;
+  my $test_num = $tst_subtest_numbers[$tst_subtest_index];
 
-  # TODO: validate tst vs. base test indices
-  # Confirm baseline has this test
-  #if ($test_num >= $#base_tests_ran) {
-  #  print "Test number " . $test_num . " missing from baseline";
-  #}
+  # Find the index of the sub-test in the baseline data
+  # TODO: consider using hash instead of linear lookup
+  my $base_index = 0;
+  ++$base_index until $base_subtest_numbers[$base_index] == $test_num or
+                      $base_index > $#base_subtest_numbers;
+  if ($base_index > $#base_subtest_numbers) {
+    print "Test number " . $test_num . " missing from baseline\n";
+  }
+  else {
+    # extract .base data for this test num
+    my $base_start = $base_subtest_indices[$base_index]; 
+    my $base_end   = $base_subtest_indices[$base_index + 1] - 1; 
+    my @base_excerpt = @base_output[$base_start .. $base_end];
 
-  # extract .base data for this test num
-  my $base_start = @$base_test_inds[$test_num]; 
-  my $base_end   = @$base_test_inds[$test_num + 1] - 1; 
-  my @base_excerpt = @$base_output[$base_start .. $base_end];
+    # extract .tst data for this test num
+    my $tst_start = $tst_subtest_indices[$tst_subtest_index]; 
+    my $tst_end   = $tst_subtest_indices[$tst_subtest_index + 1] - 1; 
+    my @tst_excerpt = @tst_output[$tst_start .. $tst_end];
 
-  # extract .tst data for this test num
-  my $tst_start = @$tst_test_inds[$test_num]; 
-  my $tst_end   = @$tst_test_inds[$test_num + 1] - 1; 
-  my @tst_excerpt = @$tst_output[$tst_start .. $tst_end];
+    # Consider comparing total length and reporting, then reporting details
+    #if ( ($base_end - $base_start) != ($tst_end - $tst_start)) {
+    #  print "DIFF Test " . $test_num . " (output length mismatch)";
+    #}
 
-  # Consider comparing total length and reporting, then reporting details
-  #if ( ($base_end - $base_start) != ($tst_end - $tst_start)) {
-  #  print "DIFF Test " . $test_num . " (output length mismatch)";
-  #}
-
-  # compare base to test
-  compare_output($test_num, \@base_excerpt, \@tst_excerpt);
+    # compare base to test
+    compare_output($test_num, \@base_excerpt, \@tst_excerpt);
+  }
 
 }
 
@@ -129,36 +140,31 @@ exit $exitcode;
 
 
 # Extract test output from the passed file handle until another
-# dakota_ test header is encountered.  Caution: returns are references
-# to the locals in this subroutine.
+# dakota_*.in test header is encountered. 
+# IN:  file handle to read from
+# OUT: reference to array of subtest numbers found
+# OUT: reference to array of subtest delineation indices
+# OUT: reference to array of test output, one entry per line
 sub extract_test_output {
-
-  my $file_handle = shift;
-  my $line_num = 0;
-
-  # Values returned by reference
-  my @tests_ran;     # list of tests ran
-  my @test_inds;     # indices for the starting line of each test
-  my @test_output;  # contents of the tst file
   
+  my ($file_handle, $ref_subtest_numbers, $ref_subtest_indices, $ref_output) = @_;
+  my $line_index = 0;
+
   while (my $line = <$file_handle>) {
-    if ( ($tested_num) = $line =~ /^Test Number (\d+)/ ) {
-      push @tests_ran, $tested_num;
-      push @test_inds, $line_num;
+    # Log the test number and line index each time we encounter a new test
+    if ( ($subtest_num) = $line =~ /^Test Number (\d+)/ ) {
+      push @{$ref_subtest_numbers}, $subtest_num;
+      push @{$ref_subtest_indices}, $line_index;
     }
 
     # stop when we encounter the next test file
-    # TODO: fix this REGEX
-    #last if ($line =~ /dakota_\w+\\\.in/);
-    last if ($line =~ /dakota_/);
+    last if ($line =~ /dakota_\w+\.in/);
 
-    push @test_output, $line;
-    $line_num++;
+    push @{$ref_output}, $line;
+    $line_index++;
   }
   # put the last line in indices so we always have start/end pairs
-  push @test_inds, $line_num;
-
-  return (\@tests_ran, \@test_inds, \@test_output);
+  push @{$ref_subtest_indices}, $line_index;
 
 }
 
