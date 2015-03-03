@@ -93,14 +93,14 @@ close ($DAKOTA_BASE);
 # ----------------------
 # Iterate over tst tests
 # ----------------------
-# print the test header (dakota_*.in) if the 0-th test was run
-# TODO: would be helpful to always output for users running a single manual test
-if ($#tst_subtest_numbers > 0 && $tst_subtest_numbers[0] == 0) {
-  print "$testin\n";
-}
 foreach my $tst_subtest_index (0 .. $#tst_subtest_numbers) {
 
   my $test_num = $tst_subtest_numbers[$tst_subtest_index];
+  # print the test header (dakota_*.in) if the 0-th test was run
+  # TODO: would be helpful to always output for users running a single manual test
+  if ($test_num == 0) {
+    print "$testin\n";
+  }
 
   # Find the index of the sub-test in the baseline data
   # TODO: consider using hash instead of linear lookup
