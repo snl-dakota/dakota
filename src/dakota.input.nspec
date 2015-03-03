@@ -1107,7 +1107,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 |
                 dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
                 [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
-                posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
+                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_points_file STRING {N_mdm(str,approxImportFile)}
                   [ 
                     annotated {N_mdm(true,approxImportAnnotated)}
@@ -1130,7 +1130,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 |
                 ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                   collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-                  posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
+                  [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                  )
                )
               |
@@ -1201,7 +1201,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               |
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
               [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
-              posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
+              [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_points_file STRING {N_mdm(str,approxImportFile)}
                 [ 
                   annotated {N_mdm(true,approxImportAnnotated)}
@@ -1224,7 +1224,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               |
               ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-                posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
+                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                )
              )
             |

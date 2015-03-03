@@ -255,12 +255,12 @@ static KeyWord
 		{"emulator_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,5,0,kw_41,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"import_points_file",11,3,4,0,kw_42,0.,0.,0,N_mdm(str,approxImportFile)},
-		{"posterior_adaptive",8,0,3,2,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)},
+		{"posterior_adaptive",8,0,3,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
 	kw_44[2] = {
 		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
-		{"posterior_adaptive",8,0,2,2,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
+		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_45[2] = {
 		{"expansion_order",13,2,1,1,kw_44,0.,0.,0,N_mdm(usharray,expansionOrder)},
@@ -343,12 +343,12 @@ static KeyWord
 		{"emulator_samples",9,0,2,0,0,0.,0.,0,N_mdm(int,emulatorSamples)},
 		{"export_points_file",11,2,5,0,kw_59,0.,0.,0,N_mdm(str,approxExportFile)},
 		{"import_points_file",11,3,4,0,kw_60,0.,0.,0,N_mdm(str,approxImportFile)},
-		{"posterior_adaptive",8,0,3,2,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)},
+		{"posterior_adaptive",8,0,3,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)},
 		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)}
 		},
 	kw_62[2] = {
 		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
-		{"posterior_adaptive",8,0,2,2,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
+		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_63[2] = {
 		{"expansion_order",13,2,1,1,kw_62,0.,0.,0,N_mdm(usharray,expansionOrder)},

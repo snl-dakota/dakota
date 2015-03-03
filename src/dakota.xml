@@ -1682,7 +1682,7 @@
                                 <keyword  id="emulator_samples3" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                                   <param type="INTEGER" />
                                 </keyword>
-				<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
+				<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
                                 <keyword  id="import_points_file6" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" >
                                   <param type="INPUT_FILE" />
                                   <optional>
@@ -1713,7 +1713,7 @@
 				    <keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				      <param type="REAL" />
 				    </keyword>
-				    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
+				    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
 				  </keyword>
 				</oneOf>
                               </keyword>
@@ -1817,7 +1817,7 @@
                             <keyword  id="emulator_samples5" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                               <param type="INTEGER" />
                             </keyword>
-			    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
+			    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
                             <keyword  id="import_points_file8" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" >
                               <param type="INPUT_FILE" />
                               <optional>
@@ -1848,7 +1848,7 @@
 				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
 				</keyword>
-				<keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help=""  />
+				<keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
                               </keyword>
                             </oneOf>
                           </keyword>

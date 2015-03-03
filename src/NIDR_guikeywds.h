@@ -243,12 +243,12 @@ static GuiKeyWord
 		{"emulator_samples",9,0,2,0,1363},
 		{"export_points_file",11,2,5,0,1375,kw_37},
 		{"import_points_file",11,3,4,0,1367,kw_38},
-		{"posterior_adaptive",8,0,3,2,1365},
+		{"posterior_adaptive",8,0,3,0,1365},
 		{"surfpack",8,0,1,1,1359}
 		},
 	kw_40[2] = {
 		{"collocation_ratio",10,0,1,1,1387},
-		{"posterior_adaptive",8,0,2,2,1389}
+		{"posterior_adaptive",8,0,2,0,1389}
 		},
 	kw_41[2] = {
 		{"expansion_order",13,2,1,1,1385,kw_40},
@@ -328,12 +328,12 @@ static GuiKeyWord
 		{"emulator_samples",9,0,2,0,1259},
 		{"export_points_file",11,2,5,0,1271,kw_54},
 		{"import_points_file",11,3,4,0,1263,kw_55},
-		{"posterior_adaptive",8,0,3,2,1261},
+		{"posterior_adaptive",8,0,3,0,1261},
 		{"surfpack",8,0,1,1,1255}
 		},
 	kw_57[2] = {
 		{"collocation_ratio",10,0,1,1,1283},
-		{"posterior_adaptive",8,0,2,2,1285}
+		{"posterior_adaptive",8,0,2,0,1285}
 		},
 	kw_58[2] = {
 		{"expansion_order",13,2,1,1,1281,kw_57},

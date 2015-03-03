@@ -1274,7 +1274,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		posterior_adaptive
+		[ posterior_adaptive ]
 		[ import_points_file STRING
 		  [ annotated
 		  | freeform ]
@@ -1291,7 +1291,7 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  posterior_adaptive
+		  [ posterior_adaptive ]
 		  )
 		)
 	      |
@@ -1371,7 +1371,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		posterior_adaptive
+		[ posterior_adaptive ]
 		[ import_points_file STRING
 		  [ annotated
 		  | freeform ]
@@ -1388,7 +1388,7 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  posterior_adaptive
+		  [ posterior_adaptive ]
 		  )
 		)
 	      |
