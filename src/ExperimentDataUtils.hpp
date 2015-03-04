@@ -202,6 +202,19 @@ public:
 
 };
 
+/** \brief Construct the hessian of the sum of squares of residuals
+ *  
+ * \param func_hessians list of hessians, The ith item is a dxd hessian matrix 
+ *        of response function i
+ * \param func_gradients A dxn matrix which is the ranspose of the jacobian of 
+ *        the n response functions
+ * \param residuals A nx1 vector of the n residuals
+ */
+void build_hessian_of_sum_square_residuals_from_function_hessians(
+       const RealSymMatrixArray &func_hessians, 
+       const RealMatrix &func_gradients, const RealVector &residuals,
+       RealSymMatrix &ssr_hessian );
+
 } // namespace dakota
 
 #endif //EXPERIMENT_DATA_UTILS

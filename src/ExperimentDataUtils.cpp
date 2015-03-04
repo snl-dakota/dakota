@@ -404,4 +404,22 @@ void ExperimentCovariance::print_covariance_blocks() const {
   }
 }
 
+void build_hessian_of_sum_square_residuals_from_function_hessians(
+       const RealSymMatrixArray &func_hessians, 
+       const RealMatrix &func_gradients, const RealVector &residuals,
+       RealSymMatrix &ssr_hessian )
+{
+  // func_gradients is the transpose of the Jacobian of the functions
+  int num_rows = func_gradients.numRows(), num_residuals = residuals.length();
+  ssr_hessian.shape( num_rows ); // initialize to zero
+  for ( int k=0; k<num_rows; k++ ){
+    for ( int j=0; j<=k; j++ ){
+      for ( int i=0; i<num_residuals; i++ )
+	ssr_hessian(j,k) += ( func_gradients(j,i)*func_gradients(k,i) - 
+			      residuals[i]*func_hessians[i](j,k) );
+      ssr_hessian(j,k) *= 2.;
+    }
+  }
+};
+
 } //namespace Dakota

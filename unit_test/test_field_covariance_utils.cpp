@@ -552,6 +552,48 @@ void test_linear_interpolate_1d_with_extrapolation()
   BOOST_CHECK( diff.normInf() < 10.*std::numeric_limits<double>::epsilon() );
 }
 
+void test_build_hessian_of_sum_square_residuals_from_function_hessians()
+{
+  int num_residuals = 3;
+  RealSymMatrixArray func_hessians( num_residuals );
+  RealMatrix func_gradients( 2, num_residuals, false );
+  RealVector residuals( num_residuals );
+
+  Real pts_array[] = {-1,-1,-0.5,0.5,1./3.,2./3.};
+  RealMatrix pts( Teuchos::View, pts_array, 2, 2, 3 );
+
+  for ( int i=0; i<num_residuals; i++ ){
+    Real x = pts(0,i), y = pts(1,i);
+    Real x2 = x*x, y2 = y*y;
+    residuals[i] = x2*y2+(2.*x2-y2)*(2.*x2-y2)/10.;
+    func_gradients(0,i) = 4./5.*x*(y2-2.*x2);
+    func_gradients(1,i) = -2./5.*y*(y2-2.*x2);
+    func_hessians[i].shape( 2 );
+    func_hessians[i](0,0) = 4./5.*(y2-6.*x2);
+    func_hessians[i](1,0) = 8.*x*y/5.;
+    func_hessians[i](1,1) = -2./5.*(3.*y2-2.*x2);
+  }
+
+  RealSymMatrix ssr_hessian;
+  build_hessian_of_sum_square_residuals_from_function_hessians(
+       func_hessians, func_gradients, residuals, ssr_hessian );
+
+  RealSymMatrix truth_ssr_hessian( 2 );
+  for ( int i=0; i<num_residuals; i++ ){
+    Real x = pts(0,i), y = pts(1,i);
+    Real x2 = x*x, x3 = x2*x, x4 = x2*x2, x5 = x3*x2, x6 = x4*x2,
+      y2 = y*y, y3 = y2*y, y4 = y2*y2, y5 = y3*y2, y6 = y4*y2;
+    truth_ssr_hessian(0,0) += -4./25.*( 10.*x2*y2*(y2-6.*x2)+
+					(y2-14.*x2)*(2.*x2-y2)*(2.*x2-y2) );
+    truth_ssr_hessian(1,0) += -8./25.*y*x*( 10.*x2*y2+3.*(2.*x2-y2)*(2.*x2-y2) );
+    truth_ssr_hessian(1,1) += 2./25.*( 10.*x2*y2*(3.*y2-2.*x2) + 
+				       (7.*y2-2.*x2)*(2.*x2-y2)*(2.*x2-y2) );
+  }
+  truth_ssr_hessian -= ssr_hessian;
+  BOOST_CHECK( truth_ssr_hessian.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+}
+
 } // end namespace TestFieldCovariance
 } // end namespace Dakota
 
@@ -572,6 +614,9 @@ int test_main( int argc, char* argv[] )      // note the name!
   // Test field interpolation functions
   test_linear_interpolate_1d_no_extrapolation();
   test_linear_interpolate_1d_with_extrapolation();
+
+  // Test hessian functions
+  test_build_hessian_of_sum_square_residuals_from_function_hessians();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
