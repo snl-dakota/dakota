@@ -71,13 +71,14 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
   // in weight(scale(data(model)))
   //numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;
   //numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
-  
+  Cout << "numTotalCalibTerms in DakotaLeastSq " << numTotalCalibTerms << '\n'; 
   if (calibrationDataFlag) {
     // this might set weights based on exp std deviations
     data_transform_model();
     ++minimizerRecasts;
-    numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
-    numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;
+    numLeastSqTerms = numTotalCalibTerms;
+    numIterPrimaryFns = numTotalCalibTerms;
+    Cout << " numLeastSqTerms in DakotaLeastSq " << numLeastSqTerms << '\n';
   }
   if (scaleFlag) {
     scale_model();

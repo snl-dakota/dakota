@@ -308,11 +308,17 @@ void Minimizer::data_transform_model()
       abort_handler(-1);
   }
 
+  // this option is currently ignored by ExperimentData; note that we
+  // don't want to weight by missing sigma all = 1.0
+  bool calc_sigma_from_data = true; // calculate sigma if not provided 
+  expData.load_data("Least Squares", calc_sigma_from_data);
+  
   // TODO: consider whether both numRowsExpData and numExperiments are needed
-  numRowsExpData = numExperiments;
-  size_t total_calib_terms = numRowsExpData*numUserPrimaryFns;
+  //numRowsExpData = numExperiments;
+  //size_t numTotalCalibTerms = numRowsExpData*numUserPrimaryFns;
+  numTotalCalibTerms = expData.num_total_exppoints();
   if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Adjusted number of calibration terms: " << total_calib_terms 
+    Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;
 
   size_t num_config_vars_read = 
@@ -320,11 +326,6 @@ void Minimizer::data_transform_model()
   if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
     Cout << "\nWarning (least squares): experimental_config_variables " 
 	 << "will be read from file, but ignored." << std::endl;
-
-  // this option is currently ignored by ExperimentData; note that we
-  // don't want to weight by missing sigma all = 1.0
-  bool calc_sigma_from_data = true; // calculate sigma if not provided 
-  expData.load_data("Least Squares", calc_sigma_from_data);
 
   applyCovariance = false;
   matrixCovarianceActive = false;
@@ -341,42 +342,54 @@ void Minimizer::data_transform_model()
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
   
-  size_t i,j,temp_counter=0;
+  size_t i,j,k,temp_counter=0;
   Sizet2DArray var_map_indices(numContinuousVars), 
-    primary_resp_map_indices(total_calib_terms), 
+    primary_resp_map_indices(numTotalCalibTerms), 
     secondary_resp_map_indices(numNonlinearConstraints);
   bool nonlinear_vars_map = false;
-  size_t num_recast_fns = total_calib_terms + numNonlinearConstraints;
+  size_t num_recast_fns = numTotalCalibTerms + numNonlinearConstraints;
   BoolDequeArray nonlinear_resp_map(num_recast_fns);
   // adjust active set vector to 1 + numNonlinearConstraints
-  ShortArray asv(total_calib_terms + numNonlinearConstraints, 1);
+  ShortArray asv(numTotalCalibTerms + numNonlinearConstraints, 1);
   activeSet.request_vector(asv);
   
   for (i=0; i<numContinuousVars; i++) {
     var_map_indices[i].resize(1);
     var_map_indices[i][0] = i;
   }
-  for (i=0; i<total_calib_terms; i++) {
+  for (i=0; i<numTotalCalibTerms; i++) {
     primary_resp_map_indices[i].resize(1);
     nonlinear_resp_map[i].resize(1);
     nonlinear_resp_map[i][0] = false;
   }
-  for (i=0; i<numUserPrimaryFns; i++) {
-    for (j=0; j<numRowsExpData; j++) {
-      temp_counter = i*numRowsExpData+j;
-      primary_resp_map_indices[temp_counter][0] = i;
+  IntVector per_length;
+  expData.per_exp_length(per_length);
+
+  Cout << "exp_length" << per_length<< '\n';;
+  temp_counter = 0;
+  //for (i=0; i<numUserPrimaryFns; i++) {
+    //for (j=0; j<numRowsExpData; j++) {
+  for (j=0; j<numExperiments; j++) {
+    size_t exp_length = per_length(j);
+    //for (i=0; i<numUserPrimaryFns; i++) {
+    Cout << "exp_length" << exp_length;
+    for(k=0; k<exp_length; k++) {
+        //temp_counter =  i*numRowsExpData+j;
+      primary_resp_map_indices[temp_counter][0] = k;
+      temp_counter++;
     }
   }
+  Cout << "Got past primary_resp_map resize " << '\n';
   for (i=0; i<numNonlinearConstraints; i++) {
     secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = total_calib_terms + i;
-    nonlinear_resp_map[total_calib_terms+i].resize(1);
-    nonlinear_resp_map[total_calib_terms+i][0] = false;
+    secondary_resp_map_indices[i][0] = numTotalCalibTerms + i;
+    nonlinear_resp_map[numTotalCalibTerms+i].resize(1);
+    nonlinear_resp_map[numTotalCalibTerms+i][0] = false;
   }
 
   void (*vars_recast) (const Variables&, Variables&) = NULL;
   void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = 
-    (numRowsExpData>1) ? replicate_set_recast : NULL;
+    (numTotalCalibTerms != numUserPrimaryFns) ? replicate_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
 			   const Response&, Response&)
     = primary_resp_differencer;
@@ -401,16 +414,21 @@ void Minimizer::data_transform_model()
   // Can this just be done on basis of submodel's weights?
   const RealVector& submodel_weights = 
     iteratedModel.subordinate_model().primary_response_fn_weights();
-  if (submodel_weights.empty() || numRowsExpData <= 1) {
+  if (submodel_weights.empty() || numTotalCalibTerms == numUserPrimaryFns) {
     // no need to expand number of weights: leave as 0 or 1
     iteratedModel.primary_response_fn_weights(submodel_weights);
   } 
   else { 
     // submodel has weights and there are multiple experiments / replicates
-    RealVector recast_weights(total_calib_terms);
+    RealVector recast_weights(numTotalCalibTerms);
+    temp_counter = 0;
     for (i=0; i<numUserPrimaryFns; i++) {
-      for (j=0; j<numRowsExpData; j++) {
-	recast_weights(i*numRowsExpData+j) = submodel_weights(i);
+      for (j=0; j<numExperiments; j++) {
+        size_t exp_length = expData.all_data(j).length();
+        for(k=0; k<exp_length; k++) {
+	  recast_weights(temp_counter) = submodel_weights(i);
+          temp_counter++;
+        }
       }
     }
     iteratedModel.primary_response_fn_weights(recast_weights);
@@ -944,10 +962,10 @@ primary_resp_differencer(const Variables& raw_vars,
   }
   if (minimizerInstance->outputLevel == DEBUG_OUTPUT && 
       minimizerInstance->numUserPrimaryFns > 0) {
-    size_t total_calib_terms = 
-      minimizerInstance->numRowsExpData * minimizerInstance->numUserPrimaryFns;
+    size_t numTotalCalibTerms = 
+      minimizerInstance-> expData.num_total_exppoints();
     const ShortArray& asv = residual_response.active_set_request_vector();
-    for (size_t i=0; i < total_calib_terms; i++) {
+    for (size_t i=0; i < numTotalCalibTerms; i++) {
       if (asv[i] & 1) 
         Cout << " residual_response function " << i << ' ' 
 	     << residual_response.function_value(i) << '\n';

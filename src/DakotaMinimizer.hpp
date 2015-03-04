@@ -264,9 +264,9 @@ protected:
   ExperimentData expData;
   /// number of experiments
   size_t numExperiments; 
-  /// number of total rows of data since we are allowing varying 
-  /// numbers of experiments and replicates per experiment 
-  size_t numRowsExpData; 
+  /// number of total calibration terms (sum over experiments of 
+  /// number of experimental data per experiment, including field data)
+  size_t numTotalCalibTerms;
   /// whether to scale residuals by covariance
   bool applyCovariance;
   /// whether matrix-valued covariance is present

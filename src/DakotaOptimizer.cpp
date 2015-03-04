@@ -316,8 +316,8 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
   else if (calibrationDataFlag) {
     const RealVector& desired_fns = cache_it->response().function_values();
     for (size_t i=0; i<numUserPrimaryFns; i++)
-      for (size_t j=0; j<numRowsExpData; j++)
-	response.function_value(desired_fns[i], i*numRowsExpData+j);
+      for (size_t j=0; j<numExperiments; j++)
+	response.function_value(desired_fns[i], i*numExperiments+j);
   }
   else
     response.update(cache_it->response());
@@ -354,7 +354,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
     if (!calibrationDataFlag)
       total_calib_terms = numUserPrimaryFns;
     else 
-      total_calib_terms = numRowsExpData * numUserPrimaryFns;
+      total_calib_terms = numTotalCalibTerms;
     Cout << "total_calib_terms in reduce_model " << total_calib_terms <<'\n';
     primary_resp_map_indices[0].resize(total_calib_terms);
     nonlinear_resp_map[0].resize(total_calib_terms);

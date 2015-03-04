@@ -566,6 +566,16 @@ config_vars(size_t experiment)
   return(allConfigVars[experiment]);
 }
 
+void ExperimentData::per_exp_length(IntVector& per_length)
+{
+  per_length.resize(allExperiments.size());
+  //Cout << "num experiments " << num_experiments();
+
+  for (size_t i=0; i<num_experiments(); i++) 
+    per_length(i)= allExperiments[i].function_values().length();
+  //Cout << "per length " << per_length;
+}
+
 
 const RealVector& ExperimentData::all_data(size_t experiment)
 {
@@ -576,6 +586,13 @@ const RealVector& ExperimentData::all_data(size_t experiment)
   return allExperiments[experiment].function_values();
 }
 
+size_t ExperimentData::num_total_exppoints() const
+{
+  size_t res_size = 0;
+  for (size_t i=0; i<num_experiments(); i++) 
+    res_size += allExperiments[i].function_values().length();
+  return res_size;
+}
 
 Real ExperimentData::
 scalar_data(size_t response, size_t experiment)
@@ -689,7 +706,7 @@ form_residuals(const Response& sim_resp, size_t experiment,
       RealVector field_pred;
       RealVector sim_values;
       sim_values = sim_resp.field_values_view(i);
-      //Cout << "sim_values " << sim_values << '\n';
+      Cout << "sim_values " << sim_values << '\n';
       const RealMatrix& sim_coords = sim_resp.field_coords_view(i);
       //Cout << "sim_coords " << sim_coords << '\n';
       RealMatrix exp_coords = field_coords_view(i,experiment);

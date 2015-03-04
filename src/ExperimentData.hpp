@@ -105,6 +105,10 @@ public:
   size_t num_experiments() const
     { return allExperiments.size(); }
 
+  /// retrieve the total number of experimental data points 
+  /// over all experiments
+  size_t num_total_exppoints() const;
+
   /// retrieve the number of scalars (applies to all experiments)
   size_t num_scalars() const;
 
@@ -118,6 +122,9 @@ public:
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
   const RealVector& all_data(size_t experiment);
+
+  /// return the individual sizes of the experimental data lengths
+  void per_exp_length(IntVector& per_length);
 
   /// retrieve the data value for the given response, for the given
   /// experiment 
