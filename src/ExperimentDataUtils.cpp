@@ -420,6 +420,114 @@ void build_hessian_of_sum_square_residuals_from_function_hessians(
       ssr_hessian(j,k) *= 2.;
     }
   }
+}
+
+void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
+					 RealVector &eigenvalues, 
+					 RealMatrix &eigenvectors )
+{
+  Teuchos::LAPACK<int, Real> la;
+
+  int N( matrix.numRows() );
+  eigenvectors.shapeUninitialized( N, N );
+  //eigenvectors.assign( matrix );
+  for ( int j=0; j<N; j++)
+    for ( int i=0; i<=j; i++)
+      eigenvectors(i,j) = matrix( i,j );
+
+  char jobz = 'V'; // compute eigenvectors
+
+  char uplo = 'U'; // assume only upper triangular part of matrix is stored
+
+  eigenvalues.sizeUninitialized( N );
+
+  int info;        // Teuchos::LAPACK output flag
+  RealVector work; // Teuchos::LAPACK work array;
+  int lwork = -1;  // Size of Teuchos::LAPACK work array
+  
+  // Compute optimal size of work array
+  work.sizeUninitialized( 1 ); // temporary work array
+  la.SYEV( jobz, uplo, N, eigenvectors.values(), eigenvectors.stride(), 
+	   eigenvalues.values(), work.values(), lwork, &info );
+
+  lwork = (int)work[0];
+  work.sizeUninitialized( lwork );
+  
+  la.SYEV( jobz, uplo, N, eigenvectors.values(), eigenvectors.stride(), 
+	   eigenvalues.values(), work.values(), lwork, &info );
+
+  if ( info > 0 )
+    {
+      std::stringstream msg;
+      msg << "The algorithm failed to converge." << info
+	  << " off-diagonal elements of an intermediate tridiagonal "
+	  << "form did not converge to zero.";
+      throw( std::runtime_error( msg.str() ) );
+    }
+  else if ( info < 0 )
+    {
+      std::stringstream msg;
+      msg << " The " << std::abs( info ) << " argument had an illegal value.";
+      throw( std::runtime_error( msg.str() ) );
+    }
 };
+
+void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
+						    RealMatrix &covariance )
+{
+  // I am returning covariance as a RealMatrix and not a RealSymMatrix 
+  // because I cannot perform matrix multiplication with RealSymMatrix
+  // and only use cases I know about donot require RealSymMatrix anyway.
+  // Specifically covariance must be transformed into a QUESO::GSL matrix
+  // Returning RealMatrix here avoids a copy
+
+  int num_rows = hessian.numRows();
+
+  // Compute eigenvalue decomposition of matrix A=QDQ'
+  // In general, the eigenvalue decomposition of a matrix is A=QDinv(Q).
+  // For real symmetric matrices A = QDQ', i.e. inv(Q) = Q'
+
+  RealVector eigenvalues;
+  RealMatrix eigenvectors;
+  symmetric_eigenvalue_decomposition( hessian, eigenvalues, eigenvectors );
+
+  // Find smallest positive eigenvalue
+  //Real min_eigval = std::numeric_limits<double>::max();
+  //for ( int i=0; i<num_rows; i++)
+  //  if ( eigenvalues[i] > 0. )
+  //    min_eigval = std::min( eigenvalues[i], min_eigval );
+
+  // Ensure hessian is positive definite by setting all negative eigenvalues 
+  // to be positive.
+  int num_negative_eigenvalues = 0;
+  for ( int i=0; i<num_rows; i++){
+    //if ( eigenvalues[i] < 0 ) eigenvalues[i] = min_eigval;
+    if ( eigenvalues[i] < 0. ){
+      eigenvalues[i] = 0.;
+      num_negative_eigenvalues++;
+    }
+    else break;
+  }
+
+  eigenvalues.print(std::cout);
+
+  // The covariance matrix is the inverse of the hessian so scale eigenvectors
+  // by Q*inv(D)
+  RealMatrix scaled_eigenvectors( eigenvectors );
+  for ( int j=0; j<num_negative_eigenvalues; j++)
+    // Assume negative eigenvalues were set to zero
+    for ( int i=0; i<num_rows; i++) 
+      scaled_eigenvectors(i,j)= 0.;
+  for ( int j=num_negative_eigenvalues; j<num_rows; j++)
+    for ( int i=0; i<num_rows; i++)
+      scaled_eigenvectors(i,j) /= eigenvalues[j];
+
+  scaled_eigenvectors.print(std::cout);
+  
+  // Compute inv(A) = Q*inv(D)*Q'
+  covariance.shapeUninitialized( num_rows, num_rows );
+  covariance.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 
+		       1.0, scaled_eigenvectors, eigenvectors, 0.0 );
+}
 
 } //namespace Dakota

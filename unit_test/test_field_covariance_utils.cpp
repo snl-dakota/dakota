@@ -594,6 +594,64 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
 	       10.*std::numeric_limits<double>::epsilon() );
 }
 
+void test_symmetric_eigenvalue_decomposition()
+{
+  Real matrix_array[] = { 1.64, 0.48, 0.48, 1.36 };
+  RealSymMatrix matrix( Teuchos::View, false, matrix_array, 2, 2 );
+
+  RealVector eigenvalues;
+  RealMatrix eigenvectors;
+  symmetric_eigenvalue_decomposition( matrix, eigenvalues, eigenvectors );
+
+  Real truth_eigenvalues_array[] = {1.,2.};
+  RealVector truth_eigenvalues( Teuchos::View, truth_eigenvalues_array, 2 );
+ 
+  truth_eigenvalues -=  eigenvalues;
+  BOOST_CHECK( truth_eigenvalues.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+
+
+  Real truth_eigenvectors_array[] ={ 0.6, -0.8, -0.8, -0.6 };
+  RealMatrix truth_eigenvectors( Teuchos::View, truth_eigenvectors_array, 2,2,2);
+
+  truth_eigenvectors -= eigenvectors;
+  BOOST_CHECK( truth_eigenvectors.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+}
+
+void test_get_positive_definite_covariance_from_hessian()
+{
+  // non positive definite matrix
+  Real hessian_array1[] = { 0.92, 1.44, 1.44, 0.08 };
+  RealSymMatrix hessian1( Teuchos::View, false, hessian_array1, 2, 2 );
+
+  RealMatrix covariance1;
+  get_positive_definite_covariance_from_hessian( hessian1, covariance1 );
+
+
+  Real truth_covariance1_array[] ={ 0.32, 0.24, 0.24, 0.18 };
+  RealMatrix truth_covariance1( Teuchos::View, truth_covariance1_array, 2, 2, 2);
+
+  truth_covariance1 -= covariance1;
+  BOOST_CHECK( truth_covariance1.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+
+  // positive definite matrix
+  Real hessian_array2[] = { 1.64, 0.48, 0.48, 1.36 };
+  RealSymMatrix hessian2( Teuchos::View, false, hessian_array2, 2, 2 );
+
+  RealMatrix covariance2;
+  get_positive_definite_covariance_from_hessian( hessian2, covariance2 );
+
+
+  Real truth_covariance2_array[] = { 0.68, -0.24, -0.24, 0.82 };
+  RealMatrix truth_covariance2( Teuchos::View, truth_covariance2_array, 2, 2, 2);
+
+  truth_covariance2 -= covariance2;
+  BOOST_CHECK( truth_covariance2.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+}
+
 } // end namespace TestFieldCovariance
 } // end namespace Dakota
 
@@ -617,6 +675,10 @@ int test_main( int argc, char* argv[] )      // note the name!
 
   // Test hessian functions
   test_build_hessian_of_sum_square_residuals_from_function_hessians();
+  test_get_positive_definite_covariance_from_hessian();
+
+  // Test linear algebra routines
+  test_symmetric_eigenvalue_decomposition();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );

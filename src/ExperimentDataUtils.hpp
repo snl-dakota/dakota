@@ -215,6 +215,25 @@ void build_hessian_of_sum_square_residuals_from_function_hessians(
        const RealMatrix &func_gradients, const RealVector &residuals,
        RealSymMatrix &ssr_hessian );
 
+/**
+ * \brief Computes the eigenvalues and, optionally, eigenvectors of a
+ *  real symmetric matrix A. 
+ * 
+ * Eigenvalues are returned in ascending order.
+ */
+void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
+					 RealVector &eigenvalues, 
+					 RealMatrix &eigenvectors );
+/**
+ * \brief Compute the covariance C of a hessian matrix H, i.e, C=inv(H) 
+ * The hessian is enforced to be positive definite by setting any negative
+ * eigenvalues to zero.
+ */
+void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
+						    RealMatrix &covariance );
+
+
+
 } // namespace dakota
 
 #endif //EXPERIMENT_DATA_UTILS
