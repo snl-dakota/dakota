@@ -113,6 +113,8 @@ foreach my $file (@test_inputs) {
   my $cnt = ( defined $test_num ) ? $test_num : 0;
   my $found = 1;
   my $output_generated = 0;
+  # restart options used to unlink file conditionally; declare outside loop:
+  my $restart = "";   # no restart options by default
   # pass through the loop at least twice since, in some cases, the #0 test is
   # not marked (the #1-#n tests can be additions to the #0 test, rather than
   # substitutions; in this case the #0 shared parts cannot be marked since the
@@ -140,7 +142,7 @@ foreach my $file (@test_inputs) {
     my $dakota_args = "";
     my $dakota_input = $input;
     # Default is to write a unique restart per test, named for the test input
-    my $restart = "";   # no restart options by default
+    $restart = "";   # no restart options by default
     my $restart_command = "-write_restart $restart_file";
 
     # per-test defaults for number processors, output file, etc.

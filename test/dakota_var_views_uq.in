@@ -26,10 +26,10 @@ method,
 #       local_interval_est nip			#5,   #f14
 #       global_interval_est ego			#6,   #f15
 #	local_evidence sqp  			#7,   #f16
-#	global_evidence lhs			#8,   #17
+#	global_evidence lhs			#8,   #f17
 
 variables,
-#	active all		#9,#f10,#f11,#f12,#f13,#f14,#f15,#f16,#17
+#	active all		#9,#f10,#f11,#f12,#f13,#f14,#f15,#f16,#f17
 	continuous_design = 2
 	  initial_point  0.   0.
 	  upper_bounds   2.   2.
@@ -57,6 +57,6 @@ interface,
 
 responses,
 	response_functions = 3
-	no_gradients		#0,#2,#3,#4,#6,#8,#9,#f11,#f12,#f13,#f15,#17
+	no_gradients		#0,#2,#3,#4,#6,#8,#9,#f11,#f12,#f13,#f15,#f17
 #	analytic_gradients	#1,#5,#7,#f10,#f14,#f16
 	no_hessians

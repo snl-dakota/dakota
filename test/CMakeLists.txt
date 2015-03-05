@@ -1,5 +1,10 @@
 # CMakeLists.txt for DAKOTA tests
 
+include(AddApplicationTest)
+include(AddFileCopyCommand)
+include(CheckIncludeFile)
+include(CMakeParseArguments)
+
 # Macro: DakotaCopyTarget
 # Copy the executable given by target_name to the current binary dir
 # and add to provided list of dependencies
@@ -18,16 +23,124 @@ macro(DakotaCopyTarget target_name deplist_varname)
     ${CMAKE_CURRENT_BINARY_DIR}/${executable_name})
 endmacro()
 
+# Find the number of the highest serial and parallel test in test_input_file
+# using regular expressions.  Set *_count_var as output variables.
+macro(dakota_count_subtests test_input_file serial_count_var parallel_count_var)
+  set(max_serial_subtest -1)    # assume all tests from 0 to max are present
+  set(max_parallel_subtest -1)  # assume all tests from 0 to max are present
+  file(STRINGS ${test_input_file} subtest_lines REGEX "#p?[0-9]+")
+  foreach(marked_line ${subtest_lines})
+    string(REGEX MATCHALL "#p?[0-9]+" subtest_marks ${marked_line})
+    foreach(st_mark ${subtest_marks})      
+      if(st_mark MATCHES "#p[0-9]+")
+	string(REGEX REPLACE "#p([0-9]+)" "\\1" st_num ${st_mark})
+	if (st_num GREATER max_parallel_subtest)
+	  set(max_parallel_subtest ${st_num})
+	endif()
+      else()
+	string(REGEX REPLACE "#([0-9]+)" "\\1" st_num ${st_mark})
+	if (st_num GREATER max_serial_subtest)
+	  set(max_serial_subtest ${st_num})
+	endif()
+      endif()
+    endforeach()
+  endforeach()
+  set(${serial_count_var} ${max_serial_subtest})
+  set(${parallel_count_var} ${max_parallel_subtest})
+endmacro()
+
+
+# Add CTest tests for a single Dakota input file.  Will create a
+# subdirectory for each file and either run all tests as a single
+# dakota_test.perl, or optionally register and run subtests
+# 0.._last_subtest in succession in that directory.
+function(dakota_app_test _test_name _last_subtest)
+  # Parse options
+  set(_option_args PARALLEL)
+  set(_multi_value_keyword_args FILE_DEPENDENCIES LABELS)
+  cmake_parse_arguments(
+    _dat
+    "${_option_args}"
+    "${_one_value_keyword_args}"
+    "${_multi_value_keyword_args}"
+    ${ARGN}
+    )
+
+  # Default values and parallel overrides
+  set(_test_input_file "${_test_name}.in")
+  set(_diffs_filename dakota_diffs.out)
+  set(_par_clopt "")
+  set(_par_mark "")
+  if (_dat_PARALLEL)
+    set(_test_name "p${_test_name}")
+    set(_diffs_filename dakota_pdiffs.out)
+    set(_par_clopt "--parallel")
+    set(_par_mark "p")
+  endif()
+
+  if (DAKOTA_EXPAND_SUBTESTS)
+    # Add the 0th serial test. Don't create custom target for copied files.
+    # Create the unique work directory here.
+    add_application_test(
+      ${_test_name}
+      SUBTEST 0
+      FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
+      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove ${_diffs_filename}
+      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+        ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
+          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
+          --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+          ${_test_input_file} 0
+      UNIQUE_DIRECTORY
+      NO_TARGET
+      LABELS ${_dat_LABELS}
+      )
+    # Now add any subtests in the file, with dep on previous number,
+    # running in same directory
+    if (_last_subtest GREATER 0)
+      foreach(st_num RANGE 1 ${_last_subtest})
+        add_application_test(
+    	${_test_name}
+  	SUBTEST ${st_num}
+    	APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+            ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
+              --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
+              --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+              ${test_input_file} ${st_num}
+    	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_test_name}"
+    	NO_TARGET
+    	LABELS ${test_labels}
+    	)
+        math(EXPR prev_st "${st_num}-1")
+        set_tests_properties("${_test_name}:${st_num}" PROPERTIES 
+  	  DEPENDS "${_test_name}:${prev_st}")
+      endforeach()
+    endif()
+  else()
+    # Add a single test for the whole file. Don't create custom target
+    # for copied files.
+    add_application_test(
+      ${_test_name}
+      FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
+      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove ${_diffs_filename}
+      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+        ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
+          --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
+          --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+          ${_test_input_file}
+      UNIQUE_DIRECTORY
+      NO_TARGET
+      LABELS ${_dat_LABELS}
+      )
+  endif()
+endfunction()
+
 
 include_directories(
   ${Dakota_SOURCE_DIR}/src
   ${Boost_INCLUDE_DIRS}
   ${Teuchos_INCLUDE_DIRS}
 )
-
-include(AddApplicationTest)
-include(AddFileCopyCommand)
-include(CheckIncludeFile)
 
 remove_definitions("-DHAVE_CONFIG_H")
 
@@ -234,20 +347,16 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       list(APPEND test_labels AcceptanceTest)
     endif()
  
-    # add serial test, but don't create custom target for copied files
-    add_application_test(
-      ${test_name}
+    # Count the number of tests in the file, giving the highest number
+    # found (-1 if no hash marked tests found)
+    set(ser_last_subtest -1)
+    set(par_last_subtest -1)
+    dakota_count_subtests(${test_input_file} ser_last_subtest par_last_subtest)
+
+    # Add either one test with all, or the 0-th test, followed by all sub-tests
+    dakota_app_test(${test_name} ${ser_last_subtest}
       FILE_DEPENDENCIES "${test_all_files}"
-      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove dakota_diffs.out
-      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
-        ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
-        --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${test_name}
-        --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-        ${test_input_file}
-      UNIQUE_DIRECTORY
-      NO_TARGET
-      LABELS ${test_labels}
-      )
+      LABELS ${test_labels})
 
     # the test add makes a copy command without target, now track all
     # the copied files for later addition to a custom target
@@ -267,41 +376,28 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     endforeach()
 
     # only add parallel tests when MPI enabled
-    if (DAKOTA_HAVE_MPI)
+    if (DAKOTA_HAVE_MPI AND ${par_last_subtest} GREATER -1)
       # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
-      file(STRINGS ${test_input_file} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
-      if (NOT ${PTestList} EQUAL "")
-
-	set(test_labels DakotaTest ParallelTest)
-	list(FIND dakota_smoke_tests p${test_name} dst_index)
-	if (NOT dst_index EQUAL -1)
-	  list(APPEND test_labels SmokeTest)
-	endif()
-	list(FIND dakota_acceptance_tests p${test_name} dst_index)
-	if (NOT dst_index EQUAL -1)
-	  list(APPEND test_labels AcceptanceTest)
-	endif()
+      set(test_labels DakotaTest ParallelTest)
+      list(FIND dakota_smoke_tests p${test_name} dst_index)
+      if (NOT dst_index EQUAL -1)
+	list(APPEND test_labels SmokeTest)
+      endif()
+      list(FIND dakota_acceptance_tests p${test_name} dst_index)
+      if (NOT dst_index EQUAL -1)
+	list(APPEND test_labels AcceptanceTest)
+      endif()
  
-	add_application_test(
-	  p${test_name}
-	  FILE_DEPENDENCIES "${test_all_files}"
-	  PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove dakota_pdiffs.out
-	  APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
-	    ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl
-	    --parallel
- 	    --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${test_name}
-	    --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-	    ${test_input_file}
-	  UNIQUE_DIRECTORY
-	  NO_TARGET
-	  LABELS ${test_labels}
-	  )
-	# track all the copied files for later addition to a custom target
-	foreach(file ${test_all_files})
-	  set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
-	  list(APPEND copied_test_files_abs "${copied_file}")
-	endforeach()
-      endif() # add parallel test
+      dakota_app_test(${test_name} ${par_last_subtest} PARALLEL 
+	FILE_DEPENDENCIES ${test_all_files}
+	LABELS ${test_labels}
+	)
+
+      # track all the copied files for later addition to a custom target
+      foreach(file ${test_all_files})
+	set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
+	list(APPEND copied_test_files_abs "${copied_file}")
+      endforeach()
     endif() # MPI enabled
 
     # TODO: The following regex needs to be based on output of dakota_diff.perl
