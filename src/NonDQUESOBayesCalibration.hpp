@@ -87,6 +87,9 @@ protected:
   /// 
   void update_model();
 
+  /// 
+  Real assess_emulator_convergence();
+
   /// intialize the QUESO parameter space, min, max, initial, and domain
   void init_parameter_domain();
 
@@ -97,9 +100,6 @@ protected:
   void user_proposal_covariance(const String& cov_type, 
 				const RealVector& cov_data, 
 				const String& cov_filename);
-
-  /// set proposal covariance, e.g., from inverse of surrogate Hessian
-  void proposal_covariance(const RealSymMatrix& hessian);
 
   /// set inverse problem options calIpOptionsValues common to all solvers
   void set_inverse_problem_options(); 

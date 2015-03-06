@@ -1,4 +1,5 @@
 #include "ExperimentDataUtils.hpp"
+#include "DakotaResponse.hpp"
 #include <iostream>
 
 namespace Dakota {
@@ -405,19 +406,27 @@ void ExperimentCovariance::print_covariance_blocks() const {
 }
 
 void build_hessian_of_sum_square_residuals_from_function_hessians(
-       const RealSymMatrixArray &func_hessians, 
-       const RealMatrix &func_gradients, const RealVector &residuals,
-       RealSymMatrix &ssr_hessian )
+       const Response& resp, RealSymMatrix &ssr_hessian )
 {
+  const RealSymMatrixArray &func_hessians = resp.function_hessians();
+  const RealMatrix &func_gradients = resp.function_gradients();
+  const RealVector &residuals = resp.function_values();
+  const ShortArray &asrv = resp.active_set_request_vector();
+
   // func_gradients is the transpose of the Jacobian of the functions
   int num_rows = func_gradients.numRows(), num_residuals = residuals.length();
   ssr_hessian.shape( num_rows ); // initialize to zero
-  for ( int k=0; k<num_rows; k++ ){
-    for ( int j=0; j<=k; j++ ){
-      for ( int i=0; i<num_residuals; i++ )
-	ssr_hessian(j,k) += ( func_gradients(j,i)*func_gradients(k,i) - 
-			      residuals[i]*func_hessians[i](j,k) );
-      ssr_hessian(j,k) *= 2.;
+  for ( int k=0; k<num_rows; k++ ) {
+    for ( int j=0; j<=k; j++ ) {
+      Real &hess_jk = ssr_hessian(j,k);
+      for ( int i=0; i<num_residuals; i++ ) {
+	//hess_jk += ( func_gradients(j,i)*func_gradients(k,i) - 
+	//		      residuals[i]*func_hessians[i](j,k) );
+	short asrv_i = asrv[i];
+	if (asrv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
+	if (asrv_i & 4) hess_jk += residuals[i]*func_hessians[i](j,k);
+      }
+      hess_jk *= 2.;
     }
   }
 }

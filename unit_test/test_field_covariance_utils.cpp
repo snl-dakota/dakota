@@ -1,5 +1,6 @@
 #include "ExperimentDataUtils.hpp"
 #include "dakota_global_defs.hpp"
+#include "DakotaResponse.hpp"
 // Boost.Test
 #include <boost/test/minimal.hpp>
 
@@ -574,9 +575,15 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
     func_hessians[i](1,1) = -2./5.*(3.*y2-2.*x2);
   }
 
+  ActiveSet set(3, 2); set.request_values(7);
+  Response resp(SIMULATION_RESPONSE, set);
+  resp.function_values(residuals);
+  resp.function_gradients(func_gradients);
+  resp.function_hessians(func_hessians);
+
   RealSymMatrix ssr_hessian;
-  build_hessian_of_sum_square_residuals_from_function_hessians(
-       func_hessians, func_gradients, residuals, ssr_hessian );
+  build_hessian_of_sum_square_residuals_from_function_hessians(resp,
+							       ssr_hessian);
 
   RealSymMatrix truth_ssr_hessian( 2 );
   for ( int i=0; i<num_residuals; i++ ){

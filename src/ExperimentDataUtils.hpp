@@ -6,6 +6,9 @@
 
 namespace Dakota {
 
+class Response;
+
+
 /**
  * \brief find the interval containing a target value. 
  * This function assumes the data is in ascending order.
@@ -204,16 +207,11 @@ public:
 
 /** \brief Construct the hessian of the sum of squares of residuals
  *  
- * \param func_hessians list of hessians, The ith item is a dxd hessian matrix 
- *        of response function i
- * \param func_gradients A dxn matrix which is the ranspose of the jacobian of 
- *        the n response functions
- * \param residuals A nx1 vector of the n residuals
+ * \param resp A response containing the residual vector, Jacobian
+ * matrix, and Hessian symmetric matrix array
  */
 void build_hessian_of_sum_square_residuals_from_function_hessians(
-       const RealSymMatrixArray &func_hessians, 
-       const RealMatrix &func_gradients, const RealVector &residuals,
-       RealSymMatrix &ssr_hessian );
+       const Response& resp, RealSymMatrix &ssr_hessian );
 
 /**
  * \brief Computes the eigenvalues and, optionally, eigenvectors of a

@@ -150,7 +150,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       // reconstruct surrogate (e.g., via PCE sparse recovery)
       update_model();
       // Assess convergence of the posterior via convergence of the PCE coeffs
-      //onv_metric = assess_emulator_convergence();
+      conv_metric = assess_emulator_convergence();
       ++num_iter;
     }
     break;
@@ -228,18 +228,32 @@ void NonDQUESOBayesCalibration::init_queso_solver()
 
 void NonDQUESOBayesCalibration::precondition_proposal()
 {
-  // TO DO: how are Hessians from multiple QoI combined?
-  size_t i = 0; // for now
-  std::vector<Approximation>& poly_approxs = emulatorModel.approximations();
-
+  short asrv;
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
-    const RealSymMatrix& hess_i
-      = poly_approxs[i].hessian(emulatorModel.continuous_variables());
-    proposal_covariance(hess_i);
-    break;
+  case PCE_EMULATOR: asrv = 7; break;
+  case  SC_EMULATOR: case GP_EMULATOR: case KRIGING_EMULATOR:
+    asrv = 3; break; // for now
   }
-  }
+
+  //emulatorModel.continuous_variables(); // new MAP ?
+  ActiveSet set = emulatorModel.current_response().active_set(); // copy
+  set.request_values(asrv);
+  emulatorModel.compute_response(set);
+
+  // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
+  RealSymMatrix log_like_hess;
+  build_hessian_of_sum_square_residuals_from_function_hessians(
+    emulatorModel.current_response(), log_like_hess);
+
+  // invert potentially indefinite Hessian
+  RealMatrix pd_covariance;
+  get_positive_definite_covariance_from_hessian(log_like_hess, pd_covariance);
+
+  // pack GSL proposalCovMatrix
+  int i, j, nv = log_like_hess.numRows();
+  for (i=0; i<nv; ++i )
+    for (j=0; j<nv; ++j )
+      (*proposalCovMatrix)(i,j) = pd_covariance(i,j);
 }
 
 
@@ -330,6 +344,14 @@ void NonDQUESOBayesCalibration::update_model()
   case GP_EMULATOR: case KRIGING_EMULATOR:
     emulatorModel.build_approximation(); break;
   }
+}
+
+
+Real NonDQUESOBayesCalibration::assess_emulator_convergence()
+{
+  // TO DO
+  RealVector delta_pce;
+  return delta_pce.normFrobenius();
 }
 
 
@@ -562,14 +584,6 @@ user_proposal_covariance(const String& cov_type,
   //proposalCovMatrix->print(std::cout);
   //std::cout << std::endl;
   //cov_data.print(std::cout);
-}
-
-
-void NonDQUESOBayesCalibration::
-proposal_covariance(const RealSymMatrix& hessian)
-{
-  // set proposalCovMatrix to inv(hessian), validating that it is a
-  // covariance matrix
 }
 
 
