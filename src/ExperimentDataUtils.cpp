@@ -408,6 +408,8 @@ void ExperimentCovariance::print_covariance_blocks() const {
 void build_hessian_of_sum_square_residuals_from_function_hessians(
        const Response& resp, RealSymMatrix &ssr_hessian )
 {
+  // This function assumes that residuals are r = ( approx - data )
+  // NOT r = ( data - approx )
   const RealSymMatrixArray &func_hessians = resp.function_hessians();
   const RealMatrix &func_gradients = resp.function_gradients();
   const RealVector &residuals = resp.function_values();
@@ -518,8 +520,6 @@ void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian
     else break;
   }
 
-  eigenvalues.print(std::cout);
-
   // The covariance matrix is the inverse of the hessian so scale eigenvectors
   // by Q*inv(D)
   RealMatrix scaled_eigenvectors( eigenvectors );
@@ -530,8 +530,6 @@ void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian
   for ( int j=num_negative_eigenvalues; j<num_rows; j++)
     for ( int i=0; i<num_rows; i++)
       scaled_eigenvectors(i,j) /= eigenvalues[j];
-
-  scaled_eigenvectors.print(std::cout);
   
   // Compute inv(A) = Q*inv(D)*Q'
   covariance.shapeUninitialized( num_rows, num_rows );
