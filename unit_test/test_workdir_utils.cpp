@@ -306,7 +306,9 @@ int test_main( int argc, char* argv[] )      // note the name!
 
   std::string rundir_str = Dakota::WorkdirHelper::startup_pwd();
   std::string env_path_str( std::getenv("PATH") );
+#if !defined(_WIN32)
   test_save_current_path(rundir_str, env_path_str);
+#endif
 
   test_create_and_remove_tmpdir();                // SYM LINKS used by default
   test_create_and_remove_wd_in_rundir("workdir"); // SYM LINKS used by default
@@ -325,7 +327,15 @@ int test_main( int argc, char* argv[] )      // note the name!
   count_driver_scripts(fq_search);
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success ); */
 
-  test_driver_relative_path("../uthelper");
+#if defined(_WIN32)
+  #define PATH_SEP_SLASH '\\'
+#else
+  #define PATH_SEP_SLASH '/'
+#endif
+  std::string relative_driver_path("..");
+  relative_driver_path += PATH_SEP_SLASH;
+  relative_driver_path += "uthelper";
+  test_driver_relative_path(relative_driver_path);
 
   return boost::exit_success;
 }
