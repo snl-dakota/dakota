@@ -302,26 +302,33 @@ void NonDQUESOBayesCalibration::filter_chain()
     // reporting to user; possibly also in auxilliary data files for
     // user consumption.
 
+    // from BMA: can only get the full acceptance chain if
+    // m_filteredChainGenerate = false
+
     // To demonstrate retrieving the chain. Note that the QUESO
     // VectorSequence class has a number of helpful filtering and
     // statistics functions.
     const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
       mcmc_chain = inverseProb->chain();
     unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-    Cout << "Final MCMC Samples: " << num_mcmc << std::endl;
-    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
-    for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
-      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
-      Cout << mcmc_sample << std::endl;
+
+    const QUESO::ScalarSequence<double>&
+      loglikelihood_vals = inverseProb->logLikelihoodValues();
+    unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+
+    if (num_mcmc != num_llhood) {
+      Cout << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
+	   << "\n                 but likelihood set has length" 
+	   << num_llhood << std::endl;
     }
-
-    // from BMA: can get the full acceptance chain (if filter = false) 
-    //           but can't yet get corresponding likelihood values
-
-    // Ask QUESO: appears to be empty, at least after filtering
-    // const QUESO::ScalarSequence<double>&
-    //   loglikelihood_vals = inverseProb->logLikelihoodValues();
-    //    unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+    else {
+      Cout << "There are " << num_mcmc << " final MCMC samples: " << std::endl;
+      QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+      for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
+	mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+	Cout << mcmc_sample << loglikelihood_vals[chain_pos] << std::endl;
+      }
+    }
   }
 
   // TO DO: perform truth evals for selected points (here or below)
@@ -648,6 +655,11 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
   //calIpMhOptionsValues->m_filteredChainComputeStats          = true;
+
+  // BMA TODO: fix scaling
+  // suppress logit transform scaling in QUESO until we get our
+  // problem scaling correct
+  calIpMhOptionsValues->m_doLogitTransform = false;
 }
 
 

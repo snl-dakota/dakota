@@ -30,7 +30,7 @@
 #include "queso/Defines.h"
 #include "queso/ValidationCycle.h"
 #include "queso/VectorSpace.h" 
-#include "queso/JointPdf.h" 
+#include "queso/GaussianJointPdf.h" 
 #include "queso/GpmsaComputerModel.h"
 #include "queso/SimulationModelOptions.h"
 
