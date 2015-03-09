@@ -67,17 +67,21 @@ include(ExternalProject)
 
 if(HAVE_QUESO)
 
-  # Prerequisites for building QUESO
-  find_program(SH sh)
-  if(${SH} MATCHES "sh-NOTFOUND")
-    message(FATAL_ERROR "Cannot build QUESO as an external project without sh")
-  endif()
-
   # Queso depends on GSL, so ensure GSL detection and proper lib settings
   # Require user to turn on this GPL package explicitly
   if(NOT DAKOTA_HAVE_GSL)
     message(FATAL_ERROR 
       "HAVE_QUESO requires enabling GPL package GSL via DAKOTA_HAVE_GSL.")
+  endif()
+
+  if(DAKOTA_QUESO_CMAKE)
+    add_subdirectory(queso)
+  else()
+
+  # Prerequisites for building QUESO
+  find_program(SH sh)
+  if(${SH} MATCHES "sh-NOTFOUND")
+    message(FATAL_ERROR "Cannot build QUESO as an external project without sh")
   endif()
 
   # Use gsl-config to get GSL settings
@@ -134,6 +138,8 @@ if(HAVE_QUESO)
 
   # Install QUESO (and possibly GRVY) libs
   install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallQuesoLibs.cmake")
+
+  endif()  # DAKOTA_QUESO_CMAKE
 
 endif(HAVE_QUESO)
 

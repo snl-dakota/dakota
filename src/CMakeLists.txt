@@ -604,6 +604,14 @@ if(HAVE_QUESO)
   endif()
 
   #list(APPEND DAKOTA_INCDIRS "$ENV{QUESO_PREFIX}/include")
+  if(DAKOTA_QUESO_CMAKE)
+
+    list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/queso/include/
+      ${GSL_INCLUDE_DIRS})
+    list(APPEND DAKOTA_PKG_LIBS queso)
+
+  else()
+
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_BINARY_DIR}/packages/queso_ext/include ${GSL_INCLUDE_DIRS})
 
@@ -624,6 +632,8 @@ if(HAVE_QUESO)
   #list(APPEND EXPORT_TARGETS queso gpmsa_any)
 
   list(APPEND DAKOTA_EXTPROJ_LIBS ${QUESO_EXTPROJ_LIBS})
+
+  endif()
 
 endif(HAVE_QUESO)
 
@@ -871,7 +881,11 @@ endif()
 
 if(HAVE_QUESO)
   # Enforce QUESO config header creation prior to compiling dakota sources
-  add_dependencies(dakota_src queso_ext)
+  if (DAKOTA_QUESO_CMAKE)
+    add_dependencies(dakota_src queso)    
+  else()
+    add_dependencies(dakota_src queso_ext)
+  endif()
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
