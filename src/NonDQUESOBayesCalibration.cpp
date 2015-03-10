@@ -160,7 +160,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   //}
 }
 
-void NonDQUESOBayesCalibration::init_queso_environment() {
+void NonDQUESOBayesCalibration::init_queso_environment()
+{
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
   // and send QUESO the proper MPI subenvironments.
@@ -218,11 +219,6 @@ void NonDQUESOBayesCalibration::init_queso_solver()
   inverseProb.reset(new
     QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>("",
     calIpOptionsValues.get(), *priorRv, *likelihoodFunctionObj, *postRv));
-
-  // To demonstrate retrieving the chain
-  // TODO: Ask QUESO why the MH sequence generator decimates the
-  // in-memory chain when generating final results
-  //calIpMhOptionsValues->m_filteredChainGenerate = false; // **** HERE!
 }
 
 
@@ -302,8 +298,8 @@ void NonDQUESOBayesCalibration::filter_chain()
     // reporting to user; possibly also in auxilliary data files for
     // user consumption.
 
-    // from BMA: can only get the full acceptance chain if
-    // m_filteredChainGenerate = false
+    // to get the full acceptance chain, need m_filteredChainGenerate set
+    // to false in set_invpb_mh_options()
 
     // To demonstrate retrieving the chain. Note that the QUESO
     // VectorSequence class has a number of helpful filtering and
@@ -648,13 +644,22 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   calIpMhOptionsValues->m_amEta                     = 2.88;
   calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
 
-  calIpMhOptionsValues->m_filteredChainGenerate              = true; // **** HERE!
-  calIpMhOptionsValues->m_filteredChainDiscardedPortion      = 0.;
-  calIpMhOptionsValues->m_filteredChainLag                   = 20; // **** HERE!
-  calIpMhOptionsValues->m_filteredChainDataOutputFileName    = "outputData/filtered_chain";
-  calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
-  calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
-  //calIpMhOptionsValues->m_filteredChainComputeStats          = true;
+  // TODO: Ask QUESO why the MH sequence generator decimates the
+  // in-memory chain when generating final results
+  if (adaptPosteriorRefine)
+    // In this case, we process the full chain for maximum posterior values
+    calIpMhOptionsValues->m_filteredChainGenerate         = false;
+  else {
+    // In this case, we filter the chain for final output
+    calIpMhOptionsValues->m_filteredChainGenerate         = true;
+    calIpMhOptionsValues->m_filteredChainDiscardedPortion = 0.;
+    calIpMhOptionsValues->m_filteredChainLag              = 20;
+    calIpMhOptionsValues->
+      m_filteredChainDataOutputFileName = "outputData/filtered_chain";
+    calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
+    calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
+    //calIpMhOptionsValues->m_filteredChainComputeStats   = true;
+  }
 
   // BMA TODO: fix scaling
   // suppress logit transform scaling in QUESO until we get our
