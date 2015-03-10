@@ -281,7 +281,9 @@ void test_driver_relative_path(const bfs::path& rel_driver_path)
   Dakota::WorkdirHelper::change_directory(rundir_str);
 
   BOOST_CHECK( !rel_driver_path.is_absolute() );
+#if !defined(_WIN32)
   BOOST_CHECK( bfs::is_regular_file(rel_driver_path) );
+#endif
 
   //try {
   Dakota::CommandShell sys_call_sh;
