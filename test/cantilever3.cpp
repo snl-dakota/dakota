@@ -74,18 +74,14 @@ int main(int argc, char** argv)
   //double y = vars[Y]; // vertical load
  
   double e = xin[0];
-  double w =  xin[1]; // horizontal load
+  double w = xin[1]; // horizontal load
   double r = xin[3]; // Young's modulus
-  double t =  xin[2]; // beam width
-  double x =  xin[4]; // beam thickness
-  double y =  xin[5]; // beam thickness
+  double t = xin[2]; // beam width
+  double x = xin[4]; // beam thickness
+  double y = xin[5]; // beam thickness
 
-  cout << " w " << w << 
-          " t"  << t << 
-          " e " << e << 
-          " r " << r << 
-          " x " << x << 
-          "y "  <<y << '\n';
+  cout << " w " << w << " t " << t << " e " << e << " r " << r
+       << " x " << x << " y " << y << '\n';
   // optimization inequality constraint: <= 0 and scaled O(1)
   //Real g_stress = stress/R - 1.0;
   //Real g_disp   = disp/D0  - 1.0;
@@ -109,6 +105,7 @@ int main(int argc, char** argv)
   fout.setf(ios::right);
 
   // **** f:
+  // suppressed since this QoI is not calibrated to data
 
   // **** c1:
   if (ASV[0] & 1)
