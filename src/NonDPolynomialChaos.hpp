@@ -39,10 +39,15 @@ public:
  
   /// standard constructor
   NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
-  /// alternate constructor
+  /// alternate constructor for numerical integration
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short num_int_level, short u_space_type,
 		      bool piecewise_basis, bool use_derivs);
+  /// alternate constructor for regression
+  NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+		      const UShortArray& exp_order_seq, Real colloc_ratio,
+		      short u_space_type, bool piecewise_basis,
+		      bool use_derivs);
   /// destructor
   ~NonDPolynomialChaos();
 

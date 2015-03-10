@@ -57,17 +57,53 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // Construct emulatorModel (no emulation, GP, PCE, or SC) for use in
   // likelihood evaluations
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
-    // instantiate a NonD{PolynomialChaos,StochCollocation} iterator
-    bool use_derivs = probDescDB.get_bool("method.derivative_usage");
-    unsigned short level
-      = probDescDB.get_usa("method.nond.sparse_grid_level")[0];
-    if (emulatorType == PCE_EMULATOR)
+  case PCE_EMULATOR: { // instantiate a NonDPolynomialChaos iterator
+    const UShortArray& levels
+      = probDescDB.get_usa("method.nond.sparse_grid_level");
+    if (levels.size()) {
+      if (levels.size() > 1) {
+	Cerr << "Error: only one sparse grid level currently supported for "
+	     << "Bayesian calibration." << std::endl;
+	abort_handler(-1);
+      }
       stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
-	Pecos::COMBINED_SPARSE_GRID, level, EXTENDED_U, false, use_derivs));
-    else
-      stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
-	Pecos::COMBINED_SPARSE_GRID, level, EXTENDED_U, false, use_derivs));
+	Pecos::COMBINED_SPARSE_GRID, levels[0], EXTENDED_U, false, false));
+    }
+    else { // regression: least squares, compressed sensing, orthog least interp
+      const UShortArray& exp_order
+	= probDescDB.get_usa("method.nond.expansion_order");
+      if (exp_order.size() != 1) { // scalar order + dim_pref defines anisotropy
+	Cerr << "Error: only one expansion order currently supported for "
+	     << "Bayesian calibration." << std::endl;
+	abort_handler(-1);
+      }
+      Real colloc_ratio = probDescDB.get_real("method.nond.collocation_ratio");
+      bool use_derivs   = probDescDB.get_bool("method.derivative_usage");
+      stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
+	Pecos::DEFAULT_REGRESSION, exp_order, colloc_ratio, EXTENDED_U,
+	false, use_derivs));
+    }
+    // no level mappings
+    NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
+    RealVectorArray empty_rv_array; // empty
+    se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
+			     empty_rv_array, respLevelTarget,
+			     respLevelTargetReduce, cdfFlag);
+    // extract NonDExpansion's uSpaceModel for use in likelihood evals
+    emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
+    break;
+  }
+  case SC_EMULATOR: { // instantiate a NonDStochCollocation iterator
+    bool use_derivs = probDescDB.get_bool("method.derivative_usage");
+    const UShortArray& levels
+      = probDescDB.get_usa("method.nond.sparse_grid_level");
+    if (levels.size() != 1) {
+      Cerr << "Error: only one sparse grid level currently supported for "
+	   << "Bayesian calibration." << std::endl;
+      abort_handler(-1);
+    }
+    stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
+      Pecos::COMBINED_SPARSE_GRID, levels[0], EXTENDED_U, false, use_derivs));
     // no level mappings
     NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
     RealVectorArray empty_rv_array; // empty

@@ -424,9 +424,9 @@ void build_hessian_of_sum_square_residuals_from_function_hessians(
       for ( int i=0; i<num_residuals; i++ ) {
 	//hess_jk += ( func_gradients(j,i)*func_gradients(k,i) - 
 	//		      residuals[i]*func_hessians[i](j,k) );
-	short asrv_i = asrv[i];
-	if (asrv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
-	if (asrv_i & 4) hess_jk += residuals[i]*func_hessians[i](j,k);
+	short rv_i = asrv[i];
+	if (rv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
+	if ( (rv_i & 5) == 5 ) hess_jk += residuals[i]*func_hessians[i](j,k);
       }
       hess_jk *= 2.;
     }

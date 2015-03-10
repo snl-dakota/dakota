@@ -308,7 +308,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 }
 
 
-/** This constructor is used for helper iterator instantiation on the fly. */
+/** This constructor is used for helper iterator instantiation on the fly
+    that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int_level, short u_space_type,
@@ -364,6 +365,92 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     //(piecewiseBasis) ? "piecewise_projection_orthogonal_polynomial" :
     "global_projection_orthogonal_polynomial";
   UShortArray exp_order; // empty for numerical integration approaches
+  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+    approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
+    pt_reuse), false);
+  initialize_u_space_model();
+
+  // no expansionSampler, no numSamplesOnExpansion
+}
+
+
+/** This constructor is used for helper iterator instantiation on the fly
+    that employ regression (least squares, CS, OLI). */
+NonDPolynomialChaos::
+NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+		    const UShortArray& exp_order_seq, Real colloc_ratio,
+		    short u_space_type, bool piecewise_basis, bool use_derivs):
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
+		piecewise_basis, use_derivs), 
+  collocRatio(colloc_ratio), termsOrder(1.), randomSeed(0),
+  tensorRegression(false), crossValidation(false), l2Penalty(0.), numAdvance(3),
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0), normalizedCoeffOutput(false)
+{
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(u_space_type, data_order);
+  initialize(u_space_type);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  bool global_bnds
+    = (numContDesVars || numContEpistUncVars || numContStateVars);
+  transform_model(iteratedModel, g_u_model, global_bnds);
+
+  // resolve expansionBasisType, exp_terms, numSamplesOnModel
+  expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
+    Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
+  UShortArray exp_order;
+  NonDIntegration::dimension_preference_to_anisotropic_order(
+    expOrderSeqSpec[sequenceIndex], dimPrefSpec/*empty*/, numContinuousVars,
+    exp_order);
+
+  size_t exp_terms;
+  switch (expansionBasisType) {
+  case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
+  case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
+    exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+    break;
+  case Pecos::TENSOR_PRODUCT_BASIS:
+    exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+    break;
+  }
+  numSamplesOnModel = terms_ratio_to_samples(exp_terms,collocRatio,termsOrder);
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  Iterator u_space_sampler;
+  if (tensorRegression) { // tensor sub-sampling
+    UShortArray dim_quad_order(numContinuousVars);
+    // define nominal quadrature order as exp_order + 1
+    // (m > p avoids most of the 0's in the Psi measurement matrix)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      dim_quad_order[i] = exp_order[i] + 1;
+    construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+			 dimPrefSpec/*empty*/);
+  }
+  else {
+    String rng("mt19937");
+    construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS, numSamplesOnModel,
+		  randomSeed, rng, false, ACTIVE);
+  }
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short  corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type =
+    //(piecewiseBasis) ? "piecewise_regression_orthogonal_polynomial" :
+    "global_regression_orthogonal_polynomial";
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
     pt_reuse), false);
