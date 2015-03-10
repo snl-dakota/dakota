@@ -142,8 +142,8 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
-		     unsigned short num_int_level, short u_space_type,
-		     bool piecewise_basis, bool use_derivs):
+		     const UShortArray& num_int_seq, const RealVector& dim_pref,
+		     short u_space_type, bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs)
 {
@@ -165,8 +165,6 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  RealVector  dim_pref;                      // empty -> isotropic
-  UShortArray num_int_seq(1, num_int_level); // single sequence
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;

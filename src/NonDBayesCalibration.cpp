@@ -57,32 +57,24 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // Construct emulatorModel (no emulation, GP, PCE, or SC) for use in
   // likelihood evaluations
   switch (emulatorType) {
+
   case PCE_EMULATOR: { // instantiate a NonDPolynomialChaos iterator
-    const UShortArray& levels
+    const UShortArray& level_seq
       = probDescDB.get_usa("method.nond.sparse_grid_level");
-    if (levels.size()) {
-      if (levels.size() > 1) {
-	Cerr << "Error: only one sparse grid level currently supported for "
-	     << "Bayesian calibration." << std::endl;
-	abort_handler(-1);
-      }
+    if (!level_seq.empty())
       stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
-	Pecos::COMBINED_SPARSE_GRID, levels[0], EXTENDED_U, false, false));
-    }
-    else { // regression: least squares, compressed sensing, orthog least interp
-      const UShortArray& exp_order
-	= probDescDB.get_usa("method.nond.expansion_order");
-      if (exp_order.size() != 1) { // scalar order + dim_pref defines anisotropy
-	Cerr << "Error: only one expansion order currently supported for "
-	     << "Bayesian calibration." << std::endl;
-	abort_handler(-1);
-      }
-      Real colloc_ratio = probDescDB.get_real("method.nond.collocation_ratio");
-      bool use_derivs   = probDescDB.get_bool("method.derivative_usage");
+	Pecos::COMBINED_SPARSE_GRID, level_seq, // ssg level sequence
+	probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
+	EXTENDED_U, false, false));
+    else // regression: least squares, compressed sensing, orthog least interp
       stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
-	Pecos::DEFAULT_REGRESSION, exp_order, colloc_ratio, EXTENDED_U,
-	false, use_derivs));
-    }
+	Pecos::DEFAULT_REGRESSION,
+	probDescDB.get_usa("method.nond.expansion_order"), // exp_order sequence
+	probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
+	probDescDB.get_real("method.nond.collocation_ratio"), EXTENDED_U, false,
+	probDescDB.get_bool("method.derivative_usage"),        // not exposed
+	probDescDB.get_bool("method.nond.cross_validation"))); // not exposed
+
     // no level mappings
     NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
     RealVectorArray empty_rv_array; // empty
@@ -93,17 +85,15 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
     break;
   }
+
   case SC_EMULATOR: { // instantiate a NonDStochCollocation iterator
-    bool use_derivs = probDescDB.get_bool("method.derivative_usage");
-    const UShortArray& levels
-      = probDescDB.get_usa("method.nond.sparse_grid_level");
-    if (levels.size() != 1) {
-      Cerr << "Error: only one sparse grid level currently supported for "
-	   << "Bayesian calibration." << std::endl;
-      abort_handler(-1);
-    }
     stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
-      Pecos::COMBINED_SPARSE_GRID, levels[0], EXTENDED_U, false, use_derivs));
+      Pecos::COMBINED_SPARSE_GRID,
+      probDescDB.get_usa("method.nond.sparse_grid_level"), // ssg level sequence
+      probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
+      EXTENDED_U, false,
+      probDescDB.get_bool("method.derivative_usage")));      // not exposed
+
     // no level mappings
     NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
     RealVectorArray empty_rv_array; // empty
@@ -114,6 +104,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
     break;
   }
+
   case GP_EMULATOR: case KRIGING_EMULATOR: {
     String sample_reuse;
     String approx_type =
@@ -128,7 +119,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     int samples = probDescDB.get_int("method.nond.emulator_samples"),
         seed    = probDescDB.get_int("method.random_seed");
-    const String& rng = probDescDB.get_string("method.random_number_generator");
     // get point samples file
     const String& import_pts_file
       = probDescDB.get_string("method.import_points_file");
@@ -141,7 +131,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       Model g_u_model;
       transform_model(iteratedModel, g_u_model, true); // globally bounded
       lhsIterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
-	samples, seed, rng, true, ACTIVE_UNIFORM), false);
+	samples, seed, probDescDB.get_string("method.random_number_generator"),
+	true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
@@ -153,7 +144,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     }
     else {
       lhsIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-	samples, seed, rng, true, ACTIVE_UNIFORM), false);
+	samples, seed, probDescDB.get_string("method.random_number_generator"),
+	true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
@@ -165,6 +157,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     }
     break;
   }
+
   case NO_EMULATOR:
     if (standardizedSpace) // recast to standardized probability space
       transform_model(iteratedModel, emulatorModel); // no global bounds

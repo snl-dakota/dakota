@@ -312,12 +312,13 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
-		    unsigned short num_int_level, short u_space_type,
-		    bool piecewise_basis, bool use_derivs):
+		    const UShortArray& num_int_seq, const RealVector& dim_pref,
+		    short u_space_type, bool piecewise_basis, bool use_derivs):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), l2Penalty(0.), //initSGLevel(0),
-  numAdvance(3), normalizedCoeffOutput(false)
+  numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
+  normalizedCoeffOutput(false)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -340,18 +341,12 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  if (expansionCoeffsApproach == Pecos::QUADRATURE) {
-    RealVector  dim_pref;                     // empty -> isotropic
-    UShortArray quad_order(1, num_int_level); // single sequence
-    construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref);
-  }
-  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
-    RealVector  dim_pref;                    // empty -> isotropic
-    UShortArray ssg_level(1, num_int_level); // single sequence
-    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref);
-  }
+  if (expansionCoeffsApproach == Pecos::QUADRATURE)
+    construct_quadrature(u_space_sampler,  g_u_model, num_int_seq, dim_pref);
+  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID)
+    construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
   else if (expansionCoeffsApproach == Pecos::CUBATURE)
-    construct_cubature(u_space_sampler, g_u_model, num_int_level);
+    construct_cubature(u_space_sampler, g_u_model, num_int_seq[0]);
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -378,13 +373,16 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     that employ regression (least squares, CS, OLI). */
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
-		    const UShortArray& exp_order_seq, Real colloc_ratio,
-		    short u_space_type, bool piecewise_basis, bool use_derivs):
+		    const UShortArray& exp_order_seq,
+		    const RealVector& dim_pref, Real colloc_ratio,
+		    short u_space_type, bool piecewise_basis, bool use_derivs,
+		    bool cv_flag):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(0),
-  tensorRegression(false), crossValidation(false), l2Penalty(0.), numAdvance(3),
-  expOrderSeqSpec(exp_order_seq), sequenceIndex(0), normalizedCoeffOutput(false)
+  tensorRegression(false), crossValidation(cv_flag), l2Penalty(0.),
+  numAdvance(3), expOrderSeqSpec(exp_order_seq), dimPrefSpec(dim_pref),
+  sequenceIndex(0), normalizedCoeffOutput(false)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -406,8 +404,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
   UShortArray exp_order;
   NonDIntegration::dimension_preference_to_anisotropic_order(
-    expOrderSeqSpec[sequenceIndex], dimPrefSpec/*empty*/, numContinuousVars,
-    exp_order);
+    expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars, exp_order);
 
   size_t exp_terms;
   switch (expansionBasisType) {
@@ -432,7 +429,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     for (size_t i=0; i<numContinuousVars; ++i)
       dim_quad_order[i] = exp_order[i] + 1;
     construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
-			 dimPrefSpec/*empty*/);
+			 dimPrefSpec);
   }
   else {
     String rng("mt19937");

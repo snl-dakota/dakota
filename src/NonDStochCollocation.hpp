@@ -40,7 +40,8 @@ public:
   NonDStochCollocation(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDStochCollocation(Model& model, short exp_coeffs_approach,
-		       unsigned short num_int_level, short u_space_type,
+		       const UShortArray& num_int_seq,
+		       const RealVector& dim_pref, short u_space_type,
 		       bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDStochCollocation();
