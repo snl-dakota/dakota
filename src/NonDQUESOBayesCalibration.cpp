@@ -55,7 +55,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
 { 
-
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
   ////////////////////////////////////////////////////////
@@ -86,9 +85,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // transformed to scaled space in same way as variables
   const String& covariance_type = 
     probDescDB.get_string("method.nond.proposal_cov_type");
-  if (covariance_type.empty())
-    default_proposal_covariance();
-  else {
+  if (!covariance_type.empty()) {
     // either filename OR data values will be non-empty
     const RealVector& covariance_data = 
       probDescDB.get_rv("method.nond.proposal_covariance_data");
@@ -97,6 +94,8 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
     user_proposal_covariance(covariance_type, covariance_data, 
 			     covariance_filename);
   }
+  else if (!emulatorType)
+    default_proposal_covariance();
 }
 
 
@@ -113,8 +112,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // construct emulatorModel and initialize tranformations, as needed
   initialize_model();
 
-  // construct likelihoodFunctionObj, prior/posterior random vectors,
-  // and inverse problem
+  // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
 
   // For testing re-entrancy
@@ -131,8 +129,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     run_queso_solver();
     break;
   case true:
-    if (!emulatorType) {
-      Cerr << "Error: " << std::endl;
+    if (!emulatorType) { // current spec prevents this
+      Cerr << "Error: adaptive posterior refinement requires emulator model."
+	   << std::endl;
       abort_handler(-1);
     }
     Real conv_metric = DBL_MAX; int num_iter = 0;
@@ -234,6 +233,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   //emulatorModel.continuous_variables(); // new MAP ?
   ActiveSet set = emulatorModel.current_response().active_set(); // copy
   set.request_values(asrv);
+  // TO DO: add analytic grad/Hessian support or access grads/Hessians directly
+  Cout << "Evaluating derivatives on emulator.\n";
   emulatorModel.compute_response(set);
 
   // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
@@ -293,37 +294,33 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 
 void NonDQUESOBayesCalibration::filter_chain()
 {
-  if (outputLevel >= DEBUG_OUTPUT) {
-    // TODO: Need to transform chain back to unscaled space for
-    // reporting to user; possibly also in auxilliary data files for
-    // user consumption.
+  // TODO: Need to transform chain back to unscaled space for reporting
+  // to user; possibly also in auxilliary data files for user consumption.
 
-    // to get the full acceptance chain, need m_filteredChainGenerate set
-    // to false in set_invpb_mh_options()
+  // to get the full acceptance chain, need m_filteredChainGenerate set
+  // to false in set_invpb_mh_options()
 
-    // To demonstrate retrieving the chain. Note that the QUESO
-    // VectorSequence class has a number of helpful filtering and
-    // statistics functions.
-    const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
-      mcmc_chain = inverseProb->chain();
-    unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  // To demonstrate retrieving the chain. Note that the QUESO VectorSequence
+  // class has a number of helpful filtering and statistics functions.
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
+    mcmc_chain = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
 
-    const QUESO::ScalarSequence<double>&
-      loglikelihood_vals = inverseProb->logLikelihoodValues();
-    unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+  const QUESO::ScalarSequence<double>&
+    loglikelihood_vals = inverseProb->logLikelihoodValues();
+  unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
 
-    if (num_mcmc != num_llhood) {
-      Cout << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
-	   << "\n                 but likelihood set has length" 
-	   << num_llhood << std::endl;
-    }
-    else {
-      Cout << "There are " << num_mcmc << " final MCMC samples: " << std::endl;
-      QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
-      for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
-	mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+  if (num_mcmc != num_llhood)
+    Cout << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
+	 << "\n                 but likelihood set has length" 
+	 << num_llhood << std::endl;
+  else {
+    Cout << "There are " << num_mcmc << " final MCMC samples: " << std::endl;
+    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+    for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
+      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+      //if (outputLevel >= DEBUG_OUTPUT)
 	Cout << mcmc_sample << loglikelihood_vals[chain_pos] << std::endl;
-      }
     }
   }
 
@@ -385,7 +382,6 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     }
   }
   else { // case PCE_EMULATOR: case SC_EMULATOR:
-    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
     // TODO: This transformation shouldn't be necessary, but need to
     // verify that ALL variable types are mapped to new bounds and
     // initial point when the PCE is constructed in u-space.
