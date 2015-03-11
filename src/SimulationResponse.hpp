@@ -55,6 +55,8 @@ public:
   /// standard constructor built from problem description database
   SimulationResponse(const Variables& vars, const ProblemDescDB& problem_db);
   /// alternate constructor that shares a SharedResponseData instance
+  SimulationResponse(const SharedResponseData& srd, const ActiveSet& set);
+  /// alternate constructor that shares a SharedResponseData instance
   SimulationResponse(const SharedResponseData& srd);
   /// alternate constructor using limited data
   SimulationResponse(const ActiveSet& set);

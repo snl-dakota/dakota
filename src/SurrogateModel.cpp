@@ -49,10 +49,10 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
 SurrogateModel::
 SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-	       const SharedVariablesData& svd, const ActiveSet& set,
-	       short output_level):
-  Model(LightWtBaseConstructor(), problem_db, parallel_lib,
-	svd, set, output_level),
+	       const SharedVariablesData& svd, const SharedResponseData& srd,
+	       const ActiveSet& set, short output_level):
+  Model(LightWtBaseConstructor(), problem_db, parallel_lib, svd, srd,
+	set, output_level),
   responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {
   modelType = "surrogate";

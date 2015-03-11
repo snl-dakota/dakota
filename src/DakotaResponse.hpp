@@ -61,7 +61,9 @@ public:
   Response();
   /// standard constructor built from problem description database
   Response(short type, const Variables& vars, const ProblemDescDB& problem_db);
-  /// alternate constructor using limited data
+  /// alternate constructor that shares response data
+  Response(const SharedResponseData& srd, const ActiveSet& set);
+  /// alternate constructor using limited data without sharing
   Response(short type, const ActiveSet& set);
   /// alternate constructor using limited data (explicit disallows implicit
   /// type conversion)
@@ -301,6 +303,11 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
+  Response(BaseConstructor, const SharedResponseData& srd,
+	   const ActiveSet& set);
+  /// constructor initializes the base class part of letter classes
+  /// (BaseConstructor overloading avoids infinite recursion in the
+  /// derived class constructors - Coplien, p. 139)
   Response(BaseConstructor, const ActiveSet& set);
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
@@ -382,6 +389,9 @@ private:
   Response* get_response(short type, const Variables& vars,
 			 const ProblemDescDB& problem_db) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
+  Response* get_response(const SharedResponseData& srd,
+			 const ActiveSet& set) const;
+  /// Used by alternate envelope constructor to instantiate a new letter class
   Response* get_response(short type, const ActiveSet& set) const;
   /// Used by copy() to instantiate a new letter class
   Response* get_response(const SharedResponseData& srd) const;
@@ -397,9 +407,11 @@ private:
   /// write a letter object to a packed MPI buffer
   void write_rep(MPIPackBuffer& s) const;
 
-  /// core implementation of reshape that resizes the containers
-  void reshape_containers(size_t num_fns, size_t num_params, 
-			  bool grad_flag, bool hess_flag);
+  /// resizes the representation's containers
+  void shape_rep(const ActiveSet& set, bool initialize = true);
+  /// resizes the representation's containers
+  void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
+		   bool hess_flag);
 
   //
   //- Heading: Private data members

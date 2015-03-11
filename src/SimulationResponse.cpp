@@ -26,6 +26,12 @@ SimulationResponse(const Variables& vars, const ProblemDescDB& problem_db):
 
 
 SimulationResponse::
+SimulationResponse(const SharedResponseData& srd, const ActiveSet& set):
+  Response(BaseConstructor(), srd, set)
+{ }
+
+
+SimulationResponse::
 SimulationResponse(const SharedResponseData& srd):
   Response(BaseConstructor(), srd)
 { }

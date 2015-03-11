@@ -131,8 +131,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   import_points(
     problem_db.get_bool("model.surrogate.import_points_file_annotated"),
-    problem_db.get_bool("model.surrogate.import_points_file_active")
-		);
+    problem_db.get_bool("model.surrogate.import_points_file_active"));
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
@@ -141,17 +140,18 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
 DataFitSurrModel::
 DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
-		 //const SharedVariablesData& svd, const ActiveSet& set,
-		 const String& approx_type, const UShortArray& approx_order,
-		 short corr_type, short corr_order, short data_order,
-		 short output_level, const String& point_reuse,
-		 const String& export_points_file, bool export_annotated,
-		 const String& import_points_file, bool import_annotated,
-		 bool import_active_only):
+		 //const SharedVariablesData& svd,const SharedResponseData& srd,
+		 const ActiveSet& set, const String& approx_type,
+		 const UShortArray& approx_order, short corr_type,
+		 short corr_order, short data_order, short output_level,
+		 const String& point_reuse, const String& export_points_file,
+		 bool export_annotated, const String& import_points_file,
+		 bool import_annotated, bool import_active_only):
   SurrogateModel(actual_model.problem_description_db(),
-		 actual_model.parallel_library(), //view, vars_comps, set,
+		 actual_model.parallel_library(),
 		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().active_set(), output_level),
+		 actual_model.current_response().shared_data(), set,
+		 output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
   manageRecasting(false), exportPointsFile(export_points_file),
@@ -200,48 +200,51 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (corr_type)
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
 
-  // ignore bounds when finite differencing on data fits, since the bounds are
-  // artificial in this case (and reflecting the stencil degrades accuracy)
-  ignoreBounds = true;
-
-  // for construction on the fly, we cannot support a separate derivative
-  // specification for the surrogate, so we link to the actual_model settings.
-  // TO DO: could base this of of incoming ASV content.
-  if (actual_model.gradient_type() == "none")
+  // to define derivative settings, we use incoming ASV to define requests
+  // and surrogate type to determine analytic derivative support.
+  const ShortArray& asv = set.request_vector();
+  size_t i, num_fns = asv.size();
+  bool grad_flag = false, hess_flag = false;
+  for (i=0; i<num_fns; i++) {
+    if (asv[i] & 2) grad_flag = true;
+    if (asv[i] & 4) hess_flag = true;
+  }
+  if (grad_flag)
+    gradientType = (approx_type == "global_polynomial" ||
+      approx_type == "global_gaussian" || approx_type == "global_kriging" ||
+      strends(approx_type, "_orthogonal_polynomial") ||
+      strends(approx_type, "_interplation_polynomial") ||
+      strbegins(approx_type, "local_") || strbegins(approx_type, "multipoint_"))
+      ? "analytic" : "numerical";
+  else 
     gradientType = "none";
-  else
-    gradientType =
-      (approx_type == "global_polynomial" ||
-       strends(approx_type, "_orthogonal_polynomial") ||
-       strends(approx_type, "_interplation_polynomial") ||
-       strbegins(approx_type, "local_") ||
-       strbegins(approx_type, "multipoint_")) ? "analytic" : "numerical";
-  if (actual_model.hessian_type() == "none")
-    hessianType = "none";
-  else
+  if (hess_flag)
     hessianType = (approx_type == "global_polynomial" ||
-		   strbegins(approx_type, "local_")) ? "analytic" : "numerical";
-
+      strends(approx_type, "_orthogonal_polynomial") ||
+    //strends(approx_type, "_interplation_polynomial") || // TO DO
+		   strbegins(approx_type, "local_"))
+      ? "analytic" : "numerical";
+  else
+    hessianType = "none";
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to
   // defaults if needed.
   if (gradientType == "numerical") { // mixed not supported for this Model
-    methodSource = "dakota";
-    intervalType = "central";
-    fdGradStepSize.resize(1);
-    fdGradStepSize[0] = 0.001;
+    methodSource = "dakota"; intervalType = "central";
     fdGradStepType = "relative";
+    fdGradStepSize.resize(1); fdGradStepSize[0] = 0.001;
   }
   if (hessianType == "numerical") { // mixed not supported for this Model
     if (gradientType == "numerical") {
-      fdHessByFnStepSize.resize(1);
-      fdHessByFnStepSize[0] = 0.002;
       fdHessStepType = "relative";
+      fdHessByFnStepSize.resize(1); fdHessByFnStepSize[0] = 0.002;
     }
-    else {
-      fdHessByGradStepSize.resize(1);
-      fdHessByGradStepSize[0] = 0.001;
-    }
+    else
+      { fdHessByGradStepSize.resize(1); fdHessByGradStepSize[0] = 0.001; }
   }
+
+  // ignore bounds when finite differencing on data fits, since the bounds are
+  // artificial in this case (and reflecting the stencil degrades accuracy)
+  ignoreBounds = true;
 
   import_points(import_annotated, import_active_only);
   initialize_export();

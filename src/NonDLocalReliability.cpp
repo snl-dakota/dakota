@@ -193,10 +193,10 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     int samples = 0, seed = 0;
     Iterator dace_iterator;
     //const Variables& curr_vars = iteratedModel.current_variables();
+    ActiveSet surr_set = iteratedModel.current_response().active_set(); // copy
+    surr_set.request_values(3); // surrogate gradient evals
     g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-      //curr_vars.view(), curr_vars.variables_components(),
-      //iteratedModel.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, data_order,
+      surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
       outputLevel, sample_reuse), false);
 
     // transform g_hat_x_model from x-space to u-space
@@ -219,10 +219,10 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     int samples = 0, seed = 0;
     Iterator dace_iterator;
     //const Variables& g_u_vars = g_u_model.current_variables();
+    ActiveSet surr_set = g_u_model.current_response().active_set(); // copy
+    surr_set.request_values(3); // surrogate gradient evals
     uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
-      //g_u_vars.view(), g_u_vars.variables_components(),
-      //g_u_model.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, data_order,
+      surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
       outputLevel, sample_reuse), false);
   }
   else if (mppSearchType == NO_APPROX) // Recast( iteratedModel )

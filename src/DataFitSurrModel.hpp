@@ -53,11 +53,10 @@ public:
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
   DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
-		   //const std::pair<short,short>& view,
-		   //const Sizet2DArray& vars_comps, const ActiveSet& set,
-		   const String& approx_type, const UShortArray& approx_order,
-		   short corr_type, short corr_order, short data_order,
-		   short output_level, const String& point_reuse,
+		   const ActiveSet& set, const String& approx_type,
+		   const UShortArray& approx_order, short corr_type,
+		   short corr_order, short data_order, short output_level,
+		   const String& point_reuse,
 		   const String& export_points_file = String(),
 		   bool export_annotated = true,
 		   const String& import_points_file = String(),

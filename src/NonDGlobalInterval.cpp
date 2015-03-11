@@ -120,11 +120,12 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     UShortArray approx_order(numUncertainVars, trend_order);
     short corr_order = -1, corr_type = NO_CORRECTION;
     //const Variables& curr_vars = iteratedModel.current_variables();
+    ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+    gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
     fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
-      //curr_vars.view(), curr_vars.variables_components(),
-      //iteratedModel.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, dataOrder, outputLevel,
-      sample_reuse, probDescDB.get_string("method.export_points_file"),
+      gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
+      outputLevel, sample_reuse,
+      probDescDB.get_string("method.export_points_file"),
       probDescDB.get_bool("method.export_points_file_annotated"),
       import_pts_file,
       probDescDB.get_bool("method.import_points_file_annotated"),

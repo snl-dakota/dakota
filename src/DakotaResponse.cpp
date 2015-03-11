@@ -76,13 +76,12 @@ Response(BaseConstructor, const Variables& vars,
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
   
-  const String& coord_file = problem_db.get_string("responses.coord_data_filename");
-  Cout << "coord_file " << coord_file;
-  
+  const String& coord_file
+    = problem_db.get_string("responses.coord_data_filename");
   if (!coord_file.empty() ) {
     RealMatrix coord_values;
     read_coord_values(coord_file,coord_values);
-    Cout << "coord_values" << coord_values;
+    Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
     field_coords(coord_values,0);
   } 
 
@@ -100,36 +99,32 @@ Response(BaseConstructor, const Variables& vars,
     SharedResponseData::functionLabels is not needed for MPI send/recv
     buffers, but is needed for NPSOLOptimizer's user-defined functions
     option to support I/O in bestResponseArray.front(). */
-Response::Response(BaseConstructor, const ActiveSet& set):
-                   //, const SharedResponseData& srd):
-  sharedRespData(set),//sharedRespData(srd),
-  functionValues(set.request_vector().size()), responseActiveSet(set),
-  responseRep(NULL), referenceCount(1)
+Response::
+Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
+  sharedRespData(srd), responseActiveSet(set), responseRep(NULL),
+  referenceCount(1)
 {
-  // Set flags according to asv content.
-  const ShortArray& asv = set.request_vector();
-  size_t i, num_fns = asv.size(),
-    num_params = set.derivative_vector().size();
-  bool grad_flag = false, hess_flag = false;
-  for (i=0; i<num_fns; i++) {
-    if (asv[i] & 2)
-      grad_flag = true;
-    if (asv[i] & 4)
-      hess_flag = true;
-  }
+  shape_rep(set);
 
-  // Reshape functionGradients and functionHessians according to content of asv
-  if (grad_flag) {
-    functionGradients.shapeUninitialized(num_params, num_fns);
-    functionGradients = 0.;
-  }
-  if (hess_flag) {
-    functionHessians.resize(num_fns);
-    for (i=0; i<num_fns; i++) {
-      functionHessians[i].reshape(num_params);
-      functionHessians[i] = 0.;
-    }
-  }
+#ifdef REFCOUNT_DEBUG
+  Cout << "Response::Response(BaseConstructor) called to build base class "
+       << "data for letter object." << std::endl;
+#endif
+}
+
+
+/** BaseConstructor must build the base class data for all derived
+    classes.  This version is used for building a response object of
+    the correct size on the fly (e.g., by slave analysis servers
+    performing execute() on a local_response).
+    SharedResponseData::functionLabels is not needed for MPI send/recv
+    buffers, but is needed for NPSOLOptimizer's user-defined functions
+    option to support I/O in bestResponseArray.front(). */
+Response::Response(BaseConstructor, const ActiveSet& set):
+  sharedRespData(set), // minimal unshared definition
+  responseActiveSet(set), responseRep(NULL), referenceCount(1)
+{
+  shape_rep(set);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(BaseConstructor) called to build base class "
@@ -183,6 +178,24 @@ Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
 
   // Set the rep pointer to the appropriate derived response class
   responseRep = get_response(type, vars, problem_db);
+  if (!responseRep) // bad type or insufficient memory
+    abort_handler(-1);
+}
+
+
+/** This is an alternate envelope constructor for instantiations on
+    the fly.  This constructor executes get_response(type, set), which
+    invokes the derived constructor corresponding to type. */
+Response::Response(const SharedResponseData& srd, const ActiveSet& set):
+  referenceCount(1) // not used since this is the envelope, not the letter
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "Response::Response(SharedResponseData&, ActiveSet&) called to "
+       << "instantiate envelope." << std::endl;
+#endif
+
+  // for responseRep, instantiate the appropriate derived response class
+  responseRep = get_response(srd, set);
   if (!responseRep) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -314,6 +327,30 @@ get_response(short type, const Variables& vars,
   default:
     Cerr << "Response type " << type << " not currently supported in derived "
 	 << "Response classes." << std::endl;
+    return NULL; break;
+  }
+}
+
+
+/** Initializes responseRep to the appropriate derived type, as given
+    by SharedResponseData::responseType. */
+Response* Response::
+get_response(const SharedResponseData& srd, const ActiveSet& set) const
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "Envelope instantiating letter in get_response()." << std::endl;
+#endif
+
+  switch (srd.response_type()) {
+  case SIMULATION_RESPONSE:
+    return new SimulationResponse(srd, set); break;
+  case EXPERIMENT_RESPONSE:
+    return new ExperimentResponse(srd, set); break;
+  case BASE_RESPONSE:
+    return new Response(BaseConstructor(), srd, set); break;
+  default:
+    Cerr << "Response type " << srd.response_type() << " not currently "
+	 << "supported in derived Response classes." << std::endl;
     return NULL; break;
   }
 }
@@ -1242,7 +1279,7 @@ reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
   else {
     // resizes scalars for now (needs additional data for field reshape)
     sharedRespData.reshape(num_fns);
-    reshape_containers(num_fns, num_params, grad_flag, hess_flag);
+    reshape_rep(num_fns, num_params, grad_flag, hess_flag);
   }
 }
 
@@ -1257,47 +1294,75 @@ void Response::field_lengths(const IntVector& field_lens)
 
     // then resize my arrays using *new* num_functions, only
     // allocating grad, hess if already sized
-    reshape_containers(sharedRespData.num_functions(), 
-		       responseActiveSet.derivative_vector().size(),
-		       false, false);
+    reshape_rep(sharedRespData.num_functions(), 
+		responseActiveSet.derivative_vector().size(), false, false);
   }
 }
 
 
-void Response::reshape_containers(size_t num_fns, size_t num_params, 
-				  bool grad_flag, bool hess_flag)
+void Response::shape_rep(const ActiveSet& set, bool initialize)
 {
-  if (responseRep) 
-    responseRep->reshape_containers(num_fns, num_params, grad_flag, hess_flag);
-  else {
-
-    if (responseActiveSet.request_vector().size()    != num_fns || 
-	responseActiveSet.derivative_vector().size() != num_params)
-      responseActiveSet.reshape(num_fns, num_params);
-
-    if (functionValues.length() != num_fns)
-      functionValues.resize(num_fns);
-
-    if (grad_flag) {
-      if (functionGradients.numRows() != num_params || 
-	  functionGradients.numCols() != num_fns)
-	functionGradients.reshape(num_params, num_fns);
-    }
-    else if (!functionGradients.empty())
-      functionGradients.shape(0,0);
-
-    if (hess_flag) {
-      if (functionHessians.size() != num_fns)
-	functionHessians.resize(num_fns);
-      for (size_t i=0; i<num_fns; ++i) {
-	if (functionHessians[i].numRows() != num_params)
-	  functionHessians[i].reshape(num_params);
-      }
-    }
-    else if (!functionHessians.empty())
-      functionHessians.clear();
-
+  // Set flags according to asv content.
+  const ShortArray& asv = set.request_vector();
+  size_t i, num_fns = asv.size(),
+    num_params = set.derivative_vector().size();
+  bool grad_flag = false, hess_flag = false;
+  for (i=0; i<num_fns; i++) {
+    if (asv[i] & 2) grad_flag = true;
+    if (asv[i] & 4) hess_flag = true;
   }
+
+  if (initialize) {
+    functionValues.size(num_fns);                   // init to 0
+    if (grad_flag)
+      functionGradients.shape(num_params, num_fns); // init to 0
+    if (hess_flag) {
+      functionHessians.resize(num_fns);
+      for (i=0; i<num_fns; i++)
+	functionHessians[i].shape(num_params);      // init to 0
+    }
+  }
+  else {
+    functionValues.sizeUninitialized(num_fns);
+    if (grad_flag)
+      functionGradients.shapeUninitialized(num_params, num_fns);
+    if (hess_flag) {
+      functionHessians.resize(num_fns);
+      for (i=0; i<num_fns; i++)
+	functionHessians[i].shapeUninitialized(num_params);
+    }
+  }
+}
+
+
+void Response::
+reshape_rep(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
+{
+  if (responseActiveSet.request_vector().size()    != num_fns || 
+      responseActiveSet.derivative_vector().size() != num_params)
+    responseActiveSet.reshape(num_fns, num_params);
+
+  if (functionValues.length() != num_fns)
+    functionValues.resize(num_fns);
+
+  if (grad_flag) {
+    if (functionGradients.numRows() != num_params || 
+	functionGradients.numCols() != num_fns)
+      functionGradients.reshape(num_params, num_fns);
+  }
+  else if (!functionGradients.empty())
+    functionGradients.shape(0,0);
+
+  if (hess_flag) {
+    if (functionHessians.size() != num_fns)
+      functionHessians.resize(num_fns);
+    for (size_t i=0; i<num_fns; ++i) {
+      if (functionHessians[i].numRows() != num_params)
+	functionHessians[i].reshape(num_params);
+    }
+  }
+  else if (!functionHessians.empty())
+    functionHessians.clear();
 }
 
 

@@ -266,12 +266,12 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-      const ActiveSet& set, short output_level):
+      const SharedResponseData& srd, const ActiveSet& set, short output_level):
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
-  currentResponse(SIMULATION_RESPONSE, set),
-  numFns(set.request_vector().size()), userDefinedConstraints(svd),
-  fdGradStepType("relative"), fdHessStepType("relative"),
-  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
+  currentResponse(srd, set), numFns(set.request_vector().size()),
+  userDefinedConstraints(svd), fdGradStepType("relative"),
+  fdHessStepType("relative"), supportsEstimDerivs(true),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),

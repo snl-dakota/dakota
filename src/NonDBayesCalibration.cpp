@@ -133,8 +133,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       lhsIterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
 	samples, seed, probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM), false);
+      ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
+      gp_set.request_values(3); // GP grads for Gauss-Newton misfit Hessian
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, g_u_model,
-        approx_type, approx_order, corr_type, corr_order, data_order,
+	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
 	probDescDB.get_string("method.export_points_file"),
 	probDescDB.get_bool("method.export_points_file_annotated"),
@@ -146,8 +148,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       lhsIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
 	samples, seed, probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM), false);
+      ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+      gp_set.request_values(3); // GP grads for Gauss-Newton misfit Hessian
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, iteratedModel,
-        approx_type, approx_order, corr_type, corr_order, data_order,
+	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
 	probDescDB.get_string("method.export_points_file"),
 	probDescDB.get_bool("method.export_points_file_annotated"),

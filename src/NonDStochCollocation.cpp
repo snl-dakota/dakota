@@ -118,10 +118,10 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
       "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
+  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
+  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    //g_u_vars.view(), g_u_vars.variables_components(),
-    //g_u_model.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, data_order,
+    sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
     probDescDB.get_bool("method.export_points_file_annotated")), false);
     // point import not supported for structured grids
@@ -201,8 +201,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
       "global_hierarchical_interpolation_polynomial" :
       "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
+  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
+  sc_set.request_values(3); // TO DO: support surr Hessian evals in helper mode
+                            // TO DO: consider passing in data_mode
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    approx_type, approx_order, corr_type, corr_order, data_order,
+    sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
   initialize_u_space_model();
 

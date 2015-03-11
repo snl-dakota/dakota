@@ -45,8 +45,8 @@ protected:
   SurrogateModel(ProblemDescDB& problem_db);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-		 const SharedVariablesData& svd, const ActiveSet& set,
-		 short output_level);
+		 const SharedVariablesData& svd, const SharedResponseData& srd,
+		 const ActiveSet& set, short output_level);
   /// destructor
   ~SurrogateModel();
 

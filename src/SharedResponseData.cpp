@@ -135,7 +135,7 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   responsesId           = srd_rep->responsesId;
 
   functionLabels        = srd_rep->functionLabels;
-  fieldLabels        = srd_rep->fieldLabels;
+  fieldLabels           = srd_rep->fieldLabels;
 
   numScalarResponses    = srd_rep->numScalarResponses;
   fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;

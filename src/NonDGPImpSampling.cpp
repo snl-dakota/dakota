@@ -63,8 +63,11 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   //uniform) because it is a set of samples to build a good GP and nothing
   //else.  Rho 0 is the nonminal distribution of the input variable
 
-  gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel, approx_type,
-    approx_order, corr_type, corr_order, data_order, outputLevel, sample_reuse, 
+  ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+  gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel,
+    gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, sample_reuse,
     probDescDB.get_string("method.export_points_file"),
     probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
     probDescDB.get_bool("method.import_points_file_annotated"),    

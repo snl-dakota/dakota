@@ -287,11 +287,11 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   //const Variables& g_u_vars = g_u_model.current_variables();
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    //g_u_vars.view(), g_u_vars.variables_components(),
-    //g_u_model.current_response().active_set(),
-    approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
-    pt_reuse, probDescDB.get_string("method.export_points_file"),
+    pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
     probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
     probDescDB.get_bool("method.import_points_file_annotated"),
     probDescDB.get_bool("method.import_points_file_active")), false);
@@ -360,9 +360,12 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     //(piecewiseBasis) ? "piecewise_projection_orthogonal_polynomial" :
     "global_projection_orthogonal_polynomial";
   UShortArray exp_order; // empty for numerical integration approaches
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                             // TO DO: consider passing in data_mode
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
-    pt_reuse), false);
+    pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -448,9 +451,12 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   String pt_reuse, approx_type =
     //(piecewiseBasis) ? "piecewise_regression_orthogonal_polynomial" :
     "global_regression_orthogonal_polynomial";
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                             // TO DO: consider passing in data_mode
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
-    pt_reuse), false);
+    pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

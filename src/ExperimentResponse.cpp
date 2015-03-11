@@ -30,6 +30,14 @@ ExperimentResponse(const Variables& vars, const ProblemDescDB& problem_db):
 
 
 ExperimentResponse::
+ExperimentResponse(const SharedResponseData& srd, const ActiveSet& set):
+  Response(BaseConstructor(), srd, set)
+{
+  // initialize the response covariance data...
+}
+
+
+ExperimentResponse::
 ExperimentResponse(const SharedResponseData& srd):
   Response(BaseConstructor(), srd)
 {
