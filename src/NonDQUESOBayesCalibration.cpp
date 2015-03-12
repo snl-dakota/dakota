@@ -234,15 +234,30 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   ActiveSet set = emulatorModel.current_response().active_set(); // copy
   set.request_values(asrv);
   emulatorModel.compute_response(set);
+  // Note: verbose output *should* echo vars and approx response
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Parameters for emulator response:\n"
+	 << emulatorModel.current_variables()
+	 << "\nActive response data:\n" << emulatorModel.current_response()
+	 << std::endl;
 
   // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
   RealSymMatrix log_like_hess;
   build_hessian_of_sum_square_residuals_from_function_hessians(
     emulatorModel.current_response(), log_like_hess);
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "Hessian of negative log-likelihood misfit:\n";
+    write_data(Cout, log_like_hess, true, true, true);
+  }
 
   // invert potentially indefinite Hessian
   RealMatrix pd_covariance;
   get_positive_definite_covariance_from_hessian(log_like_hess, pd_covariance);
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "Positive definite covariance from Hessian of negative log-"
+	 << "likelihood misfit:\n";
+    write_data(Cout, pd_covariance, true, true, true);
+  }
 
   // pack GSL proposalCovMatrix
   int i, j, nv = log_like_hess.numRows();
@@ -325,7 +340,7 @@ void NonDQUESOBayesCalibration::filter_chain()
     QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
     for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
       mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
-      //if (outputLevel >= DEBUG_OUTPUT)
+      if (outputLevel >= DEBUG_OUTPUT)
 	Cout << mcmc_sample << loglikelihood_vals[chain_pos] << std::endl;
     }
   }
@@ -609,22 +624,22 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
 
   calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
 
-  calIpMhOptionsValues->m_dataOutputFileName   = "outputData/mh_output";
+  calIpMhOptionsValues->m_dataOutputFileName = "outputData/mh_output";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
-  calIpMhOptionsValues->m_rawChainDataInputFileName     = ".";
+  calIpMhOptionsValues->m_rawChainDataInputFileName   = ".";
   if (numSamples == 0)
-    calIpMhOptionsValues->m_rawChainSize                  = 48576;
+    calIpMhOptionsValues->m_rawChainSize              = 48576;
   else 
-    calIpMhOptionsValues->m_rawChainSize                  = numSamples;
-  //calIpMhOptionsValues->m_rawChainGenerateExtra         = false;
-  //calIpMhOptionsValues->m_rawChainDisplayPeriod         = 20000;
-  //calIpMhOptionsValues->m_rawChainMeasureRunTimes       = true;
-  calIpMhOptionsValues->m_rawChainDataOutputFileName    = "outputData/raw_chain";
+    calIpMhOptionsValues->m_rawChainSize              = numSamples;
+  //calIpMhOptionsValues->m_rawChainGenerateExtra     = false;
+  //calIpMhOptionsValues->m_rawChainDisplayPeriod     = 20000;
+  //calIpMhOptionsValues->m_rawChainMeasureRunTimes   = true;
+  calIpMhOptionsValues->m_rawChainDataOutputFileName  = "outputData/raw_chain";
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(1);
-  // NO LONGER SUPPORTED.  calIpMhOptionsValues->m_rawChainComputeStats          = true;
+  // NO LONGER SUPPORTED.  calIpMhOptionsValues->m_rawChainComputeStats = true;
 
   //calIpMhOptionsValues->m_displayCandidates         = false;
   calIpMhOptionsValues->m_putOutOfBoundsInChain       = true;
@@ -764,9 +779,9 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
 
   result = (result/(NonDQUESOInstance->likelihoodScale));
   result = -0.5*result;
-  Cout << "Log likelihood is " << result << '\n';
-  if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
-    Cout << "Likelihood is " << exp(result) << '\n';
+  if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
+    Cout << "Log likelihood is " << result
+	 << " Likelihood is " << exp(result) << '\n';
   
   // TODO: open file once and append here, or rely on QUESO to output
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
