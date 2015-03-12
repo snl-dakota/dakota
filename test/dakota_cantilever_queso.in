@@ -22,7 +22,6 @@ method,
 #	    filename 'mycov.dat'
 
 variables,								
-	active uncertain
         uniform_uncertain 2
           upper_bounds  1.e8 10.0
 #  Truth value is 2.85e7 2.5 
