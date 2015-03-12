@@ -1,0 +1,38 @@
+method,									
+        bayes_calibration queso,	#0,#p0
+# NOTE: typically you will want tens of thousands of samples
+         samples = 1000 seed = 348   	# just a short test
+         mcmc_type dram
+           rejection delayed	# not critical
+           metropolis adaptive	# should adapt from improved starting covar
+# PCE spec
+	  emulator pce
+#	    sparse_grid_level = 2
+	    expansion_order = 4 collocation_ratio = 0.9
+#	    posterior_adaptive
+# GP spec
+#	  emulator gaussian_process surfpack
+#	    emulator_samples = 250
+	  output verbose
+
+variables,								
+        uniform_uncertain 2
+          upper_bounds   2.  2.
+          lower_bounds  -2. -2.
+          initial_point -1.  1.
+	  descriptors     'x1' 'x2'
+
+interface,								
+        direct 
+          analysis_driver = 'rosenbrock'
+
+responses,								
+	calibration_terms = 2
+        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'
+          freeform
+          num_experiments = 1
+	  # read two scalar sigma values in each row
+	  variance_type = 'scalar'
+  	descriptors = 'f1' 'f2'
+ 	no_gradients							
+	no_hessians

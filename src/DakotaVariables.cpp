@@ -385,9 +385,11 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
 
 short Variables::response_view(const ProblemDescDB& problem_db) const
 {
-  // if optimization or calibration response set, infer an active design view
-  return (problem_db.get_sizet("responses.num_least_squares_terms") ||
-	  problem_db.get_sizet("responses.num_objective_functions")) ?
+  // if optimization or deterministic calibration response set,
+  // infer an active design view
+  return ( problem_db.get_sizet("responses.num_objective_functions") ||
+	   ( problem_db.get_sizet("responses.num_least_squares_terms") && 
+	     ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?
     DESIGN_VIEW : DEFAULT_VIEW;
 }
 
