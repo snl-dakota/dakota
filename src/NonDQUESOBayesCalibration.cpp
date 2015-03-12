@@ -233,8 +233,6 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   //emulatorModel.continuous_variables(); // new MAP ?
   ActiveSet set = emulatorModel.current_response().active_set(); // copy
   set.request_values(asrv);
-  // TO DO: add analytic grad/Hessian support or access grads/Hessians directly
-  Cout << "Evaluating derivatives on emulator.\n";
   emulatorModel.compute_response(set);
 
   // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
@@ -248,6 +246,14 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
   // pack GSL proposalCovMatrix
   int i, j, nv = log_like_hess.numRows();
+  if (!proposalCovMatrix) {
+    proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+    if (paramSpace->dimGlobal() != nv) {
+      Cerr << "Error: Queso vector space is not consistent with proposal "
+	   << "covariance dimension." << std::endl;
+      abort_handler(-1);
+    }
+  }
   for (i=0; i<nv; ++i )
     for (j=0; j<nv; ++j )
       (*proposalCovMatrix)(i,j) = pd_covariance(i,j);
