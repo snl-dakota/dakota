@@ -213,7 +213,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     gradientType = (approx_type == "global_polynomial" ||
       approx_type == "global_gaussian" || approx_type == "global_kriging" ||
       strends(approx_type, "_orthogonal_polynomial") ||
-      strends(approx_type, "_interplation_polynomial") ||
+      strends(approx_type, "_interpolation_polynomial") ||
       strbegins(approx_type, "local_") || strbegins(approx_type, "multipoint_"))
       ? "analytic" : "numerical";
   else 
@@ -221,11 +221,15 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (hess_flag)
     hessianType = (approx_type == "global_polynomial" ||
       strends(approx_type, "_orthogonal_polynomial") ||
-    //strends(approx_type, "_interplation_polynomial") || // TO DO
+    //strends(approx_type, "_interpolation_polynomial") || // TO DO
 		   strbegins(approx_type, "local_"))
       ? "analytic" : "numerical";
   else
     hessianType = "none";
+
+  //Cout << "DFS gradientType = " << gradientType 
+  //     << " DFS hessianType = " << hessianType << std::endl;
+
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to
   // defaults if needed.
   if (gradientType == "numerical") { // mixed not supported for this Model

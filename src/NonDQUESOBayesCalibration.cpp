@@ -209,9 +209,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 {
   short asrv;
   switch (emulatorType) {
-  case PCE_EMULATOR: asrv = 7; break;
-  case  SC_EMULATOR: case GP_EMULATOR: case KRIGING_EMULATOR:
-    asrv = 3; break; // for now
+  case PCE_EMULATOR: case KRIGING_EMULATOR: asrv = 7; break;
+  case  SC_EMULATOR: case      GP_EMULATOR: asrv = 3; break; // for now
   }
 
   //emulatorModel.continuous_variables(); // new MAP ?
@@ -287,17 +286,17 @@ void NonDQUESOBayesCalibration::run_queso_solver()
   // TODO: move to print_results
   Cout << "\nThe results of QUESO are in the outputData directory.\nThe file "
        << "display_sub0.txt contains information regarding the MCMC process.\n"
-       << "The Matlab files contain the chain values.  The files to " 
-       << "load in Matlab are file_cal_ip_raw.m (the actual chain) " 
-       << "or file_cal_ip_filt.m (the filtered chain, which contains " 
-       << "every 20th step in the chain.\n"
-       << "NOTE:  the chain values in these Matlab files are currently " 
-       << "in scaled space. \n  You will have to transform them back to "
-       << "original space by:\n"
-       << "lower_bounds + chain_values * (upper_bounds - lower_bounds)\n"
-       << "The rejection rate is in the tgaCalOutput file.\n"
-       << "We hope to improve the postprocessing of the chains by the " 
-       << "next Dakota release.\n";
+       << "The Matlab files contain the chain values.\n" //  The files to " 
+  //   << "load in Matlab are\nfile_cal_ip_raw.m (the actual chain) " 
+  //   << "or file_cal_ip_filt.m (the filtered chain,\nwhich contains " 
+  //   << "every 20th step in the chain.\n"
+  //   << "NOTE:  the chain values in these Matlab files are currently " 
+  //   << "in scaled space. \n  You will have to transform them back to "
+  //   << "original space by:\n"
+  //   << "lower_bounds + chain_values * (upper_bounds - lower_bounds)\n"
+       << "The rejection rate is in the tgaCalOutput file.\n";
+  //   << "We hope to improve the postprocessing of the chains by the " 
+  //   << "next Dakota release.\n";
 }
 
 
