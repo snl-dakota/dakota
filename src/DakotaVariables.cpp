@@ -385,12 +385,15 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
 
 short Variables::response_view(const ProblemDescDB& problem_db) const
 {
-  // if optimization or deterministic calibration response set,
-  // infer an active design view
+  // if optimization or calibration response set, infer an active design view
+  // for all methods excepting members of NonDCalibration branch.  Excluding
+  // all NOND_BIT methods complicates DACE with nond_sampling, so this is
+  // avoided for now.
   return ( problem_db.get_sizet("responses.num_objective_functions") ||
 	   ( problem_db.get_sizet("responses.num_least_squares_terms") && 
-	     ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?
-    DESIGN_VIEW : DEFAULT_VIEW;
+	//   ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?
+	     problem_db.get_ushort("method.algorithm") != BAYES_CALIBRATION ) )
+    ? DESIGN_VIEW : DEFAULT_VIEW;
 }
 
 

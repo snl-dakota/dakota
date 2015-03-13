@@ -6,14 +6,15 @@ environment
         tabular_graphics_data
 
 method,
-          nl2sol         			#0,#1,#2,#3,
+          nl2sol         			#0,#1,#2,#3
 #          bayes_calibration dream 		#4
 #          samples = 60				#4
 #          chains = 3				#4
           output debug
 
 variables,
-          continuous_design = 2
+          continuous_design = 2			#0,#1,#2,#3
+#	  uniform_uncertain = 2			#4
 	  upper_bounds   0.5   0.5
 	  lower_bounds   0.1   0.1
 	  descriptors   'x1' 'x2'
