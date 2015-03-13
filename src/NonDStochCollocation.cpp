@@ -158,8 +158,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  bool global_bnds
-    = (numContDesVars || numContEpistUncVars || numContStateVars);
+  // global bounds are currently needed for Bayesian inference bounds, although
+  // this change can be reverted if/when Bayesian methods are updated to use
+  // distribution bounds.
+  bool global_bnds = true;
+    //= (numContDesVars || numContEpistUncVars || numContStateVars);
   transform_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------

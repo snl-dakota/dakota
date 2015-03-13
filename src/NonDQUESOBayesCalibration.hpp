@@ -126,6 +126,13 @@ protected:
   /// whether QUESO is working in a standardized space
   bool quesoStandardizedSpace;
 
+  /// approach for defining proposal covariance
+  String propCovarType;
+  /// data from user input of proposal covariance
+  RealVector propCovarData;
+  /// filename for user-specified proposal covariance
+  String propCovarFilename;
+
   /// MCMC type ("dram" or "multilevel", both within QUESO) 
   String mcmcType;
   /// Rejection type ("standard" or "delayed", in the DRAM framework) 

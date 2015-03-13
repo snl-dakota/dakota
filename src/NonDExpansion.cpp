@@ -642,30 +642,25 @@ void NonDExpansion::initialize_expansion()
       !u_space_sampler.is_null())
     u_space_sampler.reset();
 
-  // set initialPtU which is used for all-variables mode and for local
-  // sensitivity calculations.  In the case of design/epistemic/state vars,
-  // it captures the current values for this UQ execution; for aleatory vars,
-  // it captures the initial values from user specifications or mean defaults.
-  if (numContDesVars || numContEpistUncVars || numContStateVars) { // all vars
-    // store current design/epistemic/state and initial aleatory
-    if (numUncertainQuant == 0) // initial UQ: full update of initialPtU
-      natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
-				  initialPtU);
-    else { // subsequent UQ: partial update of initialPtU
-      RealVector pt_u; size_t i;
-      natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
-      for (i=0; i<numContDesVars; ++i)
-	initialPtU[i] = pt_u[i]; // design
-      for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
-	initialPtU[i] = pt_u[i]; // epistemic/state
-    }
-  }
-  else if (!subIteratorFlag && numUncertainQuant == 0 &&
-	   outputLevel >= NORMAL_OUTPUT)
-    // store the initial aleatory vars (user spec or mean default) in u-space
-    // for use in local sensitivity calculation
+  // set initialPtU which is used in this class for all-variables mode and local
+  // sensitivity calculations, and by external classes for queries on the PCE
+  // emulator model (e.g., NonDBayesCalibration).  In the case of design,
+  // epistemic, and state vars, it captures the current values for this UQ
+  // execution; for aleatory vars, it captures the initial values from user
+  // specifications or mean defaults.
+  if (numUncertainQuant == 0) // initial UQ: full update of initialPtU
     natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
 				initialPtU);
+  else if (numContDesVars || numContEpistUncVars || numContStateVars) {
+    // subsequent UQ for all vars mode: partial update of initialPtU; store
+    // current design/epistemic/state but don't overwrite initial aleatory
+    RealVector pt_u; size_t i;
+    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
+    for (i=0; i<numContDesVars; ++i)
+      initialPtU[i] = pt_u[i]; // design
+    for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
+      initialPtU[i] = pt_u[i]; // epistemic/state
+  }
 }
 
 
@@ -1496,6 +1491,12 @@ void NonDExpansion::compute_statistics()
   if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
 
+  // restore variable settings following build/refine: supports local
+  // sensitivities, expansion/importance sampling for all vars mode
+  // (uses ALEATORY_UNCERTAIN sampling mode), and external uses of the
+  // emulator model (emulator-based inference).
+  uSpaceModel.continuous_variables(initialPtU);
+
   // -----------------------------
   // Calculate analytic statistics
   // -----------------------------
@@ -1651,8 +1652,8 @@ void NonDExpansion::compute_statistics()
 	poly_approx_rep->expansion_coefficient_flag()) {
       // expansion sensitivities are defined from the coefficients and basis
       // polynomial derivatives.  They are computed for the means of the
-      // uncertain varables and are intended to serve as importance factors.
-      uSpaceModel.continuous_variables(initialPtU);
+      // uncertain varables and provide a measure of local importance (but not
+      // scaled by input covariance as in mean value importance factors).
       const RealVector& exp_grad_u
 	= poly_approxs[i].gradient(uSpaceModel.current_variables());
       RealVector exp_grad_x;
@@ -1692,10 +1693,6 @@ void NonDExpansion::compute_statistics()
 
     // pass x-space data so that u-space Models can perform inverse transforms
     exp_sampler_rep->initialize_random_variables(natafTransform);
-    // since expansionSampler uses an ALEATORY_UNCERTAIN sampling mode,
-    // we must set the unsampled variables to their u-space values.
-    if (numContDesVars || numContEpistUncVars || numContStateVars)
-      uSpaceModel.continuous_variables(initialPtU);
 
     // response fn is active for z->p, z->beta*, p->z, or beta*->z
     ShortArray sampler_asv(numFunctions, 0);
@@ -1741,10 +1738,6 @@ void NonDExpansion::compute_statistics()
       // This is needed if export_points_file:
       imp_sampler_rep->initialize_random_variables(natafTransform);
 
-      // since importanceSampler uses an ALEATORY_UNCERTAIN sampling mode,
-      // we must set the unsampled variables to their u-space values.
-      //if (numContDesVars || numContEpistUncVars || numContStateVars)
-      //  uSpaceModel.continuous_variables(initialPtU);
       // response fn is active for z->p, z->beta*, p->z, or beta*->z
       //ActiveSet sampler_set = importanceSampler.active_set(); // copy
       //ShortArray sampler_asv(numFunctions, 0);

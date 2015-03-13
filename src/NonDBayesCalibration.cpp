@@ -83,6 +83,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
+    //stochExpIterator.output_level(outputLevel); // synch output levels
     break;
   }
 
@@ -102,14 +103,16 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
+    //stochExpIterator.output_level(outputLevel); // synch output levels
     break;
   }
 
   case GP_EMULATOR: case KRIGING_EMULATOR: {
-    String sample_reuse;
-    String approx_type =
-      (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR) ?
-      "global_gaussian" : "global_kriging";
+    String sample_reuse; String approx_type; short deriv_order;
+    if (emulatorType == GP_EMULATOR)
+      { approx_type = "global_gaussian"; deriv_order = 3; } // grad support
+    else
+      { approx_type = "global_kriging";  deriv_order = 7; } // grad,Hess support
     UShortArray approx_order; // not used by GP/kriging
     short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
@@ -134,7 +137,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	samples, seed, probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM), false);
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
-      gp_set.request_values(3); // GP grads for Gauss-Newton misfit Hessian
+      gp_set.request_values(deriv_order); // for misfit Hessian
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, g_u_model,
 	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
@@ -149,7 +152,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	samples, seed, probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM), false);
       ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
-      gp_set.request_values(3); // GP grads for Gauss-Newton misfit Hessian
+      gp_set.request_values(deriv_order); // for misfit Hessian
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, iteratedModel,
 	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,

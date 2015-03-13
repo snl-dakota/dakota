@@ -2009,6 +2009,10 @@ inherit_as_hub_server_comm(const ParallelLevel& parent_pl,
   child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
   // use ctor defaults for child_pl.serverCommRank/serverCommSize
 
+  // This change would allow retirement of COMM_SPLIT_TO_SINGLE, but will need
+  // to expand special case checks (e.g., MPI_COMM_NULL) in fns like clear().
+  //child_pl.serverIntraComm = MPI_COMM_SELF; // *** TO DO
+
   if (parent_pl.serverIntraComm != MPI_COMM_NULL) {
 #if defined(DEEP_MPI_COPY) && defined(DAKOTA_HAVE_MPI)
     MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.hubServerIntraComm);

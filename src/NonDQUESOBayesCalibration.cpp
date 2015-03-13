@@ -48,13 +48,16 @@ NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   quesoStandardizedSpace(false),
+  propCovarType(probDescDB.get_string("method.nond.proposal_cov_type")),
+  propCovarData(probDescDB.get_rv("method.nond.proposal_covariance_data")),
+  propCovarFilename(probDescDB.get_string("method.nond.proposal_cov_filename")),
   mcmcType(probDescDB.get_string("method.mcmc_type")),
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
-{ 
+{
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
   ////////////////////////////////////////////////////////
@@ -73,29 +76,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
     calibrateSigmaFlag = false;
   // For now, set calcSigmaFlag to true: this should be read from input
   //calibrateSigmaFlag = true;
-
-  ////////////////////////////////////////////////////////
-  // Step 2 of 5: Instantiate the parameter domain
-  ////////////////////////////////////////////////////////
-  init_parameter_domain();
-
-  // initialize or update the proposal covariance; default init must
-  // be done after parameter domain is initialized
-  // TODO: In general if user gives proposal covariance; must be
-  // transformed to scaled space in same way as variables
-  const String& covariance_type = 
-    probDescDB.get_string("method.nond.proposal_cov_type");
-  if (!covariance_type.empty()) {
-    // either filename OR data values will be non-empty
-    const RealVector& covariance_data = 
-      probDescDB.get_rv("method.nond.proposal_covariance_data");
-    const String& covariance_filename = 
-      probDescDB.get_string("method.nond.proposal_cov_filename");
-    user_proposal_covariance(covariance_type, covariance_data, 
-			     covariance_filename);
-  }
-  else if (!emulatorType)
-    default_proposal_covariance();
 }
 
 
@@ -112,14 +92,21 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // construct emulatorModel and initialize tranformations, as needed
   initialize_model();
 
+  ////////////////////////////////////////////////////////
+  // Step 2 of 5: Instantiate the parameter domain
+  ////////////////////////////////////////////////////////
+  init_parameter_domain();
+  // initialize or update the proposal covariance; default init must
+  // be done after parameter domain is initialized
+  // TODO: In general if user gives proposal covariance; must be
+  // transformed to scaled space in same way as variables
+  if (!propCovarType.empty()) // either filename OR data values will be defined
+    user_proposal_covariance(propCovarType, propCovarData, propCovarFilename);
+  else if (!emulatorType)
+    default_proposal_covariance();
+
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
-
-  // For testing re-entrancy
-  //for (size_t i=0; i<2; ++i) {
-  //  Cout << "QUESO Major Iteration " << i << std::endl;
-  //  quesoEnv->resetSeed(randomSeed);
-
 
   switch (adaptPosteriorRefine) {
   case false:
@@ -154,9 +141,6 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     }
     break;
   }
-
-  // For testing re-entrancy
-  //}
 }
 
 void NonDQUESOBayesCalibration::init_queso_environment()
@@ -248,6 +232,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "Hessian of negative log-likelihood misfit:\n";
     write_data(Cout, log_like_hess, true, true, true);
+    //Cout << "2x2 determinant = " << log_like_hess(0,0)*log_like_hess(1,1) -
+    //  log_like_hess(0,1)*log_like_hess(1,0) << '\n';
   }
 
   // invert potentially indefinite Hessian
@@ -257,6 +243,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     Cout << "Positive definite covariance from Hessian of negative log-"
 	 << "likelihood misfit:\n";
     write_data(Cout, pd_covariance, true, true, true);
+    //Cout << "2x2 determinant = " << pd_covariance(0,0)*pd_covariance(1,1) -
+    //  pd_covariance(0,1)*pd_covariance(1,0) << '\n';
   }
 
   // pack GSL proposalCovMatrix
@@ -389,6 +377,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
   const RealVector& init_point = emulatorModel.continuous_variables();
+
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nInitial Point in original, unscaled space\n" << init_point
 	 << "\nLower bounds of variables in original, unscaled space\n"
