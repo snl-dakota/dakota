@@ -136,7 +136,12 @@ configure(ProblemDescDB& problem_db, Iterator& sub_iterator)
     }
   }
   else {
-    MPIUnpackBuffer recv_buffer(32); // two 64-bit ints = 16 bytes
+    // estimate size, rather than receive it over bcast
+    MPIPackBuffer send_buffer;
+    min_max_procs.first = min_max_procs.second = 0;// don't pack uninitialized
+    send_buffer << min_max_procs; int min_max_size = send_buffer.size();
+    // now receive buffer of precise length
+    MPIUnpackBuffer recv_buffer(min_max_size);
     parallelLib.bcast(recv_buffer, mi_pl);
     recv_buffer >> min_max_procs;
   }
