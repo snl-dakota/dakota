@@ -1173,6 +1173,7 @@ TAG "method/bayes_calibration/queso/emulator/pce/expansion_order/collocation_rat
 TAG "method/bayes_calibration/queso/emulator/pce/expansion_order/posterior_adaptive"
 TAG "method/bayes_calibration/queso/emulator/sc"
 TAG "method/bayes_calibration/queso/emulator/sc/sparse_grid_level"
+TAG "method/bayes_calibration/queso/emulator/proposal_updates"
 TAG "method/bayes_calibration/gpmsa"
 TAG "method/bayes_calibration/gpmsa/emulator_samples"
 TAG "method/bayes_calibration/gpmsa/import_points_file"

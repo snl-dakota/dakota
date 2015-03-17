@@ -30,13 +30,18 @@ namespace Dakota {
 NonDBayesCalibration::
 NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
-  numSamples(probDescDB.get_int("method.samples")),
+  proposalUpdates(probDescDB.get_int("method.nond.proposal_updates")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   adaptPosteriorRefine(
     probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
   standardizedSpace(false) // prior to adding to spec
 {
+  numSamples = (proposalUpdates > 1) ?
+    (int)floor((Real)probDescDB.get_int("method.samples") /
+	       (Real)proposalUpdates + .5) :
+    probDescDB.get_int("method.samples");
+
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     standardizedSpace = true; break;

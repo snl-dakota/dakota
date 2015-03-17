@@ -131,10 +131,11 @@ DataMethodRep::DataMethodRep():
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), rejectionType("delayed"),
-  metropolisType("hastings"), adaptPosteriorRefine(false), likelihoodScale(1.0),
-  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  batchSize(0), calibrateSigmaFlag(false), numChains(3), numCR(3),
-  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
+  metropolisType("hastings"), adaptPosteriorRefine(false), proposalUpdates(1),
+  likelihoodScale(1.0), fitnessMetricType("predicted_variance"),
+  batchSelectionType("naive"), batchSize(0), calibrateSigmaFlag(false),
+  numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
+  jumpStep(5), lipschitzType("local"),
   // Parameter Study
   numSteps(0), pstudyFileAnnotated(true), pstudyFileActive(false), 
   // Verification
@@ -254,7 +255,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
     << mcmcType << rejectionType << metropolisType << adaptPosteriorRefine
-    << proposalCovType << proposalCovData << proposalCovFile
+    << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType;
@@ -382,7 +383,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> emulatorSamples >> emulatorOrder >> emulatorType
     >> mcmcType >> rejectionType >> metropolisType >> adaptPosteriorRefine
-    >> proposalCovType >> proposalCovData >> proposalCovFile
+    >> proposalUpdates >> proposalCovType >> proposalCovData >> proposalCovFile
     >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType;
@@ -510,7 +511,7 @@ void DataMethodRep::write(std::ostream& s) const
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
     << mcmcType << rejectionType << metropolisType << adaptPosteriorRefine
-    << proposalCovType << proposalCovData << proposalCovFile
+    << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType;

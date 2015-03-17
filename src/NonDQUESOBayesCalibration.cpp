@@ -110,10 +110,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
   switch (adaptPosteriorRefine) {
   case false:
-    if (emulatorType)
-      precondition_proposal();
-    // solve the inverse problem by MCMC sampling
-    run_queso_solver();
+    run_chain_with_restarting();
     break;
   case true:
     if (!emulatorType) { // current spec prevents this
@@ -121,27 +118,59 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 	   << std::endl;
       abort_handler(-1);
     }
-    Real conv_metric = DBL_MAX; int num_iter = 0;
-    while (conv_metric > convergenceTol && num_iter < maxIterations) {
-      // use emulator Hessian data to precondition the proposal covariance
-      precondition_proposal();
-      // solve the inverse problem by MCMC sampling on the emulator
-      run_queso_solver();
+    Real adapt_metric = DBL_MAX;
+    int num_adapt = 0, batch_size = 5;
+    RealVectorArray best_pts;
+    while (adapt_metric > convergenceTol && num_adapt < maxIterations) {
+      run_chain_with_restarting();
       // Assess convergence of the posterior via sample-based K-L divergence:
-      //conv_metric = assess_posterior_convergence();
+      //adapt_metric = assess_posterior_convergence();
       // filter chain -or- extract full chain and sort on likelihood values.
       // Evaluate these MCMC samples with truth evals
-      filter_chain();
+      filter_chain(batch_size, best_pts);
       // update the emulator surrogate data with new truth evals and
       // reconstruct surrogate (e.g., via PCE sparse recovery)
-      update_model();
+      update_model(best_pts);
       // Assess convergence of the posterior via convergence of the PCE coeffs
-      conv_metric = assess_emulator_convergence();
-      ++num_iter;
+      adapt_metric = assess_emulator_convergence();
+      ++num_adapt;
     }
     break;
   }
 }
+
+
+void NonDQUESOBayesCalibration::run_chain_with_restarting()
+{
+  //Real restart_metric = DBL_MAX;
+  int prop_update_cntr = 0;
+  //copy_data(emulatorModel.continuous_variables(), prevCenter);
+  //RealVectorArray best_pts;
+
+  // update proposal covariance and recenter after short chain: a
+  // workaround for inability to update proposal covariance on the fly
+  while (//restart_metric > convergenceTol &&
+	 prop_update_cntr < proposalUpdates) {
+
+    // define proposal covariance from misfit Hessian
+    if (emulatorType) // TO DO: support GN Hessian for truth model w/ adjoints?
+      precondition_proposal();
+    ++prop_update_cntr;
+
+    run_queso_solver(); // solve inverse problem with MCMC 
+
+    // This approach is too greedy and can get stuck (i.e., no point in new
+    // chain has smaller mismatch than current optimal value):
+    //filter_chain(1, best_pts);
+    //restart_metric = update_center(best_pts[0]);
+
+    // Rather, use final point in acceptance chain as if we were periodically
+    // refreshing the proposal covariance within a single integrated chain.
+    if (prop_update_cntr < proposalUpdates)
+      update_center();
+  }
+}
+
 
 void NonDQUESOBayesCalibration::init_queso_environment()
 {
@@ -170,6 +199,7 @@ void NonDQUESOBayesCalibration::init_queso_environment()
     abort_handler(-1);
   }
 }
+
 
 void NonDQUESOBayesCalibration::init_queso_solver()
 {
@@ -213,7 +243,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   case  SC_EMULATOR: case      GP_EMULATOR: asrv = 3; break; // for now
   }
 
-  //emulatorModel.continuous_variables(); // new MAP ?
+  // emulatorModel's continuous variables updated in update_center()
   ActiveSet set = emulatorModel.current_response().active_set(); // copy
   set.request_values(asrv);
   emulatorModel.compute_response(set);
@@ -229,7 +259,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   build_hessian_of_sum_square_residuals_from_function_hessians(
     emulatorModel.current_response(), log_like_hess);
   if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "Hessian of negative log-likelihood misfit:\n";
+    Cout << "Hessian of misfit (negative log-likelihood):\n";
     write_data(Cout, log_like_hess, true, true, true);
     //Cout << "2x2 determinant = " << log_like_hess(0,0)*log_like_hess(1,1) -
     //  log_like_hess(0,1)*log_like_hess(1,0) << '\n';
@@ -239,8 +269,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   RealMatrix pd_covariance;
   get_positive_definite_covariance_from_hessian(log_like_hess, pd_covariance);
   if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "Positive definite covariance from Hessian of negative log-"
-	 << "likelihood misfit:\n";
+    Cout << "Positive definite covariance from inverse of misfit Hessian:\n";
     write_data(Cout, pd_covariance, true, true, true);
     //Cout << "2x2 determinant = " << pd_covariance(0,0)*pd_covariance(1,1) -
     //  pd_covariance(0,1)*pd_covariance(1,0) << '\n';
@@ -300,7 +329,8 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 }
 
 
-void NonDQUESOBayesCalibration::filter_chain()
+void NonDQUESOBayesCalibration::
+filter_chain(unsigned short batch_size, RealVectorArray& best_pts)
 {
   // TODO: Need to transform chain back to unscaled space for reporting
   // to user; possibly also in auxilliary data files for user consumption.
@@ -312,37 +342,127 @@ void NonDQUESOBayesCalibration::filter_chain()
   // class has a number of helpful filtering and statistics functions.
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
     mcmc_chain = inverseProb->chain();
-  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-
   const QUESO::ScalarSequence<double>&
     loglikelihood_vals = inverseProb->logLikelihoodValues();
-  unsigned int num_llhood = loglikelihood_vals.subSequenceSize();
+  unsigned int num_mcmc   = mcmc_chain.subSequenceSize(),
+               num_llhood = loglikelihood_vals.subSequenceSize();
 
   if (num_mcmc != num_llhood)
-    Cout << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
-	 << "\n                 but likelihood set has length" 
-	 << num_llhood << std::endl;
+    Cerr << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
+	 << "\n                 but likelihood set has length" << num_llhood
+	 << std::endl;
   else {
-    Cout << "There are " << num_mcmc << " final MCMC samples: " << std::endl;
-    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+    if  (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Sorting and extracting " << batch_size << " samples from MCMC "
+	   << "chain with " << num_mcmc << " samples: " << std::endl;
+    QUESO::GslVector mcmc_sample(paramSpace->zeroVector()); RealVector mcmc_rv;
+    // TO DO: want to keep different samples with same likelihood, but not 
+    // replicate samples with same likelihood (from rejection); for now, use
+    // a std::map since the latter is unlikely.
+    std::/*multi*/map<Real, size_t> best_samples;
     for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
-      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << mcmc_sample << loglikelihood_vals[chain_pos] << std::endl;
+      // extract GSL sample vector from QUESO vector sequence:
+      Real log_like  = loglikelihood_vals[chain_pos],
+	// TO DO: support non-uniform priors by evaluating prior density
+	unnorm_posterior = log_like; // sufficient for now for sorting
+        //std::exp(log_like) * prior_density(mcmc_sample);
+      if (outputLevel > NORMAL_OUTPUT) {
+	mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+	Cout << "MCMC sample:\n" << mcmc_sample << "Log likelihood = "
+	     << log_like << std::endl;
+      }
+      // sort by unnormalized posterior and retain batch_size samples
+      best_samples.insert(std::pair<Real, size_t>(unnorm_posterior, chain_pos));
+      if (best_samples.size() > batch_size)
+	best_samples.erase(best_samples.begin()); // pop front (lowest prob)
+    }
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "best_samples map:" << best_samples << std::endl;
+
+    // convert chain_pos to RealVector
+    size_t num_best = best_samples.size();
+    if (best_pts.size() != num_best) best_pts.resize(num_best);
+    std::/*multi*/map<Real, size_t>::iterator it; size_t i;
+    if (outputLevel > NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
+    for (it=best_samples.begin(), i=0; it!=best_samples.end(); ++it, ++i) {
+      mcmc_chain.getPositionValues(it->second, mcmc_sample);
+      copy_gsl(mcmc_sample, best_pts[i]);
+      if (outputLevel > NORMAL_OUTPUT)
+	Cout << "Best point " << i+1 << ": unnormalized posterior = "
+	     << it->first << " Sample:\n"; write_data(Cout, best_pts[i]);
     }
   }
-
-  // TO DO: perform truth evals for selected points (here or below)
-  // May be simplest to combine this fn with update_model()
 }
 
 
-void NonDQUESOBayesCalibration::update_model()
+void NonDQUESOBayesCalibration::update_center()
 {
-  // TO DO: perform truth evals for selected points (here or above)
-  // May be simplest to combine this fn with filter_chain()
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
+    mcmc_chain = inverseProb->chain();
+  const QUESO::ScalarSequence<double>&
+    loglikelihood_vals = inverseProb->logLikelihoodValues();
+  unsigned int num_mcmc   = mcmc_chain.subSequenceSize(),
+               num_llhood = loglikelihood_vals.subSequenceSize();
+  if (num_mcmc != num_llhood)
+    Cout << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
+	 << "\n                 but likelihood set has length" << num_llhood
+	 << std::endl;
 
-  //emulatorModel.append_approximation(vars_array, resp_map, rebuild_flag);
+  // extract GSL sample vector from QUESO vector sequence:
+  size_t last_index = num_mcmc - 1;
+  mcmc_chain.getPositionValues(last_index, *paramInitials);
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "New center:\n" << *paramInitials << "Log likelihood = "
+	 << loglikelihood_vals[last_index] << std::endl;
+
+  // update emulatorModel vars with end of acceptance chain for eval of
+  // misfit Hessian in precondition_proposal().  Note: the most recent
+  // emulatorModel evaluation could correspond to a rejected point.
+  RealVector c_vars;
+  copy_gsl(*paramInitials, c_vars);
+  emulatorModel.continuous_variables(c_vars);
+}
+
+
+Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
+{
+  // update emulatorModel vars for eval of misfit Hessian
+  emulatorModel.continuous_variables(new_center);
+
+  // update QUESO initial vars for starting point of chain
+  for (int i=0; i<numContinuousVars; i++)
+    if (quesoStandardizedSpace)
+      Cerr << "Warning: quesoStandardizedSpace active in "
+	   << "NonDQUESOBayesCalibration::update_center()\n";
+    else
+      (*paramInitials)[i] = new_center[i];
+
+  // evaluate and return L2 norm of change in chain starting point
+  RealVector delta_center = new_center;
+  delta_center -= prevCenter;
+  prevCenter = new_center;
+  return delta_center.normFrobenius();
+}
+
+
+void NonDQUESOBayesCalibration::update_model(const RealVectorArray& best_pts)
+{
+  /*
+  // Perform truth evals for selected points
+  emulatorModel.mode(SURROGATE_BYPASS...);
+  ActiveSet set = emulatorModel.active_set().copy();
+  set.request_values(1);
+  size_t i, num_best = best_pts.size();
+  for (i=0; i<num_best; ++i) {
+    emulatorModel.continuous_variables(best_pts[i]);
+    vars_array[i] = emulatorModel.current_variables().copy();
+
+    emualtorModel.compute_response(set);
+    resp_map[eval_id] = emulatorModel.current_response().copy(); // use i?
+  }
+  emulatorModel.append_approximation(vars_array, resp_map, rebuild_flag);
+  */
 
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR: {
@@ -651,7 +771,7 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
 
   // TODO: Ask QUESO why the MH sequence generator decimates the
   // in-memory chain when generating final results
-  if (adaptPosteriorRefine)
+  if (adaptPosteriorRefine || proposalUpdates > 1)
     // In this case, we process the full chain for maximum posterior values
     calIpMhOptionsValues->m_filteredChainGenerate         = false;
   else {
@@ -783,6 +903,17 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
     QuesoOutput.close();
   }
   return result;
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_gsl(const QUESO::GslVector& qv, RealVector& rv)
+{
+  size_t i, size_qv = qv.sizeLocal();
+  if (size_qv != rv.length())
+    rv.sizeUninitialized(size_qv);
+  for (i=0; i<size_qv; ++i)
+    rv[i] = qv[i];
 }
 
 } // namespace Dakota

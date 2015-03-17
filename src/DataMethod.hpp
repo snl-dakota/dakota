@@ -911,6 +911,9 @@ public:
   /// flag indicating adaptive refinement of the emulator in regions
   /// of high posterior probability
   bool adaptPosteriorRefine;
+  /// number of updates of the proposal covariance from computing the
+  /// misfit Hessian from an emulator
+  int proposalUpdates;
   /// the type of proposal covariance: diagonal or matrix
   String proposalCovType;
   /// raw list of reals data for the covariance

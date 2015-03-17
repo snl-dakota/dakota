@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1347 distinct keywords (plus 205 aliases) **/
+/** 1348 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -357,15 +357,16 @@ static KeyWord
 	kw_64[1] = {
 		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
-	kw_65[4] = {
+	kw_65[5] = {
 		{"gaussian_process",8,6,1,1,kw_61},
 		{"kriging",0,6,1,1,kw_61,0.,0.,-1},
 		{"pce",8,2,1,1,kw_63,0.,0.,0,N_mdm(type,emulatorType_PCE_EMULATOR)},
+		{"proposal_updates",9,0,2,0,0,0.,0.,0,N_mdm(int,proposalUpdates)},
 		{"sc",8,1,1,1,kw_64,0.,0.,0,N_mdm(type,emulatorType_SC_EMULATOR)}
 		},
 	kw_66[2] = {
 		{0,0,3,0,0,kw_55},
-		{"emulator",8,4,1,0,kw_65}
+		{"emulator",8,5,1,0,kw_65}
 		},
 	kw_67[8] = {
 		{0,0,1,0,0,kw_22},

@@ -1137,6 +1137,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
                 sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
                )
+              [ proposal_updates INTEGER {N_mdm(int,proposalUpdates)} ]
              ]
            )
           |

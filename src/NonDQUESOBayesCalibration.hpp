@@ -75,19 +75,29 @@ protected:
   /// 
   void init_queso_solver();
 
-  /// 
+  /// use derivative information from the emulator to define the proposal
+  /// covariance (inverse of misfit Hessian)
   void precondition_proposal();
 
-  /// 
+  /// perform the MCMC process
   void run_queso_solver();
 
-  /// 
-  void filter_chain();
+  /// short term option to restart the MCMC chain with updated proposal
+  /// density computed from the emulator at a new starting point
+  void run_chain_with_restarting();
 
-  /// 
-  void update_model();
+  /// extract batch_size points from the MCMC chain
+  void filter_chain(unsigned short batch_size, RealVectorArray& best_pts);
 
-  /// 
+  /// update the starting point for a restarted MCMC chain using new_center
+  Real update_center(const RealVector& new_center);
+  /// update the starting point for a restarted MCMC chain using last
+  /// point from previous chain
+  void update_center();
+  /// update the emulator model with response data computed at new points
+  void update_model(const RealVectorArray& best_pts);
+
+  /// compute the L2 norm of the change in emulator coefficients
   Real assess_emulator_convergence();
 
   /// intialize the QUESO parameter space, min, max, initial, and domain
@@ -119,6 +129,9 @@ protected:
   QUESO::GslMatrix*       hessianMatrix,
   QUESO::GslVector*       hessianEffect);
 
+  /// local copy_data utility
+  void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
+  
   //
   //- Heading: Data
   //
@@ -145,10 +158,10 @@ protected:
   bool calibrateSigmaFlag;
 
 private:
+
   //
   // - Heading: Data
   // 
-  //     
   
   /// Pointer to current class instance for use in static callback functions
   static NonDQUESOBayesCalibration* NonDQUESOInstance;
@@ -195,6 +208,10 @@ private:
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
+
+  /// cache previous MCMC starting point for assessing convergence of
+  /// chain restart process
+  RealVector prevCenter;
 };
 
 } // namespace Dakota

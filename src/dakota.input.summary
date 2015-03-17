@@ -1298,6 +1298,7 @@ KEYWORD12 method
 	      ( sc
 		sparse_grid_level INTEGERLIST
 		)
+	      [ proposal_updates INTEGER ]
 	      ]
 	    [ mcmc_type
 	      ( dram

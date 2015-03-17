@@ -2496,6 +2496,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nl2sol.covariance", P covarianceType},
 	{"nond.batch_size", P batchSize},
 	{"nond.emulator_samples", P emulatorSamples},
+	{"nond.proposal_updates", P proposalUpdates},
 	{"nond.refinement_samples", P refineSamples},
 	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},

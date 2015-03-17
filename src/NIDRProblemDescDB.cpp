@@ -6554,6 +6554,7 @@ static int
 	MP_(populationSize),
 	MP_(previousSamples),
         MP_(procsPerIterator),
+        MP_(proposalUpdates),
 	MP_(randomSeed),
 	MP_(refineSamples),
 	MP_(searchSchemeSize),

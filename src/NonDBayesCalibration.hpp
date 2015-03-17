@@ -84,6 +84,9 @@ protected:
   /// flag indicating usage of adaptive posterior refinement; currently makes
   /// sense for unstructured grids in GP and PCE least squares/CS
   bool adaptPosteriorRefine;
+  /// number of updates to proposal covariance; implemented by manual
+  /// restarting of short MCMC chains
+  int proposalUpdates;
 
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator

@@ -1723,6 +1723,9 @@
                                 </keyword>
                               </keyword>
                             </oneOf>
+			    <keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalUpdates)}" label="proposal_updates" help="" minOccurs="0" >
+                              <param type="INTEGER" />
+                            </keyword>
                           </keyword>
                         </keyword>
                         <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
