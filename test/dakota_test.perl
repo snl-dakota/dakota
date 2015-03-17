@@ -8,6 +8,7 @@
 use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
+use File::Copy;
 use File::Path 'rmtree';
 use File::Spec;
 use POSIX "sys_wait_h";
@@ -24,6 +25,7 @@ my $input_dir = "";          # default test file source is pwd
 my $mode = "run";            # modes are run, base, extract
 my $output_dir = "";         # default output is pwd
 my $parallelism = "serial";  # whether DAKOTA runs in parallel
+my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $using_qsub = 0;
@@ -347,12 +349,26 @@ foreach my $file (@test_inputs) {
   # remove unneeded files (especially $input since the last instance of this
   # file corresponds to the #(n+1) tests for which $found == false).
   if ($mode ne "extract") {
-    unlink $input;
-    unlink $output;
-    unlink $error;
-    # Remove restart if not explicitly requested
-    if ( ! ($restart =~ /w/) ) {
-      unlink $restart_file;
+    if ($save_output) {
+      # TODO: save output from each test, tagging with test number
+      move($input, "${input}.sav") if (-e $input);
+      move($output, "${output}.sav") if (-e $output);
+      move($error, "${error}.sav") if (-e $error);
+      if ($restart =~ /w/) {
+	copy($restart_file, "${restart_file}.sav") if (-e $restart_file);
+      }
+      else {
+	move($restart_file, "${restart_file}.sav") if (-e $restart_file);
+      }
+    }
+    else {
+      unlink $input;
+      unlink $output;
+      unlink $error;
+      # Remove restart if not explicitly requested
+      if ( ! ($restart =~ /w/) ) {
+	unlink $restart_file;
+      }
     }
   }
 
@@ -390,6 +406,7 @@ sub process_command_line {
   my $opt_base = 0;
   my $opt_extract = 0;
   my $opt_help = 0;
+  my $opt_save_output = 0;
   my $opt_man = 0;
   my $opt_parallel = 0;
 
@@ -402,6 +419,7 @@ sub process_command_line {
   	     'file-extract=s' => \$extract_filename,
   	     'help|?'         => \$opt_help,
   	     'input-dir=s'    => \$input_dir,
+	     'save-output'    => \$opt_save_output,
   	     'man'            => \$opt_man,
   	     'output-dir=s'   => \$output_dir,
   	     'parallel'       => \$opt_parallel
@@ -432,6 +450,11 @@ sub process_command_line {
         $baseline_filename = "dakota.base.test.new";
       }
     }
+  }
+
+  # cleanup options
+  if (${opt_save_output} || $ENV{'DAKOTA_TEST_SAVE_OUTPUT'}) {
+    $save_output = 1;
   }
 
   # executable extension must have leading dot
@@ -818,7 +841,7 @@ sub protected_test
     }
     # We have now exited the Dakota run.  To handle cases where mpich's mpirun
     # lets child processes sit around, kill the whole process group.
-    kill -9, $pid;
+    #kill -9, $pid;
   }
   return $exitcode;
 }
@@ -836,9 +859,11 @@ sub fork_dakota
       return $pid;
     }
     elsif (defined $pid) {
-      if ( $Config{osname} !~ /MSWin/ ) {
-        setpgrp(0,0); # This sets process group so I can kill this + children
-      }
+      # We used to call setpgrp to avoid zombies with MPICH mpirun,
+      # but opposite seems to be happening with more recent versions.
+      #if ( $Config{osname} !~ /MSWin/ ) {
+      #  setpgrp(0,0); # This sets process group so I can kill this + children
+      #}
       exec "$test_command";
       exit 0; # this is for when exec fails
     }
@@ -1160,6 +1185,11 @@ directory containing test inputs and baselines
 =item B<--output-dir=filepath>
 
 for generated intermediate, diff, and baseline files
+
+=item B<--save-output>
+
+save test input, output, error, and restart of the last subtest run;
+or set environment variable DAKOTA_TEST_SAVE_OUTPUT
 
 =back
 
