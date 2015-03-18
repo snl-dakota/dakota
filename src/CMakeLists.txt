@@ -821,14 +821,12 @@ endif(HAVE_AMPL)
 if(DAKOTA_HAVE_GSL)
   list(APPEND EXT_TPL_INCDIRS "${GSL_INCLUDE_DIRS}")
   list(APPEND EXT_TPL_LIBDIRS "${GSL_LIBRARY_DIRS}")
-  # this list of library absolute paths will not have cblas in it for now
+  # GSL_LIBRARIES may or may not include a CBLAS library, depending on
+  # top-level option GSL_WITHOUT_CBLAS
   list(APPEND QUESO_TPL_LIBS ${GSL_LIBRARIES})
-  if (DEFINED ENV{QUESO_CBLAS_LIBS})
-    list(APPEND QUESO_TPL_LIBS $ENV{QUESO_CBLAS_LIBS})
+  if(DAKOTA_CBLAS_LIBS) 
+    list(APPEND QUESO_TPL_LIBS ${DAKOTA_CBLAS_LIBS})
   endif()
-  #if (CBLAS_LIB)
-  #  list(APPEND EXT_TPL_LIBS "${CBLAS_LIB}")
-  #endif()
   list(APPEND EXT_TPL_LIBS ${QUESO_TPL_LIBS})
 endif(DAKOTA_HAVE_GSL)
 

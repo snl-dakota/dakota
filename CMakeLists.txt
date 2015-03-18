@@ -259,15 +259,17 @@ endif()
 # and src subdirectories
 option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
 if(DAKOTA_HAVE_GSL)
-  # We don't include CBLAS due to numerical differences between GSL
-  # CBLAS and system CBLAS.  This might cause issues when static
-  # linking on platforms that don't have a CBLAS, or will require the
-  # user to add it to the link libraries at configure time.  Might
-  # prefer to probe for a library containing cblas_ symbols, then
-  # conditionally set this option.
-  set(GSL_WITHOUT_CBLAS TRUE)
+  # One may want to provide an alternate CBLAS library via
+  # DAKOTA_CBLAS_LIBS to use in place of GSL's CBLAS.  On many
+  # platforms, linking the GSL CBLAS induces numerical DIFFs in other
+  # parts of Dakota. (Might prefer to probe for a library containing
+  # cblas_ symbols, then conditionally set this option automatically.)
+  if(DAKOTA_CBLAS_LIBS)
+    set(GSL_WITHOUT_CBLAS TRUE CACHE BOOL "Omit GSL CBLAS libraries")
+  endif()
   find_package(GSL REQUIRED)
-endif(DAKOTA_HAVE_GSL)
+  message(STATUS "Found GSL libraries: ${GSL_LIBRARIES}")
+endif()
 
 # HDF5 check at top-level due to need for settings in BOTH src
 # and test subdirectories
@@ -300,7 +302,7 @@ endif()
 option(HAVE_QUESO "Build the QUESO package." OFF)
 option(HAVE_QUESO_GPMSA "Use the QUESO GPMSA package when QUESO enabled." ON)
 option(HAVE_QUESO_GRVY "Use optional QUESO GRVY package; not recommended." OFF)
-option(DAKOTA_QUESO_CMAKE "Experimental: Dakota building QUESO with CMake" OFF)
+option(DAKOTA_QUESO_CMAKE "Experimental: Dakota building QUESO with CMake" ON)
 if (HAVE_QUESO)
   list(APPEND dakota_boost_components "program_options")
 endif()
