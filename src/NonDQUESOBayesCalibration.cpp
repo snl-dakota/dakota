@@ -159,6 +159,10 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
+    // account for redundancy between final and initial
+    if (prop_update_cntr == 1)
+      { ++numSamples; update_mh_options(); }
+
     // This approach is too greedy and can get stuck (i.e., no point in new
     // chain has smaller mismatch than current optimal value):
     //filter_chain(1, best_pts);
@@ -225,9 +229,9 @@ void NonDQUESOBayesCalibration::init_queso_solver()
   //    instances can be local and allowed to go out of scope?
 
   // define calIpOptionsValues
-  set_inverse_problem_options();
+  set_ip_options();
   // set options specific to MH algorithm
-  set_invpb_mh_options();
+  set_mh_options();
   // Inverse problem: instantiate it (posterior rv is instantiated internally)
   inverseProb.reset(new
     QUESO::StatisticalInverseProblem<QUESO::GslVector,QUESO::GslMatrix>("",
@@ -716,20 +720,19 @@ user_proposal_covariance(const String& cov_type,
 
 
 /// set inverse problem options common to all solvers
-void NonDQUESOBayesCalibration::set_inverse_problem_options() 
+void NonDQUESOBayesCalibration::set_ip_options() 
 {
   calIpOptionsValues.reset(new QUESO::SipOptionsValues());
   //definitely want to retain computeSolution
-  calIpOptionsValues->m_computeSolution      = true;
-  calIpOptionsValues->m_dataOutputFileName   = "outputData/invpb_output";
+  calIpOptionsValues->m_computeSolution    = true;
+  calIpOptionsValues->m_dataOutputFileName = "outputData/invpb_output";
   calIpOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpOptionsValues->m_dataOutputAllowedSet.insert(1);
 }
 
 
-void NonDQUESOBayesCalibration::set_invpb_mh_options() 
+void NonDQUESOBayesCalibration::set_mh_options() 
 {
-
   calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
 
   calIpMhOptionsValues->m_dataOutputFileName = "outputData/mh_output";
@@ -737,10 +740,7 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
   calIpMhOptionsValues->m_rawChainDataInputFileName   = ".";
-  if (numSamples == 0)
-    calIpMhOptionsValues->m_rawChainSize              = 48576;
-  else 
-    calIpMhOptionsValues->m_rawChainSize              = numSamples;
+  calIpMhOptionsValues->m_rawChainSize = (numSamples) ? numSamples : 48576;
   //calIpMhOptionsValues->m_rawChainGenerateExtra     = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod     = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes   = true;
@@ -750,7 +750,7 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   // NO LONGER SUPPORTED.  calIpMhOptionsValues->m_rawChainComputeStats = true;
 
   //calIpMhOptionsValues->m_displayCandidates         = false;
-  calIpMhOptionsValues->m_putOutOfBoundsInChain       = true;
+  calIpMhOptionsValues->m_putOutOfBoundsInChain       = false;
   //calIpMhOptionsValues->m_tkUseLocalHessian         = false;
   //calIpMhOptionsValues->m_tkUseNewtonComponent      = true;
   if (strends(rejectionType, "standard"))
@@ -790,6 +790,15 @@ void NonDQUESOBayesCalibration::set_invpb_mh_options()
   // suppress logit transform scaling in QUESO until we get our
   // problem scaling correct
   calIpMhOptionsValues->m_doLogitTransform = false;
+}
+
+
+
+void NonDQUESOBayesCalibration::update_mh_options() 
+{
+  // reset MH options that are subject to change
+
+  calIpMhOptionsValues->m_rawChainSize = (numSamples) ? numSamples : 48576;
 }
 
 

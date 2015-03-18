@@ -112,10 +112,11 @@ protected:
 				const String& cov_filename);
 
   /// set inverse problem options calIpOptionsValues common to all solvers
-  void set_inverse_problem_options(); 
-
+  void set_ip_options(); 
   /// set MH-specific inverse problem options calIpMhOptionsValues
-  void set_invpb_mh_options();
+  void set_mh_options();
+  /// update MH-specific inverse problem options calIpMhOptionsValues
+  void update_mh_options();
 
   //The likelihood routine is in the format that QUESO requires, 
   //with a particular argument list that QUESO expects. 
