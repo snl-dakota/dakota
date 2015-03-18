@@ -16,7 +16,7 @@ include_directories(${Dakota_SOURCE_DIR}/src)
 link_directories(${Dakota_LIBRARY_DIRS})
 
 # --- Boost dependencies
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
 # TODO: Understand leveraging BOOST_DISABLE_ASSERTS wrt to Unit Testing
 option(BOOST_DISABLE_ASSERTS "Toggle BoostAssert, default is AssertDisabled" ON)
 if (BOOST_DISABLE_ASSERTS)

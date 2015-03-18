@@ -138,6 +138,7 @@ endfunction()
 
 include_directories(
   ${Dakota_SOURCE_DIR}/src
+  ${Boost_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${Teuchos_INCLUDE_DIRS}
 )
