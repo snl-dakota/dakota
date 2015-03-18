@@ -30,7 +30,7 @@ typedef void* MPI_Request;
 static const int MPI_COMM_WORLD   =  1;
 static const int MPI_COMM_NULL    =  0;
 static const int MPI_ANY_TAG      = -1;
-static const int MPI_REQUEST_NULL =  0;
+static void*     MPI_REQUEST_NULL = NULL;
 #endif // not DAKOTA_HAVE_MPI
 
 
