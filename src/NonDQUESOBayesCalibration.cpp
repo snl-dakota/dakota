@@ -429,6 +429,7 @@ void NonDQUESOBayesCalibration::update_center()
 }
 
 
+/*
 Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 {
   // update emulatorModel vars for eval of misfit Hessian
@@ -448,6 +449,7 @@ Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
   prevCenter = new_center;
   return delta_center.normFrobenius();
 }
+*/
 
 
 void NonDQUESOBayesCalibration::update_model(const RealVectorArray& best_pts)
@@ -481,9 +483,65 @@ void NonDQUESOBayesCalibration::update_model(const RealVectorArray& best_pts)
 
 Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 {
-  // TO DO
-  RealVector delta_pce;
-  return delta_pce.normFrobenius();
+  Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
+
+  switch (emulatorType) {
+  case PCE_EMULATOR: {
+    const RealVectorArray& coeffs
+      = emulatorModel.approximation_coefficients(true); // normalized
+    size_t i, j, num_qoi = coeffs.size(), num_coeffs_i;
+
+    // This approach requires an unchanged multiIndex, which is acceptable 
+    // for regression PCE using a fixed (candidate) expansion definition.
+    // Sparsity is not a concern as returned coeffs are inflated to be
+    // dense with respect to SharedOrthogPolyApproxData::multiIndex.
+    if (prevCoeffs.empty()) { // compute delta relative to zero coeffs
+      for (i=0; i<num_qoi; ++i) {
+	const RealVector& coeffs_i = coeffs[i];
+	num_coeffs_i = coeffs_i.length();
+	for (j=0; j<num_coeffs_i; ++j) {
+	  delta_coeff_ij = coeffs_i[j]; // minus zero
+	  l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
+	}
+      }
+    }
+    else {
+      for (i=0; i<num_qoi; ++i) {
+	const RealVector& prev_coeffs_i = prevCoeffs[i];
+	const RealVector&      coeffs_i = coeffs[i];
+	num_coeffs_i = coeffs_i.length();
+	for (j=0; j<num_coeffs_i; ++j) {
+	  delta_coeff_ij = coeffs_i[j] - prev_coeffs_i[j];
+	  l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
+	}
+      }
+    }
+    prevCoeffs = coeffs;
+    break;
+  }
+  case SC_EMULATOR: {
+    // Interpolation cold use a similar concept with the expansion coeffs,
+    // although adaptation would necessarily imply differences in the grid.
+    const RealVectorArray& coeffs
+      = emulatorModel.approximation_coefficients(false);
+
+    Cerr << "Error: convergence norm not yet defined for SC emulator in "
+	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
+	 << std::endl;
+    abort_handler(-1);
+    break;
+  }
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    // Consider use of correlation lengths.
+    // TO DO: define SurfpackApproximation::approximation_coefficients()...
+    Cerr << "Error: convergence norm not yet defined for GP emulators in "
+	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
+	 << std::endl;
+    abort_handler(-1);
+    break;
+  }
+
+  return std::sqrt(l2_norm_delta_coeffs);
 }
 
 
@@ -557,17 +615,18 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
   for (int i=0; i<numContinuousVars; i++) {
-    if (init_point[i]) 
+    //if (init_point[i]) // MSE: 0 is a perfectly valid initial pt spec...
       if (quesoStandardizedSpace)
-        (*paramInitials)[i] = (init_point[i]-lower_bounds[i])/(upper_bounds[i]-lower_bounds[i]);
+        (*paramInitials)[i] = (init_point[i]   - lower_bounds[i])
+	                    / (upper_bounds[i] - lower_bounds[i]);
       else
         (*paramInitials)[i] = init_point[i];
-    else 
-      (*paramInitials)[i] = (paramMaxs[i]+paramMins[i])/2.0;
+    //else 
+    //  (*paramInitials)[i] = (paramMaxs[i]+paramMins[i])/2.0;
   }
-  //for (int i=numContinuousVars;i<total_num_params;i++) {
+  //for (int i=numContinuousVars;i<total_num_params;i++)
   //  paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
-  //}
+
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Initial Parameter values sent to QUESO " 
 	 << "(may be in scaled space) \n"  << *paramInitials << std::endl;
@@ -798,7 +857,8 @@ void NonDQUESOBayesCalibration::update_mh_options()
 {
   // reset MH options that are subject to change
 
-  calIpMhOptionsValues->m_rawChainSize = (numSamples) ? numSamples : 48576;
+  if (numSamples)
+    calIpMhOptionsValues->m_rawChainSize = numSamples;
 }
 
 

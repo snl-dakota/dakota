@@ -89,8 +89,8 @@ protected:
   /// extract batch_size points from the MCMC chain
   void filter_chain(unsigned short batch_size, RealVectorArray& best_pts);
 
-  /// update the starting point for a restarted MCMC chain using new_center
-  Real update_center(const RealVector& new_center);
+  // update the starting point for a restarted MCMC chain using new_center
+  //Real update_center(const RealVector& new_center);
   /// update the starting point for a restarted MCMC chain using last
   /// point from previous chain
   void update_center();
@@ -210,9 +210,12 @@ private:
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
 
-  /// cache previous MCMC starting point for assessing convergence of
-  /// chain restart process
-  RealVector prevCenter;
+  // cache previous MCMC starting point for assessing convergence of
+  // chain restart process
+  //RealVector prevCenter;
+  /// cache previous expansion coefficients for assessing convergence of
+  /// emulator refinement process
+  RealVectorArray prevCoeffs;
 };
 
 } // namespace Dakota
