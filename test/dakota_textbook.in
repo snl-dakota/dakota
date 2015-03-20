@@ -1,17 +1,17 @@
-## DAKOTA INPUT FILE - dakota_textbook.in #8
+## DAKOTA INPUT FILE - dakota_textbook.in #s8
 
 # This tester populates a test matrix of fork/system vs. synch/asynch
 # vs. temporary/named files for the 1 piece interface.
 
 environment,
-	  graphics				#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  graphics,tabular_graphics_data	#9
+	  graphics				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  graphics,tabular_graphics_data	#s9
 
 method,
-	dot_mmfd,				#0,#1,#2,#3,#4,#5,#6,#7,#8
-##       DOT performs better, but may not be available 	#9
-##       dot_mmfd,				#9
-#	conmin_mfd,				#9
+	dot_mmfd,				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+##       DOT performs better, but may not be available 	#s9
+##       dot_mmfd,				#s9
+#	conmin_mfd,				#s9
 	  max_iterations = 50,
 	  convergence_tolerance = 1e-4
 
@@ -23,14 +23,14 @@ variables,
 	  descriptors      'x1'   'x2'
 
 interface,
-	fork					#0,#1,#2,#3
-#	system 					#4,#5,#6,#7
-#	direct					#8,#9
-#	  asynchronous				#2,#3,#6,#7
+	fork					#s0,#s1,#s2,#s3
+#	system 					#s4,#s5,#s6,#s7
+#	direct					#s8,#s9
+#	  asynchronous				#s2,#s3,#s6,#s7
 	  analysis_driver =       'text_book'
-#	  parameters_file=        'tb.in'	#1,#3,#5,#7
-#	  results_file=           'tb.out'	#1,#3,#5,#7
-#	  file_tag				#3,#7
+#	  parameters_file=        'tb.in'	#s1,#s3,#s5,#s7
+#	  results_file=           'tb.out'	#s1,#s3,#s5,#s7
+#	  file_tag				#s3,#s7
 
 responses,
 	objective_functions = 1

@@ -14,15 +14,15 @@ environment,
 method,
 	id_method = 'PSTUDY'
 	model_pointer = 'PS_M'
-	vector_parameter_study				#0,#3,#4
-	  step_vector = 1 1				#0,#3
-#	  step_vector = 10. 10. 1 1 1 1			#4
-	  num_steps   = 3				#0,#3,#4
-#	centered_parameter_study			#1
-#	  step_vector = 1 1				#1
-#	  steps_per_variable = 2			#1
-#	sampling	     				#2
-#	  samples = 10 seed = 12347			#2
+	vector_parameter_study				#s0,#s3,#s4
+	  step_vector = 1 1				#s0,#s3
+#	  step_vector = 10. 10. 1 1 1 1			#s4
+	  num_steps   = 3				#s0,#s3,#s4
+#	centered_parameter_study			#s1
+#	  step_vector = 1 1				#s1
+#	  steps_per_variable = 2			#s1
+#	sampling	     				#s2
+#	  samples = 10 seed = 12347			#s2
 
 model,
 	id_model = 'PS_M'
@@ -30,43 +30,43 @@ model,
 	  variables_pointer  = 'PS_V'
 	  sub_method_pointer = 'ALEATORY'
 	  responses_pointer  = 'PS_R'
-	  primary_variable_mapping   = 'X1' 'X3'	#0,#1,#2,#3
-	  secondary_variable_mapping = 'mean' 'mean'	#0,#1,#2
-#	  secondary_variable_mapping = 'num_trials' 'num_trials'	#3
-#	  primary_variable_mapping   = 'X1' 'X2' 'X5' 'X7' 'X3' 'X4'	#4
-#	  secondary_variable_mapping = 'mean' 'mean'			#4
-#				       'num_trials' 'num_trials'	#4
-#				       'mean' 'mean'			#4
+	  primary_variable_mapping   = 'X1' 'X3'	#s0,#s1,#s2,#s3
+	  secondary_variable_mapping = 'mean' 'mean'	#s0,#s1,#s2
+#	  secondary_variable_mapping = 'num_trials' 'num_trials'	#s3
+#	  primary_variable_mapping   = 'X1' 'X2' 'X5' 'X7' 'X3' 'X4'	#s4
+#	  secondary_variable_mapping = 'mean' 'mean'			#s4
+#				       'num_trials' 'num_trials'	#s4
+#				       'mean' 'mean'			#s4
 	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
 	  secondary_response_mapping = 0. 0. 0. 0. 1. 0. 0. 0.
 				       0. 0. 0. 0. 0. 0. 0. 1.
 
 variables,
 	id_variables = 'PS_V'
-#	continuous_design = 2				#4
-#	  initial_point = 20. 20.			#4
-#	  descriptors = 'X1_mean' 'X2_mean'		#4
-	discrete_design_set	  			#0,#1,#3,#4
-#         integer = 2					#3,#4
-#	    initial_point = 2 12			#3,#4
-#	    set_values = 2  4  6  8 10			#3,#4
-#			12 14 16 18 20			#3,#4
-#	    descriptors = 'X1_num_tr' 'X3_num_tr'	#3
-#	    descriptors = 'X5_num_tr' 'X7_num_tr'	#4
-          real = 2					#0,#1,#4
-	    initial_point = 50. 30.			#0,#4
-#	    initial_point = 70. 50.			#1
-	    set_values    = 50. 60. 70. 80. 90.		#0,#1,#4
-			    30. 40. 50. 60. 70.		#0,#1,#4
-	    descriptors = 'X1_mean' 'X3_mean'		#0,#1
-#	    descriptors = 'X3_mean' 'X4_mean'		#4
-#	active all    		  			#2
-#	histogram_point real = 2			#2
-#	  abscissas     = 50. 60. 70. 80. 90.		#2
-#			  30. 40. 50. 60. 70.		#2
-#	  counts        = 10  20  30  20  10 		#2
-#			  10  20  30  20  10  		#2
-#	  descriptors = 'X1_mean' 'X3_mean'		#2
+#	continuous_design = 2				#s4
+#	  initial_point = 20. 20.			#s4
+#	  descriptors = 'X1_mean' 'X2_mean'		#s4
+	discrete_design_set	  			#s0,#s1,#s3,#s4
+#         integer = 2					#s3,#s4
+#	    initial_point = 2 12			#s3,#s4
+#	    set_values = 2  4  6  8 10			#s3,#s4
+#			12 14 16 18 20			#s3,#s4
+#	    descriptors = 'X1_num_tr' 'X3_num_tr'	#s3
+#	    descriptors = 'X5_num_tr' 'X7_num_tr'	#s4
+          real = 2					#s0,#s1,#s4
+	    initial_point = 50. 30.			#s0,#s4
+#	    initial_point = 70. 50.			#s1
+	    set_values    = 50. 60. 70. 80. 90.		#s0,#s1,#s4
+			    30. 40. 50. 60. 70.		#s0,#s1,#s4
+	    descriptors = 'X1_mean' 'X3_mean'		#s0,#s1
+#	    descriptors = 'X3_mean' 'X4_mean'		#s4
+#	active all    		  			#s2
+#	histogram_point real = 2			#s2
+#	  abscissas     = 50. 60. 70. 80. 90.		#s2
+#			  30. 40. 50. 60. 70.		#s2
+#	  counts        = 10  20  30  20  10 		#s2
+#			  10  20  30  20  10  		#s2
+#	  descriptors = 'X1_mean' 'X3_mean'		#s2
 
 responses,
 	id_responses = 'PS_R'
@@ -97,20 +97,20 @@ model,
 
 variables,
 	id_variables = 'ALEAT_V'
-	normal_uncertain = 4				#0,#1,#2,#4
-	  means             =  40.  30.  20.  10.	#0,#1,#2,#4
-	  std_deviations    =   8.   6.   4.   2.	#0,#1,#2,#4
-	  descriptors         'X1' 'X2' 'X3' 'X4'	#0,#1,#2,#4
-#	binomial_uncertain = 2				#3,#4
-#	  num_trials     = 10 10			#3,#4
-#	  prob_per_trial = .2 .2			#3,#4
-#	  descriptors         'X1' 'X2'			#3
-#	  descriptors         'X5' 'X6'			#4
-#	negative_binomial_uncertain = 2			#3,#4
-#	  num_trials     = 20 20			#3,#4
-#	  prob_per_trial = .1 .1			#3,#4
-#	  descriptors         'X3' 'X4'			#3
-#	  descriptors         'X7' 'X8'			#4
+	normal_uncertain = 4				#s0,#s1,#s2,#s4
+	  means             =  40.  30.  20.  10.	#s0,#s1,#s2,#s4
+	  std_deviations    =   8.   6.   4.   2.	#s0,#s1,#s2,#s4
+	  descriptors         'X1' 'X2' 'X3' 'X4'	#s0,#s1,#s2,#s4
+#	binomial_uncertain = 2				#s3,#s4
+#	  num_trials     = 10 10			#s3,#s4
+#	  prob_per_trial = .2 .2			#s3,#s4
+#	  descriptors         'X1' 'X2'			#s3
+#	  descriptors         'X5' 'X6'			#s4
+#	negative_binomial_uncertain = 2			#s3,#s4
+#	  num_trials     = 20 20			#s3,#s4
+#	  prob_per_trial = .1 .1			#s3,#s4
+#	  descriptors         'X3' 'X4'			#s3
+#	  descriptors         'X7' 'X8'			#s4
 
 interface,
 	id_interface = 'ALEAT_I'

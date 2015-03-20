@@ -3,14 +3,14 @@
 # Tests variants of numerical gradients.
 
 method,
-	optpp_q_newton				#0,#1,#2,#3,#4
-#	optpp_newton				#5,#6,#7,#8,#9
+	optpp_q_newton				#s0,#s1,#s2,#s3,#s4
+#	optpp_newton				#s5,#s6,#s7,#s8,#s9
 
 variables,
 	continuous_design = 2
-	  initial_point    0.9    1.1		#0,#1,#2,#3
-#	  initial_point    0.9    1.1		#5,#6,#7,#8
-#	  initial_point    0.9    0.0		#4,#9
+	  initial_point    0.9    1.1		#s0,#s1,#s2,#s3
+#	  initial_point    0.9    1.1		#s5,#s6,#s7,#s8
+#	  initial_point    0.9    0.0		#s4,#s9
 	  upper_bounds     5.8    2.9
 	  lower_bounds     0.5   -2.9
 	  descriptors      'x1'   'x2'
@@ -22,20 +22,20 @@ interface,
 
 responses,
 	objective_functions = 1
-	numerical_gradients			#0,#1,#2,#3,#4
-	  method_source dakota			#0,#1,#2,#3,#4
-#	    absolute				#1,#4
-#	    bounds				#2
-#	    relative				#3
-	  interval_type central			#0,#1,#2,#3,#4
-	  fd_gradient_step_size = 1.e-4		#0,#1,#2,#3
-#	  fd_gradient_step_size = 1.e-308	#4
-#	analytic_gradients	  		#5,#6,#7,#8,#9
-	no_hessians				#0,#1,#2,#3,#4
-#	numerical_hessians			#5,#6,#7,#8,#9
-#	  absolute				#6,#9
-#	  bounds				#7
-#	  relative				#8
-#	  fd_hessian_step_size = 1.e-4		#5,#6,#7,#8
-#	  fd_hessian_step_size = 1.e-308	#9
+	numerical_gradients			#s0,#s1,#s2,#s3,#s4
+	  method_source dakota			#s0,#s1,#s2,#s3,#s4
+#	    absolute				#s1,#s4
+#	    bounds				#s2
+#	    relative				#s3
+	  interval_type central			#s0,#s1,#s2,#s3,#s4
+	  fd_gradient_step_size = 1.e-4		#s0,#s1,#s2,#s3
+#	  fd_gradient_step_size = 1.e-308	#s4
+#	analytic_gradients	  		#s5,#s6,#s7,#s8,#s9
+	no_hessians				#s0,#s1,#s2,#s3,#s4
+#	numerical_hessians			#s5,#s6,#s7,#s8,#s9
+#	  absolute				#s6,#s9
+#	  bounds				#s7
+#	  relative				#s8
+#	  fd_hessian_step_size = 1.e-4		#s5,#s6,#s7,#s8
+#	  fd_hessian_step_size = 1.e-308	#s9
 

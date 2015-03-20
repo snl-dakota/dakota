@@ -12,9 +12,9 @@ method,
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
 	polynomial_chaos
-	  sparse_grid_level = 1				#0
-#	  expansion_order = 2				#1
-#	  collocation_ratio = .5 seed = 12347		#1
+	  sparse_grid_level = 1				#s0
+#	  expansion_order = 2				#s1
+#	  collocation_ratio = .5 seed = 12347		#s1
 
 model,
         id_model = 'EPIST_M'

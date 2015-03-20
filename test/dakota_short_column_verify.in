@@ -1,3 +1,4 @@
+#@ s0: TimeoutDelay=500
 #timeout override: 0=TD500
 
 method,

@@ -45,13 +45,13 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
 	nonlinear_inequality_upper_bounds = 4000.
-	analytic_gradients			#0
-#	mixed_gradients				#1
-#	  id_analytic_gradients = 2		#1
-#	  id_numerical_gradients = 1		#1
-#	  method_source dakota			#1
-#	  interval_type central			#1
-#	  fd_gradient_step_size = 1.e-4		#1
+	analytic_gradients			#s0
+#	mixed_gradients				#s1
+#	  id_analytic_gradients = 2		#s1
+#	  id_numerical_gradients = 1		#s1
+#	  method_source dakota			#s1
+#	  interval_type central			#s1
+#	  fd_gradient_step_size = 1.e-4		#s1
 	no_hessians
 
 ##########################################
@@ -118,6 +118,6 @@ interface,
 responses,
 	id_responses = 'UQ_R'
 	response_functions = 1
-	analytic_gradients			#0
-#	no_gradients				#1
+	analytic_gradients			#s0
+#	no_gradients				#s1
 	no_hessians

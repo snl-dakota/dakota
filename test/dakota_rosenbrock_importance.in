@@ -1,3 +1,5 @@
+#@ s2: TimeoutAbsolute=2400
+#@ s2: TimeoutDelay=1200
 # DAKOTA INPUT FILE - dakota_rosenbrock_importance.in
 # This file tests the importance sampling capabilities based on LHS. 
 # It is may be integrated into another rosenbrock file but for now 
@@ -21,9 +23,9 @@ environment,
 
 method,
         importance_sampling
-	  import                                   #0,#3,#4
-#	  adapt_import                             #1
-#	  mm_adapt_import                          #2
+	  import                                   #s0,#s3,#s4
+#	  adapt_import                             #s1
+#	  mm_adapt_import                          #s2
 	  response_levels = 0.5 5 50 500 
 	 #response_levels = 3.0  
           samples = 250
@@ -32,22 +34,22 @@ method,
           output quiet 
 
 variables,
-#       uniform_uncertain = 2                     #3
-#         lower_bounds   -2.0 -2.0                #3
-#         upper_bounds    2.0  2.0                #3
-#       beta_uncertain  = 1                       #4
-#         alphas = 0.5                            #4
-#         betas = 2.0                             #4
-#         lower_bounds = 0.0                      #4      
-#         upper_bounds = 1.0                      #4
-#         descriptors  'x1'                       #4
-#       exponential_uncertain = 1                 #4
-#         betas = 3.0                             #4
-#         descriptors 'x2'                        #4
-        normal_uncertain = 2                      #0,#1,#2
-         means = 0. 0.                            #0,#1,#2
-         std_deviations = 1. 1.                   #0,#1,#2
-	 descriptors     'x1' 'x2'                #0,#1,#2,#3
+#       uniform_uncertain = 2                     #s3
+#         lower_bounds   -2.0 -2.0                #s3
+#         upper_bounds    2.0  2.0                #s3
+#       beta_uncertain  = 1                       #s4
+#         alphas = 0.5                            #s4
+#         betas = 2.0                             #s4
+#         lower_bounds = 0.0                      #s4      
+#         upper_bounds = 1.0                      #s4
+#         descriptors  'x1'                       #s4
+#       exponential_uncertain = 1                 #s4
+#         betas = 3.0                             #s4
+#         descriptors 'x2'                        #s4
+        normal_uncertain = 2                      #s0,#s1,#s2
+         means = 0. 0.                            #s0,#s1,#s2
+         std_deviations = 1. 1.                   #s0,#s1,#s2
+	 descriptors     'x1' 'x2'                #s0,#s1,#s2,#s3
 
 interface,
         direct	

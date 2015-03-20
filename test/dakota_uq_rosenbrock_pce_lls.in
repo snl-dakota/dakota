@@ -59,29 +59,29 @@ environment,
 
 method,
 	polynomial_chaos 
- 	  expansion_order   = 4		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#24,#25,#26,#27,#28,#29,#30,#31,#32,#33,#34,#35,#36,#37,#38,#39,#40,#41,#42,#43,#45,#46,#47,#48
-	  collocation_ratio = 3 	#0,#1,#26,#28,#33,#40,#41,#42,#43,#46
-# 	  collocation_points = 15       #44
-#	  collocation_ratio = 0.7 	#2,#3,#4,#5,#6,#7,#10,#11,#12,#13,#14,#15,#24,#25,#29,#31,#34,#36,#38,#45,#47
-#	  collocation_ratio = 4 	#8,#9,#30,#35,#39,#48
-#	  collocation_ratio = 2  	#16,#17,#18,#19,#20,#21,#22,#23,#27,#32,#37
-#	  least_squares	      		#28,#29,#30,#31,#32
-	  least_squares svd 		#0,#8,#17,#24,#25,#48
-#	  least_squares equality_constrained #16,#38,#39
-#	  basis_pursuit	  		#2,#10,#18,#40
-# 	  basis_pursuit_denoising	#3,#11,#19,#41
-#	    noise_tolerance = 1.e-3	#3,#11,#19,
-#           noise_tolerance = 0. 	#4,#45
-#	  orthogonal_matching_pursuit	#4,#12,#20,#26,#27,#45,#46,#47
-#	  least_absolute_shrinkage	#5,#13,#21,#1,#7,#9,#15,#23,#42
-#	  least_angle_regression	#6,#14,#22,#43
-#	    l2_penalty = 0.01		#1,#7,#9,#15,#23
-#	  orthogonal_least_interpolation #44
+ 	  expansion_order   = 4		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s45,#s46,#s47,#s48
+	  collocation_ratio = 3 	#s0,#s1,#s26,#s28,#s33,#s40,#s41,#s42,#s43,#s46
+# 	  collocation_points = 15       #s44
+#	  collocation_ratio = 0.7 	#s2,#s3,#s4,#s5,#s6,#s7,#s10,#s11,#s12,#s13,#s14,#s15,#s24,#s25,#s29,#s31,#s34,#s36,#s38,#s45,#s47
+#	  collocation_ratio = 4 	#s8,#s9,#s30,#s35,#s39,#s48
+#	  collocation_ratio = 2  	#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s27,#s32,#s37
+#	  least_squares	      		#s28,#s29,#s30,#s31,#s32
+	  least_squares svd 		#s0,#s8,#s17,#s24,#s25,#s48
+#	  least_squares equality_constrained #s16,#s38,#s39
+#	  basis_pursuit	  		#s2,#s10,#s18,#s40
+# 	  basis_pursuit_denoising	#s3,#s11,#s19,#s41
+#	    noise_tolerance = 1.e-3	#s3,#s11,#s19,
+#           noise_tolerance = 0. 	#s4,#s45
+#	  orthogonal_matching_pursuit	#s4,#s12,#s20,#s26,#s27,#s45,#s46,#s47
+#	  least_absolute_shrinkage	#s5,#s13,#s21,#s1,#s7,#s9,#s15,#s23,#s42
+#	  least_angle_regression	#s6,#s14,#s22,#s43
+#	    l2_penalty = 0.01		#s1,#s7,#s9,#s15,#s23
+#	  orthogonal_least_interpolation #s44
 	  variance_based_decomp #interaction_order = 1
 	  seed = 1234567
-#	  use_derivatives		#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#27,#30,#31,#32,#35,#36,#37,#38,#39,#47
+#	  use_derivatives		#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s27,#s30,#s31,#s32,#s35,#s36,#s37,#s38,#s39,#s47
 	  output verbose
-# 	  tensor_grid			#45,#46,#47,#48
+# 	  tensor_grid			#s45,#s46,#s47,#s48
 
 variables,
 	uniform_uncertain = 2
@@ -95,6 +95,6 @@ interface,
 
 responses,
 	response_functions = 1
-	no_gradients			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#24,#26,#28,#29,#33,#34,#40,#41,#42,#43,#44,#45,#46
-#	analytic_gradients		#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23,#25,#27,#30,#31,#32,#35,#36,#37,#38,#39,#47,#48
+	no_gradients			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s24,#s26,#s28,#s29,#s33,#s34,#s40,#s41,#s42,#s43,#s44,#s45,#s46
+#	analytic_gradients		#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#s27,#s30,#s31,#s32,#s35,#s36,#s37,#s38,#s39,#s47,#s48
 	no_hessians

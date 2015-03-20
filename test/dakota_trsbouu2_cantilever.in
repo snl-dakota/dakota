@@ -65,7 +65,7 @@ method,
 	sampling
 	  sample_type lhs #samples = 9
 	  seed = 12347 rng rnum2
-#	  fixed_seed					#1
+#	  fixed_seed					#s1
 #	dace lhs seed = 5
 #	  samples = 9 symbols = 9
 
@@ -95,7 +95,7 @@ method,
         sampling
 	  samples = 50 sample_type lhs
 	  seed = 12347 rng rnum2
-#	  fixed_seed					#1
+#	  fixed_seed					#s1
 	  output quiet
 
 model,

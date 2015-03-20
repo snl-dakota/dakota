@@ -83,7 +83,7 @@ method,
         sampling
 	  sample_type lhs samples = 50
 	  seed = 12347 rng rnum2
-#	  fixed_seed					#1
+#	  fixed_seed					#s1
 	  output quiet
 
 model,

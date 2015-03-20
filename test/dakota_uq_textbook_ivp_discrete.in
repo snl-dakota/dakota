@@ -8,12 +8,12 @@ environment,
 method,
 	id_method = 'EPISTEMIC'
 	model_pointer = 'EPIST_M'
-	global_interval_est lhs			#0
-#	global_interval_est sbo			#1
-#	global_interval_est ea			#2
+	global_interval_est lhs			#s0
+#	global_interval_est sbo			#s1
+#	global_interval_est ea			#s2
 #	sampling			
-        samples = 10 seed = 12347		#0,#1
-#       max_iterations = 20 seed =234	        #2
+        samples = 10 seed = 12347		#s0,#s1
+#       max_iterations = 20 seed =234	        #s2
 
 model,
 	id_model = 'EPIST_M'

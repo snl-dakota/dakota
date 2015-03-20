@@ -10,10 +10,10 @@ environment,
 method,									 
         id_method = 'OUTER'
         model_pointer = 'OUTER_M'
-	polynomial_chaos  askey		#0,#1
-#	stoch_collocation askey		#2,#3
-	  quadrature_order = 5			#0,#2
-#	  quadrature_order = 10			#1,#3
+	polynomial_chaos  askey		#s0,#s1
+#	stoch_collocation askey		#s2,#s3
+	  quadrature_order = 5			#s0,#s2
+#	  quadrature_order = 10			#s1,#s3
 	  variance_based_decomp
 #	  output verbose
 
@@ -46,11 +46,11 @@ responses,
 method,
         id_method = 'INNER'
         model_pointer = 'INNER_M'
-	polynomial_chaos		#0,#1
-#	stoch_collocation		#2,#3
+	polynomial_chaos		#s0,#s1
+#	stoch_collocation		#s2,#s3
 	  askey non_nested
-	  sparse_grid_level = 4		#0,#2
-#	  sparse_grid_level = 6		#1,#3
+	  sparse_grid_level = 4		#s0,#s2
+#	  sparse_grid_level = 6		#s1,#s3
           num_response_levels = 0 1
           response_levels = 0.0
           compute reliabilities
@@ -66,7 +66,7 @@ model,
 
 variables,
         id_variables = 'INNER_V'
-#	active all			#1,#3
+#	active all			#s1,#s3
         continuous_design = 2
 # bounds needed for all view
 	  lower_bounds      5.    15.
@@ -88,7 +88,7 @@ interface,
         id_interface = 'INNER_I'
         direct
           analysis_driver = 'short_column'
-#	  deactivate evaluation_cache		#1,#3
+#	  deactivate evaluation_cache		#s1,#s3
 
 responses,
         id_responses = 'INNER_R'

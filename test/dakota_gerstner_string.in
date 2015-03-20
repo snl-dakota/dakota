@@ -7,65 +7,65 @@ environment,
 #	output_precision = 16
 
 method,
-	multidim_parameter_study			#0,#1
-	  # exercise each of three string levels	#0
-          partitions = 3 3 2		  		#0
-#	  # exercise only three of five string levels	#1
-#	  partitions = 2 3 2 	       	      		#1
-#       # for sets with even number elements 'center' is left of center	#2
-#	centered_parameter_study			      	 	#2
-#	  step_vector 2 1 2						#2
-#	  steps_per_variable 1 1 1					#2
-#	list_parameter_study   	 					#3,#4
-#	  # iterate points in reverse order (sets use 0-based indices)	#3
-#	  list_of_points 		  				#3
-#	    4 3 4							#3
-#	    3 2 3 							#3
-#	    2 1	2    							#3
-#	    1 0 1							#3
-#	  # test file read of string data (values are read, not indices) #4
-#	  import_points_file 'dakota_gerstner_string.4.dat'		 #4
-#	    freeform  							 #4
-#       sampling			#5
-#         sample_type lhs 		#5
-#         samples = 60			#5
-#         seed = 5837			#5
+	multidim_parameter_study			#s0,#s1
+	  # exercise each of three string levels	#s0
+          partitions = 3 3 2		  		#s0
+#	  # exercise only three of five string levels	#s1
+#	  partitions = 2 3 2 	       	      		#s1
+#       # for sets with even number elements 'center' is left of center	#s2
+#	centered_parameter_study			      	 	#s2
+#	  step_vector 2 1 2						#s2
+#	  steps_per_variable 1 1 1					#s2
+#	list_parameter_study   	 					#s3,#s4
+#	  # iterate points in reverse order (sets use 0-based indices)	#s3
+#	  list_of_points 		  				#s3
+#	    4 3 4							#s3
+#	    3 2 3 							#s3
+#	    2 1	2    							#s3
+#	    1 0 1							#s3
+#	  # test file read of string data (values are read, not indices) #s4
+#	  import_points_file 'dakota_gerstner_string.4.dat'		 #s4
+#	    freeform  							 #s4
+#       sampling			#s5
+#         sample_type lhs 		#s5
+#         samples = 60			#s5
+#         seed = 5837			#s5
 
 variables,
-        active uncertain						#0,#1,#5
-	uniform_uncertain = 2						#0,#1,#5
-	  lower_bounds      0.  0.					#0,#1,#5
-	  initial_point     0.5 0.5					#0,#1,#5
-	  upper_bounds      1.  1.					#0,#1,#5
-	  descriptors =    'x' 'y'					#0,#1,#5
-        discrete_uncertain_set string = 1					#0,#1,#5
-          elements_per_variable = 3					#0,#5
-          elements = 'iso1' 'iso2' 'iso3'			       	#0,#5
-#          elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2' 		#1
-          set_probabilities = 1. 1. 1.     	    			#0,#5
-          descriptors = 'ancomp'    					#0,#1,#5
+        active uncertain						#s0,#s1,#s5
+	uniform_uncertain = 2						#s0,#s1,#s5
+	  lower_bounds      0.  0.					#s0,#s1,#s5
+	  initial_point     0.5 0.5					#s0,#s1,#s5
+	  upper_bounds      1.  1.					#s0,#s1,#s5
+	  descriptors =    'x' 'y'					#s0,#s1,#s5
+        discrete_uncertain_set string = 1					#s0,#s1,#s5
+          elements_per_variable = 3					#s0,#s5
+          elements = 'iso1' 'iso2' 'iso3'			       	#s0,#s5
+#          elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2' 		#s1
+          set_probabilities = 1. 1. 1.     	    			#s0,#s5
+          descriptors = 'ancomp'    					#s0,#s1,#s5
 
-#	active design							#2,#3
-#	discrete_design_set 						#2,#3
-#	  integer = 2							#2,#3
-#	    elements_per_variable = 5 4					#2,#3
-#	    elements  1 3 5 7 9 					#2,#3
-#	              2 4 6 8						#2,#3
-#	    descriptors =    'x' 'y'					#2,#3
-#	  string = 1 							#2,#3
-#	    elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2'  		#2,#3
-#           descriptors = 'ancomp'    					#2,#3
+#	active design							#s2,#s3
+#	discrete_design_set 						#s2,#s3
+#	  integer = 2							#s2,#s3
+#	    elements_per_variable = 5 4					#s2,#s3
+#	    elements  1 3 5 7 9 					#s2,#s3
+#	              2 4 6 8						#s2,#s3
+#	    descriptors =    'x' 'y'					#s2,#s3
+#	  string = 1 							#s2,#s3
+#	    elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2'  		#s2,#s3
+#           descriptors = 'ancomp'    					#s2,#s3
 
-#	active state							#4
-#	discrete_state_set 						#4
-#	  integer = 2							#4
-#	    elements_per_variable = 5 4					#4
-#	    elements  1 3 5 7 9 					#4
-#	              2 4 6 8						#4
-#	    descriptors =    'x' 'y'					#4
-#	  string = 1 							#4
-#	    elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2'  		#4
-#           descriptors = 'ancomp'    					#4
+#	active state							#s4
+#	discrete_state_set 						#s4
+#	  integer = 2							#s4
+#	    elements_per_variable = 5 4					#s4
+#	    elements  1 3 5 7 9 					#s4
+#	              2 4 6 8						#s4
+#	    descriptors =    'x' 'y'					#s4
+#	  string = 1 							#s4
+#	    elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2'  		#s4
+#           descriptors = 'ancomp'    					#s4
 
 interface,
         fork asynchronous evaluation_concurrency = 4

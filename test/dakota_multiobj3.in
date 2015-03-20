@@ -13,32 +13,32 @@
 #       f4 = original cyl_head constraint 3
 
 method,
-        coliny_pattern_search					#0,#1
-	  solution_accuracy = -3.0				#0,#1
-	  initial_delta = .2					#0,#1
-	  threshold_delta = 1.e-4				#0,#1
-	  pattern_basis coordinate				#0,#1
-	  exploratory_moves basic_pattern			#0,#1
-#	soga							#2
-#       moga     						#3
-#	  seed = 10983                              		#2,#3
-#	  max_function_evaluations = 2000             		#2,#3
-#	  initialization_type unique_random            		#2,#3
-#	  mutation_type offset_normal				#2,#3
-#	    mutation_scale = 0.1				#2,#3
-#	  crossover_type shuffle_random				#2
-#	    num_offspring = 2 num_parents = 2			#2
-#	    crossover_rate = 0.8		  		#2
-#	  replacement_type favor_feasible			#2
-#	  final_solutions = 5	     				#3
-#	  crossover_type            				#3
-#	    multi_point_parameterized_binary = 2        	#3
-#	    crossover_rate = 0.8            			#3
-#	  fitness_type domination_count            		#3
-#	  replacement_type below_limit = 6            		#3
-#	    shrinkage_percentage = 0.9            		#3
-#	  convergence_type metric_tracker            		#3
-#	    percent_change = 0.05 num_generations = 10          #3
+        coliny_pattern_search					#s0,#s1
+	  solution_accuracy = -3.0				#s0,#s1
+	  initial_delta = .2					#s0,#s1
+	  threshold_delta = 1.e-4				#s0,#s1
+	  pattern_basis coordinate				#s0,#s1
+	  exploratory_moves basic_pattern			#s0,#s1
+#	soga							#s2
+#       moga     						#s3
+#	  seed = 10983                              		#s2,#s3
+#	  max_function_evaluations = 2000             		#s2,#s3
+#	  initialization_type unique_random            		#s2,#s3
+#	  mutation_type offset_normal				#s2,#s3
+#	    mutation_scale = 0.1				#s2,#s3
+#	  crossover_type shuffle_random				#s2
+#	    num_offspring = 2 num_parents = 2			#s2
+#	    crossover_rate = 0.8		  		#s2
+#	  replacement_type favor_feasible			#s2
+#	  final_solutions = 5	     				#s3
+#	  crossover_type            				#s3
+#	    multi_point_parameterized_binary = 2        	#s3
+#	    crossover_rate = 0.8            			#s3
+#	  fitness_type domination_count            		#s3
+#	  replacement_type below_limit = 6            		#s3
+#	    shrinkage_percentage = 0.9            		#s3
+#	  convergence_type metric_tracker            		#s3
+#	    percent_change = 0.05 num_generations = 10          #s3
 
 variables,
 	continuous_design = 2
@@ -53,7 +53,7 @@ interface,
 
 responses,
 	objective_functions = 4
-	  multi_objective_weights = .7 .1 .1 .1			#0,#1,#2
-#	  sense = "min" "max" "max" "max"	       	   	#1,#2,#3
+	  multi_objective_weights = .7 .1 .1 .1			#s0,#s1,#s2
+#	  sense = "min" "max" "max" "max"	       	   	#s1,#s2,#s3
 	no_gradients
 	no_hessians

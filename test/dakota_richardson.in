@@ -3,9 +3,9 @@
 
 method,
 	richardson_extrap
-	  estimate_order		#0
-#	  converge_order		#1
-#	  converge_qoi			#2
+	  estimate_order		#s0
+#	  converge_order		#s1
+#	  converge_qoi			#s2
 	  refinement_rate = 2.
 	  output verbose
 

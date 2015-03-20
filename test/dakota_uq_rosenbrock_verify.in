@@ -10,53 +10,53 @@ method,
 	  output silent
 
 variables,
-	normal_uncertain = 2				#0
-      	  means             =  0.   0. 		#0
-	  std_deviations    =  1.   1.		#0
-	  descriptors       = 'x1' 'x2'		#0
-#	uniform_uncertain = 2				#1
-#      	  lower_bounds      = -2.  -2. 		#1
-#	  upper_bounds      =  2.   2.		#1
-#	  descriptors       = 'x1' 'x2'		#1
-#	exponential_uncertain = 2			#2
-#	  betas             =  2.   2.		#2
-#	  descriptors       = 'x1' 'x2'		#2
-#	beta_uncertain = 2				#3
-#	  alphas            =  1.5  1.5		#3
-#	  betas             =  2.   2.		#3
-#      	  lower_bounds      = -2.  -2. 		#3
-#	  upper_bounds      =  2.   2.		#3
-#	  descriptors       = 'x1' 'x2'		#3
-#	gamma_uncertain = 2				#4
-#	  alphas           =  2.5  2.5		#4
-#	  betas            =  2.   2.		#4
-#	  descriptors      = 'x1' 'x2'		#4
-#	normal_uncertain = 1				#5
-#      	  means             =  0. 			#5
-#	  std_deviations    =  1.			#5
-#	  descriptors       = 'x1'			#5
-#	uniform_uncertain = 1				#5
-#      	  lower_bounds      = -2. 			#5
-#	  upper_bounds      =  2.			#5
-#	  descriptors       = 'x2'			#5
-#	exponential_uncertain = 1			#5
-#	  betas             =  2.			#5
-#	  descriptors       = 'x3'			#5
-#	beta_uncertain = 1				#5
-#	  alphas            =  1.5			#5
-#	  betas             =  2.			#5
-#      	  lower_bounds      = -2. 			#5
-#	  upper_bounds      =  2.			#5
-#	  descriptors       = 'x4'			#5
-#	gamma_uncertain = 1				#5
-#	  alphas           =  2.5			#5
-#	  betas            =  2.			#5
-#	  descriptors      = 'x5'			#5
+	normal_uncertain = 2				#s0
+      	  means             =  0.   0. 		#s0
+	  std_deviations    =  1.   1.		#s0
+	  descriptors       = 'x1' 'x2'		#s0
+#	uniform_uncertain = 2				#s1
+#      	  lower_bounds      = -2.  -2. 		#s1
+#	  upper_bounds      =  2.   2.		#s1
+#	  descriptors       = 'x1' 'x2'		#s1
+#	exponential_uncertain = 2			#s2
+#	  betas             =  2.   2.		#s2
+#	  descriptors       = 'x1' 'x2'		#s2
+#	beta_uncertain = 2				#s3
+#	  alphas            =  1.5  1.5		#s3
+#	  betas             =  2.   2.		#s3
+#      	  lower_bounds      = -2.  -2. 		#s3
+#	  upper_bounds      =  2.   2.		#s3
+#	  descriptors       = 'x1' 'x2'		#s3
+#	gamma_uncertain = 2				#s4
+#	  alphas           =  2.5  2.5		#s4
+#	  betas            =  2.   2.		#s4
+#	  descriptors      = 'x1' 'x2'		#s4
+#	normal_uncertain = 1				#s5
+#      	  means             =  0. 			#s5
+#	  std_deviations    =  1.			#s5
+#	  descriptors       = 'x1'			#s5
+#	uniform_uncertain = 1				#s5
+#      	  lower_bounds      = -2. 			#s5
+#	  upper_bounds      =  2.			#s5
+#	  descriptors       = 'x2'			#s5
+#	exponential_uncertain = 1			#s5
+#	  betas             =  2.			#s5
+#	  descriptors       = 'x3'			#s5
+#	beta_uncertain = 1				#s5
+#	  alphas            =  1.5			#s5
+#	  betas             =  2.			#s5
+#      	  lower_bounds      = -2. 			#s5
+#	  upper_bounds      =  2.			#s5
+#	  descriptors       = 'x4'			#s5
+#	gamma_uncertain = 1				#s5
+#	  alphas           =  2.5			#s5
+#	  betas            =  2.			#s5
+#	  descriptors      = 'x5'			#s5
 
 interface,
 	direct
-	  analysis_driver = 'rosenbrock'	#0,#1,#2,#3,#4
-#	  analysis_driver = 'generalized_rosenbrock'	#5
+	  analysis_driver = 'rosenbrock'	#s0,#s1,#s2,#s3,#s4
+#	  analysis_driver = 'generalized_rosenbrock'	#s5
 	  deactivate evaluation_cache restart_file
 
 responses,

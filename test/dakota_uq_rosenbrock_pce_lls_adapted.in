@@ -19,8 +19,8 @@ method,
 #	    adapted generalized
 #	      initial_level = 0
 # Active algorithm option no longer requires expanding_front selection:
-	    adapted #expanding_front		#0
-	      advancements = 3			#0
+	    adapted #expanding_front		#s0
+	      advancements = 3			#s0
 	  soft_convergence_limit = 2
 # CV settings:
 	  seed = 1234567

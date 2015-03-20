@@ -1,3 +1,4 @@
+#@ s6: TimeoutDelay=480
 # DAKOTA Input File: dakota_pcbdo_short_column.in
 # Optimization under uncertainty using polynomial chaos methods within a
 # nested OUU environment.  The test problem is the "short_column" problem from
@@ -56,18 +57,18 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	polynomial_chaos			#0,#1,#4,#5,#8
-#	stoch_collocation			#2,#3,#6,#7,#9
+	polynomial_chaos			#s0,#s1,#s4,#s5,#s8
+#	stoch_collocation			#s2,#s3,#s6,#s7,#s9
 	  askey non_nested
-	  quadrature_order = 2			#0,#2,#4,#6
-#	  sparse_grid_level = 1			#1,#3,#5,#7
-#	  sparse_grid_level = 0			#8,#9
+	  quadrature_order = 2			#s0,#s2,#s4,#s6
+#	  sparse_grid_level = 1			#s1,#s3,#s5,#s7
+#	  sparse_grid_level = 0			#s8,#s9
 	  p_refinement
-	    uniform				#0,#1,#2,#3
-#	    dimension_adaptive sobol		#4,#5,#6,#7
-#	    dimension_adaptive generalized	#8,#9
-	    max_iterations  = 2			#0,#2
-#	    max_iterations  = 5			#1,#3,#4,#5,#6,#7
+	    uniform				#s0,#s1,#s2,#s3
+#	    dimension_adaptive sobol		#s4,#s5,#s6,#s7
+#	    dimension_adaptive generalized	#s8,#s9
+	    max_iterations  = 2			#s0,#s2
+#	    max_iterations  = 5			#s1,#s3,#s4,#s5,#s6,#s7
 	    convergence_tol = 1.e-6
 	  num_response_levels = 0 1
 	  response_levels = 0.0

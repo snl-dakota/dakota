@@ -10,12 +10,12 @@
 # for that specific test.  Within the automatic test script, a special
 # syntax is used to automatically determine which lines are to be used
 # for a specific test. A #n (0 - 9) is used to associate lines in the
-# test file with a specific test.  The #0 is used to designate lines
+# test file with a specific test.  The #s0 is used to designate lines
 # which are to be run as part of the baseline test but not part of the
 # other tests. To add multiple tests to a file add the #n to the
 # trailing comment of a line, the dakota_test script will parse
 # through the file uncommenting the lines marked for a specific test,
-# and commenting out unneeded lines marked with the #0. Specific lines
+# and commenting out unneeded lines marked with the #s0. Specific lines
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
@@ -36,7 +36,7 @@ method,
 	trust_region
 	  initial_size = 0.10
 	  contraction_factor = 0.5
-#	  constraint_relax homotopy		#6,#8,#9,#11
+#	  constraint_relax homotopy		#s6,#s8,#s9,#s11
 	  expansion_factor   = 1.50
 
 method,
@@ -48,25 +48,25 @@ method,
 model,
 	id_model = 'SURROGATE'
 	responses_pointer = 'SURROGATE_RESP'
-	surrogate global                  	#0,#2,#3,#5,#6,#8,#9,#11,#14,#15
-	  dace_method_pointer = 'SAMPLING'	#0,#2,#3,#5,#6,#8,#9,#11,#14,#15
-	  polynomial quadratic			#0,#2,#3,#5,#6,#8,#9,#11
-#	  gaussian_process surfpack		#14,#15
-#	  use_derivatives			#15
-#	  correction additive first_order	#0,#3,#6,#9
-# 	surrogate local taylor_series		#1,#4,#7,#10
-#	  actual_model_pointer = 'TRUTH'	#1,#4,#7,#10
-# 	surrogate multipoint tana		#12,#13
-#	  actual_model_pointer = 'TRUTH'	#12,#13
+	surrogate global                  	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15
+	  dace_method_pointer = 'SAMPLING'	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15
+	  polynomial quadratic			#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11
+#	  gaussian_process surfpack		#s14,#s15
+#	  use_derivatives			#s15
+#	  correction additive first_order	#s0,#s3,#s6,#s9
+# 	surrogate local taylor_series		#s1,#s4,#s7,#s10
+#	  actual_model_pointer = 'TRUTH'	#s1,#s4,#s7,#s10
+# 	surrogate multipoint tana		#s12,#s13
+#	  actual_model_pointer = 'TRUTH'	#s12,#s13
 
 variables,
 	continuous_design = 2
 #   Feasible starting point
-	  initial_point    30.   40.	#0,#1,#2,#3,#4,#5,#12,#14,#15
+	  initial_point    30.   40.	#s0,#s1,#s2,#s3,#s4,#s5,#s12,#s14,#s15
 # Infeasible starting point
 #	  initial_point    65.    1.
 # Infeasible starting point
-#	  initial_point    10.   20.	#6,#7,#8,#9,#10,#11,#13
+#	  initial_point    10.   20.	#s6,#s7,#s8,#s9,#s10,#s11,#s13
 	  lower_bounds      0.    0.
 	  upper_bounds     80.   80.
 	  descriptors      'x1'  'x2'
@@ -107,8 +107,8 @@ responses,
 	nonlinear_inequality_constraints = 3
 	nonlinear_inequality_lower_bounds = 0.     0.     0.
 	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 1.e+50
-	no_gradients		 	#0,#2,#6,#8,#14
-#	numerical_gradients		#7
-#	  method_source dakota		#7
-#	analytic_gradients		#1,#3,#4,#5,#9,#10,#11,#12,#13,#15
+	no_gradients		 	#s0,#s2,#s6,#s8,#s14
+#	numerical_gradients		#s7
+#	  method_source dakota		#s7
+#	analytic_gradients		#s1,#s3,#s4,#s5,#s9,#s10,#s11,#s12,#s13,#s15
 	no_hessians

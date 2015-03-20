@@ -1,9 +1,10 @@
+#@ p0: MPIProcs=1
 # DAKOTA INPUT FILE - dakota_cantilever_dream.in
 # p0=1
 
 
 method,									
-        bayes_calibration queso, 	#0,#p0						
+        bayes_calibration queso, 	#s0,#p0						
          #NOTE:  typically you will want tens of thousands of samples, this is just a short test
          samples = 1000 seed = 348
           mcmc_type dram

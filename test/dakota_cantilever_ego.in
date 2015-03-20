@@ -1,3 +1,8 @@
+#@ s3: TimeoutAbsolute=2400
+#@ s0: TimeoutDelay=120
+#@ s1: TimeoutDelay=120
+#@ s2: TimeoutDelay=120
+#@ s3: TimeoutDelay=900
 # DAKOTA INPUT FILE : dakota_cantilever_ego.in
 # Note: currently this test file performs three different tests:
 # (1) efficient_global for constrained, global opt. with mean random vars
@@ -7,37 +12,37 @@
 # timeout overrides: 0=TD120 1=TD120 2=TD120 3=TD900 3=TA2400
 
 method,
-	efficient_global					#0,#1,#2
-	  gaussian_process dakota				#0
-#	  gaussian_process surfpack				#1
-#	global_reliability x_gaussian_process			#3
-#	  num_response_levels = 0 2 2				#3
-#	  response_levels = 0.2 0.6 0.2 0.6			#3
+	efficient_global					#s0,#s1,#s2
+	  gaussian_process dakota				#s0
+#	  gaussian_process surfpack				#s1
+#	global_reliability x_gaussian_process			#s3
+#	  num_response_levels = 0 2 2				#s3
+#	  response_levels = 0.2 0.6 0.2 0.6			#s3
 	  seed = 123457
 
 variables,
 	continuous_design = 2
-	  initial_point    4.0          4.0			#0,#1,#2
-#	  initial_point    2.5          2.5			#3
+	  initial_point    4.0          4.0			#s0,#s1,#s2
+#	  initial_point    2.5          2.5			#s3
 	  upper_bounds    10.0         10.0
 	  lower_bounds     1.0          1.0
 	  descriptors     'w' 't'
-        continuous_state = 4					#0,#1,#2
-          initial_state   40000.  29.E+6  500.  1000.	#0,#1,#2
-	  descriptors       'R'    'E'    'X'    'Y'	#0,#1,#2
-#	normal_uncertain = 4					#3
-#	  means             =  40000. 29.E+6 500. 1000.	#3
-#	  std_deviations    =  2000. 1.45E+6 100. 100.	#3
-#	  descriptors       =  'R' 'E' 'X' 'Y'		#3
+        continuous_state = 4					#s0,#s1,#s2
+          initial_state   40000.  29.E+6  500.  1000.	#s0,#s1,#s2
+	  descriptors       'R'    'E'    'X'    'Y'	#s0,#s1,#s2
+#	normal_uncertain = 4					#s3
+#	  means             =  40000. 29.E+6 500. 1000.	#s3
+#	  std_deviations    =  2000. 1.45E+6 100. 100.	#s3
+#	  descriptors       =  'R' 'E' 'X' 'Y'		#s3
 
 interface,
 	direct
 	  analysis_driver = 'cantilever'
 
 responses,
-	objective_functions = 1				#0,#1
-	nonlinear_inequality_constraints = 2		#0,#1
-#	calibration_terms = 3				#2
-#       response_functions = 3				#3
+	objective_functions = 1				#s0,#s1
+	nonlinear_inequality_constraints = 2		#s0,#s1
+#	calibration_terms = 3				#s2
+#       response_functions = 3				#s3
 	no_gradients
 	no_hessians

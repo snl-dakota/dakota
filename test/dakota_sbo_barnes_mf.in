@@ -10,12 +10,12 @@
 # for that specific test.  Within the automatic test script, a special
 # syntax is used to automatically determine which lines are to be used
 # for a specific test. A #n (0 - 9) is used to associate lines in the
-# test file with a specific test.  The #0 is used to designate lines
+# test file with a specific test.  The #s0 is used to designate lines
 # which are to be run as part of the baseline test but not part of the
 # other tests. To add multiple tests to a file add the #n to the
 # trailing comment of a line, the dakota_test script will parse
 # through the file uncommenting the lines marked for a specific test,
-# and commenting out unneeded lines marked with the #0. Specific lines
+# and commenting out unneeded lines marked with the #s0. Specific lines
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
@@ -36,27 +36,27 @@ method,
 	trust_region
 	  initial_size = 0.10
 	  contraction_factor = 0.5
-#	  constraint_relax homotopy			#0,#1,#6,#7
+#	  constraint_relax homotopy			#s0,#s1,#s6,#s7
 	  expansion_factor   = 1.50
           acceptance_logic
-	    filter                       		#0,#2,#4,#6
-#           tr_ratio                     		#1,#3,#5,#7
+	    filter                       		#s0,#s2,#s4,#s6
+#           tr_ratio                     		#s1,#s3,#s5,#s7
           merit_function
-	    augmented_lagrangian_merit     		#0,#4
-#           lagrangian_merit               		#1,#5
-#           adaptive_penalty               		#2,#6
-#           penalty_merit                  		#3,#7
+	    augmented_lagrangian_merit     		#s0,#s4
+#           lagrangian_merit               		#s1,#s5
+#           adaptive_penalty               		#s2,#s6
+#           penalty_merit                  		#s3,#s7
           approx_subproblem
 #           THE FOLLOWING COMBINATION IS ERRONEOUS AND SHOULD NOT BE USED
 #	    single_objective no_constraints
-            single_objective original_constraints                 #0
-#           single_objective linearized_constraints               #1
-#           lagrangian_objective no_constraints                   #2
-#           lagrangian_objective original_constraints             #3
-#           lagrangian_objective linearized_constraints           #4
-#           augmented_lagrangian_objective no_constraints         #5
-#           augmented_lagrangian_objective original_constraints   #6
-#           augmented_lagrangian_objective linearized_constraints #7
+            single_objective original_constraints                 #s0
+#           single_objective linearized_constraints               #s1
+#           lagrangian_objective no_constraints                   #s2
+#           lagrangian_objective original_constraints             #s3
+#           lagrangian_objective linearized_constraints           #s4
+#           augmented_lagrangian_objective no_constraints         #s5
+#           augmented_lagrangian_objective original_constraints   #s6
+#           augmented_lagrangian_objective linearized_constraints #s7
 
 method,
 	id_method = 'NLP'
@@ -73,9 +73,9 @@ model,
 #         correction additive       second_order
 #         correction multiplicative second_order
 #         correction combined       second_order
-          correction additive       first_order 	#0,#3,#6
-#         correction multiplicative first_order 	#1,#4,#7
-#         correction combined       first_order 	#2,#5
+          correction additive       first_order 	#s0,#s3,#s6
+#         correction multiplicative first_order 	#s1,#s4,#s7
+#         correction combined       first_order 	#s2,#s5
 #         ZEROTH ORDER DOES NOT WORK WITH LAGRANGIAN MERIT FUNCTIONS
 #         correction additive       zeroth_order
 #         correction multiplicative zeroth_order
@@ -84,11 +84,11 @@ model,
 variables,
 	continuous_design = 2
 #   Feasible starting point
-	  initial_point    30.   40.		#0,#1,#2,#3
+	  initial_point    30.   40.		#s0,#s1,#s2,#s3
 # Infeasible starting point
 #	  initial_point    65.    1.
 # Infeasible starting point
-#	  initial_point    10.   20.		#4,#5,#6,#7
+#	  initial_point    10.   20.		#s4,#s5,#s6,#s7
 	  lower_bounds      0.    0.
 	  upper_bounds     80.   80.
 	  descriptors      'x1'  'x2'

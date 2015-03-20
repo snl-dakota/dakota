@@ -6,15 +6,15 @@ environment
         tabular_graphics_data
 
 method,
-          nl2sol         			#0,#1,#2,#3
-#          bayes_calibration dream 		#4
-#          samples = 60				#4
-#          chains = 3				#4
+          nl2sol         			#s0,#s1,#s2,#s3
+#          bayes_calibration dream 		#s4
+#          samples = 60				#s4
+#          chains = 3				#s4
           output debug
 
 variables,
-          continuous_design = 2			#0,#1,#2,#3
-#	  uniform_uncertain = 2			#4
+          continuous_design = 2			#s0,#s1,#s2,#s3
+#	  uniform_uncertain = 2			#s4
 	  upper_bounds   0.5   0.5
 	  lower_bounds   0.1   0.1
 	  descriptors   'x1' 'x2'
@@ -24,23 +24,23 @@ interface,
 	  analysis_driver = 'damped_oscillator'
 
 responses,
-#        calibration_terms = 1             	#2,#3,#4
-        calibration_terms = 5             	#0,#1
-	scalar_calibration_terms = 5      	#0,#1
-	calibration_data_file = 'dakota_experiment_read.A.dat' freeform #0
-#       calibration_data_file = 'dakota_experiment_read.B.dat' freeform #1
-#        calibration_data			#2,#3,#4
+#        calibration_terms = 1             	#s2,#s3,#s4
+        calibration_terms = 5             	#s0,#s1
+	scalar_calibration_terms = 5      	#s0,#s1
+	calibration_data_file = 'dakota_experiment_read.A.dat' freeform #s0
+#       calibration_data_file = 'dakota_experiment_read.B.dat' freeform #s1
+#        calibration_data			#s2,#s3,#s4
         num_experiments = 1                     
         #num_config_variables = 1                        
-        variance_type = 'none'			#0
-#        variance_type = 'scalar'		#1
-#        variance_type = 'diagonal'		#2
-#        variance_type = 'matrix'		#3,#4
-#        field_calibration_terms = 1		#2,#3,#4
-#        lengths = 5				#2,#3,#4
-#	response_descriptors = 'oscillator'     #2
-#	response_descriptors = 'oscillatorA'    #3,#4
-        numerical_gradients                     #0,#1,#2,#3	
-#        no_gradients                           #4
+        variance_type = 'none'			#s0
+#        variance_type = 'scalar'		#s1
+#        variance_type = 'diagonal'		#s2
+#        variance_type = 'matrix'		#s3,#s4
+#        field_calibration_terms = 1		#s2,#s3,#s4
+#        lengths = 5				#s2,#s3,#s4
+#	response_descriptors = 'oscillator'     #s2
+#	response_descriptors = 'oscillatorA'    #s3,#s4
+        numerical_gradients                     #s0,#s1,#s2,#s3	
+#        no_gradients                           #s4
 	no_hessians
 

@@ -1,3 +1,4 @@
+#@ s0: TimeoutDelay=360
 # Dakota Input File: mogatest1.in
 
 # timeout overrides: 0=TD360

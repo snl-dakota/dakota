@@ -1,3 +1,5 @@
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=2
 # DAKOTA INPUT FILE - dakota_uq_cantilever_interval.in
 
 # Processor specification for parallel tests:
@@ -7,13 +9,13 @@ environment,
 	tabular_graphics_data    
 
 method,									 
-	global_interval_est lhs		#0
-#	global_interval_est sbo		#1
-#	global_interval_est ea 		#2
-#        max_iterations = 10            #2
-	seed = 3452 samples=1000        #0
-#	seed = 3452 samples = 50        #1
-#	seed = 3452                     #2
+	global_interval_est lhs		#s0
+#	global_interval_est sbo		#s1
+#	global_interval_est ea 		#s2
+#        max_iterations = 10            #s2
+	seed = 3452 samples=1000        #s0
+#	seed = 3452 samples = 50        #s1
+#	seed = 3452                     #s2
 
 variables,
         continuous_interval_uncertain = 2

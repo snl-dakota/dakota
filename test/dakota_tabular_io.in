@@ -1,3 +1,7 @@
+#@ s0: ExecArgs='-pre_run ::dakota_tabular_io.0.dat -run -post_run'
+#@ s2: ExecArgs='-post_run dakota_tabular_io.1.dat::'
+#@ s4: ExecArgs='-post_run dakota_tabular_io.1.dat::'
+
 # Test tabular output/input for annotated file formats
 # (adapted from dakota_uq_textbook_lhs_approx.in)
 
@@ -18,43 +22,43 @@
 #    surrogate, and do LHS at same points used to build
 
 environment,
-#	  tabular_data						#1,#2,#3
-#	    tabular_data_file = 'dakota_tabular_io.1.dat'  	#1
-#	    tabular_data_file = 'dakota_tabular_io.3.dat'  	#3
-#	  method_pointer = 'UQ'					#4
+#	  tabular_data						#s1,#s2,#s3
+#	    tabular_data_file = 'dakota_tabular_io.1.dat'  	#s1
+#	    tabular_data_file = 'dakota_tabular_io.3.dat'  	#s3
+#	  method_pointer = 'UQ'					#s4
 
 #########################################
 # interface truth model and dace method #
 #########################################
 
-method,					#0,#2,#3,#4
-	id_method = 'DACE'		#0,#2,#3,#4
-	model_pointer = 'DACE_M'	#0,#2,#3,#4
-	sampling			#0,#2,#3,#4
-	  samples = 25			#0,#2,#3
-## No additional samples beyond those read	#4
-#	  samples = 0				#4
-	  seed = 50			#0,#2,#3,#4
-	  sample_type lhs		#0,#2,#3,#4
+method,					#s0,#s2,#s3,#s4
+	id_method = 'DACE'		#s0,#s2,#s3,#s4
+	model_pointer = 'DACE_M'	#s0,#s2,#s3,#s4
+	sampling			#s0,#s2,#s3,#s4
+	  samples = 25			#s0,#s2,#s3
+## No additional samples beyond those read	#s4
+#	  samples = 0				#s4
+	  seed = 50			#s0,#s2,#s3,#s4
+	  sample_type lhs		#s0,#s2,#s3,#s4
 
-#method,							#1
-#	list_parameter_study					#1
-#	  import_points_file = 'dakota_tabular_io.0.dat'	#1
+#method,							#s1
+#	list_parameter_study					#s1
+#	  import_points_file = 'dakota_tabular_io.0.dat'	#s1
 
-#method,  		   					#4
-#	id_method = 'UQ'					#4
-#	model_pointer = 'UQ_M'					#4
-#	sampling						#4
-#	  samples = 25 						#4
-#	  seed = 50						#4
-#	  sample_type lhs					#4
-#								#4
-#model,								#4
-#	id_model = 'UQ_M'					#4
-#	surrogate global					#4
-#	  dace_method_pointer = 'DACE'				#4
-# 	  neural_network					#4
-#	  import_points_file = 'dakota_tabular_io.3.dat'	#4
+#method,  		   					#s4
+#	id_method = 'UQ'					#s4
+#	model_pointer = 'UQ_M'					#s4
+#	sampling						#s4
+#	  samples = 25 						#s4
+#	  seed = 50						#s4
+#	  sample_type lhs					#s4
+#								#s4
+#model,								#s4
+#	id_model = 'UQ_M'					#s4
+#	surrogate global					#s4
+#	  dace_method_pointer = 'DACE'				#s4
+# 	  neural_network					#s4
+#	  import_points_file = 'dakota_tabular_io.3.dat'	#s4
 
 model,
 	id_model = 'DACE_M'

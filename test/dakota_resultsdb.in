@@ -2,35 +2,35 @@
 
 environment,
 	results_output
-#	  results_output_file = 'uq.results.txt'	#1,#2
+#	  results_output_file = 'uq.results.txt'	#s1,#s2
 
 method,
 	# dakota_rosenbrock.in:0
-	optpp_q_newton					#0
-	  max_iterations = 50				#0
-	  convergence_tolerance = 1e-4  		#0
+	optpp_q_newton					#s0
+	  max_iterations = 50				#s0
+	  convergence_tolerance = 1e-4  		#s0
 
  	# dakota_rosenbrock_users.in:6
-#  	sampling					#1
-#    	  sample_type random				#1 
-#    	  samples = 200					#1
-#    	  seed = 17					#1
-#    	  response_levels = 100.0			#1
+#  	sampling					#s1
+#    	  sample_type random				#s1 
+#    	  samples = 200					#s1
+#    	  seed = 17					#s1
+#    	  response_levels = 100.0			#s1
 
 	# dakota_uq_rosenbrock_pce.in:1 
-#	polynomial_chaos				#2
-#	  quadrature_order   = 5			#2
-#	  dimension_preference = 5 3			#2
-#	  samples = 10000				#2
-#	  seed = 12347 rng rnum2			#2
-#	  response_levels =				#2
-#	  .1 1. 50. 100. 500. 1000.			#2
-#	  variance_based_decomp #interaction_order = 1	#2
+#	polynomial_chaos				#s2
+#	  quadrature_order   = 5			#s2
+#	  dimension_preference = 5 3			#s2
+#	  samples = 10000				#s2
+#	  seed = 12347 rng rnum2			#s2
+#	  response_levels =				#s2
+#	  .1 1. 50. 100. 500. 1000.			#s2
+#	  variance_based_decomp #interaction_order = 1	#s2
 
 variables,
-	continuous_design = 2				#0
-	  initial_point  -1.2  1.0			#0
-#	uniform_uncertain = 2				#1,#2
+	continuous_design = 2				#s0
+	  initial_point  -1.2  1.0			#s0
+#	uniform_uncertain = 2				#s1,#s2
       	  lower_bounds      = -2.  -2. 		
 	  upper_bounds      =  2.   2.		
 	  descriptors       = 'x1' 'x2'		
@@ -40,9 +40,9 @@ interface,
 	analysis_driver = 'rosenbrock'		
 
 responses,
-	objective_functions = 1				#0
-#	response_functions = 1				#1,#2
-	analytic_gradients				#0
-#	no_gradients					#1,#2
+	objective_functions = 1				#s0
+#	response_functions = 1				#s1,#s2
+	analytic_gradients				#s0
+#	no_gradients					#s1,#s2
 	no_hessians
 

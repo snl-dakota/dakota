@@ -1,8 +1,8 @@
 # dakota_ampl_tb.in
 
 method,
-	npsol_sqp,					#0,#1,#2,#3
-#	optpp_q_newton,					#4,#5,#6,#7
+	npsol_sqp,					#s0,#s1,#s2,#s3
+#	optpp_q_newton,					#s4,#s5,#s6,#s7
 	  max_iterations = 50,
 	  convergence_tolerance = 1e-12
 
@@ -14,19 +14,19 @@ variables,
 	  descriptors      'x1'   'x2'
 
 interface,
-	  algebraic_mappings = 'dakota_ampl_tb.unc.nl' 	#0,#2,#4,#6
-#	  algebraic_mappings = 'dakota_ampl_tb.nl' 	#1,#3,#5,#7
+	  algebraic_mappings = 'dakota_ampl_tb.unc.nl' 	#s0,#s2,#s4,#s6
+#	  algebraic_mappings = 'dakota_ampl_tb.nl' 	#s1,#s3,#s5,#s7
 
 responses,
 	objective_functions = 1
-	response_descriptors = 'obj'			#0,#2,#4,#6
-	nonlinear_inequality_constraints = 0	#0,#2,#4,#6
-#	response_descriptors = 'obj' 'c1' 'c2'		#1,#3,#5,#7
-#	nonlinear_inequality_constraints = 2	#1,#3,#5,#7
-	analytic_gradients				#0,#1,#4,#5
-#	numerical_gradients				#2,#3,#6,#7
-#	  method_source dakota				#2,#3,#6,#7
-#	  interval_type central				#2,#3,#6,#7
-#	  fd_gradient_step_size = 1.e-6			#2,#3,#6,#7
+	response_descriptors = 'obj'			#s0,#s2,#s4,#s6
+	nonlinear_inequality_constraints = 0	#s0,#s2,#s4,#s6
+#	response_descriptors = 'obj' 'c1' 'c2'		#s1,#s3,#s5,#s7
+#	nonlinear_inequality_constraints = 2	#s1,#s3,#s5,#s7
+	analytic_gradients				#s0,#s1,#s4,#s5
+#	numerical_gradients				#s2,#s3,#s6,#s7
+#	  method_source dakota				#s2,#s3,#s6,#s7
+#	  interval_type central				#s2,#s3,#s6,#s7
+#	  fd_gradient_step_size = 1.e-6			#s2,#s3,#s6,#s7
 	no_hessians
 

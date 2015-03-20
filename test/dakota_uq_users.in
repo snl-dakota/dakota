@@ -5,40 +5,40 @@ environment
 
 method,
 	id_method = 'UQ'
-#       model_pointer = 'SURR'			#4,#5
+#       model_pointer = 'SURR'			#s4,#s5
 	sampling,
-	  samples = 10				#0,#2,#3,#5
-#	  samples = 5				#1
-#         samples = 1000			#4
+	  samples = 10				#s0,#s2,#s3,#s5
+#	  samples = 5				#s1
+#         samples = 1000			#s4
 	  seed = 98765 rng rnum2
 	  response_levels = 0.1 0.2 0.6
 			    0.1 0.2 0.6
 			    0.1 0.2 0.6
-	  sample_type lhs			#0,#1,#4
-#	  sample_type random			#2,#3
+	  sample_type lhs			#s0,#s1,#s4
+#	  sample_type random			#s2,#s3
 	  distribution cumulative
 
-# model,                                         #4,#5
-#        id_model = 'SURR'    			 #4,#5
-#        surrogate global,			 #4,#5
-#          dace_method_pointer = 'DACE'		 #4,#5
-#          reuse_samples all			 #4,#5
-###       polynomial quadratic          	 #4
-###       neural_network                	 #4
-###       gaussian_process surfpack   		 #4
-#          mars                         	 #4 
-#          voronoi_surrogate                     #5
+# model,                                         #s4,#s5
+#        id_model = 'SURR'    			 #s4,#s5
+#        surrogate global,			 #s4,#s5
+#          dace_method_pointer = 'DACE'		 #s4,#s5
+#          reuse_samples all			 #s4,#s5
+###       polynomial quadratic          	 #s4
+###       neural_network                	 #s4
+###       gaussian_process surfpack   		 #s4
+#          mars                         	 #s4 
+#          voronoi_surrogate                     #s5
           
-# method,                                        #4,#5
-#        id_method = 'DACE'			 #4,#5
-#        model_pointer = 'DACE_M'		 #4,#5
-#        sampling sample_type lhs		 #4,#5
-#        samples = 121 seed = 5034 rng rnum2	 #4,#5
+# method,                                        #s4,#s5
+#        id_method = 'DACE'			 #s4,#s5
+#        model_pointer = 'DACE_M'		 #s4,#s5
+#        sampling sample_type lhs		 #s4,#s5
+#        samples = 121 seed = 5034 rng rnum2	 #s4,#s5
 
-#model,						#4,#5
-#        id_model = 'DACE_M'			#4,#5
-#        single					#4,#5
-#          interface_pointer = 'I1'		#4,#5
+#model,						#s4,#s5
+#        id_model = 'DACE_M'			#s4,#s5
+#        single					#s4,#s5
+#          interface_pointer = 'I1'		#s4,#s5
 
 variables,
 	uniform_uncertain = 2

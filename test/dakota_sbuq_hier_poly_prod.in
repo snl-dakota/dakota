@@ -17,26 +17,26 @@ method,
 #	    variance_based_decomp
 # Multifidelity test suite
 	model_pointer = 'SURROGATE'
-	polynomial_chaos			#0,#1,#2,#6,#7,#11,#12,#13,#14,#15,#16,#17
-	  non_nested				#0,#1,#2,#6,#7
-#	  expansion_order = 2 4			#11,#13,#15,#16
-#	  expansion_order = 3 5			#12,#17
-#	  uniform p_refinement			#16,#17
-#	  orthogonal_least_interpolation	#14
-#	  collocation_ratio =  2		#11,#16
-#	  collocation_ratio = .9		#12,#17
-#	  collocation_points = 10 40		#13,#14
-#	  expansion_samples = 200 2000		#15
-#	  seed = 12347	      	  		#11,#12,#13,#14,#15,#16,#17
-#	stoch_collocation non_nested		#3,#4,#5,#8,#9,#10
-	  sparse_grid_level = 1 3		#0,#3
-#	  quadrature_order = 3 5		#6,#8
-#	  uniform p_refinement			#1,#4,#7,#9
-#	  dimension_adaptive p_refinement generalized	#2,#5
-#	  sparse_grid_level = 0		  	#1,#2,#4,#5
-#	  quadrature_order = 1			#7,#9
-#	  sparse_grid_level = 5 10		#10
-#	  piecewise use_derivatives		#10
+	polynomial_chaos			#s0,#s1,#s2,#s6,#s7,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	  non_nested				#s0,#s1,#s2,#s6,#s7
+#	  expansion_order = 2 4			#s11,#s13,#s15,#s16
+#	  expansion_order = 3 5			#s12,#s17
+#	  uniform p_refinement			#s16,#s17
+#	  orthogonal_least_interpolation	#s14
+#	  collocation_ratio =  2		#s11,#s16
+#	  collocation_ratio = .9		#s12,#s17
+#	  collocation_points = 10 40		#s13,#s14
+#	  expansion_samples = 200 2000		#s15
+#	  seed = 12347	      	  		#s11,#s12,#s13,#s14,#s15,#s16,#s17
+#	stoch_collocation non_nested		#s3,#s4,#s5,#s8,#s9,#s10
+	  sparse_grid_level = 1 3		#s0,#s3
+#	  quadrature_order = 3 5		#s6,#s8
+#	  uniform p_refinement			#s1,#s4,#s7,#s9
+#	  dimension_adaptive p_refinement generalized	#s2,#s5
+#	  sparse_grid_level = 0		  	#s1,#s2,#s4,#s5
+#	  quadrature_order = 1			#s7,#s9
+#	  sparse_grid_level = 5 10		#s10
+#	  piecewise use_derivatives		#s10
 	  variance_based_decomp
 
 model,
@@ -45,22 +45,22 @@ model,
 	  low_fidelity_model  = 'LOFI'
 	  high_fidelity_model = 'HIFI'
 	  correction multiplicative
-	    zeroth_order			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17	
-#	    first_order				#10
+	    zeroth_order			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17	
+#	    first_order				#s10
 
 variables,
-	normal_uncertain = 2			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17
-      	  means             =  0.   0.		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17
-	  std_deviations    =  1.   1.		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17
-#	uniform_uncertain = 2			#10
-#	  lower_bounds      = -5.  -5.		#10
-#	  upper_bounds	    =  5.   5.		#10
+	normal_uncertain = 2			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+      	  means             =  0.   0.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	  std_deviations    =  1.   1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+#	uniform_uncertain = 2			#s10
+#	  lower_bounds      = -5.  -5.		#s10
+#	  upper_bounds	    =  5.   5.		#s10
 	  descriptors       = 'x1' 'x2'
 
 responses,
 	response_functions = 1
-	no_gradients				#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#11,#12,#13,#14,#15,#16,#17
-# 	analytic_gradients			#10
+	no_gradients				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+# 	analytic_gradients			#s10
 	no_hessians				
 
 model,

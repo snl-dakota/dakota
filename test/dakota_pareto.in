@@ -5,47 +5,47 @@
 
 environment,
 	top_method_pointer = 'PS'
-	  graphics				#0,#1
+	  graphics				#s0,#s1
 
 method
 	id_method = 'PS'
         pareto_set
 #         iterator_servers = 3
-	  opt_method_pointer = 'NLP'		#0,#1
-#	  opt_method_pointer = 'SBLO'		#2
-#	  random_weight_sets = 5 seed = 123	#1
-	  multi_objective_weight_sets = 	#0,#2
-				1.   0.   0.	#0,#2
-				0.   1.   0.	#0,#2
-				0.   0.   1.	#0,#2
-			      .333 .333 .333	#0,#2
+	  opt_method_pointer = 'NLP'		#s0,#s1
+#	  opt_method_pointer = 'SBLO'		#s2
+#	  random_weight_sets = 5 seed = 123	#s1
+	  multi_objective_weight_sets = 	#s0,#s2
+				1.   0.   0.	#s0,#s2
+				0.   1.   0.	#s0,#s2
+				0.   0.   1.	#s0,#s2
+			      .333 .333 .333	#s0,#s2
 
-#method,					#2
-#	id_method = 'SBLO'			#2
-#	model_pointer = 'SURROGATE'		#2
-#	surrogate_based_local			#2
-#	  approx_method_pointer = 'NLP'		#2
+#method,					#s2
+#	id_method = 'SBLO'			#s2
+#	model_pointer = 'SURROGATE'		#s2
+#	surrogate_based_local			#s2
+#	  approx_method_pointer = 'NLP'		#s2
 
 method,
 	id_method = 'NLP'
 	dot_bfgs
-#          convergence_tolerance = 1e-8		#2
+#          convergence_tolerance = 1e-8		#s2
 
-#method,					#2
-#	id_method = 'SAMPLING'			#2
-#	model_pointer = 'TRUTH'			#2
-#	sampling				#2
-#	  seed = 531				#2
-#	  sample_type lhs			#2
+#method,					#s2
+#	id_method = 'SAMPLING'			#s2
+#	model_pointer = 'TRUTH'			#s2
+#	sampling				#s2
+#	  seed = 531				#s2
+#	  sample_type lhs			#s2
 
-#model,						#2
-#	id_model = 'SURROGATE'			#2
-#	surrogate global			#2
-#	  dace_method_pointer = 'SAMPLING'	#2
-#	  polynomial quadratic			#2
+#model,						#s2
+#	id_model = 'SURROGATE'			#s2
+#	surrogate global			#s2
+#	  dace_method_pointer = 'SAMPLING'	#s2
+#	  polynomial quadratic			#s2
 
 model,
-#	id_model = 'TRUTH'			#2
+#	id_model = 'TRUTH'			#s2
         single
 
 variables,

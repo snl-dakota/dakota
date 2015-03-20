@@ -66,7 +66,7 @@ responses,
 	objective_functions = 2
 # TO DO: multi-objective recovery fails since there is no meta-level data
 #        for the evaluation cache lookup
-	analytic_gradients		#0,#p0
+	analytic_gradients		#s0,#p0
 #	numerical_gradients		#p1,#p2
 #	  method_source dakota		#p1,#p2
 #	  interval_type central		#p1,#p2
@@ -116,6 +116,6 @@ interface,
 responses,
 	id_responses = 'UQ_R'
 	response_functions = 2
-	analytic_gradients		#0,#p0
+	analytic_gradients		#s0,#p0
 #	no_gradients			#p1,#p2
 	no_hessians

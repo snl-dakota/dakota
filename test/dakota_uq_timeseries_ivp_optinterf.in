@@ -1,3 +1,4 @@
+#@ s0: TimeoutAbsolute=1800
 # DAKOTA Input File: dakota_uq_timeseries_ivp_optinterf.in
 # Mixed UQ with aleatory post-processing of optional interface simulation
 
@@ -14,8 +15,8 @@ method,
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
 	global_interval_est
-	  ego						#0
-#	  lhs						#1
+	  ego						#s0
+#	  lhs						#s1
 	  samples = 100 seed = 1234567 rng rnum2
 	  output verbose
 

@@ -52,23 +52,23 @@ method,
 
 model,
 	id_model = 'SURROGATE'
-	surrogate global		      	#0,#1,#2,#3,#4,#7,#8,#9,#10,#11
+	surrogate global		      	#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 	  responses_pointer = 'SURROGATE_RESP'
-	  dace_method_pointer = 'SAMPLING' 	#0,#1,#2,#3,#4,#7,#8,#9,#10,#11
+	  dace_method_pointer = 'SAMPLING' 	#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 #	  reuse_samples region
-#	  use_derivatives			#10,#11
-	  correction additive zeroth_order 	#0,#1,#2,#3,#4,#7,#8,#9,#10,#11
+#	  use_derivatives			#s10,#s11
+	  correction additive zeroth_order 	#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 ### Section to specify surface fit method.
-	  polynomial quadratic 			#0
-#	  neural_network			#1
+	  polynomial quadratic 			#s0
+#	  neural_network			#s1
 #	    nodes = 10  # to get historical behavior on test 1
-#	  gaussian_process surfpack		#2,#3,#9,#10,#11
-#	   correlation_lengths 0.79 0.76	#3
-#	  mars					#4
-#	  moving_least_squares			#7
-#	  radial_basis				#8
-# 	surrogate local taylor_series		#5,#6
-#	  actual_model_pointer = 'TRUTH' 	#5,#6
+#	  gaussian_process surfpack		#s2,#s3,#s9,#s10,#s11
+#	   correlation_lengths 0.79 0.76	#s3
+#	  mars					#s4
+#	  moving_least_squares			#s7
+#	  radial_basis				#s8
+# 	surrogate local taylor_series		#s5,#s6
+#	  actual_model_pointer = 'TRUTH' 	#s5,#s6
 
 variables,
 	continuous_design = 2
@@ -80,11 +80,11 @@ variables,
 responses,
 	id_responses = 'SURROGATE_RESP'
 	objective_functions = 1
-#	analytic_gradients			#3,#7,#8,#9,#10,#11
-  	numerical_gradients			#0,#1,#2,#4,#5,#6
-  	  method_source dakota			#0,#1,#2,#4,#5,#6
-  	  interval_type central			#0,#1,#2,#4,#5,#6
- 	  fd_gradient_step_size = 1.e-6		#0,#1,#2,#4,#5,#6
+#	analytic_gradients			#s3,#s7,#s8,#s9,#s10,#s11
+  	numerical_gradients			#s0,#s1,#s2,#s4,#s5,#s6
+  	  method_source dakota			#s0,#s1,#s2,#s4,#s5,#s6
+  	  interval_type central			#s0,#s1,#s2,#s4,#s5,#s6
+ 	  fd_gradient_step_size = 1.e-6		#s0,#s1,#s2,#s4,#s5,#s6
 	no_hessians
 
 ###############################################
@@ -105,9 +105,9 @@ method,
 # the four lines below and comment out the two
 # lines starting with 'dace lhs' above.
 	sampling
-	  samples = 10		#0,#1,#2,#3,#5,#6,#7,#8,#9,#10
-#	  samples = 30		#4
-#	  samples =  5		#11
+	  samples = 10		#s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10
+#	  samples = 30		#s4
+#	  samples =  5		#s11
 	  seed = 531 rng rnum2
 	  sample_type lhs
 
@@ -126,11 +126,11 @@ interface,
 responses,
 	id_responses = 'TRUE_RESP'
 	objective_functions = 1
-	no_gradients		#0,#1,#2,#3,#4,#7,#8,#9
-#	analytic_gradients	#5,#6,#10,#11
+	no_gradients		#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9
+#	analytic_gradients	#s5,#s6,#s10,#s11
 #	numerical_gradients
 #	  method_source dakota
 #	  interval_type central
 #	  fd_gradient_step_size = 1.e-6
-	no_hessians		#0,#1,#2,#3,#4,#5,#7,#8,#9,#10,#11
-#	analytic_hessians	#6
+	no_hessians		#s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9,#s10,#s11
+#	analytic_hessians	#s6

@@ -15,81 +15,81 @@ environment
 
 method
 # --- Parameter Studies ---
-  vector_parameter_study				#0
-    final_point = 4.0 4.0 44000. 39.E+6 1000. 2000.	#0
-    num_steps = 10					#0
-#  centered_parameter_study				#1
-#    step_vector 0.1 0.1 10 100 10 100			#1
-#    steps_per_variable 2				#1
-#  multidim_parameter_study				#2
-#    partitions = 9 6 					#2
+  vector_parameter_study				#s0
+    final_point = 4.0 4.0 44000. 39.E+6 1000. 2000.	#s0
+    num_steps = 10					#s0
+#  centered_parameter_study				#s1
+#    step_vector 0.1 0.1 10 100 10 100			#s1
+#    steps_per_variable 2				#s1
+#  multidim_parameter_study				#s2
+#    partitions = 9 6 					#s2
 # --- Sensitivity and UQ ---
-#  sampling 						#3,#4
-#    sample_type lhs					#3,#4
-#    seed = 52983					#3,#4
-#    samples = 100					#3
-#    samples = 600					#4
+#  sampling 						#s3,#s4
+#    sample_type lhs					#s3,#s4
+#    seed = 52983					#s3,#s4
+#    samples = 100					#s3
+#    samples = 600					#s4
 #    variance_based_decomp				
-#  local_reliability					#5
-#    mpp_search no_approx				#5
-#  polynomial_chaos					#6
-#    sparse_grid_level = 2 #non_nested			#6
-#    sample_type lhs					#6
-#    seed 12347  					#6
-#    samples = 10000					#6
-#    num_probability_levels = 0 17 17					#4,#5,#6
-#    probability_levels =						#4,#5,#6
-#      .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999	#4,#5,#6
-#      .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999	#4,#5,#6
-#    cumulative distribution  	      	       	      	      		#4,#5,#6
+#  local_reliability					#s5
+#    mpp_search no_approx				#s5
+#  polynomial_chaos					#s6
+#    sparse_grid_level = 2 #non_nested			#s6
+#    sample_type lhs					#s6
+#    seed 12347  					#s6
+#    samples = 10000					#s6
+#    num_probability_levels = 0 17 17					#s4,#s5,#s6
+#    probability_levels =						#s4,#s5,#s6
+#      .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999	#s4,#s5,#s6
+#      .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999	#s4,#s5,#s6
+#    cumulative distribution  	      	       	      	      		#s4,#s5,#s6
 #	  output silent
-#  conmin_mfd						#7
-#    convergence_tolerance 1.0e-4			#7
-#    constraint_tolerance  1.0e-1			#7
-#  nl2sol						#8
-#    convergence_tolerance 1.0e-6			#8
-#  output verbose					#8
+#  conmin_mfd						#s7
+#    convergence_tolerance 1.0e-4			#s7
+#    constraint_tolerance  1.0e-1			#s7
+#  nl2sol						#s8
+#    convergence_tolerance 1.0e-6			#s8
+#  output verbose					#s8
 
 model
   single
 
 variables
 # --- Parameter Study and Optimization ---
-  active all							#0,#1
-#  active design						#2,#8
-  continuous_design = 2						#0,#1,#2,#7
-#    upper_bounds   4.0     4.0					#2,#7
-    initial_point  1.0     1.0					#0
-#    initial_point  2.5     2.5					#1,#7
-#    lower_bounds   1.0     1.0					#2,#7
-    descriptors    'w'     't'					#0,#1,#2,#7
-  continuous_state = 4	     					#0,#1,#2,#7
-    initial_state  40000. 29.E+6 500. 1000.			#0,#1,#2,#7
-    descriptors    'R'    'E'    'X'  'Y'			#0,#1,#2,#7
+  active all							#s0,#s1
+#  active design						#s2,#s8
+  continuous_design = 2						#s0,#s1,#s2,#s7
+#    upper_bounds   4.0     4.0					#s2,#s7
+    initial_point  1.0     1.0					#s0
+#    initial_point  2.5     2.5					#s1,#s7
+#    lower_bounds   1.0     1.0					#s2,#s7
+    descriptors    'w'     't'					#s0,#s1,#s2,#s7
+  continuous_state = 4	     					#s0,#s1,#s2,#s7
+    initial_state  40000. 29.E+6 500. 1000.			#s0,#s1,#s2,#s7
+    descriptors    'R'    'E'    'X'  'Y'			#s0,#s1,#s2,#s7
 # --- Sensitivity Analysis ---
-#  uniform_uncertain = 6					#3
-#    upper_bounds    48000.  45.E+6  700.  1200.  2.2   2.2	#3
-#    lower_bounds    32000.  15.E+6  300.  800.   2.0   2.0	#3
-#    descriptors     'R' 'E' 'X' 'Y' 'w' 't'	  		#3
+#  uniform_uncertain = 6					#s3
+#    upper_bounds    48000.  45.E+6  700.  1200.  2.2   2.2	#s3
+#    lower_bounds    32000.  15.E+6  300.  800.   2.0   2.0	#s3
+#    descriptors     'R' 'E' 'X' 'Y' 'w' 't'	  		#s3
 # --- Uncertainty Quantification ---
-#  active uncertain						#4,#5,#6
-#  continuous_design = 2					#4,#5,#6
-#    initial_point    2.5    2.5				#4,#5,#6
-#    descriptors      'w'    't'				#4,#5,#6
+#  active uncertain						#s4,#s5,#s6
+#  continuous_design = 2					#s4,#s5,#s6
+#    initial_point    2.5    2.5				#s4,#s5,#s6
+#    descriptors      'w'    't'				#s4,#s5,#s6
 #    descriptors      'beam_width' 'beam_thickness'
-#  normal_uncertain = 4						#4,#5,#6
-#    means             =  40000. 29.E+6  500. 1000.		#4,#5,#6
-#    std_deviations    =  2000.  1.45E+6 100. 100.		#4,#5,#6
-#    descriptors       =  'R'    'E'     'X'  'Y'		#4,#5,#6
+#  normal_uncertain = 4						#s4,#s5,#s6
+#    means             =  40000. 29.E+6  500. 1000.		#s4,#s5,#s6
+#    std_deviations    =  2000.  1.45E+6 100. 100.		#s4,#s5,#s6
+#    descriptors       =  'R'    'E'     'X'  'Y'		#s4,#s5,#s6
 # --- Calibration ---
-#  continuous_design 3						#8
-#    upper_bounds 31000000 10 10				#8
-#    initial_point 29000000 4 4					#8
-#    lower_bounds 27000000 1 1					#8
-#    descriptors 'E' 'w' 't'  					#8
-#  continuous_state 3	 					#8
-#    initial_state 40000 500 1000				#8
-#    descriptors 'R' 'X' 'Y' 					#8
+#  continuous_design 3						#s8
+#    upper_bounds 31000000 10 10				#s8
+#    initial_point 29000000 4 4					#s8
+#    lower_bounds 27000000 1 1					#s8
+#    descriptors 'E' 'w' 't'  					#s8
+#  continuous_state 3	 					#s8
+#    initial_state 40000 500 1000				#s8
+#    descriptors 'R' 'X' 'Y' 					#s8
 
 interface
   direct					
@@ -97,15 +97,15 @@ interface
 
 responses
 # Using objective functions for the first two to force a best point for regression
-  objective_functions = 3				#0,#1
-#  response_functions = 3				#2,#3,#4,#5,#6
-#  objective_functions = 1				#7
-#  nonlinear_inequality_constraints = 2			#7
-#  calibration_terms 3		      			#8
-#    calibration_data_file = 'dakota_cantilever_examples.clean.dat'	#8
-#    #calibration_data_file = 'dakota_cantilever_examples.error.dat'	#8
-#    freeform						#8
+  objective_functions = 3				#s0,#s1
+#  response_functions = 3				#s2,#s3,#s4,#s5,#s6
+#  objective_functions = 1				#s7
+#  nonlinear_inequality_constraints = 2			#s7
+#  calibration_terms 3		      			#s8
+#    calibration_data_file = 'dakota_cantilever_examples.clean.dat'	#s8
+#    #calibration_data_file = 'dakota_cantilever_examples.error.dat'	#s8
+#    freeform						#s8
   descriptors = 'area' 'stress' 'displacement'     
-  no_gradients						#0,#1,#2,#3,#4,#6
-#  analytic_gradients					#5,#7,#8
+  no_gradients						#s0,#s1,#s2,#s3,#s4,#s6
+#  analytic_gradients					#s5,#s7,#s8
   no_hessians

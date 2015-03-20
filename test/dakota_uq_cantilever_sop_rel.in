@@ -1,3 +1,4 @@
+#@ p0: MPIProcs=2
 # DAKOTA Input File: dakota_uq_cantilever_sop_rel.in
 # Second-order probability (SOP) for the cantilever test function using
 # reliability methods on the inner loop.
@@ -24,7 +25,7 @@ method,
 	model_pointer = 'EPIST_M'
 	sampling
 	  samples = 50 seed = 12347
-#	  response_levels = 9.52 3.0 3.0 #1
+#	  response_levels = 9.52 3.0 3.0 #s1
 
 model,
 	id_model = 'EPIST_M'
@@ -40,16 +41,16 @@ model,
 
 variables,
 	id_variables = 'EPIST_V'
-        continuous_interval_uncertain =2	    #0,#p0
-          num_intervals = 1 1                       #0,#p0
-          interval_probs = 1.0   1.0		    #0,#p0
-          lower_bounds =   400.  800.		    #0,#p0
-          upper_bounds =   600. 1200.		    #0,#p0
-          descriptors       'X_mean' 'Y_mean'       #0,#p0
-#	uniform_uncertain = 2				#1
-#	  lower_bounds    400.   800.			#1
-#	  upper_bounds    600.  1200.			#1
-#	  descriptors       'X_mean' 'Y_mean'		#1
+        continuous_interval_uncertain =2	    #s0,#p0
+          num_intervals = 1 1                       #s0,#p0
+          interval_probs = 1.0   1.0		    #s0,#p0
+          lower_bounds =   400.  800.		    #s0,#p0
+          upper_bounds =   600. 1200.		    #s0,#p0
+          descriptors       'X_mean' 'Y_mean'       #s0,#p0
+#	uniform_uncertain = 2				#s1
+#	  lower_bounds    400.   800.			#s1
+#	  upper_bounds    600.  1200.			#s1
+#	  descriptors       'X_mean' 'Y_mean'		#s1
 
 responses,
 # minimize mean Weight
@@ -103,7 +104,7 @@ responses,
 	id_responses = 'ALEAT_R'
 	response_functions = 3
 	response_descriptors = 'weight' 'stress' 'displ'
-	analytic_gradients				#0,#1
+	analytic_gradients				#s0,#s1
 #	numerical_gradients				#p0
 #	  method_source dakota				#p0
 #	  interval_type central				#p0

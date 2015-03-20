@@ -5,10 +5,10 @@ environment,
 	#graphics
 
 method,
-	polynomial_chaos				#0,#1,#2
-#	stoch_collocation				#3,#4,#5
-	  quadrature_order = 5				#0,#1,#3,#4
-#	  sparse_grid_level = 2				#2,#5
+	polynomial_chaos				#s0,#s1,#s2
+#	stoch_collocation				#s3,#s4,#s5
+	  quadrature_order = 5				#s0,#s1,#s3,#s4
+#	  sparse_grid_level = 2				#s2,#s5
 	  samples = 10000 seed = 12347 rng rnum2
 	  probability_levels = .001 .01 .1 .2 .3 .4 .5 .6 .7 .8 .9 .99 .999
 	  variance_based_decomp #interaction_order = 1
@@ -16,21 +16,21 @@ method,
 
 variables,
 	active all				
-	continuous_design = 2				#0,#2,#3,#5
-	  initial_point   = -1.5 -1.5			#0,#2,#3,#5
-	  lower_bounds    = -2.  -2.			#0,#2,#3,#5
-	  upper_bounds    =  2.   2.			#0,#2,#3,#5
-	  descriptors     = 'cdv1' 'cdv2'		#0,#2,#3,#5
+	continuous_design = 2				#s0,#s2,#s3,#s5
+	  initial_point   = -1.5 -1.5			#s0,#s2,#s3,#s5
+	  lower_bounds    = -2.  -2.			#s0,#s2,#s3,#s5
+	  upper_bounds    =  2.   2.			#s0,#s2,#s3,#s5
+	  descriptors     = 'cdv1' 'cdv2'		#s0,#s2,#s3,#s5
 	normal_uncertain  = 2
       	  means           =  0.   0. 		
 	  std_deviations  =  1.   1.		
 	  descriptors     = 'nuv1' 'nuv2'		
-#	continuous_interval_uncertain = 2		#1,#2,#4,#5
-#	  num_intervals   = 1 1				#1,#2,#4,#5
-#	  interval_probs  = 1.0 1.0			#1,#2,#4,#5
-#	  lower_bounds    = -2.  -2.			#1,#2,#4,#5
-#	  upper_bounds    =  2.   2.			#1,#2,#4,#5
-#	  descriptors     = 'ciuv1' 'ciuv2'		#1,#2,#4,#5
+#	continuous_interval_uncertain = 2		#s1,#s2,#s4,#s5
+#	  num_intervals   = 1 1				#s1,#s2,#s4,#s5
+#	  interval_probs  = 1.0 1.0			#s1,#s2,#s4,#s5
+#	  lower_bounds    = -2.  -2.			#s1,#s2,#s4,#s5
+#	  upper_bounds    =  2.   2.			#s1,#s2,#s4,#s5
+#	  descriptors     = 'ciuv1' 'ciuv2'		#s1,#s2,#s4,#s5
 
 interface,
 	direct

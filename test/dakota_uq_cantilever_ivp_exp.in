@@ -10,9 +10,9 @@ environment,
 method,									 
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
-	global_interval_est		#0,#1,#2,#3
-	  seed = 1234567 rng rnum2		#0,#1,#2,#3
-#	local_interval_est			#4,#5,#6,#7
+	global_interval_est		#s0,#s1,#s2,#s3
+	  seed = 1234567 rng rnum2		#s0,#s1,#s2,#s3
+#	local_interval_est			#s4,#s5,#s6,#s7
 	  output verbose
 
 model,
@@ -37,8 +37,8 @@ responses,
         id_responses = 'EPIST_R'
         response_functions = 3
         response_descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
-        no_gradients				#0,#1,#2,#3
-#	analytic_gradients			#4,#5,#6,#7
+        no_gradients				#s0,#s1,#s2,#s3
+#	analytic_gradients			#s4,#s5,#s6,#s7
         no_hessians
   
 ################################
@@ -47,10 +47,10 @@ responses,
 method,
         id_method = 'ALEATORY'
         model_pointer = 'ALEAT_M'
-	polynomial_chaos non_nested	#0,#1,#4,#5
-#	stoch_collocation non_nested	#2,#3,#6,#7
-	  sparse_grid_level = 2			#0,#2,#4,#6
-#	  sparse_grid_level = 4			#1,#3,#5,#7
+	polynomial_chaos non_nested	#s0,#s1,#s4,#s5
+#	stoch_collocation non_nested	#s2,#s3,#s6,#s7
+	  sparse_grid_level = 2			#s0,#s2,#s4,#s6
+#	  sparse_grid_level = 4			#s1,#s3,#s5,#s7
           num_response_levels = 0 1 1
           response_levels = 0.0 0.0
           compute reliabilities
@@ -65,7 +65,7 @@ model,
 
 variables,
         id_variables = 'ALEAT_V'
-#	active all				#1,#3,#5,#7
+#	active all				#s1,#s3,#s5,#s7
         continuous_design = 2
           initial_point    2.4522 3.8826
 # bounds needed for all view
@@ -81,12 +81,12 @@ interface,
         id_interface = 'ALEAT_I'
         direct
           analysis_driver = 'mod_cantilever'
-#	  deactivate evaluation_cache		#1,#3,#5,#7
+#	  deactivate evaluation_cache		#s1,#s3,#s5,#s7
 
 responses,
         id_responses = 'ALEAT_R'
         response_functions = 3
         response_descriptors = 'weight' 'stress' 'displ'
-        no_gradients				#0,#1,#2,#3,#5,#7
-#	analytic_gradients			#4,#6
+        no_gradients				#s0,#s1,#s2,#s3,#s5,#s7
+#	analytic_gradients			#s4,#s6
         no_hessians

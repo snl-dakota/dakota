@@ -1,3 +1,8 @@
+#@ p0: MPIProcs=4
+#@ p1: MPIProcs=4
+#@ p2: MPIProcs=4
+#@ p3: MPIProcs=5
+#@ p4: MPIProcs=5
 # DAKOTA INPUT FILE : dakota_dace.in
 
 # Each DAKOTA test file is capable of running multiple tests. The
@@ -23,25 +28,25 @@ environment,
 	  tabular_graphics_data
 
 method,
-	dace oas seed = 5		#0,#8,#p0,#p1,#p2,#p3,#p4
-#       dace oa_lhs seed = 5            #9
-	  samples = 49 symbols = 7 	#0,#8,#9,#p0,#p1,#p2,#p3,#p4
-#	dace lhs seed = 5		#1
-#	  samples = 50 symbols = 50	#1
-#	fsu_quasi_mc hammersley		#2,#3
-#	fsu_quasi_mc halton		#4,#5
-#	fsu_cvt				#6,#7
-#	  samples = 100			#2,#3,#4,#5,#6,#7
-#	  latinize			#3,#5,#7
-	  quality_metrics		#0,#3,#5,#7
-#	  sequence_start 0 0 0 0	#2,#3,#4,#5
-#	  sequence_leap  1 1 1 1	#2,#3,#4,#5
-#	  prime_base   3 5 7		#2
-#	  prime_base 2 3 5 7  		#4
-#  	  seed = 50374 fixed_seed	#6,#7
-#	  num_trials = 10000		#6,#7
-#	  max_iterations = 100		#6,#7
-#	  output quiet	   		#1,#2,#3,#4,#5,#6,#7,#8,#9,#p0,#p1,#p2,#p3,#p4
+	dace oas seed = 5		#s0,#s8,#p0,#p1,#p2,#p3,#p4
+#       dace oa_lhs seed = 5            #s9
+	  samples = 49 symbols = 7 	#s0,#s8,#s9,#p0,#p1,#p2,#p3,#p4
+#	dace lhs seed = 5		#s1
+#	  samples = 50 symbols = 50	#s1
+#	fsu_quasi_mc hammersley		#s2,#s3
+#	fsu_quasi_mc halton		#s4,#s5
+#	fsu_cvt				#s6,#s7
+#	  samples = 100			#s2,#s3,#s4,#s5,#s6,#s7
+#	  latinize			#s3,#s5,#s7
+	  quality_metrics		#s0,#s3,#s5,#s7
+#	  sequence_start 0 0 0 0	#s2,#s3,#s4,#s5
+#	  sequence_leap  1 1 1 1	#s2,#s3,#s4,#s5
+#	  prime_base   3 5 7		#s2
+#	  prime_base 2 3 5 7  		#s4
+#  	  seed = 50374 fixed_seed	#s6,#s7
+#	  num_trials = 10000		#s6,#s7
+#	  max_iterations = 100		#s6,#s7
+#	  output quiet	   		#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3,#p4
 
 variables,
 	active all
@@ -53,22 +58,22 @@ variables,
 	  initial_state       4.0
 	  lower_bounds        0.0
 	  upper_bounds        8.0
-#	discrete_design_set			#8
-#         integer = 2				#8
-#	    num_set_values = 4 5	      	#8
-#	    set_values = -4 -3 -2 -1 0 1 2 3 4	#8
+#	discrete_design_set			#s8
+#         integer = 2				#s8
+#	    num_set_values = 4 5	      	#s8
+#	    set_values = -4 -3 -2 -1 0 1 2 3 4	#s8
 
 interface,
 	id_interface = 'I1'
 #	evaluation_scheduling master
 # Force following line as comment in test 0 for examples/advanced
-#	evaluation_scheduling master	    	#0
+#	evaluation_scheduling master	    	#s0
 #	evaluation_scheduling peer dynamic	#p1,#p4
 #	evaluation_servers = 4	   		#p4
 #	processors_per_evaluation = 1		#p4
 	system
-	  asynchronous			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#p2,#p3
-	    evaluation_concurrency = 5	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#p2
+	  asynchronous			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p2,#p3
+	    evaluation_concurrency = 5	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p2
 #	    evaluation_concurrency = 10	#p3
 	  analysis_driver = 'text_book'
 

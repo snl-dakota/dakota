@@ -4,19 +4,19 @@ environment,
 
 method,
 	polynomial_chaos
-	  expansion_order = 4							    #0,#1,#2,#3,#5
+	  expansion_order = 4							    #s0,#s1,#s2,#s3,#s5
 	  seed = 12347 rng rnum2
 # import data generated using tabular_graphics_data with quadrature_order = 5
-	  import_points_file = 'dakota_uq_rosenbrock_pce_import.annot.pts.dat' annotated    #0,#1
-#	  import_points_file = 'dakota_uq_rosenbrock_pce_import.freeform.pts.dat' freeform  #2,#3,#5
-	  export_points_file = 'dakota_uq_rosenbrock_pce_export.vals.dat' annotated #0,#2
-#	  export_points_file = 'dakota_uq_rosenbrock_pce_export.freeform.pts.dat'   #1,#3
-	  export_expansion_file = 'dakota_uq_rosenbrock_pce_export.coeffs.dat'	    #0
-#	  export_expansion_file = 'dakota_uq_rosenbrock_pce_export.norm_coeffs.dat' #5
-#	  import_expansion_file = 'dakota_uq_rosenbrock_pce_import.coeffs.dat' 	    #4
-#	  import_expansion_file = 'dakota_uq_rosenbrock_pce_import.norm_coeffs.dat' #6
-#	  normalized		  					       	    #5,#6
-	  collocation_points = 0 						    #0,#1,#2,#3,#5
+	  import_points_file = 'dakota_uq_rosenbrock_pce_import.annot.pts.dat' annotated    #s0,#s1
+#	  import_points_file = 'dakota_uq_rosenbrock_pce_import.freeform.pts.dat' freeform  #s2,#s3,#s5
+	  export_points_file = 'dakota_uq_rosenbrock_pce_export.vals.dat' annotated #s0,#s2
+#	  export_points_file = 'dakota_uq_rosenbrock_pce_export.freeform.pts.dat'   #s1,#s3
+	  export_expansion_file = 'dakota_uq_rosenbrock_pce_export.coeffs.dat'	    #s0
+#	  export_expansion_file = 'dakota_uq_rosenbrock_pce_export.norm_coeffs.dat' #s5
+#	  import_expansion_file = 'dakota_uq_rosenbrock_pce_import.coeffs.dat' 	    #s4
+#	  import_expansion_file = 'dakota_uq_rosenbrock_pce_import.norm_coeffs.dat' #s6
+#	  normalized		  					       	    #s5,#s6
+	  collocation_points = 0 						    #s0,#s1,#s2,#s3,#s5
 	  samples = 10000			
 	  response_levels = .1 1. 50. 100. 500. 1000.
 	  variance_based_decomp #interaction_order = 1

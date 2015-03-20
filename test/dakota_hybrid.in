@@ -1,3 +1,4 @@
+#@ p0: MPIProcs=3 CheckOutput='dakota.out.1'
 # DAKOTA INPUT FILE: dakota_hybrid.in
 
 # Hybrid optimization on the unconstrained Textbook test problem using
@@ -23,15 +24,15 @@ method,
 	id_method = 'HS'
 	hybrid sequential
 #	  iterator_servers = 3				#p0
-	  method_pointer_list = 'GA' 'PS' 'NLP'		#0,#3,#p0
-#	  method_pointer_list = 'GA' 'PS' 'PS2'		#1,#2
+	  method_pointer_list = 'GA' 'PS' 'NLP'		#s0,#s3,#p0
+#	  method_pointer_list = 'GA' 'PS' 'PS2'		#s1,#s2
 
 method,
 	id_method = 'GA'
 	model_pointer = 'M1'
 	coliny_ea
-#	  final_solutions = 3			#3,#p0
-          final_solutions = 1                   #0,#1,#2
+#	  final_solutions = 3			#s3,#p0
+          final_solutions = 1                   #s0,#s1,#s2
 	  seed = 1234
 	  population_size = 5 
 	  verbose output
@@ -39,7 +40,7 @@ method,
 method,
 	id_method = 'PS'
 	model_pointer = 'M1'
-#	max_function_evaluations = 100		#1
+#	max_function_evaluations = 100		#s1
 	coliny_pattern_search stochastic
 	  seed = 1234
 	  initial_delta = 0.1
@@ -48,25 +49,25 @@ method,
 	  exploratory_moves basic_pattern
 	  verbose output
 
-#method,					#1,#2
-#	id_method = 'PS2'			#1,#2
-#	model_pointer = 'M1'			#1,#2
-#	max_function_evaluations = 10		#1,#2
-#	coliny_pattern_search stochastic	#1,#2
-#	  seed = 1234	      			#1,#2
-#	  initial_delta = 0.1			#1,#2
-#	  threshold_delta = 1.e-4		#1,#2
-#	  solution_accuracy = 1.e-10		#1,#2
-#	  exploratory_moves basic_pattern	#1,#2
-#	  verbose output    			#1,#2
+#method,					#s1,#s2
+#	id_method = 'PS2'			#s1,#s2
+#	model_pointer = 'M1'			#s1,#s2
+#	max_function_evaluations = 10		#s1,#s2
+#	coliny_pattern_search stochastic	#s1,#s2
+#	  seed = 1234	      			#s1,#s2
+#	  initial_delta = 0.1			#s1,#s2
+#	  threshold_delta = 1.e-4		#s1,#s2
+#	  solution_accuracy = 1.e-10		#s1,#s2
+#	  exploratory_moves basic_pattern	#s1,#s2
+#	  verbose output    			#s1,#s2
 
-method,	  	  				#0,#3,#p0
-	id_method = 'NLP'			#0,#3,#p0
-	model_pointer = 'M2'			#0,#3,#p0
-        optpp_newton  				#0,#3,#p0
-	  gradient_tolerance = 1.e-12		#0,#3,#p0
-	  convergence_tolerance = 1.e-15	#0,#3,#p0
-	  verbose output	  		#0,#3,#p0
+method,	  	  				#s0,#s3,#p0
+	id_method = 'NLP'			#s0,#s3,#p0
+	model_pointer = 'M2'			#s0,#s3,#p0
+        optpp_newton  				#s0,#s3,#p0
+	  gradient_tolerance = 1.e-12		#s0,#s3,#p0
+	  convergence_tolerance = 1.e-15	#s0,#s3,#p0
+	  verbose output	  		#s0,#s3,#p0
 
 model,
 	id_model = 'M1'
@@ -92,8 +93,8 @@ variables,
 
 interface,
 #	id_interface = 'I1'
-	direct					#0,#1,#3,#p0
-#       system asynch   			#2
+	direct					#s0,#s1,#s3,#p0
+#       system asynch   			#s2
 	  analysis_driver=  'text_book'
 
 responses,

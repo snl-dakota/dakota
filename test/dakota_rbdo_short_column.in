@@ -65,10 +65,10 @@ responses,
 	id_responses = 'OPTIM_R'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
-	nonlinear_inequality_upper_bounds = .00621 #0,#1,#2,#3,#4,#5
-#	nonlinear_inequality_lower_bounds = 2.5	   #6,#7,#8,#9,#10,#11
-#	nonlinear_inequality_lower_bounds = 0.     #12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23
-#	nonlinear_inequality_upper_bounds = 1.e+50 #6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19,#20,#21,#22,#23
+	nonlinear_inequality_upper_bounds = .00621 #s0,#s1,#s2,#s3,#s4,#s5
+#	nonlinear_inequality_lower_bounds = 2.5	   #s6,#s7,#s8,#s9,#s10,#s11
+#	nonlinear_inequality_lower_bounds = 0.     #s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23
+#	nonlinear_inequality_upper_bounds = 1.e+50 #s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23
 	numerical_gradients
 	  method_source dakota
 	  interval_type central
@@ -82,18 +82,18 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
 	local_reliability
-#	  mpp_search x_taylor_mean		#1,#7,#13,#19
-#	  mpp_search u_taylor_mean		#2,#8,#14,#20
-#	  mpp_search x_taylor_mpp		#3,#9,#15,#21
-#	  mpp_search u_taylor_mpp		#4,#10,#16,#22
-#	  mpp_search no_approx			#5,#11,#17,#23
-	  num_response_levels = 0 1	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11
-	  response_levels = 0.0		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11
-#	  compute reliabilities			#6,#7,#8,#9,#10,#11
-#	  num_probability_levels = 0 1		#12,#13,#14,#15,#16,#17
-#	  probability_levels = .00621		#12,#13,#14,#15,#16,#17
-#	  num_reliability_levels = 0 1		#18,#19,#20,#21,#22,#23
-#	  reliability_levels = 2.5		#18,#19,#20,#21,#22,#23
+#	  mpp_search x_taylor_mean		#s1,#s7,#s13,#s19
+#	  mpp_search u_taylor_mean		#s2,#s8,#s14,#s20
+#	  mpp_search x_taylor_mpp		#s3,#s9,#s15,#s21
+#	  mpp_search u_taylor_mpp		#s4,#s10,#s16,#s22
+#	  mpp_search no_approx			#s5,#s11,#s17,#s23
+	  num_response_levels = 0 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11
+	  response_levels = 0.0		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11
+#	  compute reliabilities			#s6,#s7,#s8,#s9,#s10,#s11
+#	  num_probability_levels = 0 1		#s12,#s13,#s14,#s15,#s16,#s17
+#	  probability_levels = .00621		#s12,#s13,#s14,#s15,#s16,#s17
+#	  num_reliability_levels = 0 1		#s18,#s19,#s20,#s21,#s22,#s23
+#	  reliability_levels = 2.5		#s18,#s19,#s20,#s21,#s22,#s23
 	  cumulative distribution
 
 model,

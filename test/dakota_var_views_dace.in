@@ -7,62 +7,62 @@
 # Mix-and-match tests will be captured separately.
 
 method,
-        dace oas seed = 5				#0,#7
-          samples = 49 symbols = 7			#0,#7
-#       fsu_quasi_mc halton    	 			#1,#8
-#	  samples = 50					#1,#8
-#       psuade_moat  					#2,#9
-#         samples = 84					#2,#9
-#         partitions = 3				#2,#9
-#         seed = 50270 					#2,#9
-#       vector_parameter_study				#3,#10
-#         step_vector = .1 .1				#3
-#         step_vector = .1 .1 .1 .1 .1 .1 .1 .1		   #10
-#	  num_steps = 4	   				#3,#10
-#       list_parameter_study				#4,#11
-#         list_of_points = 1.1 1.2 1.3 1.4 1.5 1.6	#4,#11
-#                          1.7 1.8 1.9 2.0 2.1 2.2	#4,#11
-#         		   1.1 1.2 1.3 1.4 1.5 1.6	   #11
-#                          1.7 1.8 1.9 2.0 2.1 2.2	   #11
-#         		   1.1 1.2 1.3 1.4 1.5 1.6	   #11
-#                          1.7 1.8 1.9 2.0 2.1 2.2	   #11
-#         		   1.1 1.2 1.3 1.4 1.5 1.6	   #11
-#                          1.7 1.8 1.9 2.0 2.1 2.2	   #11
-#       centered_parameter_study       	       		#5,#12
-#         step_vector = .05 .05				#5
-#         step_vector = .05 .05	.05 .05 .05 .05 .05 .05	   #12
-#         steps_per_variable = 5			#5,#12
-#       multidim_parameter_study			#6,#13
-#         partitions = 2				#6,#13
+        dace oas seed = 5				#s0,#s7
+          samples = 49 symbols = 7			#s0,#s7
+#       fsu_quasi_mc halton    	 			#s1,#s8
+#	  samples = 50					#s1,#s8
+#       psuade_moat  					#s2,#s9
+#         samples = 84					#s2,#s9
+#         partitions = 3				#s2,#s9
+#         seed = 50270 					#s2,#s9
+#       vector_parameter_study				#s3,#s10
+#         step_vector = .1 .1				#s3
+#         step_vector = .1 .1 .1 .1 .1 .1 .1 .1		   #s10
+#	  num_steps = 4	   				#s3,#s10
+#       list_parameter_study				#s4,#s11
+#         list_of_points = 1.1 1.2 1.3 1.4 1.5 1.6	#s4,#s11
+#                          1.7 1.8 1.9 2.0 2.1 2.2	#s4,#s11
+#         		   1.1 1.2 1.3 1.4 1.5 1.6	   #s11
+#                          1.7 1.8 1.9 2.0 2.1 2.2	   #s11
+#         		   1.1 1.2 1.3 1.4 1.5 1.6	   #s11
+#                          1.7 1.8 1.9 2.0 2.1 2.2	   #s11
+#         		   1.1 1.2 1.3 1.4 1.5 1.6	   #s11
+#                          1.7 1.8 1.9 2.0 2.1 2.2	   #s11
+#       centered_parameter_study       	       		#s5,#s12
+#         step_vector = .05 .05				#s5
+#         step_vector = .05 .05	.05 .05 .05 .05 .05 .05	   #s12
+#         steps_per_variable = 5			#s5,#s12
+#       multidim_parameter_study			#s6,#s13
+#         partitions = 2				#s6,#s13
 
 variables,
-#	active all			#7,#8,#9,#10,#11,#12,#13
+#	active all			#s7,#s8,#s9,#s10,#s11,#s12,#s13
 	continuous_design = 2
 	  initial_point     0.   0.
 	  upper_bounds      2.   2.
 	  lower_bounds     -2.  -2.
 	  descriptors      'x1' 'x2'
 	uniform_uncertain = 2
-	  upper_bounds      3.   3.	#0,#1,#2,#3,#4,#5,#6
-	  lower_bounds     -1.  -1.	#0,#1,#2,#3,#4,#5,#6
-#	  upper_bounds      2.   2.	#7,#8,#9,#10,#11,#12,#13
-#	  lower_bounds     -2.  -2.	#7,#8,#9,#10,#11,#12,#13
+	  upper_bounds      3.   3.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+	  lower_bounds     -1.  -1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+#	  upper_bounds      2.   2.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	  lower_bounds     -2.  -2.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
 	  descriptors      'x3' 'x4'
 	interval_uncertain = 2
 	  num_intervals     1    1
 	  interval_probs    1.   1.
-	  upper_bounds      3.   3.	#0,#1,#2,#3,#4,#5,#6
-	  lower_bounds     -1.  -1.	#0,#1,#2,#3,#4,#5,#6
-#	  upper_bounds      2.   2.	#7,#8,#9,#10,#11,#12,#13
-#	  lower_bounds     -2.  -2.	#7,#8,#9,#10,#11,#12,#13
+	  upper_bounds      3.   3.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+	  lower_bounds     -1.  -1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+#	  upper_bounds      2.   2.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	  lower_bounds     -2.  -2.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
 	  descriptors      'x5' 'x6'
 	continuous_state = 2
-	  initial_state     1.   1.	#0,#1,#2,#3,#4,#5,#6
-	  upper_bounds      3.   3.	#0,#1,#2,#3,#4,#5,#6
-	  lower_bounds     -1.  -1.	#0,#1,#2,#3,#4,#5,#6
-#	  initial_state     0.   0.	#7,#8,#9,#10,#11,#12,#13
-#	  upper_bounds      2.   2.	#7,#8,#9,#10,#11,#12,#13
-#	  lower_bounds     -2.  -2.	#7,#8,#9,#10,#11,#12,#13
+	  initial_state     1.   1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+	  upper_bounds      3.   3.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+	  lower_bounds     -1.  -1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6
+#	  initial_state     0.   0.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	  upper_bounds      2.   2.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	  lower_bounds     -2.  -2.	#s7,#s8,#s9,#s10,#s11,#s12,#s13
 	  descriptors      'x7' 'x8'
 
 interface,

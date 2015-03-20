@@ -11,10 +11,10 @@ method,
 	id_method = 'SBLLS'
 	surrogate_based_local
 	model_pointer = 'SURROGATE'
-	approx_method_pointer = 'NLP'		#0,#1,#2,#4,#5,#6,#7
-#	approx_method_name = 'nl2sol'		#3
-#	approx_method_name = 'npsol_sqp'	#8
-#	approx_method_name = 'dot_sqp'		#9
+	approx_method_pointer = 'NLP'		#s0,#s1,#s2,#s4,#s5,#s6,#s7
+#	approx_method_name = 'nl2sol'		#s3
+#	approx_method_name = 'npsol_sqp'	#s8
+#	approx_method_name = 'dot_sqp'		#s9
 	max_iterations = 500
 #	soft_convergence_limit = 10
 ###############################################
@@ -31,31 +31,31 @@ method,
 	  contraction_factor = 0.50
 	  expansion_factor   = 1.50
 	approx_subproblem
-	  original_primary			#0,#1,#2,#3,#4,#5
-#	  single_objective			#6,#7,#8,#9
+	  original_primary			#s0,#s1,#s2,#s3,#s4,#s5
+#	  single_objective			#s6,#s7,#s8,#s9
 	  original_constraints
 
 ###############################################
 # begin opt specification
 ###############################################
-method,						#0,#1,#2,#4,#5,#6,#7
-	id_method = 'NLP'			#0,#1,#2,#4,#5,#6,#7
-	nl2sol,					#0,#1,#2
-#	optpp_g_newton,				#4
-#	nlssol_sqp,				#5
-#	npsol_sqp,				#6
-#	dot_sqp,				#7
-	  convergence_tolerance = 1e-8		#0,#1,#2,#4,#5,#6,#7
+method,						#s0,#s1,#s2,#s4,#s5,#s6,#s7
+	id_method = 'NLP'			#s0,#s1,#s2,#s4,#s5,#s6,#s7
+	nl2sol,					#s0,#s1,#s2
+#	optpp_g_newton,				#s4
+#	nlssol_sqp,				#s5
+#	npsol_sqp,				#s6
+#	dot_sqp,				#s7
+	  convergence_tolerance = 1e-8		#s0,#s1,#s2,#s4,#s5,#s6,#s7
 
 model,
 	id_model = 'SURROGATE'
-	surrogate global		      	#0
+	surrogate global		      	#s0
 	  responses_pointer = 'SURROGATE_RESP'
-	  dace_method_pointer = 'SAMPLING' 	#0
-	  correction additive first_order 	#0
-	  polynomial quadratic 			#0
-# 	surrogate local taylor_series		#1,#2,#3,#4,#5,#6,#7,#8,#9
-#	  actual_model_pointer = 'TRUTH' 	#1,#2,#3,#4,#5,#6,#7,#8,#9
+	  dace_method_pointer = 'SAMPLING' 	#s0
+	  correction additive first_order 	#s0
+	  polynomial quadratic 			#s0
+# 	surrogate local taylor_series		#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+#	  actual_model_pointer = 'TRUTH' 	#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 
 variables,
 	continuous_design = 2
@@ -97,5 +97,5 @@ responses,
 	id_responses = 'TRUE_RESP'
 	calibration_terms = 2
 	analytic_gradients
-	no_hessians				#0,#1
-#	analytic_hessians			#2,#3,#4,#5,#6,#7,#8,#9
+	no_hessians				#s0,#s1
+#	analytic_hessians			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9

@@ -45,10 +45,10 @@ responses,
 	id_responses = 'OPTIM_R'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
-	nonlinear_inequality_upper_bounds = .00621 #0,#1,#2
-#	nonlinear_inequality_lower_bounds = 2.5	   #3,#4,#5
-#	nonlinear_inequality_lower_bounds = 0.     #6,#7,#8,#9,#10,#11
-#	nonlinear_inequality_upper_bounds = 1.e+50 #3,#4,#5,#6,#7,#8,#9,#10,#11
+	nonlinear_inequality_upper_bounds = .00621 #s0,#s1,#s2
+#	nonlinear_inequality_lower_bounds = 2.5	   #s3,#s4,#s5
+#	nonlinear_inequality_lower_bounds = 0.     #s6,#s7,#s8,#s9,#s10,#s11
+#	nonlinear_inequality_upper_bounds = 1.e+50 #s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11
 	analytic_gradients
 	no_hessians
 
@@ -59,16 +59,16 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
 	local_reliability #nip
-	  mpp_search x_taylor_mpp		#0,#3,#6,#9
-#	  mpp_search u_taylor_mpp		#1,#4,#7,#10
-#	  mpp_search no_approx			#2,#5,#8,#11
-	  num_response_levels = 0 1		#0,#1,#2,#3,#4,#5
-	  response_levels = 0.0			#0,#1,#2,#3,#4,#5
-#	  compute reliabilities			#3,#4,#5
-#	  num_probability_levels = 0 1		#6,#7,#8
-#	  probability_levels = .00621		#6,#7,#8
-#	  num_reliability_levels = 0 1		#9,#10,#11
-#	  reliability_levels = 2.5		#9,#10,#11
+	  mpp_search x_taylor_mpp		#s0,#s3,#s6,#s9
+#	  mpp_search u_taylor_mpp		#s1,#s4,#s7,#s10
+#	  mpp_search no_approx			#s2,#s5,#s8,#s11
+	  num_response_levels = 0 1		#s0,#s1,#s2,#s3,#s4,#s5
+	  response_levels = 0.0			#s0,#s1,#s2,#s3,#s4,#s5
+#	  compute reliabilities			#s3,#s4,#s5
+#	  num_probability_levels = 0 1		#s6,#s7,#s8
+#	  probability_levels = .00621		#s6,#s7,#s8
+#	  num_reliability_levels = 0 1		#s9,#s10,#s11
+#	  reliability_levels = 2.5		#s9,#s10,#s11
 	  cumulative distribution
 
 model,

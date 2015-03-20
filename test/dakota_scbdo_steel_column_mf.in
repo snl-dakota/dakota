@@ -32,8 +32,8 @@ model,
 	surrogate hierarchical
 	  low_fidelity_model  = 'LO_FI'
 	  high_fidelity_model = 'HI_FI'
-	  correction additive first_order	#0
-#	  correction additive second_order	#1
+	  correction additive first_order	#s0
+#	  correction additive second_order	#s1
 
 variables,
 	id_variables = 'OPTIM_V'
@@ -51,8 +51,8 @@ responses,
 	nonlinear_inequality_constraints = 1
 	nonlinear_inequality_upper_bounds = 4000.
 	analytic_gradients
-	no_hessians				#0
-#	quasi_hessians sr1			#1
+	no_hessians				#s0
+#	quasi_hessians sr1			#s1
 
 responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
@@ -67,8 +67,8 @@ responses,
 	  method_source dakota
 	  interval_type central
 	  fd_gradient_step_size = 1.e-4
-	no_hessians				#0
-#	quasi_hessians sr1			#1
+	no_hessians				#s0
+#	quasi_hessians sr1			#s1
 
 ##########################
 # begin LF specification #

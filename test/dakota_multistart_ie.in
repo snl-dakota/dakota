@@ -1,3 +1,14 @@
+#@ p0: MPIProcs=8
+#@ p1: MPIProcs=8 CheckOutput='dakota.out.1'
+#@ p2: MPIProcs=8 CheckOutput='dakota.out.1'
+#@ p3: MPIProcs=8 
+#@ p4: MPIProcs=8
+#@ p5: MPIProcs=8 CheckOutput='dakota.out.1'
+#@ p6: MPIProcs=8 CheckOutput='dakota.out.1'
+#@ p7: MPIProcs=8
+#@ p8: MPIProcs=8
+#@ p9: MPIProcs=8 CheckOutput='dakota.out.1'
+
 # DAKOTA INPUT FILE - dakota_multistart_ie.in
 
 # Demonstrate use of parallel iterators with parallel evaluations, in
@@ -39,7 +50,7 @@ method,
 method,
   id_method = 'PS'
   vector_parameter_study
-  num_steps = 9				#0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7
+  num_steps = 9				#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7
 # num_steps = 2				#p8,#p9
   step_vector = 0.01
 

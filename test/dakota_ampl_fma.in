@@ -6,12 +6,12 @@
 # for that specific test.  Within the automatic test script, a special
 # syntax is used to automatically determine which lines are to be used
 # for a specific test. A #n (0 - 9) is used to associate lines in the
-# test file with a specific test.  The #0 is used to designate lines
+# test file with a specific test.  The #s0 is used to designate lines
 # which are to be run as part of the baseline test but not part of the
 # other tests. To add multiple tests to a file add the #n to the
 # trailing comment of a line, the dakota_test script will parse
 # through the file uncommenting the lines marked for a specific test,
-# and commenting out unneeded lines marked with the #0. Specific lines
+# and commenting out unneeded lines marked with the #s0. Specific lines
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
@@ -19,42 +19,42 @@ environment,
 #	graphics tabular_graphics_data
 
 method,
-	npsol_sqp					#0,#1,#2,#3
-#	vector_parameter_study				#4,#5,#6,#7
-#	  step_vector = 1. 1. 1.       num_steps = 5	#4,#6
-#	  step_vector = 1. 1. 1. 1. 1. num_steps = 5	#5,#7
+	npsol_sqp					#s0,#s1,#s2,#s3
+#	vector_parameter_study				#s4,#s5,#s6,#s7
+#	  step_vector = 1. 1. 1.       num_steps = 5	#s4,#s6
+#	  step_vector = 1. 1. 1. 1. 1. num_steps = 5	#s5,#s7
 
 variables,
-	continuous_design = 3				#0,#2,#4,#6
-	  descriptors        'mass' 'a'      'v'	#0,#2,#4,#6
-	  initial_point       2.0  1.0       3.0	#0,#2,#4,#6
-	  lower_bounds        0.0 -5.0      -5.0	#0,#2,#4,#6
-	  upper_bounds       10.0  5.0       5.0	#0,#2,#4,#6
-#	continuous_design = 5				#1,#3,#5,#7
-#	  descriptors   'x1' 'mass' 'a' 'x4' 'v'	#1,#3,#5,#7
-#	  initial_point  0.0  2.0  1.0  0.0  3.0	#1,#3,#5,#7
-#	  lower_bounds  -3.0  0.0 -5.0 -3.0 -5.0	#1,#3,#5,#7
-#	  upper_bounds   3.0 10.0  5.0  3.0  5.0	#1,#3,#5,#7
+	continuous_design = 3				#s0,#s2,#s4,#s6
+	  descriptors        'mass' 'a'      'v'	#s0,#s2,#s4,#s6
+	  initial_point       2.0  1.0       3.0	#s0,#s2,#s4,#s6
+	  lower_bounds        0.0 -5.0      -5.0	#s0,#s2,#s4,#s6
+	  upper_bounds       10.0  5.0       5.0	#s0,#s2,#s4,#s6
+#	continuous_design = 5				#s1,#s3,#s5,#s7
+#	  descriptors   'x1' 'mass' 'a' 'x4' 'v'	#s1,#s3,#s5,#s7
+#	  initial_point  0.0  2.0  1.0  0.0  3.0	#s1,#s3,#s5,#s7
+#	  lower_bounds  -3.0  0.0 -5.0 -3.0 -5.0	#s1,#s3,#s5,#s7
+#	  upper_bounds   3.0 10.0  5.0  3.0  5.0	#s1,#s3,#s5,#s7
 
 interface,
 	algebraic_mappings = 'dakota_ampl_fma.nl'
-#	system						#1,#3,#5,#7
-#	  analysis_driver = 'text_book'			#1,#3,#5,#7
-#	  parameters_file = 'tb.in'			#1,#3,#5,#7
-#	  results_file    = 'tb.out'			#1,#3,#5,#7
-#	  file_tag					#1,#3,#5,#7
-#	asynchronous					#2,#3,#6,#7
+#	system						#s1,#s3,#s5,#s7
+#	  analysis_driver = 'text_book'			#s1,#s3,#s5,#s7
+#	  parameters_file = 'tb.in'			#s1,#s3,#s5,#s7
+#	  results_file    = 'tb.out'			#s1,#s3,#s5,#s7
+#	  file_tag					#s1,#s3,#s5,#s7
+#	asynchronous					#s2,#s3,#s6,#s7
 
 responses,
-	response_descriptors = 'force' 'energy'		#0,#2,#4,#6
-#	response_descriptors = 'force' 'ineq1' 'energy'	#1,#3,#5,#7
+	response_descriptors = 'force' 'energy'		#s0,#s2,#s4,#s6
+#	response_descriptors = 'force' 'ineq1' 'energy'	#s1,#s3,#s5,#s7
 	objective_functions = 1
-#	nonlinear_inequality_constraints = 1	#1,#3,#5,#7
+#	nonlinear_inequality_constraints = 1	#s1,#s3,#s5,#s7
 	nonlinear_equality_constraints = 1
 	nonlinear_equality_targets = 20.0
-	analytic_gradients				#0,#1,#4,#5,#6,#7
-#	numerical_gradients				#2,#3
-#	  method_source dakota				#2,#3
-#	  interval_type central				#2,#3
-#	analytic_hessians				#4,#5,#6,#7
-	no_hessians					#0,#1,#2,#3
+	analytic_gradients				#s0,#s1,#s4,#s5,#s6,#s7
+#	numerical_gradients				#s2,#s3
+#	  method_source dakota				#s2,#s3
+#	  interval_type central				#s2,#s3
+#	analytic_hessians				#s4,#s5,#s6,#s7
+	no_hessians					#s0,#s1,#s2,#s3

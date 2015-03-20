@@ -6,12 +6,12 @@
 # for that specific test.  Within the automatic test script, a special
 # syntax is used to automatically determine which lines are to be used
 # for a specific test. A #n (0 - 9) is used to associate lines in the
-# test file with a specific test.  The #0 is used to designate lines
+# test file with a specific test.  The #s0 is used to designate lines
 # which are to be run as part of the baseline test but not part of the
 # other tests. To add multiple tests to a file add the #n to the
 # trailing comment of a line, the dakota_test script will parse
 # through the file uncommenting the lines marked for a specific test,
-# and commenting out unneeded lines marked with the #0. Specific lines
+# and commenting out unneeded lines marked with the #s0. Specific lines
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
@@ -25,10 +25,10 @@ method,
 #	  mpp_search x_taylor_mpp
 #	  mpp_search u_taylor_mpp
 	  mpp_search no_approx
-#	  integration second_order		#1,#2,#3
+#	  integration second_order		#s1,#s2,#s3
           num_response_levels = 1
 	  response_levels = 0.0
-#	  complementary distribution		#2
+#	  complementary distribution		#s2
 
 variables,
 	normal_uncertain = 1
@@ -47,7 +47,7 @@ interface,
 responses,
 	response_functions = 1
 	analytic_gradients
-	no_hessians				#0
-#	analytic_hessians			#1,#2
-#	numerical_hessians			#3
+	no_hessians				#s0
+#	analytic_hessians			#s1,#s2
+#	numerical_hessians			#s3
 #	quasi_hessians bfgs

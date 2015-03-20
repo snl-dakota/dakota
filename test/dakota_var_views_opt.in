@@ -7,45 +7,45 @@
 # problems.  Mix-and-match tests will be captured separately.
 
 method,
-	dot_mmfd		#0,#9
-#	npsol_sqp		#1,#10
-#	nlpql_sqp		#2,#11
-#	conmin_mfd		#3,#12
-#	optpp_q_newton		#4,#13
-#	asynch_pattern_search	#5,#14
-#	coliny_direct		#6,#15
-#	soga			#7,#16
-#	  seed = 34785		#7,#16
-#	ncsu_direct		#8,#17
+	dot_mmfd		#s0,#s9
+#	npsol_sqp		#s1,#s10
+#	nlpql_sqp		#s2,#s11
+#	conmin_mfd		#s3,#s12
+#	optpp_q_newton		#s4,#s13
+#	asynch_pattern_search	#s5,#s14
+#	coliny_direct		#s6,#s15
+#	soga			#s7,#s16
+#	  seed = 34785		#s7,#s16
+#	ncsu_direct		#s8,#s17
 	max_function_evaluations = 5000
 
 variables,
-#	active all			#9,#10,#11,#12,#13,#14,#15,#16,#17
+#	active all			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
 	continuous_design = 2
 	  initial_point  0.   0.
 	  upper_bounds   2.   2.
 	  lower_bounds  -2.  -2.
 	  descriptors   'x1' 'x2'
 	uniform_uncertain = 2
-	  upper_bounds   3.   3.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  upper_bounds   2.   2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
-	  lower_bounds  -1.  -1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  lower_bounds  -2.  -2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  upper_bounds   3.   3.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  upper_bounds   2.   2.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	  lower_bounds  -1.  -1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  lower_bounds  -2.  -2.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
 	  descriptors   'x3' 'x4'
 	interval_uncertain = 2
 	  num_intervals    1      1
-	  upper_bounds     3.     3.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  upper_bounds     2.     2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
-	  lower_bounds    -1.    -1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  lower_bounds    -2.    -2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  upper_bounds     3.     3.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  upper_bounds     2.     2.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	  lower_bounds    -1.    -1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  lower_bounds    -2.    -2.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
 	  descriptors     'x5'   'x6'
 	continuous_state = 2
-	  initial_state  1.   1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  initial_state  0.   0.	#9,#10,#11,#12,#13,#14,#15,#16,#17
-	  upper_bounds   3.   3.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  upper_bounds   2.   2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
-	  lower_bounds  -1.  -1.	#0,#1,#2,#3,#4,#5,#6,#7,#8
-#	  lower_bounds  -2.  -2.	#9,#10,#11,#12,#13,#14,#15,#16,#17
+	  initial_state  1.   1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  initial_state  0.   0.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	  upper_bounds   3.   3.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  upper_bounds   2.   2.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	  lower_bounds  -1.  -1.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  lower_bounds  -2.  -2.	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
 	  descriptors   'x7' 'x8'
 
 interface,
@@ -54,8 +54,8 @@ interface,
 
 responses,
 	objective_functions = 1
-	nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4,#5,#6,#7
-#	nonlinear_inequality_constraints = 2	#9,#10,#11,#12,#13,#14,#15,#16
+	nonlinear_inequality_constraints = 2	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	nonlinear_inequality_constraints = 2	#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 	numerical_gradients
 	  method_source dakota
 	no_hessians

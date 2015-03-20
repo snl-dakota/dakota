@@ -1,5 +1,5 @@
 method,									
-        bayes_calibration queso,	#0,#p0
+        bayes_calibration queso,	#s0,#p0
 # NOTE: typically you will want tens of thousands of samples
          samples = 1000 seed = 348   	# just a short test
          mcmc_type dram

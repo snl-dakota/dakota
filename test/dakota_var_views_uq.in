@@ -1,3 +1,4 @@
+#@ s2: TimeoutDelay=180
 ## DAKOTA INPUT FILE - dakota_var_views_uq.in
 
 # This file contains tests of the variable views override capability
@@ -9,27 +10,27 @@
 # timeout overrides: 2=TD180
 
 method,
-	sampling,				#0,   #9
-	  samples = 100				#0,   #9
-	  seed = 34785				#0,#2,#3,#4,#6,#8,#9
-#	local_reliability			#1,   #f10
-#	  mpp_search x_taylor_mean		#1,   #f10
-#	  num_response_levels = 3 0 0 		#1,#2
-#	  response_levels = 10. 40. 100.	#1,#2
+	sampling,				#s0,   #s9
+	  samples = 100				#s0,   #s9
+	  seed = 34785				#s0,#s2,#s3,#s4,#s6,#s8,#s9
+#	local_reliability			#s1,   #f10
+#	  mpp_search x_taylor_mean		#s1,   #f10
+#	  num_response_levels = 3 0 0 		#s1,#s2
+#	  response_levels = 10. 40. 100.	#s1,#s2
 #	  num_response_levels = 1 1 1		#f10,#f11
 #	  response_levels = 0.5	0.5 0.5		#f10,#f11
-#	global_reliability  	    		#2,   #f11
-#	  x_gaussian_process			#2,   #f11
-#	polynomial_chaos			#3,   #f12
-#	  quadrature_order = 5			#3,#4,#f12,#f13
-#	stoch_collocation			#4,   #f13
-#       local_interval_est nip			#5,   #f14
-#       global_interval_est ego			#6,   #f15
-#	local_evidence sqp  			#7,   #f16
-#	global_evidence lhs			#8,   #f17
+#	global_reliability  	    		#s2,   #f11
+#	  x_gaussian_process			#s2,   #f11
+#	polynomial_chaos			#s3,   #f12
+#	  quadrature_order = 5			#s3,#s4,#f12,#f13
+#	stoch_collocation			#s4,   #f13
+#       local_interval_est nip			#s5,   #f14
+#       global_interval_est ego			#s6,   #f15
+#	local_evidence sqp  			#s7,   #f16
+#	global_evidence lhs			#s8,   #f17
 
 variables,
-#	active all		#9,#f10,#f11,#f12,#f13,#f14,#f15,#f16,#f17
+#	active all		#s9,#f10,#f11,#f12,#f13,#f14,#f15,#f16,#f17
 	continuous_design = 2
 	  initial_point  0.   0.
 	  upper_bounds   2.   2.
@@ -57,6 +58,6 @@ interface,
 
 responses,
 	response_functions = 3
-	no_gradients		#0,#2,#3,#4,#6,#8,#9,#f11,#f12,#f13,#f15,#f17
-#	analytic_gradients	#1,#5,#7,#f10,#f14,#f16
+	no_gradients		#s0,#s2,#s3,#s4,#s6,#s8,#s9,#f11,#f12,#f13,#f15,#f17
+#	analytic_gradients	#s1,#s5,#s7,#f10,#f14,#f16
 	no_hessians

@@ -9,38 +9,38 @@ environment,
 
 method,
 	stoch_collocation use_derivatives	
-	  quadrature_order  = 3			#0
-#	  quadrature_order  = 5			#1
-#	  quadrature_order  = 7			#2
-#	  quadrature_order  = 9			#3
+	  quadrature_order  = 3			#s0
+#	  quadrature_order  = 5			#s1
+#	  quadrature_order  = 7			#s2
+#	  quadrature_order  = 9			#s3
 # Equivalent in 1D for linear growth m=2l+1:
 #	  sparse_grid_level = 1	non_nested
 #	  sparse_grid_level = 2	non_nested
 #	  sparse_grid_level = 3 non_nested
 #	  sparse_grid_level = 4 non_nested
 # Use for 2D (see Lagrange for verification of a subset of these results):
-#	  sparse_grid_level = 1	non_nested	#4
-#	  sparse_grid_level = 3	non_nested	#5
-#	  sparse_grid_level = 3 non_nested	#6
-#	  sparse_grid_level = 5 non_nested	#7
+#	  sparse_grid_level = 1	non_nested	#s4
+#	  sparse_grid_level = 3	non_nested	#s5
+#	  sparse_grid_level = 3 non_nested	#s6
+#	  sparse_grid_level = 5 non_nested	#s7
 
 variables,
-	uniform_uncertain = 1			#0,#1,#2,#3
-      	  lower_bounds      = -1.		#0,#1,#2,#3
-	  upper_bounds      =  1.		#0,#1,#2,#3
-	  descriptors       = 'x1'		#0,#1,#2,#3
-#	uniform_uncertain = 2			#4,#5,#6,#7
-#      	  lower_bounds      = -1. -1.		#4,#5,#6,#7
-#	  upper_bounds      =  1.  1.		#4,#5,#6,#7
-#	  descriptors       = 'x1' 'x2'		#4,#5,#6,#7
+	uniform_uncertain = 1			#s0,#s1,#s2,#s3
+      	  lower_bounds      = -1.		#s0,#s1,#s2,#s3
+	  upper_bounds      =  1.		#s0,#s1,#s2,#s3
+	  descriptors       = 'x1'		#s0,#s1,#s2,#s3
+#	uniform_uncertain = 2			#s4,#s5,#s6,#s7
+#      	  lower_bounds      = -1. -1.		#s4,#s5,#s6,#s7
+#	  upper_bounds      =  1.  1.		#s4,#s5,#s6,#s7
+#	  descriptors       = 'x1' 'x2'		#s4,#s5,#s6,#s7
 
 interface,
 	direct
 	  analysis_driver = 'scalable_monomials'		
-	  analysis_components = '1'		#0,#4
-#	  analysis_components = '2'		#1,#5
-#	  analysis_components = '3'		#2,#6
-#	  analysis_components = '4'		#3,#7
+	  analysis_components = '1'		#s0,#s4
+#	  analysis_components = '2'		#s1,#s5
+#	  analysis_components = '3'		#s2,#s6
+#	  analysis_components = '4'		#s3,#s7
 
 responses,
 	response_functions = 1

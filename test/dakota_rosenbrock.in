@@ -9,29 +9,29 @@
 # added for least squares coverage.
 
 method,
-	optpp_q_newton			#0,#1,#15
-#	optpp_fd_newton			#2,#3
-#	optpp_cg		   	#4,#5
-#	optpp_newton			#6
-#	optpp_g_newton			#7
-#	optpp_pds			#8
-#	nlssol_sqp			#9,#10
-#	nl2sol				#11,#12,#13,#14
-#	npsol_sqp			#16
-#	dot_sqp				#17
-#	optpp_newton			#18,#19
-	  max_iterations = 50           #0,#1,#2,#3,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19
-	  convergence_tolerance = 1e-4  #0,#1,#2,#3,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19
+	optpp_q_newton			#s0,#s1,#s15
+#	optpp_fd_newton			#s2,#s3
+#	optpp_cg		   	#s4,#s5
+#	optpp_newton			#s6
+#	optpp_g_newton			#s7
+#	optpp_pds			#s8
+#	nlssol_sqp			#s9,#s10
+#	nl2sol				#s11,#s12,#s13,#s14
+#	npsol_sqp			#s16
+#	dot_sqp				#s17
+#	optpp_newton			#s18,#s19
+	  max_iterations = 50           #s0,#s1,#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19
+	  convergence_tolerance = 1e-4  #s0,#s1,#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19
 # CG is a poor performer on Rosenbrock      
-#	  max_iterations = 100          #4,#5
-#	  convergence_tolerance = 1e-6  #4,#5
+#	  max_iterations = 100          #s4,#s5
+#	  convergence_tolerance = 1e-6  #s4,#s5
 #	  output debug
 
 variables,
 	continuous_design = 2
 	  initial_point  -1.2  1.0
-	  lower_bounds   -2.0 -2.0	#0,#1,#2,#3,#6,#7,#8,#9,#10,#11,#12,#15,#16,#17,#18,#19
-	  upper_bounds    2.0  2.0	#0,#1,#2,#3,#6,#7,#8,#9,#10,#11,#12,#15,#16,#17,#18,#19
+	  lower_bounds   -2.0 -2.0	#s0,#s1,#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s15,#s16,#s17,#s18,#s19
+	  upper_bounds    2.0  2.0	#s0,#s1,#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s15,#s16,#s17,#s18,#s19
 	  descriptors     'x1' 'x2'
 
 interface,
@@ -39,13 +39,13 @@ interface,
 	  analysis_driver = 'rosenbrock'
 
 responses,
-	objective_functions = 1	#0,#1,#2,#3,#4,#5,#6,#8
-#	calibration_terms = 2	#7,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18,#19
-#	no_gradients			#8
-	analytic_gradients		#0,#2,#4,#6,#7,#9,#11,#13,#15,#16,#17,#18,#19
-#	numerical_gradients		#1,#3,#5,#10,#12,#14
-#	  method_source vendor		#1,#3,#5,#10,#12,#14
-#	  interval_type forward		#1,#3,#5,#10
-#	  fd_gradient_step_size = 1.e-5	#1,#3,#5,#10
-	no_hessians		  	#0,#1,#2,#3,#4,#5,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16,#17,#18
-#	analytic_hessians		#6,#19
+	objective_functions = 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
+#	calibration_terms = 2	#s7,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19
+#	no_gradients			#s8
+	analytic_gradients		#s0,#s2,#s4,#s6,#s7,#s9,#s11,#s13,#s15,#s16,#s17,#s18,#s19
+#	numerical_gradients		#s1,#s3,#s5,#s10,#s12,#s14
+#	  method_source vendor		#s1,#s3,#s5,#s10,#s12,#s14
+#	  interval_type forward		#s1,#s3,#s5,#s10
+#	  fd_gradient_step_size = 1.e-5	#s1,#s3,#s5,#s10
+	no_hessians		  	#s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
+#	analytic_hessians		#s6,#s19

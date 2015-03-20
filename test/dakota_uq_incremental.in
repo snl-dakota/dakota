@@ -1,3 +1,6 @@
+#@ s0: Restart=write
+#@ s1: Restart=read
+
 # dakota_incremental_sampling.in
 # Restart specification for tests (test 0: write, test 1: read)
 # 0=Rw, 1=Rr
@@ -8,9 +11,9 @@ environment,
 method,
 	sampling
           seed = 234
-	  sample_type lhs samples = 10		#0
-#         sample_type incremental_lhs		#1
-#	  previous_samples = 10 samples = 20	#1
+	  sample_type lhs samples = 10		#s0
+#         sample_type incremental_lhs		#s1
+#	  previous_samples = 10 samples = 20	#s1
 
 variables,
 	uniform_uncertain = 2

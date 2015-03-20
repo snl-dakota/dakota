@@ -6,12 +6,12 @@
 # for that specific test.  Within the automatic test script, a special
 # syntax is used to automatically determine which lines are to be used
 # for a specific test. A #n (0 - 9) is used to associate lines in the
-# test file with a specific test.  The #0 is used to designate lines
+# test file with a specific test.  The #s0 is used to designate lines
 # which are to be run as part of the baseline test but not part of the
 # other tests. To add multiple tests to a file add the #n to the
 # trailing comment of a line, the dakota_test script will parse
 # through the file uncommenting the lines marked for a specific test,
-# and commenting out unneeded lines marked with the #0. Specific lines
+# and commenting out unneeded lines marked with the #s0. Specific lines
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
@@ -25,38 +25,38 @@ method,
 	sampling
 	  samples = 5000 seed = 5
 	  sample_type lhs
-	  response_levels = 2.e-5 3.e-5 4.e-5		#0,#1,#2,#3,#6,#7
+	  response_levels = 2.e-5 3.e-5 4.e-5		#s0,#s1,#s2,#s3,#s6,#s7
 
 model,
 	id_model = 'UQ_M'
 	surrogate global
 	  dace_method_pointer = 'DACE'
-	  polynomial quadratic		#0
-# 	  neural_network		#1
-#	  gaussian_process surfpack	#2,#4,#5,#6,#7
-#	  mars				#3
+	  polynomial quadratic		#s0
+# 	  neural_network		#s1
+#	  gaussian_process surfpack	#s2,#s4,#s5,#s6,#s7
+#	  mars				#s3
 
 # Test 2 with a samples file, free-form or annotated
-#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' #6
-#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform'	 #7
-#	  freeform     						 #7
+#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' #s6
+#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform'	 #s7
+#	  freeform     						 #s7
 
 variables,
-	lognormal_uncertain =  2			#0,#1,#2,#3,#4,#6,#7
-	  means             =  1.0  1.0			#0,#1,#2,#3,#4,#6,#7
-#	  std_deviations    =  0.5	 0.5		#0,#1,#2,#3,#4,#6,#7
-	  error_factors     =  1.1  1.1			#0,#1,#2,#3,#4,#6,#7
-	  descriptors       =  'TF1ln' 'TF1ln'		#0,#1,#2,#3,#4,#6,#7
-#	discrete_uncertain_set integer = 1				#4
-#	  set_probs  = .1 .2 .4 .2 .1					#4
-#	  set_values =  1  2  3  4  5					#4
-#	  descriptors = 'ModelForm'					#4
-#	histogram_point_uncertain real = 2				#5
-#	  num_pairs 7 7		  					#5
-#	  abscissas 0.200 2.166 4.133 6.100 8.067 10.033 12.000		#5
-#	            0.200 2.166 4.133 6.100 8.067 10.033 12.000		#5
-#	  counts    1     1     1     1     1     1      1		#5
-#	            1     1     1     1     1     1      1		#5
+	lognormal_uncertain =  2			#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	  means             =  1.0  1.0			#s0,#s1,#s2,#s3,#s4,#s6,#s7
+#	  std_deviations    =  0.5	 0.5		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	  error_factors     =  1.1  1.1			#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	  descriptors       =  'TF1ln' 'TF1ln'		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+#	discrete_uncertain_set integer = 1				#s4
+#	  set_probs  = .1 .2 .4 .2 .1					#s4
+#	  set_values =  1  2  3  4  5					#s4
+#	  descriptors = 'ModelForm'					#s4
+#	histogram_point_uncertain real = 2				#s5
+#	  num_pairs 7 7		  					#s5
+#	  abscissas 0.200 2.166 4.133 6.100 8.067 10.033 12.000		#s5
+#	            0.200 2.166 4.133 6.100 8.067 10.033 12.000		#s5
+#	  counts    1     1     1     1     1     1      1		#s5
+#	            1     1     1     1     1     1      1		#s5
 
 responses,
 	response_functions = 1
@@ -71,8 +71,8 @@ method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
 	sampling
-	  samples = 2			#0
-#	  samples = 20			#3,#4,#5
+	  samples = 2			#s0
+#	  samples = 20			#s3,#s4,#s5
 	  seed = 50
 	  sample_type lhs
 

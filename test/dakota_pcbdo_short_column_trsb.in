@@ -77,8 +77,8 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
 	analytic_gradients
-	no_hessians				#0,#2
-#	quasi_hessians sr1			#1,#3
+	no_hessians				#s0,#s2
+#	quasi_hessians sr1			#s1,#s3
 
 ##########################
 # begin UQ specification #
@@ -87,11 +87,11 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
 	polynomial_chaos askey
- 	  expansion_order = 2			#0,#1
-	  collocation_ratio = 2.		#0,#1
-	  seed = 12347 rng rnum2		#0,#1
+ 	  expansion_order = 2			#s0,#s1
+	  collocation_ratio = 2.		#s0,#s1
+	  seed = 12347 rng rnum2		#s0,#s1
 #	  quadrature_order = 3
-#	  sparse_grid_level = 2 non_nested	#2,#3
+#	  sparse_grid_level = 2 non_nested	#s2,#s3
 	  num_response_levels = 0 1
 	  response_levels = 0.0
 	  compute reliabilities

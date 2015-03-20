@@ -1,4 +1,8 @@
-##  DAKOTA INPUT FILE - dakota_mogatest1.in #0
+#@ s0: TimeoutDelay=360
+#@ s1: TimeoutDelay=360
+#@ s2: TimeoutDelay=360
+#@ s3: TimeoutDelay=360
+##  DAKOTA INPUT FILE - dakota_mogatest1.in #s0
 
 #  This sample Dakota input file optimizes the MOP2 problem defined on
 #  page 5-13 of David Van Veldhuizen's Ph.D. thesis at the Air Force
@@ -11,70 +15,70 @@ environment,
 	graphics tabular_graphics_data
 
 method,
-        moga                                            #0,#1,#2,#4,#5,#6,#7
-#       soga                                            #3
+        moga                                            #s0,#s1,#s2,#s4,#s5,#s6,#s7
+#       soga                                            #s3
 	output silent 
         seed = 10983
         final_solutions = 3
-	max_function_evaluations = 2500			#0,#4,#5,#6,#7
-#	max_function_evaluations = 3000			#1,#3
-#	max_function_evaluations = 2000			#2
+	max_function_evaluations = 2500			#s0,#s4,#s5,#s6,#s7
+#	max_function_evaluations = 3000			#s1,#s3
+#	max_function_evaluations = 2000			#s2
 	initialization_type unique_random
-	crossover_type shuffle_random			#0,#3,#4,#5,#6,#7
-	  num_offspring = 2 num_parents = 2		#0,#3,#4,#5,#6,#7
-#	crossover_type					#1,#2
-#	  multi_point_parameterized_binary = 2		#1,#2
+	crossover_type shuffle_random			#s0,#s3,#s4,#s5,#s6,#s7
+	  num_offspring = 2 num_parents = 2		#s0,#s3,#s4,#s5,#s6,#s7
+#	crossover_type					#s1,#s2
+#	  multi_point_parameterized_binary = 2		#s1,#s2
 	  crossover_rate = 0.8
-	mutation_type replace_uniform			#0,#1,#4,#5,#6,#7
-	  mutation_rate = 0.1				#0,#1,#4,#5,#6,#7
-#	mutation_type offset_normal			#2,#3
-#	  mutation_scale = 0.1				#2,#3
-	fitness_type domination_count                   #0,#1,#2,#4,#5,#6,#7
-	replacement_type below_limit = 6                #0,#1,#2,#4,#5,#6,#7
-	  shrinkage_percentage = 0.9                    #0,#1,#2,#4,#5,#6,#7
-#       replacement_type favor_feasible                 #3
-	convergence_type metric_tracker                 #0,#1,#2,#4,#5,#6,#7
-	  percent_change = 0.05 num_generations = 40    #0
-#	  percent_change = 0.05 num_generations = 10    #1,#2,#4,#5,#6,#7
-#	niching_type radial 0.02 0.05		  	#5
-#	niching_type distance 0.02 0.05		  	#6
-#	niching_type max_designs 0.02 0.05	  	#7
-#	  num_designs = 6	      			#7
+	mutation_type replace_uniform			#s0,#s1,#s4,#s5,#s6,#s7
+	  mutation_rate = 0.1				#s0,#s1,#s4,#s5,#s6,#s7
+#	mutation_type offset_normal			#s2,#s3
+#	  mutation_scale = 0.1				#s2,#s3
+	fitness_type domination_count                   #s0,#s1,#s2,#s4,#s5,#s6,#s7
+	replacement_type below_limit = 6                #s0,#s1,#s2,#s4,#s5,#s6,#s7
+	  shrinkage_percentage = 0.9                    #s0,#s1,#s2,#s4,#s5,#s6,#s7
+#       replacement_type favor_feasible                 #s3
+	convergence_type metric_tracker                 #s0,#s1,#s2,#s4,#s5,#s6,#s7
+	  percent_change = 0.05 num_generations = 40    #s0
+#	  percent_change = 0.05 num_generations = 10    #s1,#s2,#s4,#s5,#s6,#s7
+#	niching_type radial 0.02 0.05		  	#s5
+#	niching_type distance 0.02 0.05		  	#s6
+#	niching_type max_designs 0.02 0.05	  	#s7
+#	  num_designs = 6	      			#s7
    
 variables,
-	continuous_design = 3				#0
-	  initial_point     0     	 0	 0	#0
-	  upper_bounds      4  	 4	 4	#0
-	  lower_bounds     -4	-4	-4	#0
-	  descriptors      'x1'  	'x2'	'x3'	#0,#4,#5,#6,#7
-#	continuous_design = 2				#1,#2,#3
-#	  initial_point    0.5     	0.5		#1
-#	  upper_bounds     1  	1		#1
-#	  lower_bounds     0	0		#1
-#	  descriptors      'x1'  	'x2'		#1,#2,#3
-#	  initial_point      0	  0    		#2
-#	  upper_bounds      20  	 20		#2
-#	  lower_bounds     -20	-20		#2
-#	  upper_bounds      2.	2.		#3
-#	  lower_bounds     -2.	-2.		#3
-#       discrete_design_set                     #4,#5,#6,#7
-#	  integer = 3              		#4,#5,#6,#7
-#	    initial_point     0    0	 0	#4,#5,#6,#7
-#	    num_set_values = 5 5 5              #4,#5,#6,#7
-#             set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#4,#5,#6,#7
+	continuous_design = 3				#s0
+	  initial_point     0     	 0	 0	#s0
+	  upper_bounds      4  	 4	 4	#s0
+	  lower_bounds     -4	-4	-4	#s0
+	  descriptors      'x1'  	'x2'	'x3'	#s0,#s4,#s5,#s6,#s7
+#	continuous_design = 2				#s1,#s2,#s3
+#	  initial_point    0.5     	0.5		#s1
+#	  upper_bounds     1  	1		#s1
+#	  lower_bounds     0	0		#s1
+#	  descriptors      'x1'  	'x2'		#s1,#s2,#s3
+#	  initial_point      0	  0    		#s2
+#	  upper_bounds      20  	 20		#s2
+#	  lower_bounds     -20	-20		#s2
+#	  upper_bounds      2.	2.		#s3
+#	  lower_bounds     -2.	-2.		#s3
+#       discrete_design_set                     #s4,#s5,#s6,#s7
+#	  integer = 3              		#s4,#s5,#s6,#s7
+#	    initial_point     0    0	 0	#s4,#s5,#s6,#s7
+#	    num_set_values = 5 5 5              #s4,#s5,#s6,#s7
+#             set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#s4,#s5,#s6,#s7
 
 interface,
-	fork                                    #0,#1,#2,#4,#5,#6,#7
-#	direct                                  #3
-	  analysis_driver = 'mogatest1'			#0,#4,#5,#6,#7
-#	  analysis_driver = 'mogatest2'			#1
-#	  analysis_driver = 'mogatest3'			#2
-#	  analysis_driver = 'rosenbrock'		#3
+	fork                                    #s0,#s1,#s2,#s4,#s5,#s6,#s7
+#	direct                                  #s3
+	  analysis_driver = 'mogatest1'			#s0,#s4,#s5,#s6,#s7
+#	  analysis_driver = 'mogatest2'			#s1
+#	  analysis_driver = 'mogatest3'			#s2
+#	  analysis_driver = 'rosenbrock'		#s3
 
 responses,
-	objective_functions = 2                     #0,#1,#2,#4,#5,#6,#7
-#  	objective_functions = 1                     #3
-#	nonlinear_inequality_constraints = 2  	#2
-#	nonlinear_inequality_upper_bounds = 0.0 0.0	#2
+	objective_functions = 2                     #s0,#s1,#s2,#s4,#s5,#s6,#s7
+#  	objective_functions = 1                     #s3
+#	nonlinear_inequality_constraints = 2  	#s2
+#	nonlinear_inequality_upper_bounds = 0.0 0.0	#s2
 	no_gradients
 	no_hessians

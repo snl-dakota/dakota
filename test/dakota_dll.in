@@ -1,3 +1,5 @@
+#@ s0: ExecCmd='dll_tester' ExecArgs='1' Restart=none CheckOutput='dakota_dll.log'
+
 # Dakota DLL test, based on rosenbrock users test 0
 # To execute test outside of the Dakota testing infrastructure:
 #    dll_tester 1 dakota_dll.in

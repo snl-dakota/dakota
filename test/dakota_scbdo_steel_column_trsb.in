@@ -73,8 +73,8 @@ responses,
 	objective_functions = 1
 	nonlinear_inequality_constraints = 1
 	analytic_gradients
-	no_hessians				#0
-#	quasi_hessians sr1			#1
+	no_hessians				#s0
+#	quasi_hessians sr1			#s1
 
 ##########################################
 # begin optional interface specification #

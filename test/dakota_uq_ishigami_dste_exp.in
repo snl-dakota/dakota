@@ -10,11 +10,11 @@ environment,
 method,									 
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
-     	local_evidence		        #0
-#	global_evidence ego	        #1,#2,#3
-#         gaussian_process dakota       #1
-#         gaussian_process surfpack     #2,#3
-#	  seed = 627431			#1,#2,#3
+     	local_evidence		        #s0
+#	global_evidence ego	        #s1,#s2,#s3
+#         gaussian_process dakota       #s1
+#         gaussian_process surfpack     #s2,#s3
+#	  seed = 627431			#s1,#s2,#s3
           response_levels = 1. 5. 100.
 	  output verbose
 
@@ -38,8 +38,8 @@ variables,
 responses,
         id_responses = 'EPIST_R'
         response_functions = 1
-        analytic_gradients		#0	
-#	no_gradients			#1,#2,#3
+        analytic_gradients		#s0	
+#	no_gradients			#s1,#s2,#s3
         no_hessians
   
 ################################
@@ -65,7 +65,7 @@ model,
 
 variables,
         id_variables = 'ALEAT_V'
-#	active all			#3
+#	active all			#s3
 	continuous_design = 1
 	  initial_point 1
 	  lower_bounds 	0.

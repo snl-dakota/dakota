@@ -1,3 +1,4 @@
+#@ p0: MPIProcs=2
 # DAKOTA INPUT FILE - dakota_sbo_hierarchical.in
 
 # Demonstrates the use of hierarchical approximations and a trust
@@ -40,10 +41,10 @@ method,
 	surrogate_based_local
 	model_pointer = 'SURROGATE'
 	approx_method_pointer = 'NLP'
-#	soft_convergence_limit = 6		#6,#8
-#	max_iterations = 500			#12,#13,#14
-#	soft_convergence_limit = 20		#10,#12,#13,#14,#15,#16,#17
-#	convergence_tolerance = 1.e-8		#12,#13,#14
+#	soft_convergence_limit = 6		#s6,#s8
+#	max_iterations = 500			#s12,#s13,#s14
+#	soft_convergence_limit = 20		#s10,#s12,#s13,#s14,#s15,#s16,#s17
+#	convergence_tolerance = 1.e-8		#s12,#s13,#s14
 #	max_iterations = 10000			# published 13,14
 #	soft_convergence_limit = 200		# published 13,14
 	trust_region
@@ -66,15 +67,15 @@ model,
 	surrogate hierarchical
 	  low_fidelity_model  = 'LOFI'
 	  high_fidelity_model = 'HIFI'
-	  correction additive       second_order	#0,#3,#6,#9,#p0
-#	  correction multiplicative second_order	#1,#4,#7,#10
-#	  correction combined       second_order	#2,#5,#8,#11
-#	  correction additive       first_order		#12
-#	  correction multiplicative first_order		#13
-#	  correction combined       first_order		#14
-#	  correction additive       zeroth_order	#15
-#	  correction multiplicative zeroth_order	#16
-#	  correction combined       zeroth_order	#17
+	  correction additive       second_order	#s0,#s3,#s6,#s9,#p0
+#	  correction multiplicative second_order	#s1,#s4,#s7,#s10
+#	  correction combined       second_order	#s2,#s5,#s8,#s11
+#	  correction additive       first_order		#s12
+#	  correction multiplicative first_order		#s13
+#	  correction combined       first_order		#s14
+#	  correction additive       zeroth_order	#s15
+#	  correction multiplicative zeroth_order	#s16
+#	  correction combined       zeroth_order	#s17
 
 variables,
 	continuous_design = 2
@@ -90,12 +91,12 @@ responses,
 #	  method_source dakota
 #	  interval_type central
 # 	  fd_gradient_step_size = 0.0001
-	analytic_hessians			#0,#1,#2
-#	numerical_hessians			#3,#4,#5,#p0
-#	  fd_hessian_step_size = 0.001		#3,#4,#5,#p0
-#	quasi_hessians bfgs			#6,#7,#8
-#	quasi_hessians sr1			#9,#10,#11
-#	no_hessians				#12,#13,#14,#15,#16,#17
+	analytic_hessians			#s0,#s1,#s2
+#	numerical_hessians			#s3,#s4,#s5,#p0
+#	  fd_hessian_step_size = 0.001		#s3,#s4,#s5,#p0
+#	quasi_hessians bfgs			#s6,#s7,#s8
+#	quasi_hessians sr1			#s9,#s10,#s11
+#	no_hessians				#s12,#s13,#s14,#s15,#s16,#s17
 
 model,
 	id_model = 'LOFI'
