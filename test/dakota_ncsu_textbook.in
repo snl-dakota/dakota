@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 # DAKOTA INPUT FILE - dakota_ncsu_textbook.in
 
 # Apply NCSU DIRECT to textbook problem exercising asynchronous (batch)

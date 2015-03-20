@@ -1,3 +1,4 @@
+#@ s*: Label=AcceptanceTest
 
 method,
 	polynomial_chaos			#s0,#s1,#s4,#s5,#s8,#s9

@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 #@ p0: MPIProcs=12
 # This tester has been used to measure scaling performance in 4 level
 # parallel executions on ASCI Red.  It employs a multi-start environment with

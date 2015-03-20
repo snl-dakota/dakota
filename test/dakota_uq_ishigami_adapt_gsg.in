@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 environment,
 #	output_precision = 16
 

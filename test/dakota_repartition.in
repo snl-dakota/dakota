@@ -1,3 +1,5 @@
+#@ s*: Label=SmokeTest
+#@ p*: Label=SmokeTest
 #@ p0: MPIProcs=5
 # DAKOTA INPUT FILE - dakota_repartition.in
 

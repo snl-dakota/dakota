@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 # DAKOTA Input File: dakota_uq_textbook_sop_lhs.in
 
 # Nested UQ for the textbook test function using discrete parameter study or

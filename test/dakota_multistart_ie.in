@@ -1,12 +1,10 @@
-#@ p0: MPIProcs=8
+#@ s*: Label=SmokeTest
+#@ p*: Label=AcceptanceTest
+#@ p*: MPIProcs=8
 #@ p1: MPIProcs=8 CheckOutput='dakota.out.1'
 #@ p2: MPIProcs=8 CheckOutput='dakota.out.1'
-#@ p3: MPIProcs=8 
-#@ p4: MPIProcs=8
 #@ p5: MPIProcs=8 CheckOutput='dakota.out.1'
 #@ p6: MPIProcs=8 CheckOutput='dakota.out.1'
-#@ p7: MPIProcs=8
-#@ p8: MPIProcs=8
 #@ p9: MPIProcs=8 CheckOutput='dakota.out.1'
 
 # DAKOTA INPUT FILE - dakota_multistart_ie.in

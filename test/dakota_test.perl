@@ -119,15 +119,18 @@ foreach my $file (@test_inputs) {
     print Dumper(\%test_opts);
   }
 
-  # In order to define multiple tests within one input file, we utilize
-  # a # followed by a number, such as #3, to denote a specific test.
-  # Check input file for multiple tests, uncomment lines needed for a
-  # test, and comment out lines not needed for a test.
+  # In order to define multiple tests within one input file, we
+  # utilize #[sp][0-9]+; a #, followed by s or p for serial or
+  # parallel, followed by an integer, such as #s3, to denote a
+  # specific test.  Check input file for multiple tests, uncomment
+  # lines needed for a test, and comment out lines not needed for a
+  # test.
   my $cnt = ( defined $test_num ) ? $test_num : 0;
   my $found = 1;
   my $output_generated = 0;
   # restart options used to unlink file conditionally; declare outside loop:
-  my $restart = "";   # no restart options by default
+  my $restart = "";   # no restart options by default (opts: read, write, none)
+
   # pass through the loop at least twice since, in some cases, the #0 test is
   # not marked (the #1-#n tests can be additions to the #0 test, rather than
   # substitutions; in this case the #0 shared parts cannot be marked since the
@@ -143,52 +146,44 @@ foreach my $file (@test_inputs) {
     # open temporary input file
     open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
 
-    # define a parallel-qualified count to be $cnt or p$cnt
-    my $pq_cnt = ($parallelism eq "parallel") ? "p$cnt" : "$cnt";
+    # define a serial- or parallel-qualified count
+    my $ser_par_cnt = ($parallelism eq "parallel") ? "p$cnt" : "s$cnt";
 
     # trailing delimiter is important to avoid matching #nn with #n
-    my $test0_tag = "(\\s|,)#0(\\s|,|\\\\)";
-    my $test_tag = "(\\s|,)#$pq_cnt(\\s|,|\\\\)";
+    my $test0_tag = "(\\s|,)#s0(\\s|,|\\\\)";
+    my $test_tag = "(\\s|,)#${ser_par_cnt}(\\s|,|\\\\)";
     
-    # per-test defaults for dakota command, input, restart, and timeout
-    my $dakota_command = "dakota";
-    my $dakota_args = "";
-    my $dakota_input = $input;
-    # Default is to write a unique restart per test, named for the test input
-    $restart = "";   # no restart options by default
-    my $restart_command = "-write_restart $restart_file";
+    # per-test options for dakota exec, arguments, and input file
+    my $dakota_command = get_test_option_value($cnt, "ExecCmd", "dakota");
+    my $dakota_args = get_test_option_value($cnt, "ExecArgs", "");
+    # default is dakota_input.in_
+    my $dakota_input = get_test_option_value($cnt, "InputFile", "$input");
 
-    # per-test defaults for number processors, output file, etc.
-    my $num_proc = 0;       # number of CPUs for a given test
-    my $check_output = "";  # log file to read test output from
+    # Default is to write a unique restart per test, named for the test input
+    # no restart options by default
+    $restart = get_test_option_value($cnt, "Restart", "");
+    my $restart_command = parse_restart_command($restart, $restart_file);
+
+    # per-test default for number of CPUs in parallel test = 0
+    my $num_proc = get_test_option_value($cnt, "MPIProcs", 0);
+
+    # log file to examine for output; output will still go to $output,
+    # but then we'll check this file for diffs
+    my $check_output = get_test_option_value($cnt, "CheckOutput", "$output");
 
     # per-test timeout parameters (in seconds): these may be overridden by
-    # individual test inputs through tdMM,taNN for delay and absolute timeout,
-    # respectively
-    my $delay = 60;      # delay before checking for file size changes (60 sec)
-                         # test terminated if output stagnant for this time
-    my $timeout = 1200;  # absolute timeout for a single job (20 minutes)
+    # individual test inputs:
+    # delay before checking for file size changes (60 sec)
+    # test terminated if output stagnant for this time
+    my $delay = get_test_option_value($cnt, "TimeoutDelay", 60);
+    # absolute timeout for a single job (20 minutes)
+    my $timeout = get_test_option_value($cnt, "TimeoutAbsolute", 1200);
 
     # read input file until EOF
     while (<INPUT_MASTER>) { # read each line of file
 
       # no further processing for #@ (test annotation) lines
       next if /^#@/;
-
-      # parse out number of CPUs for parallel test
-      parse_num_proc($_, $cnt, \$num_proc);
-
-      # parse out dakota command line arguments
-      parse_dakota_command($_, $pq_cnt, $restart_file,
-                           \$dakota_command, \$dakota_args, \$dakota_input, 
-			   \$restart, \$restart_command);
-
-      # parse out option for file to examine for output; output will
-      # still go to $output, but then we'll check this file for diffs
-      parse_check_output($_, $pq_cnt, \$check_output);
-
-      # parse out timeout and delay options
-      parse_timeout($_, $cnt, \$delay, \$timeout);
 
       # Extracts a particular test (using pretty output) for inclusion in docs.
       # Does not deactivate graphics.  Does not set $found, such that the test
@@ -198,14 +193,14 @@ foreach my $file (@test_inputs) {
 	# if line contains $test_num tag, then comment/uncomment
 	if (/$test0_tag/) {   # line is initially uncommented
 	  if (/$test_tag/) {  # leave uncommented
-	    s/#p?\d+,?//g;    # remove tags
+	    s/#[sp]\d+,?//g;    # remove tags
 	    print INPUT_TMP;
 	  }
 	  # else don't output inactive line to STDOUT
 	}
 	elsif (/$test_tag/) { # line is initially commented
 	  s/^#//;             # uncomment line
-	  s/#p?\d+,?//g;      # remove tags
+	  s/#[sp]\d+,?//g;      # remove tags
 	  print INPUT_TMP;
 	}
 	elsif (/^#/) {        # inactive line: do not output to STDOUT
@@ -304,8 +299,7 @@ foreach my $file (@test_inputs) {
       if ($exit_value == 0) {
 	print "succeeded\n";
         print TEST_OUT "Test Number $cnt succeeded\n";
-	if ($check_output) { parse_test_output($check_output); }
-	else               { parse_test_output($output); }
+	parse_test_output($check_output);
       }
       else {
         # if the test failed, don't parse out any results
@@ -368,7 +362,7 @@ foreach my $file (@test_inputs) {
       move($input, "${input}.sav") if (-e $input);
       move($output, "${output}.sav") if (-e $output);
       move($error, "${error}.sav") if (-e $error);
-      if ($restart =~ /w/) {
+      if ($restart =~ /write/) {
 	copy($restart_file, "${restart_file}.sav") if (-e $restart_file);
       }
       else {
@@ -380,7 +374,7 @@ foreach my $file (@test_inputs) {
       unlink $output;
       unlink $error;
       # Remove restart if not explicitly requested
-      if ( ! ($restart =~ /w/) ) {
+      if ( ! ($restart =~ /write/) ) {
 	unlink $restart_file;
       }
     }
@@ -715,114 +709,42 @@ sub parse_key_val {
   return %keyval_hash;
 }
 
-# Parse an input file line for processor counts
-# Uses globals parallelism, ui and optionally sets $num_proc by reference
-sub parse_num_proc {
 
-  my ($line, $cnt, $ref_num_proc) = @_;
+# find a final value for a test option, going from general * to
+# specific [ps]<int>; uses global parallelism
+sub get_test_option_value() {
 
-  # get the # of processors for the parallel test
-  if ($parallelism eq "parallel" && $line =~ /p$cnt=($ui)/ ) {
-    ${$ref_num_proc} = $1;
-    print "No. of processors = ${$ref_num_proc}\n";
+  my ($cnt, $key, $default) = @_;
+  my $value = $default;    
+  my $ser_par = ($parallelism eq "parallel") ? "p" : "s"; 
+  # Successively overwrite if the options is found
+  # TODO: append if the option can have multiple values (HAVE_*, Label)
+  foreach my $test_select ("*", "${ser_par}*", "${cnt}", "${ser_par}${cnt}") {
+    if (exists $test_opts{${test_select}}{$key}) {
+      $value = "$test_opts{${test_select}}{$key}";
+    }
   }
-
-}
-
-sub parse_check_output {
-  my($line, $pq_cnt, $ref_check_output) = @_;
-
-  if ( $line =~ /(#|\s+)$pq_cnt=CheckOutput\'([\w\-\.]*)\'/ ) {
-    ${$ref_check_output} = $2;
-    print "Checking output in alternate file \'${$ref_check_output}\'\n";
-  }
+  print "Using test option ${key} = ${value}\n" if ($value ne $default);
+  return $value;
 }
 
 
-# Parse an input file line for optional DAKOTA commands
-# Takes [p]$cnt (qualified with p if needed)
-# Sets commands by reference
-sub parse_dakota_command {
-
-
-  my ($line, $pq_cnt, $restart_file, $ref_dakota_command, ,$ref_dakota_args,
-      $ref_dakota_input, $ref_restart, $ref_restart_command) = @_;
-
-  # allow override of the default DAKOTA command with
-  # D='alternate_command -with_args'
-  if ( $line =~ /(#|\s+)$pq_cnt=D\'([\w\-]*)\'/ ) {
-    ${$ref_dakota_command} = $2;
-    print "Using alternate dakota command \'${$ref_dakota_command}\'\n";
+# Compute full restart option string from passed restart option and filename
+sub parse_restart_command() {
+  my ($restart_option, $restart_file) = @_;
+  # this is also the default for /write/
+  my $restart_command = "-write_restart $restart_file";
+  if ($restart_option eq "read") {
+    # always write a named file if we're reading one
+    $restart_command = 
+	"-read_restart $restart_file -write_restart $restart_file";
+    print "Restart file: reading and writing $restart_file\n";
   }
-
-  # allow optional dakota command arguments with 
-  # DA='-with_args'
-  # pre/post run might have [ :._]
-  # consider allowing anything between the single quotes...
-  if ( $line =~ /(#|\s+)$pq_cnt=DA\'([\w\s\-\.:]*)\'/ ) {
-    ${$ref_dakota_args} = $2;
-    print "Using alternate dakota args \'${$ref_dakota_args}\'\n";
-  }
-
-  # allow override of the default test input file name with
-  # I='alternate.in'
-  # allows use of empty filename or alternate to dakota_test.in_
-  if ( $line =~ /(#|\s+)$pq_cnt=I\'([\w\- ]*)\'/ ) {
-    ${$ref_dakota_input} = $2;
-    print "Using alternate dakota input file name \'${$ref_dakota_input}\'\n";
-  }
-
-  # determine if restart file read/write is needed (R[rwsn]+) for this test
-  # TODO: allow specification of name to read/write for each test
-  #       and allow stop specification
-  if ( $line =~ /(#|\s+)$pq_cnt=R([rwsn]+)/ ) {
-    ${$ref_restart} = $2;
-    if ( (${$ref_restart} =~ /r/ || ${$ref_restart} =~ /w/) && 
-	 ${$ref_restart} =~ /n/ ) {
-      die "Restart file: (n)one option can't be used with (r)ead or (w)rite; " .
-	  "exiting\n";	    
-    }
-    elsif ( ${$ref_restart} =~ /r/ ) {
-      # always write a named file if we're reading one (r or rw case)
-      ${$ref_restart_command} =
-        "-read_restart $restart_file -write_restart $restart_file";
-      print "Restart file: reading and writing $restart_file\n";
-    }
-    elsif ( ${$ref_restart} =~ /w/ ) {
-      ${$ref_restart_command} = "-write_restart $restart_file";
-      print "Restart file: writing $restart_file\n";
-    }
-    elsif ( ${$ref_restart} =~ /n/ ) {
-      ${$ref_restart_command} = "";
-      print "Restart file: explicitly removing restart arguments\n";
-    }	
-    else {
-      print "Restart file: invalid option ${$ref_restart}; " . 
-	    "default writing to $restart_file\n";
-      ${$ref_restart} = "";
-    }
-  }
-
-}
-
-
-# Parse an input file line for optional timeout
-# Takes [p]$cnt (qualified with p if needed)
-# Sets timeouts by reference
-sub parse_timeout {
-
-  my ($line, $pq_cnt, $ref_delay, $ref_timeout) = @_;
-
-  # get any adjustments to output delay (TDmm) or absolute timeout (TAnn)
-  if ( $line =~ /(#|\s+)$pq_cnt=TD($ui)/ ) {
-    ${$ref_delay} = $2;
-    print "Output delay overridden to ${$ref_delay} seconds\n";
-  }
-  if ( $line =~ /(#|\s+)$pq_cnt=TA($ui)/ ) {
-    ${$ref_timeout} = $2;
-    print "Test timeout overridden to ${$ref_timeout} seconds\n";
-  }
-
+  elsif ($restart_option eq "none") {
+    $restart_command = "";
+    print "Restart file: explicitly removing restart arguments\n";
+  }	
+  return $restart_command;
 }
 
 
@@ -1379,6 +1301,9 @@ for all parallel tests, with an override for a specific test:
   #@ Example comment about parallel markup
   #@ p*: MPIProcs=2 
   #@ p4: TimeoutAbsolute=1200 TimeoutDelay=60
+
+A test selection may have multiple key/value pairs, but only one test
+selection is allowed per line.
 
 The markup header is terminated by any line not starting with #@.  #@
 lines will always be omitted from extracted tests.

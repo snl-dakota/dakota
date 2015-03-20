@@ -1,3 +1,5 @@
+#@ s2: DakotaConfig=HAVE_NLPQL
+#@ s11: DakotaConfig=HAVE_NLPQL
 ## DAKOTA INPUT FILE - dakota_var_views_opt.in
 
 # This file contains tests of the variable views override capability

@@ -1,3 +1,4 @@
+#@ s*: Label=AcceptanceTest
 # This input file tests evalulation of probabilities on aleatory subsets
 # for stoch expansions constructed over aleatory + {design,epistemic,both}
 

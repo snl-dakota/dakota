@@ -1,3 +1,4 @@
+#@ s*: Label=AcceptanceTest
 # DAKOTA INPUT FILE - dakota_textbook_pce.in
 
 environment,

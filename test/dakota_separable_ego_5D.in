@@ -1,3 +1,4 @@
+#@ s*: Label=AcceptanceTest
 # Example of using EGO to find the minumum of the 5 dimensional version 
 # of the abitrary-dimensional/separable 'herbie' OR 'smooth_herbie' OR
 # 'shubert' test functions

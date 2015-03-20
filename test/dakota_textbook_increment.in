@@ -1,4 +1,4 @@
-#@ *: Label=SmokeTest,AcceptanceTest
+#@ *: Label=SmokeTest
 #@ s0: Restart=write
 #@ s1: Restart=read DependsOn=s0
 

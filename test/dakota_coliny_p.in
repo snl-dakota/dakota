@@ -1,23 +1,5 @@
-#@ p0: MPIProcs=2
-#@ p1: MPIProcs=2
-#@ p2: MPIProcs=2
-#@ p3: MPIProcs=2
-#@ p4: MPIProcs=2
-#@ p5: MPIProcs=2
-#@ p6: MPIProcs=2
-#@ p7: MPIProcs=2
-#@ p8: MPIProcs=2
-#@ p9: MPIProcs=2
-#@ p10: MPIProcs=2
-#@ p11: MPIProcs=2
-#@ p12: MPIProcs=2
-#@ p13: MPIProcs=2
-#@ p14: MPIProcs=2
-#@ p15: MPIProcs=2
-#@ p16: MPIProcs=2
-#@ p17: MPIProcs=2
-#@ p18: MPIProcs=2
-#@ p19: MPIProcs=2
+#@ s*: Label=SmokeTest
+#@ p*: MPIProcs=2
 # DAKOTA INPUT FILE - dakota_coliny_p.in
 
 # Each DAKOTA test file is capable of running multiple tests. The

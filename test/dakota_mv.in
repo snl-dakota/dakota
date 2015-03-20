@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 # DAKOTA INPUT FILE - dakota_mv.in
 
 # Each DAKOTA test file is capable of running multiple tests. The

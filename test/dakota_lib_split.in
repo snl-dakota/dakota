@@ -1,3 +1,5 @@
+#@ s*: Label=SmokeTest
+#@ p*: Label=AcceptanceTest
 #@ p0: MPIProcs=4 ExecCmd='dakota_library_split'
 #@ p1: MPIProcs=6 ExecCmd='dakota_library_split'
 # dakota_library_split: tests for DAKOTA's library mode, with various

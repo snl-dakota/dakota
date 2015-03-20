@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 # DAKOTA INPUT FILE : dakota_big_dataset.in
 
 method,

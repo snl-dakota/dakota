@@ -1,3 +1,4 @@
+#@ s*: Label=AcceptanceTest
 ## DAKOTA INPUT FILE
 
 # Tests variants of numerical gradients.

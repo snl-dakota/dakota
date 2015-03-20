@@ -1,3 +1,4 @@
+#@ s*: Label=AcceptanceTest
 
 environment,
 	  method_pointer = 'SBGO'

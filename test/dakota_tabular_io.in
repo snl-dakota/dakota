@@ -1,6 +1,5 @@
 #@ s0: ExecArgs='-pre_run ::dakota_tabular_io.0.dat -run -post_run'
 #@ s2: ExecArgs='-post_run dakota_tabular_io.1.dat::'
-#@ s4: ExecArgs='-post_run dakota_tabular_io.1.dat::'
 
 # Test tabular output/input for annotated file formats
 # (adapted from dakota_uq_textbook_lhs_approx.in)

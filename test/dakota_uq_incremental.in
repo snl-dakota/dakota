@@ -1,3 +1,4 @@
+#@ s*: Label=SmokeTest
 #@ s0: Restart=write
 #@ s1: Restart=read
 

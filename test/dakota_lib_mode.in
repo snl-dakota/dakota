@@ -4,7 +4,7 @@
 #@ -------------------------
 #@ serial tests (rosenbrock)
 #@ -------------------------
-#@ s*: Label=SmokeTest,AcceptanceTest
+#@ s*: Label=SmokeTest
 #@
 #@ test 0: parsed input file (library mode 1)
 #@ override dakota command; leave input file as dakota_library_mode.in
