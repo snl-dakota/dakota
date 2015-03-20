@@ -1,3 +1,39 @@
+#@ *: DakotaConfig=HAVE_OPTPP
+#@ *: ExecCmd='dakota_library_mode' Restart=none
+#@
+#@ -------------------------
+#@ serial tests (rosenbrock)
+#@ -------------------------
+#@ s*: Label=SmokeTest,AcceptanceTest
+#@
+#@ test 0: parsed input file (library mode 1)
+#@ override dakota command; leave input file as dakota_library_mode.in
+#@
+#@ test 1: direct data object insertion (library mode 2)
+#@ override dakota command; override input file to none
+#@ s1: InputFile=''
+#@
+#@ test 2: mixed mode with an input file (library mode 3)
+#@ override dakota command; leave input file as dakota_library_mode.in
+#@ s2: ExecArgs='-mixed'
+#@
+#@ test 3: mixed mode using default input string (library mode 3)
+#@ override dakota command; override input file to none
+#@ s3: ExecArgs='-mixed' InputFile=''
+#@
+#@ --------------------------
+#@ parallel tests (text_book); first 4 use same principles as serial
+#@ --------------------------
+#@ p*: Label=AcceptanceTest
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=2 InputFile=''
+#@ p2: MPIProcs=2 ExecArgs='-mixed'
+#@ p3: MPIProcs=2 InputFile='' ExecArgs='-mixed' 
+#@ p4: MPIProcs=2
+#@ p5: MPIProcs=2
+#@ p6: MPIProcs=4
+#@ p7: MPIProcs=4
+
 # dakota_library_mode.in: tests for DAKOTA's library mode, with various
 # input and parallelism specifications (requires dakota_library_mode binary)
 

@@ -1,3 +1,7 @@
+#@ *: Label=SmokeTest,AcceptanceTest
+#@ s0: Restart=write
+#@ s1: Restart=read DependsOn=s0
+
 # DAKOTA INPUT FILE - dakota_textbook_lhs.in
 
 # Each DAKOTA test file is capable of running multiple tests. The

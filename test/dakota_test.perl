@@ -16,6 +16,8 @@ use POSIX "uname";
 use Cwd 'abs_path';
 use Config;
 
+my $DTP_DEBUG = 0;  # set to 1 to debug
+
 # set default options (global to this script)
 my $baseline_filename = "";  # default is dakota_[p]base.test.new
 my $bin_dir = "";            # default binary location is pwd (none)
@@ -71,7 +73,7 @@ if ("${bin_dir}" gt "") {
   }
 }
 my $env_path = $ENV{'PATH'}; 
-print "Testing executables in $bin_dir, PATH=$env_path\n"; 
+print "Testing executables in $bin_dir, PATH=$env_path\n" if $DTP_DEBUG; 
 
 if (defined $test_num) {
   print "Testing in $parallelism, mode = $mode, test_num = $test_num\n";
@@ -106,6 +108,15 @@ foreach my $file (@test_inputs) {
   elsif ($mode eq "run") { 
     # if normal test mode, open individual test output file
     open (TEST_OUT, ">$test") || die "cannot open output file $test\n$!";
+  }
+
+  # populate hash from test-selections to test-options for the whole file
+  %test_opts = ();  # global variable
+  parse_test_options($file);
+  if ($DTP_DEBUG) {
+    use Data::Dumper;
+    print "DEBUG: All test options:\n";
+    print Dumper(\%test_opts);
   }
 
   # In order to define multiple tests within one input file, we utilize
@@ -160,6 +171,9 @@ foreach my $file (@test_inputs) {
 
     # read input file until EOF
     while (<INPUT_MASTER>) { # read each line of file
+
+      # no further processing for #@ (test annotation) lines
+      next if /^#@/;
 
       # parse out number of CPUs for parallel test
       parse_num_proc($_, $cnt, \$num_proc);
@@ -607,6 +621,99 @@ sub get_filenames {
 # INPUT file parse helpers
 # ------------------------
 
+# GOALS:
+# Be able to extract all test properties for use in configuring CTest
+# Be able to get one test's properties when running a single test or test file
+# Be able to apply them to a given test by number
+
+# Read input file and parse any contiguous header lines beginning with #@
+# Create hash from test selections to key/value pairs
+# #@[whitespace]<test-selection>[whitespace]:[whitespace]kw1=val1 kw2=val2
+#
+# TODO: unroll test selection if contains comma
+sub parse_test_options {
+
+  my $file = shift(@_);
+  open (INPUT_FILE, "$file") ||
+      die "cannot open Dakota input file $file\n$!";
+
+  while ( (my $line = <INPUT_FILE>) =~ /^#@/) { # =~ /^#@/) {
+    # match a single test selection (could combine into two expressions)
+    # double \\ since expanding the string in the regex below
+    # support *, s*, p*, 3, s3, p4; not combining regexs to show priority
+    my $test_select_re = "\\*|[sp]\\*|[0-9]+|[sp][0-9]+";
+    # /^#@\s*(${test_select_re})\s*:\s*(.+)/
+
+    # now match selection: key/value pairs; re-match leading comment to be safe
+    # (differentiating from comments)
+    if ($line =~ /^#@\s*(${test_select_re})\s*:\s*(.+)/) {
+      my $test_selection = $1;
+      my $test_options = $2;
+      #$test_opts{${test_selection}} = { parse_key_val(${test_options})};
+      # merge key/values with any existing in the options hash
+      my %hash_tmp = parse_key_val(${test_options});
+      while (($key, $value) = each %hash_tmp) {
+	$test_opts{${test_selection}}{$key} = $value;
+      }
+    }
+
+  }  # while INPUT_FILE
+
+  close (INPUT_FILE);
+}
+
+
+sub parse_key_val {
+
+  # Regular expressions for key/value pairs
+  my $check_output_re = "(CheckOutput)='(.*)'";
+  my $dak_config_re = "(DakotaConfig)=(.*)";                # multi-valued
+  my $depends_on_re = "(DependsOn)=([sp][0-9]+)";
+  my $exec_args_re = "(ExecArgs)='(.*)'";
+  my $exec_cmd_re = "(ExecCmd)='(.*)'";
+  my $input_file_re = "(InputFile)='(.*)'";
+  my $label_re = "(Label)s?=(.*)";                          # multi-valued
+  my $mpi_procs_re = "(MPIProcs)=([0-9]+)";
+  my $restart_re = "(Restart)=(read|write|none)";
+  my $timeout_absolute_re = "(TimeoutAbsolute)=([0-9]+)";
+  my $timeout_delay_re = "(TimeoutDelay)=([0-9]+)";
+
+  @all_keyval_re = (
+    "${check_output_re}",
+    "${dak_config_re}",
+    "${depends_on_re}",
+    "${exec_args_re}",
+    "${exec_cmd_re}",
+    "${input_file_re}",
+    "${label_re}",
+    "${mpi_procs_re}",
+    "${restart_re}",
+    "${timeout_absolute_re}",
+    "${timeout_delay_re}"
+      );
+
+  # this function receives a space-separated list of key/val pairs
+  # tokenize on space, respecting quotes for filenames, arguments
+  my $line = shift(@_);
+  # trim leading and trailing whitespace
+  $line =~ s/^\s+|\s+$//g;
+  use Text::ParseWords;  # See Also Regexp::Common::balanced, delimited
+  @keyval_list = parse_line(" ", 1, $line);  
+
+  my %keyval_hash = ();
+  foreach my $kv (@keyval_list) {
+    my $matched = 0;
+    foreach my $kv_re (@all_keyval_re) {
+      if ( $kv =~ /$kv_re/) {
+	$keyval_hash{$1} = $2;
+	$matched = 1;
+      }
+    }
+    die "\nError: Invalid option '$kv' in line:\n  ${line}\n" if (!$matched);
+  }
+
+  return %keyval_hash;
+}
 
 # Parse an input file line for processor counts
 # Uses globals parallelism, ui and optionally sets $num_proc by reference
@@ -1258,5 +1365,100 @@ To create a new serial [parallel] baseline:
 
 =back
 
-=cut
+=head1 TEST FILE MARKUP
 
+=over 4
+
+=item B<Overview>
+
+Test markups are placed in a header section of dakota_*.in files on
+contiguous lines starting with #@ comments.  Each markup consists of
+<test-selection>: <key/value pairs>.  For example, to specify options
+for all parallel tests, with an override for a specific test:
+
+  #@ Example comment about parallel markup
+  #@ p*: MPIProcs=2 
+  #@ p4: TimeoutAbsolute=1200 TimeoutDelay=60
+
+The markup header is terminated by any line not starting with #@.  #@
+lines will always be omitted from extracted tests.
+
+=item B<Test Selection>
+
+Test properties are applied in the following order:
+
+=over 2
+
+=item 1. *  : all tests in this file
+
+=item 2. s* : all serial (p*, parallel) tests in this file
+
+=item 3. 4  : specific test (both serial and parallel versions)
+
+=item 4. s7 : specific serial (p7, parallel) test
+
+=back
+
+=item B<Supported Properties>
+
+See the regular expressions in dakota_test.perl for a complete list of
+supported options.
+
+=over 2
+
+=item CheckOutput='<filename>'
+
+diff Dakota output from <filename> instead of dakota_input.out; the
+single quotes are required to allow spaces in <filename>
+
+=item DakotaConfig=<dakota-define1>[,<dakota-define2>]
+
+only enable the test(s) if Dakota was configured with <dakota-define1>,
+e.g, HAVE_NPSOL, DAKOTA_HAVE_MPI
+
+=item DependsOn=<test-selection>
+
+require the test(s) to run after test-dep, where <test-selection> is a
+specific test such as s4 or p3
+
+=item ExecArgs='<command-line-args>'
+
+run the executable with <command-line-args>; the single quotes are
+required to allow space-separated args
+
+=item ExecCmd='<executable>'
+
+run <executable> instead of dakota; the single quotes are required to
+allow space-separated args
+
+=item InputFile='<dakota-input>'
+
+run with <dakota-input> instead of the default dakota_input.in; the
+single quotes are required to allow space-separated args
+
+=item Label=<label1>[,<label2>]
+
+apply CTest labels, e.g., SmokeTest, AcceptanceTest, OptimizationTest
+
+=item MPIProcs=<int-procs>
+
+invoke mpirun with -np <int-procs>
+
+=item Restart=(read|write|none)
+
+run the test(s) reading from dakota_input.rst, writing to
+dakota_input.rst, or explicitly with no restart
+
+=item TimeoutAbsolute=<int-seconds>
+
+terminate each test if total test time exceeds <int-seconds>
+
+=item TimeoutDelay=<int-seconds>
+
+terminate each test if output has not changed in <int-seconds>
+
+=back
+
+=back
+
+=cut

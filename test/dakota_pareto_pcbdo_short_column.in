@@ -1,3 +1,8 @@
+#@ *: DakotaConfig=HAVE_NPSOL
+#@ p0: MPIProcs=3 CheckOutput='dakota.out.1'
+#@ p1: MPIProcs=2 CheckOutput='dakota.out.1'
+#@ p2: MPIProcs=6 CheckOutput='dakota.out.1.1'
+
 # DAKOTA INPUT FILE - dakota_pareto.in
 
 # Demonstrates the use of the Pareto set optimization under uncertainty
