@@ -520,6 +520,37 @@ update_approximation(const VariablesArray& vars_array,
 }
 
 
+/** This function populates/replaces SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not clear
+    other data (i.e., SurrogateData::anchor{Vars,Resp}) and does not
+    update the actualModel with revised bounds, labels, etc.  Thus, it
+    updates data from a previous call to build_approximation(), and is
+    not intended to be used in isolation. */
+void DataFitSurrModel::
+update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+
+  // populate/replace the current points for each approximation
+  approxInterface.update_approximation(samples, resp_map);
+
+  if (rebuild_flag) { // find the coefficients for each approximation
+    // decide which surrogates to rebuild based on resp_map content
+    BoolDeque rebuild_deque(numFns, false);
+    for (size_t i=0; i<numFns; ++i)
+      for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
+	  { rebuild_deque[i] = true; break; }
+    // rebuild the designated surrogates
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
 /** This function appends one point to SurrogateData::{vars,resp}Data
     and rebuilds the approximation, if requested.  It does not modify
     other data (i.e., SurrogateData::anchor{Vars,Resp}) and does not
@@ -598,6 +629,37 @@ append_approximation(const VariablesArray& vars_array,
 
   // append to the current points for each approximation
   approxInterface.append_approximation(vars_array, resp_map);
+
+  if (rebuild_flag) { // find the coefficients for each approximation
+    // decide which surrogates to rebuild based on resp_map content
+    BoolDeque rebuild_deque(numFns, false);
+    for (size_t i=0; i<numFns; ++i)
+      for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
+	  { rebuild_deque[i] = true; break; }
+    // rebuild the designated surrogates
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+/** This function appends multiple points to SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not modify other 
+    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to data
+    from a previous call to build_approximation(), and is not intended to
+    be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(samples, resp_map);
 
   if (rebuild_flag) { // find the coefficients for each approximation
     // decide which surrogates to rebuild based on resp_map content

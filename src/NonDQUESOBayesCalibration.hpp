@@ -86,16 +86,17 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
-  /// extract batch_size points from the MCMC chain
-  void filter_chain(unsigned short batch_size, RealVectorArray& best_pts);
+  /// extract batch_size points from the MCMC chain and store in allSamples
+  void filter_chain(unsigned short batch_size);
 
   // update the starting point for a restarted MCMC chain using new_center
   //Real update_center(const RealVector& new_center);
   /// update the starting point for a restarted MCMC chain using last
   /// point from previous chain
   void update_center();
-  /// update the emulator model with response data computed at new points
-  void update_model(const RealVectorArray& best_pts);
+  /// evaluates allSamples on iteratedModel and update the emulator model
+  /// with all{Samples,Responses}
+  void update_model();
 
   /// compute the L2 norm of the change in emulator coefficients
   Real assess_emulator_convergence();
@@ -132,6 +133,8 @@ protected:
 
   /// local copy_data utility
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
+  /// local copy_data utility
+  void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
   
   //
   //- Heading: Data

@@ -120,17 +120,16 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     }
     Real adapt_metric = DBL_MAX;
     int num_adapt = 0, batch_size = 5;
-    RealVectorArray best_pts;
     while (adapt_metric > convergenceTol && num_adapt < maxIterations) {
       run_chain_with_restarting();
       // Assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();
       // filter chain -or- extract full chain and sort on likelihood values.
       // Evaluate these MCMC samples with truth evals
-      filter_chain(batch_size, best_pts);
+      filter_chain(batch_size);
       // update the emulator surrogate data with new truth evals and
       // reconstruct surrogate (e.g., via PCE sparse recovery)
-      update_model(best_pts);
+      update_model();
       // Assess convergence of the posterior via convergence of the PCE coeffs
       adapt_metric = assess_emulator_convergence();
       ++num_adapt;
@@ -165,8 +164,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     // This approach is too greedy and can get stuck (i.e., no point in new
     // chain has smaller mismatch than current optimal value):
-    //filter_chain(1, best_pts);
-    //restart_metric = update_center(best_pts[0]);
+    //filter_chain(1);
+    //restart_metric = update_center(allSamples[0]);
 
     // Rather, use final point in acceptance chain as if we were periodically
     // refreshing the proposal covariance within a single integrated chain.
@@ -333,8 +332,7 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 }
 
 
-void NonDQUESOBayesCalibration::
-filter_chain(unsigned short batch_size, RealVectorArray& best_pts)
+void NonDQUESOBayesCalibration::filter_chain(unsigned short batch_size)
 {
   // TODO: Need to transform chain back to unscaled space for reporting
   // to user; possibly also in auxilliary data files for user consumption.
@@ -386,15 +384,18 @@ filter_chain(unsigned short batch_size, RealVectorArray& best_pts)
 
     // convert chain_pos to RealVector
     size_t num_best = best_samples.size();
-    if (best_pts.size() != num_best) best_pts.resize(num_best);
+    if (allSamples.numCols() != num_best)
+      allSamples.shapeUninitialized(numContinuousVars, num_best);
     std::/*multi*/map<Real, size_t>::iterator it; size_t i;
     if (outputLevel > NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
     for (it=best_samples.begin(), i=0; it!=best_samples.end(); ++it, ++i) {
       mcmc_chain.getPositionValues(it->second, mcmc_sample);
-      copy_gsl(mcmc_sample, best_pts[i]);
-      if (outputLevel > NORMAL_OUTPUT)
+      copy_gsl(mcmc_sample, allSamples, i);
+      if (outputLevel > NORMAL_OUTPUT) {
 	Cout << "Best point " << i+1 << ": unnormalized posterior = "
-	     << it->first << " Sample:\n"; write_data(Cout, best_pts[i]);
+	     << it->first << " Sample:\n";
+	write_col_vector_trans(Cout, (int)i, true, false, true, allSamples);
+      }
     }
   }
 }
@@ -452,24 +453,15 @@ Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 */
 
 
-void NonDQUESOBayesCalibration::update_model(const RealVectorArray& best_pts)
+void NonDQUESOBayesCalibration::update_model()
 {
-  /*
-  // Perform truth evals for selected points
-  emulatorModel.mode(SURROGATE_BYPASS...);
-  ActiveSet set = emulatorModel.active_set().copy();
-  set.request_values(1);
-  size_t i, num_best = best_pts.size();
-  for (i=0; i<num_best; ++i) {
-    emulatorModel.continuous_variables(best_pts[i]);
-    vars_array[i] = emulatorModel.current_variables().copy();
+  // Perform truth evals (in parallel) for selected points
+  compactMode = true;
+  evaluate_parameter_sets(iteratedModel, true, false); // log allResponses
+  // update emulatorModel with new data from iteratedModel
+  emulatorModel.append_approximation(allSamples, allResponses, true); // rebuild
 
-    emualtorModel.compute_response(set);
-    resp_map[eval_id] = emulatorModel.current_response().copy(); // use i?
-  }
-  emulatorModel.append_approximation(vars_array, resp_map, rebuild_flag);
-  */
-
+  /* Is rebuild flag sufficient for PCE/SC?
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR: {
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
@@ -478,6 +470,7 @@ void NonDQUESOBayesCalibration::update_model(const RealVectorArray& best_pts)
   case GP_EMULATOR: case KRIGING_EMULATOR:
     emulatorModel.build_approximation(); break;
   }
+  */
 }
 
 
@@ -872,60 +865,52 @@ void NonDQUESOBayesCalibration::update_mh_options()
 
 
 double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
-  const QUESO::GslVector& paramValues,
-  const QUESO::GslVector* paramDirection,
-  const void*  functionDataPtr,
-  QUESO::GslVector*       gradVector,
-  QUESO::GslMatrix*       hessianMatrix,
-  QUESO::GslVector*       hessianEffect)
+  const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,
+  const void*         functionDataPtr, QUESO::GslVector*       gradVector,
+  QUESO::GslMatrix*     hessianMatrix, QUESO::GslVector*       hessianEffect)
 {
-  
   double result = 0.;
-  size_t i,j;
-  int num_exp = NonDQUESOInstance->numExperiments;
-  int num_funcs = NonDQUESOInstance->numFunctions;
-  int num_cont = NonDQUESOInstance->numContinuousVars; 
-  RealVector x(num_cont);
+  size_t i, j;
+  int num_exp = NonDQUESOInstance->numExperiments,
+    num_funcs = NonDQUESOInstance->numFunctions,
+    num_cont  = NonDQUESOInstance->numContinuousVars; 
+  RealVector x; NonDQUESOInstance->copy_gsl(paramValues, x);
   
-  for (i=0; i<num_cont; i++) 
-    x(i)=paramValues[i];
-  
-  if (NonDQUESOInstance->quesoStandardizedSpace){
+  if (NonDQUESOInstance->quesoStandardizedSpace) {
     // TODO: need to transform sigmas back to unscaled space...
-    const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
-    const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
+    const RealVector& x_lower
+      = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
+    const RealVector& x_upper
+      = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
     if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
       Cout << "Values of theta parameter QUESO is seeing" << x << '\n';
     for (i=0; i<num_cont; i++) 
-      x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
+      x(i) = x_lower(i) + x(i) * (x_upper(i) - x_lower(i));
     if (NonDQUESOInstance->outputLevel > VERBOSE_OUTPUT)
       Cout << "Values of theta parameters DAKOTA uses" << x << '\n';
   }
 
-  // The GP/KRIGING/NO EMULATOR case use an unstandardized space
-  // (original) and the PCE or SC cases use a more general
-  // standardized space.
+  // The GP/KRIGING/NO EMULATOR case use an unstandardized space (original)
+  // and the PCE or SC cases use a more general standardized space.
   //
   // We had discussed having QUESO search in the original space:  this may 
   // difficult for high dimensional spaces depending on the scaling, 
   // because QUESO calculates the volume of the hypercube in which it is 
   // searching and will stop if it is too small (e.g. if one input is 
   // of small magnitude, searching in the original space will not be viable).
-  if (NonDQUESOInstance->emulatorType == GP_EMULATOR ||
-      NonDQUESOInstance->emulatorType == KRIGING_EMULATOR ||
-      NonDQUESOInstance->emulatorType == NO_EMULATOR)
-    NonDQUESOInstance->emulatorModel.continuous_variables(x);
-  else  //case PCE_EMULATOR: case SC_EMULATOR: 
-    NonDQUESOInstance->emulatorModel.continuous_variables(x); 
+  //switch (NonDQUESOInstance->emulatorType) {
+  //case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+  NonDQUESOInstance->emulatorModel.continuous_variables(x); //break;
+  //case PCE_EMULATOR: case SC_EMULATOR: 
+  //  NonDQUESOInstance->emulatorModel.continuous_variables(x); break;
+  //}
 
   // Compute simulation response to use in likelihood 
   NonDQUESOInstance->emulatorModel.compute_response();
   const RealVector& fn_vals = 
     NonDQUESOInstance->emulatorModel.current_response().function_values();
-  if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "input is " << x << '\n';
-    Cout << "output is " << fn_vals << '\n';
-  } 
+  if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
+    Cout << "input is " << x << "\noutput is " << fn_vals << '\n';
 
   // TODO: Update treatment of standard deviations as inference
   // vs. fixed parameters; also advanced use cases of calibrated
@@ -939,23 +924,21 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // one, num_funcs, or a full num_exp*num_func matrix of standard
   // deviations.  Thus, we just have to iterate over this to calculate
   // the likelihood.
-  if (NonDQUESOInstance->calibrateSigmaFlag) {
+  if (NonDQUESOInstance->calibrateSigmaFlag)
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
       for (j=0; j<num_funcs; j++)
-        result += pow((fn_vals(j)-exp_data[j])/paramValues[num_cont+j],2.0);
+        result += pow((fn_vals(j)-exp_data[j])/paramValues[num_cont+j],2.);
     }
-  }
-  else {	
+  else
     for (i=0; i<num_exp; i++) {
       RealVector residuals;
-      NonDQUESOInstance->expData.form_residuals(NonDQUESOInstance->emulatorModel.current_response(),i,residuals);
+      NonDQUESOInstance->expData.form_residuals(
+	NonDQUESOInstance->emulatorModel.current_response(),i,residuals);
       result += NonDQUESOInstance->expData.apply_covariance(residuals, i);
     }
-  }
 
-  result = (result/(NonDQUESOInstance->likelihoodScale));
-  result = -0.5*result;
+  result /= -2. * NonDQUESOInstance->likelihoodScale;
   if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
     Cout << "Log likelihood is " << result
 	 << " Likelihood is " << exp(result) << '\n';
@@ -964,10 +947,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
     std::ofstream QuesoOutput;
     QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cont; i++) 
-      QuesoOutput << x(i) << ' ' ;
-    for (j=0; j<num_funcs; j++)
-      QuesoOutput << fn_vals(j) << ' ' ;
+    for (i=0; i<num_cont; i++)  QuesoOutput << x(i) << ' ' ;
+    for (j=0; j<num_funcs; j++) QuesoOutput << fn_vals(j) << ' ' ;
     QuesoOutput << result << '\n';
     QuesoOutput.close();
   }
@@ -983,6 +964,20 @@ copy_gsl(const QUESO::GslVector& qv, RealVector& rv)
     rv.sizeUninitialized(size_qv);
   for (i=0; i<size_qv; ++i)
     rv[i] = qv[i];
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
+{
+  size_t i, size_qv = qv.sizeLocal();
+  if (col < 0 || col >= rm.numCols() || size_qv != rm.numRows()) {
+    Cerr << "Error: inconsistent matrix access in copy_gsl()." << std::endl;
+    abort_handler(-1);
+  }
+  Real* rm_c = rm[col];
+  for (i=0; i<size_qv; ++i)
+    rm_c[i] = qv[i];
 }
 
 } // namespace Dakota

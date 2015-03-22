@@ -2664,7 +2664,22 @@ update_approximation(const VariablesArray& vars_array,
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
-            "support approximation updating." << std::endl;
+         << "support approximation updating." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Model::
+update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->update_approximation(samples, resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
+         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "support approximation updating." << std::endl;
     abort_handler(-1);
   }
 }
@@ -2707,7 +2722,22 @@ append_approximation(const VariablesArray& vars_array,
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
-            "support approximation appending." << std::endl;
+         << "support approximation appending." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Model::
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
+		     bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+         << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+         << "support approximation appending." << std::endl;
     abort_handler(-1);
   }
 }

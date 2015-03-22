@@ -127,6 +127,10 @@ public:
   virtual void update_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
+  /// replace the data points within an existing surrogate
+  virtual void update_approximation(const RealMatrix& samples,
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
 
   /// append to the existing approximation data within a surrogate
   /// based on data updates propagated elsewhere
@@ -137,6 +141,10 @@ public:
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
+  /// append multiple points to an existing surrogate's data
+  virtual void append_approximation(const RealMatrix& samples,
 				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
 
