@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1348 distinct keywords (plus 205 aliases) **/
+/** 1349 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -1810,10 +1810,11 @@ static KeyWord
 		{"annotated",8,0,1,0,0,0.,0.,0,N_rem(true,scalarDataFileAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_rem(false,scalarDataFileAnnotated)}
 		},
-	kw_301[5] = {
+	kw_301[6] = {
+		{"interpolate",8,0,5,0,0,0.,0.,0,N_rem(false,interpolateFlag)},
 		{"num_config_variables",0x29,0,2,0,0,0.,0.,0,N_rem(sizet,numExpConfigVars)},
 		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numExperiments)},
-		{"read_field_coordinates",8,0,5,0,0,0.,0.,0,N_rem(true,readFieldCoords)},
+		{"read_field_coordinates",8,0,6,0,0,0.,0.,0,N_rem(true,readFieldCoords)},
 		{"scalar_data_file",11,2,4,0,kw_300,0.,0.,0,N_rem(str,scalarDataFileName)},
 		{"variance_type",0x80f,0,3,0,0,0.,0.,0,N_rem(strL,varianceType)}
 		},
@@ -1849,7 +1850,7 @@ static KeyWord
 		{"upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
 	kw_306[18] = {
-		{"calibration_data",8,5,6,0,kw_301,0.,0.,0,N_rem(true,calibrationDataFlag)},
+		{"calibration_data",8,6,6,0,kw_301,0.,0.,0,N_rem(true,calibrationDataFlag)},
 		{"calibration_data_file",11,5,6,0,kw_302,0.,0.,0,N_rem(str,scalarDataFileName)},
 		{"calibration_term_scale_types",0x807,0,3,0,0,0.,0.,12,N_rem(strL,primaryRespFnScaleTypes)},
 		{"calibration_term_scales",0x806,0,4,0,0,0.,0.,12,N_rem(RealDL,primaryRespFnScales)},

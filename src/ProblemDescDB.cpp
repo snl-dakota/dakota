@@ -2976,6 +2976,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"calibration_data", P calibrationDataFlag},
 	{"central_hess", P centralHess},
 	{"ignore_bounds", P ignoreBounds},
+	{"interpolate", P interpolateFlag},
 	{"read_field_coords", P readFieldCoords},
 	{"scalar_data_file_annotated", P scalarDataFileAnnotated}};
     #undef P

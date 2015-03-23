@@ -156,6 +156,8 @@ public:
   size_t numExpConfigVars;
   /// list of num_experiments x num_config_vars configuration variable values
   RealVector expConfigVars;
+  /// whether one should interpolate between the experiment and simulation field data 
+  bool interpolateFlag;
 
   // next two can be retired?
   /// list of num_calibration_terms observation data

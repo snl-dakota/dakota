@@ -2179,6 +2179,7 @@ KEYWORD12 responses
 		[ annotated
 		| freeform ]
 		]
+	      [ interpolate ]
 	      [ read_field_coordinates ]
 	      )
 	  |

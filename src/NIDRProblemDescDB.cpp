@@ -6938,6 +6938,7 @@ static StringArray
 static bool
 	MP_(calibrationDataFlag),
 	MP_(centralHess),
+	MP_(interpolateFlag),
 	MP_(scalarDataFileAnnotated),
         MP_(ignoreBounds),
         MP_(readFieldCoords);

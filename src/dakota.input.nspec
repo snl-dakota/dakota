@@ -2113,6 +2113,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
             freeform {N_rem(false,scalarDataFileAnnotated)}
            ]
          ]
+        [ interpolate {N_rem(false,interpolateFlag)} ]
         [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
        )
       |

@@ -2444,6 +2444,7 @@ TAG "responses/calibration_terms/calibration_data/scalar_data_file/annotated"
 TAG "responses/calibration_terms/calibration_data/scalar_data_file/freeform"
 	DESC "{Data file in freeform format} RespCommands.html#RespFnLS"
 
+TAG "responses/calibration_terms/calibration_data/interpolate"
 TAG "responses/calibration_terms/calibration_data/read_field_coordinates"
 TAG "responses/calibration_terms/calibration_data_file"
 	DESC "{Calibration data file name} RespCommands.html#RespFnLS"
