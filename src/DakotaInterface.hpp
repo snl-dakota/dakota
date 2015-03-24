@@ -226,7 +226,7 @@ public:
 
   /// set fineGrainEvalCounters to true and initialize counters if needed
   void fine_grained_evaluation_counters(size_t num_fns);
-  /// initialize fine grained evaluation counters
+  /// initialize fine grained evaluation counters, sizing if needed
   void init_evaluation_counters(size_t num_fns);
   /// set evaluation count reference points for the interface
   void set_evaluation_reference();
@@ -310,6 +310,9 @@ protected:
   /// ApplicationInterface or functionSurfaces for ApproximationInterface).
   bool coreMappings;
 
+  /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
+  short outputLevel;
+
   /// identifier for the current evaluation, which may differ from the
   /// evaluation counters in the case of evaluation scheduling; used on
   /// iterator master as well as server processors.  Currently, this is
@@ -321,12 +324,15 @@ protected:
   // evaluation counters specific to each interface instance that track
   // counts on the iterator master processor
 
-  bool fineGrainEvalCounters; ///< controls use of fn val/grad/hess counters
+  /// controls use of fn val/grad/hess counters for detailed evaluation report
+  bool fineGrainEvalCounters;
   int evalIdCntr;     ///< total interface evaluation counter
   int newEvalIdCntr;  ///< new (non-duplicate) interface evaluation counter
   int evalIdRefPt;    ///< iteration reference point for evalIdCntr
   int newEvalIdRefPt; ///< iteration reference point for newEvalIdCntr
-  // counter arrays provide more detailed reporting if output level >= verbose
+  // counter arrays provide more detailed reporting if output level >=
+  // verbose; these are initalized on-demand in map() as sizes may
+  // change due to fields or RecastModels
   IntArray fnValCounter;     ///< number of value evaluations by resp fn
   IntArray fnGradCounter;    ///< number of gradient evaluations by resp fn
   IntArray fnHessCounter;    ///< number of Hessian evaluations by resp fn
@@ -347,8 +353,10 @@ protected:
       grads merged) in Model::synchronize() where it becomes responseMap. */
   IntResponseMap rawResponseMap;
 
-  /// response function descriptors from the DAKOTA input file (used in
-  /// print_evaluation_summary() and derived direct interface classes)
+  /// response function descriptors (used in
+  /// print_evaluation_summary() and derived direct interface
+  /// classes); initialized in map() functions due to potential
+  /// updates after construction
   StringArray fnLabels;
 
   /// flag for multiprocessor evaluation partitions (evalComm)
@@ -356,9 +364,6 @@ protected:
 
   /// flag for dedicated master partitioning at the iterator level
   bool ieDedMasterFlag;
-
-  /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
-  short outputLevel;
 
   /// set of period-delimited evaluation ID tags to use in evaluation tagging
   String evalTagPrefix;
