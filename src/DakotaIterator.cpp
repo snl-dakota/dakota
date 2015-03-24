@@ -164,19 +164,17 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
 }
 
 
-/** This alternate constructor builds base class data for inherited
-    iterators.  It is used for on-the-fly instantiations for which DB
-    queries cannot be used, and is not used for construction of
-    meta-iterators.  It has no incoming model, so only sets up a
-    minimal set of defaults. However, its use is preferable to the
-    default constructor, which should remain as minimal as possible. */
+/** This alternate constructor builds base class data for inherited iterators.
+    It is used for on-the-fly instantiations for which DB queries cannot be
+    used, and is not used for construction of meta-iterators. */
 Iterator::
 Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
-  subIteratorFlag(false), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
+  subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), //outputLevel(NORMAL_OUTPUT),
   summaryOutputFlag(false), resultsDB(iterator_results_db),
   methodId("NO_SPECIFICATION"), iteratorRep(NULL), referenceCount(1)
 {

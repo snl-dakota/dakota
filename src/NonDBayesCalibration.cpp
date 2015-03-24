@@ -88,7 +88,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
-    //stochExpIterator.output_level(outputLevel); // synch output levels
     break;
   }
 
@@ -108,7 +107,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
-    //stochExpIterator.output_level(outputLevel); // synch output levels
     break;
   }
 
