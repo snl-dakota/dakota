@@ -46,6 +46,8 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
 		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
+  numExperiments(0), numTotalCalibTerms(0),
+  applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
@@ -66,7 +68,9 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0),
-  calibrationDataFlag(false), scaleFlag(false), varsScaleFlag(false),
+  calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
+  applyCovariance(false), matrixCovarianceActive(false),
+  scaleFlag(false), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
   update_from_model(iteratedModel); // variable,constraint counts & checks
@@ -85,6 +89,8 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
   speculativeFlag(false), minimizerRecasts(0), calibrationDataFlag(false),
+  numExperiments(0), numTotalCalibTerms(0),
+  applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false), 
   secondaryRespScaleFlag(false)
 { }
@@ -312,10 +318,6 @@ void Minimizer::data_transform_model()
   // don't want to weight by missing sigma all = 1.0
   bool calc_sigma_from_data = true; // calculate sigma if not provided 
   expData.load_data("Least Squares", calc_sigma_from_data);
-  
-  // TODO: consider whether both numRowsExpData and numExperiments are needed
-  //numRowsExpData = numExperiments;
-  //size_t numTotalCalibTerms = numRowsExpData*numUserPrimaryFns;
   numTotalCalibTerms = expData.num_total_exppoints();
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
@@ -342,7 +344,6 @@ void Minimizer::data_transform_model()
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
   
-  size_t i,j,k,temp_counter=0;
   Sizet2DArray var_map_indices(numContinuousVars), 
     primary_resp_map_indices(numTotalCalibTerms), 
     secondary_resp_map_indices(numNonlinearConstraints);
@@ -353,50 +354,32 @@ void Minimizer::data_transform_model()
   ShortArray asv(numTotalCalibTerms + numNonlinearConstraints, 1);
   activeSet.request_vector(asv);
   
-  for (i=0; i<numContinuousVars; i++) {
+  for (size_t i=0; i<numContinuousVars; i++) {
     var_map_indices[i].resize(1);
     var_map_indices[i][0] = i;
   }
-  for (i=0; i<numTotalCalibTerms; i++) {
-    primary_resp_map_indices[i].resize(1);
-    nonlinear_resp_map[i].resize(1);
-    nonlinear_resp_map[i][0] = false;
-  }
-  IntVector per_length;
-  expData.per_exp_length(per_length);
 
-  Cout << "exp_length" << per_length<< '\n';;
-  temp_counter = 0;
-  //for (i=0; i<numUserPrimaryFns; i++) {
-    //for (j=0; j<numRowsExpData; j++) {
-  for (j=0; j<numExperiments; j++) {
-    size_t exp_length = per_length(j);
-    //for (i=0; i<numUserPrimaryFns; i++) {
-    Cout << "exp_length" << exp_length;
-    for(k=0; k<exp_length; k++) {
-        //temp_counter =  i*numRowsExpData+j;
-      primary_resp_map_indices[temp_counter][0] = k;
-      temp_counter++;
-    }
-  }
-  Cout << "Got past primary_resp_map resize " << '\n';
-  for (i=0; i<numNonlinearConstraints; i++) {
+  const SharedResponseData& srd = iteratedModel.current_response().shared_data();
+  gen_primary_resp_map(srd, primary_resp_map_indices, nonlinear_resp_map);
+
+  for (size_t i=0; i<numNonlinearConstraints; i++) {
     secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = numTotalCalibTerms + i;
-    nonlinear_resp_map[numTotalCalibTerms+i].resize(1);
-    nonlinear_resp_map[numTotalCalibTerms+i][0] = false;
+    // the recast constraints just depend on the simulation
+    // constraints, which start at numUserPrimaryFns
+    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
+    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
+    nonlinear_resp_map[numUserPrimaryFns+i][0] = false;
   }
 
   void (*vars_recast) (const Variables&, Variables&) = NULL;
-  void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = 
-    (numTotalCalibTerms != numUserPrimaryFns) ? replicate_set_recast : NULL;
+  // The default active set recasting should work for current use cases
+  void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
 			   const Response&, Response&)
     = primary_resp_differencer;
   void (*sec_resp_recast) (const Variables&, const Variables&,
 			   const Response&, Response&)
     = secondary_resp_copier;
-
 
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
@@ -408,38 +391,94 @@ void Minimizer::data_transform_model()
 		secondary_resp_map_indices, recast_secondary_offset,
 		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
 
+  // TODO: review where should derivatives happen in data transform
+  // case: where derivatives are computed should be tied to whether
+  // interpolation is present
+
+  // In the data transform case, perform numerical derivatives at the
+  // RecastModel level (override the RecastModel default and the
+  // subModel default)
+  iteratedModel.supports_derivative_estimation(true);
+  RecastModel* recast_model_rep = (RecastModel*) iteratedModel.model_rep();
+  recast_model_rep->submodel_supports_derivative_estimation(false);
+
+  // The following expansions are conservative.  Could be skipped when
+  // only scalar data present and no replicates.
+
   // Preserve weights through data transformations
-    
-  // BMA TODO: reconcile use of weight flag vs. empty weights
-  // Can this just be done on basis of submodel's weights?
   const RealVector& submodel_weights = 
     iteratedModel.subordinate_model().primary_response_fn_weights();
-  if (submodel_weights.empty() || numTotalCalibTerms == numUserPrimaryFns) {
-    // no need to expand number of weights: leave as 0 or 1
-    iteratedModel.primary_response_fn_weights(submodel_weights);
-  } 
-  else { 
-    // submodel has weights and there are multiple experiments / replicates
+  if (!submodel_weights.empty()) { 
     RealVector recast_weights(numTotalCalibTerms);
-    temp_counter = 0;
-    for (i=0; i<numUserPrimaryFns; i++) {
-      for (j=0; j<numExperiments; j++) {
-        size_t exp_length = expData.all_data(j).length();
-        for(k=0; k<exp_length; k++) {
-	  recast_weights(temp_counter) = submodel_weights(i);
-          temp_counter++;
-        }
-      }
-    }
+    expand_array(srd, submodel_weights, recast_weights);
     iteratedModel.primary_response_fn_weights(recast_weights);
   }
-
-  // Preserve sense through data transformation
+  // Preserve sense through data transformations
   const BoolDeque& submodel_sense = 
     iteratedModel.subordinate_model().primary_response_fn_sense();
-  iteratedModel.primary_response_fn_sense(submodel_sense);
+  if (!submodel_sense.empty()) {
+    BoolDeque recast_sense(numTotalCalibTerms);
+    expand_array(srd, submodel_sense, recast_sense);
+    iteratedModel.primary_response_fn_sense(recast_sense);
+  }
+}
 
-  // BMA TODO: data transform needs to expand scales and sense by replicates
+
+void Minimizer::
+gen_primary_resp_map(const SharedResponseData& srd,
+		     Sizet2DArray& primary_resp_map_indices,
+		     BoolDequeArray& nonlinear_resp_map) const
+{
+  size_t num_scalar = srd.num_scalar_responses();
+  size_t num_field_groups = srd.num_field_response_groups();
+  const IntVector& sim_field_lens = srd.field_lengths();
+  size_t calib_term_ind = 0;
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
+    // field lengths can be different per experiment
+    const IntVector& exp_field_lens = expData.field_lengths(exp_ind);
+    for (size_t scalar_ind = 0; scalar_ind < num_scalar; ++scalar_ind) {
+      // simulation scalars inform calibration terms 1 to 1 
+      // (no correlation or interpolation allowed)
+      primary_resp_map_indices[calib_term_ind].resize(1);
+      primary_resp_map_indices[calib_term_ind][0] = scalar_ind; //=calib_term_ind
+      nonlinear_resp_map[calib_term_ind].resize(1);
+      nonlinear_resp_map[calib_term_ind][0] = false;
+      ++calib_term_ind;
+    }
+    for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
+      // each field calibration term depends on all simulation field
+      // entries for this field, due to correlation or interpolation
+      // if no matrix correlation, no interpolation, could skip
+      for (size_t z=0; z<exp_field_lens[fg_ind]; ++z) {
+	primary_resp_map_indices[calib_term_ind].resize(sim_field_lens[fg_ind]);
+	nonlinear_resp_map[calib_term_ind].resize(sim_field_lens[fg_ind]);
+	// this residual depends on all other simulation data for this field
+	for (size_t sim_ind = 0; sim_ind<sim_field_lens[fg_ind]; ++sim_ind) {
+	  primary_resp_map_indices[calib_term_ind][sim_ind] = sim_ind;
+	  nonlinear_resp_map[calib_term_ind][sim_ind] = false;
+	}
+	++calib_term_ind;
+      }
+    }
+  }
+}
+
+
+template<typename T>
+void Minimizer::
+expand_array(const SharedResponseData& srd, const T& submodel_array, 
+	     T& recast_array) const 
+{
+  size_t num_scalar = srd.num_scalar_responses();
+  size_t num_field_groups = srd.num_field_response_groups();
+  size_t calib_term_ind = 0;
+  for (size_t exp_ind=0; exp_ind<numExperiments; ++exp_ind) {
+    const IntVector& exp_field_lens = expData.field_lengths(exp_ind);
+    for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
+      recast_array[calib_term_ind++] = submodel_array[sc_ind];
+    for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind)
+      recast_array[calib_term_ind++] = submodel_array[num_scalar + fg_ind];
+  }
 }
 
 
@@ -983,56 +1022,79 @@ primary_resp_differencer(const Variables& raw_vars,
 void Minimizer::
 data_difference_core(const Response& raw_response, Response& residual_response) 
 {
-  size_t num_fns = minimizerInstance->numUserPrimaryFns;
-  const ShortArray& asv = residual_response.active_set_request_vector();
+  IntVector experiment_lengths;
+  minimizerInstance->expData.per_exp_length(experiment_lengths);
 
+  size_t calib_term_ind = 0; // index into the total set of calibration terms
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
 
-    size_t offset = exp_ind*num_fns;
-    // form residuals for this experiment; must make temporary
-    //const RealVector& exp_data = minimizerInstance->expData.all_data(exp_ind);
-    //RealVector resid_fns = raw_response.function_values();    
-    //resid_fns -= exp_data;
+    size_t num_fns_exp = experiment_lengths[exp_ind]; // total length this exper
+
+    // form residuals for this experiment
     RealVector resid_fns;
     minimizerInstance->expData.form_residuals(raw_response, exp_ind, resid_fns);
    
     if (applyCovariance) {
+  
+      // Within a field group, cannot have matrix (off-diagonal)
+      // covariance and non-uniform ASV
+      //
+      // TODO: This is overly conservative; instead check whether
+      // matrix covariance is active on per-field group basis
+      const ShortArray& asv = residual_response.active_set_request_vector();
+      short total_asv = 0;
+      if (matrixCovarianceActive) {
 
-      // determine presence and consistency of active set vector requests
-      size_t asv_1 = 0, asv_2 = 0, asv_4 = 0;
-      for (size_t fn_ind = 0; fn_ind < num_fns; ++fn_ind) {
-	if (asv[fn_ind] & 1) ++asv_1;
-	if (asv[fn_ind] & 2) ++asv_2;
-	if (asv[fn_ind] & 4) ++asv_4;
-      }
-      // with matrix covariance, each of fn, grad, Hess must have all
-      // same asv (either none or all)
-      if (matrixCovarianceActive &&
-	  ((asv_1 != 0 && asv_1 != num_fns) ||
-	   (asv_2 != 0 && asv_2 != num_fns) ||
-	   (asv_4 != 0 && asv_4 != num_fns))
-	  ) {  
-	Cerr << "\nError: matrix form of data error covariance cannot be used "
-	     << "with non-uniform\n       active set vector; consider disabling "
-	     << "active set vector or specifying no\n      , scalar, or "
-	     << "diagonal covariance" << std::endl;
-	abort_handler(-1);
+	const IntVector& exp_field_lens = 
+	  minimizerInstance->expData.field_lengths(exp_ind);
+    	size_t num_scalar = minimizerInstance->expData.num_scalars();
+	size_t num_field_groups = minimizerInstance->expData.num_fields();
+	size_t field_start = calib_term_ind + num_scalar;
+	for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
+
+	  size_t num_fns_field = exp_field_lens[fg_ind];
+	  
+	  // determine presence and consistency of active set vector
+	  // requests within this field
+	  size_t asv_1 = 0, asv_2 = 0, asv_4 = 0;
+	  for (size_t fn_ind = 0; fn_ind < num_fns_field; ++fn_ind) {
+	    if (asv[field_start + fn_ind] & 1) ++asv_1;
+	    if (asv[field_start + fn_ind] & 2) ++asv_2;
+	    if (asv[field_start + fn_ind] & 4) ++asv_4;
+	  }
+	  
+	  // with matrix covariance, each of fn, grad, Hess must have all
+	  // same asv (either none or all) (within a field response group)
+	  if ( (asv_1 != 0 && asv_1 != num_fns_field) ||
+	       (asv_2 != 0 && asv_2 != num_fns_field) ||
+	       (asv_4 != 0 && asv_4 != num_fns_field)) {  
+	    Cerr << "\nError: matrix form of data error covariance cannot be "
+		 << "used with non-uniform\n       active set vector; consider "
+		 << "disabling active set vector or specifying no\n      , "
+		 << "scalar, or diagonal covariance" << std::endl;
+	    abort_handler(-1);
+	  }
+	  if (asv_1 > 0) total_asv |= 1;
+	  if (asv_2 > 0) total_asv |= 2;
+	  if (asv_4 > 0) total_asv |= 4;
+	}
       }
 
       if (outputLevel >= DEBUG_OUTPUT)
 	Cout << "\nLeast squares: weighting least squares terms with inverse of "
 	     << "specified error covariance." << std::endl;
  
+      
       // BMA TODO: Reduce copies with more granular fn, grad, Hess management
       RealVector weighted_resid;
-      if (asv_1 > 0)
+      if (total_asv & 1)
 	expData.apply_covariance_inv_sqrt(resid_fns, exp_ind, weighted_resid);
       else
 	weighted_resid = resid_fns;
 
       // apply cov_inv_sqrt to each row of gradient matrix
       RealMatrix weighted_grad;
-      if (asv_2 > 0) {
+      if (total_asv & 2) {
       	expData.apply_covariance_inv_sqrt(raw_response.function_gradients(),
 					  exp_ind, weighted_grad);
       }
@@ -1041,22 +1103,24 @@ data_difference_core(const Response& raw_response, Response& residual_response)
 
       // apply cov_inv_sqrt to non-contiguous Hessian matrices
       RealSymMatrixArray weighted_hess;
-      if (asv_4 > 0)
+      if (total_asv & 4)
 	expData.apply_covariance_inv_sqrt(raw_response.function_hessians(), 
 					  exp_ind, weighted_hess);
 
       copy_residuals(weighted_resid, weighted_grad, weighted_hess, 
-		     offset, num_fns, residual_response);
+		     calib_term_ind, num_fns_exp, residual_response);
     }
     else {
       // copy directly from raw gradients/Hessians into the residual response
       // don't need the grad copy, but the interface to getCol can't take const
       RealMatrix raw_grad = raw_response.function_gradients();
       copy_residuals(resid_fns, raw_grad, raw_response.function_hessians(), 
-		     offset, num_fns, residual_response);
+		     calib_term_ind, num_fns_exp, residual_response);
     }
 
-  }
+    calib_term_ind += num_fns_exp;
+
+  }  // for each experiment
 }
 
  
@@ -1122,6 +1186,7 @@ void Minimizer::
 replicate_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
 		   ActiveSet& sub_model_set)
 {
+  // BMA: IS this actually needed as an override?!?
   // AUGMENT standard mappings in RecastModel::set_mapping()
   const ShortArray& sub_model_asv = sub_model_set.request_vector();
   size_t i,j, num_sm_fns = sub_model_asv.size();

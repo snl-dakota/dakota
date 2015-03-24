@@ -113,6 +113,16 @@ protected:
   /// secondary responses are unchanged)
   void data_transform_model();
 
+  /// compute the primary response map for a data transform RecastModel
+  void gen_primary_resp_map(const SharedResponseData& srd,
+			    Sizet2DArray& primary_resp_map_indices,
+			    BoolDequeArray& nonlinear_resp_map) const;
+
+  /// expand submodel_array by replicates to populate a pre-sized recast_array
+  template<typename T>
+  void expand_array(const SharedResponseData& srd, const T& submodel_array, 
+		    T& recast_array) const;
+
   /// Wrap iteratedModel in a RecastModel that performs variable
   /// and/or response scaling
   void scale_model();

@@ -81,7 +81,7 @@ Response(BaseConstructor, const Variables& vars,
   if (!coord_file.empty() ) {
     RealMatrix coord_values;
     read_coord_values(coord_file,coord_values);
-    Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
+    //Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
     field_coords(coord_values,0);
   } 
 

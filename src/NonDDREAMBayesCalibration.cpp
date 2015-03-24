@@ -152,6 +152,11 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	 << std::endl;
   }
 
+  if (calibrateSigmaFlag) {
+    Cerr << "\nError: calibration of sigma temporarily unsupported." << std::endl;
+    abort_handler(-1);
+  }
+
 }
 
 
@@ -239,9 +244,10 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // calibrateSigmaFlag is true
   if (calibrateSigmaFlag) {
     for (int j=0; j<numFunctions; j++){
-      Real std_0_j = expData.scalar_sigma(j, 0);
-      paramMins[numContinuousVars+j]=0.01*std_0_j;
-      paramMaxs[numContinuousVars+j]=2.0*std_0_j;
+      // TODO: restore sigma calibration (need element-wise access to cov)
+      //      Real std_0_j = expData.scalar_sigma(j, 0);
+      paramMins[numContinuousVars+j] = 1.0; //0.01*std_0_j;
+      paramMaxs[numContinuousVars+j] = 1.0; //2.0*std_0_j;
     }
   }
  

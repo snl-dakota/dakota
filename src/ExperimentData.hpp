@@ -124,7 +124,11 @@ public:
   const RealVector& all_data(size_t experiment);
 
   /// return the individual sizes of the experimental data lengths
-  void per_exp_length(IntVector& per_length);
+  /// (all function values, scalar and field)
+  void per_exp_length(IntVector& per_length) const;
+
+  /// return the field lengths for specified experiment index
+  const IntVector& field_lengths(size_t experiment) const;
 
   /// retrieve the data value for the given response, for the given
   /// experiment 
@@ -245,11 +249,6 @@ private:
   /// Vector of numExperiments configurations at which data were
   /// gathered; empty if no configurations specified.
   std::vector<RealVector> allConfigVars;
-
-  // TO REMOVE
-  /// Temporary container to hold sigma data while migrating to
-  /// ExperimentCovariance
-  RealMatrix sigmaScalarValues;
 
 };
 

@@ -83,6 +83,9 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
   bool local_nls_recast = false;  // recasting LSQ to Opt in Optimizer
   bool local_moo_recast = false;  // recasting multiple to single objective
 
+  // BMA TODO: This may need updating based on multiple experiments 
+  // Don't think so.  However, fields don't contribute to num_lsq
+
   if (numObjectiveFns == 0) { // no user spec for num_objective_functions
     optimizationFlag = false; // used to distinguish NLS from MOO
     // allow solution of NLS problems as single-objective optimization
@@ -141,6 +144,7 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
   if (local_nls_recast && calibrationDataFlag) {
     data_transform_model();
     ++minimizerRecasts;
+    // TODO: Seems this needs to update number of number of calibration terms
   }
   if (scaleFlag) {
     scale_model();
@@ -350,6 +354,8 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // reduce to a single primary response, with all user primary
   // responses contributing
   if (local_nls_recast) {
+    // TODO: when reduce_model is called, model.primary_functions() should
+    // have the right size... Add model.secondary_functions() as well?
     size_t total_calib_terms; 
     if (!calibrationDataFlag)
       total_calib_terms = numUserPrimaryFns;

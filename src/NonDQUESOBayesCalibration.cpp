@@ -68,6 +68,11 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   bool calc_sigma_from_data = true; // calculate sigma if not provided
   expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
   
+  if (calibrateSigmaFlag) {
+    Cerr << "\nError: calibration of sigma temporarily unsupported." << std::endl;
+    abort_handler(-1);
+  }
+
   // for now, assume that if you are reading in any experimental 
   // standard deviations, you do NOT want to calibrate sigma terms
   // BMA TODO: this is wrong logic: need to check for != "none"
@@ -575,9 +580,10 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
       // Also need to sync up this with the logic in the ctor.  Also
       // need a default if there's no experimental data (may not be
       // sensible)
-      Real std_0_j = expData.scalar_sigma(j, 0);
-      paramMins[numContinuousVars+j] = 0.01*std_0_j;
-      paramMaxs[numContinuousVars+j] = 2.0*std_0_j;
+      // TODO: restore sigma calibration (need element-wise access to cov)
+      //      Real std_0_j = expData.scalar_sigma(j, 0);
+      paramMins[numContinuousVars+j] = 1.0; //0.01*std_0_j;
+      paramMaxs[numContinuousVars+j] = 1.0; //2.0*std_0_j;
     }
   }
  

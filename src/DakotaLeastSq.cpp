@@ -69,15 +69,15 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
 
   // Wrap the iteratedModel in 0 -- 3 RecastModels, potentially resulting
   // in weight(scale(data(model)))
-  Cout << "numTotalCalibTerms in DakotaLeastSq " << numTotalCalibTerms << '\n'; 
+  //Cout << "numTotalCalibTerms in DakotaLeastSq " << numTotalCalibTerms << '\n'; 
   if (calibrationDataFlag) {
     // this might set weights based on exp std deviations
     data_transform_model();
     ++minimizerRecasts;
-    //numFunctions = numTotalCalibTerms + numNonlinearConstraints;
+    numFunctions = numTotalCalibTerms + numNonlinearConstraints;
     numLeastSqTerms = numTotalCalibTerms;
     numIterPrimaryFns = numTotalCalibTerms;
-    Cout << " numLeastSqTerms in DakotaLeastSq " << numLeastSqTerms << '\n';
+    //Cout << " numLeastSqTerms in DakotaLeastSq " << numLeastSqTerms << '\n';
   }
   if (scaleFlag) {
     scale_model();

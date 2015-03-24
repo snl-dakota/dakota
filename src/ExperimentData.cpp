@@ -197,7 +197,6 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
 
   // TODO: temporary duplication until necessary covariance APIs are updated
   size_t num_scalar = simulationSRD.num_scalar_responses();
-  sigmaScalarValues.reshape(numExperiments,num_scalar);
 
   // setup for reading historical format, one experiment per line,
   // each consisting of [ [config_vars] fn values [ fn variance ] ]
@@ -299,7 +298,6 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
       std::cout << "\n  Data values, experiment " << i << "\n";
       allExperiments[i].write(std::cout);
     }
-    Cout << "\nExperiment variance values:\n" << sigmaScalarValues << std::endl;
   }
 
   // TODO: exists extra data in scalar_data_stream
@@ -401,10 +399,6 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     }
   }
 
-  // TODO: temporary duplication until necessary covariance APIs are updated
-  for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index)
-    sigmaScalarValues(exp_index, fn_index) = sigma_scalars[fn_index];
-
   // Data for sigma - Note: all fields have matrix, diagonal or none covariance (sigma_ data)
   //                        and so we dimension accordingly.
   size_t num_field_no_sigmas = num_fields - (num_sigma_matrices + num_sigma_diagonals + num_sigma_scalars)
@@ -460,6 +454,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     case SCALAR_SIGMA:
       // read single value, expand to a diagonal of appropriate length = field_length and add
       // field_index to diagonals map
+      Cout << "Reading scalar cov from " << field_base.string() << std::endl;
       read_covariance(field_base.string(), exp_index+1, working_cov_values);
       sigma_diagonals[count_sigma_diagonals].sizeUninitialized(field_lengths[field_index]);
       for( int i=0; i<field_lengths[field_index]; ++i )
@@ -471,6 +466,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     case DIAGONAL_SIGMA:
       // read N values, add to sigma_diagonals and add num_scalars +
       // field_index to diagonals map
+      Cout << "Reading diagonal cov from " << field_base.string() << std::endl;
       read_covariance(field_base.string(), exp_index+1, Dakota::CovarianceMatrix::VECTOR,
                       field_lengths[field_index], working_cov_values);
       sigma_diagonals[count_sigma_diagonals].sizeUninitialized(field_lengths[field_index]);
@@ -566,7 +562,7 @@ config_vars(size_t experiment)
   return(allConfigVars[experiment]);
 }
 
-void ExperimentData::per_exp_length(IntVector& per_length)
+void ExperimentData::per_exp_length(IntVector& per_length) const
 {
   per_length.resize(allExperiments.size());
   //Cout << "num experiments " << num_experiments();
@@ -576,6 +572,11 @@ void ExperimentData::per_exp_length(IntVector& per_length)
   //Cout << "per length " << per_length;
 }
 
+
+const IntVector& ExperimentData::field_lengths(size_t experiment) const
+{
+  return allExperiments[experiment].field_lengths();
+}
 
 const RealVector& ExperimentData::all_data(size_t experiment)
 {
@@ -602,17 +603,6 @@ scalar_data(size_t response, size_t experiment)
   //  abort_handler(-1);
   //}
   return(allExperiments[experiment].function_value(response));
-}
-
-Real ExperimentData::
-scalar_sigma(size_t response, size_t experiment)
-{
-  //if (allExperiments[response].experimentType != SCALAR_DATA) {
-  //  Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
-  //  abort_handler(-1);
-  //}
-  //return(allExperiments[experiment].get_scalar_covariance(response));
-  return(sigmaScalarValues(experiment, response));
 }
 
 RealVector ExperimentData::
