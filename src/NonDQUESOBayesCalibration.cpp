@@ -118,11 +118,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 	   << std::endl;
       abort_handler(-1);
     }
+    compactMode = true; // update_model() uses all{Samples,Responses}
     Real adapt_metric = DBL_MAX;
     int num_adapt = 0, batch_size = 5;
     while (adapt_metric > convergenceTol && num_adapt < maxIterations) {
       run_chain_with_restarting();
-      // Assess convergence of the posterior via sample-based K-L divergence:
+      // assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();
       // filter chain -or- extract full chain and sort on likelihood values.
       // Evaluate these MCMC samples with truth evals
@@ -130,7 +131,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       // update the emulator surrogate data with new truth evals and
       // reconstruct surrogate (e.g., via PCE sparse recovery)
       update_model();
-      // Assess convergence of the posterior via convergence of the PCE coeffs
+      // assess posterior convergence via convergence of the emulator coeffs
       adapt_metric = assess_emulator_convergence();
       ++num_adapt;
     }
@@ -455,8 +456,7 @@ Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 
 void NonDQUESOBayesCalibration::update_model()
 {
-  // Perform truth evals (in parallel) for selected points
-  compactMode = true;
+  // perform truth evals (in parallel) for selected points
   evaluate_parameter_sets(iteratedModel, true, false); // log allResponses
   // update emulatorModel with new data from iteratedModel
   emulatorModel.append_approximation(allSamples, allResponses, true); // rebuild
@@ -476,8 +476,12 @@ void NonDQUESOBayesCalibration::update_model()
 
 Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 {
-  Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
+  // coeff reference point not yet available; force another iteration rather
+  // than use norm of current coeffs (stopping on small norm is not meaningful)
+  if (prevCoeffs.empty())
+    return DBL_MAX;
 
+  Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
   switch (emulatorType) {
   case PCE_EMULATOR: {
     const RealVectorArray& coeffs
@@ -488,33 +492,22 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     // for regression PCE using a fixed (candidate) expansion definition.
     // Sparsity is not a concern as returned coeffs are inflated to be
     // dense with respect to SharedOrthogPolyApproxData::multiIndex.
-    if (prevCoeffs.empty()) { // compute delta relative to zero coeffs
-      for (i=0; i<num_qoi; ++i) {
-	const RealVector& coeffs_i = coeffs[i];
-	num_coeffs_i = coeffs_i.length();
-	for (j=0; j<num_coeffs_i; ++j) {
-	  delta_coeff_ij = coeffs_i[j]; // minus zero
-	  l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
-	}
+    for (i=0; i<num_qoi; ++i) {
+      const RealVector&      coeffs_i =     coeffs[i];
+      const RealVector& prev_coeffs_i = prevCoeffs[i];
+      num_coeffs_i = coeffs_i.length();
+      for (j=0; j<num_coeffs_i; ++j) {
+	delta_coeff_ij = coeffs_i[j] - prev_coeffs_i[j];
+	l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
       }
     }
-    else {
-      for (i=0; i<num_qoi; ++i) {
-	const RealVector& prev_coeffs_i = prevCoeffs[i];
-	const RealVector&      coeffs_i = coeffs[i];
-	num_coeffs_i = coeffs_i.length();
-	for (j=0; j<num_coeffs_i; ++j) {
-	  delta_coeff_ij = coeffs_i[j] - prev_coeffs_i[j];
-	  l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
-	}
-      }
-    }
+
     prevCoeffs = coeffs;
     break;
   }
   case SC_EMULATOR: {
-    // Interpolation cold use a similar concept with the expansion coeffs,
-    // although adaptation would necessarily imply differences in the grid.
+    // Interpolation could use a similar concept with the expansion coeffs,
+    // although adaptation would imply differences in the grid.
     const RealVectorArray& coeffs
       = emulatorModel.approximation_coefficients(false);
 
