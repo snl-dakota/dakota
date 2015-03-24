@@ -59,6 +59,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   nearbyTolerance(
     problem_db.get_real("interface.nearby_evaluation_cache_tolerance")),
   restartFileFlag(problem_db.get_bool("interface.restart_file")),
+  gradientType(problem_db.get_string("responses.gradient_type")),
+  hessianType(problem_db.get_string("responses.hessian_type")),
+  gradMixedAnalyticIds(problem_db.get_is("responses.gradients.mixed.id_analytic")),
+  hessMixedAnalyticIds(problem_db.get_is("responses.hessians.mixed.id_analytic")),
   failAction(problem_db.get_string("interface.failure_capture.action")),
   failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
@@ -71,36 +75,6 @@ ApplicationInterface(const ProblemDescDB& problem_db):
     Cerr << "\nError: no parameter to response mapping defined in "
 	 << "ApplicationInterface.\n" << std::endl;
     abort_handler(-1);
-  }
-
-  // If the user has specified active_set_vector as off, then map() uses a
-  // default ASV which is constant for all function evaluations (so that the
-  // user need not check the content of the ASV on each evaluation).
-  if (!asvControlFlag) {
-    size_t num_fns = (outputLevel > NORMAL_OUTPUT) ? fnLabels.size() :
-      problem_db.get_sa("responses.labels").size();
-    short asv_value = 1;
-    const std::string& grad_type
-      = problem_db.get_string("responses.gradient_type");
-    const std::string& hess_type
-      = problem_db.get_string("responses.hessian_type");
-    if (grad_type == "analytic")
-      asv_value += 2;
-    if (hess_type == "analytic")
-      asv_value += 4;
-    defaultASV.assign(num_fns, asv_value);
-    if (grad_type == "mixed") {
-      const IntSet& id_anal_grad
-	= problem_db.get_is("responses.gradients.mixed.id_analytic");
-      for (ISCIter cit=id_anal_grad.begin(); cit!=id_anal_grad.end(); ++cit)
-        defaultASV[*cit - 1] += 2;
-    }
-    if (hess_type == "mixed") {
-      const IntSet& id_anal_hess
-	= problem_db.get_is("responses.hessians.mixed.id_analytic");
-      for (ISCIter cit=id_anal_hess.begin(); cit!=id_anal_hess.end(); ++cit)
-        defaultASV[*cit - 1] += 4;
-    }
   }
 }
 
@@ -406,10 +380,11 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 			       Response& response, bool asynch_flag)
 {
   ++evalIdCntr; // all calls to map for this interface instance
+  const ShortArray& asv = set.request_vector();
+  size_t num_fns = asv.size();
   if (fineGrainEvalCounters) { // detailed evaluation reporting
-    const ShortArray& asv = set.request_vector();
-    size_t i, num_fns = asv.size();
-    for (i=0; i<num_fns; ++i) {
+    init_evaluation_counters(num_fns);
+    for (size_t i=0; i<num_fns; ++i) {
       short asv_val = asv[i];
       if (asv_val & 1) ++fnValCounter[i];
       if (asv_val & 2) ++fnGradCounter[i];
@@ -491,6 +466,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       //    on: asv seen by user's interface may change on each eval (default)
       //   off: asv seen by user's interface is constant for all evals
       if (!asvControlFlag) { // set ASV's to defaultASV for the mapping
+	init_default_asv(num_fns);  // initialize if not already done
 	core_set.request_vector(defaultASV); // DVV assigned above
 	core_resp.active_set(core_set);
       }
@@ -657,6 +633,36 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
   }
 
   return false; // Duplication not detected
+}
+
+/** If the user has specified active_set_vector as off, then map()
+    uses a default ASV which is constant for all function evaluations
+    (so that the user need not check the content of the ASV on each
+    evaluation).  Only initialized if needed and not already sized. */
+void ApplicationInterface::init_default_asv(size_t num_fns) {
+  if (!asvControlFlag && defaultASV.size() != num_fns) {
+    short asv_value = 1;
+    if (gradientType == "analytic")
+      asv_value |= 2;
+    if (hessianType == "analytic")
+      asv_value |= 4;
+    defaultASV.assign(num_fns, asv_value);
+    // TODO: the mixed ID sizes from the problem DB may not be
+    // commensurate with num_fns due to Recast transformations (MO
+    // reduce or experiment data); consider managing this in Model
+    if (gradientType == "mixed") {
+      ISCIter cit = gradMixedAnalyticIds.begin();
+      ISCIter cend = gradMixedAnalyticIds.end();
+      for ( ; cit != cend; ++cit)
+        defaultASV[*cit - 1] |= 2;
+    }
+    if (hessianType == "mixed") {
+      ISCIter cit = hessMixedAnalyticIds.begin();
+      ISCIter cend = hessMixedAnalyticIds.end();
+      for ( ; cit != cend; ++cit)
+        defaultASV[*cit - 1] |= 4;
+    }
+  }
 }
 
 

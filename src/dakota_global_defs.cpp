@@ -24,7 +24,7 @@
 // Toggle for MPI debug hold
 //#define MPI_DEBUG
 
-#if defined(MPI_DEBUG) && defined(MPICH2)
+#if defined(MPI_DEBUG) && defined(MPICH_NAME)
 #include <sys/types.h> 
 #include <sys/stat.h> 
 #include <fcntl.h> 
@@ -138,7 +138,8 @@ void mpi_debug_hold() {
   // hold parallel job prior to MPI_Init() in order to attach debugger to
   // master process.  Then step past ParallelLibrary instantiation and attach
   // debugger to other processes.
-#ifdef MPICH2
+//#ifdef MPICH2
+#ifdef MPICH_NAME
   // To use this approach, set $DAKOTA_DEBUGPIPE to a suitable name,
   // and create $DAKOTA_DEBUGPIPE by executing "mkfifo $DAKOTA_DEBUGPIPE".
   // After invoking "mpirun ... dakota ...", find the processes, invoke

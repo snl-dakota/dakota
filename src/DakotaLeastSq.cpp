@@ -69,13 +69,12 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
 
   // Wrap the iteratedModel in 0 -- 3 RecastModels, potentially resulting
   // in weight(scale(data(model)))
-  //numIterPrimaryFns = numUserPrimaryFns*numRowsExpData;
-  //numLeastSqTerms = numUserPrimaryFns*numRowsExpData;
   Cout << "numTotalCalibTerms in DakotaLeastSq " << numTotalCalibTerms << '\n'; 
   if (calibrationDataFlag) {
     // this might set weights based on exp std deviations
     data_transform_model();
     ++minimizerRecasts;
+    //numFunctions = numTotalCalibTerms + numNonlinearConstraints;
     numLeastSqTerms = numTotalCalibTerms;
     numIterPrimaryFns = numTotalCalibTerms;
     Cout << " numLeastSqTerms in DakotaLeastSq " << numLeastSqTerms << '\n';
@@ -531,6 +530,8 @@ void LeastSq::get_confidence_intervals()
       diag(i) += Jmatrix[j*numLeastSqTerms+i]*Jmatrix[j*numLeastSqTerms+i];
     standard_error[i] = std::sqrt(diag(i)*sigma_sq_hat);
   }
+  delete[] Jmatrix;
+
   confBoundsLower.sizeUninitialized(numContinuousVars);
   confBoundsUpper.sizeUninitialized(numContinuousVars); 
 //#ifdef HAVE_BOOST

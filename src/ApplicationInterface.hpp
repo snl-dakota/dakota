@@ -252,6 +252,10 @@ private:
   bool duplication_detect(const Variables& vars, Response& response,
 			  bool asynch_flag);
 
+  /// initialize default ASV if needed; this is done at run time due
+  /// to post-construct time Response size changes.
+  void init_default_asv(size_t num_fns);
+
   // Scheduling routines employed by synch():
 
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
@@ -460,6 +464,18 @@ private:
   /// used to manage a user request to deactivate the restart file (i.e., 
   /// insertions into write_restart).
   bool restartFileFlag;
+
+  /// type of gradients present in associated Response
+  String gradientType;
+
+  /// type of Hessians present in associated Response
+  String hessianType;
+
+  /// IDs of analytic gradients when mixed gradients present
+  IntSet gradMixedAnalyticIds;
+
+  /// IDs of analytic gradients when mixed gradients present
+  IntSet hessMixedAnalyticIds;
 
   /// the static ASV values used when the user has selected asvControl = off
   ShortArray defaultASV;

@@ -155,6 +155,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
   if (fineGrainEvalCounters) { // detailed evaluation reporting
     const ShortArray& asv = set.request_vector();
     size_t i, num_fns = asv.size();
+    init_evaluation_counters(num_fns);
     for (i=0; i<num_fns; ++i) {
       short asv_val = asv[i];
       if (asv_val & 1) { ++fnValCounter[i];  ++newFnValCounter[i];  }
