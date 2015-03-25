@@ -1,6 +1,7 @@
 #@ s*: Label=SmokeTest
 #@ p*: Label=SmokeTest
 #@ p0: MPIProcs=5
+
 # DAKOTA INPUT FILE - dakota_repartition.in
 
 # A two-pass parameter study with repartitioning of multiprocessor
@@ -12,9 +13,6 @@
 # method 2 (44 jobs through 1 5-proc. server).  11 processors is also
 # a good choice (5 2-proc. servers and 2 5-proc. servers with
 # dedicated- master/self-scheduling for both methods).
-
-# Processor specification for automated parallel tests:
-# p0=5
 
 environment,
 	top_method_pointer = 'HS'

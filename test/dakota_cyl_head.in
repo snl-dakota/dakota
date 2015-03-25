@@ -3,8 +3,8 @@
 #@ s22: DakotaConfig=HAVE_NLPQL
 #@ s23: DakotaConfig=HAVE_NLPQL
 #@ s24: DakotaConfig=HAVE_NLPQL
-# DAKOTA INPUT FILE : dakota_cyl_head.in
 
+# DAKOTA INPUT FILE : dakota_cyl_head.in
 # This file covers a testing matrix in which NPSOL, DOT, CONMIN, and OPT++
 # each solve the cyl_head problem with 5 different formulations:
 # (1) minimization w/ 3 nonlinear 1-sided ineq

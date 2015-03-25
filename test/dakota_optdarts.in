@@ -1,4 +1,4 @@
-# DAKOTA INPUT FILE - dakota_textbook_pce.in
+# DAKOTA INPUT FILE - dakota_optdarts.in
 
 environment,
 	#graphics

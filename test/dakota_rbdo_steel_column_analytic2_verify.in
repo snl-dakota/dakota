@@ -1,4 +1,5 @@
 #@ s*: Label=SmokeTest
+
 # DAKOTA Input File: dakota_rbdo_steel_column_analytic2.in
 # Optimization under uncertainty using reliability methods within a
 # fully-analytic bi-level RBDO approach.

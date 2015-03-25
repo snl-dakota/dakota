@@ -1,5 +1,6 @@
 #@ s2: TimeoutAbsolute=2400
 #@ s2: TimeoutDelay=1200
+
 # DAKOTA INPUT FILE - dakota_rosenbrock_importance.in
 # This file tests the importance sampling capabilities based on LHS. 
 # It is may be integrated into another rosenbrock file but for now 
@@ -15,8 +16,6 @@
 # it takes so long. 
 # NOTE:  to keep computational costs down, we could add "max_iterations = 5" 
 # in the method block for adapt_import and mm_adapt_import.
-
-# timeout overrides: 2=TD1200 2=TA2400
 
 environment,
 	  tabular_graphics_data

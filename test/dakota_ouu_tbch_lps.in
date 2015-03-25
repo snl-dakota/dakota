@@ -1,10 +1,10 @@
 #@ s*: Label=AcceptanceTest
 #@ s*: TimeoutDelay=120
+
 # DAKOTA Input File: dakota_ouu_tbch_lps.in
 # Used to verify optima from dakota_ouu1_tbch.in, dakota_sbouu2_tbch.in,
 # dakota_sbouu3_tbch.in, and dakota_sbouu4_tbch.in, dakota_trsbouu2_tbch.in,
 # and dakota_trsbouu4_tbch.in, in that order.
-#timeout override: 0=TD120 1=TD120 2=TD120 3=TD120
 
 environment,
 	  method_pointer = 'PS'

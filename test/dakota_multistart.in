@@ -2,6 +2,7 @@
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=4 CheckOutput='dakota.out.1'
 #@ p3: MPIProcs=4
+
 # DAKOTA INPUT FILE - dakota_multistart.in
 
 # Demonstrates the use of the multi_start environment for a
@@ -11,14 +12,8 @@
 
 # Parallel test matrix is dedicated master and peer partition
 # scheduling for concurrent iterators with single-processor and
-# multiprocessor iterator partitions.
-
-# Check the file dakota.out.1 instead of dakota.out:
-# p0=CheckOutput'dakota.out.1', p2=CheckOutput'dakota.out.1'
-
-# Processor specification for automated parallel tests:
-# p0=3, p1=3, p2=4, p3=4
-# parallel tests 2 and 3 include an idle partition due to over-allocation
+# multiprocessor iterator partitions. Parallel tests 2 and 3 include
+# an idle partition due to over-allocation
 
 environment,
 	top_method_pointer = 'MS'

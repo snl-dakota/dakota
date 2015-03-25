@@ -1,6 +1,7 @@
 #@ s*: Label=AcceptanceTest
 #@ p*: Label=SmokeTest
 #@ p0: MPIProcs=3 CheckOutput='dakota.out.1'
+
 # DAKOTA INPUT FILE: dakota_hybrid.in
 
 # Hybrid optimization on the unconstrained Textbook test problem using
@@ -11,12 +12,6 @@
 # This provides an initial global search using a derivative-free method,
 # followed by a local search using a derivative-free method, with a final
 # local search using a full Newton method.
-
-# Check the file dakota.out.1 instead of dakota.out:
-# p0=CheckOutput'dakota.out.1'
-
-# Processor specification for automated parallel tests:
-# p0=3
 
 environment,
 	top_method_pointer = 'HS'

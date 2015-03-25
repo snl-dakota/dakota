@@ -3,13 +3,12 @@
 #@ s1: TimeoutDelay=120
 #@ s2: TimeoutDelay=120
 #@ s3: TimeoutDelay=900
+
 # DAKOTA INPUT FILE : dakota_cantilever_ego.in
 # Note: currently this test file performs three different tests:
 # (1) efficient_global for constrained, global opt. with mean random vars
 # (2) efficient_global for constrained, global NLS  with mean random vars
 # (3) global_reliability for UQ at the nominal design
-
-# timeout overrides: 0=TD120 1=TD120 2=TD120 3=TD900 3=TA2400
 
 method,
 	efficient_global					#s0,#s1,#s2

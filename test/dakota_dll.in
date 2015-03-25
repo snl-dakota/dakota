@@ -1,11 +1,8 @@
 #@ s0: ExecCmd='dll_tester' ExecArgs='1' Restart=none CheckOutput='dakota_dll.log'
 
-# Dakota DLL test, based on rosenbrock users test 0
+# Dakota DLL test, based on rosenbrock users test s0
 # To execute test outside of the Dakota testing infrastructure:
 #    dll_tester 1 dakota_dll.in
-
-# Use alternate dll_tester with 2 trials (1 trials during initial debugging)
-# 0=D'dll_tester', 0=DA'1', 0=Rn, 0=CheckOutput'dakota_dll.log'
 
 environment
   tabular_graphics_data

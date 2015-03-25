@@ -3,13 +3,11 @@
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=2
 #@ p3: MPIProcs=3
+
 # Nonblocking scheduler tests:
 #   asynch local:    20
 #   message passing: p0 (peer), p1 (ded master)
 #   hybrid:          p2 (peer), p3 (ded master)
-
-# Processor specification for parallel tests:
-# p0=2,p1=3,p2=2,p3=3
 
 environment,
 	graphics tabular_graphics_data

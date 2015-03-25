@@ -2,14 +2,13 @@
 #@ s1: TimeoutDelay=360
 #@ s2: TimeoutDelay=360
 #@ s3: TimeoutDelay=360
+
 ##  DAKOTA INPUT FILE - dakota_mogatest1.in #s0
 
 #  This sample Dakota input file optimizes the MOP2 problem defined on
 #  page 5-13 of David Van Veldhuizen's Ph.D. thesis at the Air Force
 #  Institute of Technology, titled "Multiobjective Evolutionary
 #  Algorithms: Classifications, Analyses, and New Innovations.
- 
-# timeout overrides: 0=TD360, 1=TD360, 2=TD360, 3=TD360
 
 environment,
 	graphics tabular_graphics_data

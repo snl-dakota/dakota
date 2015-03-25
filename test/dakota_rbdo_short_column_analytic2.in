@@ -8,8 +8,6 @@
 # "short_column" problem from Kuschel and Rackwitz, 1997.  The
 # published soln is (b,h) = (8.668, 25.0) with f = 216.7
 
-# timeout overrides: 8=TA2100 11=TA2100
-
 environment,
 #	graphics
 	  method_pointer = 'OPTIM'

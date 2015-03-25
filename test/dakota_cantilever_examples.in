@@ -1,14 +1,15 @@
 # Cantilever examples used in Dakota training classes
-#  0 vector parameter study over all 6 vars
-#  1 centered parameter study over all 6 vars
-#  2 grid parameter study over 2 design vars
-#  3 sampling-based SA over all 6 vars
-#  4 sampling-based UQ over 4 uncertain vars
-#  5 local-reliability UQ over 4 uncertain vars
-#  6 PCE-based UQ over 4 uncertain vars
-#  7 optimization
-#  8 calibration to single values of area, stress, displacement
-#    (data generated with E = 2.85e7, w = 2.5, t = 3.0)
+#  s0 vector parameter study over all 6 vars
+#  s1 centered parameter study over all 6 vars
+#  s2 grid parameter study over 2 design vars
+#  s3 sampling-based SA over all 6 vars
+#  s4 sampling-based UQ over 4 uncertain vars
+#  s5 local-reliability UQ over 4 uncertain vars
+#  s6 PCE-based UQ over 4 uncertain vars
+#  s7 optimization
+#  s8 calibration to single values of area, stress, displacement
+#     (data generated with E = 2.85e7, w = 2.5, t = 3.0)
+
 environment
     tabular_graphics_data
     graphics

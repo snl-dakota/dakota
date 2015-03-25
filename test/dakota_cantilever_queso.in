@@ -1,7 +1,6 @@
 #@ p0: MPIProcs=1
-# DAKOTA INPUT FILE - dakota_cantilever_dream.in
-# p0=1
 
+# DAKOTA INPUT FILE - dakota_cantilever_dream.in
 
 method,									
         bayes_calibration queso, 	#s0,#p0						
