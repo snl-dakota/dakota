@@ -36015,6 +36015,10 @@ Moment-based statistics for each response function:
    0.0000000000e+00                      3.2769640651e+00
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+         weight: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
          weight: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 29 val (29 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -36048,11 +36052,15 @@ stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
 dakota_uq_cantilever_ivp_exp.in 
 Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)
+         weight: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (ALEAT_I): 3430 total (3430 new, 0 duplicate)
          weight: 539 val (539 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 1715 val (1715 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+mean_wt:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
 ccdf_beta_s:  Min = -1.0280259644e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345245456e+00  Max = 1.4095788060e+03
 Test Number 1 succeeded
@@ -36060,15 +36068,23 @@ Test Number 1 succeeded
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
-ccdf_beta_s:  Min = -1.3732302901e+01  Max = 1.9808834781e+01
-ccdf_beta_d:  Min = -1.4545923525e+01  Max = 9.4539727705e+02
+<<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
+ccdf_beta_s:  Min = -1.3732302901e+01  Max = 1.9817492249e+01
+ccdf_beta_d:  Min = -1.4545757332e+01  Max = 8.2341170428e+02
 Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)
+         weight: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (ALEAT_I): 3430 total (3430 new, 0 duplicate)
          weight: 539 val (539 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 1715 val (1715 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+mean_wt:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
 ccdf_beta_s:  Min = -1.0280259644e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345266678e+00  Max = 1.4095791165e+03
 Test Number 3 succeeded
@@ -36076,8 +36092,12 @@ Test Number 3 succeeded
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
-ccdf_beta_s:  Min = -1.5469449835e+01  Max = 2.0064600892e+01
+<<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
+         weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
+ccdf_beta_s:  Min = -1.5469449835e+01  Max = 2.0065699098e+01
 ccdf_beta_d:  Min = -1.9523639887e+00  Max = 1.0000000000e+50
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 1078 total (931 new, 147 duplicate)
@@ -45390,6 +45410,8 @@ Test Number 0 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
 Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 300 total (300 new, 0 duplicate)
+  response_fn_1: 300 val (300 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (ALEAT_I): 18000 total (16500 new, 1500 duplicate)
   response_fn_1: 18000 val (16500 n, 1500 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
@@ -45398,6 +45420,8 @@ Test Number 1 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 300 total (300 new, 0 duplicate)
+  response_fn_1: 300 val (300 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (ALEAT_I): 8200 total (7900 new, 300 duplicate)
   response_fn_1: 8200 val (7900 n, 300 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
@@ -45406,6 +45430,8 @@ Test Number 2 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 Test Number 3 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 1000 total (1000 new, 0 duplicate)
+  response_fn_1: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (ALEAT_I): 1000 total (1000 new, 0 duplicate)
   response_fn_1: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
@@ -63206,6 +63232,9 @@ Test Number 3 succeeded
    0.0000000000e+00   1.2189499948e-01   6.7590202943e-01
    2.5000000000e-01   1.2189499948e-01   6.7590202943e-01
 Test Number 4 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+  response_fn_1: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 63 total (51 new, 12 duplicate)
   response_fn_1: 38 val (33 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 31 val (24 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -64722,6 +64751,9 @@ Test Number 4 succeeded
 <<<<< Best data captured at function evaluation 4
 dakota_uq_timeseries_ivp_optinterf.in
 Test Number 0 succeeded
+<<<<< Function evaluation summary (OPTIONAL_I): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 4500 total (4500 new, 0 duplicate)
+      DeltaTime: 4500 val (4500 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 207 total (207 new, 0 duplicate)
 <<<<< Function evaluation summary (ALEAT_I): 9315 total (9315 new, 0 duplicate)
       DeltaTime: 9315 val (9315 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
