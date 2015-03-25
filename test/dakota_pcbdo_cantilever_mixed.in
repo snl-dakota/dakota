@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_DOT
 # DAKOTA Input File: dakota_pcbdo_cantilever_mixed.in
 # PCBDO with mixed insertion/augmentation using the cantilever test function.
 

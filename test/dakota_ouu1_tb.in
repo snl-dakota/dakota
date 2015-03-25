@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA Input File: dakota_ouu1_tb.in
 # Optimization under uncertainty
 # using a version of the Textbook test problem that

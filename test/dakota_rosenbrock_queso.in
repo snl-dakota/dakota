@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_QUESO
 #@ p*: MPIProcs=1
 # TO DO: remove #s0 -- it's only purpose is to provide an uncommented default
 

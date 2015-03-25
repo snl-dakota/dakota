@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # Dakota Input File: textbook_opt_ouu1.in
 environment
     method_pointer = 'OPTIM'

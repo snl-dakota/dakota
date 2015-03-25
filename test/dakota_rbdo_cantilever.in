@@ -1,3 +1,5 @@
+#@ TODO REVIEW: Do the reliability methods also need NPSOL?
+#@ *: DakotaConfig=HAVE_DOT
 # DAKOTA Input File: dakota_rbdo_cantilever.in
 # Bi-level RBDO using the cantilever test function.
 

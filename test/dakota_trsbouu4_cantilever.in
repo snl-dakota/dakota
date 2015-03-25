@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE: dakota_trsbouu4_cantilever.in
 #
 # Surrogate-based OUU with trust regions:

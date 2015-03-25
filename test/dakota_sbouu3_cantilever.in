@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_DOT
 # DAKOTA INPUT FILE: dakota_sbouu3_cantilever.in
 #
 # OUU with surrogates: nested containing surrogate

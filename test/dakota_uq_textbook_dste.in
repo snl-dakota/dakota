@@ -1,3 +1,4 @@
+#@ s5: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE - dakota_uq_textbook_dste.in
 
 environment,

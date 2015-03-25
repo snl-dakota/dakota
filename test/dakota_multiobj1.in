@@ -1,6 +1,9 @@
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_DOT
+#@ s8: DakotaConfig=HAVE_DOT
 #@ s4: DakotaConfig=HAVE_NLPQL
 #@ s9: DakotaConfig=HAVE_NLPQL
-
 # DAKOTA INPUT FILE - dakota_multiobj1.in
 
 # Unconstrained multiobjective optimization using the Textbook problem.

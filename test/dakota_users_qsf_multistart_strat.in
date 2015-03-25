@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_DOT
 # Dakota Input File: qsf_multistart_strat.in
 environment
   top_method_pointer = 'MS'

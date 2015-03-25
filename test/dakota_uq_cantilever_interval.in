@@ -1,3 +1,5 @@
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ p1: DakotaConfig=HAVE_NPSOL
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=2
 

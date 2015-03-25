@@ -1,3 +1,5 @@
+#@ Requires Windows, with very specific configuration
+#@ *: DakotaConfig=WIN32
 # Select work directory tests for Windows, taken from
 # dakota_workdir.in (left) to tests in this file (right)
 #  0 --> 0

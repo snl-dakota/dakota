@@ -1,3 +1,5 @@
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_NPSOL
 # Tests from the Additional Examples chapter in the DAKOTA Users Manual
 
 method,

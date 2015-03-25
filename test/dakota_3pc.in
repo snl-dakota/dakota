@@ -1,3 +1,6 @@
+#@ On Windows: abort; Unix shell; also refork
+#@ *: DakotaConfig=UNIX
+#@ *: DakotaConfig=HAVE_DOT
 # DAKOTA INPUT FILE - dakota_3pc.in
 
 # This tester populates a test matrix of fork/system vs. synch/asynch

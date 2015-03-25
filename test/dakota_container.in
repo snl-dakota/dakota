@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE : dakota_container.in
 
 environment,

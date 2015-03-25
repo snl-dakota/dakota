@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # Dakota Input File: container_opt_npsol.in
 environment
   graphics

@@ -1,3 +1,10 @@
+#@ s2: DakotaConfig=HAVE_DOT
+#@ s3: DakotaConfig=HAVE_DOT
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s16: DakotaConfig=HAVE_NPSOL
+#@ s17: DakotaConfig=HAVE_NPSOL
+#@ s20: DakotaConfig=HAVE_NPSOL
 #@ s12: TimeoutDelay=360
 #@ s13: TimeoutDelay=400
 

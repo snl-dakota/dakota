@@ -1,3 +1,5 @@
+#@ On Windows: mysteriously hangs when run by Jenkins
+#@ *: DakotaConfig=UNIX
 # DAKOTA INPUT FILE - dakota_uq_cantilever_ivp_exp.in
 
 environment,    

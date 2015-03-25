@@ -1,3 +1,5 @@
+#@ TODO REVIEW: Do all tests need NPSOL?
+#@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE : dakota_logratio_taylor2.in
 
 # This file covers second-order reliability index approach (RIA) CDF

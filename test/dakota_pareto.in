@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_DOT
 # DAKOTA INPUT FILE - dakota_pareto.in
 
 # Demonstrates the use of the Pareto set optimization environment.

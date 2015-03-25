@@ -1,3 +1,5 @@
+#@ s2: DakotaConfig=HAVE_DOT
+#@ s3: DakotaConfig=HAVE_DOT
 # DAKOTA INPUT FILE - dakota_illum.in
 
 # This sample Dakota input file optimizes the illumination example

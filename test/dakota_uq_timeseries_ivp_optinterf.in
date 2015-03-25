@@ -1,3 +1,5 @@
+#@ On Windows: workdir issue?
+#@ *: DakotaConfig=UNIX
 #@ s0: TimeoutAbsolute=1800
 
 # DAKOTA Input File: dakota_uq_timeseries_ivp_optinterf.in

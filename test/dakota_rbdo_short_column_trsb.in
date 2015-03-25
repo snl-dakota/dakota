@@ -1,3 +1,5 @@
+#@ TODO REVIEW: Do the reliability methods also need NPSOL?
+#@ *: DakotaConfig=HAVE_DOT
 # DAKOTA Input File: dakota_rbdo_short_column_trsb.in
 # Optimization under uncertainty using reliability methods within a
 # trust-region surrogate-based RBDO approach.  The RBDO problem is the

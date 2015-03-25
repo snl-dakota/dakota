@@ -1,3 +1,5 @@
+#@ *: DakotaConfig=HAVE_AMPL
+#@ *: DakotaConfig=HAVE_NPSOL
 # Solve the AMPL diet1 problem: minimize cost subject to buying at
 # least one entree, side, and drink.  The optimal objective is 2.81.
 #

@@ -1,3 +1,8 @@
+#@ *: DakotaConfig=HAVE_AMPL
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_NPSOL
 # dakota_ampl_tb.in
 
 method,

@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_QUESO
 #@ p0: MPIProcs=1
 # DAKOTA INPUT FILE - dakota_cantilever_queso.in
 # TO DO: remove #s0 -- it's only purpose is to provide an uncommented default

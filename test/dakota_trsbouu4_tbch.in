@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE: dakota_trsbouu4_tbch.in
 #
 # OUU with surrogates: surrogate containing nested containing surrogate

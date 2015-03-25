@@ -1,9 +1,18 @@
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_NPSOL
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_DOT
+#@ s6: DakotaConfig=HAVE_DOT
+#@ s7: DakotaConfig=HAVE_DOT
+#@ s8: DakotaConfig=HAVE_DOT
+#@ s9: DakotaConfig=HAVE_DOT
 #@ s20: DakotaConfig=HAVE_NLPQL
 #@ s21: DakotaConfig=HAVE_NLPQL
 #@ s22: DakotaConfig=HAVE_NLPQL
 #@ s23: DakotaConfig=HAVE_NLPQL
 #@ s24: DakotaConfig=HAVE_NLPQL
-
 # DAKOTA INPUT FILE : dakota_cyl_head.in
 # This file covers a testing matrix in which NPSOL, DOT, CONMIN, and OPT++
 # each solve the cyl_head problem with 5 different formulations:

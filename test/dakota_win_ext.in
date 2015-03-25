@@ -1,3 +1,5 @@
+#@ All platforms: unstable test
+#@ *: DakotaConfig=UNIX,WIN32
 # DAKOTA INPUT FILE - dakota_win_ext.in
 # test windows extensions, specifically .BAT script:  dakota_textbook.bat
 

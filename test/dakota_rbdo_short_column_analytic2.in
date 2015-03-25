@@ -1,3 +1,4 @@
+#@ TODO REVIEW: Do the reliability methods also need NPSOL?
 #@ *: DakotaConfig=HAVE_DOT
 #@ s8: TimeoutAbsolute=2100
 #@ s11: TimeoutAbsolute=2100

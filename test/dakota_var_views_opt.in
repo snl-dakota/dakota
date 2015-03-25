@@ -1,3 +1,7 @@
+#@ s0: DakotaConfig=HAVE_DOT
+#@ s9: DakotaConfig=HAVE_DOT
+#@ s1: DakotaConfig=HAVE_DOT
+#@ s10: DakotaConfig=HAVE_DOT
 #@ s2: DakotaConfig=HAVE_NLPQL
 #@ s11: DakotaConfig=HAVE_NLPQL
 

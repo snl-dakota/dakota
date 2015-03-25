@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_DOT
 # Dakota Input File: textbook_pareto_strat.in
 environment
   top_method_pointer = 'PS'

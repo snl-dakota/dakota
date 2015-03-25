@@ -1,3 +1,7 @@
+#@ s2: ReqFiles=oscillator.1.dat,oscillator.1.sigma
+#@ s3: ReqFiles=oscillatorA.1.dat,oscillatorA.1.sigma
+#@ s4: ReqFiles=oscillatorA.1.dat,oscillatorA.1.sigma
+#@ s5: ReqFiles=oscillatorB.1.coords,oscillatorB.1.dat,oscillatorB.1.sigma,oscB.coords
 # Test the experiment data read capability (scalars, field data, mixed) 
 # under a variety of conditions (sigma terms) and specification 
 # options. 

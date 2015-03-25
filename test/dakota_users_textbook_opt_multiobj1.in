@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # Dakota Input File: textbook_opt_multiobj1.in
 environment
   tabular_graphics_data

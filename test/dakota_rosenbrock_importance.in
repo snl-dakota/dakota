@@ -1,3 +1,5 @@
+#@ On Windows: File IO/performance issue?
+#@ *: DakotaConfig=UNIX
 #@ s2: TimeoutAbsolute=2400
 #@ s2: TimeoutDelay=1200
 

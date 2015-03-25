@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA Input File: dakota_rbdo_steel_column_trsb2.in
 # Optimization under uncertainty using reliability methods within a
 # fully-analytic sequential RBDO approach.

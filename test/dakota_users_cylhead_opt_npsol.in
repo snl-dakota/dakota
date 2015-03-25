@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 # Dakota Input File: cylhead_opt_npsol.in
 method
   npsol_sqp

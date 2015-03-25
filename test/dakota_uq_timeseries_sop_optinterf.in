@@ -1,3 +1,5 @@
+#@ On Windows: workdir issue?
+#@ *: DakotaConfig=UNIX
 # DAKOTA Input File: dakota_uq_timeseries_sop_optinterf.in
 # Mixed UQ with aleatory post-processing of optional interface simulation
 

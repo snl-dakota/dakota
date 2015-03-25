@@ -1,3 +1,10 @@
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+#@ s3: DakotaConfig=HAVE_DOT
+#@ s4: DakotaConfig=HAVE_DOT
+#@ s5: DakotaConfig=HAVE_DOT
+#@ s6: DakotaConfig=HAVE_DOT
 # DAKOTA INPUT FILE : dakota_cantilever.in
 
 # The cantilever test problem is primarily used in OUU testers.  This

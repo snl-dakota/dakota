@@ -1,3 +1,4 @@
+#@ s6: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE - dakota_textbook_nips.in
 
 method,
