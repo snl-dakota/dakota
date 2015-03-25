@@ -265,23 +265,35 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
   // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
   RealSymMatrix log_like_hess;
-  build_hessian_of_sum_square_residuals_from_function_hessians(
-    emulatorModel.current_response(), log_like_hess);
+  const Response& emulator_resp = emulatorModel.current_response();
+  RealMatrix prop_covar;
+  if (asrv & 4) { // try to use full misfit Hessian; fall back if indefinite
+    build_hessian_of_sum_square_residuals_from_response(emulator_resp,
+							log_like_hess);
+    bool ev_truncation =
+      get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
+    if (ev_truncation) { // fallback to Gauss-Newton
+      build_hessian_of_sum_square_residuals_from_function_gradients(
+        emulator_resp.function_gradients(), log_like_hess);
+      get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
+    }
+  }
+  else { // use Gauss-Newton approximate Hessian
+    build_hessian_of_sum_square_residuals_from_function_gradients(
+      emulator_resp.function_gradients(), log_like_hess);
+    get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
+  }
+
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "Hessian of misfit (negative log-likelihood):\n";
     write_data(Cout, log_like_hess, true, true, true);
     //Cout << "2x2 determinant = " << log_like_hess(0,0)*log_like_hess(1,1) -
     //  log_like_hess(0,1)*log_like_hess(1,0) << '\n';
-  }
 
-  // invert potentially indefinite Hessian
-  RealMatrix pd_covariance;
-  get_positive_definite_covariance_from_hessian(log_like_hess, pd_covariance);
-  if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "Positive definite covariance from inverse of misfit Hessian:\n";
-    write_data(Cout, pd_covariance, true, true, true);
-    //Cout << "2x2 determinant = " << pd_covariance(0,0)*pd_covariance(1,1) -
-    //  pd_covariance(0,1)*pd_covariance(1,0) << '\n';
+    write_data(Cout, prop_covar, true, true, true);
+    //Cout << "2x2 determinant = " << prop_covar(0,0)*prop_covar(1,1) -
+    //  prop_covar(0,1)*prop_covar(1,0) << '\n';
   }
 
   // pack GSL proposalCovMatrix
@@ -296,7 +308,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   }
   for (i=0; i<nv; ++i )
     for (j=0; j<nv; ++j )
-      (*proposalCovMatrix)(i,j) = pd_covariance(i,j);
+      (*proposalCovMatrix)(i,j) = prop_covar(i,j);
 }
 
 

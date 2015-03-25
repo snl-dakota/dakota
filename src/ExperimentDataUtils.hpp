@@ -210,8 +210,16 @@ public:
  * \param resp A response containing the residual vector, Jacobian
  * matrix, and Hessian symmetric matrix array
  */
-void build_hessian_of_sum_square_residuals_from_function_hessians(
+void build_hessian_of_sum_square_residuals_from_response(
        const Response& resp, RealSymMatrix &ssr_hessian );
+
+/** \brief Construct the hessian of the sum of squares of residuals
+ *  
+ * \param func_gradients A matrix containing the gradients of the
+ * residual vector
+ */
+void build_hessian_of_sum_square_residuals_from_function_gradients(
+       const RealMatrix &func_gradients, RealSymMatrix &ssr_hessian );
 
 /**
  * \brief Computes the eigenvalues and, optionally, eigenvectors of a
@@ -225,9 +233,9 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
 /**
  * \brief Compute the covariance C of a hessian matrix H, i.e, C=inv(H) 
  * The hessian is enforced to be positive definite by setting any negative
- * eigenvalues to zero.
+ * eigenvalues to zero.  The state of eigenvalue truncation is returned.
  */
-void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
+bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
 						    RealMatrix &covariance );
 
 

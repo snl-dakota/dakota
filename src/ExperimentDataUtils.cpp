@@ -405,7 +405,7 @@ void ExperimentCovariance::print_covariance_blocks() const {
   }
 }
 
-void build_hessian_of_sum_square_residuals_from_function_hessians(
+void build_hessian_of_sum_square_residuals_from_response(
        const Response& resp, RealSymMatrix &ssr_hessian )
 {
   // This function assumes that residuals are r = ( approx - data )
@@ -428,6 +428,26 @@ void build_hessian_of_sum_square_residuals_from_function_hessians(
 	if (rv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
 	if ( (rv_i & 5) == 5 ) hess_jk += residuals[i]*func_hessians[i](j,k);
       }
+      hess_jk *= 2.;
+    }
+  }
+}
+
+void build_hessian_of_sum_square_residuals_from_function_gradients(
+       const RealMatrix &func_gradients, RealSymMatrix &ssr_hessian )
+{
+  // This function assumes that residuals are r = ( approx - data )
+  // NOT r = ( data - approx )
+
+  // func_gradients is the transpose of the Jacobian of the functions
+  int num_rows      = func_gradients.numRows(),
+      num_residuals = func_gradients.numCols();
+  ssr_hessian.shape( num_rows ); // initialize to zero
+  for ( int k=0; k<num_rows; k++ ) {
+    for ( int j=0; j<=k; j++ ) {
+      Real &hess_jk = ssr_hessian(j,k);
+      for ( int i=0; i<num_residuals; i++ )
+	hess_jk += func_gradients(j,i)*func_gradients(k,i);
       hess_jk *= 2.;
     }
   }
@@ -483,8 +503,8 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
     }
 };
 
-void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
-						    RealMatrix &covariance )
+bool get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
+						   RealMatrix &covariance )
 {
   // I am returning covariance as a RealMatrix and not a RealSymMatrix 
   // because I cannot perform matrix multiplication with RealSymMatrix
@@ -535,6 +555,8 @@ void get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian
   covariance.shapeUninitialized( num_rows, num_rows );
   covariance.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 
 		       1.0, scaled_eigenvectors, eigenvectors, 0.0 );
+
+  return (num_negative_eigenvalues > 0);
 }
 
 } //namespace Dakota
