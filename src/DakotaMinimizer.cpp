@@ -395,12 +395,17 @@ void Minimizer::data_transform_model()
   // case: where derivatives are computed should be tied to whether
   // interpolation is present
 
+  // Need to correct a flaw in doing this: estimate derivatives uses a
+  // mix of DB lookups and new evals, but the DB lookups aren't
+  // transformed!
+
   // In the data transform case, perform numerical derivatives at the
   // RecastModel level (override the RecastModel default and the
   // subModel default)
-  iteratedModel.supports_derivative_estimation(true);
-  RecastModel* recast_model_rep = (RecastModel*) iteratedModel.model_rep();
-  recast_model_rep->submodel_supports_derivative_estimation(false);
+  // BMA: Disabled until debugged...
+  //  iteratedModel.supports_derivative_estimation(true);
+  //  RecastModel* recast_model_rep = (RecastModel*) iteratedModel.model_rep();
+  //  recast_model_rep->submodel_supports_derivative_estimation(false);
 
   // The following expansions are conservative.  Could be skipped when
   // only scalar data present and no replicates.
@@ -1045,18 +1050,20 @@ data_difference_core(const Response& raw_response, Response& residual_response)
       short total_asv = 0;
       if (matrixCovarianceActive) {
 
+    	size_t num_scalar = minimizerInstance->expData.num_scalars();
+	for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
+	  total_asv |= asv[calib_term_ind + sc_ind];
+
 	const IntVector& exp_field_lens = 
 	  minimizerInstance->expData.field_lengths(exp_ind);
-    	size_t num_scalar = minimizerInstance->expData.num_scalars();
 	size_t num_field_groups = minimizerInstance->expData.num_fields();
 	size_t field_start = calib_term_ind + num_scalar;
 	for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
 
-	  size_t num_fns_field = exp_field_lens[fg_ind];
-	  
 	  // determine presence and consistency of active set vector
 	  // requests within this field
 	  size_t asv_1 = 0, asv_2 = 0, asv_4 = 0;
+	  size_t num_fns_field = exp_field_lens[fg_ind];
 	  for (size_t fn_ind = 0; fn_ind < num_fns_field; ++fn_ind) {
 	    if (asv[field_start + fn_ind] & 1) ++asv_1;
 	    if (asv[field_start + fn_ind] & 2) ++asv_2;
@@ -1079,12 +1086,16 @@ data_difference_core(const Response& raw_response, Response& residual_response)
 	  if (asv_4 > 0) total_asv |= 4;
 	}
       }
+      else {
+	// compute aggregate ASV over scalars and field data
+	for (size_t fn_ind = 0; fn_ind < num_fns_exp; ++fn_ind)
+	  total_asv |= asv[calib_term_ind + fn_ind];
+      }
 
-      if (outputLevel >= DEBUG_OUTPUT)
+      if (outputLevel >= DEBUG_OUTPUT && total_asv > 0)
 	Cout << "\nLeast squares: weighting least squares terms with inverse of "
-	     << "specified error covariance." << std::endl;
- 
-      
+	     << "specified error\n               covariance." << std::endl;
+       
       // BMA TODO: Reduce copies with more granular fn, grad, Hess management
       RealVector weighted_resid;
       if (total_asv & 1)
