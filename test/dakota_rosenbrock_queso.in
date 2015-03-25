@@ -1,5 +1,5 @@
 method,									
-        bayes_calibration queso,	#s0,#s1,#s2,#s3,#p0
+        bayes_calibration queso,	#s0,#s1,#s2,#s3,#s4
          samples = 2000 seed = 348
          mcmc_type dram
            rejection delayed
