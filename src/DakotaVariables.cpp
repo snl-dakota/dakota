@@ -388,7 +388,8 @@ short Variables::response_view(const ProblemDescDB& problem_db) const
   // if optimization or calibration response set, infer an active design view
   // for all methods excepting members of NonDCalibration branch.  Excluding
   // all NOND_BIT methods complicates DACE with nond_sampling, so this is
-  // avoided for now.
+  // avoided for now.  Another alternative would be to make RANDOM_SAMPLING
+  // the special case (potentally only for submethods LHS and RANDOM).
   return ( problem_db.get_sizet("responses.num_objective_functions") ||
 	   ( problem_db.get_sizet("responses.num_least_squares_terms") && 
 	//   ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?

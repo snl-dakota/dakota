@@ -1,19 +1,24 @@
 method,									
-        bayes_calibration queso,	#s0,#p0
-# NOTE: typically you will want tens of thousands of samples
-         samples = 1000 seed = 348   	# just a short test
+        bayes_calibration queso,	#s0,#s1,#s2,#s3,#p0
+         samples = 2000 seed = 348
          mcmc_type dram
-           rejection delayed	# not critical
-           metropolis adaptive	# should adapt from improved starting covar
-# PCE spec
-	  emulator pce
-#	    sparse_grid_level = 2
-	    expansion_order = 4 collocation_ratio = 0.9
-#	    posterior_adaptive
-# GP spec
-#	  emulator gaussian_process surfpack
-#	    emulator_samples = 250
+           rejection delayed
+#	   metropolis adaptive	# adapt from provided proposal covar
+# PCE specs (sparse grid and regression)
+	  emulator pce						#s0,#s1
+	    sparse_grid_level = 2				#s0
+#	    expansion_order = 4 collocation_ratio = 0.9		#s1
+# SC spec (sparse grid and regression)
+#	  emulator sc						#s2
+#	    sparse_grid_level = 2				#s2
+# GP specs (surfpack and dakota)
+#	  emulator gaussian_process				#s3,#s4
+#	    surfpack						#s3
+#	    dakota						#s4
+#	    emulator_samples = 30				#s3,#s4
 	  output verbose
+	    proposal_updates = 50
+#	    posterior_adaptive
 
 variables,								
         uniform_uncertain 2

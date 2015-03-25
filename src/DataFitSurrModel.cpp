@@ -220,6 +220,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     gradientType = "none";
   if (hess_flag)
     hessianType = (approx_type == "global_polynomial" ||
+      approx_type == "global_kriging" ||
       strends(approx_type, "_orthogonal_polynomial") ||
     //strends(approx_type, "_interpolation_polynomial") || // TO DO
 		   strbegins(approx_type, "local_"))
