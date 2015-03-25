@@ -153,7 +153,7 @@ GaussProcApproximation(const ProblemDescDB& problem_db,
 #ifdef HAVE_NCSU
   Cout << "Using NCSU DIRECT to optimize correlation coefficients."<<std::endl;
 #else
-  Cerr << "NCSU DIRECT Optimizer is not available to calculate " 
+  Cerr << "Error: NCSU DIRECT Optimizer is not available to calculate " 
        << "the correlation coefficients governing the Gaussian process." 
        << "Aborting process. " << std::endl;
   abort_handler(-1);
@@ -295,7 +295,7 @@ GPmodel_apply(const RealVector& approx_pt, bool variance_flag,
 {
   size_t i, num_v = sharedDataRep->numVars;
   if (approx_pt.length() != num_v) {
-    Cout << "Dimension mismatch in GPmodel_apply" << std::endl;
+    Cerr << "Error: Dimension mismatch in GPmodel_apply" << std::endl;
     abort_handler(-1);
   }
 
@@ -648,10 +648,13 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
 
   // Gradient of prediction with respect to input
   if (gradients_flag) {
+#ifdef DEBUG_FULL
+    Cout << "\n<<<<< Entering gradient prediction in GP code\n";
+#endif //DEBUG_FULL
     // Currently, these gradients are only valid for constant trend
-    Cout << "\n<<<<< Entering gradient prediction in GP code";
-    if (trendOrder!=0) {
-      Cout << "GP gradients currently only valid for constant trend\n";
+    if (trendOrder) {
+      Cerr << "Error: GP gradients currently only supported for constant trend"
+	   << std::endl;
       abort_handler(-1);
     }
     // Construct the global matrix of derivatives, gradCovVector
@@ -671,8 +674,6 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
       approxGradient[i] = gradPred(i,0) = dotProd(0,0);
     }
   }
-  // End of gradient computations
-  
 
   if (variance_flag) {
     RealMatrix Rinv_covvec(numObs, 1, false), rT_Rinv_r(1, 1, false);
@@ -686,7 +687,7 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
     approxVariance = procVar*(1.- rT_Rinv_r(0,0));
 
 #ifdef DEBUG_FULL
-      Cout << "variance " << approxVariance << "\n\n";
+    Cout << "variance " << approxVariance << "\n\n";
 #endif //DEBUG_FULL
 
     // set this flag to true to use longer equation
