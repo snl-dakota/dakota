@@ -1,7 +1,5 @@
 #@ s4: TimeoutDelay=300
 
-# timeout overrides: 4=TD300
-
 environment,
 	#graphics
 #	output_precision = 16

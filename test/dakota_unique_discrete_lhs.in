@@ -1,4 +1,4 @@
-## DAKOTA INPUT FILE - dakota_backfill_lhs.in
+## DAKOTA INPUT FILE - dakota_unique_discrete_lhs.in
 
 # This file contains tests of the variable views override capability
 # in the context of LHS.  It covers discrete and continuous variables

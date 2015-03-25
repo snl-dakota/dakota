@@ -3,8 +3,6 @@
 #@ s1: Restart=read
 
 # dakota_incremental_sampling.in
-# Restart specification for tests (test 0: write, test 1: read)
-# 0=Rw, 1=Rr
 
 environment,
 	  tabular_graphics_data

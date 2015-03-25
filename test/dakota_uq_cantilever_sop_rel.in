@@ -1,4 +1,5 @@
 #@ p0: MPIProcs=2
+
 # DAKOTA Input File: dakota_uq_cantilever_sop_rel.in
 # Second-order probability (SOP) for the cantilever test function using
 # reliability methods on the inner loop.
@@ -9,9 +10,6 @@
 # is treated as uniform.  For test 0, the outer loop statistics are reported as
 # intervals on the inner loop statistics, where in test 1 they are treated as a
 # regular probability case in the outer loop.
-
-# Processor specification for parallel tests:
-# p0=2
 
 environment,
 #	graphics

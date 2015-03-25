@@ -1,9 +1,7 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=2
-# DAKOTA INPUT FILE - dakota_uq_cantilever_interval.in
 
-# Processor specification for parallel tests:
-# p0=2, p1=2
+# DAKOTA INPUT FILE - dakota_uq_cantilever_interval.in
 
 environment,    
 	tabular_graphics_data    

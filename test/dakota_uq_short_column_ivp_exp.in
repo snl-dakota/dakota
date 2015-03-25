@@ -6,13 +6,8 @@
 #@ p5: MPIProcs=3
 #@ p6: MPIProcs=6 CheckOutput='dakota.out.1'
 #@ p7: MPIProcs=5
+
 # DAKOTA INPUT FILE - dakota_uq_short_column_ivp_exp.in
-
-# Processor specification for parallel tests:
-# p0=2, p1=2, p2=2, p3=2, p4=3, p5=3, p6=6, p7=5
-
-# Check the file dakota.out.1 instead of dakota.out:
-# p4=CheckOutput'dakota.out.1', p6=CheckOutput'dakota.out.1'
 
 environment,
 	tabular_graphics_data

@@ -2,7 +2,7 @@
 #@ s1: TimeoutDelay=360
 #@ s2: TimeoutDelay=360
 #@ s3: TimeoutDelay=360
-#timeouts: 0=TD360, 1=TD360, 2=TD360, 3=TD360
+
 method,
 	sampling			#s0,#s1
 #	polynomial_chaos		#s2,#s3

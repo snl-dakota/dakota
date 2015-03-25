@@ -1,7 +1,6 @@
 #@ s0: TimeoutDelay=300
-# Dakota Input File: mogatest3.in
 
-# timeout overrides: 0=TD300
+# Dakota Input File: mogatest3.in
 
 environment
   graphics

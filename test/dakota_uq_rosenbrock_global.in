@@ -1,8 +1,7 @@
 #@ s0: TimeoutDelay=600
 #@ s1: TimeoutDelay=600
-# DAKOTA INPUT FILE : dakota_uq_rosenbrock_global.in
 
-# timeout overrides: 0=TD600, 1=TD600
+# DAKOTA INPUT FILE : dakota_uq_rosenbrock_global.in
 
 environment,
 	#graphics

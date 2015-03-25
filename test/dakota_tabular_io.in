@@ -6,14 +6,12 @@
 
 # 0: LHS; generate tabular output using pre-run mode; must also run
 #    -run and -post_run so output is generated for test diffing
-# 0=DA'-pre_run ::dakota_tabular_io.0.dat -run -post_run'
 
 # 1: Import the pre-run data for a list parameter study, since list
 #    import can't have responses in the data; dakota_tabular_io.1.dat
 #    will have response columns; should be same output as 3
 
 # 2: Import list parameter study output using post run 
-# 2=DA'-post_run dakota_tabular_io.1.dat::'
 
 # 3: LHS; generate tabular output to dakota_tabular_io.3.dat
 

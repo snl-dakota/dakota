@@ -1,8 +1,7 @@
 #@ s0: TimeoutAbsolute=1800
+
 # DAKOTA Input File: dakota_uq_timeseries_ivp_optinterf.in
 # Mixed UQ with aleatory post-processing of optional interface simulation
-
-# timeout override: 0=TA1800
 
 environment,
 #	graphics

@@ -1,4 +1,5 @@
 #@ s2: TimeoutDelay=180
+
 ## DAKOTA INPUT FILE - dakota_var_views_uq.in
 
 # This file contains tests of the variable views override capability
@@ -6,8 +7,6 @@
 # (discrete are covered in another test set) and considers only
 # default and 'active all' views to catch the most egregious problems.
 # Mix-and-match tests will be captured separately.
-
-# timeout overrides: 2=TD180
 
 method,
 	sampling,				#s0,   #s9

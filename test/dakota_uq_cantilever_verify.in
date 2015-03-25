@@ -1,5 +1,5 @@
 #@ s0: TimeoutDelay=240
-# timeout override: 0=TD240 
+
 method,
 	sampling
 	  samples = 100000 seed = 1234567
