@@ -6,14 +6,14 @@ environment
         tabular_graphics_data
 
 method,
-          nl2sol         			#s0,#s1,#s2,#s3
+          nl2sol         			#s0,#s1,#s2,#s3,#s5
 #          bayes_calibration dream 		#s4
 #          samples = 60				#s4
 #          chains = 3				#s4
           output debug
 
 variables,
-          continuous_design = 2			#s0,#s1,#s2,#s3
+          continuous_design = 2			#s0,#s1,#s2,#s3,#s5
 #	  uniform_uncertain = 2			#s4
 	  upper_bounds   0.5   0.5
 	  lower_bounds   0.1   0.1
@@ -24,23 +24,27 @@ interface,
 	  analysis_driver = 'damped_oscillator'
 
 responses,
-#        calibration_terms = 1             	#s2,#s3,#s4
+#        calibration_terms = 1             	#s2,#s3,#s4,#s5
         calibration_terms = 5             	#s0,#s1
 	scalar_calibration_terms = 5      	#s0,#s1
 	calibration_data_file = 'dakota_experiment_read.A.dat' freeform #s0
 #       calibration_data_file = 'dakota_experiment_read.B.dat' freeform #s1
-#        calibration_data			#s2,#s3,#s4
+#        calibration_data			#s2,#s3,#s4,#s5
         num_experiments = 1                     
         #num_config_variables = 1                        
         variance_type = 'none'			#s0
 #        variance_type = 'scalar'		#s1
-#        variance_type = 'diagonal'		#s2
+#        variance_type = 'diagonal'		#s2,#s5
 #        variance_type = 'matrix'		#s3,#s4
-#        field_calibration_terms = 1		#s2,#s3,#s4
+#        field_calibration_terms = 1		#s2,#s3,#s4,#s5
 #        lengths = 5				#s2,#s3,#s4
+#        lengths = 50				#s5
+#        num_coordinates_per_field = 1          #s5
+#         coordinate_data_file = 'oscB.coords'  #s5
 #	response_descriptors = 'oscillator'     #s2
 #	response_descriptors = 'oscillatorA'    #s3,#s4
-        numerical_gradients                     #s0,#s1,#s2,#s3	
+#	response_descriptors = 'oscillatorB'    #s5
+        numerical_gradients                     #s0,#s1,#s2,#s3,#s5	
 #        no_gradients                           #s4
 	no_hessians
 

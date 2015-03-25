@@ -5254,6 +5254,18 @@ Test Number 3 succeeded
 <<<<< Best data captured at function evaluation 19
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.2177001893e-01 x1
+                      1.0548994455e-01 x2
+<<<<< Best residual terms      =
+                      7.1952646532e-02
+                      2.8361073781e-01
+                      2.4553714234e-01
+                     -2.6564265891e-02
+                     -1.6970486451e-01
+<<<<< Best data not found in evaluation cache
 dakota_field.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
@@ -21735,7 +21747,6 @@ Test Number 9 succeeded
                      -3.4878150029e-01
                      -9.2652280288e-01
                      -5.7140784474e-01
-<<<<< Best constraint values   =
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
