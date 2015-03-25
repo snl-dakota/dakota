@@ -412,7 +412,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # to field data naming requirements:
   # TODO: include this use case in test system enhancements
   set(oscillator_aux_files 
-    oscillator.1.dat  oscillator.1.sigma oscillatorA.1.dat oscillatorA.1.sigma)
+    oscillator.1.dat  oscillator.1.sigma oscillatorA.1.dat oscillatorA.1.sigma
+    oscillatorB.1.dat oscillatorB.1.sigma oscillatorB.1.coords oscB.coords)
   foreach(file ${oscillator_aux_files})
     add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
       ${CMAKE_CURRENT_BINARY_DIR}/${file})
