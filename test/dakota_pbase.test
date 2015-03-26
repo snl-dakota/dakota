@@ -4159,6 +4159,20 @@ Test Number 0 succeeded
                       0.0000000000e+00
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 31
+dakota_rosenbrock_queso.in 
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+Test Number 4 failed with exit code 255
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 155 total (155 new, 0 duplicate)
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 143 total (143 new, 0 duplicate)
 dakota_sbo_hierarchical.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
