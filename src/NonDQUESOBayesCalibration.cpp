@@ -493,17 +493,23 @@ void NonDQUESOBayesCalibration::update_model()
     Cout << "Updating emulator: evaluating " << allSamples.numCols()
 	 << " best points." << std::endl;
   evaluate_parameter_sets(iteratedModel, true, false); // log allResponses
+
   // update emulatorModel with new data from iteratedModel
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Updating emulator: appending " << allResponses.size()
 	 << " new data sets." << std::endl;
   emulatorModel.append_approximation(allSamples, allResponses, true); // rebuild
 
-  /* Is rebuild flag sufficient for PCE/SC?
+  /*
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR: {
-    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    stochExpIterator.run(pl_iter); break;
+    emulatorModel.append_approximation(allSamples, allResponses, false);
+    emulatorModel.build_approximation(); // --> compute coeffs, not increment
+    break;
+  }
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    emulatorModel.append_approximation(allSamples, allResponses, true);//rebuild
+    break;
   }
   */
 }

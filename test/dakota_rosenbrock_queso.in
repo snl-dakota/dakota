@@ -3,26 +3,21 @@
 # TO DO: remove #s0 -- it's only purpose is to provide an uncommented default
 
 method,									
-	bayes_calibration queso,			#s0,#p0,#p1,#p2,#p3,#p4
+	bayes_calibration queso
 	  samples = 2000 seed = 348
 	  mcmc_type dram
             rejection delayed
 #	    metropolis adaptive	# adapt from provided proposal covar
-# PCE specs (sparse grid and regression)
-	  emulator pce						#s0,#p0,#p1
-	    sparse_grid_level = 2				#s0,#p0
-#	    expansion_order = 4 collocation_ratio = 0.9		#p1
-# SC spec (sparse grid and regression)
-#	  emulator sc						#p2
-#	    sparse_grid_level = 2				#p2
-# GP specs (surfpack and dakota)
-#	  emulator gaussian_process				#p3,#p4
-#	    surfpack						#p3
-#	    dakota						#p4
-#	    emulator_samples = 30				#p3,#p4
-	  output verbose
+	  emulator
+	    pce sparse_grid_level = 2				#s0,#p0
+#	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
+#	    pce expansion_order = 4 collocation_ratio = 1.2	#p6
+#	    sc  sparse_grid_level = 2				#p2
+#	    gaussian_process surfpack emulator_samples = 30	#p3,#p5
+#	    gaussian_process dakota   emulator_samples = 30	#p4
 	    proposal_updates = 50
-#	    posterior_adaptive
+#	    posterior_adaptive					#p5,#p6
+#	  output verbose
 
 variables,								
         uniform_uncertain 2
