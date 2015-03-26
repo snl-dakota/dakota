@@ -23,14 +23,87 @@ macro(DakotaCopyTarget target_name deplist_varname)
     ${CMAKE_CURRENT_BINARY_DIR}/${executable_name})
 endmacro()
 
+# Macro: dakota_get_test_properties; macro so can set in parent context.
+#
+# Input: 
+#   test_name (without .in extension), "serial" or "parallel",
+#   variable containing all test properties to parse
+# Output: 
+#   add_this_test = FALSE if test disallowed by DakotaConfig
+#   test_labels: appended with any labels from the test file
+#   test_req_files: auxilliary files this test requires
+macro(dakota_get_test_properties test_name serpar_str test_props)
+  # TODO: strip whitespace from parsed values?
+
+  if (test_props)
+    #message("DEBUG: ${test_props} ")
+
+    # DakotaConfig: required configuration for this test
+    string(REGEX MATCH 
+      "${test_name}:${serpar_str}: DakotaConfig=[A-Za-z0-9_,]+" 
+      dc_match ${test_props}
+      )
+    if (dc_match)
+      string(REPLACE "${test_name}:${serpar_str}: DakotaConfig=" "" 
+	test_props_dc ${dc_match})
+      # Get tokens by comma
+      string(REGEX MATCHALL "[A-Za-z0-9_]+" prop_dc_list ${test_props_dc})
+      foreach (req_config ${prop_dc_list})
+	# if this CMake variable is not true, omit the test
+	if (NOT "${${req_config}}")
+	  message(STATUS 
+	    "Omitting test ${test_name}, ${serpar_str}; requires config: "
+	    "${req_config}")
+	  set(add_this_test FALSE)
+	endif()
+      endforeach()
+    endif()
+
+    # add CTest labels
+    string(REGEX MATCH 
+      "${test_name}:${serpar_str}: Label=[A-Za-z0-9_,]+" 
+      label_match ${test_props})
+    if (label_match)
+      string(REPLACE "${test_name}:${serpar_str}: Label=" "" 
+	test_props_labels ${label_match})
+      # Get tokens by comma
+      string(REGEX MATCHALL "[A-Za-z0-9_]+" props_labels_list 
+	${test_props_labels})
+      list(APPEND test_labels "${props_labels_list}")
+    endif()
+
+    # test dependency files
+    string(REGEX MATCH 
+      "${test_name}:${serpar_str}: ReqFiles=[A-Za-z0-9_,\\.]+" 
+      rf_match ${test_props})
+    if (rf_match)
+      string(REPLACE "${test_name}:${serpar_str}: ReqFiles=" "" 
+	test_props_rf ${rf_match})
+      # Get tokens by comma
+      string(REGEX MATCHALL "[A-Za-z0-9_\\.]+" props_rf_list 
+	${test_props_rf})
+      # TODO: strip whitespace?
+      foreach (req_file ${props_rf_list})
+	list(APPEND test_req_files "${req_file}")
+      endforeach()
+    endif()
+
+    # TODO: Could also consider use of
+    # WILL_FAIL property on individual tests.
+
+  endif()
+endmacro()
+
+
 # Find the number of the highest serial and parallel test in test_input_file
 # using regular expressions.  Set *_count_var as output variables.
+# TODO: we don't want to always assume #s0
 macro(dakota_count_subtests test_input_file serial_count_var parallel_count_var)
   set(max_serial_subtest -1)    # assume all tests from 0 to max are present
   set(max_parallel_subtest -1)  # assume all tests from 0 to max are present
-  file(STRINGS ${test_input_file} subtest_lines REGEX "#p?[0-9]+")
+  file(STRINGS ${test_input_file} subtest_lines REGEX "#[sp][0-9]+")
   foreach(marked_line ${subtest_lines})
-    string(REGEX MATCHALL "#p?[0-9]+" subtest_marks ${marked_line})
+    string(REGEX MATCHALL "#[sp][0-9]+" subtest_marks ${marked_line})
     foreach(st_mark ${subtest_marks})      
       if(st_mark MATCHES "#p[0-9]+")
 	string(REGEX REPLACE "#p([0-9]+)" "\\1" st_num ${st_mark})
@@ -38,7 +111,7 @@ macro(dakota_count_subtests test_input_file serial_count_var parallel_count_var)
 	  set(max_parallel_subtest ${st_num})
 	endif()
       else()
-	string(REGEX REPLACE "#([0-9]+)" "\\1" st_num ${st_mark})
+	string(REGEX REPLACE "#s([0-9]+)" "\\1" st_num ${st_mark})
 	if (st_num GREATER max_serial_subtest)
 	  set(max_serial_subtest ${st_num})
 	endif()
@@ -174,231 +247,107 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # Create one CTest per DAKOTA input file, in a protected subdirectory
 
   file(GLOB dakota_test_input_files 
-       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
-
-  # Agressively omit tests for partial distributions to internal and
-  # external web.  Initial set is aggressive, omitting any test that
-  # induces FAIL due to DOT, NPSOL, or NLPQL.  Later will want to do
-  # on a per test number basis.  These are conditional on TPL
-  # presence, not distribution type to make it easier for
-  # non-developers to run the tests.  Could also consider use of
-  # WILL_FAIL property on individual tests.
-
-  # Tests that fail due to missing DOT TPL
-  if(NOT HAVE_DOT)
-    list(REMOVE_ITEM dakota_test_input_files
-      dakota_3pc.in # SHOULD BE ABLE TO FIX
-      dakota_cantilever.in  # REVIEW
-      dakota_cyl_head.in # REVIEW
-      dakota_illum.in # REVIEW
-      dakota_multiobj1.in # REVIEW
-      dakota_multistart.in # REVIEW
-      dakota_ouu1_cantilever.in
-      dakota_ouu1_tbch.in 
-      dakota_pareto.in # REVIEW
-      dakota_pcbdo_cantilever_mixed.in
-      dakota_rbdo_cantilever.in
-      dakota_rbdo_cantilever_analytic.in
-      dakota_rbdo_cantilever_analytic2.in
-      dakota_rbdo_cantilever_mixed.in
-      dakota_rbdo_cantilever_trsb2.in
-      dakota_rbdo_short_column.in
-      dakota_rbdo_short_column_analytic.in
-      dakota_rbdo_short_column_analytic2.in
-      dakota_rbdo_short_column_trsb.in
-      dakota_rbdo_short_column_trsb2.in
-      dakota_rbdo_steel_column.in
-      dakota_rbdo_steel_column_analytic2.in
-      dakota_rosenbrock.in # REVIEW
-      dakota_sbnls_rosen.in # REVIEW
-      dakota_sbouu3_cantilever.in
-      dakota_sbouu3_tbch.in
-      dakota_scaling.in  # SHOULD BE ABLE TO FIX
-      dakota_scbdo_cantilever_mixed.in
-      dakota_textbook.in # REVIEW
-      dakota_users_qsf_multistart_strat.in # REVIEW
-      dakota_users_textbook_pareto_strat.in # REVIEW
-      dakota_var_views_opt.in      # SHOULD fix
-      )
-  endif()
-  # Tests that fail due to missing NPSOL or NLPQL TPL
-  if (NOT HAVE_NPSOL OR NOT HAVE_NLPQL)
-    list(REMOVE_ITEM dakota_test_input_files
-      dakota_addtnl_users.in
-      dakota_ampl_diet.in
-      dakota_ampl_fma.in
-      dakota_ampl_tb.in
-      dakota_container.in
-      dakota_drivers.in
-      dakota_logratio_taylor2.in
-      dakota_multiobj2.in
-      dakota_ouu1_tb.in
-      dakota_pareto_pcbdo_short_column.in
-      dakota_pcbdo_cantilever.in
-      dakota_pcbdo_cantilever_mf.in
-      dakota_pcbdo_cantilever_trsb.in
-      dakota_pcbdo_rosenbrock.in
-      dakota_pcbdo_rosenbrock_mf.in
-      dakota_pcbdo_rosenbrock_trsb.in
-      dakota_pcbdo_short_column.in
-      dakota_pcbdo_short_column_mf.in
-      dakota_pcbdo_short_column_trsb.in
-      dakota_pcbdo_steel_column.in
-      dakota_pcbdo_steel_column_mf.in
-      dakota_pcbdo_steel_column_trsb.in
-      dakota_rbdo_cantilever_analytic2_verify.in
-      dakota_rbdo_cantilever_trsb.in
-      dakota_rbdo_side_impact.in
-      dakota_rbdo_steel_column_trsb2.in
-      dakota_rosenbrock_fail.in
-      dakota_sbo_barnes.in
-      dakota_sbo_barnes_mf.in
-      dakota_sbo_hier_poly_prod.in
-      dakota_sbo_hierarchical.in
-      dakota_sbouu2_cantilever.in
-      dakota_sbouu2_tbch.in
-      dakota_sbouu4_cantilever.in
-      dakota_sbouu4_tbch.in
-      dakota_scbdo_cantilever.in
-      dakota_scbdo_cantilever_mf.in
-      dakota_scbdo_cantilever_trsb.in
-      dakota_scbdo_rosenbrock.in
-      dakota_scbdo_rosenbrock_mf.in
-      dakota_scbdo_rosenbrock_trsb.in
-      dakota_scbdo_short_column.in
-      dakota_scbdo_short_column_mf.in
-      dakota_scbdo_short_column_trsb.in
-      dakota_scbdo_steel_column.in
-      dakota_scbdo_steel_column_mf.in
-      dakota_scbdo_steel_column_trsb.in
-      dakota_sebdo_short_column_adapt.in
-      dakota_textbook_nips.in
-      dakota_trsbouu2_cantilever.in
-      dakota_trsbouu2_tbch.in
-      dakota_trsbouu4_cantilever.in
-      dakota_trsbouu4_tbch.in
-      dakota_uq_cantilever_interval.in
-      dakota_uq_cantilever_taylor2.in
-      dakota_uq_textbook_dste.in
-      dakota_users_cantilever_opt_npsol.in
-      dakota_users_container_opt_npsol.in
-      dakota_users_cylhead_opt_npsol.in
-      dakota_users_textbook_opt_multiobj1.in
-      dakota_users_textbook_opt_ouu1.in
-      dakota_var_views_uq.in
-      )
-  endif()
-
-  if(NOT HAVE_DREAM)
-    list(REMOVE_ITEM dakota_test_input_files
-    dakota_cantilever_dream.in 
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
+     
+  # Generate the test properties to a file by parsing test input
+  # files.  This can be slow, so do once, then parse the output.  Work
+  # in the source tree to avoid having to manage fully-qualified paths
+  # to binary tree.
+  # TODO: perform on a per-test basis
+  # TODO: write to binary tree
+  execute_process(COMMAND "${PERL_EXECUTABLE}" 
+    "${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl" "--test-properties" 
+    "dakota_*.in" 
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    OUTPUT_VARIABLE test_props_discard ERROR_VARIABLE test_props_discard
     )
-  endif()
-
-  if(NOT HAVE_QUESO)
-    list(REMOVE_ITEM dakota_test_input_files
-    dakota_cantilever_queso.in 
-    )
-  endif()
-
-
-  # Remove tests that fail on Windows (for now); the aborts could be
-  # managed via gold standards if they don't pop a Windows error dialog
-  if (WIN32)
-    list(REMOVE_ITEM dakota_test_input_files
-      dakota_3pc.in                         # abort: Unix shell; also refork
-      dakota_drivers.in                     # 4-6 abort; refork?
-      dakota_rbdo_steel_column_analytic2.in # abort: LAPACK error
-      dakota_uq_timeseries_ivp_optinterf.in # workdir issue?
-      dakota_uq_timeseries_sop_optinterf.in # workdir issue?
-      dakota_uq_cantilever_ivp_exp.in       # mysteriously hangs when run by Jenkins
-      dakota_rosenbrock_importance.in       # File IO/performance issue?
-      dakota_workdir.in                     # not sufficiently generic
-      dakota_win_ext.in                     # stability?
-      )
-  else()
-    # Remove windows-specific tests from the UNIX suite
-    list(REMOVE_ITEM dakota_test_input_files
-      dakota_win_ext.in
-      dakota_workdir_windows.in
-      )
-  endif()
-
-  # Load lists of smoke and acceptance tests
-  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_MODULE_PATH})
-  include(TestLabelsAcceptance)
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.properties" test_props)
 
   # Iterate the list of test files and create tests for each
+  # TODO: have perl script list all serial and parallel tests by number
   foreach(test_input_file ${dakota_test_input_files})
+
+    get_filename_component(test_name ${test_input_file} NAME_WE)
 
     # Glob up all files associated with this test input file
     # These get copied by add_application_test into test/dakota_*/
-    get_filename_component(test_name ${test_input_file} NAME_WE)
     file(GLOB test_all_files
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
       )
-
-    set(test_labels DakotaTest SerialTest)
-    list(FIND dakota_smoke_tests ${test_name} dst_index)
-    if (NOT dst_index EQUAL -1)
-      list(APPEND test_labels SmokeTest)
-    endif()
-    list(FIND dakota_acceptance_tests ${test_name} dst_index)
-    if (NOT dst_index EQUAL -1)
-      list(APPEND test_labels AcceptanceTest)
-    endif()
- 
+    
     # Count the number of tests in the file, giving the highest number
     # found (-1 if no hash marked tests found)
     set(ser_last_subtest -1)
     set(par_last_subtest -1)
     dakota_count_subtests(${test_input_file} ser_last_subtest par_last_subtest)
 
-    # Add either one test with all, or the 0-th test, followed by all sub-tests
-    dakota_app_test(${test_name} ${ser_last_subtest}
-      FILE_DEPENDENCIES "${test_all_files}"
-      LABELS ${test_labels})
+    # --- Add serial test ---
+    # test properties may disable a specific test based on configuration
+    set(add_this_test TRUE)
+    set(test_labels DakotaTest SerialTest)
+    set(test_req_files)  # files mentioned in input file ReqFiles=
+    # updates above 3 variables
+    dakota_get_test_properties("${test_name}" "serial" "${test_props}")
+    if (add_this_test)
 
-    # the test add makes a copy command without target, now track all
-    # the copied files for later addition to a custom target
-    foreach(file ${test_all_files})
-      set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/${file}")
-      list(APPEND copied_test_files_abs "${copied_file}")
-    endforeach()
+      # Add either one test with all, or the 0-th test, followed by all sub-tests
+      dakota_app_test(${test_name} ${ser_last_subtest}
+	FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
+	LABELS ${test_labels})
 
-    # Also copy the aux files into test/ to support direct testing with Perl
-    set(test_aux_files ${test_all_files})
-    list(REMOVE_ITEM test_aux_files ${test_input_file})
-
-    foreach(file ${test_aux_files})
-      add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-	${CMAKE_CURRENT_BINARY_DIR}/${file})
-      list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
-    endforeach()
-
-    # only add parallel tests when MPI enabled
-    if (DAKOTA_HAVE_MPI AND ${par_last_subtest} GREATER -1)
-      # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
-      set(test_labels DakotaTest ParallelTest)
-      list(FIND dakota_smoke_tests p${test_name} dst_index)
-      if (NOT dst_index EQUAL -1)
-	list(APPEND test_labels SmokeTest)
-      endif()
-      list(FIND dakota_acceptance_tests p${test_name} dst_index)
-      if (NOT dst_index EQUAL -1)
-	list(APPEND test_labels AcceptanceTest)
-      endif()
- 
-      dakota_app_test(${test_name} ${par_last_subtest} PARALLEL 
-	FILE_DEPENDENCIES ${test_all_files}
-	LABELS ${test_labels}
-	)
-
-      # track all the copied files for later addition to a custom target
-      foreach(file ${test_all_files})
-	set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
+      # the test add makes a copy command without target, now track all
+      # the copied files for later addition to a custom target
+      foreach(file ${test_all_files} ${test_req_files})
+	set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/${file}")
 	list(APPEND copied_test_files_abs "${copied_file}")
       endforeach()
+
+      # Also copy the aux files into test/ to support direct testing with Perl
+      set(test_aux_files ${test_all_files})
+      list(REMOVE_ITEM test_aux_files ${test_input_file})
+      foreach(file ${test_aux_files} ${test_req_files})
+	add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+	  ${CMAKE_CURRENT_BINARY_DIR}/${file})
+	list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
+      endforeach()
+
+    endif()  # add_this_test
+
+    # --- Add parallel test when MPI enabled, and file contains #p<int> ---
+    if (DAKOTA_HAVE_MPI AND ${par_last_subtest} GREATER -1)
+
+      # test properties may disable a specific test based on configuration
+      set(add_this_test TRUE)
+      set(test_labels DakotaTest ParallelTest)
+      set(test_req_files)  # files mentioned in the input file ReqFiles=
+      # updates above 3 variables
+      dakota_get_test_properties("${test_name}" "parallel" "${test_props}")
+
+      if (add_this_test)
+	dakota_app_test(${test_name} ${par_last_subtest} PARALLEL 
+	  FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
+	  LABELS ${test_labels}
+	  )
+
+	# track all the copied files for later addition to a custom target
+	foreach(file ${test_all_files} ${test_req_files})
+	  set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
+	  list(APPEND copied_test_files_abs "${copied_file}")
+	endforeach()
+
+	# This is necessary if files needed by a parallel test aren't
+	# called out for a serial test, or the serial test is omitted
+	# above.  However generates the same output from two copies;
+	# revisit if causes problems.
+	set(test_aux_files ${test_all_files})
+	list(REMOVE_ITEM test_aux_files ${test_input_file})
+	foreach(file ${test_aux_files} ${test_req_files})
+	  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+	    ${CMAKE_CURRENT_BINARY_DIR}/${file})
+	  list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
+	endforeach()
+      endif()
+
     endif() # MPI enabled
 
     # TODO: The following regex needs to be based on output of dakota_diff.perl
@@ -407,21 +356,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     #  FAIL_REGULAR_EXPRESSION "fail")
 
   endforeach() # foreach test_input_file
-
-  # Data files that can't follow the auxilliary naming convention due
-  # to field data naming requirements:
-  # TODO: include this use case in test system enhancements
-  set(oscillator_aux_files 
-    oscillator.1.dat  oscillator.1.sigma oscillatorA.1.dat oscillatorA.1.sigma
-    oscillatorB.1.dat oscillatorB.1.sigma oscillatorB.1.coords oscB.coords)
-  foreach(file ${oscillator_aux_files})
-    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-      ${CMAKE_CURRENT_BINARY_DIR}/${file})
-    list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
-    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-      ${CMAKE_CURRENT_BINARY_DIR}/dakota_experiment_read/${file})
-    list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/dakota_experiment_read/${file}")  
-  endforeach()
 
   # Copy targets from src/ to test/ to facilitate testing.  We place
   # the rules for copying executables from src/ in the test/
@@ -467,7 +401,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 
 
-# Executables needed for DAKOTA testing, but NOT unit tests
+# Executables/drivers needed for DAKOTA system level testing
 set(dakota_test_executables
   barnes
   barnes_lf
