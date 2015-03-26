@@ -24,7 +24,7 @@ my $bin_dir = "";            # default binary location is pwd (none)
 my $bin_ext = "";            # default extension is empty
 my $extract_filename = "";   # default is dakota_*.in_
 my $input_dir = "";          # default test file source is pwd
-my $mode = "run";            # modes are run, base, extract
+my $mode = "run";            # modes are run, base, extract, test_props
 my $output_dir = "";         # default output is pwd
 my $parallelism = "serial";  # whether DAKOTA runs in parallel
 my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
@@ -82,7 +82,7 @@ else {
   print "Testing in $parallelism, mode = $mode\n";
 }
 
-if ($mode ne "extract") {
+if ($mode eq "base" || $mode eq "run") {
   manage_parallelism();
 }
 
@@ -90,6 +90,10 @@ if ($mode ne "extract") {
 if ($mode eq "base") {
   open (TEST_OUT, ">${output_dir}${baseline_filename}") ||
     die "Error: cannot open ${output_dir}${baseline_filename}\n$!";
+}
+
+if ($mode eq "test_props") {
+  open (PROPERTIES_OUT, ">dakota_test.properties");
 }
 
 # for each input file perform test actions
@@ -117,6 +121,10 @@ foreach my $file (@test_inputs) {
     use Data::Dumper;
     print "DEBUG: All test options:\n";
     print Dumper(\%test_opts);
+  }
+  if ($mode eq "test_props") {
+    write_test_options($file);
+    next;
   }
 
   # In order to define multiple tests within one input file, we
@@ -383,6 +391,10 @@ foreach my $file (@test_inputs) {
 
 } # end foreach file
 
+if ($mode eq "test_props") {
+  close(PROPERTIES_OUT);
+}
+
 if ($mode eq "base") {
   close(TEST_OUT);
 }
@@ -417,6 +429,7 @@ sub process_command_line {
   my $opt_save_output = 0;
   my $opt_man = 0;
   my $opt_parallel = 0;
+  my $opt_test_props = 0;
 
   # Process long options
   GetOptions('base'           => \$opt_base,
@@ -430,7 +443,8 @@ sub process_command_line {
 	     'save-output'    => \$opt_save_output,
   	     'man'            => \$opt_man,
   	     'output-dir=s'   => \$output_dir,
-  	     'parallel'       => \$opt_parallel
+  	     'parallel'       => \$opt_parallel,
+	     'test-properties'=> \$opt_test_props
 	     ) || pod2usage(1);
   pod2usage(0) if $opt_help;
   pod2usage(-exitstatus => 0, -verbose => 2) if $opt_man;
@@ -441,7 +455,11 @@ sub process_command_line {
   }
   
   # extraction and baseline options
-  if ($opt_extract || $extract_filename) {
+  if ($opt_test_props) {
+    # short-circuits any other mode
+    $mode = "test_props";
+  }
+  elsif ($opt_extract || $extract_filename) {
     if ($opt_base || $baseline_filename) {
       die "Error: cannot specify --base* and --extract* together";
     }
@@ -660,6 +678,7 @@ sub parse_test_options {
 sub parse_key_val {
 
   # Regular expressions for key/value pairs
+  my $req_files_re = "(ReqFiles)=(.*)";
   my $check_output_re = "(CheckOutput)='(.*)'";
   my $dak_config_re = "(DakotaConfig)=(.*)";                # multi-valued
   my $depends_on_re = "(DependsOn)=([sp][0-9]+)";
@@ -673,6 +692,7 @@ sub parse_key_val {
   my $timeout_delay_re = "(TimeoutDelay)=([0-9]+)";
 
   @all_keyval_re = (
+    "${req_files_re}",
     "${check_output_re}",
     "${dak_config_re}",
     "${depends_on_re}",
@@ -685,6 +705,9 @@ sub parse_key_val {
     "${timeout_absolute_re}",
     "${timeout_delay_re}"
       );
+
+  # TODO: allow append of multiple of same option split across line
+  # TODO: more efficient data structure than double loop
 
   # this function receives a space-separated list of key/val pairs
   # tokenize on space, respecting quotes for filenames, arguments
@@ -727,6 +750,56 @@ sub get_test_option_value() {
   print "Using test option ${key} = ${value}\n" if ($value ne $default);
   return $value;
 }
+
+
+# Print per-input file test options to file PROPERTIES_OUT in format 
+#   dakota_input_file:serial|parallel: key=value
+# (one line per key/value entry).  For now, aggregate test options
+# across all serial (parallel) tests in the file yield
+#
+# TODO: print number of parallel/serial tests found in file
+# TODO: detect duplicates/conflicts
+# TODO: write on per-test basis
+sub write_test_options {
+  
+  my ($input_file) = @_;
+  substr($input_file,-3, 3) = "";  # trim .in
+ 
+  # TODO: print all?  Need another hash with all possible properties
+  # to regex matches
+  foreach my $property ("ReqFiles", "DakotaConfig", "Label") {
+    my $prop_ser = "";
+    my $prop_par = "";
+    my %uniq_serial;    # properties that apply to serial tests
+    my %uniq_parallel;  # properties that apply to parallel tests
+    # iterate all test selection types
+    while ( my ($test_select, $opts) = each %test_opts) {
+      if (exists $test_opts{$test_select}{"$property"}){
+	my $prop_vals = $test_opts{$test_select}{"$property"};
+	# *, s*, s[0-9]+, [0-9]+
+	if ($test_select =~ /^s?[\*0-9]+$/) {
+	  $uniq_serial{$prop_vals} = 1;
+	}
+	# *, p*, p[0-9]+, [0-9]+
+	if ($test_select =~ /^p?[\*0-9]+$/) {
+	  $uniq_parallel{$prop_vals} = 1;
+	}
+      }
+    }
+    # using comma delimiter to help with cmake interpretation
+    foreach my $prop_vals ( keys %uniq_serial ) {
+      $prop_ser = $prop_ser ? "$prop_ser,$prop_vals" : "$property=$prop_vals";
+    }
+    print(PROPERTIES_OUT "${input_file}:serial: ${prop_ser}\n") if $prop_ser;
+
+    foreach my $prop_vals ( keys %uniq_parallel ) {
+      # using comma to help with cmake interpretation
+      $prop_par = $prop_par ? "$prop_par,$prop_vals" : "$property=$prop_vals";
+    }
+    print(PROPERTIES_OUT "${input_file}:parallel: ${prop_par}\n") if $prop_par;
+  }
+}
+
 
 
 # Compute full restart option string from passed restart option and filename
@@ -1220,6 +1293,11 @@ for generated intermediate, diff, and baseline files
 save test input, output, error, and restart of the last subtest run;
 or set environment variable DAKOTA_TEST_SAVE_OUTPUT
 
+=item B<--test-properties>
+
+write test properties for specified tests to dakota_test.properties;
+short circuits any other modes or requests
+
 =back
 
 =head1 DESCRIPTION
@@ -1339,7 +1417,7 @@ single quotes are required to allow spaces in <filename>
 =item DakotaConfig=<dakota-define1>[,<dakota-define2>]
 
 only enable the test(s) if Dakota was configured with <dakota-define1>,
-e.g, HAVE_NPSOL, DAKOTA_HAVE_MPI
+e.g, HAVE_NPSOL;DAKOTA_HAVE_MPI; separate multiple with comma
 
 =item DependsOn=<test-selection>
 
