@@ -117,7 +117,7 @@ protected:
   /// set MH-specific inverse problem options calIpMhOptionsValues
   void set_mh_options();
   /// update MH-specific inverse problem options calIpMhOptionsValues
-  void update_mh_options();
+  void update_chain_size(unsigned int size);
 
   //The likelihood routine is in the format that QUESO requires, 
   //with a particular argument list that QUESO expects. 

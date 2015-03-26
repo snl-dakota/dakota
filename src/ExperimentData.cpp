@@ -176,8 +176,8 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
   exp_srd.response_type(EXPERIMENT_RESPONSE);
   Response exp_resp(exp_srd);
   if (outputLevel >= DEBUG_OUTPUT) {
-    std::cout << "Constructing experiment response" << std::endl;
-    exp_resp.write(std::cout);
+    Cout << "Constructing experiment response" << std::endl;
+    exp_resp.write(Cout);
   }
 
   if (numConfigVars > 0)
@@ -295,8 +295,8 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
       Cout << "Values of experiment configuration variables:\n" 
 	   << allConfigVars << "\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      std::cout << "\n  Data values, experiment " << i << "\n";
-      allExperiments[i].write(std::cout);
+      Cout << "\n  Data values, experiment " << i << "\n";
+      allExperiments[i].write(Cout);
     }
   }
 
@@ -473,7 +473,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       for( int i=0; i<field_lengths[field_index]; ++i )
         sigma_diagonals[count_sigma_diagonals](i) = working_cov_values[0][i];
       diagonal_map_indices[count_sigma_diagonals++] = fn_index; // or should it be field_index? - RWH 
-      //sigma_diagonals[count_sigma_diagonals-1].print(std::cout);
+      //sigma_diagonals[count_sigma_diagonals-1].print(Cout);
       break;
 
     case MATRIX_SIGMA:
@@ -483,7 +483,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
                       field_lengths[field_index], working_cov_values);
       sigma_matrices[count_sigma_matrices] = working_cov_values;
       matrix_map_indices[count_sigma_matrices++] = fn_index; // or should it be field_index? - RWH 
-      //sigma_matrices[count_sigma_matrices-1].print(std::cout);
+      //sigma_matrices[count_sigma_matrices-1].print(Cout);
       break;
     }
   }

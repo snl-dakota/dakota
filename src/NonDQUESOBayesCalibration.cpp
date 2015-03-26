@@ -147,10 +147,19 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
 void NonDQUESOBayesCalibration::run_chain_with_restarting()
 {
+  if (outputLevel >= NORMAL_OUTPUT) {
+    if (proposalUpdates > 1)
+      Cout << "Running chain in batches of " << numSamples << " with "
+	   << proposalUpdates << " restarts." << std::endl;
+    else
+      Cout << "Running chain with " << numSamples << " samples." << std::endl;
+  }
+
   //Real restart_metric = DBL_MAX;
   int prop_update_cntr = 0;
   //copy_data(emulatorModel.continuous_variables(), prevCenter);
   //RealVectorArray best_pts;
+  update_chain_size(numSamples);
 
   // update proposal covariance and recenter after short chain: a
   // workaround for inability to update proposal covariance on the fly
@@ -166,7 +175,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     // account for redundancy between final and initial
     if (prop_update_cntr == 1)
-      { ++numSamples; update_mh_options(); }
+      update_chain_size(numSamples+1);
 
     // This approach is too greedy and can get stuck (i.e., no point in new
     // chain has smaller mismatch than current optimal value):
@@ -314,14 +323,17 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
 void NonDQUESOBayesCalibration::run_queso_solver()
 {
-  Cout << "Running Bayesian Calibration with QUESO" << std::endl; 
+  Cout << "Running Bayesian Calibration with QUESO";
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "using the following settings:"
-	 << "\nQUESO standardized space " << quesoStandardizedSpace
-	 << "\nMCMC type "<< mcmcType << "\nRejection type "<< rejectionType
-	 << "\nMetropolis type " << metropolisType
-	 << "\nNumber of samples in the MCMC Chain " << numSamples
-	 << "\nCalibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
+    Cout << " using the following settings:"
+	 << "\n  QUESO standardized space " << quesoStandardizedSpace
+	 << "\n  MCMC type "<< mcmcType
+	 << "\n  Rejection type "<< rejectionType
+	 << "\n  Metropolis type " << metropolisType
+	 << "\n  Number of samples in the MCMC Chain "
+	 << calIpMhOptionsValues->m_rawChainSize
+	 << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag;
+  Cout << std::endl;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
@@ -372,10 +384,13 @@ void NonDQUESOBayesCalibration::filter_chain(unsigned short batch_size)
 	 << "\n                 but likelihood set has length" << num_llhood
 	 << std::endl;
   else {
-    if  (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Sorting and extracting " << batch_size << " samples from MCMC "
-	   << "chain with " << num_mcmc << " samples: " << std::endl;
-    QUESO::GslVector mcmc_sample(paramSpace->zeroVector()); RealVector mcmc_rv;
+    // Important Note: in the case of chain restarting, this is the *LAST*
+    // chain.  If the need for restarting persists, will need to cache best
+    // across all of the restarted cycles.
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Filtering chain: extracting best " << batch_size
+	   << " from MCMC chain with " << num_mcmc << " samples." << std::endl;
+    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
     // TO DO: want to keep different samples with same likelihood, but not 
     // replicate samples with same likelihood (from rejection); for now, use
     // a std::map since the latter is unlikely.
@@ -397,7 +412,7 @@ void NonDQUESOBayesCalibration::filter_chain(unsigned short batch_size)
 	best_samples.erase(best_samples.begin()); // pop front (lowest prob)
     }
 
-    if (outputLevel >= DEBUG_OUTPUT)
+    if (outputLevel > NORMAL_OUTPUT)
       Cout << "best_samples map:" << best_samples << std::endl;
 
     // convert chain_pos to RealVector
@@ -474,8 +489,14 @@ Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 void NonDQUESOBayesCalibration::update_model()
 {
   // perform truth evals (in parallel) for selected points
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Updating emulator: evaluating " << allSamples.numCols()
+	 << " best points." << std::endl;
   evaluate_parameter_sets(iteratedModel, true, false); // log allResponses
   // update emulatorModel with new data from iteratedModel
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Updating emulator: appending " << allResponses.size()
+	 << " new data sets." << std::endl;
   emulatorModel.append_approximation(allSamples, allResponses, true); // rebuild
 
   /* Is rebuild flag sufficient for PCE/SC?
@@ -483,9 +504,6 @@ void NonDQUESOBayesCalibration::update_model()
   case PCE_EMULATOR: case SC_EMULATOR: {
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     stochExpIterator.run(pl_iter); break;
-  }
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    emulatorModel.build_approximation(); break;
   }
   */
 }
@@ -528,23 +546,31 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     const RealVectorArray& coeffs
       = emulatorModel.approximation_coefficients(false);
 
-    Cerr << "Error: convergence norm not yet defined for SC emulator in "
+    Cerr << "Warning: convergence norm not yet defined for SC emulator in "
 	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
 	 << std::endl;
-    abort_handler(-1);
+    //abort_handler(-1);
+    return DBL_MAX;
     break;
   }
   case GP_EMULATOR: case KRIGING_EMULATOR:
     // Consider use of correlation lengths.
     // TO DO: define SurfpackApproximation::approximation_coefficients()...
-    Cerr << "Error: convergence norm not yet defined for GP emulators in "
+    Cerr << "Warning: convergence norm not yet defined for GP emulators in "
 	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
 	 << std::endl;
-    abort_handler(-1);
+    //abort_handler(-1);
+    return DBL_MAX;
     break;
   }
 
-  return std::sqrt(l2_norm_delta_coeffs);
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Real norm = std::sqrt(l2_norm_delta_coeffs);
+    Cout << "Assessing emulator convergence: l2 norm = " << norm << std::endl;
+    return norm;
+  }
+  else
+    return std::sqrt(l2_norm_delta_coeffs);
 }
 
 
@@ -856,15 +882,8 @@ void NonDQUESOBayesCalibration::set_mh_options()
 }
 
 
-
-void NonDQUESOBayesCalibration::update_mh_options() 
-{
-  // reset MH options that are subject to change
-
-  if (numSamples)
-    calIpMhOptionsValues->m_rawChainSize = numSamples;
-}
-
+void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
+{ if (size) calIpMhOptionsValues->m_rawChainSize = size; }
 
 
 //void NonDQUESOBayesCalibration::print_results(std::ostream& s)

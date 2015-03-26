@@ -42,6 +42,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	       (Real)proposalUpdates + .5) :
     probDescDB.get_int("method.samples");
 
+  // assign default maxIterations (DataMethod default is -1)
+  if (adaptPosteriorRefine && maxIterations < 0)
+    maxIterations = 25;
+
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     standardizedSpace = true; break;
