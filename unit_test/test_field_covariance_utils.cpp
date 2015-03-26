@@ -585,8 +585,7 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
   resp.function_hessians(func_hessians);
 
   RealSymMatrix ssr_hessian;
-  build_hessian_of_sum_square_residuals_from_function_hessians(resp,
-							       ssr_hessian);
+  build_hessian_of_sum_square_residuals_from_response(resp, ssr_hessian);
 
   RealSymMatrix truth_ssr_hessian( 2 );
   for ( int i=0; i<num_residuals; i++ ){
