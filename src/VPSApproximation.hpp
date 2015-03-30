@@ -67,6 +67,7 @@ namespace Dakota
         void VPS_retrieve_neighbors(size_t ipoint, bool update_point_neighbors);
         
         void VPS_adjust_extend_neighbors_of_all_points();
+        
         void VPS_extend_neighbors(size_t ipoint);
         
         void VPS_build_local_surrogate(size_t cell_index);
@@ -80,15 +81,25 @@ namespace Dakota
         //////////////////////////////////////////////////////////////
         // Least Square Sub Surrogate METHODS
         //////////////////////////////////////////////////////////////
-        void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin,
+        void retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound,
                                    bool force_sum_constraint, size_t sum_constraint);
 
-        void VPS_LS_retrieve_poly_coefficients(size_t cell_index);
+        void build_radial_basis_function(size_t icell);
+        
+        void VPS_LS_retrieve_weights(size_t cell_index);
+        
+        double evaluate_basis_function(double* x, size_t icell, size_t ibasis);
 
+        int constrained_LeastSquare(size_t n, size_t m, double** H, double* w, double* f);
+        double vec_dot_vec(size_t n, double* vec_a, double* vec_b);
         double vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b);
         bool Cholesky(int n, double** A, double** LD);
         void Cholesky_solver(int n, double** LD, double* b, double* x);
         void GMRES(size_t n, double** A, double* b, double* x, double eps);
+        void printMatrix(size_t m, size_t n, double** M);
+        
+        
+                
     
         //////////////////////////////////////////////////////////////
         // General METHODS
@@ -110,6 +121,10 @@ namespace Dakota
         //////////////////////////////////////////////////////////////
         
         double f_test(double* x); // some test functions for debugging
+        
+        void generate_poisson_disk_sample(double r);
+        
+        void generate_MC_sample();
     
         void isocontouring(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours);
     
@@ -185,8 +200,13 @@ private:
     
     
         enum subsurrogate{LS, GP};
-        subsurrogate _vps_subsurrogate;
-    
+        enum subsurrogate_basis{polynomial, radial};
+        enum testfunction{SmoothHerbie, Herbie, UnitSphere};
+        
+        subsurrogate       _vps_subsurrogate;
+        subsurrogate_basis _vps_subsurrogate_basis;
+        testfunction       _vps_test_function;
+        
         // variables for Random number generator
         double Q[1220];
         int indx;
@@ -211,10 +231,11 @@ private:
         size_t** _vps_ext_neighbors; // cell extended neighbors
     
     
-        size_t _vps_order, _vps_num_poly_terms, _num_GMRES;
-        double*  _sample_vsize;  // furthest distance between seed and one of its Voronoi corners
+        size_t _vps_order, _num_GMRES;
+        size_t* _num_cell_basis_functions; // number of basis functions for each cell
+        double* _sample_vsize;  // furthest distance between seed and one of its Voronoi corners
         double* _vps_dfar;       // furthest distance between a seed and its extended neighbors
-        
+        double*** _sample_basis;  // centers of rbs for a given cell
         
         double _max_vsize;     // size of biggest Voronoi cell
         double _disc_min_grad; // minimum gradient for discontinuity detection
@@ -226,8 +247,9 @@ private:
         // Sub surrogate variables
         ///////////////////////////////////////////////////////////////////////////////
         // LS
-        size_t**  _vps_t;  // LS powers of the polynomial expansion
-        double** _vps_c;  // LS polynomial coeffcients per point function
+        
+        size_t***  _vps_t; // LS_polynomials powers of the polynomial expansion
+        double**   _vps_w; // LS weights per point and basis function
 
         // GP
         SharedApproxData sharedData;

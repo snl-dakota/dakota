@@ -43,33 +43,18 @@ namespace Dakota
     {
         std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
     
+        //*** Test function for debugging only
+        _vps_test_function = SmoothHerbie;
+        
+        // Default subsurrogate is LS_polynomial
         _vps_subsurrogate = LS;
+        _vps_subsurrogate_basis = polynomial;
+        
+        // hacks to switch to GP and LS and radial basis functions
+        if (surrogateOrder == -1) _vps_subsurrogate = GP;
+        else if (surrogateOrder == -2) _vps_subsurrogate_basis = radial;
+
     
-        if (surrogateOrder < 0)
-        {
-            _vps_subsurrogate = GP;
-        }
-    
-        if (_vps_subsurrogate == LS)
-        {
-            std::cout << "*** VPS:: Using LS locally " << surrogateOrder << std::endl;
-        }
-        else if (_vps_subsurrogate == GP)
-        {
-            std::cout << "*** VPS:: Using GP locally " << surrogateOrder << std::endl;
-            surrogateOrder = 0;
-            _vps_num_poly_terms = 5;
-        }
-    
-        if (_disc_min_grad < 1E-10)
-        {
-            _disc_min_grad = DBL_MAX;
-            std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
-        }
-        else
-        {
-            std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
-        }
     }
     
     /// Alternate constructor (to call VPS from another method like POF-darts)
@@ -77,11 +62,7 @@ namespace Dakota
     VPSApproximation::VPSApproximation(const SharedApproxData& shared_data):
                                        Approximation(NoDBBaseConstructor(), shared_data)
     {
-        
         SharedSurfpackApproxData* dat = dynamic_cast<SharedSurfpackApproxData*> (shared_data.data_rep());
-        
-        //if (dat == 0) std::cout<< "Casting failed"<< std::endl;
-        //else std::cout<< "Casting succeeded"<< std::endl;
         
         surrogateOrder = dat->approxOrder;
         
@@ -123,6 +104,17 @@ namespace Dakota
             VPS_retrieve_neighbors(isample, false);
         }
         
+        if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == radial)
+        {
+            std::cout<<"VPS:: Building Radial Basis Functions ... ";
+            
+            for (size_t isample = 0; isample < _num_inserted_points; isample++)
+            {
+                build_radial_basis_function(isample);
+            }
+            std::cout << " done!" << std::endl;
+        }
+        
         // initiate extended neighbors with seed neighbors
         //std::cout << "extending neighbors!" << std::endl;
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
@@ -137,10 +129,46 @@ namespace Dakota
             }
         }
         
-        // extend neighbors for all points to match the desired max power per cell
-        //std::cout << "adjusting extending neighbors!" << std::endl;
-        VPS_adjust_extend_neighbors_of_all_points();
+        if (_vps_subsurrogate == LS)
+        {
+            // extend neighbors for all points to match the desired order per cell
+            //std::cout << "adjusting extending neighbors!" << std::endl;
+            VPS_adjust_extend_neighbors_of_all_points();
+            //std::cout << "adjusting extending neighbors - done!" << std::endl;
+        }
+         
+        if (_vps_subsurrogate == GP)
+        {
+            size_t num_layers(2);
+            for (size_t ilayer  = 0; ilayer < num_layers; ilayer++)
+            {
+                for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+                {
+                    VPS_extend_neighbors(ipoint);
+                }
+            }
+        }
         
+        if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == polynomial)
+        {
+            // get furthest neighbor for each LS surrogate
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            {
+                _vps_dfar[ipoint] = 0.0;
+                for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++)
+                {
+                    size_t neighbor = _vps_ext_neighbors[ipoint][i];
+                    double dst = 0.0;
+                    for (size_t idim = 0; idim < _n_dim; idim++)
+                    {
+                        double dx = _sample_points[ipoint][idim] - _sample_points[neighbor][idim];
+                        dst += dx * dx;
+                    }
+                    dst = sqrt(dst);
+                    if (dst > _vps_dfar[ipoint]) _vps_dfar[ipoint] = dst;
+                }
+            }
+        }
         
         // build local surrogates
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
@@ -153,7 +181,10 @@ namespace Dakota
         
         if (_vps_subsurrogate == LS)
         {
-            std::cout << "VPS::    Number of polynomial coeffcients = " << std::fixed << _vps_num_poly_terms << std::endl;
+            size_t av_num_basis(0);
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++) av_num_basis+= _num_cell_basis_functions[ipoint];
+            av_num_basis/= _num_inserted_points;
+            std::cout << "VPS::    Av. Number of basis functions = " << std::fixed << av_num_basis << std::endl;
             std::cout << "VPS::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
         }
         
@@ -161,10 +192,12 @@ namespace Dakota
         
         #ifdef DEBUG_TEST_FUNCTION
         std::vector<double> contours;
-        for (size_t i = 0; i < 10; i++) contours.push_back(_f_min + 0.1 * i * (_f_max - _f_min));
-        
-        isocontouring_solid("surrogate.ps", false, true, contours);
-        //isocontouring_solid("test_function.ps", true, false, contours);
+        contours.push_back(_f_min - 2 * (_f_max - _f_min));
+        size_t num_contours(20);
+        for (size_t i = 0; i < num_contours; i++) contours.push_back(_f_min + (1.0/num_contours) * i * (_f_max - _f_min));
+        contours.push_back(_f_max + 2 * (_f_max - _f_min));
+        isocontouring_solid("vps_surrogate.ps", false, true, contours);
+        isocontouring_solid("vps_test_function.ps", true, false, contours);
         plot_neighbors();
         #endif
         
@@ -174,13 +207,36 @@ namespace Dakota
     void VPSApproximation::VPS_create_containers()
     {
         
-        std::cout<< "VPS:: Transfering data to surrogate ... " << std::endl;
+        if (_vps_subsurrogate == LS)
+        {
+            if( _vps_subsurrogate_basis == polynomial)
+                std::cout << "*** VPS:: LS_polynomials subsurrogates are initiated " << surrogateOrder << std::endl;
+            else
+                std::cout << "*** VPS:: LS_RBF subsurrogates are initiated!" << std::endl;
+        }
+        else if (_vps_subsurrogate == GP)
+        {
+            std::cout << "*** VPS:: GP subsurrogates are initiated" << std::endl;
+        }
+        
+        if (_disc_min_grad < 1E-10)
+        {
+            _disc_min_grad = DBL_MAX;
+            std::cout << "*** VPS: Discontinuity detection is disabled!" << std::endl;
+        }
+        else
+        {
+            std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+        }
+
+        
+        std::cout<< "VPS::    Transfering data to surrogate ... " << std::endl;
         
         numObs = approxData.points(); // number of points
         size_t num_v = sharedDataRep->numVars;  // number of variables
         
         
-        std::cout<< "VPS::         Number of sample points = " << numObs << std::endl;
+        std::cout<< "VPS:     Number of sample points = " << numObs << std::endl;
         _num_inserted_points = numObs;
         
         std::cout<< "VPS::    Number of dimensions = " << num_v << std::endl;
@@ -210,63 +266,103 @@ namespace Dakota
             _sample_neighbors[ipoint] = 0;
             _vps_ext_neighbors[ipoint] = 0;
         }
+        if (_vps_subsurrogate == LS)
+        {
+            _num_cell_basis_functions = new size_t[_num_inserted_points];
+            if (_vps_subsurrogate_basis == radial)
+            {
+                _sample_basis = new double**[_num_inserted_points];
+            }
+        }
         
         _sample_vsize = new double[_num_inserted_points];
-        _vps_dfar = new double[_num_inserted_points];
+        
+        if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == polynomial) _vps_dfar = new double[_num_inserted_points];
         
         // process currentPoints from approx data
         _f_min = DBL_MAX;
         _f_max = -_f_min;
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        
+        #ifdef DEBUG_TEST_FUNCTION
+        if (_vps_test_function == SmoothHerbie || _vps_test_function == Herbie)
         {
-            const RealVector& c_vars = approxData.continuous_variables(ipoint);
-            
-            _sample_points[ipoint] = new double[_n_dim];
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
-                _sample_points[ipoint][idim] = c_vars[idim];
-                if (_sample_points[ipoint][idim] < _xmin[idim]) _xmin[idim] = _sample_points[ipoint][idim];
-                if (_sample_points[ipoint][idim] > _xmax[idim]) _xmax[idim] = _sample_points[ipoint][idim];
+                _xmin[idim] = -2.0;
+                _xmax[idim] = 2.0;
             }
-            
-            #ifdef DEBUG_TEST_FUNCTION
-            _fval[ipoint] = f_test(_sample_points[ipoint]);
-            _xmin[0] = 0.0; _xmin[1] = 0.0;
-            _xmax[0] = 1.0; _xmax[1] = 1.0;
-            #else
-            // response from approxData
-            _fval[ipoint] = approxData.response_function(ipoint);
-            #endif
-            
-            if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
-            if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
-            
+        }
+        else
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _xmin[idim] = 0.0;
+                _xmax[idim] = 1.0;
+            }
         }
         
         _diag = 0.0;
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
             double DX = _xmax[idim] - _xmin[idim];
-            #ifndef DEBUG_TEST_FUNCTION
-            _xmax[idim]+= 0.5 * DX;
-            _xmin[idim]-= 0.5 * DX;
-            DX = _xmax[idim] - _xmin[idim];
-            #endif
             _diag += DX * DX;
         }
         _diag = sqrt(_diag);
+
+        // generate Poisson-disk sample
+        size_t num_points(0);
+        double h_mps = _diag / sqrt(_n_dim);
+        
+        double r_mps = 0.8 * h_mps / pow(_num_inserted_points, 1.0 / _n_dim);
+        std::cout << "VPS::DEBUG: h = " << h_mps << " , r_MPS = " << r_mps;
+        generate_poisson_disk_sample(r_mps);
+        std::cout << " ... done!" << std::endl;
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            _fval[ipoint] = f_test(_sample_points[ipoint]);
+            //_fval[ipoint] = 1.0;
+            if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
+            if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
+        }
+        #else
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            const RealVector& c_vars = approxData.continuous_variables(ipoint);
+            
+            _sample_points[ipoint] = new double[_n_dim];
+            
+            _diag = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _sample_points[ipoint][idim] = c_vars[idim];
+                if (_sample_points[ipoint][idim] < _xmin[idim]) _xmin[idim] = _sample_points[ipoint][idim];
+                if (_sample_points[ipoint][idim] > _xmax[idim]) _xmax[idim] = _sample_points[ipoint][idim];
+                double DX = _xmax[idim] - _xmin[idim];
+                _diag += DX * DX;
+            }
+            _diag = sqrt(_diag);
+                
+            // response from approxData
+            _fval[ipoint] = approxData.response_function(ipoint);
+            
+            if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
+            if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
+        }
+        #endif
+        
         
         if (_vps_subsurrogate == LS)
         {
-            // retrive powers of the polynomial expansion, 
-            retrieve_permutations(_vps_num_poly_terms, _vps_t, _n_dim, _vps_order, false, true, _vps_order);
-            //std::cout<< "VPS::    Number of poly terms = " << _vps_num_poly_terms << std::endl;
-            
-            _vps_c = new double*[_num_inserted_points];
-            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            if (_vps_subsurrogate_basis == polynomial)
             {
-                _vps_c[ipoint] = new double[_vps_num_poly_terms];
+                // retrive powers of the polynomial expansion
+                _vps_t = new size_t**[_num_inserted_points];
+                for (size_t icell = 0; icell < _num_inserted_points; icell++)
+                {
+                    retrieve_permutations(_num_cell_basis_functions[icell], _vps_t[icell], _n_dim, _vps_order, true, _vps_order);
+                }
             }
+            _vps_w = new double*[_num_inserted_points];
         }
         else if (_vps_subsurrogate == GP)
         {
@@ -450,26 +546,9 @@ namespace Dakota
     {
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            while (_vps_ext_neighbors[ipoint][0] < 2 * _vps_num_poly_terms && _vps_ext_neighbors[ipoint][0] < _num_inserted_points - 1)
+            while (_vps_ext_neighbors[ipoint][0] < 2 * _num_cell_basis_functions[ipoint] && _vps_ext_neighbors[ipoint][0] < _num_inserted_points - 1)
             {
                 VPS_extend_neighbors(ipoint);
-            }
-        }
-        
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-        {
-            _vps_dfar[ipoint] = 0.0;
-            for (size_t i = 1; i <= _vps_ext_neighbors[ipoint][0]; i++)
-            {
-                size_t neighbor = _vps_ext_neighbors[ipoint][i];
-                double dst = 0.0;
-                for (size_t idim = 0; idim < _n_dim; idim++)
-                {
-                    double dx = _sample_points[ipoint][idim] - _sample_points[neighbor][idim];
-                    dst += dx * dx;
-                }
-                dst = sqrt(dst);
-                if (dst > _vps_dfar[ipoint]) _vps_dfar[ipoint] = dst;
             }
         }
     }
@@ -518,15 +597,15 @@ namespace Dakota
     
     void VPSApproximation::VPS_build_local_surrogate(size_t cell_index)
     {
-        const SDVArray& training_vars = approxData.variables_data();
-        const SDRArray& training_resp = approxData.response_data();
-        
         if (_vps_subsurrogate == LS)
         {
-            VPS_LS_retrieve_poly_coefficients(cell_index);
+            VPS_LS_retrieve_weights(cell_index);
         }
         else if (_vps_subsurrogate == GP)
         {
+            const SDVArray& training_vars = approxData.variables_data();
+            const SDRArray& training_resp = approxData.response_data();
+            
             for (size_t j = 0; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
             {
                 size_t neighbor = cell_index;
@@ -546,27 +625,18 @@ namespace Dakota
     
     double VPSApproximation::VPS_evaluate_surrogate(double* x)
     {
-        
         size_t iclosest = retrieve_closest_cell(x);
         
         if (_vps_subsurrogate == LS)
         {
             // LS Surrogate
-            
-            // shift origin and scale
-            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] - _sample_points[iclosest][idim]) / _vps_dfar[iclosest];
-            
-            double f_VPS = _fval[iclosest];
-            for (size_t i = 0; i < _vps_num_poly_terms; i++)
+            double f_VPS = 0.0;
+            for (size_t ibasis = 0; ibasis < _num_cell_basis_functions[iclosest]; ibasis++)
             {
-                double ci = _vps_c[iclosest][i];
-                double yi = vec_pow_vec(_n_dim, x, _vps_t[i]);
-                f_VPS += ci * yi;
+                double wi = _vps_w[iclosest][ibasis];
+                double yi = evaluate_basis_function(x, iclosest, ibasis);
+                f_VPS += wi * yi;
             }
-            
-            // shift origin and scale back to origin
-            for (size_t idim = 0; idim < _n_dim; idim++) x[idim] = (x[idim] * _vps_dfar[iclosest]) + _sample_points[iclosest][idim];
-            
             return f_VPS;
         }
         else if (_vps_subsurrogate == GP)
@@ -592,7 +662,6 @@ namespace Dakota
         delete[] _xmin;
         delete[] _xmax;
         delete[] _fval;
-        delete[] _vps_dfar;
         delete[] _sample_vsize;
         
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
@@ -603,7 +672,7 @@ namespace Dakota
             
             if (_vps_subsurrogate == LS)
             {
-                delete[] _vps_c[ipoint];
+                delete[] _vps_w[ipoint];
             }
         }
         delete[] _sample_points;
@@ -612,19 +681,39 @@ namespace Dakota
         
         if (_vps_subsurrogate == LS)
         {
-            delete[] _vps_c;
-            for (size_t i = 0; i < _vps_num_poly_terms; i++)
+            delete[] _vps_w;
+            if (_vps_subsurrogate_basis == polynomial)
             {
-                delete[] _vps_t[i];
+                delete[] _vps_dfar;
+                for (size_t icell = 0; icell < _num_inserted_points; icell++)
+                {
+                    for (size_t ibasis = 0; ibasis < _num_cell_basis_functions[icell]; ibasis++)
+                    {
+                        delete[] _vps_t[icell][ibasis];
+                    }
+                    delete[] _vps_t[icell];
+                }
+                delete[] _vps_t;
             }
-            delete[] _vps_t;
+            else if (_vps_subsurrogate_basis == radial)
+            {
+                for (size_t icell = 0; icell < _num_inserted_points; icell++)
+                {
+                    size_t num_basis = _num_cell_basis_functions[icell];
+                    for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+                    {
+                        delete[] _sample_basis[icell][ibasis];
+                    }
+                    delete[] _sample_basis[icell];
+                }
+                delete[] _sample_basis;
+            }
+            delete[] _num_cell_basis_functions;
         }
         else if (_vps_subsurrogate == LS)
         {
             gpApproximations.clear();
         }
-        
-        
     }
 
     
@@ -632,7 +721,7 @@ namespace Dakota
     // Least Square Sub Surrogate METHODS
     //////////////////////////////////////////////////////////////
     
-    void VPSApproximation::retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound, bool include_origin,
+    void VPSApproximation::retrieve_permutations(size_t &m, size_t** &perm, size_t num_dim, size_t upper_bound,
                                                  bool force_sum_constraint, size_t sum_constraint)
     {
         size_t* t = new size_t[num_dim];
@@ -640,7 +729,6 @@ namespace Dakota
         
         // count output
         m = 0;
-        bool origin(true);
         size_t k_dim(num_dim - 1);
         while (true)
         {
@@ -648,10 +736,6 @@ namespace Dakota
             {
                 bool valid(true);
                 
-                if (!include_origin && origin)
-                {
-                    valid = false; origin = false;
-                }
                 if (force_sum_constraint)
                 {
                     size_t s_const(0);
@@ -659,7 +743,7 @@ namespace Dakota
                     
                     if (s_const > upper_bound)
                     {
-                        valid = false; origin = false;
+                        valid = false;
                     }
                 }
                 if (valid) m++;
@@ -700,7 +784,6 @@ namespace Dakota
         }
         
         // Taxi Counter to evaluate the surrogate
-        origin = true;
         for (size_t idim = 0; idim < num_dim; idim++) t[idim] = 0;
         k_dim = num_dim - 1;
         m = 0; // index of alpha
@@ -711,10 +794,6 @@ namespace Dakota
             {
                 bool valid(true);
                 
-                if (!include_origin && origin)
-                {
-                    valid = false; origin = false;
-                }
                 if (force_sum_constraint)
                 {
                     size_t s_const(0);
@@ -722,7 +801,7 @@ namespace Dakota
                     
                     if (s_const > upper_bound)
                     {
-                        valid = false; origin = false;
+                        valid = false;
                     }
                 }
                 if (valid)
@@ -765,67 +844,279 @@ namespace Dakota
         delete[] t;
     }
     
-    void VPSApproximation::VPS_LS_retrieve_poly_coefficients(size_t cell_index)
+    
+    void VPSApproximation::build_radial_basis_function(size_t icell)
     {
-        double** A = new double*[_vps_num_poly_terms];
-        double** LD = new double*[_vps_num_poly_terms];
-        double* b = new double[_vps_num_poly_terms];
+        std::vector<double*> rbfs;
         
-        double* x_neighbor = new double[_n_dim];
+        double* dart = new double[_n_dim];
+        double r = _sample_vsize[icell];
         
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
+        // initial basis lies at the seed of the cell
+        for (size_t idim = 0; idim < _n_dim; idim++) dart[idim] = _sample_points[icell][idim];
+        
+        size_t num_basis = 0;
+        // Adding first basis
+        rbfs.push_back(dart);
+        dart = new double[_n_dim];
+        num_basis++;
+        
+        size_t num_successive_misses(0), max_num_successive_misses(100);
+        size_t iactive = 0;
+        while (true)
         {
-            A[q] = new double[_vps_num_poly_terms];
-            LD[q] = new double[_vps_num_poly_terms];
-        }
-        
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
-        {
-            b[q] = 0.0;
-            for (size_t i = 0; i < _vps_num_poly_terms; i++)
-            {
-                A[q][i] = 0.0;
-                LD[q][i] = 0.0;
-            }
-        }
-        
-        
-        for (size_t j = 1; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
-        {
-            size_t neighbor = _vps_ext_neighbors[cell_index][j];
-            // shift origin
-            for (size_t idim = 0; idim < _n_dim; idim++) x_neighbor[idim] = (_sample_points[neighbor][idim] - _sample_points[cell_index][idim]) / _vps_dfar[cell_index];
+            // sample new basis (points from the surface of the active ball
             
-            for (size_t q = 0; q < _vps_num_poly_terms; q++)
+            // sample point uniformly from an r sphere
+            double sf = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
             {
-                double yq = vec_pow_vec(_n_dim, x_neighbor, _vps_t[q]);
-                b[q]+= (_fval[neighbor] - _fval[cell_index]) * yq;
-                for (size_t i = 0; i < _vps_num_poly_terms; i++)
+                double sum(0.0);
+                // select 12 random numbers from 0.0 to 1.0
+                for (size_t i = 0; i < 12; i++) sum += generate_a_random_number();
+                sum -= 6.0;
+                dart[idim] = sum;
+                sf += dart[idim] * dart[idim];
+            }
+            sf = r / sqrt(sf);
+            for (size_t idim = 0; idim < _n_dim; idim++) dart[idim] *= sf;
+
+            // translate to match active cell origin
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                dart[idim]+= rbfs[iactive][idim];
+            }
+            
+            bool valid_dart(true);
+            for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+            {
+                double dst_sq = 0.0;
+                for (size_t idim = 0; idim < _n_dim; idim++)
                 {
-                    double yi = vec_pow_vec(_n_dim, x_neighbor, _vps_t[i]);
-                    A[q][i] += yi * yq;
+                    double dx = dart[idim] - rbfs[ibasis][idim];
+                    dst_sq += dx * dx;
+                }
+                if (dst_sq < r * r - 1E-10)
+                {
+                    valid_dart = false; break;
                 }
             }
+            if (valid_dart)
+            {
+                num_successive_misses = 0;
+                // add a new basis
+                rbfs.push_back(dart);
+                dart = new double[_n_dim];
+                num_basis++;
+            }
+            else
+            {
+                num_successive_misses++;
+                if (num_successive_misses == max_num_successive_misses) break; // iactive++; create only a single layer of basis functions around seed
+            }
+        }
+        _num_cell_basis_functions[icell] = num_basis;
+        _sample_basis[icell] = new double*[num_basis]; 
+        for (size_t ibasis = 0; ibasis < num_basis; ibasis++) _sample_basis[icell][ibasis] = rbfs[ibasis];
+        rbfs.clear();
+        delete[] dart;
+        return;
+    }
+    
+    void VPSApproximation::VPS_LS_retrieve_weights(size_t cell_index)
+    {
+        size_t num_basis = _num_cell_basis_functions[cell_index];
+        size_t num_neighbors =_vps_ext_neighbors[cell_index][0];
+        
+        double** H = new double*[num_basis]; // columns of the LS matrix
+        double*  fval = new double[num_neighbors + 1];
+        
+        for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+        {
+            H[ibasis] = new double[num_neighbors + 1];
+            
+            for (size_t ipoint = 0; ipoint <= num_neighbors; ipoint++)
+            {
+                size_t neighbor = cell_index;
+                if (ipoint > 0) neighbor = _vps_ext_neighbors[cell_index][ipoint];
+                
+                H[ibasis][ipoint] = evaluate_basis_function(_sample_points[neighbor], cell_index, ibasis);
+            }
+        }
+        for (size_t ipoint = 0; ipoint <= num_neighbors; ipoint++)
+        {
+            size_t neighbor = cell_index;
+            if (ipoint > 0) neighbor = _vps_ext_neighbors[cell_index][ipoint];
+            fval[ipoint] = _fval[neighbor];
         }
         
-        if (Cholesky(_vps_num_poly_terms, A, LD))
-            Cholesky_solver(_vps_num_poly_terms, LD, b, _vps_c[cell_index]);
+        _vps_w[cell_index] = new double[num_basis];
+        
+        constrained_LeastSquare(num_basis, num_neighbors + 1, H, _vps_w[cell_index], fval);
+        
+        for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+        {
+            delete[] H[ibasis];
+        }
+        delete[] H;
+        delete[] fval;
+    }
+    
+    double VPSApproximation::evaluate_basis_function(double* x, size_t icell, size_t ibasis)
+    {
+        if (_vps_subsurrogate_basis == polynomial)
+        {
+            double* y = new double[_n_dim];
+            // shift origin
+            for (size_t idim = 0; idim < _n_dim; idim++) y[idim] = (x[idim] - _sample_points[icell][idim]) / _vps_dfar[icell];
+            double f_basis = vec_pow_vec(_n_dim, y, _vps_t[icell][ibasis]);
+            delete[] y;
+            return f_basis;
+        }
+        else if (_vps_subsurrogate_basis == radial)
+        {
+            double h  = _sample_vsize[icell];
+            
+            size_t basis_index = icell;
+                       
+            double dst_sq = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = x[idim] - _sample_basis[icell][ibasis][idim];
+                dst_sq += dx * dx;
+            }
+            
+            double r_basis = 4.0 * h;
+            double r_sq = r_basis * r_basis;
+            
+            return exp(-dst_sq / r_sq);
+        }
+    }
+    
+    int VPSApproximation::constrained_LeastSquare(size_t n, size_t m, double** H, double* w, double* f)
+    {
+        bool constrained = true;
+        // Solving H w = b while strictly satsifying the first equation
+        // H is n columns each has m rows
+        // w is n rows
+        // f is m rows 
+        
+        if (fabs(H[0][0]) < 1E-10)
+        {
+            std::cout << "Contrained Least Square: Dividing by zero" << std::endl;
+            return 1;
+        }
+        
+        // taking away constrained equation
+        double* crow = new double[n]; double fo = f[0];
+        double* ccol = new double[m];
+        if (constrained)
+        {
+            // storing constrained row
+            for (size_t i = 0; i < n; i++)
+            {
+                crow[i] = H[i][0]; H[i][0] = 0.0;
+            }
+            // storing constrained row
+            for (size_t j = 0; j < m; j++)
+            {
+                ccol[j] = H[0][j]; H[0][j] = 0.0;
+            }
+            ccol[0] = crow[0];
+            
+            // inserting constrained equation into remaining equations
+            for (size_t j = 1; j < m; j++)
+            {
+                for (size_t i = 1; i < n; i++)
+                {
+                    H[i][j] -= ccol[j] * crow[i] / crow[0];
+                }
+                f[j] -= ccol[j] * fo / crow[0];
+            }
+            H[0][0] = 1.0; f[0] = 0.0;
+        }
+        
+        //printMatrix(n, m, H);
+        
+        double** A = new double*[n];
+        double** LD = new double*[n];
+        double* b = new double[n];
+        
+        for (size_t row = 0; row < n; row++)
+        {
+            A[row] = new double[n];
+            LD[row] = new double[n];
+            for (size_t col = 0; col < n; col++)
+            {
+                A[row][col] = vec_dot_vec(m, H[row], H[col]);
+            }
+            b[row] = vec_dot_vec(m, H[row], f);
+        }
+        
+        //printMatrix(n, n, A);
+        
+        if (Cholesky(n, A, LD))
+        {
+            Cholesky_solver(n, LD, b, w);
+        }
         else
         {
-            GMRES(_vps_num_poly_terms, A, b, _vps_c[cell_index], 1E-6);
+            GMRES(n, A, b, w, 1E-6);
             _num_GMRES++;
         }
         
-        for (size_t q = 0; q < _vps_num_poly_terms; q++)
+        // Applying constraint
+        if (constrained)
         {
-            delete[] A[q];
-            delete[] LD[q];
+            double sum_constraint = vec_dot_vec(n, crow, w);
+            w[0] = (fo - sum_constraint) / crow[0];
+        
+            for (size_t j = 0; j < m; j++)
+            {
+                H[0][j] = ccol[j];
+                for (size_t i = 1; i < n; i++)
+                {
+                    H[i][j] += crow[i] / crow[0];
+                }
+                f[j] += fo / crow[0];
+            }
+            for (size_t i = 0; i < n; i++)
+            {
+                H[i][0] = crow[i];
+            }
+            f[0] = fo;
         }
         
+        delete[] crow;
+        delete[] ccol;
+        
+        for (size_t row = 0; row < n; row++)
+        {
+            delete[] A[row];
+            delete[] LD[row];
+        }
         delete[] A;
         delete[] LD;
         delete[] b;
-        delete[] x_neighbor;
+        return 0;
+    }
+    
+    void VPSApproximation::printMatrix(size_t m, size_t n, double** M)
+    {
+        for (size_t i = 0; i < m; i++)
+        {
+            for (size_t j = 0; j < n; j++) std::cout << M[i][j] << " ";
+            std::cout << std::endl;
+        }
+        
+    }
+    
+
+    double VPSApproximation::vec_dot_vec(size_t n, double* vec_a, double* vec_b)
+    {
+        double dot = 0.0;
+        for (size_t i = 0; i < n; i++) dot+= vec_a[i] * vec_b[i];
+        return dot;
     }
     
     double VPSApproximation::vec_pow_vec(size_t num_dim, double* vec_a, size_t* vec_b)
@@ -1251,17 +1542,109 @@ namespace Dakota
     
     double VPSApproximation::f_test(double* x)
     {
-        // step function in sphere
-        double h = 0.0;
-        for (size_t idim = 0; idim < _n_dim; idim++)
+        if (_vps_test_function == SmoothHerbie)
         {
-            double dx = x[idim];
-            h += dx * dx;
+            double fval = 1.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double xm = x[idim] - 1.0;
+                double xp = x[idim] + 1.0;
+                double wherb = exp(- xm * xm) + exp(-0.8 * xp * xp) ;
+                fval *= wherb;
+            }
+            fval = -fval;
+            return fval;
         }
-        h = sqrt(h);
-        if (h < 0.5) return 1.0;
+        else if (_vps_test_function == Herbie)
+        {
+            double fval = 1.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double xm = x[idim] - 1.0;
+                double xp = x[idim] + 1.0;
+                double wherb = exp(- xm * xm) + exp(-0.8 * xp * xp) - 0.05 * sin(8 * (x[idim] + 0.1));
+                fval *= wherb;
+            }
+            fval = -fval;
+            return fval;
+
+        }
+        else if (_vps_test_function == UnitSphere)
+        {
+            // step function in sphere
+            double h = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = x[idim];
+                h += dx * dx;
+            }
+            h = sqrt(h);
+            if (h < 0.5) return 1.0;
+            return 0.0;
+        }
         return 0.0;
     }
+    
+    void VPSApproximation::generate_poisson_disk_sample(double r)
+    {
+        double r_sq = r * r;
+        double* dart = new double[_n_dim];
+        size_t num_points = 0;
+        while (num_points < _num_inserted_points)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double u = generate_a_random_number();
+                dart[idim] = _xmin[idim] + u * (_xmax[idim] - _xmin[idim]);
+            }
+            bool valid_dart(true);
+            for (size_t ipoint = 0; ipoint < num_points; ipoint++)
+            {
+                double dst_sq(0.0);
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    double dx = dart[idim] - _sample_points[ipoint][idim];
+                    dst_sq += dx * dx;
+                }
+                //std::cout << "num_point = " << num_points << " , dst_sq = " << dst_sq << " , r_sq = "<< r_sq << std::endl;
+                if (dst_sq < r_sq)
+                {
+                    valid_dart = false;
+                    break;
+                }
+            }
+            if (valid_dart)
+            {
+                //std::cout << "ipoint = " << num_points << " : x = ";
+                //for (size_t idim = 0; idim < _n_dim; idim++) std::cout << dart[idim] << " ";
+                //std::cout << std::endl;
+                
+                _sample_points[num_points] = dart;
+                dart = new double[_n_dim];
+                num_points++;
+            }
+        }
+        delete[] dart;
+    }
+    
+    void VPSApproximation::generate_MC_sample()
+    {
+        double* dart = new double[_n_dim];
+        size_t num_points = 0;
+        while (num_points < _num_inserted_points)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double u = generate_a_random_number();
+                dart[idim] = _xmin[idim] + u * (_xmax[idim] - _xmin[idim]);
+            }
+            _sample_points[num_points] = dart;
+            dart = new double[_n_dim];
+            num_points++;
+        }
+        delete[] dart;
+    }
+
     
     void VPSApproximation::isocontouring(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours)
     {
@@ -1734,7 +2117,6 @@ namespace Dakota
         file << " stroke" << std::endl;
         file << "} def" << std::endl;
         
-        
         file << "/quad_white      % stack: x1 y1 x2 y2 x3 y3 x4 y4" << std::endl;
         file << "{newpath" << std::endl;
         file << " moveto" << std::endl;
@@ -1763,8 +2145,6 @@ namespace Dakota
         
         std::vector<double> poly_x;
         std::vector<double> poly_y;
-        
-        contours.push_back(100.00);
         
         size_t num_cells(1000);
         double* xx = new double[2];
@@ -2229,6 +2609,10 @@ namespace Dakota
         
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
+            //std::cout << "ipoint = " << isample << " : x = ";
+            //for (size_t idim = 0; idim < _n_dim; idim++) std::cout << _sample_points[isample][idim] << " ";
+            //std::cout << std::endl;
+            
             size_t num_neighbors = 0;
             if (_sample_neighbors[isample] != 0) num_neighbors = _sample_neighbors[isample][0];
             
