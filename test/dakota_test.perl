@@ -22,6 +22,7 @@ my $DTP_DEBUG = 0;  # set to 1 to debug
 my $baseline_filename = "";  # default is dakota_[p]base.test.new
 my $bin_dir = "";            # default binary location is pwd (none)
 my $bin_ext = "";            # default extension is empty
+my @dakota_config = ();      # CMake/#define configuration of Dakota itself
 my $extract_filename = "";   # default is dakota_*.in_
 my $input_dir = "";          # default test file source is pwd
 my $mode = "run";            # modes are run, base, extract, test_props
@@ -30,6 +31,7 @@ my $parallelism = "serial";  # whether DAKOTA runs in parallel
 my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
+my $test_props_file = "";    # write test properties to this file
 my $using_qsub = 0;
 my $using_slurm = 0;
 
@@ -84,6 +86,7 @@ else {
 
 if ($mode eq "base" || $mode eq "run") {
   manage_parallelism();
+  @dakota_config = check_dakota_config();
 }
 
 # create new baseline file for output from all tests
@@ -93,7 +96,7 @@ if ($mode eq "base") {
 }
 
 if ($mode eq "test_props") {
-  open (PROPERTIES_OUT, ">dakota_test.properties");
+  open (PROPERTIES_OUT, ">${test_props_file}");
 }
 
 # for each input file perform test actions
@@ -138,6 +141,8 @@ foreach my $file (@test_inputs) {
   my $output_generated = 0;
   # restart options used to unlink file conditionally; declare outside loop:
   my $restart = "";   # no restart options by default (opts: read, write, none)
+
+  # TODO: explicitly iterate the numbered tests instead of while loop
 
   # pass through the loop at least twice since, in some cases, the #0 test is
   # not marked (the #1-#n tests can be additions to the #0 test, rather than
@@ -261,6 +266,18 @@ foreach my $file (@test_inputs) {
 
       print "Test Number $cnt ";
 
+      # IDEA: register all tests in CTest, then let Perl manage
+      # subtests inclusion/exclusion...
+
+      # Would be good to skip all above work if skipping, but loop
+      # stays simpler if put here.
+##      my $enable_test = check_required_configs($cnt);
+##      if (! $enable_test) {
+##	print "skipped\n";
+##	print TEST_OUT "Test Number $cnt skipped\n";
+##      }
+##      else {
+##
       # For workdir tests, need to remove trydir*
       if ( $file eq "dakota_workdir.in" ) {
 	my @trydirlist = glob("trydir*");
@@ -324,6 +341,7 @@ foreach my $file (@test_inputs) {
 	}
       }
 
+##      }  # enable_test
     }
 
     # TODO: error if a specified test not found
@@ -429,7 +447,6 @@ sub process_command_line {
   my $opt_save_output = 0;
   my $opt_man = 0;
   my $opt_parallel = 0;
-  my $opt_test_props = 0;
 
   # Process long options
   GetOptions('base'           => \$opt_base,
@@ -444,7 +461,7 @@ sub process_command_line {
   	     'man'            => \$opt_man,
   	     'output-dir=s'   => \$output_dir,
   	     'parallel'       => \$opt_parallel,
-	     'test-properties'=> \$opt_test_props
+	     'test-properties=s' => \$test_props_file
 	     ) || pod2usage(1);
   pod2usage(0) if $opt_help;
   pod2usage(-exitstatus => 0, -verbose => 2) if $opt_man;
@@ -455,7 +472,7 @@ sub process_command_line {
   }
   
   # extraction and baseline options
-  if ($opt_test_props) {
+  if ($test_props_file) {
     # short-circuits any other mode
     $mode = "test_props";
   }
@@ -678,7 +695,6 @@ sub parse_test_options {
 sub parse_key_val {
 
   # Regular expressions for key/value pairs
-  my $req_files_re = "(ReqFiles)=(.*)";
   my $check_output_re = "(CheckOutput)='(.*)'";
   my $dak_config_re = "(DakotaConfig)=(.*)";                # multi-valued
   my $depends_on_re = "(DependsOn)=([sp][0-9]+)";
@@ -687,12 +703,13 @@ sub parse_key_val {
   my $input_file_re = "(InputFile)='(.*)'";
   my $label_re = "(Label)s?=(.*)";                          # multi-valued
   my $mpi_procs_re = "(MPIProcs)=([0-9]+)";
+  my $req_files_re = "(ReqFiles)=(.*)";
   my $restart_re = "(Restart)=(read|write|none)";
   my $timeout_absolute_re = "(TimeoutAbsolute)=([0-9]+)";
   my $timeout_delay_re = "(TimeoutDelay)=([0-9]+)";
+  my $will_fail_re = "(WillFail)=(true)";
 
   @all_keyval_re = (
-    "${req_files_re}",
     "${check_output_re}",
     "${dak_config_re}",
     "${depends_on_re}",
@@ -701,10 +718,12 @@ sub parse_key_val {
     "${input_file_re}",
     "${label_re}",
     "${mpi_procs_re}",
+    "${req_files_re}",
     "${restart_re}",
     "${timeout_absolute_re}",
-    "${timeout_delay_re}"
-      );
+    "${timeout_delay_re}",
+    "${will_fail_re}"
+  );
 
   # TODO: allow append of multiple of same option split across line
   # TODO: more efficient data structure than double loop
@@ -730,6 +749,27 @@ sub parse_key_val {
   }
 
   return %keyval_hash;
+}
+
+
+# return bool as to whether we skip this test based on configuration
+# uses global @dakota_config
+sub check_required_configs() {
+  my ($cnt) = @_;
+  my $enable_test = 1;  # whether to enable this test based on config
+  # get a comma-separated list of required configs
+  my $req_configs = get_test_option_value($cnt, "DakotaConfig", "");
+
+  # for now these can't be multivalued...
+  my @rc_list = split(',', $req_configs);
+  foreach my $rc (@rc_list) {
+    if (! grep {$_ eq $rc} @dakota_config) {
+      # Dakota does not have the required configuration
+      print "Skipping test due to ${rc}\n";
+      $enable_test = 0;
+    }
+  }
+  return $enable_test;
 }
 
 
@@ -800,6 +840,44 @@ sub write_test_options {
   }
 }
 
+
+# Determine how Dakota is configured (CMake options, OS) from
+# Makefile.export in either build or install tree
+sub check_dakota_config {
+
+  my $makefile_export = "";
+  if (-f "../src/Makefile.export.Dakota") {
+    $makefile_export = "../src/Makefile.export.Dakota";
+  }
+  elsif (-f "../include/Makefile.export.Dakota") {
+    $makefile_export = "../include/Makefile.export.Dakota";
+  }
+  return if (! ${makefile_export});
+  
+  open( my $fh, '<', $makefile_export );
+  if (! $fh) {
+    print "Warning: couldn't open ${makefile_export}.\n";
+    return;
+  }
+  my $all_defines="";
+  while ( my $line = <$fh> ) {
+    if ( $line =~ /Dakota_DEFINES=(.+)/ ) {
+      $all_defines = $1;
+      last;
+    }
+  }
+  close $fh;
+  my @dakota_defs = split(" ", $all_defines);
+  foreach my $dd (@dakota_defs) {
+    # Remove leading -D and any whitespace
+    $dd =~ s/\s*-D(.*)\s*/$1/g;
+  }
+  # Add CMake equivalents for operating system
+  push(@dakota_defs, "WIN32") if ($Config{osname} =~ /MSWin/);
+  push(@dakota_defs, "UNIX") if (! $Config{osname} =~ /MSWin/);
+
+  return @dakota_defs;
+}
 
 
 # Compute full restart option string from passed restart option and filename
@@ -1293,10 +1371,10 @@ for generated intermediate, diff, and baseline files
 save test input, output, error, and restart of the last subtest run;
 or set environment variable DAKOTA_TEST_SAVE_OUTPUT
 
-=item B<--test-properties>
+=item B<--test-properties=propsfile>
 
-write test properties for specified tests to dakota_test.properties;
-short circuits any other modes or requests
+write test properties for specified tests to propsfile; short circuits
+any other modes or requests
 
 =back
 
@@ -1459,6 +1537,10 @@ terminate each test if total test time exceeds <int-seconds>
 =item TimeoutDelay=<int-seconds>
 
 terminate each test if output has not changed in <int-seconds>
+
+=item WillFail=true
+
+this test will fail, but report as a PASS
 
 =back
 
