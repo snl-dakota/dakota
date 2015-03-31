@@ -322,8 +322,8 @@ option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
 endif()
-# DAKOTA requires Boost 1.44 or newer; IBM xlC compiler may demand 1.47 or newer
-find_package(Boost 1.44 REQUIRED COMPONENTS "${dakota_boost_components}")
+# Dakota requires Boost 1.49 or newer; enforce for all libs in the build
+find_package(Boost 1.49 REQUIRED COMPONENTS "${dakota_boost_components}")
 
 
 include(CTest)

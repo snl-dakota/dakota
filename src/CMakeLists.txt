@@ -136,18 +136,6 @@ if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
-# For Boost [1.44.0, 1.46.0), Boost Filesystem V2 is the default, but
-# V3 is available.  Force use of V3 in src/.
-set(dakota_boost_vn 
-  "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-message(STATUS "Dakota src/ using Boost version: ${dakota_boost_vn}")
-if(${dakota_boost_vn} VERSION_LESS "1.46.0")
-  add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
-  message(WARNING
-    "Dakota only supports Boost 1.46.0 or newer; recommends 1.49.0 or newer")
-  message(STATUS "Dakota forcing use of Boost filesystem V3 API")
-endif()
-
 # -----------------
 
 
