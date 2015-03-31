@@ -41,7 +41,7 @@ variables,
         discrete_uncertain_set string = 1					#s0,#s1,#s5
           elements_per_variable = 3					#s0,#s5
           elements = 'iso1' 'iso2' 'iso3'			       	#s0,#s5
-#          elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2' 		#s1
+#          elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3' 		#s1
           set_probabilities = 1. 1. 1.     	    			#s0,#s5
           descriptors = 'ancomp'    					#s0,#s1,#s5
 
@@ -53,7 +53,7 @@ variables,
 #	              2 4 6 8						#s2,#s3
 #	    descriptors =    'x' 'y'					#s2,#s3
 #	  string = 1 							#s2,#s3
-#	    elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2'  		#s2,#s3
+#	    elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'  		#s2,#s3
 #           descriptors = 'ancomp'    					#s2,#s3
 
 #	active state							#s4
@@ -64,7 +64,7 @@ variables,
 #	              2 4 6 8						#s4
 #	    descriptors =    'x' 'y'					#s4
 #	  string = 1 							#s4
-#	    elements = 'iso1' 'iso2' 'iso3' 'aniso1' 'aniso2'  		#s4
+#	    elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'  		#s4
 #           descriptors = 'ancomp'    					#s4
 
 interface,
