@@ -20,6 +20,9 @@
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
 #include <functional>
+#include <string>
+#include <sstream>
+#include <algorithm>
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -3783,6 +3786,7 @@ check_set_keys(size_t num_v, size_t ds_len, const char *kind,
 
 /// check discrete sets of integers (design and state variables);
 /// error if a duplicate value is specified
+/// error if not ordered to prevent user confusion
 static void 
 Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	   IntVector *input_dsi, IntSetArray& dsi_all, IntVector& dsi_init_pt)
@@ -3790,6 +3794,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
   if (!input_dsi)
     return;
 
+  bool misordered = false;
   int avg_num_dsi, ndup, dupval[2], num_dsi_i, val;
   size_t i, j, cntr, dsi_len = input_dsi->length();
 
@@ -3803,13 +3808,18 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
     IntSet& dsi_all_i = dsi_all[i];
     for (j=0; j<num_dsi_i; ++j, ++cntr) {
       val = (*input_dsi)[cntr];
-      if (!dsi_all_i.insert(val).second) // insert returns pair<iterator,bool>
+      if (!dsi_all_i.insert(val).second) { // insert returns pair<iterator,bool>
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
+      }
+      if (j<num_dsi_i-1 && val >= (*input_dsi)[cntr+1])
+	misordered = true;
     }
   }
   if (ndup)
     suppressed(kind, ndup, dupval, 0, 0);
+  if (misordered)
+    Squawk("Set values for each %s variable must increase", kind);
 
   // Checks on user-specified initial pt array
   if (!dsi_init_pt.empty()) {
@@ -3827,6 +3837,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 
 /// check discrete sets of integers (uncertain variables);
 /// error if a duplicate value is specified
+/// error if not ordered to prevent user confusion
 static void 
 Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	   IntVector *input_dsi, RealVector *input_dsip,
@@ -3835,6 +3846,7 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
   if (!input_dsi)
     return;
 
+  bool misordered = false;
   int avg_num_dsi, ndup, dupval[2], num_dsi_i, val;
   size_t i, j, cntr, dsi_len = input_dsi->length(),
     num_p = (input_dsip) ? input_dsip->length() : 0;
@@ -3862,10 +3874,14 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
       }
+      if (j<num_dsi_i-1 && val >= (*input_dsi)[cntr+1])
+	misordered = true;
     }
   }
   if (ndup)
     suppressed(kind, ndup, dupval, 0, 0);
+  if (misordered)
+    Squawk("Set values for each %s variable must increase", kind);
 
   // Checks on user-specified initial pt array
   if (!dsi_init_pt.empty()) {
@@ -3888,6 +3904,7 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
   if (!input_dss)
     return;
 
+  std::vector<bool> misordered(num_v,false);
   int avg_num_dss, ndup, num_dss_i;
   String dupval[2], val;
   size_t i, j, cntr, dss_len = input_dss->size();
@@ -3902,13 +3919,26 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
     StringSet& dss_all_i = dss_all[i];
     for (j=0; j<num_dss_i; ++j, ++cntr) {
       val = (*input_dss)[cntr];
-      if (!dss_all_i.insert(val).second) // insert returns pair<iterator,bool>
+      if (!dss_all_i.insert(val).second) { // insert returns pair<iterator,bool>
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
+      }
+      if (j<num_dss_i-1 && val >= (*input_dss)[cntr+1])
+	misordered[i] = true;
     }
   }
   if (ndup)
     suppressed(kind, ndup, 0, dupval, 0);
+  // Check for misordered elements and print out in the expected order
+  for(i=0; i<num_v; ++i) {
+    if (misordered[i]) {
+	std::stringstream mss;
+	std::copy(dss_all[i].begin(), dss_all[i].end(),
+	    std::ostream_iterator<std::string>(mss, " "));
+        Squawk("Elements of %s variables must be provided in ascending order ( %s)",
+	    kind, mss.str().c_str());
+     }
+  }
 
   // Checks on user-specified initial pt array
   if (!dss_init_pt.empty()) {
@@ -3932,6 +3962,7 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
   if (!input_dss)
     return;
 
+  bool misordered = false;
   int avg_num_dss, ndup, num_dss_i;
   String dupval[2], val;
   size_t i, j, cntr, dss_len = input_dss->size(),
@@ -3960,10 +3991,14 @@ Vchk_DSset(size_t num_v, const char *kind, IntArray *input_ndss,
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
       }
+      if (j<num_dss_i-1 && val >= (*input_dss)[cntr+1])
+	misordered = true;
     }
   }
   if (ndup)
     suppressed(kind, ndup, 0, dupval, 0);
+  if (misordered)
+    Squawk("Set values for each %s variable must increase", kind);
 
   // Checks on user-specified initial pt array
   if (!dss_init_pt.empty()) {
@@ -3988,6 +4023,7 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   if (!input_dsr)
     return;
 
+  bool misordered = false;
   int avg_num_dsr, ndup, num_dsr_i;
   Real dupval[2], val;
   size_t i, j, cntr, dsr_len = input_dsr->length();
@@ -4002,13 +4038,18 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
     RealSet& dsr_all_i = dsr_all[i];
     for (j=0; j<num_dsr_i; ++j, ++cntr) {
       val = (*input_dsr)[cntr];
-      if (!dsr_all_i.insert(val).second) // insert returns pair<iterator,bool>
+      if (!dsr_all_i.insert(val).second) { // insert returns pair<iterator,bool>
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
+      }
+      if (j<num_dsr_i-1 && val >= (*input_dsr)[cntr+1])
+	misordered = true;
     }
   }
   if (ndup)
     suppressed(kind, ndup, 0, 0, dupval);
+  if (misordered)
+    Squawk("Set values for each %s variable must increase", kind);
 
   // Checks on user-specified initial pt array
   if (!dsr_init_pt.empty()) {
@@ -4032,6 +4073,7 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   if (!input_dsr)
     return;
 
+  bool misordered = false;
   size_t i, j, cntr, dsr_len = input_dsr->length();
   int avg_num_dsr, ndup, num_dsr_i,
     num_p = (input_dsrp) ? input_dsrp->length() : 0;
@@ -4059,10 +4101,14 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
 	if (++ndup <= 2) // warnings suppressed beyond two duplicates
 	  dupval[ndup-1] = val;
       }
+      if (j<num_dsr_i-1 && val >= (*input_dsr)[cntr+1])
+	misordered = true;
     }
   }
   if (ndup)
     suppressed(kind, ndup, 0, 0, dupval);
+  if (misordered)
+    Squawk("Set values for each %s variable must increase", kind);
 
   // Checks on user-specified initial pt array
   if (!dsr_init_pt.empty()) {
