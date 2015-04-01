@@ -754,26 +754,11 @@ endif(HAVE_PSUADE)
 if(HAVE_X_GRAPHICS)
   add_definitions("-DHAVE_X_GRAPHICS")
   list(APPEND DAKOTA_INCDIRS ${DakotaMotif_SOURCE_DIR}/include 
-    ${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR})
-  #set(iterator_src ${iterator_src} PSUADEDesignCompExp.cpp)
+    ${DAKOTA_X_INCLUDE_DIR})
   list(APPEND DAKOTA_LIBDIRS ${DakotaMotif_BINARY_DIR})
   list(APPEND DAKOTA_PKG_LIBS DGraphics)
   list(APPEND EXPORT_TARGETS DGraphics)
-
-  list(APPEND EXT_TPL_LIBS ${X11_LIBRARIES} ${MOTIF_LIBRARIES})
-  if (X11_Xpm_FOUND)
-    list(APPEND EXT_TPL_LIBS ${X11_Xpm_LIB})
-  endif()
-  # cmake-2.8.4 doesn't set a helper variable X11_Xmu_LIB
-  if (LIBXMU)
-    list(APPEND EXT_TPL_LIBS ${LIBXMU})
-  endif()
-  if (X11_Xt_FOUND)
-    list(APPEND EXT_TPL_LIBS ${X11_Xt_LIB})
-  endif()
-  if (Threads_FOUND)
-    list(APPEND EXT_TPL_LIBS ${CMAKE_THREAD_LIBS_INIT})
-  endif()
+  list(APPEND EXT_TPL_LIBS ${DAKOTA_X_LIBRARIES})
 endif(HAVE_X_GRAPHICS)
 
 ## AGGREGATED source code spec for full-up libdakota.
