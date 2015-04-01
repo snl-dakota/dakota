@@ -1,6 +1,5 @@
-#@ *: DakotaConfig=HAVE_QUESO
+#@ *: DakotaConfig=HAVE_QUESO,DAKOTA_HAVE_MPI
 #@ p*: MPIProcs=1
-# TO DO: remove #s0 -- it's only purpose is to provide an uncommented default
 
 method,									
 	bayes_calibration queso
@@ -9,7 +8,7 @@ method,
             rejection delayed
 #	    metropolis adaptive	# adapt from provided proposal covar
 	  emulator
-	    pce sparse_grid_level = 2				#s0,#p0
+	    pce sparse_grid_level = 2				#p0
 #	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
 #	    pce expansion_order = 4 collocation_ratio = 1.2	#p6
 #	    sc  sparse_grid_level = 2				#p2

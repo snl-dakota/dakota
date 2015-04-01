@@ -102,6 +102,30 @@ if ($mode eq "test_props") {
 # for each input file perform test actions
 foreach my $file (@test_inputs) {
 
+  # populate hash from test-selections to test-options for the whole file
+  # TODO: store all options for a test by number at parse time
+  %test_opts = ();  # global variable
+  my ($max_serial, $max_parallel) = parse_test_options($file);
+  if ($DTP_DEBUG) {
+    use Data::Dumper;
+    print "DEBUG: All test options for $file:\n";
+    print Dumper(\%test_opts);
+  }
+  if ($mode eq "test_props") {
+    write_test_options($file);
+    next;
+  }
+
+  # determine test range, possibly a single subtest
+  my $last_test = ($parallelism eq "parallel") ? $max_parallel : $max_serial;
+  my @test_range = (0..${last_test});
+  if (defined $test_num) {
+    if ($test_num < 0 || $test_num > ${last_test}) {
+      die "Test number ${test_num} not found in $file\n";
+    }
+    @test_range = (${test_num}..${test_num})
+  }
+
   print "Testing $file\n";  # name of source test input file
 
   # get the intermediate file names
@@ -117,54 +141,33 @@ foreach my $file (@test_inputs) {
     open (TEST_OUT, ">$test") || die "cannot open output file $test\n$!";
   }
 
-  # populate hash from test-selections to test-options for the whole file
-  %test_opts = ();  # global variable
-  parse_test_options($file);
-  if ($DTP_DEBUG) {
-    use Data::Dumper;
-    print "DEBUG: All test options:\n";
-    print Dumper(\%test_opts);
-  }
-  if ($mode eq "test_props") {
-    write_test_options($file);
-    next;
-  }
+  # Multiple tests are defined within one input file.  A specific test
+  # is indicated by a comment #[sp][0-9]+: a #, followed by s or p for
+  # serial or parallel, followed by an integer, such as #s3.  If no
+  # markings are found, a single default serial test s0 is assumed.
+  # If only p0 is found, it is assumed a default parallel test.
+  # Therefore files with p0 must mark s0 if it is to exist as a
+  # default test (can be marked in a stripped header comment line)
 
-  # In order to define multiple tests within one input file, we
-  # utilize #[sp][0-9]+; a #, followed by s or p for serial or
-  # parallel, followed by an integer, such as #s3, to denote a
-  # specific test.  Check input file for multiple tests, uncomment
-  # lines needed for a test, and comment out lines not needed for a
-  # test.
-  my $cnt = ( defined $test_num ) ? $test_num : 0;
-  my $found = 1;
-  my $output_generated = 0;
+  # For each test, this loop uncomments lines needed for a test, and
+  # comments out lines not needed for a test.  In some cases, the #0
+  # test is not marked (the #1-#n tests can be additions to the #0
+  # test, rather than substitutions; in this case the #0 shared parts
+  # cannot be marked since the logic is to comment out all marked #0
+  # lines for the #1-#n tests).
+
   # restart options used to unlink file conditionally; declare outside loop:
   my $restart = "";   # no restart options by default (opts: read, write, none)
-
-  # TODO: explicitly iterate the numbered tests instead of while loop
-
-  # pass through the loop at least twice since, in some cases, the #0 test is
-  # not marked (the #1-#n tests can be additions to the #0 test, rather than
-  # substitutions; in this case the #0 shared parts cannot be marked since the
-  # logic is to comment out all marked #0 lines for the #1-#n tests).
-  while ( $found == 1 || 
-	  ( $parallelism eq "serial" && !defined $test_num && $cnt <= 1 ) ) {
-
-    $found = 0;
-
-    # open original input file
-    open (INPUT_MASTER, "$file") ||
-      die "cannot open original input file $file\n$!";
-    # open temporary input file
-    open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
+  foreach my $cnt (@test_range) {
 
     # define a serial- or parallel-qualified count
     my $ser_par_cnt = ($parallelism eq "parallel") ? "p$cnt" : "s$cnt";
 
     # trailing delimiter is important to avoid matching #nn with #n
-    my $test0_tag = "(\\s|,)#s0(\\s|,|\\\\)";
-    my $test_tag = "(\\s|,)#${ser_par_cnt}(\\s|,|\\\\)";
+    my $test0_tag = "(\\s|,)#s0(\\s|,)";
+    # if no serial test 0, #p0 may be an uncommented parallel test
+    $test0_tag = "(\\s|,)#p0(\\s|,)" if ($max_serial < 0); 
+    my $test_tag = "(\\s|,)#${ser_par_cnt}(\\s|,)";
     
     # per-test options for dakota exec, arguments, and input file
     my $dakota_command = get_test_option_value($cnt, "ExecCmd", "dakota");
@@ -192,6 +195,12 @@ foreach my $file (@test_inputs) {
     # absolute timeout for a single job (20 minutes)
     my $timeout = get_test_option_value($cnt, "TimeoutAbsolute", 1200);
 
+    # open original input file
+    open (INPUT_MASTER, "$file") ||
+      die "cannot open original input file $file\n$!";
+    # open temporary input file
+    open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
+
     # read input file until EOF
     while (<INPUT_MASTER>) { # read each line of file
 
@@ -199,8 +208,7 @@ foreach my $file (@test_inputs) {
       next if /^#@/;
 
       # Extracts a particular test (using pretty output) for inclusion in docs.
-      # Does not deactivate graphics.  Does not set $found, such that the test
-      # is not executed and the loop exits after one pass.
+      # Does not deactivate graphics.
       if ($mode eq "extract") {
 
 	# if line contains $test_num tag, then comment/uncomment
@@ -232,7 +240,6 @@ foreach my $file (@test_inputs) {
 	# if line contains $cnt tag, then comment/uncomment
 	elsif (/$test0_tag/) { # line is initially uncommented
 	  if (/$test_tag/) {   # leave uncommented
-	    $found = 1;
 	    print INPUT_TMP;
 	  }
 	  else {               # comment it out
@@ -240,7 +247,6 @@ foreach my $file (@test_inputs) {
 	  }
 	}
 	elsif (/$test_tag/) {  # line is initially commented
-	  $found = 1;
 	  s/#//;               # uncomment line
 	  print INPUT_TMP;
 	}
@@ -253,110 +259,95 @@ foreach my $file (@test_inputs) {
 
     # print extra carriage return in case last stored line has newline escape
     print INPUT_TMP "\n";
-
     # close both files
     close (INPUT_MASTER); # or could rewind it
     close (INPUT_TMP);
 
-    # if a new test series was found run test, else stop checking this
-    # input file for new tests
+    # nothing more to do for this input file if extracting
+    next if ($mode eq "extract");
 
-    if ( $found == 1 || 
-	 ( $cnt == 0 && $parallelism eq "serial" && $mode ne "extract" ) ) {
+    # Run the test
+    print "Test Number $cnt ";
 
-      print "Test Number $cnt ";
+    # skip if subtest $cnt not enabled in this Dakota configuration
+    my $enable_test = check_required_configs($cnt);
+    if (! $enable_test) {
+      print "skipped\n";
+      print TEST_OUT "Test Number $cnt skipped\n";
+      next;
+    }
 
-      # IDEA: register all tests in CTest, then let Perl manage
-      # subtests inclusion/exclusion...
-
-      # Would be good to skip all above work if skipping, but loop
-      # stays simpler if put here.
-##      my $enable_test = check_required_configs($cnt);
-##      if (! $enable_test) {
-##	print "skipped\n";
-##	print TEST_OUT "Test Number $cnt skipped\n";
-##      }
-##      else {
-##
-      # For workdir tests, need to remove trydir*
-      if ( $file eq "dakota_workdir.in" ) {
-	my @trydirlist = glob("trydir*");
-	for my $tdir (@trydirlist) {
-	  rmtree $tdir;
-	}
+    # For workdir tests, need to remove trydir*
+    # TODO: generalize to pre- and post-processing steps
+    if ( $file eq "dakota_workdir.in" ) {
+      my @trydirlist = glob("trydir*");
+      for my $tdir (@trydirlist) {
+	rmtree $tdir;
       }
+    }
 
-      my $test_command = 
+    my $test_command = 
         form_test_command($num_proc, $dakota_command, $dakota_args,
 			  $restart_command, $dakota_input, $output, $error);
 
-      my $pt_code = protected_test($test_command, $output, $delay, $timeout);
-      $output_generated = 1;
+    my $pt_code = protected_test($test_command, $output, $delay, $timeout);
 
-      # Uncomment these lines to catalog data from each run
-      #rename $dakota_input, "$file.$cnt";
-      #system("cp $output $output.$cnt");# leave existing $output for processing
-      #rename "dakota_tabular.dat", "dakota_tabular.dat.$cnt";
+    # Catalog data from each run, if requested
+    if ($save_output) {
+      copy("$dakota_input", "${dakota_input}.${cnt}") if (-e "$dakota_input");
+      copy("$output", "${output}.${cnt}") if (-e "$output");
+      copy("$error", "${error}.${cnt}") if (-e "$error");
+      copy("$restart_file", "${restart_file}.${cnt}") if (-e "$restart_file");
+      copy("dakota_tabular.dat", "dakota_tabular.dat.${cnt}") if (-e "dakota_tabular.dat");
+    }
 
-      # parse out return codes from $? (the Perl $CHILD_ERROR special variable)
-      # TODO: instead use POSIX W*() functions to check status
-      # Note: mpirun does not seem to reliably return error codes for
-      #       MPI_Abort'ed runs
-      my $exit_value  = $pt_code >> 8;
-      my $signal_num  = $pt_code & 127;
-      my $dumped_core = $pt_code & 128;
-      #print "[exit = $exit_value, signal = $signal_num, core = $dumped_core ";
-      #print "protected test code = $pt_code] ";
+    # parse out return codes from $? (the Perl $CHILD_ERROR special variable)
+    # TODO: instead use POSIX W*() functions to check status
+    # Note: mpirun does not seem to reliably return error codes for
+    #       MPI_Abort'ed runs
+    my $exit_value  = $pt_code >> 8;
+    my $signal_num  = $pt_code & 127;
+    my $dumped_core = $pt_code & 128;
+    #print "[exit = $exit_value, signal = $signal_num, core = $dumped_core ";
+    #print "protected test code = $pt_code] ";
 
-      # If there's anything from stderr, check it first, since MPI
-      # might return $exit_code = 0 though there was an error on a child
-      if ($exit_value == 0 && open (ERROR_FILE, $error)) {
-        while (<ERROR_FILE>) {
-	  if (/error/i || /abort/i) {
-	    $exit_value = 104;
-	    last;
-	  }
-        }
-        close (ERROR_FILE);
-      }
-
-      # iff the test succeeded, parse out the results subset of interest
-      if ($exit_value == 0) {
-	print "succeeded\n";
-        print TEST_OUT "Test Number $cnt succeeded\n";
-	parse_test_output($check_output);
-      }
-      else {
-        # if the test failed, don't parse out any results
-	print "failed with exit code $exit_value";
-	print TEST_OUT "Test Number $cnt failed with exit code $exit_value";
-	append_error_message($exit_value);
-      }
-
-      # For workdir tests, need to remove trydir*
-      if ( $file eq "dakota_workdir.in" ) {
-	my @trydirlist = glob("trydir*");
-	for my $tdir (@trydirlist) {
-	  rmtree $tdir;
+    # If there's anything from stderr, check it first, since MPI
+    # might return $exit_code = 0 though there was an error on a child
+    if ($exit_value == 0 && open (ERROR_FILE, $error)) {
+      while (<ERROR_FILE>) {
+	if (/error/i || /abort/i) {
+	  $exit_value = 104;
+	  last;
 	}
       }
-
-##      }  # enable_test
+      close (ERROR_FILE);
     }
 
-    # TODO: error if a specified test not found
-    if (defined $test_num) {
-      $found = 0;      # exit loop after one test
+    # iff the test succeeded, parse out the results subset of interest
+    if ($exit_value == 0) {
+      print "succeeded\n";
+      print TEST_OUT "Test Number $cnt succeeded\n";
+      parse_test_output($check_output);
     }
     else {
-      $cnt = $cnt + 1; # increment test counter
+      # if the test failed, don't parse out any results
+      print "failed with exit code $exit_value";
+      print TEST_OUT "Test Number $cnt failed with exit code $exit_value";
+      append_error_message($exit_value);
     }
 
-  }  # end while tests remain
+    # For workdir tests, need to remove trydir*
+    if ( $file eq "dakota_workdir.in" ) {
+      my @trydirlist = glob("trydir*");
+      for my $tdir (@trydirlist) {
+	rmtree $tdir;
+      }
+    }
+
+  }  # foreach(test)
 
 
-  # Note: this does not currently support nth_test diffing.
-  if ($mode eq "run" && $output_generated == 1) { 
+  if ($mode eq "run" && -e $test) { 
     # if normal mode, generate diffs
     close(TEST_OUT);
     my $diff_path = abs_path($0);
@@ -380,32 +371,16 @@ foreach my $file (@test_inputs) {
     my $dd_exitcode = $? >> 8;
     $summary_exitcode = $dd_exitcode if $summary_exitcode < $dd_exitcode;
   }
-  # remove unneeded files (especially $input since the last instance of this
-  # file corresponds to the #(n+1) tests for which $found == false).
+  # remove unneeded files
   if ($mode ne "extract") {
-    if ($save_output) {
-      # TODO: save output from each test, tagging with test number
-      move($input, "${input}.sav") if (-e $input);
-      move($output, "${output}.sav") if (-e $output);
-      move($error, "${error}.sav") if (-e $error);
-      if ($restart =~ /write/) {
-	copy($restart_file, "${restart_file}.sav") if (-e $restart_file);
-      }
-      else {
-	move($restart_file, "${restart_file}.sav") if (-e $restart_file);
-      }
-    }
-    else {
-      unlink $input;
-      unlink $output;
-      unlink $error;
-      # Remove restart if not explicitly requested
-      if ( ! ($restart =~ /write/) ) {
-	unlink $restart_file;
-      }
+    unlink $input;
+    unlink $output;
+    unlink $error;
+    # Remove restart if not explicitly requested
+    if ( ! ($restart =~ /write/) ) {
+      unlink $restart_file;
     }
   }
-
 
 } # end foreach file
 
@@ -663,32 +638,63 @@ sub get_filenames {
 sub parse_test_options {
 
   my $file = shift(@_);
+  my $max_serial = -1;
+  my $max_parallel = -1;
   open (INPUT_FILE, "$file") ||
       die "cannot open Dakota input file $file\n$!";
 
-  while ( (my $line = <INPUT_FILE>) =~ /^#@/) { # =~ /^#@/) {
-    # match a single test selection (could combine into two expressions)
-    # double \\ since expanding the string in the regex below
-    # support *, s*, p*, 3, s3, p4; not combining regexs to show priority
-    my $test_select_re = "\\*|[sp]\\*|[0-9]+|[sp][0-9]+";
-    # /^#@\s*(${test_select_re})\s*:\s*(.+)/
+  while (my $line = <INPUT_FILE>) {
+    # Parse test annotations
+    if ($line =~ /^#@/) {
 
-    # now match selection: key/value pairs; re-match leading comment to be safe
-    # (differentiating from comments)
-    if ($line =~ /^#@\s*(${test_select_re})\s*:\s*(.+)/) {
-      my $test_selection = $1;
-      my $test_options = $2;
-      #$test_opts{${test_selection}} = { parse_key_val(${test_options})};
-      # merge key/values with any existing in the options hash
-      my %hash_tmp = parse_key_val(${test_options});
-      while (($key, $value) = each %hash_tmp) {
-	$test_opts{${test_selection}}{$key} = $value;
+      # match a single test selection (could combine into two expressions)
+      # double \\ since expanding the string in the regex below
+      # support *, s*, p*, 3, s3, p4; not combining regexs to show priority
+      my $test_select_re = "\\*|[sp]\\*|[0-9]+|[sp][0-9]+";
+      # /^#@\s*(${test_select_re})\s*:\s*(.+)/
+
+      # now match selection: key/value pairs; re-match leading comment to be safe
+      # (differentiating from comments)
+      if ($line =~ /^#@\s*(${test_select_re})\s*:\s*(.+)/) {
+	my $test_selection = $1;
+	my $test_options = $2;
+	#$test_opts{${test_selection}} = { parse_key_val(${test_options})};
+	# merge key/values with any existing in the options hash
+	my %hash_tmp = parse_key_val(${test_options});
+	while (($key, $value) = each %hash_tmp) {
+	  $test_opts{${test_selection}}{$key} = $value;
+	}
+      }
+
+    }
+    # Count tests in this file
+    # TODO: store list of all tests and verify contiguous
+    while ($line =~ /#[sp]\d+/g) {
+      my $match = $&;
+      # iterate the matches
+      if ($match =~ /#p(\d+)/) {
+	if ($1 > ${max_parallel}) {
+	  $max_parallel = $1;
+	}
+      }
+      elsif ($match =~ /#s(\d+)/){
+	if ($1 > ${max_serial}) {
+	  $max_serial = $1;
+	}
       }
     }
-
   }  # while INPUT_FILE
 
   close (INPUT_FILE);
+
+  # if no explicit parallel test, and no serial test, assume a default
+  # serial test
+  $max_serial = 0 if ($max_parallel == -1 && $max_serial == -1);
+
+  # save total serial and parallel count into the properties
+  $test_opts{"s*"}{"Count"} = $max_serial;
+  $test_opts{"p*"}{"Count"} = $max_parallel;
+  return ($max_serial, $max_parallel);
 }
 
 
@@ -708,6 +714,10 @@ sub parse_key_val {
   my $timeout_absolute_re = "(TimeoutAbsolute)=([0-9]+)";
   my $timeout_delay_re = "(TimeoutDelay)=([0-9]+)";
   my $will_fail_re = "(WillFail)=(true)";
+
+  # TODO: cleanup workdir option
+  ##RemoveFilesBefore, RemoveFilesAfter
+      
 
   @all_keyval_re = (
     "${check_output_re}",
@@ -757,18 +767,23 @@ sub parse_key_val {
 sub check_required_configs() {
   my ($cnt) = @_;
   my $enable_test = 1;  # whether to enable this test based on config
-  # get a comma-separated list of required configs
-  my $req_configs = get_test_option_value($cnt, "DakotaConfig", "");
 
-  # for now these can't be multivalued...
-  my @rc_list = split(',', $req_configs);
-  foreach my $rc (@rc_list) {
-    if (! grep {$_ eq $rc} @dakota_config) {
-      # Dakota does not have the required configuration
-      print "Skipping test due to ${rc}\n";
-      $enable_test = 0;
+  if (@dakota_config) {
+  
+    # get a comma-separated list of required configs
+    my $req_configs = get_test_option_value($cnt, "DakotaConfig", "");
+    
+    # for now these can't be multivalued...
+    my @rc_list = split(',', $req_configs);
+    foreach my $rc (@rc_list) {
+      if (! grep {$_ eq $rc} @dakota_config) {
+	# Dakota does not have the required configuration
+	print "Skipping test due to ${rc}\n";
+	$enable_test = 0;
+      }
     }
   }
+
   return $enable_test;
 }
 
@@ -807,7 +822,8 @@ sub write_test_options {
  
   # TODO: print all?  Need another hash with all possible properties
   # to regex matches
-  foreach my $property ("ReqFiles", "DakotaConfig", "Label") {
+  foreach my $property 
+      ("ReqFiles", "DakotaConfig", "Label", "Count") {
     my $prop_ser = "";
     my $prop_par = "";
     my %uniq_serial;    # properties that apply to serial tests

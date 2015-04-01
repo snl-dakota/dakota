@@ -30,6 +30,7 @@ endmacro()
 #   variable containing all test properties to parse
 # Output: 
 #   add_this_test = FALSE if test disallowed by DakotaConfig
+#   last_test: last subtest found, -1 if none
 #   test_labels: appended with any labels from the test file
 #   test_req_files: auxilliary files this test requires
 macro(dakota_get_test_properties test_name serpar_str test_props)
@@ -91,35 +92,20 @@ macro(dakota_get_test_properties test_name serpar_str test_props)
     # TODO: Could also consider use of
     # WILL_FAIL property on individual tests.
 
-  endif()
-endmacro()
-
-
-# Find the number of the highest serial and parallel test in test_input_file
-# using regular expressions.  Set *_count_var as output variables.
-# TODO: we don't want to always assume #s0
-macro(dakota_count_subtests test_input_file serial_count_var parallel_count_var)
-  set(max_serial_subtest -1)    # assume all tests from 0 to max are present
-  set(max_parallel_subtest -1)  # assume all tests from 0 to max are present
-  file(STRINGS ${test_input_file} subtest_lines REGEX "#[sp][0-9]+")
-  foreach(marked_line ${subtest_lines})
-    string(REGEX MATCHALL "#[sp][0-9]+" subtest_marks ${marked_line})
-    foreach(st_mark ${subtest_marks})      
-      if(st_mark MATCHES "#p[0-9]+")
-	string(REGEX REPLACE "#p([0-9]+)" "\\1" st_num ${st_mark})
-	if (st_num GREATER max_parallel_subtest)
-	  set(max_parallel_subtest ${st_num})
-	endif()
-      else()
-	string(REGEX REPLACE "#s([0-9]+)" "\\1" st_num ${st_mark})
-	if (st_num GREATER max_serial_subtest)
-	  set(max_serial_subtest ${st_num})
-	endif()
+    # Find the number of the highest serial and parallel test.  Set
+    # last_subtest as output variable.
+    string(REGEX MATCH "${test_name}:${serpar_str}: Count=(-?[0-9]+)"
+      count_match ${test_props})
+    if (count_match)
+      set(last_subtest ${CMAKE_MATCH_1})
+      if(last_subtest LESS 0)
+	#message(STATUS 
+	#  "Omitting test ${test_name}, ${serpar_str}; no subtests found")
+	set(add_this_test FALSE)
       endif()
-    endforeach()
-  endforeach()
-  set(${serial_count_var} ${max_serial_subtest})
-  set(${parallel_count_var} ${max_parallel_subtest})
+    endif()
+
+  endif()
 endmacro()
 
 
@@ -253,8 +239,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # files.  This can be slow, so do once, then parse the output.  Work
   # in the source tree to avoid having to manage fully-qualified paths
   # to binary tree.
-  # TODO: perform on a per-test basis
-  # TODO: write to binary tree
   execute_process(COMMAND "${PERL_EXECUTABLE}" 
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl" 
     "--test-properties=${CMAKE_CURRENT_BINARY_DIR}/dakota_test.properties" 
@@ -272,7 +256,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   file(READ "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.properties" test_props)
 
   # Iterate the list of test files and create tests for each
-  # TODO: have perl script list all serial and parallel tests by number
   foreach(test_input_file ${dakota_test_input_files})
 
     get_filename_component(test_name ${test_input_file} NAME_WE)
@@ -283,23 +266,20 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
       )
     
-    # Count the number of tests in the file, giving the highest number
-    # found (-1 if no hash marked tests found)
-    set(ser_last_subtest -1)
-    set(par_last_subtest -1)
-    dakota_count_subtests(${test_input_file} ser_last_subtest par_last_subtest)
+    # TODO: apply properties on on a per-subtest basis
 
     # --- Add serial test ---
     # test properties may disable a specific test based on configuration
     set(add_this_test TRUE)
+    set(last_subtest -1)
     set(test_labels DakotaTest SerialTest)
     set(test_req_files)  # files mentioned in input file ReqFiles=
-    # updates above 3 variables
+    # updates above 4 variables
     dakota_get_test_properties("${test_name}" "serial" "${test_props}")
     if (add_this_test)
 
       # Add either one test with all, or the 0-th test, followed by all sub-tests
-      dakota_app_test(${test_name} ${ser_last_subtest}
+      dakota_app_test(${test_name} ${last_subtest}
 	FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
 	LABELS ${test_labels})
 
@@ -322,17 +302,18 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     endif()  # add_this_test
 
     # --- Add parallel test when MPI enabled, and file contains #p<int> ---
-    if (DAKOTA_HAVE_MPI AND ${par_last_subtest} GREATER -1)
+    if (DAKOTA_HAVE_MPI)
 
       # test properties may disable a specific test based on configuration
       set(add_this_test TRUE)
+      set(last_subtest -1)
       set(test_labels DakotaTest ParallelTest)
       set(test_req_files)  # files mentioned in the input file ReqFiles=
-      # updates above 3 variables
+      # updates above 4 variables
       dakota_get_test_properties("${test_name}" "parallel" "${test_props}")
 
       if (add_this_test)
-	dakota_app_test(${test_name} ${par_last_subtest} PARALLEL 
+	dakota_app_test(${test_name} ${last_subtest} PARALLEL 
 	  FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
 	  LABELS ${test_labels}
 	  )

@@ -1,3 +1,4 @@
+#@ Allow default serial test: #s0
 #@ s*: Label=SmokeTest
 #@ p0: MPIProcs=12
 
