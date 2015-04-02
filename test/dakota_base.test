@@ -10022,8 +10022,8 @@ Test Number 0 succeeded
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -9.0000000000e-01   2.1877500000e-01
-  -8.0000000000e-01   4.3698400000e-01
-  -5.0000000000e-01   8.2177100000e-01
+  -8.0000000000e-01   4.3698500000e-01
+  -5.0000000000e-01   8.2178100000e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
@@ -10036,16 +10036,16 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1791000000e-01
-  -8.0000000000e-01   4.3789100000e-01
-  -5.0000000000e-01   8.2121400000e-01
+  -9.0000000000e-01   2.1812700000e-01
+  -8.0000000000e-01   4.3798200000e-01
+  -5.0000000000e-01   8.2132900000e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1774000000e-01
-  -8.0000000000e-01   4.3670000000e-01
-  -5.0000000000e-01   8.2216000000e-01
+  -9.0000000000e-01   2.1789600000e-01
+  -8.0000000000e-01   4.3694900000e-01
+  -5.0000000000e-01   8.2222100000e-01
 dakota_portal_frame.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
@@ -65027,8 +65027,8 @@ Moment-based statistics for each response function:
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  3.7649048559e-01  4.2357895652e-01  3.6348050255e-01  3.9681290753e-01
- response_fn_2  6.2795615518e-02  1.0389276235e-01  3.1723288716e-01  3.4632422767e-01 
-response_fn_3  6.2629303565e-02  1.0402368019e-01  3.1952723296e-01  3.4882897282e-01
+ response_fn_2  6.2795615518e-02  1.0389276235e-01  3.1723288716e-01  3.4632422767e-01
+ response_fn_3  6.2629303565e-02  1.0402368019e-01  3.1952723296e-01  3.4882897282e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0200000000e-01
@@ -65045,38 +65045,38 @@ response_fn_3  6.2629303565e-02  1.0402368019e-01  3.1952723296e-01  3.488289728
    2.0000000000e-01   6.6800000000e-01
    6.0000000000e-01   9.0700000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1 response_fn_2 response_fn_3
-          x1  1.00000e+00
-          x2 -2.47397e-03  1.00000e+00
-response_fn_1 -6.24152e-01 -6.01342e-01  1.00000e+00
-response_fn_2  8.73285e-01 -4.34213e-01 -2.08419e-01  1.00000e+00
-response_fn_3 -4.47592e-01  8.67017e-01 -1.67689e-01 -7.64705e-01  1.00000e+00
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2 -2.47397e-03  1.00000e+00 
+response_fn_1 -6.24152e-01 -6.01342e-01  1.00000e+00 
+response_fn_2  8.73285e-01 -4.34213e-01 -2.08419e-01  1.00000e+00 
+response_fn_3 -4.47592e-01  8.67017e-01 -1.67689e-01 -7.64705e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1 response_fn_2 response_fn_3
-          x1 -7.83039e-01  9.68255e-01 -8.93975e-01
-          x2 -7.71644e-01 -8.86793e-01  9.68325e-01
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -7.83039e-01  9.68255e-01 -8.93975e-01 
+          x2 -7.71644e-01 -8.86793e-01  9.68325e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1 response_fn_2 response_fn_3
-          x1  1.00000e+00
-          x2 -2.49162e-03  1.00000e+00
-response_fn_1 -6.57853e-01 -6.32171e-01  1.00000e+00
-response_fn_2  8.74799e-01 -4.43726e-01 -2.84169e-01  1.00000e+00
-response_fn_3 -4.58975e-01  8.65647e-01 -2.47117e-01 -7.80803e-01  1.00000e+00
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2 -2.49162e-03  1.00000e+00 
+response_fn_1 -6.57853e-01 -6.32171e-01  1.00000e+00 
+response_fn_2  8.74799e-01 -4.43726e-01 -2.84169e-01  1.00000e+00 
+response_fn_3 -4.58975e-01  8.65647e-01 -2.47117e-01 -7.80803e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1 response_fn_2 response_fn_3
-          x1 -8.51067e-01  9.74931e-01 -9.12444e-01
-          x2 -8.41553e-01 -9.11376e-01  9.73051e-01
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -8.51067e-01  9.74931e-01 -9.12444e-01 
+          x2 -8.41553e-01 -9.11376e-01  9.73051e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10 total (10 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.8373805233e-01  4.0307298396e-01  1.2363043988e+00  6.1420873146e-01
+ response_fn_1  3.8373813968e-01  4.0278972520e-01  1.2361052787e+00  6.1741637759e-01
  response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
  response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  9.5397009643e-02  6.7207909501e-01  2.7724778925e-01  7.3585414381e-01
+ response_fn_1  9.5599728100e-02  6.7187655125e-01  2.7705295391e-01  7.3533702374e-01
  response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
  response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
@@ -65098,13 +65098,13 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
           x2 -7.22482e-02  1.00000e+00 
-response_fn_1 -7.07871e-01 -6.25185e-01  1.00000e+00 
-response_fn_2  8.61628e-01 -5.31298e-01 -2.63722e-01  1.00000e+00 
-response_fn_3 -5.83075e-01  8.33989e-01 -1.21225e-01 -8.92771e-01  1.00000e+00 
+response_fn_1 -7.07343e-01 -6.25603e-01  1.00000e+00 
+response_fn_2  8.61628e-01 -5.31298e-01 -2.62978e-01  1.00000e+00 
+response_fn_3 -5.83075e-01  8.33989e-01 -1.21825e-01 -8.92771e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          x1 -9.67374e-01  9.74285e-01 -9.49997e-01 
-          x2 -9.60016e-01 -9.26578e-01  9.77252e-01 
+          x1 -9.67150e-01  9.74285e-01 -9.49997e-01 
+          x2 -9.59837e-01 -9.26578e-01  9.77252e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
@@ -65115,23 +65115,7 @@ response_fn_3 -6.24242e-01  7.93939e-01 -5.45455e-02 -9.27273e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
           x1 -8.20657e-01  9.74896e-01 -9.41760e-01 
-          x2 -7.62704e-01 -9.50799e-01  9.65145e-01
-dakota_users_cantilever_opt_npsol.in
-Test Number 0 succeeded
-<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
-<<<<< Best parameters          =
-                      2.3520341271e+00 w
-                      3.3262784077e+00 t
-                      4.0000000000e+04 R
-                      2.9000000000e+07 E
-                      5.0000000000e+02 X
-                      1.0000000000e+03 Y
-<<<<< Best objective function  =
-                      7.8235203313e+00
-<<<<< Best constraint values   =
-                     -1.6009000260e-02
-                     -3.7083558446e-11
-<<<<< Best data captured at function evaluation 31
+          x2 -7.62704e-01 -9.50799e-01  9.65145e-01 
 dakota_users_cantilever_uq_global_interval.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
