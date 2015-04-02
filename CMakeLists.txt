@@ -404,23 +404,30 @@ endif() # NOT BUILD_IN_TRILINOS
 
 # Manage option for graphics (default ON if possible)
 include(DakotaXGraphics)
-option(HAVE_X_GRAPHICS "Build the DAKOTA/Motif Graphics package." ON)
+option(HAVE_X_GRAPHICS "Build the Dakota/Motif Graphics package." ON)
 if(HAVE_X_GRAPHICS)
-  dakota_x_graphics()
-  # TODO: option to force even when deps not found?
-  if(DAKOTA_X_DEPS_FOUND)
-    message(STATUS "All Dakota X_GRAPHICS dependencies found; 2D graphics "
-      "will be enabled as requested.")
-  else()
-    message(WARNING "HAVE_X_GRAPHICS requested, but X11 dependencies not "
-      "found; disabling. (Dakota graphics require X11, Xmu, Xpm, and "
-      "Motif/Lesstif, including development headers and libraries, as well as "
-      "pthreads.)"
-      )
+  if(WIN32)
+    message(STATUS "HAVE_X_GRAPHICS requested, but not supported on Windows; "
+      "disabling.")
     set(HAVE_X_GRAPHICS OFF CACHE BOOL 
-      "X graphics dependencies not found; disabling" FORCE)
-  endif()
-endif()
+      "X graphics not supported on Windows; disabling" FORCE)
+  else()
+    dakota_x_graphics()
+    # TODO: option to force even when deps not found?
+    if(DAKOTA_X_DEPS_FOUND)
+      message(STATUS "All Dakota X_GRAPHICS dependencies found; 2D graphics "
+	"will be enabled as requested.")
+    else()
+      message(WARNING "HAVE_X_GRAPHICS requested, but X11 dependencies not "
+	"found; disabling. (Dakota graphics require X11, Xmu, Xpm, and "
+	"Motif/Lesstif, including development headers and libraries, as well as "
+	"pthreads.)"
+	)
+      set(HAVE_X_GRAPHICS OFF CACHE BOOL 
+	"X graphics dependencies not found; disabling" FORCE)
+    endif()
+  endif()  # WIN32
+endif()  # HAVE_X_GRAPHICS
 
 # Manage option for f90 (default ON)
 option(DAKOTA_F90 "Build the f90, bvls_wrapper." ON)
