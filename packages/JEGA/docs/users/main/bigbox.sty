@@ -1,0 +1,40 @@
+% I like to put boxes around all of my figures and algorithms in
+% reports, and finally came up with my 'bigbox' environment.  It makes
+% a
+% box as wide as the current text and sets the stuff inside with a
+% narrower width.  The contents of 'bigbox.sty' are below.
+%
+% USAGE:
+%
+% \begin{figure}        (or {table}, or {center}, or ...)
+%   \begin{bigbox}
+%     \begin{tabbing}
+%       ...
+%     \end{tabbing}
+%   \end{bigbox}
+%   \caption{XXX}
+% \end{figure}
+%
+%%% BIGBOX - environment
+%%%
+%%% TOM SHEFFLER
+%%% Carnegie Mellon, Aug 1990
+%%%
+%%% Make an environment for boxing a figure and setting it in
+%%% a narrower width.
+\newdimen\boxfigwidth % width of figure box
+
+\def\bigbox{\begingroup
+  % Figure out how wide to set the box in
+  \boxfigwidth=\hsize
+  \advance\boxfigwidth by -2\fboxrule
+  \advance\boxfigwidth by -2\fboxsep
+  \setbox4=\vbox\bgroup\hsize\boxfigwidth
+  % Make an invisible hrule so that the box is exactly this wide
+  \hrule height0pt width\boxfigwidth\smallskip%
+% Some environments like TABBING and other LIST environments
+% use this measure of line size -
+% \LINEWIDTH=\HSIZE-\LEFTMARGIN-\RIGHTMARGIN?
+  \linewidth=\boxfigwidth
+}
+\def\endbigbox{\smallskip\egroup\fbox{\box4}\endgroup}

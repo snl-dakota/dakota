@@ -1,0 +1,90 @@
+\documentclass[letterpaper]{book}
+
+\usepackage{makeidx}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{moreverb}
+\usepackage{float}
+\usepackage{listings,color}          % used for the source code
+\usepackage{multirow}
+\usepackage{amssymb,amsmath}
+\usepackage{epstopdf}
+
+\ifx\pdfoutput\undefined
+\usepackage[ps2pdf,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue
+           ]{hyperref}
+\else
+\usepackage[pdftex,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue
+           ]{hyperref}
+\fi
+
+%\usepackage{doxygen}
+% Some settings borrowed from doxygen.sty:
+\pagestyle{fancyplain} \setlength{\parindent}{0cm}
+\setlength{\parskip}{0.2cm} \lhead[\fancyplain{}{\bfseries\thepage}]
+        {\fancyplain{}{\bfseries\rightmark}}
+\rhead[\fancyplain{}{\bfseries\leftmark}]
+        {\fancyplain{}{\bfseries\thepage}}
+\rfoot[\fancyplain{}{\bfseries\scriptsize JEGA Version 2.7 User's
+Manual generated on \today}]{}
+\lfoot[]{\fancyplain{}{\bfseries\scriptsize JEGA Version 2.7 User's
+Manual generated on \today}} \cfoot{}
+
+\usepackage{bigbox}
+\makeindex \setcounter{tocdepth}{1}
+\renewcommand\footrulewidth{0.4pt}
+
+\begin{document}
+\begin{titlepage}
+\begin{center}
+\vspace*{1.5cm} {\LARGE JEGA, A Package for Single and Multiple Objective Genetic Optimization}\\
+\vspace*{1cm}
+{\LARGE Version 2.7 User's Manual}\\
+\vspace*{1cm}
+
+{\large \bf John P. Eddy, Ph.D.}\\
+{\large System Readiness and Sustainment Technologies Department}\\
+\vspace*{0.5cm}
+{\large Sandia National Laboratories}\\
+{\large P.O. Box 5800 MS 1188}\\
+{\large Albuquerque, New Mexico 87185}\\
+\vspace*{1cm}
+
+\newpage
+
+\end{center}
+
+\input{../abstract/abstract}
+\newpage
+\input{../acknowledgements/acknowledgements}
+
+\pagenumbering{arabic} \setcounter{page}{3}
+\end{titlepage}
+
+\tableofcontents
+
+\definecolor{darkgreen}{rgb}{0.00,0.50,0.25}
+
+\setcounter{secnumdepth}{-1} % Turn off chapter numbering (for the Preface)
+
+\setcounter{secnumdepth}{2} % Turn on chapter numbering (after the Preface)
+\input{../ch_introduction/introduction}
+\input{../ch_background/background}
+\input{../ch_getting_started/getting_started}
+\input{../ch_features/features}
+\input{../ch_configuration/configuration}
+\input{../ch_capabilities/capabilities}
+\input{../ch_output/output}
+\input{../ch_examples/examples}
+
+\bibliographystyle{plain}
+\bibliography{../bibliography/bibliography}
+
+\end{document}

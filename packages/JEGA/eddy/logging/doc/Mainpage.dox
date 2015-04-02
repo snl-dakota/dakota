@@ -1,0 +1,373 @@
+/*
+================================================================================
+    PROJECT:
+
+        Eddy C++ Logging
+
+    CONTENTS:
+
+        Specialization of the main page (index.html) of this documentation.
+
+    NOTES:
+
+
+
+    PROGRAMMERS:
+
+        John Eddy (JE) - University at Buffalo, SUNY (johneddy@eng.buffalo.edu)
+
+    COPYRIGHT:
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Lesser General Public License for more details.
+
+        For a copy of the GNU Lesser General Public License, write to:
+            Free Software Foundation, Inc.
+            59 Temple Place, Suite 330
+            Boston, MA 02111-1307 USA
+
+    VERSION:
+
+        1.0.0
+
+    CHANGES:
+
+        Fri Jan 28 15:29:40 2005 - Original Version (JE)
+
+================================================================================
+*/
+
+
+
+
+/*
+================================================================================
+Document This File
+================================================================================
+*/
+/** \file
+ * \brief Contains various special definitions for generating/customizing
+ * Doxygen output.
+ *
+ * This file contains no source code.  It contains the stuff that shows up
+ * on the Main Page.
+ *
+ * Developers: Add in any other special documentation blocks that you see
+ * fit for this project.
+ */
+
+
+/*
+================================================================================
+Document The Namespaces Relevant To This Project
+================================================================================
+*/
+/** \namespace eddy
+ *
+ * \brief The overarching namespace of all code projects created by John Eddy.
+ */
+ 
+/** \namespace eddy::logging
+ *
+ * \brief The namespace into which all logging project specific code is placed.
+ */
+ 
+/** \namespace eddy::logging::detail
+ *
+ * \brief The namespace into which all "hidden" code for the logging project
+ *        is placed.
+ *
+ * This includes any types, data, etc. that the user should not have access
+ * to.  Of course, the user can still have access if this is used in a header
+ * file but it at least serves as an indicator that the user should not be
+ * using it.
+ */
+ 
+ 
+
+
+/*
+================================================================================
+Specialize the Main Page
+================================================================================
+*/
+/** \mainpage
+ *
+ * - \ref intro_sec<br>
+ * - \ref purpose_sec<br>
+ * - \ref impl_sec<br>
+ *		- \ref entries<br>
+ *			- \ref entryrat<br>
+ *		- \ref logs<br>
+ *			- \ref logsrat<br>
+ *		- \ref gateways<br>
+ *			- \ref gatewaysrat<br>
+ *		- \ref levels<br>
+ *			- \ref levelsrat<br>
+ *		- \ref threadsafe<br>
+ *			- \ref threadsafesrat<br>
+ *		- \ref macros<br>
+ *			- \ref macrossrat<br>
+ * - \ref usage_sec<br>
+ * - \ref future_sec<br>
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the Eddy C++ Logging Library v1.0.0 by
+ * <a href=mailto::johneddy@eng.buffalo.edu>John Eddy</a> at the University at
+ * buffalo, SUNY.
+ *
+ * \section purpose_sec Purpose
+ *
+ * Often when running an application it is necessary to record
+ * and/or report various bits of information about its state.  This information
+ * can be anything such as simple status notifications, exceptional or erroneous
+ * circumstances, a record of methods entered and their success or failure, etc.
+ * 
+ * The purpose of this library is to provide a flexible and highly functional
+ * means of logging various pieces of information from within a C++ program.
+ * It is meant to be extremely extensible to suit the widely varying needs of
+ * the programming community.  As such, its design is highly parameterized and
+ * imposes very few requirements on its components as discussed below in the
+ * \ref impl_sec section.
+ *
+ * \section impl_sec Implementation
+ *
+ * The library is broken into a number of functional components all of which
+ * are meant to be extensible and replacable.  There are a number of
+ * pre-existing implementations for each to cover the basic usage of the
+ * library.
+ *
+ * \subsection entries Entries
+ *
+ * An entry is a piece of information that is to be entered into a log
+ * (\ref logs).  The only components of the library that may impose
+ * requirements on entries are logs.  Logs may imposed requirements
+ * on entries because they are ultimately where entries are
+ * processed and/or stored.  As an example, the ostream_log requires that
+ * whatever is passed to it be "stream-outable" via operator <<.
+ * Minus any restrictions imposed by particular logs being used,
+ * entries can be any built-in or user-defined type.
+ *
+ * A number of entry types have been created for basic use with this library
+ * (see \ref entry_types).
+ * They each keep text in some form or another (string, ostringstream, etc.).
+ *
+ * The basic entry types provided with the library are the ostream_entry and
+ * the text_entry.  The ostream_entry implements ostream-like
+ * behavior for any "stream-outable" information.  The text_entry also
+ * allows ostream-like insertion but in a very limited way.
+ *
+ * Underneath, the ostream_entry uses a basic_ostringstream.  Information of any
+ * "stream-outable" type can be added to a ostream_entry.  The string created
+ * can be accessed any time using the accessor methods or by operator
+ * conversion to a basic_string.
+ *
+ * The text_entry on the other hand uses a basic_string as a container.  It
+ * also allows ostream like insertion but only of textual information in the
+ * form of char_type, char_type* or string_type (see class reference for these
+ * types). The built-up string of this entry type can be accessed using the
+ * accessor methods or by operator conversion to a basic_string.
+ *
+ * \subsubsection entryrat Rationale
+ *
+ * The rationale behind such a flexible and unimposing entry scheme is to
+ * provide maximum flexibility and to make the log gateways as transparent
+ * as possible.  By this paradigm, the gateways serve only as gateways through
+ * which entries must pass (and that passing is not necessarily dependent on
+ * type).
+ *
+ * \subsection logs Logs
+ *
+ * A log is a device that actually processes entries.  As such logs are the
+ * the only components that should impose requirements of any kind on their
+ * entries.  Therefore, certain logs may only be usable with certain types of
+ * entries or entries with certain properties.  Such compatibility
+ * requirements will generally be asserted by the compiler.
+ *
+ * The only requirement imposed on logs by the infrastructure is that they
+ * supply a method called "log" that accepts a single argument which will be
+ * an entry.  Other than that, a log is free to do whatever is appropriate for
+ * its purpose.
+ *
+ * See the \ref log_types for more information and examples of logs.
+ *
+ * \subsubsection logsrat Rationale
+ *
+ * The rationale for the relatively few requirements of logs is to provide
+ * maximum flexibility and user specialization.  A log may be a construct as
+ * simple as:
+ * \code
+	struct my_log { void log(int e) { cerr << e << '\n'; }  };
+   \endcode
+ * in which case only entries of type int (or coercible) will be allowed by
+ * the compiler.
+ *
+ * Conversely, logs can be as complicated as the user wishes.
+ *
+ * \subsection gateways Log Gateways
+ *
+ * Log Gateways are constructs through which entries must pass
+ * prior to reaching logs.  As such, gateways may decide which entries get
+ * passed along and which do not.
+ *
+ * Log Gateways are meant to be as transparent as possible such that any
+ * given gateway will work with any entry-log type pairs.  See for example
+ * the level log gateways which will pass any type of entry to any log type
+ * but may still do so conditionally based on logging levels.
+ *
+ * For a list of the existing log gateways and to find out what they do,
+ * see \ref log_gateway_types.
+ *
+ * \subsubsection gatewaysrat Rationale
+ *
+ * The rationale for making the gateways as transparent as possible is to make
+ * them as widely useful as possible.  Any developer that wishes to create
+ * specialized entries and associated logs should be able to use the existing
+ * gateways to serve as a go-between applying whatever conditions it is built
+ * to apply.
+ *
+ * \subsection levels Logging Levels
+ *
+ * Logging levels is a concept specific to the level log gateways.  The level
+ * log gateways pass entries only when the supplied level is such that that
+ * entry should be passed.  The specification of what levels exist is
+ * parameterizable.
+ *
+ * As a template argument, a level gateway will accept a level policy compliant
+ * class that specifies the levels that may be used.  There are 3 restrictions
+ * imposed on level policies by the infrastructure.  They are:
+ * - There must be a type within the class named "level" and it must be the
+ *	 type that is represented by a level.  This requirement would commonly
+ *	 be fulfilled either by enumerating the allowed levels in an enumeration
+ *	 called level or by a typedef that specifies the type of the levels
+ *	 (such as int).
+ * - There must be a level named "Default" which serves as a default level.
+ *   This item must either be an enumeration member or a static member of
+ *	 the class.
+ * - There must be a method with the following signature for writing the
+ *	 levels into output streams in whatever fashion is desired.
+ * \code
+	static (ostreamable return type) to_ostreamable(const level& l)
+   \endcode
+ *
+ * where the return type is anything that can be inserted into an output
+ * stream using operator <<.
+ *
+ * Furthermore, since the level gateways will be comparing levels for order,
+ * it would be wise to create a total order such that the most serious levels
+ * (those at which only the most important loggings should register) have the
+ * largest value and the values decend from there as the seriousness decends.
+ * Consider the Log4j levels supplied by the library.  They are ordered like
+ * this:
+ * - Off = (max for data type)
+ * - Fatal = 50
+ * - Error = 40
+ * - Warn = 30
+ * - Info = 20
+ * - Debug = 10
+ * - Default = Warn
+ * - All = (min for data type)
+ *
+ * The levels are typically passed about by reference to support the notion
+ * that they needn't be simple integers, enums, or other POD types.
+ *
+ * If user-defined types are to be used as levels, they must support the
+ * following operations:
+ * - default construction;
+ * - copy construction;
+ * - assignment via operator =
+ * - comparison via operator <=
+ *
+ * and they should be but don't have to be comparable via operator ==.
+ *
+ * For a list of the available logging level types see \ref level_class_types.
+ *
+ * \subsubsection levelsrat Rationale
+ *
+ * It is most convenient to use built-in types such as int, short, char, enum,
+ * etc. to represent levels.  However, since the levels are to be a policy
+ * anyway, I see no reason to make this a requirement.
+ *
+ * \subsection threadsafe Thread Safety
+ *
+ * Thread safety is a must in a library such as this.  Given that many
+ * applications are multi-threaded, in order to create an image of the state
+ * of the entire application, each thread must be able to make log entries 
+ * without the logs being subject to multi-thread corruption.  Consideration
+ * for multi-threading must take place in two primary locations.  The log
+ * gateways and the logs.
+ *
+ * The log gateways each "know" a log to which they write.  They should not
+ * assume that the log implements thread safe behavior.  Therefore, at a
+ * minimum, they should only write to logs in protected sections.  In addition,
+ * any state required by the gateways themselves (such as the map of issuers
+ * to levels in a level gateway) should be protected as multiple threads may
+ * make requests of any kind to any gateway at any time.
+ *
+ * The logs themselves should be thread safe for two reasons.  Firstly, there is
+ * no reason why many gateways can't write to the same log at the same time.
+ * So while each gateway is protecting it's reference to the log, cross gateway
+ * protection does not exist.  Secondly, there is no requirement that a log
+ * gateway be used at all.  This is part of the rationale for having a very
+ * similar logging interface for the gateways and logs (i.e. a log method
+ * accepting a single argument).  So if that is the case and gateways are not
+ * being used, then the logs are not otherwise thread protected in any way.
+ *
+ * Thread safety is implemented in this library using the Eddy Thread Safety
+ * Project library.  It can be conditionally included to avoid the overhead for
+ * single threaded applications.  To include thread protection in the library
+ * at compilation time, define EDDY_LOGGING_THREADSAFE.  If you do not define
+ * that, all traces of thread safety will be completely removed from the code.
+ *
+ * \subsubsection threadsafesrat Rationale
+ *
+ * The Eddy Thread Safety Project is used to avoid dependency on any other
+ * libraries.  However, all multi-threading code is hidden beneath macros and
+ * thus other multi-threading libraries could be relatively easily substituted.
+ * The need for multi-threading support is quite obvious and stems from the
+ * requirements outlined in the previous section.
+ *
+ * \subsection macros Macro Interface
+ *
+ * Often, logging is only used during development and testing of an
+ * application.  Of course, it is also often the case that logging is included
+ * in distributions so that users can include logs in reports of strange
+ * or ill behavior.  However, the need to completely remove logging from
+ * some builds and not others is part of the reason for the implementation of
+ * a macro interface.  Other reasons include the desire to reduce the syntax
+ * required to create log entries and to ensure that entries are managed
+ * as efficiently as possible (only constructed when needed, etc.).
+ *
+ * This project has a macro interface to accommodate these needs.  
+ *
+ * \subsubsection macrossrat Rationale
+ *
+ * The rationale for having a macro interface is to make it possible to create
+ * efficient code with minimal syntax.  The only problems are the well-known
+ * drawbacks of macro useage.  To minimize the effects of these drawbacks, all
+ * macros in the project begin with EDDY_LOGGING_... in order to make clashes
+ * unlikely.
+ *
+ * \section usage_sec Usage
+ *
+ * This library is heavily templatized and therefore is implemented entirely
+ * within header files.  In order to use it, simply include the appropriate
+ * header files and begin using the code.  It is recommended that a small
+ * "front end" application be written for any project implementing the Eddy
+ * Logging Project that exposes only those functionalities necessary with an
+ * abbreviated syntax as the declarations can be cumbersome due to the heavy
+ * use of parameterized types and namespaces.
+ *
+ * \section future_sec Future Work
+ *
+ *
+ */
+

@@ -1,0 +1,626 @@
+\chapter{Operators} \label{ch_operators}
+
+The JEGA (John Eddy's Genetic Algorithms) library %[\ref JEddy2001 "Eddy and Lewis, 2001"]
+contains two global optimization methods. The first is a
+Multi-objective Genetic Algorithm (MOGA) which performs Pareto
+optimization.  The second is a Single-objective Genetic Algorithm
+(SOGA) which performs optimization on a single objective function.
+Both methods support general constraints and a mixture of real and
+discrete variables.  The JEGA library was written by John Eddy,
+currently a member of the technical staff in the System Sustainment
+and Readiness group at Sandia National Laboratories in Albuquerque.
+These algorithms are accessed as \emph{moga} and \emph{soga} within
+DAKOTA.  DAKOTA provides access to the JEGA library through the
+JEGAOptimizer class.
+
+JEGA utilizes the \emph{max\_iterations} and
+\emph{max\_function\_evaluations} method independent controls to
+provide integer limits for the maximum number of generations and
+function evaluations, respectively.  Note that currently, the DAKOTA
+default for \emph{max\_iterations} is 100 and for
+\emph{max\_function\_evaluations} is 1000. These are the default
+settings that will be used to ``stop'' the JEGA algorithms, unless
+some specific convergence criteria are set% (see \ref T5d20 "Table
+%5.20" below).
+
+JEGA v2.0 also utilizes the \emph{output} method independent control to
+vary the amount of information presented to the user during
+execution.
+
+%\subsection MethodJEGADC JEGA method dependent controls
+
+The JEGA library currently provides two types of genetic algorithms
+(GAs): a multi-objective genetic algorithm (\emph{moga}), and a
+single- objective genetic algorithm (\emph{soga}).  Both of these
+GAs can take real-valued inputs, integer-valued inputs, or a mixture
+of real and integer-valued inputs.  ``Real-valued'' and
+``integer-valued'' refer to the use of continuous or discrete
+variable domains, respectively (the response data are real-valued in
+all cases).
+
+The basic steps of the genetic algorithm are as follows:
+
+\begin{itemize}
+
+\item Initialize the population.  This is typically done by randomly
+generating population members with or without duplicates or by some
+sort of ``warm start'' initialization.
+
+\item Evaluate the initial population members.  This involves the
+calculation of the values of the objective function(s) and
+constraints for each population member.
+
+\item Perform crossover.  This is where existing members of the
+population are combined to form new ones.  Several crossover types
+are available.  This is the beginning of the iterator loop.
+
+\item Perform mutation.  This is where random variation is added
+to the offspring designs.  Several mutation types are available.
+
+\item Evaluate the new population members.
+
+\item Assess the fitness of each member in the population.  There are
+a number of ways to evaluate the fitness of the members of the
+populations.  Choice of fitness assessor operators is strongly
+dependent on the type of algorithm being used and can have a
+profound effect on the choice of selectors.  For example, if using
+\emph{MOGA}, the available assessors are the \emph{layer\_rank} and
+\emph{domination\_count} fitness assessors.  If using either of
+these, it is strongly recommended that you use the
+\emph{below\_limit} selector as well (although the roulette wheel
+selectors can also be used).  The functionality of the
+\emph{dominationr\_count} selector of JEGA v1.0 can now be achieved
+using the \emph{domination\_count} fitness assessor and
+\emph{below\_limit} selector together.  If using \emph{SOGA}, the
+only fitness assessor is the \emph{merit\_function} fitness assessor
+which currently uses an exterior penalty function formulation to
+assign fitnesses. Any of the selectors can be used in conjunction
+with this fitness assessment scheme.  This is the first of the
+selection operators.
+
+\item Replace the population with members selected to continue in the
+next generation.  The pool of potential members is the current
+population and the current set of offspring.  The
+\emph{replacement\_type} of \emph{roulette\_wheel} or
+\emph{unique\_roulette\_wheel} may be used either with MOGA or SOGA
+problems however they are not recommended for use with MOGA.  Given
+that the only two fitness assessors for MOGA are the
+\emph{layer\_rank} and \emph{domination\_count}, the recommended
+selector is the \emph{below\_limit} selector. The
+\emph{replacement\_type} of \emph{favor\_feasible} is specific to a
+SOGA. This replacement operator will always take a feasible design
+over an infeasible one.  Beyond that, it favors solutions based on
+an assigned fitness value which must have been installed by some
+fitness assessor.
+
+\item Apply niche pressure to the population.  This step is specific
+to the MOGA and is new to JEGA v2.0.  Technically, the step is
+carried out during runs of the SOGA but only the
+\emph{null\_niching} operator is available for use with SOGA.  In
+MOGA, the \emph{radial} niching operator or the \emph{distance}
+niching operator can be used. The purpose of niching is to encourage
+differentiation along the Pareto frontier and thus a more even and
+uniform sampling.  In JEGA, niching operators typically work by
+determining when two designs are too close in the performance
+(phenotype) space and caching them until the next round of
+selection.
+
+\item Test for convergence.  The final step in the iterator loop is
+to assess the convergence of the algorithm.  There are two aspects
+to convergence that must be considered.  The first is stopping
+criteria.  A stopping criteria dictates some sort of limit on the
+algorithm that is independent of its performance.  Examples of
+stopping criteria available for use with JEGA are the
+\emph{max\_iterations} and \emph{max\_function\_evaluations} inputs.
+All JEGA convergers respect these stopping criteria in addition to
+anything else that they do.
+
+The second aspect to convergence involves repeated assessment of the
+algorithms progress in solving the problem.  In JEGA v1.0, the
+fitness tracker convergers (\emph{best\_fitness\_tracker} and
+\emph{average\_fitness\_tracker}) performed this function by
+asserting that the fitness values (either best or average) of the
+population continue to improve.  There was no such operator for the
+MOGA.  As of JEGA v2.0, the same fitness tracker convergers exist
+for use with SOGA and there is now a converger available for use
+with the MOGA. The MOGA converger (\emph{metric\_tracker}) operates
+by tracking various changes in the non-dominated frontier from
+generation to generation. When the changes occurring over a user
+specified number of generations fall below a user specified
+threshold, the algorithm stops.
+
+\item Post Process.  This occurs after convergence has been
+attained.  This operator provides a means of filtering the data
+returned by the algorithm in whatever way is relevant.  For example,
+if using a MOGA, it may be desired to return only a certain number
+of points within a particular region or evenly dispersed throughout
+the performance space, etc.
+\end{itemize}
+
+There are many controls which can be used for both MOGA and SOGA
+methods.  These include among others the random seed, initialization
+types, crossover and mutation types, and some replacement types.
+
+The \emph{seed} control defines the starting seed for the random
+number generator.  The algorithm uses random numbers heavily but a
+specification of a random seed will cause the algorithm to run
+identically from one trial to the next so long as all other input
+specifications remain the same.  New to JEGA v2.0 is the
+introduction of the \emph{log\_file} specification.  JEGA v2.0 uses
+a logging library to output messages and status to the user.  JEGA
+can be configured at build time to log to both standard error and a
+text file, one or the other, or neither.  The \emph{log\_file} input
+is a string name of a file into which to log.  If the build was
+configured without file logging in JEGA, this input is ignored.  If
+file logging is enabled and no \emph{log\_file} is specified, the
+default file name if JEGAGlobal.log is used.  Also new to JEGA v2.0
+is the introduction of the \emph{print\_each\_pop} specification. It
+serves as a flag and if supplied, the population at each generation
+will be printed to a file named ``population<GEN\#>.dat'' where
+<GEN\#> is the number of the current generation.
+
+The \emph{initialization\_type} defines the type of initialization
+for the GA.  There are three types: \emph{simple\_random},
+\emph{unique\_random}, and \emph{flat\_file}.  \emph{simple\_random}
+creates initial solutions with random variable values according to a
+uniform random number distribution. It gives no consideration to any
+previously generated designs.  The number of designs is specified by
+the \emph{population\_size}. \emph{unique\_random} is the same as
+\emph{simple\_random}, except that when a new solution is generated,
+it is checked against the rest of the solutions.  If it duplicates
+any of them, it is rejected.  \emph{flat\_file} allows the initial
+population to be read from a flat file.  If \emph{flat\_file} is
+specified, a file name must be given.
+
+Variables can be delimited in the flat file in any way you see fit
+with a few exceptions.  The delimiter must be the same on any given
+line of input with the exception of leading and trailing whitespace.
+So a line could look like: 1.1, 2.2  ,3.3 for example but could not
+look like: 1.1, 2.2  3.3.  The delimiter can vary from line to line
+within the file which can be useful if data from multiple sources is
+pasted into the same input file. The delimiter can be any string
+that does not contain any of the characters .+-dDeE or any of the
+digits 0-9.  The input will be read until the end of the file.  The
+algorithm will discard any configurations for which it was unable to
+retrieve at least the number of design variables.  The objective and
+constraint entries are not required but if ALL are present, they
+will be recorded and the design will be tagged as evaluated so that
+evaluators may choose not to re-evaluate them.  Setting the size for
+this initializer has the effect of requiring a minimum number of
+designs to create.  If this minimum number has not been created once
+the files are all read, the rest are created using the
+\emph{unique\_random} initializer and then the \emph{simple\_random}
+initializer if necessary.
+
+Note that the \emph{population\_size} only sets the size of the
+initial population.  The population size may vary in the JEGA
+methods according to the type of operators chosen for a particular
+optimization run.
+
+There are many crossover types available.
+\emph{multi\_point\_binary} crossover requires an integer number, N,
+of crossover points.  This crossover type performs a bit switching
+crossover at N crossover points in the binary encoded genome of two
+designs.  Thus, crossover may occur at any point along a solution
+chromosome (in the middle of a gene representing a design variable,
+for example). \emph{multi\_point\_parameterized\_binary} crossover
+is similar in that it performs a bit switching crossover routine at
+N crossover points. However, this crossover type performs crossover
+on each design variable individually. So the individual chromosomes
+are crossed at N locations. \emph{multi\_point\_real} crossover
+performs a variable switching crossover routing at N crossover
+points in the real real valued genome of two designs. In this
+scheme, crossover only occurs between design variables
+(chromosomes).  Note that the standard solution chromosome
+representation in the JEGA algorithm is real encoded and can handle
+integer or real design variables.  For any crossover types that use
+a binary representation, real variables are converted to long
+integers by multiplying the real number by $10^6$ and then
+truncating. Note that this assumes a precision of only six decimal
+places. Discrete variables are represented as integers (indices
+within a list of possible values) within the algorithm and thus
+require no special treatment by the binary operators.
+
+The final crossover type is \emph{shuffle\_random}.  This crossover
+type performs crossover by choosing design variables at random from
+a specified number of parents enough times that the requested number
+of children are produced.  For example, consider the case of 3
+parents producing 2 children.  This operator would go through and
+for each design variable, select one of the parents as the donor for
+the child. So it creates a random shuffle of the parent design
+variable values. The relative numbers of children and parents are
+controllable to allow for as much mixing as desired.  The more
+parents involved, the less likely that the children will wind up
+exact duplicates of the parents.
+
+All crossover types take a \emph{crossover\_rate}.  The crossover
+rate is used to calculate the number of crossover operations that
+take place. The number of crossovers is equal to the rate *
+\emph{population\_size}.
+
+There are five mutation types allowed.  \emph{replace\_uniform}
+introduces random variation by first randomly choosing a design
+variable of a randomly selected design and reassigning it to a
+random valid value for that variable.  No consideration of the
+current value is given when determining the new value.  All mutation
+types have a \emph{mutation\_rate}.  The number of mutations for the
+\emph{replace\_uniform} mutator is the product of the
+\emph{mutation\_rate} and the \emph{population\_size}.
+
+The \emph{bit\_random} mutator introduces random variation by first
+converting a randomly chosen variable of a randomly chosen design
+into a binary string.  It then flips a randomly chosen bit in the
+string from a 1 to a 0 or visa versa. In this mutation scheme, the
+resulting value has more probability of being similar to the
+original value.  The number of mutations performed is the product of
+the \emph{mutation\_rate}, the number of design variables, and the
+\emph{population\_size}.
+
+The offset mutators all act by adding an ``offset'' random amount to
+a variable value.  The random amount has a mean of zero in all
+cases. The \emph{offset\_normal} mutator introduces random variation
+by adding a Gaussian random amount to a variable value.  The random
+amount has a standard deviation dependent on the
+\emph{mutation\_scale}.  The \emph{mutation\_scale} is a fraction in
+the range [0, 1] and is meant to help control the amount of
+variation that takes place when a variable is mutated.
+\emph{mutation\_scale} is multiplied by the range of the variable
+being mutated to serve as standard deviation. \emph{offset\_cauchy}
+is similar to \emph{offset\_normal}, except that a Cauchy random
+variable is added to the variable being mutated.  The
+\emph{mutation\_scale} also defines the standard deviation for this
+mutator. Finally, \emph{offset\_uniform} adds a uniform random
+amount to the variable value.  For the \emph{offset\_uniform}
+mutator, the \emph{mutation\_scale} is interpreted as a fraction of
+the total range of the variable.  The range of possible deviation
+amounts is +/- 1/2 * (\emph{mutation\_scale} * variable range).  The
+number of mutations for all offset mutators is defined as the
+product of \emph{mutation\_rate} and \emph{population\_size}.
+
+As of JEGA v2.0, all replacement types are common to both MOGA and
+SOGA. They include the \emph{roulette\_wheel},
+\emph{unique\_roulette\_wheel}, and \emph{below\_limit} selectors.
+In \emph{roulette\_wheel replacement}, each design is conceptually
+allotted a portion of a wheel proportional to its fitness relative
+to the fitnesses of the other Designs.  Then, portions of the wheel
+are chosen at random and the design occupying those portions are
+duplicated into the next population.  Those Designs allotted larger
+portions of the wheel are more likely to be selected (potentially
+many times). \emph{unique\_roulette\_wheel} replacement is the same
+as \emph{roulette\_wheel} replacement, with the exception that a
+design may only be selected once.  The \emph{below\_limit} selector
+attempts to keep all designs for which the negated fitness is below
+a certain limit.  The values are negated to keep with the convention
+that higher fitness is better. The inputs to the \emph{below\_limit}
+selector are the limit as a real value, and a
+\emph{shrinkage\_percentage} as a real value.  The
+\emph{shrinkage\_percentage} defines the minimum amount of
+selections that will take place if enough designs are available.  It
+is interpreted as a percentage of the population size that must go
+on to the subsequent generation.  To enforce this,
+\emph{below\_limit} makes all the selections it would make anyway
+and if that is not enough, it takes the remaining that it needs from
+the best of what is left (effectively raising its limit as far as it
+must to get the minimum number of selections).  It continues until
+it has made enough selections.  The \emph{shrinkage\_percentage} is
+designed to prevent extreme decreases in the population size at any
+given generation, and thus prevent a big loss of genetic diversity
+in a very short time.  Without a shrinkage limit, a small group of
+``super'' designs may appear and quickly cull the population down to
+a size on the order of the limiting value.  In this case, all the
+diversity of the population is lost and it is expensive to
+re-diversify and spread the population.
+%
+%\anchor T5d17 <table> <caption align = "top"> \htmlonly Table 5.17
+%\endhtmlonly
+%Specification detail for JEGA method dependent controls: seed,
+%output, initialization, mutation, and replacement </caption> <tr>
+%<td><b>Description</b> <td><b>Keyword</b> <td><b>Associated Data</b>
+%<td><b>Status</b> <td><b>Default</b> <tr> <td>GA Method
+%<td>\emph{moga}| \emph{soga} <td>none <td>Required group <td>N/A
+%<tr> <td>Random Seed <td>\emph{seed} <td>integer <td>Optional
+%<td>Time based seed <tr> <td>Log File <td>\emph{log\_file} <td>string
+%<td>Optional <td>JEGAGlobal.log <tr> <td>Population Output
+%<td>\emph{print\_each\_pop} <td>none <td>Optional <td>N/A <tr>
+%<td>Output verbosity <td>\emph{output} <td>\emph{silent} |
+%\emph{quiet} | \emph{verbose} | \emph{debug} <td>Optional
+%<td>\emph{normal} <tr> <td>Initialization type
+%<td>\emph{initialization\_type} <td>\emph{simple\_random} |
+%\emph{unique\_random} | \emph{flat\_file} <td>Required
+%<td>unique\_random <tr> <td>Mutation type <td>\emph{mutation\_type}
+%<td>\emph{replace\_uniform} | \emph{bit\_random} |
+%\emph{offset\_cauchy} | \emph{offset\_uniform} | \emph{offset\_normal}
+%<td>Optional group <td>None <tr> <td>Mutation scale
+%<td>\emph{mutation\_scale} <td>real <td>Optional <td>0.15 <tr>
+%<td>Mutation rate <td>\emph{mutation\_rate} <td>real <td>Optional
+%<td>0.08 <tr> <td>Replacement type <td>\emph{replacement\_type}
+%<td>\emph{below\_limit} | \emph{roulette\_wheel} |
+%\emph{unique\_roulette\_wheel} <td>Required group <td>None <tr>
+%<td>Below limit selection <td>\emph{below\_limit} <td>real
+%<td>Optional <td>6 <tr> <td>Shrinkage percentage in below limit
+%selection <td>\emph{shrinkage\_percentage} <td>real <td>Optional<BR>
+%<td>0.9 </table>
+
+
+%
+%</table>
+%
+%\anchor T5d18 <table> <caption align = "top"> \htmlonly Table 5.18
+%\endhtmlonly
+%Specification detail for JEGA method dependent controls: crossover
+%</caption> <tr> <td><b>Description</b> <td><b>Keyword</b>
+%<td><b>Associated Data</b> <td><b>Status</b> <td><b>Default</b> <tr>
+%<td>Crossover type <td>\emph{crossover\_type} <td>\emph{multi\_point\_binary} |
+%\emph{multi\_point\_parameterized\_binary} |
+%    \emph{multi\_point\_real} | \emph{shuffle\_random}
+%<td>Optional group <td>none <tr> <td>Multi point binary crossover
+%<td>\emph{multi\_point\_binary} <td>integer <td>Required <td>N/A <tr>
+%<td>Multi point parameterized binary crossover <td>\c
+%multi\_point\_parameterized\_binary <td>integer <td>Required <td>N/A
+%<tr> <td>Multi point real crossover <td>\emph{multi\_point\_real}
+%<td>integer <td>Required <td>N/A <tr> <td>Random shuffle crossover
+%<td>\emph{shuffle\_random} <td>\emph{num\_parents}, \emph{num\_offspring}
+%<td>Required <td>N/A <tr> <td>Number of parents in random shuffle
+%crossover <td>\emph{num\_parents} <td>integer <td>optional <td>2 <tr>
+%<td>Number of offspring in random shuffle crossover <td>\c
+%num\_offspring <td>integer <td>optional <td>2 <tr> <td>Crossover rate
+%<td>\emph{crossover\_rate} <td>real <td>optional (applies to all
+%crossover types) <td>0.8 </table>
+
+%\subsection MethodJEGAMOGA Multi-objective Evolutionary Algorithms
+
+The specification for controls specific to Multi-objective
+Evolutionary algorithms are described here.  These controls will be
+appropriate to use if the user has specified \emph{moga} as the method.
+
+The initialization, crossover, and mutation controls were all
+described in the preceding section.  There are no MOGA specific
+aspects to these controls.  The \emph{fitness\_type} for a MOGA may
+be \emph{domination\_count} or \emph{layer\_rank}.  Both have been
+specifically designed to avoid problems with aggregating and scaling
+objective function values and transforming them into a single
+objective. Instead, the \emph{domination\_count} fitness assessor
+works by ordering population members by the negative of the number
+of designs that dominate them.  The values are negated in keeping
+with the convention that higher fitness is better.  The
+\emph{layer\_rank} fitness assessor works by assigning all
+non-dominated designs a layer of 0, then from what remains,
+assigning all the non-dominated a layer of -1, and so on until all
+designs have been assigned a layer.  Again, the values are negated
+for the higher-is-better fitness convention. Use of the
+\emph{below\_limit} selector with the \emph{domination\_count}
+fitness assessor has the effect of keeping all designs that are
+dominated by fewer then a limiting number of other designs subject
+to the shrinkage limit.  Using it with the \emph{layer\_rank}
+fitness assessor has the effect of keeping all those designs whose
+layer is below a certain threshold again subject to a minimum.
+
+New to JEGA v2.0 is the introduction of niche pressure operators.
+These operators are meant primarily for use with the moga.  The job
+of a niche pressure operator is to encourage diversity along the
+Pareto frontier as the algorithm runs.  This is typically
+accomplished by discouraging clustering of design points in the
+performance space.  In JEGA, the application of niche pressure
+occurs as a secondary selection operation.  The nicher is given a
+chance to perform a pre-selection operation prior to the operation
+of the selection (replacement) operator, and is then called to
+perform niching on the set of designs that were selected by the
+selection operator.
+
+Currently, the only niche pressure operator available is the
+\emph{radial} nicher. This niche pressure applicator works by
+enforcing a minimum distance between designs in the performance
+space at each generation.  The algorithm proceeds by starting at the
+(or one of the) extreme designs along objective dimension 0 and
+marching through the population removing all designs that are too
+close to the current design.  One exception to the rule is that the
+algorithm will never remove an extreme design which is defined as a
+design that is maximal or minimal in all but 1 objective dimension
+(for a classical 2 objective problem, the extreme designs are those
+at the tips of the non-dominated frontier).
+
+The designs that are removed by the nicher are not discarded.  They
+are buffered and re-inserted into the population during the next
+pre-selection operation.  This way, the selector is still the only
+operator that discards designs and the algorithm will not waste time
+``re-filling'' gaps created by the nicher.
+
+The niche pressure control consists of two options.  The first is
+the \emph{null\_niching} option which specifies that no niche
+pressure is to be applied. The second is the \emph{radial\_niching}
+option which specifies that the radial niching algorithm is to be
+use.  The radial nicher requires as input a vector of fractions with
+length equal to the number of objectives.  The elements of the
+vector are interpreted as percentages of the non-dominated range for
+each objective defining a minimum distance to all other designs. All
+values should be in the range (0, 1).  The minimum allowable
+distance between any two designs in the performance space is the
+euclidian distance defined by these percentages.
+
+Also new to JEGA v2.0 is the introduction of the MOGA specific
+\emph{metric\_tracker} converger.  This converger is conceptually
+similar to the best and average fitness tracker convergers in that
+it tracks the progress of the population over a certain number of
+generations and stops when the progress falls below a certain
+threshold.  The implementation is quite different however.  The
+\emph{metric\_tracker} converger tracks 3 metrics specific to the
+non-dominated frontier from generation to generation.  All 3 of
+these metrics are computed as percent changes between the
+generations.  In order to compute these metrics, the converger
+stores a duplicate of the non-dominated frontier at each generation
+for comparison to the non-dominated frontier of the next generation.
+
+The first metric is one that indicates how the expanse of the
+frontier is changing.  The expanse along a given objective is
+defined by the range of values existing within the non-dominated
+set.  The expansion metric is computed by tracking the extremes of
+the non-dominated frontier from one generation to the next.  Any
+movement of the extreme values is noticed and the maximum percentage
+movement is computed as:
+%
+%\begin{equation}
+%    Em = \max_{j=1)^{nof} |(range(j, i) - range(j, i-1)) / range(j, i-1)|
+%\end{equation}
+
+where Em is the max expansion metric, j is the objective function
+index, i is the current generation number, and \emph{nof} is the
+total number of objectives.  The range is the difference between the
+largest value along an objective and the smallest when considering
+only non-dominated designs.
+
+The second metric monitors changes in the density of the
+non-dominated set.  The density metric is computed as the number of
+non-dominated points divided by the hypervolume of the non-dominated
+region of space.  Therefore, changes in the density can be caused by
+changes in the number of non-dominated points or by changes in size
+of the non-dominated space or both.  The size of the non-dominated
+space is computed as:
+
+%\begin{equation}
+%    Vps(i) = \prod_{j=1)^{nof} range(j, i)
+%\end{equation}
+
+where Vps(i) is the hypervolume of the non-dominated space at
+generation i and all other terms have the same meanings as above.
+
+The density of the a given non-dominated space is then:
+
+\begin{equation}
+    Dps(i) = Pct(i) / Vps(i)
+\end{equation}
+
+where Pct(i) is the number of points on the non-dominated frontier
+at generation i.
+
+The percentage increase in density of the frontier is then
+calculated as:
+
+\begin{equation}
+    Cd = |(Dps(i) - Dps(i-1)) / Dps(i-1)|
+\end{equation}
+
+where Cd is the change in density metric.
+
+The final metric is one that monitors the ``goodness'' of the
+non-dominated frontier.  This metric is computed by considering each
+design in the previous population and determining if it is dominated
+by any designs in the current population.  All that are determined
+to be dominated are counted. The metric is the ratio of the number
+that are dominated to the total number that exist in the previous
+population.
+
+As mentioned above, each of these metrics is a percentage.  The
+tracker records the largest of these three at each generation.  Once
+the recorded percentage is below the supplied percent change for the
+supplied number of generations consecutively, the algorithm is
+converged.
+
+The specification for convergence in a MOGA can either be
+\emph{metric\_tracker} or can be omitted all together.  If omitted,
+no convergence algorithm will be used and the algorithm will rely on
+stopping criteria only.  If \emph{metric\_tracker} is specified,
+then a \emph{percent\_change} and \emph{num\_generations} must be
+supplied as with the other metric tracker convergers (average and
+best fitness trackers).  The \emph{percent\_change} is the threshold
+beneath which convergence is attained whereby it is compared to the
+metric value computed as described above.  The
+\emph{num\_generations} is the number of generations over which the
+metric value should be tracked. Convergence will be attained if the
+recorded metric is below \emph{percent\_change} for
+\emph{num\_generations} consecutive generations.
+
+The MOGA specific controls are described in %\ref T5d19 "Table 5.19"
+below. Note that MOGA and SOGA create additional output files during
+execution.  ``finaldata.dat'' is a file that holds the Pareto
+members of the population in the final generation.  ``discards.dat''
+holds solutions that were discarded from the population during the
+course of evolution. It can often be useful to plot objective
+function values from these files to visually see the Pareto front
+and ensure that finaldata.dat solutions dominate discards.dat
+solutions.  The solutions are written to these output files in the
+format ``Input1...InputN..Output1...OutputM''. If MOGA is used in a
+multi-level optimization strategy (which requires one optimal
+solution from each individual optimization method to be passed to
+the subsequent optimization method as its starting point), the
+solution in the Pareto set closest to the ``utopia'' point is given
+as the best solution. This solution is also reported in the DAKOTA
+output. This ``best'' solution in the Pareto set has minimum
+distance from the utopia point.  The utopia point is defined as the
+point of extreme (best) values for each objective function.  For
+example, if the Pareto front is bounded by (1,100) and (90,2), then
+(1,2) is the utopia point.  There will be a point in the Pareto set
+that has minimum L2-norm distance to this point, for example (10,10)
+may be such a point.  In SOGA, the solution that minimizes the
+single objective function is returned as the best solution.
+
+%
+%\anchor T5d19 <table> <caption align = "top"> \htmlonly Table 5.19
+%\endhtmlonly
+%Specification detail for MOGA method controls </caption> <tr>
+%<td><b>Description</b> <td><b>Keyword</b> <td><b>Associated Data</b>
+%<td><b>Status</b> <td><b>Default</b> <tr> <td>Fitness type
+%<td>\emph{fitness\_type} <td>\emph{layer\_rank} |
+%\emph{domination\_count} <td>Required group <td> None <tr> <td>Niche
+%pressure type <td>\emph{niching\_type} <td>\emph{radial\_niching}
+%<td>Optional group <td> No niche pressure <tr> <td>Radial niching
+%<td>\emph{radial\_niching} <td>list of real <td>Optional <td> 0.01
+%for all objectives <tr> <td>Convergence type
+%<td>\emph{metric\_tracker} <td>none <td>Optional group <td>Stopping
+%criteria only <tr> <td>Percent change limit for metric\_tracker
+%converger <td>\emph{percent\_change} <td>real <td>Optional <td>0.1
+%<tr> <td>Number generations for metric\_tracker converger
+%<td>\emph{num\_generations} <td>integer <td>Optional <td>10 </table>
+
+
+%\subsection MethodJEGASOGA Single-objective Evolutionary Algorithms
+
+The specification for controls specific to Single-objective
+Evolutionary algorithms are described here.  These controls will be
+appropriate to use if the user has specified \emph{soga} as the method.
+
+The initialization, crossover, and mutation controls were all
+described above.  There are no SOGA specific aspects to these
+controls.  The \emph{replacement\_type} for a SOGA may be
+\emph{roulette\_wheel}, \emph{unique\_roulette\_wheel}, or
+\emph{favor\_feasible}.  The \emph{favor\_feasible} replacement type
+always takes a feasible design over an infeasible one. Beyond that,
+it selects designs based on a fitness value.  As of JEGA v2.0, the
+fitness assessment operator must be specified with SOGA although the
+\emph{merit\_function} is currently the only one.  The roulette
+wheel selectors no longer assume a fitness function.  The
+\emph{merit\_function} fitness assessor uses an exterior penalty
+function formulation to penalize infeasible designs.  The
+specification allows the input of a \emph{constraint\_penalty} which
+is the multiplier to use on the constraint violations.
+
+The SOGA controls allow two additional convergence types.  The
+\emph{convergence\_type} called \emph{average\_fitness\_tracker}
+keeps track of the average fitness in a population.  If this average
+fitness does not change more than \emph{percent\_change} over some
+number of generations, \emph{num\_generations}, then the solution is
+reported as converged and the algorithm terminates. The
+\emph{best\_fitness\_tracker} works in a similar manner, only it
+tracks the best fitness in the population. Convergence occurs after
+\emph{num\_generations} has passed and there has been less than
+\emph{percent\_change} in the best fitness value.  Both also respect
+the stopping criteria.
+
+The SOGA specific controls are described in %\ref T5d20 "Table 5.20"
+below.
+%
+%\anchor T5d20 <table> <caption align = "top"> \htmlonly Table 5.20
+%\endhtmlonly
+%Specification detail for SOGA method controls </caption> <tr>
+%<td><b>Description</b> <td><b>Keyword</b> <td><b>Associated Data</b>
+%<td><b>Status</b> <td><b>Default</b> <tr> <td>Fitness type
+%<td>\emph{fitness\_type} <td>\emph{merit\_function} <td>Optional group
+%<td> merit\_function <tr> <td>Merit function fitness
+%<td>\emph{merit\_function} <td>\emph{real} <td>Optional <td>1.0 <tr>
+%<td>Replacement type <td>\emph{replacement\_type}
+%<td>\emph{favor\_feasible} | \emph{unique\_roulette\_wheel} |
+%\emph{roulette\_wheel} <td>Optional group <td> <tr> <td>Convergence
+%type <td>\emph{convergence\_type} <td>\emph{best\_fitness\_tracker} |
+%\emph{average\_fitness\_tracker} <td>Optional <td> <tr> <td>Number of
+%generations (for convergence test) <td>\emph{num\_generations}
+%<td>integer <td>Optional <td>10 <tr> <td>Percent change in fitness
+%<td>\emph{percent\_change} <td>real <td>Optional <td>0.1 </table>

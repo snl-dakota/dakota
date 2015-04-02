@@ -1,0 +1,102 @@
+#ifndef _JEGA_CONFIG_H
+#define _JEGA_CONFIG_H 1
+ 
+/* Define to 1 if the system has the type `int16_t'. */
+#cmakedefine JEGA_HAVE_INT16_T @JEGA_HAVE_INT16_T@ 
+
+/* Define to 1 if the system has the type `int32_t'. */
+#cmakedefine JEGA_HAVE_INT32_T @JEGA_HAVE_INT32_T@ 
+
+/* Define to 1 if the system has the type `int64_t'. */
+#cmakedefine JEGA_HAVE_INT64_T @JEGA_HAVE_INT64_T@ 
+
+/* Define to 1 if the system has the type `int8_t'. */
+#cmakedefine JEGA_HAVE_INT8_T @JEGA_HAVE_INT8_T@ 
+
+/* Define to 1 if the system has the type `uint16_t'. */
+#cmakedefine JEGA_HAVE_UINT16_T @JEGA_HAVE_UINT16_T@ 
+
+/* Define to 1 if the system has the type `uint32_t'. */
+#cmakedefine JEGA_HAVE_UINT32_T @JEGA_HAVE_UINT32_T@ 
+
+/* Define to 1 if the system has the type `uint64_t'. */
+#cmakedefine JEGA_HAVE_UINT64_T @JEGA_HAVE_UINT64_T@ 
+
+/* Define to 1 if the system has the type `uint8_t'. */
+#cmakedefine JEGA_HAVE_UINT8_T @JEGA_HAVE_UINT8_T@ 
+
+/* add int16_t type */
+#ifndef JEGA_HAVE_INT16_T
+typedef short int16_t;
+#endif
+
+/* add int32_t type */
+#ifndef JEGA_HAVE_INT32_T
+typedef int int32_t;
+#endif
+
+/* add int64_t type */
+#ifndef JEGA_HAVE_INT64_T
+typedef long int64_t;
+#endif
+
+/* add int8_t type */
+#ifndef JEGA_HAVE_INT8_T
+typedef char int8_t;
+#endif
+
+/* add uint16_t type */
+#ifndef JEGA_HAVE_UINT16_T
+typedef unsigned short uint16_t;
+#endif
+
+/* add uint32_t type */
+#ifndef JEGA_HAVE_UINT32_T
+typedef unsigned int uint32_t;
+#endif
+
+/* add uint64_t type */
+#ifndef JEGA_HAVE_UINT64_T
+typedef unsigned long uint64_t;
+#endif
+
+/* add uint8_t type */
+#ifndef JEGA_HAVE_UINT8_T
+typedef unsigned char uint8_t;
+#endif
+
+/* Macro to enable logging in JEGA. */
+#define JEGA_LOGGING_ON 1 
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+*/
+#define JEGA_LT_OBJDIR ".libs/" 
+
+/* Name of package */
+#define JEGA_PACKAGE "jega" 
+
+/* Define to the address where bug reports for this package should be sent. */
+#define JEGA_PACKAGE_BUGREPORT "dakota@sandia.gov" 
+
+/* Define to the full name of this package. */
+#define JEGA_PACKAGE_NAME "JEGA" 
+
+/* Define to the full name and version of this package. */
+#define JEGA_PACKAGE_STRING "JEGA 2.7.0" 
+
+/* Define to the one symbol short name of this package. */
+#define JEGA_PACKAGE_TARNAME "jega" 
+
+/* Define to the home page for this package. */
+#define JEGA_PACKAGE_URL "" 
+
+/* Define to the version of this package. */
+#define JEGA_PACKAGE_VERSION "2.7.0" 
+
+/* Version number of package */
+#cmakedefine JEGA_VERSION "2.7.0" 
+
+/* Macro to include boost code in build. */
+#cmakedefine JEGA_HAVE_BOOST @JEGA_HAVE_BOOST@
+
+#endif

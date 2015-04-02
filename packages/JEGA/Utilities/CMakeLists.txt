@@ -1,0 +1,44 @@
+add_library(utilities
+  src/BasicParameterDatabaseImpl.cpp 
+  src/BooleanDesignVariableType.cpp 
+  src/ConstraintInfo.cpp 
+  src/ConstraintNatureBase.cpp 
+  src/ConstraintTypeBase.cpp 
+  src/ContinuumDesignVariableNature.cpp 
+  src/Design.cpp 
+  src/DesignFileReader.cpp 
+  src/DesignGroup.cpp 
+  src/DesignGroupVector.cpp 
+  src/DesignStatistician.cpp 
+  src/DesignTarget.cpp 
+  src/DesignVariableInfo.cpp 
+  src/DesignVariableNatureBase.cpp 
+  src/DesignVariableTypeBase.cpp 
+  src/DiscreteDesignVariableNature.cpp 
+  src/EqualityConstraintType.cpp 
+  src/InequalityConstraintType.cpp 
+  src/InfoBase.cpp 
+  src/IntegerDesignVariableType.cpp 
+  src/LinearConstraintNature.cpp 
+  src/LinearObjectiveFunctionNature.cpp 
+  src/Logging.cpp 
+  src/MaximizeObjectiveFunctionType.cpp 
+  src/MessageBoard.cpp
+  src/MinimizeObjectiveFunctionType.cpp 
+  src/MultiObjectiveStatistician.cpp 
+  src/NonLinearConstraintNature.cpp 
+  src/NonLinearObjectiveFunctionNature.cpp 
+  src/NotEqualityConstraintType.cpp 
+  src/ObjectiveFunctionInfo.cpp 
+  src/ObjectiveFunctionNatureBase.cpp 
+  src/ObjectiveFunctionTypeBase.cpp 
+  src/ParameterExtractor.cpp 
+  src/RealDesignVariableType.cpp 
+  src/RegionOfSpace.cpp 
+  src/SeekRangeObjectiveFunctionType.cpp 
+  src/SeekValueObjectiveFunctionType.cpp 
+  src/SingleObjectiveStatistician.cpp 
+  src/TwoSidedInequalityConstraintType.cpp 
+  src/UnconstrainedStatistician.cpp
+)
+install(TARGETS utilities EXPORT ${ExportTarget} DESTINATION lib)

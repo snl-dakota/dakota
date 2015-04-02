@@ -1,0 +1,119 @@
+/*
+================================================================================
+    PROJECT:
+
+        Eddy C++ Utilities Project
+
+    CONTENTS:
+
+        Specialization of the main page (index.html) of this documentation.
+
+    NOTES:
+
+
+
+    PROGRAMMERS:
+
+        John Eddy (jpeddy@sandia.gov) (JE)
+
+    ORGANIZATION:
+
+        Sandia National Laboratories
+
+    COPYRIGHT:
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Lesser General Public License for more details.
+
+        For a copy of the GNU Lesser General Public License, write to:
+            Free Software Foundation, Inc.
+            59 Temple Place, Suite 330
+            Boston, MA 02111-1307 USA
+
+    VERSION:
+
+        1.0.0
+
+    CHANGES:
+
+        Fri Jan 28 15:29:40 2005 - Original Version (JE)
+
+================================================================================
+*/
+
+
+
+
+/*
+================================================================================
+Document This File
+================================================================================
+*/
+/** \file
+ * \brief Contains various special definitions for generating/customizing
+ *		  Doxygen output.
+ *
+ * This file contains no source code.  It contains the stuff that shows up
+ * on the Main Page.
+ *
+ * Developers: Add in any other special documentation blocks that you see
+ * fit for this project.
+ */
+
+
+/*
+================================================================================
+Document The Namespaces Relevant To This Project
+================================================================================
+*/
+/** \namespace eddy
+ *
+ * \brief The overarching namespace of all code projects created by John Eddy.
+ */
+ 
+/** \namespace eddy::utilities
+ *
+ * \brief The namespace into which all utilities project specific code is
+ *		  placed.
+ */
+ 
+ 
+ 
+
+
+/*
+================================================================================
+Specialize the Main Page
+================================================================================
+*/
+/** \mainpage
+ *
+ * - \ref intro_sec<br>
+ * - \ref purpose_sec<br>
+ * - \ref impl_sec<br>
+ * - \ref usage_sec<br>
+ * - \ref future_sec<br>
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the Eddy C++ Utilities Library v1.0.0 by
+ * <a href=mailto::jpeddy@sandia.gov>John Eddy</a> at Sandia National
+ * Laboratories in Albuquerque, NM.
+ *
+ * \section purpose_sec Purpose
+ *
+ * \section impl_sec Implementation
+ *
+ * \section usage_sec Usage
+ *
+ * \section future_sec Future Work
+ *
+ *
+ */

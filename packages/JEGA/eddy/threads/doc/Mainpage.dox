@@ -1,0 +1,127 @@
+/*
+================================================================================
+    PROJECT:
+
+        Eddy C++ Thread Safety Project
+
+    CONTENTS:
+
+        Specialization of the main page (index.html) of this documentation.
+
+    NOTES:
+
+
+    PROGRAMMERS:
+
+        John Eddy (jpeddy@sandia.gov) (JE)
+
+    ORGANIZATION:
+
+        Sandia National Laboratories
+
+    COPYRIGHT:
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Lesser General Public License for more details.
+
+        For a copy of the GNU Lesser General Public License, write to:
+            Free Software Foundation, Inc.
+            59 Temple Place, Suite 330
+            Boston, MA 02111-1307 USA
+
+    VERSION:
+
+        1.0.0
+
+    CHANGES:
+
+        Mon Jun 09 09:48:34 2003 - Original Version (JE)
+
+
+
+================================================================================
+*/
+
+/*
+**************************************************************************
+Document this file
+**************************************************************************
+*/
+/** \file
+ * \brief Contains various special definitions for generating/customizing
+ *        the main page of the Doxygen documentation.
+ *
+ * This file contains no source code.  It only contains the stuff that
+ * shows up on the main page.
+ *
+ * Developers: Add in any other special documentation blocks that you see
+ * fit for this project.
+ */
+
+
+/*
+================================================================================
+Document The Namespaces Relevant To This Project
+================================================================================
+*/
+/** \namespace eddy
+ *
+ * \brief The overarching namespace of all code projects created by John Eddy.
+ */
+ 
+/** \namespace eddy::threads
+ *
+ * \brief The namespace into which all threads project specific code is placed.
+ */
+ 
+/** \mainpage
+ *
+ * \section intro Introduction
+ *
+ * This application provides for multi-threaded programming including
+ * manipulation of threads, mutexes, and conditions.
+ *
+ * \section purpose Purpose
+ *
+ * The purpose of this application is to provide a simple OO interface to
+ * mult-threaded application development.  It is meant to be portable
+ * and thus is not very feature rich.
+ *
+ * \section impl Implementation
+ *
+ * This project is modeled heavily after the thread library of the boost
+ * project but does not make use of it.  The main classes of this project are
+ * - thread
+ * - mutex
+ * - mutex_lock
+ * - condition
+ * - mutexed_variable
+ *
+ * In addition, there are some thread safe versions of miscellaneous
+ * classes such as containers.  The underlying thread manipulation library
+ * is pthreads which are available for *nix OS flavors as well as for windows.
+ *
+ * \section usage Usage
+ *
+ * To use this module, add the include directory to your list of include
+ * directories and link to the appropriate library which is one of:
+ *
+ * (In Windows)
+ * - /lib/libethreads.lib (for release builds)
+ * - /lib/libethreads_d.lib (for debug builds)
+ *
+ * (In *nix)
+ * - lib/libethreads.a
+ *
+ * \section future Future Work
+ *
+ * The ThreadPool class is not yet functional.  Plan to finish or eliminate
+ * it in the future.
+ */

@@ -1,0 +1,178 @@
+\chapter{Getting Started} \label{ch:getting_started}
+
+\vspace{1em}
+\begin{center}
+\parbox{5.5in}{ \emph{
+\textbf{I have a multi-objective optimization problem to solve, how
+do I use JEGA?}} }
+\end{center}
+\vspace{1em}
+
+JEGA can be used in a number of ways.  Regardless of how you wish to
+use it, there are some common things that must be done.
+
+\section{Obtaining JEGA} \label{sec:obtaining_JEGA}
+
+Currently, JEGA can only be publicly obtained through
+\href{http://dakota.sandia.gov}{The DAKOTA Project}.  Downloading
+DAKOTA will result in a download of the full JEGA package as well.
+
+\section{Building JEGA}\label{sec:building_JEGA}
+
+JEGA is primarily meant to be compiled into a static library.  It is
+intended to be used from within an existing or newly created
+program.  There is a way to use JEGA as a stand alone application
+and provide input via an input file.  See ?? for more details.
+Regardless of how you are using JEGA, the first step is to compile
+it. This of course only need be done once and then the JEGA library
+can be used in multiple projects. JEGA uses an autoconf build
+harness for Unix style systems and Visual Studio .NET 2003, 2005, and
+2008 solution and project files for Windows. Build JEGA with your desired
+configuration options and make note of the name and location of the
+resulting library file.  See Chapter~\ref{ch:configuration} for
+information on the configuration options.
+
+\subsection{Building on Unix and Unix-like Systems}\label{sec:building_unix}
+
+The JEGA distribution includes the files produced by autoconf.  The
+end user need only issue two commands to compile JEGA.  The first is
+a call to the configure script.  You will issue this call with any
+desired arguments as described in Section~\ref{sec:compile_config}.
+It is strongly recommended that you maintain separate build and
+source trees.  In order to accomplish this, you should issue the
+configure call from a directory other than \texttt{\$(JEGA\_ROOT)}.
+Recommended practice is to create subfolders within the
+\texttt{\$(JEGA\_ROOT)/build} directory.  This way, you can maintain
+multiple configurations on multiple different platforms/machines,
+etc. simultaneously.
+
+Once configuration is complete, JEGA can be built with a call to
+make.  The commands that must be issued are shown below.
+
+\texttt{>> \$(JEGA\_ROOT)/configure ARGS}\newline
+\texttt{>> make}
+
+As an example, suppose you have multiple machines on which you may
+want to use JEGA.  Suppose that the JEGA source distribution is on a
+shared drive and you wish to share a source tree but not a build
+tree. Also suppose that you wish to maintain both a debug and a
+release build.  Here is the recommended procedure. Lets say the two
+machines are named yin and yang.
+
+- Browse into \texttt{\$(JEGA\_ROOT)/build}:\newline
+    \texttt{>> cd \$(JEGA\_ROOT)/build}\newline
+
+- Make a directory for each of yin and yang:\newline
+    \texttt{>> mkdir yin}\newline
+    \texttt{>> mkdir yang}\newline
+
+- Make subdirectories in each for debug and release:\newline
+    \texttt{>> cd yin}\newline
+    \texttt{>> mkdir debug}\newline
+    \texttt{>> mkdir release}\newline
+    \texttt{>> cd ../yang}\newline
+    \texttt{>> mkdir debug}\newline
+    \texttt{>> mkdir release}\newline
+
+- Enter the yin debug directory while on yin, configure, and make:\newline
+    \texttt{>> <LOGON> yin}\newline
+    \texttt{>> cd \$(JEGA\_ROOT)/build/yin/debug}\newline
+    \texttt{>> \$(JEGA\_ROOT)/configure CXXFLAGS=-g --enable-debugging}\newline
+    \texttt{>> make}\newline
+
+- Enter the yin release directory while on yin, configure, and make:\newline
+    \texttt{>> cd ../release}\newline
+    \texttt{>> \$(JEGA\_ROOT)/configure CXXFLAGS=-O2}\newline
+    \texttt{>> make}\newline
+
+- Do the same in the yang directories while on yang.\newline
+
+Once you have completed these steps, you will have static libraries
+in each of the 4 directories built from the same shared source tree.
+
+\subsection{Building in Microsoft Visual Studio}\label{sec:building_msvs}
+
+JEGA is distributed with solution and project files for both Visual
+Studio .NET 2003 (7.1), 2005 (8.0), and 2008 (9.0).  The solution files
+can be found in \texttt{\$(JEGA\_ROOT)/build/vc71},
+\texttt{\$(JEGA\_ROOT)/build/vc80}, \texttt{\$(JEGA\_ROOT)/build/vc90}
+respectively.  Open the desired ``.sln'' file.  There are a number of
+build configurations available.  Each is set up to build JEGA with
+different options. See Table~\ref{} below for a listing of those options.
+Choose your desired build configuration and then build the project.  The
+result will be a library against which you can link and an executable if
+building the configuration file front end.
+
+\subsection{Building in Eclipse Using CDT}\label{sec:building_eclipse_cdt}
+
+
+
+\section{Using JEGA Once Built}\label{sec:using_built_JEGA}
+
+In order to get started using the created library, you will have to
+create a project. Exactly what this requires depends on what system
+you are developing on.  If developing on Window for example, you
+will want to create a new Visual Studio project or a new nmake
+project. If on a unix type system, you will create a new makefile
+project, etc.  If you already have a project that you want to start
+using JEGA in, you need only modify it slightly to start using JEGA.
+
+Regardless of what system you are using, there are some common
+requirements for using JEGA.
+
+\subsubsection{Required Include Paths}\label{sec:req_incl_paths}
+
+You will have to add some paths to your list of include directories.
+This is typically done with a command line argument to your compiler
+such as -I or /I.
+
+\begin{itemize}
+\item \texttt{\$(JEGA\_ROOT)/include}
+\item \texttt{\$(JEGA\_ROOT)/eddy}
+\end{itemize}
+
+There may be additional include path requirements depending on what
+system you are using.  See the sections below for specific
+requirements.
+
+Windows does not come with an implementation of pthreads which JEGA
+uses if compiled with \texttt{JEGA\_THREADSAFE} defined. To deal
+with this case, JEGA is distributed with a snapshot of the PThreads
+Win32 headers and libraries (http://sourceware.org/pthreads-win32/).
+If you need to use them, then you must also include the path:
+
+\begin{itemize}
+\item \$(JEGA\_ROOT)/eddy/threads/pthreads/include
+\end{itemize}
+
+\subsubsection{Required Libraries}\label{sec:req_libs}
+
+You will also have to link against the JEGA library created during
+the build. This is typically specified with two inputs to the
+compiler. One to specify a path to look in and one to specify the
+name of the library. The library created when building JEGA will be
+called libjega.\$(LIB\_EXT) where \$(LIB\_EXT) is the file extension
+for static libraries on your system; typically .a or .lib.
+
+
+The easiest thing to do is to follow the examples in
+Chapter~\ref{ch:examples}.
+
+\subsection{Using JEGA on Unix and Unix-like Systems}\label{sec:using_on_unix}
+
+If on a unix like system, you will want to add the paths to the
+configuration headers that were created by autoconf. There are two
+paths needed for two headers. They are in the build tree, not the
+source tree. Consider \texttt{\$(BUILD\_DIR)} to be the path to the
+trunk of your build directory in the discussion below. In the
+example of Section~\ref{sec:building_unix}, \texttt{\$(BUILD\_DIR)}
+would be one of \texttt{\$(JEGA\_ROOT)/build/yin/debug},
+\texttt{\$(JEGA\_ROOT)/build/yang/release}, etc.  The directories
+you will need to add are:
+
+\begin{itemize}
+\item \texttt{\$(BUILD\_DIR)}
+\item \texttt{\$(BUILD\_DIR)/eddy}
+\end{itemize}
+
+\subsection{Using JEGA in Microsoft Visual Studio}\label{sec:building_msvs}

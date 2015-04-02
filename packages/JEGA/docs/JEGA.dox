@@ -1,0 +1,404 @@
+/*
+================================================================================
+    PROJECT:
+
+        John Eddy's Genetic Algorithms (JEGA)
+
+    CONTENTS:
+
+        Comments and other information for specializing the
+        Doxygen documentation.
+
+    NOTES:
+
+
+    PROGRAMMERS:
+
+        John Eddy (jpeddy@sandia.gov) (JE)
+
+    ORGANIZATION:
+
+        Sandia National Laboratories
+
+    COPYRIGHT:
+
+        This library is distributed under the GNU Lesser General Public License
+        agreement.  For more information, see the LICENSE file in the top level
+        JEGA directory.
+
+    VERSION:
+
+        2.0.0
+
+    CHANGES:
+
+        Mon Jun 09 09:48:34 2003 - Original Version (JE)
+
+================================================================================
+*/
+
+
+/*
+================================================================================
+Document this file
+================================================================================
+*/
+/** \file
+ * \brief Contains the main page input for Doxygen.
+ */
+
+
+
+/*
+================================================================================
+Document The Namespaces Relevant To This Project
+================================================================================
+*/
+/** \namespace JEGA
+ *
+ * \brief The overarching namespace of all JEGA specific code.
+ */
+
+/** \namespace JEGA::Logging
+ *
+ * \brief The namespace into which all JEGA logging specific code is placed.
+ */
+
+/** \namespace JEGA::FrontEnd
+ *
+ * \brief The namespace containing all types necessary to drive JEGA as
+ *        a third party library from another application.
+ */
+
+/** \namespace JEGA::Utilities
+ *
+ * \brief The namespace containing all core types, data constructs, etc. used
+ *        internally by JEGA.
+ */
+
+/** \namespace JEGA::Algorithms
+ *
+ * \brief The namespace into which all algorithm specific code is
+ *        placed (ex. GeneticAlgorithm and associated).
+ */
+
+
+
+
+
+
+/*
+================================================================================
+Specialize the Main Page
+================================================================================
+*/
+/** \mainpage
+ *
+ * \section introsec Introduction
+ *
+ * Welcome to version 2.0 of the JEGA library.  As with version 1.0, this
+ * library contains implementations of Genetic Algorithms (GAs) that were
+ * prepared by <a href="mailto:jpeddy@sandia.gov">John Eddy</a> (JE) on behalf
+ * of <a href="http://www.sandia.gov">Sandia National Laboratories</a>
+ * (SNL), Albuquerque, NM. The code is based on work completed by JE at the
+ * University at Buffalo (UB), Buffalo, NY but has been extended and improved.
+ * John is now a member of the technical staff at Sandia.
+ *
+ * The program is licensed under the GNU Lesser General Public License and so
+ * is free of charge.  Each source file is prepended with the following
+ * copyright disclaimer (or equivolent):
+ *
+ * \verbatim
+ 
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+ 
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Lesser General Public License for more details.
+ 
+        For a copy of the GNU Lesser General Public License, write to:
+            Free Software Foundation, Inc.
+            59 Temple Place, Suite 330
+            Boston, MA 02111-1307 USA
+ 
+   \endverbatim
+ *
+ * \section purpsec Purpose
+ *
+ * The primary purpose of this project is to provide SNLs
+ * <A href=http://www.cs.sandia.gov/DAKOTA/>Dakota</A>
+ * optimization software with a capability for seeking entire sets of Pareto
+ * optimal solutions to optimization problems without repeated conversion of a
+ * multi-objective problem (MOP) into a single objective one.  Although the
+ * JEGA library is primarily used from within Dakota, much work has gone into
+ * making JEGA a useful stand alone library.  This includes the creation and
+ * maintenance of a front-end project to ease the syntax of incorporating JEGA
+ * into any application.  In addition, manages extensions to the front end have
+ * been created for seemless encorporation of JEGA into programs written in any
+ * Microsoft .NET languages.  These extensions are not available through the
+ * DAKOTA release.  Contact <a href="mailto:jpeddy@sandia.gov">John Eddy</a>
+ * for more information.
+ *
+ * The requirements for using the library from outside Dakota can be met by
+ * using the few classes in the front end portion of the JEGA project and
+ * specializing a
+ * <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmEvaluator.html">
+ * GeneticAlgorithmEvaluator</A> class.  These requirements are
+ * fulfilled in Dakota by the
+ * <A href="./classDakota_1_1JEGAOptimizer.html">JEGAOptimizer</a>
+ * and <A href="./classDakota_1_1JEGAEvaluator.html">JEGAEvaluator</a> classes
+ * respectively.
+ *
+ * Although the primary deliverable of JEGA is the MOGA, a single objective GA
+ * has also been provided.  It is expected that the SOGA will be deprecated at
+ * some point in the future in favor of the MOGA which can effectively solve
+ * single objective problems if configured properly.
+ *
+ * The remaining discussion of this page is focused on the MOGA and MOP's in
+ * general.
+ *
+ * \section backsec Background
+ *
+ * An MOP is an optimization problem for which there is more than one objective
+ * function to simultaneously extremize.
+ *
+ * The statement of the General MOP as put forth in [1] is:
+ *
+ * <BR><BR><CENTER><B>Find:</B></CENTER><BR>
+ *
+ * <CENTER><B>x</B><SUP>*</SUP> = [x<SUB>1</SUB><SUP>*</SUP>,
+ *                                 x<SUB>2</SUB><SUP>*</SUP>,
+ *                                 ...,
+ *                                 x<SUB>n</SUB><SUP>*</SUP>]<SUP>T</SUP>
+ * </CENTER><BR><BR>
+ * <CENTER><B>Which satisfies the <I>m</I> inequality constraints:</B></CENTER>
+ * <BR><BR>
+ * <CENTER>g<I><SUB>i</SUB></I>(<B>x</B>)<=0&nbsp;&nbsp;&nbsp;&nbsp;
+ * <I>i</I>=1, 2, ..., <I>m</I></CENTER><BR><BR>
+ *
+ * <CENTER><B>The <I>p</I> equality constraints:</B></CENTER><BR><BR>
+ * <CENTER>h<I><SUB>i</SUB></I>(<B>x</B>)=0&nbsp;&nbsp;&nbsp;&nbsp;
+ * <I>i</I>=1, 2, ..., <I>p</I></CENTER><BR><BR>
+ *
+ * <CENTER><B>And optimizes the vector function:</B></CENTER><BR><BR>
+ * <CENTER><B>f</B>(<B>x</B>)=[f<SUB>1</SUB>(<B>x</B>),
+ *                             f<SUB>2</SUB>(<B>x</B>),
+ *                             ...,
+ *                             f<SUB>k</SUB>(<B>x</B>)]<SUP>T</SUP>
+ * </CENTER><BR><BR><BR>
+ * The solutions to such problems are seldom singular.  This is only the case
+ * when the objectives of an MOP do not conflict.  More commonly or at least
+ * more interestingly, the objectives do conflict and the solution becomes an
+ * entire set of non-dominated solutions commonly referred to as the Pareto
+ * optimal set. The Pareto optimal set consists of Pareto optimal solutions.
+ * The verbal definition of Pareto optimality as quoted from [1] is presented
+ * below.  In that definition, a criterion is an objective and to say "decrease
+ * some criterion" means to improve it.  That may mean to make it's value
+ * smaller, larger, closer to the target, etc. depending on what kind of an
+ * objective it is.
+ *
+ * <CENTER>"[A feasible vector] <B>x</B><SUP>*</SUP> is Pareto optimal
+ * if there exists no [other] feasible vector <B>x</B> which would decrease
+ * some criterion without causing a simultaneous increase in at least one other
+ * criterion.  The phrase "Pareto optimal" is considered to mean with respect
+ * to the entire decision variable space unless otherwise specified."</CENTER>
+ *
+ * For the purposes of this documentation, the phrase "Pareto optimal" will
+ * always refer to the true Pareto optimal set (which is the total, global
+ * solution to an MOP). The Pareto optimal set is ultimately the goal of our
+ * efforts.  However, in the interim we need a way to refer to the solutions we
+ * are considering.  To describe the best (in a Pareto sense) of these
+ * solutions, we will use the term "non-dominated".  This term will imply that
+ * a solution satisfies the definition of a Pareto optimal solution when
+ * compared with only the current set of evaluated solutions.  The difference
+ * is that a true Pareto optimal solution is permanently optimal.  The label
+ * "non-dominated" may come and go as more and more solutions are considered.
+ * In general we will never know if our final solutions are truly Pareto 
+ * optimal or not.
+ *
+ * \subsection MOGAs Multi-Objective Genetic Algorithms (MOGA)
+ *
+ * The method chosen to accomplish the task of identifying non-dominated
+ * solutions is to use a MOGA.  A MOGA is a specialized type of genetic
+ * algorithm for use on MOPs.  It is assumed that the reader is familiar with
+ * the basics of genetic algorithms.
+ *
+ * Genetic algorithms are particularly well suited to these types of problems
+ * since their very design involves maintaining sets of solutions.  MOGAs
+ * typically require specialized fitness assessment and/or selection routines
+ * such that non-dominated solutions are favored.  By favoring non-dominated
+ * solutions, it is possible to "evolve" the population of solutions into a
+ * sampling of the Pareto optimal set.
+ *
+ * In addition, MOPs require specialized convergence schemes.  A converger
+ * specialized for MOGA has been introduced in JEGA v2.  See the
+ * <A href="./classJEGA_1_1Algorithms_1_1MOGAConverger.html">MOGAConverger</a>
+ * documentation for more details.
+ *
+ * Other specialized types of operators may be useful when attempting to
+ * populate a Pareto frontier such as those that encourage differentiation and
+ * an even distribution of points.  JEGA v2 also includes a new class of
+ * operators called Niche Pressure Applicators which are meant to perform this
+ * very function.  The currently available niche pressure applicators can be
+ * found starting
+ * <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmNichePressureApplicator.html">
+ * here</a>.
+ *
+ * Most other methods for generating solutions to MOPs involve the
+ * repeated conversion of an MOP into a single objective problem.  The most
+ * common of this type of conversion involves using some sort of combinatorial
+ * parameters such as weights. By minimizing a weighted sum of the objectives,
+ * it is possible to find a Pareto optimal solution and by repeatedly altering
+ * the weights and re-solving, it is possible to identify many such solutions.
+ *
+ * Some of the disadvantages of such approaches include [2,3]:<BR><BR>
+ * &nbsp;&nbsp;&nbsp;&nbsp;-Their inability to generate a uniform sampling of
+ *     some frontiers;<BR>
+ * &nbsp;&nbsp;&nbsp;&nbsp;-Their inability to generate points in non-convex
+ *     portions of a frontier;<BR>
+ * &nbsp;&nbsp;&nbsp;&nbsp;-A non-intuitive relationship between combinatorial
+ *     parameters (weights, etc.) and performances for poorly behaved
+ *     functions; and<BR>
+ * &nbsp;&nbsp;&nbsp;&nbsp;-Poor efficiency especially for functions requiring
+ *     a global optimization technique such as a genetic algorithm.<BR>
+ *
+ * MOGA's do not suffer from the same set of drawbacks.
+ *
+ * On the first point, MOGAs may have difficulty generating a uniform sampling
+ * of a frontier but generally for different reasons than a combinatorial
+ * method. For example, the ability of a linear weighted sum approach to find a
+ * uniform sampling of a frontier depends a great deal on the shape of the
+ * frontier in the objective space.  Frontiers for which the curvature changes
+ * significantly as you traverse it will prove difficult for weighted sum
+ * approaches.
+ *
+ * For difficult problems, portions of the Pareto frontier in the objective
+ * space may exist in "difficult" regions of the variable space.  If a MOGA is
+ * not properly encouraged to diversify, it may not encounter these regions and
+ * may remain occupied developing "easier" regions of the variable space.  The
+ * result of such a situation would be gaps in the frontier.
+ *
+ * On the second point, in general, MOGAs have no more difficulty finding
+ * Pareto sets that are non-convex, discrete, or otherwise ill conditioned than
+ * they do finding well behaved "classical" looking Pareto frontiers (assuming
+ * the problems are of comparable complexity).<BR>
+ *
+ * On the third point, MOGAs do not combine the objectives and so that is not
+ * an issue.<BR>
+ *
+ * And finally on the fourth point, as genetic algorithms, MOGAs generally do
+ * require a large number of function evaluations.  However, when compared to
+ * the number required to generate a comparable solution set using a
+ * combinatorial approach, especially if the solver used is a global one such
+ * as a genetic algorithm, MOGAs can perform much more efficiently.
+ *
+ * \section implsec Implementation
+ *
+ * The structure of this implementation was devised to provide both users and
+ * developers with a great deal of flexibility as well as simplicity.  A flow
+ * diagram of the standard progression of the algorithm is shown below.  Note
+ * that specialized main loop operators may do things in a different order or
+ * add additional opertions in various places.  Click on the operator boxes to
+ * browse to the corresponding documentation.
+ *
+ * \htmlonly
+    <IMG SRC="../images/JEGAFlow.JPG" USEMAP="#flowchart">
+       <map name="flowchart">
+           <area shape="poly" coords="221,490,329,447,437,490,329,531" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmConverger.html">
+           <area shape="rect" coords="80,326,203,368" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmCrosser.html">
+           <area shape="rect" coords="529,244,652,287" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmEvaluator.html">
+           <area shape="rect" coords="733,28,855,70" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmEvaluator.html">
+           <area shape="rect" coords="732,246,855,367" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmFitnessAssessor.html">
+           <area shape="rect" coords="528,29,650,70" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmInitializer.html">
+           <area shape="rect" coords="325,245,448,287" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmMutator.html">
+           <area shape="rect" coords="732,469,854,511" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmSelector.html">
+           <area shape="rect" coords="365,150,508,191" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmMainLoop.html">
+           <area shape="rect" coords="529,469,651,511" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmNichePressureApplicator.html">
+           <area shape="rect" coords="237,599,421,640" href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmPostProcessor.html">
+       </map>
+   \endhtmlonly
+ * <BR><BR>
+ * Basically, the functionality of the genetic operators has been abstracted
+ * away from the guts of the algorithm.  This allows developers to easily
+ * implement new types of variational or selection operators as well as to
+ * alter the progression of the algorithm.
+ * <BR><BR>
+ * The various operators that can be specialized are listed below.  See the
+ * documentation on each to see what it does and what specialized versions are
+ * available.<BR><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmConverger.html">GeneticAlgorithmConverger</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmCrosser.html">GeneticAlgorithmCrosser</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmEvaluator.html">GeneticAlgorithmEvaluator</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmFitnessAssessor.html">GeneticAlgorithmFitnessAssessor</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmInitializer.html">GeneticAlgorithmInitializer</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmMainLoop.html">GeneticAlgorithmMainLoop</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmMutator.html">GeneticAlgorithmMutator</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmSelector.html">GeneticAlgorithmSelector</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmNichePressureApplicator.html">GeneticAlgorithmNichePressureApplicator</A><BR>
+ *      &nbsp;&nbsp;&nbsp;&nbsp;-
+ *      <A href="./classJEGA_1_1Algorithms_1_1GeneticAlgorithmPostProcessor.html">GeneticAlgorithmPostProcessor</A><BR>
+ *
+ * <BR><BR>
+ *
+ * JEGA is an independent Sandia software development project.  However, it is
+ * also distributed with the <A href=http://www.cs.sandia.gov/DAKOTA/>Dakota</A>
+ * software as a third party (or vendor) optimizer.  If you are using JEGA
+ * through DAKOTA, you can find relevant information on how to do that in the
+ * DAKTOA manuals
+ * <A href="http://www.cs.sandia.gov/DAKOTA/software.html">here</A>.
+ *
+ * \subsection usesec Usage
+ *
+ * JEGA was built to be very flexible and as such, it can be used in any of a
+ * number of ways.  The most common way to use JEGA is as a component or
+ * library within an application.  This can be accomplished completely through
+ * the "Front End" portion of JEGA.  Instructions on how to do this can be
+ * found in the JEGA users manual here INSERT REF!!!
+ *
+ * Future plans for JEGA include built in capabilities to support use of JEGA
+ * as a front end to drive your simulation as well as for use as a library.
+ *
+ * \subsection outsec Output
+ *
+ * JEGA now makes use of the <a href="../../eddy/logging/doc/html/index.html">
+ * Eddy C++ Logging Project</a> for all output to the user during execution.
+ * This does not include the writing of data files.  The JEGA
+ * specific interface for the Eddy Logging C++ Project is described
+ * <a href="./Logging_8hpp.html#_details">here</a>.  With this new
+ * functionality, JEGA is capable of respecting the Dakota output specifier
+ * which is one of debug, verbose, quiet, or silent.
+ *
+ * \subsection changesec Changes
+ *
+ * Click <a href="../html-changes/index.html">here</a> for a list of changes in
+ * the latest release.
+ *
+ * \section refsec References
+ *
+ * [1] Coello Coello, C.A., Van Veldhuizen, D.A., and Lamont, G.B.,
+ * <I>Evolutionary Algorithms for Solving Multi-Objective Problems</I>,
+ * Kluwer Academic/Plenum Publishers, New York, NY., 2002.
+ * <BR><BR>
+ * [2] Chen, W., Wiecek, M.M., and Zhang, J.,
+ * "Quality Utility - A Compromise Programming Approach to Robust Design",
+ * ASME Design Engineering Technical Conferences, DETC98/DAC-5601, 1998.
+ * <BR><BR>
+ * [3] Das, I., and Dennis, J.E.,
+ * "A Closer Look at Drawbacks of Minimizing Weighted Sums of Objectives for
+ * Pareto set Generation in Multicriteria Optimization Problems",
+ * Structural Optimization, 1997, Vol. 14, pp. 63-69.
+ */
+ 

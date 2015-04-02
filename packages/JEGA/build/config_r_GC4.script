@@ -1,0 +1,1 @@
+$JEGA_ROOT/configure -C CXXFLAGS=-O2 CXX=/usr/bin/g++4

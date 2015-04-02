@@ -1,0 +1,523 @@
+/*
+================================================================================
+    PROJECT:
+
+        John Eddy's Genetic Algorithms (JEGA)
+
+    CONTENTS:
+
+        Comments and other information for specializing the
+        Doxygen documentation.
+
+    NOTES:
+
+
+    PROGRAMMERS:
+
+        John Eddy (jpeddy@sandia.gov) (JE)
+
+    ORGANIZATION:
+
+        Sandia National Laboratories
+
+    COPYRIGHT:
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Lesser General Public License for more details.
+
+        For a copy of the GNU Lesser General Public License, write to:
+            Free Software Foundation, Inc.
+            59 Temple Place, Suite 330
+            Boston, MA 02111-1307 USA
+
+    VERSION:
+
+        2.0.0
+
+    CHANGES:
+
+        Mon Jun 09 09:48:34 2003 - Original Version (JE)
+
+================================================================================
+*/
+
+
+/*
+================================================================================
+Document this file
+================================================================================
+*/
+/** \file
+ * \brief Contains the main page input for Doxygen.
+ */
+
+
+
+/*
+================================================================================
+Document The Namespaces Relevant To This Project
+================================================================================
+*/
+/** \namespace JEGA::FrontEnd::Managed
+ *
+ * \brief The namespace containing all types necessary to drive JEGA from
+ *        any of the .NET languages.
+ */
+
+
+
+
+
+
+
+/*
+================================================================================
+Specialize the Main Page
+================================================================================
+*/
+/** \mainpage
+ *
+ * \section introsec Introduction
+ *
+ * Welcome to version 1.0 of the JEGA Managed front end project.  To learn more
+ * about JEGA, visit the JEGA documentation page (Insert Link). The JEGA
+ * library contains implementations of Genetic Algorithms (GAs) that were
+ * prepared by <a href="mailto:jpeddy@sandia.gov">John Eddy</a> (JE) on behalf
+ * of <a href="http://www.sandia.gov">Sandia National Laboratories</a>
+ * (SNL), Albuquerque, NM. The code is based on work completed by JE at the
+ * University at Buffalo (UB), Buffalo, NY but has been extended and improved.
+ * John is now a member of the technical staff at Sandia.  This front end
+ * project is a "wrapper" project through which the JEGA engine can be operated
+ * from any of the .NET languages.
+ *
+ * The program is licensed under the GNU Lesser General Public License and so
+ * is free of charge.  Each source file is prepended with the following
+ * copyright disclaimer (or equivolent):
+ *
+ * \verbatim
+ 
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+ 
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Lesser General Public License for more details.
+ 
+        For a copy of the GNU Lesser General Public License, write to:
+            Free Software Foundation, Inc.
+            59 Temple Place, Suite 330
+            Boston, MA 02111-1307 USA
+ 
+   \endverbatim
+ *
+ * \section purpsec Purpose
+ *
+ * The primary purpose of this project is to provide .NET language users a
+ * simple but powerful interface to the JEGA library.  With this project, JEGA
+ * methods can effectively be linked directly into your code via a <I>dll</I>
+ * and be used to solve any of your single or multiple-objective optimization
+ * problems.
+ *
+ * \section backsec Background
+ *
+ *
+ * \section implsec Implementation
+ *
+ * The requirements for using the library can be met by
+ * using the few classes provided and specializing an
+ * <A href="./classJEGA_1_1FrontEnd_1_1Managed_1_1MEvaluationFunctor.html">
+ * MEvaluationFunctor</A> class, creating and loading an
+ * <A href="./classJEGA_1_1FrontEnd_1_1Managed_1_1MProblemConfig.html">
+ * MProblemConfig</A>, and creating and loading an
+ * <A href="./classJEGA_1_1FrontEnd_1_1Managed_1_1MAlgorithmConfig.html">
+ * MAlgorithm</A> class.  These can be used in conjunction with an
+ * <A href="./classJEGA_1_1FrontEnd_1_1Managed_1_1MDriver.html">
+ * MDrvier</A> class instance to retrieve solutions to optimization problems.
+ *
+ * The structure of this implementation was devised to provide both users and
+ * developers with a great deal of flexibility as well as simplicity.
+ *
+ * \subsection usesec Usage
+ *
+ * JEGA was built to be very flexible and as such, it can be used in any of a
+ * number of ways.  The most common way to use JEGA is as a component or
+ * library within an application and this project is in direct support of that
+ * idiom.  From within your application, make the call through the MDriver
+ * class to initialize JEGA.  This should be done once and only once prior to
+ * using JEGA.  Then create and load a managed problem
+ * configuration (MProblemConfig) which is a managed proxy or wrapper type for
+ * the core JEGA ProblemConfig construct.  Then, create a class that implements
+ * the managed evaluation functor (MEvaluationFunctor) interface, create and
+ * load a managed algorithm configuration (MAlgorithmConfig) object which is
+ * again a wrapper for a core JEGA structure.  Create a managed driver
+ * (MDriver) using the managed problem configuration as an argument.  Once
+ * these steps are done, call the \code MDriver.ExecuteAlgorithm \endcode
+ * method with the algorithm configuration as an argument.  The solutions will
+ * be returned from the ExecuteAlgorithm method in a simple ArrayList of
+ * MSolution objects.
+ *
+ * The first step in getting started is to create your .NET project and add
+ * the JEGA Managed Front End <I>dll</I> as a reference.
+ *
+ * Now it is time to write some code.  The most substantial code that must be
+ * written is the creation of an evaluation functor.  This is the class that
+ * will provide the method called by JEGA to get evaluation of the objectives
+ * and constraints done.
+ *
+ * <B>How to create an evaluation functor:</B><BR> 
+ * The managed evaluation functor (
+ * <A href="./classJEGA_1_1FrontEnd_1_1Managed_1_1MEvaluationFunctor.html">
+ * MEvaluationFunctor</A>) is a simple interface with a single method to be
+ * implemented.  Here is a simple example in Visual Basic .NET 2005 code.
+ * \code
+    Imports JEGA.FrontEnd.Managed
+    Imports JEGA_VB_FE.JEGA.FrontEnd.VisualBasic
+
+    Public Class MyEvaluator
+        Implements MEvaluationFunctor
+        
+        Public Function _
+        Evaluate( _
+            ByVal X As ArrayList, _
+            ByVal F As ArrayList, _
+            ByVal G As ArrayList _
+            ) As Boolean _
+                Implements MEvaluationFunctor.Evaluate
+           
+            Dim sqrtSoS As Double = 0.0
+
+            For Each v As Double In X
+                sqrtSoS += v * v
+            Next
+
+            sqrtSoS = Math.Sqrt(sqrtSoS)
+
+            For i As Integer = 0 To F.Count - 1
+                F(i) = sqrtSoS
+            Next
+            For i As Integer = 0 To G.Count - 1
+                G(i) = sqrtSoS
+            Next
+            
+            Return True
+           
+        End Function
+        
+    End Class
+ 
+   \endcode
+ *
+ * Quite obviously, this is a rediculous example that means nothing and so it
+ * is up to you to fill in meaningful evaluation code.
+ *
+ * Another thing that must be done is that a problem configuration object must
+ * be declared and loaded.  This is the object into which the properties of the
+ * problem are stored.
+ *
+ * <B>How to create and load a Problem Configuration Object:</B><BR>
+ * Creating a problem configuration object is a simple as declaring one and
+ * then calling the methods to load it.  Consider the following example in
+ * Visual Basic .NET 2005 code.
+ *
+ * \code
+    Dim pConfig As New MProblemConfig()
+
+    ' Add Variables
+    pConfig.AddContinuumRealVariable("X1", 0.0, 10.0, 4)
+
+    Dim rdisVals As Double() = New Double() {1.0, 2.0, 3.0, 4.0, 5.0}
+    pConfig.AddDiscreteRealVariable("X2", rdisVals)
+
+    pConfig.AddContinuumIntegerVariable("X3", -5, 5)
+
+    Dim idisVals As Integer() = New Integer() {1, 3, 5, 7, 9}
+    pConfig.AddDiscreteIntegerVariable("X4", idisVals)
+
+    ' Add Objectives
+    pConfig.AddNonlinearSeekValueObjective("F1", 7.5)
+    pConfig.AddNonlinearSeekRangeObjective("F2", 4.2, 34.9)
+    pConfig.AddNonlinearMinimizeObjective("F3")
+    pConfig.AddNonlinearMaximizeObjective("F4")
+
+    ' Add Constraints
+    pConfig.AddNonlinearEqualityConstraint("G1", 12.4)
+    pConfig.AddNonlinearInequalityConstraint("G2", 0.0)
+    pConfig.AddNonlinearTwoSidedInequalityConstraint("G3", 0.0, 100.0)
+
+   \endcode
+ *
+ * This code will result in the description of a problem with:
+ * - 4 variables:
+ *  - 1 real valued continuous variable with bounds [0, 10] and a decimal
+ *    precision of 4,
+ *  - 1 real valued discrete variable with possible values 1, 2, 3, 4, and 5,
+ *  - 1 integer valued continuous variable with bounds [-5, 5], and
+ *  - 1 integer valued discrete variable with possible value 1, 3, 5, 7, and 9.
+ * - 4 objective functions:
+ *  - 1 to seek a value of 7.5,
+ *  - 1 to seek a range of values from [4.2, 34.9],
+ *  - 1 to seek a minimum possible value, and
+ *  - 1 to seek a maximum possible value.
+ * - 3 constraints:
+ *  - 1 nonlinear equality constraint that must equal 12.4,
+ *  - 1 nonlinear inequality constraint that must be less than 0, and
+ *  - 1 nonlinear two sided inequality constraint that must be in the range
+ *    [0, 100].
+ *
+ * That is it for the problem configuration object.  The next step described is
+ * how to create the algorithm configuration object.
+ *
+ * <B>How to create and load an Algorithm Configuration Object:</B><BR>
+ * Creating the algorithm configuration object requires the creation of a
+ * managed evaluation functor as described above.  It then requires that you
+ * inform JEGA what operators to use for each operation and how to configure
+ * it.  This is by far the most difficult step and requires the most knowledge
+ * of JEGA.  The JEGA documentation describes each operator, it's name, and 
+ * what configuration inputs it requires.
+ *
+ * An abbreviated example follows.
+ * \code
+    Dim evaler As New MyEvaluator()
+    Dim aConfig As New MAlgorithmConfig(New MEvaluator(evaler))
+
+    aConfig.SetAlgorithmType(MAlgorithmConfig.AlgType.MOGA)
+    aConfig.SetLoggingFilename("MOGARun.log")
+    aConfig.SetDefaultLoggingLevel(MAlgorithmConfig.Debug)
+    aConfig.SetAlgorithmName("MOGA_1")
+    aConfig.SetPrintPopEachGen(False)
+
+    ' Configure the convergence operator
+    aConfig.SetConvergerName("metric_tracker")
+    pdb.AddIntegralParam("method.max_iterations", Integer.MaxValue)
+    pdb.AddIntegralParam("method.max_function_evaluations", 1000)
+    pdb.AddDoubleParam("method.jega.percent_change", 0.03)
+    pdb.AddSizeTypeParam("method.jega.num_generations", 10)
+
+    ' Configure the crossover operator
+    aConfig.SetCrosserName("shuffle_random")
+    pdb.AddDoubleParam("method.crossover_rate", 0.8)
+    pdb.AddSizeTypeParam("method.jega.num_offspring", 2)
+    pdb.AddSizeTypeParam("method.jega.num_parents", 2)
+
+    ' Configure the niche pressure operator
+    aConfig.SetNichePressureApplicatorName("radial")
+    Dim nicheVector As Double() = New Double() {0.5, 0.5}
+    pdb.AddDoubleVectorParam("method.jega.niche_vector", nicheVector)
+
+    ' Configure the fitness assessment operator
+    aConfig.SetFitnessAssessorName("domination_count")
+
+    ' Configure the initialization operator
+    aConfig.SetInitializerName("unique_random")
+    pdb.AddIntegralParam("method.population_size", 50)
+
+    ' Configure the main loop operator
+    aConfig.SetMainLoopName("duplicate_free")
+
+    ' Configure the mutation operator
+    aConfig.SetMutatorName("replace_uniform")
+    pdb.AddDoubleParam("method.mutation_rate", 0.1)
+
+    ' Configure the selection operator
+    aConfig.SetSelectorName("below_limit")
+    pdb.AddDoubleParam("method.jega.fitness_limit", 5)
+    pdb.AddDoubleParam("method.jega.shrinkage_percentage", 0.9)
+    
+    ' Configure the post-processor operator.
+    aConfig.SetPostProcessorName("null_postprocessor")
+    
+   \endcode
+ *
+ * Now that the evaluator and each configuration object is created and ready
+ * for use, the only thing left to do now is to execute the algorithm.  To do
+ * so, you must declare a managed Driver and use it to run the algorithm.  An
+ * example of how to do this is shown below again in Visual Basic .NET 2005
+ * code.
+ *
+ * \code
+    Dim driver As New MDriver(pConfig)
+    Dim results As MSolution() = driver.ExecuteAlgorithm(aConfig)
+   \endcode
+ *
+ *
+ * Putting this all together and remembering to initialize JEGA, the entire
+ * program would look like this:
+ *
+ * \code
+    Imports JEGA.FrontEnd.Managed
+    Imports JEGA_VB_FE.JEGA.FrontEnd.VisualBasic
+
+    Public Class MyEvaluator
+        Implements MEvaluationFunctor
+
+        Public Function _
+        Evaluate( _
+            ByVal X As ArrayList, _
+            ByVal F As ArrayList, _
+            ByVal G As ArrayList _
+            ) As Boolean _
+                Implements MEvaluationFunctor.Evaluate
+
+            Dim sqrtSoS As Double = 0.0
+
+            For Each v As Double In X
+                sqrtSoS += v * v
+            Next
+
+            sqrtSoS = Math.Sqrt(sqrtSoS)
+
+            For i As Integer = 0 To F.Count - 1
+                F(i) = sqrtSoS
+            Next
+            For i As Integer = 0 To G.Count - 1
+                G(i) = sqrtSoS
+            Next
+
+            Return True
+
+        End Function
+
+    End Class
+
+    Public Class MyMainClass
+
+
+        Public Shared Sub _
+        Main( _
+            ByVal cmdArgs() As String _
+            )
+
+            '''''''''''''''
+            ' Initialize JEGA.
+            '''''''''''''''
+            MDriver.InitializeJEGA( _
+                "JEGAGlobal.log", MAlgorithmConfig.Quiet, 0 _
+                )
+
+            '''''''''''''''
+            ' Prepare the problem configuration object.
+            '''''''''''''''
+
+            Dim pConfig As New MProblemConfig()
+
+            ' Add Variables
+            pConfig.AddContinuumRealVariable("X1", 0.0, 10.0, 4)
+
+            Dim rdisVals As Double() = New Double() {1.0, 2.0, 3.0, 4.0, 5.0}
+            pConfig.AddDiscreteRealVariable("X2", rdisVals)
+
+            pConfig.AddContinuumIntegerVariable("X3", -5, 5)
+
+            Dim idisVals As Integer() = New Integer() {1, 3, 5, 7, 9}
+            pConfig.AddDiscreteIntegerVariable("X4", idisVals)
+
+            ' Add Objectives
+            pConfig.AddNonlinearSeekValueObjective("F1", 7.5)
+            pConfig.AddNonlinearSeekRangeObjective("F2", 4.2, 34.9)
+            pConfig.AddNonlinearMinimizeObjective("F3")
+            pConfig.AddNonlinearMaximizeObjective("F4")
+
+            ' Add Constraints
+            pConfig.AddNonlinearEqualityConstraint("G1", 12.4)
+            pConfig.AddNonlinearInequalityConstraint("G2", 0.0)
+            pConfig.AddNonlinearTwoSidedInequalityConstraint("G3", 0.0, 100.0)
+
+
+            '''''''''''''''
+            ' Prepare the algorithm configuration object.
+            '''''''''''''''
+
+            Dim evaler As New MyEvaluator()
+            Dim aConfig As New MAlgorithmConfig(New MEvaluator(evaler))
+            Dim pdb As MParameterDatabase = aConfig.GetParameterDB()
+
+            aConfig.SetAlgorithmType(MAlgorithmConfig.AlgType.MOGA)
+            aConfig.SetLoggingFilename("MOGARun.log")
+            aConfig.SetDefaultLoggingLevel(MAlgorithmConfig.Debug)
+            aConfig.SetAlgorithmName("MOGA_1")
+            aConfig.SetPrintPopEachGen(False)
+
+            ' Configure the convergence operator
+            aConfig.SetConvergerName("metric_tracker")
+            pdb.AddIntegralParam("method.max_iterations", Integer.MaxValue)
+            pdb.AddIntegralParam("method.max_function_evaluations", 1000)
+            pdb.AddDoubleParam("method.jega.percent_change", 0.03)
+            pdb.AddSizeTypeParam("method.jega.num_generations", 10)
+
+            ' Configure the crossover operator
+            aConfig.SetCrosserName("shuffle_random")
+            pdb.AddDoubleParam("method.crossover_rate", 0.8)
+            pdb.AddSizeTypeParam("method.jega.num_offspring", 2)
+            pdb.AddSizeTypeParam("method.jega.num_parents", 2)
+
+            ' Configure the niche pressure operator
+            aConfig.SetNichePressureApplicatorName("radial")
+            Dim nicheVector As Double() = New Double() {0.5, 0.5}
+            pdb.AddDoubleVectorParam("method.jega.niche_vector", nicheVector)
+
+            ' Configure the fitness assessment operator
+            aConfig.SetFitnessAssessorName("domination_count")
+
+            ' Configure the initialization operator
+            aConfig.SetInitializerName("unique_random")
+            pdb.AddIntegralParam("method.population_size", 50)
+
+            ' Configure the main loop operator
+            aConfig.SetMainLoopName("duplicate_free")
+
+            ' Configure the mutation operator
+            aConfig.SetMutatorName("replace_uniform")
+            pdb.AddDoubleParam("method.mutation_rate", 0.1)
+
+            ' Configure the selection operator
+            aConfig.SetSelectorName("below_limit")
+            pdb.AddDoubleParam("method.jega.fitness_limit", 5)
+            pdb.AddDoubleParam("method.jega.shrinkage_percentage", 0.9)
+
+            ' Configure the post-processor operator.
+            aConfig.SetPostProcessorName("null_postprocessor")
+
+            '''''''''''''''
+            ' Prepare and use the driver.
+            '''''''''''''''
+            Dim driver As New MDriver(pConfig)
+            Dim results As MSolution() = driver.ExecuteAlgorithm(aConfig)
+
+            ' Now do something with the results.
+
+        End Sub
+
+    End Class
+   \endcode
+ *
+ * This code by itself will not produce meaningful results because the
+ * evaluation functions are nonsense.  If you were to replace that code, you
+ * could get a meaningful result.
+ *
+ * \subsection outsec Output
+ *
+ * JEGA now makes use of the <a href="../../eddy/logging/doc/html/index.html">
+ * Eddy C++ Logging Project</a> for all output to the user during execution.
+ * This does not include the writing of data files.  The JEGA
+ * specific interface for the Eddy Logging C++ Project is described
+ * in the JEGA project help files.  With this new functionality, JEGA is
+ * capable of outputting information at any of debug, verbose, quiet, or
+ * silent output levels.
+ *
+ * \subsection changesec Changes
+ *
+ *
+ * \section refsec References
+ *
+ */
+ 

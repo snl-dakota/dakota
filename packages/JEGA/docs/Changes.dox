@@ -1,0 +1,134 @@
+/*
+================================================================================
+    PROJECT:
+
+        John Eddy's Genetic Algorithms (JEGA)
+
+    CONTENTS:
+
+        Listings of changes, bug fixes, etc. for the JEGA project.
+
+    NOTES:
+
+
+    PROGRAMMERS:
+
+        John Eddy (jpeddy@sandia.gov) (JE)
+
+    ORGANIZATION:
+
+        Sandia National Laboratories
+
+    COPYRIGHT:
+
+        This library is distributed under the GNU Lesser General Public License
+        agreement.  For more information, see the LICENSE file in the top level
+        JEGA directory.
+
+    VERSION:
+
+        2.0.0
+
+    CHANGES:
+
+        Thu Apr 27 09:48:34 2006 - Original Version (JE)
+
+================================================================================
+*/
+
+
+/*
+================================================================================
+Document this file
+================================================================================
+*/
+/** \file
+ * \brief Contains the listing of changes to JEGA by version.
+ */
+
+
+/** \mainpage
+ *
+ * <B>JEGA Version Release Changes</B>
+ *
+ * <B>v2.1</B>
+ * - Change of the algorithm progression to pass the initial population
+ *   directly to the fitness assessor bypassing the variational operators.
+ * - Introduction of the Post Processor operator for filtering final solutions.
+ *     - Creation of the NullPostProcessor to serve as the null objects of
+ *         post processors.
+ * - Addition of much source code documentation.
+ * - Addition of new "distance" niche pressure applicator.
+ * - Introduction of "region of space" concept and constructs for potential use
+ *     in the future whereby algorithms can be confined to sub-regions of the
+ *     design space.
+ * - Addition of new "double matrix" initializer that reads initial designs
+ *   from a supplied matrix of values.
+ * - Multiple bug fixes.
+ * - Multiple improvements to the logging output.
+ *
+ * <B>v2.0</B>
+ *
+ * - Namespace Updates:
+ *     - Introduction of JEGA namespace.
+ *     - namespace Utilities became namespace JEGA::Utilities.
+ *     - namespace GeneticAlgorithms became namespace JEGA::Algorithms.
+ *     - Introduction of namespace JEGA::FrontEnd
+ *     - Introduction of namespace JEGA::Logging to house the JEGA specific
+ *         front end to the eddy logging project.
+ * - Introduction of eddy projects including:
+ *     - Threads project for thread safety (this is not used in Dakota
+ *         but is available when using JEGA independently of Dakota).
+ *     - Logging project for all reporting to the user during execution
+ *        with the exception of writing data files.
+ *     - Utilities project for various data structures, utility classes,
+ *         and data types such as fixed size integers.
+ * - Addition of many logging points where information can now be presented
+ *     to the user.
+ * - Introduction of new class of operators for niche pressure.
+ * - Introduction of radial niche pressure applicator.
+ * - Modification of DominationCountSelector into DominationCountFitnessAssessor
+ *     for use with various selectors.
+ * - Introduction of BelowLimitSelector for selecting designs within a limiting
+ *     value of fitness.
+ * - Creation of Front End project to ease the use of JEGA as a third party
+ *     library in other applications.
+ * - Movement of fitness tracker convergers out of the SOGA directory into the
+ *     top level GA directory for shared use.
+ * - Introduction of MOGA convergence operator.
+ * - Overhaul of core data structures including elimination of PODDeque, HSortDeque,
+ *     etc. in favor of STL multiset class with specialized predicates.  The
+ *     new implementation is safer, faster, more robust, and more portable.
+ * - Overhaul of Statistician classes for increased flexibility with data
+ *     structures.
+ * - Intrduction of ParameterDatabase interface and associated Basic Impl
+ *     to avoid the need for "two-way" dependencies when using JEGA as a third
+ *     party library.
+ * - Introduction of the ParameterExtractor class to ease the use of obtaining
+ *     values from ParameterDatabase class objects.
+ * - Elimination of "Plug-in" design style for Designs and Design Groups in favor
+ *     of returning sepecialized data structures with relevant information.  This
+ *     results in short-lived value storage which is safer than attempting to keep
+ *     such information up-to-date during the course of an algorithm especially when
+ *     it is usually only needed immediately after it is calculated.
+ * - Introduction of data structures to support the previous bullet.
+ * - Separation of DesignTarget into pure interface and associated Basic Impl.
+ * - Separation of Design::GetVariable method into Design::GetVariableValue and
+ *     Design::GetVariableRep to ease retrieval of variable values in the desired form.
+ * - Introduction of DesignFileReader class to aid in retrieving designs from
+ *     files.  Currently only flat files are supported.
+ * - Addition of much code documentation.
+ * - Overhauled JEGAOptimizer class to make use of JEGA front end project.
+ * - Fixed bug in multi-point parameterized crossover routine whereby it was using
+ *   the bitwise or operator where it should have been using the xor.
+ * - Overhauled multi-point crossover routine for correct operation.
+ * - Numerous other bug fixes.
+ * - Changed all convergers to respect max gens and max evals.
+ * - Change to the way constraints are handled by the multi-objective
+ *     statistician.  Now tracks violations to get idea of how much violation
+ *     is "a lot" and compares designs based on that.
+ *
+ * <B>v1.0</B>
+ *
+ * - Initial Release.
+ */
