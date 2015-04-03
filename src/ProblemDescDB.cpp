@@ -2288,6 +2288,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.actual_model_pointer", P truthModelPointer},
 	{"surrogate.challenge_points_file", P approxChallengeFile},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
+	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_model_file", P approxExportModelFile},
 	{"surrogate.export_points_file", P approxExportFile},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
@@ -2435,7 +2436,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     #define P &DataModelRep::
     static KW<Real, DataModelRep> Rdmo[] = {	
       // must be sorted by string (key)
-      {"surrogate.discont_grad_threshold", P discontGradThreshold},
+      {"surrogate.discont_grad_thresh", P discontGradThresh},
+      {"surrogate.discont_jump_thresh", P discontJumpThresh},
       {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold}};
@@ -2522,9 +2524,9 @@ int ProblemDescDB::get_int(const String& entry_name) const
       // must be sorted by string (key)
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
+        {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
-        {"surrogate.points_total", P pointsTotal},
-        {"surrogate.surrogate_order", P surrogateOrder}};
+        {"surrogate.points_total", P pointsTotal}};
     #undef P
 
     KW<int, DataModelRep> *kw;
@@ -2916,10 +2918,12 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"surrogate.challenge_points_file_active", P approxChallengeActive},
 	{"surrogate.challenge_points_file_annotated", P approxChallengeAnnotated},
 	{"surrogate.cross_validate", P crossValidateFlag},
+	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
 	{"surrogate.export_points_file_annotated", P approxExportAnnotated},
 	{"surrogate.import_points_file_active", P approxImportActive},
 	{"surrogate.import_points_file_annotated", P approxImportAnnotated},
+	{"surrogate.piecewise_decomp", P piecewiseDecomp},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P

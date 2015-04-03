@@ -111,31 +111,34 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data)
        << std::endl;
 #endif
 
-  const String& approx_type = shared_data.data_rep()->approxType;
-  if (approx_type == "local_taylor")
-    return new TaylorApproximation(problem_db, shared_data);
-  else if (approx_type == "multipoint_tana")
-    return new TANA3Approximation(problem_db, shared_data);
-  else if (strends(approx_type, "_orthogonal_polynomial") ||
-	   strends(approx_type, "_interpolation_polynomial"))
-    return new PecosApproximation(problem_db, shared_data);
-  else if (approx_type == "global_gaussian")
-    return new GaussProcApproximation(problem_db, shared_data);
-  else if (approx_type == "global_voronoi_surrogate")
+  bool pw_decomp = problem_db.get_bool("model.surrogate.piecewise_decomp");
+  if (pw_decomp) {
     return new VPSApproximation(problem_db, shared_data);
+  } else {
+    const String& approx_type = shared_data.data_rep()->approxType;
+    if (approx_type == "local_taylor")
+      return new TaylorApproximation(problem_db, shared_data);
+    else if (approx_type == "multipoint_tana")
+      return new TANA3Approximation(problem_db, shared_data);
+    else if (strends(approx_type, "_orthogonal_polynomial") ||
+	     strends(approx_type, "_interpolation_polynomial"))
+      return new PecosApproximation(problem_db, shared_data);
+    else if (approx_type == "global_gaussian")
+      return new GaussProcApproximation(problem_db, shared_data);
 #ifdef HAVE_SURFPACK
-  else if (approx_type == "global_polynomial"     ||
-	   approx_type == "global_kriging"        ||
-	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
-	   approx_type == "global_radial_basis"   ||
-	   approx_type == "global_mars"           ||
-	   approx_type == "global_moving_least_squares")
-    return new SurfpackApproximation(problem_db, shared_data);
+    else if (approx_type == "global_polynomial"     ||
+	     approx_type == "global_kriging"        ||
+	     approx_type == "global_neural_network" || // TO DO: Two ANN's ?
+	     approx_type == "global_radial_basis"   ||
+	     approx_type == "global_mars"           ||
+	     approx_type == "global_moving_least_squares")
+      return new SurfpackApproximation(problem_db, shared_data);
 #endif // HAVE_SURFPACK
-  else {
-    Cerr << "Error: Approximation type " << approx_type << " not available."
-	 << std::endl;
-    return NULL;
+    else {
+      Cerr << "Error: Approximation type " << approx_type << " not available."
+	   << std::endl;
+      return NULL;
+    }
   }
 }
 

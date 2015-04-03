@@ -1,0 +1,56 @@
+# Test global surrogates with piecewise local decomposition
+environment
+	  tabular_graphics_data
+          method_pointer = 'UQ'
+
+method,
+	id_method = 'UQ'
+        model_pointer = 'SURR'			
+	sampling,
+	  samples = 10				
+	  seed = 98765 rng rnum2
+	  response_levels = 0.1 0.2 0.6
+			    0.1 0.2 0.6
+			    0.1 0.2 0.6
+	  distribution cumulative
+
+ model,                                         
+        id_model = 'SURR'    			 
+        surrogate global,			 
+          dace_method_pointer = 'DACE'		 
+          reuse_samples all			 
+	  polynomial quadratic
+#          gaussian_process surfpack              
+#          radial_basis              
+	    piecewise_decomp			  
+	      cell_type = 'vornonoi'
+	      discontinuity_detection		 
+	        jump_threshold 20.0		 
+          
+method,                                        
+        id_method = 'DACE'			 
+        model_pointer = 'DACE_M'		 
+        sampling sample_type lhs		 
+        samples = 121 seed = 5034 rng rnum2	 
+
+model,						
+        id_model = 'DACE_M'			
+        single					
+          interface_pointer = 'I1'		
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds =  0.   0.
+	  upper_bounds =  1.   1.
+	  descriptors  = 'x1' 'x2'
+
+interface,
+        id_interface = 'I1'
+	direct
+	  analysis_driver = 'text_book'
+
+responses,
+	response_functions = 3
+	no_gradients
+	no_hessians
+

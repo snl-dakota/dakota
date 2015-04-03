@@ -38,10 +38,19 @@ namespace Dakota
     VPSApproximation::VPSApproximation(const ProblemDescDB& problem_db,
                                        const SharedApproxData& shared_data):
                                        Approximation(BaseConstructor(), problem_db, shared_data),
-                                       surrogateOrder(problem_db.get_int("model.surrogate.surrogate_order")),
-                                       _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_threshold"))
+                                       _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_thresh"))
     {
+
+      const String& surrogate_type = problem_db.get_string("model.surrogate.type");
+      if (surrogate_type != "global_kriging" && surrogate_type != "global_polynomial" &&
+	  surrogate_type != "global_radial_basis") {
+	Cerr << "\nError: Piecewise decomp not available for " << surrogate_type 
+	     << " surrogate; consider GP, RBF, or polynomial" << std::endl;
+	abort_handler(-1);
+      }
+
         std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+        std::cout << "*** VPS:: Initializing, Surrogate type " << surrogate_type << std::endl;
     
         //*** Test function for debugging only
         _vps_test_function = SmoothHerbie;
@@ -50,11 +59,15 @@ namespace Dakota
         _vps_subsurrogate = LS;
         _vps_subsurrogate_basis = polynomial;
         
-        // hacks to switch to GP and LS and radial basis functions
-        if (surrogateOrder == -1) _vps_subsurrogate = GP;
-        else if (surrogateOrder == -2) _vps_subsurrogate_basis = radial;
+        // switch to GP or radial basis functions if requested
+	if (surrogate_type == "global_kriging") _vps_subsurrogate = GP;
+        else if (surrogate_type == "global_radial_basis") _vps_subsurrogate_basis = radial;
 
-    
+	if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == polynomial) {
+	  surrogateOrder = problem_db.get_short("model.surrogate.polynomial_order");
+	}
+
+
     }
     
     /// Alternate constructor (to call VPS from another method like POF-darts)

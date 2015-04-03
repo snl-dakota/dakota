@@ -1706,11 +1706,14 @@ KEYWORD model
 	      | cubic
 	      [ export_model_file STRING ]
 	      )
-	    |
-	    ( voronoi_surrogate
-	      [ surrogate_order INTEGER ]
-	      [ discont_grad_threshold REAL ]
-	      )
+	    [ piecewise_decomposition
+	      [ cell_type STRING ]
+	      [ support_layers INTEGER ]
+	      [ discontinuity_detection
+		jump_threshold REAL
+		| gradient_threshold REAL
+		]
+	      ]
 	    [ total_points INTEGER
 	    | minimum_points
 	    | recommended_points ]

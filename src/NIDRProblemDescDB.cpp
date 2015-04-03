@@ -6849,7 +6849,8 @@ static Model_mp_type
 
 static Real
 	MP_(annRange),
-    MP_(discontGradThreshold),
+        MP_(discontGradThresh),
+        MP_(discontJumpThresh),
 	MP_(krigingNugget),
 	MP_(percentFold);
 
@@ -6865,6 +6866,7 @@ static String
 	MP_(approxExportFile),
 	MP_(approxImportFile),
 	MP_(approxExportModelFile),
+	MP_(decompCellType),
 	MP_(idModel),
 	MP_(interfacePointer),
 	MP_(krigingOptMethod),
@@ -6887,10 +6889,12 @@ static bool
 	MP_(approxImportActive),
 	MP_(approxImportAnnotated),
 	MP_(crossValidateFlag),
+	MP_(decompDiscontDetect),
 	MP_(hierarchicalTags),
 	MP_(modelUseDerivsFlag),
-	MP_(pressFlag),
-	MP_(pointSelection);
+        MP_(piecewiseDecomp),
+        MP_(pointSelection),
+        MP_(pressFlag);
 
 static short
 	MP_(annNodes),
@@ -6906,11 +6910,11 @@ static short
 	MP_(rbfMinPartition);
 
 static int
+        MP_(decompSupportLayers),
         MP_(numFolds),
         MP_(pointsTotal),
         MP_(subMethodProcs),
-        MP_(subMethodServers),
-	MP_(surrogateOrder);
+        MP_(subMethodServers);
 
 #undef MP2s
 #undef MP2

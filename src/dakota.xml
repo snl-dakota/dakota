@@ -2365,15 +2365,29 @@
                     <param type="OUTPUT_FILE" />
                   </keyword>
                 </keyword>
-                <keyword  id="voronoi_surrogate2" name="voronoi_surrogate" code="{N_mom(lit,surrogateType_global_voronoi_surrogate)}" label="voronoi_surrogate" help="" minOccurs="1" >
-		  <keyword  id="surrogate_order2" name="surrogate_order" code="{N_mom(int,surrogateOrder)}" label="surrogate_order" help="" minOccurs="0">
-		    <param type="INTEGER" />
-           </keyword>
-           <keyword  id="discont_threshold" name="discont_grad_threshold" code="{N_mom(Real,discontGradThreshold)}" label="discont_grad_threshold" help="" minOccurs="0">
-            <param type="REAL" />
-		  </keyword>
-                </keyword>
+
               </oneOf>
+
+              <keyword  id="piecewise_decomposition" name="piecewise_decomposition" code="{N_mom(true,piecewiseDecomp)}" label="Piecewise local decomposition" help="" minOccurs="0" >
+		<keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local cell type" help="" minOccurs="0">
+		  <param type="STRING" />
+		</keyword>
+
+		<keyword  id="support_layers" name="support_layers" code="{N_mom(int,decompSupportLayers)}" label="Layers of support for local basis funcion" help="" minOccurs="0">
+		  <param type="INTEGER" />
+		</keyword>
+
+		<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable discontinuity detection" help="" minOccurs="0">
+		  <oneOf>
+		    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,decompJumpThresh)}" label="Absolute function jump threshold" help="" minOccurs="1">
+		      <param type="REAL" />
+		    </keyword>
+		    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,decompGradientThresh)}" label="Absolute gradient threshold" help="" minOccurs="1">
+		      <param type="REAL" />
+		    </keyword>
+		  </oneOf>
+		</keyword>
+              </keyword>
               <optional>
                 <oneOf>
                   <keyword  id="total_points" name="total_points" code="{N_mom(int,pointsTotal)}" label="total_points" help=""  >
