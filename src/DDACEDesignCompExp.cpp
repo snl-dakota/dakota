@@ -13,6 +13,7 @@
 #include "DDACEDesignCompExp.hpp"
 #include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
+#include "DDaceSampler.h"
 #include "DDaceRandomSampler.h"
 #include "DDaceOASampler.h"
 #include "DDaceOALHSampler.h"
@@ -112,6 +113,12 @@ void DDACEDesignCompExp::extract_trends()
 
 void DDACEDesignCompExp::post_input()
 {
+  if (!seedSpec) {
+    Cerr << "\nError (DACE): post_run mode requires user-specified seed.\n";
+    abort_handler(-1);
+  }
+  // apply any corrections to user spec to update numSamples before post input
+  resolve_samples_symbols();
   // call convenience function from Analyzer
   read_variables_responses(numSamples, numContinuousVars);
 }
@@ -119,6 +126,12 @@ void DDACEDesignCompExp::post_input()
 
 void DDACEDesignCompExp::post_run(std::ostream& s)
 {
+  // main effects require generating the symbolMapping for post-run
+  if (mainEffectsFlag && symbolMapping.empty()) {
+    boost::shared_ptr<DDaceSamplerBase> ddace_sampler = 
+      create_sampler(iteratedModel);
+    symbolMapping = ddace_sampler->getP();
+  }
   // In VBD case, stats are managed in the run phase
   if (!varBasedDecompFlag) {
     if (mainEffectsFlag) // need allResponses
@@ -143,6 +156,9 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   // keep track of number of DACE executions for this object
   numDACERuns++;
 
+  Cout << "\nDACE method = " << submethod_enum_to_string(daceMethod) 
+       << " Samples = " << numSamples << " Symbols = " << numSymbols;
+
   // If a seed is specified, use it to get repeatable behavior, else allow DDACE
   // to generate different samples each time (seeded from a system clock).  For
   // the case where extract_trends() may be called multiple times for the same
@@ -159,8 +175,6 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   }
   else if (!varyPattern) // force same sample pattern: reset to previous value
     DistributionBase::setSeed(randomSeed);
-  Cout << "\nDACE method = " << daceMethod << " Samples = " << numSamples
-       << " Symbols = " << numSymbols;
   if (varyPattern && numDACERuns > 1)
     Cout << " Seed not reset from previous DACE execution\n";
   else if (seedSpec)
@@ -168,6 +182,47 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   else
     Cout << " Seed (system-generated) = " << randomSeed << '\n';
 
+  // vector used for DDace getSamples
+  std::vector<DDaceSamplePoint> sample_points(numSamples);
+
+  // in get_parameter_sets, generate the samples; could omit the symbolMapping
+  boost::shared_ptr<DDaceSamplerBase> ddace_sampler = 
+    create_sampler(iteratedModel);
+  ddace_sampler->getSamples(sample_points);
+  if (mainEffectsFlag)
+    symbolMapping = ddace_sampler->getP();
+
+  // copy the DDace sample array to allSamples
+  if (allSamples.numRows() != numContinuousVars ||
+      allSamples.numCols() != numSamples)
+    allSamples.shapeUninitialized(numContinuousVars, numSamples);
+  for (int i=0; i<numSamples; ++i) {
+    Real* all_samp_i = allSamples[i];
+    const DDaceSamplePoint& sample_pt_i = sample_points[i];
+    for (int j=0; j<numContinuousVars; ++j)
+      all_samp_i[j] = sample_pt_i[j];
+  }
+
+  if (volQualityFlag) {
+    double* dace_points = new double [numContinuousVars*numSamples];
+    copy_data(sample_points, dace_points, numContinuousVars*numSamples);
+    const RealVector& c_l_bnds = model.continuous_lower_bounds();
+    const RealVector& c_u_bnds = model.continuous_upper_bounds();
+    for (int i=0; i<numContinuousVars; i++) {
+      const double& offset = c_l_bnds[i];
+      double norm = 1. / (c_u_bnds[i] - c_l_bnds[i]);
+      for (int j=0; j<numSamples; j++)
+        dace_points[i+j*numContinuousVars]
+	  = (dace_points[i+j*numContinuousVars] - offset) * norm;
+    }
+    volumetric_quality(numContinuousVars, numSamples, dace_points);
+    delete [] dace_points;
+  }
+}
+
+boost::shared_ptr<DDaceSamplerBase>
+DDACEDesignCompExp::create_sampler(Model& model)
+{
   // Get bounded region and check that (1) the lengths of bounds arrays are 
   // consistent with numContinuousVars, and (2) the bounds are not default 
   // bounds (upper/lower = +/-DBL_MAX) since this results in Infinity in the 
@@ -183,8 +238,7 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
          << "\n       bounds arrays in DDACEDesignCompExp." << std::endl;
     abort_handler(-1);
   }
-  int i, j;
-  for (i=0; i<numContinuousVars; i++) {
+  for (int i=0; i<numContinuousVars; i++) {
     if (c_l_bnds[i] <= -DBL_MAX || c_u_bnds[i] >= DBL_MAX) {
       Cerr << "\nError: DDACEDesignCompExp requires specification of variable "
 	   << "bounds for all active variables." << std::endl;
@@ -195,96 +249,61 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   // Construct a uniform distribution vector
   // An alternative option is a normal distribution 
   std::vector<Distribution> ddace_distribution(numContinuousVars);
-  for (i=0; i<numContinuousVars; i++)
+  for (int i=0; i<numContinuousVars; i++)
     ddace_distribution[i]= UniformDistribution(c_l_bnds[i], c_u_bnds[i]);
-
-  // vector used for DDace getSamples
-  std::vector<DDaceSamplePoint> sample_points(numSamples);
 
   bool noise = true;
   switch (daceMethod) {
   case SUBMETHOD_OAS: {
-    DDaceOASampler ddace_sampler(numSamples, noise, ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
-    if (mainEffectsFlag)
-      symbolMapping = ddace_sampler.getP();
+    return boost::shared_ptr<DDaceSamplerBase>
+      (new DDaceOASampler(numSamples, noise, ddace_distribution));
     break;
   }
   case SUBMETHOD_OA_LHS: {
     int strength = 2;
     bool randomize = true;
-    DDaceOALHSampler ddace_sampler(numSamples, numContinuousVars, strength,
-				   randomize, ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
-    if (mainEffectsFlag)
-      symbolMapping = ddace_sampler.getP();
+    return boost::shared_ptr<DDaceSamplerBase>
+      (new DDaceOALHSampler(numSamples, numContinuousVars, strength, randomize,
+			    ddace_distribution));
     break;
   }
   case SUBMETHOD_LHS: {
     int replications = numSamples/numSymbols;
-    DDaceLHSampler ddace_sampler(numSamples, replications, noise,
-				 ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
-    if (mainEffectsFlag)
-      symbolMapping = ddace_sampler.getP();
+    return boost::shared_ptr<DDaceSamplerBase>
+      (new DDaceLHSampler(numSamples, replications, noise, ddace_distribution));
     break;
   }
   case SUBMETHOD_RANDOM: {
-    DDaceRandomSampler ddace_sampler(numSamples, ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
+      return boost::shared_ptr<DDaceSamplerBase>
+	(new DDaceRandomSampler(numSamples, ddace_distribution));
     break;
   }
   case SUBMETHOD_GRID: {
-    DDaceFactorialSampler ddace_sampler(numSamples, numSymbols, noise,
-					ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
-    if (mainEffectsFlag)
-      symbolMapping = ddace_sampler.getP();
+    return boost::shared_ptr<DDaceSamplerBase>
+      (new DDaceFactorialSampler(numSamples, numSymbols, noise, 
+				 ddace_distribution));
     break;
   }
   case SUBMETHOD_CENTRAL_COMPOSITE: {
-    DDaceCentralCompositeSampler ddace_sampler(numSamples, numContinuousVars,
-					       ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
+    return boost::shared_ptr<DDaceSamplerBase>
+      (new DDaceCentralCompositeSampler(numSamples, numContinuousVars,
+					ddace_distribution));
     break;
   }
   case SUBMETHOD_BOX_BEHNKEN: {
-    DDaceBoxBehnkenSampler ddace_sampler(numSamples, numContinuousVars,
-					 ddace_distribution);
-    ddace_sampler.getSamples(sample_points);
+    return boost::shared_ptr<DDaceSamplerBase>
+      (new DDaceBoxBehnkenSampler(numSamples, numContinuousVars,
+				  ddace_distribution));
     break;
   }
   default:
-    Cerr << "DDACE method \"" << daceMethod << "\" is not available at this "
-    	 << "time\nplease choose another sampling method." << std::endl;
+    Cerr << "DDACE method \"" << submethod_enum_to_string(daceMethod) 
+	 << "\" is not available at this time\n"
+	 << "please choose another sampling method." << std::endl;
     abort_handler(-1);
     break;
   }
 
-  // copy the DDace sample array to allSamples
-  if (allSamples.numRows() != numContinuousVars ||
-      allSamples.numCols() != numSamples)
-    allSamples.shapeUninitialized(numContinuousVars, numSamples);
-  for (i=0; i<numSamples; ++i) {
-    Real* all_samp_i = allSamples[i];
-    const DDaceSamplePoint& sample_pt_i = sample_points[i];
-    for (j=0; j<numContinuousVars; ++j)
-      all_samp_i[j] = sample_pt_i[j];
-  }
-
-  if (volQualityFlag) {
-    double* dace_points = new double [numContinuousVars*numSamples];
-    copy_data(sample_points, dace_points, numContinuousVars*numSamples);
-    for (i=0; i<numContinuousVars; i++) {
-      const double& offset = c_l_bnds[i];
-      double norm = 1. / (c_u_bnds[i] - c_l_bnds[i]);
-      for (j=0; j<numSamples; j++)
-        dace_points[i+j*numContinuousVars]
-	  = (dace_points[i+j*numContinuousVars] - offset) * norm;
-    }
-    volumetric_quality(numContinuousVars, numSamples, dace_points);
-    delete [] dace_points;
-  }
 }
 
 
@@ -427,8 +446,8 @@ void DDACEDesignCompExp::resolve_samples_symbols()
     break;
   }
   default:
-    Cerr << "Error: DDACE method \"" << daceMethod << "\" is not an option."
-	 << std::endl;
+    Cerr << "Error: DDACE method \"" << submethod_enum_to_string(daceMethod) 
+	 << "\" is not an option." << std::endl;
     abort_handler(-1); break;
   }
 

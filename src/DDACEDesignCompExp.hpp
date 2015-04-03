@@ -19,6 +19,7 @@
 
 #include "DakotaPStudyDACE.hpp"
 
+class DDaceSamplerBase;
 class DDaceSamplePoint;
 
 namespace Dakota {
@@ -74,6 +75,9 @@ private:
 
   /// builds a DDaceMainEffects::OneWayANOVA if mainEffectsFlag is set
   void compute_main_effects();
+
+  /// create a DDACE sampler
+  boost::shared_ptr<DDaceSamplerBase> create_sampler(Model& model);
 
   /// convenience function for resolving number of samples and
   /// number of symbols from input.

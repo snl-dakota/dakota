@@ -1,3 +1,7 @@
+#@ s11: DependsOn=s10
+#@ s11: ExecArgs='-post_run dakota_dace.10.dat::'
+#@ s12: DependsOn=s7
+#@ s12: ExecArgs='-post_run dakota_dace.7.dat::'
 #@ p0: MPIProcs=4
 #@ p1: MPIProcs=4
 #@ p2: MPIProcs=4
@@ -8,27 +12,36 @@
 
 environment,
 	  graphics
-	  tabular_graphics_data
+	  tabular_data
+#	    tabular_data_file 'dakota_dace.10.dat'	#s10
+#	    tabular_data_file 'dakota_dace.7.dat'	#s7
 
 method,
-	dace oas seed = 5		#s0,#s8,#p0,#p1,#p2,#p3,#p4
+	dace oas seed = 5		#s0,#s8,#s10,#s11,#p0,#p1,#p2,#p3,#p4
+	  quality_metrics		#s0,#s10,#s11
 #       dace oa_lhs seed = 5            #s9
 	  samples = 49 symbols = 7 	#s0,#s8,#s9,#p0,#p1,#p2,#p3,#p4
 #	dace lhs seed = 5		#s1
 #	  samples = 50 symbols = 50	#s1
+# Test post-run with automatic samples/symbols adjustment, main effects, and 
+# symbols to exercise dependencies in pre vs post run
+#          main_effects	       		#s10,#s11
+#	   samples = 42 symbols = 6  	#s10,#s11
 #	fsu_quasi_mc hammersley		#s2,#s3
 #	fsu_quasi_mc halton		#s4,#s5
-#	fsu_cvt				#s6,#s7
-#	  samples = 100			#s2,#s3,#s4,#s5,#s6,#s7
-#	  latinize			#s3,#s5,#s7
-	  quality_metrics		#s0,#s3,#s5,#s7
+#	fsu_cvt				#s6,#s7,#s12
+#	  samples = 100			#s2,#s3,#s4, #s5,#s6,#s7,#s12
+#	  latinize			#s3,#s5,#s7,#s12
+#	  quality_metrics		#s3,#s5,#s7,#s12
 #	  sequence_start 0 0 0 0	#s2,#s3,#s4,#s5
 #	  sequence_leap  1 1 1 1	#s2,#s3,#s4,#s5
 #	  prime_base   3 5 7		#s2
 #	  prime_base 2 3 5 7  		#s4
-#  	  seed = 50374 fixed_seed	#s6,#s7
-#	  num_trials = 10000		#s6,#s7
-#	  max_iterations = 100		#s6,#s7
+#  	  seed = 50374 fixed_seed	#s6,#s7,#s12
+#	  num_trials = 10000		#s6,#s7,#s12
+#	  max_iterations = 100		#s6,#s7,#s12
+# Test post-run for FSUDace
+# 
 #	  output quiet	   		#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3,#p4
 
 variables,
@@ -55,8 +68,8 @@ interface,
 #	evaluation_servers = 4	   		#p4
 #	processors_per_evaluation = 1		#p4
 	system
-	  asynchronous			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p2,#p3
-	    evaluation_concurrency = 5	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p2
+	  asynchronous			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#p2,#p3
+	    evaluation_concurrency = 5	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#p2
 #	    evaluation_concurrency = 10	#p3
 	  analysis_driver = 'text_book'
 

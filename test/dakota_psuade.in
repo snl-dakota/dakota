@@ -1,4 +1,9 @@
-# DAKOTA INPUT FILE : dakota_moat.in
+#@ s1: DependsOn=s0
+#@ s1: ExecArgs='-post_run dakota_psuade.0.dat::'
+# DAKOTA INPUT FILE : dakota_psuade.in
+environment					#s0,#s1
+  tabular_data					#s0
+    tabular_data_file 'dakota_psuade.0.dat'	#s0
 
 method,
 	psuade_moat
