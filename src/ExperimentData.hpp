@@ -168,6 +168,10 @@ public:
   /// form residuals and interpolate if necessary 
   void form_residuals(const Response& sim_resp, size_t experiment, 
                       RealVector& residuals); 
+  
+  /// flag for interpolation.  If 0, no interpolation. 
+  /// If 1, interpolate. 
+  bool interpolate_flag();
 
 private:
 
@@ -235,6 +239,8 @@ private:
   /// which might not be correct)
   SharedResponseData simulationSRD;
 
+  /// flag for interpolation.  
+  bool interpolateFlag;
   /// output verbosity level
   short outputLevel;
 

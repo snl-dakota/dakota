@@ -15,7 +15,7 @@ namespace Dakota {
 
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
-  scalarDataAnnotated(true), outputLevel(NORMAL_OUTPUT)
+  scalarDataAnnotated(true), interpolateFlag(false), outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }                                
 
 
@@ -27,6 +27,7 @@ ExperimentData(const ProblemDescDB& pddb,
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
   scalarDataAnnotated(pddb.get_bool("responses.scalar_data_file_annotated")),
+  interpolateFlag(pddb.get_bool("responses.interpolate")),
   outputLevel(output_level)
 { 
   initialize(pddb.get_sa("responses.variance_type"), srd);
@@ -43,7 +44,7 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
   scalarDataFilename(scalar_data_filename), dataPathPrefix(data_prefix),
-  scalarDataAnnotated(true), outputLevel(output_level)
+  scalarDataAnnotated(true), interpolateFlag(false), outputLevel(output_level)
 {
   initialize(variance_types, srd);
 }
@@ -624,6 +625,11 @@ bool ExperimentData::variance_type_active(short variance_type)
   return vt_it != varianceTypes.end();
 }
 
+bool ExperimentData::interpolate_flag()
+{
+  return interpolateFlag;
+}
+
 Real ExperimentData::
 apply_covariance(const RealVector& residuals, size_t experiment)
 {
@@ -665,21 +671,21 @@ form_residuals(const Response& sim_resp, size_t experiment,
   RealVector resid_fns = sim_resp.function_values();
   size_t i,j;
   size_t cntr=0;
-  bool interpolate = true; 
   const IntVector simLengths = sim_resp.field_lengths();
   int numfields = num_fields();
 
-  if ((num_fields() == 0) && (resid_fns.length() == res_size))
+  /*if ((num_fields() == 0) && (resid_fns.length() == res_size))
     interpolate = false;
   else { 
     for (j=0; j<num_fields(); j++) {
       if (field_data_view(j,experiment).length() == simLengths(j))
          interpolate = false;
     }
-  }
+  }*/
+
   if (outputLevel >= DEBUG_OUTPUT) 
-    Cout << "interpolate " << interpolate << '\n';
-  if (!interpolate) {
+    Cout << "interpolate " << interpolateFlag << '\n';
+  if (!interpolateFlag) {
      resid_fns -= allExperiments[experiment].function_values();
      residuals = resid_fns;
   }

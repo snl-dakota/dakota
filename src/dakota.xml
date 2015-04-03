@@ -3608,7 +3608,7 @@
                     </oneOf>
 		  </optional>
 		</keyword>
-		<keyword  id="interpolate1" name="interpolate" code="{N_rem(false,interpolateFlag)}" label="Interpolate between simulation and experiment data" help="RespCommands.html#RespFnLS" minOccurs="0" />
+		<keyword  id="interpolate1" name="interpolate" code="{N_rem(true,interpolateFlag)}" label="Interpolate between simulation and experiment data" help="RespCommands.html#RespFnLS" minOccurs="0" />
 
 		<keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
 		

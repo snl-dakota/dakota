@@ -1816,7 +1816,7 @@ static KeyWord
 		{"freeform",8,0,1,0,0,0.,0.,0,N_rem(false,scalarDataFileAnnotated)}
 		},
 	kw_302[6] = {
-		{"interpolate",8,0,5,0,0,0.,0.,0,N_rem(false,interpolateFlag)},
+		{"interpolate",8,0,5,0,0,0.,0.,0,N_rem(true,interpolateFlag)},
 		{"num_config_variables",0x29,0,2,0,0,0.,0.,0,N_rem(sizet,numExpConfigVars)},
 		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numExperiments)},
 		{"read_field_coordinates",8,0,6,0,0,0.,0.,0,N_rem(true,readFieldCoords)},
