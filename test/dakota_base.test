@@ -5335,6 +5335,21 @@ Test Number 5 succeeded
                      -2.6564265891e-02
                      -1.6970486451e-01
 <<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.2557395147e-01 x1
+                      1.0000000000e-01 x2
+<<<<< Best residual terms      =
+                      7.6544962826e-02
+                      3.0404319220e-01
+                      2.7503792070e-01
+                     -3.6389723265e-03
+                     -1.6720595754e-01
+                      2.8404319220e-01
+                      1.9853236241e-01
+                     -7.7303327174e-02
+<<<<< Best data not found in evaluation cache
 dakota_field.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
