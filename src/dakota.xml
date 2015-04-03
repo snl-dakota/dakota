@@ -2379,10 +2379,10 @@
 
 		<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable discontinuity detection" help="" minOccurs="0">
 		  <oneOf>
-		    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,decompJumpThresh)}" label="Absolute function jump threshold" help="" minOccurs="1">
+		    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute function jump threshold" help="" minOccurs="1">
 		      <param type="REAL" />
 		    </keyword>
-		    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,decompGradientThresh)}" label="Absolute gradient threshold" help="" minOccurs="1">
+		    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,discontGradThresh)}" label="Absolute gradient threshold" help="" minOccurs="1">
 		      <param type="REAL" />
 		    </keyword>
 		  </oneOf>
