@@ -958,7 +958,10 @@ JEGAOptimizer::LoadDakotaResponses(
     for(size_t i=0; i<static_cast<size_t>(this->numNonlinearConstraints); ++i)
         fn_vals[i+this->numObjectiveFns] = des.GetConstraint(i);
 
-    resp.function_values(fn_vals);
+    /// BMA: would prefer to omit this check, but Optimizer is
+    /// managing MO --> SO recast for JEGA currently.
+    if (!localObjectiveRecast)
+      resp.function_values(fn_vals);
 }
 
 void
@@ -1258,8 +1261,10 @@ JEGAOptimizer::LoadTheParameterDatabase(
         distance_vector
         );
  
-    dak_rv = 
-        &this->probDescDB.get_rv("responses.primary_response_fn_weights");
+    // when recasting is active, the weights may be transformed; get off Model
+    dak_rv = &iteratedModel.primary_response_fn_weights();
+    //dak_rv = 
+    //    &this->probDescDB.get_rv("responses.primary_response_fn_weights");
     // BMA  why needed; discuss with JE; otherwise get seg fault in GetBestSO
     if(!dak_rv->empty())
     {

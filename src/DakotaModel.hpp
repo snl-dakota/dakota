@@ -813,6 +813,8 @@ public:
 
   /// return number of functions in currentResponse
   size_t num_functions() const;
+  /// return number of primary functions (total less nonlinear constraints)
+  size_t num_primary_fns() const;
 
   /// return the gradient evaluation type (gradientType)
   const String& gradient_type() const;
@@ -859,6 +861,11 @@ public:
   /// get the relative weightings for multiple objective functions or least
   /// squares terms
   const RealVector& primary_response_fn_weights() const;
+
+  /// get the primary response function type (generic, objective, calibration)
+  short primary_fn_type() const;
+  /// set the primary response function type, e.g., when recasting
+  void primary_fn_type(short type);
 
   /// indicates potential usage of estimate_derivatives() based on
   /// gradientType/hessianType
@@ -2910,6 +2917,15 @@ inline size_t Model::num_functions() const
                     : currentResponse.num_functions();
 }
 
+inline size_t Model::num_primary_fns() const
+{
+  if (modelRep)
+    return modelRep->num_primary_fns();
+
+  return (num_functions() - num_nonlinear_ineq_constraints() - 
+	  num_nonlinear_eq_constraints());
+}
+
 
 inline const String& Model::gradient_type() const
 { return (modelRep) ? modelRep->gradientType : gradientType; }
@@ -2992,6 +3008,20 @@ inline const BoolDeque& Model::primary_response_fn_sense() const
 
 inline const RealVector& Model::primary_response_fn_weights() const
 { return (modelRep) ? modelRep->primaryRespFnWts : primaryRespFnWts; }
+
+
+inline short Model::primary_fn_type() const
+{ 
+  return (modelRep) ? 
+    modelRep->currentResponse.shared_data().primary_fn_type() : 
+    currentResponse.shared_data().primary_fn_type(); 
+}
+
+inline void Model::primary_fn_type(short type)
+{
+  if (modelRep) modelRep->currentResponse.shared_data().primary_fn_type(type);
+  else          currentResponse.shared_data().primary_fn_type(type);
+}
 
 
 inline bool Model::derivative_estimation()

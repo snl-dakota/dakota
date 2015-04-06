@@ -60,17 +60,10 @@ SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model):
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
 {
-  size_t num_obj_fns
-    = probDescDB.get_sizet("responses.num_objective_functions"), num_lsq_terms
-    = probDescDB.get_sizet("responses.num_least_squares_terms");
-  if (num_obj_fns) {
+  if (model.primary_fn_type() == OBJECTIVE_FNS)
     optimizationFlag  = true;
-    numUserPrimaryFns = num_obj_fns;
-  }
-  else if (num_lsq_terms) {
+  else if (model.primary_fn_type() == CALIB_TERMS)
     optimizationFlag  = false;
-    numUserPrimaryFns = num_lsq_terms;
-  }
   else {
     Cerr << "Error: unsupported response type specification in "
 	 << "SurrBasedMinimizer constructor." << std::endl;

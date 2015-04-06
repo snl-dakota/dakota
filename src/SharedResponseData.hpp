@@ -17,7 +17,7 @@
 
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
-//#include "DataResponses.hpp"
+#include "DataResponses.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/tracking.hpp>
@@ -88,6 +88,10 @@ private:
 
   /// enumeration of BASE_RESPONSE, SIMULATION_RESPONSE, or EXPERIMENT_RESPONSE
   short responseType;
+
+  /// data set type for primary response: generic, objective, calibration
+  short primaryFnType;
+
   /// response identifier string from the input file
   String responsesId;
 
@@ -109,9 +113,10 @@ private:
 };
 
 
-inline SharedResponseDataRep::SharedResponseDataRep()
+inline SharedResponseDataRep::SharedResponseDataRep():
   // copy and reshape immediately apply copy_rep, so don't initialize anything:
   //:responseType(BASE_RESPONSE)//, // overridden in derived class ctors
+  primaryFnType(GENERIC_FNS)
   //responsesId("NO_SPECIFICATION"), numScalarResponses(0),
 {
 #ifdef REFCOUNT_DEBUG
@@ -215,6 +220,11 @@ public:
   short response_type() const;
   /// set the response type: {BASE,SIMULATION,EXPERIMENT}_RESPONSE
   void response_type(short type);
+
+  /// get the primary function type (generic, objective, calibration)
+  short primary_fn_type() const;
+  /// set the primary function type (generic, objective, calibration)
+  void primary_fn_type(short type);
 
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
@@ -347,8 +357,13 @@ inline short SharedResponseData::response_type() const
 { return srdRep->responseType; }
 
 
+// TODO: Seems this could require disconnecting/new rep?
 inline void SharedResponseData::response_type(short type)
 { srdRep->responseType = type; }
+
+
+inline short SharedResponseData::primary_fn_type() const
+{ return srdRep->primaryFnType; }
 
 
 inline const String& SharedResponseData::function_label(size_t i) const

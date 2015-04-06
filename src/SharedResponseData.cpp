@@ -35,6 +35,7 @@ namespace Dakota {
 SharedResponseDataRep::
 SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
+  primaryFnType(GENERIC_FNS),
   responsesId(problem_db.get_string("responses.id")), 
   functionLabels(problem_db.get_sa("responses.labels"))
 {
@@ -68,6 +69,12 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
     std::max(problem_db.get_sizet("responses.num_objective_functions"),
 	     problem_db.get_sizet("responses.num_least_squares_terms"));
+
+  // update primary response type based on specification
+  if (problem_db.get_sizet("responses.num_objective_functions") > 0) 
+    primaryFnType = OBJECTIVE_FNS;
+  else if (problem_db.get_sizet("responses.num_least_squares_terms") > 0)
+    primaryFnType = CALIB_TERMS;
 
   if (num_field_responses) {
     // require scalar spec and enforce total = scalar + field
@@ -112,6 +119,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
 
 SharedResponseDataRep::SharedResponseDataRep(const ActiveSet& set):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
+  primaryFnType(GENERIC_FNS),
   responsesId("NO_SPECIFICATION"),
   numScalarResponses(set.request_vector().size())
 {
@@ -132,6 +140,7 @@ SharedResponseDataRep::SharedResponseDataRep(const ActiveSet& set):
 void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
 {
   responseType          = srd_rep->responseType;
+  primaryFnType         = srd_rep->primaryFnType;
   responsesId           = srd_rep->responsesId;
 
   functionLabels        = srd_rep->functionLabels;
@@ -148,8 +157,11 @@ template<class Archive>
 void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
 {
   ar & responseType;
+  ar & primaryFnType;
   ar & responsesId;
+  // TODO: archive unrolled minimal labels if possible
   ar & functionLabels;
+  ar & fieldLabels;
   ar & numScalarResponses;
   ar & fieldRespGroupLengths;
   ar & numCoordsPerField;
@@ -168,8 +180,10 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
 bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
 {
   return (responseType == other.responseType &&
+	  primaryFnType == other.primaryFnType &&
 	  responsesId == other.responsesId &&
 	  functionLabels == other.functionLabels &&
+	  fieldLabels == other.fieldLabels &&
 	  numScalarResponses == other.numScalarResponses &&
 	  fieldRespGroupLengths == other.fieldRespGroupLengths &&
 	  numCoordsPerField == other.numCoordsPerField);
@@ -285,6 +299,18 @@ void SharedResponseData::field_group_labels(const StringArray& field_labels)
   srdRep->fieldLabels = field_labels;
   // rebuild unrolled functionLabels for field values (no size change)
   srdRep->build_field_labels();
+}
+
+
+void SharedResponseData::primary_fn_type(short type) 
+{ 
+  // when the primary type changes, need a new rep
+  if (srdRep->primaryFnType != type) {
+    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    srdRep.reset(new SharedResponseDataRep());  // create new srdRep
+    srdRep->copy_rep(old_rep.get());            // copy old data to new
+    srdRep->primaryFnType = type;
+  }
 }
 
 

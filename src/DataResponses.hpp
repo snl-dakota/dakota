@@ -22,9 +22,11 @@
 
 namespace Dakota {
 
-// special values for derived Response type
+/// special values for derived Response type
 enum { BASE_RESPONSE=0, SIMULATION_RESPONSE, EXPERIMENT_RESPONSE };
 
+/// values for primary response types
+enum {GENERIC_FNS = 0, OBJECTIVE_FNS, CALIB_TERMS };
 
 /// Body class for responses specification data.
 

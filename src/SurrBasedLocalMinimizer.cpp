@@ -154,6 +154,11 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
       false, NULL, set_recast, recast_primary_resp_map,
       recast_secondary_resp_map, recast_offset, nonlinear_resp_map,
       approx_subprob_objective_eval, approx_subprob_constraint_eval), false);
+
+    // these formulations have converted multiple objectives or
+    // calibration terms to a single objective
+    if (approxSubProbObj != ORIGINAL_PRIMARY)
+      approxSubProbModel.primary_fn_type(OBJECTIVE_FNS);
   }
 
   // Instantiate the approximate sub-problem minimizer

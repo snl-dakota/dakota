@@ -29,10 +29,12 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
-  numResponseFunctions(
-    probDescDB.get_sizet("responses.num_response_functions")),
+  numResponseFunctions(0),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
-{ }
+{ 
+  if (model.primary_fn_type() == GENERIC_FNS)
+    numResponseFunctions = model.num_primary_fns();
+}
 
 
 /** This alternate constructor is used for generation and evaluation

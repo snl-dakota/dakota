@@ -42,7 +42,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
-  minimizerRecasts(0),
+  minimizerRecasts(0), optimizationFlag(true),
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
 		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
@@ -68,6 +68,7 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0),
+  optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(false), varsScaleFlag(false),
@@ -88,7 +89,8 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
-  speculativeFlag(false), minimizerRecasts(0), calibrationDataFlag(false),
+  speculativeFlag(false), minimizerRecasts(0), optimizationFlag(true),
+  calibrationDataFlag(false),
   numExperiments(0), numTotalCalibTerms(0),
   applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false), 
@@ -173,8 +175,10 @@ void Minimizer::update_from_model(const Model& model)
                             numNonlinearEqConstraints;
   numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
   numConstraints = numNonlinearConstraints + numLinearConstraints;
-  numUserPrimaryFns = numFunctions - numNonlinearConstraints;
-  numIterPrimaryFns = numFunctions - numNonlinearConstraints;
+  numUserPrimaryFns = model.num_primary_fns();
+  numIterPrimaryFns = numUserPrimaryFns;
+  if (model.primary_fn_type() == CALIB_TERMS)
+    numTotalCalibTerms = numUserPrimaryFns;  // default value
   // Check for linear constraint support in method selection
   if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
        ( methodName == NL2SOL       ||
@@ -318,7 +322,12 @@ void Minimizer::data_transform_model()
   // don't want to weight by missing sigma all = 1.0
   bool calc_sigma_from_data = true; // calculate sigma if not provided 
   expData.load_data("Least Squares", calc_sigma_from_data);
+
+  // update sizes in Iterator view
   numTotalCalibTerms = expData.num_total_exppoints();
+  numFunctions = numTotalCalibTerms + numNonlinearConstraints;
+  numIterPrimaryFns = numTotalCalibTerms;
+
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;
@@ -390,6 +399,8 @@ void Minimizer::data_transform_model()
 		set_recast, primary_resp_map_indices,
 		secondary_resp_map_indices, recast_secondary_offset,
 		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
+  ++minimizerRecasts;
+
 
   // TODO: review where should derivatives happen in data transform
   // case: where derivatives are computed should be tied to whether
@@ -510,6 +521,7 @@ void Minimizer::scale_model()
       RecastModel(iteratedModel, recast_vars_comps_total, all_relax_di,
 		  all_relax_dr, numUserPrimaryFns, numNonlinearConstraints,
 		  numNonlinearIneqConstraints), false);
+  ++minimizerRecasts;
 
   // initialize_scaling function needs to modify the iteratedModel
   initialize_scaling();

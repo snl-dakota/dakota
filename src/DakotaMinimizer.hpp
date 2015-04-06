@@ -254,11 +254,13 @@ protected:
   unsigned short minimizerRecasts;
   /// flag for use where optimization and NLS must be distinguished
   bool optimizationFlag;
-  /// number of objective functions or least squares terms in the user's model
-  /// always initialize at Minimizer, even if overridden later
+  /// number of objective functions or least squares terms in the
+  /// inbound model; always initialize at Minimizer, even if
+  /// overridden later
   size_t numUserPrimaryFns;
-  /// number of objective functions or least squares terms in iterator's view
-  /// always initialize at Minimizer, even if overridden later
+  /// number of objective functions or least squares terms in
+  /// iterator's view, after transformations; always initialize at
+  /// Minimizer, even if overridden later
   size_t numIterPrimaryFns;
 
   /// convenience flag for denoting the presence of user-specified bound

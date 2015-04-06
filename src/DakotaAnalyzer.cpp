@@ -31,18 +31,22 @@ namespace Dakota {
 
 Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
+  numObjFns(0), numLSqTerms(0), // default: no best data tracking
   writePrecision(probDescDB.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
 
-  if (probDescDB.get_sizet("responses.num_response_functions"))
-    numObjFns = numLSqTerms = 0; // no best data tracking
-  else {
-    numObjFns   = probDescDB.get_sizet("responses.num_objective_functions");
-    numLSqTerms = probDescDB.get_sizet("responses.num_least_squares_terms");
+  if (model.primary_fn_type() == OBJECTIVE_FNS)
+    numObjFns = model.num_primary_fns();
+  else if (model.primary_fn_type() == CALIB_TERMS)
+    numLSqTerms = model.num_primary_fns();
+  else if (model.primary_fn_type() != GENERIC_FNS) {
+    Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
+    abort_handler(-1);
   }
+  
   if (probDescDB.get_bool("method.variance_based_decomp")) 
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
 
@@ -53,7 +57,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 
 Analyzer::Analyzer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
-  writePrecision(0), numObjFns(0), numLSqTerms(0) // no best data tracking
+  writePrecision(0), numObjFns(0), numLSqTerms(0) // default: no best data tracking
 {
   update_from_model(iteratedModel); // variable/response counts & checks
 }
@@ -61,7 +65,7 @@ Analyzer::Analyzer(unsigned short method_name, Model& model):
 
 Analyzer::Analyzer(unsigned short method_name):
   Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
-  writePrecision(0), numObjFns(0), numLSqTerms(0) // no best data tracking
+  writePrecision(0), numObjFns(0), numLSqTerms(0) // default: no best data tracking
 { }
 
 

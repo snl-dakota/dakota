@@ -33,8 +33,11 @@ Optimizer* Optimizer::optimizerInstance(NULL);
 
 Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
   Minimizer(problem_db, model),
-  numObjectiveFns(probDescDB.get_sizet("responses.num_objective_functions"))
+  // initial value from Minimizer as accounts for fields and transformations
+  numObjectiveFns(numUserPrimaryFns)
 {
+  optimizationFlag = true; // default; may be overridden below
+
   bool err_flag = false;
   // Check for correct bit associated within methodName
   if ( !(methodName & OPTIMIZER_BIT) ) {
@@ -59,101 +62,55 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
 
   // Check for full Newton method w/o Hessian support (direct or via recast)
   bool require_hessians = false;
-  size_t num_lsq = probDescDB.get_sizet("responses.num_least_squares_terms");
+  bool have_lsq = (model.primary_fn_type() == CALIB_TERMS);
   if (methodName == OPTPP_NEWTON) { // || ...) {
     require_hessians = true;
-    if ( ( num_lsq == 0 && iteratedModel.hessian_type()  == "none" ) ||
-	 ( num_lsq      && iteratedModel.gradient_type() == "none" ) ) {
+    if ( ( !have_lsq && iteratedModel.hessian_type()  == "none" ) ||
+	 (  have_lsq && iteratedModel.gradient_type() == "none" ) ) {
       Cerr << "\nError: full Newton optimization requires objective Hessians."
 	   << std::endl;
       err_flag = true;
     }
   }
 
-  if (err_flag)
-    abort_handler(-1);
-
   // Initialize a best variables instance; bestVariablesArray should
   // be in calling context; so initialized before any recasts
   bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
-  // Check for proper response function definition (optimization data set)
-  // and manage requirements for local recasting
-
-  bool local_nls_recast = false;  // recasting LSQ to Opt in Optimizer
-  bool local_moo_recast = false;  // recasting multiple to single objective
-
-  // BMA TODO: This may need updating based on multiple experiments 
-  // Don't think so.  However, fields don't contribute to num_lsq
-
-  if (numObjectiveFns == 0) { // no user spec for num_objective_functions
+  // Check for proper response function definition (optimization or
+  // calibration) and manage local recasting (necessary if inbound
+  // model contains calibration terms)
+  if (have_lsq) {
+    // use local recast to solve NLS problems as single-objective optimization
+    Cerr << "Warning: coercing least squares data set into optimization data "
+	 << "set." << std::endl;
     optimizationFlag = false; // used to distinguish NLS from MOO
-    // allow solution of NLS problems as single-objective optimization
-    // through local recasting
-    bool recast_err_flag = false;
-    if (num_lsq) {
-      // Distinguish NLS case requiring a local recast from one where the
-      // incoming model has already been recast (surrogate-based NLS with
-      // "approx_subproblem single_objective").  Note that numFunctions
-      // and numNonlinearConstraints have been set in the ctor chain based
-      // on the incoming model.  Honoring the (rare) case of a user spec
-      // of num_least_squares_terms = 1 requires special logic.
-      if (numUserPrimaryFns == num_lsq) { // local recasting _may_ be required
-	if (num_lsq == 1) // ambiguous; use local recast if not already recast
-	  local_nls_recast = (iteratedModel.model_type() != "recast");
-	else              // not yet recast; local recasting is required
-	  local_nls_recast = true;
-      }
-      else { // a recasting of LSQ has already occurred
-	if (numUserPrimaryFns == 1) // since not equal, num_lsq > 1
-	  local_nls_recast = false;
-	else // prior recasting must be LSQ --> single obj fn
-	  recast_err_flag = true;
-      }
-    }
-    else
-      recast_err_flag = true;
-    if (recast_err_flag) {
-      Cerr << "\nError: responses specification is incompatible with "
-	   << "optimization methods." << std::endl;
-      abort_handler(-1);
-    }
-    if (local_nls_recast)
-      Cerr << "Warning: coercing least squares data set into optimization data "
-	   << "set." << std::endl;
-    // For all NLS cases, reset numObjectiveFns to 1: optimizers see single
-    // objective in recast model, whether local or prior recast.
-    numObjectiveFns = 1;
+    localObjectiveRecast = true;
   }
-  else { // user specification for num_objective_functions
-    optimizationFlag = true; // used to distinguish NLS from MOO
-    if (numObjectiveFns > 1 && methodName != MOGA)
-      { local_moo_recast = true; numObjectiveFns = 1; }
+  else if (model.primary_fn_type() == OBJECTIVE_FNS) {
+    if (numUserPrimaryFns > 1 && methodName != MOGA)
+      localObjectiveRecast = true; 
+  }
+  else {
+    Cerr << "\nError: responses specification is incompatible with "
+	 << "optimization methods." << std::endl;
+    err_flag = true;
   }
 
-  // update number of functions being Iterated; used at Minimizer level
-  numIterPrimaryFns = numObjectiveFns; 
-  // whether a local objective reduction is to be performed
-  localObjectiveRecast = (local_nls_recast || local_moo_recast);
-  // optimizationFlag indicates whether optimization or least-squares
+  if (err_flag)
+    abort_handler(-1);
+
+  // TODO: can't allow experimental data with SBNLS for now!  Can we
+  // data transform, scale, weight?
 
   // Wrap the iteratedModel in 0 -- 3 RecastModels, potentially resulting
   // in reduce(scale(data(model)))
-
-  // this might set weights based on exp std deviations!
-  if (local_nls_recast && calibrationDataFlag) {
+  if (calibrationDataFlag)
     data_transform_model();
-    ++minimizerRecasts;
-    // TODO: Seems this needs to update number of number of calibration terms
-  }
-  if (scaleFlag) {
+  if (scaleFlag)
     scale_model();
-    ++minimizerRecasts;
-  }
-  if (localObjectiveRecast) {
-    reduce_model(local_nls_recast, require_hessians);
-    ++minimizerRecasts;
-  }
+  if (localObjectiveRecast)
+    reduce_model(have_lsq, require_hessians);
 }
 
 
@@ -221,7 +178,11 @@ void Optimizer::print_results(std::ostream& s)
   // data for looking up the function evaluation ID number
   const String& interface_id = iteratedModel.interface_id(); 
   int eval_id; 
-  ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
+  // must search in the inbound Model's space (and even that may not
+  // suffice if there are additional recastings underlying this
+  // Optimizer's Model
+  ActiveSet search_set(numUserPrimaryFns + numNonlinearConstraints, 
+		       numContinuousVars); // asv = 1's
  
   // -------------------------------------
   // Single and Multipoint results summary
@@ -311,7 +272,6 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
     lookup_set.reshape(numUserPrimaryFns);
     lookup_set.request_values(1);
   }
-
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
   if (cache_it == data_pairs.get<hashed>().end())
@@ -337,9 +297,14 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing reduction transformation" << std::endl;
 
-  // numObjectiveFns is as seen by this iteration after reduction
+  // numObjectiveFns is as seen by this Iterator after reduction
+  numObjectiveFns = 1;
+  // update Minimizer sizes as well
+  numIterPrimaryFns = numObjectiveFns; 
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
+
   size_t i;
-  size_t num_recast_fns = numObjectiveFns + numNonlinearConstraints;
+  size_t num_recast_fns = numFunctions;
   Sizet2DArray var_map_indices(numContinuousVars), 
     primary_resp_map_indices(numObjectiveFns), 
     secondary_resp_map_indices(numNonlinearConstraints);
@@ -361,7 +326,6 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
       total_calib_terms = numUserPrimaryFns;
     else 
       total_calib_terms = numTotalCalibTerms;
-    Cout << "total_calib_terms in reduce_model " << total_calib_terms <<'\n';
     primary_resp_map_indices[0].resize(total_calib_terms);
     nonlinear_resp_map[0].resize(total_calib_terms);
     for (i=0; i<total_calib_terms; i++) {
@@ -419,6 +383,8 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
 		set_recast, primary_resp_map_indices,
 		secondary_resp_map_indices, recast_secondary_offset,
 		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
+  ++minimizerRecasts;
+
 
   // if Gauss-Newton recasting, then the RecastModel Response needs to
   // allocate space for a Hessian (default copy of sub-model response
@@ -427,6 +393,9 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
     Response recast_resp = iteratedModel.current_response(); // shared rep
     recast_resp.reshape(num_recast_fns, numContinuousVars, true, true);
   }
+
+  // this recast results in a single primary response of type objective
+  iteratedModel.primary_fn_type(OBJECTIVE_FNS);
 
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse

@@ -38,15 +38,18 @@ LeastSq* LeastSq::leastSqInstance(NULL);
     settings. */
 LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
   Minimizer(problem_db, model),
-  numLeastSqTerms(probDescDB.get_sizet("responses.num_least_squares_terms")),
+  // initial value from Minimizer as accounts for fields and transformations
+  numLeastSqTerms(numUserPrimaryFns),
   weightFlag(!iteratedModel.primary_response_fn_weights().empty())
 				// TODO: wrong because of recasting layers
 {
+  optimizationFlag  = false;
+
   bool err_flag = false;
   // Check for proper function definition
-  if (numLeastSqTerms <= 0) {
-    Cerr << "\nError: number of least squares terms must be greater than zero "
-         << "for least squares methods." << std::endl;
+  if (model.primary_fn_type() != CALIB_TERMS) {
+    Cerr << "\nError: model must have calibration terms to apply least squares "
+	 << "methods." << std::endl;
     err_flag = true;
   }
   // Check for correct bit associated within methodName
@@ -63,30 +66,17 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
   // be in calling context; so initialized before any recasts
   bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
-  // Register RecastModel as needed.  Problem size doesn't change, so
-  // don't update numIter/numUserPrimaryFns
-  optimizationFlag  = false;
-
   // Wrap the iteratedModel in 0 -- 3 RecastModels, potentially resulting
   // in weight(scale(data(model)))
-  //Cout << "numTotalCalibTerms in DakotaLeastSq " << numTotalCalibTerms << '\n'; 
   if (calibrationDataFlag) {
-    // this might set weights based on exp std deviations
     data_transform_model();
-    ++minimizerRecasts;
-    numFunctions = numTotalCalibTerms + numNonlinearConstraints;
+    // update local data sizes
     numLeastSqTerms = numTotalCalibTerms;
-    numIterPrimaryFns = numTotalCalibTerms;
-    //Cout << " numLeastSqTerms in DakotaLeastSq " << numLeastSqTerms << '\n';
   }
-  if (scaleFlag) {
+  if (scaleFlag)
     scale_model();
-    ++minimizerRecasts;
-  }
-  if (weightFlag) {
+  if (weightFlag)
     weight_model();
-    ++minimizerRecasts;
-  }
 }
 
 
@@ -172,6 +162,7 @@ void LeastSq::weight_model()
 		set_recast, primary_resp_map_indices,
 		secondary_resp_map_indices, recast_secondary_offset,
 		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
+  ++minimizerRecasts;
 
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
