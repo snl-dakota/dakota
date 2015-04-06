@@ -276,6 +276,19 @@ void CovarianceMatrix::print() const {
   }
 }
 
+void CovarianceMatrix::get_main_diagonal( RealVector &diagonal ) const {
+  // Only resize matrix if the memory size has not already been allocated
+  if ( diagonal.length() != num_dof() )
+    diagonal.sizeUninitialized( num_dof() );
+  
+  if ( covIsDiagonal_ ) {
+    for (int i=0; i<num_dof(); i++ )
+      diagonal[i] = covDiagonal_[i];
+  }else{
+    for (int i=0; i<num_dof(); i++ )
+      diagonal[i] = covMatrix_(i,i);
+  }
+}
 
 ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
 {
@@ -402,6 +415,24 @@ void ExperimentCovariance::print_covariance_blocks() const {
   for (int i=0; i<covMatrices_.size(); i++ ){
     std::cout << "Covariance Matrix " << i << '\n';
     covMatrices_[i].print();
+  }
+}
+
+void ExperimentCovariance::get_main_diagonal( RealVector &diagonal ) const {
+  
+  // Get the number of entries along the main diagonal
+  int num_diagonal_entries = 0;
+  for (int i=0; i<covMatrices_.size(); i++ )
+    num_diagonal_entries += covMatrices_[i].num_dof();
+  diagonal.sizeUninitialized( num_diagonal_entries );
+  
+  // Extract the diagonal of each sub block of the experimental covariance matrix
+  int global_row_num = 0;
+  for (int i=0; i<covMatrices_.size(); i++ ){
+    RealVector sub_diagonal( Teuchos::View, diagonal.values()+global_row_num,
+			     covMatrices_[i].num_dof() );
+      covMatrices_[i].get_main_diagonal( sub_diagonal );
+    global_row_num += covMatrices_[i].num_dof();
   }
 }
 

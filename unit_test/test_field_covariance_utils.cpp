@@ -108,6 +108,17 @@ void test_multiple_scalar_covariance_matrix()
   BOOST_CHECK( scaled_hessians[2].normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
 
+  // Test extraction of main diagonal
+  RealVector diagonal;
+  exper_cov.get_main_diagonal( diagonal );
+
+  Real exact_diagonal_array[] = {1.,2.,4.};
+  RealVector exact_diagonal(Teuchos::View, exact_diagonal_array, 3 );
+  
+  exact_diagonal -= diagonal;
+  BOOST_CHECK( exact_diagonal.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+
 }
 
 void test_single_diagonal_block_covariance_matrix()
@@ -302,6 +313,17 @@ void test_single_full_block_covariance_matrix()
 	       100.*std::numeric_limits<double>::epsilon() );
   BOOST_CHECK( scaled_hessians[2].normInf() < 
 	       100.*std::numeric_limits<double>::epsilon() );
+
+  // Test extraction of main diagonal
+  RealVector diagonal;
+  exper_cov.get_main_diagonal( diagonal );
+
+  Real exact_diagonal_array[] = {1.,2.,4.};
+  RealVector exact_diagonal(Teuchos::View, exact_diagonal_array, 3 );
+  
+  exact_diagonal -= diagonal;
+  BOOST_CHECK( exact_diagonal.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
   
 }
 
@@ -479,6 +501,18 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 	       100.*std::numeric_limits<double>::epsilon() );
   BOOST_CHECK( scaled_hessians[8].normInf() < 
 	       100.*std::numeric_limits<double>::epsilon() );
+
+
+  // Test extraction of main diagonal
+  RealVector diagonal;
+  exper_cov.get_main_diagonal( diagonal );
+
+  Real exact_diagonal_array[] = {1.,1.,2.,4.,1.,2.,4.,2.,4.};
+  RealVector exact_diagonal(Teuchos::View, exact_diagonal_array, 9 );
+  
+  exact_diagonal -= diagonal;
+  BOOST_CHECK( exact_diagonal.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
 }
 
 void test_linear_interpolate_1d_no_extrapolation()
@@ -598,11 +632,6 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
     truth_ssr_hessian(1,1) += 2./25.*( 10.*x2*y2*(2.*x2-3.*y2) + 
 				       (7.*y2-2.*x2)*(2.*x2-y2)*(2.*x2-y2) );
   }
-  
-  truth_ssr_hessian.print(std::cout);
-  ssr_hessian.print(std::cout);
-  func_hessians[0].print(std::cout);
-  residuals.print(std::cout);
   
   truth_ssr_hessian -= ssr_hessian;
   BOOST_CHECK( truth_ssr_hessian.normInf() < 

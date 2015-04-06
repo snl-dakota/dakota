@@ -147,6 +147,10 @@ public:
 
   /// Print a covariance matrix
   void print() const;
+
+  /// Return a (copy) vector containing the entries of the main diagonal of the
+  /// covariance matrix
+  void get_main_diagonal( RealVector &diagonal ) const;
 };
 
 
@@ -203,6 +207,10 @@ public:
   /// Print each block of the covariance matrix
   void print_covariance_blocks() const;
 
+  /// Return a (copy) vector containing the main diagonal entries of the 
+  /// experimental covariance matrix
+  void get_main_diagonal( RealVector &diagonal ) const;
+
 };
 
 /** \brief Construct the hessian of the sum of squares of residuals
@@ -237,7 +245,6 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
  */
 bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
 						    RealMatrix &covariance );
-
 
 
 } // namespace dakota
