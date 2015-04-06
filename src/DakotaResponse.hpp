@@ -289,6 +289,8 @@ public:
   virtual void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
 					 RealSymMatrixArray& weighted_hessians);
 
+  virtual void get_covariance_diagonal( RealVector &diagonal ) const;
+
 protected:
 
   //

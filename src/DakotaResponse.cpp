@@ -1551,6 +1551,17 @@ void Response::apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
   }
 }
 
+void Response::get_covariance_diagonal( RealVector &diagonal) const
+{
+  if (responseRep)
+    responseRep->get_covariance_diagonal( diagonal );
+  else {
+    Cerr << "\nError: get_covariance_diagonal not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
 /** Implementation of serialization load for the Response handle */
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)

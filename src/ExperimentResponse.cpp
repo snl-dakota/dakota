@@ -135,6 +135,13 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
 							 weighted_hessians); 
 }
 
+void  ExperimentResponse::
+get_covariance_diagonal( RealVector &diagonal ) const
+{
+  expDataCovariance.get_main_diagonal( diagonal ); 
+}
+
+
 void ExperimentResponse::copy_rep(Response* source_resp_rep)
 {
   // copy base class data

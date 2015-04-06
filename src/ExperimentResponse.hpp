@@ -81,6 +81,7 @@ public:
 				 RealMatrix& weighted_gradients);
   void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
 				 RealSymMatrixArray& weighted_hessians);
+  void get_covariance_diagonal( RealVector &diagonal ) const;
 
 protected:
 

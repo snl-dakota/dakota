@@ -243,11 +243,15 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // the parameter domain will now be expanded by sigma terms if 
   // calibrateSigmaFlag is true
   if (calibrateSigmaFlag) {
+    RealVector covariance_diagonal;
+    // Todo: pass in corrrect experiment number as second argument
+    expData.get_main_diagonal( covariance_diagonal, 0 );
     for (int j=0; j<numFunctions; j++){
-      // TODO: restore sigma calibration (need element-wise access to cov)
-      //      Real std_0_j = expData.scalar_sigma(j, 0);
-      paramMins[numContinuousVars+j] = 1.0; //0.01*std_0_j;
-      paramMaxs[numContinuousVars+j] = 1.0; //2.0*std_0_j;
+      Real std_j = std::sqrt( covariance_diagonal[j] );
+      paramMins[numContinuousVars+j] = 0.01*std_j;
+      paramMaxs[numContinuousVars+j] = 2.0*std_j;
+      //paramMins[numContinuousVars+j] = 1.0; //0.01*std_0_j;
+      //paramMaxs[numContinuousVars+j] = 1.0; //2.0*std_0_j;
     }
   }
  

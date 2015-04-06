@@ -165,6 +165,10 @@ public:
 				 size_t experiment, 
 				 RealSymMatrixArray& weighted_hessians);
 
+  /// return a (copy) vector containing the main diagonal entries of a specified
+  /// experimental covariance matrix
+  void get_main_diagonal( RealVector &diagonal, size_t experiment ) const;
+    
   /// form residuals and interpolate if necessary 
   void form_residuals(const Response& sim_resp, size_t experiment, 
                       RealVector& residuals); 

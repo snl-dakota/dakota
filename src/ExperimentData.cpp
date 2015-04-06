@@ -643,6 +643,11 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
 						       weighted_hessians);
 }
 
+void ExperimentData::get_main_diagonal( RealVector &diagonal, 
+					size_t experiment ) const{
+  allExperiments[experiment].get_covariance_diagonal( diagonal );
+}
+
 
 void ExperimentData::
 form_residuals(const Response& sim_resp, size_t experiment, 
