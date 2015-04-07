@@ -53,10 +53,6 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 void ExperimentData::initialize(const StringArray& variance_types, 
 				const SharedResponseData& srd)
 {
-  // disallow mixed (old and new) data readers
-  if (calibrationDataFlag && !scalarDataFilename.empty())
-    throw std::runtime_error("You cannot combine use of both a scalar data file and field data files.");
-
   // only initialize data if needed; TODO: consider always initializing
   if (calibrationDataFlag || !scalarDataFilename.empty()) {
 
@@ -247,6 +243,7 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     // Read and set the configuration variables
     // -----
 
+    // Need to decide what to do if both scalar_data_file and "experiment.#" files exist - RWH
     if ( (numConfigVars > 0) && scalar_data_file ) {
       allConfigVars[exp_index].sizeUninitialized(numConfigVars);
       // TODO: try/catch

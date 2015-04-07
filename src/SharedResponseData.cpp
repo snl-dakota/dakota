@@ -87,7 +87,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     }
 
     // extract the fieldLabels from the functionLabels (one per field group)
-    copy_data_partial(functionLabels, num_scalar_resp_fns, num_field_responses,
+    copy_data_partial(functionLabels, numScalarResponses, num_field_responses,
 		      fieldLabels);
     // unroll field response groups to create individual function labels
     fieldRespGroupLengths = problem_db.get_iv("responses.lengths");

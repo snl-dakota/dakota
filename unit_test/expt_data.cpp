@@ -169,20 +169,6 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(expt_data, disallowOldAndNewReads)
-{
-  // Create an invalid ExperimentData object that combines old-style scalar data
-  // and new-style field-data readers. 
-  StringArray variance_types(1);
-  TEST_THROW( 
-      ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, "" /* working_dir */, 
-                               mock_srd, variance_types, 0 /* SILENT_OUTPUT */,
-                               "dummyscalarDataFilename"),
-      std::runtime_error );
-}
-
-//----------------------------------------------------------------
-
 TEUCHOS_UNIT_TEST(expt_data, allowNoConfigFile)
 {
   // Create an ExperimentData object that expects NUM_CONFIG_VARS > 0 but
