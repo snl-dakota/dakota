@@ -86,6 +86,9 @@ Includes
 #include <GeneticAlgorithmInitializer.hpp>
 #include <OperatorGroups/AllOperators.hpp>
 
+// SOGA-specific API
+#include <../SOGA/include/SOGA.hpp>
+
 // JEGA front end includes.
 #include <../FrontEnd/Core/include/Driver.hpp>
 #include <../FrontEnd/Core/include/ProblemConfig.hpp>
@@ -841,7 +844,7 @@ JEGAOptimizer::find_optimum(
     // map) key is pair<constraintViolation, fitness>, where fitness
     // is either utopia distance (MOGA) or objective value (SOGA)
     std::multimap<RealRealPair, Design*> designSortMap;
-    this->GetBestSolutions(bests, designSortMap);
+    this->GetBestSolutions(bests, *theGA, designSortMap);
 
     JEGAIFLOG_II_G(designSortMap.size() == 0, lquiet(), this,
         text_entry(lquiet(), name + ": was unable to identify at least one "
@@ -958,8 +961,9 @@ JEGAOptimizer::LoadDakotaResponses(
     for(size_t i=0; i<static_cast<size_t>(this->numNonlinearConstraints); ++i)
         fn_vals[i+this->numObjectiveFns] = des.GetConstraint(i);
 
-    /// BMA: would prefer to omit this check, but Optimizer is
-    /// managing MO --> SO recast for JEGA currently.
+    /// BMA: would prefer to omit this check, but if there is a
+    /// localObjectiveRecast active, this resp set call will decimate
+    /// the bestResonseArray entries to a single function value
     if (!localObjectiveRecast)
       resp.function_values(fn_vals);
 }
@@ -1263,21 +1267,15 @@ JEGAOptimizer::LoadTheParameterDatabase(
  
     // when recasting is active, the weights may be transformed; get off Model
     dak_rv = &iteratedModel.primary_response_fn_weights();
-    //dak_rv = 
-    //    &this->probDescDB.get_rv("responses.primary_response_fn_weights");
-    // BMA  why needed; discuss with JE; otherwise get seg fault in GetBestSO
-    if(!dak_rv->empty())
-    {
-        JEGA::DoubleVector mow_vector(
-            dak_rv->values(),
-            dak_rv->values() + dak_rv->length()
-            );
+    JEGA::DoubleVector mow_vector(
+        dak_rv->values(),
+        dak_rv->values() + dak_rv->length()
+        );
 
-        this->_theParamDB->AddDoubleVectorParam(
-            "responses.multi_objective_weights",
-            mow_vector
-            );
-    }
+    this->_theParamDB->AddDoubleVectorParam(
+        "responses.multi_objective_weights",
+        mow_vector
+        );
 
     // Dakota does not expose a capability to enter multiple flat file names
     // as a vector (can delimit them in the single string and JEGA will parse
@@ -1544,16 +1542,17 @@ JEGAOptimizer::LoadTheConstraints(
 void
 JEGAOptimizer::GetBestSolutions(
     const JEGA::Utilities::DesignOFSortSet& from,
+    const JEGA::Algorithms::GeneticAlgorithm& theGA,
     std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
     )
 {
     EDDY_FUNC_DEBUGSCOPE
 
     if(this->methodName == MOGA)
-        this->GetBestMOSolutions(from, designSortMap);
+        this->GetBestMOSolutions(from, theGA, designSortMap);
 
     else if(this->methodName == SOGA)
-        this->GetBestSOSolutions(from, designSortMap);
+        this->GetBestSOSolutions(from, theGA, designSortMap);
 
     else
     {
@@ -1569,6 +1568,7 @@ JEGAOptimizer::GetBestSolutions(
 void
 JEGAOptimizer::GetBestMOSolutions(
     const JEGA::Utilities::DesignOFSortSet& from,
+    const JEGA::Algorithms::GeneticAlgorithm& theGA,
     std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
     )
 {
@@ -1649,6 +1649,7 @@ JEGAOptimizer::GetBestMOSolutions(
 void
 JEGAOptimizer::GetBestSOSolutions(
     const JEGA::Utilities::DesignOFSortSet& from,
+    const JEGA::Algorithms::GeneticAlgorithm& theGA,
     std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
     )
 {
@@ -1665,23 +1666,20 @@ JEGAOptimizer::GetBestSOSolutions(
     // get total number of constraints (nonlinear and linear)
     const eddy::utilities::uint64_t noc = target.GetNCN();
 
-    // in order to order the points, need the weights.
+    // in order to order the points, need the weights; get them from
+    // the GA to ensure solver/final results consistency
     JEGA::DoubleVector weights;
-
-    bool success = ParameterExtractor::GetDoubleVectorFromDB(
-        *this->_theParamDB,
-        "responses.multi_objective_weights",
-        weights
-        );
-
-    // if we could not get them and there are multiple objectives, then we have
-    // to abort without an answer.
-    // Otherwise if we did not succeed and there is a single objective,
-    // then we will assume a single weight of value 1.
-    if(!success)
+    try 
     {
-        if(nof > 1) return;
-        weights.assign(1, 1.0);
+        const JEGA::Algorithms::SOGA& 
+	    the_ga = dynamic_cast<const JEGA::Algorithms::SOGA&>(theGA);
+	weights = the_ga.GetWeights();
+    }
+    catch(const std::bad_cast& bc_except) 
+    {
+      Cerr << "\nError: could not cast GeneticAlgorithm to SOGA; exception:\n" 
+	   << bc_except.what() << std::endl;
+      abort_handler(-1);
     }
 
     // iterate the designs and sort first by constraint violation,

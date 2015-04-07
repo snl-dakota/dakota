@@ -399,6 +399,10 @@ class JEGAOptimizer :
          *
          * \param from The full set of designs returned by the solver.
          *
+         * \param theGA The GA used to generate this set; needed for
+         *              its weights in the SO case, provided to both
+         *              for consistency
+         *
 	     * \param designSortMap Map of best solutions with key
 	     *                      pair<constraintViolation, fitness>
 	     * 
@@ -407,9 +411,10 @@ class JEGAOptimizer :
          */
         void
         GetBestSolutions(
-  	        const JEGA::Utilities::DesignOFSortSet& from,
+  	    const JEGA::Utilities::DesignOFSortSet& from,
+            const JEGA::Algorithms::GeneticAlgorithm& theGA,
             std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
-	        );
+            );
 
         /**
          * \brief Retreive the best Designs from a set of solutions assuming
@@ -420,8 +425,9 @@ class JEGAOptimizer :
          */
         void
         GetBestMOSolutions(
-	        const JEGA::Utilities::DesignOFSortSet& from,
-	        std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
+	    const JEGA::Utilities::DesignOFSortSet& from,
+            const JEGA::Algorithms::GeneticAlgorithm& theGA,
+	    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
             );
 
         /**
@@ -433,8 +439,9 @@ class JEGAOptimizer :
          */
         void
         GetBestSOSolutions(
-	        const JEGA::Utilities::DesignOFSortSet& from,
-	        std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
+	    const JEGA::Utilities::DesignOFSortSet& from,
+            const JEGA::Algorithms::GeneticAlgorithm& theGA,
+	    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
             );
 
         /**

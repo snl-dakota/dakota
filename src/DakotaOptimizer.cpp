@@ -88,7 +88,10 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
     localObjectiveRecast = true;
   }
   else if (model.primary_fn_type() == OBJECTIVE_FNS) {
-    if (numUserPrimaryFns > 1 && methodName != MOGA)
+    // we allow SOGA to manage weighted multiple objectives where
+    // possible, so we can better retrieve final results
+    if (numUserPrimaryFns > 1 && 
+	(methodName != MOGA && methodName != SOGA))
       localObjectiveRecast = true; 
   }
   else {
