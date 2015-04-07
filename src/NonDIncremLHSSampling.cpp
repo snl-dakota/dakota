@@ -171,7 +171,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     const Pecos::RealVector& n_u_bnds   = adp.normal_upper_bounds();
     const Pecos::RealVector& ln_means   = adp.lognormal_means();
     const Pecos::RealVector& ln_std_devs  = adp.lognormal_std_deviations();
-    const Pecos::RealVector& ln_lambdas   = adp.lognormal_means();
+    const Pecos::RealVector& ln_lambdas   = adp.lognormal_lambdas();
     const Pecos::RealVector& ln_zetas     = adp.lognormal_zetas();
     const Pecos::RealVector& ln_err_facts = adp.lognormal_error_factors();
     const Pecos::RealVector& ln_l_bnds  = adp.lognormal_lower_bounds();
