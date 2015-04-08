@@ -579,15 +579,14 @@ if(HAVE_ESM)
 endif()
 
 # Can't do CheckPackage because queso isn't built in CMake and
-# therefore can't be in EXPORT_TARGETS. (Also, we don't use
-# -DHAVE_QUESO anyway.)
+# therefore can't be in EXPORT_TARGETS.
 #CheckPackage(QUESO)
 if(HAVE_QUESO)
 
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
-  add_definitions("-DDAKOTA_QUESO")
+  add_definitions("-DHAVE_QUESO")
   if(HAVE_QUESO_GPMSA)
-    add_definitions("-DDAKOTA_GPMSA")
+    add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   endif()
 

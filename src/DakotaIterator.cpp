@@ -89,10 +89,10 @@
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
 #endif
-#ifdef DAKOTA_GPMSA
+#ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
 #endif
-#ifdef DAKOTA_QUESO
+#ifdef HAVE_QUESO
 #include "NonDQUESOBayesCalibration.hpp"
 #endif
 #ifdef HAVE_DREAM
@@ -372,11 +372,11 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
-#ifdef DAKOTA_GPMSA
+#ifdef HAVE_QUESO_GPMSA
     case SUBMETHOD_GPMSA:
       return new NonDGPMSABayesCalibration(problem_db, model); break;
 #endif
-#ifdef DAKOTA_QUESO
+#ifdef HAVE_QUESO
     case SUBMETHOD_QUESO:
       return new NonDQUESOBayesCalibration(problem_db, model); break;
 #endif
