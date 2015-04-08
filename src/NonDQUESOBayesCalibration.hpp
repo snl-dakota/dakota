@@ -147,7 +147,10 @@ protected:
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
   /// local copy_data utility
   void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
-  
+
+  /// compute the prior PDF for a particular MCMC sample
+  Real prior_density(const QUESO::GslVector& qv);
+
   //
   //- Heading: Data
   //

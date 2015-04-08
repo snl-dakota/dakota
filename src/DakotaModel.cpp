@@ -3859,10 +3859,10 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
 }
 
 
-Real Model::continuous_probability_density() const
+Real Model::continuous_probability_density(const RealVector& c_vars) const
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->continuous_probability_density();
+    return modelRep->continuous_probability_density(c_vars);
   else {
     // error trap on correlated random variables
     if (!aleatDistParams.uncertain_correlations().empty()) {
@@ -3872,102 +3872,116 @@ Real Model::continuous_probability_density() const
       abort_handler(-1);
     }
 
-    // any setting of active continuous vars must occur prior to fn invocation
-    // (similar to compute_response())
-    const RealVector& c_vars = currentVariables.continuous_variables();
     UShortMultiArrayConstView cv_types
       = currentVariables.continuous_variable_types();
-    Real pdf = 1.; size_t i, index = 0, num_cv = c_vars.length();
+    Real pdf = 1.; size_t i, dist_index = 0, num_cv = c_vars.length();
     for (i=0; i<num_cv; ++i) {
-      switch (cv_types[i]) {
-      case NORMAL_UNCERTAIN:
-	// NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
-	// this and use Pecos::normal_pdf() but single bound cases make this
-	// approach more complicated than warranted.
-	pdf *= Pecos::bounded_normal_pdf(c_vars[i],
-		 aleatDistParams.normal_mean(index),
-		 aleatDistParams.normal_std_deviation(index),
-		 aleatDistParams.normal_lower_bound(index),
-		 aleatDistParams.normal_upper_bound(index));
-	break;
-      case LOGNORMAL_UNCERTAIN: {
-	// NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
-	// this and use Pecos::lognormal_pdf() but single bound cases make this
-	// approach more complicated than warranted.  NIDR does not default
-	// define all lognormal parameter mappings so this needs to be managed.
-	Real mean, stdev;
-	const RealVector& lambdas = aleatDistParams.lognormal_lambdas();
-	if (!lambdas.empty())
-	  Pecos::moments_from_lognormal_params(lambdas[index],
-	    aleatDistParams.lognormal_zeta(index), mean, stdev);
-	else {
-	  mean = aleatDistParams.lognormal_mean(index);
-	  const RealVector& err_facts
-	    = aleatDistParams.lognormal_error_factors();
-	  if (!err_facts.empty())
-	    Pecos::lognormal_std_deviation_from_err_factor(mean,
-	      err_facts[index], stdev);
-	  else
-	    stdev = aleatDistParams.lognormal_std_deviation(index);
-	}
-	pdf *= Pecos::bounded_lognormal_pdf(c_vars[i], mean, stdev,
-		 aleatDistParams.lognormal_lower_bound(index),
-		 aleatDistParams.lognormal_upper_bound(index));
-	break;
-      }
-      case UNIFORM_UNCERTAIN:
-	pdf *= Pecos::uniform_pdf(aleatDistParams.uniform_lower_bound(index),
-				  aleatDistParams.uniform_upper_bound(index));
-	break;
-      case LOGUNIFORM_UNCERTAIN:
-	pdf *= Pecos::loguniform_pdf(c_vars[i],
-		 aleatDistParams.loguniform_lower_bound(index),
-		 aleatDistParams.loguniform_upper_bound(index));
-	break;
-      case TRIANGULAR_UNCERTAIN:
-	pdf *= Pecos::triangular_pdf(c_vars[i],
-		 aleatDistParams.triangular_mode(index),
-		 aleatDistParams.triangular_lower_bound(index),
-		 aleatDistParams.triangular_upper_bound(index));
-	break;
-      case EXPONENTIAL_UNCERTAIN: 
-	pdf *= Pecos::exponential_pdf(c_vars[i],
-				      aleatDistParams.exponential_beta(index));
-	break;
-      case BETA_UNCERTAIN:
-	pdf *= Pecos::beta_pdf(c_vars[i], aleatDistParams.beta_alpha(index),
-			       aleatDistParams.beta_beta(index),
-			       aleatDistParams.beta_lower_bound(index),
-			       aleatDistParams.beta_upper_bound(index));
-	break;
-      case GAMMA_UNCERTAIN:
-	pdf *= Pecos::gamma_pdf(c_vars[i], aleatDistParams.gamma_alpha(index),
-				aleatDistParams.gamma_beta(index));
-	break;
-      case GUMBEL_UNCERTAIN:
-	pdf *= Pecos::gumbel_pdf(c_vars[i], aleatDistParams.gumbel_alpha(index),
-				 aleatDistParams.gumbel_beta(index));
-	break;
-      case FRECHET_UNCERTAIN:
-	pdf *= Pecos::frechet_pdf(c_vars[i],
-				  aleatDistParams.frechet_alpha(index),
-				  aleatDistParams.frechet_beta(index));
-	break;
-      case WEIBULL_UNCERTAIN:
-	pdf *= Pecos::weibull_pdf(c_vars[i],
-				  aleatDistParams.weibull_alpha(index),
-				  aleatDistParams.weibull_beta(index));
-	break;
-      case HISTOGRAM_BIN_UNCERTAIN:
-	pdf *= Pecos::histogram_bin_pdf(c_vars[i],
-		 aleatDistParams.histogram_bin_pairs(index));
-	break;
-      //default: no-op
-      }
+      // design/epistemic/state return 1
+      pdf *= continuous_probability_density(c_vars[i], cv_types[i], dist_index);
+      // shortcut: increment distribution index if same type, else reset
       if (i+1 < num_cv)
-	index = (cv_types[i] == cv_types[i+1]) ? index + 1 : 0;
+	dist_index = (cv_types[i] == cv_types[i+1]) ? dist_index + 1 : 0;
     }
     return pdf;
+  }
+}
+
+
+/** This overloaded version accepts a distribution index to avoid repeated
+    invocations of find_index(). */
+Real Model::
+continuous_probability_density(Real c_var, unsigned short cv_type,
+			       size_t dist_index) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->continuous_probability_density(c_var, cv_type, dist_index);
+  else {
+    switch (cv_type) {
+    case NORMAL_UNCERTAIN:
+      // NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
+      // this and use Pecos::normal_pdf() but single bound cases make this
+      // approach more complicated than warranted.
+      return Pecos::bounded_normal_pdf(c_var,
+	       aleatDistParams.normal_mean(dist_index),
+	       aleatDistParams.normal_std_deviation(dist_index),
+	       aleatDistParams.normal_lower_bound(dist_index),
+	       aleatDistParams.normal_upper_bound(dist_index));
+      break;
+    case LOGNORMAL_UNCERTAIN: {
+      // NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
+      // this and use Pecos::lognormal_pdf() but single bound cases make this
+      // approach more complicated than warranted.  NIDR does not default
+      // define all lognormal parameter mappings so this needs to be managed.
+      Real mean, stdev;
+      const RealVector& lambdas = aleatDistParams.lognormal_lambdas();
+      if (!lambdas.empty())
+	Pecos::moments_from_lognormal_params(lambdas[dist_index],
+	  aleatDistParams.lognormal_zeta(dist_index), mean, stdev);
+      else {
+	mean = aleatDistParams.lognormal_mean(dist_index);
+	const RealVector& err_facts
+	  = aleatDistParams.lognormal_error_factors();
+	if (!err_facts.empty())
+	  Pecos::lognormal_std_deviation_from_err_factor(mean,
+	    err_facts[dist_index], stdev);
+	else
+	  stdev = aleatDistParams.lognormal_std_deviation(dist_index);
+      }
+      return Pecos::bounded_lognormal_pdf(c_var, mean, stdev,
+	       aleatDistParams.lognormal_lower_bound(dist_index),
+	       aleatDistParams.lognormal_upper_bound(dist_index));
+      break;
+    }
+    case UNIFORM_UNCERTAIN:
+      return Pecos::uniform_pdf(aleatDistParams.uniform_lower_bound(dist_index),
+	       aleatDistParams.uniform_upper_bound(dist_index));
+      break;
+    case LOGUNIFORM_UNCERTAIN:
+      return Pecos::loguniform_pdf(c_var,
+	       aleatDistParams.loguniform_lower_bound(dist_index),
+	       aleatDistParams.loguniform_upper_bound(dist_index));
+      break;
+    case TRIANGULAR_UNCERTAIN:
+      return Pecos::triangular_pdf(c_var,
+	       aleatDistParams.triangular_mode(dist_index),
+	       aleatDistParams.triangular_lower_bound(dist_index),
+	       aleatDistParams.triangular_upper_bound(dist_index));
+      break;
+    case EXPONENTIAL_UNCERTAIN: 
+      return Pecos::exponential_pdf(c_var,
+	       aleatDistParams.exponential_beta(dist_index));
+      break;
+    case BETA_UNCERTAIN:
+      return Pecos::beta_pdf(c_var, aleatDistParams.beta_alpha(dist_index),
+			     aleatDistParams.beta_beta(dist_index),
+			     aleatDistParams.beta_lower_bound(dist_index),
+			     aleatDistParams.beta_upper_bound(dist_index));
+      break;
+    case GAMMA_UNCERTAIN:
+      return Pecos::gamma_pdf(c_var, aleatDistParams.gamma_alpha(dist_index),
+			      aleatDistParams.gamma_beta(dist_index));
+      break;
+    case GUMBEL_UNCERTAIN:
+      return Pecos::gumbel_pdf(c_var, aleatDistParams.gumbel_alpha(dist_index),
+			       aleatDistParams.gumbel_beta(dist_index));
+      break;
+    case FRECHET_UNCERTAIN:
+      return Pecos::frechet_pdf(c_var,
+				aleatDistParams.frechet_alpha(dist_index),
+				aleatDistParams.frechet_beta(dist_index));
+      break;
+    case WEIBULL_UNCERTAIN:
+      return Pecos::weibull_pdf(c_var,
+				aleatDistParams.weibull_alpha(dist_index),
+				aleatDistParams.weibull_beta(dist_index));
+      break;
+    case HISTOGRAM_BIN_UNCERTAIN:
+      return Pecos::histogram_bin_pdf(c_var,
+	       aleatDistParams.histogram_bin_pairs(dist_index));
+      break;
+    default:
+      return 1.; break;
+    }
   }
 }
 

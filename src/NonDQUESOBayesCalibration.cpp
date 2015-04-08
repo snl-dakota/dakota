@@ -413,15 +413,16 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
   QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
   for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
     // extract GSL sample vector from QUESO vector sequence:
-    Real log_posterior = loglike_vals[chain_pos]; // uniform priors
-    //                 + std::log(prior_density(mcmc_sample)); // nonuniform
-    // TO DO: support non-uniform priors by evaluating prior density
-    if (outputLevel > NORMAL_OUTPUT) {
-      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+    mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+    // evaluate log of posterior from log likelihood and log prior:
+    Real log_posterior = loglike_vals[chain_pos]
+                       + std::log(prior_density(mcmc_sample));
+    //std::log(emulatorModel.continuous_probability_density(mcmc_sample));
+    if (outputLevel > NORMAL_OUTPUT)
       Cout << "MCMC sample: " << mcmc_sample << " log posterior = "
 	   << log_posterior << std::endl;
-    }
-    // sort by unnormalized posterior and retain batch_size samples
+    // sort ascending by log posterior (highest prob are last) and retain
+    // batch_size samples
     local_best.insert(std::pair<Real, size_t>(log_posterior, chain_pos));
     if (local_best.size() > batch_size)
       local_best.erase(local_best.begin()); // pop front (lowest prob)
@@ -1062,6 +1063,37 @@ copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
   Real* rm_c = rm[col];
   for (i=0; i<size_qv; ++i)
     rm_c[i] = qv[i];
+}
+
+
+Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
+{
+  // Mirrors Model::continuous_probability_density() for efficiency:
+  // > avoid incurring overhead of GslVector -> RealVector copy
+  // > avoid repeated dist_index lookups when looping over single var version
+
+  // error trap on correlated random variables
+  const Pecos::AleatoryDistParams& a_dist
+    = emulatorModel.aleatory_distribution_parameters();
+  if (!a_dist.uncertain_correlations().empty()) {
+    Cerr << "Error: prior_density() uses a product of marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  UShortMultiArrayConstView cv_types
+    = emulatorModel.continuous_variable_types();
+  Real pdf = 1.; size_t i, dist_index = 0, num_cv = cv_types.size();
+  for (i=0; i<num_cv; ++i) {
+    // design/epistemic/state return 1
+    pdf *= emulatorModel.continuous_probability_density(qv[i], cv_types[i],
+							dist_index);
+    // shortcut: increment distribution index if same type, else reset
+    if (i+1 < num_cv)
+      dist_index = (cv_types[i] == cv_types[i+1]) ? dist_index + 1 : 0;
+  }
+  return pdf;
 }
 
 } // namespace Dakota
