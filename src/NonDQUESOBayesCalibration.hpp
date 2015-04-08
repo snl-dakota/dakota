@@ -86,8 +86,21 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
-  /// extract batch_size points from the MCMC chain and store in allSamples
-  void filter_chain(unsigned short batch_size);
+  /// extract batch_size points from the MCMC chain and store final
+  /// aggregated set within allSamples
+  void filter_chain(size_t update_cntr, unsigned short batch_size);
+  /// store indices of best batch_size samples from the current MCMC
+  /// chain within the local_best array
+  void chain_to_local(unsigned short batch_size,
+		      std::map<Real, size_t>& local_best);
+  /// update bestSamples aggregation using new contributions from the
+  /// current MCMC chain
+  void local_to_aggregated(unsigned short batch_size,
+			   const std::map<Real, size_t>& local_best);
+  /// following aggregation cycles, copy bestSamples to allSamples
+  void aggregated_to_all();
+  /// in the absence of aggregation cycles, copy local_best to allSamples
+  void local_to_all(const std::map<Real, size_t>& local_best);
 
   // update the starting point for a restarted MCMC chain using new_center
   //Real update_center(const RealVector& new_center);
@@ -123,13 +136,12 @@ protected:
   //with a particular argument list that QUESO expects. 
   //We are not using all of these arguments but may in the future.
   /// Likelihood function for call-back from QUESO to DAKOTA for evaluation
-  static double dakotaLikelihoodRoutine(
-  const QUESO::GslVector& paramValues,
-  const QUESO::GslVector* paramDirection,
-  const void*  functionDataPtr,
-  QUESO::GslVector*       gradVector,
-  QUESO::GslMatrix*       hessianMatrix,
-  QUESO::GslVector*       hessianEffect);
+  static double dakotaLikelihoodRoutine(const QUESO::GslVector& paramValues,
+					const QUESO::GslVector* paramDirection,
+					const void*             functionDataPtr,
+					QUESO::GslVector*       gradVector,
+					QUESO::GslMatrix*       hessianMatrix,
+					QUESO::GslVector*       hessianEffect);
 
   /// local copy_data utility
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
@@ -212,6 +224,10 @@ private:
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
+
+  /// array for managing aggregation of best MCMC samples across
+  /// multiple (restarted) chains
+  std::/*multi*/map<Real, QUESO::GslVector> bestSamples;
 
   // cache previous MCMC starting point for assessing convergence of
   // chain restart process

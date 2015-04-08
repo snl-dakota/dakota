@@ -125,14 +125,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     }
     compactMode = true; // update_model() uses all{Samples,Responses}
     Real adapt_metric = DBL_MAX;
-    int num_adapt = 0, batch_size = 5;
+    int num_adapt = 0;
     while (adapt_metric > convergenceTol && num_adapt < maxIterations) {
       run_chain_with_restarting();
       // assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();
-      // filter chain -or- extract full chain and sort on likelihood values.
-      // Evaluate these MCMC samples with truth evals
-      filter_chain(batch_size);
       // update the emulator surrogate data with new truth evals and
       // reconstruct surrogate (e.g., via PCE sparse recovery)
       update_model();
@@ -156,9 +153,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   }
 
   //Real restart_metric = DBL_MAX;
-  int prop_update_cntr = 0;
+  size_t prop_update_cntr = 0; unsigned short batch_size = 5;
   //copy_data(emulatorModel.continuous_variables(), prevCenter);
-  //RealVectorArray best_pts;
   update_chain_size(numSamples);
 
   // update proposal covariance and recenter after short chain: a
@@ -173,19 +169,24 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
+    if (adaptPosteriorRefine) // extract best MCMC samples from current batch
+      filter_chain(prop_update_cntr, batch_size);
+
     // account for redundancy between final and initial
     if (prop_update_cntr == 1)
       update_chain_size(numSamples+1);
 
     // This approach is too greedy and can get stuck (i.e., no point in new
     // chain has smaller mismatch than current optimal value):
-    //filter_chain(1);
-    //restart_metric = update_center(allSamples[0]);
-
+    //restart_metric = update_center(allSamples[last_index]);
+    //
     // Rather, use final point in acceptance chain as if we were periodically
     // refreshing the proposal covariance within a single integrated chain.
     if (prop_update_cntr < proposalUpdates)
       update_center();
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << std::endl;
   }
 }
 
@@ -323,17 +324,17 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
 void NonDQUESOBayesCalibration::run_queso_solver()
 {
-  Cout << "Running Bayesian Calibration with QUESO";
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << " using the following settings:"
-	 << "\n  QUESO standardized space " << quesoStandardizedSpace
-	 << "\n  MCMC type "<< mcmcType
-	 << "\n  Rejection type "<< rejectionType
-	 << "\n  Metropolis type " << metropolisType
+  Cout << "Running Bayesian Calibration with QUESO using ";
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "the following settings:" //<< "\n  MCMC type "<< mcmcType
 	 << "\n  Number of samples in the MCMC Chain "
 	 << calIpMhOptionsValues->m_rawChainSize
-	 << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag;
-  Cout << std::endl;
+	 << "\n  Rejection type "<< rejectionType
+	 << "\n  Metropolis type " << metropolisType
+	 << "\n  QUESO standardized space " << quesoStandardizedSpace
+	 << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
+  else
+    Cout << calIpMhOptionsValues->m_rawChainSize << " MCMC samples."<<std::endl;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
@@ -345,10 +346,9 @@ void NonDQUESOBayesCalibration::run_queso_solver()
   else if (mcmcType == "multilevel")
     inverseProb->solveWithBayesMLSampling();
 
-  // TODO: move to print_results
-  Cout << "\nThe results of QUESO are in the outputData directory.\nThe file "
-       << "display_sub0.txt contains information regarding the MCMC process.\n"
-       << "The Matlab files contain the chain values.\n" //  The files to " 
+  Cout << "QUESO MCMC chain completed.  QUESO results are in the outputData "
+       << "directory:\n  display_sub0.txt contains MCMC diagnostics.\n"
+       << "  Matlab files contain the chain values.\n"; //  The files to " 
   //   << "load in Matlab are\nfile_cal_ip_raw.m (the actual chain) " 
   //   << "or file_cal_ip_filt.m (the filtered chain,\nwhich contains " 
   //   << "every 20th step in the chain.\n"
@@ -356,79 +356,143 @@ void NonDQUESOBayesCalibration::run_queso_solver()
   //   << "in scaled space. \n  You will have to transform them back to "
   //   << "original space by:\n"
   //   << "lower_bounds + chain_values * (upper_bounds - lower_bounds)\n"
-       << "The rejection rate is in the tgaCalOutput file.\n";
+  //   << "The rejection rate is in the tgaCalOutput file.\n"
   //   << "We hope to improve the postprocessing of the chains by the " 
   //   << "next Dakota release.\n";
 }
 
 
-void NonDQUESOBayesCalibration::filter_chain(unsigned short batch_size)
+void NonDQUESOBayesCalibration::
+filter_chain(size_t update_cntr, unsigned short batch_size)
+{
+  // filter chain -or- extract full chain and sort on likelihood values
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Filtering chain: extracting best " << batch_size
+	 << " from MCMC chain " << update_cntr << " containing "
+	 << inverseProb->chain().subSequenceSize() << " samples.\n";
+
+  std::/*multi*/map<Real, size_t> local_best;
+  chain_to_local(batch_size, local_best);
+  if (proposalUpdates > 1) {
+    local_to_aggregated(batch_size, local_best);
+    if (update_cntr == proposalUpdates)
+      aggregated_to_all();
+  }
+  else
+    local_to_all(local_best);
+}
+
+
+void NonDQUESOBayesCalibration::
+chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
 {
   // TODO: Need to transform chain back to unscaled space for reporting
   // to user; possibly also in auxilliary data files for user consumption.
 
-  // to get the full acceptance chain, need m_filteredChainGenerate set
-  // to false in set_invpb_mh_options()
+  // to get the full acceptance chain, m_filteredChainGenerate is set to
+  // false in set_invpb_mh_options()
 
-  // To demonstrate retrieving the chain. Note that the QUESO VectorSequence
-  // class has a number of helpful filtering and statistics functions.
-  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
-    mcmc_chain = inverseProb->chain();
-  const QUESO::ScalarSequence<double>&
-    loglikelihood_vals = inverseProb->logLikelihoodValues();
-  unsigned int num_mcmc   = mcmc_chain.subSequenceSize(),
-               num_llhood = loglikelihood_vals.subSequenceSize();
+  // Note: the QUESO VectorSequence class has a number of helpful filtering
+  // and statistics functions.
 
-  if (num_mcmc != num_llhood)
-    Cerr << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
-	 << "\n                 but likelihood set has length" << num_llhood
-	 << std::endl;
-  else {
-    // Important Note: in the case of chain restarting, this is the *LAST*
-    // chain.  If the need for restarting persists, will need to cache best
-    // across all of the restarted cycles.
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Filtering chain: extracting best " << batch_size
-	   << " from MCMC chain with " << num_mcmc << " samples." << std::endl;
-    QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
-    // TO DO: want to keep different samples with same likelihood, but not 
-    // replicate samples with same likelihood (from rejection); for now, use
-    // a std::map since the latter is unlikely.
-    std::/*multi*/map<Real, size_t> best_samples;
-    for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
-      // extract GSL sample vector from QUESO vector sequence:
-      Real log_like  = loglikelihood_vals[chain_pos],
-	// TO DO: support non-uniform priors by evaluating prior density
-	unnorm_posterior = log_like; // sufficient for now for sorting
-        //std::exp(log_like) * prior_density(mcmc_sample);
-      if (outputLevel > NORMAL_OUTPUT) {
-	mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
-	Cout << "MCMC sample:\n" << mcmc_sample << "Log likelihood = "
-	     << log_like << std::endl;
-      }
-      // sort by unnormalized posterior and retain batch_size samples
-      best_samples.insert(std::pair<Real, size_t>(unnorm_posterior, chain_pos));
-      if (best_samples.size() > batch_size)
-	best_samples.erase(best_samples.begin()); // pop front (lowest prob)
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& mcmc_chain
+    = inverseProb->chain();
+  const QUESO::ScalarSequence<double>& loglike_vals
+    = inverseProb->logLikelihoodValues();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  if (num_mcmc != loglike_vals.subSequenceSize()) {
+    Cerr << "Error (NonDQUESO): final mcmc chain has length " << num_mcmc 
+	 << "\n                 but likelihood set has length"
+	 << loglike_vals.subSequenceSize() << std::endl;
+    abort_handler(-1);
+  }
+
+  // TO DO: want to keep different samples with same likelihood, but not 
+  // replicate samples with same likelihood (from rejection); for now, use
+  // a std::map since the latter is unlikely.
+  QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+  for (size_t chain_pos = 0; chain_pos < num_mcmc; ++chain_pos) {
+    // extract GSL sample vector from QUESO vector sequence:
+    Real log_posterior = loglike_vals[chain_pos]; // uniform priors
+    //                 + std::log(prior_density(mcmc_sample)); // nonuniform
+    // TO DO: support non-uniform priors by evaluating prior density
+    if (outputLevel > NORMAL_OUTPUT) {
+      mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
+      Cout << "MCMC sample: " << mcmc_sample << " log posterior = "
+	   << log_posterior << std::endl;
     }
+    // sort by unnormalized posterior and retain batch_size samples
+    local_best.insert(std::pair<Real, size_t>(log_posterior, chain_pos));
+    if (local_best.size() > batch_size)
+      local_best.erase(local_best.begin()); // pop front (lowest prob)
+  }
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "local_best map:\n" << local_best << std::endl;
+}
 
-    if (outputLevel > NORMAL_OUTPUT)
-      Cout << "best_samples map:" << best_samples << std::endl;
 
-    // convert chain_pos to RealVector
-    size_t num_best = best_samples.size();
-    if (allSamples.numCols() != num_best)
-      allSamples.shapeUninitialized(numContinuousVars, num_best);
-    std::/*multi*/map<Real, size_t>::iterator it; size_t i;
-    if (outputLevel > NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
-    for (it=best_samples.begin(), i=0; it!=best_samples.end(); ++it, ++i) {
-      mcmc_chain.getPositionValues(it->second, mcmc_sample);
-      copy_gsl(mcmc_sample, allSamples, i);
-      if (outputLevel > NORMAL_OUTPUT) {
-	Cout << "Best point " << i+1 << ": unnormalized posterior = "
-	     << it->first << " Sample:\n";
-	write_col_vector_trans(Cout, (int)i, true, false, true, allSamples);
-      }
+void NonDQUESOBayesCalibration::
+local_to_aggregated(unsigned short batch_size,
+		    const std::map<Real, size_t>& local_best)
+{
+  // Merge local std::map<Real, size_t> into aggregate/class-scope
+  // std::map<Real, QUESO::GslVector> 
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  std::/*multi*/map<Real, size_t>::const_iterator cit;
+  QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+  for (cit=local_best.begin(); cit!=local_best.end(); ++cit) {
+    mcmc_chain.getPositionValues(cit->second, mcmc_sample);
+    bestSamples.insert(
+      std::pair<Real, QUESO::GslVector>(cit->first, mcmc_sample));
+    // continuously maintain length to reduce sorting cost
+    if (bestSamples.size() > batch_size)
+      bestSamples.erase(bestSamples.begin()); // pop front
+  }
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "bestSamples map:\n" << bestSamples << std::endl;
+}
+
+
+void NonDQUESOBayesCalibration::aggregated_to_all()
+{
+  // copy bestSamples into allSamples
+  size_t num_best = bestSamples.size();
+  if (allSamples.numCols() != num_best)
+    allSamples.shapeUninitialized(numContinuousVars, num_best);
+  std::/*multi*/map<Real, QUESO::GslVector>::iterator it; size_t i;
+  if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
+  for (it=bestSamples.begin(), i=0; it!=bestSamples.end(); ++it, ++i) {
+    copy_gsl(it->second, allSamples, i);
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "Best point " << i+1 << ": Log posterior = " << it->first
+	   << " Sample:";
+      write_col_vector_trans(Cout, (int)i, false, false, true, allSamples);
+    }
+  }
+  bestSamples.clear();
+}
+
+
+void NonDQUESOBayesCalibration::
+local_to_all(const std::map<Real, size_t>& local_best)
+{
+  // copy local_best into allSamples
+  size_t num_best = local_best.size();
+  if (allSamples.numCols() != num_best)
+    allSamples.shapeUninitialized(numContinuousVars, num_best);
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+  std::/*multi*/map<Real, size_t>::const_iterator cit; size_t i;
+  if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
+  for (cit=local_best.begin(), i=0; cit!=local_best.end(); ++cit, ++i) {
+    mcmc_chain.getPositionValues(cit->second, mcmc_sample);
+    copy_gsl(mcmc_sample, allSamples, i);
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "Best point " << i+1 << ": Log posterior = " << cit->first
+	   << " Sample:";
+      write_col_vector_trans(Cout, (int)i, false, false, true, allSamples);
     }
   }
 }
@@ -438,21 +502,14 @@ void NonDQUESOBayesCalibration::update_center()
 {
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& 
     mcmc_chain = inverseProb->chain();
-  const QUESO::ScalarSequence<double>&
-    loglikelihood_vals = inverseProb->logLikelihoodValues();
-  unsigned int num_mcmc   = mcmc_chain.subSequenceSize(),
-               num_llhood = loglikelihood_vals.subSequenceSize();
-  if (num_mcmc != num_llhood)
-    Cout << "Warning (QUESO): final mcmc chain has length " << num_mcmc 
-	 << "\n                 but likelihood set has length" << num_llhood
-	 << std::endl;
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
 
   // extract GSL sample vector from QUESO vector sequence:
   size_t last_index = num_mcmc - 1;
   mcmc_chain.getPositionValues(last_index, *paramInitials);
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "New center:\n" << *paramInitials << "Log likelihood = "
-	 << loglikelihood_vals[last_index] << std::endl;
+	 << inverseProb->logLikelihoodValues()[last_index] << std::endl;
 
   // update emulatorModel vars with end of acceptance chain for eval of
   // misfit Hessian in precondition_proposal().  Note: the most recent
@@ -499,19 +556,6 @@ void NonDQUESOBayesCalibration::update_model()
     Cout << "Updating emulator: appending " << allResponses.size()
 	 << " new data sets." << std::endl;
   emulatorModel.append_approximation(allSamples, allResponses, true); // rebuild
-
-  /*
-  switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
-    emulatorModel.append_approximation(allSamples, allResponses, false);
-    emulatorModel.build_approximation(); // --> compute coeffs, not increment
-    break;
-  }
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    emulatorModel.append_approximation(allSamples, allResponses, true);//rebuild
-    break;
-  }
-  */
 }
 
 
