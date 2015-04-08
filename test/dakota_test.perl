@@ -25,6 +25,7 @@ my $bin_ext = "";            # default extension is empty
 my @dakota_config = ();      # CMake/#define configuration of Dakota itself
 my $extract_filename = "";   # default is dakota_*.in_
 my $input_dir = "";          # default test file source is pwd
+my $label_regex = "";        # regular expression to filter based on labels
 my $mode = "run";            # modes are run, base, extract, test_props
 my $output_dir = "";         # default output is pwd
 my $parallelism = "serial";  # whether DAKOTA runs in parallel
@@ -115,6 +116,9 @@ foreach my $file (@test_inputs) {
     write_test_options($file);
     next;
   }
+
+  # skip whole test file if regex specified and doesn't match labels
+  next if (!check_labels()) ;
 
   # determine test range, possibly a single subtest
   my $last_test = ($parallelism eq "parallel") ? $max_parallel : $max_serial;
@@ -432,6 +436,7 @@ sub process_command_line {
   	     'file-extract=s' => \$extract_filename,
   	     'help|?'         => \$opt_help,
   	     'input-dir=s'    => \$input_dir,
+	     'label-regex=s'  => \$label_regex,
 	     'save-output'    => \$opt_save_output,
   	     'man'            => \$opt_man,
   	     'output-dir=s'   => \$output_dir,
@@ -788,11 +793,41 @@ sub check_required_configs() {
 }
 
 
+# Check if any of the current test labels match a user-provided
+# regular expression.  For now this is only checking on a per-file
+# basis (*, s*, p*) to mimic CTest behavior
+sub check_labels() {
+
+  my $enable_test = 1;  # whether to enable this test (default yes if no regex)
+
+  if (${label_regex}) {
+    $enable_test = 0;  # only enable this test if a label is matched
+
+    # get a comma-separated list of assigned labels (-1 so * and s*/p* only)
+    my $quiet = 1;
+    my $test_labels = get_test_option_value(-1, "Label", "", $quiet);
+   
+    my @tl_list = split(',', $test_labels);
+    foreach my $tl (@tl_list) {
+      if (${tl} =~ /${label_regex}/) {
+	#print "Including test since ${tl} matched ${label_regex}\n";
+	$enable_test = 1;
+	last;
+      }
+    }
+  }
+  
+  return $enable_test;
+}
+
+
 # find a final value for a test option, going from general * to
 # specific [ps]<int>; uses global parallelism
 sub get_test_option_value() {
 
-  my ($cnt, $key, $default) = @_;
+  my ($cnt, $key, $default, $quiet) = @_;
+  
+
   my $value = $default;    
   my $ser_par = ($parallelism eq "parallel") ? "p" : "s"; 
   # Successively overwrite if the options is found
@@ -802,7 +837,9 @@ sub get_test_option_value() {
       $value = "$test_opts{${test_select}}{$key}";
     }
   }
-  print "Using test option ${key} = ${value}\n" if ($value ne $default);
+  if ( !$quiet && $value ne $default) {
+    print "Using test option ${key} = ${value}\n";
+  }
   return $value;
 }
 
@@ -890,7 +927,7 @@ sub check_dakota_config {
   }
   # Add CMake equivalents for operating system
   push(@dakota_defs, "WIN32") if ($Config{osname} =~ /MSWin/);
-  push(@dakota_defs, "UNIX") if (! $Config{osname} =~ /MSWin/);
+  push(@dakota_defs, "UNIX") if (!($Config{osname} =~ /MSWin/));
 
   return @dakota_defs;
 }
@@ -1344,6 +1381,12 @@ print full manual page and exit
 =item B<--parallel>
 
 run parallel tests
+
+=item B<--label-regex=regular_expression>
+
+only run test files with global label (*, p*, s*) matching given
+regular_expression; this is applied only on a per-file basis, not to
+skip individual tests
 
 =item B<--base>                  
 
