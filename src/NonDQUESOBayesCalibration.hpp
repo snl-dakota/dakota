@@ -26,7 +26,7 @@ namespace QUESO {
   template<class V, class M> class VectorSpace;
   template<class V, class M> class BoxSubset;
   template<class V, class M> class GenericScalarFunction;
-  template<class V, class M> class UniformVectorRV;
+  template<class V, class M> class BaseVectorRV;
   template<class V, class M> class GenericVectorRV;
   template<class V, class M> class StatisticalInverseProblem;
   class SipOptionsValues;
@@ -219,7 +219,7 @@ private:
   boost::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
     QUESO::GslMatrix> > likelihoodFunctionObj;
 
-  boost::shared_ptr<QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+  boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     priorRv;
 
   boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >

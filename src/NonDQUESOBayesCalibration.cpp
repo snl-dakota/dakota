@@ -33,10 +33,174 @@
 #include "queso/GenericScalarFunction.h"
 #include "queso/UniformVectorRV.h"
 
+// for generic log prior eval
+#include "queso/JointPdf.h"
+#include "queso/VectorRV.h"
+
 static const char rcsId[]="@(#) $Id$";
 
 
 namespace Dakota {
+
+// declaring inherited classes here for now during prototyping to
+// avoid including QUESO header in our header
+
+/// Dakota specialization of QUESO generic joint PDF
+template <class V, class M>
+class QuesoJointPdf: public QUESO::BaseJointPdf<V, M>
+{
+public:
+  //! Default constructor.
+  /*! Instantiates an object of the class, i.e. a scalar function,
+      given a prefix and its domain.*/
+  QuesoJointPdf(const char*                  prefix,
+		const QUESO::VectorSet<V,M>& domainSet);
+  //! Destructor
+  virtual ~QuesoJointPdf();
+
+  //! Actual value of the PDF (scalar function).
+  double actualValue(const V& domainVector, const V* domainDirection, 
+		     V* gradVector, M* hessianMatrix, V* hessianEffect) const;
+  
+  //! Logarithm of the value of the function.
+  double lnValue(const V& domainVector, const V* domainDirection, 
+		 V* gradVector, M* hessianMatrix, V* hessianEffect) const;
+
+  // NOTE: likely don't need for MCMC:
+  //! Computes the logarithm of the normalization factor.
+  double computeLogOfNormalizationFactor(unsigned int numSamples,
+					 bool m_logOfNormalizationFactor) const;
+
+private:
+  using QUESO::BaseScalarFunction<V,M>::m_env;
+  using QUESO::BaseScalarFunction<V,M>::m_prefix;
+  // using QUESO::BaseScalarFunction<V,M>::m_domainSet;
+  // using QUESO::BaseJointPdf<V,M>::m_normalizationStyle;
+  // using QUESO::BaseJointPdf<V,M>::m_logOfNormalizationFactor;
+};
+
+// Constructor -------------------------------------
+template<class V,class M>
+QuesoJointPdf<V,M>::QuesoJointPdf(const char* prefix,
+				  const QUESO::VectorSet<V,M>& domainSet)
+  : QUESO::BaseJointPdf<V,M>(((std::string)(prefix)+"generic").c_str(),
+			     domainSet)
+{
+  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
+    *m_env.subDisplayFile() << "Entering QuesoJointPdf<V,M>::constructor()"
+                            << ": prefix = " << m_prefix
+                            << std::endl;
+  }
+
+  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
+    *m_env.subDisplayFile() << "Leaving QuesoJointPdf<V,M>::constructor()"
+                            << ": prefix = " << m_prefix
+                            << std::endl;
+  }
+}
+
+// Destructor --------------------------------------
+template<class V,class M>
+QuesoJointPdf<V,M>::~QuesoJointPdf()
+{
+}
+
+template<class V,class M>
+double QuesoJointPdf<V,M>::
+actualValue(const V& domainVector, const V* domainDirection,
+	    V* gradVector, M* hessianMatrix, V* hessianEffect) const
+{
+}
+  
+template<class V,class M>
+double QuesoJointPdf<V,M>::
+lnValue(const V& domainVector, const V* domainDirection, 
+	V* gradVector, M* hessianMatrix, V* hessianEffect) const
+{
+}
+
+template<class V,class M>
+double QuesoJointPdf<V,M>::
+computeLogOfNormalizationFactor(unsigned int numSamples, 
+				bool m_logOfNormalizationFactor) const
+{
+}
+
+/// Dakota specialization of QUESO vector-valued random variable
+template <class V, class M>
+class QuesoVectorRV: public QUESO::BaseVectorRV<V,M>
+{
+
+public:
+  //! Default constructor
+  /*! Constructs a generic queso vector RV, given a prefix and the
+      image set of the vector RV.*/
+  QuesoVectorRV(const char*                  prefix,
+		const QUESO::VectorSet<V,M>& imageSet);
+  //! Virtual destructor
+  virtual ~QuesoVectorRV();
+ 
+  //! TODO: Prints the vector RV (required pure virtual).
+  void print(std::ostream& os) const;
+
+private:
+  using QUESO::BaseVectorRV<V,M>::m_env;
+  using QUESO::BaseVectorRV<V,M>::m_prefix;
+  using QUESO::BaseVectorRV<V,M>::m_imageSet;
+  using QUESO::BaseVectorRV<V,M>::m_pdf;
+  // using QUESO::BaseVectorRV<V,M>::m_realizer;  // only needed to make draws
+  // using QUESO::BaseVectorRV<V,M>::m_subCdf;
+  // using QUESO::BaseVectorRV<V,M>::m_unifiedCdf;
+  // using QUESO::BaseVectorRV<V,M>::m_mdf;
+};
+
+
+// Default constructor-------------------------------
+template<class V, class M>
+QuesoVectorRV<V,M>::QuesoVectorRV(const char* prefix,
+				  const QUESO::VectorSet<V,M>& imageSet)
+  : QUESO::BaseVectorRV<V,M>(((std::string)(prefix)+"generic").c_str(),imageSet)
+{
+  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
+    *m_env.subDisplayFile() << "Entering QuesoVectorRV<V,M>::constructor()"
+                            << ": prefix = " << m_prefix
+                            << std::endl;
+  }
+
+  m_pdf = new QuesoJointPdf<V,M>(m_prefix.c_str(),
+				 m_imageSet);
+  // m_realizer   = NULL; // FIX ME: complete code
+  // m_subCdf     = NULL; // FIX ME: complete code
+  // m_unifiedCdf = NULL; // FIX ME: complete code
+  // m_mdf        = NULL; // FIX ME: complete code
+
+  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
+    *m_env.subDisplayFile() << "Leaving QuesoVectorRV<V,M>::constructor()"
+                            << ": prefix = " << m_prefix
+                            << std::endl;
+  }
+}
+
+// Destructor ---------------------------------------
+template<class V, class M>
+QuesoVectorRV<V,M>::~QuesoVectorRV()
+{
+  // delete m_mdf;
+  // delete m_unifiedCdf;
+  // delete m_subCdf;
+  // delete m_realizer;
+  delete m_pdf;
+}
+
+// I/O methods --------------------------------------
+template <class V, class M>
+void
+QuesoVectorRV<V,M>::print(std::ostream& os) const
+{
+  os << "QuesoVectorRV<V,M>::print() says, 'Please implement me.'" << std::endl;
+  return;
+}
+
 
 // initialization of statics
 NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
@@ -244,6 +408,10 @@ void NonDQUESOBayesCalibration::init_queso_solver()
   // set/update prior functions
   priorRv.reset(new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
 		("prior_", *paramDomain));
+
+  // generic prior prototype:
+  // priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+  // 		("prior_", *paramDomain));
 
   postRv.reset(new QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
 	       ("post_", *paramSpace));
