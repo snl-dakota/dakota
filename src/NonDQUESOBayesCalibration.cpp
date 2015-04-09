@@ -68,7 +68,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
   
   if (calibrateSigmaFlag) {
-    Cerr << "\nError: calibration of sigma temporarily unsupported." << std::endl;
+    Cerr << "\nError: calibration of sigma temporarily unsupported."<<std::endl;
     abort_handler(-1);
   }
 
@@ -123,18 +123,26 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       abort_handler(-1);
     }
     compactMode = true; // update_model() uses all{Samples,Responses}
-    Real adapt_metric = DBL_MAX;
-    int num_adapt = 0;
-    while (adapt_metric > convergenceTol && num_adapt < maxIterations) {
+    Real adapt_metric = DBL_MAX; unsigned short int num_iter = 0;
+    while (adapt_metric > convergenceTol && num_iter < maxIterations) {
+
+      // place update block here so that chain is always run for initial or
+      // updated emulator; placing block at loop end could result in emulator
+      // convergence w/o final chain.
+      if (num_iter) {
+	// update the emulator surrogate data with new truth evals and
+	// reconstruct surrogate (e.g., via PCE sparse recovery)
+	update_model();
+	// assess posterior convergence via convergence of the emulator coeffs
+	adapt_metric = assess_emulator_convergence();
+      }
+
+      // execute MCMC chain, optionally in batches
       run_chain_with_restarting();
+      ++num_iter;
+
       // assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();
-      // update the emulator surrogate data with new truth evals and
-      // reconstruct surrogate (e.g., via PCE sparse recovery)
-      update_model();
-      // assess posterior convergence via convergence of the emulator coeffs
-      adapt_metric = assess_emulator_convergence();
-      ++num_adapt;
     }
     break;
   }
