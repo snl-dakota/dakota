@@ -670,10 +670,10 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
       switch (trendOrder) {
       //case 0: // constant trend: no contribution to derivative
       case 1: // derivative of linear trend
-	approxGradient[i] += betaCoeffs(i+1,0); break;
+	approxGradient[i] += betaCoeffs(i+1,0)/trainStdvs(i); break;
       case 2: // derivative of trend with linear and diagonal quadratic terms
-	approxGradient[i] += betaCoeffs(i+1,0)
-	                  +  2. * betaCoeffs(num_v+i+1,0) * approxPoint(0,i);
+	approxGradient[i] += (betaCoeffs(i+1,0)
+	                  +  2.*betaCoeffs(num_v+i+1,0)*approxPoint(0,i))/trainStdvs(i);
 	break;
       }
     }
