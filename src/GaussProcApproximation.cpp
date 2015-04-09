@@ -651,17 +651,11 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
 #ifdef DEBUG_FULL
     Cout << "\n<<<<< Entering gradient prediction in GP code\n";
 #endif //DEBUG_FULL
-    // Currently, these gradients are only valid for constant trend
-    if (trendOrder) {
-      Cerr << "Error: GP gradients currently only supported for constant trend"
-	   << std::endl;
-      abort_handler(-1);
-    }
     // Construct the global matrix of derivatives, gradCovVector
     get_grad_cov_vector();
 
     RealMatrix gradPred(num_v, 1, false), dotProd(1, 1, false),
-      gradCovVector_i(numObs, 1, false);
+       gradCovVector_i(numObs, 1, false);
     approxGradient.sizeUninitialized(num_v);
     for (i=0; i<num_v; i++) {
       // First set up gradCovVector_i to be the ith column of the matrix
@@ -670,8 +664,17 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
     	gradCovVector_i(j,0) = gradCovVector(j,i);
         // Grad_i = dot_prod(gradCovVector_i, inv(R)*YFb)
       dotProd.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Rinv_YFb,
-	       gradCovVector_i, 0.);
+		       gradCovVector_i, 0.);
       approxGradient[i] = gradPred(i,0) = dotProd(0,0);
+      // add trend contribution
+      switch (trendOrder) {
+      //case 0: // constant trend: no contribution to derivative
+      case 1: // derivative of linear trend
+	approxGradient[i] += betaCoeffs(i+1,0); break;
+      case 2: // derivative of trend with linear and diagonal quadratic terms
+	approxGradient[i] += betaCoeffs(i+1,0)
+	                  +  betaCoeffs(num_v+i+1,0) * approxPoint(0,i); break;
+      }
     }
   }
 
@@ -1105,8 +1108,7 @@ namespace idx_table
 
 
 int GaussProcApproximation::pointsel_add_sel(const RealArray& delta)
-// Uses unsorted errors in delta, finds which points to add, and adds
-// them
+// Uses unsorted errors in delta, finds which points to add, and adds them
 {
   size_t ntest, i, j, itest, nadded, num_v = sharedDataRep->numVars;
 

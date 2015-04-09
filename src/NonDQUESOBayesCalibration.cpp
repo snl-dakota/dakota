@@ -46,8 +46,7 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
-  NonDBayesCalibration(problem_db, model),
-  quesoStandardizedSpace(false),
+  NonDBayesCalibration(problem_db, model), quesoStandardizedSpace(false),
   propCovarType(probDescDB.get_string("method.nond.proposal_cov_type")),
   propCovarData(probDescDB.get_rv("method.nond.proposal_covariance_data")),
   propCovarFilename(probDescDB.get_string("method.nond.proposal_cov_filename")),
@@ -682,13 +681,10 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
  
   // TODO: Update this after we decide how to manage the
   // transformation to standardized space.
-  if (quesoStandardizedSpace){
-    for (size_t i=0; i<numContinuousVars; i++) {
-      paramMins[i] = 0.0;
-      paramMaxs[i] = 1.0;
-    }
-  }
-    
+  if (quesoStandardizedSpace)
+    for (size_t i=0; i<numContinuousVars; i++)
+      { paramMins[i] = 0.0; paramMaxs[i] = 1.0; }
+
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "calibrateSigmaFlag  " << calibrateSigmaFlag
 	 << "\nParameter bounds sent to QUESO (may be scaled):\nparamMins  "
@@ -1068,6 +1064,9 @@ copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
 
 Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
 {
+  // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
+  // which may in turn call back to our GenericVectorRV prior plug-in
+
   // Mirrors Model::continuous_probability_density() for efficiency:
   // > avoid incurring overhead of GslVector -> RealVector copy
   // > avoid repeated dist_index lookups when looping over single var version
