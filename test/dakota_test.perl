@@ -667,7 +667,14 @@ sub parse_test_options {
 	# merge key/values with any existing in the options hash
 	my %hash_tmp = parse_key_val(${test_options});
 	while (($key, $value) = each %hash_tmp) {
-	  $test_opts{${test_selection}}{$key} = $value;
+	  # if key already appeared, append with comma
+	  if (exists $test_opts{${test_selection}}{$key}) {
+	    $test_opts{${test_selection}}{$key} = 
+		"$test_opts{${test_selection}}{$key},$value";
+	  }
+	  else {
+	    $test_opts{${test_selection}}{$key} = $value;
+	  }
 	}
       }
 

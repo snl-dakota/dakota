@@ -1,6 +1,6 @@
 #@ TODO REVIEW: Do the reliability methods also need NPSOL?
 #@ On Windows: abort: LAPACK error
-#@ *: DakotaConfig=Unix
+#@ *: DakotaConfig=UNIX
 #@ *: DakotaConfig=HAVE_DOT
 # DAKOTA Input File: dakota_rbdo_steel_column_analytic2.in
 # Optimization under uncertainty using reliability methods within a
