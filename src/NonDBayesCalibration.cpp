@@ -80,7 +80,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	Pecos::DEFAULT_REGRESSION,
 	probDescDB.get_usa("method.nond.expansion_order"), // exp_order sequence
 	probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
-	probDescDB.get_real("method.nond.collocation_ratio"), EXTENDED_U, false,
+	probDescDB.get_real("method.nond.collocation_ratio"), randomSeed,
+	EXTENDED_U, false,
 	probDescDB.get_bool("method.derivative_usage"),        // not exposed
 	probDescDB.get_bool("method.nond.cross_validation"))); // not exposed
 
@@ -127,8 +128,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       if (iteratedModel.hessian_type()  != "none") data_order |= 4;
     }
     unsigned short sample_type = SUBMETHOD_DEFAULT;
-    int samples = probDescDB.get_int("method.nond.emulator_samples"),
-        seed    = probDescDB.get_int("method.random_seed");
+    int samples = probDescDB.get_int("method.nond.emulator_samples");
     // get point samples file
     const String& import_pts_file
       = probDescDB.get_string("method.import_points_file");
@@ -141,8 +141,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       Model g_u_model;
       transform_model(iteratedModel, g_u_model, true); // globally bounded
       lhsIterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
-	samples, seed, probDescDB.get_string("method.random_number_generator"),
-	true, ACTIVE_UNIFORM), false);
+	samples, randomSeed,
+	probDescDB.get_string("method.random_number_generator"), true,
+	ACTIVE_UNIFORM), false);
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, g_u_model,
@@ -156,8 +157,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     }
     else {
       lhsIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-	samples, seed, probDescDB.get_string("method.random_number_generator"),
-	true, ACTIVE_UNIFORM), false);
+	samples, randomSeed,
+	probDescDB.get_string("method.random_number_generator"), true,
+	ACTIVE_UNIFORM), false);
       ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
       emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, iteratedModel,

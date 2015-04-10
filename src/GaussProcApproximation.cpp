@@ -641,7 +641,6 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
 		  betaCoeffs, 0.);
 
   approxValue = approx_val(0,0) + f_beta(0,0);
-
 #ifdef DEBUG_FULL
   Cout << "prediction " << approxValue << '\n';
 #endif //DEBUG_FULL
@@ -666,15 +665,15 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
       dotProd.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Rinv_YFb,
 		       gradCovVector_i, 0.);
       approxGradient[i] = gradPred(i,0) = dotProd(0,0);
-      // add trend contribution
+      // add trend derivative, accounting for scaling approxPoint(0,i) =
+      // (approx_pt(i)-trainMeans(i))/trainStdvs(i) in GPmodel_apply()
       switch (trendOrder) {
       //case 0: // constant trend: no contribution to derivative
       case 1: // derivative of linear trend
-	approxGradient[i] += betaCoeffs(i+1,0)/trainStdvs(i); break;
+	approxGradient[i] +=   betaCoeffs(i+1,0) / trainStdvs(i);  break;
       case 2: // derivative of trend with linear and diagonal quadratic terms
-	approxGradient[i] += (betaCoeffs(i+1,0)
-	                  +  2.*betaCoeffs(num_v+i+1,0)*approxPoint(0,i))/trainStdvs(i);
-	break;
+	approxGradient[i] += ( betaCoeffs(i+1,0) + 2.*betaCoeffs(num_v+i+1,0) *
+			       approxPoint(0,i) ) / trainStdvs(i); break;
       }
     }
   }
@@ -689,7 +688,6 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
 		       Rinv_covvec, 0.);
 
     approxVariance = procVar*(1.- rT_Rinv_r(0,0));
-
 #ifdef DEBUG_FULL
     Cout << "variance " << approxVariance << "\n\n";
 #endif //DEBUG_FULL

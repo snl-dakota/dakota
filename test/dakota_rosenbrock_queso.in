@@ -16,6 +16,7 @@ method,
 #	    gaussian_process dakota   emulator_samples = 30	#p4
 	    proposal_updates = 50
 #	    posterior_adaptive					#p5,#p6
+#	    convergence_tolerance = .05				#p6
 #	  output verbose
 
 variables,								

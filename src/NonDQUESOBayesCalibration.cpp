@@ -353,7 +353,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     //
     // Rather, use final point in acceptance chain as if we were periodically
     // refreshing the proposal covariance within a single integrated chain.
-    if (prop_update_cntr < proposalUpdates)
+    if (prop_update_cntr < proposalUpdates || adaptPosteriorRefine)
       update_center();
 
     if (outputLevel >= NORMAL_OUTPUT)
@@ -370,14 +370,11 @@ void NonDQUESOBayesCalibration::init_queso_environment()
 
   // TODO: see if this can be a local, or if the env retains a pointer
   envOptionsValues.reset(new QUESO::EnvOptionsValues());
-  envOptionsValues->m_subDisplayFileName   = "outputData/display";
+  envOptionsValues->m_subDisplayFileName = "outputData/display";
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
-  envOptionsValues->m_displayVerbosity     = 2;
-  if (randomSeed) 
-    envOptionsValues->m_seed                 = randomSeed;
-  else
-    envOptionsValues->m_seed                 = 1 + (int)clock(); 
+  envOptionsValues->m_displayVerbosity = 2;
+  envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
  
   if (mcmcType== "dram")
     quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
@@ -739,8 +736,20 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 {
   // coeff reference point not yet available; force another iteration rather
   // than use norm of current coeffs (stopping on small norm is not meaningful)
-  if (prevCoeffs.empty())
+  if (prevCoeffs.empty()) {
+    switch (emulatorType) {
+    case PCE_EMULATOR:
+      prevCoeffs = emulatorModel.approximation_coefficients(true);  break;
+    case SC_EMULATOR:
+      prevCoeffs = emulatorModel.approximation_coefficients(false); break;
+    case GP_EMULATOR: case KRIGING_EMULATOR:
+      Cerr << "Warning: convergence norm not yet defined for GP emulators in "
+	   << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
+	   << std::endl;
+      break;
+    }
     return DBL_MAX;
+  }
 
   Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
   switch (emulatorType) {
@@ -808,11 +817,11 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   paramSpace.reset(new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
 		   (*quesoEnv, "param_", total_num_params, NULL));
 
-  QUESO::GslVector paramMins(paramSpace->zeroVector());
-  QUESO::GslVector paramMaxs(paramSpace->zeroVector());
+  QUESO::GslVector paramMins(paramSpace->zeroVector()),
+                   paramMaxs(paramSpace->zeroVector());
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
-  const RealVector& init_point = emulatorModel.continuous_variables();
+  const RealVector& init_point   = emulatorModel.continuous_variables();
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nInitial Point in original, unscaled space\n" << init_point

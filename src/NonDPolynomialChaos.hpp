@@ -47,7 +47,7 @@ public:
   /// alternate constructor for regression
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      const UShortArray& exp_order_seq,
-		      const RealVector& dim_pref, Real colloc_ratio,
+		      const RealVector& dim_pref, Real colloc_ratio, int seed,
 		      short u_space_type, bool piecewise_basis,
 		      bool use_derivs, bool cv_flag);
   /// destructor

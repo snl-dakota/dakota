@@ -4173,7 +4173,7 @@ Test Number 4 succeeded
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 150 total (150 new, 0 duplicate)
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 138 total (138 new, 0 duplicate)
+<<<<< Function evaluation summary: 123 total (123 new, 0 duplicate)
 dakota_sbo_hierarchical.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
