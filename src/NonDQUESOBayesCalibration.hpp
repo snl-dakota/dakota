@@ -57,7 +57,14 @@ public:
   NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model);
   /// destructor
   ~NonDQUESOBayesCalibration();
-         
+
+  //
+  //- Heading: public member functions
+  //
+
+  /// compute the prior PDF for a particular MCMC sample
+  Real prior_density(const QUESO::GslVector& qv);
+
 protected:
 
   //
@@ -148,15 +155,9 @@ protected:
   /// local copy_data utility
   void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
 
-  /// compute the prior PDF for a particular MCMC sample
-  Real prior_density(const QUESO::GslVector& qv);
-
   //
   //- Heading: Data
   //
-
-  /// whether QUESO is working in a standardized space
-  bool quesoStandardizedSpace;
 
   /// approach for defining proposal covariance
   String propCovarType;

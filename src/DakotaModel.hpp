@@ -568,7 +568,7 @@ public:
 
   /// return a set of distribution bounds for a particular index within the
   /// active aleatory random variables
-  std::pair<Real, Real> continuous_distribution_bounds(size_t cv_index) const;
+  RealRealPair continuous_distribution_bounds(size_t cv_index) const;
 
   // LABELS and TAGS
 

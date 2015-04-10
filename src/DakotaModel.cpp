@@ -3986,8 +3986,7 @@ continuous_probability_density(Real c_var, unsigned short cv_type,
 }
 
 
-std::pair<Real, Real> Model::
-continuous_distribution_bounds(size_t cv_index) const
+RealRealPair Model::continuous_distribution_bounds(size_t cv_index) const
 {
   if (modelRep) // envelope fwd to letter
     return modelRep->continuous_distribution_bounds(cv_index);
