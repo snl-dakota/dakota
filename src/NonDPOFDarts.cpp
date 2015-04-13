@@ -51,8 +51,6 @@ namespace Dakota {
 
 NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
-  emulatorOrder(probDescDB.get_int("method.nond.surrogate_order")),
-  emulatorType(probDescDB.get_short("method.nond.emulator")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples")),
   lipschitzType(probDescDB.get_string("method.lipschitz")),
   samples(probDescDB.get_int("method.samples"))
@@ -62,8 +60,6 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
     /*
     Cout << "Hello World, POF Darts is coming! " << '\n';
     Cout << "Number of samples " << samples << '\n';
-    Cout << "Surrogate order " << emulatorOrder << '\n';
-    Cout << "Emulator Type " << emulatorType << '\n';
     Cout << "Emulator Samples " << emulatorSamples << '\n';
     Cout << "lipschitzType " << lipschitzType << '\n';
     */
@@ -75,25 +71,18 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   
     _eval_error = false;
     
-  
-    if (emulatorOrder==0)
-        emulatorOrder = 4;             // order of vps surrogate if used
     if (emulatorSamples==0)
         emulatorSamples = 1E6;         // number of samples to evaluate surrogate
-    
-  
-    if ((emulatorType == KRIGING_EMULATOR) || ( emulatorType == NO_EMULATOR))
-    {
-        _use_vor_surrogate = false; // true = use VPS , false = use GP
-    }
-    else
-    {
-        _use_vor_surrogate = true; // true = use VPS , false = use GP
-        _vps_order = emulatorOrder;             // order of vps surrogate if used
+
+
+    if (iteratedModel.model_type() != "surrogate") {
+      Cerr << "Error: NonDPOFDarts::iteratedModel must be a "
+	   << "surrogate model." << std::endl;
+      abort_handler(-1);
     }
     
     //Cout << "in initialize loop" << '\n';
-    initialize_surrogates(); // initialize one surrogate per function
+
 }
     
 
@@ -257,7 +246,6 @@ void NonDPOFDarts::quantify_uncertainty()
         const RealVector&  lower_bounds = iteratedModel.continuous_lower_bounds();
         const RealVector&  upper_bounds = iteratedModel.continuous_upper_bounds();
         
-        // default domain is for the Herbie Function
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
             _xmin[idim] = lower_bounds[idim];
@@ -666,9 +654,14 @@ void NonDPOFDarts::quantify_uncertainty()
         for (size_t idim = 0; idim < _n_dim; idim++) newX[idim] = x[idim];
         
         iteratedModel.continuous_variables(newX);
+	// bypass the surrogate model to evaluate the underlying truth model
+	iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
         iteratedModel.compute_response();
-        
-        add_surrogate_data(iteratedModel.current_variables(), iteratedModel.current_response());
+
+	// TODO: later, generalize DataFitSurrModel to automatically
+	// cache the points when in bypass mode
+        add_surrogate_data(iteratedModel.current_variables(),
+			   iteratedModel.current_response());
         
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
@@ -948,78 +941,49 @@ void NonDPOFDarts::quantify_uncertainty()
     // SUUROGATE METHODS
     ////////////////////////////////////////////////////////////////
     
-    void NonDPOFDarts::initialize_surrogates()
-    {
-        // create the data to configure the surrogate
-        // String approx_type("global_gaussian");  // Dakota GP
-        String approx_type;
-        
-        if (_use_vor_surrogate)   approx_type = "global_voronoi_surrogate";  // VPS
-        else                      approx_type = "global_kriging";  // Surfpack GP
-        
-        
-        UShortArray approx_order;
-        short data_order = 1;  // assume only function values
-        short output_level = QUIET_OUTPUT;
-        
-        if (_use_vor_surrogate)
-        {
-            for (size_t i = 0; i < numContinuousVars; ++i) approx_order.push_back(_vps_order);
-        }
-        
-        sharedData = SharedApproxData(approx_type, approx_order, numContinuousVars, data_order, output_level);
-        //gpApproximations.resize(numFunctions, Approximation(sharedData));
-        for (size_t i = 0; i < numFunctions; ++i)
-        {
-            gpApproximations.push_back(Approximation(sharedData));
-        }
-        // setup a variables object for evaluating the model
-        gpEvalVars = iteratedModel.current_variables().copy();
-    }
-
-    
     void NonDPOFDarts::add_surrogate_data(const Variables& vars, const Response& resp)
     {
-        for (size_t i = 0; i < numFunctions; ++i)
-        {
-            bool anchor_flag = false;
-            bool deep_copy = true;
-            gpApproximations[i].add(vars, anchor_flag, deep_copy);
-            gpApproximations[i].add(resp, i, anchor_flag, deep_copy);
-        }
+      // TODO: have the surrogate model instead cache the data when in
+      // bypass mode
+      IntResponsePair tmp_pair((int)0, resp);
+      bool rebuild_flag = false;
+      iteratedModel.append_approximation(vars, tmp_pair, rebuild_flag);
     }
     
-    void NonDPOFDarts::build_surrogate(size_t fn_index)
+    void NonDPOFDarts::build_surrogate()
     {
-        gpApproximations[fn_index].build();
+      // TODO: do we just send all points here? or append one at a time?
+      iteratedModel.build_approximation();
+      // change surrogate to evaluate the surrogate model
+      iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE); 
     }
     
     Real NonDPOFDarts::eval_surrogate(size_t function_index, double* x)
     {
-        // this copy could be moved outside the loop for memory efficiency
-        for (size_t vi = 0; vi < numContinuousVars; ++vi)
-            gpEvalVars.continuous_variable(x[vi], vi);
-        
-        return gpApproximations[function_index].value(gpEvalVars);
+      // this copy could be moved outside the loop for memory efficiency
+      for (size_t vi = 0; vi < numContinuousVars; ++vi)
+	iteratedModel.continuous_variable(x[vi], vi);
+      // TODO: use active_set_vector for efficiency if you truly only
+      // need 1 response function?
+      iteratedModel.compute_response();
+      const RealVector& fn_vals = 
+	iteratedModel.current_response().function_values();
+      return fn_vals[function_index];
     }
-    
+   
     void NonDPOFDarts::estimate_pof_surrogate()
     {
         clock_t start_time, end_time; double cpu_time, total_time(0.0);
         
-        // build the surrogate for the given function
-        for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
-        {
-            start_time = clock();
+	start_time = clock();
+        
+	build_surrogate();
             
-            build_surrogate(resp_fn_count);
+	end_time = clock();
+	cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
             
-            end_time = clock();
-            cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
-            
-            std::cout.precision(4);
-            std::cout <<  "pof::    Surrogate " << resp_fn_count << " built in " << std::fixed << cpu_time << " seconds." << std::endl;
-        }
+	std::cout.precision(4);
+	std::cout <<  "pof::    Surrogates built in " << std::fixed << cpu_time << " seconds." << std::endl;
 
          // evaluate the surrogate for the given function
         double** num_fMC_samples = new double*[numFunctions];

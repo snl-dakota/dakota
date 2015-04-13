@@ -1128,13 +1128,6 @@ KEYWORD12 method
 	    local
 	    | global
 	    ]
-	  [ emulator
-	    gaussian_process
-	    |
-	    ( voronoi_surrogate
-	      [ surrogate_order INTEGER ]
-	      )
-	    ]
 	  [ emulator_samples INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
@@ -1717,7 +1710,8 @@ KEYWORD model
 	    [ total_points INTEGER
 	    | minimum_points
 	    | recommended_points ]
-	    [ dace_method_pointer STRING ]
+	    [ dace_method_pointer STRING
+	    | actual_model_pointer STRING ]
 	    [ reuse_points ALIAS reuse_samples
 	      all
 	      | region

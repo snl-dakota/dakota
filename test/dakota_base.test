@@ -10153,6 +10153,7 @@ Partial Rank Correlation Matrix between input and output:
           x2 -7.62704e-01 -9.50799e-01  9.65145e-01 
 dakota_pof.in
 Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -10160,6 +10161,7 @@ Test Number 0 succeeded
   -8.0000000000e-01   4.3698500000e-01
   -5.0000000000e-01   8.2178100000e-01
 Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 200000 total (200000 new, 0 duplicate)
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -10168,6 +10170,7 @@ Test Number 1 succeeded
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9333000000e-01
 Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -10175,6 +10178,7 @@ Test Number 2 succeeded
   -8.0000000000e-01   4.3798200000e-01
   -5.0000000000e-01   8.2132900000e-01
 Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------

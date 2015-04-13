@@ -113,7 +113,7 @@ protected:
     //////////////////////////////////////////////////////////////
     void initialize_surrogates();
     void add_surrogate_data(const Variables& vars, const Response& resp);
-    void build_surrogate(size_t fn_index);
+    void build_surrogate();
     double eval_surrogate(size_t fn_index, double *vin);
     void estimate_pof_surrogate();
     
@@ -142,15 +142,9 @@ protected:
     // user-specified seed
     int seed;
     
-    // emulator order
-    int emulatorOrder;
-     
     // number of samples on emulator  
     int emulatorSamples;
 
-    // emulator type (currently GP or VPS) 
-    short emulatorType;
-    
     // type of estimation for Lipschitz constants
     String lipschitzType;
  
@@ -207,15 +201,7 @@ protected:
     double** _fval;
     size_t _active_response_function;
     
-    // surrogate variables
-    SharedApproxData sharedData;
-    std::vector<Approximation> gpApproximations;
-    Variables gpEvalVars;
-    
-    bool _use_vor_surrogate;
     bool _use_local_L;
-    
-    size_t _vps_order;
 
 };
 

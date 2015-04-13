@@ -1168,6 +1168,8 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       actualModel.compute_response(set);
       currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
+      // TODO: Add to surrogate build data
+      //      add_datapoint(....)
       break;
     case MODEL_DISCREPANCY:
       actualModel.compute_response(set);

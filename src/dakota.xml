@@ -1490,16 +1490,6 @@
                           <keyword  id="global_est" name="global" code="{N_mdm(lit,lipschitzType_global)}" label="global_est" help=""  />
                         </oneOf>
                       </keyword>
-                      <keyword  id="emulator1" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-                        <oneOf>
-                          <keyword  id="gaussian_process4" name="gaussian_process" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="gaussian_process" help="" minOccurs="1" />
-                          <keyword  id="voronoi_surrogate1" name="voronoi_surrogate" code="{N_mdm(type,emulatorType_VPS_EMULATOR)}" label="voronoi_surrogate" help="" minOccurs="1" >
-		            <keyword  id="surrogate_order" name="surrogate_order" code="{N_mdm(int,emulatorOrder)}" label="surrogate_order" help="" minOccurs="0">
-		              <param type="INTEGER" />
-		            </keyword>
-                          </keyword>
-                        </oneOf>
-                      </keyword>
                       <keyword  id="emulator_samples6" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                           <param type="INTEGER" />
                       </keyword>
@@ -2397,9 +2387,16 @@
                   <keyword  id="recommended_points" name="recommended_points" code="{N_mom(type,pointsManagement_RECOMMENDED_POINTS)}" label="recommended_points" help=""  />
                 </oneOf>
               </optional>
-              <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
-                <param type="STRING" in_taglist="method" />
-              </keyword>
+	      <optional>
+		<oneOf>
+		  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
+                    <param type="STRING" in_taglist="method" />
+		  </keyword>
+		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,truthModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+                    <param type="STRING" in_taglist="model" />
+		  </keyword>
+		</oneOf>
+	      </optional>
               <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="reuse_points" help="" minOccurs="0" >
                 <alias name="reuse_samples"/>
                 <oneOf>

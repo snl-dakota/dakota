@@ -965,13 +965,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             global {N_mdm(lit,lipschitzType_global)}
            ]
-          [ emulator {0}
-            gaussian_process {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
-            |
-            ( voronoi_surrogate {N_mdm(type,emulatorType_VPS_EMULATOR)}
-              [ surrogate_order INTEGER {N_mdm(int,emulatorOrder)} ]
-             )
-           ]
           [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
           [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
             [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
@@ -1597,7 +1590,11 @@ KEYWORD model {N_mom3(start,0,stop)}
         |
         recommended_points {N_mom(type,pointsManagement_RECOMMENDED_POINTS)}
        ]
-      [ dace_method_pointer STRING {N_mom(str,subMethodPointer)} ]
+      [ 
+        dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+        |
+        actual_model_pointer STRING {N_mom(str,truthModelPointer)}
+       ]
       [ reuse_points ALIAS reuse_samples {0}
         all {N_mom(lit,approxPointReuse_all)}
         |
