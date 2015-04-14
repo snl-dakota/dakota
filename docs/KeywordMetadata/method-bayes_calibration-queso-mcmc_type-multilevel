@@ -1,7 +1,0 @@
-Blurb::  Type of MCMC algorithm
-Description::  Use of the multilevel MCMC approach described in [\cite Prudencio "Prudencio and Cheung, 2012"].
-Topics::	bayesian_calibration
-Examples::
-Theory::
-Faq::
-See_Also::	

@@ -1,8 +1,0 @@
-Blurb::  Type of MCMC algorithm used (dram or multilevel).
-Description::  The type of Markov Chain Monte Carlo used.  There are two types currently:  DRAM (Delayed Rejection Adaptive Metropolis) and multi-level. 
-DRAM is described in [\cite Haario "Haario et al. 2006"].  The multilevel algorithm is described in [\cite Prudencio "Prudencio and Cheung, 2012"].
-Topics::	bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	

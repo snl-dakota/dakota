@@ -59,9 +59,28 @@ For each experiment, there are four main types of data related to fields:
 </ul>
 
 The above description is relevant for field data (with files for field values, field coordinates, 
-field variances).  If the user also has experimental data, it may be entered in the same way (e.g. 
+field variances).  If the user also has scalar experimental data, it may be entered in the same way (e.g. 
 one file for a scalar experimental value named scalar_response_descriptor.NUM.dat, etc.) 
 However, the user can choose to enter the scalar data in the format that we offer for pure scalar 
 data, where we have just one file, with the number of rows of that file equal to the number 
 of experiments.  In that case, the scalar data is in the file given by the name \c scalar_data_file, 
 and the format of that file is the same as discussed in \ref responses-calibration_terms-calibration_data_file.
+
+One important feature of field data is the capability to interpolate 
+between points in the field.  For example, we may have simulation data 
+at a set of responses \f$ y \f$ at time points \f$ t \f$: 
+(\f$ t_{s1}, y_{s1} \f$), (\f$ t_{s2}, y_{s2} \f$), etc. 
+In this example, \f$ t \f$ is the independent coordinate for the simulation, and the simulation time and response points are denoted with subscripts \f$ s1, s2, s3, \f$.  If the user has experimental data that is taken at different time points:   
+(\f$ t_{e1}, y_{e1} \f$), (\f$ t_{e2}, y_{e2} \f$), ..., 
+it is necessary to interpolate the simulation data to provide estimates 
+of the simulation response at the experimental time points to 
+construct the residual terms (model - experiment) 
+at the experimental time points.  Dakota can perform this interpolation 
+now.  The user must specify the keyword \c interpolate, and also 
+provide the field coordinates as well as field values for the 
+experiment data.  If the \c interpolate keyword is not specified, 
+Dakota will assume that the simulation field data and the experiment
+field data is taken at the same set of independent coordinate values and 
+simply construct the difference between these field terms to create the set of residuals for the sum-of-squares calculation.
+ 
+

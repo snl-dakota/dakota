@@ -2,10 +2,8 @@ Blurb::
 Supply calibration data in a text file (ONLY FOR SCALAR DATA)
 Description::
 
-This specification block outlines keywords that allow calibration 
-data to be read into Dakota.  It assumes there are only scalar 
-data calibration terms:  that is, no field_calibration_terms have 
-been defined.
+This specification block outlines keywords that allow scalar calibration 
+data to be read into Dakota.  
 
 \c calibration_data_file specifies a text file containing data which
 Dakota will attempt to match by calibrating the model variables. The
@@ -24,10 +22,13 @@ index | configuration xvars | y data observations | y data variances
 
 Here each such row in the file corresponds to an experiment or
 replicate observation of an experiment to be compared to the model
-output.  NOTE:  the \c calibration_data_file is ONLY meant when 
-you have scalar calibration terms.  If you have field calibration 
+output.  NOTE:  the \c calibration_data_file is meant when 
+you have ONLY scalar calibration terms.  If you have field calibration 
 terms, you should use \c calibration_data and the associated specification 
-below it.
+below it.  
+If you have both scalar and field calibration terms, you should 
+still use the \c calibration_data specification.  Within this specification, a scalar 
+data file can be specified by \c scalar_data_file and uses the format described here.
 
 <b> Simple case </b>
 
@@ -56,15 +57,15 @@ NOTE:  you must specify the same \c variance_type for all scalar terms.
 That is, they will all be 'none' or all be 'scalar.'
 
 For each response that has a 'scalar' variance type, 
-each row of the datafile will now have \f$ N_{terms} \f$
-y data values followed by \f$ N{terms} columns that specify 
+each row of the datafile will now have \f$ N_{terms} \f$ of
+\f$ y \f$ data values followed by \f$ N_{terms} \f$ columns that specify 
 the measurement error (in units of variance, not standard deviation of the measurement error) 
-for \f$ y variances. 
+for \f$ y \f$ variances. 
 
 Dakota will run the analysis driver, which must return \f$ N_{terms}
 \f$ responses. Then the residuals are computed as: 
 
-\f[ R_{i} = \frac{y^{Model}_i - y^{Data}_{i}}{sqrt{{var}_i}} \f] 
+\f[ R_{i} = \frac{y^{Model}_i - y^{Data}_{i}}{\sqrt{{var}_i}} \f] 
 
 for \f$ i = 1 \dots N_{terms} \f$.  
 
@@ -77,7 +78,7 @@ defaults are described below.
 <ul>
   <li> \c num_experiments ( \f$ N_{exp} \f$ )
 
-    Default: \f$ N_{exp} = N_{terms} \f$ 
+    Default: \f$ N_{exp} = 1 \f$ 
 
     This indicates that the data represents multiple experiments,
     where each experiment might be conducted with different values of
