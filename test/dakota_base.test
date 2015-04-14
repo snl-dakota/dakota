@@ -38562,6 +38562,10 @@ Test Number 0 succeeded
          weight: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (INNER_I): 17025 total (17025 new, 0 duplicate)
+         weight: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for mean_wt:
    3.0250000000e+01   P0   P0
    2.4750000000e+01   P1   P0
@@ -38664,6 +38668,10 @@ ccdf_beta_d Sobol' indices:
                       3.7075905965e-01  6.9874466386e-01 uuv_2
                       3.2798560422e-01 uuv_1 uuv_2 
 Test Number 1 succeeded
+<<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
+         weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
          weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -38999,6 +39007,10 @@ Test Number 2 succeeded
          weight: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (INNER_I): 17025 total (17025 new, 0 duplicate)
+         weight: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
@@ -39023,6 +39035,10 @@ ccdf_beta_d Sobol' indices:
                       3.7075905961e-01  6.9874466385e-01 uuv_2
                       3.2798560424e-01 uuv_1 uuv_2 
 Test Number 3 succeeded
+<<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
+         weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
          weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -53928,6 +53944,8 @@ dakota_uq_rosenbrock_pce_lls.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666822e+02   P0   P0
   -4.0000000000001901e+00   P1   P0
@@ -53953,6 +53971,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718785e-01  5.0253108617262288e-01 x2
                       2.0616659945543503e-01 x1 x2 
 Test Number 1 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -53982,6 +54002,8 @@ response_fn_1 Sobol' indices:
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566663723258449e+02   P0   P0
   -4.0000405170575561e+00   P1   P0
@@ -54007,6 +54029,8 @@ response_fn_1 Sobol' indices:
                       2.9636454243487531e-01  5.0253118227273041e-01 x2
                       2.0616663983785508e-01 x1 x2 
 Test Number 3 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54036,6 +54060,8 @@ response_fn_1 Sobol' indices:
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666816e+02   P0   P0
   -3.9999999999969460e+00   P1   P0
@@ -54059,6 +54085,8 @@ response_fn_1 Sobol' indices:
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666544e+02   P0   P0
   -3.9999999999983116e+00   P1   P0
@@ -54078,6 +54106,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671719018e-01  5.0253108617262976e-01 x2
                       2.0616659945543955e-01 x1 x2 
 Test Number 6 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54100,6 +54130,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718735e-01  5.0253108617262443e-01 x2
                       2.0616659945543708e-01 x1 x2 
 Test Number 7 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54156,6 +54188,8 @@ response_fn_1 Sobol' indices:
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5130568529251707e+02   P0   P0
   -1.0742629049860719e+01   P1   P0
@@ -54181,6 +54215,8 @@ response_fn_1 Sobol' indices:
                       2.9741829595095354e-01  4.9542228257486970e-01 x2
                       1.9800398662391616e-01 x1 x2 
 Test Number 10 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54210,6 +54246,8 @@ response_fn_1 Sobol' indices:
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566617963823347e+02   P0   P0
   -3.9999106093424102e+00   P1   P0
@@ -54237,6 +54275,8 @@ response_fn_1 Sobol' indices:
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666668948e+02   P0   P0
   -4.0000000000880611e+00   P1   P0
@@ -54261,6 +54301,8 @@ response_fn_1 Sobol' indices:
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666748e+02   P0   P0
   -4.0000000000000711e+00   P1   P0
@@ -54279,6 +54321,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718829e-01  5.0253108617262088e-01 x2
                       2.0616659945543256e-01 x1 x2 
 Test Number 14 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54301,6 +54345,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671719284e-01  5.0253108617262032e-01 x2
                       2.0616659945542751e-01 x1 x2 
 Test Number 15 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54330,6 +54376,8 @@ response_fn_1 Sobol' indices:
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666646e+02   P0   P0
   -3.9999999999997420e+00   P1   P0
@@ -54355,6 +54403,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718763e-01  5.0253108617262265e-01 x2
                       2.0616659945543497e-01 x1 x2 
 Test Number 17 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54384,6 +54434,8 @@ response_fn_1 Sobol' indices:
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666680e+02   P0   P0
   -3.9999999999996305e+00   P1   P0
@@ -54409,6 +54461,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718751e-01  5.0253108617262265e-01 x2
                       2.0616659945543511e-01 x1 x2 
 Test Number 19 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54438,6 +54492,8 @@ response_fn_1 Sobol' indices:
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666691e+02   P0   P0
   -3.9999999999997766e+00   P1   P0
@@ -54463,6 +54519,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718774e-01  5.0253108617262265e-01 x2
                       2.0616659945543489e-01 x1 x2 
 Test Number 21 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54492,6 +54550,8 @@ response_fn_1 Sobol' indices:
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666697e+02   P0   P0
   -3.9999999999997264e+00   P1   P0
@@ -54517,6 +54577,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718757e-01  5.0253108617262254e-01 x2
                       2.0616659945543497e-01 x1 x2 
 Test Number 23 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54546,6 +54608,8 @@ response_fn_1 Sobol' indices:
 Test Number 24 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   3.9710392746678298e+02   P0   P0
   -2.9411194266419534e+02   P1   P0
@@ -54571,6 +54635,8 @@ response_fn_1 Sobol' indices:
                       4.7515671150765332e-01  5.9620622644593535e-01 x2
                       1.2104951493828198e-01 x1 x2 
 Test Number 25 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54600,6 +54666,8 @@ response_fn_1 Sobol' indices:
 Test Number 26 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666657e+02   P0   P0
   -4.0000000000001217e+00   P1   P0
@@ -54625,6 +54693,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718779e-01  5.0253108617262265e-01 x2
                       2.0616659945543483e-01 x1 x2 
 Test Number 27 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54654,6 +54724,8 @@ response_fn_1 Sobol' indices:
 Test Number 28 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666822e+02   P0   P0
   -4.0000000000001901e+00   P1   P0
@@ -54679,6 +54751,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718785e-01  5.0253108617262288e-01 x2
                       2.0616659945543503e-01 x1 x2 
 Test Number 29 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54708,6 +54782,8 @@ response_fn_1 Sobol' indices:
 Test Number 30 succeeded
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+  response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666703e+02   P0   P0
   -4.0000000000011937e+00   P1   P0
@@ -54733,6 +54809,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718624e-01  5.0253108617262043e-01 x2
                       2.0616659945543425e-01 x1 x2 
 Test Number 31 succeeded
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54762,6 +54840,8 @@ response_fn_1 Sobol' indices:
 Test Number 32 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666646e+02   P0   P0
   -3.9999999999997420e+00   P1   P0
@@ -54787,6 +54867,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718763e-01  5.0253108617262265e-01 x2
                       2.0616659945543497e-01 x1 x2 
 Test Number 33 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54816,6 +54898,8 @@ response_fn_1 Sobol' indices:
 Test Number 34 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666544e+02   P0   P0
   -3.9999999999983116e+00   P1   P0
@@ -54835,6 +54919,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671719018e-01  5.0253108617262976e-01 x2
                       2.0616659945543955e-01 x1 x2 
 Test Number 35 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+  response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54864,6 +54950,8 @@ response_fn_1 Sobol' indices:
 Test Number 36 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666748e+02   P0   P0
   -4.0000000000000711e+00   P1   P0
@@ -54882,6 +54970,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718829e-01  5.0253108617262088e-01 x2
                       2.0616659945543256e-01 x1 x2 
 Test Number 37 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54911,6 +55001,8 @@ response_fn_1 Sobol' indices:
 Test Number 38 succeeded
 <<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
   response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 4 total (4 new, 0 duplicate)
+  response_fn_1: 4 val (4 n, 0 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666748e+02   P0   P0
   -4.0000000000000711e+00   P1   P0
@@ -54929,6 +55021,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718829e-01  5.0253108617262088e-01 x2
                       2.0616659945543256e-01 x1 x2 
 Test Number 39 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+  response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -54958,6 +55052,8 @@ response_fn_1 Sobol' indices:
 Test Number 40 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666822e+02   P0   P0
   -4.0000000000001901e+00   P1   P0
@@ -54983,6 +55079,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718785e-01  5.0253108617262288e-01 x2
                       2.0616659945543503e-01 x1 x2 
 Test Number 41 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55012,6 +55110,8 @@ response_fn_1 Sobol' indices:
 Test Number 42 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666646e+02   P0   P0
   -4.0000000000001359e+00   P1   P0
@@ -55037,6 +55137,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718768e-01  5.0253108617262243e-01 x2
                       2.0616659945543472e-01 x1 x2 
 Test Number 43 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+  response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
   response_fn_1: 45 val (45 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55066,6 +55168,8 @@ response_fn_1 Sobol' indices:
 Test Number 44 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
   response_fn_1: 15 val (15 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
+  response_fn_1: 15 val (15 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666657e+02   P0   P0
   -4.0000000000005684e+00   P1   P0
@@ -55093,6 +55197,8 @@ response_fn_1 Sobol' indices:
 Test Number 45 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666646e+02   P0   P0
   -4.0000000000003286e+00   P1   P0
@@ -55110,6 +55216,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718785e-01  5.0253108617262265e-01 x2
                       2.0616659945543475e-01 x1 x2 
 Test Number 46 succeeded
+<<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
+  response_fn_1: 75 val (75 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
   response_fn_1: 75 val (75 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55149,6 +55257,8 @@ response_fn_1 Sobol' indices:
 Test Number 47 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
   response_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+  response_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666680e+02   P0   P0
   -4.0000000000004272e+00   P1   P0
@@ -55168,6 +55278,8 @@ response_fn_1 Sobol' indices:
                       2.9636448671718729e-01  5.0253108617262232e-01 x2
                       2.0616659945543503e-01 x1 x2 
 Test Number 48 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55208,6 +55320,8 @@ dakota_uq_rosenbrock_pce_lls_adapted.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
   response_fn_1: 14 val (14 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+  response_fn_1: 14 val (14 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666288e+02   P0   P0
   -4.0000000000023448e+00   P1   P0
@@ -55232,6 +55346,8 @@ response_fn_1 Sobol' indices:
                       2.0616659945544485e-01 x1 x2 
 dakota_uq_rosenbrock_pce_lls_cv.in
 Test Number 0 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55262,6 +55378,8 @@ Moment-based statistics for each response function:
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5286271219498047e+02   P0   P0
   -3.5503040522556746e+00   P1   P0
@@ -55282,6 +55400,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5286271219498047e+02  5.9941779500497216e+02
 Test Number 2 succeeded
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55306,6 +55426,8 @@ Moment-based statistics for each response function:
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566626360790860e+02   P0   P0
   -3.9996761194582127e+00   P1   P0
@@ -55326,6 +55448,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566626360790860e+02  6.0656003319256286e+02
 Test Number 4 succeeded
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55350,6 +55474,8 @@ Moment-based statistics for each response function:
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666544e+02   P0   P0
   -4.0000000000002371e+00   P1   P0
@@ -55370,6 +55496,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666544e+02  6.0656024184257785e+02
 Test Number 6 succeeded
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55394,6 +55522,8 @@ Moment-based statistics for each response function:
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.0637393382050124e+02   P0   P0
   -9.0547715235566013e+00   P1   P0
@@ -55409,6 +55539,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.0637393382050124e+02  6.3901323861691776e+02
 Test Number 8 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55439,6 +55571,8 @@ Moment-based statistics for each response function:
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5286271219498047e+02   P0   P0
   -3.5503040522556746e+00   P1   P0
@@ -55459,6 +55593,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5286271219498047e+02  5.9941779500497216e+02
 Test Number 10 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55483,6 +55619,8 @@ Moment-based statistics for each response function:
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566653898315883e+02   P0   P0
   -3.9999127643896277e+00   P1   P0
@@ -55503,6 +55641,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566653898315883e+02  6.0656014531244034e+02
 Test Number 12 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55533,6 +55673,8 @@ Moment-based statistics for each response function:
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666669e+02   P0   P0
   -3.9999999999998908e+00   P1   P0
@@ -55553,6 +55695,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666669e+02  6.0656024184257808e+02
 Test Number 14 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55583,6 +55727,8 @@ Moment-based statistics for each response function:
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.4479870827612621e+02   P0   P0
   -4.8922459878111395e+00   P1   P0
@@ -55603,6 +55749,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.4479870827612621e+02  5.9716639349792081e+02
 Test Number 16 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55633,6 +55781,8 @@ Moment-based statistics for each response function:
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666686e+02   P0   P0
   -3.9999999999999432e+00   P1   P0
@@ -55659,6 +55809,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666686e+02  6.0656024184257865e+02
 Test Number 18 succeeded
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55689,6 +55841,8 @@ Moment-based statistics for each response function:
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666686e+02   P0   P0
   -3.9999999999999432e+00   P1   P0
@@ -55717,6 +55871,8 @@ Moment-based statistics for each response function:
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666680e+02   P0   P0
   -3.9999999999999618e+00   P1   P0
@@ -55737,6 +55893,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666680e+02  6.0656024184257831e+02
 Test Number 21 succeeded
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55761,6 +55919,8 @@ Moment-based statistics for each response function:
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666657e+02   P0   P0
   -3.9999999999999427e+00   P1   P0
@@ -55781,6 +55941,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666657e+02  6.0656024184257842e+02
 Test Number 23 succeeded
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55805,6 +55967,8 @@ Moment-based statistics for each response function:
 Test Number 24 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666760e+02   P0   P0
   -4.0000000000008740e+00   P1   P0
@@ -55825,6 +55989,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666760e+02  6.0656024184257819e+02
 Test Number 25 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55849,6 +56015,8 @@ Moment-based statistics for each response function:
 Test Number 26 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666742e+02   P0   P0
   -3.9999999999998819e+00   P1   P0
@@ -55871,6 +56039,8 @@ Moment-based statistics for each response function:
 Test Number 27 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
   response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+  response_fn_1: 19 val (19 n, 0 d), 19 grad (19 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666680e+02   P0   P0
   -3.9999999999999618e+00   P1   P0
@@ -55891,6 +56061,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666680e+02  6.0656024184257831e+02
 Test Number 28 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55921,6 +56093,8 @@ Moment-based statistics for each response function:
 Test Number 29 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   3.1500848482424118e+02   P0   P0
   5.6036133946735063e+01   P1   P0
@@ -55941,6 +56115,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  3.1500848482424118e+02  3.1721456160755332e+02
 Test Number 30 succeeded
+<<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
+  response_fn_1: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
   response_fn_1: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -55965,6 +56141,8 @@ Moment-based statistics for each response function:
 Test Number 31 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666725e+02   P0   P0
   -4.0000000000000338e+00   P1   P0
@@ -55985,6 +56163,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666725e+02  6.0656024184257785e+02
 Test Number 32 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56015,6 +56195,8 @@ Moment-based statistics for each response function:
 Test Number 33 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666760e+02   P0   P0
   -3.9999999999996803e+00   P1   P0
@@ -56043,6 +56225,8 @@ Moment-based statistics for each response function:
 Test Number 34 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
   response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+  response_fn_1: 18 val (18 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666544e+02   P0   P0
   -4.0000000000002371e+00   P1   P0
@@ -56063,6 +56247,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666544e+02  6.0656024184257785e+02
 Test Number 35 succeeded
+<<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
+  response_fn_1: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
   response_fn_1: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56087,6 +56273,8 @@ Moment-based statistics for each response function:
 Test Number 36 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+  response_fn_1: 10 val (10 n, 0 d), 10 grad (10 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666669e+02   P0   P0
   -3.9999999999998908e+00   P1   P0
@@ -56107,6 +56295,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666669e+02  6.0656024184257808e+02
 Test Number 37 succeeded
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56131,6 +56321,8 @@ Moment-based statistics for each response function:
 Test Number 38 succeeded
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
   response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+  response_fn_1: 84 val (84 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666742e+02   P0   P0
   -3.9999999999998703e+00   P1   P0
@@ -56151,6 +56343,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666742e+02  6.0656024184257831e+02
 Test Number 39 succeeded
+<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
+  response_fn_1: 15 val (15 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
   response_fn_1: 15 val (15 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56176,6 +56370,8 @@ dakota_uq_rosenbrock_pce_lls_cv_fail.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
   response_fn_1: 112 val (112 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
+  response_fn_1: 112 val (112 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666771e+02   P0   P0
   -3.9999999999998579e+00   P1   P0
@@ -56196,6 +56392,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666771e+02  6.0656024184257979e+02
 Test Number 1 succeeded
+<<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
+  response_fn_1: 37 val (37 n, 0 d), 37 grad (37 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
   response_fn_1: 37 val (37 n, 0 d), 37 grad (37 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56226,6 +56424,8 @@ Moment-based statistics for each response function:
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666665628e+02   P0   P0
   -3.9999999999848437e+00   P1   P0
@@ -56246,6 +56446,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666665628e+02  6.0656024184256012e+02
 Test Number 3 succeeded
+<<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
+  response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56276,6 +56478,8 @@ Moment-based statistics for each response function:
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666572e+02   P0   P0
   -3.9999999999951528e+00   P1   P0
@@ -56296,6 +56500,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666572e+02  6.0656024184257649e+02
 Test Number 5 succeeded
+<<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
+  response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56320,6 +56526,8 @@ Moment-based statistics for each response function:
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+  response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666665657e+02   P0   P0
   -3.9999999999994245e+00   P1   P0
@@ -56342,6 +56550,8 @@ Moment-based statistics for each response function:
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 66 total (66 new, 0 duplicate)
+  response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666475e+02   P0   P0
   -3.9999999999987739e+00   P1   P0
@@ -56362,6 +56572,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666475e+02  6.0656024184257512e+02
 Test Number 8 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+  response_fn_1: 30 val (30 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
   response_fn_1: 30 val (30 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56390,6 +56602,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666666646e+02  6.0656024184257694e+02
 Test Number 9 succeeded
+<<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
+  response_fn_1: 112 val (112 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
   response_fn_1: 112 val (112 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -56427,6 +56641,8 @@ Moment-based statistics for each response function:
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
   response_fn_1: 37 val (37 n, 0 d), 37 grad (37 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
+  response_fn_1: 37 val (37 n, 0 d), 37 grad (37 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666668226e+02   P0   P0
   -3.9999999999759268e+00   P1   P0
@@ -56462,6 +56678,8 @@ Moment-based statistics for each response function:
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
   response_fn_1: 37 val (37 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
+  response_fn_1: 37 val (37 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666640589e+02   P0   P0
   -3.9999999998767239e+00   P1   P0
@@ -56482,6 +56700,8 @@ Moment-based statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  4.5566666666640589e+02  6.0656024184211299e+02
 Test Number 12 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+  response_fn_1: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
   response_fn_1: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
