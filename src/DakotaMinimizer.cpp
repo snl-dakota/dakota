@@ -387,6 +387,7 @@ void Minimizer::data_transform_model()
 
   const SharedResponseData& srd = iteratedModel.current_response().shared_data();
   gen_primary_resp_map(srd, primary_resp_map_indices, nonlinear_resp_map);
+  Cout << "prminds = \n" << primary_resp_map_indices << "\n";
 
   for (size_t i=0; i<numNonlinearConstraints; i++) {
     secondary_resp_map_indices[i].resize(1);
@@ -478,6 +479,8 @@ gen_primary_resp_map(const SharedResponseData& srd,
       nonlinear_resp_map[calib_term_ind][0] = false;
       ++calib_term_ind;
     }
+    // base index for simulation in current field group
+    size_t sim_ind_offset = num_scalar; 
     for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
       // each field calibration term depends on all simulation field
       // entries for this field, due to correlation or interpolation
@@ -487,11 +490,13 @@ gen_primary_resp_map(const SharedResponseData& srd,
 	nonlinear_resp_map[calib_term_ind].resize(sim_field_lens[fg_ind]);
 	// this residual depends on all other simulation data for this field
 	for (size_t sim_ind = 0; sim_ind<sim_field_lens[fg_ind]; ++sim_ind) {
-	  primary_resp_map_indices[calib_term_ind][sim_ind] = sim_ind;
+	  primary_resp_map_indices[calib_term_ind][sim_ind] = 
+	    sim_ind_offset + sim_ind;
 	  nonlinear_resp_map[calib_term_ind][sim_ind] = false;
 	}
 	++calib_term_ind;
       }
+      sim_ind_offset += sim_field_lens[fg_ind];
     }
   }
 }
