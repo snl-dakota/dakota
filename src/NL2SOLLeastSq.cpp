@@ -480,7 +480,8 @@ void NL2SOLLeastSq::minimize_residuals()
 	}
   RealVector y(n);
   copy_data(R, n, y);
-  bestResponseArray.front().function_values(y);
+  if (!calibrationDataFlag)  // else local_recast_retrieve
+    bestResponseArray.front().function_values(y);
   free(x);
   get_confidence_intervals();
 

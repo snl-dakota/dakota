@@ -951,21 +951,21 @@ JEGAOptimizer::LoadDakotaResponses(
     vars.discrete_int_variables(di_vars);
     vars.discrete_real_variables(dr_vars);
 
-    RealVector fn_vals(this->numFunctions);
-    for(size_t i=0; i<this->numObjectiveFns; i++)
-      fn_vals[i]= des.GetObjective(i);
+    // BMA TODO: Could always populate constraints and just get
+    // primary responses from the DB, as in SNLL
+    if (!localObjectiveRecast) {  // else local_recast_retrieve
+      RealVector fn_vals(this->numFunctions);
+      for(size_t i=0; i<this->numObjectiveFns; i++)
+	fn_vals[i]= des.GetObjective(i);
 
-    // JEGA constraint ordering is nonlinear inequality, nonlinear equality,
-    // linear inequality, linear equality
-    // (see JEGAOptimizer::LoadTheConstraints()).
-    for(size_t i=0; i<static_cast<size_t>(this->numNonlinearConstraints); ++i)
+      // JEGA constraint ordering is nonlinear inequality, nonlinear equality,
+      // linear inequality, linear equality
+      // (see JEGAOptimizer::LoadTheConstraints()).
+      for(size_t i=0; i<static_cast<size_t>(this->numNonlinearConstraints); ++i)
         fn_vals[i+this->numObjectiveFns] = des.GetConstraint(i);
 
-    /// BMA: would prefer to omit this check, but if there is a
-    /// localObjectiveRecast active, this resp set call will decimate
-    /// the bestResonseArray entries to a single function value
-    if (!localObjectiveRecast)
       resp.function_values(fn_vals);
+    }
 }
 
 void

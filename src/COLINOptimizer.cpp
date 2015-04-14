@@ -1069,7 +1069,9 @@ void COLINOptimizer::post_run(std::ostream& s)
   ResponseArray::size_type index = 0;
   for( ; var_best_it != var_best_end; ++var_best_it, ++resp_best_it, ++index) {
     bestVariablesArray[index] = var_best_it->second.copy();
-    bestResponseArray[index] = resp_best_it->second.copy();
+    if (!localObjectiveRecast) {  // else local_recast_retrieve
+      bestResponseArray[index] = resp_best_it->second.copy();
+    }
   }
 
   ps->clear();

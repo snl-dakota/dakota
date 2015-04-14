@@ -178,14 +178,13 @@ void Optimizer::print_results(std::ostream& s)
   // initialize the results archive for this dataset
   archive_allocate_best(num_best);
 
-  // data for looking up the function evaluation ID number
-  const String& interface_id = iteratedModel.interface_id(); 
-  int eval_id; 
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
-  // Optimizer's Model
-  ActiveSet search_set(numUserPrimaryFns + numNonlinearConstraints, 
-		       numContinuousVars); // asv = 1's
+  // Optimizer's Model) to find the function evaluation ID number
+  Model orig_model = original_model();
+  const String& interface_id = orig_model.interface_id(); 
+  // use asv = 1's
+  ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
  
   // -------------------------------------
   // Single and Multipoint results summary
@@ -199,41 +198,46 @@ void Optimizer::print_results(std::ostream& s)
     // output best response
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
     const RealVector& best_fns = bestResponseArray[i].function_values(); 
-    // the functions may have been expanded for data differencing, so
-    // can't use the number of user-provided functions (numUserPrimaryFns)
-    size_t num_primary_fns = best_fns.length() - numNonlinearConstraints;
+
     if (optimizationFlag) {
-      if (num_primary_fns > 1) s << "<<<<< Best objective functions "; 
+      if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions "; 
       else                       s << "<<<<< Best objective function  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, (size_t)0, num_primary_fns, best_fns); 
+      write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns); 
     }
     else {
-      const RealVector& lsq_weights
-        = iteratedModel.subordinate_model().primary_response_fn_weights();
-      Real t = 0.;
-      for(size_t j=0; j<num_primary_fns; ++j) {
-	const Real& t1 = best_fns[j];
-        if (lsq_weights.empty())
-	  t += t1*t1;
-	else
-          t += t1*t1*lsq_weights[j];
+      if (calibrationDataFlag) {
+	// first use the data difference model to print data differenced
+	// residuals, perhaps most useful to the user
+	unsigned short recasts_left = 1;  // leave one recast
+	Model data_diff_model = original_model(recasts_left);
+	Response residual_resp = data_diff_model.current_response();
+	data_difference_core(bestResponseArray[i], residual_resp);
+	const RealVector& resid_fns = residual_resp.function_values(); 
+
+	// must use the expanded weight set from the data difference model
+	const RealVector& lsq_weights 
+	  = data_diff_model.primary_response_fn_weights();
+	print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
+			num_best, i, s);
+
+	// then print the original userModel Responses
+	print_model_resp(numUserPrimaryFns, best_fns, num_best, i, s);
       }
-      s << "<<<<< Best residual norm ";
-      if (num_best > 1) s << "(set " << i+1 << ") ";
-      s << "= " << std::setw(write_precision+7)
-	<< std::sqrt(t) << "; 0.5 * norm^2 = " << std::setw(write_precision+7)
-	<< 0.5*t << '\n';
-      if (num_primary_fns > 1) s << "<<<<< Best residual terms "; 
-      else                       s << "<<<<< Best residual term  "; 
-      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, (size_t)0, num_primary_fns, best_fns); 
+      else {
+	// the original model had least squares terms
+	const RealVector& lsq_weights 
+	  = orig_model.primary_response_fn_weights();
+	print_residuals(numUserPrimaryFns, best_fns, lsq_weights, 
+			num_best, i, s);
+      }
     }
 
     if (numNonlinearConstraints) { 
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, num_primary_fns, numNonlinearConstraints, best_fns);
+      write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, 
+			 best_fns);
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
@@ -257,37 +261,6 @@ void Optimizer::print_results(std::ostream& s)
     // pass data to the results archive
     archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
   }
-}
-
-
-/** Retrieve a MOO/NLS response based on the data returned by a single
-    objective optimizer by performing a data_pairs search. This may
-    get called even for a single user-specified function, since we may
-    be recasting a single NLS residual into a squared objective. */
-void Optimizer::
-local_objective_recast_retrieve(const Variables& vars, Response& response) const
-{
-  // The returned response needs to be in the user space, but possible
-  // expanded by the experimental data replicates
-  // BMA TODO: Could have two retrieve functions to avoid extra copies
-  ActiveSet lookup_set(response.active_set());
-  if (calibrationDataFlag) {
-    lookup_set.reshape(numUserPrimaryFns);
-    lookup_set.request_values(1);
-  }
-  PRPCacheHIter cache_it
-    = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
-  if (cache_it == data_pairs.get<hashed>().end())
-    Cerr << "Warning: failure in recovery of final values for locally recast "
-	 << "optimization." << std::endl;
-  else if (calibrationDataFlag) {
-    const RealVector& desired_fns = cache_it->response().function_values();
-    for (size_t i=0; i<numUserPrimaryFns; i++)
-      for (size_t j=0; j<numExperiments; j++)
-	response.function_value(desired_fns[i], i*numExperiments+j);
-  }
-  else
-    response.update(cache_it->response());
 }
 
 
@@ -525,10 +498,12 @@ void Optimizer::initialize_run()
     implementations of post_run() (which would otherwise hide it). */
 void Optimizer::post_run(std::ostream& s)
 {
+  // Note: Historically bestResponseArray data varied: simulation
+  // responses or data-differenced residuals.  Now it's standardized
+  // to return in the same space as the original inbound Model.
 
-  // Note: bestArrays are in iteratorSpace which may be single
-  // objective and we don't unapply any data transformation on
-  // residuals as the user may want to see them.
+  // Default is to assume the Iterator posted in the transformed space
+  // and either map back, or where needed, lookup.
 
   // scaling transformation needs to be performed on each best point
   size_t num_points = bestVariablesArray.size();
@@ -544,8 +519,7 @@ void Optimizer::post_run(std::ostream& s)
     Response&  best_resp = bestResponseArray[point_index];
 
     // Reverse transformations on each point in best data: expand
-    // (unreduce), unscale, but leave differenced with data (for
-    // LeastSq problems, always report the residuals)
+    // (unreduce via lookup), unscale, remove data (lookup)
 
     // transform variables back to user space (for local obj recast or scaling)
     // must do before lookup in retrieve, which is in user space
@@ -562,17 +536,20 @@ void Optimizer::post_run(std::ostream& s)
     // this will retrieve primary functions of size best (possibly
     // expanded, but not differenced with replicate data)
     if (localObjectiveRecast) {
-      local_objective_recast_retrieve(best_vars, best_resp);
+
+      local_recast_retrieve(best_vars, best_resp);
       // BMA TODO: if retrieved the best fns/cons from DB, why unscaling cons?
-      if (secondaryRespScaleFlag || 
-	  need_resp_trans_byvars(best_resp.active_set_request_vector(),
-				 numUserPrimaryFns, numNonlinearConstraints)) {
-	Response tmp_response = best_resp.copy();
-	response_modify_s2n(best_vars, best_resp, tmp_response,
-			    numUserPrimaryFns, numNonlinearConstraints);
-	best_resp.update_partial(numUserPrimaryFns, numNonlinearConstraints,
-				 tmp_response, numUserPrimaryFns);
-      }
+      // Would need this if looking up only primary fns in DB
+      // if (secondaryRespScaleFlag || 
+      // 	  need_resp_trans_byvars(best_resp.active_set_request_vector(),
+      // 				 numUserPrimaryFns, numNonlinearConstraints)) {
+      // 	Response tmp_response = best_resp.copy();
+      // 	response_modify_s2n(best_vars, best_resp, tmp_response,
+      // 			    numUserPrimaryFns, numNonlinearConstraints);
+      // 	best_resp.update_partial(numUserPrimaryFns, numNonlinearConstraints,
+      // 				 tmp_response, numUserPrimaryFns);
+      // }
+      //    }
     }
     // just unscale if needed
     else if (primaryRespScaleFlag || secondaryRespScaleFlag ||
@@ -595,22 +572,6 @@ void Optimizer::post_run(std::ostream& s)
 				 tmp_response, numUserPrimaryFns);
       }
     }
-
-    // if looked up in DB, need to reapply the data transformation so
-    // user will see final residuals, possibly expanded by experimental data
-    if (/* local_nls_recast && (implicit in localObjectiveRecast) */ 
-	localObjectiveRecast && calibrationDataFlag) {
-      //size_t num_experiments = obsData.numRows();
-      const RealVector& fn_vals = best_resp.function_values();
-      size_t fn_index = 0;
-      for (size_t i=0; i<numUserPrimaryFns; ++i)
-        for (size_t j=0; j<numExperiments; ++j){
-	  best_resp.function_value
-	    (fn_vals[fn_index] - expData.scalar_data(i,j), fn_index);
-	  ++fn_index;
-	}
-    }
-
   }
 
   Minimizer::post_run(s);

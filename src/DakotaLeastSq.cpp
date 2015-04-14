@@ -183,9 +183,9 @@ void LeastSq::weight_model()
 void LeastSq::print_results(std::ostream& s)
 {
   // archive the single best point
-  size_t num_best = 1, index = 0;
+  size_t num_best = 1, best_ind = 0;
   archive_allocate_best(num_best);
-  archive_best(index, bestVariablesArray.front(), bestResponseArray.front());
+  archive_best(best_ind, bestVariablesArray.front(), bestResponseArray.front());
 
   // Print best design parameters.  Could just print all of best variables 
   // (as in ParamStudy::print_results), but restrict to just design 
@@ -196,36 +196,54 @@ void LeastSq::print_results(std::ostream& s)
   //best_vars.continuous_variables().write(s);
   //best_vars.discrete_variables().write(s);
 
-  const RealVector& fn_vals_star = bestResponseArray.front().function_values();
-  const RealVector& lsq_weights
-	= iteratedModel.subordinate_model().primary_response_fn_weights();
-  Real t = 0.;
-  for(size_t i=0; i<numLeastSqTerms; i++) {
-    const Real& t1 = fn_vals_star[i];
-    if (lsq_weights.empty())
-      t += t1*t1;
-    else  
-      t += t1*t1*lsq_weights[i];
+  // after post-run, responses should be back in user model space (no
+  // data, scaling, or weighting)
+  const RealVector& best_fns = bestResponseArray.front().function_values();
+  if (calibrationDataFlag) {
+    // first use the data difference model to print data differenced
+    // residuals, perhaps most useful to the user
+    unsigned short recasts_left = 1;  // leave one recast for the data
+    Model data_diff_model = original_model(recasts_left);
+    Response residual_resp = data_diff_model.current_response();
+    data_difference_core(bestResponseArray.front(), residual_resp);
+    const RealVector& resid_fns = residual_resp.function_values(); 
+
+    // must use the expanded weight set from the data difference model
+    const RealVector& lsq_weights 
+      = data_diff_model.primary_response_fn_weights();
+    print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
+		    num_best, best_ind, s);
+
+    // then print the original userModel Responses
+    print_model_resp(numUserPrimaryFns, best_fns, num_best, best_ind, s);
   }
-  s << "<<<<< Best residual norm = " << std::setw(write_precision+7)
-    << std::sqrt(t) << "; 0.5 * norm^2 = " << std::setw(write_precision+7)
-    << 0.5*t << '\n';
+  else {
+    // the original model had least squares terms and numLeastSqTerms
+    // == numTotalCalibTerms
+    const RealVector& lsq_weights
+      = iteratedModel.subordinate_model().primary_response_fn_weights();
+    print_residuals(numUserPrimaryFns, best_fns, lsq_weights, 
+		    num_best, best_ind, s);
+  }
 
-  // Print best response functions
-  if (numLeastSqTerms > 1) s << "<<<<< Best residual terms      =\n";
-  else                     s << "<<<<< Best residual term       =\n";
-  write_data_partial(s, (size_t)0, numLeastSqTerms, fn_vals_star);
-
-  size_t num_cons = numFunctions - numLeastSqTerms;
-  if (num_cons) {
+  if (numNonlinearConstraints) {
     s << "<<<<< Best constraint values   =\n";
-    write_data_partial(s, numLeastSqTerms, num_cons, fn_vals_star);
+    write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, best_fns);
   }
 
   // Print fn. eval. number where best occurred.  This cannot be catalogued 
   // directly because the optimizers track the best iterate internally and 
   // return the best results after iteration completion.  Therfore, perform a
   // search in the data_pairs cache to extract the evalId for the best fn. eval.
+
+  // must search in the inbound Model's space (and even that may not
+  // suffice if there are additional recastings underlying this
+  // solver's Model) to find the function evaluation ID number
+  Model orig_model = original_model();
+  const String& interface_id = orig_model.interface_id(); 
+  // use asv = 1's
+  ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
+
   activeSet.request_values(1);
   PRPCacheHIter cache_it = lookup_by_val(data_pairs,
     iteratedModel.interface_id(), best_vars, activeSet);
@@ -387,42 +405,46 @@ void LeastSq::post_run(std::ostream& s)
     Variables& best_vars = bestVariablesArray[point_index];
     Response&  best_resp = bestResponseArray[point_index];
 
-    // Reverse transformations on each point in best data: unweight,
-    // unscale, but leave differenced with data (for LeastSq problems,
-    // always report the residuals)
-
-    if (weightFlag) {
-      const RealVector& lsq_weights
-	= iteratedModel.subordinate_model().primary_response_fn_weights();
-      const RealVector& fn_vals = best_resp.function_values();
-      for (size_t i=0; i<numLeastSqTerms; i++)
-	best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
+    if (calibrationDataFlag) {
+      // don't try to uncast with data transforms and interpolation...
+      local_recast_retrieve(best_vars, best_resp);
     }
+    else {
+      // Reverse transformations on each point in best data: unweight, unscale
+      if (weightFlag) {
+	const RealVector& lsq_weights
+	  = iteratedModel.subordinate_model().primary_response_fn_weights();
+	const RealVector& fn_vals = best_resp.function_values();
+	for (size_t i=0; i<numLeastSqTerms; i++)
+	  best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
+      }
 
-    if (varsScaleFlag)
-      best_vars.continuous_variables(
-        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		   cvScaleMultipliers, cvScaleOffsets));
+      if (varsScaleFlag)
+	best_vars.continuous_variables(
+          modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
+		     cvScaleMultipliers, cvScaleOffsets));
   
-    if (primaryRespScaleFlag || secondaryRespScaleFlag) {
-      Response tmp_response = best_resp.copy();
-      if (primaryRespScaleFlag || 
-	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
-				 numLeastSqTerms)) {
-	response_modify_s2n(best_vars, best_resp, tmp_response, 0,
-			    numLeastSqTerms);
-	best_resp.update_partial(0, numLeastSqTerms, tmp_response, 0);
+      if (primaryRespScaleFlag || secondaryRespScaleFlag) {
+	Response tmp_response = best_resp.copy();
+	if (primaryRespScaleFlag || 
+	    need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
+				   numLeastSqTerms)) {
+	  response_modify_s2n(best_vars, best_resp, tmp_response, 0,
+			      numLeastSqTerms);
+	  best_resp.update_partial(0, numLeastSqTerms, tmp_response, 0);
+	}
+	if (secondaryRespScaleFlag || 
+	    need_resp_trans_byvars(tmp_response.active_set_request_vector(),
+				   numLeastSqTerms, numNonlinearConstraints)) {
+	  response_modify_s2n(best_vars, best_resp, tmp_response, numLeastSqTerms,
+			      numNonlinearConstraints);
+	  best_resp.update_partial(numLeastSqTerms, numNonlinearConstraints,
+				   tmp_response, numLeastSqTerms);
+	}
       }
-      if (secondaryRespScaleFlag || 
-	  need_resp_trans_byvars(tmp_response.active_set_request_vector(),
-				 numLeastSqTerms, numNonlinearConstraints)) {
-	response_modify_s2n(best_vars, best_resp, tmp_response, numLeastSqTerms,
-			    numNonlinearConstraints);
-	best_resp.update_partial(numLeastSqTerms, numNonlinearConstraints,
-				 tmp_response, numLeastSqTerms);
-      }
-    }
 
+    }
+    
   }
 
   Minimizer::post_run(s);

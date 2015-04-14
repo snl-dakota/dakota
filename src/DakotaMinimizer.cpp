@@ -19,6 +19,7 @@
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
 #include "ParamResponsePair.hpp"
+#include "PRPMultiIndex.hpp"
 #include "RecastModel.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #ifdef __SUNPRO_CC
@@ -29,6 +30,8 @@ static const char rcsId[]="@(#) $Id: DakotaMinimizer.cpp 7029 2010-10-22 00:17:0
 
 
 namespace Dakota {
+
+extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 Minimizer* Minimizer::minimizerInstance(NULL);
@@ -302,6 +305,19 @@ void Minimizer::post_run(std::ostream& s)
 }
 
 
+Model Minimizer::original_model(unsigned short recasts_left)
+{
+  // Dive into the originally passed model (could keep a shallow copy of it)
+  // Don't use a reference here as want a shallow copy, not the instance
+  Model usermodel(iteratedModel);
+  for (unsigned short i=1; i<=minimizerRecasts - recasts_left; ++i) {
+    usermodel = usermodel.subordinate_model();
+  }
+
+  return(usermodel);
+}
+
+
 /** Reads observation data to compute least squares residuals.  Does
     not change size of responses, and is the first wrapper, therefore
     sizes are based on iteratedModel.  */
@@ -350,6 +366,7 @@ void Minimizer::data_transform_model()
 	   expData.variance_type_active(DIAGONAL_SIGMA))
     applyCovariance = true;
 
+  // BMA TODO:
   // !!! The size of the variables map should be all active variables,
   // !!! not continuous!!!
   
@@ -2182,14 +2199,7 @@ void Minimizer::resize_best_vars_array(size_t newsize)
     // of the model's current variables for envelope-letter requirements.
 
     // Best point arrays have be sized and scaled in the original user space.  
-
-    // Dive into the originally passed model (could keep a shallow copy of it)
-    // Don't use a reference here as want a shallow copy, not the instance
-    Model usermodel(iteratedModel);
-    for (unsigned short i=1; i<=minimizerRecasts; ++i) {
-      usermodel = usermodel.subordinate_model();
-    }
-
+    Model usermodel = original_model();
     bestVariablesArray.reserve(newsize);
     for(size_t i=curr_size; i<newsize; ++i)
       bestVariablesArray.push_back(usermodel.current_variables().copy());
@@ -2216,18 +2226,95 @@ void Minimizer::resize_best_resp_array(size_t newsize)
     // of the model's current response for envelope-letter requirements.
 
     // Best point arrays have be sized and scaled in the original user space.  
-
-    // Dive into the originally passed model (could keep a shallow copy of it)
-    // Don't use a reference here as want a shallow copy, not the instance
-    Model usermodel(iteratedModel);
-    for (unsigned short i=1; i<=minimizerRecasts; ++i)
-      usermodel = usermodel.subordinate_model();
-
+    Model usermodel = original_model();
     bestResponseArray.reserve(newsize);
     for(size_t i=curr_size; i<newsize; ++i)
       bestResponseArray.push_back(usermodel.current_response().copy());
   }
   // else no size change
 }
+
+
+Real Minimizer::
+sum_squared_residuals(size_t num_pri_fns, const RealVector& residuals, 
+		      const RealVector& weights)
+{
+  if (!weights.empty() && num_pri_fns != weights.length()) {
+    Cerr << "\nError (sum_squared_residuals): incompatible residual and weight "
+	 << "lengths." << std::endl;
+    abort_handler(-1);
+  }
+
+  // TODO: Just call reduce/objective on the data?
+  Real t = 0.;
+  for(size_t j=0; j<num_pri_fns; ++j) {
+    const Real& t1 = residuals[j];
+    if (weights.empty())
+      t += t1*t1;
+    else
+      t += t1*t1*weights[j];
+  }
+
+  return t;
+}
+
+
+void Minimizer::print_model_resp(size_t num_pri_fns, const RealVector& best_fns,
+				 size_t num_best, size_t best_index,
+				 std::ostream& s)
+
+{
+  if (num_pri_fns > 1) s << "<<<<< Best model responses "; 
+  else                 s << "<<<<< Best model response "; 
+  if (num_best > 1) s << "(set " << best_index+1 << ") "; s << "=\n"; 
+  write_data_partial(s, (size_t)0, num_pri_fns, best_fns); 
+}
+
+
+void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms, 
+				const RealVector& weights, 
+				size_t num_best, size_t best_index,
+				std::ostream& s)
+{
+  // BMA TODO: if data and scaling are present, this won't print
+  // correct weighted residual norms
+
+  Real wssr = sum_squared_residuals(num_terms, best_terms, weights);
+
+  s << "<<<<< Best residual norm ";
+  if (num_best > 1) s << "(set " << best_index+1 << ") ";
+  s << "= " << std::setw(write_precision+7)
+    << std::sqrt(wssr) << "; 0.5 * norm^2 = " 
+    << std::setw(write_precision+7) << 0.5*wssr << '\n';
+
+  // Print best response functions
+  if (num_terms > 1) s << "<<<<< Best residual terms "; 
+  else               s << "<<<<< Best residual term  "; 
+  if (num_best > 1) s << "(set " << best_index+1 << ") "; s << "=\n"; 
+  write_data_partial(s, (size_t)0, num_terms, best_terms); 
+}
+
+
+/** Retrieve a MOO/NLS response based on the data returned by a single
+    objective optimizer by performing a data_pairs search. This may
+    get called even for a single user-specified function, since we may
+    be recasting a single NLS residual into a squared
+    objective. Always returns best data in the space of the original
+    inbound Model. */
+void Minimizer::
+local_recast_retrieve(const Variables& vars, Response& response) const
+{
+  // TODO: could omit constraints for solvers populating them (there
+  // may not exist a single DB eval with both functions, constraints)
+  ActiveSet lookup_set(response.active_set());
+  PRPCacheHIter cache_it
+    = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
+  if (cache_it == data_pairs.get<hashed>().end())
+    Cerr << "Warning: failure in recovery of final values for locally recast "
+	 << "optimization." << std::endl;
+  else
+    response.update(cache_it->response());
+}
+
 
 } // namespace Dakota

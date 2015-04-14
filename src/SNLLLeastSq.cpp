@@ -549,9 +549,14 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // update best response to contain the final lsq terms.  Since OPT++ has no
   // knowledge of these terms, the OPT++ final design variables must be matched
   // to final lsq terms using data_pairs.find().
-  RealVector best_fns(numFunctions);
-  ShortArray search_asv(numFunctions, 1);
-  for (size_t i=numLeastSqTerms; i<numFunctions; i++)
+
+  // Since we always perform DB lookup for OPT++ final results, don't
+  // need to transform by weights or calibration data.
+
+  size_t num_user_fns = numUserPrimaryFns + numNonlinearConstraints;
+  RealVector best_fns(num_user_fns);
+  ShortArray search_asv(num_user_fns, 1);
+  for (size_t i=numUserPrimaryFns; i<num_user_fns; ++i)
     search_asv[i] = 0; // don't need constr from DB due to getConstraintValue()
   activeSet.request_vector(search_asv);
 
@@ -567,38 +572,31 @@ void SNLLLeastSq::post_run(std::ostream& s)
   }
   else // unscaled -> user/native
     copy_data_partial(cache_it->response().function_values(), (size_t)0,
-		      numLeastSqTerms, best_fns, (size_t)0);
+		      numUserPrimaryFns, best_fns, (size_t)0);
   activeSet.request_values(1); // restore
 
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.
   // Therefore, reorder the constraint values, unscale them, and store them.
   if (numNonlinearConstraints) {
-    RealVector scaled_cons(numFunctions);
+    // This is sized for the original user model, so applied scales
+    // are the right size (primary fns are ignored here anyway):
+    RealVector scaled_cons(numUserPrimaryFns + numNonlinearConstraints);
     scaled_cons = 1.;
     copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), scaled_cons,
-			       numLeastSqTerms);
+			       numUserPrimaryFns);
     // primary functions unscaled/unweighted from lookup; unscale secondary
     if (secondaryRespScaleFlag || 
-	need_resp_trans_byvars(activeSet.request_vector(), numLeastSqTerms, 
+	need_resp_trans_byvars(activeSet.request_vector(), numUserPrimaryFns, 
 			       numNonlinearConstraints)) {
       // scale all functions, but only copy constraints
       copy_data_partial(
         modify_s2n(scaled_cons, responseScaleTypes, responseScaleMultipliers,
 		   responseScaleOffsets),
-	numLeastSqTerms, numNonlinearConstraints, best_fns, numLeastSqTerms);
+	numUserPrimaryFns, numNonlinearConstraints, best_fns, numUserPrimaryFns);
     }
     else
-      copy_data_partial(scaled_cons, numLeastSqTerms, numNonlinearConstraints,
-			best_fns, numLeastSqTerms);
-  }
-
-  // For LeastSq methods, always report the residuals
-  // A DB lookup needs to have the data differenced off from the user response
-  if (calibrationDataFlag) {
-    //size_t num_experiments = obsData.numRows();
-    for (size_t i=0; i<numUserPrimaryFns; ++i)
-      for (size_t j=0; j<numExperiments; ++j)
-          best_fns[i] -= expData.scalar_data(i,j);
+      copy_data_partial(scaled_cons, numUserPrimaryFns, numNonlinearConstraints,
+			best_fns, numUserPrimaryFns);
   }
 
   bestResponseArray.front().function_values(best_fns);

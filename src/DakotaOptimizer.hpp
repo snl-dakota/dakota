@@ -110,10 +110,6 @@ private:
 			   const BoolDeque& sense, const RealVector& full_wts,
 			   Response& reduced_response) const;
 
-  /// infers MOO/NLS solution from the solution of a single-objective optimizer
-  void local_objective_recast_retrieve(const Variables& vars,
-				       Response& response) const;
-
   //
   //- Heading: Data
   //

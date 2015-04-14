@@ -4976,6 +4976,10 @@ Moment-based statistics for each response function:
   numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
+         weight: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
          weight: 11 val (11 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 29 val (29 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)

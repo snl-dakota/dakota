@@ -108,11 +108,13 @@ void OptDartsOptimizer::find_optimum()
     }
     bestVariablesArray.front().continuous_variables(contVars);
     
-    // at the end, need to return the bestResponseArray with the best function values
-    RealVector best_fns(numFunctions);
-    best_fns[0] = _fb;
-    bestResponseArray.front().function_values(best_fns);
-    bestResponseArray.front().function_values(best_fns);
+    // at the end, need to return the bestResponseArray with the best
+    // function values; unless DB lookup is needed
+    if (!localObjectiveRecast) {
+      RealVector best_fns(numFunctions);
+      best_fns[0] = _fb;
+      bestResponseArray.front().function_values(best_fns);
+    }
     Cout << "In body of find_optimizer " << '\n';
     
     opt_darts_terminate();

@@ -232,7 +232,8 @@ void NLSSOLLeastSq::minimize_residuals()
               local_c_vals.values() + nlnConstraintArraySize,
               best_fns.values() + numLeastSqTerms);
   }
-  bestResponseArray.front().function_values(best_fns);
+  if (!calibrationDataFlag)  // else local_recast_retrieve
+    bestResponseArray.front().function_values(best_fns);
 
   /*
   // For better post-processing, could append fort.9 to dakota.out line
