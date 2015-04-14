@@ -4,9 +4,7 @@
 method,
 	bayes_calibration queso
 	  samples = 2000 seed = 348
-	  mcmc_type dram
-            rejection delayed
-#	    metropolis adaptive	# adapt from provided proposal covar
+	  delayed_rejection
 	  emulator
 	    pce sparse_grid_level = 2				#p0,#p7
 #	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
