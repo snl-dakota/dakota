@@ -904,10 +904,6 @@ public:
   short emulatorType;
   /// the \c mcmc type specification in \ref MethodNonDBayesCalib
   String mcmcType;
-  /// the \c rejection type specification in \ref MethodNonDBayesCalib
-  String rejectionType;
-  /// the \c metropolis type specification in \ref MethodNonDBayesCalib
-  String metropolisType;
   /// flag indicating adaptive refinement of the emulator in regions
   /// of high posterior probability
   bool adaptPosteriorRefine;

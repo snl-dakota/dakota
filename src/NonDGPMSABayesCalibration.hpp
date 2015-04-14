@@ -59,10 +59,6 @@ public:
   //- Heading: Data
   //
 
-  /// Rejection type (standard or delayed, in the DRAM framework)
-  String rejectionType;
-  /// Metropolis type (hastings or adaptive, in the DRAM framework)
-  String metropolisType;
   /// number of samples of the simulation to construct the GP 
   int emulatorSamples;
   /// scale factor for likelihood

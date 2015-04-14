@@ -1152,19 +1152,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              ]
            )
-          [ mcmc_type {0}
-            ( dram {N_mdm(lit,mcmcType_dram)}
-              [ rejection {0}
-                standard {N_mdm(lit,rejectionType_standard)}
-                |
-                delayed {N_mdm(lit,rejectionType_delayed)}
-               ]
-              [ metropolis {0}
-                hastings {N_mdm(lit,metropolisType_hastings)}
-                |
-                adaptive {N_mdm(lit,metropolisType_adaptive)}
-               ]
-             )
+          [ 
+            dram {N_mdm(lit,mcmcType_dram)}
+            |
+            delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+            |
+            adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+            |
+            metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
             |
             multilevel {N_mdm(lit,mcmcType_multilevel)}
            ]

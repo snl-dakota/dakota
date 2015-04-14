@@ -1743,25 +1743,15 @@
                           </keyword>
                         </keyword>
                       </oneOf>
-                      <keyword  id="mcmc_type" name="mcmc_type" code="{0}" label="mcmc_type" help="" minOccurs="0" >
+                      <optional>
                         <oneOf>
-                          <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" >
-                            <keyword  id="rejection" name="rejection" code="{0}" label="rejection" help="" minOccurs="0" >
-                              <oneOf>
-                                <keyword  id="standard" name="standard" code="{N_mdm(lit,rejectionType_standard)}" label="standard" help=""  />
-                                <keyword  id="delayed" name="delayed" code="{N_mdm(lit,rejectionType_delayed)}" label="delayed" help=""  />
-                              </oneOf>
-                            </keyword>
-                            <keyword  id="metropolis" name="metropolis" code="{0}" label="metropolis" help="" minOccurs="0" >
-                              <oneOf>
-                                <keyword  id="hastings" name="hastings" code="{N_mdm(lit,metropolisType_hastings)}" label="hastings" help=""  />
-                                <keyword  id="adaptive" name="adaptive" code="{N_mdm(lit,metropolisType_adaptive)}" label="adaptive" help=""  />
-                              </oneOf>
-                            </keyword>
-                          </keyword>
+                          <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" />
+                          <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help=""  />
+                          <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help=""  />
+                          <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help=""  />
                           <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help=""  />
                         </oneOf>
-                      </keyword>
+                      </optional>
                       <keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" >
                         <oneOf>
                           <keyword  id="mt199372" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />

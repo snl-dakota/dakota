@@ -1293,19 +1293,11 @@ KEYWORD12 method
 		)
 	      [ proposal_updates INTEGER ]
 	      ]
-	    [ mcmc_type
-	      ( dram
-		[ rejection
-		  standard
-		  | delayed
-		  ]
-		[ metropolis
-		  hastings
-		  | adaptive
-		  ]
-		)
-	      | multilevel
-	      ]
+	    [ dram
+	    | delayed_rejection
+	    | adaptive_metropolis
+	    | metropolis_hastings
+	    | multilevel ]
 	    [ rng
 	      mt19937
 	      | rnum2
@@ -1329,19 +1321,11 @@ KEYWORD12 method
 	      [ annotated
 	      | freeform ]
 	      ]
-	    [ mcmc_type
-	      ( dram
-		[ rejection
-		  standard
-		  | delayed
-		  ]
-		[ metropolis
-		  hastings
-		  | adaptive
-		  ]
-		)
-	      | multilevel
-	      ]
+	    [ dram
+	    | delayed_rejection
+	    | adaptive_metropolis
+	    | metropolis_hastings
+	    | multilevel ]
 	    [ rng
 	      mt19937
 	      | rnum2

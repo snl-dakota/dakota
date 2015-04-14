@@ -166,12 +166,9 @@ protected:
   /// filename for user-specified proposal covariance
   String propCovarFilename;
 
-  /// MCMC type ("dram" or "multilevel", both within QUESO) 
+  /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
+  /// or "metropolis_hastings" or "multilevel",  within QUESO) 
   String mcmcType;
-  /// Rejection type ("standard" or "delayed", in the DRAM framework) 
-  String rejectionType;
-  /// Metropolis type ("hastings" or "adaptive", in the DRAM framework) 
-  String metropolisType;
   /// scale factor for likelihood; deprecated
   Real likelihoodScale;
   /// flag to indicated if the sigma terms should be calibrated (default true)

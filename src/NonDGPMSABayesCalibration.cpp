@@ -50,8 +50,6 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::NonDGPMSAInstance(NULL);
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  rejectionType(probDescDB.get_string("method.rejection")),
-  metropolisType(probDescDB.get_string("method.metropolis")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_points_file")),
   approxImportAnnotated(
@@ -112,9 +110,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
   NonDGPMSAInstance=this;
-  Cout << "Rejection type  "<< rejectionType
-       << "\nMetropolis type " << metropolisType
-       << "\nNum Samples " << numSamples << '\n';
+  Cout << "\nNum Samples " << numSamples << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;
 

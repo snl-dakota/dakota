@@ -216,8 +216,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   propCovarData(probDescDB.get_rv("method.nond.proposal_covariance_data")),
   propCovarFilename(probDescDB.get_string("method.nond.proposal_cov_filename")),
   mcmcType(probDescDB.get_string("method.mcmc_type")),
-  rejectionType(probDescDB.get_string("method.rejection")),
-  metropolisType(probDescDB.get_string("method.metropolis")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
@@ -377,7 +375,9 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_displayVerbosity = 2;
   envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
  
-  if (mcmcType== "dram")
+  if ((mcmcType == "dram") || (mcmcType == "delayed_rejection") ||
+      (mcmcType == "metropolis_hastings") || 
+      (mcmcType == "adaptive_metropolis"))
     quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
 					      envOptionsValues.get()));
   else if (strends(mcmcType, "multilevel"))
@@ -497,11 +497,9 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 {
   Cout << "Running Bayesian Calibration with QUESO using ";
   if (outputLevel > NORMAL_OUTPUT)
-    Cout << "the following settings:" //<< "\n  MCMC type "<< mcmcType
+    Cout << "the following settings:" << "\n  MCMC type "<< mcmcType
 	 << "\n  Number of samples in the MCMC Chain "
 	 << calIpMhOptionsValues->m_rawChainSize
-	 << "\n  Rejection type "<< rejectionType
-	 << "\n  Metropolis type " << metropolisType
 	 << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
   else
     Cout << calIpMhOptionsValues->m_rawChainSize << " MCMC samples."<<std::endl;
@@ -509,7 +507,9 @@ void NonDQUESOBayesCalibration::run_queso_solver()
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
   ////////////////////////////////////////////////////////
-  if (mcmcType == "dram")
+  if ((mcmcType == "dram") || (mcmcType == "delayed_rejection") ||
+      (mcmcType == "metropolis_hastings") || 
+      (mcmcType == "adaptive_metropolis"))
     inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(),
 						  *paramInitials, 
 						  proposalCovMatrix.get());
@@ -1030,17 +1030,17 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_putOutOfBoundsInChain       = false;
   //calIpMhOptionsValues->m_tkUseLocalHessian         = false;
   //calIpMhOptionsValues->m_tkUseNewtonComponent      = true;
-  if (strends(rejectionType, "standard"))
+  if (strbegins(mcmcType, "adaptive") || strbegins(mcmcType, "metropolis"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 0;
-  else if (strends(rejectionType, "delayed"))
+  else if (strbegins(mcmcType, "delayed") || strbegins(mcmcType, "dram"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
   calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
   calIpMhOptionsValues->m_drScalesForExtraStages[0] = 5;
   //calIpMhOptionsValues->m_drScalesForExtraStages[1] = 10;
   //calIpMhOptionsValues->m_drScalesForExtraStages[2] = 20;
-  if (strends(metropolisType, "hastings"))
+  if (strbegins(mcmcType, "metropolis") || strbegins(mcmcType, "delayed"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
-  else if (strends(metropolisType, "adaptive"))
+  else if (strbegins(mcmcType, "adaptive") || strbegins(mcmcType, "dram"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 1;
   calIpMhOptionsValues->m_amAdaptInterval           = 100;
   calIpMhOptionsValues->m_amEta                     = 2.88;

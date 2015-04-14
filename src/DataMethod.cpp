@@ -130,8 +130,8 @@ DataMethodRep::DataMethodRep():
   integrationRefine(NO_INT_REFINE), refineSamples(0),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
-  emulatorType(NO_EMULATOR), mcmcType("dram"), rejectionType("delayed"),
-  metropolisType("hastings"), adaptPosteriorRefine(false), proposalUpdates(1),
+  emulatorType(NO_EMULATOR), mcmcType("dram"), 
+  adaptPosteriorRefine(false), proposalUpdates(1),
   likelihoodScale(1.0), fitnessMetricType("predicted_variance"),
   batchSelectionType("naive"), batchSize(0), calibrateSigmaFlag(false),
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
@@ -254,7 +254,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << rejectionType << metropolisType << adaptPosteriorRefine
+    << mcmcType << adaptPosteriorRefine
     << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
@@ -382,7 +382,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> emulatorSamples >> emulatorOrder >> emulatorType
-    >> mcmcType >> rejectionType >> metropolisType >> adaptPosteriorRefine
+    >> mcmcType >> adaptPosteriorRefine
     >> proposalUpdates >> proposalCovType >> proposalCovData >> proposalCovFile
     >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
@@ -510,7 +510,7 @@ void DataMethodRep::write(std::ostream& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << rejectionType << metropolisType << adaptPosteriorRefine
+    << mcmcType << adaptPosteriorRefine
     << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
