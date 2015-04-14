@@ -585,12 +585,12 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
     // extract GSL sample vector from QUESO vector sequence:
     mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
     // evaluate log of posterior from log likelihood and log prior:
-    Real log_posterior = loglike_vals[chain_pos]
-                       + std::log(prior_density(mcmc_sample));
+    Real log_prior     = std::log(prior_density(mcmc_sample)),
+         log_posterior = loglike_vals[chain_pos] + log_prior;
     //std::log(emulatorModel.continuous_probability_density(mcmc_sample));
     if (outputLevel > NORMAL_OUTPUT)
-      Cout << "MCMC sample: " << mcmc_sample << " log posterior = "
-	   << log_posterior << std::endl;
+      Cout << "MCMC sample: " << mcmc_sample << " log prior = " << log_prior
+	   << " log posterior = " << log_posterior << std::endl;
     // sort ascending by log posterior (highest prob are last) and retain
     // batch_size samples
     local_best.insert(std::pair<Real, size_t>(log_posterior, chain_pos));
@@ -1142,8 +1142,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
 
   result /= -2. * NonDQUESOInstance->likelihoodScale;
   if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
-    Cout << "Log likelihood is " << result
-	 << " Likelihood is " << exp(result) << '\n';
+    Cout << "Log likelihood is " << result << " Likelihood is " << exp(result)
+	 << '\n';
   
   // TODO: open file once and append here, or rely on QUESO to output
   if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
