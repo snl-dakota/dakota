@@ -68,18 +68,12 @@ protected:
 
   /// number of samples in the chain (e.g. number of MCMC samples)
   int numSamples;
- 
   /// random seed for MCMC process
   int randomSeed;
 
-  // technically doesn't apply to GPMSA, but leaving here for now
-  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
-  short emulatorType;
-
-  /// Model instance employed in the likelihood function; provides response
-  /// function values from Gaussian processes, stochastic expansions (PCE/SC),
-  /// or direct access to simulations (no surrogate option)
-  Model emulatorModel;
+  /// flag indicating use of a variable transformation to standardized
+  /// probability space for the model or emulator
+  bool standardizedSpace;
 
   /// flag indicating usage of adaptive posterior refinement; currently makes
   /// sense for unstructured grids in GP and PCE least squares/CS
@@ -88,14 +82,17 @@ protected:
   /// restarting of short MCMC chains
   int proposalUpdates;
 
-  /// flag indicating use of a variable transformation to standardized
-  /// probability space for the model or emulator
-  bool standardizedSpace;
+  // technically doesn't apply to GPMSA, but leaving here for now
+  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
+  short emulatorType;
+  /// Model instance employed in the likelihood function; provides response
+  /// function values from Gaussian processes, stochastic expansions (PCE/SC),
+  /// or direct access to simulations (no surrogate option)
+  Model mcmcModel;
+
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
-  /// PCE/SC-based emulatorModel
+  /// PCE/SC-based mcmcModel
   Iterator stochExpIterator;
-  /// LHS iterator for generating samples for GP 
-  Iterator lhsIterator;
 
 private:
 
@@ -107,7 +104,7 @@ private:
 
 
 inline const Model& NonDBayesCalibration::algorithm_space_model() const
-{ return emulatorModel; }
+{ return mcmcModel; }
 
 } // namespace Dakota
 

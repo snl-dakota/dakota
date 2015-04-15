@@ -177,7 +177,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     else {
       Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
 	   << num_primary << " but saw " << num_sense << "." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -233,7 +233,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       Cerr << "Error: Mixed gradient specification not currently valid with "
            << "vendor numerical.\nSelect dakota as method_source instead."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     Cout << "Mixed gradients: analytic gradients for functions { ";
     for (ILCIter cit=mixed_grad_analytic_ids.begin();
@@ -339,7 +339,7 @@ Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
 
   modelRep = get_model(problem_db);
   if ( !modelRep ) // bad type or insufficient memory
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
 }
 
 
@@ -467,7 +467,7 @@ void Model::assign_rep(Model* model_rep, bool ref_count_incr)
     if (!ref_count_incr) {
       Cerr << "Error: duplicated model_rep pointer assignment without "
 	   << "reference count increment in Model::assign_rep()." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
   else { // normal case: old != new
@@ -733,7 +733,7 @@ const IntResponseMap& Model::synchronize_nowait()
       // something like a parallel greedy gradient-based line search).
       Cerr << "Error: finite differencing within asynch evaluations not "
 	   << "currently supported by Model::synchronize_nowait()" << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
 
     const IntResponseMap& raw_response_map = derived_synchronize_nowait();
@@ -2319,7 +2319,7 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 	     // and lacks a separate error check.
 	Cerr << "Error: unsupported asv gradient request in Model::manage_asv."
 	     << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       if ( surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
 	   ( hessianType == "quasi" ||
@@ -2355,7 +2355,7 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 	     // with no_hessians and it lacks a separate error check.
 	Cerr << "Error: unsupported asv Hessian request in Model::manage_asv."
 	     << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
     }
   }
@@ -2371,7 +2371,7 @@ void Model::derived_compute_response(const ActiveSet& set)
     Cerr << "Error: Letter lacking redefinition of virtual derived_compute_"
          << "response() function.\nNo default defined at base class."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2384,7 +2384,7 @@ void Model::derived_asynch_compute_response(const ActiveSet& set)
     Cerr << "Error: Letter lacking redefinition of virtual derived_asynch_"
          << "compute_response() function.\nNo default defined at base class."
          << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2395,7 +2395,7 @@ const IntResponseMap& Model::derived_synchronize()
     Cerr << "Error: Letter lacking redefinition of virtual derived_synchronize"
          << "() function.\n       derived_synchronize is not available for this"
 	 << " Model." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // should not occur: protected fn only used by the letter
@@ -2409,7 +2409,7 @@ const IntResponseMap& Model::derived_synchronize_nowait()
     Cerr << "Error: Letter lacking redefinition of virtual derived_synchronize"
          << "_nowait() function.\n       derived_synchronize_nowait is not "
 	 << "available for this Model." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // should not occur: protected fn only used by the letter
@@ -2607,7 +2607,7 @@ void Model::build_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\nThis model does not support approximation "
 	 << "construction." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2619,7 +2619,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
 	 << "support constrained approximation construction." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2635,7 +2635,7 @@ void Model::update_approximation(bool rebuild_flag)
     Cerr << "Error: Letter lacking redefinition of virtual update_"
 	 << "approximation(bool) function.\nThis model does not support "
 	 << "approximation updating." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2650,7 +2650,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
 	 << "support approximation updating." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2665,7 +2665,7 @@ update_approximation(const VariablesArray& vars_array,
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
          << "support approximation updating." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2680,7 +2680,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(RealMatrix, IntResponseMap) function.\nThis model does not "
          << "support approximation updating." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2693,7 +2693,7 @@ void Model::append_approximation(bool rebuild_flag)
     Cerr << "Error: Letter lacking redefinition of virtual append_"
 	 << "approximation(bool) function.\nThis model does not support "
 	 << "approximation appending." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2708,7 +2708,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
 	 << "support approximation appending." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2723,7 +2723,7 @@ append_approximation(const VariablesArray& vars_array,
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
          << "support approximation appending." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2738,7 +2738,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(RealMatrix, IntResponseMap) function.\nThis model does not "
          << "support approximation appending." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2751,7 +2751,7 @@ void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
     Cerr << "Error: Letter lacking redefinition of virtual\n       "
 	 << "pop_approximation(bool, bool) function.  This model does not\n"
 	 << "       support approximation data removal." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2764,7 +2764,7 @@ void Model::restore_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual restore_"
 	 << "approximation() function.\nThis model does not support "
 	 << "approximation restoration." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2775,7 +2775,7 @@ bool Model::restore_available()
     Cerr << "Error: Letter lacking redefinition of virtual restore_"
 	 << "approximation(bool) function.\nThis model does not support "
 	 << "approximation restoration." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   return modelRep->restore_available();
 }
@@ -2789,7 +2789,7 @@ void Model::finalize_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual finalize_"
 	 << "approximation() function.\nThis model does not support "
 	 << "approximation finalization." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2802,7 +2802,7 @@ void Model::store_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
 	 << "() function.\nThis model does not support approximation storage."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2815,7 +2815,7 @@ void Model::combine_approximation(short corr_type)
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\nThis model does not support "
 	 << "approximation combination." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2829,7 +2829,7 @@ const VariablesArray Model::build_variables() const
     Cerr << "Error: Letter lacking redefinition of virtual build_variables()"
          << "\nThis model does not support build variables retrieval."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2842,7 +2842,7 @@ const ResponseArray Model::build_responses() const
     Cerr << "Error: Letter lacking redefinition of virtual build_responses()"
          << "\nThis model does not support build responses retrieval."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 */
@@ -2863,7 +2863,7 @@ SharedApproxData& Model::shared_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
          << "() function.\nThis model does not support approximations."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2877,7 +2877,7 @@ std::vector<Approximation>& Model::approximations()
     Cerr << "Error: Letter lacking redefinition of virtual approximations() "
          << "function.\nThis model does not support approximations."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2891,7 +2891,7 @@ const RealVectorArray& Model::approximation_coefficients(bool normalized)
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
          << "coefficients() function.\nThis model does not support "
          << "approximations." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2909,7 +2909,7 @@ approximation_coefficients(const RealVectorArray& approx_coeffs,
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
          << "coefficients() function.\n       This model does not support "
          << "approximations." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2920,7 +2920,7 @@ const RealVector& Model::approximation_variances(const Variables& vars)
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
          << "variances() function.\nThis model does not support "
          << "approximations." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2934,7 +2934,7 @@ const Pecos::SurrogateData& Model::approximation_data(size_t index)
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
          << " function.\nThis model does not support approximations."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2965,7 +2965,7 @@ DiscrepancyCorrection& Model::discrepancy_correction()
     Cerr << "Error: Letter lacking redefinition of virtual discrepancy_"
 	 << "correction() function.\nThis model does not support corrections."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // envelope fwd to letter
@@ -2980,7 +2980,7 @@ void Model::component_parallel_mode(short mode)
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual "
 	 << "component_parallel_mode() function.\n." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2990,7 +2990,7 @@ IntIntPair Model::estimate_partition_bounds(int max_eval_concurrency)
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual "
 	 << "estimate_partition_bounds() function.\n." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   return modelRep->estimate_partition_bounds(max_eval_concurrency);
@@ -3038,7 +3038,7 @@ void Model::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual serve_run() function"
 	 << ".\nThis model does not support server operations." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -3051,7 +3051,7 @@ void Model::stop_servers()
     Cerr << "Error: Letter lacking redefinition of virtual stop_servers() "
          << "function.\nThis model does not support server operations."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -3177,7 +3177,7 @@ set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (map_iter == modelPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
            << "Model::set_communicators()." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     else
       modelPCIter = map_iter->second;
@@ -3396,7 +3396,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     Cerr << "Error: Letter lacking redefinition of virtual derived_init_"
 	 << "communicators() function.\n       This model does not support "
 	 << "communicator operations." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -3408,7 +3408,7 @@ void Model::derived_init_serial()
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_init_serial"
          << "() function.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -3928,7 +3928,7 @@ Real Model::continuous_probability_density(const RealVector& c_vars) const
       Cerr << "Error: continuous_probability_density() uses a product of "
 	   << "marginal densities\n       and can only be used for independent "
 	   << "random variables." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
 
     UShortMultiArrayConstView cv_types
@@ -4109,6 +4109,107 @@ RealRealPair Model::continuous_distribution_bounds(size_t cv_index) const
 }
 
 
+Real Model::
+continuous_distribution_moment(size_t cv_index,
+			       unsigned short int moment_id) const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->continuous_distribution_moment(cv_index, moment_id);
+  else {
+    if (!moment_id || moment_id > 2) {
+      Cerr << "Error: Model::continuous_distribution_moment() only supports "
+	   << "first two moments." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    UShortMultiArrayConstView cv_types
+      = currentVariables.continuous_variable_types();
+    unsigned short dist_type = cv_types[cv_index];
+    size_t dist_index = cv_index - find_index(cv_types, dist_type);
+    Real mean, stdev;
+    switch (dist_type) {
+    // cases with (possibly optional) explicit distribution bounds
+    case NORMAL_UNCERTAIN:
+      return (moment_id == 1) ? aleatDistParams.normal_mean(dist_index) :
+	aleatDistParams.normal_std_deviation(dist_index);
+      break;
+    case LOGNORMAL_UNCERTAIN:
+      if (!aleatDistParams.lognormal_lambdas().empty()) // lambda/zeta
+	Pecos::moments_from_lognormal_params(
+	  aleatDistParams.lognormal_lambda(dist_index),
+	  aleatDistParams.lognormal_zeta(dist_index), mean, stdev);
+      else if (moment_id == 1)
+	return aleatDistParams.lognormal_mean(dist_index);
+      else if (!aleatDistParams.lognormal_std_deviations().empty())// mean/stdev
+	return aleatDistParams.lognormal_std_deviation(dist_index);
+      else { // mean/err_fact
+	Pecos::lognormal_std_deviation_from_err_factor(
+	  aleatDistParams.lognormal_mean(dist_index),
+	  aleatDistParams.lognormal_error_factor(dist_index), stdev);
+	return stdev;
+      }
+      break;
+    case UNIFORM_UNCERTAIN:
+      Pecos::moments_from_uniform_params(
+	aleatDistParams.uniform_lower_bound(dist_index),
+	aleatDistParams.uniform_upper_bound(dist_index), mean, stdev);
+      break;
+    case LOGUNIFORM_UNCERTAIN:
+      Pecos::moments_from_uniform_params(
+	aleatDistParams.loguniform_lower_bound(dist_index),
+	aleatDistParams.loguniform_upper_bound(dist_index), mean, stdev);
+      break;
+    case TRIANGULAR_UNCERTAIN:
+      Pecos::moments_from_triangular_params(
+	aleatDistParams.triangular_lower_bound(dist_index),
+	aleatDistParams.triangular_upper_bound(dist_index),
+	aleatDistParams.triangular_mode(dist_index), mean, stdev);
+      break;
+    case EXPONENTIAL_UNCERTAIN:
+      Pecos::moments_from_exponential_params(
+	aleatDistParams.exponential_beta(dist_index), mean, stdev);
+      break;
+    case BETA_UNCERTAIN:
+      Pecos::moments_from_beta_params(
+	aleatDistParams.beta_lower_bound(dist_index),
+	aleatDistParams.beta_upper_bound(dist_index),
+	aleatDistParams.beta_alpha(dist_index),
+	aleatDistParams.beta_beta(dist_index), mean, stdev);
+      break;
+    case GAMMA_UNCERTAIN:
+      Pecos::moments_from_gamma_params(
+	aleatDistParams.gamma_alpha(dist_index),
+	aleatDistParams.gamma_beta(dist_index), mean, stdev);
+      break;
+    case GUMBEL_UNCERTAIN:
+      Pecos::moments_from_gumbel_params(
+	aleatDistParams.gumbel_alpha(dist_index),
+	aleatDistParams.gumbel_beta(dist_index), mean, stdev);
+      break;
+    case FRECHET_UNCERTAIN:
+      Pecos::moments_from_frechet_params(
+	aleatDistParams.frechet_alpha(dist_index),
+	aleatDistParams.frechet_beta(dist_index), mean, stdev);
+      break;
+    case WEIBULL_UNCERTAIN:
+      Pecos::moments_from_weibull_params(
+	aleatDistParams.weibull_alpha(dist_index),
+	aleatDistParams.weibull_beta(dist_index), mean, stdev);
+      break;
+    case HISTOGRAM_BIN_UNCERTAIN:
+      Pecos::moments_from_histogram_bin_params(
+	aleatDistParams.histogram_bin_pairs(dist_index), mean, stdev);
+      break;
+    default:
+      Cerr << "Error: unsupported distribution type " << dist_type
+	   << " in Model::continuous_distribution_moment()." << std::endl;
+      abort_handler(MODEL_ERROR);
+      break;
+    }
+    return (moment_id == 1) ? mean : stdev;
+  }
+}
+
+
 int Model::evaluation_id() const
 {
   if (modelRep) // envelope fwd to letter
@@ -4137,7 +4238,7 @@ void Model::set_evaluation_reference()
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual set_evaluation_"
 	 << "reference() function.\n" << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -4149,7 +4250,7 @@ void Model::fine_grained_evaluation_counters()
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual fine_grained_"
 	 << "evaluation_counters() function.\n" << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -4163,7 +4264,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual print_evaluation_"
 	 << "summary() function.\n" << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -4177,7 +4278,7 @@ void Model::eval_tag_prefix(const String& eval_id_str)
   // else { // letter lacking redefinition of virtual fn.
   //   Cerr << "Error: Letter lacking redefinition of virtual eval_tag_prefix()"
   // 	 << "function.\n" << std::endl;
-  //   abort_handler(-1);
+  //   abort_handler(MODEL_ERROR);
   // }
 }
 

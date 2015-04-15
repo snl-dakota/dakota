@@ -46,7 +46,8 @@ const bool TABULAR_IFACE_ID = true;
 /// enum for Dakota abort reasons; using negative numbers to avoid
 /// clash with signal codes 1--64 in signum.h
 enum {
-  MODEL_ERROR     = -6, // error with Model recursion
+  ITERATOR_ERROR  = -7, // error with Iterator
+  MODEL_ERROR     = -6, // error within Model recursion
   IO_ERROR        = -5, // error with core file I/O
   INTERFACE_ERROR = -4, // error with map invocation (user workflow/driver): 
                         // analysis driver, if/of

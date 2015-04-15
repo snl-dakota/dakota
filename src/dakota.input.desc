@@ -1230,6 +1230,7 @@ TAG "method/bayes_calibration/dream/emulator/pce/expansion_order/collocation_rat
 TAG "method/bayes_calibration/dream/emulator/pce/expansion_order/posterior_adaptive"
 TAG "method/bayes_calibration/dream/emulator/sc"
 TAG "method/bayes_calibration/dream/emulator/sc/sparse_grid_level"
+TAG "method/bayes_calibration/standardized_space"
 TAG "method/bayes_calibration/use_derivatives"
 TAG "method/bayes_calibration/likelihood_scale"
 	DESC "{Likelihood scale factor} MethodCommands.html#MethodNonDBayesCalib"

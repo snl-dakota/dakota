@@ -567,8 +567,13 @@ public:
 				      size_t dist_index) const;
 
   /// return a set of distribution bounds for a particular index within the
-  /// active aleatory random variables
+  /// active continuous variables
   RealRealPair continuous_distribution_bounds(size_t cv_index) const;
+
+  /// return a distribution moment for a particular index within the
+  /// active continuous variables
+  Real continuous_distribution_moment(size_t cv_index,
+				      unsigned short int moment_id) const;
 
   // LABELS and TAGS
 

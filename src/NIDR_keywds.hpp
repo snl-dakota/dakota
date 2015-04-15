@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1345 distinct keywords (plus 205 aliases) **/
+/** 1346 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -356,15 +356,16 @@ static KeyWord
 		{0,0,7,0,0,kw_51},
 		{"emulator",8,5,1,0,kw_61}
 		},
-	kw_63[8] = {
+	kw_63[9] = {
 		{0,0,1,0,0,kw_22},
 		{0,0,2,0,0,kw_23},
-		{"calibrate_sigma",8,0,4,0,0,0.,0.,0,N_mdm(true,calibrateSigmaFlag)},
+		{"calibrate_sigma",8,0,5,0,0,0.,0.,0,N_mdm(true,calibrateSigmaFlag)},
 		{"dream",8,6,1,1,kw_48,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_DREAM)},
 		{"gpmsa",8,3,1,1,kw_54,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_GPMSA)},
-		{"likelihood_scale",10,0,3,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
+		{"likelihood_scale",10,0,4,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
 		{"queso",8,1,1,1,kw_62,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_QUESO)},
-		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
+		{"standardized_space",8,0,2,0,0,0.,0.,0,N_mdm(true,standardizedSpace)},
+		{"use_derivatives",8,0,3,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
 	kw_64[4] = {
 		{0,0,1,0,0,kw_22},
@@ -1509,7 +1510,7 @@ static KeyWord
 	kw_261[90] = {
 		{"adaptive_sampling",8,8,10,1,kw_36,0.,0.,0,N_mdm(utype,methodName_ADAPTIVE_SAMPLING)},
 		{"asynch_pattern_search",8,9,10,1,kw_40,0.,0.,0,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
-		{"bayes_calibration",8,6,10,1,kw_63,0.,0.,0,N_mdm(utype,methodName_BAYES_CALIBRATION)},
+		{"bayes_calibration",8,7,10,1,kw_63,0.,0.,0,N_mdm(utype,methodName_BAYES_CALIBRATION)},
 		{"centered_parameter_study",8,3,10,1,kw_64,0.,0.,0,N_mdm(utype,methodName_CENTERED_PARAMETER_STUDY)},
 		{"coliny_apps",0,9,10,1,kw_40,0.,0.,-3,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
 		{"coliny_beta",8,1,10,1,kw_66,0.,0.,0,N_mdm(utype,methodName_COLINY_BETA)},
@@ -1561,7 +1562,7 @@ static KeyWord
 		{"nlpql_sqp",8,0,10,1,kw_85,0.,0.,0,N_mdm(utype,methodName_NLPQL_SQP)},
 		{"nlssol_sqp",8,0,10,1,kw_233,0.,0.,0,N_mdm(utype,methodName_NLSSOL_SQP)},
 		{"nond_adaptive_sampling",0,8,10,1,kw_36,0.,0.,-53,N_mdm(utype,methodName_ADAPTIVE_SAMPLING)},
-		{"nond_bayes_calibration",0,6,10,1,kw_63,0.,0.,-52,N_mdm(utype,methodName_BAYES_CALIBRATION)},
+		{"nond_bayes_calibration",0,7,10,1,kw_63,0.,0.,-52,N_mdm(utype,methodName_BAYES_CALIBRATION)},
 		{"nond_efficient_subspace",0,2,10,1,kw_93,0.,0.,-30,N_mdm(utype,methodName_EFFICIENT_SUBSPACE)},
 		{"nond_global_evidence",0,5,10,1,kw_113,0.,0.,-24,N_mdm(utype,methodName_GLOBAL_EVIDENCE)},
 		{"nond_global_interval_est",0,5,10,1,kw_119,0.,0.,-24,N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)},

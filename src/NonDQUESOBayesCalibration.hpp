@@ -114,7 +114,7 @@ protected:
   /// update the starting point for a restarted MCMC chain using last
   /// point from previous chain
   void update_center();
-  /// evaluates allSamples on iteratedModel and update the emulator model
+  /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
   /// with all{Samples,Responses}
   void update_model();
 

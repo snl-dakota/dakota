@@ -136,7 +136,7 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   if (crossoverChainPairs < 0) {
     numCR = 3;
-    Cout << "WARN (DREAM): crossover_chain_pairs < 0, resetting to 3 (default)." 
+    Cout << "WARN (DREAM): crossover_chain_pairs < 0, resetting to 3 (default)."
 	 << std::endl;
   }
 
@@ -153,7 +153,8 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   if (calibrateSigmaFlag) {
-    Cerr << "\nError: calibration of sigma temporarily unsupported." << std::endl;
+    Cerr << "\nError: calibration of sigma temporarily unsupported."
+	 << std::endl;
     abort_handler(-1);
   }
 
@@ -175,7 +176,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   Cout << "INFO (DREAM): Num Samples " << numSamples << '\n';
   Cout << "INFO (DREAM): Calibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
  
-  // construct emulatorModel, if needed
+  // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
 
   // Set seed in both local generator and the one underlying DREAM in RNGLIB
@@ -214,9 +215,9 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
 
-  const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
-  const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
-  const RealVector& init_point = emulatorModel.continuous_variables();
+  const RealVector& lower_bounds = mcmcModel.continuous_lower_bounds();
+  const RealVector& upper_bounds = mcmcModel.continuous_upper_bounds();
+  const RealVector& init_point   = mcmcModel.continuous_variables();
   Cout << "Initial Points " << init_point << '\n';
 
   if (emulatorType == GP_EMULATOR || emulatorType == KRIGING_EMULATOR || 
@@ -330,55 +331,27 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
 {
   double result = 0.;
   size_t i,j,k;
-  int num_exp = NonDDREAMInstance->numExperiments;
-  int num_funcs = NonDDREAMInstance->numFunctions;
-  int num_cont = NonDDREAMInstance->numContinuousVars; 
+  int num_exp = NonDDREAMInstance->numExperiments,
+    num_funcs = NonDDREAMInstance->numFunctions,
+    num_cont  = NonDDREAMInstance->numContinuousVars; 
 
   // BMA TODO:
   // Bug: if calibrating sigma, this would be bigger
-  //  RealVector x(Teuchos::View, zp, par_num);
+  //RealVector x(Teuchos::View, zp, par_num);
   RealVector x(Teuchos::View, zp, num_cont);
-  // using a view; don't need copy for DREAM
-  // for (i=0; i<num_cont; i++) 
-  //   x(i)=paramValues[i];
     
   //Cout << "numExperiments" << num_exp << '\n';
   //Cout << "numFunctions" << num_funcs << '\n';
   //Cout << "numExpStdDeviationsRead " << NonDDREAMInstance->numExpStdDeviationsRead << '\n';
 
-  // FOR NOW:  THE GP and the NO EMULATOR case use an unstandardized 
-  // space (original) and the PCE or SC cases use a more general standardized space.  
-  // We had discussed having DREAM search in the original space:  this may 
-  // difficult for high dimensional spaces depending on the scaling, 
-  // because DREAM calculates the volume of the hypercube in which it is 
-  // searching and will stop if it is too small (e.g. if one input is 
-  // of small magnitude, searching in the original space will not be viable).
-  // 
-  if (NonDDREAMInstance->emulatorType == GP_EMULATOR || 
-      NonDDREAMInstance->emulatorType == KRIGING_EMULATOR || 
-      NonDDREAMInstance->emulatorType == NO_EMULATOR) {
-    //const RealVector& xLow = NonDDREAMInstance->emulatorModel.continuous_lower_bounds();
-    //const RealVector& xHigh = NonDDREAMInstance->emulatorModel.continuous_upper_bounds();
-    //Cout << "Queso X" << x << '\n';
-    //for (i=0; i<num_cont; i++) 
-    //  x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
-    NonDDREAMInstance->emulatorModel.continuous_variables(x); 
-    //Cout << "DAKOTA X" << x << '\n';
-  }
-  else { //case PCE_EMULATOR: case SC_EMULATOR: 
-  //    RealVector u(num_cont);
-  //    Iterator* se_iter = NonDDREAMInstance->stochExpIterator.iterator_rep();
-  //    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-  //    nataf.trans_X_to_U(x,u);
-    NonDDREAMInstance->emulatorModel.continuous_variables(x); 
-  } 
+  // DREAM searches in either the original space (default for GPs and no
+  // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
+  NonDDREAMInstance->mcmcModel.continuous_variables(x); 
 
   // Compute simulation response to use in likelihood 
-  NonDDREAMInstance->emulatorModel.compute_response();
-  const RealVector& fn_vals = 
-    NonDDREAMInstance->emulatorModel.current_response().function_values();
-  //Cout << "input is " << x << '\n';
-  //Cout << "output is " << fn_vals << '\n';
+  NonDDREAMInstance->mcmcModel.compute_response();
+  const Response& curr_resp = NonDDREAMInstance->mcmcModel.current_response();
+  const RealVector& fn_vals = curr_resp.function_values();
  
   // Calculate the likelihood depending on what information is available 
   // for the standard deviations
@@ -398,7 +371,7 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   else {
     for (i=0; i<num_exp; i++) {
       RealVector residuals; 
-      NonDDREAMInstance->expData.form_residuals(NonDDREAMInstance->emulatorModel.current_response(),i,residuals);
+      NonDDREAMInstance->expData.form_residuals(curr_resp,i,residuals);
       result += NonDDREAMInstance->expData.apply_covariance(residuals, i);    
     }
   }
@@ -427,10 +400,10 @@ problem_size(int &chain_num, int &cr_num, int &gen_num, int &pair_num,
 	     int &par_num)
 {
   chain_num = NonDDREAMInstance->numChains;
-  cr_num = NonDDREAMInstance->numCR;
-  gen_num = NonDDREAMInstance->numGenerations;
-  pair_num = NonDDREAMInstance->crossoverChainPairs;
-  par_num = NonDDREAMInstance->numContinuousVars;
+  cr_num    = NonDDREAMInstance->numCR;
+  gen_num   = NonDDREAMInstance->numGenerations;
+  pair_num  = NonDDREAMInstance->crossoverChainPairs;
+  par_num   = NonDDREAMInstance->numContinuousVars;
 
   return;
 }

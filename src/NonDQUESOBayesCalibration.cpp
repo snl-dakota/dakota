@@ -232,7 +232,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   
   if (calibrateSigmaFlag) {
     Cerr << "\nError: calibration of sigma temporarily unsupported."<<std::endl;
-    abort_handler(-1);
+    abort_handler(ITERATOR_ERROR);
   }
 
   // for now, assume that if you are reading in any experimental 
@@ -256,7 +256,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // instantiate QUESO objects and execute
   NonDQUESOInstance = this;
 
-  // construct emulatorModel and initialize tranformations, as needed
+  // construct mcmcModel and initialize tranformations, as needed
   initialize_model();
 
   ////////////////////////////////////////////////////////
@@ -267,7 +267,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // be done after parameter domain is initialized
   // TODO: In general if user gives proposal covariance; must be
   // transformed to scaled space in same way as variables
-  if (!propCovarType.empty()) // either filename OR data values will be defined
+  if (!propCovarType.empty()) // either filename OR data values defined
     user_proposal_covariance(propCovarType, propCovarData, propCovarFilename);
   else if (!emulatorType)
     default_proposal_covariance();
@@ -283,11 +283,14 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     if (!emulatorType) { // current spec prevents this
       Cerr << "Error: adaptive posterior refinement requires emulator model."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(ITERATOR_ERROR);
     }
     compactMode = true; // update_model() uses all{Samples,Responses}
     Real adapt_metric = DBL_MAX; unsigned short int num_iter = 0;
     while (adapt_metric > convergenceTol && num_iter < maxIterations) {
+
+      // TO DO: treat this like cross-validation as there is likely a sweet
+      // spot prior to degradation of conditioning (too much refinement data)
 
       // place update block here so that chain is always run for initial or
       // updated emulator; placing block at loop end could result in emulator
@@ -324,7 +327,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
   //Real restart_metric = DBL_MAX;
   size_t prop_update_cntr = 0; unsigned short batch_size = 5;
-  //copy_data(emulatorModel.continuous_variables(), prevCenter);
+  //copy_data(mcmcModel.continuous_variables(), prevCenter);
   update_chain_size(numSamples);
 
   // update proposal covariance and recenter after short chain: a
@@ -427,20 +430,19 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   case  SC_EMULATOR: case      GP_EMULATOR: asrv = 3; break; // for now
   }
 
-  // emulatorModel's continuous variables updated in update_center()
-  ActiveSet set = emulatorModel.current_response().active_set(); // copy
+  // mcmcModel's continuous variables updated in update_center()
+  ActiveSet set = mcmcModel.current_response().active_set(); // copy
   set.request_values(asrv);
-  emulatorModel.compute_response(set);
+  mcmcModel.compute_response(set);
   // Note: verbose output *should* echo vars and approx response
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Parameters for emulator response:\n"
-	 << emulatorModel.current_variables()
-	 << "\nActive response data:\n" << emulatorModel.current_response()
-	 << std::endl;
+	 << mcmcModel.current_variables() << "\nActive response data:\n"
+	 << mcmcModel.current_response()  << std::endl;
 
   // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
   RealSymMatrix log_like_hess;
-  const Response& emulator_resp = emulatorModel.current_response();
+  const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
   if (asrv & 4) { // try to use full misfit Hessian; fall back if indefinite
     build_hessian_of_sum_square_residuals_from_response(emulator_resp,
@@ -478,7 +480,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     if (paramSpace->dimGlobal() != nv) {
       Cerr << "Error: Queso vector space is not consistent with proposal "
 	   << "covariance dimension." << std::endl;
-      abort_handler(-1);
+      abort_handler(ITERATOR_ERROR);
     }
   }
   for (i=0; i<nv; ++i )
@@ -563,7 +565,7 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
     Cerr << "Error (NonDQUESO): final mcmc chain has length " << num_mcmc 
 	 << "\n                 but likelihood set has length"
 	 << loglike_vals.subSequenceSize() << std::endl;
-    abort_handler(-1);
+    abort_handler(ITERATOR_ERROR);
   }
 
   // TO DO: want to keep different samples with same likelihood, but not 
@@ -576,7 +578,7 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
     // evaluate log of posterior from log likelihood and log prior:
     Real log_prior     = std::log(prior_density(mcmc_sample)),
          log_posterior = loglike_vals[chain_pos] + log_prior;
-    //std::log(emulatorModel.continuous_probability_density(mcmc_sample));
+    //std::log(mcmcModel.continuous_probability_density(mcmc_sample));
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "MCMC sample: " << mcmc_sample << " log prior = " << log_prior
 	   << " log posterior = " << log_posterior << std::endl;
@@ -671,20 +673,20 @@ void NonDQUESOBayesCalibration::update_center()
     Cout << "New center:\n" << *paramInitials << "Log likelihood = "
 	 << inverseProb->logLikelihoodValues()[last_index] << std::endl;
 
-  // update emulatorModel vars with end of acceptance chain for eval of
+  // update mcmcModel vars with end of acceptance chain for eval of
   // misfit Hessian in precondition_proposal().  Note: the most recent
-  // emulatorModel evaluation could correspond to a rejected point.
+  // mcmcModel evaluation could correspond to a rejected point.
   RealVector c_vars;
   copy_gsl(*paramInitials, c_vars);
-  emulatorModel.continuous_variables(c_vars);
+  mcmcModel.continuous_variables(c_vars);
 }
 
 
 /*
 Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 {
-  // update emulatorModel vars for eval of misfit Hessian
-  emulatorModel.continuous_variables(new_center);
+  // update mcmcModel vars for eval of misfit Hessian
+  mcmcModel.continuous_variables(new_center);
 
   // update QUESO initial vars for starting point of chain
   for (int i=0; i<numContinuousVars; i++)
@@ -707,11 +709,11 @@ void NonDQUESOBayesCalibration::update_model()
 	 << " best points." << std::endl;
   evaluate_parameter_sets(iteratedModel, true, false); // log allResponses
 
-  // update emulatorModel with new data from iteratedModel
+  // update mcmcModel with new data from iteratedModel
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Updating emulator: appending " << allResponses.size()
 	 << " new data sets." << std::endl;
-  emulatorModel.append_approximation(allSamples, allResponses, true); // rebuild
+  mcmcModel.append_approximation(allSamples, allResponses, true); // rebuild
 }
 
 
@@ -722,9 +724,9 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
   if (prevCoeffs.empty()) {
     switch (emulatorType) {
     case PCE_EMULATOR:
-      prevCoeffs = emulatorModel.approximation_coefficients(true);  break;
+      prevCoeffs = mcmcModel.approximation_coefficients(true);  break;
     case SC_EMULATOR:
-      prevCoeffs = emulatorModel.approximation_coefficients(false); break;
+      prevCoeffs = mcmcModel.approximation_coefficients(false); break;
     case GP_EMULATOR: case KRIGING_EMULATOR:
       Cerr << "Warning: convergence norm not yet defined for GP emulators in "
 	   << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
@@ -737,8 +739,8 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
   Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
   switch (emulatorType) {
   case PCE_EMULATOR: {
-    const RealVectorArray& coeffs
-      = emulatorModel.approximation_coefficients(true); // normalized
+    // normalized coeffs:
+    const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(true);
     size_t i, j, num_qoi = coeffs.size(), num_coeffs_i;
 
     // This approach requires an unchanged multiIndex, which is acceptable 
@@ -761,13 +763,12 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
   case SC_EMULATOR: {
     // Interpolation could use a similar concept with the expansion coeffs,
     // although adaptation would imply differences in the grid.
-    const RealVectorArray& coeffs
-      = emulatorModel.approximation_coefficients(false);
+    const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(false);
 
     Cerr << "Warning: convergence norm not yet defined for SC emulator in "
 	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
 	 << std::endl;
-    //abort_handler(-1);
+    //abort_handler(ITERATOR_ERROR);
     return DBL_MAX;
     break;
   }
@@ -777,7 +778,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     Cerr << "Warning: convergence norm not yet defined for GP emulators in "
 	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
 	 << std::endl;
-    //abort_handler(-1);
+    //abort_handler(ITERATOR_ERROR);
     return DBL_MAX;
     break;
   }
@@ -803,7 +804,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
   for (size_t i=0; i<numContinuousVars; i++) {
-    RealRealPair bnds = emulatorModel.continuous_distribution_bounds(i);
+    RealRealPair bnds = mcmcModel.continuous_distribution_bounds(i);
     paramMins[i] = bnds.first; paramMaxs[i] = bnds.second;
   }
   // if calibrateSigmaFlag, the parameter domain is expanded by sigma terms 
@@ -819,14 +820,14 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
       //paramMaxs[numContinuousVars+j] = 1.;
       Real std_j = std::sqrt( covariance_diagonal[j] );
       paramMins[numContinuousVars+j] = .01 * std_j;
-      paramMaxs[numContinuousVars+j] = 2.  * std_j;
+      paramMaxs[numContinuousVars+j] =  2. * std_j;
     }
   }
   paramDomain.reset(new QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
 		    ("param_", *paramSpace, paramMins, paramMaxs));
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
-  const RealVector& init_point = emulatorModel.continuous_variables();
+  const RealVector& init_point = mcmcModel.continuous_variables();
   for (size_t i=0; i<numContinuousVars; i++)
     (*paramInitials)[i] = init_point[i];
   if (calibrateSigmaFlag)
@@ -846,15 +847,26 @@ void NonDQUESOBayesCalibration::default_proposal_covariance()
   int total_num_params = paramSpace->dimGlobal();
   QUESO::GslVector covDiag(paramSpace->zeroVector());
 
-  // default to covariance of independent uniforms (diagonal)
+  /*
+  // Old: default to covariance of independent uniforms (diagonal)
   const QUESO::GslVector& param_min = paramDomain->minValues();
   const QUESO::GslVector& param_max = paramDomain->maxValues();
   for (int i=0; i<total_num_params; i++)
     covDiag[i] = (param_max[i]-param_min[i])*(param_max[i]-param_min[i])/12.0;
-  
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Diagonal elements of the proposal covariance " 
-	 << "sent to QUESO (may be in scaled space) \n" << covDiag << '\n';
+  */
+
+  // New: covariance from variance of prior marginals (diagonal)
+  Real stdev;
+  for (int i=0; i<total_num_params; i++) {
+    stdev = mcmcModel.continuous_distribution_moment(i, 2);
+    covDiag[i] = stdev * stdev;
+  }
+
+  if (outputLevel > NORMAL_OUTPUT) {
+    Cout << "Diagonal elements of the proposal covariance sent to QUESO";
+    if (standardizedSpace) Cout << " (scaled space)";
+    Cout << '\n' << covDiag << '\n';
+  }
 
   proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
   
@@ -869,17 +881,22 @@ void NonDQUESOBayesCalibration::default_proposal_covariance()
 }
 
 
+/** This function will convert user-specified cov_type = "diagonal" |
+    "matrix" data from either cov_data or cov_filename and populate a
+    full QUESO::GslMatrix* in proposalCovMatrix with the covariance. */
 void NonDQUESOBayesCalibration::
-user_proposal_covariance(const String& cov_type, 
-			 const RealVector& cov_data, 
+user_proposal_covariance(const String& cov_type, const RealVector& cov_data, 
 			 const String& cov_filename)
 {
-  // TODO: Will need to scale user covariance if this method is
-  // applying its own scaling.
-
-  // this function will convert user-specified cov_type = "diagonal" |
-  // "matrix" data from either cov_data or cov_filename and populate a
-  // full QUESO::GslMatrix* in proposalCovMatrix with the covariance
+  if (emulatorType) {
+    Cerr << "Warning: user-defined proposal covariance ignored for emulator "
+	 << "models in lieu of analytic proposal covariance." << std::endl;
+    return;
+  }
+  // TODO: transform user covariance for use in standardized probability space
+  else if (standardizedSpace)
+    throw std::runtime_error("user-defined proposal covariance is invalid for use in transformed probability spaces.");
+  // Note: if instead a warning, then fallback to default_proposal_covariance()
 
   bool use_file = !cov_filename.empty();
 
@@ -1091,13 +1108,13 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // of small magnitude, searching in the original space will not be viable).
 
   //RealVector x; NonDQUESOInstance->copy_gsl(paramValues, x);
-  //NonDQUESOInstance->emulatorModel.continuous_variables(x);
+  //NonDQUESOInstance->mcmcModel.continuous_variables(x);
   for (i=0; i<num_cv; ++i)
-    NonDQUESOInstance->emulatorModel.continuous_variable(paramValues[i], i);
+    NonDQUESOInstance->mcmcModel.continuous_variable(paramValues[i], i);
 
-  NonDQUESOInstance->emulatorModel.compute_response();
+  NonDQUESOInstance->mcmcModel.compute_response();
 
-  const Response& resp = NonDQUESOInstance->emulatorModel.current_response();
+  const Response& resp = NonDQUESOInstance->mcmcModel.current_response();
   const RealVector& fn_vals = resp.function_values();
   if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
     Cout << "input is " << paramValues << "\noutput is " << fn_vals << '\n';
@@ -1163,7 +1180,7 @@ copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
   size_t i, size_qv = qv.sizeLocal();
   if (col < 0 || col >= rm.numCols() || size_qv != rm.numRows()) {
     Cerr << "Error: inconsistent matrix access in copy_gsl()." << std::endl;
-    abort_handler(-1);
+    abort_handler(ITERATOR_ERROR);
   }
   Real* rm_c = rm[col];
   for (i=0; i<size_qv; ++i)
@@ -1181,22 +1198,24 @@ Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
   // > avoid repeated dist_index lookups when looping over single var version
 
   // error trap on correlated random variables
+  // TO DO: add support for evaluation of correlated prior density
   const Pecos::AleatoryDistParams& a_dist
-    = emulatorModel.aleatory_distribution_parameters();
+    = mcmcModel.aleatory_distribution_parameters();
   if (!a_dist.uncertain_correlations().empty()) {
-    Cerr << "Error: prior_density() uses a product of marginal densities\n"
-	 << "       and can only be used for independent random variables."
-	 << std::endl;
-    abort_handler(-1);
+    Cerr << "Error: prior_density() currently uses a product of marginal "
+	 << "densities\n       and can only be used for independent random "
+	 << "variables at this time.\n       Consider use of variable "
+	 << "transformation option." << std::endl;
+    abort_handler(ITERATOR_ERROR);
   }
 
   UShortMultiArrayConstView cv_types
-    = emulatorModel.continuous_variable_types();
+    = mcmcModel.continuous_variable_types();
   Real pdf = 1.; size_t i, dist_index = 0, num_cv = cv_types.size();
   for (i=0; i<num_cv; ++i) {
-    // design/epistemic/state return 1
-    pdf *= emulatorModel.continuous_probability_density(qv[i], cv_types[i],
-							dist_index);
+    // design/epistemic/state return 1.
+    pdf *= mcmcModel.continuous_probability_density(qv[i], cv_types[i],
+						    dist_index);
     // shortcut: increment distribution index if same type, else reset
     if (i+1 < num_cv)
       dist_index = (cv_types[i] == cv_types[i+1]) ? dist_index + 1 : 0;

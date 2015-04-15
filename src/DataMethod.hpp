@@ -904,6 +904,8 @@ public:
   short emulatorType;
   /// the \c mcmc type specification in \ref MethodNonDBayesCalib
   String mcmcType;
+  /// use of standardized probability spaces for MCMC within Bayesian inference
+  bool standardizedSpace;
   /// flag indicating adaptive refinement of the emulator in regions
   /// of high posterior probability
   bool adaptPosteriorRefine;

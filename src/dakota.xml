@@ -1844,6 +1844,7 @@
                       </keyword>
                     </keyword>
                   </oneOf>
+                  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
                   <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
                   <keyword  id="likelihood_scale" name="likelihood_scale" code="{N_mdm(Real,likelihoodScale)}" label="Likelihood scale factor" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" >
                     <param type="REAL" />

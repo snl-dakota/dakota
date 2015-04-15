@@ -61,8 +61,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   lhsIter.assign_rep(new
-    NonDLHSSampling(iteratedModel, sample_type, emulatorSamples, randomSeed,
-		    rng, true, ACTIVE_UNIFORM), false);
+    NonDLHSSampling(mcmcModel, sample_type, emulatorSamples, randomSeed, rng,
+		    true, ACTIVE_UNIFORM), false);
 }
 
 
@@ -100,8 +100,8 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 /** Perform the uncertainty quantification */
 void NonDGPMSABayesCalibration::quantify_uncertainty()
 {
-  // construct emulatorModel, if needed
-  //NonDBayesCalibration::quantify_uncertainty();
+  // initialize the mcmcModel (including emulator construction) if needed
+  initialize_model();
  
   Cout << "import points file "<< approxImportFile
        << "import points annotated " << approxImportAnnotated
@@ -147,7 +147,6 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv
   // *********************************************************************
   int total_num_params = numUncertainVars;
-  
   Cout << "total_num_params " << total_num_params;
   
   QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
@@ -156,9 +155,9 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "Got to line 196 \n" ;
   QUESO::GslVector paramMins(paramSpace.zeroVector());
   QUESO::GslVector paramMaxs(paramSpace.zeroVector());
-  const RealVector& lower_bounds = iteratedModel.continuous_lower_bounds();
-  const RealVector& upper_bounds = iteratedModel.continuous_upper_bounds();
-  const RealVector& init_point = iteratedModel.continuous_variables();
+  const RealVector& lower_bounds = mcmcModel.continuous_lower_bounds();
+  const RealVector& upper_bounds = mcmcModel.continuous_upper_bounds();
+  const RealVector& init_point   = mcmcModel.continuous_variables();
   Cout << "Initial Points " << init_point << "\nlower_bounds " << lower_bounds
        << '\n'; // << "emulatorType " << emulatorType << '\n';
 

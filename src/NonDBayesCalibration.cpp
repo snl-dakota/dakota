@@ -34,8 +34,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   randomSeed(probDescDB.get_int("method.random_seed")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   adaptPosteriorRefine(
-    probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
-  standardizedSpace(false) // prior to adding to spec
+    probDescDB.get_bool("method.nond.adaptive_posterior_refinement"))
 {
   numSamples = (proposalUpdates > 1) ?
     (int)floor((Real)probDescDB.get_int("method.samples") /
@@ -49,9 +48,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     standardizedSpace = true; break;
-  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    // TO DO: add to spec
-    //standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+  default:
+    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) {
       initialize_random_variable_transformation();
       initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
@@ -63,7 +61,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  // Construct emulatorModel (no emulation, GP, PCE, or SC) for use in
+  // Construct mcmcModel (no emulation, GP, PCE, or SC) for use in
   // likelihood evaluations
   switch (emulatorType) {
 
@@ -92,7 +90,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     empty_rv_array, respLevelTarget,
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
-    emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
+    mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
     break;
   }
 
@@ -111,7 +109,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			     empty_rv_array, respLevelTarget,
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
-    emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
+    mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
     break;
   }
 
@@ -136,17 +134,17 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       { samples = 0; sample_reuse = "all"; }
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
-    //Iterator lhs_iterator;
+    Iterator lhs_iterator;
     if (standardizedSpace) {
       Model g_u_model;
       transform_model(iteratedModel, g_u_model, true); // globally bounded
-      lhsIterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
+      lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
 	samples, randomSeed,
 	probDescDB.get_string("method.random_number_generator"), true,
 	ACTIVE_UNIFORM), false);
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
-      emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, g_u_model,
+      mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
 	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
 	probDescDB.get_string("method.export_points_file"),
@@ -156,13 +154,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
         probDescDB.get_bool("method.import_points_file_active")), false);
     }
     else {
-      lhsIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
 	samples, randomSeed,
 	probDescDB.get_string("method.random_number_generator"), true,
 	ACTIVE_UNIFORM), false);
       ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
-      emulatorModel.assign_rep(new DataFitSurrModel(lhsIterator, iteratedModel,
+      mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
 	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
         outputLevel, sample_reuse,
 	probDescDB.get_string("method.export_points_file"),
@@ -176,9 +174,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   case NO_EMULATOR:
     if (standardizedSpace) // recast to standardized probability space
-      transform_model(iteratedModel, emulatorModel); // no global bounds
+      transform_model(iteratedModel, mcmcModel); // no global bounds
     else
-      emulatorModel = iteratedModel; // shared rep
+      mcmcModel = iteratedModel; // shared rep
     break;
   }
 
@@ -195,13 +193,13 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
   //iteratedModel.init_communicators(maxEvalConcurrency);
 
-  // stochExpIterator and emulatorModel use NoDBBaseConstructor,
+  // stochExpIterator and mcmcModel use NoDBBaseConstructor,
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    emulatorModel.init_communicators(pl_iter, maxEvalConcurrency); break;
+    mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
   }
 }
 
@@ -211,13 +209,13 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   //iteratedModel.set_communicators(maxEvalConcurrency);
 
-  // stochExpIterator and emulatorModel use NoDBBaseConstructor,
+  // stochExpIterator and mcmcModel use NoDBBaseConstructor,
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    emulatorModel.set_communicators(pl_iter, maxEvalConcurrency); break;
+    mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
   }
 }
 
@@ -228,7 +226,7 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.free_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    emulatorModel.free_communicators(pl_iter, maxEvalConcurrency); break;
+    mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
   }
 
   //iteratedModel.free_communicators(maxEvalConcurrency);
@@ -248,7 +246,7 @@ void NonDBayesCalibration::initialize_model()
       //initialize_final_statistics_gradients(); // not required
       natafTransform.transform_correlations();
     }
-    emulatorModel.build_approximation(); break;
+    mcmcModel.build_approximation(); break;
   case NO_EMULATOR:
     if (standardizedSpace) {
       initialize_random_variable_parameters();

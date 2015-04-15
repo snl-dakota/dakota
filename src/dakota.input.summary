@@ -1375,6 +1375,7 @@ KEYWORD12 method
 		)
 	      ]
 	    )
+	  [ standardized_space ]
 	  [ use_derivatives ]
 	  [ likelihood_scale REAL ]
 	  [ calibrate_sigma ]

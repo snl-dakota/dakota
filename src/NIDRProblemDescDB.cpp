@@ -6564,6 +6564,7 @@ static bool
 	MP_(showAllEval),
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
+	MP_(standardizedSpace),
 	MP_(tensorGridFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),

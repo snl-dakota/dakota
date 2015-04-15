@@ -130,7 +130,7 @@ DataMethodRep::DataMethodRep():
   integrationRefine(NO_INT_REFINE), refineSamples(0),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
-  emulatorType(NO_EMULATOR), mcmcType("dram"), 
+  emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), proposalUpdates(1),
   likelihoodScale(1.0), fitnessMetricType("predicted_variance"),
   batchSelectionType("naive"), batchSize(0), calibrateSigmaFlag(false),
@@ -254,7 +254,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << adaptPosteriorRefine
+    << mcmcType << standardizedSpace << adaptPosteriorRefine
     << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
@@ -262,7 +262,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive << varPartitions;
+    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive
+    << varPartitions;
 
   // Verification
   s << refinementRate;
@@ -382,7 +383,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> emulatorSamples >> emulatorOrder >> emulatorType
-    >> mcmcType >> adaptPosteriorRefine
+    >> mcmcType >> standardizedSpace >> adaptPosteriorRefine
     >> proposalUpdates >> proposalCovType >> proposalCovData >> proposalCovFile
     >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
@@ -390,7 +391,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
-    >> pstudyFilename >> pstudyFileAnnotated >> pstudyFileActive >> varPartitions;
+    >> pstudyFilename >> pstudyFileAnnotated >> pstudyFileActive
+    >> varPartitions;
 
   // Verification
   s >> refinementRate;
@@ -510,7 +512,7 @@ void DataMethodRep::write(std::ostream& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << adaptPosteriorRefine
+    << mcmcType << standardizedSpace << adaptPosteriorRefine
     << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
@@ -518,7 +520,8 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive << varPartitions;
+    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive
+    << varPartitions;
 
   // Verification
   s << refinementRate;
