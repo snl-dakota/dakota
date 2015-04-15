@@ -215,7 +215,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   propCovarType(probDescDB.get_string("method.nond.proposal_cov_type")),
   propCovarData(probDescDB.get_rv("method.nond.proposal_covariance_data")),
   propCovarFilename(probDescDB.get_string("method.nond.proposal_cov_filename")),
-  mcmcType(probDescDB.get_string("method.mcmc_type")),
+  mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
@@ -375,17 +375,11 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_displayVerbosity = 2;
   envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
  
-  if ((mcmcType == "dram") || (mcmcType == "delayed_rejection") ||
-      (mcmcType == "metropolis_hastings") || 
-      (mcmcType == "adaptive_metropolis"))
+  if (mcmcType == "multilevel")
+    quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
+  else // dram, dr, am, or mh
     quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
 					      envOptionsValues.get()));
-  else if (strends(mcmcType, "multilevel"))
-    quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
-  else {
-    Cerr << "\nError (QUESO): Unknown MCMC type " << mcmcType << std::endl;
-    abort_handler(-1);
-  }
 }
 
 
@@ -495,26 +489,21 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
 void NonDQUESOBayesCalibration::run_queso_solver()
 {
-  Cout << "Running Bayesian Calibration with QUESO using ";
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "the following settings:" << "\n  MCMC type "<< mcmcType
-	 << "\n  Number of samples in the MCMC Chain "
-	 << calIpMhOptionsValues->m_rawChainSize
-	 << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
-  else
-    Cout << calIpMhOptionsValues->m_rawChainSize << " MCMC samples."<<std::endl;
+  Cout << "Running Bayesian Calibration with QUESO using " << mcmcType
+       << " with " << calIpMhOptionsValues->m_rawChainSize << " MCMC samples."
+       << std::endl;
+  //if (outputLevel > NORMAL_OUTPUT)
+  //  Cout << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
   ////////////////////////////////////////////////////////
-  if ((mcmcType == "dram") || (mcmcType == "delayed_rejection") ||
-      (mcmcType == "metropolis_hastings") || 
-      (mcmcType == "adaptive_metropolis"))
+  if (mcmcType == "multilevel")
+    inverseProb->solveWithBayesMLSampling();
+  else
     inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(),
 						  *paramInitials, 
 						  proposalCovMatrix.get());
-  else if (mcmcType == "multilevel")
-    inverseProb->solveWithBayesMLSampling();
 
   Cout << "QUESO MCMC chain completed.  QUESO results are in the outputData "
        << "directory:\n  display_sub0.txt contains MCMC diagnostics.\n"
@@ -1030,24 +1019,23 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_putOutOfBoundsInChain       = false;
   //calIpMhOptionsValues->m_tkUseLocalHessian         = false;
   //calIpMhOptionsValues->m_tkUseNewtonComponent      = true;
-  if (strbegins(mcmcType, "adaptive") || strbegins(mcmcType, "metropolis"))
-    calIpMhOptionsValues->m_drMaxNumExtraStages = 0;
-  else if (strbegins(mcmcType, "delayed") || strbegins(mcmcType, "dram"))
-    calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
+
+  // delayed rejection option:
+  calIpMhOptionsValues->m_drMaxNumExtraStages
+    = (mcmcType == "delayed_rejection" || mcmcType == "dram") ? 1 : 0;
   calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
   calIpMhOptionsValues->m_drScalesForExtraStages[0] = 5;
   //calIpMhOptionsValues->m_drScalesForExtraStages[1] = 10;
   //calIpMhOptionsValues->m_drScalesForExtraStages[2] = 20;
-  if (strbegins(mcmcType, "metropolis") || strbegins(mcmcType, "delayed"))
-    calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
-  else if (strbegins(mcmcType, "adaptive") || strbegins(mcmcType, "dram"))
-    calIpMhOptionsValues->m_amInitialNonAdaptInterval = 1;
+
+  // adaptive metropolis option:
+  calIpMhOptionsValues->m_amInitialNonAdaptInterval
+    = (mcmcType == "adaptive_metropolis" || mcmcType == "dram") ? 1 : 0;
   calIpMhOptionsValues->m_amAdaptInterval           = 100;
   calIpMhOptionsValues->m_amEta                     = 2.88;
   calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
 
-  // TODO: Ask QUESO why the MH sequence generator decimates the
-  // in-memory chain when generating final results
+  // chain management options:
   if (adaptPosteriorRefine || proposalUpdates > 1)
     // In this case, we process the full chain for maximum posterior values
     calIpMhOptionsValues->m_filteredChainGenerate         = false;
@@ -1063,9 +1051,9 @@ void NonDQUESOBayesCalibration::set_mh_options()
     //calIpMhOptionsValues->m_filteredChainComputeStats   = true;
   }
 
-  // BMA TODO: fix scaling
-  // suppress logit transform scaling in QUESO until we get our
-  // problem scaling correct
+  // logit transform addresses high rejection rates in corners of bounded
+  // domains.  It is hardwired on at this time, although potentially redundant
+  // in some cases (e.g., WIENER u-space type).
   calIpMhOptionsValues->m_doLogitTransform = false;
 }
 
