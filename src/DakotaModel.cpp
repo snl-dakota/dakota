@@ -3272,7 +3272,26 @@ void Model::estimate_message_lengths()
 
     if (parallelLib.mpirun_flag()) {
       MPIPackBuffer buff;
-      buff << currentVariables;
+
+      // A Variables object could later be larger if it has string set
+      // elements that are longer than the current value.  Create a
+      // new Variables object and set the string variables to the
+      // worst case before packing. Variables aren't aware of the set
+      // elements, so set them here with helper functions.
+      Variables new_vars(currentVariables.copy());
+      size_t offset = 0;
+      string_variable_max(discreteDesignSetStringValues, offset, new_vars);
+      offset += discreteDesignSetStringValues.size();
+      string_variable_max(aleatDistParams.histogram_point_string_pairs(), 
+			  offset, new_vars);
+      offset += aleatDistParams.histogram_point_string_pairs().size();
+      string_variable_max(
+        epistDistParams.discrete_set_string_values_probabilities(),
+	offset, new_vars);
+      offset += epistDistParams.discrete_set_string_values_probabilities().size();
+      string_variable_max(discreteStateSetStringValues, offset, new_vars);
+
+      buff << new_vars;
       messageLengths[0] = buff.size(); // length of message containing vars
 
       // The grad/Hessian arrays in currentResponse get dynamically resized as
@@ -3295,13 +3314,53 @@ void Model::estimate_message_lengths()
       buff << new_response;
       messageLengths[2] = buff.size(); // length of message containing response
       buff.reset();
-      ParamResponsePair current_pair(currentVariables, interface_id(),
+      ParamResponsePair current_pair(new_vars, interface_id(),
 				     new_response);
       buff << current_pair;
       messageLengths[3] = buff.size(); // length of message containing a PRPair
 #ifdef MPI_DEBUG
       Cout << "Message Lengths:\n" << messageLengths << std::endl;
 #endif // MPI_DEBUG
+    }
+  }
+}
+
+
+void Model::string_variable_max(const StringSetArray& ssa, size_t offset, 
+				Variables& vars) {
+  if (modelRep) // envelope fwd to letter
+    modelRep->string_variable_max(ssa, offset, vars);
+  else { // not a virtual function: base class definition for all letters
+    size_t num_vars = ssa.size();
+    for (size_t i=0; i<num_vars; ++i) {
+      String max_string("");
+      SSCIter ss_it = ssa[i].begin(), ss_end = ssa[i].end();
+      for ( ; ss_it!=ss_end; ++ss_it) {
+	if (ss_it->size() > max_string.size())
+	  max_string = *ss_it;
+      }
+      if (!max_string.empty())
+	vars.all_discrete_string_variable(max_string, offset+i);
+    }
+  }
+}
+
+
+void Model::string_variable_max(const StringRealMapArray& srma, size_t offset, 
+				Variables& vars) {
+  if (modelRep) // envelope fwd to letter
+    modelRep->string_variable_max(srma, offset, vars);
+  else { // not a virtual function: base class definition for all letters
+    size_t num_vars = srma.size();
+    for (size_t i=0; i<num_vars; ++i) {
+      String max_string("");
+      SRMCIter ss_it = srma[i].begin(), ss_end = srma[i].end();
+      for ( ; ss_it!=ss_end; ++ss_it) {
+	if (ss_it->first.size() > max_string.size())
+	  max_string = ss_it->first;
+      }
+      if (!max_string.empty())
+	vars.all_discrete_string_variable(max_string, offset+i);
     }
   }
 }

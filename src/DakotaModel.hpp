@@ -996,6 +996,17 @@ protected:
   /// based on ie_pl settings
   void set_ie_asynchronous_mode(int max_eval_concurrency);
 
+  /// set the current value of each string variable offset + i to the
+  /// longest string value found in the admissible string set ssa[i]
+  void string_variable_max(const StringSetArray& ssa, size_t offset, 
+			   Variables& vars) ;
+
+  /// set the current value of each string variable offset + i to the
+  /// longest string value found in the admissible string map srma[i]
+  void string_variable_max(const StringRealMapArray& srma, size_t offset, 
+			   Variables& vars);
+
+
   //
   //- Heading: Data
   //
