@@ -436,15 +436,14 @@ void ExperimentCovariance::get_main_diagonal( RealVector &diagonal ) const {
   }
 }
 
-void build_hessian_of_sum_square_residuals_from_response(
-       const Response& resp, RealSymMatrix &ssr_hessian )
-{
+void build_hessian_of_sum_square_residuals_from_function_data(
+		 const RealSymMatrixArray &func_hessians, 
+		 const RealMatrix &func_gradients,
+                 const RealVector &residuals,
+		 const ShortArray &asrv,
+		 RealSymMatrix &ssr_hessian ){
   // This function assumes that residuals are r = ( approx - data )
   // NOT r = ( data - approx )
-  const RealSymMatrixArray &func_hessians = resp.function_hessians();
-  const RealMatrix &func_gradients = resp.function_gradients();
-  const RealVector &residuals = resp.function_values();
-  const ShortArray &asrv = resp.active_set_request_vector();
 
   // func_gradients is the transpose of the Jacobian of the functions
   int num_rows = func_gradients.numRows(), num_residuals = residuals.length();
@@ -459,9 +458,69 @@ void build_hessian_of_sum_square_residuals_from_response(
 	if (rv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
 	if ( (rv_i & 5) == 5 ) hess_jk += residuals[i]*func_hessians[i](j,k);
       }
-      hess_jk *= 2.;
+      // we adopt convention and compute hessian of sum square residuals
+      // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
+      // multiplication
+      //hess_jk *= 2.;
     }
   }
+}
+
+// temp hack to stop NonDQUESOBayes code from braking until we can
+// resolve issues with interpolating gradients and hessians of field
+// data
+void build_hessian_of_sum_square_residuals_from_response(
+		 const Response& resp,
+		 RealSymMatrix &ssr_hessian ){
+  const RealSymMatrixArray &func_hessians = resp.function_hessians();
+  const RealMatrix &func_gradients = resp.function_gradients();
+  const RealVector &residuals = resp.function_values();
+  const ShortArray &asrv = resp.active_set_request_vector();
+  build_hessian_of_sum_square_residuals_from_function_data( func_hessians, 
+							    func_gradients, 
+							    residuals,
+							    asrv,
+							    ssr_hessian );
+}
+
+void build_hessian_of_sum_square_residuals_from_response(
+		 const Response& resp, ExperimentCovariance &exper_cov, 
+		 RealSymMatrix &ssr_hessian )
+{
+  const RealSymMatrixArray &func_hessians = resp.function_hessians();
+  const RealMatrix &func_gradients = resp.function_gradients();
+  const RealVector &residuals = resp.function_values();
+  const ShortArray &asrv = resp.active_set_request_vector();
+
+  if ( exper_cov.num_blocks() > 0 ){
+    RealSymMatrixArray scaled_hessians;
+    RealMatrix scaled_gradients;
+    RealVector scaled_residuals;
+    exper_cov.apply_experiment_covariance_inverse_sqrt_to_hessians(
+						       func_hessians,
+						       scaled_hessians);
+    exper_cov.apply_experiment_covariance_inverse_sqrt_to_gradients(
+						       func_gradients,
+						       scaled_gradients);
+    exper_cov.apply_experiment_covariance_inverse_sqrt(residuals, 
+						       scaled_residuals);
+    // The reason the call to build_hessian... is explicilty listed 
+    // once in each coniditional statement is to avoid additional copies 
+    // needed by using only one function call after the conditional 
+    // The additional copies are needed to convert residuals, func_gradients, and
+    // func_hessians to be copied into scaled_residuals etc.
+    // when exper_cov is empty
+    build_hessian_of_sum_square_residuals_from_function_data( scaled_hessians, 
+							      scaled_gradients, 
+							      scaled_residuals,
+							      asrv,
+							      ssr_hessian );
+  }else
+    build_hessian_of_sum_square_residuals_from_function_data( func_hessians, 
+							      func_gradients, 
+							      residuals,
+							      asrv,
+							      ssr_hessian );
 }
 
 void build_hessian_of_sum_square_residuals_from_function_gradients(
@@ -479,7 +538,10 @@ void build_hessian_of_sum_square_residuals_from_function_gradients(
       Real &hess_jk = ssr_hessian(j,k);
       for ( int i=0; i<num_residuals; i++ )
 	hess_jk += func_gradients(j,i)*func_gradients(k,i);
-      hess_jk *= 2.;
+      // we adopt convention and compute hessian of sum square residuals
+      // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
+      // multiplication
+      //hess_jk *= 2.;
     }
   }
 }

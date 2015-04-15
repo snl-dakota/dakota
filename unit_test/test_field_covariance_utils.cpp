@@ -372,7 +372,7 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   Real matrix_array[] = {1.,0.5,0.25,0.5,2.,0.5,0.25,0.5,4.};
   matrix_map_indices.sizeUninitialized( num_matrices );
   matrix_map_indices[0] = 2;
-  matrices.resize( num_diags );
+  matrices.resize( num_matrices );
   matrices[0].shapeUninitialized( num_matrix_rows, num_matrix_rows );
   for ( int j=0; j<num_matrix_rows; j++ ){
     for ( int i=0; i<num_matrix_rows; i++ )
@@ -589,7 +589,7 @@ void test_linear_interpolate_1d_with_extrapolation()
 
 void test_build_hessian_of_sum_square_residuals_from_function_hessians()
 {
-  int num_residuals = 1;
+  int num_residuals = 3;
   RealSymMatrixArray func_hessians( num_residuals );
   RealMatrix func_gradients( 2, num_residuals, false );
   RealVector residuals( num_residuals );
@@ -612,30 +612,135 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
     func_hessians[i](1,1) = 2./5.*(3.*y2-2.*x2);
   }
 
-  ActiveSet set(3, 2); set.request_values(7);
+  ActiveSet set(num_residuals, 2); set.request_values(7);
   Response resp(SIMULATION_RESPONSE, set);
   resp.function_values(residuals);
   resp.function_gradients(func_gradients);
   resp.function_hessians(func_hessians);
 
-  RealSymMatrix ssr_hessian;
-  build_hessian_of_sum_square_residuals_from_response(resp, ssr_hessian);
+  // -------------------------------------- //
+  // Build hessian without noise covariance
+  // -------------------------------------- //
 
+  // If no noise covariance specify exper_cov as empty
+  ExperimentCovariance exper_cov;
+
+  RealSymMatrix ssr_hessian;
+  build_hessian_of_sum_square_residuals_from_response(resp, exper_cov,
+						      ssr_hessian);
+  // hessian computed for ssr= r'r/2
   RealSymMatrix truth_ssr_hessian( 2 );
   for ( int i=0; i<num_residuals; i++ ){
     Real x = pts(0,i), y = pts(1,i);
     Real x2 = x*x, x3 = x2*x, x4 = x2*x2, x5 = x3*x2, x6 = x4*x2,
       y2 = y*y, y3 = y2*y, y4 = y2*y2, y5 = y3*y2, y6 = y4*y2;
-    truth_ssr_hessian(0,0) += 4./25.*( 10.*x2*y2*(y2-6.*x2)-
+    truth_ssr_hessian(0,0) += 2./25.*( 10.*x2*y2*(y2-6.*x2)-
 					(y2-14.*x2)*(2.*x2-y2)*(2.*x2-y2) );
-    truth_ssr_hessian(1,0) += 8./25.*y*x*( 10.*x2*y2-3.*(2.*x2-y2)*(2.*x2-y2) );
-    truth_ssr_hessian(1,1) += 2./25.*( 10.*x2*y2*(2.*x2-3.*y2) + 
+    truth_ssr_hessian(1,0) += 4./25.*y*x*( 10.*x2*y2-3.*(2.*x2-y2)*(2.*x2-y2) );
+    truth_ssr_hessian(1,1) += 1./25.*( 10.*x2*y2*(2.*x2-3.*y2) + 
 				       (7.*y2-2.*x2)*(2.*x2-y2)*(2.*x2-y2) );
   }
   
   truth_ssr_hessian -= ssr_hessian;
   BOOST_CHECK( truth_ssr_hessian.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
+
+  // -------------------------------------- //
+  // Build hessian with noise covariance
+  // -------------------------------------- //
+
+  // Fill exper_cov with noise covariance
+  std::vector<RealMatrix> matrices;
+  std::vector<RealVector> diagonals;
+  RealVector scalars;
+  IntVector matrix_map_indices, diagonal_map_indices, scalar_map_indices;
+
+  // Experiment covariance matrix consists of the following blocks
+  // scalar_1, matrix_1
+
+  // MATLAB CODE: 
+  /*
+    A = [1,0.5;0.5,2.]; S = eye(3); S(1,1)=1.; S(2:3,2:3)=A;
+    U = chol( inv(S) );
+
+    r = [-0.9 -0.05625 -0.04444444444444444]';
+    g = [-0.8, -0.1, -0.05925925925925925; 0.4, -0.05, 0.05925925925925925];
+    h1 = [4,-1.6;-1.6,0.4]; h2=[1 0.4;0.4,0.1]; 
+    h3 =[0.1777777777777778,-0.3555555555555555;
+    -0.3555555555555555, 0.4444444444444445];
+
+    gnewton_hess = g*inv(S)*g';
+    rs = r'*inv(S);
+    hess = gnewton_hess + rs(1)*h1+rs(2)*h2+rs(3)*h3
+  */   
+
+  // Generate scalar matrix blocks
+  int num_scalars = 1;
+  Real scalar_array[] = {1.};
+  int scalar_map_index_array[] = {0};
+  scalars.sizeUninitialized( num_scalars );
+  scalar_map_indices.sizeUninitialized( num_scalars );
+  for ( int i=0; i<num_scalars; i++ ){
+    scalars[i] = scalar_array[i];
+    scalar_map_indices[i] = scalar_map_index_array[i];
+  }
+
+  // Generate full covariance matrix blocks
+  int num_matrices=1;
+  int num_matrix_rows = 2;
+  Real matrix_array[] = {1.,0.5,0.5,2.};
+  matrix_map_indices.sizeUninitialized( num_matrices );
+  matrix_map_indices[0] = 1;
+  matrices.resize( num_matrices );
+  matrices[0].shapeUninitialized( num_matrix_rows, num_matrix_rows );
+  for ( int j=0; j<num_matrix_rows; j++ ){
+    for ( int i=0; i<num_matrix_rows; i++ )
+      matrices[0](i,j) = matrix_array[j*num_matrix_rows+i];
+  }
+
+  exper_cov.set_covariance_matrices( matrices, diagonals, scalars,
+				     matrix_map_indices,
+				     diagonal_map_indices, 
+				     scalar_map_indices );
+  
+  build_hessian_of_sum_square_residuals_from_response(resp, exper_cov,
+						      ssr_hessian);
+
+  Real truth_noise_scaled_ssr_hessian_array[] = {-3.00319615912208e+00,
+						 1.10723495982755e+00,
+						 1.10723495982755e+00,
+						 -2.02746423672350e-01};
+  RealSymMatrix truth_noise_scaled_ssr_hessian( Teuchos::View, true,
+					  truth_noise_scaled_ssr_hessian_array,
+					  2, 2 );
+  
+  truth_noise_scaled_ssr_hessian -= ssr_hessian;
+  BOOST_CHECK( truth_noise_scaled_ssr_hessian.normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
+
+  // -------------------------------------- //
+  // Build Gauss-Newton hessian with noise covariance
+  // -------------------------------------- //
+  ActiveSet set1(num_residuals, 2); set1.request_values(3);
+  Response resp1(SIMULATION_RESPONSE, set1);
+  resp1.function_values(residuals);
+  resp1.function_gradients(func_gradients);
+  resp1.function_hessians(func_hessians);
+  
+  build_hessian_of_sum_square_residuals_from_response(resp1, exper_cov,
+						      ssr_hessian);
+
+  Real truth_noise_scaled_gn_ssr_hessian_array[] = {6.50048990789732e-01,
+						    -3.15445816186557e-01,
+						    -3.15445816186557e-01,
+						    1.66556927297668e-01};
+  RealSymMatrix truth_noise_scaled_gn_ssr_hessian( Teuchos::View, true,
+					truth_noise_scaled_gn_ssr_hessian_array,
+					2, 2 );
+  
+  truth_noise_scaled_gn_ssr_hessian -= ssr_hessian;
+  BOOST_CHECK( truth_noise_scaled_gn_ssr_hessian.normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() );
 }
 
 void test_symmetric_eigenvalue_decomposition()

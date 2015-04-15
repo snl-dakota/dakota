@@ -211,6 +211,11 @@ public:
   /// experimental covariance matrix
   void get_main_diagonal( RealVector &diagonal ) const;
 
+  /// Return the number of diagonal blocks in the entire matrix
+  int num_blocks() const{
+    return numBlocks_;
+  };
+
 };
 
 /** \brief Construct the hessian of the sum of squares of residuals
@@ -219,7 +224,15 @@ public:
  * matrix, and Hessian symmetric matrix array
  */
 void build_hessian_of_sum_square_residuals_from_response(
-       const Response& resp, RealSymMatrix &ssr_hessian );
+	 const Response &resp, ExperimentCovariance &exper_cov, 
+	 RealSymMatrix &ssr_hessian );
+
+// temp hack to stop NonDQUESOBayes code from braking until we can
+// resolve issues with interpolating gradients and hessians of field
+// data
+void build_hessian_of_sum_square_residuals_from_response(
+		 const Response& resp,
+		 RealSymMatrix &ssr_hessian );
 
 /** \brief Construct the hessian of the sum of squares of residuals
  *  
@@ -228,6 +241,23 @@ void build_hessian_of_sum_square_residuals_from_response(
  */
 void build_hessian_of_sum_square_residuals_from_function_gradients(
        const RealMatrix &func_gradients, RealSymMatrix &ssr_hessian );
+
+/** \brief Construct the hessian of the sum of squares of residuals
+ *  
+ * \param func_hessians A list of matrices containing the Hessians of the 
+ * function elements in the residual vector
+ * \param func_gradients A matrix containing the gradients of the
+ * residual vector
+ * \param residuals A vector of residuals (mismatch between experimental data
+ * and the corresponding function values
+ * \param asrv The active set request vector
+ */  
+void build_hessian_of_sum_square_residuals_from_function_data(
+		 const RealSymMatrixArray &func_hessians, 
+		 const RealMatrix &func_gradients,
+                 const RealVector &residuals,
+		 const ShortArray &asrv,
+		 RealSymMatrix &ssr_hessian );
 
 /**
  * \brief Computes the eigenvalues and, optionally, eigenvectors of a
