@@ -5347,6 +5347,29 @@ Test Number 6 succeeded
                       1.9853236241e-01
                      -7.7303327174e-02
 <<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
+   oscB_scalar1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9999999104e-01 x1
+                      1.9999999940e-01 x2
+<<<<< Best residual terms =
+                      0.0000000000e+00
+                      1.3613277172e-11
+                     -1.2187029164e-11
+                     -2.3831086604e-12
+                     -2.0706369173e-11
+<<<<< Best model responses =
+                      5.0000000000e-01
+                      4.9607619661e-01
+                      4.8650263279e-01
+                      4.7422314550e-01
+                      4.6154307319e-01
+<<<<< Best data captured at function evaluation 16
 dakota_field.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
