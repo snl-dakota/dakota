@@ -1385,7 +1385,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
   const char *L;
 
   if (!dbRep)
-	Null_rep("get_iv");
+	Null_rep("get_rma");
   if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
 	Locked_db();
