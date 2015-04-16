@@ -2614,6 +2614,9 @@
           </keyword>
           <keyword  id="categorical" name="categorical" code="{N_vam(categorical,discreteDesignSetIntCat)}" label="categorical" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN integer" />
+              <keyword id="adjacency" name="adjacency" code="{N_vam(newivec,Var_Info_ddsia)}" label="adjacency" help="" minOccurs="0">
+                <param type="INTEGERLIST"/>
+              </keyword>
           </keyword>
           <keyword  id="initial_point2" name="initial_point" code="{N_vam(ivec,discreteDesignSetIntVars)}" label="Initial point" help="VarCommands.html#VarDDSIV" minOccurs="0" >
             <param type="INTEGERLIST" constraint="LEN integer" />
@@ -2631,6 +2634,9 @@
           <keyword  id="elements1" name="elements" code="{N_vam(newsarray,Var_Info_ddss)}" label="elements" help=""  >
             <alias name="set_values"/>
             <param type="STRINGLIST" />
+          </keyword>
+          <keyword id="adjacency1" name="adjacency" code="{N_vam(newivec,Var_Info_ddssa)}" label="adjacency" help="" minOccurs="0">
+            <param type="INTEGERLIST"/>
           </keyword>
           <keyword  id="initial_point3" name="initial_point" code="{N_vam(strL,discreteDesignSetStrVars)}" label="Initial point" help="VarCommands.html#VarDDSRV" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN string" />
@@ -2651,6 +2657,9 @@
           </keyword>
           <keyword  id="categorical1" name="categorical" code="{N_vam(categorical,discreteDesignSetRealCat)}" label="categorical" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN integer" />
+            <keyword id="adjacency2" name="adjacency" code="{N_vam(newivec,Var_Info_ddsra)}" label="adjacency" help="" minOccurs="0">
+              <param type="INTEGERLIST"/>
+            </keyword>
           </keyword>
           <keyword  id="initial_point4" name="initial_point" code="{N_vam(rvec,discreteDesignSetRealVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="REALLIST" constraint="LEN real" />

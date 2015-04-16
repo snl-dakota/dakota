@@ -60,6 +60,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << discreteDesignSetIntVars     << discreteDesignSetStrVars  << discreteDesignSetRealVars
     << discreteDesignSetInt         << discreteDesignSetStr     << discreteDesignSetReal
     << discreteDesignSetIntCat      << discreteDesignSetRealCat
+    << discreteDesignSetIntAdj      << discreteDesignSetStrAdj << discreteDesignSetRealAdj
     << continuousDesignLabels       << discreteDesignRangeLabels
     << discreteDesignSetIntLabels   << discreteDesignSetStrLabels << discreteDesignSetRealLabels;
 
@@ -154,6 +155,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> discreteDesignSetIntVars     >> discreteDesignSetStrVars >> discreteDesignSetRealVars
     >> discreteDesignSetInt         >> discreteDesignSetStr >> discreteDesignSetReal
     >> discreteDesignSetIntCat      >> discreteDesignSetRealCat
+    >> discreteDesignSetIntAdj      >> discreteDesignSetStrAdj >> discreteDesignSetRealAdj
     >> continuousDesignLabels       >> discreteDesignRangeLabels
     >> discreteDesignSetIntLabels   >> discreteDesignSetStrLabels >> discreteDesignSetRealLabels;
 

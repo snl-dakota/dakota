@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1346 distinct keywords (plus 205 aliases) **/
+/** 1349 distinct keywords (plus 205 aliases) **/
 
 static GuiKeyWord
 	kw_1[2] = {
@@ -44,92 +44,92 @@ static GuiKeyWord
 		{"write_restart",11,0,5,0,13}
 		},
 	kw_8[1] = {
-		{"cache_tolerance",10,0,1,0,2441}
+		{"cache_tolerance",10,0,1,0,2447}
 		},
 	kw_9[4] = {
-		{"active_set_vector",8,0,1,0,2435},
-		{"evaluation_cache",8,0,2,0,2437},
-		{"restart_file",8,0,4,0,2443},
-		{"strict_cache_equality",8,1,3,0,2439,kw_8}
+		{"active_set_vector",8,0,1,0,2441},
+		{"evaluation_cache",8,0,2,0,2443},
+		{"restart_file",8,0,4,0,2449},
+		{"strict_cache_equality",8,1,3,0,2445,kw_8}
 		},
 	kw_10[1] = {
-		{"processors_per_analysis",0x19,0,1,0,2411,0,0.,0.,0.,0,"{Number of processors per analysis server} InterfCommands.html#InterfApplicDF"}
+		{"processors_per_analysis",0x19,0,1,0,2417,0,0.,0.,0.,0,"{Number of processors per analysis server} InterfCommands.html#InterfApplicDF"}
 		},
 	kw_11[4] = {
-		{"abort",8,0,1,1,2425,0,0.,0.,0.,0,"@[CHOOSE failure mitigation]"},
-		{"continuation",8,0,1,1,2431},
-		{"recover",14,0,1,1,2429},
-		{"retry",9,0,1,1,2427}
+		{"abort",8,0,1,1,2431,0,0.,0.,0.,0,"@[CHOOSE failure mitigation]"},
+		{"continuation",8,0,1,1,2437},
+		{"recover",14,0,1,1,2435},
+		{"retry",9,0,1,1,2433}
 		},
 	kw_12[1] = {
-		{"numpy",8,0,1,0,2417,0,0.,0.,0.,0,"{Python NumPy dataflow} InterfCommands.html#InterfApplicMSP"}
+		{"numpy",8,0,1,0,2423,0,0.,0.,0.,0,"{Python NumPy dataflow} InterfCommands.html#InterfApplicMSP"}
 		},
 	kw_13[8] = {
-		{"copy_files",15,0,5,0,2405,0,0.,0.,0.,0,"{copy files} InterfCommands.html#InterfApplicF"},
-		{"dir_save",0,0,3,0,2400},
-		{"dir_tag",0,0,2,0,2398},
-		{"directory_save",8,0,3,0,2401,0,0.,0.,0.,0,"{Save work directory} InterfCommands.html#InterfApplicF"},
-		{"directory_tag",8,0,2,0,2399,0,0.,0.,0.,0,"{Tag work directory} InterfCommands.html#InterfApplicF"},
-		{"link_files",15,0,4,0,2403,0,0.,0.,0.,0,"{link files} InterfCommands.html#InterfApplicF"},
-		{"named",11,0,1,0,2397,0,0.,0.,0.,0,"{Name of work directory} InterfCommands.html#InterfApplicF"},
-		{"replace",8,0,6,0,2407}
+		{"copy_files",15,0,5,0,2411,0,0.,0.,0.,0,"{copy files} InterfCommands.html#InterfApplicF"},
+		{"dir_save",0,0,3,0,2406},
+		{"dir_tag",0,0,2,0,2404},
+		{"directory_save",8,0,3,0,2407,0,0.,0.,0.,0,"{Save work directory} InterfCommands.html#InterfApplicF"},
+		{"directory_tag",8,0,2,0,2405,0,0.,0.,0.,0,"{Tag work directory} InterfCommands.html#InterfApplicF"},
+		{"link_files",15,0,4,0,2409,0,0.,0.,0.,0,"{link files} InterfCommands.html#InterfApplicF"},
+		{"named",11,0,1,0,2403,0,0.,0.,0.,0,"{Name of work directory} InterfCommands.html#InterfApplicF"},
+		{"replace",8,0,6,0,2413}
 		},
 	kw_14[9] = {
-		{"allow_existing_results",8,0,3,0,2385,0,0.,0.,0.,0,"{Allow existing results files} InterfCommands.html#InterfApplicF"},
-		{"aprepro",8,0,5,0,2389,0,0.,0.,0.,0,"{Aprepro parameters file format} InterfCommands.html#InterfApplicF"},
-		{"dprepro",0,0,5,0,2388},
-		{"file_save",8,0,7,0,2393,0,0.,0.,0.,0,"{Parameters and results file saving} InterfCommands.html#InterfApplicF"},
-		{"file_tag",8,0,6,0,2391,0,0.,0.,0.,0,"{Parameters and results file tagging} InterfCommands.html#InterfApplicF"},
-		{"parameters_file",11,0,1,0,2381,0,0.,0.,0.,0,"{Parameters file name} InterfCommands.html#InterfApplicF"},
-		{"results_file",11,0,2,0,2383,0,0.,0.,0.,0,"{Results file name} InterfCommands.html#InterfApplicF"},
-		{"verbatim",8,0,4,0,2387,0,0.,0.,0.,0,"{Verbatim driver/filter invocation syntax} InterfCommands.html#InterfApplicF"},
-		{"work_directory",8,8,8,0,2395,kw_13,0.,0.,0.,0,"{Create work directory} InterfCommands.html#InterfApplicF"}
+		{"allow_existing_results",8,0,3,0,2391,0,0.,0.,0.,0,"{Allow existing results files} InterfCommands.html#InterfApplicF"},
+		{"aprepro",8,0,5,0,2395,0,0.,0.,0.,0,"{Aprepro parameters file format} InterfCommands.html#InterfApplicF"},
+		{"dprepro",0,0,5,0,2394},
+		{"file_save",8,0,7,0,2399,0,0.,0.,0.,0,"{Parameters and results file saving} InterfCommands.html#InterfApplicF"},
+		{"file_tag",8,0,6,0,2397,0,0.,0.,0.,0,"{Parameters and results file tagging} InterfCommands.html#InterfApplicF"},
+		{"parameters_file",11,0,1,0,2387,0,0.,0.,0.,0,"{Parameters file name} InterfCommands.html#InterfApplicF"},
+		{"results_file",11,0,2,0,2389,0,0.,0.,0.,0,"{Results file name} InterfCommands.html#InterfApplicF"},
+		{"verbatim",8,0,4,0,2393,0,0.,0.,0.,0,"{Verbatim driver/filter invocation syntax} InterfCommands.html#InterfApplicF"},
+		{"work_directory",8,8,8,0,2401,kw_13,0.,0.,0.,0,"{Create work directory} InterfCommands.html#InterfApplicF"}
 		},
 	kw_15[12] = {
-		{"analysis_components",15,0,1,0,2371,0,0.,0.,0.,0,"{Additional identifiers for use by the analysis_drivers} InterfCommands.html#InterfApplic"},
-		{"deactivate",8,4,6,0,2433,kw_9,0.,0.,0.,0,"{Feature deactivation} InterfCommands.html#InterfApplic"},
-		{"direct",8,1,4,1,2409,kw_10,0.,0.,0.,0,"[CHOOSE interface type]{Direct function interface } InterfCommands.html#InterfApplicDF"},
-		{"failure_capture",8,4,5,0,2423,kw_11,0.,0.,0.,0,"{Failure capturing} InterfCommands.html#InterfApplic"},
-		{"fork",8,9,4,1,2379,kw_14,0.,0.,0.,0,"@{Fork interface } InterfCommands.html#InterfApplicF"},
-		{"grid",8,0,4,1,2421,0,0.,0.,0.,0,"{Grid interface } InterfCommands.html#InterfApplicG"},
-		{"input_filter",11,0,2,0,2373,0,0.,0.,0.,0,"{Input filter} InterfCommands.html#InterfApplic"},
-		{"matlab",8,0,4,1,2413,0,0.,0.,0.,0,"{Matlab interface } InterfCommands.html#InterfApplicMSP"},
-		{"output_filter",11,0,3,0,2375,0,0.,0.,0.,0,"{Output filter} InterfCommands.html#InterfApplic"},
-		{"python",8,1,4,1,2415,kw_12,0.,0.,0.,0,"{Python interface } InterfCommands.html#InterfApplicMSP"},
-		{"scilab",8,0,4,1,2419,0,0.,0.,0.,0,"{Scilab interface } InterfCommands.html#InterfApplicMSP"},
-		{"system",8,9,4,1,2377,kw_14}
+		{"analysis_components",15,0,1,0,2377,0,0.,0.,0.,0,"{Additional identifiers for use by the analysis_drivers} InterfCommands.html#InterfApplic"},
+		{"deactivate",8,4,6,0,2439,kw_9,0.,0.,0.,0,"{Feature deactivation} InterfCommands.html#InterfApplic"},
+		{"direct",8,1,4,1,2415,kw_10,0.,0.,0.,0,"[CHOOSE interface type]{Direct function interface } InterfCommands.html#InterfApplicDF"},
+		{"failure_capture",8,4,5,0,2429,kw_11,0.,0.,0.,0,"{Failure capturing} InterfCommands.html#InterfApplic"},
+		{"fork",8,9,4,1,2385,kw_14,0.,0.,0.,0,"@{Fork interface } InterfCommands.html#InterfApplicF"},
+		{"grid",8,0,4,1,2427,0,0.,0.,0.,0,"{Grid interface } InterfCommands.html#InterfApplicG"},
+		{"input_filter",11,0,2,0,2379,0,0.,0.,0.,0,"{Input filter} InterfCommands.html#InterfApplic"},
+		{"matlab",8,0,4,1,2419,0,0.,0.,0.,0,"{Matlab interface } InterfCommands.html#InterfApplicMSP"},
+		{"output_filter",11,0,3,0,2381,0,0.,0.,0.,0,"{Output filter} InterfCommands.html#InterfApplic"},
+		{"python",8,1,4,1,2421,kw_12,0.,0.,0.,0,"{Python interface } InterfCommands.html#InterfApplicMSP"},
+		{"scilab",8,0,4,1,2425,0,0.,0.,0.,0,"{Scilab interface } InterfCommands.html#InterfApplicMSP"},
+		{"system",8,9,4,1,2383,kw_14}
 		},
 	kw_16[2] = {
-		{"master",8,0,1,1,2475},
-		{"peer",8,0,1,1,2477}
+		{"master",8,0,1,1,2481},
+		{"peer",8,0,1,1,2483}
 		},
 	kw_17[2] = {
-		{"dynamic",8,0,1,1,2451},
-		{"static",8,0,1,1,2453}
+		{"dynamic",8,0,1,1,2457},
+		{"static",8,0,1,1,2459}
 		},
 	kw_18[3] = {
-		{"analysis_concurrency",0x19,0,3,0,2455,0,0.,0.,0.,0,"{Asynchronous analysis concurrency} InterfCommands.html#InterfIndControl"},
-		{"evaluation_concurrency",0x19,0,1,0,2447,0,0.,0.,0.,0,"{Asynchronous evaluation concurrency} InterfCommands.html#InterfIndControl"},
-		{"local_evaluation_scheduling",8,2,2,0,2449,kw_17,0.,0.,0.,0,"{Local evaluation scheduling} InterfCommands.html#InterfIndControl"}
+		{"analysis_concurrency",0x19,0,3,0,2461,0,0.,0.,0.,0,"{Asynchronous analysis concurrency} InterfCommands.html#InterfIndControl"},
+		{"evaluation_concurrency",0x19,0,1,0,2453,0,0.,0.,0.,0,"{Asynchronous evaluation concurrency} InterfCommands.html#InterfIndControl"},
+		{"local_evaluation_scheduling",8,2,2,0,2455,kw_17,0.,0.,0.,0,"{Local evaluation scheduling} InterfCommands.html#InterfIndControl"}
 		},
 	kw_19[2] = {
-		{"dynamic",8,0,1,1,2465},
-		{"static",8,0,1,1,2467}
+		{"dynamic",8,0,1,1,2471},
+		{"static",8,0,1,1,2473}
 		},
 	kw_20[2] = {
-		{"master",8,0,1,1,2461},
-		{"peer",8,2,1,1,2463,kw_19,0.,0.,0.,0,"{Peer scheduling of evaluations} InterfCommands.html#InterfIndControl"}
+		{"master",8,0,1,1,2467},
+		{"peer",8,2,1,1,2469,kw_19,0.,0.,0.,0,"{Peer scheduling of evaluations} InterfCommands.html#InterfIndControl"}
 		},
 	kw_21[9] = {
-		{"algebraic_mappings",11,0,2,0,2367,0,0.,0.,0.,0,"{Algebraic mappings file} InterfCommands.html#InterfAlgebraic"},
-		{"analysis_drivers",15,12,3,0,2369,kw_15,0.,0.,0.,0,"{Analysis drivers} InterfCommands.html#InterfApplic"},
-		{"analysis_scheduling",8,2,9,0,2473,kw_16,0.,0.,0.,0,"{Message passing configuration for scheduling of analyses} InterfCommands.html#InterfIndControl"},
-		{"analysis_servers",0x19,0,8,0,2471,0,0.,0.,0.,0,"{Number of analysis servers} InterfCommands.html#InterfIndControl"},
-		{"asynchronous",8,3,4,0,2445,kw_18,0.,0.,0.,0,"{Asynchronous interface usage} InterfCommands.html#InterfIndControl"},
-		{"evaluation_scheduling",8,2,6,0,2459,kw_20,0.,0.,0.,0,"{Message passing configuration for scheduling of evaluations} InterfCommands.html#InterfIndControl"},
-		{"evaluation_servers",0x19,0,5,0,2457,0,0.,0.,0.,0,"{Number of evaluation servers} InterfCommands.html#InterfIndControl"},
-		{"id_interface",11,0,1,0,2365,0,0.,0.,0.,0,"{Interface set identifier} InterfCommands.html#InterfIndControl"},
-		{"processors_per_evaluation",0x19,0,7,0,2469,0,0.,0.,0.,0,"{Number of processors per evaluation server} InterfCommands.html#InterfIndControl"}
+		{"algebraic_mappings",11,0,2,0,2373,0,0.,0.,0.,0,"{Algebraic mappings file} InterfCommands.html#InterfAlgebraic"},
+		{"analysis_drivers",15,12,3,0,2375,kw_15,0.,0.,0.,0,"{Analysis drivers} InterfCommands.html#InterfApplic"},
+		{"analysis_scheduling",8,2,9,0,2479,kw_16,0.,0.,0.,0,"{Message passing configuration for scheduling of analyses} InterfCommands.html#InterfIndControl"},
+		{"analysis_servers",0x19,0,8,0,2477,0,0.,0.,0.,0,"{Number of analysis servers} InterfCommands.html#InterfIndControl"},
+		{"asynchronous",8,3,4,0,2451,kw_18,0.,0.,0.,0,"{Asynchronous interface usage} InterfCommands.html#InterfIndControl"},
+		{"evaluation_scheduling",8,2,6,0,2465,kw_20,0.,0.,0.,0,"{Message passing configuration for scheduling of evaluations} InterfCommands.html#InterfIndControl"},
+		{"evaluation_servers",0x19,0,5,0,2463,0,0.,0.,0.,0,"{Number of evaluation servers} InterfCommands.html#InterfIndControl"},
+		{"id_interface",11,0,1,0,2371,0,0.,0.,0.,0,"{Interface set identifier} InterfCommands.html#InterfIndControl"},
+		{"processors_per_evaluation",0x19,0,7,0,2475,0,0.,0.,0.,0,"{Number of processors per evaluation server} InterfCommands.html#InterfIndControl"}
 		},
 	kw_22[2] = {
 		{"complementary",8,0,1,1,1185},
@@ -1912,206 +1912,206 @@ static GuiKeyWord
 		{"variables_pointer",11,0,2,0,1685,0,0.,0.,0.,0,"{Variables set pointer} ModelCommands.html#ModelIndControl"}
 		},
 	kw_278[2] = {
-		{"annotated",8,0,1,0,2555,0,0.,0.,0.,0,"{Data file in annotated format} RespCommands.html#RespFnLS"},
-		{"freeform",8,0,1,0,2557,0,0.,0.,0.,0,"{Data file in freeform format} RespCommands.html#RespFnLS"}
+		{"annotated",8,0,1,0,2561,0,0.,0.,0.,0,"{Data file in annotated format} RespCommands.html#RespFnLS"},
+		{"freeform",8,0,1,0,2563,0,0.,0.,0.,0,"{Data file in freeform format} RespCommands.html#RespFnLS"}
 		},
 	kw_279[6] = {
-		{"interpolate",8,0,5,0,2559},
-		{"num_config_variables",0x29,0,2,0,2549,0,0.,0.,0.,0,"{Configuration variable columns in file} RespCommands.html#RespFnLS"},
-		{"num_experiments",0x29,0,1,0,2547,0,0.,0.,0.,0,"{Experiments in file} RespCommands.html#RespFnLS"},
-		{"read_field_coordinates",8,0,6,0,2561},
-		{"scalar_data_file",11,2,4,0,2553,kw_278},
-		{"variance_type",0x80f,0,3,0,2551,0,0.,0.,0.,0,0,0,"field_calibration_terms"}
+		{"interpolate",8,0,5,0,2565},
+		{"num_config_variables",0x29,0,2,0,2555,0,0.,0.,0.,0,"{Configuration variable columns in file} RespCommands.html#RespFnLS"},
+		{"num_experiments",0x29,0,1,0,2553,0,0.,0.,0.,0,"{Experiments in file} RespCommands.html#RespFnLS"},
+		{"read_field_coordinates",8,0,6,0,2567},
+		{"scalar_data_file",11,2,4,0,2559,kw_278},
+		{"variance_type",0x80f,0,3,0,2557,0,0.,0.,0.,0,0,0,"field_calibration_terms"}
 		},
 	kw_280[5] = {
-		{"annotated",8,0,1,0,2565},
-		{"freeform",8,0,1,0,2567},
-		{"num_config_variables",0x29,0,3,0,2571},
-		{"num_experiments",0x29,0,2,0,2569},
-		{"variance_type",0x80f,0,4,0,2573,0,0.,0.,0.,0,0,0,"calibration_terms"}
+		{"annotated",8,0,1,0,2571},
+		{"freeform",8,0,1,0,2573},
+		{"num_config_variables",0x29,0,3,0,2577},
+		{"num_experiments",0x29,0,2,0,2575},
+		{"variance_type",0x80f,0,4,0,2579,0,0.,0.,0.,0,0,0,"calibration_terms"}
 		},
 	kw_281[4] = {
-		{"coordinate_data_file",11,0,3,0,2537},
-		{"coordinate_list",14,0,3,0,2535},
-		{"lengths",13,0,1,1,2531,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"num_coordinates_per_field",13,0,2,0,2533}
+		{"coordinate_data_file",11,0,3,0,2543},
+		{"coordinate_list",14,0,3,0,2541},
+		{"lengths",13,0,1,1,2537,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"num_coordinates_per_field",13,0,2,0,2539}
 		},
 	kw_282[6] = {
-		{"nonlinear_equality_scale_types",0x807,0,2,0,2588,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_scales",0x806,0,3,0,2590,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_targets",6,0,1,0,2586,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"scale_types",0x80f,0,2,0,2589,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"scales",0x80e,0,3,0,2591,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"targets",14,0,1,0,2587,0,0.,0.,0.,0,"{Nonlinear equality targets} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
+		{"nonlinear_equality_scale_types",0x807,0,2,0,2594,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_scales",0x806,0,3,0,2596,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_targets",6,0,1,0,2592,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"scale_types",0x80f,0,2,0,2595,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"scales",0x80e,0,3,0,2597,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"targets",14,0,1,0,2593,0,0.,0.,0.,0,"{Nonlinear equality targets} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
 		},
 	kw_283[8] = {
-		{"lower_bounds",14,0,1,0,2577,0,0.,0.,0.,0,"{Nonlinear inequality lower bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_lower_bounds",6,0,1,0,2576,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scale_types",0x807,0,3,0,2580,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scales",0x806,0,4,0,2582,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_upper_bounds",6,0,2,0,2578,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"scale_types",0x80f,0,3,0,2581,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"scales",0x80e,0,4,0,2583,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"upper_bounds",14,0,2,0,2579,0,0.,0.,0.,0,"{Nonlinear inequality upper bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
+		{"lower_bounds",14,0,1,0,2583,0,0.,0.,0.,0,"{Nonlinear inequality lower bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_lower_bounds",6,0,1,0,2582,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_scale_types",0x807,0,3,0,2586,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_scales",0x806,0,4,0,2588,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_upper_bounds",6,0,2,0,2584,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"scale_types",0x80f,0,3,0,2587,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"scales",0x80e,0,4,0,2589,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"upper_bounds",14,0,2,0,2585,0,0.,0.,0.,0,"{Nonlinear inequality upper bounds} RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
 	kw_284[18] = {
-		{"calibration_data",8,6,6,0,2545,kw_279},
-		{"calibration_data_file",11,5,6,0,2563,kw_280,0.,0.,0.,0,"{Calibration data file name} RespCommands.html#RespFnLS"},
-		{"calibration_term_scale_types",0x807,0,3,0,2538,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"calibration_term_scales",0x806,0,4,0,2540,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"calibration_weights",6,0,5,0,2542,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"field_calibration_terms",0x29,4,2,0,2529,kw_281},
-		{"least_squares_data_file",3,5,6,0,2562,kw_280},
-		{"least_squares_term_scale_types",0x807,0,3,0,2538,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"least_squares_term_scales",0x806,0,4,0,2540,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"least_squares_weights",6,0,5,0,2542,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"nonlinear_equality_constraints",0x29,6,8,0,2585,kw_282,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnLS"},
-		{"nonlinear_inequality_constraints",0x29,8,7,0,2575,kw_283,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnLS"},
-		{"num_nonlinear_equality_constraints",0x21,6,8,0,2584,kw_282},
-		{"num_nonlinear_inequality_constraints",0x21,8,7,0,2574,kw_283},
-		{"primary_scale_types",0x80f,0,3,0,2539,0,0.,0.,0.,0,"{Calibration scaling types} RespCommands.html#RespFnLS",0,"calibration_terms"},
-		{"primary_scales",0x80e,0,4,0,2541,0,0.,0.,0.,0,"{Calibration scales} RespCommands.html#RespFnLS",0,"calibration_terms"},
-		{"scalar_calibration_terms",0x29,0,1,0,2527},
-		{"weights",14,0,5,0,2543,0,0.,0.,0.,0,"{Calibration term weights} RespCommands.html#RespFnLS",0,"calibration_terms"}
+		{"calibration_data",8,6,6,0,2551,kw_279},
+		{"calibration_data_file",11,5,6,0,2569,kw_280,0.,0.,0.,0,"{Calibration data file name} RespCommands.html#RespFnLS"},
+		{"calibration_term_scale_types",0x807,0,3,0,2544,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"calibration_term_scales",0x806,0,4,0,2546,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"calibration_weights",6,0,5,0,2548,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"field_calibration_terms",0x29,4,2,0,2535,kw_281},
+		{"least_squares_data_file",3,5,6,0,2568,kw_280},
+		{"least_squares_term_scale_types",0x807,0,3,0,2544,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"least_squares_term_scales",0x806,0,4,0,2546,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"least_squares_weights",6,0,5,0,2548,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"nonlinear_equality_constraints",0x29,6,8,0,2591,kw_282,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnLS"},
+		{"nonlinear_inequality_constraints",0x29,8,7,0,2581,kw_283,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnLS"},
+		{"num_nonlinear_equality_constraints",0x21,6,8,0,2590,kw_282},
+		{"num_nonlinear_inequality_constraints",0x21,8,7,0,2580,kw_283},
+		{"primary_scale_types",0x80f,0,3,0,2545,0,0.,0.,0.,0,"{Calibration scaling types} RespCommands.html#RespFnLS",0,"calibration_terms"},
+		{"primary_scales",0x80e,0,4,0,2547,0,0.,0.,0.,0,"{Calibration scales} RespCommands.html#RespFnLS",0,"calibration_terms"},
+		{"scalar_calibration_terms",0x29,0,1,0,2533},
+		{"weights",14,0,5,0,2549,0,0.,0.,0.,0,"{Calibration term weights} RespCommands.html#RespFnLS",0,"calibration_terms"}
 		},
 	kw_285[4] = {
-		{"absolute",8,0,2,0,2627},
-		{"bounds",8,0,2,0,2629},
-		{"ignore_bounds",8,0,1,0,2623,0,0.,0.,0.,0,"{Ignore variable bounds} RespCommands.html#RespGradMixed"},
-		{"relative",8,0,2,0,2625}
+		{"absolute",8,0,2,0,2633},
+		{"bounds",8,0,2,0,2635},
+		{"ignore_bounds",8,0,1,0,2629,0,0.,0.,0.,0,"{Ignore variable bounds} RespCommands.html#RespGradMixed"},
+		{"relative",8,0,2,0,2631}
 		},
 	kw_286[10] = {
-		{"central",8,0,6,0,2637,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,4,4,0,2621,kw_285,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
-		{"fd_gradient_step_size",6,0,7,0,2638},
-		{"fd_step_size",14,0,7,0,2639,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
-		{"forward",8,0,6,0,2635,0,0.,0.,0.,0,"@"},
-		{"id_analytic_gradients",13,0,2,2,2615,0,0.,0.,0.,0,"{Analytic derivatives function list} RespCommands.html#RespGradMixed"},
-		{"id_numerical_gradients",13,0,1,1,2613,0,0.,0.,0.,0,"{Numerical derivatives function list} RespCommands.html#RespGradMixed"},
-		{"interval_type",8,0,5,0,2633,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
-		{"method_source",8,0,3,0,2619,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
-		{"vendor",8,0,4,0,2631}
+		{"central",8,0,6,0,2643,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"dakota",8,4,4,0,2627,kw_285,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
+		{"fd_gradient_step_size",6,0,7,0,2644},
+		{"fd_step_size",14,0,7,0,2645,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
+		{"forward",8,0,6,0,2641,0,0.,0.,0.,0,"@"},
+		{"id_analytic_gradients",13,0,2,2,2621,0,0.,0.,0.,0,"{Analytic derivatives function list} RespCommands.html#RespGradMixed"},
+		{"id_numerical_gradients",13,0,1,1,2619,0,0.,0.,0.,0,"{Numerical derivatives function list} RespCommands.html#RespGradMixed"},
+		{"interval_type",8,0,5,0,2639,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
+		{"method_source",8,0,3,0,2625,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
+		{"vendor",8,0,4,0,2637}
 		},
 	kw_287[2] = {
-		{"fd_hessian_step_size",6,0,1,0,2670},
-		{"fd_step_size",14,0,1,0,2671,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessMixed"}
+		{"fd_hessian_step_size",6,0,1,0,2676},
+		{"fd_step_size",14,0,1,0,2677,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessMixed"}
 		},
 	kw_288[1] = {
-		{"damped",8,0,1,0,2687,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessMixed"}
+		{"damped",8,0,1,0,2693,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessMixed"}
 		},
 	kw_289[2] = {
-		{"bfgs",8,1,1,1,2685,kw_288,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
-		{"sr1",8,0,1,1,2689}
+		{"bfgs",8,1,1,1,2691,kw_288,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
+		{"sr1",8,0,1,1,2695}
 		},
 	kw_290[8] = {
-		{"absolute",8,0,2,0,2675},
-		{"bounds",8,0,2,0,2677},
-		{"central",8,0,3,0,2681,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"forward",8,0,3,0,2679,0,0.,0.,0.,0,"@"},
-		{"id_analytic_hessians",13,0,5,0,2691,0,0.,0.,0.,0,"{Analytic Hessians function list} RespCommands.html#RespHessMixed"},
-		{"id_numerical_hessians",13,2,1,0,2669,kw_287,0.,0.,0.,0,"{Numerical Hessians function list} RespCommands.html#RespHessMixed"},
-		{"id_quasi_hessians",13,2,4,0,2683,kw_289,0.,0.,0.,0,"{Quasi Hessians function list} RespCommands.html#RespHessMixed"},
-		{"relative",8,0,2,0,2673}
+		{"absolute",8,0,2,0,2681},
+		{"bounds",8,0,2,0,2683},
+		{"central",8,0,3,0,2687,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"forward",8,0,3,0,2685,0,0.,0.,0.,0,"@"},
+		{"id_analytic_hessians",13,0,5,0,2697,0,0.,0.,0.,0,"{Analytic Hessians function list} RespCommands.html#RespHessMixed"},
+		{"id_numerical_hessians",13,2,1,0,2675,kw_287,0.,0.,0.,0,"{Numerical Hessians function list} RespCommands.html#RespHessMixed"},
+		{"id_quasi_hessians",13,2,4,0,2689,kw_289,0.,0.,0.,0,"{Quasi Hessians function list} RespCommands.html#RespHessMixed"},
+		{"relative",8,0,2,0,2679}
 		},
 	kw_291[4] = {
-		{"coordinate_data_file",11,0,3,0,2523},
-		{"coordinate_list",14,0,3,0,2521},
-		{"lengths",13,0,1,1,2517},
-		{"num_coordinates_per_field",13,0,2,0,2519}
+		{"coordinate_data_file",11,0,3,0,2529},
+		{"coordinate_list",14,0,3,0,2527},
+		{"lengths",13,0,1,1,2523},
+		{"num_coordinates_per_field",13,0,2,0,2525}
 		},
 	kw_292[6] = {
-		{"nonlinear_equality_scale_types",0x807,0,2,0,2508,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_scales",0x806,0,3,0,2510,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_targets",6,0,1,0,2506,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
-		{"scale_types",0x80f,0,2,0,2509,0,0.,0.,0.,0,"{Nonlinear scaling types (for inequalities or equalities)} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
-		{"scales",0x80e,0,3,0,2511,0,0.,0.,0.,0,"{Nonlinear scales (for inequalities or equalities)} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
-		{"targets",14,0,1,0,2507,0,0.,0.,0.,0,"{Nonlinear equality constraint targets} RespCommands.html#RespFnOpt",0,"nonlinear_equality_constraints"}
+		{"nonlinear_equality_scale_types",0x807,0,2,0,2514,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_scales",0x806,0,3,0,2516,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_targets",6,0,1,0,2512,0,0.,0.,0.,0,0,0,"nonlinear_equality_constraints"},
+		{"scale_types",0x80f,0,2,0,2515,0,0.,0.,0.,0,"{Nonlinear scaling types (for inequalities or equalities)} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
+		{"scales",0x80e,0,3,0,2517,0,0.,0.,0.,0,"{Nonlinear scales (for inequalities or equalities)} RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
+		{"targets",14,0,1,0,2513,0,0.,0.,0.,0,"{Nonlinear equality constraint targets} RespCommands.html#RespFnOpt",0,"nonlinear_equality_constraints"}
 		},
 	kw_293[8] = {
-		{"lower_bounds",14,0,1,0,2497,0,0.,0.,0.,0,"{Nonlinear inequality constraint lower bounds} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_lower_bounds",6,0,1,0,2496,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scale_types",0x807,0,3,0,2500,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scales",0x806,0,4,0,2502,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_upper_bounds",6,0,2,0,2498,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
-		{"scale_types",0x80f,0,3,0,2501,0,0.,0.,0.,0,"{Nonlinear constraint scaling types (for inequalities or equalities)} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
-		{"scales",0x80e,0,4,0,2503,0,0.,0.,0.,0,"{Nonlinear constraint scales (for inequalities or equalities)} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
-		{"upper_bounds",14,0,2,0,2499,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"}
+		{"lower_bounds",14,0,1,0,2503,0,0.,0.,0.,0,"{Nonlinear inequality constraint lower bounds} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_lower_bounds",6,0,1,0,2502,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_scale_types",0x807,0,3,0,2506,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_scales",0x806,0,4,0,2508,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_upper_bounds",6,0,2,0,2504,0,0.,0.,0.,0,0,0,"nonlinear_inequality_constraints"},
+		{"scale_types",0x80f,0,3,0,2507,0,0.,0.,0.,0,"{Nonlinear constraint scaling types (for inequalities or equalities)} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
+		{"scales",0x80e,0,4,0,2509,0,0.,0.,0.,0,"{Nonlinear constraint scales (for inequalities or equalities)} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
+		{"upper_bounds",14,0,2,0,2505,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"}
 		},
 	kw_294[15] = {
-		{"field_objectives",0x29,4,8,0,2515,kw_291},
-		{"multi_objective_weights",6,0,4,0,2492,0,0.,0.,0.,0,0,0,"objective_functions"},
-		{"nonlinear_equality_constraints",0x29,6,6,0,2505,kw_292,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnOpt"},
-		{"nonlinear_inequality_constraints",0x29,8,5,0,2495,kw_293,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnOpt"},
-		{"num_field_objectives",0x21,4,8,0,2514,kw_291},
-		{"num_nonlinear_equality_constraints",0x21,6,6,0,2504,kw_292},
-		{"num_nonlinear_inequality_constraints",0x21,8,5,0,2494,kw_293},
-		{"num_scalar_objectives",0x21,0,7,0,2512},
-		{"objective_function_scale_types",0x807,0,2,0,2488,0,0.,0.,0.,0,0,0,"objective_functions"},
-		{"objective_function_scales",0x806,0,3,0,2490,0,0.,0.,0.,0,0,0,"objective_functions"},
-		{"primary_scale_types",0x80f,0,2,0,2489,0,0.,0.,0.,0,"{Objective function scaling types} RespCommands.html#RespFnOpt",0,"objective_functions"},
-		{"primary_scales",0x80e,0,3,0,2491,0,0.,0.,0.,0,"{Objective function scales} RespCommands.html#RespFnOpt",0,"objective_functions"},
-		{"scalar_objectives",0x29,0,7,0,2513},
-		{"sense",0x80f,0,1,0,2487,0,0.,0.,0.,0,"{Optimization sense} RespCommands.html#RespFnOpt",0,"objective_functions"},
-		{"weights",14,0,4,0,2493,0,0.,0.,0.,0,"{Multi-objective weightings} RespCommands.html#RespFnOpt",0,"objective_functions"}
+		{"field_objectives",0x29,4,8,0,2521,kw_291},
+		{"multi_objective_weights",6,0,4,0,2498,0,0.,0.,0.,0,0,0,"objective_functions"},
+		{"nonlinear_equality_constraints",0x29,6,6,0,2511,kw_292,0.,0.,0.,0,"{Number of nonlinear equality constraints} RespCommands.html#RespFnOpt"},
+		{"nonlinear_inequality_constraints",0x29,8,5,0,2501,kw_293,0.,0.,0.,0,"{Number of nonlinear inequality constraints} RespCommands.html#RespFnOpt"},
+		{"num_field_objectives",0x21,4,8,0,2520,kw_291},
+		{"num_nonlinear_equality_constraints",0x21,6,6,0,2510,kw_292},
+		{"num_nonlinear_inequality_constraints",0x21,8,5,0,2500,kw_293},
+		{"num_scalar_objectives",0x21,0,7,0,2518},
+		{"objective_function_scale_types",0x807,0,2,0,2494,0,0.,0.,0.,0,0,0,"objective_functions"},
+		{"objective_function_scales",0x806,0,3,0,2496,0,0.,0.,0.,0,0,0,"objective_functions"},
+		{"primary_scale_types",0x80f,0,2,0,2495,0,0.,0.,0.,0,"{Objective function scaling types} RespCommands.html#RespFnOpt",0,"objective_functions"},
+		{"primary_scales",0x80e,0,3,0,2497,0,0.,0.,0.,0,"{Objective function scales} RespCommands.html#RespFnOpt",0,"objective_functions"},
+		{"scalar_objectives",0x29,0,7,0,2519},
+		{"sense",0x80f,0,1,0,2493,0,0.,0.,0.,0,"{Optimization sense} RespCommands.html#RespFnOpt",0,"objective_functions"},
+		{"weights",14,0,4,0,2499,0,0.,0.,0.,0,"{Multi-objective weightings} RespCommands.html#RespFnOpt",0,"objective_functions"}
 		},
 	kw_295[4] = {
-		{"coordinate_data_file",11,0,3,0,2605},
-		{"coordinate_list",14,0,3,0,2603},
-		{"lengths",13,0,1,1,2599},
-		{"num_coordinates_per_field",13,0,2,0,2601}
+		{"coordinate_data_file",11,0,3,0,2611},
+		{"coordinate_list",14,0,3,0,2609},
+		{"lengths",13,0,1,1,2605},
+		{"num_coordinates_per_field",13,0,2,0,2607}
 		},
 	kw_296[4] = {
-		{"field_responses",0x29,4,2,0,2597,kw_295},
-		{"num_field_responses",0x21,4,2,0,2596,kw_295},
-		{"num_scalar_responses",0x21,0,1,0,2594},
-		{"scalar_responses",0x29,0,1,0,2595}
+		{"field_responses",0x29,4,2,0,2603,kw_295},
+		{"num_field_responses",0x21,4,2,0,2602,kw_295},
+		{"num_scalar_responses",0x21,0,1,0,2600},
+		{"scalar_responses",0x29,0,1,0,2601}
 		},
 	kw_297[8] = {
-		{"central",8,0,6,0,2637,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,4,4,0,2621,kw_285,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
-		{"fd_gradient_step_size",6,0,7,0,2638},
-		{"fd_step_size",14,0,7,0,2639,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
-		{"forward",8,0,6,0,2635,0,0.,0.,0.,0,"@"},
-		{"interval_type",8,0,5,0,2633,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
-		{"method_source",8,0,3,0,2619,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
-		{"vendor",8,0,4,0,2631}
+		{"central",8,0,6,0,2643,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"dakota",8,4,4,0,2627,kw_285,0.,0.,0.,0,"@[CHOOSE gradient source]{Interval scaling type} RespCommands.html#RespGradNum"},
+		{"fd_gradient_step_size",6,0,7,0,2644},
+		{"fd_step_size",14,0,7,0,2645,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespGradMixed"},
+		{"forward",8,0,6,0,2641,0,0.,0.,0.,0,"@"},
+		{"interval_type",8,0,5,0,2639,0,0.,0.,0.,0,"{Interval type} RespCommands.html#RespGradNum"},
+		{"method_source",8,0,3,0,2625,0,0.,0.,0.,0,"{Method source} RespCommands.html#RespGradNum"},
+		{"vendor",8,0,4,0,2637}
 		},
 	kw_298[7] = {
-		{"absolute",8,0,2,0,2649},
-		{"bounds",8,0,2,0,2651},
-		{"central",8,0,3,0,2655,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"fd_hessian_step_size",6,0,1,0,2644},
-		{"fd_step_size",14,0,1,0,2645,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessNum"},
-		{"forward",8,0,3,0,2653,0,0.,0.,0.,0,"@"},
-		{"relative",8,0,2,0,2647}
+		{"absolute",8,0,2,0,2655},
+		{"bounds",8,0,2,0,2657},
+		{"central",8,0,3,0,2661,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
+		{"fd_hessian_step_size",6,0,1,0,2650},
+		{"fd_step_size",14,0,1,0,2651,0,0.,0.,0.,0,"{Finite difference step size} RespCommands.html#RespHessNum"},
+		{"forward",8,0,3,0,2659,0,0.,0.,0.,0,"@"},
+		{"relative",8,0,2,0,2653}
 		},
 	kw_299[1] = {
-		{"damped",8,0,1,0,2661,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessQuasi"}
+		{"damped",8,0,1,0,2667,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} RespCommands.html#RespHessQuasi"}
 		},
 	kw_300[2] = {
-		{"bfgs",8,1,1,1,2659,kw_299,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
-		{"sr1",8,0,1,1,2663}
+		{"bfgs",8,1,1,1,2665,kw_299,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
+		{"sr1",8,0,1,1,2669}
 		},
 	kw_301[19] = {
-		{"analytic_gradients",8,0,4,2,2609,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
-		{"analytic_hessians",8,0,5,3,2665,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
-		{"calibration_terms",0x29,18,3,1,2525,kw_284,0.,0.,0.,0,"{{Calibration (Least squares)} Number of calibration terms} RespCommands.html#RespFnLS"},
-		{"descriptors",15,0,2,0,2483,0,0.,0.,0.,0,"{Response labels} RespCommands.html#RespLabels"},
-		{"id_responses",11,0,1,0,2481,0,0.,0.,0.,0,"{Responses set identifier} RespCommands.html#RespSetId"},
-		{"least_squares_terms",0x21,18,3,1,2524,kw_284},
-		{"mixed_gradients",8,10,4,2,2611,kw_286,0.,0.,0.,0,"{Mixed gradients} RespCommands.html#RespGradMixed"},
-		{"mixed_hessians",8,8,5,3,2667,kw_290,0.,0.,0.,0,"{Mixed Hessians} RespCommands.html#RespHessMixed"},
-		{"no_gradients",8,0,4,2,2607,0,0.,0.,0.,0,"@"},
-		{"no_hessians",8,0,5,3,2641,0,0.,0.,0.,0,"@"},
-		{"num_least_squares_terms",0x21,18,3,1,2524,kw_284},
-		{"num_objective_functions",0x21,15,3,1,2484,kw_294},
-		{"num_response_functions",0x21,4,3,1,2592,kw_296},
-		{"numerical_gradients",8,8,4,2,2617,kw_297,0.,0.,0.,0,"{Numerical gradients} RespCommands.html#RespGradNum"},
-		{"numerical_hessians",8,7,5,3,2643,kw_298,0.,0.,0.,0,"{Numerical Hessians} RespCommands.html#RespHessNum"},
-		{"objective_functions",0x29,15,3,1,2485,kw_294,0.,0.,0.,0,"{{Optimization} Number of objective functions} RespCommands.html#RespFnOpt"},
-		{"quasi_hessians",8,2,5,3,2657,kw_300,0.,0.,0.,0,"{Quasi Hessians} RespCommands.html#RespHessQuasi"},
-		{"response_descriptors",7,0,2,0,2482},
-		{"response_functions",0x29,4,3,1,2593,kw_296,0.,0.,0.,0,"{{Generic responses} Number of response functions} RespCommands.html#RespFnGen"}
+		{"analytic_gradients",8,0,4,2,2615,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
+		{"analytic_hessians",8,0,5,3,2671,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
+		{"calibration_terms",0x29,18,3,1,2531,kw_284,0.,0.,0.,0,"{{Calibration (Least squares)} Number of calibration terms} RespCommands.html#RespFnLS"},
+		{"descriptors",15,0,2,0,2489,0,0.,0.,0.,0,"{Response labels} RespCommands.html#RespLabels"},
+		{"id_responses",11,0,1,0,2487,0,0.,0.,0.,0,"{Responses set identifier} RespCommands.html#RespSetId"},
+		{"least_squares_terms",0x21,18,3,1,2530,kw_284},
+		{"mixed_gradients",8,10,4,2,2617,kw_286,0.,0.,0.,0,"{Mixed gradients} RespCommands.html#RespGradMixed"},
+		{"mixed_hessians",8,8,5,3,2673,kw_290,0.,0.,0.,0,"{Mixed Hessians} RespCommands.html#RespHessMixed"},
+		{"no_gradients",8,0,4,2,2613,0,0.,0.,0.,0,"@"},
+		{"no_hessians",8,0,5,3,2647,0,0.,0.,0.,0,"@"},
+		{"num_least_squares_terms",0x21,18,3,1,2530,kw_284},
+		{"num_objective_functions",0x21,15,3,1,2490,kw_294},
+		{"num_response_functions",0x21,4,3,1,2598,kw_296},
+		{"numerical_gradients",8,8,4,2,2623,kw_297,0.,0.,0.,0,"{Numerical gradients} RespCommands.html#RespGradNum"},
+		{"numerical_hessians",8,7,5,3,2649,kw_298,0.,0.,0.,0,"{Numerical Hessians} RespCommands.html#RespHessNum"},
+		{"objective_functions",0x29,15,3,1,2491,kw_294,0.,0.,0.,0,"{{Optimization} Number of objective functions} RespCommands.html#RespFnOpt"},
+		{"quasi_hessians",8,2,5,3,2663,kw_300,0.,0.,0.,0,"{Quasi Hessians} RespCommands.html#RespHessQuasi"},
+		{"response_descriptors",7,0,2,0,2488},
+		{"response_functions",0x29,4,3,1,2599,kw_296,0.,0.,0.,0,"{{Generic responses} Number of response functions} RespCommands.html#RespFnGen"}
 		},
 	kw_302[6] = {
 		{"aleatory",8,0,1,1,1937},
@@ -2122,24 +2122,24 @@ static GuiKeyWord
 		{"uncertain",8,0,1,1,1935}
 		},
 	kw_303[11] = {
-		{"alphas",14,0,1,1,2083,0,0.,0.,0.,0,"{beta uncertain alphas} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
-		{"betas",14,0,2,2,2085,0,0.,0.,0.,0,"{beta uncertain betas} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
-		{"buv_alphas",6,0,1,1,2082,0,0.,0.,0.,0,0,0,"beta_uncertain"},
-		{"buv_betas",6,0,2,2,2084,0,0.,0.,0.,0,0,0,"beta_uncertain"},
-		{"buv_descriptors",7,0,6,0,2092,0,0.,0.,0.,0,0,0,"beta_uncertain"},
-		{"buv_lower_bounds",6,0,3,3,2086,0,0.,0.,0.,0,0,0,"beta_uncertain"},
-		{"buv_upper_bounds",6,0,4,4,2088,0,0.,0.,0.,0,0,0,"beta_uncertain"},
-		{"descriptors",15,0,6,0,2093,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Gamma",0,"beta_uncertain"},
-		{"initial_point",14,0,5,0,2091,0,0.,0.,0.,0,0,0,"beta_uncertain"},
-		{"lower_bounds",14,0,3,3,2087,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
-		{"upper_bounds",14,0,4,4,2089,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"}
+		{"alphas",14,0,1,1,2089,0,0.,0.,0.,0,"{beta uncertain alphas} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
+		{"betas",14,0,2,2,2091,0,0.,0.,0.,0,"{beta uncertain betas} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
+		{"buv_alphas",6,0,1,1,2088,0,0.,0.,0.,0,0,0,"beta_uncertain"},
+		{"buv_betas",6,0,2,2,2090,0,0.,0.,0.,0,0,0,"beta_uncertain"},
+		{"buv_descriptors",7,0,6,0,2098,0,0.,0.,0.,0,0,0,"beta_uncertain"},
+		{"buv_lower_bounds",6,0,3,3,2092,0,0.,0.,0.,0,0,0,"beta_uncertain"},
+		{"buv_upper_bounds",6,0,4,4,2094,0,0.,0.,0.,0,0,0,"beta_uncertain"},
+		{"descriptors",15,0,6,0,2099,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Gamma",0,"beta_uncertain"},
+		{"initial_point",14,0,5,0,2097,0,0.,0.,0.,0,0,0,"beta_uncertain"},
+		{"lower_bounds",14,0,3,3,2093,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
+		{"upper_bounds",14,0,4,4,2095,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"}
 		},
 	kw_304[5] = {
-		{"descriptors",15,0,4,0,2165,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Negative_Binomial",0,"binomial_uncertain"},
-		{"initial_point",13,0,3,0,2163,0,0.,0.,0.,0,0,0,"binomial_uncertain"},
-		{"num_trials",13,0,2,2,2161,0,0.,0.,0.,0,"{binomial uncertain num_trials} VarCommands.html#VarDAUV_Binomial",0,"binomial_uncertain"},
-		{"prob_per_trial",6,0,1,1,2158,0,0.,0.,0.,0,0,0,"binomial_uncertain"},
-		{"probability_per_trial",14,0,1,1,2159,0,0.,0.,0.,0,0,0,"binomial_uncertain"}
+		{"descriptors",15,0,4,0,2171,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Negative_Binomial",0,"binomial_uncertain"},
+		{"initial_point",13,0,3,0,2169,0,0.,0.,0.,0,0,0,"binomial_uncertain"},
+		{"num_trials",13,0,2,2,2167,0,0.,0.,0.,0,"{binomial uncertain num_trials} VarCommands.html#VarDAUV_Binomial",0,"binomial_uncertain"},
+		{"prob_per_trial",6,0,1,1,2164,0,0.,0.,0.,0,0,0,"binomial_uncertain"},
+		{"probability_per_trial",14,0,1,1,2165,0,0.,0.,0.,0,0,0,"binomial_uncertain"}
 		},
 	kw_305[12] = {
 		{"cdv_descriptors",7,0,6,0,1958,0,0.,0.,0.,0,0,0,"continuous_design"},
@@ -2156,26 +2156,26 @@ static GuiKeyWord
 		{"upper_bounds",14,0,3,0,1953,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarCDV",0,"continuous_design"}
 		},
 	kw_306[10] = {
-		{"descriptors",15,0,6,0,2249,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDUSRV",0,"continuous_interval_uncertain"},
-		{"initial_point",14,0,5,0,2247,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
-		{"interval_probabilities",14,0,2,0,2241,0,0.,0.,0.,0,"{basic probability assignments per continuous interval} VarCommands.html#VarCEUV_Interval"},
-		{"interval_probs",6,0,2,0,2240},
-		{"iuv_descriptors",7,0,6,0,2248,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
-		{"iuv_interval_probs",6,0,2,0,2240},
-		{"iuv_num_intervals",5,0,1,0,2238,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
-		{"lower_bounds",14,0,3,1,2243,0,0.,0.,0.,0,"{lower bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"},
-		{"num_intervals",13,0,1,0,2239,0,0.,0.,0.,0,"{number of intervals defined for each continuous interval variable} VarCommands.html#VarCEUV_Interval",0,"continuous_interval_uncertain"},
-		{"upper_bounds",14,0,4,2,2245,0,0.,0.,0.,0,"{upper bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"}
+		{"descriptors",15,0,6,0,2255,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDUSRV",0,"continuous_interval_uncertain"},
+		{"initial_point",14,0,5,0,2253,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
+		{"interval_probabilities",14,0,2,0,2247,0,0.,0.,0.,0,"{basic probability assignments per continuous interval} VarCommands.html#VarCEUV_Interval"},
+		{"interval_probs",6,0,2,0,2246},
+		{"iuv_descriptors",7,0,6,0,2254,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
+		{"iuv_interval_probs",6,0,2,0,2246},
+		{"iuv_num_intervals",5,0,1,0,2244,0,0.,0.,0.,0,0,0,"continuous_interval_uncertain"},
+		{"lower_bounds",14,0,3,1,2249,0,0.,0.,0.,0,"{lower bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"},
+		{"num_intervals",13,0,1,0,2245,0,0.,0.,0.,0,"{number of intervals defined for each continuous interval variable} VarCommands.html#VarCEUV_Interval",0,"continuous_interval_uncertain"},
+		{"upper_bounds",14,0,4,2,2251,0,0.,0.,0.,0,"{upper bounds of continuous intervals} VarCommands.html#VarCEUV_Interval"}
 		},
 	kw_307[8] = {
-		{"csv_descriptors",7,0,4,0,2314,0,0.,0.,0.,0,0,0,"continuous_state"},
-		{"csv_initial_state",6,0,1,0,2308,0,0.,0.,0.,0,0,0,"continuous_state"},
-		{"csv_lower_bounds",6,0,2,0,2310,0,0.,0.,0.,0,0,0,"continuous_state"},
-		{"csv_upper_bounds",6,0,3,0,2312,0,0.,0.,0.,0,0,0,"continuous_state"},
-		{"descriptors",15,0,4,0,2315,0,0.,0.,0.,0,0,0,"continuous_state"},
-		{"initial_state",14,0,1,0,2309,0,0.,0.,0.,0,"{Initial states} VarCommands.html#VarCSV",0,"continuous_state"},
-		{"lower_bounds",14,0,2,0,2311,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarCSV",0,"continuous_state"},
-		{"upper_bounds",14,0,3,0,2313,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarCSV",0,"continuous_state"}
+		{"csv_descriptors",7,0,4,0,2320,0,0.,0.,0.,0,0,0,"continuous_state"},
+		{"csv_initial_state",6,0,1,0,2314,0,0.,0.,0.,0,0,0,"continuous_state"},
+		{"csv_lower_bounds",6,0,2,0,2316,0,0.,0.,0.,0,0,0,"continuous_state"},
+		{"csv_upper_bounds",6,0,3,0,2318,0,0.,0.,0.,0,0,0,"continuous_state"},
+		{"descriptors",15,0,4,0,2321,0,0.,0.,0.,0,0,0,"continuous_state"},
+		{"initial_state",14,0,1,0,2315,0,0.,0.,0.,0,"{Initial states} VarCommands.html#VarCSV",0,"continuous_state"},
+		{"lower_bounds",14,0,2,0,2317,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarCSV",0,"continuous_state"},
+		{"upper_bounds",14,0,3,0,2319,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarCSV",0,"continuous_state"}
 		},
 	kw_308[8] = {
 		{"ddv_descriptors",7,0,4,0,1968,0,0.,0.,0.,0,0,0,"discrete_design_range"},
@@ -2187,344 +2187,351 @@ static GuiKeyWord
 		{"lower_bounds",13,0,2,0,1965,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDDRIV",0,"discrete_design_range"},
 		{"upper_bounds",13,0,3,0,1967,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDDRIV",0,"discrete_design_range"}
 		},
-	kw_309[7] = {
-		{"categorical",15,0,3,0,1979,0,0.,0.,0.,0,0,0,"integer"},
-		{"descriptors",15,0,5,0,1983,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDDSIV",0,"integer"},
+	kw_309[1] = {
+		{"adjacency",13,0,1,0,1981}
+		},
+	kw_310[7] = {
+		{"categorical",15,1,3,0,1979,kw_309,0.,0.,0.,0,0,0,"integer"},
+		{"descriptors",15,0,5,0,1985,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDDSIV",0,"integer"},
 		{"elements",13,0,2,1,1977},
 		{"elements_per_variable",0x80d,0,1,0,1975,0,0.,0.,0.,0,0,0,"integer"},
-		{"initial_point",13,0,4,0,1981,0,0.,0.,0.,0,"{Initial point} VarCommands.html#VarDDSIV",0,"integer"},
+		{"initial_point",13,0,4,0,1983,0,0.,0.,0.,0,"{Initial point} VarCommands.html#VarDDSIV",0,"integer"},
 		{"num_set_values",0x805,0,1,0,1974,0,0.,0.,0.,0,0,0,"integer"},
 		{"set_values",5,0,2,1,1976}
 		},
-	kw_310[7] = {
-		{"categorical",15,0,3,0,2001,0,0.,0.,0.,0,0,0,"integer"},
-		{"descriptors",15,0,5,0,2005,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Normal",0,"real"},
-		{"elements",14,0,2,1,1999},
-		{"elements_per_variable",0x80d,0,1,0,1997,0,0.,0.,0.,0,0,0,"real"},
-		{"initial_point",14,0,4,0,2003,0,0.,0.,0.,0,0,0,"real"},
-		{"num_set_values",0x805,0,1,0,1996,0,0.,0.,0.,0,0,0,"real"},
-		{"set_values",6,0,2,1,1998}
+	kw_311[1] = {
+		{"adjacency",13,0,1,0,2007}
 		},
-	kw_311[6] = {
-		{"descriptors",15,0,4,0,1993,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDDSRV",0,"string"},
-		{"elements",15,0,2,1,1989},
-		{"elements_per_variable",0x80d,0,1,0,1987,0,0.,0.,0.,0,0,0,"string"},
-		{"initial_point",15,0,3,0,1991,0,0.,0.,0.,0,"{Initial point} VarCommands.html#VarDDSRV",0,"string"},
-		{"num_set_values",0x805,0,1,0,1986,0,0.,0.,0.,0,0,0,"string"},
-		{"set_values",7,0,2,1,1988}
+	kw_312[7] = {
+		{"categorical",15,1,3,0,2005,kw_311,0.,0.,0.,0,0,0,"integer"},
+		{"descriptors",15,0,5,0,2011,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Normal",0,"real"},
+		{"elements",14,0,2,1,2003},
+		{"elements_per_variable",0x80d,0,1,0,2001,0,0.,0.,0.,0,0,0,"real"},
+		{"initial_point",14,0,4,0,2009,0,0.,0.,0.,0,0,0,"real"},
+		{"num_set_values",0x805,0,1,0,2000,0,0.,0.,0.,0,0,0,"real"},
+		{"set_values",6,0,2,1,2002}
 		},
-	kw_312[3] = {
-		{"integer",0x19,7,1,0,1973,kw_309},
-		{"real",0x19,7,3,0,1995,kw_310},
-		{"string",0x19,6,2,0,1985,kw_311}
+	kw_313[7] = {
+		{"adjacency",13,0,3,0,1993},
+		{"descriptors",15,0,5,0,1997,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDDSRV",0,"string"},
+		{"elements",15,0,2,1,1991},
+		{"elements_per_variable",0x80d,0,1,0,1989,0,0.,0.,0.,0,0,0,"string"},
+		{"initial_point",15,0,4,0,1995,0,0.,0.,0.,0,"{Initial point} VarCommands.html#VarDDSRV",0,"string"},
+		{"num_set_values",0x805,0,1,0,1988,0,0.,0.,0.,0,0,0,"string"},
+		{"set_values",7,0,2,1,1990}
 		},
-	kw_313[9] = {
-		{"descriptors",15,0,6,0,2263,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCSV",0,"discrete_interval_uncertain"},
-		{"initial_point",13,0,5,0,2261,0,0.,0.,0.,0,0,0,"discrete_interval_uncertain"},
-		{"interval_probabilities",14,0,2,0,2255,0,0.,0.,0.,0,"{Basic probability assignments per interval} VarCommands.html#VarDIUV"},
-		{"interval_probs",6,0,2,0,2254},
-		{"lower_bounds",13,0,3,1,2257,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDIUV"},
-		{"num_intervals",13,0,1,0,2253,0,0.,0.,0.,0,"{Number of intervals defined for each interval variable} VarCommands.html#VarDIUV",0,"discrete_interval_uncertain"},
-		{"range_probabilities",6,0,2,0,2254},
-		{"range_probs",6,0,2,0,2254},
-		{"upper_bounds",13,0,4,2,2259,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDIUV"}
+	kw_314[3] = {
+		{"integer",0x19,7,1,0,1973,kw_310},
+		{"real",0x19,7,3,0,1999,kw_312},
+		{"string",0x19,7,2,0,1987,kw_313}
 		},
-	kw_314[8] = {
-		{"descriptors",15,0,4,0,2325,0,0.,0.,0.,0,0,0,"discrete_state_range"},
-		{"dsv_descriptors",7,0,4,0,2324,0,0.,0.,0.,0,0,0,"discrete_state_range"},
-		{"dsv_initial_state",5,0,1,0,2318,0,0.,0.,0.,0,0,0,"discrete_state_range"},
-		{"dsv_lower_bounds",5,0,2,0,2320,0,0.,0.,0.,0,0,0,"discrete_state_range"},
-		{"dsv_upper_bounds",5,0,3,0,2322,0,0.,0.,0.,0,0,0,"discrete_state_range"},
-		{"initial_state",13,0,1,0,2319,0,0.,0.,0.,0,"{Initial states} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
-		{"lower_bounds",13,0,2,0,2321,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
-		{"upper_bounds",13,0,3,0,2323,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDSRIV",0,"discrete_state_range"}
+	kw_315[9] = {
+		{"descriptors",15,0,6,0,2269,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCSV",0,"discrete_interval_uncertain"},
+		{"initial_point",13,0,5,0,2267,0,0.,0.,0.,0,0,0,"discrete_interval_uncertain"},
+		{"interval_probabilities",14,0,2,0,2261,0,0.,0.,0.,0,"{Basic probability assignments per interval} VarCommands.html#VarDIUV"},
+		{"interval_probs",6,0,2,0,2260},
+		{"lower_bounds",13,0,3,1,2263,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDIUV"},
+		{"num_intervals",13,0,1,0,2259,0,0.,0.,0.,0,"{Number of intervals defined for each interval variable} VarCommands.html#VarDIUV",0,"discrete_interval_uncertain"},
+		{"range_probabilities",6,0,2,0,2260},
+		{"range_probs",6,0,2,0,2260},
+		{"upper_bounds",13,0,4,2,2265,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDIUV"}
 		},
-	kw_315[7] = {
-		{"categorical",15,0,3,0,2335,0,0.,0.,0.,0,0,0,"integer"},
-		{"descriptors",15,0,5,0,2339,0,0.,0.,0.,0,0,0,"integer"},
-		{"elements",13,0,2,1,2333},
-		{"elements_per_variable",0x80d,0,1,0,2331,0,0.,0.,0.,0,0,0,"integer"},
-		{"initial_state",13,0,4,0,2337,0,0.,0.,0.,0,"{Initial state} VarCommands.html#VarDSSIV",0,"integer"},
-		{"num_set_values",0x805,0,1,0,2330,0,0.,0.,0.,0,0,0,"integer"},
-		{"set_values",5,0,2,1,2332}
+	kw_316[8] = {
+		{"descriptors",15,0,4,0,2331,0,0.,0.,0.,0,0,0,"discrete_state_range"},
+		{"dsv_descriptors",7,0,4,0,2330,0,0.,0.,0.,0,0,0,"discrete_state_range"},
+		{"dsv_initial_state",5,0,1,0,2324,0,0.,0.,0.,0,0,0,"discrete_state_range"},
+		{"dsv_lower_bounds",5,0,2,0,2326,0,0.,0.,0.,0,0,0,"discrete_state_range"},
+		{"dsv_upper_bounds",5,0,3,0,2328,0,0.,0.,0.,0,0,0,"discrete_state_range"},
+		{"initial_state",13,0,1,0,2325,0,0.,0.,0.,0,"{Initial states} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
+		{"lower_bounds",13,0,2,0,2327,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDSRIV",0,"discrete_state_range"},
+		{"upper_bounds",13,0,3,0,2329,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDSRIV",0,"discrete_state_range"}
 		},
-	kw_316[7] = {
-		{"categorical",15,0,3,0,2357,0,0.,0.,0.,0,0,0,"integer"},
-		{"descriptors",15,0,5,0,2361,0,0.,0.,0.,0,0,0,"real"},
-		{"elements",14,0,2,1,2355},
-		{"elements_per_variable",0x80d,0,1,0,2353,0,0.,0.,0.,0,0,0,"real"},
-		{"initial_state",14,0,4,0,2359,0,0.,0.,0.,0,0,0,"real"},
-		{"num_set_values",0x805,0,1,0,2352,0,0.,0.,0.,0,0,0,"real"},
-		{"set_values",6,0,2,1,2354}
+	kw_317[7] = {
+		{"categorical",15,0,3,0,2341,0,0.,0.,0.,0,0,0,"integer"},
+		{"descriptors",15,0,5,0,2345,0,0.,0.,0.,0,0,0,"integer"},
+		{"elements",13,0,2,1,2339},
+		{"elements_per_variable",0x80d,0,1,0,2337,0,0.,0.,0.,0,0,0,"integer"},
+		{"initial_state",13,0,4,0,2343,0,0.,0.,0.,0,"{Initial state} VarCommands.html#VarDSSIV",0,"integer"},
+		{"num_set_values",0x805,0,1,0,2336,0,0.,0.,0.,0,0,0,"integer"},
+		{"set_values",5,0,2,1,2338}
 		},
-	kw_317[6] = {
-		{"descriptors",15,0,4,0,2349,0,0.,0.,0.,0,0,0,"string"},
-		{"elements",15,0,2,1,2345},
-		{"elements_per_variable",0x80d,0,1,0,2343,0,0.,0.,0.,0,0,0,"string"},
-		{"initial_state",15,0,3,0,2347,0,0.,0.,0.,0,"{Initial state} VarCommands.html#VarDSSRV",0,"string"},
-		{"num_set_values",0x805,0,1,0,2342,0,0.,0.,0.,0,0,0,"string"},
-		{"set_values",7,0,2,1,2344}
+	kw_318[7] = {
+		{"categorical",15,0,3,0,2363,0,0.,0.,0.,0,0,0,"integer"},
+		{"descriptors",15,0,5,0,2367,0,0.,0.,0.,0,0,0,"real"},
+		{"elements",14,0,2,1,2361},
+		{"elements_per_variable",0x80d,0,1,0,2359,0,0.,0.,0.,0,0,0,"real"},
+		{"initial_state",14,0,4,0,2365,0,0.,0.,0.,0,0,0,"real"},
+		{"num_set_values",0x805,0,1,0,2358,0,0.,0.,0.,0,0,0,"real"},
+		{"set_values",6,0,2,1,2360}
 		},
-	kw_318[3] = {
-		{"integer",0x19,7,1,0,2329,kw_315},
-		{"real",0x19,7,3,0,2351,kw_316},
-		{"string",0x19,6,2,0,2341,kw_317}
+	kw_319[6] = {
+		{"descriptors",15,0,4,0,2355,0,0.,0.,0.,0,0,0,"string"},
+		{"elements",15,0,2,1,2351},
+		{"elements_per_variable",0x80d,0,1,0,2349,0,0.,0.,0.,0,0,0,"string"},
+		{"initial_state",15,0,3,0,2353,0,0.,0.,0.,0,"{Initial state} VarCommands.html#VarDSSRV",0,"string"},
+		{"num_set_values",0x805,0,1,0,2348,0,0.,0.,0.,0,0,0,"string"},
+		{"set_values",7,0,2,1,2350}
 		},
-	kw_319[9] = {
-		{"categorical",15,0,4,0,2275,0,0.,0.,0.,0,0,0,"integer"},
-		{"descriptors",15,0,6,0,2279,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSRIV",0,"integer"},
-		{"elements",13,0,2,1,2271},
-		{"elements_per_variable",13,0,1,0,2269,0,0.,0.,0.,0,0,0,"integer"},
-		{"initial_point",13,0,5,0,2277,0,0.,0.,0.,0,0,0,"integer"},
-		{"num_set_values",5,0,1,0,2268,0,0.,0.,0.,0,0,0,"integer"},
-		{"set_probabilities",14,0,3,0,2273,0,0.,0.,0.,0,"{Probabilities for each set member} VarCommands.html#VarDUSIV"},
-		{"set_probs",6,0,3,0,2272},
-		{"set_values",5,0,2,1,2270}
+	kw_320[3] = {
+		{"integer",0x19,7,1,0,2335,kw_317},
+		{"real",0x19,7,3,0,2357,kw_318},
+		{"string",0x19,6,2,0,2347,kw_319}
 		},
-	kw_320[9] = {
-		{"categorical",15,0,4,0,2301,0,0.,0.,0.,0,0,0,"real"},
-		{"descriptors",15,0,6,0,2305,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSSRV",0,"real"},
-		{"elements",14,0,2,1,2297},
-		{"elements_per_variable",13,0,1,0,2295,0,0.,0.,0.,0,0,0,"real"},
-		{"initial_point",14,0,5,0,2303,0,0.,0.,0.,0,0,0,"real"},
-		{"num_set_values",5,0,1,0,2294,0,0.,0.,0.,0,0,0,"real"},
-		{"set_probabilities",14,0,3,0,2299},
-		{"set_probs",6,0,3,0,2298},
-		{"set_values",6,0,2,1,2296}
+	kw_321[9] = {
+		{"categorical",15,0,4,0,2281,0,0.,0.,0.,0,0,0,"integer"},
+		{"descriptors",15,0,6,0,2285,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSRIV",0,"integer"},
+		{"elements",13,0,2,1,2277},
+		{"elements_per_variable",13,0,1,0,2275,0,0.,0.,0.,0,0,0,"integer"},
+		{"initial_point",13,0,5,0,2283,0,0.,0.,0.,0,0,0,"integer"},
+		{"num_set_values",5,0,1,0,2274,0,0.,0.,0.,0,0,0,"integer"},
+		{"set_probabilities",14,0,3,0,2279,0,0.,0.,0.,0,"{Probabilities for each set member} VarCommands.html#VarDUSIV"},
+		{"set_probs",6,0,3,0,2278},
+		{"set_values",5,0,2,1,2276}
 		},
-	kw_321[8] = {
-		{"descriptors",15,0,5,0,2291,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSSIV",0,"string"},
-		{"elements",15,0,2,1,2285},
-		{"elements_per_variable",13,0,1,0,2283,0,0.,0.,0.,0,0,0,"string"},
-		{"initial_point",15,0,4,0,2289,0,0.,0.,0.,0,0,0,"string"},
-		{"num_set_values",5,0,1,0,2282,0,0.,0.,0.,0,0,0,"string"},
-		{"set_probabilities",14,0,3,0,2287,0,0.,0.,0.,0,"{Probabilities for each set member} VarCommands.html#VarDUSRV"},
-		{"set_probs",6,0,3,0,2286},
-		{"set_values",7,0,2,1,2284}
+	kw_322[9] = {
+		{"categorical",15,0,4,0,2307,0,0.,0.,0.,0,0,0,"real"},
+		{"descriptors",15,0,6,0,2311,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSSRV",0,"real"},
+		{"elements",14,0,2,1,2303},
+		{"elements_per_variable",13,0,1,0,2301,0,0.,0.,0.,0,0,0,"real"},
+		{"initial_point",14,0,5,0,2309,0,0.,0.,0.,0,0,0,"real"},
+		{"num_set_values",5,0,1,0,2300,0,0.,0.,0.,0,0,0,"real"},
+		{"set_probabilities",14,0,3,0,2305},
+		{"set_probs",6,0,3,0,2304},
+		{"set_values",6,0,2,1,2302}
 		},
-	kw_322[3] = {
-		{"integer",0x19,9,1,0,2267,kw_319},
-		{"real",0x19,9,3,0,2293,kw_320},
-		{"string",0x19,8,2,0,2281,kw_321}
+	kw_323[8] = {
+		{"descriptors",15,0,5,0,2297,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDSSIV",0,"string"},
+		{"elements",15,0,2,1,2291},
+		{"elements_per_variable",13,0,1,0,2289,0,0.,0.,0.,0,0,0,"string"},
+		{"initial_point",15,0,4,0,2295,0,0.,0.,0.,0,0,0,"string"},
+		{"num_set_values",5,0,1,0,2288,0,0.,0.,0.,0,0,0,"string"},
+		{"set_probabilities",14,0,3,0,2293,0,0.,0.,0.,0,"{Probabilities for each set member} VarCommands.html#VarDUSRV"},
+		{"set_probs",6,0,3,0,2292},
+		{"set_values",7,0,2,1,2290}
 		},
-	kw_323[5] = {
-		{"betas",14,0,1,1,2075,0,0.,0.,0.,0,"{exponential uncertain betas} VarCommands.html#VarCAUV_Exponential",0,"exponential_uncertain"},
-		{"descriptors",15,0,3,0,2079,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Beta",0,"exponential_uncertain"},
-		{"euv_betas",6,0,1,1,2074,0,0.,0.,0.,0,0,0,"exponential_uncertain"},
-		{"euv_descriptors",7,0,3,0,2078,0,0.,0.,0.,0,0,0,"exponential_uncertain"},
-		{"initial_point",14,0,2,0,2077,0,0.,0.,0.,0,0,0,"exponential_uncertain"}
+	kw_324[3] = {
+		{"integer",0x19,9,1,0,2273,kw_321},
+		{"real",0x19,9,3,0,2299,kw_322},
+		{"string",0x19,8,2,0,2287,kw_323}
 		},
-	kw_324[7] = {
-		{"alphas",14,0,1,1,2117,0,0.,0.,0.,0,"{frechet uncertain alphas} VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
-		{"betas",14,0,2,2,2119,0,0.,0.,0.,0,"{frechet uncertain betas} VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
-		{"descriptors",15,0,4,0,2123,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Weibull",0,"frechet_uncertain"},
-		{"fuv_alphas",6,0,1,1,2116,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
-		{"fuv_betas",6,0,2,2,2118,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
-		{"fuv_descriptors",7,0,4,0,2122,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
-		{"initial_point",14,0,3,0,2121,0,0.,0.,0.,0,0,0,"frechet_uncertain"}
+	kw_325[5] = {
+		{"betas",14,0,1,1,2081,0,0.,0.,0.,0,"{exponential uncertain betas} VarCommands.html#VarCAUV_Exponential",0,"exponential_uncertain"},
+		{"descriptors",15,0,3,0,2085,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Beta",0,"exponential_uncertain"},
+		{"euv_betas",6,0,1,1,2080,0,0.,0.,0.,0,0,0,"exponential_uncertain"},
+		{"euv_descriptors",7,0,3,0,2084,0,0.,0.,0.,0,0,0,"exponential_uncertain"},
+		{"initial_point",14,0,2,0,2083,0,0.,0.,0.,0,0,0,"exponential_uncertain"}
 		},
-	kw_325[7] = {
-		{"alphas",14,0,1,1,2097,0,0.,0.,0.,0,"{gamma uncertain alphas} VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
-		{"betas",14,0,2,2,2099,0,0.,0.,0.,0,"{gamma uncertain betas} VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
-		{"descriptors",15,0,4,0,2103,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Gumbel",0,"gamma_uncertain"},
-		{"gauv_alphas",6,0,1,1,2096,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
-		{"gauv_betas",6,0,2,2,2098,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
-		{"gauv_descriptors",7,0,4,0,2102,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
-		{"initial_point",14,0,3,0,2101,0,0.,0.,0.,0,0,0,"gamma_uncertain"}
-		},
-	kw_326[4] = {
-		{"descriptors",15,0,3,0,2183,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Hypergeometric",0,"geometric_uncertain"},
-		{"initial_point",13,0,2,0,2181,0,0.,0.,0.,0,0,0,"geometric_uncertain"},
-		{"prob_per_trial",6,0,1,1,2178,0,0.,0.,0.,0,0,0,"geometric_uncertain"},
-		{"probability_per_trial",14,0,1,1,2179,0,0.,0.,0.,0,0,0,"geometric_uncertain"}
+	kw_326[7] = {
+		{"alphas",14,0,1,1,2123,0,0.,0.,0.,0,"{frechet uncertain alphas} VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
+		{"betas",14,0,2,2,2125,0,0.,0.,0.,0,"{frechet uncertain betas} VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
+		{"descriptors",15,0,4,0,2129,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Weibull",0,"frechet_uncertain"},
+		{"fuv_alphas",6,0,1,1,2122,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
+		{"fuv_betas",6,0,2,2,2124,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
+		{"fuv_descriptors",7,0,4,0,2128,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
+		{"initial_point",14,0,3,0,2127,0,0.,0.,0.,0,0,0,"frechet_uncertain"}
 		},
 	kw_327[7] = {
-		{"alphas",14,0,1,1,2107,0,0.,0.,0.,0,"{gumbel uncertain alphas} VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
-		{"betas",14,0,2,2,2109,0,0.,0.,0.,0,"{gumbel uncertain betas} VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
-		{"descriptors",15,0,4,0,2113,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Frechet",0,"gumbel_uncertain"},
-		{"guuv_alphas",6,0,1,1,2106,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
-		{"guuv_betas",6,0,2,2,2108,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
-		{"guuv_descriptors",7,0,4,0,2112,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
-		{"initial_point",14,0,3,0,2111,0,0.,0.,0.,0,0,0,"gumbel_uncertain"}
+		{"alphas",14,0,1,1,2103,0,0.,0.,0.,0,"{gamma uncertain alphas} VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
+		{"betas",14,0,2,2,2105,0,0.,0.,0.,0,"{gamma uncertain betas} VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
+		{"descriptors",15,0,4,0,2109,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Gumbel",0,"gamma_uncertain"},
+		{"gauv_alphas",6,0,1,1,2102,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
+		{"gauv_betas",6,0,2,2,2104,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
+		{"gauv_descriptors",7,0,4,0,2108,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
+		{"initial_point",14,0,3,0,2107,0,0.,0.,0.,0,0,0,"gamma_uncertain"}
 		},
-	kw_328[11] = {
-		{"abscissas",14,0,2,1,2139,0,0.,0.,0.,0,"{sets of abscissas for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
-		{"counts",14,0,3,2,2143,0,0.,0.,0.,0,"{sets of counts for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
-		{"descriptors",15,0,5,0,2147,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Poisson",0,"histogram_bin_uncertain"},
-		{"huv_bin_abscissas",6,0,2,1,2138},
-		{"huv_bin_counts",6,0,3,2,2142},
-		{"huv_bin_descriptors",7,0,5,0,2146,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
-		{"huv_bin_ordinates",6,0,3,2,2140},
-		{"initial_point",14,0,4,0,2145,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
-		{"num_pairs",5,0,1,0,2136,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
-		{"ordinates",14,0,3,2,2141,0,0.,0.,0.,0,"{sets of ordinates for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
-		{"pairs_per_variable",13,0,1,0,2137,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"}
+	kw_328[4] = {
+		{"descriptors",15,0,3,0,2189,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Hypergeometric",0,"geometric_uncertain"},
+		{"initial_point",13,0,2,0,2187,0,0.,0.,0.,0,0,0,"geometric_uncertain"},
+		{"prob_per_trial",6,0,1,1,2184,0,0.,0.,0.,0,0,0,"geometric_uncertain"},
+		{"probability_per_trial",14,0,1,1,2185,0,0.,0.,0.,0,0,0,"geometric_uncertain"}
 		},
-	kw_329[6] = {
-		{"abscissas",13,0,2,1,2203,0,0.,0.,0.,0,"{sets of abscissas for point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"},
-		{"counts",14,0,3,2,2205,0,0.,0.,0.,0,"{sets of counts for point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"},
-		{"descriptors",15,0,5,0,2209,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCEUV_Interval",0,"integer"},
-		{"initial_point",13,0,4,0,2207,0,0.,0.,0.,0,0,0,"integer"},
-		{"num_pairs",5,0,1,0,2200,0,0.,0.,0.,0,0,0,"integer"},
-		{"pairs_per_variable",13,0,1,0,2201,0,0.,0.,0.,0,0,0,"integer"}
+	kw_329[7] = {
+		{"alphas",14,0,1,1,2113,0,0.,0.,0.,0,"{gumbel uncertain alphas} VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
+		{"betas",14,0,2,2,2115,0,0.,0.,0.,0,"{gumbel uncertain betas} VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
+		{"descriptors",15,0,4,0,2119,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Frechet",0,"gumbel_uncertain"},
+		{"guuv_alphas",6,0,1,1,2112,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
+		{"guuv_betas",6,0,2,2,2114,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
+		{"guuv_descriptors",7,0,4,0,2118,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
+		{"initial_point",14,0,3,0,2117,0,0.,0.,0.,0,0,0,"gumbel_uncertain"}
 		},
-	kw_330[6] = {
-		{"abscissas",14,0,2,1,2227},
-		{"counts",14,0,3,2,2229},
-		{"descriptors",15,0,5,0,2233,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDUSIV",0,"real"},
-		{"initial_point",14,0,4,0,2231,0,0.,0.,0.,0,0,0,"real"},
-		{"num_pairs",5,0,1,0,2224,0,0.,0.,0.,0,0,0,"real"},
-		{"pairs_per_variable",13,0,1,0,2225,0,0.,0.,0.,0,0,0,"real"}
+	kw_330[11] = {
+		{"abscissas",14,0,2,1,2145,0,0.,0.,0.,0,"{sets of abscissas for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
+		{"counts",14,0,3,2,2149,0,0.,0.,0.,0,"{sets of counts for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
+		{"descriptors",15,0,5,0,2153,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Poisson",0,"histogram_bin_uncertain"},
+		{"huv_bin_abscissas",6,0,2,1,2144},
+		{"huv_bin_counts",6,0,3,2,2148},
+		{"huv_bin_descriptors",7,0,5,0,2152,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
+		{"huv_bin_ordinates",6,0,3,2,2146},
+		{"initial_point",14,0,4,0,2151,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
+		{"num_pairs",5,0,1,0,2142,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"},
+		{"ordinates",14,0,3,2,2147,0,0.,0.,0.,0,"{sets of ordinates for bin-based histogram variables} VarCommands.html#VarCAUV_Bin_Histogram"},
+		{"pairs_per_variable",13,0,1,0,2143,0,0.,0.,0.,0,0,0,"histogram_bin_uncertain"}
 		},
 	kw_331[6] = {
-		{"abscissas",15,0,2,1,2215},
-		{"counts",14,0,3,2,2217},
-		{"descriptors",15,0,5,0,2221,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDIUV",0,"string"},
-		{"initial_point",15,0,4,0,2219,0,0.,0.,0.,0,0,0,"string"},
-		{"num_pairs",5,0,1,0,2212,0,0.,0.,0.,0,0,0,"string"},
-		{"pairs_per_variable",13,0,1,0,2213,0,0.,0.,0.,0,0,0,"string"}
+		{"abscissas",13,0,2,1,2209,0,0.,0.,0.,0,"{sets of abscissas for point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"},
+		{"counts",14,0,3,2,2211,0,0.,0.,0.,0,"{sets of counts for point-based histogram variables} VarCommands.html#VarDAUV_Point_Histogram"},
+		{"descriptors",15,0,5,0,2215,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCEUV_Interval",0,"integer"},
+		{"initial_point",13,0,4,0,2213,0,0.,0.,0.,0,0,0,"integer"},
+		{"num_pairs",5,0,1,0,2206,0,0.,0.,0.,0,0,0,"integer"},
+		{"pairs_per_variable",13,0,1,0,2207,0,0.,0.,0.,0,0,0,"integer"}
 		},
-	kw_332[3] = {
-		{"integer",0x19,6,1,0,2199,kw_329},
-		{"real",0x19,6,3,0,2223,kw_330},
-		{"string",0x19,6,2,0,2211,kw_331}
+	kw_332[6] = {
+		{"abscissas",14,0,2,1,2233},
+		{"counts",14,0,3,2,2235},
+		{"descriptors",15,0,5,0,2239,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDUSIV",0,"real"},
+		{"initial_point",14,0,4,0,2237,0,0.,0.,0.,0,0,0,"real"},
+		{"num_pairs",5,0,1,0,2230,0,0.,0.,0.,0,0,0,"real"},
+		{"pairs_per_variable",13,0,1,0,2231,0,0.,0.,0.,0,0,0,"real"}
 		},
-	kw_333[5] = {
-		{"descriptors",15,0,5,0,2195,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Point_Histogram",0,"hypergeometric_uncertain"},
-		{"initial_point",13,0,4,0,2193,0,0.,0.,0.,0,0,0,"hypergeometric_uncertain"},
-		{"num_drawn",13,0,3,3,2191,0,0.,0.,0.,0,"{hypergeometric uncertain num_drawn } VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
-		{"selected_population",13,0,2,2,2189,0,0.,0.,0.,0,"{hypergeometric uncertain selected_population} VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
-		{"total_population",13,0,1,1,2187,0,0.,0.,0.,0,"{hypergeometric uncertain total_population} VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"}
+	kw_333[6] = {
+		{"abscissas",15,0,2,1,2221},
+		{"counts",14,0,3,2,2223},
+		{"descriptors",15,0,5,0,2227,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDIUV",0,"string"},
+		{"initial_point",15,0,4,0,2225,0,0.,0.,0.,0,0,0,"string"},
+		{"num_pairs",5,0,1,0,2218,0,0.,0.,0.,0,0,0,"string"},
+		{"pairs_per_variable",13,0,1,0,2219,0,0.,0.,0.,0,0,0,"string"}
 		},
-	kw_334[2] = {
-		{"lnuv_zetas",6,0,1,1,2024,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"zetas",14,0,1,1,2025,0,0.,0.,0.,0,"{lognormal uncertain zetas} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
+	kw_334[3] = {
+		{"integer",0x19,6,1,0,2205,kw_331},
+		{"real",0x19,6,3,0,2229,kw_332},
+		{"string",0x19,6,2,0,2217,kw_333}
 		},
-	kw_335[4] = {
-		{"error_factors",14,0,1,1,2031,0,0.,0.,0.,0,"[CHOOSE variance spec.]{lognormal uncertain error factors} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
-		{"lnuv_error_factors",6,0,1,1,2030,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_std_deviations",6,0,1,1,2028,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"std_deviations",14,0,1,1,2029,0,0.,0.,0.,0,"@{lognormal uncertain standard deviations} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
+	kw_335[5] = {
+		{"descriptors",15,0,5,0,2201,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Point_Histogram",0,"hypergeometric_uncertain"},
+		{"initial_point",13,0,4,0,2199,0,0.,0.,0.,0,0,0,"hypergeometric_uncertain"},
+		{"num_drawn",13,0,3,3,2197,0,0.,0.,0.,0,"{hypergeometric uncertain num_drawn } VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
+		{"selected_population",13,0,2,2,2195,0,0.,0.,0.,0,"{hypergeometric uncertain selected_population} VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
+		{"total_population",13,0,1,1,2193,0,0.,0.,0.,0,"{hypergeometric uncertain total_population} VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"}
 		},
-	kw_336[11] = {
-		{"descriptors",15,0,5,0,2039,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Uniform",0,"lognormal_uncertain"},
-		{"initial_point",14,0,4,0,2037,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lambdas",14,2,1,1,2023,kw_334,0.,0.,0.,0,"[CHOOSE characterization]{lognormal uncertain lambdas} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
-		{"lnuv_descriptors",7,0,5,0,2038,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_lambdas",6,2,1,1,2022,kw_334,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_lower_bounds",6,0,2,0,2032,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_means",6,4,1,1,2026,kw_335,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_upper_bounds",6,0,3,0,2034,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lower_bounds",14,0,2,0,2033,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
-		{"means",14,4,1,1,2027,kw_335,0.,0.,0.,0,"@{lognormal uncertain means} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
-		{"upper_bounds",14,0,3,0,2035,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
+	kw_336[2] = {
+		{"lnuv_zetas",6,0,1,1,2030,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"zetas",14,0,1,1,2031,0,0.,0.,0.,0,"{lognormal uncertain zetas} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
 		},
-	kw_337[7] = {
-		{"descriptors",15,0,4,0,2059,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Triangular",0,"loguniform_uncertain"},
-		{"initial_point",14,0,3,0,2057,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
-		{"lower_bounds",14,0,1,1,2053,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"},
-		{"luuv_descriptors",7,0,4,0,2058,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
-		{"luuv_lower_bounds",6,0,1,1,2052,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
-		{"luuv_upper_bounds",6,0,2,2,2054,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
-		{"upper_bounds",14,0,2,2,2055,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"}
+	kw_337[4] = {
+		{"error_factors",14,0,1,1,2037,0,0.,0.,0.,0,"[CHOOSE variance spec.]{lognormal uncertain error factors} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
+		{"lnuv_error_factors",6,0,1,1,2036,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_std_deviations",6,0,1,1,2034,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"std_deviations",14,0,1,1,2035,0,0.,0.,0.,0,"@{lognormal uncertain standard deviations} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
 		},
-	kw_338[5] = {
-		{"descriptors",15,0,4,0,2175,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Geometric",0,"negative_binomial_uncertain"},
-		{"initial_point",13,0,3,0,2173,0,0.,0.,0.,0,0,0,"negative_binomial_uncertain"},
-		{"num_trials",13,0,2,2,2171,0,0.,0.,0.,0,"{negative binomial uncertain success num_trials} VarCommands.html#VarDAUV_Negative_Binomial",0,"negative_binomial_uncertain"},
-		{"prob_per_trial",6,0,1,1,2168,0,0.,0.,0.,0,0,0,"negative_binomial_uncertain"},
-		{"probability_per_trial",14,0,1,1,2169,0,0.,0.,0.,0,0,0,"negative_binomial_uncertain"}
+	kw_338[11] = {
+		{"descriptors",15,0,5,0,2045,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Uniform",0,"lognormal_uncertain"},
+		{"initial_point",14,0,4,0,2043,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lambdas",14,2,1,1,2029,kw_336,0.,0.,0.,0,"[CHOOSE characterization]{lognormal uncertain lambdas} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
+		{"lnuv_descriptors",7,0,5,0,2044,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_lambdas",6,2,1,1,2028,kw_336,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_lower_bounds",6,0,2,0,2038,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_means",6,4,1,1,2032,kw_337,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_upper_bounds",6,0,3,0,2040,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lower_bounds",14,0,2,0,2039,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
+		{"means",14,4,1,1,2033,kw_337,0.,0.,0.,0,"@{lognormal uncertain means} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
+		{"upper_bounds",14,0,3,0,2041,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
 		},
-	kw_339[11] = {
-		{"descriptors",15,0,6,0,2019,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Lognormal",0,"normal_uncertain"},
-		{"initial_point",14,0,5,0,2017,0,0.,0.,0.,0,0,0,"normal_uncertain"},
-		{"lower_bounds",14,0,3,0,2013,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
-		{"means",14,0,1,1,2009,0,0.,0.,0.,0,"{normal uncertain means} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
-		{"nuv_descriptors",7,0,6,0,2018,0,0.,0.,0.,0,0,0,"normal_uncertain"},
-		{"nuv_lower_bounds",6,0,3,0,2012,0,0.,0.,0.,0,0,0,"normal_uncertain"},
-		{"nuv_means",6,0,1,1,2008,0,0.,0.,0.,0,0,0,"normal_uncertain"},
-		{"nuv_std_deviations",6,0,2,2,2010,0,0.,0.,0.,0,0,0,"normal_uncertain"},
-		{"nuv_upper_bounds",6,0,4,0,2014,0,0.,0.,0.,0,0,0,"normal_uncertain"},
-		{"std_deviations",14,0,2,2,2011,0,0.,0.,0.,0,"{normal uncertain standard deviations} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
-		{"upper_bounds",14,0,4,0,2015,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"}
+	kw_339[7] = {
+		{"descriptors",15,0,4,0,2065,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Triangular",0,"loguniform_uncertain"},
+		{"initial_point",14,0,3,0,2063,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
+		{"lower_bounds",14,0,1,1,2059,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"},
+		{"luuv_descriptors",7,0,4,0,2064,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
+		{"luuv_lower_bounds",6,0,1,1,2058,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
+		{"luuv_upper_bounds",6,0,2,2,2060,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
+		{"upper_bounds",14,0,2,2,2061,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"}
 		},
-	kw_340[3] = {
-		{"descriptors",15,0,3,0,2155,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Binomial",0,"poisson_uncertain"},
-		{"initial_point",13,0,2,0,2153,0,0.,0.,0.,0,0,0,"poisson_uncertain"},
-		{"lambdas",14,0,1,1,2151,0,0.,0.,0.,0,"{poisson uncertain lambdas} VarCommands.html#VarDAUV_Poisson",0,"poisson_uncertain"}
+	kw_340[5] = {
+		{"descriptors",15,0,4,0,2181,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Geometric",0,"negative_binomial_uncertain"},
+		{"initial_point",13,0,3,0,2179,0,0.,0.,0.,0,0,0,"negative_binomial_uncertain"},
+		{"num_trials",13,0,2,2,2177,0,0.,0.,0.,0,"{negative binomial uncertain success num_trials} VarCommands.html#VarDAUV_Negative_Binomial",0,"negative_binomial_uncertain"},
+		{"prob_per_trial",6,0,1,1,2174,0,0.,0.,0.,0,0,0,"negative_binomial_uncertain"},
+		{"probability_per_trial",14,0,1,1,2175,0,0.,0.,0.,0,0,0,"negative_binomial_uncertain"}
 		},
-	kw_341[9] = {
-		{"descriptors",15,0,5,0,2071,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Exponential",0,"triangular_uncertain"},
-		{"initial_point",14,0,4,0,2069,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
-		{"lower_bounds",14,0,2,2,2065,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
-		{"modes",14,0,1,1,2063,0,0.,0.,0.,0,"{triangular uncertain modes} VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
-		{"tuv_descriptors",7,0,5,0,2070,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
-		{"tuv_lower_bounds",6,0,2,2,2064,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
-		{"tuv_modes",6,0,1,1,2062,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
-		{"tuv_upper_bounds",6,0,3,3,2066,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
-		{"upper_bounds",14,0,3,3,2067,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"}
+	kw_341[11] = {
+		{"descriptors",15,0,6,0,2025,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Lognormal",0,"normal_uncertain"},
+		{"initial_point",14,0,5,0,2023,0,0.,0.,0.,0,0,0,"normal_uncertain"},
+		{"lower_bounds",14,0,3,0,2019,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
+		{"means",14,0,1,1,2015,0,0.,0.,0.,0,"{normal uncertain means} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
+		{"nuv_descriptors",7,0,6,0,2024,0,0.,0.,0.,0,0,0,"normal_uncertain"},
+		{"nuv_lower_bounds",6,0,3,0,2018,0,0.,0.,0.,0,0,0,"normal_uncertain"},
+		{"nuv_means",6,0,1,1,2014,0,0.,0.,0.,0,0,0,"normal_uncertain"},
+		{"nuv_std_deviations",6,0,2,2,2016,0,0.,0.,0.,0,0,0,"normal_uncertain"},
+		{"nuv_upper_bounds",6,0,4,0,2020,0,0.,0.,0.,0,0,0,"normal_uncertain"},
+		{"std_deviations",14,0,2,2,2017,0,0.,0.,0.,0,"{normal uncertain standard deviations} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
+		{"upper_bounds",14,0,4,0,2021,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"}
 		},
-	kw_342[7] = {
-		{"descriptors",15,0,4,0,2049,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Loguniform",0,"uniform_uncertain"},
-		{"initial_point",14,0,3,0,2047,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
-		{"lower_bounds",14,0,1,1,2043,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
-		{"upper_bounds",14,0,2,2,2045,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
-		{"uuv_descriptors",7,0,4,0,2048,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
-		{"uuv_lower_bounds",6,0,1,1,2042,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
-		{"uuv_upper_bounds",6,0,2,2,2044,0,0.,0.,0.,0,0,0,"uniform_uncertain"}
+	kw_342[3] = {
+		{"descriptors",15,0,3,0,2161,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDAUV_Binomial",0,"poisson_uncertain"},
+		{"initial_point",13,0,2,0,2159,0,0.,0.,0.,0,0,0,"poisson_uncertain"},
+		{"lambdas",14,0,1,1,2157,0,0.,0.,0.,0,"{poisson uncertain lambdas} VarCommands.html#VarDAUV_Poisson",0,"poisson_uncertain"}
 		},
-	kw_343[7] = {
-		{"alphas",14,0,1,1,2127,0,0.,0.,0.,0,"{weibull uncertain alphas} VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
-		{"betas",14,0,2,2,2129,0,0.,0.,0.,0,"{weibull uncertain betas} VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
-		{"descriptors",15,0,4,0,2133,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Bin_Histogram",0,"weibull_uncertain"},
-		{"initial_point",14,0,3,0,2131,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
-		{"wuv_alphas",6,0,1,1,2126,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
-		{"wuv_betas",6,0,2,2,2128,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
-		{"wuv_descriptors",7,0,4,0,2132,0,0.,0.,0.,0,0,0,"weibull_uncertain"}
+	kw_343[9] = {
+		{"descriptors",15,0,5,0,2077,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Exponential",0,"triangular_uncertain"},
+		{"initial_point",14,0,4,0,2075,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
+		{"lower_bounds",14,0,2,2,2071,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
+		{"modes",14,0,1,1,2069,0,0.,0.,0.,0,"{triangular uncertain modes} VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
+		{"tuv_descriptors",7,0,5,0,2076,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
+		{"tuv_lower_bounds",6,0,2,2,2070,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
+		{"tuv_modes",6,0,1,1,2068,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
+		{"tuv_upper_bounds",6,0,3,3,2072,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
+		{"upper_bounds",14,0,3,3,2073,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"}
 		},
-	kw_344[34] = {
+	kw_344[7] = {
+		{"descriptors",15,0,4,0,2055,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Loguniform",0,"uniform_uncertain"},
+		{"initial_point",14,0,3,0,2053,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
+		{"lower_bounds",14,0,1,1,2049,0,0.,0.,0.,0,"{Distribution lower bounds} VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
+		{"upper_bounds",14,0,2,2,2051,0,0.,0.,0.,0,"{Distribution upper bounds} VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
+		{"uuv_descriptors",7,0,4,0,2054,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
+		{"uuv_lower_bounds",6,0,1,1,2048,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
+		{"uuv_upper_bounds",6,0,2,2,2050,0,0.,0.,0.,0,0,0,"uniform_uncertain"}
+		},
+	kw_345[7] = {
+		{"alphas",14,0,1,1,2133,0,0.,0.,0.,0,"{weibull uncertain alphas} VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
+		{"betas",14,0,2,2,2135,0,0.,0.,0.,0,"{weibull uncertain betas} VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
+		{"descriptors",15,0,4,0,2139,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCAUV_Bin_Histogram",0,"weibull_uncertain"},
+		{"initial_point",14,0,3,0,2137,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
+		{"wuv_alphas",6,0,1,1,2132,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
+		{"wuv_betas",6,0,2,2,2134,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
+		{"wuv_descriptors",7,0,4,0,2138,0,0.,0.,0.,0,0,0,"weibull_uncertain"}
+		},
+	kw_346[34] = {
 		{"active",8,6,2,0,1929,kw_302,0.,0.,0.,0,"{Active variables} VarCommands.html#VarDomain"},
-		{"beta_uncertain",0x19,11,13,0,2081,kw_303,0.,0.,0.,0,"{beta uncertain variables} VarCommands.html#VarCAUV_Beta","Continuous Aleatory Uncertain"},
-		{"binomial_uncertain",0x19,5,20,0,2157,kw_304,0.,0.,0.,0,"{binomial uncertain variables} VarCommands.html#VarDAUV_Binomial","Discrete Aleatory Uncertain"},
+		{"beta_uncertain",0x19,11,13,0,2087,kw_303,0.,0.,0.,0,"{beta uncertain variables} VarCommands.html#VarCAUV_Beta","Continuous Aleatory Uncertain"},
+		{"binomial_uncertain",0x19,5,20,0,2163,kw_304,0.,0.,0.,0,"{binomial uncertain variables} VarCommands.html#VarDAUV_Binomial","Discrete Aleatory Uncertain"},
 		{"continuous_design",0x19,12,4,0,1947,kw_305,0.,0.,0.,0,"{Continuous design variables} VarCommands.html#VarCDV","Design Variables"},
-		{"continuous_interval_uncertain",0x19,10,26,0,2237,kw_306,0.,0.,0.,0,"{continuous interval uncertain variables} VarCommands.html#VarCEUV_Interval","Epistemic Uncertain"},
-		{"continuous_state",0x19,8,29,0,2307,kw_307,0.,0.,0.,0,"{Continuous state variables} VarCommands.html#VarCSV","State Variables"},
+		{"continuous_interval_uncertain",0x19,10,26,0,2243,kw_306,0.,0.,0.,0,"{continuous interval uncertain variables} VarCommands.html#VarCEUV_Interval","Epistemic Uncertain"},
+		{"continuous_state",0x19,8,29,0,2313,kw_307,0.,0.,0.,0,"{Continuous state variables} VarCommands.html#VarCSV","State Variables"},
 		{"discrete_design_range",0x19,8,5,0,1961,kw_308,0.,0.,0.,0,"{Discrete design range variables} VarCommands.html#VarDDRIV","Design Variables"},
-		{"discrete_design_set",8,3,6,0,1971,kw_312,0.,0.,0.,0,0,"Design Variables"},
-		{"discrete_interval_uncertain",0x19,9,27,0,2251,kw_313,0.,0.,0.,0,"{Discrete interval uncertain variables} VarCommands.html#VarDIUV","Epistemic Uncertain"},
-		{"discrete_state_range",0x19,8,30,0,2317,kw_314,0.,0.,0.,0,"{Discrete state range variables} VarCommands.html#VarDSRIV","State Variables"},
-		{"discrete_state_set",8,3,31,0,2327,kw_318,0.,0.,0.,0,0,"State Variables"},
-		{"discrete_uncertain_range",0x11,9,27,0,2250,kw_313},
-		{"discrete_uncertain_set",8,3,28,0,2265,kw_322,0.,0.,0.,0,0,"Epistemic Uncertain"},
-		{"exponential_uncertain",0x19,5,12,0,2073,kw_323,0.,0.,0.,0,"{exponential uncertain variables} VarCommands.html#VarCAUV_Exponential","Continuous Aleatory Uncertain"},
-		{"frechet_uncertain",0x19,7,16,0,2115,kw_324,0.,0.,0.,0,"{frechet uncertain variables} VarCommands.html#VarCAUV_Frechet","Continuous Aleatory Uncertain"},
-		{"gamma_uncertain",0x19,7,14,0,2095,kw_325,0.,0.,0.,0,"{gamma uncertain variables} VarCommands.html#VarCAUV_Gamma","Continuous Aleatory Uncertain"},
-		{"geometric_uncertain",0x19,4,22,0,2177,kw_326,0.,0.,0.,0,"{geometric uncertain variables} VarCommands.html#VarDAUV_Geometric","Discrete Aleatory Uncertain"},
-		{"gumbel_uncertain",0x19,7,15,0,2105,kw_327,0.,0.,0.,0,"{gumbel uncertain variables} VarCommands.html#VarCAUV_Gumbel","Continuous Aleatory Uncertain"},
-		{"histogram_bin_uncertain",0x19,11,18,0,2135,kw_328,0.,0.,0.,0,"{histogram bin uncertain variables} VarCommands.html#VarCAUV_Bin_Histogram","Continuous Aleatory Uncertain"},
-		{"histogram_point_uncertain",8,3,24,0,2197,kw_332,0.,0.,0.,0,"{histogram point uncertain variables} VarCommands.html#VarDAUV_Point_Histogram","Discrete Aleatory Uncertain"},
-		{"hypergeometric_uncertain",0x19,5,23,0,2185,kw_333,0.,0.,0.,0,"{hypergeometric uncertain variables} VarCommands.html#VarDAUV_Hypergeometric","Discrete Aleatory Uncertain"},
+		{"discrete_design_set",8,3,6,0,1971,kw_314,0.,0.,0.,0,0,"Design Variables"},
+		{"discrete_interval_uncertain",0x19,9,27,0,2257,kw_315,0.,0.,0.,0,"{Discrete interval uncertain variables} VarCommands.html#VarDIUV","Epistemic Uncertain"},
+		{"discrete_state_range",0x19,8,30,0,2323,kw_316,0.,0.,0.,0,"{Discrete state range variables} VarCommands.html#VarDSRIV","State Variables"},
+		{"discrete_state_set",8,3,31,0,2333,kw_320,0.,0.,0.,0,0,"State Variables"},
+		{"discrete_uncertain_range",0x11,9,27,0,2256,kw_315},
+		{"discrete_uncertain_set",8,3,28,0,2271,kw_324,0.,0.,0.,0,0,"Epistemic Uncertain"},
+		{"exponential_uncertain",0x19,5,12,0,2079,kw_325,0.,0.,0.,0,"{exponential uncertain variables} VarCommands.html#VarCAUV_Exponential","Continuous Aleatory Uncertain"},
+		{"frechet_uncertain",0x19,7,16,0,2121,kw_326,0.,0.,0.,0,"{frechet uncertain variables} VarCommands.html#VarCAUV_Frechet","Continuous Aleatory Uncertain"},
+		{"gamma_uncertain",0x19,7,14,0,2101,kw_327,0.,0.,0.,0,"{gamma uncertain variables} VarCommands.html#VarCAUV_Gamma","Continuous Aleatory Uncertain"},
+		{"geometric_uncertain",0x19,4,22,0,2183,kw_328,0.,0.,0.,0,"{geometric uncertain variables} VarCommands.html#VarDAUV_Geometric","Discrete Aleatory Uncertain"},
+		{"gumbel_uncertain",0x19,7,15,0,2111,kw_329,0.,0.,0.,0,"{gumbel uncertain variables} VarCommands.html#VarCAUV_Gumbel","Continuous Aleatory Uncertain"},
+		{"histogram_bin_uncertain",0x19,11,18,0,2141,kw_330,0.,0.,0.,0,"{histogram bin uncertain variables} VarCommands.html#VarCAUV_Bin_Histogram","Continuous Aleatory Uncertain"},
+		{"histogram_point_uncertain",8,3,24,0,2203,kw_334,0.,0.,0.,0,"{histogram point uncertain variables} VarCommands.html#VarDAUV_Point_Histogram","Discrete Aleatory Uncertain"},
+		{"hypergeometric_uncertain",0x19,5,23,0,2191,kw_335,0.,0.,0.,0,"{hypergeometric uncertain variables} VarCommands.html#VarDAUV_Hypergeometric","Discrete Aleatory Uncertain"},
 		{"id_variables",11,0,1,0,1927,0,0.,0.,0.,0,"{Variables set identifier} VarCommands.html#VarSetId"},
-		{"interval_uncertain",0x11,10,26,0,2236,kw_306},
-		{"lognormal_uncertain",0x19,11,8,0,2021,kw_336,0.,0.,0.,0,"{lognormal uncertain variables} VarCommands.html#VarCAUV_Lognormal","Continuous Aleatory Uncertain"},
-		{"loguniform_uncertain",0x19,7,10,0,2051,kw_337,0.,0.,0.,0,"{loguniform uncertain variables} VarCommands.html#VarCAUV_Loguniform","Continuous Aleatory Uncertain"},
+		{"interval_uncertain",0x11,10,26,0,2242,kw_306},
+		{"lognormal_uncertain",0x19,11,8,0,2027,kw_338,0.,0.,0.,0,"{lognormal uncertain variables} VarCommands.html#VarCAUV_Lognormal","Continuous Aleatory Uncertain"},
+		{"loguniform_uncertain",0x19,7,10,0,2057,kw_339,0.,0.,0.,0,"{loguniform uncertain variables} VarCommands.html#VarCAUV_Loguniform","Continuous Aleatory Uncertain"},
 		{"mixed",8,0,3,0,1943},
-		{"negative_binomial_uncertain",0x19,5,21,0,2167,kw_338,0.,0.,0.,0,"{negative binomial uncertain variables} VarCommands.html#VarDAUV_Negative_Binomial","Discrete Aleatory Uncertain"},
-		{"normal_uncertain",0x19,11,7,0,2007,kw_339,0.,0.,0.,0,"{normal uncertain variables} VarCommands.html#VarCAUV_Normal","Continuous Aleatory Uncertain"},
-		{"poisson_uncertain",0x19,3,19,0,2149,kw_340,0.,0.,0.,0,"{poisson uncertain variables} VarCommands.html#VarDAUV_Poisson","Discrete Aleatory Uncertain"},
+		{"negative_binomial_uncertain",0x19,5,21,0,2173,kw_340,0.,0.,0.,0,"{negative binomial uncertain variables} VarCommands.html#VarDAUV_Negative_Binomial","Discrete Aleatory Uncertain"},
+		{"normal_uncertain",0x19,11,7,0,2013,kw_341,0.,0.,0.,0,"{normal uncertain variables} VarCommands.html#VarCAUV_Normal","Continuous Aleatory Uncertain"},
+		{"poisson_uncertain",0x19,3,19,0,2155,kw_342,0.,0.,0.,0,"{poisson uncertain variables} VarCommands.html#VarDAUV_Poisson","Discrete Aleatory Uncertain"},
 		{"relaxed",8,0,3,0,1945},
-		{"triangular_uncertain",0x19,9,11,0,2061,kw_341,0.,0.,0.,0,"{triangular uncertain variables} VarCommands.html#VarCAUV_Triangular","Continuous Aleatory Uncertain"},
-		{"uncertain_correlation_matrix",14,0,25,0,2235,0,0.,0.,0.,0,"{correlations in aleatory uncertain variables} VarCommands.html#VarAUV_Correlations","Aleatory Uncertain Correlations"},
-		{"uniform_uncertain",0x19,7,9,0,2041,kw_342,0.,0.,0.,0,"{uniform uncertain variables} VarCommands.html#VarCAUV_Uniform","Continuous Aleatory Uncertain"},
-		{"weibull_uncertain",0x19,7,17,0,2125,kw_343,0.,0.,0.,0,"{weibull uncertain variables} VarCommands.html#VarCAUV_Weibull","Continuous Aleatory Uncertain"}
+		{"triangular_uncertain",0x19,9,11,0,2067,kw_343,0.,0.,0.,0,"{triangular uncertain variables} VarCommands.html#VarCAUV_Triangular","Continuous Aleatory Uncertain"},
+		{"uncertain_correlation_matrix",14,0,25,0,2241,0,0.,0.,0.,0,"{correlations in aleatory uncertain variables} VarCommands.html#VarAUV_Correlations","Aleatory Uncertain Correlations"},
+		{"uniform_uncertain",0x19,7,9,0,2047,kw_344,0.,0.,0.,0,"{uniform uncertain variables} VarCommands.html#VarCAUV_Uniform","Continuous Aleatory Uncertain"},
+		{"weibull_uncertain",0x19,7,17,0,2131,kw_345,0.,0.,0.,0,"{weibull uncertain variables} VarCommands.html#VarCAUV_Weibull","Continuous Aleatory Uncertain"}
 		},
-	kw_345[6] = {
+	kw_347[6] = {
 		{"environment",0x108,15,1,1,1,kw_7,0.,0.,0.,0,"{Environment} The environment specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. EnvCommands.html"},
-		{"interface",0x308,9,5,5,2363,kw_21,0.,0.,0.,0,"{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. InterfCommands.html"},
+		{"interface",0x308,9,5,5,2369,kw_21,0.,0.,0.,0,"{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. InterfCommands.html"},
 		{"method",0x308,90,2,2,47,kw_245,0.,0.,0.,0,"{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. MethodCommands.html"},
 		{"model",8,7,3,3,1681,kw_277,0.,0.,0.,0,"{Model} A model consists of a model type and maps specified variables through an interface to generate responses. ModelCommands.html"},
-		{"responses",0x308,19,6,6,2479,kw_301,0.,0.,0.,0,"{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. RespCommands.html"},
-		{"variables",0x308,34,4,4,1925,kw_344,0.,0.,0.,0,"{Variables} A variables object specifies the parameter set to be iterated by a particular method. VarCommands.html"}
+		{"responses",0x308,19,6,6,2485,kw_301,0.,0.,0.,0,"{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. RespCommands.html"},
+		{"variables",0x308,34,4,4,1925,kw_346,0.,0.,0.,0,"{Variables} A variables object specifies the parameter set to be iterated by a particular method. VarCommands.html"}
 		};
 
 } // namespace Dakota
@@ -2532,7 +2539,7 @@ static GuiKeyWord
 #ifdef __cplusplus
 extern "C" {
 #endif
-KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_345};
+KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_347};
 #ifdef __cplusplus
 }
 #endif

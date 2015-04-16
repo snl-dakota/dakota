@@ -268,6 +268,19 @@ public:
   BitArray discreteDesignSetIntCat;
   /// is each ddsr var strictly categorical (true) or relaxable (false)
   BitArray discreteDesignSetRealCat;
+  
+  /// Adjacency matrices for each of the discrete design variables defined
+  /// by an integer set (from the \c discrete_design_set integer
+  /// \c categorical \c adjacency specification in \ref VarDV
+  RealMatrixArray discreteDesignSetIntAdj;
+  /// Adjacency matrices for each of the discrete design variables defined
+  /// by a string set (from the \c discrete_design_set string
+  ///  \c adjacency specification in \ref VarDV
+  RealMatrixArray discreteDesignSetStrAdj;
+  /// Adjacency matrices for each of the discrete design variables defined
+  /// by a real set (from the \c discrete_design_set real
+  /// \c categorical \c adjacency specification in \ref VarDV
+  RealMatrixArray discreteDesignSetRealAdj;
 
   /// labels array for the continuous design variables (from the
   /// \c continuous_design \c descriptors specification in \ref VarDV)

@@ -1380,6 +1380,31 @@ static void Null_rep1(const char *who)
   abort_handler(PARSE_ERROR);
 }
 
+const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
+{
+  const char *L;
+
+  if (!dbRep)
+	Null_rep("get_iv");
+  if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<RealMatrixArray, DataVariablesRep> RMAdv[] = {	
+      // must be sorted by string (key)
+	{"discrete_design_set_int.adjacency", P discreteDesignSetIntAdj},
+	{"discrete_design_set_real.adjacency", P discreteDesignSetRealAdj},
+	{"discrete_design_set_str.adjacency", P discreteDesignSetStrAdj}
+	};
+    #undef P
+    KW<RealMatrixArray, DataVariablesRep> *kw;
+    if ((kw = (KW<RealMatrixArray, DataVariablesRep>*)Binsearch(RMAdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
+  Bad_name(entry_name, "get_rma");
+  return abort_handler_t<const RealMatrixArray&>(PARSE_ERROR);
+}
+
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {

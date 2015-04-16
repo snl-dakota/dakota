@@ -190,6 +190,8 @@ public:
   // entry_name. Need a HashTable or other container with an efficient lookup
   // function here.
 
+  /// get a RealMatrixArray out of the database based on an identifier string
+  const RealMatrixArray& get_rma(const String& entry_name) const;
   /// get a RealVector out of the database based on an identifier string
   const RealVector& get_rv(const String& entry_name) const;
   /// get an IntVector out of the database based on an identifier string

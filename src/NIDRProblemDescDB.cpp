@@ -444,11 +444,12 @@ struct Var_Info {
              *nhpip, *nhpsp, *nhprp, 
              *ndusi, *nduss, *ndusr,
              *ndssi, *ndsss, *ndssr;
+             
   RealVector *ddsr, *CIlb, *CIub, *CIp, *DIp, *DSIp, *DSSp, *DSRp, *dusr,
              *hba, *hbo, *hbc, 
              *hpic, *hpsc, *hpra, *hprc,
              *ucm, *dssr;
-  IntVector  *ddsi, *DIlb, *DIub, *hpia, *dusi, *dssi;
+  IntVector  *ddsi, *DIlb, *DIub, *hpia, *dusi, *dssi, *ddsia, *ddssa, *ddsra;
   StringArray *ddss, *hpsa, *duss, *dsss;
 };
 
@@ -4124,6 +4125,27 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   //else: default initialization performed in Vgen_DIset
 }
 
+// Validate adjacency matrices 
+static void 
+Vchk_Adjacency(size_t num_v, const char *kind, const IntArray &num_e,
+		const IntVector &input_ddsa, RealMatrixArray &dda_all)  {
+  size_t expected_size = 0;
+  for(size_t i = 0; i < num_v; ++i)
+    expected_size += num_e[i]*num_e[i];
+    if(expected_size != input_ddsa.length())
+      Squawk("adjacency list for %s has incorrect length", kind);
+    else {
+      size_t e_ctr = 0;
+      for(size_t i = 0; i < num_v; ++i) {
+        RealMatrix a_tmp(num_e[i],num_e[i]);
+        for(size_t j = 0; j < num_e[i]; ++j)  
+          for(size_t k = 0; k < num_e[i]; ++k) 
+            a_tmp[j][k] = input_ddsa[e_ctr++];
+        dda_all.push_back(a_tmp);
+      }
+    }
+}
+
 static bool 
 check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
 	       bool aggregate_LUV, size_t offset)
@@ -4495,6 +4517,13 @@ Vchk_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   static char kind[] = "discrete_design_set_integer";
   Vchk_DIset(dv->numDiscreteDesSetIntVars, kind, vi->nddsi, vi->ddsi,
 	     dv->discreteDesignSetInt, dv->discreteDesignSetIntVars);
+  if(vi->ddsia) {
+    IntArray num_e;
+    for(size_t i = 0; i < dv->numDiscreteDesSetIntVars; i++)
+      num_e.push_back(dv->discreteDesignSetInt[i].size());
+      Vchk_Adjacency(dv->numDiscreteDesSetIntVars, kind, num_e, *vi->ddsia,
+		      dv->discreteDesignSetIntAdj);
+  }
 }
 
 static void Vgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
@@ -4511,6 +4540,13 @@ Vchk_DiscreteDesSetStr(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   static char kind[] = "discrete_design_set_string";
   Vchk_DSset(dv->numDiscreteDesSetStrVars, kind, vi->nddss, vi->ddss,
 	     dv->discreteDesignSetStr, dv->discreteDesignSetStrVars);
+  if(vi->ddssa) {
+    IntArray num_e;
+    for(size_t i = 0; i < dv->numDiscreteDesSetStrVars; i++)
+	    num_e.push_back(dv->discreteDesignSetStr[i].size());
+    Vchk_Adjacency(dv->numDiscreteDesSetStrVars, kind, num_e, *vi->ddssa,
+		    dv->discreteDesignSetStrAdj);
+  }
 }
 
 static void Vgen_DiscreteDesSetStr(DataVariablesRep *dv, size_t offset)
@@ -4527,6 +4563,13 @@ Vchk_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   static char kind[] = "discrete_design_set_real";
   Vchk_DRset(dv->numDiscreteDesSetRealVars, kind, vi->nddsr, vi->ddsr,
 	     dv->discreteDesignSetReal, dv->discreteDesignSetRealVars);
+  if(vi->ddsra) {
+    IntArray num_e;
+    for(size_t i = 0; i < dv->numDiscreteDesSetRealVars; i++)
+      num_e.push_back(dv->discreteDesignSetReal[i].size());
+    Vchk_Adjacency(dv->numDiscreteDesSetRealVars, kind, num_e,
+		    *vi->ddsra, dv->discreteDesignSetRealAdj);
+  }
 }
 
 static void Vgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
@@ -7107,6 +7150,9 @@ static IntVector
         MP_(histogramPointIntUncVars),
         VP_(hpia),
         VP_(dssi),
+        VP_(ddsia),
+        VP_(ddssa),
+        VP_(ddsra),
         VP_(dusi);
 
 static IntArray
