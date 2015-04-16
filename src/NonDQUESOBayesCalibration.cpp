@@ -1134,7 +1134,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
       for (j=0; j<num_fn; j++)
-        result += pow((fn_vals[j]-exp_data[j])/paramValues[num_cv+j],2.);
+        result += std::pow((fn_vals[j]-exp_data[j])/paramValues[num_cv+j],2.);
     }
   }
   else {

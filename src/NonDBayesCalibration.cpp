@@ -52,7 +52,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) {
       initialize_random_variable_transformation();
-      initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
+      initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
+      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
       // Note: initialize_random_variable_parameters() is performed at run time
       initialize_random_variable_correlations();
       verify_correlation_support();
@@ -199,6 +200,7 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+    //if (standardizedSpace)
     mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
   }
 }
@@ -215,6 +217,7 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+    //if (standardizedSpace)
     mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
   }
 }
@@ -226,6 +229,7 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.free_communicators(pl_iter);                  break;
   case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
+    //if (standardizedSpace)
     mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
   }
 

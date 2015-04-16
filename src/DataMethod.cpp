@@ -132,7 +132,7 @@ DataMethodRep::DataMethodRep():
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), proposalUpdates(1),
-  likelihoodScale(1.0), fitnessMetricType("predicted_variance"),
+  likelihoodScale(1.), fitnessMetricType("predicted_variance"),
   batchSelectionType("naive"), batchSize(0), calibrateSigmaFlag(false),
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5), lipschitzType("local"),
@@ -141,8 +141,8 @@ DataMethodRep::DataMethodRep():
   // Verification
   refinementRate(2.),
   // Point import/export files
-  approxImportAnnotated(true), approxImportActive(false), approxExportAnnotated(true),
-  referenceCount(1)
+  approxImportAnnotated(true), approxImportActive(false),
+  approxExportAnnotated(true), referenceCount(1)
 { }
 
 
