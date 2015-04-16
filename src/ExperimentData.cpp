@@ -180,6 +180,8 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
   if (numConfigVars > 0)
     allConfigVars.resize(numExperiments);
 
+  size_t num_scalars = simulationSRD.num_scalar_responses();
+
   // Count number of each sigma type for sizing
   //
   // TODO: If "none" is specified, map to appropriate type.  For field
@@ -189,13 +191,11 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     std::count(varianceTypes.begin(), varianceTypes.end(), MATRIX_SIGMA);
   size_t num_sigma_diagonals = 
     std::count(varianceTypes.begin(), varianceTypes.end(), DIAGONAL_SIGMA);
-  size_t num_sigma_scalars = //simulationSRD.num_scalar_responses(); 
-    std::count(varianceTypes.begin(), varianceTypes.end(), SCALAR_SIGMA);
-  if( scalarSigmaPerRow > 0 )
-    num_sigma_scalars -= simulationSRD.num_scalar_responses();
+  size_t num_sigma_scalars = 0.0;
+  if( !varianceTypes.empty() )
+      std::count(varianceTypes.begin()+num_scalars, varianceTypes.end(), SCALAR_SIGMA);
 
   // TODO: temporary duplication until necessary covariance APIs are updated
-  size_t num_scalar = simulationSRD.num_scalar_responses();
 
   // setup for reading historical format, one experiment per line,
   // each consisting of [ [config_vars] fn values [ fn variance ] ]
@@ -205,7 +205,7 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
       Cout << "\nReading scalar experimental data from file " 
 	   << scalarDataFilename << ":";
       Cout << "\n  " << numExperiments << " experiment(s) for";
-      Cout << "\n  " << num_scalar << " scalar responses" << std::endl;
+      Cout << "\n  " << num_scalars << " scalar responses" << std::endl;
     }
     TabularIO::open_file(scalar_data_stream, scalarDataFilename, 
 			 context_message);
@@ -317,9 +317,6 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   size_t num_fields = simulationSRD.num_field_response_groups();
   size_t num_resp = num_scalars + num_fields;
 
-  if( (num_scalars > 0) && !scalar_data_file )
-    throw std::runtime_error("Non-field scalar covariances require a Scalar Data file.");
-
 
   // -----
   // Data to populate from files for a single experiment
@@ -355,11 +352,10 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
   // from historical to new format (later collapse and eliminate
   // copies) TODO: advance a row of exp data in outer context and pass
   // in here to simplify these two cases
+  sigma_scalars.resize(num_scalars);
+  scalar_map_indices.resize(num_scalars);
   if (scalar_data_file) {
     // Non-field response sigmas; field response sigma scalars later get expanded into diagonals
-    sigma_scalars.resize(num_scalars);
-    scalar_map_indices.resize(num_scalars);
-
     for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
       exp_values[fn_index].resize(1);
       scalar_data_stream >> exp_values[fn_index];
@@ -374,6 +370,29 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       // BMA: in a mixed case we might want these populated with 1.0
       // even if data missing
     }
+  }
+  else
+  {
+    RealMatrix working_cov_values;
+    const StringArray& scalar_labels = exp_resp.function_labels();
+    for( size_t i=0; i<num_scalars; ++i ) {
+      //std::cout << "Scalar function " << i << ": veriance_type = " << varianceTypes[i] << ", label = \"" << scalar_labels[i] << "\"" << std::endl;
+      // Read data from file named: scalar_labels.expt_num.dat
+      boost::filesystem::path field_base = dataPathPrefix / scalar_labels[i];
+      read_field_values(field_base.string(), exp_index+1, exp_values[i]);
+
+      // Optionally allow covariance data
+      if( varianceTypes[i] ) {
+        read_covariance(field_base.string(), exp_index+1, working_cov_values);
+        sigma_scalars[i] = working_cov_values(0,0);
+        scalar_map_indices[i] = i;
+      }
+      else {
+        sigma_scalars[i] = 1.0;
+        scalar_map_indices[i] = i;
+      }
+    }
+
   }
 
   // Data for sigma - Note: all fields have matrix, diagonal or none covariance (sigma_ data)
