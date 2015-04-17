@@ -29,7 +29,7 @@ my $exitcode = 0;
 $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; 
 # TODO: extend NaN/Inf to work cross-platform (funny Windows format)
 # invalid numerical field
-$naninf = "-?([Nn][Aa][Nn]|[Ii][Nn][Ff])";
+$naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
 # numerical field printed as exponential (may contain NaN/Inf)
 # (?: --> group without capture)
 $e = "(?:$expo|$naninf)";
