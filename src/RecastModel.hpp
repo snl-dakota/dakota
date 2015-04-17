@@ -291,6 +291,11 @@ protected:
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
 
+  /// RecastModel may need to map variables, asv before DB lookup, or
+  /// responses after lookup
+  bool db_lookup(const Variables& search_vars, 
+		 const ActiveSet& search_set, Response& found_resp);
+
 private:
 
   //

@@ -18543,13 +18543,13 @@ Test Number 10 succeeded
                       7.7409023663e-08
 <<<<< Best data captured at function evaluation 76
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 335 total (303 new, 32 duplicate)
+<<<<< Function evaluation summary: 204 total (202 new, 2 duplicate)
 <<<<< Best parameters          =
-                      9.9967599585e-01 x1
-                      9.9935093870e-01 x2
+                      9.9873710729e-01 x1
+                      9.9746836963e-01 x2
 <<<<< Best objective function  =
-                      1.0511277929e-07
-<<<<< Best data captured at function evaluation 335
+                      1.6004331384e-06
+<<<<< Best data captured at function evaluation 204
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =

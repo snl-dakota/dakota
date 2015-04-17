@@ -803,4 +803,37 @@ void RecastModel::update_from_sub_model()
   }
 }
 
+
+bool RecastModel::
+db_lookup(const Variables& search_vars, const ActiveSet& search_set,
+	  Response& found_resp)
+{
+  // transform from recast (Iterator) to sub-model (user) variables;
+  // making copy to avoid modifying submodel state during the lookup
+  Variables sub_model_vars(subModel.current_variables().copy());
+  transform_variables(search_vars, sub_model_vars);
+
+  // the incoming set is for the recast problem, which must be converted
+  // back to the underlying response set for evaluation by the subModel.
+  ActiveSet sub_model_set;
+  transform_set(search_vars, search_set, sub_model_set);
+
+  // invoke default implementation for the lookup; making copy to
+  // avoid modifying submodel state during the lookup
+  Response sub_model_resp(subModel.current_response().copy());
+  bool eval_found = Model::db_lookup(sub_model_vars, search_set, sub_model_resp);
+  if (!eval_found)
+    return false;
+
+  // recast the subModel response ("user space") into the "iterator space"
+  found_resp.active_set(search_set);
+  if (respMapping)
+    transform_response(search_vars, sub_model_vars, sub_model_resp, found_resp);
+  else
+    found_resp.update(sub_model_resp);
+
+  return eval_found;
+}
+
+
 } // namespace Dakota

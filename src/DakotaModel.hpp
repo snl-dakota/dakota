@@ -264,6 +264,11 @@ public:
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
+  /// search the eval database (during derivative estimation); derived
+  /// may need to reimplement due to problem transformations
+  /// (RecastModel); return true if found in DB
+  virtual bool db_lookup(const Variables& search_vars, 
+			 const ActiveSet& search_set, Response& found_resp);
 
   //
   //- Heading: Member functions
