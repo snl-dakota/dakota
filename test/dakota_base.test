@@ -18458,7 +18458,7 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                      -2.2485381461e+00
 <<<<< Best constraint values   =
-                      1.9904806317e-01
+                      1.9889739264e-01
                      -1.1447157333e-01
                      -1.9999990233e-01
 <<<<< Best data captured at function evaluation 16
@@ -18680,7 +18680,7 @@ Test Number 21 succeeded
                      -3.3675644528e-01
                      -3.3331809175e-01
 <<<<< Best constraint values   =
-                     -7.8252145431e-03
+                     -1.5650429086e-03
 <<<<< Best data captured at function evaluation 203
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 375 total (375 new, 0 duplicate)
