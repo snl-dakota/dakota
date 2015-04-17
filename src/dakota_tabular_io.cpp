@@ -61,9 +61,13 @@ void write_header_tabular(std::ostream& tabular_ostream,
 			  const std::string& counter_label)
 {
   // headers use Matlab comment syntax
-  tabular_ostream << "%" << counter_label << ' ';
-  if (TABULAR_IFACE_ID)
+  if (TABULAR_OPTIONS & TABULAR_EVAL_ID)
+    tabular_ostream << "%" << counter_label << ' ';
+  if (TABULAR_OPTIONS & TABULAR_IFACE_ID) {
+    if (!(TABULAR_OPTIONS & TABULAR_EVAL_ID))
+      tabular_ostream << "%";
     tabular_ostream << "interface ";
+  }
   vars.write_tabular_labels(tabular_ostream);
   response.write_tabular_labels(tabular_ostream);
 }
@@ -72,11 +76,13 @@ void write_header_tabular(std::ostream& tabular_ostream,
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
 			   const String& iface_id)
 {
-  // align left to make eval_id consistent with whitespace-delimited header row
-  std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
-  tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
-  tabular_ostream.flags(before_left_align);
-  if (TABULAR_IFACE_ID) {
+  if (TABULAR_OPTIONS & TABULAR_EVAL_ID) {
+    // align left to make eval_id consistent with whitespace-delimited header row
+    std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
+    tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
+    tabular_ostream.flags(before_left_align);
+  }
+  if (TABULAR_OPTIONS & TABULAR_IFACE_ID) {
     // write the interface ID string, NO_ID for empty
     // (Dakota 6.1 used EMPTY for missing ID)
     if (iface_id.empty())
@@ -172,8 +178,9 @@ size_t read_leading_columns(std::istream& input_stream, bool annotated)
 {
   size_t row_label = _NPOS;
   if (annotated) {
-    input_stream >> row_label;
-    if (TABULAR_IFACE_ID) {
+    if (TABULAR_OPTIONS & TABULAR_EVAL_ID)
+      input_stream >> row_label;
+    if (TABULAR_OPTIONS & TABULAR_IFACE_ID) {
       String iface_id;
       input_stream >> iface_id;
       // (Dakota 6.1 used EMPTY for missing ID)

@@ -21,6 +21,7 @@ TAG "environment/graphics"
 
 TAG "environment/tabular_data"
 TAG "environment/tabular_data/tabular_data_file"
+TAG "environment/tabular_options"
 TAG "environment/output_precision"
 	DESC "{Numeric output precision} EnvCommands.html#EnvOutput"
 

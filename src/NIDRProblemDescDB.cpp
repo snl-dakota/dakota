@@ -1856,18 +1856,18 @@ env_str(const char *keyname, Values *val, void **g, void *v)
   (*(DataEnvironmentRep**)g)->**(String DataEnvironmentRep::**)v = *val->s;
 }
 
-// void NIDRProblemDescDB::
-// env_strL(const char *keyname, Values *val, void **g, void *v)
-// {
-//   StringArray *sa
-//     = &((*(DataEnvironmentRep**)g)->**(StringArray DataEnvironmentRep::**)v);
-//   const char **s = val->s;
-//   size_t i, n = val->n;
+void NIDRProblemDescDB::
+env_strL(const char *keyname, Values *val, void **g, void *v)
+{
+  StringArray *sa
+    = &((*(DataEnvironmentRep**)g)->**(StringArray DataEnvironmentRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-//   sa->resize(n);
-//   for(i = 0; i < n; i++)
-//     (*sa)[i] = s[i];
-// }
+  sa->resize(n);
+  for(i = 0; i < n; i++)
+    (*sa)[i] = s[i];
+}
 
 void NIDRProblemDescDB::
 method_tr_final(const char *keyname, Values *val, void **g, void *v)
@@ -7074,6 +7074,9 @@ static String
 	MP_(tabularDataFile),
         MP_(topMethodPointer),
         MP_(writeRestart);
+
+static StringArray
+        MP_(tabularOptions);
 
 static bool
 	MP_(checkFlag),

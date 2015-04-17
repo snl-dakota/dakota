@@ -52,6 +52,9 @@
           <param type="OUTPUT_FILE" />
         </keyword>
       </keyword>
+      <keyword id="tabular_options" name="tabular_options" code="{N_stm(strL,tabularOptions)}" label="tabular_options" help="" minOccurs="0" >
+	<param type="STRINGLIST" />
+      </keyword>
       <keyword  id="output_precision" name="output_precision" code="{N_stm(int,outputPrecision)}" label="Numeric output precision" help="EnvCommands.html#EnvOutput" minOccurs="0" >
         <param type="INTEGER" constraint=">= 0" />
       </keyword>

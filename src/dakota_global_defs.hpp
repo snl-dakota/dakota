@@ -26,9 +26,6 @@ namespace Dakota {
 /// special value returned by index() when entry not found
 const size_t _NPOS = ~(size_t)0; // one's complement
 
-/// whether to write/read interface IDs in tabular data
-const bool TABULAR_IFACE_ID = true;
-
 // --------------
 // Global objects
 // --------------
@@ -105,6 +102,14 @@ public:
 extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;
 extern int write_precision;
+
+/// options for tabular columns
+enum { TABULAR_NONE = 0, TABULAR_EVAL_ID = 1, TABULAR_IFACE_ID = 2}; 
+// TABULAR_VARS = 4, TABULAR_RESP = 8
+
+/// active tabular output columns
+extern unsigned short TABULAR_OPTIONS;
+
 #ifdef DAKOTA_MODELCENTER
 extern int mc_ptr_int;
 extern int dc_ptr_int;

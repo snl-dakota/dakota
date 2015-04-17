@@ -59,6 +59,9 @@ ResultsManager iterator_results_db;
 int write_precision = 10;     ///< used in ostream data output functions
                               ///< (restart_util.cpp overrides default value)
 
+/// by default, write/read eval_id and interface column in tabular data
+unsigned short TABULAR_OPTIONS = (TABULAR_EVAL_ID | TABULAR_IFACE_ID);
+
 MPIManager      dummy_mpi_mgr; ///< dummy MPIManager for ref initialization
 ProgramOptions  dummy_prg_opt; ///< dummy ProgramOptions for ref initialization
 OutputManager   dummy_out_mgr; ///< dummy OutputManager for ref initialization

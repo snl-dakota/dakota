@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1349 distinct keywords (plus 205 aliases) **/
+/** 1350 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[2] = {
@@ -26,21 +26,22 @@ static KeyWord
 		{"tabular_data_file",11,0,1,0,0,0.,0.,0,N_stm(str,tabularDataFile)},
 		{"tabular_graphics_file",3,0,1,0,0,0.,0.,-1,N_stm(str,tabularDataFile)}
 		},
-	kw_7[15] = {
+	kw_7[16] = {
 		{"check",8,0,1,0,0,0.,0.,0,N_stm(true,checkFlag)},
 		{"error_file",11,0,3,0,0,0.,0.,0,N_stm(str,errorFile)},
 		{"graphics",8,0,9,0,0,0.,0.,0,N_stm(true,graphicsFlag)},
-		{"method_pointer",3,0,13,0,0,0.,0.,10,N_stm(str,topMethodPointer)},
+		{"method_pointer",3,0,14,0,0,0.,0.,11,N_stm(str,topMethodPointer)},
 		{"output_file",11,0,2,0,0,0.,0.,0,N_stm(str,outputFile)},
-		{"output_precision",0x29,0,11,0,0,0.,0.,0,N_stm(int,outputPrecision)},
+		{"output_precision",0x29,0,12,0,0,0.,0.,0,N_stm(int,outputPrecision)},
 		{"post_run",8,2,8,0,kw_1,0.,0.,0,N_stm(true,postRunFlag)},
 		{"pre_run",8,2,6,0,kw_2,0.,0.,0,N_stm(true,preRunFlag)},
 		{"read_restart",11,1,4,0,kw_3,0.,0.,0,N_stm(str,readRestart)},
-		{"results_output",8,1,12,0,kw_4,0.,0.,0,N_stm(true,resultsOutputFlag)},
+		{"results_output",8,1,13,0,kw_4,0.,0.,0,N_stm(true,resultsOutputFlag)},
 		{"run",8,2,7,0,kw_5,0.,0.,0,N_stm(true,runFlag)},
 		{"tabular_data",8,2,10,0,kw_6,0.,0.,0,N_stm(true,tabularDataFlag)},
 		{"tabular_graphics_data",0,2,10,0,kw_6,0.,0.,-1,N_stm(true,tabularDataFlag)},
-		{"top_method_pointer",11,0,13,0,0,0.,0.,0,N_stm(str,topMethodPointer)},
+		{"tabular_options",15,0,11,0,0,0.,0.,0,N_stm(strL,tabularOptions)},
+		{"top_method_pointer",11,0,14,0,0,0.,0.,0,N_stm(str,topMethodPointer)},
 		{"write_restart",11,0,5,0,0,0.,0.,0,N_stm(str,writeRestart)}
 		},
 	kw_8[1] = {
@@ -2401,7 +2402,7 @@ static KeyWord
 		{"weibull_uncertain",0x19,7,17,0,kw_362,0.,0.,0,N_vam(pintz,numWeibullUncVars)}
 		},
 	kw_364[6] = {
-		{"environment",0x108,15,1,1,kw_7,0.,0.,0,NIDRProblemDescDB::env_start},
+		{"environment",0x108,16,1,1,kw_7,0.,0.,0,NIDRProblemDescDB::env_start},
 		{"interface",0x308,9,5,5,kw_21,0.,0.,0,N_ifm3(start,0,stop)},
 		{"method",0x308,90,2,2,kw_261,0.,0.,0,N_mdm3(start,0,stop)},
 		{"model",8,7,3,3,kw_294,0.,0.,0,N_mom3(start,0,stop)},

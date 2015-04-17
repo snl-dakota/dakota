@@ -198,7 +198,7 @@ public:
   //KWH(env_lit);
   KWH(env_start);
   KWH(env_str);
-  //KWH(env_strL);
+  KWH(env_strL);
   KWH(env_true);
 
   KWH(var_RealLb);

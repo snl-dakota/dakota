@@ -125,6 +125,31 @@ void OutputManager::parse(const ProblemDescDB& problem_db)
     else
       write_precision = db_write_precision;
   }
+
+  const StringArray db_tabular_opts = 
+    problem_db.get_sa("environment.tabular_options");
+  if (!db_tabular_opts.empty()) {
+    // setup valid options for tabular files
+    std::map<String, unsigned short> tab_opts;
+    tab_opts["eval_id"] = TABULAR_EVAL_ID;
+    tab_opts["interface"] = TABULAR_IFACE_ID;
+    // iterate user-provided options
+    bool found_error = false;
+    TABULAR_OPTIONS = TABULAR_NONE;
+    BOOST_FOREACH(const String& user_opt, db_tabular_opts) {
+      std::map<String, unsigned short>::const_iterator 
+	tab_opts_it = tab_opts.find(user_opt);
+      if (tab_opts_it == tab_opts.end()) {
+	Cerr << "\nError: unknown tabular option '" << user_opt << "'\n";
+	found_error = true;
+      }
+      else
+	TABULAR_OPTIONS |= tab_opts_it->second;
+    }
+    if (found_error) 
+      abort_handler(PARSE_ERROR);
+    Cout << "Using tabular_options:\n" << db_tabular_opts << std::endl;
+  }
 }
 
 

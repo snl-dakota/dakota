@@ -35,7 +35,8 @@ void DataEnvironmentRep::write(MPIPackBuffer& s) const
     << outputFile << errorFile << readRestart << stopRestart << writeRestart
     << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
     << runInput << runOutput << postRunInput << postRunOutput
-    << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
+    << graphicsFlag << tabularDataFlag << tabularDataFile << tabularOptions 
+    << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }
 
@@ -46,7 +47,8 @@ void DataEnvironmentRep::read(MPIUnpackBuffer& s)
     >> outputFile >> errorFile >> readRestart >> stopRestart >> writeRestart
     >> preRunFlag >> runFlag >> postRunFlag >> preRunInput >> preRunOutput
     >> runInput >> runOutput >> postRunInput >> postRunOutput
-    >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> outputPrecision
+    >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> tabularOptions 
+    >> outputPrecision
     >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
 }
 
@@ -57,7 +59,8 @@ void DataEnvironmentRep::write(std::ostream& s) const
     << outputFile << errorFile << readRestart << stopRestart << writeRestart
     << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
     << runInput << runOutput << postRunInput << postRunOutput
-    << graphicsFlag << tabularDataFlag << tabularDataFile << outputPrecision
+    << graphicsFlag << tabularDataFlag << tabularDataFile << tabularOptions 
+    << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }
 

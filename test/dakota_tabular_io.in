@@ -18,25 +18,28 @@
 # 4: LHS on surrogate; import data from 3, build an interpolating
 #    surrogate, and do LHS at same points used to build
 
+# 5: Test 0 with Dakota 6.0 format
+
 environment,
-#	  tabular_data						#s1,#s2,#s3
+#	  tabular_data						#s1,#s2,#s3,#s5
 #	    tabular_data_file = 'dakota_tabular_io.1.dat'  	#s1
 #	    tabular_data_file = 'dakota_tabular_io.3.dat'  	#s3
 #	  method_pointer = 'UQ'					#s4
+#	  tabular_options = 'eval_id'	 			#s5
 
 #########################################
 # interface truth model and dace method #
 #########################################
 
-method,					#s0,#s2,#s3,#s4
-	id_method = 'DACE'		#s0,#s2,#s3,#s4
-	model_pointer = 'DACE_M'	#s0,#s2,#s3,#s4
-	sampling			#s0,#s2,#s3,#s4
-	  samples = 25			#s0,#s2,#s3
+method,					#s0,#s2,#s3,#s4,#s5
+	id_method = 'DACE'		#s0,#s2,#s3,#s4,#s5
+	model_pointer = 'DACE_M'	#s0,#s2,#s3,#s4,#s5
+	sampling			#s0,#s2,#s3,#s4,#s5
+	  samples = 25			#s0,#s2,#s3,#s5
 ## No additional samples beyond those read	#s4
 #	  samples = 0				#s4
-	  seed = 50			#s0,#s2,#s3,#s4
-	  sample_type lhs		#s0,#s2,#s3,#s4
+	  seed = 50			#s0,#s2,#s3,#s4,#s5
+	  sample_type lhs		#s0,#s2,#s3,#s4,#s5
 
 #method,							#s1
 #	list_parameter_study					#s1

@@ -2067,7 +2067,18 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_sa");
-  if ((L = Begins(entry_name, "method."))) {
+  if ((L = Begins(entry_name, "environment."))) {
+    #define P &DataEnvironmentRep::
+    static KW<StringArray, DataEnvironmentRep> SAenv[] = {	
+      // must be sorted by string (key)
+      {"tabular_options", P tabularOptions}};
+    #undef P
+
+    KW<StringArray, DataEnvironmentRep> *kw;
+    if ((kw = (KW<StringArray, DataEnvironmentRep>*)Binsearch(SAenv, L)))
+	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
