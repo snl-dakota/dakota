@@ -73,8 +73,8 @@ protected:
 
   /// redefined from DakotaNonD
   void quantify_uncertainty();
-  // redefined from DakotaNonD
-  //void print_results(std::ostream& s);
+  /// redefined from DakotaAnalyzer
+  void print_results(std::ostream& s);
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();

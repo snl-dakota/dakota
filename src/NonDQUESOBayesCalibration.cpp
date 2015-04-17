@@ -325,8 +325,12 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
       Cout << "Running chain with " << numSamples << " samples." << std::endl;
   }
 
+  // clear for each (composite) chain (best samples for current emulator)
+  bestSamples.clear();
+
   //Real restart_metric = DBL_MAX;
-  size_t prop_update_cntr = 0; unsigned short batch_size = 5;
+  size_t prop_update_cntr = 0;
+  unsigned short batch_size = (adaptPosteriorRefine) ? 5 : 1;
   //copy_data(mcmcModel.continuous_variables(), prevCenter);
   update_chain_size(numSamples);
 
@@ -342,8 +346,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
-    if (adaptPosteriorRefine) // extract best MCMC samples from current batch
-      filter_chain(prop_update_cntr, batch_size);
+    filter_chain(prop_update_cntr, batch_size);
 
     // account for redundancy between final and initial
     if (prop_update_cntr == 1)
@@ -534,13 +537,17 @@ filter_chain(size_t update_cntr, unsigned short batch_size)
 
   std::/*multi*/map<Real, size_t> local_best;
   chain_to_local(batch_size, local_best);
-  if (proposalUpdates > 1) {
-    local_to_aggregated(batch_size, local_best);
-    if (update_cntr == proposalUpdates)
-      aggregated_to_all();
+  if (adaptPosteriorRefine) { // extract best MCMC samples from current batch
+    if (proposalUpdates > 1) {
+      local_to_aggregated(batch_size, local_best);
+      if (update_cntr == proposalUpdates)
+	aggregated_to_all();
+    }
+    else
+      local_to_all(local_best);
   }
-  else
-    local_to_all(local_best);
+  else // track MAP for final results
+    local_to_aggregated(batch_size, local_best);
 }
 
 
@@ -632,7 +639,6 @@ void NonDQUESOBayesCalibration::aggregated_to_all()
       write_col_vector_trans(Cout, (int)i, false, false, true, allSamples);
     }
   }
-  bestSamples.clear();
 }
 
 
@@ -1079,12 +1085,29 @@ void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 { if (size) calIpMhOptionsValues->m_rawChainSize = size; }
 
 
-//void NonDQUESOBayesCalibration::print_results(std::ostream& s)
-//{
-//  NonDBayesCalibration::print_results(s);
-//
-//  additional QUESO output
-//}
+void NonDQUESOBayesCalibration::print_results(std::ostream& s)
+{
+  //NonDBayesCalibration::print_results(s);
+
+  // -------------------------------------
+  // Single and multipoint results summary
+  // -------------------------------------
+  std::/*multi*/map<Real, QUESO::GslVector>::iterator it;
+  size_t i, j, num_best = bestSamples.size();
+  for (it=bestSamples.begin(), i=1; it!=bestSamples.end(); ++it, ++i) {
+    s << "<<<<< Best parameters          ";
+    if (num_best > 1) s << "(set " << i << ") ";
+    s << "=\n";
+    QUESO::GslVector& qv = it->second;
+    for (j=0; j<numContinuousVars; ++j)
+      s << "                     " << std::setw(write_precision+7)
+	<< qv[j] << '\n';
+    s << "<<<<< Best log posterior       ";
+    if (num_best > 1) s << "(set " << i << ") ";
+    s << "=\n                     " << std::setw(write_precision+7)
+      << it->first << '\n';
+  }
+}
 
 
 double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(

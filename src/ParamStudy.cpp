@@ -258,7 +258,6 @@ void ParamStudy::post_run(std::ostream& s)
       iteratedModel.discrete_set_string_values()); // to map string variable
                                                    // values back to indices
 
-
   Analyzer::post_run(s);
 }
 

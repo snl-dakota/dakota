@@ -139,10 +139,16 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     if (standardizedSpace) {
       Model g_u_model;
       transform_model(iteratedModel, g_u_model, true); // globally bounded
-      lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
-	samples, randomSeed,
-	probDescDB.get_string("method.random_number_generator"), true,
-	ACTIVE_UNIFORM), false);
+
+      NonDLHSSampling* lhs_rep = new NonDLHSSampling(g_u_model,
+	sample_type, samples, randomSeed,
+	probDescDB.get_string("method.random_number_generator"),
+	true, ACTIVE_UNIFORM);
+      lhs_iterator.assign_rep(lhs_rep, false);
+      // propagate natafTransform settings to u-space sampler
+      // (recast mappings pick up most recent nondInstance update)
+      lhs_rep->initialize_random_variables(natafTransform);
+
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
       mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
@@ -155,10 +161,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
         probDescDB.get_bool("method.import_points_file_active")), false);
     }
     else {
-      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-	samples, randomSeed,
-	probDescDB.get_string("method.random_number_generator"), true,
-	ACTIVE_UNIFORM), false);
+      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel,
+	sample_type, samples, randomSeed,
+	probDescDB.get_string("method.random_number_generator"),
+	true, ACTIVE_UNIFORM), false);
+
       ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
       mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
