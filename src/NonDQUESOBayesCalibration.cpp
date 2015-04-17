@@ -1088,24 +1088,37 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 {
   //NonDBayesCalibration::print_results(s);
 
-  // -------------------------------------
-  // Single and multipoint results summary
-  // -------------------------------------
-  std::/*multi*/map<Real, QUESO::GslVector>::iterator it;
-  size_t i, j, num_best = bestSamples.size();
+  if (bestSamples.empty()) return;
+  // ----------------------------------------
+  // Output best sample which appoximates MAP
+  // ----------------------------------------
+  std::/*multi*/map<Real, QUESO::GslVector>::iterator it = --bestSamples.end();
+  //std::pair<Real, QUESO::GslVector>& best = bestSamples.back();
+  QUESO::GslVector& qv = it->second; size_t j, wpp7 = write_precision+7;
+  s << "<<<<< Best parameters          =\n";
+  for (j=0; j<numContinuousVars; ++j)
+    s << "                     " << std::setw(wpp7) << qv[j] << '\n';
+  s << "<<<<< Best log posterior       =\n                     "
+    << std::setw(wpp7) << it->first << '\n';
+
+  /*
+  // --------------------------
+  // Multipoint results summary
+  // --------------------------
+  std::map<Real, QUESO::GslVector>::iterator it;
+  size_t i, j, num_best = bestSamples.size(), wpp7 = write_precision+7;
   for (it=bestSamples.begin(), i=1; it!=bestSamples.end(); ++it, ++i) {
     s << "<<<<< Best parameters          ";
     if (num_best > 1) s << "(set " << i << ") ";
     s << "=\n";
     QUESO::GslVector& qv = it->second;
     for (j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(write_precision+7)
-	<< qv[j] << '\n';
+      s << "                     " << std::setw(wpp7) << qv[j] << '\n';
     s << "<<<<< Best log posterior       ";
     if (num_best > 1) s << "(set " << i << ") ";
-    s << "=\n                     " << std::setw(write_precision+7)
-      << it->first << '\n';
+    s << "=\n                     " << std::setw(wpp7) << it->first << '\n';
   }
+  */
 }
 
 

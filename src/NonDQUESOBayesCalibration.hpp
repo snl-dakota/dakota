@@ -79,7 +79,7 @@ protected:
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
 
-  /// 
+  /// define variables, options, likelihood callback, and inverse problem
   void init_queso_solver();
 
   /// use derivative information from the emulator to define the proposal
