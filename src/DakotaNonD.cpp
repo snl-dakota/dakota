@@ -560,7 +560,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   recast_model->inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 
   // Update continuous aleatory variable types (needed for Model::
-  // continuous_{probability_density,distribution_bounds}())
+  // continuous_{probability_density,distribution_bounds,distribution_moment}())
   for (i=numContDesVars; i<num_cdv_cauv; ++i)
     recast_model->continuous_variable_type(
       pecos_to_dakota_variable_type(u_types[i]), i);

@@ -145,9 +145,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM);
       lhs_iterator.assign_rep(lhs_rep, false);
-      // propagate natafTransform settings to u-space sampler
-      // (recast mappings pick up most recent nondInstance update)
-      lhs_rep->initialize_random_variables(natafTransform);
 
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
@@ -256,6 +253,10 @@ void NonDBayesCalibration::initialize_model()
       initialize_random_variable_parameters();
       //initialize_final_statistics_gradients(); // not required
       natafTransform.transform_correlations();
+      // propagate natafTransform settings to lhs_iterator
+      // (recast mappings pick up most recent nondInstance update)
+      ((NonD*)mcmcModel.subordinate_iterator().iterator_rep())->
+	initialize_random_variables(natafTransform);
     }
     mcmcModel.build_approximation(); break;
   case NO_EMULATOR:

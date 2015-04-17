@@ -494,9 +494,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
 void NonDQUESOBayesCalibration::run_queso_solver()
 {
-  Cout << "Running Bayesian Calibration with QUESO using " << mcmcType
-       << " with " << calIpMhOptionsValues->m_rawChainSize << " MCMC samples."
-       << std::endl;
+  Cout << "Running Bayesian Calibration with QUESO " << mcmcType << " with "
+       << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
 
