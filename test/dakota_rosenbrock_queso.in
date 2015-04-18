@@ -4,8 +4,7 @@
 method,
 	bayes_calibration queso
 	  samples = 5000 seed = 348
-	  delayed_rejection		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
-#	  dram				#p9,#p10,#p13
+	  delayed_rejection
 	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
 	    pce sparse_grid_level = 2				#p0,#p7
 #	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
