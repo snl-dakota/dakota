@@ -265,8 +265,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   if (proposalCovarType == "user") // either filename OR data values defined
     user_proposal_covariance(proposalCovarInputType, proposalCovarData,
 			     proposalCovarFilename);
-  else if ( proposalCovarType == "prior" ||
-	    ( proposalCovarType.empty() && !emulatorType ) )
+  else if (proposalCovarType == "prior")
     prior_proposal_covariance(); // prior selection or default for no emulator
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
@@ -435,11 +434,15 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     break;
   }
 
-  // mcmcModel's continuous variables updated in update_center()
+  // update mcmcModel's continuous variables from paramInitials
+  for (size_t i=0; i<numContinuousVars; ++i)
+    mcmcModel.continuous_variable((*paramInitials)[i], i);
+  // update request vector values
   ActiveSet set = mcmcModel.current_response().active_set(); // copy
   set.request_values(asrv);
+  // compute and output response
   mcmcModel.compute_response(set);
-  // Note: verbose output *should* echo vars and approx response
+  // TO DO: is this redundant? (verbose output *should* echo vars/response)
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Parameters for emulator response:\n"
 	 << mcmcModel.current_variables() << "\nActive response data:\n"
@@ -496,7 +499,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
 void NonDQUESOBayesCalibration::run_queso_solver()
 {
-  Cout << "Running Bayesian Calibration with QUESO " << mcmcType << " with "
+  Cout << "Running Bayesian Calibration with QUESO " << mcmcType << " using "
        << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
@@ -674,27 +677,19 @@ void NonDQUESOBayesCalibration::update_center()
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
 
   // extract GSL sample vector from QUESO vector sequence:
+  // Note can't use the most recent mcmcModel evaluation since this could
+  // correspond to a rejected point.
   size_t last_index = num_mcmc - 1;
   mcmc_chain.getPositionValues(last_index, *paramInitials);
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "New center:\n" << *paramInitials << "Log likelihood = "
 	 << inverseProb->logLikelihoodValues()[last_index] << std::endl;
-
-  // update mcmcModel vars with end of acceptance chain for eval of
-  // misfit Hessian in precondition_proposal().  Note: the most recent
-  // mcmcModel evaluation could correspond to a rejected point.
-  RealVector c_vars;
-  copy_gsl(*paramInitials, c_vars);
-  mcmcModel.continuous_variables(c_vars);
 }
 
 
 /*
 Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 {
-  // update mcmcModel vars for eval of misfit Hessian
-  mcmcModel.continuous_variables(new_center);
-
   // update QUESO initial vars for starting point of chain
   for (int i=0; i<numContinuousVars; i++)
     (*paramInitials)[i] = new_center[i];
@@ -834,9 +829,16 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 		    ("param_", *paramSpace, paramMins, paramMaxs));
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
-  const RealVector& init_point = mcmcModel.continuous_variables();
-  for (size_t i=0; i<numContinuousVars; i++)
-    (*paramInitials)[i] = init_point[i];
+  const RealVector& init_pt = mcmcModel.continuous_variables();
+  if (standardizedSpace) { // init_pt not already propagated through transform
+    RealVector u_pt;
+    natafTransform.trans_X_to_U(init_pt, u_pt);
+    for (size_t i=0; i<numContinuousVars; i++)
+      (*paramInitials)[i] = u_pt[i];
+  }
+  else
+    for (size_t i=0; i<numContinuousVars; i++)
+      (*paramInitials)[i] = init_pt[i];
   if (calibrateSigmaFlag)
     for (size_t i=numContinuousVars; i<total_num_params; i++)
       (*paramInitials)[i] = (paramMaxs[i] + paramMins[i]) / 2.;
