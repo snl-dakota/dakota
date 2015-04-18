@@ -830,11 +830,19 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
   const RealVector& init_pt = mcmcModel.continuous_variables();
-  if (standardizedSpace) { // init_pt not already propagated through transform
-    RealVector u_pt;
-    natafTransform.trans_X_to_U(init_pt, u_pt);
-    for (size_t i=0; i<numContinuousVars; i++)
-      (*paramInitials)[i] = u_pt[i];
+  if (standardizedSpace) {
+    switch (emulatorType) {
+    case PCE_EMULATOR: case SC_EMULATOR: 
+      for (size_t i=0; i<numContinuousVars; i++)
+	(*paramInitials)[i] = init_pt[i];
+      break;
+    default: // init_pt not already propagated through transform
+      RealVector u_pt;
+      natafTransform.trans_X_to_U(init_pt, u_pt);
+      for (size_t i=0; i<numContinuousVars; i++)
+	(*paramInitials)[i] = u_pt[i];
+      break;
+    }
   }
   else
     for (size_t i=0; i<numContinuousVars; i++)
