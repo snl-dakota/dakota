@@ -3,7 +3,7 @@
 
 method,
 	bayes_calibration queso
-	  samples = 5000 seed = 348
+	  samples = 2000 seed = 348
 	  delayed_rejection
 	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
 	    pce sparse_grid_level = 2				#p0,#p7
@@ -16,9 +16,8 @@ method,
 #	    convergence_tolerance = .05				#p6
 #	    standardized_space					#p11,#p12,#p13
 	  proposal_covariance
-#	    prior
 	    derivatives	
-#	    proposal_updates = 50
+	    proposal_updates = 50 # default update is every 100 samples
 #	  output verbose
 
 variables,								

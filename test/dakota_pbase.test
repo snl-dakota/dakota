@@ -4162,22 +4162,102 @@ Test Number 0 succeeded
 dakota_rosenbrock_queso.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9821693128e-01
+                      4.9732235483e-01
+<<<<< Best log posterior       =
+                     -1.3866183423e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9821693128e-01
+                      4.9732235483e-01
+<<<<< Best log posterior       =
+                     -1.3866183423e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.8842789972e-01
+                      4.7741599738e-01
+<<<<< Best log posterior       =
+                     -1.3868642074e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9643386255e-01
+                      9.9464470965e-01
+<<<<< Best log posterior       =
+                     -2.7729127035e+00
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.7685579944e-01
+                      9.5483199475e-01
+<<<<< Best log posterior       =
+                     -2.7731585686e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 150 total (150 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0029355594e+00
+                      1.0058924662e+00
+<<<<< Best log posterior       =
+                     -2.7725973560e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 123 total (123 new, 0 duplicate)
+<<<<< Function evaluation summary: 83 total (83 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.5666370829e-01
+                      9.3955094940e-01
+<<<<< Best log posterior       =
+                     -1.3876438826e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.4407433277e-01
+                      2.9242765088e-01
+<<<<< Best log posterior       =
+                     -2.2377989420e+00
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 150 total (150 new, 0 duplicate)
+<<<<< Function evaluation summary: 150 total (149 new, 1 duplicate)
+<<<<< Best parameters          =
+                      5.4982259792e-01
+                      2.9980198018e-01
+<<<<< Best log posterior       =
+                     -2.2372562734e+00
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 3316 total (3266 new, 50 duplicate)
+<<<<< Best parameters          =
+                      9.9643386255e-01
+                      9.9464470965e-01
+<<<<< Best log posterior       =
+                     -2.7729127035e+00
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 3411 total (3361 new, 50 duplicate)
+<<<<< Best parameters          =
+                      5.4407433277e-01
+                      2.9242765087e-01
+<<<<< Best log posterior       =
+                     -2.2377989420e+00
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9821693128e-01
+                      4.9732235483e-01
+<<<<< Best log posterior       =
+                     -1.3866183423e+00
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.8842789972e-01
+                      4.7741599738e-01
+<<<<< Best log posterior       =
+                     -1.3868642074e+00
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 3316 total (3266 new, 50 duplicate)
+<<<<< Best parameters          =
+                      4.9821693128e-01
+                      4.9732235483e-01
+<<<<< Best log posterior       =
+                     -1.3866183423e+00
 dakota_sbo_hierarchical.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
