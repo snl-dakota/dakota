@@ -131,11 +131,10 @@ DataMethodRep::DataMethodRep():
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  adaptPosteriorRefine(false), proposalUpdates(1),
-  likelihoodScale(1.), fitnessMetricType("predicted_variance"),
-  batchSelectionType("naive"), batchSize(0), calibrateSigmaFlag(false),
-  numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
-  jumpStep(5), lipschitzType("local"),
+  adaptPosteriorRefine(false), proposalCovUpdates(0), likelihoodScale(1.),
+  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
+  batchSize(0), calibrateSigmaFlag(false), numChains(3), numCR(3),
+  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
   // Parameter Study
   numSteps(0), pstudyFileAnnotated(true), pstudyFileActive(false), 
   // Verification
@@ -254,11 +253,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine
-    << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
-    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep << lipschitzType;
+    << mcmcType << standardizedSpace << adaptPosteriorRefine << proposalCovType
+    << proposalCovUpdates << proposalCovInputType << proposalCovData
+    << proposalCovFile << likelihoodScale << fitnessMetricType
+    << batchSelectionType << batchSize << calibrateSigmaFlag << numChains
+    << numCR << crossoverChainPairs << grThreshold << jumpStep << lipschitzType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -383,11 +382,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> emulatorSamples >> emulatorOrder >> emulatorType
-    >> mcmcType >> standardizedSpace >> adaptPosteriorRefine
-    >> proposalUpdates >> proposalCovType >> proposalCovData >> proposalCovFile
-    >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
-    >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
-    >> grThreshold >> jumpStep >> lipschitzType;
+    >> mcmcType >> standardizedSpace >> adaptPosteriorRefine >> proposalCovType
+    >> proposalCovUpdates >> proposalCovInputType >> proposalCovData
+    >> proposalCovFile >> likelihoodScale >> fitnessMetricType
+    >> batchSelectionType >> batchSize >> calibrateSigmaFlag >> numChains
+    >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep >> lipschitzType;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -512,11 +511,11 @@ void DataMethodRep::write(std::ostream& s) const
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine
-    << proposalUpdates << proposalCovType << proposalCovData << proposalCovFile
-    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep << lipschitzType;
+    << mcmcType << standardizedSpace << adaptPosteriorRefine << proposalCovType
+    << proposalCovUpdates << proposalCovInputType << proposalCovData
+    << proposalCovFile << likelihoodScale << fitnessMetricType
+    << batchSelectionType << batchSize << calibrateSigmaFlag << numChains
+    << numCR << crossoverChainPairs << grThreshold << jumpStep << lipschitzType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

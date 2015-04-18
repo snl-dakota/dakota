@@ -3,7 +3,7 @@
 
 method,
 	bayes_calibration queso
-	  samples = 2000 seed = 348
+	  samples = 5000 seed = 348
 	  delayed_rejection		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
 #	  dram				#p9,#p10,#p13
 	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
@@ -13,10 +13,13 @@ method,
 #	    sc  sparse_grid_level = 2				#p2
 #	    gaussian_process surfpack emulator_samples = 30	#p3,#p5,#p8,#p11
 #	    gaussian_process dakota   emulator_samples = 30	#p4,#p12
-	    proposal_updates = 50       #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
 #	    posterior_adaptive					#p5,#p6,#p8
 #	    convergence_tolerance = .05				#p6
 #	    standardized_space					#p11,#p12,#p13
+	  proposal_covariance
+#	    prior
+	    derivatives	
+#	    proposal_updates = 50
 #	  output verbose
 
 variables,								
@@ -38,5 +41,7 @@ responses,
         calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'
           freeform num_experiments = 1 variance_type = 'scalar'
   	descriptors = 'f1' 'f2'
- 	no_gradients							
-	no_hessians
+ 	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
+	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
+#	analytic_gradients	#p9,#p10,#p13
+#	analytic_hessians	#p9,#p10,#p13

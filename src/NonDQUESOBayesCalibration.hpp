@@ -124,11 +124,11 @@ protected:
   /// intialize the QUESO parameter space, min, max, initial, and domain
   void init_parameter_domain();
 
-  /// use historical default behavior for setting proposal covariance
-  void default_proposal_covariance();
+  /// use covariance of prior distribution for setting proposal covariance
+  void prior_proposal_covariance();
 
   /// set proposal covariance from user-provided diagonal or matrix
-  void user_proposal_covariance(const String& cov_type, 
+  void user_proposal_covariance(const String& input_fmt, 
 				const RealVector& cov_data, 
 				const String& cov_filename);
 
@@ -158,13 +158,6 @@ protected:
   //
   //- Heading: Data
   //
-
-  /// approach for defining proposal covariance
-  String propCovarType;
-  /// data from user input of proposal covariance
-  RealVector propCovarData;
-  /// filename for user-specified proposal covariance
-  String propCovarFilename;
 
   /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
   /// or "metropolis_hastings" or "multilevel",  within QUESO) 

@@ -909,14 +909,16 @@ public:
   /// flag indicating adaptive refinement of the emulator in regions
   /// of high posterior probability
   bool adaptPosteriorRefine;
-  /// number of updates of the proposal covariance from computing the
-  /// misfit Hessian from an emulator
-  int proposalUpdates;
-  /// the type of proposal covariance: diagonal or matrix
+  /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
-  /// raw list of reals data for the covariance
+  /// number of updates of the proposal covariance from computing the
+  /// misfit Hessian using residual values and derivatives
+  int proposalCovUpdates;
+  /// the format of proposal covariance input: diagonal or matrix
+  String proposalCovInputType;
+  /// raw list of real data for the proposal covariance
   RealVector proposalCovData;
-  /// file from which to read covariance diagonal or matrix
+  /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
   /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;

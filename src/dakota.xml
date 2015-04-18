@@ -1716,9 +1716,7 @@
                                 </keyword>
                               </keyword>
                             </oneOf>
-			    <keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalUpdates)}" label="proposal_updates" help="" minOccurs="0" >
-                              <param type="INTEGER" />
-                            </keyword>
+			    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
                           </keyword>
                         </keyword>
                         <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
@@ -1761,17 +1759,27 @@
                           <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
                         </oneOf>
                       </keyword>
-                      <keyword  id="proposal_covariance" name="proposal_covariance" code="{0}" label="Proposal covariance type" help="" minOccurs="0" >
-                        <oneOf>
-                          <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovType_diagonal)}" label="Diagonal covariance" help=""  />
-                          <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovType_matrix)}" label="Matrix covariance" help=""  />
-                        </oneOf>
+                      <keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
 			<oneOf>
-			  <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="Proposal covariance data values" help="" minOccurs="1" >
-			    <param type="REALLIST"/>
+			  <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
+			    <keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
+                              <param type="INTEGER" />
+                            </keyword>
 			  </keyword>
-			  <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="Proposal covariance filename" help="" minOccurs="1" >
+			  <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
+			  <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
+			    <param type="REALLIST"/>
+                            <oneOf>
+                              <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
+                              <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+                            </oneOf>
+			  </keyword>
+			  <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
 			    <param type="INPUT_FILE"/>
+                            <oneOf>
+                              <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
+                              <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+                            </oneOf>
 			  </keyword>
 			</oneOf>
                       </keyword>
@@ -1844,11 +1852,11 @@
                             </keyword>
                           </keyword>
                         </oneOf>
+			<keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
                       </keyword>
                     </keyword>
                   </oneOf>
                   <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
-                  <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
                   <keyword  id="likelihood_scale" name="likelihood_scale" code="{N_mdm(Real,likelihoodScale)}" label="Likelihood scale factor" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" >
                     <param type="REAL" />
                   </keyword>
@@ -2066,7 +2074,7 @@
                       </oneOf>
                     </optional>
                   </keyword>
-                  <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" />
+                  <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" />
                   <keyword  id="seed9" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed for initial GP construction" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" >
                     <param type="INTEGER" constraint="> 0" />
                   </keyword>
@@ -2419,7 +2427,7 @@
                   </oneOf>
                 </optional>
               </keyword>
-              <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Surfpack GP gradient enhancement" help="ModelCommands.html#ModelSurrG" minOccurs="0" />
+              <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Surfpack GP gradient enhancement" help="ModelCommands.html#ModelSurrG" minOccurs="0" />
               <keyword  id="correction" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
                 <oneOf label="correction order">
                   <keyword  id="zeroth_order" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="zeroth_order" help=""  />

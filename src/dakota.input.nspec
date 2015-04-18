@@ -1131,7 +1131,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
                 sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
                )
-              [ proposal_updates INTEGER {N_mdm(int,proposalUpdates)} ]
+              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
              ]
            )
           |
@@ -1169,13 +1169,24 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             rnum2 {N_mdm(lit,rngName_rnum2)}
            ]
-          [ proposal_covariance {0}
-            diagonal {N_mdm(lit,proposalCovType_diagonal)}
+          [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+            ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+              [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+             )
             |
-            matrix {N_mdm(lit,proposalCovType_matrix)}
-            values REALLIST {N_mdm(RealDL,proposalCovData)}
+            prior {N_mdm(lit,proposalCovType_prior)}
             |
-            filename STRING {N_mdm(str,proposalCovFile)}
+            ( values REALLIST {N_mdm(RealDL,proposalCovData)}
+              diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+              |
+              matrix {N_mdm(lit,proposalCovInputType_matrix)}
+             )
+            |
+            ( filename STRING {N_mdm(str,proposalCovFile)}
+              diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+              |
+              matrix {N_mdm(lit,proposalCovInputType_matrix)}
+             )
            ]
          )
         |
@@ -1221,10 +1232,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
               sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
              )
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            ]
          )
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
         [ calibrate_sigma {N_mdm(true,calibrateSigmaFlag)} ]
        )

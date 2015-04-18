@@ -30,16 +30,40 @@ namespace Dakota {
 NonDBayesCalibration::
 NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
-  proposalUpdates(probDescDB.get_int("method.nond.proposal_updates")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
+  randomSeed(probDescDB.get_int("method.random_seed")),
   adaptPosteriorRefine(
-    probDescDB.get_bool("method.nond.adaptive_posterior_refinement"))
+    probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
+  proposalCovarType(
+    probDescDB.get_string("method.nond.proposal_covariance_type")),
+  proposalCovarData(probDescDB.get_rv("method.nond.proposal_covariance_data")),
+  proposalCovarFilename(
+    probDescDB.get_string("method.nond.proposal_covariance_filename")),
+  proposalCovarInputType(
+    probDescDB.get_string("method.nond.proposal_covariance_input_type"))
 {
-  numSamples = (proposalUpdates > 1) ?
-    (int)floor((Real)probDescDB.get_int("method.samples") /
-	       (Real)proposalUpdates + .5) :
-    probDescDB.get_int("method.samples");
+  // assign default proposalCovarType
+  if (proposalCovarType.empty()) {
+    if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
+    else              proposalCovarType = "prior";       // prior covariance
+  }
+
+  // manage sample partitions and defaults
+  int samples_spec = probDescDB.get_int("method.samples");
+  if (proposalCovarType == "derivatives") {
+    int pc_update_spec
+      = probDescDB.get_int("method.nond.proposal_covariance_updates");
+    if (pc_update_spec < 1) { // default partition: update every 100 samples
+      numSamples  = 100;
+      chainCycles = (int)floor((Real)samples_spec / (Real)numSamples + .5);
+    }
+    else { // partition as specified
+      numSamples  = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
+      chainCycles = pc_update_spec;
+    }
+  }
+  else
+    { numSamples = samples_spec; chainCycles = 1; }
 
   // assign default maxIterations (DataMethod default is -1)
   if (adaptPosteriorRefine && maxIterations < 0)

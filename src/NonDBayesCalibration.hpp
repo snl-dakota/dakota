@@ -66,22 +66,6 @@ protected:
   //- Heading: Data
   //
 
-  /// number of samples in the chain (e.g. number of MCMC samples)
-  int numSamples;
-  /// random seed for MCMC process
-  int randomSeed;
-
-  /// flag indicating use of a variable transformation to standardized
-  /// probability space for the model or emulator
-  bool standardizedSpace;
-
-  /// flag indicating usage of adaptive posterior refinement; currently makes
-  /// sense for unstructured grids in GP and PCE least squares/CS
-  bool adaptPosteriorRefine;
-  /// number of updates to proposal covariance; implemented by manual
-  /// restarting of short MCMC chains
-  int proposalUpdates;
-
   // technically doesn't apply to GPMSA, but leaving here for now
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
   short emulatorType;
@@ -93,6 +77,30 @@ protected:
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
   Iterator stochExpIterator;
+
+  /// number of samples in the chain (e.g. number of MCMC samples)
+  int numSamples;
+  /// number of update cycles for MCMC chain (implemented by restarting
+  /// of short chains)
+  int chainCycles;
+  /// random seed for MCMC process
+  int randomSeed;
+
+  /// flag indicating use of a variable transformation to standardized
+  /// probability space for the model or emulator
+  bool standardizedSpace;
+  /// flag indicating usage of adaptive posterior refinement; currently makes
+  /// sense for unstructured grids in GP and PCE least squares/CS
+  bool adaptPosteriorRefine;
+
+  /// approach for defining proposal covariance
+  String proposalCovarType;
+  /// data from user input of proposal covariance
+  RealVector proposalCovarData;
+  /// filename for user-specified proposal covariance
+  String proposalCovarFilename;
+  /// approach for defining proposal covariance
+  String proposalCovarInputType;
 
 private:
 

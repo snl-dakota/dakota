@@ -212,9 +212,6 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
 NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  propCovarType(probDescDB.get_string("method.nond.proposal_cov_type")),
-  propCovarData(probDescDB.get_rv("method.nond.proposal_covariance_data")),
-  propCovarFilename(probDescDB.get_string("method.nond.proposal_cov_filename")),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
@@ -263,14 +260,14 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Step 2 of 5: Instantiate the parameter domain
   ////////////////////////////////////////////////////////
   init_parameter_domain();
-  // initialize or update the proposal covariance; default init must
-  // be done after parameter domain is initialized
-  // TODO: In general if user gives proposal covariance; must be
-  // transformed to scaled space in same way as variables
-  if (!propCovarType.empty()) // either filename OR data values defined
-    user_proposal_covariance(propCovarType, propCovarData, propCovarFilename);
-  else if (!emulatorType)
-    default_proposal_covariance();
+
+  // initialize proposal covariance (must follow parameter domain init)
+  if (proposalCovarType == "user") // either filename OR data values defined
+    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
+			     proposalCovarFilename);
+  else if ( proposalCovarType == "prior" ||
+	    ( proposalCovarType.empty() && !emulatorType ) )
+    prior_proposal_covariance(); // prior selection or default for no emulator
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
@@ -318,9 +315,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 void NonDQUESOBayesCalibration::run_chain_with_restarting()
 {
   if (outputLevel >= NORMAL_OUTPUT) {
-    if (proposalUpdates > 1)
+    if (chainCycles > 1)
       Cout << "Running chain in batches of " << numSamples << " with "
-	   << proposalUpdates << " restarts." << std::endl;
+	   << chainCycles << " restarts." << std::endl;
     else
       Cout << "Running chain with " << numSamples << " samples." << std::endl;
   }
@@ -329,7 +326,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   bestSamples.clear();
 
   //Real restart_metric = DBL_MAX;
-  size_t prop_update_cntr = 0;
+  size_t update_cntr = 0;
   unsigned short batch_size = (adaptPosteriorRefine) ? 5 : 1;
   //copy_data(mcmcModel.continuous_variables(), prevCenter);
   update_chain_size(numSamples);
@@ -337,19 +334,19 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   // update proposal covariance and recenter after short chain: a
   // workaround for inability to update proposal covariance on the fly
   while (//restart_metric > convergenceTol &&
-	 prop_update_cntr < proposalUpdates) {
+	 update_cntr < chainCycles) {
 
     // define proposal covariance from misfit Hessian
-    if (emulatorType) // TO DO: support GN Hessian for truth model w/ adjoints?
+    if (proposalCovarType == "derivatives")
       precondition_proposal();
-    ++prop_update_cntr;
+    ++update_cntr;
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
-    filter_chain(prop_update_cntr, batch_size);
+    filter_chain(update_cntr, batch_size);
 
     // account for redundancy between final and initial
-    if (prop_update_cntr == 1)
+    if (update_cntr == 1)
       update_chain_size(numSamples+1);
 
     // This approach is too greedy and can get stuck (i.e., no point in new
@@ -358,7 +355,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     //
     // Rather, use final point in acceptance chain as if we were periodically
     // refreshing the proposal covariance within a single integrated chain.
-    if (prop_update_cntr < proposalUpdates || adaptPosteriorRefine)
+    if (update_cntr < chainCycles || adaptPosteriorRefine)
       update_center();
 
     if (outputLevel >= NORMAL_OUTPUT)
@@ -431,6 +428,11 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   switch (emulatorType) {
   case PCE_EMULATOR: case KRIGING_EMULATOR: asrv = 7; break;
   case  SC_EMULATOR: case      GP_EMULATOR: asrv = 3; break; // for now
+  case  NO_EMULATOR:
+    asrv = 1;
+    if (mcmcModel.gradient_type() != "none") asrv |= 2;
+    if (mcmcModel.hessian_type()  != "none") asrv |= 4;
+    break;
   }
 
   // mcmcModel's continuous variables updated in update_center()
@@ -537,9 +539,9 @@ filter_chain(size_t update_cntr, unsigned short batch_size)
   std::/*multi*/map<Real, size_t> local_best;
   chain_to_local(batch_size, local_best);
   if (adaptPosteriorRefine) { // extract best MCMC samples from current batch
-    if (proposalUpdates > 1) {
+    if (chainCycles > 1) {
       local_to_aggregated(batch_size, local_best);
-      if (update_cntr == proposalUpdates)
+      if (update_cntr == chainCycles)
 	aggregated_to_all();
     }
     else
@@ -847,36 +849,27 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
 
 /** Must be called after paramMins/paramMaxs set above */
-void NonDQUESOBayesCalibration::default_proposal_covariance()
+void NonDQUESOBayesCalibration::prior_proposal_covariance()
 {
   int total_num_params = paramSpace->dimGlobal();
   QUESO::GslVector covDiag(paramSpace->zeroVector());
 
-  /*
-  // Old: default to covariance of independent uniforms (diagonal)
-  const QUESO::GslVector& param_min = paramDomain->minValues();
-  const QUESO::GslVector& param_max = paramDomain->maxValues();
-  for (int i=0; i<total_num_params; i++)
-    covDiag[i] = (param_max[i]-param_min[i])*(param_max[i]-param_min[i])/12.0;
-  */
-
-  // New: covariance from variance of prior marginals (diagonal)
+  // diagonal covariance from variance of prior marginals
   Real stdev;
   for (int i=0; i<total_num_params; i++) {
     stdev = mcmcModel.continuous_distribution_moment(i, 2);
     covDiag[i] = stdev * stdev;
   }
 
-  if (outputLevel > NORMAL_OUTPUT) {
-    Cout << "Diagonal elements of the proposal covariance sent to QUESO";
-    if (standardizedSpace) Cout << " (scaled space)";
-    Cout << '\n' << covDiag << '\n';
-  }
-
   proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
-  
+
   if (outputLevel > NORMAL_OUTPUT) {
-    Cout << "QUESO ProposalCovMatrix " << '\n'; 
+    //Cout << "Diagonal elements of the proposal covariance sent to QUESO";
+    //if (standardizedSpace) Cout << " (scaled space)";
+    //Cout << '\n' << covDiag << '\n';
+    Cout << "QUESO ProposalCovMatrix"; 
+    if (standardizedSpace) Cout << " (scaled space)";
+    Cout << '\n'; 
     for (size_t i=0; i<total_num_params; i++) {
       for (size_t j=0; j<total_num_params; j++) 
 	Cout <<  (*proposalCovMatrix)(i,j) << "  "; 
@@ -890,25 +883,20 @@ void NonDQUESOBayesCalibration::default_proposal_covariance()
     "matrix" data from either cov_data or cov_filename and populate a
     full QUESO::GslMatrix* in proposalCovMatrix with the covariance. */
 void NonDQUESOBayesCalibration::
-user_proposal_covariance(const String& cov_type, const RealVector& cov_data, 
+user_proposal_covariance(const String& input_fmt, const RealVector& cov_data, 
 			 const String& cov_filename)
 {
-  if (emulatorType) {
-    Cerr << "Warning: user-defined proposal covariance ignored for emulator "
-	 << "models in lieu of analytic proposal covariance." << std::endl;
-    return;
-  }
   // TODO: transform user covariance for use in standardized probability space
-  else if (standardizedSpace)
+  if (standardizedSpace)
     throw std::runtime_error("user-defined proposal covariance is invalid for use in transformed probability spaces.");
-  // Note: if instead a warning, then fallback to default_proposal_covariance()
+  // Note: if instead a warning, then fallback to prior_proposal_covariance()
 
   bool use_file = !cov_filename.empty();
 
   // Sanity check
-  if( ("diagonal" != cov_type) &&
-      ("matrix"   != cov_type) )
-    throw std::runtime_error("User-specified covariance must have type of either \"diagonal\" of \"matrix\".  You have \""+cov_type+"\".");
+  if( ("diagonal" != input_fmt) &&
+      ("matrix"   != input_fmt) )
+    throw std::runtime_error("User-specified covariance must have type of either \"diagonal\" of \"matrix\".  You have \""+input_fmt+"\".");
 
   // Sanity check
   if( cov_data.length() && use_file )
@@ -934,7 +922,7 @@ user_proposal_covariance(const String& cov_type, const RealVector& cov_data,
     read_unsized_data(s, values_from_file, row_major);
   }
 
-  if( "diagonal" == cov_type )
+  if( "diagonal" == input_fmt )
   {
     if( use_file ) {
       // Sanity checks
@@ -957,7 +945,7 @@ user_proposal_covariance(const String& cov_type, const RealVector& cov_data,
         (*proposalCovMatrix)(i,i) = cov_data(i);
     }
   }
-  else // "matrix" == cov_type
+  else // "matrix" == input_fmt
   {
     if( use_file ) {
       // Sanity checks
@@ -1058,7 +1046,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
 
   // chain management options:
-  if (adaptPosteriorRefine || proposalUpdates > 1)
+  if (adaptPosteriorRefine || chainCycles > 1)
     // In this case, we process the full chain for maximum posterior values
     calIpMhOptionsValues->m_filteredChainGenerate         = false;
   else {

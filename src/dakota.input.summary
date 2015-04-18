@@ -1292,7 +1292,7 @@ KEYWORD12 method
 	      ( sc
 		sparse_grid_level INTEGERLIST
 		)
-	      [ proposal_updates INTEGER ]
+	      [ use_derivatives ]
 	      ]
 	    [ dram
 	    | delayed_rejection
@@ -1304,10 +1304,20 @@ KEYWORD12 method
 	      | rnum2
 	      ]
 	    [ proposal_covariance
-	      diagonal
-	      | matrix
-	      values REALLIST
-	      | filename STRING
+	      ( derivatives
+		[ proposal_updates INTEGER ]
+		)
+	      | prior
+	      |
+	      ( values REALLIST
+		diagonal
+		| matrix
+		)
+	      |
+	      ( filename STRING
+		diagonal
+		| matrix
+		)
 	      ]
 	    )
 	  |
@@ -1332,10 +1342,20 @@ KEYWORD12 method
 	      | rnum2
 	      ]
 	    [ proposal_covariance
-	      diagonal
-	      | matrix
-	      values REALLIST
-	      | filename STRING
+	      ( derivatives
+		[ proposal_updates INTEGER ]
+		)
+	      | prior
+	      |
+	      ( values REALLIST
+		diagonal
+		| matrix
+		)
+	      |
+	      ( filename STRING
+		diagonal
+		| matrix
+		)
 	      ]
 	    )
 	  |
@@ -1374,10 +1394,10 @@ KEYWORD12 method
 	      ( sc
 		sparse_grid_level INTEGERLIST
 		)
+	      [ use_derivatives ]
 	      ]
 	    )
 	  [ standardized_space ]
-	  [ use_derivatives ]
 	  [ likelihood_scale REAL ]
 	  [ calibrate_sigma ]
 	  [ samples INTEGER ]
