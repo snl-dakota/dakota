@@ -10205,9 +10205,9 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1113700000e-01
-  -8.0000000000e-01   4.3070000000e-01
-  -5.0000000000e-01   8.2366800000e-01
+  -9.0000000000e-01   2.1303400000e-01
+  -8.0000000000e-01   4.3561500000e-01
+  -5.0000000000e-01   8.2417700000e-01
 dakota_portal_frame.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
