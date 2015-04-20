@@ -273,7 +273,7 @@ void NonDBayesCalibration::initialize_model()
     stochExpIterator.run(pl_iter); break;
   }
   case GP_EMULATOR: case KRIGING_EMULATOR:
-    if (standardizedSpace) {
+    if (standardizedSpace) { // TO DO: no need for local natafTransform
       initialize_random_variable_parameters();
       //initialize_final_statistics_gradients(); // not required
       natafTransform.transform_correlations();

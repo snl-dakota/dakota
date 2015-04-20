@@ -1094,8 +1094,30 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   //std::pair<Real, QUESO::GslVector>& best = bestSamples.back();
   QUESO::GslVector& qv = it->second; size_t j, wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
-  for (j=0; j<numContinuousVars; ++j)
-    s << "                     " << std::setw(wpp7) << qv[j] << '\n';
+  if (standardizedSpace) {
+    RealVector u_rv, x_rv; copy_gsl(qv, u_rv);
+    switch (emulatorType) {
+    case PCE_EMULATOR:     case SC_EMULATOR: {
+      NonD* nond_iterator = (NonD*)stochExpIterator.iterator_rep();
+      nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
+      break;
+    }
+    case KRIGING_EMULATOR: case GP_EMULATOR: {
+      NonD* nond_iterator
+	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
+      // TO DO: no need for local natafTransform
+      break;
+    }
+    case NO_EMULATOR:
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      break;
+    }
+    write_data(Cout, x_rv);
+  }
+  else
+    for (j=0; j<numContinuousVars; ++j)
+      s << "                     " << std::setw(wpp7) << qv[j] << '\n';
   s << "<<<<< Best log posterior       =\n                     "
     << std::setw(wpp7) << it->first << '\n';
 
