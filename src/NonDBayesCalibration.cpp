@@ -148,6 +148,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     UShortArray approx_order; // not used by GP/kriging
     short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
+      // derivatives for emulator construction (not emulator evaluation)
       if (iteratedModel.gradient_type() != "none") data_order |= 2;
       if (iteratedModel.hessian_type()  != "none") data_order |= 4;
     }

@@ -229,7 +229,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   
   if (calibrateSigmaFlag) {
     Cerr << "\nError: calibration of sigma temporarily unsupported."<<std::endl;
-    abort_handler(ITERATOR_ERROR);
+    abort_handler(METHOD_ERROR);
   }
 
   // for now, assume that if you are reading in any experimental 
@@ -279,7 +279,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     if (!emulatorType) { // current spec prevents this
       Cerr << "Error: adaptive posterior refinement requires emulator model."
 	   << std::endl;
-      abort_handler(ITERATOR_ERROR);
+      abort_handler(METHOD_ERROR);
     }
     compactMode = true; // update_model() uses all{Samples,Responses}
     Real adapt_metric = DBL_MAX; unsigned short int num_iter = 0;
@@ -423,14 +423,22 @@ void NonDQUESOBayesCalibration::init_queso_solver()
 
 void NonDQUESOBayesCalibration::precondition_proposal()
 {
-  short asrv;
+  // Gauss-Newton approximate Hessian requires gradients of residuals (rv=2)
+  // full Hessian requires values/gradients/Hessians of residuals (rv=7)
+  short asrv = 0;
   switch (emulatorType) {
-  case PCE_EMULATOR: case KRIGING_EMULATOR: asrv = 7; break;
-  case  SC_EMULATOR: case      GP_EMULATOR: asrv = 3; break; // for now
+  case PCE_EMULATOR: case KRIGING_EMULATOR:
+    asrv = 7; break;
+  case  SC_EMULATOR: case      GP_EMULATOR: // no Hessian support yet
+    asrv = 2; break;
   case  NO_EMULATOR:
-    asrv = 1;
-    if (mcmcModel.gradient_type() != "none") asrv |= 2;
-    if (mcmcModel.hessian_type()  != "none") asrv |= 4;
+    if (mcmcModel.gradient_type() != "none") asrv |= 2; // gradients
+    if (mcmcModel.hessian_type()  != "none") asrv |= 5; // values & Hessians
+    if (!asrv) {
+      Cerr << "Error: response derivative specification required for proposal "
+	   << "preconditioning." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
     break;
   }
 
@@ -483,7 +491,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     if (paramSpace->dimGlobal() != nv) {
       Cerr << "Error: Queso vector space is not consistent with proposal "
 	   << "covariance dimension." << std::endl;
-      abort_handler(ITERATOR_ERROR);
+      abort_handler(METHOD_ERROR);
     }
   }
   for (i=0; i<nv; ++i )
@@ -571,7 +579,7 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
     Cerr << "Error (NonDQUESO): final mcmc chain has length " << num_mcmc 
 	 << "\n                 but likelihood set has length"
 	 << loglike_vals.subSequenceSize() << std::endl;
-    abort_handler(ITERATOR_ERROR);
+    abort_handler(METHOD_ERROR);
   }
 
   // TO DO: want to keep different samples with same likelihood, but not 
@@ -765,7 +773,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     Cerr << "Warning: convergence norm not yet defined for SC emulator in "
 	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
 	 << std::endl;
-    //abort_handler(ITERATOR_ERROR);
+    //abort_handler(METHOD_ERROR);
     return DBL_MAX;
     break;
   }
@@ -775,7 +783,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     Cerr << "Warning: convergence norm not yet defined for GP emulators in "
 	 << "NonDQUESOBayesCalibration::assess_emulator_convergence()."
 	 << std::endl;
-    //abort_handler(ITERATOR_ERROR);
+    //abort_handler(METHOD_ERROR);
     return DBL_MAX;
     break;
   }
@@ -1230,7 +1238,7 @@ copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
   size_t i, size_qv = qv.sizeLocal();
   if (col < 0 || col >= rm.numCols() || size_qv != rm.numRows()) {
     Cerr << "Error: inconsistent matrix access in copy_gsl()." << std::endl;
-    abort_handler(ITERATOR_ERROR);
+    abort_handler(METHOD_ERROR);
   }
   Real* rm_c = rm[col];
   for (i=0; i<size_qv; ++i)
@@ -1256,7 +1264,7 @@ Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
 	 << "densities\n       and can only be used for independent random "
 	 << "variables at this time.\n       Consider use of variable "
 	 << "transformation option." << std::endl;
-    abort_handler(ITERATOR_ERROR);
+    abort_handler(METHOD_ERROR);
   }
 
   UShortMultiArrayConstView cv_types
