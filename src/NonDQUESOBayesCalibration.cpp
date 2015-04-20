@@ -440,13 +440,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   // update request vector values
   ActiveSet set = mcmcModel.current_response().active_set(); // copy
   set.request_values(asrv);
-  // compute and output response
+  // compute response (echoed to Cout if outputLevel > NORMAL)
   mcmcModel.compute_response(set);
-  // TO DO: is this redundant? (verbose output *should* echo vars/response)
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Parameters for emulator response:\n"
-	 << mcmcModel.current_variables() << "\nActive response data:\n"
-	 << mcmcModel.current_response()  << std::endl;
 
   // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
   RealSymMatrix log_like_hess;
@@ -1102,14 +1097,14 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
       nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
       break;
     }
-    case KRIGING_EMULATOR: case GP_EMULATOR: {
-      NonD* nond_iterator
-	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-      nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
-      // TO DO: no need for local natafTransform
-      break;
-    }
-    case NO_EMULATOR:
+    // GPs can use local nataf or the copy in lhs_iterator
+    //case KRIGING_EMULATOR: case GP_EMULATOR: {
+    //NonD* nond_iterator
+    //	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+    //nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
+    //break;
+    //}
+    default: //case NO_EMULATOR:
       natafTransform.trans_U_to_X(u_rv, x_rv);
       break;
     }

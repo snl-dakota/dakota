@@ -74,6 +74,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = true; break;
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+    // define local natafTransform (passed to subordinate iterators as needed)
     if (standardizedSpace) {
       initialize_random_variable_transformation();
       initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
@@ -273,12 +274,12 @@ void NonDBayesCalibration::initialize_model()
     stochExpIterator.run(pl_iter); break;
   }
   case GP_EMULATOR: case KRIGING_EMULATOR:
-    if (standardizedSpace) { // TO DO: no need for local natafTransform
+    if (standardizedSpace) {
       initialize_random_variable_parameters();
       //initialize_final_statistics_gradients(); // not required
       natafTransform.transform_correlations();
       // propagate natafTransform settings to lhs_iterator
-      // (recast mappings pick up most recent nondInstance update)
+      // (recast mappings use active nondInstance)
       ((NonD*)mcmcModel.subordinate_iterator().iterator_rep())->
 	initialize_random_variables(natafTransform);
     }

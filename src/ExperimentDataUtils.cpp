@@ -461,7 +461,7 @@ void build_hessian_of_sum_square_residuals_from_function_data(
       // we adopt convention and compute hessian of sum square residuals
       // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
       // multiplication
-      //hess_jk *= 2.;
+      hess_jk *= 2.;
     }
   }
 }
@@ -541,7 +541,7 @@ void build_hessian_of_sum_square_residuals_from_function_gradients(
       // we adopt convention and compute hessian of sum square residuals
       // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
       // multiplication
-      //hess_jk *= 2.;
+      hess_jk *= 2.;
     }
   }
 }
