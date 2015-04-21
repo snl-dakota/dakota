@@ -78,9 +78,8 @@ NCSUOptimizer(Model& model, const int& max_iter, const int& max_eval,
 /** This is an alternate constructor for Iterator instantiations by name
     using a Model but no ProblemDescDB. */
 NCSUOptimizer::NCSUOptimizer(Model& model):
-  Optimizer(NCSU_DIRECT, model), setUpType(SETUP_MODEL),
-  minBoxSize(-1.), volBoxSize(-1.), solutionTarget(-DBL_MAX), 
-  userObjectiveEval(NULL)
+  Optimizer(NCSU_DIRECT, model), setUpType(SETUP_MODEL), minBoxSize(-1.),
+  volBoxSize(-1.), solutionTarget(-DBL_MAX), userObjectiveEval(NULL)
 { 
   initialize(); 
   check_inputs();

@@ -1052,7 +1052,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     // ------------------------
     // Loop over num_deriv_vars
     // ------------------------
-    RealVector x = x0; Real x0_j, lb_j = -DBL_MAX, ub_j = DBL_MAX;
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
+    RealVector x = x0; Real x0_j, lb_j = -dbl_inf, ub_j = dbl_inf;
     for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
       size_t xj_index = find_index(cv_ids, original_dvv[j]);
       x0_j = x0[xj_index];
@@ -1077,7 +1078,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	// Enforce a minimum delta of fdgss*.01
 	Real fdgss = (fdGradStepSize.length() == num_deriv_vars)
 	           ? fdGradStepSize[xj_index] : fdGradStepSize[0];
-	//	Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
+	//Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
 	Real h = FDstep1(x0_j, lb_j, ub_j,
 			 initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradStepType));
 	if (asynch_flag) // communicate settings to synchronize_derivatives()
@@ -2234,7 +2235,7 @@ finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
     return aleatDistParams.lognormal_lower_bound(ln_index); break;
   }
   case GUMBEL_UNCERTAIN:      // -infinity
-    return -DBL_MAX;                                break;
+    return -std::numeric_limits<Real>::infinity();  break;
   default:
     return global_c_l_bnds[cv_index];               break;
   }
@@ -2260,7 +2261,7 @@ finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
   }
   case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN: // infinity
   case GUMBEL_UNCERTAIN:      case FRECHET_UNCERTAIN: case WEIBULL_UNCERTAIN:
-    return DBL_MAX;                                 break;
+    return std::numeric_limits<Real>::infinity();   break;
   default:
     return global_c_u_bnds[cv_index];               break;
   }
@@ -3951,9 +3952,9 @@ continuous_probability_density(Real c_var, unsigned short cv_type,
   else {
     switch (cv_type) {
     case NORMAL_UNCERTAIN:
-      // NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
-      // this and use Pecos::normal_pdf() but single bound cases make this
-      // approach more complicated than warranted.
+      // NIDR always defines bounds (default to +/-inf).  Could detect this and
+      // use Pecos::normal_pdf() but single bound cases make this approach more
+      // complicated than warranted.
       return Pecos::bounded_normal_pdf(c_var,
 	       aleatDistParams.normal_mean(dist_index),
 	       aleatDistParams.normal_std_deviation(dist_index),
@@ -3961,10 +3962,10 @@ continuous_probability_density(Real c_var, unsigned short cv_type,
 	       aleatDistParams.normal_upper_bound(dist_index));
       break;
     case LOGNORMAL_UNCERTAIN: {
-      // NIDR always defines bounds (default to +/-DBL_MAX).  Could detect
-      // this and use Pecos::lognormal_pdf() but single bound cases make this
-      // approach more complicated than warranted.  NIDR does not default
-      // define all lognormal parameter mappings so this needs to be managed.
+      // NIDR always defines bounds (default to +/-inf).  Could detect this and
+      // use Pecos::lognormal_pdf() but single bound cases make this approach
+      // more complicated than warranted.  NIDR does not default define all
+      // lognormal parameter mappings so this needs to be managed.
       Real mean, stdev;
       const RealVector& lambdas = aleatDistParams.lognormal_lambdas();
       if (!lambdas.empty())
@@ -4091,12 +4092,10 @@ RealRealPair Model::continuous_distribution_bounds(size_t cv_index) const
     // semi-bounded cases without distribution bounds
     case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN:
     case FRECHET_UNCERTAIN:     case WEIBULL_UNCERTAIN:
-      lwr = 0.;           upr = DBL_MAX;
-      break;
+      lwr = 0.; upr = std::numeric_limits<Real>::infinity(); break;
     // unbounded cases without distribution bounds
     case GUMBEL_UNCERTAIN: default:
-      lwr = -DBL_MAX;     upr = DBL_MAX;
-      break;
+      lwr = -(upr = std::numeric_limits<Real>::infinity());  break;
     }
     return std::pair<Real, Real>(lwr, upr);
   }

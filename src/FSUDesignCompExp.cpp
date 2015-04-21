@@ -222,7 +222,7 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
 
   // Get bounded region and check that (1) the lengths of bounds arrays are 
   // consistent with numContinuousVars, and (2) the bounds are not default 
-  // bounds (upper/lower = +/-DBL_MAX) since this results in Infinity in the 
+  // bounds (upper/lower = +/-inf) since this results in Infinity in the 
   // sample_points returned.  Discrepancies can occur in the case of uncertain
   // variables, since they do not currently have global bounds specifications.
   // It would be nice to detect this and automatically delete any uncertain
@@ -237,8 +237,9 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
   }
   size_t i, j;
   RealVector c_bnds_range(numContinuousVars);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   for (i=0; i<numContinuousVars; i++) {
-    if (c_l_bnds[i] <= -DBL_MAX/2. || c_u_bnds[i] >= DBL_MAX/2.) {
+    if (c_l_bnds[i] == -dbl_inf || c_u_bnds[i] == dbl_inf) {
       Cerr << "\nError: FSUDesignCompExp requires specification of variable "
 	   << "bounds for all active variables." << std::endl;
       abort_handler(-1);

@@ -319,8 +319,8 @@ select_rep_points(const RealVectorArray& var_samples_u,
   SizetArray safe_indices; safe_indices.reserve(num_samples);
 
   //TMW: Additional variables needed if no failures are found
-  size_t closestpt;
-  Real mindist = DBL_MAX, closestbeta, ddist;
+  //size_t closestpt;
+  //Real mindist = DBL_MAX, closestbeta, ddist;
 
   // update designPoint once; update uncertain vars for each sample
   for (j=0; j<numContDesVars; ++j)
@@ -490,7 +490,7 @@ void NonDAdaptImpSampling::converge_statistics(bool cov_flag)
   size_t total_samples = 0,
     max_iter    = (maxIterations < 0) ? 100 : maxIterations, // default to 100
     max_samples = refineSamples * max_iter;
-  Real sum_var = 0., cov, old_cov = DBL_MAX, p, sum_p = 0.,
+  Real sum_var = 0., cov, old_cov = 0., p, sum_p = 0.,
     old_p = (invertProb) ? 1. - probEstimate : probEstimate;
   bool converged = false, p_converged, cov_converged;
 

@@ -259,6 +259,8 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 #ifdef DAKOTA_F90
       int nsetp, ierr;
       RealVector bnd(2*num_active_lag); // bounds on lambda
+      // lawson_hanson2.f90: BVLS ignore bounds based on huge(), so +/-DBL_MAX
+      // is sufficient here
       for (i=0; i<num_active_lag; ++i) {
 	bnd[i*2]   = (i<num_active_lag_ineq) ? 0. : -DBL_MAX; // lower bound
 	bnd[i*2+1] = DBL_MAX;                                 // upper bound

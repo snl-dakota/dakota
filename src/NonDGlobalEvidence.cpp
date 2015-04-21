@@ -150,7 +150,8 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
   }
 
   if (eval_approx) {
-    if (truthFnStar == DBL_MAX || truthFnStar == -DBL_MAX) {
+    if ( ( !maximize && truthFnStar ==  DBL_MAX ) ||
+	 (  maximize && truthFnStar == -DBL_MAX ) ) {
       Cout << "No function evaluations were found in cell. Truth function is "
 	   << "set to DBL_MAX and approxFnStar is evaluated at midpoint.\n";
       for (i=0; i<numContIntervalVars; ++i)

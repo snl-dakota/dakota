@@ -346,11 +346,8 @@ void CONMINOptimizer::initialize_run()
     conminUpperBnds[i] = upper_bnds[i];
   }
   // Initialize array padding (N1 = numContinuousVars + 2).
-  for (i=numContinuousVars; i<N1; i++) {
-    conminDesVars[i]   =  0.0;
-    conminLowerBnds[i] = -DBL_MAX;
-    conminUpperBnds[i] =  DBL_MAX;
-  }
+  for (i=numContinuousVars; i<N1; i++)
+    conminDesVars[i] = conminLowerBnds[i] = conminUpperBnds[i] = 0.;
 }
 
 
@@ -367,8 +364,8 @@ void CONMINOptimizer::find_optimum()
   // Initialize variables internal to CONMIN
   int NSIDE     = 0;   // flag for upper/lower var bounds: 1=bounds, 0=no bounds
   // NSIDE must be set to 0 for unbounded since CONMIN cannot handle having
-  // upper/lower bounds set to +/-DBL_MAX.  Set NSIDE to 1 if bounds arrays
-  // have nondefault values.
+  // upper/lower bounds set to +/-inf.  Set NSIDE to 1 if bounds arrays have
+  // nondefault values.
   for (i=0; i<numContinuousVars; i++) {
     if (conminLowerBnds[i] > -bigRealBoundSize ||
 	conminUpperBnds[i] <  bigRealBoundSize) {

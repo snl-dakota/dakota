@@ -312,7 +312,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       rel_change_L2(c_vars, prev_cv_star);
     // update prev_cv_star
     copy_data(c_vars, prev_cv_star);
-    if ( dist_cstar < dist_tol)
+    if (dist_cstar < dist_tol)
       ++dist_convergence_cntr;
 
     // If DIRECT failed to find a point with EIF>0, it returns the

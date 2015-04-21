@@ -573,7 +573,8 @@ void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
       len_upper_bnds = linearIneqConUpperBnds.length();
     if (!len_lower_bnds) {
       linearIneqConLowerBnds.sizeUninitialized(numLinearIneqCons);
-      linearIneqConLowerBnds = -DBL_MAX; // default lower bounds
+      linearIneqConLowerBnds
+	= -std::numeric_limits<Real>::infinity(); // default lower bounds
     }
     else if (len_lower_bnds != numLinearIneqCons) {
       Cerr << "Error: length of linear inequality lower bounds specification "

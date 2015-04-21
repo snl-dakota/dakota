@@ -200,6 +200,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       switch_ranks[i] = BoolDeque(numSamples, false);
 
     size_t cntr = 0;
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
 
     //NORMAL
     for (k=0; k<numNormalVars; k++, cntr++) {
@@ -209,10 +210,10 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
       for (i=0; i<numSamples; i++) {
         temp_x = sample_values_first[i][cntr];
-        if (n_l_bnds[k] > -DBL_MAX || n_u_bnds[k] < DBL_MAX) {
-      	  Real Phi_l = (n_l_bnds[k] > -DBL_MAX) ? 
+        if (n_l_bnds[k] > -dbl_inf || n_u_bnds[k] < dbl_inf) {
+      	  Real Phi_l = (n_l_bnds[k] > -dbl_inf) ? 
 	    Pecos::Phi((n_l_bnds[k]-mean_x)/sigma_x): 0.;
-      	  Real Phi_u = (n_u_bnds[k] < DBL_MAX) ? 
+      	  Real Phi_u = (n_u_bnds[k] <  dbl_inf) ? 
 	    Pecos::Phi((n_u_bnds[k]-mean_x)/sigma_x) : 1.;
           Real Phi_x = Pecos::Phi((temp_x-mean_x)/sigma_x);
           Real cdf = (Phi_x-Phi_l)/(Phi_u - Phi_l);
@@ -248,10 +249,10 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
       for (i=0; i<numSamples; i++) {
         temp_x = log(sample_values_first[i][cntr]);
-        if (ln_l_bnds[k] > 0 || ln_u_bnds[k] < DBL_MAX) {
+        if (ln_l_bnds[k] > 0 || ln_u_bnds[k] < dbl_inf) {
       	  Real Phi_l = (ln_l_bnds[k] > 0 ) ? 
 	    Pecos::Phi((log(ln_l_bnds[k])-lambda)/zeta): 0.;
-      	  Real Phi_u = (ln_u_bnds[k] < DBL_MAX) ? 
+      	  Real Phi_u = (ln_u_bnds[k] < dbl_inf) ? 
 	    Pecos::Phi((log(ln_u_bnds[k])-lambda)/zeta) : 1.;
           Real Phi_x = Pecos::Phi((temp_x-lambda)/(zeta));
           Real cdf = (Phi_x - Phi_l)/(Phi_u - Phi_l);

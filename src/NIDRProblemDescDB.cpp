@@ -1684,6 +1684,7 @@ make_response_defaults(std::list<DataResponses>* drl)
 #undef Schk
 #define Numberof(x) sizeof(x)/sizeof(x[0])
 
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; It++) {
 
@@ -1752,7 +1753,7 @@ make_response_defaults(std::list<DataResponses>* drl)
     if ((n = dr->numNonlinearIneqConstraints) > 0) {
       if (dr->nonlinearIneqLowerBnds.length() == 0) {
 	dr->nonlinearIneqLowerBnds.sizeUninitialized(n);
-	dr->nonlinearIneqLowerBnds = -DBL_MAX;
+	dr->nonlinearIneqLowerBnds = -dbl_inf;
       }
       if (dr->nonlinearIneqUpperBnds.length() == 0) {
 	dr->nonlinearIneqUpperBnds.sizeUninitialized(n);
@@ -2230,14 +2231,15 @@ static void Vgen_ContinuousDes(DataVariablesRep *dv, size_t offset)
 {
   RealVector *L, *U, *V;
   size_t i, n = dv->numContinuousDesVars;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   L = &dv->continuousDesignLowerBnds;
   U = &dv->continuousDesignUpperBnds;
   V = &dv->continuousDesignVars;
   if (L->length() == 0)
-    Set_rv(L, -DBL_MAX, n);
+    Set_rv(L, -dbl_inf, n);
   if (U->length() == 0)
-    Set_rv(U, DBL_MAX, n);
+    Set_rv(U, dbl_inf, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
     for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
@@ -2274,14 +2276,15 @@ static void Vgen_ContinuousState(DataVariablesRep *dv, size_t offset)
 {
   RealVector *L, *U, *V;
   size_t i, n = dv->numContinuousStateVars;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   L = &dv->continuousStateLowerBnds;
   U = &dv->continuousStateUpperBnds;
   V = &dv->continuousStateVars;
   if (L->length() == 0)
-    Set_rv(L, -DBL_MAX, n);
+    Set_rv(L, -dbl_inf, n);
   if (U->length() == 0)
-    Set_rv(U, DBL_MAX, n);
+    Set_rv(U, dbl_inf, n);
   if (V->length() == 0) {
     V->sizeUninitialized(n);
     for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
@@ -2337,6 +2340,7 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
   size_t i, j, n;
   Real mean, stdev, nudge, lower, upper;
   RealVector *B, *L, *M, *Sd, *U, *V, *IP;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   n  =  dv->numNormalUncVars;
   M  = &dv->normalUncMeans;      Sd = &dv->normalUncStdDevs;
@@ -2350,7 +2354,7 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
     bds |= 1;
   }
   else {
-    Set_rv(L, -DBL_MAX, n); // distribution
+    Set_rv(L, -dbl_inf, n); // distribution
     for(j = 0; j < n; ++j)
       (*B)[offset+j] = (*M)[j] - 3.*(*Sd)[j]; // inferred global
   }
@@ -2362,7 +2366,7 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
     bds |= 2;
   }
   else {
-    Set_rv(U, DBL_MAX, n); // distribution
+    Set_rv(U, dbl_inf, n); // distribution
     for(j = 0; j < n; ++j)
       (*B)[offset+j] = (*M)[j] + 3.*(*Sd)[j]; // inferred global
   }
@@ -2452,6 +2456,7 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
   size_t i, j, n;
   Real mean, stdev, nudge, lower, upper;
   RealVector *B, *Ef, *Lam, *L, *M, *Sd, *U, *V, *Z, *IP;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   // lambda/zeta, mean/std_deviation, or mean/error_factor
   n  = dv->numLognormalUncVars;    Lam = &dv->lognormalUncLambdas;
@@ -2471,7 +2476,7 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
   Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n); // global = dist
   B = &dv->continuousAleatoryUncUpperBnds;
   if (num_U) Vcopyup(B, U, offset, n); // global = dist
-  else       Set_rv(U, DBL_MAX, n);    // default dist; global inferred below
+  else       Set_rv(U, dbl_inf, n);    // default dist; global inferred below
 
   for (i = offset, j = 0; j < n; ++i, ++j) {
 
@@ -2554,6 +2559,7 @@ Vchk_LoguniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   size_t j, n;
   Real Lj, Uj;
   RealVector *L, *U;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   n = dv->numLoguniformUncVars;
   L = &dv->loguniformUncLowerBnds;
@@ -2568,7 +2574,7 @@ Vchk_LoguniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       Squawk("loguniform bounds must be positive");
       return;
     }
-    if (Lj >= DBL_MAX || Uj >= DBL_MAX) {
+    if (Lj == dbl_inf || Uj == dbl_inf) {
       Squawk("loguniform bounds must be finite");
       return;
     }
@@ -3516,6 +3522,7 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   int tot_nI, nIi, avg_nI;
   Real lb, lbj, ub, ubj, default_p;
   RealVector *Ilb, *Iub, *Ip;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   if ((Ilb = vi->CIlb) && (Iub = vi->CIub)) {
     num_lb = Ilb->length(); // interval lower_bounds
@@ -3571,7 +3578,7 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
       RealRealPairRealMap& Pi = P[i];  // map from an interval to a probability
-      ub = -(lb = DBL_MAX);
+      ub = -(lb = dbl_inf);
       if (!num_p) default_p = 1./nIi; // default = equal probability per cell
       for(j=0; j<nIi; ++j, ++k) {
 	lbj = (*Ilb)[k];
@@ -3593,6 +3600,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
 {
   Real lb, lbk, ub, ubk, stdev;
   RealVector *ceuLB, *ceuUB, *V, *IP;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   ceuLB = &dv->continuousEpistemicUncLowerBnds;
   ceuUB = &dv->continuousEpistemicUncUpperBnds;
@@ -3604,7 +3612,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    lb = DBL_MAX; ub = -DBL_MAX;
+    lb = dbl_inf; ub = -dbl_inf;
     const RealRealPairRealMap& Pj = P[j];
     RealRealPairRealMap::const_iterator it = Pj.begin();
     RealRealPairRealMap::const_iterator it_end = Pj.end();
@@ -4394,7 +4402,7 @@ Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
 	  avg_val += *it;
 	avg_val /= num_set_i;
 	// bracket avg_val between [s_left,s_right]
-	s_right = DBL_MAX; s_left = -DBL_MAX;
+	s_left = L[offset]; s_right = U[offset];
 	for(it = set_i.begin(); it != ie; ++it) {
 	  set_val = *it;
 	  if (set_val > avg_val) {      // update nearest neighbor to right
@@ -4439,7 +4447,7 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
       V[i] = (num_IP) ? IP[j] : it->first;
     }
     else {
-      L[i] = it->first;     // lower bound is first value
+      L[i] = it->first;      // lower bound is first value
       U[i] = (--ite)->first; // upper bound is final value
       if (num_IP) V[i] = IP[j];
       else if (init_V) {
@@ -4448,7 +4456,7 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs, RealVector& IP,
 	  avg_val += it->first;
 	avg_val /= num_vp_j;
 	// bracket avg_val between [s_left,s_right]
-	s_right = DBL_MAX; s_left = -DBL_MAX;
+	s_left = L[i]; s_right = U[i];
 	for(it = vp_j.begin(); it != ite; ++it) {
 	  set_val = it->first;
 	  if (set_val > avg_val) {      // update nearest neighbor to right
@@ -7276,18 +7284,18 @@ static Var_brv
 	MP2s(lognormalUncLowerBnds,0.),
 	MP2s(lognormalUncMeans,0.),
 	MP2s(lognormalUncStdDevs,0.),
-	MP2s(lognormalUncUpperBnds,DBL_MAX),
+	MP2s(lognormalUncUpperBnds,std::numeric_limits<Real>::infinity()),
 	MP2s(lognormalUncVars,0.),
 	MP2s(lognormalUncZetas,0.),
 	MP2s(loguniformUncLowerBnds,0.),
-	MP2s(loguniformUncUpperBnds,DBL_MAX),
+	MP2s(loguniformUncUpperBnds,std::numeric_limits<Real>::infinity()),
 	MP2s(loguniformUncVars,0.),
 	MP2s(normalUncStdDevs,0.),
 	MP2s(poissonUncLambdas,0.),
-	MP2s(triangularUncLowerBnds, -DBL_MAX),
-	MP2s(triangularUncUpperBnds, DBL_MAX),
-	MP2s(uniformUncLowerBnds, -DBL_MAX),
-	MP2s(uniformUncUpperBnds, DBL_MAX),
+	MP2s(triangularUncLowerBnds,-std::numeric_limits<Real>::infinity()),
+	MP2s(triangularUncUpperBnds, std::numeric_limits<Real>::infinity()),
+	MP2s(uniformUncLowerBnds,-std::numeric_limits<Real>::infinity()),
+	MP2s(uniformUncUpperBnds, std::numeric_limits<Real>::infinity()),
 	MP2s(weibullUncAlphas,0.),
 	MP2s(weibullUncBetas,0.);
 

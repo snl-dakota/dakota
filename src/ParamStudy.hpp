@@ -552,11 +552,12 @@ inline bool ParamStudy::check_finite_bounds()
   // Finite bounds required for partitioning: check for case of default bounds
   // (upper/lower = +/- type limits)
   size_t i;
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (numContinuousVars) {
     const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
     const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
     for (i=0; i<numContinuousVars; ++i)
-      if (c_l_bnds[i] <= -DBL_MAX || c_u_bnds[i] >= DBL_MAX)
+      if (c_l_bnds[i] == -dbl_inf || c_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }
   }
   if (numDiscreteIntVars) {
@@ -570,7 +571,7 @@ inline bool ParamStudy::check_finite_bounds()
     const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
     const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
     for (i=0; i<numDiscreteRealVars; ++i)
-      if (dr_l_bnds[i] <= -DBL_MAX || dr_u_bnds[i] >= DBL_MAX)
+      if (dr_l_bnds[i] == -dbl_inf || dr_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }
   }
   if (bnds_err)

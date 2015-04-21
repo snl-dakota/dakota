@@ -225,7 +225,7 @@ DDACEDesignCompExp::create_sampler(Model& model)
 {
   // Get bounded region and check that (1) the lengths of bounds arrays are 
   // consistent with numContinuousVars, and (2) the bounds are not default 
-  // bounds (upper/lower = +/-DBL_MAX) since this results in Infinity in the 
+  // bounds (upper/lower = +/-inf) since this results in Infinity in the 
   // sample_points returned.  Discrepancies can occur in the case of uncertain
   // variables, since they do not currently have global bounds specifications.
   // It would be nice to detect this and automatically delete any uncertain
@@ -238,8 +238,9 @@ DDACEDesignCompExp::create_sampler(Model& model)
          << "\n       bounds arrays in DDACEDesignCompExp." << std::endl;
     abort_handler(-1);
   }
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   for (int i=0; i<numContinuousVars; i++) {
-    if (c_l_bnds[i] <= -DBL_MAX || c_u_bnds[i] >= DBL_MAX) {
+    if (c_l_bnds[i] == -dbl_inf || c_u_bnds[i] == dbl_inf) {
       Cerr << "\nError: DDACEDesignCompExp requires specification of variable "
 	   << "bounds for all active variables." << std::endl;
       abort_handler(-1);

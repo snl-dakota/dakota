@@ -598,6 +598,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     = x_model.aleatory_distribution_parameters();
   Pecos::AleatoryDistParams&       u_adp
     = u_model.aleatory_distribution_parameters();
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (num_u_nuv || num_u_bnuv) {
     size_t num_total_nuv = num_u_nuv+num_u_bnuv;
     RealVector nuv_means(num_total_nuv, false),
@@ -619,7 +620,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 	}
 	else if (u_types[i] == Pecos::STD_NORMAL) {
 	  nuv_means[n_cntr]  = 0.;	 nuv_std_devs[n_cntr] = 1.;
-	  nuv_l_bnds[n_cntr] = -DBL_MAX; nuv_u_bnds[n_cntr]   = DBL_MAX;
+	  nuv_l_bnds[n_cntr] = -dbl_inf; nuv_u_bnds[n_cntr]   = dbl_inf;
 	  ++n_cntr;
 	}
 	if (x_types[i] == Pecos::NORMAL || x_types[i] == Pecos::BOUNDED_NORMAL)
@@ -628,7 +629,7 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     }
     else {
       nuv_means  = 0.;       nuv_std_devs = 1.;
-      nuv_l_bnds = -DBL_MAX; nuv_u_bnds   = DBL_MAX;
+      nuv_l_bnds = -dbl_inf; nuv_u_bnds   = dbl_inf;
     }
     u_adp.normal_means(nuv_means);
     u_adp.normal_std_deviations(nuv_std_devs);
@@ -1103,8 +1104,9 @@ void NonD::initialize_random_variable_types(short u_space_type)
     = iteratedModel.aleatory_distribution_parameters();
   const RealVector& n_l_bnds = adp.normal_lower_bounds();
   const RealVector& n_u_bnds = adp.normal_upper_bounds();
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   for (i=0; i<numNormalVars; ++i, ++av_cntr) {
-    if (n_l_bnds[i] > -DBL_MAX || n_u_bnds[i] < DBL_MAX) {
+    if (n_l_bnds[i] > -dbl_inf || n_u_bnds[i] < dbl_inf) {
       x_types[av_cntr] = Pecos::BOUNDED_NORMAL;
       switch (u_space_type) {
       case STD_NORMAL_U: case ASKEY_U:
@@ -1128,7 +1130,7 @@ void NonD::initialize_random_variable_types(short u_space_type)
   const RealVector& ln_l_bnds = adp.lognormal_lower_bounds();
   const RealVector& ln_u_bnds = adp.lognormal_upper_bounds();
   for (i=0; i<numLognormalVars; ++i, ++av_cntr) {
-    if (ln_l_bnds[i] > 0. || ln_u_bnds[i] < DBL_MAX) {
+    if (ln_l_bnds[i] > 0. || ln_u_bnds[i] < dbl_inf) {
       x_types[av_cntr] = Pecos::BOUNDED_LOGNORMAL;
       switch (u_space_type) {
       case STD_NORMAL_U: case ASKEY_U:
@@ -1315,6 +1317,7 @@ void NonD::initialize_random_variable_parameters()
     x_std_devs(num_active_vars, false), x_l_bnds(num_active_vars, false),
     x_u_bnds(num_active_vars, false);
   RealVectorArray x_addtl(num_active_vars);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
   const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
@@ -1324,7 +1327,7 @@ void NonD::initialize_random_variable_parameters()
     const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
     const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
     // unlike uniform/loguniform/beta/triangular, design bounds are optional
-    if (lwr == -DBL_MAX || upr == DBL_MAX) {
+    if (lwr == -dbl_inf || upr == dbl_inf) {
       Cerr << "Error: bounds specification required for design variable "
 	   << "transformation to standard uniform." << std::endl;
       abort_handler(-1);
@@ -1424,7 +1427,7 @@ void NonD::initialize_random_variable_parameters()
 					     x_std_devs[av_cntr]);
       // use default distribution bounds, not default global DACE bounds
       x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = DBL_MAX;
+      x_u_bnds[av_cntr] = dbl_inf;
       x_addtl[av_cntr].sizeUninitialized(1);
       x_addtl[av_cntr][0] = beta;
     }
@@ -1458,7 +1461,7 @@ void NonD::initialize_random_variable_parameters()
 				       x_std_devs[av_cntr]);
       // use default distribution bounds, not default global DACE bounds
       x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = DBL_MAX;
+      x_u_bnds[av_cntr] = dbl_inf;
       x_addtl[av_cntr].sizeUninitialized(2);
       x_addtl[av_cntr][0] = alpha;
       x_addtl[av_cntr][1] = beta;
@@ -1473,8 +1476,8 @@ void NonD::initialize_random_variable_parameters()
       Pecos::moments_from_gumbel_params(alpha, beta, x_means[av_cntr],
 					x_std_devs[av_cntr]);
       // use default distribution bounds, not default global DACE bounds
-      x_l_bnds[av_cntr] = -DBL_MAX;
-      x_u_bnds[av_cntr] =  DBL_MAX;
+      x_l_bnds[av_cntr] = -dbl_inf;
+      x_u_bnds[av_cntr] =  dbl_inf;
       x_addtl[av_cntr].sizeUninitialized(2);
       x_addtl[av_cntr][0] = alpha;
       x_addtl[av_cntr][1] = beta;
@@ -1489,7 +1492,7 @@ void NonD::initialize_random_variable_parameters()
 					 x_std_devs[av_cntr]);
       // use default distribution bounds, not default global DACE bounds
       x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = DBL_MAX;
+      x_u_bnds[av_cntr] = dbl_inf;
       x_addtl[av_cntr].sizeUninitialized(2);
       x_addtl[av_cntr][0] = alpha;
       x_addtl[av_cntr][1] = beta;
@@ -1504,7 +1507,7 @@ void NonD::initialize_random_variable_parameters()
 					 x_std_devs[av_cntr]);
       // use default distribution bounds, not default global DACE bounds
       x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = DBL_MAX;
+      x_u_bnds[av_cntr] = dbl_inf;
       x_addtl[av_cntr].sizeUninitialized(2);
       x_addtl[av_cntr][0] = alpha;
       x_addtl[av_cntr][1] = beta;
@@ -1561,7 +1564,7 @@ void NonD::initialize_random_variable_parameters()
     const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
     const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
     // unlike uniform/loguniform/beta/triangular, state bounds are optional
-    if (lwr == -DBL_MAX || upr == DBL_MAX) {
+    if (lwr == -dbl_inf || upr == dbl_inf) {
       Cerr << "Error: bounds specification required for state variable "
 	   << "transformation to standard uniform." << std::endl;
       abort_handler(-1);

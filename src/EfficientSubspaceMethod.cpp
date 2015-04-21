@@ -507,8 +507,7 @@ compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
     double mach_svtol = inf_norm * std::numeric_limits<Real>::epsilon();
 
     reducedRank = num_singular_values;
-    double sv_small = 1.0;
-    double sv_large = DBL_MAX;
+    double sv_small = 1., sv_large = DBL_MAX;
     for (unsigned int i=0; i<num_singular_values; ++i) {
 	
       // we assume the user tolerance is looser than machine; could improve

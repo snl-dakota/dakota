@@ -1000,7 +1000,7 @@ void NonDGlobalReliability::get_best_sample()
   }
 
   // Calculation of fnStar will have different form for CDF/CCDF cases
-  fnStar = DBL_MAX; IntRespMCIter it;
+  fnStar = (pmaMaximizeG) ? -DBL_MAX : DBL_MAX; IntRespMCIter it;
   for (i=0, it=true_responses.begin(); i<num_samples; i++, ++it) {
     // calculate the reliability index (beta)
     Real beta_star = 0., penalized_response; // TO DO
@@ -1049,6 +1049,8 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
     Real res_norm;
     IntVector index(1);
     RealVector lambda(1), w(1), bnd(2);
+    // lawson_hanson2.f90: BVLS ignore bounds based on huge(), so +/-DBL_MAX
+    // is sufficient here
     bnd[0] = -DBL_MAX; bnd[1] = DBL_MAX;
     BVLS_WRAPPER_FC(A.values(), m, n, m_grad_f.values(), bnd.values(),
 		    lambda.values(), res_norm, nsetp, w.values(),

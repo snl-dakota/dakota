@@ -83,11 +83,12 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	= problem_db.get_rv("responses.nonlinear_equality_targets");
       bool warning_flag = false;
       size_t i;
+      Real dbl_inf = std::numeric_limits<Real>::infinity();
       for (i=0; i<numOptInterfIneqCon; ++i)
-	if ( interf_ineq_l_bnds[i] > -DBL_MAX || interf_ineq_u_bnds[i] != 0.0 )
+	if ( interf_ineq_l_bnds[i] > -dbl_inf || interf_ineq_u_bnds[i] != 0. )
 	  warning_flag = true;
       for (i=0; i<numOptInterfEqCon; ++i)
-	if ( interf_eq_targets[i] != 0.0 )
+	if ( interf_eq_targets[i] != 0. )
 	  warning_flag = true;
       if (warning_flag)
 	Cerr << "Warning: nonlinear constraint bounds and targets in nested "
@@ -2909,6 +2910,7 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 {
   Pecos::AleatoryDistParams& submodel_adp
     = subModel.aleatory_distribution_parameters();
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
 
   switch (svm_target) {
   case Pecos::CDV_LWR_BND: case Pecos::CSV_LWR_BND:
@@ -2935,9 +2937,9 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 	u_bnd = submodel_adp.normal_upper_bound(mapped_index);
     // translate: change bounds by same amount as mean
     submodel_adp.normal_mean(r_var, mapped_index);
-    if (l_bnd > -DBL_MAX)
+    if (l_bnd > -dbl_inf)
       submodel_adp.normal_lower_bound(l_bnd + delta, mapped_index);
-    if (u_bnd <  DBL_MAX)
+    if (u_bnd <  dbl_inf)
       submodel_adp.normal_upper_bound(u_bnd + delta, mapped_index);
     break;
   }
@@ -2948,11 +2950,11 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 	u_bnd = submodel_adp.normal_upper_bound(mapped_index);
     // scale: preserve number of std deviations where l,u bound occurs
     submodel_adp.normal_std_deviation(r_var, mapped_index);
-    if (l_bnd > -DBL_MAX) {
+    if (l_bnd > -dbl_inf) {
       Real num_sig_l = (mean - l_bnd) / stdev;
       submodel_adp.normal_lower_bound(mean - num_sig_l * r_var, mapped_index);
     }
-    if (u_bnd <  DBL_MAX) {
+    if (u_bnd <  dbl_inf) {
       Real num_sig_u = (u_bnd - mean) / stdev;
       submodel_adp.normal_upper_bound(mean + num_sig_u * r_var, mapped_index);
     }

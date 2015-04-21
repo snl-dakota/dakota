@@ -4258,7 +4258,6 @@ Test Number 13 succeeded
                       9.9464470965e-01
 <<<<< Best log posterior       =
                      -1.3866183423e+00
-
 dakota_sbo_hierarchical.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
