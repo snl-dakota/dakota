@@ -4261,7 +4261,7 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
 	  avg_val += *it;
 	avg_val /= num_set_i;
 	// bracket avg_val between [i_left,i_right]
-	i_right = INT_MAX; i_left = INT_MIN;
+	i_left = L[offset]; i_right = U[offset];
 	for(it = set_i.begin(); it != ie; ++it) {
 	  r_val = i_val = *it;
 	  if (r_val > avg_val) {      // update nearest neighbor to right
@@ -4353,7 +4353,7 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs, IntVector& IP,
 	  avg_val += it->first;
 	avg_val /= num_vp_j;
 	// bracket avg_val between [i_left,i_right]
-	i_right = INT_MAX; i_left = INT_MIN;
+	i_left = L[offset]; i_right = U[offset];
 	for(it = vp_j.begin(); it != ite; ++it) {
 	  r_val = i_val = it->first;
 	  if (r_val > avg_val) {      // update nearest neighbor to right
