@@ -152,11 +152,11 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	 << std::endl;
   }
 
-  if (calibrateSigmaFlag) {
-    Cerr << "\nError: calibration of sigma temporarily unsupported."
-	 << std::endl;
-    abort_handler(-1);
-  }
+  //if (calibrateSigmaFlag) {
+  //  Cerr << "\nError: calibration of sigma temporarily unsupported."
+  //	 << std::endl;
+  //  abort_handler(-1);
+  //}
 
 }
 
@@ -199,7 +199,19 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  expData.load_data("DREAM Bayes Calibration", calc_sigma_from_data);
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Read data from file " << calibrationDataFlag << '\n';
+  if (calibrationDataFlag)
+    expData.load_data("DREAM Bayes Calibration", calc_sigma_from_data);
+  else {
+    Cout << "No experiment data from files " << '\n';
+    Cout << "DREAM is assuming the simulation is returning the residuals" << '\n';
+  }
+  if (calibrateSigmaFlag && !calibrationDataFlag) {
+    Cerr << "\nError: you are attempting to calibrate the measurement error "
+         << "but have not provided experimental data information."<<std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
 
   ////////////////////////////////////////////////////////
@@ -361,7 +373,11 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
   // matrix of standard deviations.  Thus, we just have to iterate over this to 
   // calculate the likelihood. 
-  if (NonDDREAMInstance->calibrateSigmaFlag) {
+  if (NonDDREAMInstance->calibrationDataFlag == false) {
+    for (j=0; j<num_funcs; j++)
+      result += std::pow(fn_vals[j],2.);
+  }
+  else if (NonDDREAMInstance->calibrateSigmaFlag) {
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDDREAMInstance->expData.all_data(i);
       for (j=0; j<num_funcs; j++)
@@ -403,7 +419,10 @@ problem_size(int &chain_num, int &cr_num, int &gen_num, int &pair_num,
   cr_num    = NonDDREAMInstance->numCR;
   gen_num   = NonDDREAMInstance->numGenerations;
   pair_num  = NonDDREAMInstance->crossoverChainPairs;
-  par_num   = NonDDREAMInstance->numContinuousVars;
+  if (NonDDREAMInstance->calibrateSigmaFlag)
+    par_num = NonDDREAMInstance->numFunctions + NonDDREAMInstance->numContinuousVars; 
+  else 
+    par_num   = NonDDREAMInstance->numContinuousVars;
 
   return;
 }

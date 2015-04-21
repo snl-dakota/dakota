@@ -225,10 +225,18 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
-  
-  if (calibrateSigmaFlag) {
-    Cerr << "\nError: calibration of sigma temporarily unsupported."<<std::endl;
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Read data from file " << calibrationDataFlag << '\n';
+  if (calibrationDataFlag)
+    expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
+  else {
+    Cout << "No experiment data from files " << '\n';
+    Cout << "QUESO is assuming the simulation is returning the residuals" << '\n';
+  }
+  if (calibrateSigmaFlag && !calibrationDataFlag) {
+    Cerr << "\nError: you are attempting to calibrate the measurement error " 
+         << "but have not provided experimental data information."<<std::endl;
+     //calibration of sigma temporarily unsupported."<<std::endl;
     abort_handler(METHOD_ERROR);
   }
 
@@ -1188,7 +1196,12 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // already had the correct values placed depending if there is zero,
   // one, num_fn, or a full num_exp*num_fn matrix of standard deviations.
   // Thus, we just have to iterate over this to calculate the likelihood.
-  if (NonDQUESOInstance->calibrateSigmaFlag) {
+
+  if (NonDQUESOInstance->calibrationDataFlag == false) {
+    for (j=0; j<num_fn; j++)
+      result += std::pow(fn_vals[j],2.);
+  }
+  else if (NonDQUESOInstance->calibrateSigmaFlag) {
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
       for (j=0; j<num_fn; j++)

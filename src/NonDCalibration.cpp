@@ -42,11 +42,11 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
 
   // input spec may get expanded to allow data via input file, but
   // currently data file is required
-  if (!calibrationDataFlag) {
-    Cerr << "\nError (NonDCalibration): Bayesian methods require calibration "
-	 << "data file." << std::endl;
-    found_error = true;
-  }
+  //if (!calibrationDataFlag) {
+  //  Cerr << "\nError (NonDCalibration): Bayesian methods require calibration "
+//	 << "data file." << std::endl;
+ //   found_error = true;
+ // }
 
   if (numExpConfigVars > 0) {
 
