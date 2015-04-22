@@ -1734,8 +1734,7 @@ iterator_response_overlay(const Response& sub_iterator_response,
 
   // build mapped response data:
 
-  // Do not update in place this way due to Teuchos copy ctor bug:
-  //RealVector mapped_vals = mapped_response.function_values_view();
+  RealVector mapped_vals = mapped_response.function_values_view();
   const RealVector& sub_iterator_vals = sub_iterator_response.function_values();
   const RealMatrix& sub_iterator_grads
     = sub_iterator_response.function_gradients();
@@ -1746,8 +1745,7 @@ iterator_response_overlay(const Response& sub_iterator_response,
   size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
   for (i=0; i<num_sub_iter_mapped_1; ++i) {
     if (mapped_asv[i] & 1) { // mapped_vals
-      //Real& inner_prod = mapped_vals[i];
-      Real& inner_prod = mapped_response.function_value_view(i);
+      Real& inner_prod = mapped_vals[i];
       for (j=0; j<numSubIterFns; ++j)
 	inner_prod += primaryRespCoeffs(i,j)*sub_iterator_vals[j]; // [W]{S}
     }
@@ -1779,9 +1777,7 @@ iterator_response_overlay(const Response& sub_iterator_response,
     if (i>=numSubIterMappedIneqCon)
       m_index += numOptInterfEqCon + numSubIterMappedIneqCon; // [A]{S} == {a_t}
     if (mapped_asv[m_index] & 1) { // mapped_vals
-      //Real& inner_prod = mapped_vals[m_index]; 
-      Real& inner_prod =  mapped_response.function_value_view(m_index);
-      inner_prod = 0.;
+      Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
       for (j=0; j<numSubIterFns; ++j)
         inner_prod += secondaryRespCoeffs(i,j)*sub_iterator_vals[j];
     }

@@ -511,8 +511,6 @@ inline const RealMatrix Response::field_coords_view(size_t i) const
 
 inline RealVector Response::function_values_view()
 {
-  // Caution/Bug: with some compilers the Teuchos::View may be copy
-  // constructed into a Teuchos::Copy, decoupling the view from the data
   return (responseRep) ?
     RealVector(Teuchos::View, responseRep->functionValues.values(),
 	       responseRep->functionValues.length()) :
@@ -525,9 +523,6 @@ inline RealVector Response::function_values_view() const
   // Note: this const version is largely subsumed by const RealVector&
   // function_values().  We include it just for consistency with other
   // function_*_view().
-
-  // Caution/Bug: with some compilers the Teuchos::View may be copy
-  // constructed into a Teuchos::Copy, decoupling the view from the data
   return (responseRep) ?
     RealVector(Teuchos::View, responseRep->functionValues.values(),
 	       responseRep->functionValues.length()) :
@@ -584,8 +579,6 @@ inline const Real* Response::function_gradient(int i) const
 
 inline RealVector Response::function_gradient_view(int i)
 {   
-  // Caution/Bug: with some compilers the Teuchos::View may be copy
-  // constructed into a Teuchos::Copy, decoupling the view from the data
   if (responseRep)
     return Teuchos::getCol(Teuchos::View, responseRep->functionGradients, i);
   else
@@ -595,8 +588,6 @@ inline RealVector Response::function_gradient_view(int i)
 
 inline RealVector Response::function_gradient_view(int i) const
 {   
-  // Caution/Bug: with some compilers the Teuchos::View may be copy
-  // constructed into a Teuchos::Copy, decoupling the view from the data
   if (responseRep)
     return Teuchos::getCol(Teuchos::View, responseRep->functionGradients, i);
   else
@@ -625,8 +616,7 @@ inline RealMatrix Response::function_gradients_view()
     return RealMatrix(Teuchos::View, responseRep->functionGradients,
 		      responseRep->functionGradients.numRows(),
 		      responseRep->functionGradients.numCols());
-  else // Caution/Bug: with some compilers the Teuchos::View may be copy
-       // constructed into a Teuchos::Copy, decoupling the view from the data
+  else
     return RealMatrix(Teuchos::View, functionGradients,
 		      functionGradients.numRows(), functionGradients.numCols());
 }
@@ -662,9 +652,6 @@ inline RealSymMatrix Response::function_hessian_view(size_t i)
   // this case, such that maintaining just the stricter const version would
   // be sufficient.  Maintaining the distinction is just for consistency with
   // other function_*_view().
-
-  // Caution/Bug: with some compilers the Teuchos::View may be copy
-  // constructed into a Teuchos::Copy, decoupling the view from the data
   if (responseRep)
     return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
 			 responseRep->functionHessians[i].numRows());
@@ -676,8 +663,6 @@ inline RealSymMatrix Response::function_hessian_view(size_t i)
 
 inline RealSymMatrix Response::function_hessian_view(size_t i) const
 {
-  // Caution/Bug: with some compilers the Teuchos::View may be copy
-  // constructed into a Teuchos::Copy, decoupling the view from the data
   if (responseRep)
     return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
 			 responseRep->functionHessians[i].numRows());
@@ -704,8 +689,6 @@ inline RealSymMatrixArray Response::function_hessians_view()
     for (i=0; i<num_hess; ++i)
       fn_hessians_view[i] = RealSymMatrix(Teuchos::View, functionHessians[i],
 					  functionHessians[i].numRows());
-    // Caution/Bug: with some compilers the Teuchos::View may be copy
-    // constructed into a Teuchos::Copy, decoupling the view from the data
     return fn_hessians_view;
   }
 }
