@@ -557,10 +557,19 @@ size_t read_data_tabular(const std::string& input_filename,
       vars.read_tabular(input_stream, active_only);
       ++num_evals;
 
-      cva.push_back(vars.continuous_variables());
-      diva.push_back(vars.discrete_int_variables());
+      // the Variables object vars passed in is a deep copy, but these
+      // accessors return views; force a deep copy of each vector for
+      // storage in array
+      RealVector c_vars(Teuchos::Copy, vars.continuous_variables().values(), 
+			vars.continuous_variables().length());
+      cva.push_back(c_vars);
+      IntVector di_vars(Teuchos::Copy, vars.discrete_int_variables().values(),
+			vars.discrete_int_variables().length());
+      diva.push_back(di_vars);
       list_dsv_points.push_back(vars.discrete_string_variables());
-      drva.push_back(vars.discrete_real_variables());
+      RealVector dr_vars(Teuchos::Copy, vars.discrete_real_variables().values(),
+			 vars.discrete_real_variables().length());
+      drva.push_back(dr_vars);
 
       input_stream >> std::ws;  // advance to next readable input
     }

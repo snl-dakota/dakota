@@ -209,7 +209,9 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // within opt++.  This occurs within the context of the run function so that
   // any variable reassignment at the strategy layer (after iterator
   // construction) is captured with setX.
-  RealVector x(init_pt);
+
+  // perform a deep copy to disconnect from Dakota's Teuchos::View
+  RealVector x(Teuchos::Copy, init_pt.values(), init_pt.length());
   nlf_objective->setX(x);  // setX accepts a ColumnVector
   size_t num_cv = init_pt.length();
 
