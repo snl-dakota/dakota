@@ -6,7 +6,7 @@ method,
         bayes_calibration queso, 	#p0
          #NOTE:  typically you will want tens of thousands of samples, this is just a short test
          samples = 1000 seed = 348
-          dram
+          delayed_rejection
           # delayed_rejection | adaptive_metropolis | metropolis_hastings
           #output debug
 	  # 1. diagonal with values

@@ -1085,7 +1085,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   // logit transform addresses high rejection rates in corners of bounded
   // domains.  It is hardwired on at this time, although potentially redundant
   // in some cases (e.g., WIENER u-space type).
-  calIpMhOptionsValues->m_doLogitTransform = false;
+  calIpMhOptionsValues->m_doLogitTransform = true;
 }
 
 

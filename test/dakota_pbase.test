@@ -2866,7 +2866,12 @@ Test Number 29 succeeded
 <<<<< Best data captured at function evaluation 33
 dakota_cantilever_queso.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 1651 total (1651 new, 0 duplicate)
+<<<<< Function evaluation summary: 1983 total (1983 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.8502378697e+07
+                      2.5030427991e+00
+<<<<< Best log posterior       =
+                     -3.1482189735e+01
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
@@ -4159,56 +4164,56 @@ Test Number 0 succeeded
                       0.0000000000e+00
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 31
-dakota_rosenbrock_queso.in 
+dakota_rosenbrock_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9643386255e-01
-                      9.9464470965e-01
+                      1.0083423183e+00
+                      1.0161067550e+00
 <<<<< Best log posterior       =
-                     -1.3866183423e+00
+                     -1.3864058779e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9643386255e-01
-                      9.9464470965e-01
+                      1.0083423991e+00
+                      1.0161069151e+00
 <<<<< Best log posterior       =
-                     -1.3866183423e+00
+                     -1.3864058796e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.7685579944e-01
-                      9.5483199475e-01
+                      1.0067356454e+00
+                      1.0143041147e+00
 <<<<< Best log posterior       =
-                     -1.3868642074e+00
+                     -1.3864017386e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9643386255e-01
-                      9.9464470965e-01
+                      1.0083423990e+00
+                      1.0161069149e+00
 <<<<< Best log posterior       =
-                     -2.7729127035e+00
+                     -2.7727002407e+00
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.7685579944e-01
-                      9.5483199475e-01
+                      1.0067356454e+00
+                      1.0143041147e+00
 <<<<< Best log posterior       =
-                     -2.7731585686e+00
+                     -2.7726960997e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 150 total (150 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0029355594e+00
-                      1.0058924662e+00
+                      9.8970388269e-01
+                      9.8047878610e-01
 <<<<< Best log posterior       =
-                     -2.7725973560e+00
+                     -2.7727878568e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 83 total (83 new, 0 duplicate)
+<<<<< Function evaluation summary: 138 total (138 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.9133274166e+00
-                      1.8791018988e+00
+                      1.9739951385e+00
+                      1.8599098283e+00
 <<<<< Best log posterior       =
-                     -1.3876438826e+00
+                     -1.3864646470e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4224,12 +4229,12 @@ Test Number 8 succeeded
 <<<<< Best log posterior       =
                      -2.2372562734e+00
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 3316 total (3266 new, 50 duplicate)
+<<<<< Function evaluation summary: 3279 total (3229 new, 50 duplicate)
 <<<<< Best parameters          =
-                      9.9643386255e-01
-                      9.9464470965e-01
+                      1.0083422539e+00
+                      1.0161066272e+00
 <<<<< Best log posterior       =
-                     -2.7729127035e+00
+                     -2.7727002377e+00
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 3411 total (3361 new, 50 duplicate)
 <<<<< Best parameters          =
@@ -4240,24 +4245,24 @@ Test Number 10 succeeded
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9643386255e-01
-                      9.9464470965e-01
+                      1.0083422327e+00
+                      1.0161065852e+00
 <<<<< Best log posterior       =
-                     -1.3866183423e+00
+                     -1.3864058761e+00
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.7685579944e-01
-                      9.5483199475e-01
+                      1.0067356454e+00
+                      1.0143041147e+00
 <<<<< Best log posterior       =
-                     -1.3868642074e+00
+                     -1.3864017386e+00
 Test Number 13 succeeded
-<<<<< Function evaluation summary: 3316 total (3266 new, 50 duplicate)
+<<<<< Function evaluation summary: 3279 total (3229 new, 50 duplicate)
 <<<<< Best parameters          =
-                      9.9643386255e-01
-                      9.9464470965e-01
+                      1.0083422053e+00
+                      1.0161065309e+00
 <<<<< Best log posterior       =
-                     -1.3866183423e+00
+                     -1.3864058755e+00
 dakota_sbo_hierarchical.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
