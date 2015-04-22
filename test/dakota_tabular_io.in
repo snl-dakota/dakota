@@ -24,8 +24,8 @@ environment,
 #	  tabular_data						#s1,#s2,#s3,#s5
 #	    tabular_data_file = 'dakota_tabular_io.1.dat'  	#s1
 #	    tabular_data_file = 'dakota_tabular_io.3.dat'  	#s3
+#	    custom_annotated eval_id	 			#s5
 #	  method_pointer = 'UQ'					#s4
-#	  tabular_options = 'eval_id'	 			#s5
 
 #########################################
 # interface truth model and dace method #

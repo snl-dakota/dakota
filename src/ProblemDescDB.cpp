@@ -2067,18 +2067,19 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_sa");
-  if ((L = Begins(entry_name, "environment."))) {
-    #define P &DataEnvironmentRep::
-    static KW<StringArray, DataEnvironmentRep> SAenv[] = {	
-      // must be sorted by string (key)
-      {"tabular_options", P tabularOptions}};
-    #undef P
+  // if ((L = Begins(entry_name, "environment."))) {
+  //   #define P &DataEnvironmentRep::
+  //   static KW<StringArray, DataEnvironmentRep> SAenv[] = {	
+  //     // must be sorted by string (key)
+  //     {"env_options", P envOptions}};
+  //   #undef P
 
-    KW<StringArray, DataEnvironmentRep> *kw;
-    if ((kw = (KW<StringArray, DataEnvironmentRep>*)Binsearch(SAenv, L)))
-	return dbRep->environmentSpec.dataEnvRep->*kw->p;
-  }
-  else if ((L = Begins(entry_name, "method."))) {
+  //   KW<StringArray, DataEnvironmentRep> *kw;
+  //   if ((kw = (KW<StringArray, DataEnvironmentRep>*)Binsearch(SAenv, L)))
+  // 	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+  // }
+  // else 
+  if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
@@ -2700,7 +2701,18 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_ushort");
-  if ((L = Begins(entry_name, "method."))) {
+  if ((L = Begins(entry_name, "environment."))) {
+    #define P &DataEnvironmentRep::
+    static KW<unsigned short, DataEnvironmentRep> UShde[] = { 
+      // must be sorted by string (key)
+        {"tabular_format", P tabularFormat}};
+    #undef P
+
+    KW<unsigned short, DataEnvironmentRep> *kw;
+    if ((kw = (KW<unsigned short, DataEnvironmentRep>*)Binsearch(UShde, L)))
+	return dbRep->environmentSpec.dataEnvRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "method."))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::

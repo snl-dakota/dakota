@@ -337,7 +337,12 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     RealMatrix the_data;
     // BMA TODO: allow active only on point import?
     // approxImportActiveOnly
-    TabularIO::read_data_tabular(approxImportFile,"GPMSA input points",the_data,num_simulations,(numUncertainVars+numFunctions),approxImportAnnotated,verbose); 
+    unsigned short tabular_format = 
+      approxImportAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
+    TabularIO::
+      read_data_tabular(approxImportFile, "GPMSA input points", the_data,
+			num_simulations, (numUncertainVars+numFunctions),
+			tabular_format, verbose); 
     RealVector temp_resp(numFunctions);
     for (i = 0; i < num_simulations; ++i) {
       for (j=0; j<(numUncertainVars);++j){

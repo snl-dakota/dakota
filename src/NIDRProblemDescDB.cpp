@@ -362,6 +362,11 @@ Resp_mp_lit {
 //  const char *lit;
 //};
 
+struct Env_mp_utype {
+  unsigned short DataEnvironmentRep::* sp;
+  unsigned short utype;
+};
+
 enum { // kinds of continuous aleatory uncertain variables
   CAUVar_normal = 0,
   CAUVar_lognormal = 1,
@@ -1855,6 +1860,22 @@ void NIDRProblemDescDB::
 env_str(const char *keyname, Values *val, void **g, void *v)
 {
   (*(DataEnvironmentRep**)g)->**(String DataEnvironmentRep::**)v = *val->s;
+}
+
+/// set a value for an unsigned short type
+void NIDRProblemDescDB::
+env_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(DataEnvironmentRep**)g)->*((Env_mp_utype*)v)->sp = 
+    ((Env_mp_utype*)v)->utype;
+}
+
+/// augment an unsigned short type with |=
+void NIDRProblemDescDB::
+env_augment_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(DataEnvironmentRep**)g)->*((Env_mp_utype*)v)->sp |= 
+    ((Env_mp_utype*)v)->utype;
 }
 
 void NIDRProblemDescDB::
@@ -7065,11 +7086,20 @@ static size_t
 #undef MP2
 #undef MP_
 
+// Macros for Environment
+
 #define MP_(x) DataEnvironmentRep::* env_mp_##x = &DataEnvironmentRep::x
-//#define MP2(x,y) env_mp_##x##_##y = {&DataEnvironmentRep::x,#y}
+#define MP2s(x,y) env_mp_##x##_##y = {&DataEnvironmentRep::x,y}
 
 //static Env_mp_lit
 //      MP2(,);
+
+static Env_mp_utype
+        MP2s(tabularFormat,TABULAR_NONE),
+        MP2s(tabularFormat,TABULAR_HEADER),
+        MP2s(tabularFormat,TABULAR_EVAL_ID),
+        MP2s(tabularFormat,TABULAR_IFACE_ID),
+        MP2s(tabularFormat,TABULAR_ANNOTATED);
 
 static String
         MP_(errorFile),
@@ -7086,9 +7116,6 @@ static String
         MP_(topMethodPointer),
         MP_(writeRestart);
 
-static StringArray
-        MP_(tabularOptions);
-
 static bool
 	MP_(checkFlag),
 	MP_(graphicsFlag),
@@ -7103,6 +7130,7 @@ static int
         MP_(stopRestart);
 
 //#undef MP2
+#undef MP2s
 #undef MP_
 
 #define MP_(x) DataVariablesRep::* var_mp_##x = &DataVariablesRep::x

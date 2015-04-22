@@ -59,6 +59,22 @@ class SharedVariablesData;
 namespace TabularIO {
 
 //
+//- Utilities for status messages
+//
+
+/// Translate tabular_format into a user-friendly name
+String format_name(unsigned short tabular_format);
+
+/// Describe the expected data file format based on passed parameters
+void print_expected_format(std::ostream& s, unsigned short tabular_format, 
+			   size_t num_rows, size_t num_cols);
+
+/// Print a warning if there's extra data in the file
+void print_unexpected_data(std::ostream& s, const String& filename,
+			   const String& context_message, 
+			   unsigned short tabular_format);
+
+//
 //- Utilities for opening tabular files
 //
 
@@ -83,11 +99,13 @@ void open_file(std::ofstream& data_file, const std::string& output_filename,
 /// surrogate approx evals
 void write_header_tabular(std::ostream& tabular_ostream, 
 			  const Variables& vars, const Response& response,
-			  const std::string& counter_label);
+			  const std::string& counter_label,
+			  unsigned short tabular_format);
 
 /// Write the leading column with eval ID and conditionally, the interface ID
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
-			   const String& iface_id);
+			   const String& iface_id, 
+			   unsigned short tabular_format);
 
 /// Output a row of tabular data from variables and response object
 /// used by graphics to append to tabular file during iteration.  All
@@ -97,7 +115,7 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 void write_data_tabular(std::ostream& tabular_ostream, 
 			const Variables& vars, const String& iface, 
 			const Response& response, size_t counter,
-			bool annotated);
+			unsigned short tabular_format);
 
 /// PCE export: write freeform format file with whitespace-separated
 /// data where each row has num_fns reals from coeffs, followed
@@ -116,10 +134,12 @@ void write_data_tabular(const std::string& output_filename,
 bool exists_extra_data(std::istream& tabular_file);
 
 /// read and discard header line from the stream
-void read_header_tabular(std::istream& input_stream, bool annotated);
+void read_header_tabular(std::istream& input_stream, 
+			 unsigned short tabular_format);
 
 /// read leading columns [ int eval_id [ String iface_id ] ]
-size_t read_leading_columns(std::istream& input_stream, bool annotated);
+size_t read_leading_columns(std::istream& input_stream,
+			    unsigned short tabular_format);
 
 
 // TODO: The following need review, rework, and consolidation
@@ -134,7 +154,7 @@ size_t read_leading_columns(std::istream& input_stream, bool annotated);
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealVector& input_data, size_t num_entries,
-		       bool annotated);
+		       unsigned short tabular_format);
 
 /// read possibly header-annotated whitespace-separated data of
 /// Variables, followed by num_fns, into a dynamic vector with minimal
@@ -142,7 +162,8 @@ void read_data_tabular(const std::string& input_filename,
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
-		       RealArray& input_vector, bool annotated, bool active_only);
+		       RealArray& input_vector, unsigned short tabular_format,
+		       bool active_only);
 
 
 /// PCE import: read possibly header-annotated whitespace-separated
@@ -153,7 +174,8 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       RealVectorArray& input_coeffs, 
 		       UShort2DArray& input_indices, 
-		       bool annotated, size_t num_vars, size_t num_fns);
+		       unsigned short tabular_format,
+		       size_t num_vars, size_t num_fns);
 
 //
 // Uses: DataFitSurrModel (highly specialized)
@@ -165,7 +187,7 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, Response resp,
 		       VariablesList& input_vars, ResponseList& input_resp,
-		       bool annotated,
+		       unsigned short tabular_format,
 		       bool verbose=false,
 		       bool active_only=false);
 
@@ -181,9 +203,8 @@ void read_data_tabular(const std::string& input_filename,
 		       RealMatrix& input_matrix, 
 		       size_t num_rows,
 		       size_t num_cols,
-		       bool annotated,
-		       bool verbose=false
-		       );
+		       unsigned short tabular_format,
+		       bool verbose=false);
 
 /// read specified input data file into arrays with sizes specified
 /// by the passed vc_totals array; used in ParamStudy
@@ -191,7 +212,8 @@ size_t read_data_tabular(const std::string& input_filename,
 			 const std::string& context_message,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 bool annotated, bool active_only, Variables vars);
+			 unsigned short tabular_format,
+			 bool active_only, Variables vars);
 
 } // namespace TabularIO
 

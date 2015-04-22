@@ -318,6 +318,9 @@ private:
   // For tabular output
   // -----
 
+  /// tabular format options; see enum
+  unsigned short tabularFormat;
+
   /// used for x axis values in 2D graphics and for 1st column in tabular data
   int graphicsCntr;
 

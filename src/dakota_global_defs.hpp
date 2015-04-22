@@ -104,11 +104,10 @@ extern std::ostream* dakota_cerr;
 extern int write_precision;
 
 /// options for tabular columns
-enum { TABULAR_NONE = 0, TABULAR_EVAL_ID = 1, TABULAR_IFACE_ID = 2}; 
-// TABULAR_VARS = 4, TABULAR_RESP = 8
-
-/// active tabular output columns
-extern unsigned short TABULAR_OPTIONS;
+enum { TABULAR_NONE = 0, TABULAR_HEADER = 1, 
+       TABULAR_EVAL_ID = 2, TABULAR_IFACE_ID = 4,
+       // default is fully annotated as of Dakota 6.1
+       TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
 
 #ifdef DAKOTA_MODELCENTER
 extern int mc_ptr_int;

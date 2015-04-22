@@ -490,11 +490,13 @@ load_distribute_points(const String& points_filename, bool annotated,
  
   // TODO: validate the read values of inactive variables
 
+  unsigned short tabular_format = annotated ? TABULAR_ANNOTATED : TABULAR_NONE;
   // Could read into these dynamically or into a temporary and then allocate
   numEvals = TabularIO::
     read_data_tabular(points_filename, "List Parameter Study", 
 		      listCVPoints, listDIVPoints, listDSVPoints, listDRVPoints,
-		      annotated, active_only, iteratedModel.current_variables().copy());
+		      tabular_format, active_only, 
+		      iteratedModel.current_variables().copy());
   if (numEvals == 0) err = true;
 
 

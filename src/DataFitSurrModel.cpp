@@ -1594,9 +1594,10 @@ void DataFitSurrModel::import_points(bool annotated, bool active_only)
   bool verbose = (outputLevel > NORMAL_OUTPUT);
 
   // Deep copy of variables/response so data in model isn't changed during read
+  unsigned short tabular_format = annotated ? TABULAR_ANNOTATED : TABULAR_NONE;
   TabularIO::read_data_tabular(importPointsFile, 
 			       "DataFitSurrModel samples file", vars, resp,
-			       reuseFileVars, reuseFileResponses, annotated, 
+			       reuseFileVars, reuseFileResponses, tabular_format,
 			       verbose, active_only);
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -1615,7 +1616,7 @@ void DataFitSurrModel::initialize_export()
 		       "DataFitSurrModel export");
   if (exportAnnotated)
     TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				    currentResponse, "eval_id");
+				    currentResponse, "eval_id", TABULAR_ANNOTATED);
 }
 
 
@@ -1653,6 +1654,9 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
   if (exportPointsFile.empty())
     return;
 
+  unsigned short tabular_format = 
+    exportAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
+
   if (manageRecasting) {
     // create vars envelope & resp handle to manage the instances to be exported
     Variables export_vars(vars); Response export_resp(resp); // shallow copies
@@ -1678,11 +1682,11 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
       }
 
     TabularIO::write_data_tabular(exportFileStream, export_vars, interface_id(),
-				  export_resp, eval_id, exportAnnotated);
+				  export_resp, eval_id, tabular_format);
   }
   else
     TabularIO::write_data_tabular(exportFileStream, vars, interface_id(), resp, 
-				  eval_id, exportAnnotated);
+				  eval_id, tabular_format);
 }
 
 

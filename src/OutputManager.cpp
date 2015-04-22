@@ -43,6 +43,7 @@ OutputManager::OutputManager():
   redirCalled(false), 
   coutRedirector(dakota_cout, &std::cout), 
   cerrRedirector(dakota_cerr, &std::cerr),
+  tabularFormat(TABULAR_ANNOTATED),
   graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }
 
@@ -114,6 +115,7 @@ void OutputManager::parse(const ProblemDescDB& problem_db)
   tabularDataFile = problem_db.get_string("environment.tabular_graphics_file");
   resultsOutputFlag = problem_db.get_bool("environment.results_output");
   resultsOutputFile = problem_db.get_string("environment.results_output_file");
+  tabularFormat = problem_db.get_ushort("environment.tabular_format");
 
   int db_write_precision = problem_db.get_int("environment.output_precision");
   if (db_write_precision > 0) {  // assign global write_precision
@@ -124,31 +126,6 @@ void OutputManager::parse(const ProblemDescDB& problem_db)
     }
     else
       write_precision = db_write_precision;
-  }
-
-  const StringArray db_tabular_opts = 
-    problem_db.get_sa("environment.tabular_options");
-  if (!db_tabular_opts.empty()) {
-    // setup valid options for tabular files
-    std::map<String, unsigned short> tab_opts;
-    tab_opts["eval_id"] = TABULAR_EVAL_ID;
-    tab_opts["interface"] = TABULAR_IFACE_ID;
-    // iterate user-provided options
-    bool found_error = false;
-    TABULAR_OPTIONS = TABULAR_NONE;
-    BOOST_FOREACH(const String& user_opt, db_tabular_opts) {
-      std::map<String, unsigned short>::const_iterator 
-	tab_opts_it = tab_opts.find(user_opt);
-      if (tab_opts_it == tab_opts.end()) {
-	Cerr << "\nError: unknown tabular option '" << user_opt << "'\n";
-	found_error = true;
-      }
-      else
-	TABULAR_OPTIONS |= tab_opts_it->second;
-    }
-    if (found_error) 
-      abort_handler(PARSE_ERROR);
-    Cout << "Using tabular_options:\n" << db_tabular_opts << std::endl;
   }
 }
 
@@ -313,7 +290,8 @@ create_tabular_datastream(const Variables& vars, const Response& response)
 
   // tabular graphics data only supports annotated format, active AND inactive
   // TODO: only write header if newly opened?
-  TabularIO::write_header_tabular(tabularDataFStream, vars, response, "eval_id");
+  TabularIO::write_header_tabular(tabularDataFStream, vars, response, "eval_id",
+				  tabularFormat);
 }
 
 
@@ -357,7 +335,7 @@ add_datapoint(const Variables& vars, const String& iface,
     // Iterator outputs, the counter may not be that from an interface
 
     TabularIO::write_data_tabular(tabularDataFStream, vars, iface, response,
-     				  graphicsCntr, true);
+     				  graphicsCntr, tabularFormat);
   }
 
   // Only increment the graphics counter if posting data (incrementing on every

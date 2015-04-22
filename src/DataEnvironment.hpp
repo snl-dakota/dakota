@@ -80,8 +80,8 @@ public:
   /// the filename used for tabular data collection by the environment (from
   /// the tabular_graphics_file specification in \ref EnvIndControl)
   String tabularDataFile;
-  /// options for columns in tabular data files
-  StringArray tabularOptions;
+  /// format for tabular data files (see enum)
+  unsigned short tabularFormat;
 
   /// output precision for tabular and screen output
   int outputPrecision;

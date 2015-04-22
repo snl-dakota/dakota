@@ -21,7 +21,12 @@ TAG "environment/graphics"
 
 TAG "environment/tabular_data"
 TAG "environment/tabular_data/tabular_data_file"
-TAG "environment/tabular_options"
+TAG "environment/tabular_data/annotated"
+TAG "environment/tabular_data/custom_annotated"
+TAG "environment/tabular_data/custom_annotated/header"
+TAG "environment/tabular_data/custom_annotated/eval_id"
+TAG "environment/tabular_data/custom_annotated/interface_id"
+TAG "environment/tabular_data/freeform"
 TAG "environment/output_precision"
 	DESC "{Numeric output precision} EnvCommands.html#EnvOutput"
 

@@ -51,8 +51,9 @@ void ParamResponsePair::write_annotated(std::ostream& s) const
 
 void ParamResponsePair::write_tabular(std::ostream& s) const
 {
+  // BMA TODO: pass format option...
   TabularIO::
-    write_leading_columns(s, evalInterfaceIds.first, evalInterfaceIds.second);
+    write_leading_columns(s, evalInterfaceIds.first, evalInterfaceIds.second, TABULAR_ANNOTATED);
   // write variables in input spec order
   prpVariables.write_tabular(s);
   prpResponse.write_tabular(s);
@@ -63,8 +64,9 @@ void ParamResponsePair::write_tabular(std::ostream& s) const
     Variables and Response write_tabular_labels... */
 void ParamResponsePair::write_tabular_labels(std::ostream& s) const
 {
+  // BMA TODO: pass format option...
   TabularIO::
-    write_header_tabular(s, prpVariables, prpResponse, "eval_id");
+    write_header_tabular(s, prpVariables, prpResponse, "eval_id", TABULAR_ANNOTATED);
 }
 
 

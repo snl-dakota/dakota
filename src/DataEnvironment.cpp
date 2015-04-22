@@ -23,7 +23,8 @@ DataEnvironmentRep::DataEnvironmentRep():
   checkFlag(false), stopRestart(0), 
   preRunFlag(false), runFlag(false), postRunFlag(false),
   graphicsFlag(false), tabularDataFlag(false), 
-  tabularDataFile("dakota_tabular.dat"), outputPrecision(0), 
+  tabularDataFile("dakota_tabular.dat"), tabularFormat(TABULAR_ANNOTATED), 
+  outputPrecision(0), 
   resultsOutputFlag(false), resultsOutputFile("dakota_results.txt"), 
   referenceCount(1)
 { }
@@ -35,7 +36,7 @@ void DataEnvironmentRep::write(MPIPackBuffer& s) const
     << outputFile << errorFile << readRestart << stopRestart << writeRestart
     << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
     << runInput << runOutput << postRunInput << postRunOutput
-    << graphicsFlag << tabularDataFlag << tabularDataFile << tabularOptions 
+    << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }
@@ -47,7 +48,7 @@ void DataEnvironmentRep::read(MPIUnpackBuffer& s)
     >> outputFile >> errorFile >> readRestart >> stopRestart >> writeRestart
     >> preRunFlag >> runFlag >> postRunFlag >> preRunInput >> preRunOutput
     >> runInput >> runOutput >> postRunInput >> postRunOutput
-    >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> tabularOptions 
+    >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> tabularFormat 
     >> outputPrecision
     >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
 }
@@ -59,7 +60,7 @@ void DataEnvironmentRep::write(std::ostream& s) const
     << outputFile << errorFile << readRestart << stopRestart << writeRestart
     << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
     << runInput << runOutput << postRunInput << postRunOutput
-    << graphicsFlag << tabularDataFlag << tabularDataFile << tabularOptions 
+    << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
 }

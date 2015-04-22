@@ -21,8 +21,20 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ graphics {N_stm(true,graphicsFlag)} ]
   [ tabular_data ALIAS tabular_graphics_data {N_stm(true,tabularDataFlag)}
     [ tabular_data_file ALIAS tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
+    [ 
+      annotated {N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}
+      |
+      ( 
+        ( custom_annotated {N_stm(utype,tabularFormat_TABULAR_NONE)}
+          [ header {N_stm(augment_utype,tabularFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)} ]
+         )
+       )
+      |
+      freeform {N_stm(utype,tabularFormat_TABULAR_NONE)}
+     ]
    ]
-  [ tabular_options STRINGLIST {N_stm(strL,tabularOptions)} ]
   [ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
   [ results_output {N_stm(true,resultsOutputFlag)}
     [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]

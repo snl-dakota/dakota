@@ -828,10 +828,12 @@ void ApproximationInterface::read_challenge_points(bool active_only)
   size_t num_cols = num_vars + num_fns;
 
   // use a Variables object to easily read active vs. all
+  unsigned short tabular_format = 
+    challengeAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
   RealArray pts_array;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
 			       actualModelVars.copy(), num_fns, pts_array, 
-			       challengeAnnotated, challengeActiveOnly);
+			       tabular_format, challengeActiveOnly);
   
   // translate to the matrix, using real vector only for convenience
   size_t num_points = pts_array.size()/num_cols;

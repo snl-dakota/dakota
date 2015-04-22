@@ -51,9 +51,20 @@
           <alias name="tabular_graphics_file"/>
           <param type="OUTPUT_FILE" />
         </keyword>
-      </keyword>
-      <keyword id="tabular_options" name="tabular_options" code="{N_stm(strL,tabularOptions)}" label="tabular_options" help="" minOccurs="0" >
-	<param type="STRINGLIST" />
+        <optional>
+          <oneOf>
+            <keyword  id="annotated" name="annotated" code="{N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  />
+	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+	    <required>
+              <keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		<keyword  id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		<keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		<keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+	      </keyword>
+	    </required>
+            <keyword  id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="freeform" help=""  />
+          </oneOf>
+        </optional>
       </keyword>
       <keyword  id="output_precision" name="output_precision" code="{N_stm(int,outputPrecision)}" label="Numeric output precision" help="EnvCommands.html#EnvOutput" minOccurs="0" >
         <param type="INTEGER" constraint=">= 0" />

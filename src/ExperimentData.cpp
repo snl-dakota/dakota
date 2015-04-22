@@ -209,7 +209,9 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     }
     TabularIO::open_file(scalar_data_stream, scalarDataFilename, 
 			 context_message);
-    TabularIO::read_header_tabular(scalar_data_stream, scalarDataAnnotated);
+    unsigned short tabular_format = 
+      scalarDataAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
+    TabularIO::read_header_tabular(scalar_data_stream, tabular_format);
   }
 
   if (!scalar_data_file) { 

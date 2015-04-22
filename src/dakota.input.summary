@@ -21,8 +21,16 @@ KEYWORD01 environment
 	[ graphics ]
 	[ tabular_data ALIAS tabular_graphics_data
 	  [ tabular_data_file ALIAS tabular_graphics_file STRING ]
+	  [ annotated
+	  |
+	  ( custom_annotated
+	    [ header ]
+	    [ eval_id ]
+	    [ interface_id ]
+	    ]
+	  |
+	  ( freeform
 	  ]
-	[ tabular_options STRINGLIST ]
 	[ output_precision INTEGER >= 0 ]
 	[ results_output
 	  [ results_output_file STRING ]

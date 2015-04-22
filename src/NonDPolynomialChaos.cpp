@@ -600,8 +600,9 @@ void NonDPolynomialChaos::compute_expansion()
     // Annotation provides questionable value in this context & is off for now.
     RealVectorArray coeffs_array(numFunctions); UShort2DArray multi_index;
     String context("polynomial chaos expansion import file");
+    unsigned short tabular_format = TABULAR_NONE;
     TabularIO::read_data_tabular(expansionImportFile, context, coeffs_array,
-				 multi_index, false, numContinuousVars,
+				 multi_index, tabular_format, numContinuousVars,
 				 numFunctions);
 
     // post the shared data
@@ -785,7 +786,7 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
       = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
     String context("polynomial chaos expansion export file");
     TabularIO::write_data_tabular(expansionExportFile, context, coeffs_array,
-				  data_rep->multi_index());//, false);
+				  data_rep->multi_index());
   }
 }
 

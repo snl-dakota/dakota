@@ -17,6 +17,48 @@ namespace Dakota {
 // protecting certain components
 namespace TabularIO {
 
+String format_name(unsigned short tabular_format)
+{
+  String file_format("annotated");
+  if (tabular_format == TABULAR_NONE)
+    file_format = "freeform";
+  else if (tabular_format < TABULAR_ANNOTATED)
+    file_format = "custom_annotated";
+
+  return file_format;
+}
+
+void print_expected_format(std::ostream& s, unsigned short tabular_format, 
+			   size_t num_rows, size_t num_cols)
+{
+  s << "\nExpected " << format_name(tabular_format) << " tabular file:";
+  if (tabular_format > TABULAR_NONE) {
+    if (tabular_format & TABULAR_HEADER) 
+      s << "\n  * header row with labels";
+    if (tabular_format & TABULAR_EVAL_ID)
+      s << "\n  * leading column with counter";
+    if (tabular_format & TABULAR_IFACE_ID)
+      s << "\n  * leading column with interface ID";
+    s << "\nsurrounding ";
+  }
+  else 
+    s << '\n';
+  s << "whitespace-separated data";
+  if (num_rows > 0)
+    s << "; " << num_rows << " rows";
+  if (num_cols > 0)
+    s << "; " << num_rows << " columns";
+  s << std::endl;
+}
+
+void print_unexpected_data(std::ostream& s, const String& filename,
+			   const String& context_message, 
+			   unsigned short tabular_format)
+{
+  s << "\nWarning (" << context_message << "): found unexpected extra data in "
+    << format_name(tabular_format) << "\nfile " << filename << "." << std::endl; 
+}
+
 
 //
 //- Utilities for opening tabular files
@@ -58,31 +100,36 @@ void open_file(std::ofstream& data_file, const std::string& output_filename,
 
 void write_header_tabular(std::ostream& tabular_ostream, 
 			  const Variables& vars, const Response& response,
-			  const std::string& counter_label)
+			  const std::string& counter_label,
+			  unsigned short tabular_format)
 {
+  if ( !(tabular_format & TABULAR_HEADER) )
+    return;
+
   // headers use Matlab comment syntax
-  if (TABULAR_OPTIONS & TABULAR_EVAL_ID)
-    tabular_ostream << "%" << counter_label << ' ';
-  if (TABULAR_OPTIONS & TABULAR_IFACE_ID) {
-    if (!(TABULAR_OPTIONS & TABULAR_EVAL_ID))
-      tabular_ostream << "%";
+  tabular_ostream << "%";
+
+  if (tabular_format & TABULAR_EVAL_ID)
+    tabular_ostream << counter_label << ' ';
+  if (tabular_format & TABULAR_IFACE_ID)
     tabular_ostream << "interface ";
-  }
   vars.write_tabular_labels(tabular_ostream);
   response.write_tabular_labels(tabular_ostream);
 }
 
 
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
-			   const String& iface_id)
+			   const String& iface_id,
+			   unsigned short tabular_format)
 {
-  if (TABULAR_OPTIONS & TABULAR_EVAL_ID) {
+  // conditionally write evaluation ID and/or interface ID
+  if (tabular_format & TABULAR_EVAL_ID) {
     // align left to make eval_id consistent with whitespace-delimited header row
     std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
     tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
     tabular_ostream.flags(before_left_align);
   }
-  if (TABULAR_OPTIONS & TABULAR_IFACE_ID) {
+  if (tabular_format & TABULAR_IFACE_ID) {
     // write the interface ID string, NO_ID for empty
     // (Dakota 6.1 used EMPTY for missing ID)
     if (iface_id.empty())
@@ -96,11 +143,9 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 void write_data_tabular(std::ostream& tabular_ostream, 
 			const Variables& vars, const String& iface_id, 
 			const Response& response, size_t counter,
-			bool annotated)
+			unsigned short tabular_format)
 {
-  // write evaluation ID and interface ID
-  if (annotated)
-    write_leading_columns(tabular_ostream, counter, iface_id);
+  write_leading_columns(tabular_ostream, counter, iface_id, tabular_format);
   vars.write_tabular(tabular_ostream);
   response.write_tabular(tabular_ostream);
 }
@@ -164,9 +209,11 @@ void write_data_tabular(const std::string& output_filename,
 
 /** Discard header row from tabular file; alternate could read into a
     string array.  Requires header to be delimited by a newline. */
-void read_header_tabular(std::istream& input_stream, bool annotated)
+void read_header_tabular(std::istream& input_stream,
+			 unsigned short tabular_format)
 {
-  if (annotated) {
+  if (tabular_format & TABULAR_HEADER) {
+    input_stream >> std::ws;
     String discard_labels;
     getline(input_stream, discard_labels);
   }
@@ -174,19 +221,18 @@ void read_header_tabular(std::istream& input_stream, bool annotated)
 
 
 /**  for now we discard the interface data; later will return for validation */
-size_t read_leading_columns(std::istream& input_stream, bool annotated)
+size_t read_leading_columns(std::istream& input_stream,
+			    unsigned short tabular_format)
 {
   size_t row_label = _NPOS;
-  if (annotated) {
-    if (TABULAR_OPTIONS & TABULAR_EVAL_ID)
-      input_stream >> row_label;
-    if (TABULAR_OPTIONS & TABULAR_IFACE_ID) {
-      String iface_id;
-      input_stream >> iface_id;
-      // (Dakota 6.1 used EMPTY for missing ID)
-      if (iface_id == "NO_ID" || iface_id == "EMPTY")
-	iface_id.clear();
-    }
+  if (tabular_format & TABULAR_EVAL_ID)
+    input_stream >> row_label;
+  if (tabular_format & TABULAR_IFACE_ID) {
+    String iface_id;
+    input_stream >> iface_id;
+    // (Dakota 6.1 used EMPTY for missing ID)
+    if (iface_id == "NO_ID" || iface_id == "EMPTY")
+      iface_id.clear();
   }
   // else no-op
   return row_label;
@@ -215,24 +261,21 @@ bool exists_extra_data(std::istream& input_stream)
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealVector& input_vector, size_t num_entries,
-		       bool annotated)
+		       unsigned short tabular_format)
 {
   // TODO: handle both row and col vectors in the text?
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
-
-  if (annotated) {
-    input_stream >> std::ws;
-    read_header_tabular(input_stream, annotated);
-  }
+  
+  read_header_tabular(input_stream, tabular_format);
 
   input_vector.resize(num_entries);
   try {
-    if (annotated) {
+    if (tabular_format & TABULAR_EVAL_ID || tabular_format & TABULAR_IFACE_ID) {
       for (size_t row_ind = 0; row_ind < num_entries; ++row_ind) {
 	input_stream >> std::ws;
 	// discard the leading cols (typically eval or data ID, iface ID)
-	read_leading_columns(input_stream, annotated);
+	read_leading_columns(input_stream, tabular_format);
 	input_stream >> input_vector[row_ind];
       } 
     } else {
@@ -242,37 +285,23 @@ void read_data_tabular(const std::string& input_filename,
     }
   }
   catch (const std::ios_base::failure& failorbad_except) {
-    Cout << "\nError (" << context_message << "): could not read file.";
-    if (annotated) {
-      Cout << "\nExpected header-annotated tabular file:"
-	   << "\n  * header row with labels and " << num_entries << " data rows"
-	   << "\n  * leading column with counter and 1 data column";
-    }
-    else {
-      Cout << "\nExpected free-form tabular file: no leading row nor column; "
-	   << num_entries << " whitespace-separated numeric data.";
-    }
-    Cout << std::endl;
+    Cerr << "\nError (" << context_message << "): could not read file.";
+    print_expected_format(Cerr, tabular_format, num_entries, 1);
     abort_handler(-1);
   }
 
-  if (exists_extra_data(input_stream)) { 
-    Cout << "\nWarning (" << context_message << "): "
-	 << "found unexpected extra data in " 
-	 << (annotated ? "header-annotated" : "free-form")
-	 << "\nfile " << input_filename << "." << std::endl; 
-  }
-
+  if (exists_extra_data(input_stream))
+    print_unexpected_data(Cout, input_filename, context_message, tabular_format);
 }
 
 
 
-  // BMA TODO: use a helper to read each line.
-  // BMA TODO: what to do about discrete vars, esp string?
+// BMA TODO: use a helper to read each line.
+// BMA TODO: what to do about discrete vars, esp string?
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
-		       RealArray& input_vector, bool annotated,
+		       RealArray& input_vector, unsigned short tabular_format,
 		       bool active_only)
 {
   std::ifstream input_stream;
@@ -284,16 +313,13 @@ void read_data_tabular(const std::string& input_filename,
   //  input_vector.resize(num_rows);
   try {
 
-    if (annotated) {
-      input_stream >> std::ws;
-      read_header_tabular(input_stream, annotated);
-    }
+    read_header_tabular(input_stream, tabular_format);
 
     input_stream >> std::ws;
     while (input_stream.good() && !input_stream.eof()) {
 
       // discard any leading columns
-      read_leading_columns(input_stream, annotated);
+      read_leading_columns(input_stream, tabular_format);
 
       // use a variables object because it knows how to read active vs. all
       vars.read_tabular(input_stream, active_only);
@@ -317,16 +343,7 @@ void read_data_tabular(const std::string& input_filename,
   catch (const std::ios_base::failure& failorbad_except) {
     Cerr << "\nError (" << context_message << "): could not read file " 
 	 << input_filename << ".";
-    if (annotated) {
-      Cout << "\nExpected header-annotated tabular file:"
-	   << "\n  * header row with labels "
-	   << "\n  * leading column with counter and " << num_vars << " data columns";
-    }
-    else {
-      Cout << "\nExpected free-form tabular file: no leading row nor column; "
-	   << num_vars << " columns of whitespace-separated numeric data.";
-    }
-    Cout << std::endl;
+    print_expected_format(Cerr, tabular_format, 0, num_vars);
     abort_handler(-1);
   }
   catch (const TabularDataTruncated& tdtrunc) {
@@ -349,7 +366,8 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       RealVectorArray& input_coeffs, 
 		       UShort2DArray& input_indices, 
-		       bool annotated, size_t num_vars, size_t num_fns)
+		       unsigned short tabular_format,
+		       size_t num_vars, size_t num_fns)
 {
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
@@ -362,16 +380,13 @@ void read_data_tabular(const std::string& input_filename,
 
   try {
 
-    if (annotated) {
-      input_stream >> std::ws;
-      read_header_tabular(input_stream, annotated);
-    }
+    read_header_tabular(input_stream, tabular_format);
 
     input_stream >> std::ws;
     while (input_stream.good() && !input_stream.eof()) {
 
       // discard any leading columns; annotated is unlikely in this case
-      read_leading_columns(input_stream, annotated);
+      read_leading_columns(input_stream, tabular_format);
 
       // read the (required) coefficients of length num_fns
       RealArray read_coeffs(num_fns, std::numeric_limits<double>::quiet_NaN());
@@ -401,17 +416,7 @@ void read_data_tabular(const std::string& input_filename,
   catch (const std::ios_base::failure& failorbad_except) {
     Cerr << "\nError (" << context_message << "): could not read file " 
 	 << input_filename << ".";
-    if (annotated) {
-      Cout << "\nExpected header-annotated tabular file:"
-	   << "\n  * header row with labels "
-	   << "\n  * leading column with counter and " << num_vars 
-	   << " data columns";
-    }
-    else {
-      Cout << "\nExpected free-form tabular file: no leading row nor column; "
-	   << num_vars << " columns of whitespace-separated numeric data.";
-    }
-    Cout << std::endl;
+    print_expected_format(Cerr, tabular_format, 0, num_vars);
     abort_handler(-1);
   }
   catch(...) {
@@ -439,24 +444,20 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, Response resp,
 		       VariablesList& input_vars, ResponseList& input_resp,
-		       bool annotated,
-		       bool verbose, bool active_only
-		       )
+		       unsigned short tabular_format,
+		       bool verbose, bool active_only)
 {
   std::ifstream data_file;
   open_file(data_file, input_filename, context_message);
 
-  if (annotated) {
-    data_file >> std::ws;
-    read_header_tabular(data_file, annotated);
-  }
+  read_header_tabular(data_file, tabular_format);
 
   // shouldn't need both good and eof checks
   data_file >> std::ws;
   while (data_file.good() && !data_file.eof()) {
     try {
       // discard the leading columns 
-      read_leading_columns(data_file, annotated);
+      read_leading_columns(data_file, tabular_format);
       vars.read_tabular(data_file, active_only);
       resp.read_tabular(data_file);
     }
@@ -489,7 +490,7 @@ void read_data_tabular(const std::string& input_filename,
 		       RealMatrix& input_matrix, 
 		       size_t num_rows,
 		       size_t num_cols,
-		       bool annotated,
+		       unsigned short tabular_format,
 		       bool verbose)
 {
   std::ifstream input_stream;
@@ -498,20 +499,17 @@ void read_data_tabular(const std::string& input_filename,
   if (verbose) {
     Cout << "\nAttempting to read " << num_rows << " x " << num_cols << " = "
 	 << num_rows*num_cols << " numeric data from " 
-	 << (annotated ? "header-annotated" : "free-form")
+	 << (tabular_format > TABULAR_NONE ? "header-annotated" : "free-form")
 	 << " file " << input_filename << "..." << std::endl;
   }
 
-  if (annotated) {
-    input_stream >> std::ws;
-    read_header_tabular(input_stream, annotated);
-  }
+  read_header_tabular(input_stream, tabular_format);
 
   input_matrix.shapeUninitialized(num_rows, num_cols);	
   for (size_t row_ind = 0; row_ind < num_rows; ++row_ind) {
     try {
       // experiment data would never have an interface ID
-      if (annotated) {
+      if (tabular_format & TABULAR_EVAL_ID) {
 	// discard the row label (typically eval or data ID)
 	size_t discard_row_label;
 	input_stream >> discard_row_label;
@@ -520,28 +518,14 @@ void read_data_tabular(const std::string& input_filename,
 	input_stream >> input_matrix(row_ind, col_ind);
     }
     catch (const std::ios_base::failure& failorbad_except) {
-      Cout << "\nError (" << context_message << "): could not read file.";
-      if (annotated) {
-	Cout << "\nExpected header-annotated tabular file:"
-	     << "\n  * header row with labels and " << num_rows << " data rows"
-	     << "\n  * leading column with counter and " << num_cols 
-	     << " data columns";
-      }
-      else {
-	Cout << "\nExpected free-form tabular file: no leading row nor column; "
-	     << num_rows*num_cols << " whitespace-separated numeric data.";
-      }
-      Cout << std::endl;
+      Cerr << "\nError (" << context_message << "): could not read file.";
+      print_expected_format(Cerr, tabular_format, num_rows, num_cols);
       abort_handler(-1);
     }
   }
 
-  if (exists_extra_data(input_stream)) { 
-    Cout << "\nWarning (" << context_message << "): "
-	 << "found unexpected extra data in " 
-	 << (annotated ? "header-annotated" : "free-form")
-	 << "\nfile " << input_filename << "." << std::endl; 
-  }
+  if (exists_extra_data(input_stream))
+    print_unexpected_data(Cout, input_filename, context_message, tabular_format);
 }
 
 
@@ -550,7 +534,8 @@ size_t read_data_tabular(const std::string& input_filename,
 			 const std::string& context_message,
 			 RealVectorArray& cva, IntVectorArray& diva, 
 			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 bool annotated, bool active_only, Variables vars)
+			 unsigned short tabular_format, 
+			 bool active_only, Variables vars)
 {
   size_t num_evals = 0, num_vars = vars.tv();
   // temporary dynamic container to read string variables
@@ -561,17 +546,12 @@ size_t read_data_tabular(const std::string& input_filename,
  
   try {
 
-    if (annotated) {
-      input_stream >> std::ws;
-      read_header_tabular(input_stream, annotated);
-    }
+    read_header_tabular(input_stream, tabular_format);
 
     input_stream >> std::ws;  // advance to next readable input
     while (input_stream.good() && !input_stream.eof()) {
-      if (annotated) {
-	// discard the row labels (typically eval and iface ID)
-	read_leading_columns(input_stream, annotated);
-      }
+      // discard the row labels (typically eval and iface ID)
+      read_leading_columns(input_stream, tabular_format);
 
       // read all or active, but set only the active variables into the lists
       vars.read_tabular(input_stream, active_only);
@@ -588,17 +568,7 @@ size_t read_data_tabular(const std::string& input_filename,
   catch (const std::ios_base::failure& failorbad_except) {
     Cerr << "\nError (" << context_message << "): could not read file " 
 	 << input_filename << ".";
-    if (annotated) {
-      Cout << "\nExpected header-annotated tabular file:"
-	   << "\n  * header row with labels "
-	   << "\n  * leading column with counter and " << num_vars 
-	   << " data columns";
-    }
-    else {
-      Cout << "\nExpected free-form tabular file: no leading row nor column; "
-	   << num_vars << " columns of whitespace-separated numeric data.";
-    }
-    Cout << std::endl;
+    print_expected_format(Cerr, tabular_format, 0, num_vars);
     abort_handler(-1);
   }
   catch (const TabularDataTruncated& tdtrunc) {

@@ -200,6 +200,8 @@ public:
   KWH(env_str);
   KWH(env_strL);
   KWH(env_true);
+  KWH(env_utype);
+  KWH(env_augment_utype);
 
   KWH(var_RealLb);
   KWH(var_RealUb);

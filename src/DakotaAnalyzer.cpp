@@ -654,7 +654,8 @@ void Analyzer::pre_output()
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel.current_variables(), 
 				  iteratedModel.current_response(),
-				  "eval_id");
+				  "eval_id",
+				  TABULAR_ANNOTATED);
 
   tabular_file << std::setprecision(write_precision) 
 	       << std::resetiosflags(std::ios::floatfield);
@@ -663,7 +664,8 @@ void Analyzer::pre_output()
   for (size_t eval_index = 0; eval_index < num_evals; eval_index++) {
 
     TabularIO::write_leading_columns(tabular_file, eval_index+1, 
-				     iteratedModel.interface_id());
+				     iteratedModel.interface_id(),
+				     TABULAR_ANNOTATED);
     if (compactMode) {
       // allSamples num_vars x num_evals, so each col becomes tabular file row
       // populate the active discrete variables that aren't in sample_matrix
@@ -712,17 +714,14 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   std::ifstream tabular_file;
   TabularIO::open_file(tabular_file, filename, "post-run input");
-  bool annotated = true;  // pre/post only supports annotated; could detect
+  // pre/post only supports annotated; could detect
+  unsigned short tabular_format = TABULAR_ANNOTATED;
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nAttempting to read " << num_evals << " samples from file "
 	 << filename << "..." << std::endl;
   
-  if (annotated) {
-    tabular_file >> std::ws;
-    // discard header with labels
-    TabularIO::read_header_tabular(tabular_file, annotated); 
-  }
+  TabularIO::read_header_tabular(tabular_file, tabular_format); 
 
   Variables vars;  // temporary container to use for read in compact case
   if (compactMode) {
@@ -742,8 +741,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
     try {
       tabular_file >> std::ws;
-      if (annotated) {
-	eval_id = TabularIO::read_leading_columns(tabular_file, annotated);
+      if (tabular_format & TABULAR_EVAL_ID) {
+	eval_id = TabularIO::read_leading_columns(tabular_file, tabular_format);
 	if (eval_id != cntr) {
 	  Cerr << "\nError in post-run input: unexpected eval_id from leading "
 	       << "column in file." << std::endl;
@@ -790,11 +789,9 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
       update_best(allVariables[i], i+1, allResponses[eval_id]);
   }
 
-  if (TabularIO::exists_extra_data(tabular_file)) { 
-    Cout << "\nWarning (post-run input): found unexpected extra data in " 
-	 << (annotated ? "header-annotated" : "free-form")
-	 << "\nfile " << filename << "." << std::endl; 
-  }
+  if (TabularIO::exists_extra_data(tabular_file))
+    TabularIO::print_unexpected_data(Cout, filename, "post-run input",
+				     tabular_format);
   
   tabular_file.close();
   if (outputLevel > QUIET_OUTPUT)
