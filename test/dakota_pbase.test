@@ -2866,19 +2866,19 @@ Test Number 29 succeeded
 <<<<< Best data captured at function evaluation 33
 dakota_cantilever_queso.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 1983 total (1983 new, 0 duplicate)
+<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8502378697e+07
-                      2.5030427991e+00
+                      2.8727141660e+07
+                      2.5002397601e+00
 <<<<< Best log posterior       =
-                     -3.1482189735e+01
+                     -3.0473907151e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 1996 total (1996 new, 0 duplicate)
+<<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8500000499e+07
-                      2.5024010733e+00
+                      2.8626895001e+07
+                      2.5014413312e+00
 <<<<< Best log posterior       =
-                     -3.1526195721e+01
+                     -3.0545204301e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1983 total (1983 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2887,12 +2887,12 @@ Test Number 2 succeeded
 <<<<< Best log posterior       =
                      -3.1482189735e+01
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 1996 total (1996 new, 0 duplicate)
+<<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8500000499e+07
-                      2.5024010733e+00
+                      2.8626895001e+07
+                      2.5014413312e+00
 <<<<< Best log posterior       =
-                     -3.1526195721e+01
+                     -3.0545204301e+01
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)

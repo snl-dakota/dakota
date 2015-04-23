@@ -1061,7 +1061,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
 
   // adaptive metropolis option:
   calIpMhOptionsValues->m_amInitialNonAdaptInterval
-    = (mcmcType == "adaptive_metropolis" || mcmcType == "dram") ? 1 : 0;
+    = (mcmcType == "adaptive_metropolis" || mcmcType == "dram") ? 100 : 0;
   calIpMhOptionsValues->m_amAdaptInterval           = 100;
   calIpMhOptionsValues->m_amEta                     = 2.88;
   calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
