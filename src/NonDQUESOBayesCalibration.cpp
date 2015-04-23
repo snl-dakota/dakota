@@ -112,7 +112,7 @@ double QuesoJointPdf<V,M>::
 actualValue(const V& domainVector, const V* domainDirection,
 	    V* gradVector, M* hessianMatrix, V* hessianEffect) const
 { return NonDQUESOInstance->prior_density(domainVector); }
-  
+
 template<class V,class M>
 double QuesoJointPdf<V,M>::
 lnValue(const V& domainVector, const V* domainDirection, 
@@ -229,10 +229,9 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Cout << "Read data from file " << calibrationDataFlag << '\n';
   if (calibrationDataFlag)
     expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
-  else {
-    Cout << "No experiment data from files " << '\n';
-    Cout << "QUESO is assuming the simulation is returning the residuals" << '\n';
-  }
+  else
+    Cout << "No experiment data from files\n"
+	 << "QUESO is assuming the simulation is returning the residuals\n";
   if (calibrateSigmaFlag && !calibrationDataFlag) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
          << "but have not provided experimental data information."<<std::endl;
