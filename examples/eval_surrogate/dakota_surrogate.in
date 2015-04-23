@@ -2,11 +2,11 @@
 # Build and evaluate a surrogate at a user-specified set of points
 
 # Top-level controls
-strategy
-  single_method
-    method_pointer = 'EvalSurrogate'
-  tabular_graphics_data
-    tabular_graphics_file = 'dak_surrogate_evals.dat'
+# strategy
+#  single_method
+#    method_pointer = 'EvalSurrogate'
+#  tabular_graphics_data
+#    tabular_graphics_file = 'dak_surrogate_evals.dat'
 
 
 # Method to perform evaluations of the surrogate model
@@ -102,4 +102,5 @@ interface,
   id_interface = 'SimulationInterface'
   fork
     analysis_driver = 'text_book'
-
+#    analysis_driver = 'rosenbrock'
+#    analysis_driver = 'herbie'

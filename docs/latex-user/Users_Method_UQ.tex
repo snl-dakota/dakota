@@ -1836,10 +1836,8 @@ reference manual.
 \subsection{Adaptive sampling based on dart throwing}\label{uq:adaptive:darts}
 \texttt{pof\_darts} is a novel method for estimating the probability of failure based on random sphere-packing. Random spheres are sampled from the domain with the constraint that each new sphere center has to be outside prior disks~\cite{Ebeida14}. The radius of each sphere is chosen such that the entire sphere lies either in the failure or the non-failure region. This radius depends of the function evaluation at the disk center, the failure threshold and an estimate of the function gradient at the disk center. 
 After exhausting the sampling budget specified by \texttt{samples}, which is the number of spheres per failure threshold, the domain is decomposed into two regions.  These regions correspond to failure and non-failure, each represented by the union of the spheres of each type. The volume of the union of failure spheres gives a lower bound on the required estimate of the probability of failure, while the volume of the union of the non-failure spheres subtracted from the volume of the domain gives an upper estimate. 
-After the sphere are constructed, we construct a surrogate model and sample the surrogate model extensively to estimate the probability of failure for each threshold. 
+After the spheres are constructed, we construct a surrogate model and sample the surrogate model extensively to estimate the probability of failure for each threshold. 
 %We currently report the average of both estimates.
-
-The surrogate model can either be a global surrogate (in this case, a Gaussian process model) or a local surrogate. The local surrogate method is a new piecewise surrogate model that we have developed.  It is called the \textbf{VPS} (Voronoi Piecewise Surrogate) Model.  The VPS model is used to construct high-dimensional surrogates fitting a few data points. This model has been recently added to Dakota as a local alternative to the global Gaussian process surrogate model, allowing the user to estimate a high-dimensional function value with cheap polynomial evaluations; see~\ref{models:surf:vps} for more details on the construction of VPS.
 
 \texttt{pof\_darts} handles multiple response functions and allows each to have multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will insert a number of spheres specified by the user-input parameter "samples". However, estimating the probability of failure for each failure threshold would utilize the total number of disks sampled for all failure thresholds. For each failure threshold, the sphere radii changes to generate the right spatial decomposition.
 
@@ -1847,9 +1845,10 @@ The POF-Darts method is specified by the method keyword
 \texttt{pof\_darts}. The sample budget is specified by \texttt{samples}.
 The user can either use a local or global approach to estimate the Lipschitz constant per sphere. 
 The local approach is specified with \texttt{lipschitz local} and the global approach with \texttt{lipschitz global}. 
-In terms of specifying which surrogate to use, the global surrogate is specified with \texttt{emulator gaussian\_process}
-and the VPS surrogate is specified with \texttt{emulator voronoi\_surrogate}. 
-The number of samples taken on the emulator to estimate the probability of failure is specified with \texttt{emulator\_samples}.
+
+The surrogate model used by the \texttt{pof\_darts} method for extensive sampling is typically a global surrogate that uses all available sample points to approximate the surrogate anywhere, or optionally a piecewise-decomposed one that uses small sample sets to build local patches of the global surrogate. The piecewise decomposition option is a new capability added to Dakota to help construct high-dimensional surrogates fitting a few data points with cheap polynomial evaluations. The piecewise decomposition option currently supports polynomial, Gaussian Process (GP), and Radial Basis Functions (RBF) surroagte models. It requires a \texttt{cell_type}, set by default to Voronoi cells, an optional number of \texttt{support_layers}, and an optional \texttt{discontinuity_detection} parameter; see~\ref{models:surf:piecewise_decomp} for more details.
+
+In terms of specifying which surrogate to use, for example: the GP global surrogate is specified with \texttt{emulator gaussian\_process}, and the piecewise decomposition option is specified with \texttt{piecewise_decomp}. The number of samples taken on the emulator to estimate the probability of failure is specified with \texttt{emulator\_samples}.
 
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
 

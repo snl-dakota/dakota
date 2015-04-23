@@ -163,7 +163,9 @@ MLS is a weighted least squares approach where the weighting is
 ``moved'' or recalculated for every new point where 
 a prediction is desired.~\cite{Nea04} 
 
-\textbf{Voronoi Piecewise Surrogate (VPS)}: VPS models provide a natural approach to decompose a high-dimensional domain using the implicit Voronoi tessellation around the known function evaluations as seeds. This decomposition enables low-order piecewise Least Squares polynomial approximation of the underlying function in each Voronoi cell, independently, using the function values at the seed and its neighbors. 
+\textbf{Piecewise Decomposition Option for Global Surrogates}: Typically, the previous regression techniques use all available sample points to approximate the underlying function anywhere in the domain. An alternative option is to use piecewise dcomposition to locally approximate the function at some point using a few sample points from its neighborhood. This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. It requires a decomposition cell type (currently set to be Voronoi cells), an optional number of support layers of neighbors, and optional discontinuity detection parameters (jump/gradient).   
+
+%VPS models provide a natural approach to decompose a high-dimensional domain using the implicit Voronoi tessellation around the known function evaluations as seeds. This decomposition enables low-order piecewise Least Squares polynomial approximation of the underlying function in each Voronoi cell, independently, using the function values at the seed and its neighbors. 
 
 %\textbf{Orthogonal Polynomials}: This technique involves the use of
 %multivariate orthogonal polynomials as a global basis for surrogate
@@ -521,6 +523,8 @@ parameter space, unless it is known a priori that the true data trends
 are close to linear, quadratic, or cubic. See~\cite{Mye95} for more
 information on polynomial models.
 
+This surrogate model is supoorted by the piecewise domain decomposition option, explained in~\ref{models:surf:piecewise_decomp}.
+
 \subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
 \label{models:surf:kriging}
 In the current release of Dakota, we have two versions of spatial interpolation 
@@ -754,6 +758,8 @@ models are as follows:
       correlation matrix.
 \end{itemize}
 
+This surrogate model is supoorted by the piecewise domain decomposition option, explained in~\ref{models:surf:piecewise_decomp}.
+
 \subsubsection{Artificial Neural Network (ANN) Models}\label{models:surf:ann}
 
 The ANN surface fitting method in Dakota employs a stochastic layered
@@ -845,6 +851,7 @@ function or splines are used.
 Our implementation uses a Gaussian radial basis function. 
 The weights are determined via a linear least squares solution approach.
 See~\cite{Orr96} for more details.
+This surrogate model is supoorted by the piecewise domain decomposition option, explained in~\ref{models:surf:piecewise_decomp}.
 
 \subsubsection{Moving Least Squares}\label{models:surf:mls}
 
@@ -872,32 +879,21 @@ in trust region methods where the surrogate model is constructed in
 a constrained region over a few points.  It does not appear to be working 
 as well globally, at least at this point in time.
 
+\subsubsection{Piecewise Decomposition Option for Global Surrogate Models}\label{models:surf:piecewise_decomp}
+Regression techniques typically use all available sample points to approximate the underlying function anywhere in the domain. An alternative option is to use piecewise dcomposition to locally approximate the function at some point using a few sample points from its neighborhood. This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. 
 
-\subsubsection{Voronoi Piecewise Surrogate (VPS) Models}\label{models:surf:vps}
+This option requires a decomposition cell type. A valid cell type is one where any point in the domain is assigned to some cell(s), and each cell identifies its neighbor cells. Currently, only Voronoi cells are supported. Each cell constructs its own piece of the global surrogate, using the function information at its seed and a few layers of its neighbors, parametrized by \texttt{support_layers}. It also supports an optional discontinuity detection capability \texttt{discontinuity_detection}, specified by either a jump threshold value \texttt{jump_threshold} or a gradient threshold one \texttt{gradient_threshold}. 
 
-Voronoi Piecewise Surrogate (VPS) is a new method to build high-dimensional surrogates and consequently solve UQ and optimization problem at the cheap price of a polynomial evaluation. Given a pointset $\{\mathbf{x}_i\}$ in $\mathbb{R}^{d}$, and their function evaluations $f(\mathbf{x}_i)$, VPS aims to estimate the function value elsewhere.
+The features of the current (Voronoi) piecewise decomposition choice are further explained below: 
 
-The key building block in the VPS model is to decompose the high-dimensional parameter space using the implicit Voronoi tessellation around the known function evaluations as seeds. Any domain discretization (mesh) subdivides the domain into cells (elements), where any point in the domain is assigned to some cell(s), and each cell identifies its neighbor cells. The VPS approach achieves the former using a simple nearest neighbor search, and the latter using Spoke Darts without constructing an explicit mesh. 
+\begin{itemize}
+	\item In the Voronoi piecewise decomposition option, we decompose the high-dimensional parameter space using the implicit Voronoi tessellation around the known function evaluations as seeds. Using this approach, any point in the domain is assigned to a Voronoi cell using a simple nearest neighbor search, and the neighbor cells are then identified using Spoke Darts without constructing an explicit mesh. 
+	\item The one-to-one mapping between the number of function evaluations and the number of Voronoi cells, regardless of the number of dimensions, eliminates the curse of dimensionality associated with standard domain decompositions. This Voronoi decomposition enables low-order piecewise polynomial approximation of the underlying function (and the associated error estimate) in the neighborhood of each function evaluation, independently. Moreover, the tessellation is naturally updated with the addition of new function evaluations.  
+\end{itemize}
 
-The one-to-one mapping between the number of function evaluations and the number of Voronoi cells, regardless of the number of dimensions, eliminates the curse of dimensionality associated with standard domain decompositions. This Voronoi decomposition enables low-order piecewise polynomial approximation of the underlying function (and the associated error estimate) in the neighborhood of each function evaluation, independently. Moreover, the tessellation is naturally updated with the addition of new function evaluations. Handling functions with discontinuities using VPS is trivial due to its piecewise construction, which traps discontinuities along Voronoi facets. 
+Extending the piecewise decomposition option to other global surrogate models is still under development. 
 
-In its basic version, VPS uses a Least Squares approach to build the piecewise surrogate, by finding the optimal coefficents of a polynomial with order $p$ such that:
-
-\begin{equation}
-	\hat{f}({\bf x})=\sum_{m=0}^{M-1}c_{m} \prod_{k=1}^{d} x_{k}^{t_{m,k}}
-	\label{models:surf:eq:vps}  
-\end{equation}
-
-where $\sum_{k=1}^{d} t_{m,k} \leq p$, $\forall m$. The LS-optimized vector of polynomial coefficients $\mathbf{c}$ can be found through:
-
-\begin{equation}
-	\mathbf{c} = [ \sum_{j} \mathbf{y} (\mathbf{x}_j) \mathbf{y}^{T}(\mathbf{x}_j)]^{-1} \sum_{j}\mathbf{y}(\mathbf{x}_j)f(\mathbf{x}_j) 
-\end{equation}
-
-where $\mathbf{y}(\mathbf{x}) = \{y_m(\mathbf{x})\} = \prod_{k=1}^{d} x_{k}^{t_{m,k}}$ is the vector of monomial terms in $f({\bf x})$. Apparently, solving for $\mathbf{c}$ implies finding a matrix inverse, and depends on the number of neighbors involved in the surrogate construction, in each Voronoi cell. Therefore, we start with a slightly large number of neighbors; say twice the number of unknowns ($p+1$) and use numerical methods to solve for $\mathbf{c}$, e.g., Cholesky decomposition. When applicable, Cholesky decomposition is roughly twice as efficient as the LU decomposition. In the few cases when Cholesky decomposition failed to converge to a unique solution, the generalized minimal residual method (GMRES), an iterative method that approximates the solution by the vector in a Krylov subspace with minimal residual, is used. This dual approach of using Cholesky-GMRES with the number of neighbors set to twice the number of unknowns for each Voronoi cell has been found stable, even for high-dimensional problems.
-
-Without impacting the core Voronoi decomposition approach, VPS can alternatively use other global surrogates ( e.g., Gaussian processes), locally within each Voronoi cell instead of Least Squares to construct local surrogates. The implementation of VPS based on other surrogates is still under development. 
-
+%where $\mathbf{y}(\mathbf{x}) = \{y_m(\mathbf{x})\} = \prod_{k=1}^{d} x_{k}^{t_{m,k}}$ is the vector of monomial terms in $f({\bf x})$. Apparently, solving for $\mathbf{c}$ implies finding a matrix inverse, and depends on the number of neighbors involved in the surrogate construction, in each Voronoi cell. Therefore, we start with a slightly large number of neighbors; say twice the number of unknowns ($p+1$) and use numerical methods to solve for $\mathbf{c}$, e.g., Cholesky decomposition. When applicable, Cholesky decomposition is roughly twice as efficient as the LU decomposition. In the few cases when Cholesky decomposition failed to converge to a unique solution, the generalized minimal residual method (GMRES), an iterative method that approximates the solution by the vector in a Krylov subspace with minimal residual, is used. This dual approach of using Cholesky-GMRES with the number of neighbors set to twice the number of unknowns for each Voronoi cell has been found stable, even for high-dimensional problems.
 
 \subsubsection{Surrogate Diagnostic Metrics}\label{models:surf:diagnostics}
 
