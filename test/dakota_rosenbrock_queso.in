@@ -21,9 +21,9 @@ method,
 #	  output verbose
 
 variables,								
-	uniform_uncertain 2		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13
-	  upper_bounds   2.  2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13
-	  lower_bounds  -2. -2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13
+	uniform_uncertain 2		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14
+	  upper_bounds   2.  2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14
+	  lower_bounds  -2. -2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14
 #	normal_uncertain 2  		#p7,#p8,#p10
 #	  means          0.  0.		#p7,#p8,#p10
 #	  std_deviations 1.  1.		#p7,#p8,#p10
@@ -36,10 +36,10 @@ interface,
 
 responses,								
 	calibration_terms = 2
-        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'
-          freeform num_experiments = 1 variance_type = 'scalar'
+        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13
+          freeform num_experiments = 1 variance_type = 'scalar'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13
   	descriptors = 'f1' 'f2'
  	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
-	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
-#	analytic_gradients	#p9,#p10,#p13
+	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14
+#	analytic_gradients	#p9,#p10,#p13,#p14
 #	analytic_hessians	#p9,#p10,#p13

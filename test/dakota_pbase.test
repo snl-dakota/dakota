@@ -4284,6 +4284,13 @@ Test Number 13 succeeded
                       1.0161065309e+00
 <<<<< Best log posterior       =
                      -1.3864058755e+00
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 3397 total (3348 new, 49 duplicate)
+<<<<< Best parameters          =
+                      1.0068297233e+00
+                      1.0145761977e+00
+<<<<< Best log posterior       =
+                     -2.7726498990e+00
 dakota_sbo_hierarchical.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
