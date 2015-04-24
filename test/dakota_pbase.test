@@ -2880,12 +2880,12 @@ Test Number 1 succeeded
 <<<<< Best log posterior       =
                      -3.0545204301e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1983 total (1983 new, 0 duplicate)
+<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8502378697e+07
-                      2.5030427991e+00
+                      2.8727141660e+07
+                      2.5002397601e+00
 <<<<< Best log posterior       =
-                     -3.1482189735e+01
+                     -3.0473907151e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
 <<<<< Best parameters          =

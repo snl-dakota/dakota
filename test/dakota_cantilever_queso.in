@@ -9,12 +9,11 @@ method,
           # | delayed_rejection | adaptive_metropolis | metropolis_hastings
 #	  output debug
 	  proposal_covariance
-# 1. diagonal with values
+# diagonal and matrix formats with values
 	    diagonal values 1.0e6 1.0e-1				#p0
-# 2. matrix with values
 #	    matrix   values 1.0 0.1					#p1
 #                  	    0.1 2.0					#p1
-# 3. diagonal or matrix from file
+# diagonal and matrix formats from file
 #	    diagonal filename 'dakota_cantilever_queso.diag.dat'	#p2
 #	    matrix   filename 'dakota_cantilever_queso.matrix.dat'	#p3
 
