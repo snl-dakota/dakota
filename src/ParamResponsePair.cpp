@@ -49,11 +49,12 @@ void ParamResponsePair::write_annotated(std::ostream& s) const
 }
 
 
-void ParamResponsePair::write_tabular(std::ostream& s) const
+void ParamResponsePair::write_tabular(std::ostream& s, 
+				      unsigned short tabular_format) const
 {
-  // BMA TODO: pass format option...
   TabularIO::
-    write_leading_columns(s, evalInterfaceIds.first, evalInterfaceIds.second, TABULAR_ANNOTATED);
+    write_leading_columns(s, evalInterfaceIds.first, evalInterfaceIds.second, 
+			  tabular_format);
   // write variables in input spec order
   prpVariables.write_tabular(s);
   prpResponse.write_tabular(s);
@@ -62,11 +63,11 @@ void ParamResponsePair::write_tabular(std::ostream& s) const
 
 /** When the eval id or interface isn't needed, directly appeal to
     Variables and Response write_tabular_labels... */
-void ParamResponsePair::write_tabular_labels(std::ostream& s) const
+void ParamResponsePair::write_tabular_labels(std::ostream& s,
+					     unsigned short tabular_format) const
 {
-  // BMA TODO: pass format option...
   TabularIO::
-    write_header_tabular(s, prpVariables, prpResponse, "eval_id", TABULAR_ANNOTATED);
+    write_header_tabular(s, prpVariables, prpResponse, "eval_id", tabular_format);
 }
 
 

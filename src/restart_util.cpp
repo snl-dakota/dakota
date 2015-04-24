@@ -16,6 +16,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/program_options.hpp>
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "ParamResponsePair.hpp"
@@ -32,18 +33,22 @@ namespace Dakota {
 
 using std::endl;
 
+/// print restart utility help message
+void print_usage(std::ostream& s);
+
 /// print a restart file
-void print_restart(int argc, char** argv, String print_dest);
+void print_restart(StringArray pos_args, String print_dest);
 /// print a restart file (PDB format)
-void print_restart_pdb(int argc, char** argv, String print_dest);
+void print_restart_pdb(StringArray pos_args, String print_dest);
 /// print a restart file (tabular format)
-void print_restart_tabular(int argc, char** argv, String print_dest);
+void print_restart_tabular(StringArray pos_args, String print_dest, 
+			   unsigned short tabular_format);
 /// read a restart file (neutral file format)
-void read_neutral(int argc, char** argv);
+void read_neutral(StringArray pos_args);
 /// repair a restart file by removing corrupted evaluations
-void repair_restart(int argc, char** argv, String identifier_type);
+void repair_restart(StringArray pos_args, String identifier_type);
 /// concatenate multiple restart files
-void concatenate_restart(int argc, char** argv);
+void concatenate_restart(StringArray pos_args);
 
 } // namespace Dakota
 
@@ -56,46 +61,97 @@ void concatenate_restart(int argc, char** argv);
 
 int main(int argc, char* argv[])
 {
-  if (argc<3) {
-    Cerr << "Usage: \"dakota_restart_util print <restart_file>\"\n"
-         << "       \"dakota_restart_util to_neutral <restart_file> "
-	 << "<neutral_file>\"\n"
-         << "       \"dakota_restart_util from_neutral <neutral_file> "
-	 << "<restart_file>\"\n"
-         << "       \"dakota_restart_util to_pdb <restart_file> "
-	 << "<pdb_file>\"\n"
-         << "       \"dakota_restart_util to_tabular <restart_file> "
-	 << "<text_file>\"\n"
-         << "       \"dakota_restart_util remove <double> <old_restart_file> "
-	 << "<new_restart_file>\"\n"
-         << "       \"dakota_restart_util remove_ids <int_1> ... <int_n> "
-         << "<old_restart_file> <new_restart_file>\"\n"
-         << "       \"dakota_restart_util cat <restart_file_1> ... "
-	 << "<restart_file_n> <new_restart_file>\"" << endl;
-    exit(-1);
+  std::string util_command;               // restart utility mode
+  std::vector<std::string> pos_args;      // all remaining positional args
+  std::vector<std::string> tabular_opts;  // custom_annotated options
+  try {
+    // setup command-line options
+    namespace bpo = boost::program_options;
+    // options in include in help message
+    bpo::options_description general_opts("options");
+    general_opts.add_options()
+      ("help", "show dakota_restart_util help message")
+      ("custom_annotated",
+       bpo::value<std::vector<std::string> >(&tabular_opts)->multitoken(), 
+       "tabular file options: header, eval_id, interface_id")
+      ;
+    // positional arguments to hide
+    bpo::options_description hidden_opts("positional options");
+    hidden_opts.add_options()
+      ("util_command", bpo::value<std::string>(&util_command), 
+       "restart utility command/mode")
+      ("pos_args", bpo::value<std::vector<std::string> >(&pos_args), 
+       "positional opts")
+      ;
+    // concatenated options
+    bpo::options_description all_opts("all options");
+    all_opts.add(general_opts).add(hidden_opts);
+    // positional options are the restart_util command and any options to it
+    bpo::positional_options_description positional_opts;
+    positional_opts.add("util_command", 1).add("pos_args", -1);
+
+    // parse the command line
+    bpo::variables_map vm;
+    bpo::store(bpo::command_line_parser(argc, argv).
+	       options(all_opts).positional(positional_opts).run(), vm);
+    bpo::notify(vm);    
+
+    if (vm.count("help")) {
+      print_usage(cout);
+      cout << general_opts << std::endl;
+      return 0;
+    }
+    if (util_command.empty() || pos_args.empty()) {
+      print_usage(Cerr);
+      Cerr << general_opts << std::endl;
+      return -1;
+    }
+  }
+  catch (const std::exception& e) {
+    Cerr << "\nError parsing command-line options: " << e.what() << std::endl;
+    return -1;
   }
 
-  String util_command(argv[1]);
+  unsigned short tabular_format = TABULAR_ANNOTATED;
+  if (!tabular_opts.empty()) {
+    bool found_error = false;
+    tabular_format = TABULAR_NONE;
+    BOOST_FOREACH(const String& tab_opt, tabular_opts) {
+      if (tab_opt == "header")
+	tabular_format |= TABULAR_HEADER;
+      else if (tab_opt == "eval_id")
+	tabular_format |= TABULAR_EVAL_ID;
+      else if (tab_opt == "interface_id")
+	tabular_format |= TABULAR_IFACE_ID;
+      else {
+	Cerr << "Error: unknown custom_annotated option '" << tab_opt << "'\n";
+	found_error= true;
+      }
+    }
+    if (found_error)
+      return -1;
+  }
 
   if (util_command == "print")
-    print_restart(argc, argv, "stdout");
+    print_restart(pos_args, "stdout");
   else if (util_command == "to_neutral")
-    print_restart(argc, argv, "neutral_file");
+    print_restart(pos_args, "neutral_file");
   else if (util_command == "from_neutral")
-    read_neutral(argc, argv);
+    read_neutral(pos_args);
   else if (util_command == "to_pdb")
-    print_restart_pdb(argc, argv, "pdb_file");
+    print_restart_pdb(pos_args, "pdb_file");
   else if (util_command == "to_tabular")
-    print_restart_tabular(argc, argv, "text_file");
+    print_restart_tabular(pos_args, "text_file", tabular_format);
   else if (util_command == "remove")
-    repair_restart(argc, argv, "by_value");
+    repair_restart(pos_args, "by_value");
   else if (util_command == "remove_ids")
-    repair_restart(argc, argv, "by_id");
+    repair_restart(pos_args, "by_id");
   else if (util_command == "cat")
-    concatenate_restart(argc, argv);
+    concatenate_restart(pos_args);
   else {
-    Cerr << "Error: " << util_command << " not supported." << endl;
-    exit(-1);
+    Cerr << "Error: command '" << util_command << "' not supported." << endl;
+    print_usage(Cerr);
+    return -1;
   }
 
   return 0;
@@ -103,6 +159,23 @@ int main(int argc, char* argv[])
 
 
 namespace Dakota {
+
+void print_usage(std::ostream& s)
+{
+  s << "Usage:\n  dakota_restart_util command <arg1> [<arg2> <arg3> ...] --options\n"
+    << "    dakota_restart_util print <restart_file>\n"
+    << "    dakota_restart_util to_neutral <restart_file> <neutral_file>\n"
+    << "    dakota_restart_util from_neutral <neutral_file> <restart_file>\n"
+#ifdef HAVE_PDB_H
+    << "    dakota_restart_util to_pdb <restart_file> <pdb_file>\n"
+#endif
+    << "    dakota_restart_util to_tabular <restart_file> <text_file> [--custom_annotated [header] [eval_id] [interface_id]]\n"
+    << "    dakota_restart_util remove <double> <old_restart_file> <new_restart_file>\n"
+    << "    dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>\n"
+    << "    dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>" 
+    << endl;
+}
+
 
 /** \b Usage: "dakota_restart_util print dakota.rst"\n
               "dakota_restart_util to_neutral dakota.rst dakota.neu"
@@ -112,33 +185,33 @@ namespace Dakota {
     is successful in a restarted run (e.g., starting a new method
     from the previous best), and the latter is used for translating
     binary files between platforms. */
-void print_restart(int argc, char** argv, String print_dest)
+void print_restart(StringArray pos_args, String print_dest)
 {
   if (print_dest != "stdout" && print_dest != "neutral_file") {
     Cerr << "Error: bad print_dest in print_restart" << endl;
     exit(-1);
   }
-  else if (print_dest == "stdout" && argc != 3) {
-    Cerr << "Usage: \"dakota_restart_util print <restart_file>\"." << endl;
+  else if (print_dest == "stdout" && pos_args.size() != 1) {
+    Cerr << "Usage: dakota_restart_util print <restart_file>." << endl;
     exit(-1);
   }
-  else if (print_dest == "neutral_file" && argc != 4) {
-    Cerr << "Usage: \"dakota_restart_util to_neutral <restart_file> "
-	 << "<neutral_file>\"." << endl;
+  else if (print_dest == "neutral_file" && pos_args.size() != 2) {
+    Cerr << "Usage: dakota_restart_util to_neutral <restart_file> "
+	 << "<neutral_file>." << endl;
     exit(-1);
   }
 
-  std::ifstream restart_input_fs(argv[2], std::ios::binary);
+  std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
   if (!restart_input_fs.good()) {
-    Cerr << "Error: failed to open restart file " << argv[2] << endl;
+    Cerr << "Error: failed to open restart file " << pos_args[0] << endl;
     exit(-1);
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
   std::ofstream neutral_file_stream;
   if (print_dest == "neutral_file") {
-    cout << "Writing neutral file " << argv[3] << '\n';
-    neutral_file_stream.open(argv[3]);
+    cout << "Writing neutral file " << pos_args[1] << '\n';
+    neutral_file_stream.open(pos_args[1].c_str());
   }
 
   // override default to output data in full precision (double = 16 digits)
@@ -184,17 +257,17 @@ void print_restart(int argc, char** argv, String print_dest)
     Unrolls all data associated with a particular tag for all
     evaluations and then writes this data in a tabular format
     (e.g., to a PDB database or MATLAB/TECPLOT data file). */
-void print_restart_pdb(int argc, char** argv, String print_dest)
+void print_restart_pdb(StringArray pos_args, String print_dest)
 {
-  if (argc != 4) {
-    Cerr << "Usage: \"dakota_restart_util to_pdb <restart_file> <pdb_file>\"."
+  if (pos_args.size() != 2) {
+    Cerr << "Usage: dakota_restart_util to_pdb <restart_file> <pdb_file>."
          << endl;
     exit(-1);
   }
 
-  std::ifstream restart_input_fs(argv[2], std::ios::binary);
+  std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
   if (!restart_input_fs.good()) {
-    Cerr << "Error: failed to open restart file " << argv[2] << endl;
+    Cerr << "Error: failed to open restart file " << pos_args[0] << endl;
     exit(-1);
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
@@ -268,9 +341,9 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
 
 #ifdef HAVE_PDB_H
   // open the PDB file
-  cout << "Writing PDB file:" << argv[3] << '\n';
+  cout << "Writing PDB file:" << pos_args[1] << '\n';
   PDBfile *fileID;
-  if ((fileID = PD_open(argv[3], "w")) == NULL){
+  if ((fileID = PD_open(pos_args[1].c_str(), "w")) == NULL){
     cout << "Problem opening PDB file";
     return;
   }
@@ -319,7 +392,7 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
   }
     
   if(!PD_close(fileID))
-    cout << "Problem closing PDB file" << argv[3] << '\n';
+    cout << "Problem closing PDB file" << pos_args[1] << '\n';
 #else
   cout << "PDB utilities not available" << endl;
   exit(0);
@@ -335,24 +408,25 @@ void print_restart_pdb(int argc, char** argv, String print_dest)
     Unrolls all data associated with a particular tag for all
     evaluations and then writes this data in a tabular format
     (e.g., to a PDB database or MATLAB/TECPLOT data file). */
-void print_restart_tabular(int argc, char** argv, String print_dest)
+  void print_restart_tabular(StringArray pos_args, String print_dest,
+			     unsigned short tabular_format)
 {
-  if (argc != 4) {
-    Cerr << "Usage: \"dakota_restart_util to_tabular <restart_file> "
-	 << "<text_file>\"." << endl;
+  if (pos_args.size() != 2) {
+    Cerr << "Usage: dakota_restart_util to_tabular <restart_file> "
+	 << "<text_file>." << endl;
     exit(-1);
   }
 
-  std::ifstream restart_input_fs(argv[2], std::ios::binary);
+  std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
   if (!restart_input_fs.good()) {
-    Cerr << "Error: failed to open restart file " << argv[2] << endl;
+    Cerr << "Error: failed to open restart file " << pos_args[0] << endl;
     exit(-1);
   }
   boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
   size_t num_evals = 0;
-  cout << "Writing tabular text file " << argv[3] << '\n';
-  std::ofstream tabular_text(argv[3]);
+  cout << "Writing tabular text file " << pos_args[1] << '\n';
+  std::ofstream tabular_text(pos_args[1].c_str());
   // to track changes in interface and/or labels
   String curr_interf;
   StringMultiArray curr_acv_labels;
@@ -405,10 +479,10 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 	curr_adrv_labels = curr_vars.all_discrete_real_variable_labels();
 	curr_resp_labels = current_pair.response().function_labels();
 	// write the new header
-	current_pair.write_tabular_labels(tabular_text);
+	current_pair.write_tabular_labels(tabular_text, tabular_format);
       }
     }
-    current_pair.write_tabular(tabular_text);  // also writes IDs
+    current_pair.write_tabular(tabular_text, tabular_format);  // also writes IDs
     ++num_evals;
 
     // peek to force EOF if the last restart record was read
@@ -424,25 +498,25 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
 
     Reads evaluations from a neutral file.  This is used for translating
     binary files between platforms. */
-void read_neutral(int argc, char** argv)
+void read_neutral(StringArray pos_args)
 {
-  if (argc != 4) {
-    Cerr << "Usage: \"dakota_restart_util from_neutral <neutral_file> "
-	 << "<restart_file>\"." << endl;
+  if (pos_args.size() != 2) {
+    Cerr << "Usage: dakota_restart_util from_neutral <neutral_file> "
+	 << "<restart_file>." << endl;
     exit(-1);
   }
 
-  std::ifstream neutral_file_stream(argv[2]);
+  std::ifstream neutral_file_stream(pos_args[0].c_str());
   if (neutral_file_stream)
-    cout << "Reading neutral file " << argv[2] << '\n';
+    cout << "Reading neutral file " << pos_args[0] << '\n';
   else {
-    Cerr << "Error: failed to open neutral file " << argv[2] << endl;
+    Cerr << "Error: failed to open neutral file " << pos_args[0] << endl;
     exit(-1);
   }
   
-  std::ofstream restart_output_fs(argv[3], std::ios::binary);
+  std::ofstream restart_output_fs(pos_args[1].c_str(), std::ios::binary);
   boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
-  cout << "Writing new restart file " << argv[3] << '\n';
+  cout << "Writing new restart file " << pos_args[1] << '\n';
 
   int cntr = 0;
   neutral_file_stream >> std::ws;
@@ -476,34 +550,49 @@ void read_neutral(int argc, char** argv)
     number (all evaluations having a matching response function value
     are removed) or a list of integers (all evaluations with matching
     evaluation ids are removed). */
-void repair_restart(int argc, char** argv, String identifier_type)
+void repair_restart(StringArray pos_args, String identifier_type)
 {
   double  remove_val;
   bool    by_value;
   IntList bad_ids;
   String  read_restart_filename, write_restart_filename;
   if (identifier_type == "by_value") {
-    if (argc != 5) {
-      Cerr << "Usage: \"dakota_restart_util remove <double> <old_restart_file> "
-           << "<new_restart_file>\"." << endl;
+    if (pos_args.size() != 3) {
+      Cerr << "Usage: dakota_restart_util remove <double> <old_restart_file> "
+           << "<new_restart_file>." << endl;
       exit(-1);
     }
     by_value = true;
-    remove_val = atof(argv[2]);
-    read_restart_filename  = argv[3];
-    write_restart_filename = argv[4];
+    try {
+      remove_val = boost::lexical_cast<double>(pos_args[0]);
+    }
+    catch (const boost::bad_lexical_cast& blc_except) {
+      Cerr << "\nError invalid floating point response " << pos_args[0] 
+	   << " to remove." << std::endl;
+      exit(-1);
+    }
+    read_restart_filename  = pos_args[1];
+    write_restart_filename = pos_args[2];
   }
   else if (identifier_type == "by_id") {
-    if (argc < 5) {
-      Cerr << "Usage: \"dakota_restart_util remove_ids <int_1> ... <int_n> "
-           << "<old_restart_file> <new_restart_file>\"." << endl;
+    if (pos_args.size() < 3) {
+      Cerr << "Usage: dakota_restart_util remove_ids <int_1> ... <int_n> "
+           << "<old_restart_file> <new_restart_file>." << endl;
       exit(-1);
     }
     by_value = false;
-    for (int i=2; i<argc-2; ++i)
-      bad_ids.push_back(atoi(argv[i]));
-    read_restart_filename  = argv[argc-2];
-    write_restart_filename = argv[argc-1];
+    write_restart_filename = pos_args.back(); pos_args.pop_back();
+    read_restart_filename  = pos_args.back(); pos_args.pop_back();
+    try {
+      BOOST_FOREACH(const String& pa, pos_args) {
+	bad_ids.push_back(boost::lexical_cast<int>(pa));
+      }
+    }
+    catch (const boost::bad_lexical_cast& blc_except) {
+      Cerr << "\nError: invalid integer IDs " << pos_args 
+	   << " for command remove_ids" << std::endl;
+      exit(-1);
+    }
   }
   else {
     Cerr << "Error: bad identifier_type in repair_restart." << endl;
@@ -582,24 +671,26 @@ void repair_restart(int argc, char** argv, String identifier_type)
                  dakota_new.rst"
 
     Combines multiple restart files into a single restart database. */
-void concatenate_restart(int argc, char** argv)
+void concatenate_restart(StringArray pos_args)
 {
-  if (argc < 5) {
-    Cerr << "Usage: \"dakota_restart_util cat <restart_file_1> ... "
-	 << "<restart_file_n> <new_restart_file>\"." << endl;
+  if (pos_args.size() < 3) {
+    Cerr << "Usage: dakota_restart_util cat <restart_file_1> ... "
+	 << "<restart_file_n> <new_restart_file>." << endl;
     exit(-1);
   }
 
-  std::ofstream restart_output_fs(argv[argc-1], std::ios::binary);
+  String write_restart_filename = pos_args.back(); pos_args.pop_back();
+  std::ofstream restart_output_fs(write_restart_filename.c_str(),
+				  std::ios::binary);
   boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
 
-  cout << "Writing new restart file " << argv[argc-1] << '\n';
+  cout << "Writing new restart file " << write_restart_filename << '\n';
 
-  for (int cat_cntr=2; cat_cntr<argc-1; cat_cntr++) {
+  BOOST_FOREACH(const String& rst_file, pos_args) {
 
-    std::ifstream restart_input_fs(argv[cat_cntr], std::ios::binary);
+    std::ifstream restart_input_fs(rst_file.c_str(), std::ios::binary);
     if (!restart_input_fs.good()) {
-      Cerr << "Error: failed to open restart file " << argv[cat_cntr] << endl;
+      Cerr << "Error: failed to open restart file " << rst_file << endl;
       exit(-1);
     }
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
@@ -625,7 +716,7 @@ void concatenate_restart(int argc, char** argv)
       restart_input_fs.peek();
     }
 
-    cout << argv[cat_cntr] << " processing completed: " << cntr
+    cout << rst_file << " processing completed: " << cntr
          << " evaluations retrieved.\n";
   }
   restart_output_fs.close();
