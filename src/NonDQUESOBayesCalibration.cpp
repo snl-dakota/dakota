@@ -14,6 +14,7 @@
 
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDQUESOBayesCalibration.hpp"
+#include "NonDExpansion.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
@@ -715,17 +716,53 @@ Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 
 void NonDQUESOBayesCalibration::update_model()
 {
+  if (!emulatorType) {
+    Cerr << "Error: NonDQUESOBayesCalibration::update_model() requires an "
+	 << "emulator model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   // perform truth evals (in parallel) for selected points
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Updating emulator: evaluating " << allSamples.numCols()
 	 << " best points." << std::endl;
-  evaluate_parameter_sets(iteratedModel, true, false); // log allResponses
+  // bypass surrogate but preserve transformations to standardized space
+  short orig_resp_mode = mcmcModel.surrogate_response_mode(); // store mode
+  mcmcModel.surrogate_response_mode(BYPASS_SURROGATE); // actual model evals
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR:
+    nondInstance = (NonD*)stochExpIterator.iterator_rep();
+    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
+    nondInstance = this; // restore
+    break;
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    if (standardizedSpace)
+      nondInstance = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
+    if (standardizedSpace)
+      nondInstance = this; // restore
+    break;
+  }
+  mcmcModel.surrogate_response_mode(orig_resp_mode); // restore mode
 
   // update mcmcModel with new data from iteratedModel
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Updating emulator: appending " << allResponses.size()
 	 << " new data sets." << std::endl;
-  mcmcModel.append_approximation(allSamples, allResponses, true); // rebuild
+  switch (emulatorType) {
+  case PCE_EMULATOR: case SC_EMULATOR: {
+    // Adapt the expansion in sync with the dataset using a top-down design
+    // (more explicit than embedded logic w/i mcmcModel.append_approximation).
+    NonDExpansion* se_iterator
+      = (NonDExpansion*)stochExpIterator.iterator_rep();
+    se_iterator->append(allSamples, allResponses);
+    // TO DO: order increment places addtnl reqmts on emulator conv assessment
+    break;
+  }
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    mcmcModel.append_approximation(allSamples, allResponses, true); // rebuild
+    break;
+  }
 }
 
 
@@ -842,16 +879,25 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   const RealVector& init_pt = mcmcModel.continuous_variables();
   if (standardizedSpace) {
     switch (emulatorType) {
-    case PCE_EMULATOR: case SC_EMULATOR: 
+    case PCE_EMULATOR: case SC_EMULATOR:
+      // init_pt already propagated through transform
       for (size_t i=0; i<numContinuousVars; i++)
 	(*paramInitials)[i] = init_pt[i];
       break;
-    default: // init_pt not already propagated through transform
+    default: {
+      // init_pt not already propagated through transform
       RealVector u_pt;
-      natafTransform.trans_X_to_U(init_pt, u_pt);
+      if (emulatorType == NO_EMULATOR) // use local nataf
+	natafTransform.trans_X_to_U(init_pt, u_pt);
+      else { // use nataf in DataFitSurrModel::daceIterator
+	NonD* nond_iterator
+	  = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+	nond_iterator->variable_transformation().trans_X_to_U(init_pt, u_pt);
+      }
       for (size_t i=0; i<numContinuousVars; i++)
 	(*paramInitials)[i] = u_pt[i];
       break;
+    }
     }
   }
   else
@@ -1112,13 +1158,13 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
       nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
       break;
     }
-    // GPs can use local nataf or the copy in lhs_iterator
-    //case KRIGING_EMULATOR: case GP_EMULATOR: {
-    //NonD* nond_iterator
-    //	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-    //nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
-    //break;
-    //}
+    // GPs use nataf in lhs_iterator
+    case KRIGING_EMULATOR: case GP_EMULATOR: {
+      NonD* nond_iterator
+    	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
+      break;
+    }
     default: //case NO_EMULATOR:
       natafTransform.trans_U_to_X(u_rv, x_rv);
       break;

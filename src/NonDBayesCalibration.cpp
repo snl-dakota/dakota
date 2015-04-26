@@ -71,11 +71,26 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+    // natafTransform defined within NonDExpansion
     standardizedSpace = true; break;
+  case GP_EMULATOR: case KRIGING_EMULATOR:
+    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+    if (standardizedSpace) {
+      // define natafTransform within DataFitSurrModel::daceIterator
+      NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      lhs_iter->initialize_random_variable_transformation();
+      lhs_iter->initialize_random_variable_types(ASKEY_U); // need x_types below
+      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
+      // Note: initialize_random_variable_parameters() is performed at run time
+      lhs_iter->initialize_random_variable_correlations();
+      lhs_iter->verify_correlation_support();
+      //lhs_iter->initialize_final_statistics(); // stats set is not default
+    }
+    break;
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    // define local natafTransform (passed to subordinate iterators as needed)
     if (standardizedSpace) {
+      // define local natafTransform
       initialize_random_variable_transformation();
       initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
       // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
@@ -229,9 +244,12 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);                  break;
-  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    //if (standardizedSpace)
+  case GP_EMULATOR: case KRIGING_EMULATOR:
     mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
+  case NO_EMULATOR:
+    if (standardizedSpace)
+      mcmcModel.init_communicators(pl_iter, maxEvalConcurrency);
+    break;
   }
 }
 
@@ -246,9 +264,12 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);                  break;
-  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    //if (standardizedSpace)
+  case GP_EMULATOR: case KRIGING_EMULATOR:
     mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
+  case NO_EMULATOR:
+    if (standardizedSpace)
+      mcmcModel.set_communicators(pl_iter, maxEvalConcurrency);
+    break;
   }
 }
 
@@ -257,10 +278,13 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
-    stochExpIterator.free_communicators(pl_iter);                  break;
-  case GP_EMULATOR: case KRIGING_EMULATOR: case NO_EMULATOR:
-    //if (standardizedSpace)
+    stochExpIterator.free_communicators(pl_iter);              break;
+  case GP_EMULATOR: case KRIGING_EMULATOR:
     mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
+  case NO_EMULATOR:
+    if (standardizedSpace)
+      mcmcModel.free_communicators(pl_iter, maxEvalConcurrency);
+    break;
   }
 
   //iteratedModel.free_communicators(maxEvalConcurrency);
@@ -276,20 +300,17 @@ void NonDBayesCalibration::initialize_model()
   }
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace) {
-      initialize_random_variable_parameters();
-      //initialize_final_statistics_gradients(); // not required
-      natafTransform.transform_correlations();
-      // propagate natafTransform settings to lhs_iterator
-      // (recast mappings use active nondInstance)
-      ((NonD*)mcmcModel.subordinate_iterator().iterator_rep())->
-	initialize_random_variables(natafTransform);
+      NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      lhs_iter->initialize_random_variable_parameters();
+      //lhs_iter->initialize_final_statistics_gradients(); // not required
+      lhs_iter->transform_correlations();
     }
     mcmcModel.build_approximation(); break;
   case NO_EMULATOR:
     if (standardizedSpace) {
       initialize_random_variable_parameters();
       //initialize_final_statistics_gradients(); // not required
-      natafTransform.transform_correlations();
+      transform_correlations();
     }
     break;
   }

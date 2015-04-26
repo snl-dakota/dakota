@@ -45,6 +45,21 @@ public:
   void initialize_random_variables(
     const Pecos::ProbabilityTransformation& transform);
 
+  /// instantiate natafTransform
+  void initialize_random_variable_transformation();
+  /// initializes ranVarTypesX and ranVarTypesU within natafTransform
+  void initialize_random_variable_types(short u_space_type);
+  /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
+  /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
+  void initialize_random_variable_parameters();
+  /// propagate iteratedModel correlations to natafTransform
+  void initialize_random_variable_correlations();
+  /// verify that correlation warping is supported by Nataf for given
+  /// variable types
+  void verify_correlation_support();
+  /// perform correlation warping for variable types supported by Nataf
+  void transform_correlations();
+
   /// set requestedRespLevels, requestedProbLevels, requestedRelLevels,
   /// requestedGenRelLevels, respLevelTarget, and cdfFlag (used in
   /// combination with alternate ctors)
@@ -123,19 +138,6 @@ protected:
 
   /// create a system-generated unique seed (when a seed is unspecified)
   int generate_system_seed();
-
-  /// instantiate natafTransform
-  void initialize_random_variable_transformation();
-  /// initializes ranVarTypesX and ranVarTypesU within natafTransform
-  void initialize_random_variable_types(short u_space_type);
-  /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
-  /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
-  void initialize_random_variable_parameters();
-  /// propagate iteratedModel correlations to natafTransform
-  void initialize_random_variable_correlations();
-  /// verify that correlation warping supported by Der Kiureghian & Liu
-  /// for given variable types
-  void verify_correlation_support();
 
   /// initializes finalStatistics::functionGradients
   void initialize_final_statistics_gradients();
@@ -405,6 +407,10 @@ private:
 
 inline NonD::~NonD()
 { }
+
+
+inline void NonD::transform_correlations()
+{ natafTransform.transform_correlations(); }
 
 
 inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)

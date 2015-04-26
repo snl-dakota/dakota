@@ -58,6 +58,14 @@ public:
 
   const Model& algorithm_space_model() const;
 
+  //
+  //- Heading: Virtual functions
+  //
+
+  /// append new data to uSpaceModel and update expansion order (PCE only)
+  virtual void append(const RealMatrix& samples,
+		      const IntResponseMap& resp_map);
+
 protected:
 
   //
@@ -72,8 +80,9 @@ protected:
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
-  /// uniformly increment the expansion order (PCE only)
-  virtual void increment_order();
+  /// uniformly increment the expansion order and structured/unstructured
+  /// grid (PCE only)
+  virtual void increment_order_and_grid();
   /// increment the input specification sequence (PCE only)
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
@@ -149,8 +158,8 @@ protected:
   //- Heading: Data
   //
 
-  /// Model representing the approximate response function in u-space, after
-  /// u-space recasting and orthogonal polynomial data fit recursions
+  /// Model representing the approximate response function in u-space,
+  /// after u-space recasting and polynomial data fit recursions
   Model uSpaceModel;
 
   /// method for collocation point generation and subsequent

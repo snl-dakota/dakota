@@ -897,7 +897,7 @@ void NonDExpansion::refine_expansion()
       case Pecos::LEAST_ANGLE_REGRESSION:
 	// ramp expansion order and update regression samples, keeping
 	// initial collocation ratio (either user specified or inferred)
-	increment_order(); // virtual fn defined for NonDPCE
+	increment_order_and_grid(); // virtual fn defined for NonDPCE
 	update_expansion(); // invokes uSpaceModel.build_approximation()
 	break;
       }
@@ -956,11 +956,20 @@ void NonDExpansion::refine_expansion()
 }
 
 
-void NonDExpansion::increment_order()
+void NonDExpansion::append(const RealMatrix&     samples,
+			   const IntResponseMap& resp_map)
 {
-  Cerr << "Error: virtual increment_order() not redefined by NonDExpansion "
-       << "derived class.  This class foes not support uniform expansion order "
-       << "increments." << std::endl;
+  Cerr << "Error: virtual append() not redefined by derived class.  "
+       << "NonDExpansion does not support data appending." << std::endl;
+  abort_handler(-1);
+}
+
+
+void NonDExpansion::increment_order_and_grid()
+{
+  Cerr << "Error: virtual increment_order_and_grid() not redefined by derived "
+       << "class.  NonDExpansion does not support uniform expansion order and "
+       << "grid increments." << std::endl;
   abort_handler(-1);
 }
 

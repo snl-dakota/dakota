@@ -192,11 +192,9 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	  termsOrder
 	    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
 	  if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
-	    collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel,
-						 termsOrder);
+	    collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
 	  else if (collocRatio > 0.)     // define colloc pts from collocRatio
-	    numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio,
-						       termsOrder);
+	    numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 	}
 
 	if (numSamplesOnModel) {
@@ -425,7 +423,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
     break;
   }
-  numSamplesOnModel = terms_ratio_to_samples(exp_terms,collocRatio,termsOrder);
+  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 
   // -------------------------
   // Construct u_space_sampler
@@ -571,6 +569,9 @@ void NonDPolynomialChaos::initialize_u_space_model()
       rc_options(crossValidation, randomSeed, noiseTols, l2Penalty,
 		 false, 0/*initSGLevel*/, 2, numAdvance);
     shared_data_rep->configuration_options(rc_options);
+
+    // updates for automatic order adaptation
+    //...
   }
 
   // perform last due to numSamplesOnModel update
@@ -667,8 +668,7 @@ void NonDPolynomialChaos::increment_specification_sequence()
       size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
 	Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
 	Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-      numSamplesOnModel
-	= terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
     }
   }
   else if (update_sampler && tensorRegression) {
@@ -703,11 +703,20 @@ void NonDPolynomialChaos::increment_specification_sequence()
 
 
 /** Used for uniform refinement of regression-based PCE. */
-void NonDPolynomialChaos::increment_order()
+void NonDPolynomialChaos::increment_order_and_grid()
 {
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   shared_data_rep->increment_order();
+  increment_grid_from_order();
+}
+
+
+/** Used for uniform refinement of regression-based PCE. */
+void NonDPolynomialChaos::increment_grid_from_order()
+{
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
   const UShortArray& exp_order = shared_data_rep->expansion_order();
   size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
     Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
@@ -715,8 +724,7 @@ void NonDPolynomialChaos::increment_order()
 
   // update numSamplesOnModel based on existing collocation ratio and
   // updated number of expansion terms
-  numSamplesOnModel
-    = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
+  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 
   // update u-space sampler to use new sample count
   if (tensorRegression) {
@@ -733,6 +741,51 @@ void NonDPolynomialChaos::increment_order()
     DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
     dfs_model->total_points(numSamplesOnModel);
   }
+}
+
+
+/** Used for uniform refinement of regression-based PCE. */
+void NonDPolynomialChaos::increment_order_from_grid()
+{
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+
+  // update expansion order based on existing collocation ratio and
+  // updated number of truth model samples
+  UShortArray exp_order = shared_data_rep->expansion_order();       // copy
+  ratio_samples_to_order(collocRatio, numSamplesOnModel, exp_order);// increment
+  shared_data_rep->expansion_order(exp_order);                      // restore
+}
+
+
+void NonDPolynomialChaos::
+ratio_samples_to_order(Real colloc_ratio, int num_samples,
+		       UShortArray& exp_order)
+{
+  // ramp expansion order to synchronize with num_samples and colloc_ratio
+
+  size_t data_size = (useDerivs) ?
+    num_samples * (numContinuousVars + 1) : num_samples;
+  size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+    Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
+    Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+  // data_reqd = colloc_ratio * exp_terms^termsOrder
+  size_t data_reqd = (size_t)std::floor(std::pow((Real)exp_terms, termsOrder) *
+					colloc_ratio + .5);
+  while (data_reqd < data_size) {
+    // uniform order increment
+    for (size_t i=0; i<numContinuousVars; ++i)
+      ++exp_order[i];
+    // terms in total order expansion
+    exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+      Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
+      Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+    data_reqd = (size_t)std::floor(std::pow((Real)exp_terms, termsOrder) *
+				   colloc_ratio + .5);
+  }
+  if (data_reqd > data_size) // one too many increments; back up
+    for (size_t i=0; i<numContinuousVars; ++i)
+      --exp_order[i];
 }
 
 
