@@ -609,7 +609,7 @@ void NonDExpansion::initialize_expansion()
   // update ranVar info to capture any distribution param insertions
   initialize_random_variable_parameters();
   initialize_final_statistics_gradients();
-  natafTransform.transform_correlations();
+  transform_correlations();
 
   // now that data has flowed down at run-time from any higher level recursions
   // to iteratedModel, it must be propagated up through the local g_u_model and

@@ -69,44 +69,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (adaptPosteriorRefine && maxIterations < 0)
     maxIterations = 25;
 
-  switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-    // natafTransform defined within NonDExpansion
-    standardizedSpace = true; break;
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) {
-      // define natafTransform within DataFitSurrModel::daceIterator
-      NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-      lhs_iter->initialize_random_variable_transformation();
-      lhs_iter->initialize_random_variable_types(ASKEY_U); // need x_types below
-      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
-      // Note: initialize_random_variable_parameters() is performed at run time
-      lhs_iter->initialize_random_variable_correlations();
-      lhs_iter->verify_correlation_support();
-      //lhs_iter->initialize_final_statistics(); // stats set is not default
-    }
-    break;
-  default:
-    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) {
-      // define local natafTransform
-      initialize_random_variable_transformation();
-      initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
-      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
-      // Note: initialize_random_variable_parameters() is performed at run time
-      initialize_random_variable_correlations();
-      verify_correlation_support();
-      //initialize_final_statistics(); // statistics set is not default
-    }
-    break;
-  }
-
   // Construct mcmcModel (no emulation, GP, PCE, or SC) for use in
   // likelihood evaluations
   switch (emulatorType) {
 
   case PCE_EMULATOR: { // instantiate a NonDPolynomialChaos iterator
+    standardizedSpace = true; // natafTransform defined within NonDExpansion
+
     const UShortArray& level_seq
       = probDescDB.get_usa("method.nond.sparse_grid_level");
     if (!level_seq.empty())
@@ -136,6 +105,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   case SC_EMULATOR: { // instantiate a NonDStochCollocation iterator
+    standardizedSpace = true; // natafTransform defined within NonDExpansion
+
     stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
       Pecos::COMBINED_SPARSE_GRID,
       probDescDB.get_usa("method.nond.sparse_grid_level"), // ssg level sequence
@@ -155,6 +126,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   case GP_EMULATOR: case KRIGING_EMULATOR: {
+    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+
     String sample_reuse; String approx_type; short deriv_order;
     if (emulatorType == GP_EMULATOR)
       { approx_type = "global_gaussian"; deriv_order = 3; } // grad support
@@ -178,14 +151,43 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator;
     if (standardizedSpace) {
+
+      /* Can't do this: circular dependency between lhs_iter/g_u_model
+      // define natafTransform within DataFitSurrModel::daceIterator
+      NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
+      lhs_iter->initialize_random_variable_transformation();
+      lhs_iter->initialize_random_variable_types(ASKEY_U); // need x_types below
+      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
+      // Note: initialize_random_variable_parameters() is performed at run time
+      lhs_iter->initialize_random_variable_correlations();
+      lhs_iter->verify_correlation_support();
+      //lhs_iter->initialize_final_statistics(); // stats set is not default
+
       Model g_u_model;
-      transform_model(iteratedModel, g_u_model, true); // globally bounded
+      lhs_iter->transform_model(iteratedModel, g_u_model, true); // global bnds
+      */
+
+      // initialize local natafTransform to support g_u_model construction
+      initialize_random_variable_transformation();
+      initialize_random_variable_types(ASKEY_U); // need x_types below
+      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
+      // Note: initialize_random_variable_parameters() is performed at run time
+      initialize_random_variable_correlations();
+      verify_correlation_support();
+      //initialize_final_statistics(); // stats set is not default
+
+      Model g_u_model;
+      transform_model(iteratedModel, g_u_model, true); // global bnds
 
       NonDLHSSampling* lhs_rep = new NonDLHSSampling(g_u_model,
 	sample_type, samples, randomSeed,
 	probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM);
       lhs_iterator.assign_rep(lhs_rep, false);
+
+      // transfer (partial) natafTransform settings to lhs_rep and clear local
+      lhs_rep->initialize_random_variables(natafTransform);
+      natafTransform = Pecos::ProbabilityTransformation(); // clear
 
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
@@ -219,8 +221,20 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   case NO_EMULATOR:
-    if (standardizedSpace) // recast to standardized probability space
+    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+    if (standardizedSpace) {
+      // define local natafTransform
+      initialize_random_variable_transformation();
+      initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
+      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
+      // Note: initialize_random_variable_parameters() is performed at run time
+      initialize_random_variable_correlations();
+      verify_correlation_support();
+      //initialize_final_statistics(); // statistics set is not default
+
+      // recast to standardized probability space
       transform_model(iteratedModel, mcmcModel); // no global bounds
+    }
     else
       mcmcModel = iteratedModel; // shared rep
     break;
@@ -243,13 +257,9 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
-    stochExpIterator.init_communicators(pl_iter);                  break;
-  case GP_EMULATOR: case KRIGING_EMULATOR:
+    stochExpIterator.init_communicators(pl_iter);              break;
+  default:
     mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
-  case NO_EMULATOR:
-    if (standardizedSpace)
-      mcmcModel.init_communicators(pl_iter, maxEvalConcurrency);
-    break;
   }
 }
 
@@ -263,13 +273,9 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
-    stochExpIterator.set_communicators(pl_iter);                  break;
-  case GP_EMULATOR: case KRIGING_EMULATOR:
+    stochExpIterator.set_communicators(pl_iter);              break;
+  default:
     mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
-  case NO_EMULATOR:
-    if (standardizedSpace)
-      mcmcModel.set_communicators(pl_iter, maxEvalConcurrency);
-    break;
   }
 }
 
@@ -279,12 +285,8 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
     stochExpIterator.free_communicators(pl_iter);              break;
-  case GP_EMULATOR: case KRIGING_EMULATOR:
+  default:
     mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
-  case NO_EMULATOR:
-    if (standardizedSpace)
-      mcmcModel.free_communicators(pl_iter, maxEvalConcurrency);
-    break;
   }
 
   //iteratedModel.free_communicators(maxEvalConcurrency);

@@ -366,7 +366,7 @@ void NonDGlobalReliability::quantify_uncertainty()
 {
   // initialize the random variable arrays and the correlation Cholesky factor
   initialize_random_variable_parameters();
-  natafTransform.transform_correlations();
+  transform_correlations();
 
   // set the object instance pointer for use within static member functions
   NonDGlobalReliability* prev_grel_instance = nondGlobRelInstance;

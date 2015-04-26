@@ -635,7 +635,7 @@ void NonDLocalReliability::mpp_search()
   // Since the uncertain variable distributions (means, std devs, correlations)
   // may change among NonDLocalReliability invocations (e.g., RBDO with design
   // variable insertion), this code block is performed on every invocation.
-  natafTransform.transform_correlations();
+  transform_correlations();
 
   // initialize initialPtUSpec on first reliability analysis; needs to precede
   // iteratedModel.continuous_variables() assignment in initial_taylor_series()
