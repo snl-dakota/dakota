@@ -1,4 +1,5 @@
 #@ s*: Label=AcceptanceTest
+#@ s*: TimeoutDelay=120
 
 # DAKOTA Input File: dakota_ouu_cantilever_lps.in
 # Used to verify optima from dakota_ouu1_cantilever.in,
