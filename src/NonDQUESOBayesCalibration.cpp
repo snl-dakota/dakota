@@ -991,16 +991,28 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   if( "diagonal" == input_fmt )
   {
     if( use_file ) {
+      // Allow either row or column data layout
+      bool row_data = false;
       // Sanity checks
-      if( values_from_file.size() != 1 ) 
-        throw std::runtime_error("\"diagonal\" Queso covariance file data should have 1 column and "
-                                 +convert_to_string(total_num_params)+" rows.");
-      if( values_from_file[0].length() != total_num_params )
-        throw std::runtime_error("\"diagonal\" Queso covariance file data should have "
-                                 +convert_to_string(total_num_params)+" rows.  Found "
-                                 +convert_to_string(values_from_file[0].length())+" rows.");
-      for( int i=0; i<total_num_params; ++i )
-        (*proposalCovMatrix)(i,i) = values_from_file[0](i);
+      if( values_from_file.size() != 1 ) {
+        if( values_from_file.size() == total_num_params ) 
+          row_data = true;
+        else
+          throw std::runtime_error("\"diagonal\" Queso covariance file data should have either 1 column (or row) and "
+              +convert_to_string(total_num_params)+" rows (or columns).");
+      }
+      if( row_data ) {
+        for( int i=0; i<total_num_params; ++i )
+          (*proposalCovMatrix)(i,i) = values_from_file[i](0);
+      }
+      else {
+        if( values_from_file[0].length() != total_num_params )
+          throw std::runtime_error("\"diagonal\" Queso covariance file data should have "
+              +convert_to_string(total_num_params)+" rows.  Found "
+              +convert_to_string(values_from_file[0].length())+" rows.");
+        for( int i=0; i<total_num_params; ++i )
+          (*proposalCovMatrix)(i,i) = values_from_file[0](i);
+      }
     }
     else {
       // Sanity check
