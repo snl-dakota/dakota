@@ -293,7 +293,8 @@ if(DAKOTA_HAVE_HDF5)
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
-set(dakota_boost_components "regex;filesystem;serialization;system")
+set(dakota_boost_components
+  "filesystem;program_options;regex;serialization;system")
 
 # Acro requires the signals library in addition
 option(HAVE_ACRO "Build the ACRO package." ON)
@@ -306,10 +307,6 @@ option(HAVE_QUESO "Build the QUESO package." OFF)
 option(HAVE_QUESO_GPMSA "Use the QUESO GPMSA package when QUESO enabled." ON)
 option(HAVE_QUESO_GRVY "Use optional QUESO GRVY package; not recommended." OFF)
 option(DAKOTA_QUESO_CMAKE "Experimental: Dakota building QUESO with CMake" ON)
-if (HAVE_QUESO)
-  list(APPEND dakota_boost_components "program_options")
-endif()
-
 
 # Options for adaptive sampling that affect both packages and src
 option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)
