@@ -32,7 +32,8 @@ ProgramOptions::ProgramOptions():
   worldRank(0),
   echoInput(true), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
-  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
+  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
+  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -43,7 +44,8 @@ ProgramOptions::ProgramOptions(int world_rank):
   worldRank(world_rank),
   echoInput(true), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
-  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
+  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
+  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -54,7 +56,8 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
   worldRank(world_rank),
   echoInput(true), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
-  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false)
+  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
+  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -173,6 +176,13 @@ const String& ProgramOptions::post_run_input() const
 
 const String& ProgramOptions::post_run_output() const
 { return postRunOutput; }
+
+
+unsigned int ProgramOptions::pre_run_output_format() const
+{ return preRunOutputFormat; }
+
+unsigned int ProgramOptions::post_run_input_format() const
+{ return postRunInputFormat; }
 
 
 bool ProgramOptions::proceed_to_instantiate() const
@@ -338,6 +348,12 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
       set_option(problem_db, "run_output", runOutput);
       set_option(problem_db, "post_run_input", postRunInput);
       set_option(problem_db, "post_run_output", postRunOutput);
+
+      preRunOutputFormat = 
+	problem_db.get_ushort("environment.pre_run_output_format");
+      postRunInputFormat = 
+	problem_db.get_ushort("environment.post_run_input_format");
+
     }
 
     // only call this when user modes haven't already been parsed
@@ -360,6 +376,8 @@ void ProgramOptions::read(MPIUnpackBuffer& s)
   // run mode filenames
   s >> preRunInput >> preRunOutput >> runInput >> runOutput 
     >> postRunInput >> postRunOutput;
+  // run mode formats
+  s >> preRunOutputFormat >> postRunInputFormat;
 }
 
 
@@ -375,6 +393,8 @@ void ProgramOptions::write(MPIPackBuffer& s) const
   // run mode filenames
   s << preRunInput << preRunOutput << runInput << runOutput 
     << postRunInput << postRunOutput;
+  // run mode formats
+  s << preRunOutputFormat << postRunInputFormat;
 }
 
 

@@ -58,9 +58,9 @@ public:
 		   short corr_order, short data_order, short output_level,
 		   const String& point_reuse,
 		   const String& export_points_file = String(),
-		   bool export_annotated = true,
+		   unsigned short export_format = TABULAR_ANNOTATED,
 		   const String& import_points_file = String(),
-		   bool import_annotated = true,
+		   unsigned short import_format = TABULAR_ANNOTATED,
 		   bool import_active_only = false);
   /// destructor
   ~DataFitSurrModel();
@@ -249,7 +249,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(bool annotated, bool active_only);
+  void import_points(unsigned short tabular_format, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// initialize manageRecasting and recastFlags for data import/export
@@ -306,8 +306,8 @@ private:
   String importPointsFile;
   /// file name from \c export_points_file specification
   String exportPointsFile;
-  /// annotation setting for file export of variables and approximate responses
-  bool exportAnnotated;
+  /// file export format for variables and approximate responses
+  unsigned short exportFormat;
   /// file name for \c export_points_file specification
   std::ofstream exportFileStream;
   /// array of variables sets read from the \c import_points_file

@@ -8,14 +8,34 @@ KEYWORD01 environment
 	[ write_restart STRING ]
 	[ pre_run
 	  [ input STRING ]
-	  [ output STRING ]
+	  [ output STRING
+	    [ annotated
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
+	    ]
 	  ]
 	[ run
 	  [ input STRING ]
 	  [ output STRING ]
 	  ]
 	[ post_run
-	  [ input STRING ]
+	  [ input STRING
+	    [ annotated
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
+	    ]
 	  [ output STRING ]
 	  ]
 	[ graphics ]
@@ -704,12 +724,26 @@ KEYWORD12 method
 	  [ use_derivatives ]
 	  [ import_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
@@ -790,7 +824,14 @@ KEYWORD12 method
 	      )
 	    [ import_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    )
@@ -802,7 +843,14 @@ KEYWORD12 method
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ import_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    )
@@ -826,7 +874,14 @@ KEYWORD12 method
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    ]
 	  [ export_expansion_file STRING ]
 	  [ fixed_seed ]
@@ -916,7 +971,14 @@ KEYWORD12 method
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
@@ -1041,12 +1103,26 @@ KEYWORD12 method
 	  [ emulator_samples INTEGER ]
 	  [ import_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
@@ -1094,12 +1170,26 @@ KEYWORD12 method
 	  [ batch_size INTEGER ]
 	  [ import_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
@@ -1200,12 +1290,26 @@ KEYWORD12 method
 	    [ use_derivatives ]
 	    [ import_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      ]
 	    ]
 	  | ea
@@ -1250,12 +1354,26 @@ KEYWORD12 method
 	    [ use_derivatives ]
 	    [ import_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      ]
 	    ]
 	  | ea
@@ -1279,12 +1397,26 @@ KEYWORD12 method
 		[ posterior_adaptive ]
 		[ import_points_file STRING
 		  [ annotated
-		  | freeform ]
+		  |
+		  ( custom_annotated
+		    [ header ]
+		    [ eval_id ]
+		    [ interface_id ]
+		    ]
+		  |
+		  ( freeform
 		  [ active_only ]
 		  ]
 		[ export_points_file STRING
 		  [ annotated
-		  | freeform ]
+		  |
+		  ( custom_annotated
+		    [ header ]
+		    [ eval_id ]
+		    [ interface_id ]
+		    ]
+		  |
+		  ( freeform
 		  ]
 		)
 	      |
@@ -1333,12 +1465,26 @@ KEYWORD12 method
 	    emulator_samples INTEGER
 	    [ import_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      ]
 	    [ dram
 	    | delayed_rejection
@@ -1381,12 +1527,26 @@ KEYWORD12 method
 		[ posterior_adaptive ]
 		[ import_points_file STRING
 		  [ annotated
-		  | freeform ]
+		  |
+		  ( custom_annotated
+		    [ header ]
+		    [ eval_id ]
+		    [ interface_id ]
+		    ]
+		  |
+		  ( freeform
 		  [ active_only ]
 		  ]
 		[ export_points_file STRING
 		  [ annotated
-		  | freeform ]
+		  |
+		  ( custom_annotated
+		    [ header ]
+		    [ eval_id ]
+		    [ interface_id ]
+		    ]
+		  |
+		  ( freeform
 		  ]
 		)
 	      |
@@ -1549,12 +1709,26 @@ KEYWORD12 method
 	  | dakota ]
 	  [ import_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    [ active_only ]
 	    ]
 	  [ export_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    ]
 	  [ use_derivatives ]
 	  [ seed INTEGER > 0 ]
@@ -1614,7 +1788,14 @@ KEYWORD12 method
 	  |
 	  ( import_points_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
 	    [ active_only ]
 	    )
 	  [ model_pointer STRING ]
@@ -1733,12 +1914,26 @@ KEYWORD model
 	      ]
 	    [ import_points_file ALIAS samples_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    [ export_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      ]
 	    [ use_derivatives ]
 	    [ correction
@@ -1758,7 +1953,14 @@ KEYWORD model
 	      ]
 	    [ challenge_points_file STRING
 	      [ annotated
-	      | freeform ]
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
 	      [ active_only ]
 	      ]
 	    )
@@ -2193,7 +2395,13 @@ KEYWORD12 responses
 	      [ variance_type STRINGLIST ]
 	      [ scalar_data_file STRING
 		[ annotated
-		| freeform ]
+		|
+		( custom_annotated
+		  [ header ]
+		  [ exp_id ]
+		  ]
+		|
+		( freeform
 		]
 	      [ interpolate ]
 	      [ read_field_coordinates ]
@@ -2201,7 +2409,13 @@ KEYWORD12 responses
 	  |
 	  ( calibration_data_file ALIAS least_squares_data_file STRING
 	    [ annotated
-	    | freeform ]
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ exp_id ]
+	      ]
+	    |
+	    ( freeform
 	    [ num_experiments INTEGER >= 0 ]
 	    [ num_config_variables INTEGER >= 0 ]
 	    [ variance_type STRINGLIST ]

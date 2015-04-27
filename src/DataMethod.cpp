@@ -136,12 +136,12 @@ DataMethodRep::DataMethodRep():
   batchSize(0), calibrateSigmaFlag(false), numChains(3), numCR(3),
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
   // Parameter Study
-  numSteps(0), pstudyFileAnnotated(true), pstudyFileActive(false), 
+  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
   refinementRate(2.),
   // Point import/export files
-  approxImportAnnotated(true), approxImportActive(false),
-  approxExportAnnotated(true), referenceCount(1)
+  approxImportFormat(TABULAR_ANNOTATED), approxImportActive(false),
+  approxExportFormat(TABULAR_ANNOTATED), referenceCount(1)
 { }
 
 
@@ -261,15 +261,15 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive
+    << pstudyFilename << pstudyFileFormat << pstudyFileActive
     << varPartitions;
 
   // Verification
   s << refinementRate;
  
   // Point import/export files
-  s << approxImportFile << approxImportAnnotated << approxImportActive
-    << approxExportFile << approxExportAnnotated;
+  s << approxImportFile << approxImportFormat << approxImportActive
+    << approxExportFile << approxExportFormat;
 }
 
 
@@ -390,15 +390,15 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
-    >> pstudyFilename >> pstudyFileAnnotated >> pstudyFileActive
+    >> pstudyFilename >> pstudyFileFormat >> pstudyFileActive
     >> varPartitions;
 
   // Verification
   s >> refinementRate;
 
   // Point import/export files
-  s >> approxImportFile >> approxImportAnnotated >> approxImportActive
-    >> approxExportFile >> approxExportAnnotated;
+  s >> approxImportFile >> approxImportFormat >> approxImportActive
+    >> approxExportFile >> approxExportFormat;
 }
 
 
@@ -519,15 +519,15 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
-    << pstudyFilename << pstudyFileAnnotated << pstudyFileActive
+    << pstudyFilename << pstudyFileFormat << pstudyFileActive
     << varPartitions;
 
   // Verification
   s << refinementRate;
 
   // Point import/export files
-  s << approxImportFile << approxImportAnnotated << approxImportActive
-    << approxExportFile << approxExportAnnotated;
+  s << approxImportFile << approxImportFormat << approxImportActive
+    << approxExportFile << approxExportFormat;
 }
 
 

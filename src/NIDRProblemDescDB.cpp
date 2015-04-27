@@ -346,15 +346,24 @@ struct Model_mp_type {
   short type;
 };
 
+struct Model_mp_utype {
+  unsigned short DataModelRep::* sp;
+  unsigned short utype;
+};
+
 struct Resp_Info {
   DataResponsesRep *dr;
   DataResponses *dr0;
 };
 
-struct
-Resp_mp_lit {
+struct Resp_mp_lit {
   String DataResponsesRep::* sp;
   const char *lit;
+};
+
+struct Resp_mp_utype {
+  unsigned short DataResponsesRep::* sp;
+  unsigned short utype;
 };
 
 //struct Env_mp_lit {
@@ -1368,6 +1377,13 @@ method_utype(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+method_augment_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Meth_Info**)g)->dme->*((Method_mp_utype*)v)->ip
+    |= ((Method_mp_utype*)v)->utype;
+}
+
+void NIDRProblemDescDB::
 model_Real(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->**(Real DataModelRep::**)v = *val->r;
@@ -1435,6 +1451,20 @@ void NIDRProblemDescDB::
 model_type(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
+}
+
+void NIDRProblemDescDB::
+model_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp = 
+    ((Model_mp_utype*)v)->utype;
+}
+
+void NIDRProblemDescDB::
+model_augment_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Mod_Info**)g)->dmo->*((Model_mp_utype*)v)->sp |= 
+    ((Model_mp_utype*)v)->utype;
 }
 
 void NIDRProblemDescDB::
@@ -1538,6 +1568,21 @@ resp_lit(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Resp_Info**)g)->dr->*((Resp_mp_lit*)v)->sp = ((Resp_mp_lit*)v)->lit;
 }
+
+void NIDRProblemDescDB::
+resp_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Resp_Info**)g)->dr->*((Resp_mp_utype*)v)->sp
+    = ((Resp_mp_utype*)v)->utype;
+}
+
+void NIDRProblemDescDB::
+resp_augment_utype(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Resp_Info**)g)->dr->*((Resp_mp_utype*)v)->sp
+    |= ((Resp_mp_utype*)v)->utype;
+}
+
 
 void NIDRProblemDescDB::
 resp_sizet(const char *keyname, Values *val, void **g, void *v)
@@ -6615,9 +6660,7 @@ static StringArray
 
 static bool
 	MP_(adaptPosteriorRefine),
-	MP_(approxExportAnnotated),
 	MP_(approxImportActive),
-	MP_(approxImportAnnotated),
 	MP_(backfillFlag),
 	MP_(calibrateSigmaFlag),
 	MP_(constantPenalty),
@@ -6633,7 +6676,6 @@ static bool
 	MP_(normalizedCoeffs),
 	MP_(printPopFlag),
 	MP_(pstudyFileActive),
-	MP_(pstudyFileAnnotated),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
 	MP_(showAllEval),
@@ -6760,6 +6802,16 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE);
 
 static Method_mp_utype
+        MP2s(approxExportFormat,TABULAR_NONE),
+        MP2s(approxExportFormat,TABULAR_HEADER),
+        MP2s(approxExportFormat,TABULAR_EVAL_ID),
+        MP2s(approxExportFormat,TABULAR_IFACE_ID),
+        MP2s(approxExportFormat,TABULAR_ANNOTATED),
+        MP2s(approxImportFormat,TABULAR_NONE),
+        MP2s(approxImportFormat,TABULAR_HEADER),
+        MP2s(approxImportFormat,TABULAR_EVAL_ID),
+        MP2s(approxImportFormat,TABULAR_IFACE_ID),
+        MP2s(approxImportFormat,TABULAR_ANNOTATED),
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
@@ -6825,6 +6877,11 @@ static Method_mp_utype
 	MP2s(methodName,LIST_PARAMETER_STUDY),
 	MP2s(methodName,CENTERED_PARAMETER_STUDY),
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
+        MP2s(pstudyFileFormat,TABULAR_NONE),
+        MP2s(pstudyFileFormat,TABULAR_HEADER),
+        MP2s(pstudyFileFormat,TABULAR_EVAL_ID),
+        MP2s(pstudyFileFormat,TABULAR_IFACE_ID),
+        MP2s(pstudyFileFormat,TABULAR_ANNOTATED),
 	MP2s(reliabilitySearchType,AMV_PLUS_U),
 	MP2s(reliabilitySearchType,AMV_PLUS_X),
 	MP2s(reliabilitySearchType,AMV_U),
@@ -6922,6 +6979,23 @@ static Model_mp_type
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),
 
+static Model_mp_utype
+        MP2s(approxChallengeFormat,TABULAR_NONE),
+        MP2s(approxChallengeFormat,TABULAR_HEADER),
+        MP2s(approxChallengeFormat,TABULAR_EVAL_ID),
+        MP2s(approxChallengeFormat,TABULAR_IFACE_ID),
+        MP2s(approxChallengeFormat,TABULAR_ANNOTATED),
+        MP2s(approxExportFormat,TABULAR_NONE),
+        MP2s(approxExportFormat,TABULAR_HEADER),
+        MP2s(approxExportFormat,TABULAR_EVAL_ID),
+        MP2s(approxExportFormat,TABULAR_IFACE_ID),
+        MP2s(approxExportFormat,TABULAR_ANNOTATED),
+        MP2s(approxImportFormat,TABULAR_NONE),
+        MP2s(approxImportFormat,TABULAR_HEADER),
+        MP2s(approxImportFormat,TABULAR_EVAL_ID),
+        MP2s(approxImportFormat,TABULAR_IFACE_ID),
+        MP2s(approxImportFormat,TABULAR_ANNOTATED);
+
 static Real
 	MP_(annRange),
         MP_(discontGradThresh),
@@ -6959,10 +7033,7 @@ static StringArray
 
 static bool
 	MP_(approxChallengeActive),
-	MP_(approxChallengeAnnotated),
-	MP_(approxExportAnnotated),
 	MP_(approxImportActive),
-	MP_(approxImportAnnotated),
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
 	MP_(hierarchicalTags),
@@ -6997,6 +7068,7 @@ static int
 
 #define MP_(x) DataResponsesRep::* resp_mp_##x = &DataResponsesRep::x
 #define MP2(x,y) resp_mp_##x##_##y = {&DataResponsesRep::x,#y}
+#define MP2s(x,y) resp_mp_##x##_##y = {&DataResponsesRep::x,y}
 
 static IntSet
 	MP_(idAnalyticGrads),
@@ -7064,7 +7136,6 @@ static bool
 	MP_(calibrationDataFlag),
 	MP_(centralHess),
 	MP_(interpolateFlag),
-	MP_(scalarDataFileAnnotated),
         MP_(ignoreBounds),
         MP_(readFieldCoords);
 
@@ -7083,6 +7154,13 @@ static size_t
 	MP_(numScalarObjectiveFunctions),
 	MP_(numScalarResponseFunctions);
 
+static Resp_mp_utype
+        MP2s(scalarDataFormat,TABULAR_NONE),
+        MP2s(scalarDataFormat,TABULAR_HEADER),
+        MP2s(scalarDataFormat,TABULAR_EVAL_ID),
+        MP2s(scalarDataFormat,TABULAR_EXPER_ANNOT);
+ 
+#undef MP2s
 #undef MP2
 #undef MP_
 
@@ -7095,6 +7173,16 @@ static size_t
 //      MP2(,);
 
 static Env_mp_utype
+        MP2s(postRunInputFormat,TABULAR_NONE),
+        MP2s(postRunInputFormat,TABULAR_HEADER),
+        MP2s(postRunInputFormat,TABULAR_EVAL_ID),
+        MP2s(postRunInputFormat,TABULAR_IFACE_ID),
+        MP2s(postRunInputFormat,TABULAR_ANNOTATED),
+        MP2s(preRunOutputFormat,TABULAR_NONE),
+        MP2s(preRunOutputFormat,TABULAR_HEADER),
+        MP2s(preRunOutputFormat,TABULAR_EVAL_ID),
+        MP2s(preRunOutputFormat,TABULAR_IFACE_ID),
+        MP2s(preRunOutputFormat,TABULAR_ANNOTATED),
         MP2s(tabularFormat,TABULAR_NONE),
         MP2s(tabularFormat,TABULAR_HEADER),
         MP2s(tabularFormat,TABULAR_EVAL_ID),

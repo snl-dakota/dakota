@@ -965,8 +965,8 @@ public:
   RealVector listOfPoints;
   /// the \c import_points_file spec for a file-based parameter study
   String pstudyFilename;
-  /// whether the parameter study points file is annotated
-  bool pstudyFileAnnotated;
+  /// tabular format for the parameter study points file
+  unsigned short pstudyFileFormat;
   /// whether to import active variables only
   bool pstudyFileActive;
   /// the \c partitions specification for PStudy method in \ref MethodPSMPS
@@ -981,14 +981,14 @@ public:
 
   /// the file name for point import in surrogate-based methods
   String approxImportFile;
-  /// whether the point import file is annotated (default true)
-  bool approxImportAnnotated;
+  /// tabular format for approximation import
+  unsigned short approxImportFormat;
   /// whether to import active variables only
   bool approxImportActive;
   /// the file name for point export in surrogate-based methods
   String approxExportFile;
-  /// whether the point export file is annotated (default true)
-  bool approxExportAnnotated;
+  /// tabular format for approximation export
+  unsigned short approxExportFormat;
 
 private:
 

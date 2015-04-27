@@ -39,8 +39,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   manageRecasting(false),
   importPointsFile(problem_db.get_string("model.surrogate.import_points_file")),
   exportPointsFile(problem_db.get_string("model.surrogate.export_points_file")),
-  exportAnnotated(
-    problem_db.get_bool("model.surrogate.export_points_file_annotated"))
+  exportFormat(
+    problem_db.get_ushort("model.surrogate.export_points_file_format"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -130,7 +130,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
-    problem_db.get_bool("model.surrogate.import_points_file_annotated"),
+    problem_db.get_ushort("model.surrogate.import_points_file_format"),
     problem_db.get_bool("model.surrogate.import_points_file_active"));
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
@@ -145,8 +145,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 const UShortArray& approx_order, short corr_type,
 		 short corr_order, short data_order, short output_level,
 		 const String& point_reuse, const String& export_points_file,
-		 bool export_annotated, const String& import_points_file,
-		 bool import_annotated, bool import_active_only):
+		 unsigned short export_format, const String& import_points_file,
+		 unsigned short import_format, bool import_active_only):
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
 		 actual_model.current_variables().shared_data(),
@@ -155,7 +155,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
   manageRecasting(false), exportPointsFile(export_points_file),
-  exportAnnotated(export_annotated), importPointsFile(import_points_file)
+  exportFormat(export_format), importPointsFile(import_points_file)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -251,7 +251,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
-  import_points(import_annotated, import_active_only);
+  import_points(import_format, import_active_only);
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
@@ -1574,7 +1574,8 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     then reuse its data as appropriate within build_global().
     Surrogate data imports default to active/inactive variables, but
     user can override to active only */
-void DataFitSurrModel::import_points(bool annotated, bool active_only)
+void DataFitSurrModel::
+import_points(unsigned short tabular_format, bool active_only)
 {
   if (importPointsFile.empty())
     return;
@@ -1594,7 +1595,6 @@ void DataFitSurrModel::import_points(bool annotated, bool active_only)
   bool verbose = (outputLevel > NORMAL_OUTPUT);
 
   // Deep copy of variables/response so data in model isn't changed during read
-  unsigned short tabular_format = annotated ? TABULAR_ANNOTATED : TABULAR_NONE;
   TabularIO::read_data_tabular(importPointsFile, 
 			       "DataFitSurrModel samples file", vars, resp,
 			       reuseFileVars, reuseFileResponses, tabular_format,
@@ -1614,9 +1614,8 @@ void DataFitSurrModel::initialize_export()
 
   TabularIO::open_file(exportFileStream, exportPointsFile,
 		       "DataFitSurrModel export");
-  if (exportAnnotated)
-    TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				    currentResponse, "eval_id", TABULAR_ANNOTATED);
+  TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				  currentResponse, "eval_id", exportFormat);
 }
 
 
@@ -1654,9 +1653,6 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
   if (exportPointsFile.empty())
     return;
 
-  unsigned short tabular_format = 
-    exportAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
-
   if (manageRecasting) {
     // create vars envelope & resp handle to manage the instances to be exported
     Variables export_vars(vars); Response export_resp(resp); // shallow copies
@@ -1682,11 +1678,11 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
       }
 
     TabularIO::write_data_tabular(exportFileStream, export_vars, interface_id(),
-				  export_resp, eval_id, tabular_format);
+				  export_resp, eval_id, exportFormat);
   }
   else
     TabularIO::write_data_tabular(exportFileStream, vars, interface_id(), resp, 
-				  eval_id, tabular_format);
+				  eval_id, exportFormat);
 }
 
 

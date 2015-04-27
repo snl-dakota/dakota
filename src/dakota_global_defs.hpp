@@ -106,7 +106,9 @@ extern int write_precision;
 /// options for tabular columns
 enum { TABULAR_NONE = 0, TABULAR_HEADER = 1, 
        TABULAR_EVAL_ID = 2, TABULAR_IFACE_ID = 4,
-       // default is fully annotated as of Dakota 6.1
+       // experiment data annotated has header and exp_id
+       TABULAR_EXPER_ANNOT = TABULAR_HEADER | TABULAR_EVAL_ID,
+       // default for tabular files is fully annotated as of Dakota 6.1
        TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
 
 #ifdef DAKOTA_MODELCENTER

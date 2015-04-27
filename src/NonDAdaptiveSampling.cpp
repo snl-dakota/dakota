@@ -128,8 +128,8 @@ namespace Dakota
 		gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel,
 						  gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
 						  outputLevel, sample_reuse, probDescDB.get_string("method.export_points_file"),
-						  probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
-							probDescDB.get_bool("method.import_points_file_annotated"),
+						  probDescDB.get_ushort("method.export_points_file_format"), import_pts_file,
+							probDescDB.get_ushort("method.import_points_file_format"),
 							probDescDB.get_bool("method.import_points_file_active")), false);
 
 		vary_pattern = true; // allow seed to run among multiple approx sample sets

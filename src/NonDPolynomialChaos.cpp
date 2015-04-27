@@ -290,8 +290,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
-    probDescDB.get_bool("method.export_points_file_annotated"), import_pts_file,
-    probDescDB.get_bool("method.import_points_file_annotated"),
+    probDescDB.get_ushort("method.export_points_file_format"), import_pts_file,
+    probDescDB.get_ushort("method.import_points_file_format"),
     probDescDB.get_bool("method.import_points_file_active")), false);
   initialize_u_space_model();
 

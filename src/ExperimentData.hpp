@@ -228,8 +228,9 @@ private:
   /// the user-specied scalar data filename
   String scalarDataFilename;
   
-  /// whether the simple scalar data file is in annotated format 
-  bool scalarDataAnnotated;
+  /// tabular format of the simple scalar data file; supports
+  /// TABULAR_NONE, TABULAR_HEADER, TABULAR_EVAL_ID, TABULAR_EXPER_ANNOT
+  unsigned short scalarDataFormat;
 
   /// number of sigma values to read from each row in simple data file
   /// format (calculated from variance types strings

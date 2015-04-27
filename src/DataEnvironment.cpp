@@ -22,6 +22,7 @@ namespace Dakota {
 DataEnvironmentRep::DataEnvironmentRep():
   checkFlag(false), stopRestart(0), 
   preRunFlag(false), runFlag(false), postRunFlag(false),
+  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED),
   graphicsFlag(false), tabularDataFlag(false), 
   tabularDataFile("dakota_tabular.dat"), tabularFormat(TABULAR_ANNOTATED), 
   outputPrecision(0), 
@@ -36,6 +37,7 @@ void DataEnvironmentRep::write(MPIPackBuffer& s) const
     << outputFile << errorFile << readRestart << stopRestart << writeRestart
     << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
     << runInput << runOutput << postRunInput << postRunOutput
+    << preRunOutputFormat << postRunInputFormat
     << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;
@@ -48,6 +50,7 @@ void DataEnvironmentRep::read(MPIUnpackBuffer& s)
     >> outputFile >> errorFile >> readRestart >> stopRestart >> writeRestart
     >> preRunFlag >> runFlag >> postRunFlag >> preRunInput >> preRunOutput
     >> runInput >> runOutput >> postRunInput >> postRunOutput
+    >> preRunOutputFormat >> postRunInputFormat
     >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> tabularFormat 
     >> outputPrecision
     >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
@@ -60,6 +63,7 @@ void DataEnvironmentRep::write(std::ostream& s) const
     << outputFile << errorFile << readRestart << stopRestart << writeRestart
     << preRunFlag << runFlag << postRunFlag << preRunInput << preRunOutput
     << runInput << runOutput << postRunInput << postRunOutput
+    << preRunOutputFormat << postRunInputFormat
     << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
     << resultsOutputFlag << resultsOutputFile << topMethodPointer;

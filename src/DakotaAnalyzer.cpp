@@ -651,11 +651,13 @@ void Analyzer::pre_output()
   // When in compactMode, get the inactive variables off the Model and
   // use sample_to_variables to set the discrete variables not treated
   // by allSamples.
+  unsigned short tabular_format = 
+    parallelLib.program_options().pre_run_output_format();
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel.current_variables(), 
 				  iteratedModel.current_response(),
 				  "eval_id",
-				  TABULAR_ANNOTATED);
+				  tabular_format);
 
   tabular_file << std::setprecision(write_precision) 
 	       << std::resetiosflags(std::ios::floatfield);
@@ -665,7 +667,7 @@ void Analyzer::pre_output()
 
     TabularIO::write_leading_columns(tabular_file, eval_index+1, 
 				     iteratedModel.interface_id(),
-				     TABULAR_ANNOTATED);
+				     tabular_format);
     if (compactMode) {
       // allSamples num_vars x num_evals, so each col becomes tabular file row
       // populate the active discrete variables that aren't in sample_matrix
@@ -715,7 +717,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   std::ifstream tabular_file;
   TabularIO::open_file(tabular_file, filename, "post-run input");
   // pre/post only supports annotated; could detect
-  unsigned short tabular_format = TABULAR_ANNOTATED;
+  unsigned short tabular_format = 
+    parallelLib.program_options().post_run_input_format();
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nAttempting to read " << num_evals << " samples from file "

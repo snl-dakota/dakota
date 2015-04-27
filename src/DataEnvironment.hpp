@@ -71,6 +71,9 @@ public:
   String postRunInput;  ///< filename for post_run input
   String postRunOutput; ///< filename for post_run output
 
+  unsigned short preRunOutputFormat;  ///< tabular format for pre_run output
+  unsigned short postRunInputFormat;  ///< tabular format for post_run input
+
   /// flags use of graphics by the environment (from the \c graphics
   /// specification in \ref EnvIndControl)
   bool graphicsFlag;

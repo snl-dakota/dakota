@@ -117,15 +117,15 @@ public:
   /// the file name from the \c import_points_file specification in
   /// \ref ModelSurrG
   String approxImportFile;
-  /// whether the point import file is annotated (default true)
-  bool approxImportAnnotated;
+  /// tabular format for the point import file
+  unsigned short approxImportFormat;
   /// whether to import active variables only
   bool approxImportActive;
   /// the file name from the \c export_points_file specification in
   /// \ref ModelSurrG
   String approxExportFile;
-  /// whether the point export file is annotated (default true)
-  bool approxExportAnnotated;
+  /// tabular format for the point export file
+  unsigned short approxExportFormat;
 
   /// the file name from the \c export_model_file specification in
   /// \ref ModelSurrG
@@ -220,8 +220,8 @@ public:
   /// the file name from the \c challenge_points_file specification in
   /// \ref ModelSurrG
   String approxChallengeFile;
-  /// whether the challenge data file is annotated (default true)
-  bool approxChallengeAnnotated;
+  /// tabular format of the challenge data file
+  unsigned short approxChallengeFormat;
   /// whether to import active variables only
   bool approxChallengeActive;
 

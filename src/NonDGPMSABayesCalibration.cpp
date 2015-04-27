@@ -52,8 +52,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_points_file")),
-  approxImportAnnotated(
-    probDescDB.get_bool("method.import_points_file_annotated")),
+  approxImportFormat(
+    probDescDB.get_bool("method.import_points_file_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_points_file_active")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
@@ -103,9 +103,10 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
  
-  Cout << "import points file "<< approxImportFile
-       << "import points annotated " << approxImportAnnotated
-       << "import points active " << approxImportActiveOnly;
+  if (outputLevel > NORMAL_OUTPUT) 
+    Cout << "import points file "<< approxImportFile
+	 << "import points format " << approxImportFormat
+	 << "import points active " << approxImportActiveOnly;
   if (approxImportFile.empty())
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
@@ -337,12 +338,10 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     RealMatrix the_data;
     // BMA TODO: allow active only on point import?
     // approxImportActiveOnly
-    unsigned short tabular_format = 
-      approxImportAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
     TabularIO::
       read_data_tabular(approxImportFile, "GPMSA input points", the_data,
 			num_simulations, (numUncertainVars+numFunctions),
-			tabular_format, verbose); 
+			approxImportFormat, verbose); 
     RealVector temp_resp(numFunctions);
     for (i = 0; i < num_simulations; ++i) {
       for (j=0; j<(numUncertainVars);++j){

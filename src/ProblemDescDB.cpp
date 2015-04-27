@@ -2705,6 +2705,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataEnvironmentRep::
     static KW<unsigned short, DataEnvironmentRep> UShde[] = { 
       // must be sorted by string (key)
+        {"post_run_input_format", P postRunInputFormat},
+        {"pre_run_output_format", P preRunOutputFormat},
         {"tabular_format", P tabularFormat}};
     #undef P
 
@@ -2716,23 +2718,41 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
-    static KW<unsigned short, DataMethodRep> UShdmo[] = { 
+    static KW<unsigned short, DataMethodRep> UShdme[] = { 
       // must be sorted by string (key)
 	{"algorithm", P methodName},
+	{"export_points_file_format", P approxExportFormat},
+	{"import_points_file_format", P approxImportFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.cubature_integrand", P cubIntOrder},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.reliability_search_type", P reliabilitySearchType},
 	{"nond.vbd_interaction_order", P vbdOrder},
+	{"pstudy.file_format", P pstudyFileFormat},
 	{"sample_type", P sampleType},
 	{"soft_convergence_limit", P softConvLimit},
 	{"sub_method", P subMethod}};
     #undef P
 
     KW<unsigned short, DataMethodRep> *kw;
-    if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdmo, L)))
+    if ((kw = (KW<unsigned short, DataMethodRep>*)Binsearch(UShdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "model."))) {
+    if (dbRep->modelDBLocked)
+	Locked_db();
+    #define P &DataModelRep::
+    static KW<unsigned short, DataModelRep> UShdmo[] = { 
+      // must be sorted by string (key)
+	{"surrogate.challenge_points_file_format", P approxChallengeFormat},
+	{"surrogate.export_points_file_format", P approxExportFormat},
+	{"surrogate.import_points_file_format", P approxImportFormat}};
+    #undef P
+
+    KW<unsigned short, DataModelRep> *kw;
+    if ((kw = (KW<unsigned short, DataModelRep>*)Binsearch(UShdmo, L)))
+	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "interface."))) {
     if (dbRep->interfaceDBLocked)
@@ -2746,6 +2766,19 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     KW<unsigned short, DataInterfaceRep> *kw;
     if ((kw = (KW<unsigned short, DataInterfaceRep>*)Binsearch(UShdi, L)))
 	return dbRep->dataInterfaceIter->dataIfaceRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "responses."))) {
+    if (dbRep->responsesDBLocked)
+	Locked_db();
+    #define P &DataResponsesRep::
+    static KW<unsigned short, DataResponsesRep> UShdr[] = { 
+      // must be sorted by string (key)
+        {"scalar_data_format", P scalarDataFormat}};
+    #undef P
+
+    KW<unsigned short, DataResponsesRep> *kw;
+    if ((kw = (KW<unsigned short, DataResponsesRep>*)Binsearch(UShdr, L)))
+	return dbRep->dataResponsesIter->dataRespRep->*kw->p;
   }
   Bad_name(entry_name, "get_ushort");
   return abort_handler_t<unsigned short>(PARSE_ERROR);
@@ -2924,11 +2957,9 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
 	{"derivative_usage", P methodUseDerivsFlag},
-	{"export_points_file_annotated", P approxExportAnnotated},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"import_points_file_active", P approxImportActive},
-	{"import_points_file_annotated", P approxImportAnnotated},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
@@ -2943,7 +2974,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"print_each_pop", P printPopFlag},
 	{"pstudy.file_active", P pstudyFileActive},
-	{"pstudy.file_annotated", P pstudyFileAnnotated},
 	{"quality_metrics", P volQualityFlag},
 	{"sbg.replace_points", P surrBasedGlobalReplacePts},
 	{"sbl.truth_surrogate_bypass", P surrBasedLocalLayerBypass},
@@ -2964,13 +2994,10 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       // must be sorted by string (key)
 	{"hierarchical_tags", P hierarchicalTags},
 	{"surrogate.challenge_points_file_active", P approxChallengeActive},
-	{"surrogate.challenge_points_file_annotated", P approxChallengeAnnotated},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
-	{"surrogate.export_points_file_annotated", P approxExportAnnotated},
 	{"surrogate.import_points_file_active", P approxImportActive},
-	{"surrogate.import_points_file_annotated", P approxImportAnnotated},
 	{"surrogate.piecewise_decomp", P piecewiseDecomp},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
@@ -3029,8 +3056,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"central_hess", P centralHess},
 	{"ignore_bounds", P ignoreBounds},
 	{"interpolate", P interpolateFlag},
-	{"read_field_coords", P readFieldCoords},
-	{"scalar_data_file_annotated", P scalarDataFileAnnotated}};
+	{"read_field_coords", P readFieldCoords}};
     #undef P
 
     KW<bool, DataResponsesRep> *kw;

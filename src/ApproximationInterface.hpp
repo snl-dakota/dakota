@@ -186,8 +186,8 @@ private:
   /// data file for user-supplied challenge data (per interface, since may
   /// contain multiple responses)
   String challengeFile;
-  /// whether the points file is annotated
-  bool challengeAnnotated;
+  /// tabular format of the challenge points file
+  unsigned short challengeFormat;
   /// whether to import active only
   bool challengeActiveOnly;
   /// container for the challenge points data

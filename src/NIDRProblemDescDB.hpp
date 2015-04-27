@@ -161,6 +161,7 @@ public:
   KWH(method_usharray);
   KWH(method_ushint);
   KWH(method_utype);
+  KWH(method_augment_utype);
   KWH(method_utype_lit);
 
   KWH(model_Real);
@@ -178,6 +179,8 @@ public:
   KWH(model_strL);
   KWH(model_true);
   KWH(model_type);
+  KWH(model_utype);
+  KWH(model_augment_utype);
 
   KWH(resp_RealDL);
   KWH(resp_RealL);
@@ -191,6 +194,8 @@ public:
   KWH(resp_str);
   KWH(resp_strL);
   KWH(resp_true);
+  KWH(resp_utype);
+  KWH(resp_augment_utype);
 
   //KWH(env_Real);
   //KWH(env_RealL);

@@ -33,8 +33,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   approxFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("environment.graphics")),
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
-  challengeAnnotated(
-    problem_db.get_bool("model.surrogate.challenge_points_file_annotated")),
+  challengeFormat(
+    problem_db.get_ushort("model.surrogate.challenge_points_file_format")),
   challengeActiveOnly(
     problem_db.get_bool("model.surrogate.challenge_points_file_active")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
@@ -127,7 +127,7 @@ ApproximationInterface(const String& approx_type,
 		       const String& am_interface_id, size_t num_fns,
 		       short data_order, short output_level):
   Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
-  challengeAnnotated(true), challengeActiveOnly(false), 
+  challengeFormat(TABULAR_ANNOTATED), challengeActiveOnly(false), 
   actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
@@ -828,12 +828,10 @@ void ApproximationInterface::read_challenge_points(bool active_only)
   size_t num_cols = num_vars + num_fns;
 
   // use a Variables object to easily read active vs. all
-  unsigned short tabular_format = 
-    challengeAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
   RealArray pts_array;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
 			       actualModelVars.copy(), num_fns, pts_array, 
-			       tabular_format, challengeActiveOnly);
+			       challengeFormat, challengeActiveOnly);
   
   // translate to the matrix, using real vector only for convenience
   size_t num_points = pts_array.size()/num_cols;

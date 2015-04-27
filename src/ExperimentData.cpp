@@ -15,7 +15,8 @@ namespace Dakota {
 
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
-  scalarDataAnnotated(true), interpolateFlag(false), outputLevel(NORMAL_OUTPUT)
+  scalarDataFormat(TABULAR_EXPER_ANNOT), interpolateFlag(false), 
+  outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }                                
 
 
@@ -26,7 +27,7 @@ ExperimentData(const ProblemDescDB& pddb,
   numExperiments(pddb.get_sizet("responses.num_experiments")), 
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
-  scalarDataAnnotated(pddb.get_bool("responses.scalar_data_file_annotated")),
+  scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
   interpolateFlag(pddb.get_bool("responses.interpolate")),
   outputLevel(output_level)
 { 
@@ -44,7 +45,7 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
   scalarDataFilename(scalar_data_filename), dataPathPrefix(data_prefix),
-  scalarDataAnnotated(true), interpolateFlag(false), outputLevel(output_level)
+  scalarDataFormat(TABULAR_EXPER_ANNOT), interpolateFlag(false), outputLevel(output_level)
 {
   initialize(variance_types, srd);
 }
@@ -209,9 +210,7 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     }
     TabularIO::open_file(scalar_data_stream, scalarDataFilename, 
 			 context_message);
-    unsigned short tabular_format = 
-      scalarDataAnnotated ? TABULAR_ANNOTATED : TABULAR_NONE;
-    TabularIO::read_header_tabular(scalar_data_stream, tabular_format);
+    TabularIO::read_header_tabular(scalar_data_stream, scalarDataFormat);
   }
 
   if (!scalar_data_file) { 
@@ -235,11 +234,9 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
 
   for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
 
+    // conditionally read leading exp_id column
     // TODO: error handling
-    if (scalarDataAnnotated) {
-      size_t discard_row_label;
-	scalar_data_stream >> discard_row_label;
-    }
+    TabularIO::read_leading_columns(scalar_data_stream, scalarDataFormat);
 
     // -----
     // Read and set the configuration variables

@@ -61,8 +61,12 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
   graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
 {
   //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stdout_redirect())
+  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
+    if (outputLevel >= DEBUG_OUTPUT) 
+      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
+		<< std::endl;
     coutRedirector.push_back(prog_opts.output_file());
+  }
 
   //  if error file specified, redirect immediately, possibly rebind later
   if (worldRank == 0 && prog_opts.user_stderr_redirect())
@@ -144,17 +148,23 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
   String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
   
   if (outputLevel >= DEBUG_OUTPUT)
-    std::cout << "DEBUG: Rank " << worldRank << " pushing output tag; new tag '"
-	      << file_tag << "'" << std::endl;
+    std::cout << "\nDEBUG: Rank " << worldRank 
+	      << " pushing output tag; new tag '" << file_tag 
+	      << "'; force_redirect = " << force_cout_redirect << std::endl;
 
-  if (force_cout_redirect || prog_opts.user_stdout_redirect())
+  // Only redirect if parallel config requires it (otherwise may bind
+  // multiple MPI ranks to same stream); any default user-requested
+  // redirect would have happened in the constructor
+  if (force_cout_redirect)
     coutRedirector.push_back(prog_opts.output_file() + file_tag);
-  else  // output file remains same as before (possibly cout)
+  else  // output file remains same as before (possibly std::cout)
     coutRedirector.push_back();
 
-  if (!prog_opts.error_file().empty())
+  // Only redirect if parallel config requires it AND user requested
+  // error redirection; otherwise errors remain to the console
+  if (force_cout_redirect && !prog_opts.error_file().empty())
     cerrRedirector.push_back(prog_opts.error_file() + file_tag);
-  else  // error file remains same as before (possibly cee)
+  else  // error file remains same as before (possibly std::cerr)
     cerrRedirector.push_back();
 
   // We always write a restart file; need to be careful to only read
@@ -180,7 +190,7 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
 void OutputManager::pop_output_tag()
 {
   if (fileTags.empty()) {
-    Cerr << "\nWarning: Rank " << worldRank 
+    Cout << "\nWarning: Rank " << worldRank 
 	 << " attempting to pop non-existent output tag." << std::endl;
     return;
   }
@@ -189,7 +199,7 @@ void OutputManager::pop_output_tag()
 
   if (outputLevel >= DEBUG_OUTPUT) {
     String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
-    std::cout << "DEBUG: Rank " << worldRank << " popping output tag; new tag '"
+    std::cout << "\nDEBUG: Rank " << worldRank << " popping output tag; new tag '"
 	      << file_tag << "'" << std::endl;
   }
 
@@ -199,7 +209,7 @@ void OutputManager::pop_output_tag()
 
   // the restart file will get closed if this pops the last reference to it
   if (restartDestinations.empty())
-    Cerr << "\nWarning: Attempt to pop non-existent restart destination!"
+    Cout << "\nWarning: Attempt to pop non-existent restart destination!"
 	 << std::endl;
   else
     restartDestinations.pop_back();

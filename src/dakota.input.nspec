@@ -8,14 +8,42 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ write_restart STRING {N_stm(str,writeRestart)} ]
   [ pre_run {N_stm(true,preRunFlag)}
     [ input STRING {N_stm(str,preRunInput)} ]
-    [ output STRING {N_stm(str,preRunOutput)} ]
+    [ output STRING {N_stm(str,preRunOutput)}
+      [ 
+        annotated {N_stm(utype,preRunOutputFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_stm(utype,preRunOutputFormat_TABULAR_NONE)}
+            [ header {N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_stm(utype,preRunOutputFormat_TABULAR_NONE)}
+       ]
+     ]
    ]
   [ run {N_stm(true,runFlag)}
     [ input STRING {N_stm(str,runInput)} ]
     [ output STRING {N_stm(str,runOutput)} ]
    ]
   [ post_run {N_stm(true,postRunFlag)}
-    [ input STRING {N_stm(str,postRunInput)} ]
+    [ input STRING {N_stm(str,postRunInput)}
+      [ 
+        annotated {N_stm(utype,postRunInputFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_stm(utype,postRunInputFormat_TABULAR_NONE)}
+            [ header {N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_stm(utype,postRunInputFormat_TABULAR_NONE)}
+       ]
+     ]
     [ output STRING {N_stm(str,postRunOutput)} ]
    ]
   [ graphics {N_stm(true,graphicsFlag)} ]
@@ -580,17 +608,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
       [ import_points_file STRING {N_mdm(str,approxImportFile)}
         [ 
-          annotated {N_mdm(true,approxImportAnnotated)}
+          annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
           |
-          freeform {N_mdm(false,approxImportAnnotated)}
+          ( 
+            ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
          ]
         [ active_only {N_mdm(true,approxImportActive)} ]
        ]
       [ export_points_file STRING {N_mdm(str,approxExportFile)}
         [ 
-          annotated {N_mdm(true,approxExportAnnotated)}
+          annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
           |
-          freeform {N_mdm(false,approxExportAnnotated)}
+          ( 
+            ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
          ]
        ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
@@ -703,9 +747,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  )
                 [ import_points_file STRING {N_mdm(str,approxImportFile)}
                   [ 
-                    annotated {N_mdm(true,approxImportAnnotated)}
+                    annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                     |
-                    freeform {N_mdm(false,approxImportAnnotated)}
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                    ]
                   [ active_only {N_mdm(true,approxImportActive)} ]
                  ]
@@ -737,9 +789,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
               [ export_points_file STRING {N_mdm(str,approxExportFile)}
                 [ 
-                  annotated {N_mdm(true,approxExportAnnotated)}
+                  annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                   |
-                  freeform {N_mdm(false,approxExportAnnotated)}
+                  ( 
+                    ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                  ]
                ]
               [ export_expansion_file STRING {N_mdm(str,expansionExportFile)} ]
@@ -821,9 +881,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
               [ export_points_file STRING {N_mdm(str,approxExportFile)}
                 [ 
-                  annotated {N_mdm(true,approxExportAnnotated)}
+                  annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                   |
-                  freeform {N_mdm(false,approxExportAnnotated)}
+                  ( 
+                    ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                  ]
                ]
              )
@@ -894,17 +962,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
           [ import_points_file STRING {N_mdm(str,approxImportFile)}
             [ 
-              annotated {N_mdm(true,approxImportAnnotated)}
+              annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
               |
-              freeform {N_mdm(false,approxImportAnnotated)}
+              ( 
+                ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
+              |
+              freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
              ]
             [ active_only {N_mdm(true,approxImportActive)} ]
            ]
           [ export_points_file STRING {N_mdm(str,approxExportFile)}
             [ 
-              annotated {N_mdm(true,approxExportAnnotated)}
+              annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
               |
-              freeform {N_mdm(false,approxExportAnnotated)}
+              ( 
+                ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
+              |
+              freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
              ]
            ]
           [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
@@ -943,17 +1027,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ batch_size INTEGER {N_mdm(int,batchSize)} ]
           [ import_points_file STRING {N_mdm(str,approxImportFile)}
             [ 
-              annotated {N_mdm(true,approxImportAnnotated)}
+              annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
               |
-              freeform {N_mdm(false,approxImportAnnotated)}
+              ( 
+                ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
+              |
+              freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
              ]
             [ active_only {N_mdm(true,approxImportActive)} ]
            ]
           [ export_points_file STRING {N_mdm(str,approxExportFile)}
             [ 
-              annotated {N_mdm(true,approxExportAnnotated)}
+              annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
               |
-              freeform {N_mdm(false,approxExportAnnotated)}
+              ( 
+                ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
+              |
+              freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
              ]
            ]
           [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
@@ -1013,17 +1113,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ import_points_file STRING {N_mdm(str,approxImportFile)}
                 [ 
-                  annotated {N_mdm(true,approxImportAnnotated)}
+                  annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                   |
-                  freeform {N_mdm(false,approxImportAnnotated)}
+                  ( 
+                    ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                  ]
                 [ active_only {N_mdm(true,approxImportActive)} ]
                ]
               [ export_points_file STRING {N_mdm(str,approxExportFile)}
                 [ 
-                  annotated {N_mdm(true,approxExportAnnotated)}
+                  annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                   |
-                  freeform {N_mdm(false,approxExportAnnotated)}
+                  ( 
+                    ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                  ]
                ]
              )
@@ -1078,17 +1194,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
             [ import_points_file STRING {N_mdm(str,approxImportFile)}
               [ 
-                annotated {N_mdm(true,approxImportAnnotated)}
+                annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                 |
-                freeform {N_mdm(false,approxImportAnnotated)}
+                ( 
+                  ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                ]
               [ active_only {N_mdm(true,approxImportActive)} ]
              ]
             [ export_points_file STRING {N_mdm(str,approxExportFile)}
               [ 
-                annotated {N_mdm(true,approxExportAnnotated)}
+                annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                 |
-                freeform {N_mdm(false,approxExportAnnotated)}
+                ( 
+                  ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                ]
              ]
            )
@@ -1116,17 +1248,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_points_file STRING {N_mdm(str,approxImportFile)}
                   [ 
-                    annotated {N_mdm(true,approxImportAnnotated)}
+                    annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                     |
-                    freeform {N_mdm(false,approxImportAnnotated)}
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                    ]
                   [ active_only {N_mdm(true,approxImportActive)} ]
                  ]
                 [ export_points_file STRING {N_mdm(str,approxExportFile)}
                   [ 
-                    annotated {N_mdm(true,approxExportAnnotated)}
+                    annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                     |
-                    freeform {N_mdm(false,approxExportAnnotated)}
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                    ]
                  ]
                )
@@ -1151,17 +1299,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             emulator_samples INTEGER {N_mdm(int,emulatorSamples)}
             [ import_points_file STRING {N_mdm(str,approxImportFile)}
               [ 
-                annotated {N_mdm(true,approxImportAnnotated)}
+                annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                 |
-                freeform {N_mdm(false,approxImportAnnotated)}
+                ( 
+                  ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                ]
               [ active_only {N_mdm(true,approxImportActive)} ]
              ]
             [ export_points_file STRING {N_mdm(str,approxExportFile)}
               [ 
-                annotated {N_mdm(true,approxExportAnnotated)}
+                annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                 |
-                freeform {N_mdm(false,approxExportAnnotated)}
+                ( 
+                  ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                ]
              ]
            )
@@ -1217,17 +1381,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_points_file STRING {N_mdm(str,approxImportFile)}
                 [ 
-                  annotated {N_mdm(true,approxImportAnnotated)}
+                  annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                   |
-                  freeform {N_mdm(false,approxImportAnnotated)}
+                  ( 
+                    ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                  ]
                 [ active_only {N_mdm(true,approxImportActive)} ]
                ]
               [ export_points_file STRING {N_mdm(str,approxExportFile)}
                 [ 
-                  annotated {N_mdm(true,approxExportAnnotated)}
+                  annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
                   |
-                  freeform {N_mdm(false,approxExportAnnotated)}
+                  ( 
+                    ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
                  ]
                ]
              )
@@ -1406,17 +1586,33 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ import_points_file STRING {N_mdm(str,approxImportFile)}
           [ 
-            annotated {N_mdm(true,approxImportAnnotated)}
+            annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
             |
-            freeform {N_mdm(false,approxImportAnnotated)}
+            ( 
+              ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
            ]
           [ active_only {N_mdm(true,approxImportActive)} ]
          ]
         [ export_points_file STRING {N_mdm(str,approxExportFile)}
           [ 
-            annotated {N_mdm(true,approxExportAnnotated)}
+            annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
             |
-            freeform {N_mdm(false,approxExportAnnotated)}
+            ( 
+              ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
            ]
          ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
@@ -1481,9 +1677,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       ( import_points_file STRING {N_mdm(str,pstudyFilename)}
         [ 
-          annotated {N_mdm(true,pstudyFileAnnotated)}
+          annotated {N_mdm(utype,pstudyFileFormat_TABULAR_ANNOTATED)}
           |
-          freeform {N_mdm(false,pstudyFileAnnotated)}
+          ( 
+            ( custom_annotated {N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,pstudyFileFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,pstudyFileFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,pstudyFileFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}
          ]
         [ active_only {N_mdm(true,pstudyFileActive)} ]
        )
@@ -1624,17 +1828,33 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
       [ import_points_file ALIAS samples_file STRING {N_mom(str,approxImportFile)}
         [ 
-          annotated {N_mom(true,approxImportAnnotated)}
+          annotated {N_mom(utype,approxImportFormat_TABULAR_ANNOTATED)}
           |
-          freeform {N_mom(false,approxImportAnnotated)}
+          ( 
+            ( custom_annotated {N_mom(utype,approxImportFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mom(utype,approxImportFormat_TABULAR_NONE)}
          ]
         [ active_only {N_mdm(true,approxImportActive)} ]
        ]
       [ export_points_file STRING {N_mom(str,approxExportFile)}
         [ 
-          annotated {N_mom(true,approxExportAnnotated)}
+          annotated {N_mom(utype,approxExportFormat_TABULAR_ANNOTATED)}
           |
-          freeform {N_mom(false,approxExportAnnotated)}
+          ( 
+            ( custom_annotated {N_mom(utype,approxExportFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mom(utype,approxExportFormat_TABULAR_NONE)}
          ]
        ]
       [ use_derivatives {N_mom(true,modelUseDerivsFlag)} ]
@@ -1662,9 +1882,17 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
       [ challenge_points_file STRING {N_mom(str,approxChallengeFile)}
         [ 
-          annotated {N_mom(true,approxChallengeAnnotated)}
+          annotated {N_mom(utype,approxChallengeFormat_TABULAR_ANNOTATED)}
           |
-          freeform {N_mom(false,approxChallengeAnnotated)}
+          ( 
+            ( custom_annotated {N_mom(utype,approxChallengeFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,approxChallengeFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,approxChallengeFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,approxChallengeFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mom(utype,approxChallengeFormat_TABULAR_NONE)}
          ]
         [ active_only {N_mom(true,approxChallengeActive)} ]
        ]
@@ -2134,9 +2362,16 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
         [ variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
         [ scalar_data_file STRING {N_rem(str,scalarDataFileName)}
           [ 
-            annotated {N_rem(true,scalarDataFileAnnotated)}
+            annotated {N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}
             |
-            freeform {N_rem(false,scalarDataFileAnnotated)}
+            ( 
+              ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
+                [ header {N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)} ]
+                [ exp_id {N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)} ]
+               )
+             )
+            |
+            freeform {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
            ]
          ]
         [ interpolate {N_rem(true,interpolateFlag)} ]
@@ -2145,9 +2380,16 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       |
       ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,scalarDataFileName)}
         [ 
-          annotated {N_rem(true,scalarDataFileAnnotated)}
+          annotated {N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}
           |
-          freeform {N_rem(false,scalarDataFileAnnotated)}
+          ( 
+            ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
+              [ header {N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)} ]
+              [ exp_id {N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)} ]
+             )
+           )
+          |
+          freeform {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
          ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]

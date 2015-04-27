@@ -40,9 +40,9 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       = probDescDB.get_rv("method.parameter_study.list_of_points");
     if (pt_list.empty()) {
       const String& pt_fname = probDescDB.get_string("method.pstudy.filename");
-      bool annotated = probDescDB.get_bool("method.pstudy.file_annotated");
+      unsigned short tabular_format = probDescDB.get_ushort("method.pstudy.file_format");
       bool active_only = probDescDB.get_bool("method.pstudy.file_active");
-      if (load_distribute_points(pt_fname, annotated, active_only))
+      if (load_distribute_points(pt_fname, tabular_format, active_only))
 	err_flag = true;
     }
     else if (distribute_list_of_points(pt_list))
@@ -473,7 +473,8 @@ void ParamStudy::multidim_loop()
     points_file is valued-based (reals, integers, strings) so file
     input matches tabular data output.  Return false on success. */
 bool ParamStudy::
-load_distribute_points(const String& points_filename, bool annotated,
+load_distribute_points(const String& points_filename, 
+		       unsigned short tabular_format,
 		       bool active_only)
 {
   bool err = false;
@@ -490,7 +491,6 @@ load_distribute_points(const String& points_filename, bool annotated,
  
   // TODO: validate the read values of inactive variables
 
-  unsigned short tabular_format = annotated ? TABULAR_ANNOTATED : TABULAR_NONE;
   // Could read into these dynamically or into a temporary and then allocate
   numEvals = TabularIO::
     read_data_tabular(points_filename, "List Parameter Study", 

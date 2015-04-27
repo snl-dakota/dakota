@@ -21,7 +21,7 @@ DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), 
-  approxImportAnnotated(true), approxImportActive(false), approxExportAnnotated(true),
+  approxImportFormat(TABULAR_ANNOTATED), approxImportActive(false), approxExportFormat(TABULAR_ANNOTATED),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   krigingNugget(0.0), krigingFindNugget(0), mlsPolyOrder(0), mlsWeightFunction(0),
@@ -31,7 +31,7 @@ DataModelRep::DataModelRep():
   decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
   trendOrder("reduced_quadratic"),
   pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.0),
-  pressFlag(false), approxChallengeAnnotated(true), approxChallengeActive(false),
+  pressFlag(false), approxChallengeFormat(TABULAR_ANNOTATED), approxChallengeActive(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), referenceCount(1)
 { }
@@ -44,7 +44,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
-    << approxImportAnnotated << approxImportActive << approxExportFile << approxExportAnnotated
+    << approxImportFormat << approxImportActive << approxExportFile << approxExportFormat
     << approxExportModelFile 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
@@ -56,7 +56,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder 
     << pointSelection << diagMetrics << crossValidateFlag << numFolds  
-    << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
+    << percentFold << pressFlag  << approxChallengeFile << approxChallengeFormat 
     << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs
     << subMethodServers << subMethodProcs << subMethodScheduling;
@@ -70,7 +70,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateFnIndices
     >> surrogateType >> truthModelPointer >> lowFidelityModelPointer
     >> pointsTotal >> pointsManagement >> approxPointReuse >> approxImportFile
-    >> approxImportAnnotated >> approxImportActive >> approxExportFile >> approxExportAnnotated
+    >> approxImportFormat >> approxImportActive >> approxExportFile >> approxExportFormat
     >> approxExportModelFile 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
@@ -82,7 +82,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> decompDiscontDetect >> discontJumpThresh >> discontGradThresh
     >> trendOrder
     >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds
-    >> percentFold >> pressFlag  >> approxChallengeFile >> approxChallengeAnnotated 
+    >> percentFold >> pressFlag  >> approxChallengeFile >> approxChallengeFormat 
     >> approxChallengeActive >> optionalInterfRespPointer >> primaryVarMaps
     >> secondaryVarMaps >> primaryRespCoeffs >> secondaryRespCoeffs
     >> subMethodServers >> subMethodProcs >> subMethodScheduling;
@@ -96,7 +96,7 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
     << pointsTotal << pointsManagement << approxPointReuse << approxImportFile
-    << approxImportAnnotated << approxImportActive << approxExportFile << approxExportAnnotated
+    << approxImportFormat << approxImportActive << approxExportFile << approxExportFormat
     << approxExportModelFile
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
@@ -108,7 +108,7 @@ void DataModelRep::write(std::ostream& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder
     << pointSelection << diagMetrics << crossValidateFlag << numFolds
-    << percentFold << pressFlag  << approxChallengeFile << approxChallengeAnnotated 
+    << percentFold << pressFlag  << approxChallengeFile << approxChallengeFormat 
     << approxChallengeActive << optionalInterfRespPointer << primaryVarMaps
     << secondaryVarMaps << primaryRespCoeffs << secondaryRespCoeffs
     << subMethodServers << subMethodProcs << subMethodScheduling;

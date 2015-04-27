@@ -105,6 +105,11 @@ public:
   /// filename for post-run output
   const String& post_run_output() const;
 
+  /// tabular format for pre-run output
+  unsigned int pre_run_output_format() const;
+  /// tabular format for post-run input
+  unsigned int post_run_input_format() const;
+
   /// whether steps beyond help/version are requested (instantiation required)
   bool proceed_to_instantiate() const;
 
@@ -243,6 +248,9 @@ private:
   String runOutput;     ///< filename for run output
   String postRunInput;  ///< filename for post_run input
   String postRunOutput; ///< filename for post_run output
+
+  unsigned short preRunOutputFormat;  ///< tabular format for pre_run output
+  unsigned short postRunInputFormat;  ///< tabular format for post_run input
 
 };  // class ProgramOptions
 

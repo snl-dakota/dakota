@@ -170,8 +170,8 @@ public:
   /// name of experimental data file containing response data (with
   /// optional state variable and sigma data) to read
   String scalarDataFileName;
-  /// whether the experimental data is in annotated format
-  bool scalarDataFileAnnotated;
+  /// tabular format of the scalar data file
+  unsigned short scalarDataFormat;
 
   // derivative settings
 

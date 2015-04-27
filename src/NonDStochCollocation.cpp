@@ -123,7 +123,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
-    probDescDB.get_bool("method.export_points_file_annotated")), false);
+    probDescDB.get_ushort("method.export_points_file_format")), false);
     // point import not supported for structured grids
   initialize_u_space_model();
 

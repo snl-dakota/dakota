@@ -26,7 +26,7 @@ DataResponsesRep::DataResponsesRep():
   numFieldLeastSqTerms(0), numFieldNonlinearIneqConstraints(0),
   numFieldNonlinearEqConstraints(0), numFieldResponseFunctions(0),
   calibrationDataFlag(false), numExperiments(1), numExpConfigVars(0),
-  scalarDataFileAnnotated(true), ignoreBounds(false), centralHess(false), 
+  scalarDataFormat(TABULAR_EXPER_ANNOT), ignoreBounds(false), centralHess(false), 
   methodSource("dakota"), intervalType("forward"), interpolateFlag(false),
   fdGradStepType("relative"), fdHessStepType("relative"), readFieldCoords(false),
   referenceCount(1)
@@ -53,7 +53,7 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     // experimental data
     << calibrationDataFlag << numExperiments << numExpConfigVars
     << expConfigVars << expObservations << expStdDeviations << scalarDataFileName
-    << scalarDataFileAnnotated
+    << scalarDataFormat
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << interpolateFlag 
@@ -86,7 +86,7 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     // experimental data
     >> calibrationDataFlag >> numExperiments  >> numExpConfigVars
     >> expConfigVars >> expObservations >> expStdDeviations >> scalarDataFileName
-    >> scalarDataFileAnnotated
+    >> scalarDataFormat
     // derivative settings
     >> gradientType >> hessianType >> ignoreBounds >> centralHess
     >> quasiHessianType >> methodSource >> intervalType >> interpolateFlag 
@@ -120,7 +120,7 @@ void DataResponsesRep::write(std::ostream& s) const
     // experimental data
     << calibrationDataFlag << numExperiments << numExpConfigVars
     << expConfigVars << expObservations << expStdDeviations << scalarDataFileName
-    << scalarDataFileAnnotated
+    << scalarDataFormat
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << interpolateFlag 
