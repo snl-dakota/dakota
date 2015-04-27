@@ -434,7 +434,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
       // Sanity check length
       if( field_lengths[field_index] != exp_coords.numRows() )
         throw std::runtime_error("Inconsistent lengths of field data and coordinates.");
-      exp_resp.field_coords(exp_coords, fn_index);
+      exp_resp.field_coords(exp_coords, field_index);
     }
          
     // read sigma 1, N (field_lengths[field_index]), or N^2 values
