@@ -151,22 +151,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator;
     if (standardizedSpace) {
-
-      /* Can't do this: circular dependency between lhs_iter/g_u_model
-      // define natafTransform within DataFitSurrModel::daceIterator
-      NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-      lhs_iter->initialize_random_variable_transformation();
-      lhs_iter->initialize_random_variable_types(ASKEY_U); // need x_types below
-      // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
-      // Note: initialize_random_variable_parameters() is performed at run time
-      lhs_iter->initialize_random_variable_correlations();
-      lhs_iter->verify_correlation_support();
-      //lhs_iter->initialize_final_statistics(); // stats set is not default
-
-      Model g_u_model;
-      lhs_iter->transform_model(iteratedModel, g_u_model, true); // global bnds
-      */
-
       // initialize local natafTransform to support g_u_model construction
       initialize_random_variable_transformation();
       initialize_random_variable_types(ASKEY_U); // need x_types below
@@ -184,10 +168,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM);
       lhs_iterator.assign_rep(lhs_rep, false);
-
-      // transfer (partial) natafTransform settings to lhs_rep and clear local
-      lhs_rep->initialize_random_variables(natafTransform);
-      natafTransform = Pecos::ProbabilityTransformation(); // clear
 
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
@@ -302,10 +282,23 @@ void NonDBayesCalibration::initialize_model()
   }
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace) {
+      if (natafTransform.is_null()) { // reentrancy: recover from clear below
+	initialize_random_variable_transformation();
+	initialize_random_variable_types(ASKEY_U);
+	initialize_random_variable_correlations();
+	//verify_correlation_support();
+      }
+      initialize_random_variable_parameters();
+      //initialize_final_statistics_gradients(); // not required
+      transform_correlations();
+
+      // local natafTransform updating complete (Note: cannot perform these
+      // operations within DataFitSurrModel::daceIterator as its model lacks
+      // x-space data).  Once done, we can transfer settings to daceIterator
+      // and clear local to prune the redundancy.
       NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-      lhs_iter->initialize_random_variable_parameters();
-      //lhs_iter->initialize_final_statistics_gradients(); // not required
-      lhs_iter->transform_correlations();
+      lhs_iter->initialize_random_variables(natafTransform); // transfer
+      natafTransform = Pecos::ProbabilityTransformation();   // clear local
     }
     mcmcModel.build_approximation(); break;
   case NO_EMULATOR:
