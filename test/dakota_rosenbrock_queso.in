@@ -5,25 +5,26 @@ method,
 	bayes_calibration queso
 	  samples = 2000 seed = 348
 	  delayed_rejection
-	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
+	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14
 	    pce sparse_grid_level = 2				#p0,#p7
 #	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
 #	    pce expansion_order = 4 collocation_ratio = 1.2	#p6
 #	    sc  sparse_grid_level = 2				#p2
-#	    gaussian_process surfpack emulator_samples = 30	#p3,#p5,#p8,#p11
+#	    gaussian_process surfpack emulator_samples = 30	#p3,#p5,#p8,#p11,#p14
 #	    gaussian_process dakota   emulator_samples = 30	#p4,#p12
-#	    posterior_adaptive					#p5,#p6,#p8
-#	    convergence_tolerance = .05				#p6
-#	    standardized_space					#p11,#p12,#p13
+#	    posterior_adaptive					#p5,#p6,#p8,#p14
+#	      max_iterations = 10				#p5,#p6,#p8,#p14
+#	      convergence_tolerance = 1.e-13			#p6
+#	    standardized_space					#p11,#p12,#p13,#p14
 	  proposal_covariance
 	    derivatives	
 	    proposal_updates = 50 # default update is every 100 samples
 #	  output verbose
 
 variables,								
-	uniform_uncertain 2		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14
-	  upper_bounds   2.  2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14
-	  lower_bounds  -2. -2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14
+	uniform_uncertain 2		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
+	  upper_bounds   2.  2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
+	  lower_bounds  -2. -2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
 #	normal_uncertain 2  		#p7,#p8,#p10
 #	  means          0.  0.		#p7,#p8,#p10
 #	  std_deviations 1.  1.		#p7,#p8,#p10
@@ -39,7 +40,7 @@ responses,
         calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13
           freeform num_experiments = 1 variance_type = 'scalar'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13
   	descriptors = 'f1' 'f2'
- 	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12
-	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14
-#	analytic_gradients	#p9,#p10,#p13,#p14
+ 	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14
+	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p15
+#	analytic_gradients	#p9,#p10,#p13,#p15
 #	analytic_hessians	#p9,#p10,#p13
