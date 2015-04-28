@@ -350,9 +350,6 @@ protected:
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
 
-  /// independent coordinate values 
-  RealMatrixArray coordValuesPerField;
-
 private:
 
   friend class boost::serialization::access;
@@ -721,20 +718,6 @@ inline const IntVector& Response::num_coords_per_field() const
 {
   if (responseRep) return responseRep->sharedRespData.num_coords_per_field();
   else             return sharedRespData.num_coords_per_field();
-}
-
-
-inline void Response::set_coord_values(const RealMatrix& coord_vals_per_field, const size_t field_num)
-{
-  if (responseRep) responseRep->coordValuesPerField[field_num] = coord_vals_per_field;
-  else             coordValuesPerField[field_num] = coord_vals_per_field;
-}
-
-
-inline const RealMatrix& Response::get_coord_values(const size_t field_num) const
-{
-  if (responseRep) return responseRep->coordValuesPerField[field_num];
-  else             return coordValuesPerField[field_num];
 }
 
 
