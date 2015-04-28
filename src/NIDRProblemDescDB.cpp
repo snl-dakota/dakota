@@ -6707,6 +6707,7 @@ static int
 	MP_(maxFunctionEvaluations),
 	MP_(maxIterations),
 	MP_(mutationRange),
+        MP_(neighborOrder),
 	MP_(newSolnsGenerated),
 	MP_(numChains),
 	MP_(numCR),
