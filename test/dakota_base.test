@@ -8597,6 +8597,48 @@ Test Number 5 succeeded
 <<<<< Best objective function  =
                       2.4820032000e+03
 <<<<< Best data captured at function evaluation 474
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9997513788e-01 x1
+                      4.9998419452e-01 x2
+                      1.0247600898e+00 x3
+                                     1 y1
+                                     1 y2
+                      1.2000000000e+00 y3
+                      1.2000000000e+00 y4
+<<<<< Best objective function  =
+                      1.2822071095e-01
+<<<<< Best constraint values   =
+                     -1.6958765959e-05
+                     -3.3741647054e-06
+<<<<< Best data captured at function evaluation 993
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.8437500000e-01 x1
+                      4.8437500000e-01 x2
+                      1.2343750000e+00 x3
+                                     1 y1
+                                     1 y2
+                                     4 z1
+                                     8 z2
+                      1.2000000000e+00 y3
+                      1.2000000000e+00 y4
+<<<<< Best objective function  =
+                      2.4821475903e+03
+<<<<< Best constraint values   =
+                     -7.5683593750e-03
+                     -7.5683593750e-03
+<<<<< Best data captured at function evaluation 794
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x
+                      1.0000000000e+00 y
+<<<<< Best objective function  =
+                      2.0611536224e-09
+<<<<< Best data captured at function evaluation 17
 dakota_nonlinear_cg.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)

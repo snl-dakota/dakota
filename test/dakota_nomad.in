@@ -13,38 +13,68 @@ method,
 #	max_iterations = 100					#s5
 #	function_precision = 0.00000001				#s5
 #	variable_neighborhood_search = 0.1			#s5
+#	neighbor_order = 2	       				#s6
+#	neighbor_order = 4	       				#s7
 #	display_format = 'bbe obj'
 #	display_all_evaluations	       				#s5
 #	history_file = 'mads_history.log'			#s5
 
 variables,
-	continuous_design = 3
-	  initial_point   -1.0    1.5   2.0
-	  upper_bounds    10.0   10.0  10.0
-	  lower_bounds   -10.0  -10.0 -10.0
-	  descriptors      'x1'  'x2'  'x3'
-#	discrete_design_range = 2				#s1,#s4,#s5
-#	  initial_point      2     2				#s1,#s4,#s5
-#	  lower_bounds       1     1				#s1,#s4,#s5
-#	  upper_bounds       4     9				#s1,#s4,#s5
-#	  descriptors      'y1'   'y2'				#s1,#s4,#s5
-#       discrete_design_set					#s2,#s3,#s4,#s5
-#         real = 2						#s2,#s4,#s5
-#           num_set_values = 4 5				#s2,#s4,#s5
-#           set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s2,#s4,#s5
-#           descriptors      'y3'   'y4' 	       	       	#s2,#s4,#s5
-#         integer = 2						#s3,#s4,#s5
-#           num_set_values = 2 2	  			#s3,#s4,#s5
-#           set_values = 4 7 8 9				#s3,#s4,#s5
-#           descriptors      'z1'   'z2'			#s3,#s4,#s5
+	continuous_design = 3					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	  initial_point   -1.0    1.5   2.0			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	  upper_bounds    10.0   10.0  10.0			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	  lower_bounds   -10.0  -10.0 -10.0			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	  descriptors      'x1'  'x2'  'x3'			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	continuous_design = 2					#s8
+#	  initial_point     0.5 0.5				#s8
+#	  lower_bounds      0.  0.				#s8
+#	  upper_bounds      1.  1.				#s8
+#	  descriptors =    'x' 'y'				#s8
+#	discrete_design_range = 2				#s1,#s4,#s5,#s6,#s7
+#	  initial_point      2     2				#s1,#s4,#s5,#s6,#s7
+#	  lower_bounds       1     1				#s1,#s4,#s5,#s6,#s7
+#	  upper_bounds       4     9				#s1,#s4,#s5,#s6,#s7
+#	  descriptors      'y1'   'y2'				#s1,#s4,#s5,#s6,#s7
+#       discrete_design_set					#s2,#s3,#s4,#s5,#s6,#s7
+#         real = 2						#s2,#s4,#s5,#s6,#s7
+#           elements_per_variable = 4 5				#s2,#s4,#s5,#s6,#s7
+#           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s2,#s4,#s5,#s6,#s7
+#           descriptors      'y3'   'y4' 	       	       	#s2,#s4,#s5,#s6,#s7
+#	    categorical 'yes' 'yes' 				#s6,#s7
+#	    adjacency 1 1 0 0 					#s6,#s7
+#	    	      1 1 1 0					#s6,#s7
+#		      0 1 1 1					#s6,#s7
+#		      0 0 1 1					#s6,#s7
+#		      1 0 1 0 1					#s6,#s7
+#		      0 1 0 1 0					#s6,#s7
+#		      1 0 1 0 1					#s6,#s7
+#		      0 1 0 1 0					#s6,#s7
+#		      1 0 1 0 1					#s6,#s7
+#         integer = 2						#s3,#s4,#s5,#s7
+#           elements_per_variable = 2 2	  			#s3,#s4,#s5,#s7
+#           elements = 4 7 8 9					#s3,#s4,#s5,#s7
+#           descriptors      'z1'   'z2'			#s3,#s4,#s5,#s7
+#	    categorical 'yes' 'yes' 				#s7
+#       discrete_design_set string = 1			#s8
+#	    elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'  	#s8
+#           descriptors = 'ancomp'    				#s8
+#	    adjacency 1 1 0 0 0					#s8
+#	    	      1 1 0 0 0					#s8
+#                     0 0 1 1 1					#s8
+#                     0 0 1 1 1					#s8
+#                     0 0 1 1 1					#s8
 
 interface,
-       direct							#s0,#s2,#s4
-#	fork asynch evaluation_concurrency 4			#s1,#s3,#s5
-	  analysis_driver = 'text_book'
+       direct							#s0,#s2,#s4,#s6,#s7
+#	fork asynch evaluation_concurrency 4			#s1,#s3,#s5,#s8
+	  analysis_driver = 'text_book'	   			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#          analysis_driver = 'gerstner_string'			#s8
+#          parameters_file = 'params.in'			#s8
+#          results_file = 'results.out'				#s8
+#          file_tag	  					#s8
 
 responses,
 	objective_functions = 1
-#	nonlinear_inequality_constraints = 2			#s1,#s3,#s4
+#	nonlinear_inequality_constraints = 2			#s1,#s3,#s4,#s6,#s7
 	no_gradients
 	no_hessians
