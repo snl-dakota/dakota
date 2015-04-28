@@ -57,11 +57,12 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # 105 unknown or other FAIL
 my $summary_exitcode = 0;
 
-# numeric regular expressions
+# regular expressions for matching and extracting test results
 my $e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field: exponential
 my $f = "-?\\d+\\.?\\d*";             # numerical field: floating point
 my $i = "-?\\d+";                     # numerical field: integer notation
 my $ui = "\\d+";                      # numerical field: unsigned integer
+my $s = "[A-Za-z0-9_-]+";             # alphanumeric (plus _ and -) string
 
 # command line processing may adjust above global variables
 process_command_line();
@@ -1161,7 +1162,7 @@ sub parse_test_output {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
-      while (/^\s+($e|$i)/) {
+      while (/^\s+($e|$i|$s)/) {
 	print;
 	print TEST_OUT;
 	$_ = <OUTPUT>; # grab next line

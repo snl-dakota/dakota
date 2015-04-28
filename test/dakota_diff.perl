@@ -35,6 +35,8 @@ $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
 $e = "(?:$expo|$naninf)";
 # numerical field in integer notation
 $i = "-?\\d+";                     
+# string variable field
+$s = "[a-zA-Z0-9_-]+";
 
 # Numerical DIFF tolerances
 # Tolerance below which absolute numerical diff will be used
@@ -276,8 +278,8 @@ sub compare_output {
       $first_diff = 0;
       $base = shift @base_excerpt; # grab next line
       $test = shift @tst_excerpt; # grab next line
-      while ( ( ($t_val) = $test =~ /^\s+($e|$i)/ ) &&
-	      ( ($b_val) = $base =~ /^\s+($e|$i)/ ) ) {
+      while ( ( ($t_val) = $test =~ /^\s+($e|$i|$s)/ ) &&
+	      ( ($b_val) = $base =~ /^\s+($e|$i|$s)/ ) ) {
 	if (diff($t_val, $b_val)) {
 	  $test_diff = 1;
 	  if ($first_diff == 0) {
@@ -293,18 +295,18 @@ sub compare_output {
       }
 
       # if there's extra data in either file, mark this a DIFF
-      if ( ( ($t_val) = $test =~ /^\s+($e|$i)/ ) ||
-	   ( ($b_val) = $base =~ /^\s+($e|$i)/ ) ) {
+      if ( ( ($t_val) = $test =~ /^\s+($e|$i|$s)/ ) ||
+	   ( ($b_val) = $base =~ /^\s+($e|$i|$s)/ ) ) {
 	$test_diff = 1;
 	if ($first_diff == 0) {
 	  push @base_diffs, $b_hdr;
 	  push @test_diffs, $t_hdr;
 	}
-	while ( ($t_val) = $test =~ /^\s+($e|$i)/ ) {
+	while ( ($t_val) = $test =~ /^\s+($e|$i|$s)/ ) {
 	  push @test_diffs, $test;
 	  $test = shift @tst_excerpt; # grab next line
 	}
-	while ( ($b_val) = $base =~ /^\s+($e|$i)/ ) {
+	while ( ($b_val) = $base =~ /^\s+($e|$i|$s)/ ) {
 	  push @base_diffs, $base;
 	  $base = shift @base_excerpt; # grab next line
 	}
@@ -711,8 +713,8 @@ sub diff {
 
   #print "Diffing $_[0] and $_[1]\n";
   
-  # for nan or inf, require exact string match
-  if ( $_[0] =~ /$naninf/ || $_[1] =~ /$naninf/ ) {
+  # for nan, inf, or discrete set string, require exact string match
+  if ( $_[0] =~ /$naninf|^$s$/ || $_[1] =~ /$naninf|^$s$/ ) {
     if ( $_[0] ne $_[1] ) {
       return 1;
     }
@@ -720,6 +722,7 @@ sub diff {
       return 0;
     }
   }
+  	    
 
   if ( (abs($_[0]) < $SMALL) || (abs($_[1]) < $SMALL) ) {
     $differ = abs($_[0] - $_[1]);     # absolute difference

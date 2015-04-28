@@ -8636,6 +8636,7 @@ Test Number 8 succeeded
 <<<<< Best parameters          =
                       1.0000000000e+00 x
                       1.0000000000e+00 y
+                                  iso3 ancomp
 <<<<< Best objective function  =
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 17
