@@ -18,47 +18,64 @@
 # 4: LHS on surrogate; import data from 3, build an interpolating
 #    surrogate, and do LHS at same points used to build
 
-# 5: Test 0 with Dakota 6.0 format
+# 5--9: Tests 0--4 with Dakota various tabular formats, including 6.0
+#   5 --> 6 freeform (no annotation)
+#   6 --> 7 eval_id header (Dakota 6.0 format)
+#   8 --> 9 eval_id interface_id (headerless)
 
 environment,
-#	  tabular_data						#s1,#s2,#s3,#s5
+#	  tabular_data						#s1,#s2,#s3
+#	  tabular_data						#s6,#s7,#s8
 #	    tabular_data_file = 'dakota_tabular_io.1.dat'  	#s1
 #	    tabular_data_file = 'dakota_tabular_io.3.dat'  	#s3
-#	    custom_annotated eval_id	 			#s5
-#	  method_pointer = 'UQ'					#s4
+#	    tabular_data_file = 'dakota_tabular_io.6.dat'  	#s6
+#	      custom_annotated eval_id header			#s6
+#	    tabular_data_file = 'dakota_tabular_io.8.dat'  	#s8
+#	      custom_annotated eval_id interface_id		#s8
+#	  method_pointer = 'UQ'					#s4,#s9
+#	  pre_run						#s5
+#	    output 'dakota_tabular_io.5.dat'			#s5
+#	    freeform						#s5	    
+#	  run  post_run	 					#s5
+#	  post_run input 'dakota_tabular_io.6.dat'		#s7
+#	    custom_annotated eval_id header			#s7
 
 #########################################
 # interface truth model and dace method #
 #########################################
 
-method,					#s0,#s2,#s3,#s4,#s5
-	id_method = 'DACE'		#s0,#s2,#s3,#s4,#s5
-	model_pointer = 'DACE_M'	#s0,#s2,#s3,#s4,#s5
-	sampling			#s0,#s2,#s3,#s4,#s5
-	  samples = 25			#s0,#s2,#s3,#s5
-## No additional samples beyond those read	#s4
-#	  samples = 0				#s4
-	  seed = 50			#s0,#s2,#s3,#s4,#s5
-	  sample_type lhs		#s0,#s2,#s3,#s4,#s5
+method,					#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
+	id_method = 'DACE'		#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
+	model_pointer = 'DACE_M'	#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
+	sampling			#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
+	  samples = 25			#s0,#s2,#s3,#s5,#s7,#s8
+## No additional samples beyond those read	#s4,#s9
+#	  samples = 0				#s4,#s9
+	  seed = 50			#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
+	  sample_type lhs		#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
 
-#method,							#s1
-#	list_parameter_study					#s1
+#method,							#s1,#s6
+#	list_parameter_study					#s1,#s6
 #	  import_points_file = 'dakota_tabular_io.0.dat'	#s1
+#	  import_points_file = 'dakota_tabular_io.5.dat'	#s6
+#	    freeform						#s6
 
-#method,  		   					#s4
-#	id_method = 'UQ'					#s4
-#	model_pointer = 'UQ_M'					#s4
-#	sampling						#s4
-#	  samples = 25 						#s4
-#	  seed = 50						#s4
-#	  sample_type lhs					#s4
-#								#s4
-#model,								#s4
-#	id_model = 'UQ_M'					#s4
-#	surrogate global					#s4
-#	  dace_method_pointer = 'DACE'				#s4
-# 	  neural_network					#s4
+#method,  		   					#s4,#s9
+#	id_method = 'UQ'					#s4,#s9
+#	model_pointer = 'UQ_M'					#s4,#s9
+#	sampling						#s4,#s9
+#	  samples = 25 						#s4,#s9
+#	  seed = 50						#s4,#s9
+#	  sample_type lhs					#s4,#s9
+#								#s4,#s9
+#model,								#s4,#s9
+#	id_model = 'UQ_M'					#s4,#s9
+#	surrogate global					#s4,#s9
+#	  dace_method_pointer = 'DACE'				#s4,#s9
+# 	  neural_network					#s4,#s9
 #	  import_points_file = 'dakota_tabular_io.3.dat'	#s4
+#	  import_points_file = 'dakota_tabular_io.8.dat'	#s9
+#	    custom_annotated eval_id interface_id		#s9
 
 model,
 	id_model = 'DACE_M'
