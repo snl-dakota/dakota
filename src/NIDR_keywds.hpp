@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1478 distinct keywords (plus 205 aliases) **/
+/** 1479 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1080,13 +1080,14 @@ static KeyWord
 		{"reliability_levels",14,1,3,0,kw_185,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
 		{"response_levels",14,2,2,0,kw_188,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
-	kw_190[8] = {
+	kw_190[9] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,9,0,0,kw_44},
-		{"display_all_evaluations",8,0,6,0,0,0.,0.,0,N_mdm(true,showAllEval)},
+		{"display_all_evaluations",8,0,7,0,0,0.,0.,0,N_mdm(true,showAllEval)},
 		{"display_format",11,0,4,0,0,0.,0.,0,N_mdm(str,displayFormat)},
 		{"function_precision",10,0,1,0,0,0.,0.,0,N_mdm(Real,functionPrecision)},
 		{"history_file",11,0,3,0,0,0.,0.,0,N_mdm(str,historyFile)},
+		{"neighbor_order",0x19,0,6,0,0,0.,0.,0,N_mdm(pint,neighborOrder)},
 		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"variable_neighborhood_search",10,0,5,0,0,0.,0.,0,N_mdm(Real,vns)}
 		},
@@ -1724,7 +1725,7 @@ static KeyWord
 		{"local_reliability",8,3,10,1,kw_189,0.,0.,0,N_mdm(utype,methodName_LOCAL_RELIABILITY)},
 		{"max_function_evaluations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,3,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"mesh_adaptive_search",8,6,10,1,kw_190,0.,0.,0,N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)},
+		{"mesh_adaptive_search",8,7,10,1,kw_190,0.,0.,0,N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)},
 		{"moga",8,5,10,1,kw_204,0.,0.,0,N_mdm(utype,methodName_MOGA)},
 		{"multi_start",8,4,10,1,kw_207,0.,0.,0,N_mdm(utype,methodName_MULTI_START)},
 		{"multidim_parameter_study",8,1,10,1,kw_208,0.,0.,0,N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)},

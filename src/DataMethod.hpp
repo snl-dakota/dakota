@@ -741,6 +741,8 @@ public:
   String displayFormat;
   /// the \c VNS specification for NOMAD
   Real vns;
+  /// the \c NEIGHBOR_ORDER specification for NOMAD
+  int neighborOrder;
   /// the \c DISPLAY_ALL_EVAL specification for NOMAD
   bool showAllEval;
 

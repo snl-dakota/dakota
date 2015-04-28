@@ -590,6 +590,9 @@
                   <keyword  id="variable_neighborhood_search" name="variable_neighborhood_search" code="{N_mdm(Real,vns)}" label="variable_neighborhood_search" help="" minOccurs="0" >
                     <param type="REAL" />
                   </keyword>
+                  <keyword  id="neighbor_order" name="neighbor_order" code="{N_mdm(pint,neighborOrder)}" label="Neighbor Order" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" >
+                    <param type="INTEGER" constraint="> 0" />
+                  </keyword>
                   <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" />
                 </keyword>
                 <required>

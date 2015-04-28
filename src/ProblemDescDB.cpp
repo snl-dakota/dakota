@@ -2531,6 +2531,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"iterator_servers", P iteratorServers},
 	{"max_function_evaluations", P maxFunctionEvaluations},
 	{"max_iterations", P maxIterations},
+	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
 	{"nond.batch_size", P batchSize},
 	{"nond.emulator_samples", P emulatorSamples},

@@ -386,6 +386,7 @@ TAG "method/mesh_adaptive_search/history_file"
 
 TAG "method/mesh_adaptive_search/display_format"
 TAG "method/mesh_adaptive_search/variable_neighborhood_search"
+TAG "method/mesh_adaptive_search/neighbor_order"
 TAG "method/mesh_adaptive_search/display_all_evaluations"
 	DESC "{Display NOMAD evaluations} MethodCommands.html#MethodNOMADDC"
 

@@ -101,7 +101,7 @@ DataMethodRep::DataMethodRep():
   populationSize(50), //flatFile(),
   // NOMAD
   historyFile("mads_history"), displayFormat("bbe obj"), 
-  vns(0.0), showAllEval(false),
+  vns(0.0), neighborOrder(1), showAllEval(false),
   // NCSU 
   volBoxSize(-1.),
   // DDACE
@@ -231,7 +231,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << randomSeed;
 
   // MADS
-  s << historyFile << displayFormat << vns << showAllEval;
+  s << historyFile << displayFormat << vns << neighborOrder << showAllEval;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
@@ -360,7 +360,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> randomSeed;
 
   // MADS
-  s >> historyFile >> displayFormat >> vns >> showAllEval;
+  s >> historyFile >> displayFormat >> vns >> neighborOrder >> showAllEval;
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag >> previousSamples
@@ -489,7 +489,7 @@ void DataMethodRep::write(std::ostream& s) const
   s << randomSeed;
 
   // MADS
-  s << historyFile << displayFormat << vns << showAllEval;
+  s << historyFile << displayFormat << vns << neighborOrder << showAllEval;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples

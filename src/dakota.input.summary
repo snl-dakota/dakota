@@ -409,6 +409,7 @@ KEYWORD12 method
 	  [ history_file STRING ]
 	  [ display_format STRING ]
 	  [ variable_neighborhood_search REAL ]
+	  [ neighbor_order INTEGER > 0 ]
 	  [ display_all_evaluations ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
