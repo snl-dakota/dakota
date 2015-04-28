@@ -32,7 +32,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model)
 {     
      // load_parameters
-     this->load_parameters(model);
+  //     this->load_parameters(model);
 
      // Set Rnd Seed
      randomSeed = probDescDB.get_int("method.random_seed");
@@ -53,16 +53,28 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
      // VNS = Variable Neighbor Search, it is used to escape local minima
      // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
      vns = probDescDB.get_real("method.mesh_adaptive_search.variable_neighborhood_search");
+
+     numHops = probDescDB.get_int("method.mesh_adaptive_search.neighbor_order");
           
      // Set the History File, which will contain all the evaluations history
-     historyFile =  probDescDB.get_string("method.mesh_adaptive_search.history_file");     
+     historyFile =  probDescDB.get_string("method.mesh_adaptive_search.history_file"); 
+
+     discreteSetIntCat = probDescDB.get_ba("variables.discrete_design_set_int.categorical");
+
+     discreteSetRealCat = probDescDB.get_ba("variables.discrete_design_set_real.categorical");
+
+     discreteSetIntAdj = probDescDB.get_rma("variables.discrete_design_set_int.adjacency");
+
+     discreteSetRealAdj = probDescDB.get_rma("variables.discrete_design_set_real.adjacency");
+
+     discreteSetStrAdj = probDescDB.get_rma("variables.discrete_design_set_str.adjacency");
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):
   Optimizer(MESH_ADAPTIVE_SEARCH, model)
 {
      // load_parameters
-     this->load_parameters(model);
+  //     this->load_parameters(model);
 }
 
 // Sub Class: Driver, this class runs the Mads algorithm using
@@ -84,17 +96,20 @@ void NomadOptimizer::find_optimum()
      NOMAD::Parameters p (out);
      
      // Load Input Parameters
+     numTotalVars = numContinuousVars + numDiscreteIntVars 
+                  + numDiscreteRealVars + numDiscreteStringVars;
      p.set_DIMENSION(this->numTotalVars);
+     this->load_parameters(iteratedModel, p);
      
      vector<NOMAD::bb_output_type> bb_responses (1+numNomadNonlinearIneqConstraints+numNonlinearEqConstraints);
-     for(int i=0;i<numContinuousVars;i++)
-     {
-	  p.set_BB_INPUT_TYPE(i,NOMAD::CONTINUOUS);
-     }
-     for(int i=0;i<numDiscreteIntVars+numDiscreteRealVars;i++)
-     {
-	  p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::INTEGER);
-     }
+     //     for(int i=0;i<numContinuousVars;i++)
+     //     {
+     //	  p.set_BB_INPUT_TYPE(i,NOMAD::CONTINUOUS);
+     //     }
+     //     for(int i=0;i<numDiscreteIntVars+numDiscreteRealVars;i++)
+     //     {
+     //	  p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::INTEGER);
+     //     }
      
      // Obtain response types
 
@@ -169,9 +184,11 @@ void NomadOptimizer::find_optimum()
      Model& m = this->iteratedModel;
      NomadOptimizer::Evaluator ev (p,m);
      ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
+
+     NomadOptimizer::Extended_Poll ep (p,categoricalAdjacency,numHops);
      
      // Create Algorithm ( NOMAD::Mads mads ( params, &evaluator ) )
-     NOMAD::Mads mads (p,&ev);
+     NOMAD::Mads mads (p,&ev,&ep,NULL,NULL);
      // Use Dakota's recast model for multi-objective for now.  Enable
      // NOMAD's native support for multi-objective later.
      NOMAD::Mads::set_flag_check_bimads(false);
@@ -197,6 +214,7 @@ void NomadOptimizer::find_optimum()
      const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
      const IntSetArray& set_int_vars = iteratedModel.discrete_set_int_values();
      const RealSetArray& set_real_vars = iteratedModel.discrete_set_real_values();
+     const StringSetArray& set_string_vars = iteratedModel.discrete_set_string_values();
 
      size_t j, dsi_cntr;
 
@@ -220,6 +238,9 @@ void NomadOptimizer::find_optimum()
        discRealVars = set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars].value(), set_real_vars[j]);
      }
      bestVariablesArray.front().discrete_real_variables(discRealVars);
+     for (j=0; j<numDiscreteStringVars; j++) {
+       bestVariablesArray.front().discrete_string_variable(set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars].value(), set_string_vars[j]), j);
+     }
 
      // Retrieve the best responses and convert from NOMAD to
      // DAKOTA vector.h
@@ -301,6 +322,7 @@ void NomadOptimizer::find_optimum()
 	  int n_cont_vars = _model.cv();
 	  int n_disc_int_vars = _model.div();
 	  int n_disc_real_vars = _model.drv();
+	  int n_disc_string_vars = _model.dsv();
 	  
           // Prepare Vectors for Dakota model.
           RealVector contVars(n_cont_vars);
@@ -310,6 +332,7 @@ void NomadOptimizer::find_optimum()
 	  const BitArray& int_set_bits = _model.discrete_int_sets();
 	  const IntSetArray&  set_int_vars = _model.discrete_set_int_values();
 	  const RealSetArray& set_real_vars = _model.discrete_set_real_values();
+	  const StringSetArray& set_string_vars = _model.discrete_set_string_values();
 
 	  const BoolDeque& sense = _model.primary_response_fn_sense();
 	  bool max_flag = (!sense.empty() && sense[0]);
@@ -347,6 +370,10 @@ void NomadOptimizer::find_optimum()
 	    Real dakota_value = set_index_to_value(x[i+n_cont_vars+n_disc_int_vars].value(), set_real_vars[i]);
 	    _model.discrete_real_variable(dakota_value, i);
 	  }
+	  for (i=0; i<n_disc_string_vars; i++) {
+	    _model.discrete_string_variable(set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
+	  }
+
 	  //	  _model.continuous_variables(contVars);
 	  //	  _model.discrete_int_variables(discIntVars);
 	  //	  _model.discrete_real_variables(discRealVars);
@@ -373,10 +400,49 @@ void NomadOptimizer::find_optimum()
 	  
      }
 
-void NomadOptimizer::load_parameters(Model &model)
+void NomadOptimizer::Extended_Poll::construct_extended_points(const NOMAD::Eval_Point &nomad_point)
 {
-     numTotalVars = numContinuousVars +
-                    numDiscreteIntVars + numDiscreteRealVars;
+  NOMAD::Point current_point = nomad_point;
+  NOMAD::Signature *nomad_signature = nomad_point.get_signature();
+
+  construct_multihop_neighbors(current_point, *nomad_signature, adjacency_matrix.begin(), -1, nHops);
+}
+
+void NomadOptimizer::Extended_Poll::construct_multihop_neighbors(NOMAD::Point &base_point, NOMAD::Signature point_signature, RealMatrixArray::iterator rma_iter, size_t last_cat_index, int num_hops)
+{
+  size_t i, j, k;
+
+  RealMatrixArray::iterator pass_through_iter(rma_iter), tmp_iter;
+  const std::vector<NOMAD::bb_input_type>& input_types = point_signature.get_input_types();
+
+  for (i=last_cat_index+1, tmp_iter=rma_iter; i<point_signature.get_n(); i++)
+  {
+    if (input_types[i] == NOMAD::CATEGORICAL)
+    {
+      NOMAD::Point neighbor = base_point;
+      j = (size_t) base_point[i].value();
+      pass_through_iter++;
+      for (k=0; k<(*tmp_iter).numCols(); k++)
+      {
+	if ((*tmp_iter)[j][k]>0 && j!=k)
+	{
+	  neighbor[i] = k;
+	  add_extended_poll_point(neighbor, point_signature);
+	  if (num_hops > 1)
+	  {
+	    construct_multihop_neighbors(neighbor, point_signature, pass_through_iter, i, num_hops-1);
+	  }
+	}
+      }
+      tmp_iter++;
+    }
+  }
+}
+
+  void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
+{
+  //     numTotalVars = numContinuousVars +
+  //                    numDiscreteIntVars + numDiscreteRealVars;
     
      // Define Input Types and Bounds
      
@@ -396,11 +462,16 @@ void NomadOptimizer::load_parameters(Model &model)
      const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
      const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
 
+     const StringMultiArrayConstView initial_point_string = model.discrete_string_variables();
+
      const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
      const IntSetArray& initial_point_set_int = iteratedModel.discrete_set_int_values();
      const RealSetArray& initial_point_set_real = iteratedModel.discrete_set_real_values();
+     const StringSetArray& initial_point_set_string = iteratedModel.discrete_set_string_values();
 
-     size_t i, index, dsi_cntr;
+     RealMatrix tmp_categorical_adjacency;
+
+     size_t i, j, k, index, dsi_cntr;
     
      for(i=0;i<numContinuousVars;i++)
      {
@@ -421,6 +492,7 @@ void NomadOptimizer::load_parameters(Model &model)
                  << "for all continuous variables" << std::endl;
 	    abort_handler(-1);
 	  }
+	  p.set_BB_INPUT_TYPE(i,NOMAD::CONTINUOUS);
      }
      for(i=0, dsi_cntr=0; i<numDiscreteIntVars; i++)
      {
@@ -433,29 +505,58 @@ void NomadOptimizer::load_parameters(Model &model)
 	}
 	else {
 	  _initial_point[i+numContinuousVars] = (int)index;
+	}
+	if (!discreteSetIntCat.empty() && discreteSetIntCat[dsi_cntr] == 1)
+	{
+	  p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::CATEGORICAL);
+	  if (!discreteSetIntAdj.empty())
+	    categoricalAdjacency.push_back(discreteSetIntAdj[dsi_cntr]);
+	  else
+	  {
+	    tmp_categorical_adjacency.reshape(initial_point_set_int[dsi_cntr].size(), initial_point_set_int[dsi_cntr].size());
+	    for (j=0; j<initial_point_set_int[dsi_cntr].size(); j++)
+	    {
+	      for (k=0; k<initial_point_set_int[dsi_cntr].size(); k++)
+	      {
+		if (k==j-1 || k==j || k==j+1)
+		  tmp_categorical_adjacency[j][k] = 1;
+		else
+		  tmp_categorical_adjacency[j][k] = 0;
+	      }
+	    }
+	    categoricalAdjacency.push_back(tmp_categorical_adjacency);
+	  }
+	}
+	else
+	{
+	  p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::INTEGER);
 	  _lower_bound[i+numContinuousVars] = 0;
 	  _upper_bound[i+numContinuousVars] = initial_point_set_int[dsi_cntr].size() - 1;
 	}
 	++dsi_cntr;
        }
-       else {
+       else 
+       {
  	 _initial_point[i+numContinuousVars] = initial_point_int[i];
-	  if (lower_bound_int[i] > -bigIntBoundSize)
-	    _lower_bound[i+numContinuousVars] = lower_bound_int[i];
-	  else {
-	    Cerr << "\nError: NomadOptimizer::load_parameters\n"
-                 << "mesh_adaptive_search requires lower bounds "
-                 << "for all discrete range variables" << std::endl;
-	    abort_handler(-1);
-	  }
-	  if (upper_bound_int[i] < bigIntBoundSize)
-	    _upper_bound[i+numContinuousVars] = upper_bound_int[i];
-	  else {
-	    Cerr << "\nError: NomadOptimizer::load_parameters\n"
-                 << "mesh_adaptive_search requires upper bounds "
-                 << "for all discrete range variables" << std::endl;
-	    abort_handler(-1);
-	  }
+	 if (lower_bound_int[i] > -bigIntBoundSize)
+	   _lower_bound[i+numContinuousVars] = lower_bound_int[i];
+	 else
+	 {
+	   Cerr << "\nError: NomadOptimizer::load_parameters\n"
+		<< "mesh_adaptive_search requires lower bounds "
+		<< "for all discrete range variables" << std::endl;
+	   abort_handler(-1);
+	 }
+	 if (upper_bound_int[i] < bigIntBoundSize)
+	   _upper_bound[i+numContinuousVars] = upper_bound_int[i];
+	 else
+	 {
+	   Cerr << "\nError: NomadOptimizer::load_parameters\n"
+		<< "mesh_adaptive_search requires upper bounds "
+		<< "for all discrete range variables" << std::endl;
+	   abort_handler(-1);
+	 }
+	 p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::INTEGER);
        }
      }
      for (i=0; i<numDiscreteRealVars; i++) {
@@ -467,8 +568,62 @@ void NomadOptimizer::load_parameters(Model &model)
        }
        else {
 	 _initial_point[i+numContinuousVars+numDiscreteIntVars] = (int)index;
+       }
+       if (!discreteSetRealCat.empty() && discreteSetRealCat[i] == 1)
+       {
+	 p.set_BB_INPUT_TYPE(i+numContinuousVars+numDiscreteIntVars,NOMAD::CATEGORICAL);
+	 if (!discreteSetRealAdj.empty())
+	   categoricalAdjacency.push_back(discreteSetRealAdj[i]);
+	 else
+	 {
+	   tmp_categorical_adjacency.reshape(initial_point_set_real[i].size(), initial_point_set_real[i].size());
+	   for (j=0; j<initial_point_set_real[i].size(); j++)
+	   {
+	     for (k=0; k<initial_point_set_real[i].size(); k++)
+	     {
+	       if (k==j-1 || k==j || k==j+1)
+		 tmp_categorical_adjacency[j][k] = 1;
+	       else
+		 tmp_categorical_adjacency[j][k] = 0;
+	     }
+	   }
+	   categoricalAdjacency.push_back(tmp_categorical_adjacency);
+	 }
+       }
+       else
+       {
+       	 p.set_BB_INPUT_TYPE(i+numContinuousVars+numDiscreteIntVars,NOMAD::INTEGER);
 	 _lower_bound[i+numContinuousVars+numDiscreteIntVars] = 0;
 	 _upper_bound[i+numContinuousVars+numDiscreteIntVars] = initial_point_set_real[i].size() - 1;
+       }
+     }
+     for (i=0; i<numDiscreteStringVars; i++) {
+       index = set_value_to_index(initial_point_string[i], initial_point_set_string[i]);
+       if (index == _NPOS) {
+	 Cerr << "\nError: failure in discrete string set lookup within "
+	      << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+	 abort_handler(-1);
+       }
+       else {
+	 _initial_point[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] = (int)index;
+       }
+       p.set_BB_INPUT_TYPE(i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars,NOMAD::CATEGORICAL);
+       if (!discreteSetStrAdj.empty())
+	 categoricalAdjacency.push_back(discreteSetStrAdj[i]);
+       else
+       {
+	 tmp_categorical_adjacency.reshape(initial_point_set_string[i].size(), initial_point_set_string[i].size());
+	 for (j=0; j<initial_point_set_string[i].size(); j++)
+	 {
+	   for (k=0; k<initial_point_set_string[i].size(); k++)
+	   {
+	     if (k==j-1 || k==j || k==j+1)
+	       tmp_categorical_adjacency[j][k] = 1;
+	     else
+	       tmp_categorical_adjacency[j][k] = 0;
+	   }
+	 }
+	 categoricalAdjacency.push_back(tmp_categorical_adjacency);
        }
      }
      

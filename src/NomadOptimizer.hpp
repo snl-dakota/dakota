@@ -77,13 +77,14 @@ namespace Dakota {
 	  private:
 	       // Forward Declaration
 	       class Evaluator;
+               class Extended_Poll;
 	       
 	       /// Convenience function for Parameter loading.
 	       /** This function takes the Parameters provided
 	       by the user in the DAKOTA model.
 	       @param model NOMAD Model object
 	       */
-	       void load_parameters(Model &model);
+       void load_parameters(Model &model, NOMAD::Parameters &p);
 	       // Variables for the stuff that must go in
 	       // the parameters.
 	       // Will be filled by calling 
@@ -98,10 +99,12 @@ namespace Dakota {
                int numNomadNonlinearIneqConstraints;
 	       
 	       /// Parameters passes to Nomad
-	       int randomSeed, maxBlackBoxEvals, maxIterations;
+               int randomSeed, maxBlackBoxEvals, maxIterations, numHops;
                std::string outputFormat, historyFile;
 	       bool displayAll;
 	       Real epsilon, vns;
+               BitArray discreteSetIntCat, discreteSetRealCat;
+               RealMatrixArray discreteSetIntAdj, discreteSetRealAdj, discreteSetStrAdj;
 	       
                /// Pointer to Nomad initial point
 	       NOMAD::Point initialPoint;
@@ -120,6 +123,9 @@ namespace Dakota {
 
        /// offsets for constraint transformations
        std::vector<double> constraintMapOffsets;
+
+       IntSetArray categoricalIndex;
+       RealMatrixArray categoricalAdjacency;       
      };
 
      ///  NOMAD-based Evaluator class.
@@ -206,5 +212,27 @@ namespace Dakota {
 	 constrMapIndices = constraintMapIndices;
 	 constrMapMultipliers = constraintMapMultipliers;
 	 constrMapOffsets = constraintMapOffsets;}
-     } ;   
+     } ;
+
+  class NomadOptimizer::Extended_Poll : public NOMAD::Extended_Poll {
+
+  private:
+
+    RealMatrixArray &adjacency_matrix;
+    int nHops;
+
+  public:
+
+    // constructor:
+    Extended_Poll(NOMAD::Parameters &p, RealMatrixArray &categoricalAdjacency, int numHops) :
+      NOMAD::Extended_Poll(p), adjacency_matrix(categoricalAdjacency), nHops(numHops) {};
+
+    // destructor:
+    ~Extended_Poll(void){};
+
+    // construct the extended poll points:
+    void construct_extended_points(const NOMAD::Eval_Point &nomad_point);
+    void construct_multihop_neighbors(NOMAD::Point &base_point, NOMAD::Signature point_signature, RealMatrixArray::iterator rma_iter, size_t last_cat_index, int num_hops);
+  };
+   
 }
