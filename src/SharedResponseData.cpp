@@ -196,10 +196,11 @@ void SharedResponseDataRep::build_field_labels()
   if (functionLabels.size() != unroll_fns)
     functionLabels.resize(unroll_fns);  // unique label for each QoI
 
+  // append _<field_entry_num> to the base label
   size_t unrolled_index = numScalarResponses;
   for (size_t i=0; i<fieldRespGroupLengths.length(); ++i)
     for (size_t j=0; j<fieldRespGroupLengths[i]; ++j)
-      build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1);
+      build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1, "_");
 }
 
 

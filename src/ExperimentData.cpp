@@ -65,6 +65,22 @@ void ExperimentData::initialize(const StringArray& variance_types,
       Cout << std::endl;
     }
 
+    if (interpolateFlag) {
+      // can't use normInf as the vector is a 1 x num_fields matrix
+      bool multiple_coords = false;
+      const IntVector coords_per_field = srd.num_coords_per_field();
+      for (size_t f_ind = 0; f_ind < coords_per_field.length(); ++f_ind)
+	if (coords_per_field[f_ind] > 1) {
+	  multiple_coords = true;
+	  break;
+	}
+      if (multiple_coords) {
+	Cerr << "\nError: calibration data 'interpolate' option not available " 
+	     << "for fields with\n       more than 1 independent coordinate.\n";
+	abort_handler(-1);
+      }
+    }
+
     // for now, copy in case any recasting between construct and read;
     // don't want to share a rep, or do we?
     simulationSRD = srd.copy();
@@ -226,17 +242,19 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     catch(std::runtime_error & e)
     {
       if( numConfigVars > 0 )
-        throw std::runtime_error("Expected "+convert_to_string(numConfigVars)+" experiemnt "
+        throw std::runtime_error("Expected "+convert_to_string(numConfigVars)+" experiment "
             + "config variables but the required file \""+config_vars_basepath.string()
             +"\" does not exist.");
     }
   }
 
+  bool found_error = false;
   for (size_t exp_index = 0; exp_index < numExperiments; ++exp_index) {
 
     // conditionally read leading exp_id column
     // TODO: error handling
-    TabularIO::read_leading_columns(scalar_data_stream, scalarDataFormat);
+    if (scalar_data_file)
+      TabularIO::read_leading_columns(scalar_data_stream, scalarDataFormat);
 
     // -----
     // Read and set the configuration variables
@@ -255,12 +273,25 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     load_experiment(exp_index, scalar_data_stream, num_sigma_matrices, 
 		    num_sigma_diagonals, num_sigma_scalars, exp_resp);
 
+    if (simulationSRD.field_lengths() != exp_resp.field_lengths() &&
+	!interpolateFlag) {
+      Cerr << "\nError: field lengths of experiment " << exp_index+1 
+	   << " data:\n       " << exp_resp.field_lengths()
+	   << "\n       differ from simulation field lengths:"  
+	   << simulationSRD.field_lengths() << "and 'interpolate' not enabled."
+	   << std::endl;
+	found_error = true;
+    }
+
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Values for experiment " << exp_index + 1 << ": \n" 
 	   << exp_resp.function_values() << std::endl;
 
     allExperiments.push_back(exp_resp.copy());
   }
+  if (found_error)
+    abort_handler(-1);
+
 
   // historically we calculated sigma from data by default if not
   // provided; might want a user option for this However, is counter

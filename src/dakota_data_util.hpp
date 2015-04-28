@@ -122,10 +122,11 @@ inline bool strcontains(const std::string& input, const std::string& test)
 // Utility functions for creating string arrays
 // --------------------------------------------
 
-/// create a label by appending a numerical tag to the root_label
-inline void build_label(String& label, const String& root_label, size_t tag)
+/// create a label by appending a numerical tag to the root_label, o
+inline void build_label(String& label, const String& root_label, size_t tag, 
+			const String& separator = "")
 {
-  label = root_label + boost::lexical_cast<std::string>(tag);
+  label = root_label + separator + boost::lexical_cast<std::string>(tag);
 }
 
 /// create an array of labels by tagging root_label for each entry in
