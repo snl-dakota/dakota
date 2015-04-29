@@ -5321,31 +5321,31 @@ Test Number 3 succeeded
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
 <<<<< Best parameters          =
-                      2.2177001893e-01 x1
-                      1.0548994455e-01 x2
-<<<<< Best residual terms      =
-                      7.1952646532e-02
-                      2.8361073781e-01
-                      2.4553714234e-01
-                     -2.6564265891e-02
-                     -1.6970486451e-01
+                      3.0485918399e-01 x1
+                      2.0378318020e-01 x2
+<<<<< Best residual terms =
+                     -8.7286457621e-01
+                     -2.5097962981e-01
+                      5.0500354109e-01
+                      1.0910985811e-01
+                      1.5290830881e-01
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 30 total (28 new, 2 duplicate)
+<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
 <<<<< Best parameters          =
-                      2.2557395147e-01 x1
-                      1.0000000000e-01 x2
-<<<<< Best residual terms      =
-                      7.6544962826e-02
-                      3.0404319220e-01
-                      2.7503792070e-01
-                     -3.6389723265e-03
-                     -1.6720595754e-01
-                      2.8404319220e-01
-                      1.9853236241e-01
-                     -7.7303327174e-02
+                      3.0849657457e-01 x1
+                      2.0499655992e-01 x2
+<<<<< Best residual terms =
+                     -8.7358016351e-01
+                     -2.5263605456e-01
+                      5.0569938597e-01
+                      1.1212939662e-01
+                      1.5318475527e-01
+                     -3.0358016351e-01
+                      5.8936394544e-01
+                     -2.8900614027e-02
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
