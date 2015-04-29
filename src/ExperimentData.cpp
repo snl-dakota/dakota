@@ -28,6 +28,7 @@ ExperimentData(const ProblemDescDB& pddb,
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
   scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
+  scalarSigmaPerRow(0), readFieldCoords(false), 
   interpolateFlag(pddb.get_bool("responses.interpolate")),
   outputLevel(output_level)
 { 
@@ -44,8 +45,9 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
                std::string scalar_data_filename):
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
-  scalarDataFilename(scalar_data_filename), dataPathPrefix(data_prefix),
-  scalarDataFormat(TABULAR_EXPER_ANNOT), interpolateFlag(false), outputLevel(output_level)
+  dataPathPrefix(data_prefix), scalarDataFilename(scalar_data_filename),
+  scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
+  readFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
   initialize(variance_types, srd);
 }
