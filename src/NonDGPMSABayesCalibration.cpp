@@ -53,7 +53,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_points_file")),
   approxImportFormat(
-    probDescDB.get_bool("method.import_points_file_format")),
+    probDescDB.get_ushort("method.import_points_file_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_points_file_active")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
@@ -63,6 +63,12 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   lhsIter.assign_rep(new
     NonDLHSSampling(mcmcModel, sample_type, emulatorSamples, randomSeed, rng,
 		    true, ACTIVE_UNIFORM), false);
+
+  Cerr << "Error: NonDGPMSABayesCalibration requires the user to update the vectors and parameters "
+         << "governing this model manually in the NonDGPMSABayesianCalibration class "
+         << "and then recompile.  For further instructions, contact a Dakota developer."  << std::endl;
+    abort_handler(METHOD_ERROR);
+
 }
 
 
