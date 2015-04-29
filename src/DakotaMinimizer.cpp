@@ -1057,139 +1057,18 @@ primary_resp_differencer(const Variables& raw_vars,
   }
 }
 
-
 void Minimizer::
 data_difference_core(const Response& raw_response, Response& residual_response) 
 {
-  IntVector experiment_lengths;
-  minimizerInstance->expData.per_exp_length(experiment_lengths);
-
-  size_t calib_term_ind = 0; // index into the total set of calibration terms
-  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
-
-    size_t num_fns_exp = experiment_lengths[exp_ind]; // total length this exper
-
-    // form residuals for this experiment
-    RealVector resid_fns;
-    minimizerInstance->expData.form_residuals(raw_response, exp_ind, resid_fns);
-   
-    if (applyCovariance) {
-  
-      // Within a field group, cannot have matrix (off-diagonal)
-      // covariance and non-uniform ASV
-      //
-      // TODO: This is overly conservative; instead check whether
-      // matrix covariance is active on per-field group basis
-      const ShortArray& asv = residual_response.active_set_request_vector();
-      short total_asv = 0;
-      if (matrixCovarianceActive) {
-
-    	size_t num_scalar = minimizerInstance->expData.num_scalars();
-	for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
-	  total_asv |= asv[calib_term_ind + sc_ind];
-
-	const IntVector& exp_field_lens = 
-	  minimizerInstance->expData.field_lengths(exp_ind);
-	size_t num_field_groups = minimizerInstance->expData.num_fields();
-	size_t field_start = calib_term_ind + num_scalar;
-	for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
-
-	  // determine presence and consistency of active set vector
-	  // requests within this field
-	  size_t asv_1 = 0, asv_2 = 0, asv_4 = 0;
-	  size_t num_fns_field = exp_field_lens[fg_ind];
-	  for (size_t fn_ind = 0; fn_ind < num_fns_field; ++fn_ind) {
-	    if (asv[field_start + fn_ind] & 1) ++asv_1;
-	    if (asv[field_start + fn_ind] & 2) ++asv_2;
-	    if (asv[field_start + fn_ind] & 4) ++asv_4;
-	  }
-	  
-	  // with matrix covariance, each of fn, grad, Hess must have all
-	  // same asv (either none or all) (within a field response group)
-	  if ( (asv_1 != 0 && asv_1 != num_fns_field) ||
-	       (asv_2 != 0 && asv_2 != num_fns_field) ||
-	       (asv_4 != 0 && asv_4 != num_fns_field)) {  
-	    Cerr << "\nError: matrix form of data error covariance cannot be "
-		 << "used with non-uniform\n       active set vector; consider "
-		 << "disabling active set vector or specifying no\n      , "
-		 << "scalar, or diagonal covariance" << std::endl;
-	    abort_handler(-1);
-	  }
-	  if (asv_1 > 0) total_asv |= 1;
-	  if (asv_2 > 0) total_asv |= 2;
-	  if (asv_4 > 0) total_asv |= 4;
-	}
-      }
-      else {
-	// compute aggregate ASV over scalars and field data
-	for (size_t fn_ind = 0; fn_ind < num_fns_exp; ++fn_ind)
-	  total_asv |= asv[calib_term_ind + fn_ind];
-      }
-
-      if (outputLevel >= DEBUG_OUTPUT && total_asv > 0)
-	Cout << "\nLeast squares: weighting least squares terms with inverse of "
-	     << "specified error\n               covariance." << std::endl;
-       
-      // BMA TODO: Reduce copies with more granular fn, grad, Hess management
-      RealVector weighted_resid;
-      if (total_asv & 1)
-	expData.apply_covariance_inv_sqrt(resid_fns, exp_ind, weighted_resid);
-      else
-	weighted_resid = resid_fns;
-
-      // apply cov_inv_sqrt to each row of gradient matrix
-      RealMatrix weighted_grad;
-      if (total_asv & 2) {
-      	expData.apply_covariance_inv_sqrt(raw_response.function_gradients(),
-					  exp_ind, weighted_grad);
-      }
-      else
-	weighted_grad = raw_response.function_gradients();
-
-      // apply cov_inv_sqrt to non-contiguous Hessian matrices
-      RealSymMatrixArray weighted_hess;
-      if (total_asv & 4)
-	expData.apply_covariance_inv_sqrt(raw_response.function_hessians(), 
-					  exp_ind, weighted_hess);
-
-      copy_residuals(weighted_resid, weighted_grad, weighted_hess, 
-		     calib_term_ind, num_fns_exp, residual_response);
-    }
-    else {
-      // copy directly from raw gradients/Hessians into the residual response
-      // don't need the grad copy, but the interface to getCol can't take const
-      RealMatrix raw_grad = raw_response.function_gradients();
-      copy_residuals(resid_fns, raw_grad, raw_response.function_hessians(), 
-		     calib_term_ind, num_fns_exp, residual_response);
-    }
-
-    calib_term_ind += num_fns_exp;
-
-  }  // for each experiment
+  ShortArray total_asv;
+  bool interrogate_field_data = 
+    ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
+  total_asv = expData.determine_active_request(residual_response, 
+					       interrogate_field_data);
+  expData.form_residuals(raw_response, total_asv, residual_response);
+  if (applyCovariance) 
+    expData.scale_residuals(residual_response, total_asv);
 }
-
- 
-void Minimizer::
-copy_residuals(const RealVector& fn_vals, RealMatrix& fn_grad, 
-	       const RealSymMatrixArray& fn_hess, size_t offset, size_t num_fns,
-	       Response& residual_response) 
-{
-  const ShortArray& asv = residual_response.active_set_request_vector();
-  for (size_t i=0; i<num_fns; i++) {
-    if (asv[i] & 1) {
-      residual_response.function_value(fn_vals[i], offset+i);
-    }
-    if (asv[i] & 2) {
-      RealVector raw_grad_i = 
-	Teuchos::getCol(Teuchos::View, fn_grad, (int)i);
-      residual_response.function_gradient(raw_grad_i, offset+i);
-    }
-    if (asv[i] & 4) {
-      residual_response.function_hessian(fn_hess[i], offset+i);
-    }
-  }
-}
-
 
 /** Variables map from iterator/scaled space to user/native space
     using a RecastModel. */
@@ -1225,7 +1104,6 @@ gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
       sub_model_set.request_value(sm_asv_val, i);
     }
 }
-
 
 void Minimizer::
 replicate_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,

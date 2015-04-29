@@ -387,9 +387,10 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   else {
     for (i=0; i<num_exp; i++) {
       RealVector residuals; 
-      NonDDREAMInstance->expData.form_residuals(curr_resp,i,residuals);
+      NonDDREAMInstance->expData.form_residuals_deprecated(curr_resp,i,residuals);
       result += NonDDREAMInstance->expData.apply_covariance(residuals, i);    
     }
+    // replace with data_difference core which needs to be raised to expData
   }
 
   result = (result/(NonDDREAMInstance->likelihoodScale));

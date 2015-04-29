@@ -526,6 +526,21 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   RealMatrix prop_covar;
   if (precondRequestValue & 4) { 
     // try to use full misfit Hessian; fall back if indefinite
+
+    /* RealVector residuals; RealMatrix func_gradients; 
+       RealSymMatrixArray func_hessians;
+    for (i=0; i<num_exp; i++) {
+    NonDQUESOInstance->expData.form_residuals(resp, i, residuals);
+    NonDQUESOInstance->expData.form_gradients(resp, i, func_gradients);
+    NonDQUESOInstance->expData.form_hessians(resp, i, func_hessians);
+    // Note inside build_hessian_... we need to be able to update 
+    // log_like_hessian and not create  anew.
+    build_hessian_of_sum_square_residuals_from_function_data(func_hessians,
+    func_gradients, residuals, emulator_resp.active_set_request_vector,
+    log_like_hess);
+    }
+    }*/
+
     build_hessian_of_sum_square_residuals_from_response(emulator_resp,
 							log_like_hess);
     bool ev_truncation =
@@ -1334,9 +1349,20 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   else {
     RealVector residuals;
     for (i=0; i<num_exp; i++) {
-      NonDQUESOInstance->expData.form_residuals(resp, i, residuals);
+      NonDQUESOInstance->expData.form_residuals_deprecated(resp, i, residuals);
       result += NonDQUESOInstance->expData.apply_covariance(residuals, i);
     }
+    /*ShortArray total_asv;
+    bool interrogate_field_data = 
+      ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
+    total_asv=NonDQUESOInstance->expData.determine_active_request(curr_resp,
+					  interrogate_field_data);
+    NonDQUESOInstance->expData.form_residuals(curr_resp, total_asv, 
+					      residual_response);
+    if (applyCovariance) 
+      NonDQUESOInstance->expData.scale_residuals(residual_response, total_asv);
+    RealVector residuals = residual_resp.function_values_view();
+    result = residuals.dot( residuals );*/
   }
 
   result /= -2. * NonDQUESOInstance->likelihoodScale;

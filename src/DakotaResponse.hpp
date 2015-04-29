@@ -79,7 +79,7 @@ public:
 
   /// assignment operator
   Response operator=(const Response& response);
-
+  
   //
   //- Heading: Member functions
   //
@@ -138,6 +138,8 @@ public:
   const RealMatrix& function_gradients() const;
   /// return all function gradients as a view for updating in place
   RealMatrix function_gradients_view();
+  /// return all function gradients as a view for updating in place
+  RealMatrix function_gradients_view() const;
   /// set a function gradient
   void function_gradient(const RealVector& function_grad, int i);
   /// set all function gradients
@@ -156,6 +158,9 @@ public:
   /// return all function Hessians as Teuchos::Views (shallow copies)
   /// for updating in place
   RealSymMatrixArray function_hessians_view();
+  /// return all function Hessians as Teuchos::Views (shallow copies)
+  /// for updating in place
+  RealSymMatrixArray function_hessians_view() const;
   /// set a function Hessian
   void function_hessian(const RealSymMatrix& function_hessian, size_t i);
   /// set all function Hessians
@@ -173,6 +178,11 @@ public:
   const RealMatrix field_coords_view(size_t i) const;
   /// set a field value's coordinates
   void field_coords(const RealMatrix& field_coords, size_t i);
+
+  /// return a view of the gradients of each field element
+  RealMatrix field_gradients_view(size_t i) const;
+  /// return a view of the hessians of each field element
+  RealSymMatrixArray field_hessians_view(size_t i) const;
 
   /// return the field lengths from sharedRespData
   const IntVector& field_lengths() const;
@@ -485,7 +495,6 @@ inline RealVector Response::field_values_view(size_t i)
   }
 }
 
-
 inline RealMatrix Response::field_coords_view(size_t i)
 {
   if (responseRep)
@@ -618,6 +627,17 @@ inline RealMatrix Response::function_gradients_view()
 		      functionGradients.numRows(), functionGradients.numCols());
 }
 
+inline RealMatrix Response::function_gradients_view() const
+{
+  if (responseRep)
+    return RealMatrix(Teuchos::View, responseRep->functionGradients,
+		      responseRep->functionGradients.numRows(),
+		      responseRep->functionGradients.numCols());
+  else
+    return RealMatrix(Teuchos::View, functionGradients,
+		      functionGradients.numRows(), functionGradients.numCols());
+}
+
 
 inline void Response::
 function_gradient(const RealVector& function_grad, int i)
@@ -677,6 +697,20 @@ inline const RealSymMatrixArray& Response::function_hessians() const
 
 
 inline RealSymMatrixArray Response::function_hessians_view()
+{
+  if (responseRep)
+    return responseRep->function_hessians_view();
+  else {
+    size_t i, num_hess = functionHessians.size();
+    RealSymMatrixArray fn_hessians_view(num_hess);
+    for (i=0; i<num_hess; ++i)
+      fn_hessians_view[i] = RealSymMatrix(Teuchos::View, functionHessians[i],
+					  functionHessians[i].numRows());
+    return fn_hessians_view;
+  }
+}
+
+inline RealSymMatrixArray Response::function_hessians_view() const
 {
   if (responseRep)
     return responseRep->function_hessians_view();
@@ -795,6 +829,38 @@ update_partial(size_t start_index_target, size_t num_items,
 inline bool Response::is_null() const
 { return (responseRep == NULL); }
 
+inline RealMatrix Response::field_gradients_view(size_t i) const
+{
+  if (responseRep)
+    return responseRep->field_gradients_view(i);
+  else {
+    size_t j, cntr = sharedRespData.num_scalar_responses();
+    const IntVector& field_len = sharedRespData.field_lengths();
+    for (j=0; j<i; j++)
+      cntr += field_len[j];
+    return RealMatrix(Teuchos::View, functionGradients, 
+		      functionGradients.numRows(), field_len[i],
+		      0, cntr);
+  }
+}
+
+inline RealSymMatrixArray Response::field_hessians_view(size_t i) const
+{
+  if (responseRep)
+    return responseRep->field_hessians_view(i);
+  else {
+    const IntVector& field_len = sharedRespData.field_lengths();
+    size_t j, num_field_hess = field_len[i], 
+      cntr = sharedRespData.num_scalar_responses();;
+    for (j=0; j<i; j++)
+      cntr += field_len[j];
+    RealSymMatrixArray fn_hessians_view(num_field_hess);
+    for (j=0; j<num_field_hess; ++j)
+      fn_hessians_view[j] = RealSymMatrix(Teuchos::View,functionHessians[cntr+j],
+					  functionHessians[j].numRows());
+    return fn_hessians_view;
+  }
+}
 
 /// global comparison function for Response
 inline bool responses_id_compare(const Response& resp, const void* id)

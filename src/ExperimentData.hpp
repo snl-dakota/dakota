@@ -168,14 +168,41 @@ public:
   /// return a (copy) vector containing the main diagonal entries of a specified
   /// experimental covariance matrix
   void get_main_diagonal( RealVector &diagonal, size_t experiment ) const;
+
+  /// form residuals for all experiments, interpolating if necessary 
+  void form_residuals(const Response& sim_resp, const ShortArray &total_asv, 
+		      Response &residual_resp );
     
-  /// form residuals and interpolate if necessary 
-  void form_residuals(const Response& sim_resp, size_t experiment, 
-                      RealVector& residuals); 
+  /// form residuals for an individual experiment, interpolating if necessary 
+  void form_residuals(const Response& sim_resp, size_t exp_num, 
+		      const ShortArray &total_asv, size_t residual_resp_offset,
+		      Response &residual_resp); 
+
+  /// Remove once BAYES classes are cleaned up to use new 
+  /// Minimizer::data_difference_core functions
+  void form_residuals_deprecated(const Response& sim_resp, size_t experiment, 
+				 RealVector& residuals); 
   
   /// flag for interpolation.  If 0, no interpolation. 
   /// If 1, interpolate. 
   bool interpolate_flag();
+
+  /// Interpolate simulation data (values, gradients and hessians) onto
+  /// the coordinates of the experimental data
+  void interpolate_simulation_data( const Response &sim_resp, 
+				    size_t exp_num,
+				    const ShortArray &total_asv, 
+				    size_t exp_offset,
+				    Response &interp_resp );
+
+  /// Perform check on the active request vector to make sure
+  /// it is amenable to interpolation of simulation data and application
+  /// of apply covariance
+  ShortArray determine_active_request( const Response& resid_resp,
+				       bool interogate_field_data );
+
+  /// Apply the experiment data covariance to the residual data
+  void scale_residuals( Response& residual_response, ShortArray &total_asv );
 
 private:
 

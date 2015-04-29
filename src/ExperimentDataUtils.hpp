@@ -27,25 +27,34 @@ int binary_search( T target, Teuchos::SerialDenseVector<O,T> &data )
   if ( high < 0 ) return 0;
   else if ( high < low ) return high;
   else return low;
+
 }
 
+void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad, 
+		     const RealSymMatrixArray& fn_hess, size_t offset, 
+		     size_t num_fns, Response& response);
+
+void interpolate_simulation_field_data( const Response &sim_resp, 
+					const RealMatrix &exp_coords,
+					size_t field_num, short total_asv,
+					size_t interp_resp_offset,
+					Response &interp_resp );
+
 /**
- * \brief Returns the value of at 1D function f at the points of 
- * vector pred_pts using linear interpolation. 
+ * \brief Returns the value of at 1D function f and its gradient and hessians
+ * (if available) at the points of  vector pred_pts using linear interpolation. 
  * The vector build_pts specifies the coordinates of the underlying interval at
  * which the values (build_vals) of the function f are known. The length of 
  * output pred_vals is equal to the length of pred_pts. 
  * This function assumes the build_pts is in ascending order */
-void linear_interpolate_1d( RealMatrix &build_pts, RealVector &build_vals, 
-			    RealMatrix &pred_pts, RealVector &pred_vals );
-
-/**
- * \brief Given two sets of coordinates and corresponding function values this
- * function returns the difference between the two functions
- * at the coordinates of the second set */
-void function_difference_1d( RealMatrix &coords_1, RealVector &values_1,
-			     RealMatrix &coords_2, RealVector &values_2,
-			     RealVector &diff );
+void linear_interpolate_1d( const RealMatrix &build_pts, 
+			    const RealVector &build_vals, 
+			    const RealMatrix &build_grads, 
+			    const RealSymMatrixArray &build_hessians,
+			    const RealMatrix &pred_pts, 
+			    RealVector &pred_vals,
+			    RealMatrix &pred_grads, 
+			    RealSymMatrixArray &pred_hessians );
 
 class CovarianceMatrix
 {
@@ -275,6 +284,14 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
  */
 bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
 						    RealMatrix &covariance );
+
+/**
+ * \brief Copy a field into a response object
+ */
+void copy_residuals(const RealVector& fn_vals, RealMatrix& fn_grad, 
+		    const RealSymMatrixArray& fn_hess, size_t offset, 
+		    size_t num_fns,
+		    Response& response);
 
 
 } // namespace dakota

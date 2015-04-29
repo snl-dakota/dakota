@@ -4,47 +4,204 @@
 
 namespace Dakota {
 
-void linear_interpolate_1d( RealMatrix &build_pts, RealVector &build_vals, 
-			    RealMatrix &pred_pts, RealVector &pred_vals )
+void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad, 
+		     const RealSymMatrixArray& fn_hess, size_t offset, 
+		     size_t num_fns, Response& response)
 {
-  if ( build_pts.numRows()!=1 )
-    throw( std::runtime_error("build pts must be 1xN") );
-  if ( pred_pts.numRows()!=1 )
-    throw( std::runtime_error("build pts must be 1xM") );
-  RealVector pred_pts_1d( Teuchos::View, pred_pts.values(), pred_pts.numCols() );
-  RealVector build_pts_1d( Teuchos::View, build_pts.values(), 
-			   build_pts.numCols() );
-  int num_pred_pts = pred_pts.numCols();
-  int num_build_pts = build_pts.numCols();
-  if ( pred_vals.length() != num_pred_pts )
-    pred_vals.sizeUninitialized( num_pred_pts );
-  for ( int i = 0; i < num_pred_pts; i++ )
-    {
-      // enforce constant interpolation when interpolation is outside the
-      // range of build_pts
-      if ( pred_pts_1d[i] <= build_pts_1d[0] )
-	pred_vals[i] = build_vals[0];
-      else if ( pred_pts_1d[i] >= build_pts_1d[num_build_pts-1] )
-	pred_vals[i] = build_vals[num_build_pts-1];
-      else
-	{
-	  // assumes binary search returns index of the closest point in 
-	  // build_pts to the left of pts(0,i)
-	  int index = binary_search( pred_pts_1d[i], build_pts_1d );
-	  pred_vals[i] = 
-	    build_vals[index] + ( (build_vals[index+1]-build_vals[index] ) /
-				  (build_pts_1d[index+1]-build_pts_1d[index]) ) *
-	    ( pred_pts_1d[i] - build_pts_1d[index] );
-	}
+  const ShortArray& asv = response.active_set_request_vector();
+  for (size_t i=0; i<num_fns; i++) {
+    if (asv[i] & 1) {
+      response.function_value(fn_vals[i], offset+i);
     }
+    if (asv[i] & 2) {
+      RealVector raw_grad_i = 
+	Teuchos::getCol(Teuchos::View, fn_grad, (int)i);
+      response.function_gradient(raw_grad_i, offset+i);
+    }
+    if (asv[i] & 4) {
+      response.function_hessian(fn_hess[i], offset+i);
+    }
+  }
 }
 
-void function_difference_1d( RealMatrix &coords_1, RealVector &values_1,
-			     RealMatrix &coords_2, RealVector &values_2,
-			     RealVector &diff )
+void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad, 
+		     const RealSymMatrixArray& fn_hess, size_t offset, 
+		     size_t num_fns, short total_asv, Response& response)
 {
-  linear_interpolate_1d( coords_1, values_1, coords_2, diff );
-  diff -= values_2;
+  
+  for (size_t i=0; i<num_fns; i++) {
+    if (total_asv & 1) {
+      response.function_value(fn_vals[i], offset+i);
+    }
+    if (total_asv & 2) {
+      RealVector raw_grad_i = 
+	Teuchos::getCol(Teuchos::View, fn_grad, (int)i);
+      response.function_gradient(raw_grad_i, offset+i);
+    }
+    if (total_asv & 4) {
+      response.function_hessian(fn_hess[i], offset+i);
+    }
+  }
+}
+
+void interpolate_simulation_field_data( const Response &sim_resp, 
+					const RealMatrix &exp_coords,
+					size_t field_num, short total_asv,
+					size_t interp_resp_offset,
+					Response &interp_resp ){
+  int outputLevel = 1;
+  int DEBUG_OUTPUT = 0;
+
+  const RealMatrix& sim_coords = sim_resp.field_coords_view(field_num);
+  const RealVector sim_vals = sim_resp.field_values_view(field_num);
+  RealMatrix sim_grads;
+  // TODO(JDJ) : Decide if total_asv is fine grained enough. At the moment
+  // it is per experiment. But we can use it at this level at the more
+  // fine grained level of per field
+  if ( total_asv & 2 )
+    sim_grads = sim_resp.field_gradients_view(field_num);
+
+  RealSymMatrixArray sim_hessians;
+  if ( total_asv & 4 )
+    sim_hessians = sim_resp.field_hessians_view(field_num);
+
+
+  if (outputLevel >= DEBUG_OUTPUT){
+    RealVector sim_values;
+    sim_values = sim_resp.field_values_view(field_num);
+    Cout << "sim_values " << sim_values << '\n';
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "sim_coords " << sim_coords << '\n';
+    Cout << "exp_coords " << exp_coords << '\n';
+  }
+  
+  RealVector interp_vals;
+  RealMatrix interp_grads;
+  RealSymMatrixArray interp_hessians;
+  linear_interpolate_1d( sim_coords, sim_vals, sim_grads, sim_hessians,
+			 exp_coords, interp_vals, interp_grads, 
+			 interp_hessians ); 
+
+  size_t field_size = interp_vals.length();
+  
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "field pred " << interp_vals << '\n';
+    Cout << "interp_resp_offset " << interp_resp_offset << '\n';
+    Cout << "field_size " << field_size << '\n';
+  }
+
+  copy_field_data(interp_vals, interp_grads, interp_hessians, 
+		  interp_resp_offset, field_size, total_asv, 
+		  interp_resp);
+}
+
+void linear_interpolate_1d( const RealMatrix &build_pts, 
+			    const RealVector &build_vals, 
+			    const RealMatrix &build_grads, 
+			    const RealSymMatrixArray &build_hessians,
+			    const RealMatrix &pred_pts, 
+			    RealVector &pred_vals,
+			    RealMatrix &pred_grads, 
+			    RealSymMatrixArray &pred_hessians )
+{
+  
+  int num_pred_pts = pred_pts.numRows();
+  int num_build_pts = build_pts.numRows();
+
+  // Following code assumes that vals are always interpolated
+  // and if hessians are requested that gradients are provided
+  bool interp_grads = ( ( build_grads.numRows() > 0 ) && 
+			( build_grads.numCols() > 0 ) );
+  bool interp_hessians = ( build_hessians.size() > 0 );
+
+  if ( ( interp_hessians ) && ( !interp_grads) )
+    throw( std::runtime_error("Hessians were provided, but gradients were missing") );
+
+  if ( build_pts.numCols()!=1 )
+    throw( std::runtime_error("build pts must be Nx1") );
+  if ( pred_pts.numCols()!=1 )
+    throw( std::runtime_error("build pts must be Mx1") );
+  // The following is for when we active multivariate interpolation of field data
+  //if ( pred_pts.numCols()!=build_pts.numCols() )
+  //  throw( std::runtime_error("build pts and pred pts must have the same number of columns") );
+
+  int num_vars = build_grads.numRows();
+  RealVector pred_pts_1d( Teuchos::View, pred_pts.values(), num_pred_pts );
+  RealVector build_pts_1d( Teuchos::View, build_pts.values(), num_build_pts );
+
+  // Initialize memory for interpolated data
+  if ( pred_vals.length() != num_pred_pts )
+    pred_vals.sizeUninitialized( num_pred_pts );
+  // Only initialize gradient memory if build gradients was not empty
+  if ( ( interp_grads ) && 
+       ( ( pred_grads.numRows() != num_vars ) || 
+	 ( pred_grads.numCols() != num_pred_pts ) ) )
+    pred_grads.shapeUninitialized( num_vars, num_pred_pts );
+  // Only initialize hessian memory if build hessians was not empty
+  if ( ( interp_hessians ) && ( pred_hessians.size() != num_pred_pts ) )
+    pred_hessians.resize( num_pred_pts );
+
+  for ( int i = 0; i < num_pred_pts; i++ ){
+    // enforce constant interpolation when interpolation is outside the
+    // range of build_pts
+    if ( pred_pts_1d[i] <= build_pts_1d[0] ){
+      pred_vals[i] = build_vals[0];
+      for (int k=0; k<build_grads.numRows();k++)
+	pred_grads(k,i) = build_grads(k,0);
+      if ( interp_hessians ){
+	if ( pred_hessians[i].numRows() != num_vars )
+	  pred_hessians[i].shapeUninitialized( num_vars );
+	for (int k=0; k<build_grads.numRows();k++)
+	  for (int j=0; j<=k; j++)
+	    pred_hessians[i](j,k) = build_hessians[0](j,k);
+      }
+    }else if ( pred_pts_1d[i] >= build_pts_1d[num_build_pts-1] ){
+      pred_vals[i] = build_vals[num_build_pts-1];
+      for (int k=0; k<build_grads.numRows();k++)
+	pred_grads(k,i) = build_grads(k,num_build_pts-1);
+      if ( interp_hessians ){
+	if ( pred_hessians[i].numRows() != num_vars )
+	  pred_hessians[i].shapeUninitialized( num_vars );
+	for (int k=0; k<build_grads.numRows();k++)
+	  for (int j=0; j<=k; j++)
+	    pred_hessians[i](j,k) = build_hessians[num_build_pts-1](j,k);
+      }
+    }else{
+      // assumes binary search returns index of the closest point in 
+      // build_pts to the left of pts(0,i)
+      int index = binary_search( pred_pts_1d[i], build_pts_1d );
+
+      // interpolate function values
+      pred_vals[i] = build_vals[index] +
+	( (build_vals[index+1]-build_vals[index] ) /
+	  (build_pts_1d[index+1]-build_pts_1d[index]) ) *
+	( pred_pts_1d[i] - build_pts_1d[index] );
+      // interpolate gradient values
+      if ( interp_grads ){
+	for (int j=0; j<build_grads.numRows();j++){
+	  pred_grads(j,i) = build_grads(j,index) +
+	    ( (build_grads(j,index+1)-build_grads(j,index) ) /
+	      (build_pts_1d[index+1]-build_pts_1d[index]) ) *
+	    ( pred_pts_1d[i] - build_pts_1d[index] );
+	}
+      }
+      // interpolate hessian values
+      if ( interp_hessians ){
+	if ( pred_hessians[i].numRows() != num_vars )
+	  pred_hessians[i].shapeUninitialized( num_vars );
+	for (int k=0; k<build_grads.numRows();k++){
+	  for (int j=0; j<=k; j++){
+	    pred_hessians[i](j,k) = build_hessians[index](j,k) +
+	      ( (build_hessians[index+1](j,k)-build_hessians[index](j,k) ) /
+		(build_pts_1d[index+1]-build_pts_1d[index]) ) *
+	      ( pred_pts_1d[i] - build_pts_1d[index] );
+	  }
+	}
+      }
+    }
+  }
 }
 
 CovarianceMatrix::CovarianceMatrix() : numDOF_(0), covIsDiagonal_(false) {}

@@ -706,10 +706,238 @@ void ExperimentData::get_main_diagonal( RealVector &diagonal,
   allExperiments[experiment].get_covariance_diagonal( diagonal );
 }
 
+void ExperimentData::
+form_residuals(const Response& sim_resp, const ShortArray &total_asv, 
+	       Response &residual_resp )
+{
+  IntVector experiment_lengths;
+  per_exp_length(experiment_lengths);
+  size_t residual_resp_offset = 0;
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
+    size_t num_fns_exp = experiment_lengths[exp_ind]; // total length this exper
+    form_residuals( sim_resp, exp_ind, total_asv, residual_resp_offset,
+		    residual_resp );
+    residual_resp_offset += num_fns_exp;
+  }
+}
 
 void ExperimentData::
-form_residuals(const Response& sim_resp, size_t experiment, 
-               RealVector& residuals)
+form_residuals(const Response& sim_resp, size_t exp_num, 
+	       const ShortArray &total_asv, size_t exp_offset, 
+	       Response &residual_resp )
+{
+  size_t res_size = allExperiments[exp_num].function_values().length();
+
+  RealVector resid_fns = sim_resp.function_values();
+  size_t i,j;
+  const IntVector simLengths = sim_resp.field_lengths();
+  int numfields = num_fields();
+
+  RealVector all_residuals = residual_resp.function_values_view();
+  RealVector residuals(Teuchos::View, all_residuals.values()+exp_offset,
+		       res_size);
+
+  if (outputLevel >= DEBUG_OUTPUT) 
+    Cout << "interpolate " << interpolateFlag << '\n';
+  if (!interpolateFlag) {
+
+    short asv = total_asv[exp_num];
+    RealMatrix sim_grads = sim_resp.function_gradients_view();
+    RealSymMatrixArray sim_hessians = sim_resp.function_hessians_view();
+
+    //resid_fns -= allExperiments[exp_num].function_values();
+    // residuals = resid_fns;
+    for (i=0; i<resid_fns.length(); i++){
+      residuals[i]=
+	resid_fns[i]-allExperiments[exp_num].function_value(i);
+
+      if ( asv & 2 ){
+	RealVector sim_grad_i = 
+	  Teuchos::getCol(Teuchos::View, sim_grads, (int)i);
+	residual_resp.function_gradient(sim_grad_i, exp_offset+i);
+      }
+
+      if ( asv & 4 )
+	residual_resp.function_hessian(sim_hessians[i], exp_offset+i);
+    }
+  }else{   
+    if (num_scalars() > 0) {
+      for (i=0; i<num_scalars(); i++) 
+        residuals[i]= resid_fns[i]-allExperiments[exp_num].function_value(i);
+    }
+
+    // interpolate the simulation data onto the coordinates of the experiment
+    // data
+
+    // I think resisuals are stored in continguous order, 
+    // [exp1(scalars,fields),...,exp_n(scalars,fields)
+    // if so need to pass exp_offset to interpolate function above
+    // and inside that function set offset =  exp_offset and 
+    // then increment in usual way
+    interpolate_simulation_data(sim_resp, exp_num, total_asv, exp_offset,
+				residual_resp);
+
+    if (outputLevel >= DEBUG_OUTPUT) 
+      Cout << "interp values" << residuals << '\n';
+
+    if (total_asv[exp_num] & 1) {
+      // compute the residuals, i.e. subtract the experiment data values
+      // from the (interpolated) simulation values.
+      size_t cntr = num_scalars();
+      for (i=0; i<num_fields(); i++){
+	size_t num_field_fns = field_data_view(i,exp_num).length();
+	for (j=0; j<num_field_fns; j++, cntr++)
+	  residuals[cntr] -= field_data_view(i,exp_num)[j];
+      }
+      if (outputLevel >= DEBUG_OUTPUT) 
+	Cout << "residuals in exp space" << residuals << '\n';
+    }
+  }
+}
+
+void ExperimentData::
+interpolate_simulation_data( const Response &sim_resp, size_t exp_num,
+			     const ShortArray &total_asv, size_t exp_offset,
+			     Response &interp_resp ){
+  size_t offset = exp_offset + num_scalars();
+  IntVector field_lens = field_lengths(exp_num);
+  for (size_t field_num=0; field_num<num_fields(); field_num++){ 
+    RealMatrix exp_coords = field_coords_view(field_num,exp_num);
+    interpolate_simulation_field_data( sim_resp, exp_coords, field_num, 
+				       total_asv[exp_num],
+				       offset, interp_resp );
+    offset += field_lens[field_num]; 
+  }
+}
+
+ShortArray ExperimentData::
+determine_active_request( const Response& resid_resp,
+			  bool interogate_field_data ){
+  IntVector experiment_lengths;
+  per_exp_length(experiment_lengths);
+  ShortArray total_asv( numExperiments );
+
+  size_t calib_term_ind = 0; // index into the total set of calibration terms
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
+    // total length this exper
+    size_t num_fns_exp = experiment_lengths[exp_ind]; 
+     
+    // Within a field group, cannot have matrix (off-diagonal)
+    // covariance and non-uniform ASV
+    //
+    // TODO: This is overly conservative; instead check whether
+    // matrix covariance is active on per-field group basis
+    const ShortArray& asv = resid_resp.active_set_request_vector();
+    total_asv[exp_ind] = 0;
+    if (interogate_field_data) {
+
+      size_t num_scalar = num_scalars();
+      for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
+	total_asv[exp_ind] |= asv[calib_term_ind + sc_ind];
+
+      const IntVector& exp_field_lens = field_lengths(exp_ind);
+      size_t num_field_groups = num_fields();
+      size_t field_start = calib_term_ind + num_scalar;
+      for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
+
+	// determine presence and consistency of active set vector
+	// requests within this field
+	size_t asv_1 = 0, asv_2 = 0, asv_4 = 0;
+	size_t num_fns_field = exp_field_lens[fg_ind];
+	for (size_t fn_ind = 0; fn_ind < num_fns_field; ++fn_ind) {
+	  if (asv[field_start + fn_ind] & 1) ++asv_1;
+	  if (asv[field_start + fn_ind] & 2) ++asv_2;
+	  if (asv[field_start + fn_ind] & 4) ++asv_4;
+	}
+	  
+	// with matrix covariance, each of fn, grad, Hess must have all
+	// same asv (either none or all) (within a field response group)
+	if ( (asv_1 != 0 && asv_1 != num_fns_field) ||
+	     (asv_2 != 0 && asv_2 != num_fns_field) ||
+	     (asv_4 != 0 && asv_4 != num_fns_field)) {  
+	  Cerr << "\nError: matrix form of data error covariance cannot be "
+	       << "used with non-uniform\n       active set vector; consider "
+	       << "disabling active set vector or specifying no\n      , "
+	       << "scalar, or diagonal covariance" << std::endl;
+	  abort_handler(-1);
+	}
+	if (asv_1 > 0) total_asv[exp_ind] |= 1;
+	if (asv_2 > 0) total_asv[exp_ind] |= 2;
+	if (asv_4 > 0) total_asv[exp_ind] |= 4;
+      }
+    }
+    else {
+      // compute aggregate ASV over scalars and field data
+      for (size_t fn_ind = 0; fn_ind < num_fns_exp; ++fn_ind)
+	total_asv[exp_ind] |= asv[calib_term_ind + fn_ind];
+    }
+
+    if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
+      Cout << "\nLeast squares: weighting least squares terms with inverse of "
+	   << "specified error\n               covariance." << std::endl;
+           
+    calib_term_ind += num_fns_exp;
+  }  // for each experiment
+  return(total_asv);
+}
+
+void ExperimentData::
+scale_residuals( Response& residual_response, ShortArray &total_asv ){
+  IntVector experiment_lengths;
+  per_exp_length(experiment_lengths);
+
+  size_t calib_term_ind = 0; // index into the total set of calibration terms
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
+    // total length this exper
+    size_t num_fns_exp = experiment_lengths[exp_ind]; 
+    
+    // apply noise covariance to the residuals for this experiment 
+    // and store in correct place in residual_response
+    if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
+      Cout << "\nLeast squares: weighting least squares terms with inverse of "
+	   << "specified error\n               covariance." << std::endl;
+       
+    // apply cov_inv_sqrt to the residual vector
+    RealVector weighted_resid;
+    if (total_asv[exp_ind] & 1)
+      apply_covariance_inv_sqrt(residual_response.function_values(),
+				exp_ind, weighted_resid);
+    else
+      weighted_resid = residual_response.function_values();
+
+    // apply cov_inv_sqrt to each row of gradient matrix
+    RealMatrix weighted_grad;
+    if (total_asv[exp_ind] & 2) {
+      apply_covariance_inv_sqrt(residual_response.function_gradients(),
+				exp_ind, weighted_grad);
+    }
+    else
+      weighted_grad = residual_response.function_gradients();
+
+    // apply cov_inv_sqrt to non-contiguous Hessian matrices
+    RealSymMatrixArray weighted_hess;
+    if (total_asv[exp_ind] & 4)
+      apply_covariance_inv_sqrt(residual_response.function_hessians(), 
+				exp_ind, weighted_hess);
+    // JDJ it seems like the following will fail if (total_asv[exp_ind] & 4)
+    // is false as a copy or view of weighted hess is not made, it is instead
+    // just empty. Confirm with BMA
+
+    weighted_resid.print(std::cout);
+    weighted_grad.print(std::cout);
+
+    //Todo: BMA/JDJ Only perform copy of resid, grads or hess if covariance
+    //matrix was applied to that data
+    copy_field_data(weighted_resid, weighted_grad, weighted_hess, 
+		    calib_term_ind, num_fns_exp, residual_response);
+
+    calib_term_ind += num_fns_exp;
+  } // for each experiment
+}
+
+void ExperimentData::
+form_residuals_deprecated(const Response& sim_resp, size_t experiment, 
+			  RealVector& residuals)
 {
   size_t res_size = allExperiments[experiment].function_values().length();
   residuals.resize(res_size);
@@ -757,14 +985,16 @@ form_residuals(const Response& sim_resp, size_t experiment,
       RealMatrix exp_coords = field_coords_view(i,experiment);
       //Cout << "exp_coords " << exp_coords << '\n';
 
-      RealMatrix first_sim_coords(sim_coords, Teuchos::TRANS);
-      RealMatrix first_exp_coords(exp_coords, Teuchos::TRANS);
-
       if (outputLevel >= DEBUG_OUTPUT) {
-        Cout << "first_sim_coords " << first_sim_coords << '\n';
-        Cout << "first_exp_coords " << first_exp_coords << '\n';
+        Cout << "first_sim_coords " << sim_coords << '\n';
+        Cout << "first_exp_coords " << exp_coords << '\n';
       }
-      linear_interpolate_1d(first_sim_coords, sim_values, first_exp_coords, field_pred);
+      RealVector interp_vals;
+      RealMatrix sim_grads, interp_grads;
+      RealSymMatrixArray sim_hessians, interp_hessians;
+      linear_interpolate_1d(sim_coords, sim_values, sim_grads, sim_hessians,
+			    exp_coords, interp_vals, interp_grads, 
+			    interp_hessians);
       if (outputLevel >= DEBUG_OUTPUT) 
         Cout << "field pred " << field_pred << '\n';
 
@@ -777,5 +1007,6 @@ form_residuals(const Response& sim_resp, size_t experiment,
   }
 
 }
+
 
 }  // namespace Dakota
