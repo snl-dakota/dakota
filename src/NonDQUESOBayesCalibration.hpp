@@ -79,6 +79,12 @@ protected:
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
 
+  /// initialize the ASV value for preconditioned cases
+  void init_precond_request_value();
+  
+  /// initialize a residual response for use in data transformations
+  void init_residual_response();
+
   /// define variables, options, likelihood callback, and inverse problem
   void init_queso_solver();
 
@@ -166,6 +172,10 @@ protected:
   Real likelihoodScale;
   /// flag to indicated if the sigma terms should be calibrated (default true)
   bool calibrateSigmaFlag;
+  /// the active set request value to use in proposal preconditioning
+  short precondRequestValue;
+  /// local Response in which to store computed residuals
+  Response residualResponse;
 
 private:
 

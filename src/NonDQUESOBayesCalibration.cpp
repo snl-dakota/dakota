@@ -216,7 +216,8 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
-  calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma"))
+  calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma")),
+  precondRequestValue(0)
 {
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
@@ -261,8 +262,14 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // instantiate QUESO objects and execute
   NonDQUESOInstance = this;
 
-  // construct mcmcModel and initialize tranformations, as needed
+  // construct mcmcModel and initialize transformations, as needed
   initialize_model();
+
+  // initialize the ASV request value for preconditioning and
+  // construct a Response for use in residual computation
+  if (proposalCovarType == "derivatives")
+    init_precond_request_value();
+  init_residual_response();
 
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
@@ -418,6 +425,48 @@ void NonDQUESOBayesCalibration::init_queso_environment()
 }
 
 
+void NonDQUESOBayesCalibration::init_precond_request_value()
+{
+  // Gauss-Newton approximate Hessian requires gradients of residuals (rv=2)
+  // full Hessian requires values/gradients/Hessians of residuals (rv=7)
+  precondRequestValue = 0;
+  switch (emulatorType) {
+  case PCE_EMULATOR: case KRIGING_EMULATOR:
+    precondRequestValue = 7; break;
+  case  SC_EMULATOR: case      GP_EMULATOR: // no Hessian support yet
+    precondRequestValue = 2; break;
+  case  NO_EMULATOR:
+    if (mcmcModel.gradient_type() != "none") 
+      precondRequestValue |= 2; // gradients
+    if (mcmcModel.hessian_type()  != "none") 
+      precondRequestValue |= 5; // values & Hessians
+    break;
+  }
+}
+
+
+void NonDQUESOBayesCalibration::init_residual_response()
+{
+  // The residual response is sized based on total experiment data
+  // size.  It has to allocate space for derivatives in the case of
+  // preconditioned proposal covariance.
+  const Response& resp = mcmcModel.current_response();
+  residualResponse = resp.copy(false);  // false: SRD can be shared until resize
+  size_t total_residuals = 
+    calibrationDataFlag ? expData.num_total_exppoints() : resp.num_functions();
+  // likelihood needs fn_vals; preconditioning may need derivs
+  short request_value_needed = 1 | precondRequestValue;
+
+  // reshape needed if change in size or derivative request; Response
+  // only resizes contained data if needed
+  residualResponse.reshape(total_residuals,
+			   resp.active_set_derivative_vector().size(),
+			   request_value_needed & 2, request_value_needed & 4);
+  // TODO: fully map the active set vector as in Minimizer, or replace
+  // with a RecastModel for data.
+}
+
+
 void NonDQUESOBayesCalibration::init_queso_solver()
 {
   ////////////////////////////////////////////////////////
@@ -456,23 +505,10 @@ void NonDQUESOBayesCalibration::init_queso_solver()
 
 void NonDQUESOBayesCalibration::precondition_proposal()
 {
-  // Gauss-Newton approximate Hessian requires gradients of residuals (rv=2)
-  // full Hessian requires values/gradients/Hessians of residuals (rv=7)
-  short asrv = 0;
-  switch (emulatorType) {
-  case PCE_EMULATOR: case KRIGING_EMULATOR:
-    asrv = 7; break;
-  case  SC_EMULATOR: case      GP_EMULATOR: // no Hessian support yet
-    asrv = 2; break;
-  case  NO_EMULATOR:
-    if (mcmcModel.gradient_type() != "none") asrv |= 2; // gradients
-    if (mcmcModel.hessian_type()  != "none") asrv |= 5; // values & Hessians
-    if (!asrv) {
-      Cerr << "Error: response derivative specification required for proposal "
-	   << "preconditioning." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    break;
+  if (!precondRequestValue) {
+    Cerr << "Error: response derivative specification required for proposal "
+	 << "preconditioning." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
 
   // update mcmcModel's continuous variables from paramInitials
@@ -480,7 +516,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     mcmcModel.continuous_variable((*paramInitials)[i], i);
   // update request vector values
   ActiveSet set = mcmcModel.current_response().active_set(); // copy
-  set.request_values(asrv);
+  set.request_values(precondRequestValue);
   // compute response (echoed to Cout if outputLevel > NORMAL)
   mcmcModel.compute_response(set);
 
@@ -488,7 +524,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   RealSymMatrix log_like_hess;
   const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
-  if (asrv & 4) { // try to use full misfit Hessian; fall back if indefinite
+  if (precondRequestValue & 4) { 
+    // try to use full misfit Hessian; fall back if indefinite
     build_hessian_of_sum_square_residuals_from_response(emulator_resp,
 							log_like_hess);
     bool ev_truncation =
@@ -499,7 +536,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
       get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
     }
   }
-  else { // use Gauss-Newton approximate Hessian
+  else { 
+    // use Gauss-Newton approximate Hessian
     build_hessian_of_sum_square_residuals_from_function_gradients(
       emulator_resp.function_gradients(), log_like_hess);
     get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
