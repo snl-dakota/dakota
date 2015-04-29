@@ -519,6 +519,9 @@ LocalDesignVariableMutator::PerformBlockExtensionMutation(
 {
     EDDY_FUNC_DEBUGSCOPE
 
+    // if there is only 1 time period, then there is nothing to do.
+    if(rm._dateDVs.size() < 2) return;
+
     // store the design target for repeated use
     const DesignTarget& target = des.GetDesignTarget();
 
@@ -814,7 +817,7 @@ LocalDesignVariableMutator::Mutate(
     {
         JEGALOG_II(this->GetLogger(), ldebug(), this,
             text_entry(ldebug(), this->GetName() + ": Rate and group size are "
-                       "such that no mutation will occur.")
+                "such that no mutation will occur.")
             )
         return;
     }
@@ -843,8 +846,8 @@ LocalDesignVariableMutator::Mutate(
 			this->GetRoadmapAndPriorNDV(dv);
 
         // The probabilities for fancy mutation types depend on how many
-        // multiple change options and variables there are.
-        const size_t tcVars =
+        // multiple change options, variables, and time periods there are.
+        const size_t tcVars = rmpndv.first->_dateDVs.size() < 2 ? 0 :
             rmpndv.first->_optMap.size() + rmpndv.first->_varMap.size();
 
         const size_t ldv = dv - rmpndv.second;
@@ -871,7 +874,7 @@ LocalDesignVariableMutator::Mutate(
 
         // if dv indicates a single option variable, then do single option
         // mutation types.
-        if(ldv < rmpndv.first->_numSCOpts)
+        if(tcVars == 0 || ldv < rmpndv.first->_numSCOpts)
         {
             if(val <= 0.4)
                 this->PerformMoveBy1Mutation(*chosen, dv);
@@ -1167,13 +1170,16 @@ LocalDesignVariableMutator::PerformFullBlockChangeMutation(
 {
     EDDY_FUNC_DEBUGSCOPE
 
+    // Start by changing the variable at dv.
+    des.SetVariableRep(dv, newRep);
+
+    // If there is only 1 time period, then there is nothing more to do.
+    if(rm._dateDVs.size() < 2) return;
+
     const size_t ldv = dv - pndv;
     const DesignTarget& target = this->GetDesignTarget();
     const DesignVariableInfoVector& dvis = target.GetDesignVariableInfos();
     const bool dvIsVar = static_cast<int>(ldv) > rm._hiOptVar;
-
-    // Start by changing the variable at dv.
-    des.SetVariableRep(dv, newRep);
 
     // If we are dealing with a variable, figure out which one.
     if(dvIsVar)

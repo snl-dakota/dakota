@@ -94,7 +94,7 @@ std::size_t
 GeneticAlgorithmConverger::GetMaxGenerations(
     ) const
 {
-    return _maxGens;
+    return this->_maxGens;
 }
 
 inline
@@ -102,7 +102,15 @@ std::size_t
 GeneticAlgorithmConverger::GetMaxEvaluations(
     ) const
 {
-    return _maxEvals;
+    return this->_maxEvals;
+}
+
+inline
+double
+GeneticAlgorithmConverger::GetMaxTime(
+    ) const
+{
+    return this->_maxTime;
 }
 
 inline
@@ -110,7 +118,7 @@ bool
 GeneticAlgorithmConverger::GetConverged(
     ) const
 {
-    return _converged;
+    return this->_converged;
 }
 
 

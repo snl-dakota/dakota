@@ -745,13 +745,12 @@ MaxDesignsNichePressureApplicator::ComputeNicheCounts(
         iit!=designs.end(); ++iit
         )
     {
+        size_t ncAfter = 1; // 1 to count self
         const Design& id = **iit;
 
         DesignOFSortSet::const_iterator jit(iit);
         for(++jit; jit!=designs.end(); ++jit)
         {
-            // Only worsen the j iterate design.  This makes it so that the
-            // order of preference doesn't wipe out an entire cluster.
             const Design& jd = **jit;
 
             // If jit is too close to iit, then we increment ncAfter and
@@ -775,8 +774,14 @@ MaxDesignsNichePressureApplicator::ComputeNicheCounts(
                 { tooClose = false; break; }
 
             // If it is too close, we mark it as such.  Otherwise we move on.
-            if(tooClose) ncm.AddToValue(jd, 1);
+            if(tooClose)
+            {
+                ++ncAfter;
+                ncm.AddToValue(jd, 1);
+            }
         }
+
+        ncm.AddToValue(id, ncAfter);
     }
 
     ncm.ResumeStatistics(true);

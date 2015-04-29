@@ -316,7 +316,7 @@ MANAGED_CLASS(public, MFitnessRecord) :
          *
          * \return The number of fitness values recorded in this record.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetSize(
             );
 

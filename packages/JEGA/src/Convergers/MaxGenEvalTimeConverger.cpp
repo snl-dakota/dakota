@@ -2,15 +2,15 @@
 ================================================================================
     PROJECT:
 
-        John Eddy's Genetic Algorithms (JEGA) Managed Front End
+        John Eddy's Genetic Algorithms (JEGA)
 
     CONTENTS:
 
-        Implementation of class MFitnessRecord.
+        Implementation of class MaxGenEvalTimeConverger.
 
     NOTES:
 
-        See notes of MFitnessRecord.hpp.
+        See notes of MaxGenEvalTimeConverger.hpp.
 
     PROGRAMMERS:
 
@@ -18,7 +18,7 @@
 
     ORGANIZATION:
 
-        Sandia National Laboratories, Albuquerque NM
+        Sandia National Laboratories
 
     COPYRIGHT:
 
@@ -26,11 +26,11 @@
 
     VERSION:
 
-        2.1.0
+        2.7.0
 
     CHANGES:
 
-        Fri Sep 28 09:07:37 2007 - Original Version (JE)
+        Thu Sep 18 13:43:57 2014 - Original Version (JE)
 
 ================================================================================
 */
@@ -44,7 +44,7 @@ Document This File
 ================================================================================
 */
 /** \file
- * \brief Contains the implementation of the MFitnessRecord class.
+ * \brief Contains the implementation of the MaxGenEvalTimeConverger class.
  */
 
 
@@ -55,14 +55,11 @@ Document This File
 Includes
 ================================================================================
 */
-#include <stdafx.h>
-#include <MDesign.hpp>
-#include <MFitnessRecord.hpp>
+#include <../Utilities/include/JEGAConfig.hpp>
 
-#pragma unmanaged
-#include <../include/FitnessRecord.hpp>
+#include <../Utilities/include/Logging.hpp>
 #include <utilities/include/EDDY_DebugScope.hpp>
-#pragma managed
+#include <Convergers/MaxGenEvalTimeConverger.hpp>
 
 
 
@@ -75,7 +72,9 @@ Includes
 Namespace Using Directives
 ================================================================================
 */
-using namespace JEGA::Algorithms;
+using namespace std;
+using namespace JEGA::Logging;
+using namespace JEGA::Utilities;
 
 
 
@@ -89,8 +88,7 @@ Begin Namespace
 ================================================================================
 */
 namespace JEGA {
-    namespace FrontEnd {
-        namespace Managed {
+    namespace Algorithms {
 
 
 
@@ -141,78 +139,37 @@ Public Methods
 ================================================================================
 */
 
-JEGA::Algorithms::FitnessRecord&
-MFitnessRecord::Manifest(
+const string&
+MaxGenEvalTimeConverger::Name(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return *this->_guts;
+    static const string ret("max_evals_gens_time");
+    return ret;
 }
 
-
-bool
-MFitnessRecord::AddFitness(
-    MDesign MOH des,
-    double fitness
+const string&
+MaxGenEvalTimeConverger::Description(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _guts->AddFitness(&des->Manifest(), fitness);
+
+    static const string ret(
+        "This converger returns true if either the maximum allowable number of "
+        "evaluations, maximum allowable number of generations, or maximum wall "
+        "clock time has been reached or exceeded."
+        );
+    return ret;
 }
 
-double
-MFitnessRecord::GetAverageFitness(
+GeneticAlgorithmOperator*
+MaxGenEvalTimeConverger::Create(
+    GeneticAlgorithm& algorithm
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetAverageFitness();
+    return new MaxGenEvalTimeConverger(algorithm);
 }
-
-double
-MFitnessRecord::GetFitness(
-    MDesign MOH des
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetFitness(des->Manifest());
-}
-
-double
-MFitnessRecord::GetMaxFitness(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetMaxFitness();
-}
-
-double
-MFitnessRecord::GetMinFitness(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetMinFitness();
-}
-
-double
-MFitnessRecord::GetTotalFitness(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetTotalFitness();
-}
-
-eddy::utilities::uint64_t
-MFitnessRecord::GetSize(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetSize();
-}
-
-
-
-
-
 
 
 
@@ -235,19 +192,41 @@ Subclass Overridable Methods
 ================================================================================
 */
 
-void
-MFitnessRecord::MANAGED_DISPOSE(
+
+string
+MaxGenEvalTimeConverger::GetName(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return MaxGenEvalTimeConverger::Name();
+}
+
+string
+MaxGenEvalTimeConverger::GetDescription(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return MaxGenEvalTimeConverger::Description();
+}
+
+GeneticAlgorithmOperator*
+MaxGenEvalTimeConverger::Clone(
+    GeneticAlgorithm& algorithm
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return new MaxGenEvalTimeConverger(*this, algorithm);
+}
+
+bool
+MaxGenEvalTimeConverger::CheckConvergence(
+    const DesignGroup&,
+    const FitnessRecord&
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    delete _guts;
-    _guts = 0x0;
+    return this->GeneticAlgorithmConverger::CheckConvergence();
 }
-
-
-
-
-
 
 
 
@@ -270,32 +249,30 @@ Structors
 ================================================================================
 */
 
-MFitnessRecord::MFitnessRecord(
+MaxGenEvalTimeConverger::MaxGenEvalTimeConverger(
+    GeneticAlgorithm& algorithm
     ) :
-        _guts(new FitnessRecord())
+        GeneticAlgorithmConverger(algorithm)
 {
     EDDY_FUNC_DEBUGSCOPE
 }
 
-MFitnessRecord::MFitnessRecord(
-    size_t initSize
+MaxGenEvalTimeConverger::MaxGenEvalTimeConverger(
+    const MaxGenEvalTimeConverger& copy
     ) :
-        _guts(new FitnessRecord(initSize))
+        GeneticAlgorithmConverger(copy)
 {
     EDDY_FUNC_DEBUGSCOPE
 }
 
-MFitnessRecord::~MFitnessRecord(
-    )
+MaxGenEvalTimeConverger::MaxGenEvalTimeConverger(
+    const MaxGenEvalTimeConverger& copy,
+    GeneticAlgorithm& algorithm
+    ) :
+        GeneticAlgorithmConverger(copy, algorithm)
 {
     EDDY_FUNC_DEBUGSCOPE
-    MANAGED_DISPOSE();
 }
-
-
-
-
-
 
 
 
@@ -304,7 +281,6 @@ MFitnessRecord::~MFitnessRecord(
 End Namespace
 ================================================================================
 */
-        } // namespace Managed
-    } // namespace FrontEnd
+    } // namespace Algorithms
 } // namespace JEGA
 

@@ -229,6 +229,14 @@ NullConverger::CheckConvergence(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
+    return this->CheckConvergence();
+}
+
+bool
+NullConverger::CheckConvergence(
+    )
+{
+    EDDY_FUNC_DEBUGSCOPE
 
     JEGALOG_II(this->GetLogger(), ldebug(), this, text_entry(ldebug(),
         this->GetName() + ": in use."))
@@ -239,7 +247,6 @@ NullConverger::CheckConvergence(
     // return not converged.
     return false;
 }
-
 
 
 

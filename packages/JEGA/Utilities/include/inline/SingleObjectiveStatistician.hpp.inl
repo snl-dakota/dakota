@@ -191,7 +191,7 @@ SingleObjectiveStatistician::FindMinSumMinViolateDesigns(
     for(typename DesignContainer::const_iterator it(cont.begin());
         it!=cont.end(); ++it)
     {
-        // ignore designs that are not evalauted.
+        // ignore designs that are not evaluated.
         if(!(*it)->IsEvaluated()) continue;
 
         double viol = DesignStatistician::ComputeTotalPercentageViolation(**it);

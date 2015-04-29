@@ -145,7 +145,7 @@ ConstraintNatureBase::GetDesignTarget(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetDesignTarget();
+    return this->GetType().GetDesignTarget();
 
 } // ConstraintNatureBase::GetDesignTarget
 
@@ -154,7 +154,7 @@ ConstraintNatureBase::GetDesignTarget(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetDesignTarget();
+    return this->GetType().GetDesignTarget();
 
 } // ConstraintNatureBase::GetDesignTarget
 
@@ -163,7 +163,7 @@ ConstraintNatureBase::GetConstraintInfo(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetConstraintInfo();
+    return this->GetType().GetConstraintInfo();
 
 } // ConstraintNatureBase::GetConstraintInfo
 
@@ -172,7 +172,7 @@ ConstraintNatureBase::GetConstraintInfo(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetConstraintInfo();
+    return this->GetType().GetConstraintInfo();
 
 } // ConstraintNatureBase::GetConstraintInfo
 

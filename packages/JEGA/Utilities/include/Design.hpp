@@ -428,10 +428,10 @@ class JEGA_SL_IEDECL Design
         struct IDHasher :
             public std::unary_function<Design*, std::size_t>
         {
-            const std::size_t operator()(const Design* des) const {
+            std::size_t operator()(const Design* des) const {
                 return des->GetID();
             }
-            const std::size_t operator()(const Design& des) const {
+            std::size_t operator()(const Design& des) const {
                 return des.GetID();
             }
         };
@@ -439,14 +439,14 @@ class JEGA_SL_IEDECL Design
         struct IDEquals :
             public std::binary_function<Design*, Design*, std::size_t>
         {
-            const std::size_t operator()(
+            std::size_t operator()(
                 const Design* des1, const Design* des2
                 ) const
             {
                 return des1->GetID() == des1->GetID();
             }
 
-            const std::size_t operator()(
+            std::size_t operator()(
                 const Design& des1, const Design& des2
                 ) const
             {

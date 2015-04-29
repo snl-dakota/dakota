@@ -139,7 +139,7 @@ ObjectiveFunctionNatureBase::GetDesignTarget(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetDesignTarget();
+    return this->GetType().GetDesignTarget();
 
 } // ObjectiveFunctionNatureBase::GetDesignTarget
 
@@ -148,7 +148,7 @@ ObjectiveFunctionNatureBase::GetDesignTarget(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetDesignTarget();
+    return this->GetType().GetDesignTarget();
 
 } // ObjectiveFunctionNatureBase::GetDesignTarget
 
@@ -157,7 +157,7 @@ ObjectiveFunctionNatureBase::GetObjectiveFunctionInfo(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetObjectiveFunctionInfo();
+    return this->GetType().GetObjectiveFunctionInfo();
 
 } // ObjectiveFunctionNatureBase::GetObjectiveFunctionInfo
 
@@ -166,7 +166,7 @@ ObjectiveFunctionNatureBase::GetObjectiveFunctionInfo(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetObjectiveFunctionInfo();
+    return this->GetType().GetObjectiveFunctionInfo();
 
 } // ObjectiveFunctionNatureBase::GetObjectiveFunctionInfo
 

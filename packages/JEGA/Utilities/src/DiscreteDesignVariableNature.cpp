@@ -365,7 +365,7 @@ DiscreteDesignVariableNature::GetRandomValue(
     EDDY_FUNC_DEBUGSCOPE
     DoubleVector::size_type elem =
         static_cast<DoubleVector::size_type>(
-            DesignVariableNatureBase::GetRandomDoubleRep()
+            this->DesignVariableNatureBase::GetRandomDoubleRep()
             );
     return this->_disVals[elem];
 }
@@ -392,10 +392,10 @@ DiscreteDesignVariableNature::GetValueOf(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(IsValidDoubleRep(rep));
+    EDDY_ASSERT(this->IsValidDoubleRep(rep));
     DoubleVector::size_type loc =
         static_cast<DoubleVector::size_type>(Math::Round(rep));
-    return IsValidDoubleRep(rep) ? this->_disVals[loc] : -DBL_MAX;
+    return this->IsValidDoubleRep(rep) ? this->_disVals[loc] : -DBL_MAX;
 }
 
 double
@@ -452,7 +452,7 @@ DiscreteDesignVariableNature::GetNearestValidDoubleRep(
 
     if(rep == -DBL_MAX) return rep;
 
-    double temp = Math::Round(rep);
+    const double temp = Math::Round(rep);
 
     return Math::Max(Math::Min(
         this->GetMaxDoubleRep(), temp
@@ -523,7 +523,7 @@ void DiscreteDesignVariableNature::SetMaxValue(
             ),
          this->_disVals.end()
          );
-    AddDiscreteValue(value);
+    this->AddDiscreteValue(value);
 }
 
 void DiscreteDesignVariableNature::SetMinValue(

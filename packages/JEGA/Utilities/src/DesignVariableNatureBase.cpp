@@ -123,7 +123,7 @@ DesignVariableNatureBase::SetPrecision(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(!IsPrecisionLocked());
+    EDDY_ASSERT(!this->IsPrecisionLocked());
 
     if(IsPrecisionLocked())
     {
@@ -135,7 +135,7 @@ DesignVariableNatureBase::SetPrecision(
 
          return false;
     }
-    _precision = prec;
+    this->_precision = prec;
     return true;
 }
 
@@ -168,7 +168,7 @@ DesignVariableNatureBase::AssertPrecision(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    return (val==-DBL_MAX) ? -DBL_MAX : Math::Round(val, _precision);
+    return (val==-DBL_MAX) ? -DBL_MAX : Math::Round(val, this->_precision);
 }
 
 
@@ -177,7 +177,7 @@ DesignVariableNatureBase::GetDesignVariableInfo(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetDesignVariableInfo();
+    return this->GetType().GetDesignVariableInfo();
 }
 
 const DesignVariableInfo&
@@ -185,7 +185,7 @@ DesignVariableNatureBase::GetDesignVariableInfo(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetType().GetDesignVariableInfo();
+    return this->GetType().GetDesignVariableInfo();
 }
 
 double
@@ -195,7 +195,9 @@ DesignVariableNatureBase::GetRandomDoubleRep(
     EDDY_FUNC_DEBUGSCOPE
 
     // use the max and mins as the range.
-    return GetRandomDoubleRep(GetMinDoubleRep(), GetMaxDoubleRep());
+    return this->GetRandomDoubleRep(
+        this->GetMinDoubleRep(), this->GetMaxDoubleRep()
+        );
 }
 
 double
@@ -207,10 +209,10 @@ DesignVariableNatureBase::GetRandomDoubleRep(
 
     // we need the index of this variable which can be obtained from the
     // info object.
-    size_t index = GetType().GetDesignVariableInfo().GetNumber();
+    size_t index = this->GetType().GetDesignVariableInfo().GetNumber();
 
     // use the extremes for our variable in within as the range.
-    return GetRandomDoubleRep(
+    return this->GetRandomDoubleRep(
         within.GetLowerLimit(index), within.GetUpperLimit(index)
         );
 }
@@ -241,7 +243,6 @@ DesignVariableNatureBase::IsValidValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-
     return (value != -DBL_MAX);
 }
 
@@ -251,7 +252,6 @@ DesignVariableNatureBase::IsValidDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-
     return (rep != -DBL_MAX);
 }
 

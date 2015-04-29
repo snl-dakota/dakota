@@ -57,6 +57,7 @@ Includes
 // JEGAConfig.hpp should be the first include in all JEGA files.
 #include <../Utilities/include/JEGAConfig.hpp>
 
+#include <ctime>
 #include <limits>
 #include <GeneticAlgorithm.hpp>
 #include <GeneticAlgorithmConverger.hpp>
@@ -109,6 +110,10 @@ const std::size_t GeneticAlgorithmConverger::DEFAULT_MAX_EVALS(
     std::numeric_limits<std::size_t>::max()
     );
 
+const double GeneticAlgorithmConverger::DEFAULT_MAX_TIME(
+    std::numeric_limits<double>::max()
+    );
+
 
 
 
@@ -147,6 +152,21 @@ GeneticAlgorithmConverger::SetMaxEvaluations(
         ostream_entry(lverbose(),
             this->GetName() + ": Maximum allowable evaluations now = ")
             << this->_maxEvals
+        )
+}
+
+void
+GeneticAlgorithmConverger::SetMaxTime(
+    double maxTime
+    )
+{
+    EDDY_FUNC_DEBUGSCOPE
+    this->_maxTime = maxTime;
+
+    JEGALOG_II(this->GetLogger(), lverbose(), this,
+        ostream_entry(lverbose(),
+            this->GetName() + ": Maximum allowable time now = ")
+            << this->_maxTime << " seconds "
         )
 }
 
@@ -205,6 +225,14 @@ GeneticAlgorithmConverger::IsMaxEvalsExceeded(
 }
 
 bool
+GeneticAlgorithmConverger::IsMaxTimeExceeded(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return (this->GetAlgorithm().GetElapsedTime() > this->_maxTime);
+}
+
+bool
 GeneticAlgorithmConverger::IsMaxGensReached(
     ) const
 {
@@ -218,6 +246,14 @@ GeneticAlgorithmConverger::IsMaxEvalsReached(
 {
     EDDY_FUNC_DEBUGSCOPE
     return (this->GetAlgorithm().GetNumberEvaluations() >= this->_maxEvals);
+}
+
+bool
+GeneticAlgorithmConverger::IsMaxTimeReached(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return (this->GetAlgorithm().GetElapsedTime() >= this->_maxTime);
 }
 
 
@@ -279,6 +315,19 @@ GeneticAlgorithmConverger::PollForParameters(
 
     this->SetMaxEvaluations(this->_maxEvals);
 
+    
+    success = ParameterExtractor::GetDoubleFromDB(
+        db, "method.max_time", this->_maxTime
+        );
+
+    JEGAIFLOG_CF_II(!success, this->GetLogger(), lverbose(), this,
+        ostream_entry(lverbose(), this->GetName() + ": The maximum allowable "
+            "amount of time was not found in the parameter "
+            "database.  Using the current value of ") << this->_maxTime
+        )
+
+    this->SetMaxTime(this->_maxTime);
+
     return true;
 }
 
@@ -290,6 +339,45 @@ GeneticAlgorithmConverger::GetType(
     return "Converger";
 }
 
+bool
+GeneticAlgorithmConverger::CheckConvergence(
+    )
+{
+    JEGALOG_II(this->GetLogger(), ldebug(), this,
+        text_entry(ldebug(), this->GetName() + ": Entering convergence check.")
+        )
+
+    // convergence depends only on the maximum allowable number of generations,
+    // evaluations, and amount of wall clock time.
+    // If any has been reached or exceeded, we've converged.
+    bool converged =
+        this->IsMaxGensReached() ||
+        this->IsMaxEvalsReached() ||
+        this->IsMaxTimeReached();
+
+    JEGAIFLOG_CF_II(this->IsMaxGensReached(), this->GetLogger(), lverbose(),
+        this,
+        text_entry(lverbose(), this->GetName() + ": maximum allowable number "
+            "of generations has been reached.")
+        )
+
+    JEGAIFLOG_CF_II(this->IsMaxEvalsReached(), this->GetLogger(), lverbose(),
+        this,
+        text_entry(lverbose(), this->GetName() + ": maximum allowable number "
+            "of evaluations has been reached.")
+        )
+
+    JEGAIFLOG_CF_II(this->IsMaxTimeReached(), this->GetLogger(), lverbose(),
+        this,
+        text_entry(lverbose(), this->GetName() + ": maximum allowable wall "
+            "clock time has been reached.")
+        )
+
+    this->SetConverged(converged);
+
+    // return true if we have converged, false otherwise.
+    return this->GetConverged();
+}
 
 
 
@@ -318,6 +406,7 @@ GeneticAlgorithmConverger::GeneticAlgorithmConverger(
         GeneticAlgorithmOperator(algorithm),
         _maxGens(DEFAULT_MAX_GENS),
         _maxEvals(DEFAULT_MAX_EVALS),
+        _maxTime(DEFAULT_MAX_TIME),
         _converged(false)
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -330,6 +419,7 @@ GeneticAlgorithmConverger::GeneticAlgorithmConverger(
         GeneticAlgorithmOperator(copy),
         _maxGens(copy._maxGens),
         _maxEvals(copy._maxEvals),
+        _maxTime(copy._maxTime),
         _converged(copy._converged)
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -343,6 +433,7 @@ GeneticAlgorithmConverger::GeneticAlgorithmConverger(
         GeneticAlgorithmOperator(copy, algorithm),
         _maxGens(copy._maxGens),
         _maxEvals(copy._maxEvals),
+        _maxTime(copy._maxTime),
         _converged(copy._converged)
 {
     EDDY_FUNC_DEBUGSCOPE

@@ -253,6 +253,9 @@ class JEGA_SL_IEDECL GeneticAlgorithmEvaluator :
         /// The mutext that protects the _numEvals variable in threadsafe mode.
         EDDY_DECLARE_MUTABLE_MUTEX(_numEvalsMutex)
 
+        /// The mutext that protects the injections list in threadsafe mode.
+        EDDY_DECLARE_MUTABLE_MUTEX(_injsMutex)
+
         ThreadManager* _tMgr;
 
     /*

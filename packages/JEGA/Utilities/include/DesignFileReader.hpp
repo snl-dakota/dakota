@@ -651,6 +651,9 @@ class DesignFileReader
         std::string
         DetermineDelimeter(
             const std::string& from
+#ifdef JEGA_LOGGING_ON
+            , const std::string& prev
+#endif
             );
 
         /**

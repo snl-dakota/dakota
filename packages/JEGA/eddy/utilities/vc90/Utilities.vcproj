@@ -20,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_st_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -143,8 +143,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -265,8 +265,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_st_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			ManagedExtensions="0"
 			>
@@ -415,8 +415,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_mt_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -524,6 +524,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\libeutils_d_mt_sl.lib"
 			/>
 			<Tool
@@ -544,8 +545,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_mt_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -692,8 +693,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -832,8 +833,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -988,8 +989,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			WholeProgramOptimization="1"
 			>
@@ -1127,8 +1128,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_st_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -1250,8 +1251,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -1375,8 +1376,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_mt_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -1500,8 +1501,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			ManagedExtensions="0"
 			WholeProgramOptimization="1"

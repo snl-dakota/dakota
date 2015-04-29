@@ -98,7 +98,7 @@ ConstraintInfo&
 ConstraintTypeBase::GetConstraintInfo(
     )
 {
-    return _info;
+    return this->_info;
 }
 
 inline
@@ -106,7 +106,7 @@ const ConstraintInfo&
 ConstraintTypeBase::GetConstraintInfo(
     ) const
 {
-    return _info;
+    return this->_info;
 }
 
 inline
@@ -114,7 +114,7 @@ ConstraintNatureBase&
 ConstraintTypeBase::GetNature(
     ) const
 {
-    return *_nature;
+    return *(this->_nature);
 }
 
 

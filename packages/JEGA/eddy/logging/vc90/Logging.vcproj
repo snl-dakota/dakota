@@ -19,8 +19,8 @@
 	<Configurations>
 		<Configuration
 			Name="all|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="10"
 			>
 			<Tool

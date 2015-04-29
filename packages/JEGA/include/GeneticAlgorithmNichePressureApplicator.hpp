@@ -228,7 +228,7 @@ class JEGA_SL_IEDECL GeneticAlgorithmNichePressureApplicator :
         bool _cacheDesigns;
 
         /// The temporary storage for removed designs.
-        JEGA::Utilities::DesignOFSortSet _desBuffer;
+        JEGA::Utilities::DesignDVSortSet _desBuffer;
 
 
 
@@ -290,6 +290,18 @@ class JEGA_SL_IEDECL GeneticAlgorithmNichePressureApplicator :
     */
     public:
 
+        inline
+        bool
+        TestBufferForClone(
+            const JEGA::Utilities::Design& ofDes
+            );
+
+        template <typename DesContT>
+        std::size_t
+        TestBufferForClones(
+            const DesContT& against
+            );
+            
 
 
 

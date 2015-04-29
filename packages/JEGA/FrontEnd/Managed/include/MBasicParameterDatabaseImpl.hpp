@@ -426,7 +426,7 @@ MANAGED_CLASS(public, MBasicParameterDatabaseImpl) :
          *                                 size_t value.
          */
         virtual
-        std::size_t
+        eddy::utilities::uint64_t
         GetSizeType(
             System::String MOH tag
             );
@@ -554,7 +554,7 @@ MANAGED_CLASS(public, MBasicParameterDatabaseImpl) :
         bool
         AddSizeTypeParam(
             System::String MOH tag,
-            std::size_t value
+            eddy::utilities::uint64_t value
             );
 
         /// Maps the supplied boolean value to the supplied tag.

@@ -39,7 +39,7 @@ option(JEGA_USE_BOOST "Should JEGA be built using Boost?" OFF)
   find_package(Boost)
   if(Boost_FOUND)
     set(JEGA_HAVE_BOOST 1)
-    include_directories(${Boost_INCLUDE_DIRS})
+    include_directories(${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
   endif()
 endif()
 

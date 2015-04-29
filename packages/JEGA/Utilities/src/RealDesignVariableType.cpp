@@ -193,7 +193,7 @@ RealDesignVariableType::GetValueOf(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().GetValueOf(rep);
+    return this->GetNature().GetValueOf(rep);
 }
 
 double
@@ -201,7 +201,7 @@ RealDesignVariableType::GetRandomValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().GetRandomValue();
+    return this->GetNature().GetRandomValue();
 }
 
 double
@@ -210,7 +210,7 @@ RealDesignVariableType::GetDoubleRepOf(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().GetDoubleRepOf(value);
+    return this->GetNature().GetDoubleRepOf(value);
 }
 
 double
@@ -218,7 +218,7 @@ RealDesignVariableType::GetRandomDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().GetRandomDoubleRep();
+    return this->GetNature().GetRandomDoubleRep();
 }
 
 double
@@ -228,7 +228,7 @@ RealDesignVariableType::GetRandomDoubleRep(
 {
     EDDY_FUNC_DEBUGSCOPE
     // get the bounds of this variable from within.
-    return GetNature().GetRandomDoubleRep(within);
+    return this->GetNature().GetRandomDoubleRep(within);
 }
 
 double
@@ -237,7 +237,7 @@ RealDesignVariableType::GetNearestValidValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().GetNearestValidValue(value);
+    return this->GetNature().GetNearestValidValue(value);
 }
 
 double
@@ -246,7 +246,7 @@ RealDesignVariableType::GetNearestValidDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().GetNearestValidDoubleRep(rep);
+    return this->GetNature().GetNearestValidDoubleRep(rep);
 }
 
 

@@ -68,10 +68,6 @@ Includes
 */
 #include <MConfig.hpp>
 
-#pragma unmanaged
-#include <cstddef>
-#include <utilities/include/int_types.hpp>
-
 
 
 
@@ -81,7 +77,8 @@ Includes
 /*
 ================================================================================
 Pre-Namespace Forward Declares
-================================================================================
+==========================
+#pragma unmanaged======================================================
 */
 namespace JEGA
 {
@@ -197,7 +194,7 @@ MANAGED_CLASS(public, MDesign)
          */
         void
         SetVariable(
-            std::size_t num,
+            eddy::utilities::uint64_t num,
             double val
             );
 
@@ -211,7 +208,7 @@ MANAGED_CLASS(public, MDesign)
          */
         void
         SetObjective(
-            std::size_t num,
+            eddy::utilities::uint64_t num,
             double val
             );
 
@@ -225,7 +222,7 @@ MANAGED_CLASS(public, MDesign)
          */
         void
         SetConstraint(
-            std::size_t num,
+            eddy::utilities::uint64_t num,
             double val
             );
 
@@ -260,7 +257,7 @@ MANAGED_CLASS(public, MDesign)
          */
         double
         GetVariable(
-            std::size_t num
+            eddy::utilities::uint64_t num
             );
 
         /// Retrieves the requested objective function value.
@@ -273,7 +270,7 @@ MANAGED_CLASS(public, MDesign)
          */
         double
         GetObjective(
-            std::size_t num
+            eddy::utilities::uint64_t num
             );
 
         /// Retrieves the requested constraint function value.
@@ -286,10 +283,10 @@ MANAGED_CLASS(public, MDesign)
          */
         double
         GetConstraint(
-            std::size_t num
+            eddy::utilities::uint64_t num
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetID(
             );
 
@@ -317,7 +314,7 @@ MANAGED_CLASS(public, MDesign)
          *
          * \return The number of design variables for the current problem.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetNDV(
             );
 
@@ -327,7 +324,7 @@ MANAGED_CLASS(public, MDesign)
          *
          * \return The number of objective functions for the current problem.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetNOF(
             );
 
@@ -337,7 +334,7 @@ MANAGED_CLASS(public, MDesign)
          *
          * \return The number of constraints for the current problem.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetNCN(
             );
 

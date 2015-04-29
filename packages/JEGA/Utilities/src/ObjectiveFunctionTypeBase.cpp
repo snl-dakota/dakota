@@ -141,7 +141,7 @@ ObjectiveFunctionTypeBase::GetDesignTarget(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _info.GetDesignTarget();
+    return this->_info.GetDesignTarget();
 
 } // ObjectiveFunctionTypeBase::GetDesignTarget
 
@@ -150,7 +150,7 @@ ObjectiveFunctionTypeBase::GetDesignTarget(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _info.GetDesignTarget();
+    return this->_info.GetDesignTarget();
 
 } // ObjectiveFunctionTypeBase::GetDesignTarget
 
@@ -159,7 +159,7 @@ ObjectiveFunctionTypeBase::GetNatureString(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().ToString();
+    return this->GetNature().ToString();
 
 } // ObjectiveFunctionTypeBase::GetNatureString
 
@@ -174,10 +174,10 @@ ObjectiveFunctionTypeBase::SetNature(
     EDDY_ASSERT(nature != 0x0);
     EDDY_ASSERT(&nature->GetType() == this);
 
-    if( (nature == 0x0) || (_nature == nature)) return false;
+    if( (nature == 0x0) || (this->_nature == nature)) return false;
 
     delete _nature;
-    _nature = nature;
+    this->_nature = nature;
     return true;
 
 } // ObjectiveFunctionTypeBase::SetNature
@@ -212,7 +212,7 @@ ObjectiveFunctionTypeBase::EvaluateObjective(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().EvaluateObjective(des);
+    return this->GetNature().EvaluateObjective(des);
 
 } // ObjectiveFunctionTypeBase::EvaluateObjective
 
@@ -224,7 +224,8 @@ ObjectiveFunctionTypeBase::GetPreferredAmount(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    return GetValueForMinimization(val2) - GetValueForMinimization(val1);
+    return this->GetValueForMinimization(val2) -
+        this->GetValueForMinimization(val1);
 
 } // ObjectiveFunctionTypeBase::GetPreferredAmount
 

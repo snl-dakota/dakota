@@ -269,23 +269,23 @@ MANAGED_CLASS(public, MGeneticAlgorithm) :
         GetCurrentPopulation(
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetGenerationNumber(
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetPopulationSize(
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetNDV(
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetNOF(
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetNCN(
             );
 

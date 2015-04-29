@@ -126,7 +126,7 @@ Accessors
 ================================================================================
 */
 
-std::size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithmEvaluator::GetNumberEvaluations(
     )
 {
@@ -135,7 +135,7 @@ MGeneticAlgorithmEvaluator::GetNumberEvaluations(
     return this->_evaler->GetNumberEvaluations();
 }
 
-std::size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithmEvaluator::GetMaxEvaluations(
     )
 {
@@ -144,7 +144,7 @@ MGeneticAlgorithmEvaluator::GetMaxEvaluations(
     return this->_evaler->GetMaxEvaluations();
 }
 
-std::size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithmEvaluator::GetEvaluationConcurrency(
     )
 {

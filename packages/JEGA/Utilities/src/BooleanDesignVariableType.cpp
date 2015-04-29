@@ -202,17 +202,17 @@ BooleanDesignVariableType::SetPrecision(
 {
     EDDY_FUNC_DEBUGSCOPE
     EDDY_ASSERT(prec == 0);
-    if(!DesignVariableTypeBase::SetPrecision(prec)) return false;
+    if(!this->DesignVariableTypeBase::SetPrecision(prec)) return false;
 
     if(prec != 0)
     {
         JEGALOG_II_G(lquiet(), this,
             ostream_entry(lquiet(), "Precision for Boolean design variable "
                 "type must be 0.  Supplied value of ") << prec << " for "
-                << GetDesignVariableInfo().GetLabel() << " rejected."
+                << this->GetDesignVariableInfo().GetLabel() << " rejected."
             )
 
-        DesignVariableTypeBase::SetPrecision(0);
+        this->DesignVariableTypeBase::SetPrecision(0);
         return false;
     }
 
@@ -306,9 +306,14 @@ BooleanDesignVariableType::GetRandomDoubleRep(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    const size_t index = GetDesignVariableInfo().GetNumber();
-    bool lb = GetNearestValidDoubleRep(within.GetLowerLimit(index)) == 0.0;
-    bool ub = GetNearestValidDoubleRep(within.GetUpperLimit(index)) == 0.0;
+    const size_t index = this->GetDesignVariableInfo().GetNumber();
+
+    bool lb = this->GetNearestValidDoubleRep(
+        within.GetLowerLimit(index)
+        ) == 0.0;
+    bool ub = this->GetNearestValidDoubleRep(
+        within.GetUpperLimit(index)
+        ) == 0.0;
 
     return RandomNumberGenerator::RandomBoolean() ? lb : ub;
 }
@@ -328,7 +333,7 @@ BooleanDesignVariableType::SetMinValue(
                 "rejecting supplied value of ") << value << "."
             )
     }
-    DesignVariableTypeBase::SetMinValue(0.0);
+    this->DesignVariableTypeBase::SetMinValue(0.0);
 }
 
 
@@ -347,7 +352,7 @@ BooleanDesignVariableType::SetMaxValue(
                 "rejecting supplied value of ") << value << "."
             )
     }
-    DesignVariableTypeBase::SetMinValue(1.0);
+    this->DesignVariableTypeBase::SetMinValue(1.0);
 }
 
 
@@ -380,7 +385,7 @@ BooleanDesignVariableType::BooleanDesignVariableType(
         DesignVariableTypeBase(info)
 {
     EDDY_FUNC_DEBUGSCOPE
-    GetNature().SetPrecision(0);
+    this->GetNature().SetPrecision(0);
 }
 
 BooleanDesignVariableType::BooleanDesignVariableType(
@@ -390,7 +395,7 @@ BooleanDesignVariableType::BooleanDesignVariableType(
         DesignVariableTypeBase(copy, info)
 {
     EDDY_FUNC_DEBUGSCOPE
-    GetNature().SetPrecision(0);
+    this->GetNature().SetPrecision(0);
 }
 
 

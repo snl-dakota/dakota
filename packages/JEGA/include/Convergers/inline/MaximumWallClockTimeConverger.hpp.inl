@@ -6,13 +6,13 @@
 
     CONTENTS:
 
-        Implementation of class FitnessRecord.
+        Inline methods of class MaximumWallClockTimeConverger.
 
     NOTES:
-    
-        See notes of FitnessRecord.hpp.
 
-    PROGRAMMERS: 
+        See notes of MaximumWallClockTimeConverger.hpp.
+
+    PROGRAMMERS:
 
         John Eddy (jpeddy@sandia.gov) (JE)
 
@@ -26,11 +26,11 @@
 
     VERSION:
 
-        2.0.0
+        2.7.0
 
     CHANGES:
 
-        Wed Dec 21 15:54:57 2005 - Original Version (JE)
+        Thu Sep 11 08:20:51 2014 - Original Version (JE)
 
 ================================================================================
 */
@@ -44,7 +44,7 @@ Document This File
 ================================================================================
 */
 /** \file
- * \brief Contains the implementation of the FitnessRecord class.
+ * \brief Contains the inline methods of the MaximumWallClockTimeConverger class.
  */
 
 
@@ -55,26 +55,7 @@ Document This File
 Includes
 ================================================================================
 */
-// JEGAConfig.hpp should be the first include in all JEGA files.
-#include <../Utilities/include/JEGAConfig.hpp>
 
-#include <FitnessRecord.hpp>
-#include <utilities/include/Math.hpp>
-#include <../Utilities/include/Design.hpp>
-#include <utilities/include/EDDY_DebugScope.hpp>
-
-
-
-
-
-
-
-/*
-================================================================================
-Namespace Using Directives
-================================================================================
-*/
-using namespace JEGA::Utilities;
 
 
 
@@ -96,7 +77,7 @@ namespace JEGA {
 
 /*
 ================================================================================
-Static Member Data Definitions
+Inline Mutators
 ================================================================================
 */
 
@@ -109,7 +90,7 @@ Static Member Data Definitions
 
 /*
 ================================================================================
-Mutators
+Inline Accessors
 ================================================================================
 */
 
@@ -122,7 +103,7 @@ Mutators
 
 /*
 ================================================================================
-Accessors
+Inline Public Methods
 ================================================================================
 */
 
@@ -135,18 +116,7 @@ Accessors
 
 /*
 ================================================================================
-Public Methods
-================================================================================
-*/
-
-
-
-
-
-
-/*
-================================================================================
-Subclass Visible Methods
+Inline Subclass Visible Methods
 ================================================================================
 */
 
@@ -159,17 +129,7 @@ Subclass Visible Methods
 
 /*
 ================================================================================
-Subclass Overridable Methods
-================================================================================
-*/
-
-
-
-
-
-/*
-================================================================================
-Private Methods
+Inline Private Methods
 ================================================================================
 */
 
@@ -182,23 +142,11 @@ Private Methods
 
 /*
 ================================================================================
-Structors
+Inline Structors
 ================================================================================
 */
 
 
-FitnessRecord::FitnessRecord(
-    std::size_t initSize
-    ) :
-        _data(initSize)
-{
-}
-
-
-FitnessRecord::~FitnessRecord(
-    )
-{
-}
 
 
 
@@ -212,3 +160,4 @@ End Namespace
 */
     } // namespace Algorithms
 } // namespace JEGA
+

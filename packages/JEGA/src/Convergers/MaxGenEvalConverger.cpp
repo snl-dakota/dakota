@@ -231,6 +231,14 @@ MaxGenEvalConverger::CheckConvergence(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
+    return this->CheckConvergence();
+}
+
+bool
+MaxGenEvalConverger::CheckConvergence(
+    )
+{
+    EDDY_FUNC_DEBUGSCOPE
 
     JEGALOG_II(this->GetLogger(), ldebug(), this,
         text_entry(ldebug(), this->GetName() + ": Entering convergence check.")
@@ -258,7 +266,6 @@ MaxGenEvalConverger::CheckConvergence(
     // return true if we have converged, false otherwise.
     return this->GetConverged();
 }
-
 
 
 

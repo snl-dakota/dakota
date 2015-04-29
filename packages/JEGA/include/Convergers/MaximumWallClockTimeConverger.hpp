@@ -2,11 +2,11 @@
 ================================================================================
     PROJECT:
 
-        John Eddy's Genetic Algorithms (JEGA) Managed Front End
+        John Eddy's Genetic Algorithms (JEGA)
 
     CONTENTS:
 
-        Definition of class MGeneticAlgorithmEvaluator.
+        Definition of class MaximumWallClockTimeConverger.
 
     NOTES:
 
@@ -26,11 +26,11 @@
 
     VERSION:
 
-        1.0.0
+        2.7.0
 
     CHANGES:
 
-        Mon Feb 23 15:08:29 2009 - Original Version ()
+        Thu Sep 11 08:20:51 2014 - Original Version (JE)
 
 ================================================================================
 */
@@ -44,7 +44,7 @@ Document This File
 ================================================================================
 */
 /** \file
- * \brief Contains the definition of the MGeneticAlgorithmEvaluator class.
+ * \brief Contains the definition of the MaximumWallClockTimeConverger class.
  */
 
 
@@ -55,10 +55,10 @@ Document This File
 Prevent Multiple Inclusions
 ================================================================================
 */
-#ifndef JEGA_FRONTEND_MANAGED_MGENETICALGORITHMEVALUATOR_HPP
-#define JEGA_FRONTEND_MANAGED_MGENETICALGORITHMEVALUATOR_HPP
+#ifndef JEGA_UTILITIES_WALLCLOCKTIMECONVERGER_HPP
+#define JEGA_UTILITIES_WALLCLOCKTIMECONVERGER_HPP
 
-#pragma once
+
 
 
 
@@ -69,7 +69,11 @@ Prevent Multiple Inclusions
 Includes
 ================================================================================
 */
-#include <MConfig.hpp>
+// JEGAConfig.hpp should be the first include in all JEGA files.
+#include <../Utilities/include/JEGAConfig.hpp>
+
+#include <GeneticAlgorithmConverger.hpp>
+
 
 
 
@@ -82,26 +86,7 @@ Includes
 Pre-Namespace Forward Declares
 ================================================================================
 */
-namespace JEGA
-{
-    namespace Algorithms
-    {
-        class GeneticAlgorithmEvaluator;
-    }
-}
 
-
-
-
-
-
-/*
-================================================================================
-Namespace Aliases
-================================================================================
-*/
-#pragma managed
-#using <mscorlib.dll>
 
 
 
@@ -128,8 +113,7 @@ Begin Namespace
 ================================================================================
 */
 namespace JEGA {
-    namespace FrontEnd {
-        namespace Managed {
+    namespace Algorithms {
 
 
 
@@ -140,7 +124,7 @@ namespace JEGA {
 In-Namespace Forward Declares
 ================================================================================
 */
-MANAGED_CLASS_FORWARD_DECLARE(public, MGeneticAlgorithmEvaluator);
+class MaximumWallClockTimeConverger;
 
 
 
@@ -166,12 +150,16 @@ In-Namespace File Scope Typedefs
 Class Definition
 ================================================================================
 */
+/// Indicates convergence by exceeding maximum run time.
 /**
- * \brief
+ * This converger checks the current total elapsed time of the
+ * GeneticAlgorithm and returns true if that value is greater than
+ * the specified maximum time.
  *
- *
+ * This operator requires only the configuration inputs of the base class.
  */
-MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
+class MaximumWallClockTimeConverger :
+    public GeneticAlgorithmConverger
 {
     /*
     ============================================================================
@@ -194,7 +182,6 @@ MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
     */
     private:
 
-        const JEGA::Algorithms::GeneticAlgorithmEvaluator* _evaler;
 
 
 
@@ -220,31 +207,6 @@ MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
     */
     public:
 
-        /// Returns the current number of evaluations completed.
-        /**
-         * \return The number of evaluations recorded so far for this
-         *         evaluator.
-         */
-        eddy::utilities::uint64_t
-        GetNumberEvaluations(
-            );
-
-        /// Gets the maximum allowable number of evaluations for the algorithm.
-        /**
-         * \return The maximum allowable number of evaluations.
-         */
-        eddy::utilities::uint64_t
-        GetMaxEvaluations(
-            );
-
-        /// Allows access to the current value of evaluation concurrency.
-        /**
-         * \return The current evaluation concurrency used by this evaluator.
-         */
-        eddy::utilities::uint64_t
-        GetEvaluationConcurrency(
-            );
-
 
     protected:
 
@@ -259,29 +221,43 @@ MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
     */
     public:
 
-        /// Indicates if the maximum number of evaluations has been exceeded.
+        /// Returns the proper name of this operator.
         /**
-         * \return True if the current number of evaluations is strictly
-         *         greater than the max allowable.
+         * \return The string "max_time".
          */
-        bool
-        IsMaxEvalsExceeded(
+        static
+        const std::string&
+        Name(
             );
 
+        /// Returns a full description of what this operator does and how.
         /**
-         * \brief Indicates if the maximum number of evaluations has been
-         *        reached or exceeded.
+         * The returned text is:
+         * \verbatim
+            This converger returns true if the maximum allowable
+            number of evaluations has been reached or exceeded.
+           \endverbatim.
          *
-         * \return True if the current number of evaluations is >= the max
-         *         allowable.
+         * \return A description of the operation of this operator.
          */
-        bool
-        IsMaxEvalsReached(
+        static
+        const std::string&
+        Description(
             );
 
-        void
-        Detach(
+        /**
+         * \brief Returns a new instance of this operator class for use by
+         *        \a algorithm.
+         *
+         * \param algorithm The GA for which the new converger is to be used.
+         * \return A new, default instance of a MaximumWallClockTimeConverger.
+         */
+        static
+        GeneticAlgorithmOperator*
+        Create(
+            GeneticAlgorithm& algorithm
             );
+
 
     /*
     ============================================================================
@@ -301,10 +277,58 @@ MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
     */
     public:
 
+        /// Tests for convergence
+        /**
+         * This method checks to see if the maximum number of evaluations
+         * has been reached (or exceeded) and returns true if so.
+         *
+         * \param group The group to use in the convergence check.
+         * \param fitnesses The fitnesses of the designs in \a group.
+         * \return true if convergence has been achieved and false otherwise.
+         */
         virtual
-        const JEGA::Algorithms::GeneticAlgorithmEvaluator&
-        Manifest(
+        bool
+        CheckConvergence(
+            const JEGA::Utilities::DesignGroup& group,
+            const FitnessRecord& fitnesses
             );
+
+        virtual
+        bool
+        CheckConvergence(
+            );
+
+        /// Returns the proper name of this operator.
+        /**
+         * \return See Name().
+         */
+        virtual
+        std::string
+        GetName(
+            ) const;
+
+        /// Returns a full description of what this operator does and how.
+        /**
+         * \return See Description().
+         */
+        virtual
+        std::string
+        GetDescription(
+            ) const;
+
+        /**
+         * \brief Creates and returns a pointer to an exact duplicate of this
+         *        operator.
+         *
+         * \param algorithm The GA for which the clone is being created.
+         * \return A clone of this operator.
+         */
+        virtual
+        GeneticAlgorithmOperator*
+        Clone(
+            GeneticAlgorithm& algorithm
+            ) const;
+
 
     protected:
 
@@ -331,19 +355,38 @@ MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
     public:
 
         /**
-         * \brief Constructs a Managed GA Evaluator wrapper using the supplied
-         *        GeneticAlgorithmEvaluator.
+         * \brief Constructs a MaximumWallClockTimeConverger for use by \a
+         *         algorithm.
          *
-         * \param toWrap The evaluator used to construct this managed wrapper
-         *               class.
+         * \param algorithm The GA for which the new converger is to be used.
          */
-        MGeneticAlgorithmEvaluator(
-            const JEGA::Algorithms::GeneticAlgorithmEvaluator* toWrap
+        MaximumWallClockTimeConverger(
+            GeneticAlgorithm& algorithm
             );
 
+        /// Copy constructs a MaximumWallClockTimeConverger.
+        /**
+         * \param copy The converger from which properties are to be duplicated
+         *             into this.
+         */
+        MaximumWallClockTimeConverger(
+            const MaximumWallClockTimeConverger& copy
+            );
 
+        /**
+         * \brief Copy constructs a MaximumWallClockTimeConverger for use by
+         *        \a algorithm.
+         *
+         * \param copy The converger from which properties are to be duplicated
+         *             into this.
+         * \param algorithm The GA for which the new converger is to be used.
+         */
+        MaximumWallClockTimeConverger(
+            const MaximumWallClockTimeConverger& copy,
+            GeneticAlgorithm& algorithm
+            );
 
-}; // class MGeneticAlgorithmEvaluator
+}; // class MaximumWallClockTimeConverger
 
 
 
@@ -352,8 +395,7 @@ MANAGED_CLASS(public, MGeneticAlgorithmEvaluator)
 End Namespace
 ================================================================================
 */
-        } // namespace Managed
-    } // namespace FrontEnd
+    } // namespace Algorithms
 } // namespace JEGA
 
 
@@ -367,7 +409,7 @@ End Namespace
 Include Inlined Functions File
 ================================================================================
 */
-// Not using an Inlined Functions File.
+#include "./inline/MaximumWallClockTimeConverger.hpp.inl"
 
 
 
@@ -376,4 +418,4 @@ Include Inlined Functions File
 End of Multiple Inclusion Check
 ================================================================================
 */
-#endif // JEGA_FRONTEND_MANAGED_MGENETICALGORITHMEVALUATOR_HPP
+#endif // JEGA_UTILITIES_WALLCLOCKTIMECONVERGER_HPP

@@ -19,8 +19,10 @@ add_library(jega
   Convergers/AverageFitnessTrackerConverger.cpp 
   Convergers/BestFitnessTrackerConverger.cpp 
   Convergers/MaxGenEvalConverger.cpp 
+  Convergers/MaxGenEvalTimeConverger.cpp 
   Convergers/MaximumEvaluationConverger.cpp 
   Convergers/MaximumGenerationConverger.cpp 
+  Convergers/MaximumWallClockTimeConverger.cpp 
   Convergers/MetricTrackerConvergerBase.cpp 
   Convergers/NullConverger.cpp 
   Crossers/NPointBinaryCrosser.cpp 

@@ -207,7 +207,7 @@ GeneticAlgorithmMutator::ChooseDesignsToMutate(
     for(size_t i=0; i<howMany; ++i)
     {
         if(mutate_locs[i] == last) continue;
-        advance(tmIt, mutate_locs[i] - last);
+        std::advance(tmIt, mutate_locs[i] - last);
         toMutate.push_back(tmIt);
         last = mutate_locs[i];
     }

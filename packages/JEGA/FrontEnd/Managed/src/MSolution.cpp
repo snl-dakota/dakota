@@ -132,7 +132,7 @@ Accessors
 
 double
 MSolution::GetVariable(
-    std::size_t num
+    eddy::utilities::uint64_t num
     )
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -143,7 +143,7 @@ MSolution::GetVariable(
 
 double
 MSolution::GetObjective(
-    std::size_t num
+    eddy::utilities::uint64_t num
     )
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -154,16 +154,16 @@ MSolution::GetObjective(
 
 double
 MSolution::GetConstraint(
-    std::size_t num
+    eddy::utilities::uint64_t num
     )
 {
     EDDY_FUNC_DEBUGSCOPE
     return Convert::ToDouble(MANAGED_LIST_ITEM(
-		this->_G, static_cast<int>(num)
+        this->_G, static_cast<int>(num)
 		));
 }
 
-std::size_t
+eddy::utilities::uint64_t
 MSolution::GetID(
     )
 {
@@ -187,7 +187,7 @@ Public Methods
 */
 
 
-std::size_t
+eddy::utilities::uint64_t
 MSolution::GetNDV(
     )
 {
@@ -196,7 +196,7 @@ MSolution::GetNDV(
 
 } // MSolution::GetNDV
 
-std::size_t
+eddy::utilities::uint64_t
 MSolution::GetNOF(
     )
 {
@@ -205,7 +205,7 @@ MSolution::GetNOF(
 
 } // MSolution::GetNOF
 
-std::size_t
+eddy::utilities::uint64_t
 MSolution::GetNCN(
     )
 {
@@ -271,7 +271,7 @@ Subclass Visible Methods
 
 bool
 MSolution::HasAttribute(
-    size_t attrIndex
+    eddy::utilities::uint64_t attrIndex
     )
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -327,7 +327,7 @@ MSolution::MSolution(
             des.GetRawAttributes().to_ulong()
             )),
         _id(des.GetID()),
-        _tag(nullptr)
+        _tag(MANAGED_NULL_HANDLE)
 {
     EDDY_FUNC_DEBUGSCOPE
 
@@ -360,8 +360,8 @@ MSolution::MSolution(
         _attributes(static_cast<eddy::utilities::bitmask8_t>(
             mDes->Manifest().GetRawAttributes().to_ulong()
             )),
-        _id(mDes->GetID()),
-        _tag(nullptr)
+        _id(static_cast<size_t>(mDes->GetID())),
+        _tag(MANAGED_NULL_HANDLE)
 {
     EDDY_FUNC_DEBUGSCOPE
 

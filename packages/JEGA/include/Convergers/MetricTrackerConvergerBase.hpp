@@ -73,8 +73,8 @@ Includes
 #include <../Utilities/include/JEGAConfig.hpp>
 
 #include <MetricTracker.hpp>
-#include <Convergers/MaxGenEvalConverger.hpp>
 #include <../Utilities/include/MessageBoard.hpp>
+#include <Convergers/MaxGenEvalTimeConverger.hpp>
 
 
 
@@ -164,7 +164,7 @@ Class Definition
  * requirements of the base class.
  */
 class MetricTrackerConvergerBase :
-    public MaxGenEvalConverger
+    public MaxGenEvalTimeConverger
 {
     /*
     ============================================================================

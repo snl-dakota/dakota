@@ -739,7 +739,6 @@ class JEGA_SL_IEDECL DesignMultiSet :
             size_type clonecount = 0;
 
             // look at each member of other in turn.
-
             for(; s!=e; ++s)
                 clonecount += (larger.test_for_clone(*s) == le) ? 0 : 1;
 

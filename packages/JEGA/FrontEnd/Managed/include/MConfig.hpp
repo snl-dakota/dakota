@@ -42,6 +42,8 @@
 
 #pragma unmanaged
 #include <../Utilities/include/Logging.hpp>
+#include <cstddef>
+#include <utilities/include/int_types.hpp>
 #pragma managed
 
 #if _MSC_VER < 1400

@@ -300,6 +300,8 @@ class JEGA_SL_IEDECL GeneticAlgorithm
 
         std::string _dataDir;
 
+        std::size_t _startTime;
+
     /*
     ============================================================================
     Mutators
@@ -430,6 +432,7 @@ class JEGA_SL_IEDECL GeneticAlgorithm
         /**
          * \return A mutable reference to the contained operator set.
          */
+        inline
         GeneticAlgorithmOperatorSet&
         GetOperatorSet(
             );
@@ -438,6 +441,7 @@ class JEGA_SL_IEDECL GeneticAlgorithm
         /**
          * \return An immutable reference to the contained operator set.
          */
+        inline
         const GeneticAlgorithmOperatorSet&
         GetOperatorSet(
             ) const;
@@ -492,6 +496,11 @@ class JEGA_SL_IEDECL GeneticAlgorithm
         const FitnessRecord&
         GetCurrentFitnesses(
             );
+
+        inline
+        const std::size_t&
+        GetStartTime(
+            ) const;
 
         /**
          * \brief Indicates whether or not this algorithm is writing the
@@ -959,6 +968,10 @@ class JEGA_SL_IEDECL GeneticAlgorithm
         std::size_t
         LogIllconditionedDesigns(
             const JEGA::Utilities::DesignGroup& from
+            ) const;
+
+        double
+        GetElapsedTime(
             ) const;
 
     /*

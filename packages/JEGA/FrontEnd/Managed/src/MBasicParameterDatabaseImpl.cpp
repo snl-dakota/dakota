@@ -268,7 +268,7 @@ MBasicParameterDatabaseImpl::GetDouble(
     return this->_thePDB->GetDouble(ToStdStr(tag));
 }
 
-std::size_t
+eddy::utilities::uint64_t
 MBasicParameterDatabaseImpl::GetSizeType(
     System::String MOH tag
     )
@@ -354,11 +354,13 @@ MBasicParameterDatabaseImpl::AddDoubleParam(
 bool
 MBasicParameterDatabaseImpl::AddSizeTypeParam(
     String MOH tag,
-    std::size_t value
+    eddy::utilities::uint64_t value
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return this->_thePDB->AddSizeTypeParam(ToStdStr(tag), value);
+    return this->_thePDB->AddSizeTypeParam(
+        ToStdStr(tag), static_cast<std::size_t>(value)
+        );
 }
 
 bool

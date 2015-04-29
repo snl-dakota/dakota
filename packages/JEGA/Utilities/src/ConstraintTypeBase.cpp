@@ -125,10 +125,10 @@ ConstraintTypeBase::SetNature(
     EDDY_ASSERT(nature != 0x0);
     EDDY_ASSERT(&nature->GetType() == this);
 
-    if( (nature == 0x0) || (_nature == nature)) return false;
+    if( (nature == 0x0) || (this->_nature == nature)) return false;
 
-    delete _nature;
-    _nature = nature;
+    delete this->_nature;
+    this->_nature = nature;
     return true;
 
 } // ConstraintTypeBase::SetNature
@@ -161,7 +161,7 @@ ConstraintTypeBase::GetDesignTarget(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _info.GetDesignTarget();
+    return this->_info.GetDesignTarget();
 
 } // ConstraintTypeBase::GetDesignTarget
 
@@ -170,7 +170,7 @@ ConstraintTypeBase::GetDesignTarget(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _info.GetDesignTarget();
+    return this->_info.GetDesignTarget();
 
 } // ConstraintTypeBase::GetDesignTarget
 
@@ -179,7 +179,7 @@ ConstraintTypeBase::GetNatureString(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().ToString();
+    return this->GetNature().ToString();
 }
 
 
@@ -212,7 +212,7 @@ ConstraintTypeBase::EvaluateConstraint(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return GetNature().EvaluateConstraint(des);
+    return this->GetNature().EvaluateConstraint(des);
 
 } // ConstraintTypeBase::EvaluateConstraint
 
@@ -224,8 +224,8 @@ ConstraintTypeBase::GetPreferredAmount(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    double val1 = GetConstraintInfo().GetViolationAmount(des1);
-    double val2 = GetConstraintInfo().GetViolationAmount(des2);
+    double val1 = this->GetConstraintInfo().GetViolationAmount(des1);
+    double val2 = this->GetConstraintInfo().GetViolationAmount(des2);
 
     return (val1 < val2) ? (val2 - val1) : 0.0;
 
@@ -258,7 +258,7 @@ ConstraintTypeBase::ConstraintTypeBase(
         _nature(0)
 {
     EDDY_FUNC_DEBUGSCOPE
-    _nature = new NonLinearConstraintNature(*this);
+    this->_nature = new NonLinearConstraintNature(*this);
 
 } // ConstraintTypeBase::ConstraintTypeBase
 
@@ -270,7 +270,7 @@ ConstraintTypeBase::ConstraintTypeBase(
         _nature(0)
 {
     EDDY_FUNC_DEBUGSCOPE
-    _nature = copy._nature->Clone(*this);
+    this->_nature = copy._nature->Clone(*this);
 
 } // ConstraintTypeBase::ConstraintTypeBase
 
@@ -278,7 +278,7 @@ ConstraintTypeBase::~ConstraintTypeBase(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    delete _nature;
+    delete this->_nature;
 }
 
 

@@ -181,7 +181,7 @@ ProblemConfig::AddContinuumRealVariable(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddContinuumRealVariable(
-        _theTarget, label, lowerBound, upperBound, precision
+        this->_theTarget, label, lowerBound, upperBound, precision
         );
 }
 
@@ -201,7 +201,7 @@ ProblemConfig::AddDiscreteRealVariable(
         )
 
     return ConfigHelper::AddDiscreteRealVariable(
-        _theTarget, label, values
+        this->_theTarget, label, values
         );
 }
 
@@ -214,7 +214,7 @@ ProblemConfig::AddContinuumIntegerVariable(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddContinuumIntegerVariable(
-        _theTarget, label, lowerBound, upperBound
+        this->_theTarget, label, lowerBound, upperBound
         );
 }
 
@@ -234,7 +234,7 @@ ProblemConfig::AddDiscreteIntegerVariable(
         )
 
     return ConfigHelper::AddDiscreteIntegerVariable(
-        _theTarget, label, values
+        this->_theTarget, label, values
         );
 }
 
@@ -244,7 +244,7 @@ ProblemConfig::AddBooleanVariable(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return ConfigHelper::AddBooleanVariable(_theTarget, label);
+    return ConfigHelper::AddBooleanVariable(this->_theTarget, label);
 }
 
 bool
@@ -255,7 +255,7 @@ ProblemConfig::AddLinearMinimizeObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearMinimizeObjective(
-        _theTarget, label, coeffs
+        this->_theTarget, label, coeffs
         );
 }
 
@@ -267,7 +267,7 @@ ProblemConfig::AddLinearMaximizeObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearMaximizeObjective(
-        _theTarget, label, coeffs
+        this->_theTarget, label, coeffs
         );
 }
 
@@ -280,7 +280,7 @@ ProblemConfig::AddLinearSeekValueObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearSeekValueObjective(
-        _theTarget, label, value, coeffs
+        this->_theTarget, label, value, coeffs
         );
 }
 
@@ -294,7 +294,7 @@ ProblemConfig::AddLinearSeekRangeObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearSeekRangeObjective(
-        _theTarget, label, lowerBound, upperBound, coeffs
+        this->_theTarget, label, lowerBound, upperBound, coeffs
         );
 }
 
@@ -305,7 +305,7 @@ ProblemConfig::AddNonlinearMinimizeObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearMinimizeObjective(
-        _theTarget, label
+        this->_theTarget, label
         );
 }
 
@@ -316,7 +316,7 @@ ProblemConfig::AddNonlinearMaximizeObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearMaximizeObjective(
-        _theTarget, label
+        this->_theTarget, label
         );
 }
 
@@ -328,7 +328,7 @@ ProblemConfig::AddNonlinearSeekValueObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearSeekValueObjective(
-        _theTarget, label, value
+        this->_theTarget, label, value
         );
 }
 
@@ -341,7 +341,7 @@ ProblemConfig::AddNonlinearSeekRangeObjective(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearSeekRangeObjective(
-        _theTarget, label, lowerBound, upperBound
+        this->_theTarget, label, lowerBound, upperBound
         );
 }
 
@@ -354,7 +354,7 @@ ProblemConfig::AddLinearInequalityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearInequalityConstraint(
-        _theTarget, label, upperLimit, coeffs
+        this->_theTarget, label, upperLimit, coeffs
         );
 }
 
@@ -368,7 +368,7 @@ ProblemConfig::AddLinearEqualityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearEqualityConstraint(
-        _theTarget, label, target, allowedViol, coeffs
+        this->_theTarget, label, target, allowedViol, coeffs
         );
 }
 
@@ -381,7 +381,7 @@ ProblemConfig::AddLinearNotEqualityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearNotEqualityConstraint(
-        _theTarget, label, tabooValue, coeffs
+        this->_theTarget, label, tabooValue, coeffs
         );
 }
 
@@ -395,7 +395,7 @@ ProblemConfig::AddLinearTwoSidedInequalityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddLinearTwoSidedInequalityConstraint(
-        _theTarget, label, lowerLimit, upperLimit, coeffs
+        this->_theTarget, label, lowerLimit, upperLimit, coeffs
         );
 }
 
@@ -407,7 +407,7 @@ ProblemConfig::AddNonlinearInequalityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearInequalityConstraint(
-        _theTarget, label, upperLimit
+        this->_theTarget, label, upperLimit
         );
 }
 
@@ -420,7 +420,7 @@ ProblemConfig::AddNonlinearEqualityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearEqualityConstraint(
-        _theTarget, label, target, allowedViol
+        this->_theTarget, label, target, allowedViol
         );
 }
 
@@ -432,7 +432,7 @@ ProblemConfig::AddNonlinearNotEqualityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearNotEqualityConstraint(
-        _theTarget, label, tabooValue
+        this->_theTarget, label, tabooValue
         );
 }
 
@@ -445,7 +445,7 @@ ProblemConfig::AddNonlinearTwoSidedInequalityConstraint(
 {
     EDDY_FUNC_DEBUGSCOPE
     return ConfigHelper::AddNonlinearTwoSidedInequalityConstraint(
-        _theTarget, label, lowerLimit, upperLimit
+        this->_theTarget, label, lowerLimit, upperLimit
         );
 }
 

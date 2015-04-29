@@ -96,12 +96,12 @@ MANAGED_CLASS(public, TestEvaluator) :
             List<MDesign MOH> MOH injections
             )
         {
-            size_t ndv = des->GetNDV();
+            eddy::utilities::uint64_t ndv = des->GetNDV();
             double f0 = 0.0;
             double f1 = 0.0;
 
-            for(size_t i=0; i<ndv; ++i) {
-                double xi = des->GetVariable(i);
+            for(eddy::utilities::uint64_t i=0; i<ndv; ++i) {
+                const double xi = des->GetVariable(i);
                 f0 += Math::Pow(xi - (SQRT3INV), 2.0);
                 f1 += Math::Pow(xi + (SQRT3INV), 2.0);
             }

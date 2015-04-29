@@ -274,7 +274,7 @@ MDriver::InitializeAlgorithm(
 {
     EDDY_FUNC_DEBUGSCOPE
     try {
-        return gcnew MGeneticAlgorithm(
+        return MANAGED_GCNEW MGeneticAlgorithm(
             this->_theApp->InitializeAlgorithm(config->Manifest())
             );
     }

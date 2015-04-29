@@ -641,6 +641,8 @@ GeneticAlgorithmEvaluator::InjectDesign(
     Design& des
     )
 {
+    EDDY_FUNC_DEBUGSCOPE
+    EDDY_SCOPEDLOCK(l, this->_injsMutex)
     this->_injections.insert(&des);
 }
 
@@ -648,6 +650,8 @@ void
 GeneticAlgorithmEvaluator::ClearInjectedDesigns(
     )
 {
+    EDDY_FUNC_DEBUGSCOPE
+    EDDY_SCOPEDLOCK(l, this->_injsMutex)
     this->GetDesignTarget().TakeDesigns(this->_injections);
     this->_injections.clear();
 }
@@ -664,6 +668,7 @@ GeneticAlgorithmEvaluator::MergeInjectedDesigns(
 
     // Merge in any designs injected via the evaluator.  They get merged
     // into the children and must already be evaluated.
+    EDDY_SCOPEDLOCK(l, this->_injsMutex)
     JEGA_LOGGING_IF_ON(const std::size_t oisze = this->_injections.size();)
     const DesignDVSortSet& dvSort = into.GetDVSortContainer();
 
@@ -920,7 +925,8 @@ GeneticAlgorithmEvaluator::GeneticAlgorithmEvaluator(
         _maxEvals(DEFAULT_MAX_EVALS),
         _evalConcur(DEFAULT_EVAL_CONCUR),
         _tMgr(new ThreadManager(DEFAULT_EVAL_CONCUR)) EDDY_COMMA_IF_THREADSAFE
-        EDDY_INIT_MUTEX(_numEvalsMutex, PTHREAD_MUTEX_RECURSIVE)
+        EDDY_INIT_MUTEX(_injsMutex, PTHREAD_MUTEX_RECURSIVE)EDDY_COMMA_IF_THREADSAFE
+        EDDY_INIT_MUTEX(_numEvalsMutex, PTHREAD_MUTEX_RECURSIVE) 
 {
     EDDY_FUNC_DEBUGSCOPE
 }
@@ -933,6 +939,7 @@ GeneticAlgorithmEvaluator::GeneticAlgorithmEvaluator(
         _maxEvals(copy._maxEvals),
         _evalConcur(copy._evalConcur),
         _tMgr(new ThreadManager(copy._evalConcur)) EDDY_COMMA_IF_THREADSAFE
+        EDDY_INIT_MUTEX(_injsMutex, PTHREAD_MUTEX_RECURSIVE) EDDY_COMMA_IF_THREADSAFE
         EDDY_INIT_MUTEX(_numEvalsMutex, PTHREAD_MUTEX_RECURSIVE)
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -947,6 +954,7 @@ GeneticAlgorithmEvaluator::GeneticAlgorithmEvaluator(
         _maxEvals(copy._maxEvals),
         _evalConcur(copy._evalConcur),
         _tMgr(new ThreadManager(copy._evalConcur)) EDDY_COMMA_IF_THREADSAFE
+        EDDY_INIT_MUTEX(_injsMutex, PTHREAD_MUTEX_RECURSIVE) EDDY_COMMA_IF_THREADSAFE
         EDDY_INIT_MUTEX(_numEvalsMutex, PTHREAD_MUTEX_RECURSIVE)
 {
     EDDY_FUNC_DEBUGSCOPE

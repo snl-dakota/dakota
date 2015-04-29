@@ -271,6 +271,11 @@ class MaxGenEvalConverger :
             const FitnessRecord& fitnesses
             );
 
+        virtual
+        bool
+        CheckConvergence(
+            );
+
         /// Returns the proper name of this operator.
         /**
          * \return See Name().

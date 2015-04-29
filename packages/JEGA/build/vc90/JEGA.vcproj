@@ -20,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_st_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -151,8 +151,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -280,8 +280,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_st_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			ManagedExtensions="0"
 			>
@@ -430,8 +430,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_mt_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -565,8 +565,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_mt_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -713,8 +713,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -855,8 +855,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -1005,8 +1005,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_sl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			WholeProgramOptimization="1"
 			>
@@ -1143,8 +1143,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_st_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -1268,8 +1268,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -1395,8 +1395,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_mt_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			>
 			<Tool
@@ -1483,7 +1483,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\eddy;..\..\include;..\..\eddy\threads\pthreads\include;&quot;$(BOOST_ROOT)&quot;"
-				PreprocessorDefinitions="JEGA_SL;JEGA_EXPORTING;JEGA_THREADSAFE;JEGA_OPTION_DEBUG;JEGA_HAVE_BOOST;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="JEGA_SL;JEGA_EXPORTING;JEGA_THREADSAFE;JEGA_OPTION_DEBUG;JEGA_LOGGING_ON;JEGA_HAVE_BOOST;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="3"
 				AssemblerListingLocation=""
 				ObjectFile="$(IntDir)\obj\"
@@ -1524,8 +1524,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_sl_for_dl|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			ManagedExtensions="0"
 			WholeProgramOptimization="1"
@@ -1787,11 +1787,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\Convergers\MaxGenEvalTimeConverger.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\Convergers\MaximumEvaluationConverger.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\Convergers\MaximumGenerationConverger.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Convergers\MaximumWallClockTimeConverger.cpp"
 					>
 				</File>
 				<File
@@ -2096,11 +2104,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\Convergers\MaxGenEvalTimeConverger.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\Convergers\MaximumEvaluationConverger.hpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\include\Convergers\MaximumGenerationConverger.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\Convergers\MaximumWallClockTimeConverger.hpp"
 					>
 				</File>
 				<File
@@ -2127,11 +2143,19 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\include\Convergers\inline\MaxGenEvalTimeConverger.hpp.inl"
+						>
+					</File>
+					<File
 						RelativePath="..\..\include\Convergers\inline\MaximumEvaluationConverger.hpp.inl"
 						>
 					</File>
 					<File
 						RelativePath="..\..\include\Convergers\inline\MaximumGenerationConverger.hpp.inl"
+						>
+					</File>
+					<File
+						RelativePath="..\..\include\Convergers\inline\MaximumWallClockTimeConverger.hpp.inl"
 						>
 					</File>
 					<File

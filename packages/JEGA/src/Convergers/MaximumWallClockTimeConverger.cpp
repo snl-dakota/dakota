@@ -2,15 +2,15 @@
 ================================================================================
     PROJECT:
 
-        John Eddy's Genetic Algorithms (JEGA) Managed Front End
+        John Eddy's Genetic Algorithms (JEGA)
 
     CONTENTS:
 
-        Implementation of class MFitnessRecord.
+        Implementation of class MaximumWallClockTimeConverger.
 
     NOTES:
 
-        See notes of MFitnessRecord.hpp.
+        See notes of MaximumWallClockTimeConverger.hpp.
 
     PROGRAMMERS:
 
@@ -18,7 +18,7 @@
 
     ORGANIZATION:
 
-        Sandia National Laboratories, Albuquerque NM
+        Sandia National Laboratories
 
     COPYRIGHT:
 
@@ -26,11 +26,11 @@
 
     VERSION:
 
-        2.1.0
+        2.7.0
 
     CHANGES:
 
-        Fri Sep 28 09:07:37 2007 - Original Version (JE)
+        Thu Sep 11 08:20:51 2014 - Original Version (JE)
 
 ================================================================================
 */
@@ -44,7 +44,7 @@ Document This File
 ================================================================================
 */
 /** \file
- * \brief Contains the implementation of the MFitnessRecord class.
+ * \brief Contains the implementation of the MaximumWallClockTimeConverger class.
  */
 
 
@@ -55,14 +55,11 @@ Document This File
 Includes
 ================================================================================
 */
-#include <stdafx.h>
-#include <MDesign.hpp>
-#include <MFitnessRecord.hpp>
+#include <../Utilities/include/JEGAConfig.hpp>
 
-#pragma unmanaged
-#include <../include/FitnessRecord.hpp>
+#include <../Utilities/include/Logging.hpp>
 #include <utilities/include/EDDY_DebugScope.hpp>
-#pragma managed
+#include <Convergers/MaximumWallClockTimeConverger.hpp>
 
 
 
@@ -75,7 +72,10 @@ Includes
 Namespace Using Directives
 ================================================================================
 */
-using namespace JEGA::Algorithms;
+using namespace std;
+using namespace JEGA::Utilities;
+using namespace JEGA::Logging;
+
 
 
 
@@ -89,8 +89,7 @@ Begin Namespace
 ================================================================================
 */
 namespace JEGA {
-    namespace FrontEnd {
-        namespace Managed {
+    namespace Algorithms {
 
 
 
@@ -141,79 +140,36 @@ Public Methods
 ================================================================================
 */
 
-JEGA::Algorithms::FitnessRecord&
-MFitnessRecord::Manifest(
+const string&
+MaximumWallClockTimeConverger::Name(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return *this->_guts;
+    static const string ret("max_time");
+    return ret;
 }
 
-
-bool
-MFitnessRecord::AddFitness(
-    MDesign MOH des,
-    double fitness
+const string&
+MaximumWallClockTimeConverger::Description(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _guts->AddFitness(&des->Manifest(), fitness);
+
+    static const string ret(
+        "This converger returns true if the maximum allowable "
+        "amount of time has been reached or exceeded."
+        );
+    return ret;
 }
 
-double
-MFitnessRecord::GetAverageFitness(
+GeneticAlgorithmOperator*
+MaximumWallClockTimeConverger::Create(
+    GeneticAlgorithm& algorithm
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetAverageFitness();
+    return new MaximumWallClockTimeConverger(algorithm);
 }
-
-double
-MFitnessRecord::GetFitness(
-    MDesign MOH des
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetFitness(des->Manifest());
-}
-
-double
-MFitnessRecord::GetMaxFitness(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetMaxFitness();
-}
-
-double
-MFitnessRecord::GetMinFitness(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetMinFitness();
-}
-
-double
-MFitnessRecord::GetTotalFitness(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetTotalFitness();
-}
-
-eddy::utilities::uint64_t
-MFitnessRecord::GetSize(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    return _guts->GetSize();
-}
-
-
-
-
-
-
 
 
 /*
@@ -235,21 +191,58 @@ Subclass Overridable Methods
 ================================================================================
 */
 
-void
-MFitnessRecord::MANAGED_DISPOSE(
+string
+MaximumWallClockTimeConverger::GetName(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return MaximumWallClockTimeConverger::Name();
+}
+
+string
+MaximumWallClockTimeConverger::GetDescription(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return MaximumWallClockTimeConverger::Description();
+}
+
+GeneticAlgorithmOperator*
+MaximumWallClockTimeConverger::Clone(
+    GeneticAlgorithm& algorithm
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return new MaximumWallClockTimeConverger(*this, algorithm);
+}
+
+bool
+MaximumWallClockTimeConverger::CheckConvergence(
+    const DesignGroup&,
+    const FitnessRecord&
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    delete _guts;
-    _guts = 0x0;
+    return this->CheckConvergence();
 }
 
+bool
+MaximumWallClockTimeConverger::CheckConvergence(
+    )
+{
+    EDDY_FUNC_DEBUGSCOPE
 
+    JEGALOG_II(this->GetLogger(), ldebug(), this,
+        text_entry(ldebug(), this->GetName() + ": Entering convergence check.")
+        )
 
+    // convergence depends only on the maximum allowable
+    // number of evaluations.
+    this->SetConverged(this->IsMaxTimeReached());
 
-
-
-
+    // return true if we have converged, false otherwise.
+    return this->GetConverged();
+}
 
 /*
 ================================================================================
@@ -270,31 +263,30 @@ Structors
 ================================================================================
 */
 
-MFitnessRecord::MFitnessRecord(
+MaximumWallClockTimeConverger::MaximumWallClockTimeConverger(
+    GeneticAlgorithm& algorithm
     ) :
-        _guts(new FitnessRecord())
+        GeneticAlgorithmConverger(algorithm)
 {
     EDDY_FUNC_DEBUGSCOPE
 }
 
-MFitnessRecord::MFitnessRecord(
-    size_t initSize
+MaximumWallClockTimeConverger::MaximumWallClockTimeConverger(
+    const MaximumWallClockTimeConverger& copy
     ) :
-        _guts(new FitnessRecord(initSize))
+        GeneticAlgorithmConverger(copy)
 {
     EDDY_FUNC_DEBUGSCOPE
 }
 
-MFitnessRecord::~MFitnessRecord(
-    )
+MaximumWallClockTimeConverger::MaximumWallClockTimeConverger(
+    const MaximumWallClockTimeConverger& copy,
+    GeneticAlgorithm& algorithm
+    ) :
+        GeneticAlgorithmConverger(copy, algorithm)
 {
     EDDY_FUNC_DEBUGSCOPE
-    MANAGED_DISPOSE();
 }
-
-
-
-
 
 
 
@@ -304,7 +296,6 @@ MFitnessRecord::~MFitnessRecord(
 End Namespace
 ================================================================================
 */
-        } // namespace Managed
-    } // namespace FrontEnd
+    } // namespace Algorithms
 } // namespace JEGA
 

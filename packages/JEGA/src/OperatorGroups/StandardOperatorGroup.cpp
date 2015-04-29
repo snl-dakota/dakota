@@ -80,8 +80,10 @@ Includes
 #include <Crossers/NPointParameterizedBinaryCrosser.hpp>
 
 #include <Convergers/MaxGenEvalConverger.hpp>
+#include <Convergers/MaxGenEvalTimeConverger.hpp>
 #include <Convergers/MaximumEvaluationConverger.hpp>
 #include <Convergers/MaximumGenerationConverger.hpp>
+#include <Convergers/MaximumWallClockTimeConverger.hpp>
 
 #include <MainLoops/StandardMainLoop.hpp>
 #include <MainLoops/DuplicateRemovingMainLoop.hpp>
@@ -266,8 +268,10 @@ StandardOperatorGroup::AcquireOperators(
 
         // Register all the convergers
         DO_REGISTER(ConvergerRegistry, MaximumEvaluationConverger);
+        DO_REGISTER(ConvergerRegistry, MaximumWallClockTimeConverger);
         DO_REGISTER(ConvergerRegistry, MaximumGenerationConverger);
         DO_REGISTER(ConvergerRegistry, MaxGenEvalConverger);
+        DO_REGISTER(ConvergerRegistry, MaxGenEvalTimeConverger);
 
         // Register all the crossers
         DO_REGISTER(CrosserRegistry, RandomDesignVariableCrosser);

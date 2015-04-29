@@ -20,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_mt_ex|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -141,7 +141,7 @@
 				LinkLibraryDependencies="false"
 				AdditionalDependencies="libjega.lib"
 				OutputFile="$(OutDir)\jega.exe"
-				AdditionalLibraryDirectories="&quot;$(BOOST_ROOT)\stage\lib\x64&quot;;..\..\..\build\vc90\x64\Debug_mt_ex"
+				AdditionalLibraryDirectories="&quot;$(BOOST_ROOT)\stage\lib\x64&quot;;..\..\..\build\vc90\x64\Debug_mt_sl"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -172,8 +172,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_mt_ex|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -317,8 +317,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_st_ex|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -465,8 +465,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_st_ex|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			>
 			<Tool

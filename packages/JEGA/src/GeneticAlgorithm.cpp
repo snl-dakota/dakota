@@ -56,6 +56,7 @@ Includes
 // JEGAConfig.hpp should be the first include in all JEGA files.
 #include <../Utilities/include/JEGAConfig.hpp>
 
+#include <ctime>
 #include <cfloat>
 #include <fstream>
 #include <FitnessRecord.hpp>
@@ -391,24 +392,6 @@ GeneticAlgorithm::SetPrintEachPopulation(
 Accessors
 ================================================================================
 */
-GeneticAlgorithmOperatorSet&
-GeneticAlgorithm::GetOperatorSet(
-    )
-{
-    EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(this->_opSet != 0x0);
-    return *this->_opSet;
-}
-
-const GeneticAlgorithmOperatorSet&
-GeneticAlgorithm::GetOperatorSet(
-    ) const
-{
-    EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(this->_opSet != 0x0);
-    return *this->_opSet;
-}
-
 const FitnessRecord&
 GeneticAlgorithm::GetCurrentFitnesses(
     )
@@ -756,6 +739,14 @@ GeneticAlgorithm::ValidateVariableValues(
 #endif
 
     return numIll;
+}
+
+double
+GeneticAlgorithm::GetElapsedTime(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    return double(clock() - this->_startTime) / CLOCKS_PER_SEC;
 }
 
 /*
@@ -1175,6 +1166,8 @@ GeneticAlgorithm::AlgorithmInitialize(
 {
     EDDY_FUNC_DEBUGSCOPE
 
+    this->_startTime = clock();
+
     // initialize the populations design variable values.
     this->InitializePopulation();
 
@@ -1255,11 +1248,15 @@ GeneticAlgorithm::AlgorithmProcess(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    // If this algorithm has already reported itself
-    // converged, don't do anything.
-    if(this->GetConverger().GetConverged()) return false;
+    // If this algorithm has already reported itself converged, don't do
+    // anything.
+    // Or, similary, if we test it for convergence using the parameterless
+    // convergence method and it says it is converged, then do nothing.
+    if(this->GetConverger().GetConverged() ||
+       this->GetConverger().CheckConvergence())
+        return false;
 
-    bool ret = this->GetMainLoop().RunGeneration();
+    const bool ret = this->GetMainLoop().RunGeneration();
 
     if(this->_printPopEachGen) this->WritePopulationToFile();
 
@@ -1447,7 +1444,8 @@ GeneticAlgorithm::GeneticAlgorithm(
         _isFinalized(false),
         _isInitialized(false),
         _lastFtns(0x0),
-        _dataDir("./")
+        _dataDir("./"),
+        _startTime(std::numeric_limits<clock_t>::max())
 {
     EDDY_FUNC_DEBUGSCOPE
     this->_opSet = new GeneticAlgorithmOperatorSet(*this);

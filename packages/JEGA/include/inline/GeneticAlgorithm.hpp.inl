@@ -54,6 +54,7 @@ Document This File
 Includes
 ================================================================================
 */
+#include <utilities/include/EDDY_DebugScope.hpp>
 
 
 
@@ -88,6 +89,26 @@ Inline Mutators
 Inline Accessors
 ================================================================================
 */
+inline
+GeneticAlgorithmOperatorSet&
+GeneticAlgorithm::GetOperatorSet(
+    )
+{
+    EDDY_FUNC_DEBUGSCOPE
+    EDDY_ASSERT(this->_opSet != 0x0);
+    return *this->_opSet;
+}
+
+inline
+const GeneticAlgorithmOperatorSet&
+GeneticAlgorithm::GetOperatorSet(
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
+    EDDY_ASSERT(this->_opSet != 0x0);
+    return *this->_opSet;
+}
+
 inline
 eddy::utilities::uint64_t
 GeneticAlgorithm::GetInstanceNumber(
@@ -142,6 +163,14 @@ GeneticAlgorithm::GetOffspring(
     ) const
 {
     return this->_cldrn;
+}
+
+inline
+const std::size_t&
+GeneticAlgorithm::GetStartTime(
+    ) const
+{
+    return this->_startTime;
 }
 
 inline

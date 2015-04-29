@@ -181,18 +181,18 @@ IntegerDesignVariableType::SetPrecision(
 {
     EDDY_FUNC_DEBUGSCOPE
     EDDY_ASSERT(prec <= 0);
-    eddy::utilities::int16_t prevPrec = GetPrecision();
-    if(!DesignVariableTypeBase::SetPrecision(prec)) return false;
+    eddy::utilities::int16_t prevPrec = this->GetPrecision();
+    if(!this->DesignVariableTypeBase::SetPrecision(prec)) return false;
 
     if(prec > 0)
     {
         JEGALOG_II_G(lquiet(), this,
             ostream_entry(lquiet(), "Precision for integer design variable "
                 "type must be <= 0.  Supplied value of ") << prec << " for "
-                << GetDesignVariableInfo().GetLabel() << " rejected."
+                << this->GetDesignVariableInfo().GetLabel() << " rejected."
             )
 
-        DesignVariableTypeBase::SetPrecision(prevPrec);
+        this->DesignVariableTypeBase::SetPrecision(prevPrec);
         return false;
     }
 
@@ -213,7 +213,8 @@ IntegerDesignVariableType::IsValidDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return Math::IsWhole(rep) && DesignVariableTypeBase::IsValidDoubleRep(rep);
+    return Math::IsWhole(rep) &&
+        this->DesignVariableTypeBase::IsValidDoubleRep(rep);
 }
 
 DesignVariableTypeBase*
@@ -231,7 +232,7 @@ IntegerDesignVariableType::GetValueOf(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return Math::IsWhole(rep) ? GetNature().GetValueOf(rep) : -DBL_MAX;
+    return Math::IsWhole(rep) ? this->GetNature().GetValueOf(rep) : -DBL_MAX;
 }
 
 double
@@ -245,11 +246,10 @@ IntegerDesignVariableType::GetNearestValidValue(
 
     if(value == -DBL_MAX) return value;
 
-    double temp = GetNature().GetNearestValidValue(value);
+    double temp = this->GetNature().GetNearestValidValue(value);
 
-    if(Math::IsWhole(temp) && IsValueInBounds(temp)) return temp;
-
-    return GetNearestValidValue(Math::Round(temp));
+    if(Math::IsWhole(temp) && this->IsValueInBounds(temp)) return temp;
+    return this->GetNearestValidValue(Math::Round(temp));
 }
 
 double
@@ -261,7 +261,9 @@ IntegerDesignVariableType::GetNearestValidDoubleRep(
 
     if(rep == -DBL_MAX) return rep;
 
-    return GetNature().GetNearestValidDoubleRep(Math::Round(rep));
+    return this->GetNature().GetNearestValidDoubleRep(
+        this->ubround(rep, this->GetMinDoubleRep(), this->GetMaxDoubleRep())
+        );
 }
 
 double
@@ -270,9 +272,14 @@ IntegerDesignVariableType::GetRandomValue(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    double temp = GetNature().GetRandomValue();
+    const double temp = this->GetNature().GetRandomValue();
 
-    return GetNearestValidValue(Math::Round(temp));
+    // If temp is valid, return it.  Otherwise continue.
+    if(this->IsValidValue(temp)) return temp;
+
+    return this->GetNearestValidValue(
+        this->ubround(temp, this->GetMinValue(), this->GetMaxValue())
+        );
 }
 
 double
@@ -284,7 +291,7 @@ IntegerDesignVariableType::GetDoubleRepOf(
     EDDY_ASSERT(Math::IsWhole(value));
 
     if(!Math::IsWhole(value)) return -DBL_MAX;
-    return GetNature().GetDoubleRepOf(value);
+    return this->GetNature().GetDoubleRepOf(value);
 }
 
 double
@@ -293,8 +300,8 @@ IntegerDesignVariableType::GetRandomDoubleRep(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    double temp = GetNature().GetRandomDoubleRep();
-    return GetNearestValidDoubleRep(temp);
+    double temp = this->GetNature().GetRandomDoubleRep();
+    return this->GetNearestValidDoubleRep(temp);
 }
 
 double
@@ -304,8 +311,8 @@ IntegerDesignVariableType::GetRandomDoubleRep(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    double temp = GetNature().GetRandomDoubleRep(within);
-    return GetNearestValidDoubleRep(temp);
+    double temp = this->GetNature().GetRandomDoubleRep(within);
+    return this->GetNearestValidDoubleRep(temp);
 }
 
 void
@@ -325,7 +332,7 @@ IntegerDesignVariableType::SetMinValue(
             )
         value = Math::Round(value);
     }
-    DesignVariableTypeBase::SetMinValue(value);
+    this->DesignVariableTypeBase::SetMinValue(value);
 }
 
 
@@ -346,7 +353,7 @@ IntegerDesignVariableType::SetMaxValue(
             )
         value = Math::Round(value);
     }
-    DesignVariableTypeBase::SetMaxValue(value);
+    this->DesignVariableTypeBase::SetMaxValue(value);
 }
 
 
@@ -358,8 +365,27 @@ Private Methods
 ================================================================================
 */
 
+double
+IntegerDesignVariableType::ubround(
+    const double& value,
+    const double& min,
+    const double& max
+    ) const
+{
+    EDDY_FUNC_DEBUGSCOPE
 
+    const double pct = (value - min) / (max - min);
+    const double adjMinVal = min - 0.5;
 
+    // There is a slight chance that the provided value is ub and so will adjust
+    // wind up rounding to 1 greater than ub after adjustment.  All calling
+    // sites to this function will correct for that.  Alternatives would be
+    // to avoid that by shortening the adjustment to as close to 0.5 as we can
+    // such that adjMinVal != min-0.5 and adjMaxVal != max + 0.5.
+    return Math::Round(
+        (pct * ((max + 0.5) - adjMinVal)) + adjMinVal
+        );
+}
 
 
 
@@ -377,7 +403,7 @@ IntegerDesignVariableType::IntegerDesignVariableType(
         DesignVariableTypeBase(info)
 {
     EDDY_FUNC_DEBUGSCOPE
-    GetNature().SetPrecision(0);
+    this->GetNature().SetPrecision(0);
 }
 
 IntegerDesignVariableType::IntegerDesignVariableType(
@@ -387,7 +413,7 @@ IntegerDesignVariableType::IntegerDesignVariableType(
         DesignVariableTypeBase(copy, info)
 {
     EDDY_FUNC_DEBUGSCOPE
-    GetNature().SetPrecision(0);
+    this->GetNature().SetPrecision(0);
 }
 
 

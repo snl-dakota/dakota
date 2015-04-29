@@ -160,17 +160,19 @@ Class Definition
  * It can do so by any means it wishes.
  *
  * This base class provides a means of checking for overrun of the number of
- * generations and overrun of the number of evaluations.  Derived versions are
- * free to use these methods but don't have to.  Derived versions are required
- * to implement the CheckConvergence method.
+ * generations, overrun of the number of evaluations, and overrun of the amount
+ * of wall clock time..  Derived versions are free to use these methods but
+ * don't have to.  Derived versions are required to implement the
+ * CheckConvergence method.
  *
- * The maximum allowable generations and maximum allowable evaluations are
- * extracted from the parameter database using the names
- * "method.max_iterations" and "method.max_function_evaluations" respectively.
- * They are extracted as size type parameters. If they are not in the parameter
- * database, the default values as defined by DEFAULT_MAX_GENS and
- * DEFAULT_MAX_EVALS respectively will be used.  These are required in addition
- * to any requirements of the base class.
+ * The maximum allowable generations, maximum allowable evaluations, and maximum
+ * allowable wall clock time are extracted from the parameter database using the
+ * names "method.max_iterations", "method.max_function_evaluations", and
+ * "method.max_time" respectively.  The evaluations and iterations are extracted
+ * as size type parameters.  The time is a double.  If they are not in the
+ * parameter database, the default values as defined by DEFAULT_MAX_GENS,
+ * DEFAULT_MAX_EVALS, and DEFAULT_MAX_TIME respectively will be used.  These are
+ * required in addition to any requirements of the base class.
  */
 class JEGA_SL_IEDECL GeneticAlgorithmConverger :
   public GeneticAlgorithmOperator
@@ -203,6 +205,10 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         /// The default value for the maximum allowable number of evaluations.
         static const std::size_t DEFAULT_MAX_EVALS;
 
+        /// The default value for the maximum allowable amount of time
+        // (in seconds).
+        static const double DEFAULT_MAX_TIME;
+
     private:
 
         /// The maximum allowable number of generations for the algorithm.
@@ -210,6 +216,9 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
 
         /// The maximum allowable number of evaluations for the algorithm.
         std::size_t _maxEvals;
+
+        /// The maximum allowable amount of time (seconds) for the algorithm.
+        double _maxTime;
 
         /// True if convergence has been achieved and false otherwise.
         /**
@@ -255,6 +264,20 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
             std::size_t maxEvals
             );
 
+        /// Sets the maximum allowable amount of time for the algorithm.
+        /**
+         * Derived convergers are not required to respect this.
+         *
+         * This method enters a verbose level log entry informing of the new
+         * maximum amount of time.
+         *
+         * \param maxEvals The new maximum allowable amount of time in seconds.
+         */
+        void
+        SetMaxTime(
+            double maxTime
+            );
+
     protected:
 
         /// Sets the converged flag for this converger.
@@ -269,9 +292,6 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         SetConverged(
             bool lval = true
             );
-
-
-
 
     /*
     ============================================================================
@@ -298,6 +318,15 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         GetMaxEvaluations(
             ) const;
 
+        /// Gets the maximum allowable amount of time for the algorithm.
+        /**
+         * \return The maximum allowable amount of time in seconds.
+         */
+        inline
+        double
+        GetMaxTime(
+            ) const;
+
         /// Gets the converged flag for this converger.
         /**
          * \return Whether or not this converger has reported convergence.
@@ -306,10 +335,6 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         bool
         GetConverged(
             ) const;
-
-
-
-
 
     /*
     ============================================================================
@@ -336,6 +361,15 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         IsMaxEvalsExceeded(
             ) const;
 
+        /// Indicates if the maximum amount of time has been exceeded.
+        /**
+         * \return True if the current amount of time in seconds is strictly
+         *         greater than the max allowable.
+         */
+        bool
+        IsMaxTimeExceeded(
+            ) const;
+
         /**
          * \brief Indicates if the maximum number of generations has been
          *        reached or exceeded.
@@ -358,6 +392,15 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         IsMaxEvalsReached(
             ) const;
 
+        /**
+         * \brief Indicates if the maximum amount of time has been reached or
+         *        exceeded.
+         *
+         * \return True if the current amount of time is >= the max allowable.
+         */
+        bool
+        IsMaxTimeReached(
+            ) const;
 
 
 
@@ -389,6 +432,8 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
          *
          * The method can do whatever you wish but should return
          * true to indicate convergence and flase to indicate non-convergence.
+         * It should also use the \a SetConverged method of this class to
+         * record the result.
          *
          * \param group The group to use in the convergence check.
          * \param fitnesses The fitnesses of the designs in \a group.
@@ -400,6 +445,11 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
             const JEGA::Utilities::DesignGroup& group,
             const FitnessRecord& fitnesses
             ) = 0;
+
+        virtual
+        bool
+        CheckConvergence(
+            );
 
         /// Retrieves specific parameters using Get...FromDB methods.
         /**
@@ -431,17 +481,10 @@ class JEGA_SL_IEDECL GeneticAlgorithmConverger :
         GetType(
             ) const;
 
-
-
-
     protected:
 
 
     private:
-
-
-
-
 
     /*
     ============================================================================

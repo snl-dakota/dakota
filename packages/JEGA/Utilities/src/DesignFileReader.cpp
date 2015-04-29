@@ -328,7 +328,13 @@ DesignFileReader::ParseValues(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
+
+#ifdef JEGA_LOGGING_ON
+    static std::string ret;
+    ret = DetermineDelimeter(from, ret);
+#else
     std::string ret(DetermineDelimeter(from));
+#endif
     ParseValues(from, ret, into);
     return ret;
 }
@@ -379,6 +385,9 @@ DesignFileReader::ParseValues(
 string
 DesignFileReader::DetermineDelimeter(
     const string& from
+#ifdef JEGA_LOGGING_ON
+    , const std::string& prev
+#endif
     )
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -408,8 +417,8 @@ DesignFileReader::DetermineDelimeter(
                     delimCandidate == WHITESPACE_DELIMITER ?
                     AWS : delimCandidate;
                 )
-            JEGALOG_IT_G(
-                ldebug(), DesignFileReader,
+            JEGAIFLOG_IT_G(
+                delimCandidate != prev, ldebug(), DesignFileReader,
                 text_entry(
                     ldebug(),
                     "Design File Reader: Delimiter determined to be " + delim
@@ -440,8 +449,8 @@ DesignFileReader::DetermineDelimeter(
             AWS : delimCandidate;
         )
 
-    JEGALOG_IT_G(
-        ldebug(), DesignFileReader,
+    JEGAIFLOG_IT_G(
+        delimCandidate != prev, ldebug(), DesignFileReader,
         text_entry(
             ldebug(),
             "Design File Reader: Delimiter determined to be " + delim

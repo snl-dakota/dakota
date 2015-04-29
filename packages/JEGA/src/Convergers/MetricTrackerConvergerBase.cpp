@@ -231,7 +231,7 @@ MetricTrackerConvergerBase::CheckConvergence(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    if(this->MaxGenEvalConverger::CheckConvergence(group, fitnesses))
+    if(this->MaxGenEvalTimeConverger::CheckConvergence(group, fitnesses))
         return true;
 
     // now get the metric to push onto the stack.
@@ -261,7 +261,8 @@ MetricTrackerConvergerBase::CheckConvergence(
 
     // Iterate the number of entries minus the last one and if we can determine
     // that we don't converge, break.
-    size_t e = this->_metricTracker.GetStackDepth() - 1;
+    const double minVal = this->_metricTracker.MinValue().second;
+    const double maxVal = this->_metricTracker.MaxValue().second;
     bool converged = true;
 
     // If this is an absolute checker, then the max absolute value of the metric
@@ -269,35 +270,31 @@ MetricTrackerConvergerBase::CheckConvergence(
     double pctChng = 0;
     if(this->_absolute)
     {
-        double minVal = this->_metricTracker.MinValue().second;
-        double maxVal = this->_metricTracker.MaxValue().second;
         pctChng = Math::Max(fabs(minVal), fabs(maxVal));
     }
     else
     {
-        double maxPct = eddy::utilities::numeric_limits<double>::smallest();
-        for(size_t i=0; i<e; ++i)
+        if(maxVal == minVal)
         {
-            double currPct = this->GetProgressPercentage(i, e);
-            pctChng = Math::Max(currPct, maxPct);
-
-#ifdef JEGA_LOGGING_ON
-            if(maxPct > this->_change &&
-               !this->GetLogger().Gate().will_log(this, lverbose()))
-                break;
-#else
-            if(maxPct > this->_change) break;
-#endif
+            pctChng = 0.0;
         }
-
-        // report to 1 more decimal place than necessary to cover the _change
-        // using at least 2.
-        JEGALOG_II(this->GetLogger(), lverbose(), this,
-            ostream_entry(lverbose(),
-                this->GetName() + ": Current max percentage progress is ")
-                << Math::Round(maxPct * 100.0, this->GetNumDP()) << "%."
-            )
+        else if(maxVal == 0.0)
+        {
+            pctChng = (maxVal - minVal) / ((maxVal + minVal) * 0.5);
+        }
+        else
+        {
+            pctChng = (maxVal - minVal) / fabs(maxVal);
+        }
     }
+
+    // report to 1 more decimal place than necessary to cover the _change
+    // using at least 2.
+    JEGALOG_II(this->GetLogger(), lverbose(), this,
+        ostream_entry(lverbose(),
+            this->GetName() + ": Current max percentage progress is ")
+            << Math::Round(pctChng * 100.0, this->GetNumDP()) << "%."
+        )
 
     converged = (pctChng <= this->_change);
 
@@ -349,7 +346,7 @@ MetricTrackerConvergerBase::PollForParameters(
     // Otherwise, finish recording and output at the verbose level.
     this->SetPercentChange(this->_change);
 
-    return this->MaxGenEvalConverger::PollForParameters(db);
+    return this->MaxGenEvalTimeConverger::PollForParameters(db);
 }
 
 
@@ -380,7 +377,7 @@ MetricTrackerConvergerBase::MetricTrackerConvergerBase(
     GeneticAlgorithm& algorithm,
     bool absolute
     ) :
-        MaxGenEvalConverger(algorithm),
+        MaxGenEvalTimeConverger(algorithm),
         _metricTracker(DEFAULT_NUM_GENS),
         _change(DEFAULT_CHNG),
         _absolute(absolute)
@@ -410,7 +407,7 @@ MetricTrackerConvergerBase::MetricTrackerConvergerBase(
 MetricTrackerConvergerBase::MetricTrackerConvergerBase(
     const MetricTrackerConvergerBase& copy
     ) :
-        MaxGenEvalConverger(copy),
+        MaxGenEvalTimeConverger(copy),
         _metricTracker(copy._metricTracker),
         _change(copy._change),
         _absolute(copy._absolute)
@@ -441,7 +438,7 @@ MetricTrackerConvergerBase::MetricTrackerConvergerBase(
     const MetricTrackerConvergerBase& copy,
     GeneticAlgorithm& algorithm
     ) :
-        MaxGenEvalConverger(copy, algorithm),
+        MaxGenEvalTimeConverger(copy, algorithm),
         _metricTracker(copy._metricTracker),
         _change(copy._change),
         _absolute(copy._absolute)

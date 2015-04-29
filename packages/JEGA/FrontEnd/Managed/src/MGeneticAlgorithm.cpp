@@ -204,31 +204,31 @@ MGeneticAlgorithm::GetCurrentPopulation(
     return ret;
 }
 
-size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithm::GetGenerationNumber(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return static_cast<size_t>(this->_theAlg->GetGenerationNumber());
+    return static_cast<eddy::utilities::uint64_t>(this->_theAlg->GetGenerationNumber());
 }
 
-size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithm::GetPopulationSize(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return static_cast<size_t>(this->_theAlg->GetPopulation().SizeOF());
+    return static_cast<eddy::utilities::uint64_t>(this->_theAlg->GetPopulation().SizeOF());
 }
 
-size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithm::GetNDV(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return this->_theAlg->GetDesignTarget().GetNDV();
+    return static_cast<eddy::utilities::uint64_t>(this->_theAlg->GetDesignTarget().GetNDV());
 }
 
-size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithm::GetNOF(
     )
 {
@@ -236,7 +236,7 @@ MGeneticAlgorithm::GetNOF(
     return this->_theAlg->GetDesignTarget().GetNOF();
 }
 
-size_t
+eddy::utilities::uint64_t
 MGeneticAlgorithm::GetNCN(
     )
 {

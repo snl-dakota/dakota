@@ -115,6 +115,35 @@ GeneticAlgorithmNichePressureApplicator::GetCacheDesigns(
 Inline Public Methods
 ================================================================================
 */
+inline
+bool
+GeneticAlgorithmNichePressureApplicator::TestBufferForClone(
+    const JEGA::Utilities::Design& ofDes
+    )
+{
+    return this->_cacheDesigns ?
+        this->_desBuffer.test_for_clone(
+            const_cast<JEGA::Utilities::Design*>(&ofDes)
+            ) != this->_desBuffer.end() :
+        false;
+}
+
+template <typename DesContT>
+std::size_t
+GeneticAlgorithmNichePressureApplicator::TestBufferForClones(
+    const DesContT& against
+    )
+{
+    if(!this->_cacheDesigns) return 0;
+    std::size_t cloneCount = 0;
+    const typename JEGA::Utilities::DesignDVSortSet::const_iterator le(
+        this->_desBuffer.end()
+        );
+    const typename DesContT::const_iterator e(against.end());
+    for(typename DesContT::const_iterator it(against.begin()); it!=e; ++it)
+        cloneCount += this->_desBuffer.test_for_clone(*it) == le ? 0 : 1;
+    return cloneCount;
+}
 
 
 

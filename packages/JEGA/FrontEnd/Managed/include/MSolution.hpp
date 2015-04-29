@@ -69,9 +69,6 @@ Includes
 */
 #include <MConfig.hpp>
 
-#pragma unmanaged
-#include <cstddef>
-#include <utilities/include/int_types.hpp>
 
 
 
@@ -83,6 +80,7 @@ Includes
 Pre-Namespace Forward Declares
 ================================================================================
 */
+#pragma unmanaged
 namespace JEGA
 {
     namespace Utilities
@@ -249,7 +247,7 @@ MANAGED_CLASS(public, MSolution)
          */
         double
         GetVariable(
-            std::size_t num
+            eddy::utilities::uint64_t num
             );
 
         /// Retrieves the requested objective function value.
@@ -262,7 +260,7 @@ MANAGED_CLASS(public, MSolution)
          */
         double
         GetObjective(
-            std::size_t num
+            eddy::utilities::uint64_t num
             );
 
         /// Retrieves the requested constraint function value.
@@ -275,10 +273,10 @@ MANAGED_CLASS(public, MSolution)
          */
         double
         GetConstraint(
-            std::size_t num
+            eddy::utilities::uint64_t num
             );
 
-        std::size_t
+        eddy::utilities::uint64_t
         GetID(
             );
 
@@ -305,7 +303,7 @@ MANAGED_CLASS(public, MSolution)
          *
          * \return The number of design variables for the current problem.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetNDV(
             );
 
@@ -315,7 +313,7 @@ MANAGED_CLASS(public, MSolution)
          *
          * \return The number of objective functions for the current problem.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetNOF(
             );
 
@@ -325,7 +323,7 @@ MANAGED_CLASS(public, MSolution)
          *
          * \return The number of constraints for the current problem.
          */
-        std::size_t
+        eddy::utilities::uint64_t
         GetNCN(
             );
 
@@ -411,7 +409,7 @@ MANAGED_CLASS(public, MSolution)
          */
         bool
         HasAttribute(
-            std::size_t attrIndex
+            eddy::utilities::uint64_t attrIndex
             );
 
 

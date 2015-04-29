@@ -1787,7 +1787,7 @@ ConfigFileFrontEndApp::PrintVersionMessage(
         const CFFE_TYPEOF(tag)& prms = CFFE_GETVAR(tag); \
         for(CFFE_TYPEOF(tag)::const_iterator it(prms.begin()); \
             it!=prms.end(); ++it) if((*it).get<0>() != ITS::_dummyTag) \
-                _theParamDB->meth((*it).get<0>(), (*it).get<1>()); \
+                this->_theParamDB->meth((*it).get<0>(), (*it).get<1>()); \
     }
 
 void

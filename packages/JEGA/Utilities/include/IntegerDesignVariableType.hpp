@@ -426,9 +426,12 @@ class JEGA_SL_IEDECL IntegerDesignVariableType :
     */
     private:
 
-
-
-
+        double
+        ubround(
+            const double& value,
+            const double& min,
+            const double& max
+            ) const;
 
     /*
     ============================================================================

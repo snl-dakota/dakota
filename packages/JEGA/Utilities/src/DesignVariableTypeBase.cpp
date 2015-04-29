@@ -119,17 +119,17 @@ DesignVariableTypeBase::SetNature(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(!IsNatureLocked());
-    EDDY_ASSERT(nature != _nature);
+    EDDY_ASSERT(!this->IsNatureLocked());
+    EDDY_ASSERT(nature != this->_nature);
     EDDY_ASSERT(nature != 0x0);
-    EDDY_ASSERT(&_nature->GetType() == this);
+    EDDY_ASSERT(& this->_nature->GetType() == this);
 
-    if( IsNatureLocked() ||
+    if(this->IsNatureLocked() ||
         (nature == 0x0) ||
-        (_nature == nature)) return false;
+        (this->_nature == nature)) return false;
 
-    delete _nature;
-    _nature = nature;
+    delete this->_nature;
+    this->_nature = nature;
     return true;
 }
 
@@ -161,7 +161,7 @@ DesignVariableTypeBase::GetDesignTarget(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _info.GetDesignTarget();
+    return this->_info.GetDesignTarget();
 
 } // DesignVariableTypeBase::GetDesignTarget
 
@@ -170,7 +170,7 @@ DesignVariableTypeBase::GetDesignTarget(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    return _info.GetDesignTarget();
+    return this->_info.GetDesignTarget();
 
 } // DesignVariableTypeBase::GetDesignTarget
 
@@ -179,8 +179,8 @@ DesignVariableTypeBase::GetNatureString(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->ToString();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->ToString();
 }
 
 double
@@ -189,8 +189,8 @@ DesignVariableTypeBase::AssertPrecision(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->AssertPrecision(val);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->AssertPrecision(val);
 }
 
 
@@ -223,8 +223,8 @@ DesignVariableTypeBase::IsValueInBounds(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsValueInBounds(value);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsValueInBounds(value);
 }
 
 bool
@@ -233,8 +233,8 @@ DesignVariableTypeBase::IsRepInBounds(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsRepInBounds(rep);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsRepInBounds(rep);
 }
 
 bool
@@ -242,8 +242,8 @@ DesignVariableTypeBase::IsDiscreteValueLocked(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsDiscreteValueLocked();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsDiscreteValueLocked();
 }
 
 bool
@@ -251,8 +251,8 @@ DesignVariableTypeBase::IsOutOfBoundsDefined(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsOutOfBoundsDefined();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsOutOfBoundsDefined();
 }
 
 bool
@@ -260,8 +260,8 @@ DesignVariableTypeBase::IsPrecisionLocked(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsPrecisionLocked();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsPrecisionLocked();
 }
 
 bool
@@ -270,8 +270,8 @@ DesignVariableTypeBase::IsValidValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsValidValue(value);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsValidValue(value);
 }
 
 bool
@@ -280,8 +280,8 @@ DesignVariableTypeBase::IsValidDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return (rep != -DBL_MAX) && _nature->IsValidDoubleRep(rep);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return (rep != -DBL_MAX) && this->_nature->IsValidDoubleRep(rep);
 }
 
 double
@@ -289,8 +289,8 @@ DesignVariableTypeBase::GetDefaultValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetMinValue();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetMinValue();
 }
 
 double
@@ -298,8 +298,8 @@ DesignVariableTypeBase::GetMaxValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetMaxValue();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetMaxValue();
 }
 
 double
@@ -307,8 +307,8 @@ DesignVariableTypeBase::GetMinValue(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetMinValue();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetMinValue();
 }
 
 double
@@ -316,8 +316,8 @@ DesignVariableTypeBase::GetDefaultDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetMinDoubleRep();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetMinDoubleRep();
 }
 
 double
@@ -325,8 +325,8 @@ DesignVariableTypeBase::GetMaxDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetMaxDoubleRep();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetMaxDoubleRep();
 }
 
 double
@@ -334,8 +334,8 @@ DesignVariableTypeBase::GetMinDoubleRep(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetMinDoubleRep();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetMinDoubleRep();
 }
 
 double
@@ -343,8 +343,8 @@ DesignVariableTypeBase::GetDistanceBetweenDoubleReps(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetDistanceBetweenDoubleReps();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetDistanceBetweenDoubleReps();
 }
 
 bool
@@ -353,8 +353,8 @@ DesignVariableTypeBase::AddDiscreteValue(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->AddDiscreteValue(value);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->AddDiscreteValue(value);
 }
 
 void
@@ -362,8 +362,8 @@ DesignVariableTypeBase::ClearDiscreteValues(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    _nature->ClearDiscreteValues();
+    EDDY_ASSERT(this->_nature != 0x0);
+    this->_nature->ClearDiscreteValues();
 }
 
 bool
@@ -372,8 +372,8 @@ DesignVariableTypeBase::RemoveDiscreteValue(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->RemoveDiscreteValue(value);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->RemoveDiscreteValue(value);
 }
 
 void
@@ -382,8 +382,8 @@ DesignVariableTypeBase::SetMinValue(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    _nature->SetMinValue(value);
+    EDDY_ASSERT(this->_nature != 0x0);
+    this->_nature->SetMinValue(value);
 }
 
 void
@@ -392,8 +392,8 @@ DesignVariableTypeBase::SetMaxValue(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    _nature->SetMaxValue(value);
+    EDDY_ASSERT(this->_nature != 0x0);
+    this->_nature->SetMaxValue(value);
 }
 
 eddy::utilities::int16_t
@@ -401,8 +401,8 @@ DesignVariableTypeBase::GetPrecision(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->GetPrecision();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->GetPrecision();
 }
 
 bool
@@ -411,8 +411,8 @@ DesignVariableTypeBase::SetPrecision(
     )
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->SetPrecision(prec);
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->SetPrecision(prec);
 }
 
 bool
@@ -420,8 +420,8 @@ DesignVariableTypeBase::IsDiscrete(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsDiscrete();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsDiscrete();
 }
 
 bool
@@ -429,8 +429,8 @@ DesignVariableTypeBase::IsContinuum(
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
-    EDDY_ASSERT(_nature != 0x0);
-    return _nature->IsContinuum();
+    EDDY_ASSERT(this->_nature != 0x0);
+    return this->_nature->IsContinuum();
 }
 
 
@@ -459,7 +459,7 @@ DesignVariableTypeBase::DesignVariableTypeBase(
         _nature(0x0)
 {
     EDDY_FUNC_DEBUGSCOPE
-    _nature = new ContinuumDesignVariableNature(*this);
+    this->_nature = new ContinuumDesignVariableNature(*this);
 }
 
 DesignVariableTypeBase::DesignVariableTypeBase(
@@ -470,13 +470,14 @@ DesignVariableTypeBase::DesignVariableTypeBase(
         _nature(0x0)
 {
     EDDY_FUNC_DEBUGSCOPE
-    _nature = copy._nature->Clone(*this);
+    this->_nature = copy._nature->Clone(*this);
 }
 
 DesignVariableTypeBase::~DesignVariableTypeBase()
 {
     EDDY_FUNC_DEBUGSCOPE
-    delete _nature;
+    delete this->_nature;
+    this->_nature = 0x0;
 }
 
 

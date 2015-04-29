@@ -69,8 +69,6 @@ Includes
 #include <MConfig.hpp>
 #include <MEvaluationFunctor.hpp>
 
-#pragma unmanaged
-#include <utilities/include/int_types.hpp>
 
 
 
@@ -82,6 +80,7 @@ Includes
 Pre-Namespace Forward Declares
 ================================================================================
 */
+#pragma unmanaged
 namespace JEGA
 {
     namespace Algorithms
@@ -141,8 +140,8 @@ In-Namespace Forward Declares
 ================================================================================
 */
 MANAGED_CLASS_FORWARD_DECLARE(public, MDesign);
+class BaseEvaluator;
 class BaseEvaluatorCreator;
-
 
 
 
@@ -210,7 +209,7 @@ MANAGED_CLASS(public, MEvaluator) :
          */
         MEvaluationFunctor MOH _theDelegate;
 
-        JEGA::Algorithms::GeneticAlgorithmEvaluator* _evaler;
+        BaseEvaluator* _evaler;
 
     /*
     ============================================================================
@@ -232,7 +231,7 @@ MANAGED_CLASS(public, MEvaluator) :
 
         void
         SetEvaluator(
-            JEGA::Algorithms::GeneticAlgorithmEvaluator* evaler
+            BaseEvaluator* evaler
             );
 
     protected:
@@ -400,14 +399,14 @@ MANAGED_CLASS(public, MEvaluator) :
             MEvaluationFunctor MOH theDelegate
             );
 
-        MEvaluator(
-            JEGA::Algorithms::GeneticAlgorithmEvaluator* evaler
-            );
+        //MEvaluator(
+        //    JEGA::Algorithms::GeneticAlgorithmEvaluator* evaler
+        //    );
 
-        MEvaluator(
-            MEvaluationFunctor MOH theDelegate,
-            JEGA::Algorithms::GeneticAlgorithmEvaluator* evaler
-            );
+        //MEvaluator(
+        //    MEvaluationFunctor MOH theDelegate,
+        //    JEGA::Algorithms::GeneticAlgorithmEvaluator* evaler
+        //    );
 
         /// Destructs an MEvaluator.
         /**

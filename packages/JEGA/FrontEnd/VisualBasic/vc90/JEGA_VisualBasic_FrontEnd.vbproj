@@ -254,7 +254,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Managed\vc90\JEGA_Managed_FrontEnd.vcxproj">
+    <ProjectReference Include="..\..\Managed\vc90\JEGA_Managed_FrontEnd.vcproj">
       <Project>{11BA5D31-1B70-4F2C-AF9F-9BB2AED4E354}</Project>
       <Name>JEGA_Managed_FrontEnd</Name>
     </ProjectReference>

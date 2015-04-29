@@ -60,6 +60,7 @@ Includes
 #include <GeneticAlgorithm.hpp>
 #include <GeneticAlgorithmCrosser.hpp>
 #include <GeneticAlgorithmMutator.hpp>
+#include <GeneticAlgorithmNichePressureApplicator.hpp>
 #include <../Utilities/include/Logging.hpp>
 #include <utilities/include/EDDY_DebugScope.hpp>
 #include <MainLoops/DuplicateRemovingMainLoop.hpp>
@@ -336,6 +337,11 @@ DuplicateRemovingMainLoop::RunGeneration(
             this->GetDesignTarget().CheckoutDiscards();
         nrem = discards.test_for_clones(cldrn.GetDVSortContainer());
         this->GetDesignTarget().CheckinDiscards();
+
+        if(nrem > 0) nrem = cldrn.FlushCloneDesigns();
+
+        nrem = this->GetAlgorithm().GetOperatorSet().GetNichePressureApplicator(
+            ).TestBufferForClones(cldrn.GetDVSortContainer());
 
         if(nrem > 0) nrem = cldrn.FlushCloneDesigns();
 
