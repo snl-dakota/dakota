@@ -225,7 +225,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
  
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
-  bool calc_sigma_from_data = true; // calculate sigma if not provided
+  bool calc_sigma_from_data = calibrateSigmaFlag; // calculate sigma if not provided
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Read data from file " << calibrationDataFlag << '\n';
   if (calibrationDataFlag)
@@ -269,6 +269,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   init_parameter_domain();
 
+  // Size our Queso covariance matrix
+  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
   // initialize proposal covariance (must follow parameter domain init)
   if (proposalCovarType == "user") // either filename OR data values defined
     user_proposal_covariance(proposalCovarInputType, proposalCovarData,
@@ -276,6 +278,29 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   else if (proposalCovarType == "prior")
     prior_proposal_covariance(); // prior selection or default for no emulator
 
+  if (calibrateSigmaFlag){
+    for (int i=0; i<numFunctions; i++) {
+      (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = 
+        std::sqrt(expData.scalar_sigma_est(i));
+    }
+  }
+  if (proposalCovarType == "user" || proposalCovarType == "prior") {
+    QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
+    test_mat -= *proposalCovMatrix;
+    if( test_mat.normMax() > 1.e-14 )
+      throw std::runtime_error("Queso covariance matrix is not symmetric.");
+
+    // validate that provided data is a valid covariance matrix - test PD part of SPD
+    test_mat = *proposalCovMatrix;
+    int ierr = test_mat.chol();
+    if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
+      throw std::runtime_error("Queso covariance data is not SPD.");
+  }
+  if (outputLevel > NORMAL_OUTPUT ){ 
+    Cout << "Proposal Covariance " << '\n';
+    proposalCovMatrix->print(std::cout);
+    std::cout << std::endl;
+  }
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
 
@@ -496,7 +521,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   int i, j, nv = log_like_hess.numRows();
   if (!proposalCovMatrix) {
     proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
-    if (paramSpace->dimGlobal() != nv) {
+    if ((paramSpace->dimGlobal() != nv) || 
+        (paramSpace->dimGlobal() !=(nv+numFunctions))) {
       Cerr << "Error: Queso vector space is not consistent with proposal "
 	   << "covariance dimension." << std::endl;
       abort_handler(METHOD_ERROR);
@@ -858,16 +884,18 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   }
   // if calibrateSigmaFlag, the parameter domain is expanded by sigma terms 
   if (calibrateSigmaFlag) {
-    RealVector covariance_diagonal;
+    //RealVector covariance_diagonal;
     // Todo: pass in corrrect experiment number as second argument
-    expData.get_main_diagonal( covariance_diagonal, 0 );
+    //expData.get_main_diagonal( covariance_diagonal, 0 );
     for (int j=0; j<numFunctions; j++){
       // TODO: Need to be able to get sigma from new covariance class.
       // Also need to sync up this with the logic in the ctor.  Also need
       // a default if there's no experimental data (may not be sensible)
       //paramMins[numContinuousVars+j] = 1.;
       //paramMaxs[numContinuousVars+j] = 1.;
-      Real std_j = std::sqrt( covariance_diagonal[j] );
+      //Real std_j = std::sqrt( covariance_diagonal[j] );
+      Real std_j = std::sqrt( expData.scalar_sigma_est(j));
+      Cout << " scalar_sigma_est " << std_j;
       paramMins[numContinuousVars+j] = .01 * std_j;
       paramMaxs[numContinuousVars+j] =  2. * std_j;
     }
@@ -917,17 +945,17 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 /** Must be called after paramMins/paramMaxs set above */
 void NonDQUESOBayesCalibration::prior_proposal_covariance()
 {
-  int total_num_params = paramSpace->dimGlobal();
-  QUESO::GslVector covDiag(paramSpace->zeroVector());
+  int total_num_params = numContinuousVars;
+  // int total_num_params = paramSpace->dimGlobal();
+  // QUESO::GslVector covDiag(paramSpace->zeroVector());
 
   // diagonal covariance from variance of prior marginals
   Real stdev;
   for (int i=0; i<total_num_params; i++) {
     stdev = mcmcModel.continuous_distribution_moment(i, 2);
-    covDiag[i] = stdev * stdev;
+    (*proposalCovMatrix)(i,i) = stdev * stdev;
   }
-
-  proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
+  //proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
 
   if (outputLevel > NORMAL_OUTPUT) {
     //Cout << "Diagonal elements of the proposal covariance sent to QUESO";
@@ -969,15 +997,15 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
     throw std::runtime_error("You cannot provide both covariance values and a covariance data filename.");
 
   // Size our Queso covariance matrix
-  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+  //proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
 
   // Sanity check
-  int total_num_params = paramSpace->dimGlobal();
-  if( (proposalCovMatrix->numRowsLocal()  != total_num_params) || 
+  int total_num_params = numContinuousVars; //paramSpace->dimGlobal();
+  /*if( (proposalCovMatrix->numRowsLocal()  != total_num_params) || 
       (proposalCovMatrix->numRowsGlobal() != total_num_params) || 
       (proposalCovMatrix->numCols()       != total_num_params)   )
     throw std::runtime_error("Queso vector space is not consistent with parameter dimension.");
-        
+  */      
   // Read in a general way and then check that the data is consistent
   RealVectorArray values_from_file;
   if( use_file )
@@ -1056,7 +1084,7 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   //    but chol doesn't seem to mind that matrices are not symmetric... RWH
   //proposalCovMatrix->print(std::cout);
   //std::cout << std::endl;
-  QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
+  /*QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
   test_mat -= *proposalCovMatrix;
   if( test_mat.normMax() > 1.e-14 )
     throw std::runtime_error("Queso covariance matrix is not symmetric.");
@@ -1066,7 +1094,7 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   int ierr = test_mat.chol();
   if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
     throw std::runtime_error("Queso covariance data is not SPD.");
-
+ */
   //proposalCovMatrix->print(std::cout);
   //std::cout << std::endl;
   //cov_data.print(std::cout);

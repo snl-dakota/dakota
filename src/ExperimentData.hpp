@@ -134,9 +134,9 @@ public:
   /// experiment 
   Real scalar_data(size_t response, size_t experiment);
 
-  /// retrieve the standard deviation value for the given response, for
-  /// the given experiment
-  Real scalar_sigma(size_t response, size_t experiment);
+  /// retrieve the standard deviation value for the given response, 
+  /// estimated over all responses
+  Real scalar_sigma_est(size_t response);
 
   /// retrieve a view of the field data for the given response, for the given
   /// experiment 
@@ -248,7 +248,8 @@ private:
   bool interpolateFlag;
   /// output verbosity level
   short outputLevel;
-
+  /// vector of estimated sigma values to be used in Bayesian calibration
+  RealVector estimated_sigmas;
 
   // core data storage
 

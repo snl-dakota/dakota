@@ -298,26 +298,30 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
   // to loading one experiment at a time; would have to be done
   // afterwards.  Also, not clear about what to do in interpolating
   // field data case...
-  /*
-  else if (calc_sigma_from_data) {
+  if (calc_sigma_from_data && (scalarSigmaPerRow == 0)) {
+    estimated_sigmas.resize(num_scalars);
     Real mean_est, var_est;
-    for (j=0; j<num_functions; j++){
+    for (size_t j=0; j<num_scalars; j++){
       mean_est = 0.0;
-      for (i=0; i<numExperiments; i++) 
-        mean_est += yObsData(i,j);
+      for (size_t i=0; i<numExperiments; i++) 
+        mean_est += allExperiments[i].function_value(j);
       mean_est = mean_est / ((Real)(numExperiments));
       var_est = 0;
-      for (i=0; i<numExperiments; i++) 
-        var_est += (yObsData(i,j)-mean_est)*(yObsData(i,j)-mean_est); 
-      for (i=0; i<numExperiments; i++) 
-        yStdData(i,j) = (numExperiments > 1) ? 
-	  std::sqrt(var_est/(Real)(numExperiments-1)) : 1.0;
-      for (i=0; i<numExperiments; i++) 
-        Cout << yStdData(i,j) << "\n";
-    }
+      for (size_t i=0; i<numExperiments; i++) 
+        var_est += (allExperiments[i].function_value(j)-mean_est)*
+                   (allExperiments[i].function_value(j)-mean_est); 
+      estimated_sigmas(j) = (numExperiments > 1) ? 
+	  (var_est/(Real)(numExperiments-1)) : 1.0;
+      }
+      if (outputLevel >= DEBUG_OUTPUT) 
+        Cout << "estimated sigmas " << estimated_sigmas << "\n";
   }
-  */
-
+  if (calc_sigma_from_data && (scalarSigmaPerRow > 0)) {
+     estimated_sigmas.resize(num_scalars);
+     allExperiments[0].get_covariance_diagonal(estimated_sigmas);
+     if (outputLevel >= DEBUG_OUTPUT) 
+       Cout << "estimated sigmas " << estimated_sigmas << "\n";
+  } 
   // verify that the two experiments have different data
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Experiment data summary:";
@@ -634,6 +638,12 @@ scalar_data(size_t response, size_t experiment)
   //}
   return(allExperiments[experiment].function_value(response));
 }
+
+Real ExperimentData::
+scalar_sigma_est(size_t response)
+{
+  return estimated_sigmas(response);
+} 
 
 RealVector ExperimentData::
 field_data_view(size_t response, size_t experiment)
