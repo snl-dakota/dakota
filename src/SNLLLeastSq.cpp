@@ -604,7 +604,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // post-process results to compute confidence intervals on parameter estimates
   get_confidence_intervals();
 
-  // bypass duplicate post-processing in LeastSq
+  // bypass duplicate post-processing in LeastSq, since we did a DB lookup
   Minimizer::post_run(s);
 }
 

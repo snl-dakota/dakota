@@ -482,8 +482,21 @@ void LeastSq::get_confidence_intervals()
  
   Teuchos::LAPACK<int, Real> la;
 
-  //first calculate the estimate of sigma-squared.  
-  const RealVector& fn_vals_star = bestResponseArray.front().function_values();
+  // The CI should be based on the residuals the solver worked on
+  // (including data differences), but it only stored in the user
+  // model space
+  RealVector fn_vals_star;
+  if (calibrationDataFlag) {
+    unsigned short recasts_left = 1;  // leave one recast for the data
+    Model data_diff_model = original_model(recasts_left);
+    Response residual_resp = data_diff_model.current_response();
+    data_difference_core(bestResponseArray.front(), residual_resp);
+    fn_vals_star = residual_resp.function_values(); 
+  }
+  else 
+    fn_vals_star = bestResponseArray.front().function_values();
+
+  // first calculate the estimate of sigma-squared.
   for (i=0; i<numLeastSqTerms; i++)
     sse_total += (fn_vals_star[i]*fn_vals_star[i]);
   sigma_sq_hat = sse_total/dof;
