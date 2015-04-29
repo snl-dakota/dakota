@@ -204,7 +204,7 @@ void LeastSq::print_results(std::ostream& s)
     // residuals, perhaps most useful to the user
     unsigned short recasts_left = 1;  // leave one recast for the data
     Model data_diff_model = original_model(recasts_left);
-    Response residual_resp = data_diff_model.current_response();
+    Response residual_resp(data_diff_model.current_response().copy());
     data_difference_core(bestResponseArray.front(), residual_resp);
     const RealVector& resid_fns = residual_resp.function_values(); 
 
@@ -489,7 +489,7 @@ void LeastSq::get_confidence_intervals()
   if (calibrationDataFlag) {
     unsigned short recasts_left = 1;  // leave one recast for the data
     Model data_diff_model = original_model(recasts_left);
-    Response residual_resp = data_diff_model.current_response();
+    Response residual_resp(data_diff_model.current_response().copy());
     data_difference_core(bestResponseArray.front(), residual_resp);
     fn_vals_star = residual_resp.function_values(); 
   }
