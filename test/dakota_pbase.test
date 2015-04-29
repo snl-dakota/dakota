@@ -2893,6 +2893,13 @@ Test Number 3 succeeded
                       2.5014413312e+00
 <<<<< Best log posterior       =
                      -3.0545204301e+01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 1740 total (1740 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.8622938341e+07
+                      2.5041462548e+00
+<<<<< Best log posterior       =
+                     -2.3649305524e+01
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
