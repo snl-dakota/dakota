@@ -34,7 +34,7 @@ Optimizer* Optimizer::optimizerInstance(NULL);
 Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
   Minimizer(problem_db, model),
   // initial value from Minimizer as accounts for fields and transformations
-  numObjectiveFns(numUserPrimaryFns)
+  numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {
   optimizationFlag = true; // default; may be overridden below
 
