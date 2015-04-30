@@ -225,8 +225,12 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // so that any bounds modifications at the strategy layer (e.g., 
   // BranchBndStrategy, SurrBasedOptStrategy) are properly captured.
   if (bound_constr_flag) {
+    RealVector optpp_lbounds(Teuchos::Copy, lower_bounds.values(),
+			     lower_bounds.length());
+    RealVector optpp_ubounds(Teuchos::Copy, upper_bounds.values(),
+			     upper_bounds.length());
     OPTPP::Constraint bc
-      = new OPTPP::BoundConstraint(num_cv, lower_bounds, upper_bounds);
+      = new OPTPP::BoundConstraint(num_cv, optpp_lbounds, optpp_ubounds);
     constraint_array.append(bc);
   }
 
@@ -242,15 +246,25 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   if (num_lin_con) {
 
     if (num_lin_ineq_con){
-      OPTPP::Constraint li = new OPTPP::LinearInequality(lin_ineq_coeffs,
-							 lin_ineq_l_bnds,
-							 lin_ineq_u_bnds);
+      RealMatrix optpp_lin_ineq_coeffs(Teuchos::Copy, lin_ineq_coeffs,
+				       num_lin_ineq_con, init_pt.length());
+      RealVector optpp_lin_ineq_lbnds(Teuchos::Copy, lin_ineq_l_bnds.values(),
+				      num_lin_ineq_con);
+      RealVector optpp_lin_ineq_ubnds(Teuchos::Copy, lin_ineq_u_bnds.values(),
+				      num_lin_ineq_con);
+      OPTPP::Constraint li = new OPTPP::LinearInequality(optpp_lin_ineq_coeffs,
+							 optpp_lin_ineq_lbnds,
+							 optpp_lin_ineq_ubnds);
       constraint_array.append(li);
     }
 
     if (num_lin_eq_con) {
-      OPTPP::Constraint le = new OPTPP::LinearEquation(lin_eq_coeffs,
-						       lin_eq_targets);
+      RealMatrix optpp_lin_eq_coeffs(Teuchos::Copy, lin_eq_coeffs,
+				     num_lin_eq_con, init_pt.length());
+      RealVector optpp_lin_eq_targets(Teuchos::Copy, lin_eq_targets.values(),
+				      num_lin_eq_con);
+      OPTPP::Constraint le = new OPTPP::LinearEquation(optpp_lin_eq_coeffs,
+						       optpp_lin_eq_targets);
       constraint_array.append(le);
     }
   }
