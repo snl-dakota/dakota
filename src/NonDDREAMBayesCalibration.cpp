@@ -385,11 +385,20 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
     }
   }
   else {
+    RealVector total_residuals( NonDDREAMInstance->expData.num_total_exppoints() );
+    int cntr = 0;
     for (i=0; i<num_exp; i++) {
-      RealVector residuals; 
-      NonDDREAMInstance->expData.form_residuals_deprecated(curr_resp,i,residuals);
-      result += NonDDREAMInstance->expData.apply_covariance(residuals, i);    
+      RealVector residuals;
+      NonDDREAMInstance->expData.form_residuals_deprecated(curr_resp, i, residuals);
+      copy_data_partial( residuals, 0, residuals.length(), total_residuals,
+			 cntr );
+      cntr += residuals.length();
     }
+    if (NonDDREAMInstance->expData.variance_active()){
+      for (i=0; i<num_exp; i++)
+  	result += NonDDREAMInstance->expData.apply_covariance(total_residuals, i);	
+    }else
+      result = total_residuals.dot(total_residuals);
     // replace with data_difference core which needs to be raised to expData
   }
 

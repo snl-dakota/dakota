@@ -212,18 +212,38 @@ public:
   void scale_residuals( Response& residual_response, ShortArray &total_asv );
 
   /// Build the hessian of the ssr from residuals, function gradients and
-  /// function hessians
-  RealSymMatrix build_hessian_of_sum_square_residuals(const Response& resp,
-						      bool gradients_only);
+  /// function hessians based on the response's active set request vector
+  void build_hessian_of_sum_square_residuals(const Response& resp,
+					     RealSymMatrix &ssr_hessian);
+  /// Build the hessian of the ssr from residuals, function gradients and
+  /// function hessians using the passed active set request vector (overrides
+  /// the response's request vector)
+  void build_hessian_of_sum_square_residuals(const Response& resp,
+					     const ShortArray& asrv,
+					     RealSymMatrix &ssr_hessian);
 
   /// Update the hessian of ssr with the values from the hessian associated
   /// with a single experiment
   void build_hessian_of_sum_square_residuals_from_response( 
-						     const Response& resp, 
-						     int exp_ind,
-						     RealSymMatrix &ssr_hessian,
-						     bool initialize_hessian,
-						     bool gradients_only);
+						    const Response& resp, 
+						    const ShortArray& asrv,
+						    int exp_ind,
+						    RealSymMatrix &ssr_hessian);
+
+  /** \brief Construct the hessian of the sum of squares of residuals
+   *  
+   * \param func_hessians A list of matrices containing the Hessians of the 
+   * function elements in the residual vector
+   * \param func_gradients A matrix containing the gradients of the
+   * residual vector
+   * \param residuals A vector of residuals (mismatch between experimental data
+   * and the corresponding function values
+   * \param asrv The active set request vector
+   */  
+  void build_hessian_of_sum_square_residuals_from_function_data(
+    const RealSymMatrixArray &func_hessians, 
+    const RealMatrix &func_gradients, const RealVector &residuals,
+    RealSymMatrix &ssr_hessian, const ShortArray& asrv);
 
 private:
 
@@ -331,7 +351,8 @@ private:
 
   /// Length of each experiment
   IntVector experimentLengths;
-
+  /// function index offsets for individual experiment data sets
+  IntVector expOffsets;
 };
 
 } // namespace Dakota

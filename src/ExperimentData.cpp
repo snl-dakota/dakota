@@ -93,6 +93,7 @@ void ExperimentData::initialize(const StringArray& variance_types,
     {
       experimentLengths.sizeUninitialized(1);
       experimentLengths[0] = srd.num_functions();
+      expOffsets.size(1); // init to 0
     }
 }
 
@@ -352,6 +353,11 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
 
   // store the lengths (number of functions) of each experiment
   per_exp_length(experimentLengths);
+  size_t i, num_exp = allExperiments.size();
+  expOffsets.sizeUninitialized(num_exp);
+  expOffsets(0) = 0;
+  for (i=1; i<num_exp; i++) 
+    expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
 
   // TODO: exists extra data in scalar_data_stream
 
@@ -707,9 +713,7 @@ bool ExperimentData::interpolate_flag()
 
 RealVector ExperimentData::
 residuals_view( const RealVector& residuals, size_t experiment ){
-  int exp_offset = 0;
-  if ( experiment > 0 ) 
-    exp_offset = experimentLengths[experiment-1];
+  int exp_offset = expOffsets[experiment];
   RealVector exp_resid(Teuchos::View, residuals.values()+exp_offset,
 		       experimentLengths[experiment]);
   return exp_resid;
@@ -720,9 +724,7 @@ residuals_view( const RealVector& residuals, size_t experiment ){
 /// all experiments
 RealMatrix ExperimentData::
 gradients_view( const RealMatrix &gradients, size_t experiment){
-  int exp_offset = 0;
-  if ( experiment > 0 ) 
-    exp_offset = experimentLengths[experiment-1];
+  int exp_offset = expOffsets[experiment];
   RealMatrix exp_grads(Teuchos::View, gradients, gradients.numRows(),
 		       experimentLengths[experiment], 0, exp_offset );
   return exp_grads;
@@ -734,15 +736,15 @@ gradients_view( const RealMatrix &gradients, size_t experiment){
 RealSymMatrixArray ExperimentData::
 hessians_view( const RealSymMatrixArray &hessians, 
 	       size_t experiment ){
-  int num_hess = experimentLengths[experiment];
-  int exp_offset = 0;
-  if ( experiment > 0 ) 
-    exp_offset = experimentLengths[experiment-1];
+  int num_hess = experimentLengths[experiment],
+    exp_offset = expOffsets[experiment];
   RealSymMatrixArray exp_hessians( num_hess );
-  size_t i, cntr;
-  for (i=0,cntr=0; i<num_hess; ++i,++cntr)
-    exp_hessians[i] = RealSymMatrix(Teuchos::View, hessians[cntr],
-				    hessians[cntr].numRows());
+  if ( !hessians.empty() ){
+    for (size_t i=0; i<num_hess; ++i,++exp_offset)
+      if (hessians[exp_offset].numRows()) // else leave exp_hessians[i] empty
+	exp_hessians[i] = RealSymMatrix(Teuchos::View, hessians[exp_offset],
+					hessians[exp_offset].numRows());
+  }
   return exp_hessians;
 }
 
@@ -1002,9 +1004,6 @@ scale_residuals( Response& residual_response, ShortArray &total_asv ){
     // is false as a copy or view of weighted hess is not made, it is instead
     // just empty. Confirm with BMA
 
-    weighted_resid.print(std::cout);
-    weighted_grad.print(std::cout);
-
     //Todo: BMA/JDJ Only perform copy of resid, grads or hess if covariance
     //matrix was applied to that data
     copy_field_data(weighted_resid, weighted_grad, weighted_hess, 
@@ -1106,62 +1105,53 @@ recover_model(size_t num_pri_fns, RealVector& best_fns) const
     best_fns[i] += experiment0.function_value(i);
 }
 
-RealSymMatrix ExperimentData::
+void ExperimentData::
 build_hessian_of_sum_square_residuals( const Response& resp, 
-				       bool gradients_only )
+				       RealSymMatrix &ssr_hessian )
 {
-  RealSymMatrix ssr_hessian;
-  const ShortArray &asrv = resp.active_set_request_vector();
-  // following assumse asrv are all the same
-  Cout << gradients_only << "\n";
+  build_hessian_of_sum_square_residuals( resp, resp.active_set_request_vector(),
+					 ssr_hessian);
+}
 
-  if (!gradients_only)
-    gradients_only = ( (asrv[0] & 5) != 5 );
-  Cout << gradients_only << "\n";
+void ExperimentData::
+build_hessian_of_sum_square_residuals( const Response& resp, 
+				       const ShortArray& asrv,
+				       RealSymMatrix &ssr_hessian )
+{
+  // initialize ssr_hessian to zero, prior to summing over set of experiments
+  ssr_hessian.shape(resp.active_set().derivative_vector().size());
   size_t residual_resp_offset = 0;
-  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
-    // The following intializes ssr_hessian to zero the first time it is called
-    // then simply adds to the entries
-    build_hessian_of_sum_square_residuals_from_response( resp, exp_ind, 
-							 ssr_hessian, 
-							 exp_ind==0,
-							 gradients_only);
-  }
-  return ssr_hessian;
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
+    // adds to ssr_hessian for each experiment
+    build_hessian_of_sum_square_residuals_from_response( resp, asrv, exp_ind, 
+							 ssr_hessian );
 }
 
 void ExperimentData::
 build_hessian_of_sum_square_residuals_from_response( const Response& resp, 
+						     const ShortArray& asrv,
 						     int exp_ind,
-						     RealSymMatrix &ssr_hessian,
-						     bool initialize_hessian,
-						     bool gradients_only)
+						     RealSymMatrix &ssr_hessian)
 {
   const RealSymMatrixArray &func_hessians = resp.function_hessians();
   const RealMatrix &func_gradients = resp.function_gradients();
   const RealVector &residuals = resp.function_values();
-  const ShortArray &asrv = resp.active_set_request_vector();
   
-  bool apply_covariance = false;
-  if ( ( variance_type_active(MATRIX_SIGMA) ) ||
-       ( variance_type_active(SCALAR_SIGMA) ) || 
-       ( variance_type_active(DIAGONAL_SIGMA) ) )
-    apply_covariance= true;
+  bool apply_covariance = ( ( variance_type_active(MATRIX_SIGMA) ) ||
+			    ( variance_type_active(SCALAR_SIGMA) ) || 
+			    ( variance_type_active(DIAGONAL_SIGMA) ) );
 
   RealVector scaled_residuals;
   RealMatrix scaled_gradients;
   RealSymMatrixArray scaled_hessians;
-  //if ( apply_covariance ){
-  if ( false ){
+  if ( apply_covariance ){
     apply_covariance_inv_sqrt(residuals, exp_ind, scaled_residuals);
-      apply_covariance_inv_sqrt(func_gradients, exp_ind, scaled_gradients);
-    if ( !gradients_only )
-      apply_covariance_inv_sqrt(func_hessians, exp_ind, scaled_hessians);
+    apply_covariance_inv_sqrt(func_gradients, exp_ind, scaled_gradients);
+    apply_covariance_inv_sqrt(func_hessians, exp_ind, scaled_hessians);
   }else{
     scaled_residuals = residuals_view( residuals, exp_ind );
     scaled_gradients = gradients_view( func_gradients, exp_ind );
-    if ( !gradients_only )
-      scaled_hessians = hessians_view( func_hessians, exp_ind );
+    scaled_hessians = hessians_view( func_hessians, exp_ind );
   }
 
   /*scaled_residuals.print(std::cout);
@@ -1174,8 +1164,35 @@ build_hessian_of_sum_square_residuals_from_response( const Response& resp,
 							    scaled_gradients, 
 							    scaled_residuals,
 							    ssr_hessian,
-							    initialize_hessian,
-							    gradients_only);
+							    asrv);
+}
+
+void ExperimentData::
+build_hessian_of_sum_square_residuals_from_function_data(
+		 const RealSymMatrixArray &func_hessians, 
+		 const RealMatrix &func_gradients,
+                 const RealVector &residuals,
+		 RealSymMatrix &ssr_hessian,
+		 const ShortArray& asrv ){
+  // This function assumes that residuals are r = ( approx - data )
+  // NOT r = ( data - approx )
+
+  // func_gradients is the transpose of the Jacobian of the functions
+  int num_rows = ssr_hessian.numRows(), num_residuals = residuals.length();
+  for ( int k=0; k<num_rows; k++ ) {
+    for ( int j=0; j<=k; j++ ) {
+      Real &hess_jk = ssr_hessian(j,k);
+      for ( int i=0; i<num_residuals; i++ ) {
+	short asrv_i = asrv[i];
+	if (asrv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
+	if ( (asrv_i & 5) == 5 ) hess_jk += residuals[i]*func_hessians[i](j,k);
+      }
+      // we adopt convention and compute hessian of sum square residuals
+      // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
+      // multiplication
+      //hess_jk *= 2.;
+    }
+  }
 }
 
 }  // namespace Dakota

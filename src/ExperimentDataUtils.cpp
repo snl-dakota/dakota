@@ -387,23 +387,29 @@ void CovarianceMatrix::apply_covariance_inverse_sqrt_to_hessian(
     msg += "multiplication.";
     throw( std::runtime_error( msg ) );
   }
-  int num_grads = hessians[0].numRows();
+  int num_rows = hessians[start].numRows();
+  if (!num_rows) return; // if Hessian inactive for this fn, no contribution
   if ( covIsDiagonal_ ) {
     for (int k=0; k<numDOF_; k++){
       // Must only loop over lower or upper triangular part
       // because accessor function (i,j) adjusts both upper and lower triangular
       // part
-      for (int j=0; j<num_grads; j++)
-	for (int i=0; i<=j; i++)
-	  hessians[start+k](i,j) /= std::sqrt( covDiagonal_[k] ); 
+      hessians[start+k] *= 1./std::sqrt( covDiagonal_[k] );
     }
   }else{
+    for (int k=0; k<numDOF_; k++) {
+      if (!hessians[start+k].numRows()) {
+	Cerr << "Error: all Hessians must be defined in CovarianceMatrix::"
+	     << "apply_covariance_inverse_sqrt_to_hessian()." << std::endl;
+	abort_handler(OTHER_ERROR);
+      }
+    }
     RealVector hess_ij_res( numDOF_, false );
     RealVector scaled_hess_ij_res( numDOF_, false );
     // Must only loop over lower or upper triangular part
     // because accessor function (i,j) adjusts both upper and lower triangular
     // part
-    for (int j=0; j<num_grads; j++){
+    for (int j=0; j<num_rows; j++){
       for (int i=0; i<=j; i++){
 	// Extract the ij hessian components for each degree of freedom 
 	for (int k=0; k<numDOF_; k++)
@@ -574,10 +580,11 @@ void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt_to_hessians(
 
   // perform deep copy of hessians
   result.resize( hessians.size() );
-  for (int i=0; i<hessians.size(); i++ ){
-    result[i].shapeUninitialized( hessians[i].numRows() );
-    result[i].assign( hessians[i] );
-  }
+  for (int i=0; i<hessians.size(); i++ )
+    if (hessians[i].numRows()) { // else don't bother to assign empty matrix
+      result[i].shapeUninitialized( hessians[i].numRows() );
+      result[i].assign( hessians[i] );
+    }
   int shift = 0;
   for (int i=0; i<covMatrices_.size(); i++ ){
     int num_dof = covMatrices_[i].num_dof();
@@ -610,81 +617,6 @@ void ExperimentCovariance::get_main_diagonal( RealVector &diagonal ) const {
 			     covMatrices_[i].num_dof() );
       covMatrices_[i].get_main_diagonal( sub_diagonal );
     global_row_num += covMatrices_[i].num_dof();
-  }
-}
-
-void build_hessian_of_sum_square_residuals_from_function_data(
-		 const RealSymMatrixArray &func_hessians, 
-		 const RealMatrix &func_gradients,
-                 const RealVector &residuals,
-		 RealSymMatrix &ssr_hessian,
-		 bool initialize,
-		 bool gradients_only ){
-  // This function assumes that residuals are r = ( approx - data )
-  // NOT r = ( data - approx )
-
-  // func_gradients is the transpose of the Jacobian of the functions
-  int num_rows = func_gradients.numRows(), num_residuals = residuals.length();
-  if ( initialize )
-    ssr_hessian.shape( num_rows ); // initialize to zero
-  for ( int k=0; k<num_rows; k++ ) {
-    for ( int j=0; j<=k; j++ ) {
-      Real &hess_jk = ssr_hessian(j,k);
-      for ( int i=0; i<num_residuals; i++ ) {
-	hess_jk += func_gradients(j,i)*func_gradients(k,i);
-	if (!gradients_only) hess_jk += residuals[i]*func_hessians[i](j,k);
-      }
-      // we adopt convention and compute hessian of sum square residuals
-      // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
-      // multiplication
-      hess_jk *= 2.;
-    }
-  }
-}
-
-// temp hack to stop NonDQUESOBayes code from braking until we can
-// resolve issues with interpolating gradients and hessians of field
-// data
-void build_hessian_of_sum_square_residuals_from_response(
-		 const Response& resp,
-		 RealSymMatrix &ssr_hessian,
-		 bool initialize,
-		 bool gradients_only){
-  const RealSymMatrixArray &func_hessians = resp.function_hessians();
-  const RealMatrix &func_gradients = resp.function_gradients();
-  const RealVector &residuals = resp.function_values();
-  const ShortArray &asrv = resp.active_set_request_vector();
-  build_hessian_of_sum_square_residuals_from_function_data( func_hessians, 
-							    func_gradients, 
-							    residuals,
-							    ssr_hessian,
-							    initialize,
-							    gradients_only);
-}
-
-void build_hessian_of_sum_square_residuals_from_function_gradients(
-		 const RealMatrix &func_gradients, 
-		 RealSymMatrix &ssr_hessian,
-		 bool initialize)
-{
-  // This function assumes that residuals are r = ( approx - data )
-  // NOT r = ( data - approx )
-
-  // func_gradients is the transpose of the Jacobian of the functions
-  int num_rows      = func_gradients.numRows(),
-      num_residuals = func_gradients.numCols();
-  if ( initialize )
-    ssr_hessian.shape( num_rows ); // initialize to zero
-  for ( int k=0; k<num_rows; k++ ) {
-    for ( int j=0; j<=k; j++ ) {
-      Real &hess_jk = ssr_hessian(j,k);
-      for ( int i=0; i<num_residuals; i++ )
-	hess_jk += func_gradients(j,i)*func_gradients(k,i);
-      // we adopt convention and compute hessian of sum square residuals
-      // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
-      // multiplication
-      hess_jk *= 2.;
-    }
   }
 }
 

@@ -437,9 +437,11 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   case  SC_EMULATOR: case      GP_EMULATOR: // no Hessian support yet
     precondRequestValue = 2; break;
   case  NO_EMULATOR:
-    if (mcmcModel.gradient_type() != "none") 
+    // Note: mixed gradients/Hessians are still globally "on", regardless of
+    // mixed computation approach
+    if (mcmcModel.gradient_type() != "none")
       precondRequestValue |= 2; // gradients
-    if (mcmcModel.hessian_type()  != "none") 
+    if (mcmcModel.hessian_type()  != "none")
       precondRequestValue |= 5; // values & Hessians
     break;
   }
@@ -525,21 +527,21 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   RealSymMatrix log_like_hess;
   const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
-  if (precondRequestValue & 4) { 
+  if (precondRequestValue & 4) {
     // try to use full misfit Hessian; fall back if indefinite
-    log_like_hess = expData.build_hessian_of_sum_square_residuals(emulator_resp,
-								  false);
+    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_like_hess);
     bool ev_truncation =
       get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
     if (ev_truncation) { // fallback to Gauss-Newton
-      log_like_hess = 
-	expData.build_hessian_of_sum_square_residuals(emulator_resp,true);
+      ShortArray asrv_override(numFunctions, 2); // override asrv in response
+      expData.build_hessian_of_sum_square_residuals(emulator_resp,
+						    asrv_override,
+						    log_like_hess);
       get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
     }
   }
-  else { 
-    log_like_hess = 
-      expData.build_hessian_of_sum_square_residuals(emulator_resp,true);
+  else {
+    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_like_hess);
     get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
   }
 
@@ -1332,14 +1334,21 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
     }
   }
   else {
-    RealVector residuals;
+    RealVector total_residuals( NonDQUESOInstance->expData.num_total_exppoints() );
+    int cntr = 0;
     for (i=0; i<num_exp; i++) {
+      RealVector residuals;
       NonDQUESOInstance->expData.form_residuals_deprecated(resp, i, residuals);
-      if (NonDQUESOInstance->expData.variance_active())
-	result += NonDQUESOInstance->expData.apply_covariance(residuals, i);
-      else
-	result += residuals.dot(residuals);
+      copy_data_partial( residuals, 0, residuals.length(), total_residuals,
+			 cntr );
+      cntr += residuals.length();
     }
+    if (NonDQUESOInstance->expData.variance_active()){
+      for (i=0; i<num_exp; i++) 
+  	result += NonDQUESOInstance->expData.apply_covariance(total_residuals, i);	
+    }else
+      result = total_residuals.dot(total_residuals);
+
     /*ShortArray total_asv;
     bool interrogate_field_data = 
       ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
