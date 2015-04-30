@@ -538,9 +538,14 @@ void test_linear_interpolate_1d_no_extrapolation()
   for ( int i=0; i<num_sim_pts; i++)
     sim_vals[i] = 0.5*(3.*std::pow(sim_pts(0,i),2)-1.);
 
+  // dummy objects to satisfy API
+  RealMatrix sim_grads, interp_grads;
+  RealSymMatrixArray sim_hessians, interp_hessians;
+
   // Interpolate the simulation data onto the coordinates of the field data
   RealVector interp_vals;
-  linear_interpolate_1d( sim_pts, sim_vals, field_pts, interp_vals );
+  linear_interpolate_1d( sim_pts, sim_vals, sim_grads, sim_hessians,
+			 field_pts, interp_vals, interp_grads, interp_hessians );
   interp_vals -= field_vals;
 
   Real diff_array[] = {-2.16574074074074e-1,1.8e-1,3.91261574074074e-1,
@@ -575,9 +580,14 @@ void test_linear_interpolate_1d_with_extrapolation()
   for ( int i=0; i<num_sim_pts; i++)
     sim_vals[i] = 0.5*(3.*std::pow(sim_pts(0,i),2)-1.);
 
+  // dummy objects to satisfy API
+  RealMatrix sim_grads, interp_grads;
+  RealSymMatrixArray sim_hessians, interp_hessians;
+
   // Interpolate the simulation data onto the coordinates of the field data
   RealVector interp_vals;
-  linear_interpolate_1d( sim_pts, sim_vals, field_pts, interp_vals );
+  linear_interpolate_1d( sim_pts, sim_vals, sim_grads, sim_hessians, field_pts, 
+			 interp_vals, interp_grads, interp_hessians );
   interp_vals -= field_vals;
 
   Real diff_array[] = {-7.38425925925926e-1,1.8e-1,3.91261574074074e-1,
