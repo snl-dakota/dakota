@@ -183,6 +183,10 @@ public:
   void form_residuals_deprecated(const Response& sim_resp, size_t experiment, 
 				 RealVector& residuals); 
   
+  /// recover original model from the first experiment block in a full
+  /// set of residuals; works in no interpolation case only (sizes same)
+  void recover_model(size_t num_pri_fns, RealVector& model_fns) const;
+
   /// flag for interpolation.  If 0, no interpolation. 
   /// If 1, interpolate. 
   bool interpolate_flag();

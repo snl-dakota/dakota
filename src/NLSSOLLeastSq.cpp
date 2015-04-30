@@ -222,18 +222,18 @@ void NLSSOLLeastSq::minimize_residuals()
   // (not the final fn. eval) since NLSSOL performs this assignment internally 
   // prior to exiting (see "Subroutine npsol" section of NPSOL manual).
   bestVariablesArray.front().continuous_variables(local_des_vars);
-  RealVector best_fns(numFunctions);
-  //copy_data_partial(local_lsq_vals, best_fns, 0);
-  std::copy(local_lsq_vals.values(), local_lsq_vals.values() + numLeastSqTerms,
-            best_fns.values());
-  if (numNonlinearConstraints) {
-    //copy_data_partial(local_c_vals, best_fns, numLeastSqTerms);
-    std::copy(local_c_vals.values(),
-              local_c_vals.values() + nlnConstraintArraySize,
-              best_fns.values() + numLeastSqTerms);
-  }
-  if (!calibrationDataFlag)  // else local_recast_retrieve
-    bestResponseArray.front().function_values(best_fns);
+
+  // If no interpolation, numUserPrimaryFns <= numLsqTerms.  Copy the
+  // first block of inbound model fns to best.  If data transform,
+  // will be further transformed back to user space (weights, scale,
+  // data) if needed in LeastSq::post_run
+  RealVector best_fns = bestResponseArray.front().function_values_view();
+  // take care with each copy to not resize the best_fns
+  if ( !(calibrationDataFlag && expData.interpolate_flag()) )
+    copy_data_partial(local_lsq_vals, 0, (int)numUserPrimaryFns, best_fns, 0);
+  if (numNonlinearConstraints)
+    copy_data_partial(local_c_vals, 0, (int)nlnConstraintArraySize, best_fns,
+		      (int)numUserPrimaryFns);
 
   /*
   // For better post-processing, could append fort.9 to dakota.out line
@@ -250,8 +250,6 @@ void NLSSOLLeastSq::minimize_residuals()
   */
   Cout << "\nNOTE: see Fortran device 9 file (fort.9 or ftn09)"
        << "\n      for complete NLSSOL iteration history." << std::endl;
-
-  get_confidence_intervals();
 
   // restore in case of recursion
   nlssolInstance = prev_nls_instance;

@@ -1009,4 +1009,23 @@ form_residuals_deprecated(const Response& sim_resp, size_t experiment,
 }
 
 
+/** Add the data back to the residual to recover the model, for use in
+    surrogated-based LSQ where DB lookup will fail (need approx eval
+    DB).  best_fns contains primary and secondary responses */
+void ExperimentData::
+recover_model(size_t num_pri_fns, RealVector& best_fns) const
+{
+  if (interpolateFlag) {
+    Cerr << "Error: cannot recover model from residuals when interpolating.\n";
+    abort_handler(-1);
+  }
+  const Response& experiment0 = allExperiments[0];
+  if (num_pri_fns != experiment0.num_functions()) {
+    Cerr << "Error: incompatible sizes in recover_model()\n";
+    abort_handler(-1);
+  }
+  for (size_t i=0; i<num_pri_fns; ++i)
+    best_fns[i] += experiment0.function_value(i);
+}
+
 }  // namespace Dakota

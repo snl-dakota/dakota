@@ -478,12 +478,15 @@ void NL2SOLLeastSq::minimize_residuals()
 	calcr(&n, &p, x, &i, q.RC[0].r, 0, &q, 0);
 	R = q.RC[0].r;
 	}
-  RealVector y(n);
-  copy_data(R, n, y);
-  if (!calibrationDataFlag)  // else local_recast_retrieve
-    bestResponseArray.front().function_values(y);
+  // If no interpolation, numUserPrimaryFns <= numLsqTerms.  Copy the
+  // first block of inbound model fns to best.  If data transform,
+  // will be further transformed back to user space (weights, scale,
+  // data) if needed in LeastSq::post_run
+  if ( !(calibrationDataFlag && expData.interpolate_flag()) )
+    for (size_t i=0; i<numUserPrimaryFns; ++i)
+      bestResponseArray.front().function_value(R[i], i);
+
   free(x);
-  get_confidence_intervals();
 
   nl2solInstance = prev_instance; // restore in case of recursion
 }

@@ -558,14 +558,16 @@ void SNLLLeastSq::post_run(std::ostream& s)
   ShortArray search_asv(num_user_fns, 1);
   for (size_t i=numUserPrimaryFns; i<num_user_fns; ++i)
     search_asv[i] = 0; // don't need constr from DB due to getConstraintValue()
-  activeSet.request_vector(search_asv);
+  // take care to not resize activeSet due to post_run
+  ActiveSet search_set(activeSet);
+  search_set.request_vector(search_asv);
 
   // The retrieved primary response will be unweighted and unscaled
   PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-    iteratedModel.interface_id(), bestVariablesArray.front(), activeSet);
+    iteratedModel.interface_id(), bestVariablesArray.front(), search_set);
   if (cache_it == data_pairs.get<hashed>().end()) {
     // This can occur in model calibration under uncertainty using nested
-    // models, so make this non-fatal.
+    // models, or surrogate models so make this non-fatal.
     Cerr << "Warning: failure in recovery of final least squares terms."
          << std::endl;
     //abort_handler(-1);
@@ -573,7 +575,6 @@ void SNLLLeastSq::post_run(std::ostream& s)
   else // unscaled -> user/native
     copy_data_partial(cache_it->response().function_values(), (size_t)0,
 		      numUserPrimaryFns, best_fns, (size_t)0);
-  activeSet.request_values(1); // restore
 
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.
   // Therefore, reorder the constraint values, unscale them, and store them.

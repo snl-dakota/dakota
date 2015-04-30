@@ -200,6 +200,10 @@ void LeastSq::print_results(std::ostream& s)
   // data, scaling, or weighting)
   const RealVector& best_fns = bestResponseArray.front().function_values();
   if (calibrationDataFlag) {
+
+    // TODO: approximate models with interpolation of field data may
+    // not have recovered the correct best residuals
+
     // first use the data difference model to print data differenced
     // residuals, perhaps most useful to the user
     unsigned short recasts_left = 1;  // leave one recast for the data
@@ -400,17 +404,29 @@ void LeastSq::post_run(std::ostream& s)
     abort_handler(-1);
   }
 
+  // transformations must precede confidence interval calculation
   for (size_t point_index = 0; point_index < num_points; ++point_index) {
     
     Variables& best_vars = bestVariablesArray[point_index];
     Response&  best_resp = bestResponseArray[point_index];
 
-    if (calibrationDataFlag) {
-      // don't try to uncast with data transforms and interpolation...
+    /// transform variables back to inbound model, before any potential lookup
+    if (varsScaleFlag)
+      best_vars.continuous_variables(
+        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
+		   cvScaleMultipliers, cvScaleOffsets));
+
+    if (calibrationDataFlag && expData.interpolate_flag()) {
+      // When interpolation is active, best we can do is a lookup.
+      // This will fail for surrogate models; need approx eval DB
       local_recast_retrieve(best_vars, best_resp);
     }
     else {
-      // Reverse transformations on each point in best data: unweight, unscale
+      // Derived classes populated best response with first
+      // experiment's block of residuals as seen by the
+      // solver. Reverse transformations on each point in best data:
+      // unweight, unscale, restore data
+
       if (weightFlag) {
 	const RealVector& lsq_weights
 	  = iteratedModel.subordinate_model().primary_response_fn_weights();
@@ -418,12 +434,10 @@ void LeastSq::post_run(std::ostream& s)
 	for (size_t i=0; i<numLeastSqTerms; i++)
 	  best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
       }
-
-      if (varsScaleFlag)
-	best_vars.continuous_variables(
-          modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		     cvScaleMultipliers, cvScaleOffsets));
   
+      // unscaling should be based on correct size in data difference case
+      // scaling does not work in conjunction with data diff...
+
       if (primaryRespScaleFlag || secondaryRespScaleFlag) {
 	Response tmp_response = best_resp.copy();
 	if (primaryRespScaleFlag || 
@@ -443,9 +457,18 @@ void LeastSq::post_run(std::ostream& s)
 	}
       }
 
+      if (calibrationDataFlag) {
+	// restore residuals to original model's primary responses
+	// (leaving any constraints)
+	RealVector resid_fns = best_resp.function_values_view();
+	expData.recover_model(numUserPrimaryFns, resid_fns);
+      }
     }
     
   }
+
+  // confidence interval calculation requires best_response
+  get_confidence_intervals();
 
   Minimizer::post_run(s);
 }
@@ -483,10 +506,14 @@ void LeastSq::get_confidence_intervals()
   Teuchos::LAPACK<int, Real> la;
 
   // The CI should be based on the residuals the solver worked on
-  // (including data differences), but it only stored in the user
-  // model space
+  // (including data differences), but they are only stored in the
+  // user model space
   RealVector fn_vals_star;
   if (calibrationDataFlag) {
+    // TODO: when interpolating field data, best may not be populated
+
+    // NOTE: This doesn't assume current_response() contains best;
+    // just uses it as a temporary object for computing the residuals
     unsigned short recasts_left = 1;  // leave one recast for the data
     Model data_diff_model = original_model(recasts_left);
     Response residual_resp(data_diff_model.current_response().copy());
