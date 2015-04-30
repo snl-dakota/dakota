@@ -27,8 +27,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
-  calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
-		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
+  calibrationData(probDescDB.get_bool("responses.calibration_data") ||
+    !probDescDB.get_string("responses.scalar_data_filename").empty()),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
   varianceTypesRead(probDescDB.get_sa("responses.variance_type")),
@@ -39,15 +39,6 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   discreteRealConfigStart(0)
 { 
   bool found_error = false;
-
-  // input spec may get expanded to allow data via input file, but
-  // currently data file is required
-  //if (!calibrationDataFlag) {
-  //  Cerr << "\nError (NonDCalibration): Bayesian methods require calibration "
-//	 << "data file." << std::endl;
- //   found_error = true;
- // }
-
   if (numExpConfigVars > 0) {
 
     // would need to trap error if all_variables were later allowed

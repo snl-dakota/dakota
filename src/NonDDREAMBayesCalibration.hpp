@@ -96,7 +96,7 @@ protected:
   Real likelihoodScale;
 
   /// flag to indicate if the sigma terms should be calibrated (default true)
-  bool calibrateSigmaFlag;
+  bool calibrateSigma;
 
   /// lower bounds on calibrated parameters
   RealVector paramMins;

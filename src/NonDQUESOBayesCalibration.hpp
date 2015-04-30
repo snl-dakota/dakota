@@ -171,7 +171,7 @@ protected:
   /// scale factor for likelihood; deprecated
   Real likelihoodScale;
   /// flag to indicated if the sigma terms should be calibrated (default true)
-  bool calibrateSigmaFlag;
+  bool calibrateSigma;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
   /// local Response in which to store computed residuals

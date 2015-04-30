@@ -95,7 +95,7 @@ NonDDREAMBayesCalibration::
 NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
-  calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma")),
+  calibrateSigma(probDescDB.get_bool("method.nond.calibrate_sigma")),
   numChains(probDescDB.get_int("method.dream.num_chains")),
   numCR(probDescDB.get_int("method.dream.num_cr")),
   crossoverChainPairs(probDescDB.get_int("method.dream.crossover_chain_pairs")),
@@ -151,13 +151,6 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Cout << "WARN (DREAM): jump_step < 1, resetting to 5 (default)." 
 	 << std::endl;
   }
-
-  //if (calibrateSigmaFlag) {
-  //  Cerr << "\nError: calibration of sigma temporarily unsupported."
-  //	 << std::endl;
-  //  abort_handler(-1);
-  //}
-
 }
 
 
@@ -174,7 +167,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // diagnostic information
   Cout << "INFO (DREAM): Standardized space " << standardizedSpace << '\n';
   Cout << "INFO (DREAM): Num Samples " << numSamples << '\n';
-  Cout << "INFO (DREAM): Calibrate Sigma Flag " << calibrateSigmaFlag  << '\n';
+  Cout << "INFO (DREAM): Calibrate Sigma " << calibrateSigma  << '\n';
  
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
@@ -199,15 +192,14 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
   bool calc_sigma_from_data = true; // calculate sigma if not provided
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Read data from file " << calibrationDataFlag << '\n';
-  if (calibrationDataFlag)
+  //if (outputLevel > NORMAL_OUTPUT)
+  //  Cout << "Read data from file " << calibrationData << '\n';
+  if (calibrationData)
     expData.load_data("DREAM Bayes Calibration", calc_sigma_from_data);
-  else {
-    Cout << "No experiment data from files " << '\n';
-    Cout << "DREAM is assuming the simulation is returning the residuals" << '\n';
-  }
-  if (calibrateSigmaFlag && !calibrationDataFlag) {
+  else
+    Cout << "No experiment data from files\n"
+	 << "DREAM is assuming the simulation is returning the residuals\n";
+  if (calibrateSigma && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error "
          << "but have not provided experimental data information."<<std::endl;
     abort_handler(METHOD_ERROR);
@@ -217,11 +209,8 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
   ////////////////////////////////////////////////////////
-  int total_num_params;
-  if (calibrateSigmaFlag) 
-    total_num_params = numContinuousVars + numFunctions;
-  else 
-    total_num_params = numContinuousVars; 
+  int total_num_params = (calibrateSigma) ?
+    numContinuousVars + numFunctions : numContinuousVars; 
   
   // resize, initializing to zero
   paramMins.size(total_num_params);
@@ -254,8 +243,8 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
     }
   }
   // the parameter domain will now be expanded by sigma terms if 
-  // calibrateSigmaFlag is true
-  if (calibrateSigmaFlag) {
+  // calibrateSigma is true
+  if (calibrateSigma) {
     RealVector covariance_diagonal;
     // Todo: pass in corrrect experiment number as second argument
     expData.get_main_diagonal( covariance_diagonal, 0 );
@@ -268,7 +257,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
     }
   }
  
-  Cout << "INFO (DREAM): calibrateSigmaFlag  " << calibrateSigmaFlag << '\n';
+  Cout << "INFO (DREAM): calibrateSigma  " << calibrateSigma << '\n';
   Cout << "INFO (DREAM): paramMins  " << paramMins << '\n';
   Cout << "INFO (DREAM): paramMaxs  " << paramMaxs << '\n';
   
@@ -373,11 +362,11 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
   // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
   // matrix of standard deviations.  Thus, we just have to iterate over this to 
   // calculate the likelihood. 
-  if (NonDDREAMInstance->calibrationDataFlag == false) {
+  if (!NonDDREAMInstance->calibrationData) {
     for (j=0; j<num_funcs; j++)
       result += std::pow(fn_vals[j],2.);
   }
-  else if (NonDDREAMInstance->calibrateSigmaFlag) {
+  else if (NonDDREAMInstance->calibrateSigma) {
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDDREAMInstance->expData.all_data(i);
       for (j=0; j<num_funcs; j++)
@@ -429,10 +418,9 @@ problem_size(int &chain_num, int &cr_num, int &gen_num, int &pair_num,
   cr_num    = NonDDREAMInstance->numCR;
   gen_num   = NonDDREAMInstance->numGenerations;
   pair_num  = NonDDREAMInstance->crossoverChainPairs;
-  if (NonDDREAMInstance->calibrateSigmaFlag)
-    par_num = NonDDREAMInstance->numFunctions + NonDDREAMInstance->numContinuousVars; 
-  else 
-    par_num   = NonDDREAMInstance->numContinuousVars;
+  par_num   = (NonDDREAMInstance->calibrateSigma) ?
+    NonDDREAMInstance->numFunctions + NonDDREAMInstance->numContinuousVars :
+    NonDDREAMInstance->numContinuousVars;
 
   return;
 }

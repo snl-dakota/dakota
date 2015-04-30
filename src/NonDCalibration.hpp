@@ -58,8 +58,8 @@ protected:
 
   // TODO: Update from expData to scalarData and handle field data
 
-  /// whether there is calibration data present
-  bool calibrationDataFlag;
+  /// flag indicating whether there is calibration data present
+  bool calibrationData;
 
   /// number of experiments to read from data file
   size_t numExperiments;

@@ -216,7 +216,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
-  calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma")),
+  calibrateSigma(probDescDB.get_bool("method.nond.calibrate_sigma")),
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
@@ -227,29 +227,19 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
  
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
-  bool calc_sigma_from_data = calibrateSigmaFlag; // calculate sigma if not provided
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Read data from file " << calibrationDataFlag << '\n';
-  if (calibrationDataFlag)
-    expData.load_data("QUESO Bayes Calibration", calc_sigma_from_data);
+  //if (outputLevel > NORMAL_OUTPUT)
+  //  Cout << "Read data from file " << calibrationData << '\n';
+  if (calibrationData)
+    expData.load_data("QUESO Bayes Calibration", calibrateSigma);
   else
     Cout << "No experiment data from files\n"
 	 << "QUESO is assuming the simulation is returning the residuals\n";
-  if (calibrateSigmaFlag && !calibrationDataFlag) {
+  if (calibrateSigma && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
          << "but have not provided experimental data information."<<std::endl;
      //calibration of sigma temporarily unsupported."<<std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  // for now, assume that if you are reading in any experimental 
-  // standard deviations, you do NOT want to calibrate sigma terms
-  // BMA TODO: this is wrong logic: need to check for != "none"
-  // Also, need to sync up with data available in the covariance class.
-  if (!varianceTypesRead.empty() && !calibrateSigmaFlag)
-    calibrateSigmaFlag = false;
-  // For now, set calcSigmaFlag to true: this should be read from input
-  //calibrateSigmaFlag = true;
 }
 
 
@@ -277,37 +267,38 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   init_parameter_domain();
 
-  // Size our Queso covariance matrix
+  // Size our Queso covariance matrix and initialize trailing diagonal if
+  // calibrating sigma terms
   proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+  if (calibrateSigma)
+    for (int i=0; i<numFunctions; i++)
+      (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = 
+        std::sqrt(expData.scalar_sigma_est(i));
   // initialize proposal covariance (must follow parameter domain init)
+  // This is the leading sub-matrix in the case of calibrating sigma terms
   if (proposalCovarType == "user") // either filename OR data values defined
     user_proposal_covariance(proposalCovarInputType, proposalCovarData,
 			     proposalCovarFilename);
   else if (proposalCovarType == "prior")
     prior_proposal_covariance(); // prior selection or default for no emulator
 
-  if (calibrateSigmaFlag){
-    for (int i=0; i<numFunctions; i++) {
-      (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = 
-        std::sqrt(expData.scalar_sigma_est(i));
-    }
-  }
   if (proposalCovarType == "user" || proposalCovarType == "prior") {
     QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
     test_mat -= *proposalCovMatrix;
     if( test_mat.normMax() > 1.e-14 )
       throw std::runtime_error("Queso covariance matrix is not symmetric.");
 
-    // validate that provided data is a valid covariance matrix - test PD part of SPD
+    // validate that provided data is a valid covariance matrix -
+    // test PD part of SPD
     test_mat = *proposalCovMatrix;
     int ierr = test_mat.chol();
     if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
       throw std::runtime_error("Queso covariance data is not SPD.");
   }
-  if (outputLevel > NORMAL_OUTPUT ){ 
+  if (outputLevel > NORMAL_OUTPUT ) { 
     Cout << "Proposal Covariance " << '\n';
-    proposalCovMatrix->print(std::cout);
-    std::cout << std::endl;
+    proposalCovMatrix->print(Cout);
+    Cout << std::endl;
   }
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
@@ -456,7 +447,7 @@ void NonDQUESOBayesCalibration::init_residual_response()
   const Response& resp = mcmcModel.current_response();
   residualResponse = resp.copy(false);  // false: SRD can be shared until resize
   size_t total_residuals = 
-    calibrationDataFlag ? expData.num_total_exppoints() : resp.num_functions();
+    calibrationData ? expData.num_total_exppoints() : resp.num_functions();
   // likelihood needs fn_vals; preconditioning may need derivs
   short request_value_needed = 1 | precondRequestValue;
 
@@ -579,7 +570,7 @@ void NonDQUESOBayesCalibration::run_queso_solver()
   Cout << "Running Bayesian Calibration with QUESO " << mcmcType << " using "
        << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
   //if (outputLevel > NORMAL_OUTPUT)
-  //  Cout << "\n  Calibrate Sigma Flag " << calibrateSigmaFlag << std::endl;
+  //  Cout << "\n  Calibrate Sigma " << calibrateSigma << std::endl;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
@@ -910,7 +901,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 
 void NonDQUESOBayesCalibration::init_parameter_domain()
 {
-  int total_num_params = (calibrateSigmaFlag) ?
+  int total_num_params = (calibrateSigma) ?
     numContinuousVars + numFunctions : numContinuousVars; 
   
   paramSpace.reset(new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
@@ -922,8 +913,8 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     RealRealPair bnds = mcmcModel.continuous_distribution_bounds(i);
     paramMins[i] = bnds.first; paramMaxs[i] = bnds.second;
   }
-  // if calibrateSigmaFlag, the parameter domain is expanded by sigma terms 
-  if (calibrateSigmaFlag) {
+  // if calibrateSigma, the parameter domain is expanded by sigma terms 
+  if (calibrateSigma) {
     //RealVector covariance_diagonal;
     // Todo: pass in corrrect experiment number as second argument
     //expData.get_main_diagonal( covariance_diagonal, 0 );
@@ -971,7 +962,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   else
     for (size_t i=0; i<numContinuousVars; i++)
       (*paramInitials)[i] = init_pt[i];
-  if (calibrateSigmaFlag)
+  if (calibrateSigma)
     for (size_t i=numContinuousVars; i<total_num_params; i++)
       (*paramInitials)[i] = (paramMaxs[i] + paramMins[i]) / 2.;
 
@@ -1308,7 +1299,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   const Response& resp = NonDQUESOInstance->mcmcModel.current_response();
   const RealVector& fn_vals = resp.function_values();
   if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
-    Cout << "input is " << paramValues << "\noutput is " << fn_vals << '\n';
+    Cout << "Likelihood input is " << paramValues
+	 << "\noutput is " << fn_vals << '\n';
 
   // TODO: Update treatment of standard deviations as inference
   // vs. fixed parameters; also advanced use cases of calibrated
@@ -1322,11 +1314,11 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // one, num_fn, or a full num_exp*num_fn matrix of standard deviations.
   // Thus, we just have to iterate over this to calculate the likelihood.
 
-  if (NonDQUESOInstance->calibrationDataFlag == false) {
+  if (!NonDQUESOInstance->calibrationData) {
     for (j=0; j<num_fn; j++)
       result += std::pow(fn_vals[j],2.);
   }
-  else if (NonDQUESOInstance->calibrateSigmaFlag) {
+  else if (NonDQUESOInstance->calibrateSigma) {
     for (i=0; i<num_exp; i++) {
       const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
       for (j=0; j<num_fn; j++)
@@ -1437,6 +1429,12 @@ Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
     if (i+1 < num_cv)
       dist_index = (cv_types[i] == cv_types[i+1]) ? dist_index + 1 : 0;
   }
+
+  // TO DO
+  //if (calibrateSigma) {
+  //  for (i=num_cv; i<total; ++i)
+  //    pdf *= ; // sigma priors
+  //}
   return pdf;
 }
 
