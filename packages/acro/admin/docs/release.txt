@@ -1,0 +1,131 @@
+=======================================
+Acro Software Release Process Checklist
+=======================================
+
+***************************** PLAN ****************************** 
+
+1. Release requested by
+   ___ project manager
+   ___ customer(s)
+   ___ other: __________________________________________________
+
+2. Release motivated by
+   ___ new features
+   ___ bug fixes
+   ___ other: __________________________________________________
+
+3. Release number:
+
+   Acro:                ___
+   Packages:
+     APPSPACK           ___
+     COLIN              ___
+     Coliny             ___
+     GNLP               ___
+     OPT++              ___
+     ParPCX             ___
+     PEBBL              ___
+     PICO               ___
+     TMF                ___
+     UTILIB             ___
+
+4. Subversion revision number: __________________
+
+5. ___ Identify customer(s): ___________________________________
+
+6. ___ Identify or stakeholder(s): _____________________________
+
+7. Dates:
+
+   __________ release components checklist completed, checked in
+
+   __________ release test plan identified, checked in
+
+   __________ submit copyright paperwork
+
+   __________ third party issues identified, checked in
+
+   __________ individual project release checklists, checked in
+
+   __________ configure/install and setup script working
+
+   __________ testing complete
+
+   __________ documentation complete
+
+   __________ customer satisfaction plan created, checked in
+
+   __________ release
+
+9. Release to:
+   ___ internal
+   ___ external
+   ___ specific customer: ______________________________________
+
+10. Release Products
+   ___ Source distributions
+	External distributions:
+	Internal distributions:
+   ___ Executables
+	External distributions:
+	Internal distributions:
+   ___ Documentation
+
+11. Release formats (check all that apply):
+   ___ zip file
+   ___ CD
+   ___ other: __________________________________________________
+
+*****************************  DO ****************************** 
+Initials
+  |
+  V
+
+ ___ Communicate release plan to developers, in particular the
+      dates and components identified in the release components checklist.
+
+ ___ Communicate third party package requirements to third
+         party contacts if necessary.
+
+ ___ Do necessary copyright negotiations for packages
+
+ ___ Update copyright information for third party packages
+
+ ___ Create and check in customer satisfaction plan [customerSatisfaction.txt]
+
+ ___ Create a preliminary release package.
+
+ ___ Complete release plan preparation checklist [releasePreparation.txt]
+
+ ___ Resolve build and test failures.
+
+ ___ Create stable branch
+
+ ___ Test code in stable branch and resolve issues.
+
+***************************** CHECK **************************** 
+
+ ___ Verify that all bugs, features and documentation identified in
+      the PLAN have been resolved.
+
+ ___ Verify that all necessary Release Process Checklists and
+      required attachments have been completed.
+
+***************************** ACT **************************** 
+
+ ___ Create the release branch in the releases/{major}.{minor}.{revision}
+     directory.
+
+ ___ Update the distribution information in the
+     dist/{major}.{minor}.{revision} directory
+     ___ Test results
+     ___ Release documentation
+     ___ Release tarball
+
+ ___ Certify release (project leader), date: ___________________
+
+ ___ Deliver and announce release, date: _______________________
+
+ ___ Update or improve release process if appropriate
+
+ ___ Initiate plan for customer satisfaction, date: ____________

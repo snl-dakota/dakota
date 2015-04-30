@@ -1,0 +1,95 @@
+driver: acro.pebbl
+
+python:
+    - import acro.pebbl
+
+solvers:
+    knapsack:
+        name: knapsack
+    pknapsack1:
+        name: knapsack
+        solver_options: --forceParallel
+        np: 1
+    pknapsack2:
+        name: knapsack
+        np: 2
+    pknapsack4:
+        name: knapsack
+        np: 4
+
+problems:
+    animals.1:
+        optimum:    157
+        data:      ../etc/knapsack/problems/animals.1
+    animals.2:
+        optimum:    152
+        data:       ../etc/knapsack/problems/animals.2
+    nobranch:
+        optimum:    225
+        data:       ../etc/knapsack/problems/nobranch
+    test-data.100.1:
+        optimum:    30571
+        data:       ../etc/knapsack/problems/test-data.100.1
+    test-data.100.2:
+        optimum:    26950
+        data:       ../etc/knapsack/problems/test-data.100.2
+    test-data.100.3:
+        optimum:    29110
+        data:       ../etc/knapsack/problems/test-data.100.3
+    test-data.1000.1:
+        optimum:    273709
+        data:       ../etc/knapsack/problems/test-data.1000.1
+    test-data.1000.2:
+        optimum:    275866
+        data:       ../etc/knapsack/problems/test-data.1000.2
+    test-data.1000.3:
+        optimum:    280115
+        data:       ../etc/knapsack/problems/test-data.1000.3
+    test-data.1000.4:
+        optimum:    277582
+        data:       ../etc/knapsack/problems/test-data.1000.4
+
+suites:
+
+    knapsack:
+        categories:
+            - nightly
+            - smoke
+            - serial
+            - knapsack
+        solvers:
+            knapsack:
+        problems:
+            animals.1:
+            animals.2:
+            nobranch:
+            test-data.100.1:
+            test-data.100.2:
+            test-data.100.3:
+            test-data.1000.1:
+            test-data.1000.2:
+            test-data.1000.3:
+            test-data.1000.4:
+
+    pknapsack:
+        categories:
+            - nightly
+            - smoke
+            - parallel
+            - pknapsack
+        solvers:
+            pknapsack1:
+            pknapsack2:
+            pknapsack4:
+        problems:
+            animals.1:
+            animals.2:
+            nobranch:
+            test-data.100.1:
+            test-data.100.2:
+            test-data.100.3:
+            test-data.1000.1:
+            test-data.1000.2:
+            test-data.1000.3:
+            test-data.1000.4:
+

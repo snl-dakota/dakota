@@ -1,0 +1,49 @@
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: default
+Problem Type: NLP0
+Number of objectives: 1
+Real variables:    3
+Index        Label           Fixed Val       Lower Bound T       Upper Bound T
+    1       _none_              _none_         -Infinity N          Infinity N 
+    2       _none_              _none_         -Infinity N          Infinity N 
+    3       _none_              _none_         -Infinity N          Infinity N 
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0
+TestOptSolver: iter 0 value 29.7 pt 3 : 9.9 9.9 9.9 viol 0
+TestOptSolver: iter 1 value 29.4 pt 3 : 9.8 9.8 9.8 viol 0
+TestOptSolver: iter 2 value 29.1 pt 3 : 9.7 9.7 9.7 viol 0
+TestOptSolver: iter 3 value 28.8 pt 3 : 9.6 9.6 9.6 viol 0
+TestOptSolver: iter 0 value 14.7 pt 3 : 4.9 4.9 4.9 viol 0
+TestOptSolver: iter 1 value 14.4 pt 3 : 4.8 4.8 4.8 viol 0
+TestOptSolver: iter 2 value 14.1 pt 3 : 4.7 4.7 4.7 viol 0
+TestOptSolver: iter 3 value 13.8 pt 3 : 4.6 4.6 4.6 viol 0
+TestOptSolver: iter 4 value 13.5 pt 3 : 4.5 4.5 4.5 viol 0
+TestOptSolver: iter 5 value 13.2 pt 3 : 4.4 4.4 4.4 viol 0
+TestOptSolver: iter 6 value 12.9 pt 3 : 4.3 4.3 4.3 viol 0
+TestOptSolver: iter 7 value 12.6 pt 3 : 4.2 4.2 4.2 viol 0
+TestOptSolver: iter 8 value 12.3 pt 3 : 4.1 4.1 4.1 viol 0
+TestOptSolver: iter 9 value 12 pt 3 : 4 4 4 viol 0
+TestOptSolver: iter 10 value 11.7 pt 3 : 3.9 3.9 3.9 viol 0
+TestOptSolver: iter 11 value 11.4 pt 3 : 3.8 3.8 3.8 viol 0
+TestOptSolver: iter 12 value 11.1 pt 3 : 3.7 3.7 3.7 viol 0
+TestOptSolver: iter 13 value 10.8 pt 3 : 3.6 3.6 3.6 viol 0
+TestOptSolver: iter 14 value 10.5 pt 3 : 3.5 3.5 3.5 viol 0
+TestOptSolver: iter 15 value 10.2 pt 3 : 3.4 3.4 3.4 viol 0
+TestOptSolver: iter 16 value 9.9 pt 3 : 3.3 3.3 3.3 viol 0
+TestOptSolver: iter 0 value 28.5 pt 3 : 9.5 9.5 9.5 viol 0
+TestOptSolver: iter 1 value 28.2 pt 3 : 9.4 9.4 9.4 viol 0
+TestOptSolver: iter 2 value 27.9 pt 3 : 9.3 9.3 9.3 viol 0
+TestOptSolver: iter 3 value 27.6 pt 3 : 9.2 9.2 9.2 viol 0
+TestOptSolver: iter 4 value 27.3 pt 3 : 9.1 9.1 9.1 viol 0
+TestOptSolver: iter 5 value 27 pt 3 : 9 9 9 viol 0
+TestOptSolver: iter 6 value 26.7 pt 3 : 8.9 8.9 8.9 viol 0
+TestOptSolver: iter 7 value 26.4 pt 3 : 8.8 8.8 8.8 viol 0
+TestOptSolver: iter 8 value 26.1 pt 3 : 8.7 8.7 8.7 viol 0
+TestOptSolver: iter 9 value 25.8 pt 3 : 8.6 8.6 8.6 viol 0

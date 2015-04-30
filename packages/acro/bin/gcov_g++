@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+
+# gcov doesn't work if compile directory is different than
+# the directory for the source.  For those cases, search the
+# argument list for -o a/b/foo.o and instead, cd a/b and compile
+# it there.
+# Pico (and probably others) compile and archive things this way.
+
+
+my @com;
+my $arg;
+my $dir = '';
+
+sub checkarg {
+  my $argref = shift;
+  my $dirref = shift;
+# print "check: $$argref\n";
+  if ($$argref =~ m:(.*/)(.+): ) {
+    $$dirref = $1;
+    $$argref = $2;
+  } else {
+    $$dirref = '';
+  }
+# print "check: $$argref, dir: $$dirref\n";
+}
+
+# invoked as g++ or gcc?
+if ($0 =~ /\+\+/) {
+  $com[0] = "g++";
+} else {
+  $com[0] = "gcc";
+}
+
+while ($arg = shift) {
+  if ($arg eq "-o") {
+    push @com, $arg;
+    $arg = shift;
+    checkarg(\$arg , \$dir);
+  } elsif ($arg =~ /^-o(.+)/) {
+    push @com, "-o";
+    $arg = $1;
+    checkarg(\$arg , \$dir);
+  }
+  if ($dir && $arg =~ m:^$dir:) {
+    $arg =~ s/^$dir//;
+  }
+  push @com, $arg;
+}
+
+
+if ("$dir") {
+  print "$0 [Info]: Compiling in $dir\n";
+  exec "(cd $dir ; @com)\n";
+} else {
+  exec "@com\n";
+}
+

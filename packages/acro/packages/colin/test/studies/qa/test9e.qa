@@ -1,0 +1,24 @@
+
+Test9e - response merging
+r1: [ 58:50 ]
+r2: [ 53:50 ]
+Exception caught:
+   AppResponse::merge_responses(): responses have different domain points.
+r1a: [ 158:150 ]
+Merging r1, r1a:
+r1: [ 58:50 158:150 ]
+r1a: [ 58:50 158:150 ]
+Merging r1, (empty) r1b:
+r1: [ 58:50 158:150 ]
+r1b: [ 58:50 158:150 ]
+check computation bypass: 1
+Merging (empty)r1c, r1:
+r1c: [ 58:50 158:150 ]
+r1: [ 58:50 158:150 ]
+check computation bypass: 1
+r1c: [ 58:50 108:100 158:150 ]
+r1: [ 58:50 158:150 ]
+Merging r1c, r1:
+r1c: [ 58:50 108:100 158:150 ]
+r1: [ 58:50 108:100 158:150 ]
+NEval: 4

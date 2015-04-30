@@ -1,0 +1,54 @@
+<!--
+  Experiment to test solvers on TestProblem10.mod
+
+  Test problem TestProblem10.mod has the property that each 
+  function evaluation is better than the one before.  Consequently, an
+  optimizer would never terminate on this function, and it must be
+  terminated with a given maximum number of function evaluations.
+
+  This test function has proven effective at flushing out bugs in
+  solvers, since in most cases we should be able to exactly 
+  characterize the search behavior.
+-->
+<experimental-study name="scolib-test10">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>scolib</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+
+      <factor name="test">
+        <level>_termination='Max-Num-Evals' _data=../etc/ampl/TestProblem10.mod</level>
+      </factor>
+
+      <factor name="config">
+        <level>solver=sco:ps   max_neval=500 _optimum=-500</level>
+        <level>solver=sco:sw max_neval=500 _optimum=-500</level>
+<!--
+        <level>solver=sco:plgo max_neval=500 _optimum=-74 _termination='Successful'</level>
+-->
+        <level>solver=sco:direct max_neval=500 _optimum=-74</level>
+      </factor>
+
+    </factors>
+    <controls>
+       <executable>./scolib_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value=_termination</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=0.0 _cmp_operator='le'</options>
+  </analysis>
+</experimental-study>

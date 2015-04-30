@@ -1,0 +1,46 @@
+/*!
+ * \page heapPage
+
+\section heapSec Heaps
+
+The class utilib::AbstractHeap defines an abstract class that provides
+the core operations of a heap.  This is adapted from code developed
+by Jonathan Eckstein (Rutgers).  A heap is a partially sorted binary
+tree. The heap's tree is not completely in order, but it ensures that
+every node has a value less than either of its children. Additionally,
+a heap is a "complete tree" -- every level of the tree is filled in
+before adding a node to the next level, and one that has the nodes in
+a given level filled in from left to right, with no breaks.  Items can
+be inserted into and removed from heap with O(log n) effort.
+
+The utilib::SimpleHeap class is a simple heap object
+that maintains copies of the keys that are kept in the tree.  The
+utilib::GenericHeap class maintains references to the keys that
+are kept in the tree.  The
+\c add() and \c remove() methods are used to insert and delete items
+this tree.  Iterators are not currently supported for heaps, but
+references to elements of this tree are returned by the \c add() and
+\c remove() methods.
+
+The following example illustrates the use of a heap:
+\verbatim
+    utilib::SimpleHeap<int> tree;
+    //
+    // Initializing a heap with integers
+    //
+    for (int i=0; i<10; i++)
+      tree.add(200*i % 13);
+    //
+    // Printing and deleting the tree (in sorted order)
+    //
+    for (int i=0; i<10; i++) {
+      SimpleHeapItem<int>* item = tree.top();
+      cout << item->key() << " ";
+      bool status;
+      tree.remove(item, status);
+      }
+\endverbatim
+
+*/
+
+

@@ -1,0 +1,58 @@
+<experimental-study name="example">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>colin</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+      <factor name="test">
+        <level name="example1">_data=example1.xml _optimum=0</level>
+        <level name="example1">_data=example1a.xml _optimum=0</level>
+        <level name="example1">_data=example1b.xml _optimum=147</level>
+        <level name="example2">_data=example2.xml _optimum=40.0003200</level>
+        <level name="example2a">_data=example2a.xml _optimum=40.0003200</level>
+        <level name="example3">_data=example3.xml _optimum=58</level>
+        <level name="example3a">_data=example3a.xml _optimum=58</level>
+        <level name="example4">_data=example4.xml _optimum=0</level>
+        <level name="example5">_data=example5.xml _optimum=0.00078125</level>
+        <level name="example6">_data=example6.xml _optimum=97.602507188</level>
+        <level name="example6a">_data=example6a.xml _optimum=102.43895217</level>
+        <level name="example8">_data=example8.xml _optimum=40.6741602</level>
+        <level name="example8a">_data=example8a.xml _optimum=40.0127844713</level>
+        <level name="example1">_data=example10.xml _optimum=2</level>
+        <level name="example1">_data=example10a.xml _optimum=2</level>
+        <level name="example1">_data=example10b.xml _optimum=3.46410161518</level>
+        <level name="example1">_data=example10c.xml _optimum=0.001153411</level>
+        <level name="example1">_data=example11.xml _optimum=0</level>
+        <level name="example1">_data=example11b.xml _optimum=0</level>
+        <level name="example1">_data=example12.xml _optimum=128.0083014</level>
+      </factor>
+    </factors>
+    <controls>
+       <executable>./colin_test --shell</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="ConstraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0            _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=1e-5 _cmp=leq</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0                  _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0                   _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

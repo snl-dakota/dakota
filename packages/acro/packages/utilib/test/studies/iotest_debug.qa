@@ -1,0 +1,105 @@
+ucout_flag=1
+----------------------------------------------------------
+FOO -- default settings
+Beginning CommonIO block.
+Debug value 0 works
+TEST 1
+
+TEST 2
+
+TEST 3
+A IS HERE
+
+TEST 4
+A IS HERE
+
+TEST 5
+A IS HERE
+B IS HERE
+
+
+
+TEST FINAL
+Ending CommonIO block.
+
+----------------------------------------------------------
+----------------------------------------------------------
+FOO -- output to a file iotest.temp.*
+Beginning CommonIO block.
+Ending CommonIO block.
+
+----------------------------------------------------------
+----------------------------------------------------------
+FOO -- tagged output with numDigits=5
+Beginning CommonIO block.
+[0]-00001 Debug value 0 works
+[0]-00002 TEST 1
+[0]-00003 TEST 2
+[0]-00004 TEST 3
+[0]-00005 A IS HERE
+[0]-00006 TEST 4
+[0]-00007 A IS HERE
+[0]-00008 TEST 5
+[0]-00009 A IS HERE
+[0]-00010 B IS HERE
+[0]-00011 TEST FINAL
+Ending CommonIO block.
+
+----------------------------------------------------------
+----------------------------------------------------------
+FOO -- default settings
+Beginning CommonIO block.
+[0] Debug value 0 works
+[0] TEST 1
+[0] TEST 2
+[0] TEST 3
+[0] A IS HERE
+[0] TEST 4
+[0] A IS HERE
+[0] TEST 5
+[0] A IS HERE
+[0] B IS HERE
+[0] TEST FINAL
+Ending CommonIO block.
+
+----------------------------------------------------------
+----------------------------------------------------------
+FOO -- buffered output
+[0] Beginning CommonIO block.
+[0] Debug value 0 works
+[0] TEST 1
+[0] TEST 2
+[0] TEST 3
+[0] A IS HERE
+[0] TEST 4
+[0] A IS HERE
+[0] TEST 5
+[0] A IS HERE
+[0] B IS HERE
+[0] TEST FINAL
+[0] Ending CommonIO block.
+
+----------------------------------------------------------
+----------------------------------------------------------
+FOO -- default settings
+Beginning CommonIO block.
+[0] Debug value 0 works
+[0] TEST 1
+[0] TEST 2
+[0] TEST 3
+[0] A IS HERE
+[0] TEST 4
+[0] A IS HERE
+[0] TEST 5
+[0] A IS HERE
+[0] B IS HERE
+[0] TEST FINAL
+Ending CommonIO block.
+
+----------------------------------------------------------
+----------------------------------------------------------
+FOO -- buffered output to a file with tagging
+
+----------------------------------------------------------
+Closing MPI
+Ending IO

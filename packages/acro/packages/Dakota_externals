@@ -1,0 +1,6 @@
+colin      -r7645 https://software.sandia.gov/svn/acro/colin/trunk
+dummy      -r7645 https://software.sandia.gov/svn/acro/common/trunk/packages/dummy
+interfaces -r7645 https://software.sandia.gov/svn/acro/interfaces/trunk
+pebbl      -r7645 https://software.sandia.gov/svn/acro/pebbl/trunk
+scolib     -r7645 https://software.sandia.gov/svn/acro/scolib/trunk
+utilib     -r1991 https://software.sandia.gov/svn/utilib/trunk

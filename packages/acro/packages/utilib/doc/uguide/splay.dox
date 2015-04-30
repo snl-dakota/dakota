@@ -1,0 +1,54 @@
+/*!
+ * \page splayPage
+
+\section splaySec Splay Trees
+
+The class utilib::AbstractSplayTree defines an abstract class that
+provides the core operations of a top-down splay tree.  This is adapted
+from code developed by D. Sleator, which itself is adapted from simple
+top-down splay, at the bottom of 669 of \if GeneratingLATEX \latexonly Sleator
+and Tarjan~\cite{SleTar85}. \endlatexonly \endif \if GeneratingHTML [\ref SleTar85
+"SleTar85"]. \endif
+
+Splay trees are a simple and efficient data structure for storing an
+ordered set. The data structure consists of a binary tree, with no
+additional fields. It allows searching, insertion, deletion, deletemin,
+deletemax, splitting, joining, and many other operations, all with
+amortized logarithmic performance. Since the trees adapt to the sequence
+of requests, their performance on real access patterns is typically even
+better.
+
+The splay operation is applied to a binary search tree.  It restructures
+the tree as it descends toward the desired key's place in the tree.
+During descent, long paths are shortened by rotation.  Ultimately, when
+the desired key is found, the binary search tree is reassembled to make
+the desired key's node the new root.
+
+The utilib::SimpleSplayTree class is a simple splay tree object
+that maintains copies of the keys that are kept in the tree.  The
+utilib::GenericSplayTree class maintains references to the keys that
+are kept in the tree.  The
+\c add() and \c remove() methods are used to insert and delete items
+this tree.  Iterators are not currently supported for splay trees, but
+references to elements of this tree are returned by these operators.
+
+The following example illustrates the use of a splay tree:
+\verbatim
+    utilib::SimpleSplayTree<int> tree;
+    //
+    // Initializing a tree with integers
+    //
+    for (int i=0; i<10; i++)
+      tree.add(200*i % 13);
+    //
+    // Printing the tree
+    //
+    for (int i=0; i<10; i++) {
+      SimpleSplayTreeItem<int>* item = tree.find_rank(i);
+      cout << item->key() << " ";
+      }
+\endverbatim
+
+*/
+
+

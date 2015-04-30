@@ -1,0 +1,37 @@
+<!-- 
+	MINLP0 problem being passed to a MINLP solver.
+	Minimize just continuous variables.
+        Using nonlinear constraints, which are reformulated to form an
+		unconstrained application.
+	Using an implicit reformulation, which uses a constraint
+			violation penalty of 1.0.
+  -->
+
+<ColinInput>
+  <Problem type="MINLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+
+    <Constraints>
+        <Nonlinear num="2">
+          <Leq value="4.0"/>
+        </Nonlinear>
+     </Constraints>
+
+     <Driver>
+        <Command>../../../../python/bin/python example_fn1</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <InitialPoint>
+       r(3: 10.1 10.1 10.1)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

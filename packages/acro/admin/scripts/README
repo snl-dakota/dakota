@@ -1,0 +1,72 @@
+$Id: README 775 2006-08-30 16:15:44Z lafisk $
+
+The acro_votd_tarball script can be used to make a distribution
+tar file for any acro package for any given date, representing
+the state of the repository on that date.
+
+The acro_votd_tarballs script uses the acro_votd_tarball script
+to create nightly distribution tar files for every acro project.  It
+also maintains the previous night's files and a web page listing
+the available VOTDs (version of the day tar files).
+
+The acro_release script takes an Acro release number as an argument
+and reads the acro/qa/docs/projectVersions.txt file which lists all
+projects released with that Acro version.  Then it
+creates all the tar files required for the Acro release, and writes
+a web page listing all available release tar files.  The script is
+documented in the comment in the script file.
+
+acro_votd_tarballs
+==================
+
+This bash script uses the acro_votd_tarball script to create a
+nightly snapshot distribution tar file for each acro project.  It 
+maintains an html file listing the files available for download.  
+A "nightly" and a "previous" are maintained for each acro project.
+"votd" means "version of the day".
+
+  Command line options:
+    debug     Add this argument if you want the acro source that
+              was used to build the distributions to be saved.
+
+  Variables defined in script:
+    releaseDir  Set to absolute path of directory that script should run in.
+    tarballDir  Set to relative path of directory that tar files should
+                be written to.
+    modules     List of CVS modules to check out
+    projects    Name of acro project associated with each module
+    publish     Set to "1" if the project tar file is to
+                appear on the Acro download web page, "0" otherwise.
+  
+  On error:
+    If the script is not able to complete for some reason, it will
+    print the message:
+      Interrupted...
+      Reverting to state before starting to build this nightly
+
+    More detailed information will be printed by the acro_votd_tarball
+    script which is invoked to create each project's tar file.
+
+acro_votd_tarball
+=================
+
+This bash script checks out an acro project as of a specific date.
+If the project builds successfully, it creates a distribution tar
+file.  If a date is specified, it is included in the tar file name,
+otherwise the word "nightly" is included in the name.
+
+  Command line options:
+    project-name    The acro project to check out
+    yyyymmdd        The date for the code snapshot, defaults to
+                    today if no date is provided
+
+  Environment variables:
+    SOURCE_SAVE_DIR   If set, sources will be saved to this directory
+
+  Variables defined in script:
+    cvsloc          Set to "-d path" if required for cvs checkout command
+
+  On error:
+    The script will print an error message if checkout, configure, make,
+    or "make dist" failed.  The error message contains the string
+    "failed" in it.

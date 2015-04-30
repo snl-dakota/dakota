@@ -1,0 +1,42 @@
+
+Test1d - Setup NLP1 application and reformulate it to eliminate constraints
+application set up
+
+SUMMARY
+Number of objectives: 1
+Real variables:    3
+Index        Label       Lower Bound T       Upper Bound T
+    1       _none_         -Infinity N          Infinity N 
+    2       _none_         -Infinity N          Infinity N 
+    3       _none_         -Infinity N          Infinity N 
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+Nonlinear constraints:    3
+  Equality:               0
+  Inequality:             3
+Index               Label         Lower Bound         Upper Bound
+    1              _none_                   0            Infinity 
+    2              _none_           -Infinity                 1.1 
+    3              _none_                 0.2                 1.2 
+
+ANS: f_info= 8
+STATUS: 1
+ANS: g_info= 3 : 8 4 2 
+ANS: nlcf_info= 3 : 21 17 7 
+
+application reformulated
+application assigned to problem
+
+SUMMARY
+Number of objectives: 1
+Real variables:    3
+Index        Label       Lower Bound T       Upper Bound T
+    1       _none_         -Infinity N          Infinity N 
+    2       _none_         -Infinity N          Infinity N 
+    3       _none_         -Infinity N          Infinity N 
+
+ANS: f_info= 294.4
+STATUS: 0
+ANS: g_info= 3 : 8 4 2 
+ANS: cf_info= 3 : 21 17 7 

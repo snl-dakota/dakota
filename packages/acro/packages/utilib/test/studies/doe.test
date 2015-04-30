@@ -1,0 +1,6 @@
+4                                # number of factors
+3                                # the first factor has three levels
+2                                # the second factor has two levels
+2                                # the third factor has two levels
+4 c 0.0 1.0                      # the fourth factor is continuous in [0.0,1.0] 
+                                 #     for which we want four levels

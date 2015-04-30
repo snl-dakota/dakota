@@ -1,0 +1,1008 @@
+\section{Creating PEBBL Applications}
+
+When using PEBBL, you should generally first create a serial PEBBL
+application and debug it using whatever C++ development environment
+you are most comfortable with.  Then you should extend it to a
+parallel application using MPI.
+
+\subsection{Defining a serial application}
+\label{sec:serialMethods}
+To create a basic serial PEBBL application, you need to do three things:
+\begin{itemize}
+\item Define a class extending \texttt{branching}
+\item Define a class extending \texttt{branchSub}
+\item Create a ``driver'' program that runs your algorithm.
+\end{itemize}
+You may do all these things in a single C++ file.  Conventionally,
+however, you would use a header (\texttt{.h} or \texttt{.hpp}) file to
+define your new classes, one or more additional C++ source files
+containing code to implement methods for those classes, and a C++
+source containing the driver.  
+
+To load the basic definitions of \texttt{branching} and
+\texttt{branchSub} into the compiler, you should \texttt{\#include}
+the file \texttt{<pebbl/branching.h>}.  Supposing your classes are
+called \texttt{\emph{myBranching}} and \texttt{\emph{myBranchSub}},
+and you are using a single header file, it should take the general
+form shown in Figure~\ref{fig:code1}.
+
+\begin{figure}[tbp]
+\begin{codeblock}
+\#include <pebbl/branching.h> \\
+\\
+using namespace pebbl; \\
+\\
+class myBranchSub;  // Forward declaration \\
+\\
+clas\=s \emph{myBranching} : virtual public branching \\
+\{\\
+\>friend class \emph{myBranchSub}; \\
+\\
+public:\\
+$\quad\vdots$ \\
+\} \\
+\\
+class \emph{myBranchSub} : virtual public branchSub \\
+\{\\
+\>friend class \emph{myBranching}; \\
+\\
+protected:\\
+\>// A pointer to the global branching object\\
+\> \emph{myBranching}* globalPtr;\\
+$\quad\vdots$ \\
+public:\\
+\>  // Return a pointer to the global branching object\\
+\>  \emph{myBranching}* global() const \{ return globalPtr; \}\\
+\\
+\>  // Return a pointer to the base class of the global branching object \\
+\>  branching* bGlobal() const \{ return global(); \}\\
+$\quad\vdots$ \\
+\}
+\end{codeblock}
+\vspace{-2ex}
+\caption{Standard code pattern for creating a serial PEBBL application.}
+\label{fig:code1}
+\end{figure}
+
+We now describe how to construct these classes; in the course of this
+description, you should also refer to the files \texttt{serialCore.h},
+and \texttt{serialKnapsack.\{h,cpp\}}
+%%
+%% WEH TODO - INSERT SEMI_ASSIGNMENT PROBLEM
+%%
+%%, and \textbf{insert the semi-assignment example} 
+%%
+in directory \texttt{pebbl/src/example/}.
+
+\subsubsection{Methods you should create ---
+  \texttt{branching}-derived class}
+
+In your \texttt{branching}-derived derived class, for example
+\texttt{\emph{myBranching}}, you should define the following methods:
+
+\boxheader{Constructor}
+Classes derived from \texttt{branching} should have a constructor with
+no arguments; the diamond inheritance pattern used by PEBBL means that
+constructors with arguments are in general not advisable.  The
+constructor should contain a call to
+\texttt{branching::\linebreak[0]branchingInit($\cdots$)}. If you want
+to maximize the objective function, you should supply
+\texttt{branchingInit} an argument of \texttt{maximization}; if you
+want to minimize, you can leave the argument list blank, or supply the
+argument \texttt{minimization}.  Thus, one might have something like
+\begin{codeblock}
+\emph{myBranching}() \{ branchingInit(minimization); $\cdots$ \}; \\
+\end{codeblock}
+
+\boxheader{Destructor} 
+Naturally, you should also have a destructor for your
+\texttt{branching}-derived class, for example:
+\begin{codeblock}
+$\sim$\emph{myBranching}() \{ $\cdots$ \}; \\
+\end{codeblock}
+
+\method{branchSub* blankSub()}
+You must provide a \texttt{blankSub()} method of return type
+\texttt{branchSub*} that returns an empty subproblem specific to your
+application.  To avoid circularity, the class declaration for
+\texttt{\emph{myBranching}} should declare this method, but not
+include its code, as in:
+\begin{codeblock}
+branchSub* blankSub();
+\end{codeblock}
+Once
+\texttt{\emph{myBranching}} and
+\texttt{\emph{myBranchSub}} are both declared, you should have the
+actual code, as in:
+\begin{codeblock}
+bra\=nchSub* \emph{myBranching}::blankSub() \\
+\{ \\
+\>   \emph{myBranchSub}* newSP = new \emph{myBranchSub}; \\
+\>    newSP->setGlobalInfo(this);\\
+\};
+\end{codeblock}
+Here, \texttt{\emph{myBranchSub}::setGlobalInfo} should be a routine
+that copies any necessary information from the 
+\texttt{\emph{myBranching}} object into a \texttt{\emph{myBranchSub}}
+object.  At a minimum, it should set \texttt{globalPtr}.
+
+\method{bool setupProblem(int\& argc,char**\& argv)}
+This method is responsible for reading in any input data describing
+the problem instance.  Its arguments \texttt{argc} and \texttt{argv}
+are standard unix-style command line descriptors.  However, by the
+time \texttt{setupProblem} is called, these arguments will be
+``cleaned'' of any MPI-related information and parameter settings
+recognized by PEBBL.  Typically, \texttt{setupProblem} should simply
+read a problem description from the file whose name is in \texttt{argv[1]}.  
+
+\method{serialPrintSolution(const char* header,const char*
+  footer,std::ostream\& s)} 
+Typically, the \texttt{branching}-derived class should have the
+ability to store a single solution to the optimization problem.  The
+\texttt{serialPrintSolution} method should print this solution to the
+stream \texttt{s}, preceded by the \texttt{header}, and followed by
+\texttt{footer}.  Strictly speaking, you do not have to implement this
+method --- it has a default implementation of \texttt{\{~\}}.
+However, it should be defined if you need PEBBL to print
+out anything besides the \emph{value} of the solution.
+
+\subsubsection{Methods you should create ---
+  \texttt{branchSub}-derived class}
+
+\boxheader{Constructor} 
+As with the \texttt{branching}-derived class,
+you should have an empty-argument constructor for your
+\texttt{branchSub}-derived class, for example:
+\begin{codeblock}
+\emph{myBranchSub}() \{  $\cdots$ \}; \\
+\end{codeblock}
+
+\boxheader{Destructor} 
+A destructor is naturally required, for example:
+\begin{codeblock}
+$\sim$\emph{myBranchSub}() \{ $\cdots$ \}; \\
+\end{codeblock}
+
+\method{branching* bGlobal() const}
+This method is required for methods in \texttt{branchSub} to locate
+the corresponding problem-wide information in the corresponding
+\texttt{branching} object.  Presuming you have declared a data member
+\texttt{\emph{myBranching}* globalPtr} as in Figure~\ref{fig:code1}, 
+then Figure~\ref{fig:code1}'s definition should suffice:
+\begin{codeblock}
+branching* bGlobal() const \{ return global(); \};
+\end{codeblock}
+Your implementations of methods such as \texttt{branchComputation()},
+will almost certainly require access to problem-wide but
+application-specific information.  In the implementation above, this
+may be obtained directly through \texttt{globalPtr} or slightly more
+elegantly via
+\begin{codeblock}
+\emph{myBranching}* global() const \{ return globalPtr; \};
+\end{codeblock}
+
+\method{void setGlobalInfo(\emph{myBranching*} global\_)}
+The purpose of this routine should be to ``bind'' a particular
+subproblem object to the problem description embodied in the object
+\texttt{*global\_}.  At a minimum, this requires setting
+\texttt{globalPtr}.  For example:
+\begin{codeblock}
+voi\=d setGlobalInfo(\emph{myBranching*} global\_) \\
+\{ \\
+\> globalPtr = global\_; \\
+\>\textrm{(Copy any other desired information from
+  \texttt{*global\_} )}\\
+\}
+\end{codeblock}
+
+
+\method{void setRootComputation()}
+A call to this method indicates that a \texttt{\emph{myBranchSub}}
+object should be made into a root subproblem.  Information on the
+problem description should be obtained, for example, via
+\texttt{global()} or \texttt{globalPtr}.
+
+\pagebreak[1]
+
+\method{void boundComputation()} 
+This method should attempt to bound the subproblem.  When the bound
+computation is complete, it should execute \texttt{setState(bounded)}.
+If the method exits without calling \texttt{setState(bounded)} to
+declare the subproblem \texttt{bounded}, PEBBL will assume that the
+bounding operation is incomplete: it will call
+\texttt{boundComputation()} repeatedly until the subproblem is
+fathomed or declared \texttt{bounded}.  To indicate the value of the
+bound, you set the \texttt{double} data member \texttt{bound};
+you may update \texttt{bound} as many times as you like, and PEBBL
+will use the information immediately, even before the
+problem state becomes \texttt{bounded} --- for example, a sequence of calls
+to \texttt{boundComputation()} may gradually improve the bound.
+To indicate infeasibility of a subproblem, or that it cannot possibly
+improve upon the current solution stored in
+\texttt{bGlobal()->incumbentValue}, you may execute
+\texttt{setState(dead)}. 
+
+
+\method{bool candidateSolution()} 
+PEBBL will only invoke this method
+for subproblems in the \texttt{bounded} state.  Returning
+\texttt{true} means that the just-computed bound is
+exact and it is not necessary to separate the subproblem --- that is,
+a subproblem is a \emph{terminal} node of the branch-and-bound
+tree.  In integer programming, for example, you would want
+\texttt{candidateSolution()} to return \texttt{true} whenever the
+linear programming relaxation produces a solution that has all integer
+values.  Returning \texttt{true} also tells PEBBL that you have
+computed a feasible solution to the overall optimization problem, as
+opposed to just a bound.  PEBBL will most likely invoke
+\texttt{updateIncumbent()} (see below) to retrieve this solution.
+
+
+\method{int splitComputation()} 
+This method should attempt to separate the subproblem.  Similarly to
+\texttt{boundComputation()}, it will be called repeatedly until it
+calls \texttt{setState(separated)}.  The value returned is the number $k$
+of child problems generated (simply $2$ for many applications).  The
+number of children can vary between subproblems.
+If you return without declaring the problem \texttt{separated}, PEBBL
+will ignore the return value and invoke \texttt{splitComputation()}
+again later.  In the course of separating the problem, you may update
+\texttt{bound} at any time to reflect any further information gained
+in the course of separation; PEBBL will use this
+information immediately.  This routine may also execute
+\texttt{setState(dead)}, in which case PEBBL will immediately prune
+the subproblem.
+
+
+\method{branchSub* makeChild(int whichChild)} 
+This method should create a child problem and return it.  The argument
+\texttt{whichChild} may take any value between $0$ and $k-1$, where $k$
+was the value returned by \texttt{splitComputation()} for this
+subproblem.  
+A value of $0$ indicates you should create the first child, a
+value of $1$ indicates you should create the second child, and so
+forth.  
+
+When you create a child problem, you should make sure that its
+\texttt{globalPtr} is set as in the parent problem, and all local
+data are initialized correctly.
+
+
+\method{void updateIncumbent()}
+This method should set the state of the \texttt{branching}-derived
+class --- \emph{e.g. \texttt{myBranching}} --- to reflect a feasible
+problem solution correspondig to this 
+subproblem.  PEBBL will typically call this method
+after \texttt{candidateSolution()} returns \texttt{true}.  A typical
+implementation will look like:
+\begin{codeblock}
+voi\=d \emph{myBranchSub}::updateIncumbent() \\
+\{\\
+\>bGlobal()->incumbentValue = bound;  // Set the incumbent value \\
+\>\textrm{(Copy the solution itself to \texttt{*global()})} \\
+\>bGlobal()->signalIncumbent(); \\
+\}
+\end{codeblock}
+Once the solution has been copied to a \texttt{branching}-derived
+class, it can be written by the \texttt{serialPrintSolution($\cdots$)}
+method.  The call to \texttt{signalIncumbent()} tells PEBBL that
+the subproblem pool should be pruned.  Once the application is ported
+to the parallel layer, \texttt{signalIncumbent()} will also initiate
+interprocessor communication to broadcast the new incumbent value.
+
+
+\subsubsection{Selected additional methods}
+\label{sec:seradd}
+We now present an inexhaustive list of additional methods that you may
+wish to override for particular applications.
+
+\method{void branching::preprocess()}
+This method is intended for ``preprocessing'' of the problem prior to
+commencing the branch-and-bound search; the default implementation is
+an empty stub.  In principle, its functions
+could be combined with \texttt{setupProblem($\cdots$)}, but it is
+provided for generality.  Note that once you migrate your application
+to the parallel layer, \texttt{preprocess()} is called \emph{after}
+the problem instance is broadcast to all processors, and could
+potentially be parallelized.
+
+\method{double branching::initialGuess()} 
+This method is provided to
+allow you to compute a ``quick and dirty'' initial guess at the
+solution.  In a knapsack problem, for example, this routine could run
+a simple greedy heuristic.  Your implementation need not be guaranteed
+to find anything: for example, the default implementation is an empty
+stub.  If you do find something, you should set
+\texttt{incumbentValue} and the application-specific data structures
+(within \texttt{\emph{myBranching}}, for example), describing the
+present solution.
+
+\method{bool branching::haveIncumbentHeuristic()} 
+The default implementation of this method just returns \texttt{false}.
+You should change it to return \texttt{true} if your application has a
+way of trying to obtain a feasible solution from a non-terminal
+\texttt{bounded} subproblem.  
+
+\method{void branchSub::incumbentHeuristic()} 
+PEBBL will only call
+this method if \texttt{haveIncumbentHeuristic()} returns \texttt{true},
+and only for \texttt{bounded} subproblems for which
+\texttt{candidateSolution()} returns \texttt{false}.  If called, this
+method should attempt to create a feasible solution to this 
+problem.  If this problem has a better objective value than
+\texttt{bGlobal()->incumbentValue}, you should call
+\texttt{updateIncumbent()}, or perform an equivalent sequence of
+operations. 
+
+\method{void branchSub::makeCurrentEffect()}
+PEBBL has the notion of a ``current subproblem'' -- the one presently
+being bounded or separated.  The method \texttt{makeCurrentEffect()}
+provides a ``hook'' that is called whenever a subproblem is made
+``current''.  In a branch-and-cut algorithm, for example, it could
+load the subproblem's cuts into the linear programming solver.  Its
+default implementation is a stub.
+
+\method{void branchSub::noLongerCurrentEffect()}
+PEBBL calls this ``hook'' whenever a subproblem ceases to be
+``current''.  Again, its default implemetation is a stub.
+
+\method{bool branchSub::forceStayCurrent()}
+PEBL calls this method when it is considering replacing the current
+subproblem with a different one.  Returning \texttt{true} indicates
+that the current subproblem should be kept current if at all possible.
+The default implementation always returns \texttt{false}, meaning that
+PEBBL is free to ``unload'' the current subproblem, and replace it
+with a different one.
+
+\boxheader{Creating your own parameters} 
+In addition to PEBBL's
+existing parameters, you may create your own command-line parameters.
+The simplest place to do so is in the constructor of your
+\texttt{branching}-derived class.  Parameter creation statements
+usually have the general form
+\begin{codeblock}
+create\_categorized\_parameter(\="\emph{commandLineName}",\\
+\>\emph{internalName},\\
+\>"<\emph{datatype}>",\\
+\>"\emph{defaultValue}",\\
+\>"\emph{text description}",\\
+\>"\emph{category}",\\
+\>\emph{error check object})
+\end{codeblock}
+Here,
+\begin{description}
+\item[\texttt{\emph{commandLineName}}] is the name to be recognized on
+  the command line.  For example, \texttt{\emph{fooBar}} will cause the
+  option \texttt{--\emph{fooBar}=\emph{value}} to be recognized on the
+  command line.  
+\item[\texttt{\emph{internalName}}] is a reference to a data member in
+  which to store the value of the parameter.
+\item[\texttt{\emph{datatype}}] is the C++ datatype of
+  \texttt{\emph{internalName}}.  Common choices are \texttt{bool},
+  \texttt{int}, \texttt{double}, and \texttt{string}.
+\item[\texttt{\emph{defaultValue}}] is the default value for the
+  parameter.  Data member \texttt{\emph{internalName}} will take this
+  value if command line parameter \texttt{--\emph{commandLineName}} is
+  not specified.
+\item[\texttt{\emph{text description}}] is a parameter description
+  printed in response to \texttt{--help}.  For descriptions longer
+  than one line, embed newline-tab character sequences
+  (``\texttt{$\backslash$n$\backslash$t}'') in this text.
+\item[\texttt{\emph{category}}] The category header to be used when
+  printing the parameter description in response to \texttt{--help}.
+  You may invent new categories.
+\item[\texttt{\emph{error check object}}] specifies simple constraints
+  on the value of the parameter.  For details, refer to the UTILIB
+  Parameter class documentation~\cite{UTILIB}.
+\end{description}
+Note that for parameters of type \texttt{bool}, you may omit
+\texttt{=\emph{value}} on the command line, in which case the value is
+set to \texttt{true}.  That is, \texttt{--\emph{fooBar}} is
+equivalent to \texttt{--\emph{fooBar}=true}
+
+You may specify parameter error checks more elaborate than those
+available in \texttt{\emph{error check object}} by overloading the
+method \texttt{bool branching::checkParameters}; if you detect an
+error in this routine, print a diagnostic message and return
+\texttt{false}.  If you do not, execute \texttt{return
+branching::checkParameters()} to invoke the standard checks on PEBBL's
+built-in parameters.
+
+%
+%\textbf{Bill: do they need to do anything else to get their own
+%  parameters working?} 
+%
+% WEH - NO
+%
+
+
+\subsubsection{Constructing a serial driver}
+
+Once you have defined \texttt{branching}- and
+\texttt{branchSub}-derived clases as above, you need to create a
+``driver'' program that invokes them.  A typical form for a driver
+program would be:
+
+\begin{codeblock}
+int \=main(int argc, char** argv)\\
+\{\\
+\>  InitializeTiming(); \\
+\>  \emph{myBranching} instance; \\
+\>  boo\=l f\=lag = instance.setup(argc,argv); \\
+\>  if (flag) \\
+\>\>    \{ \\
+\>\>\>      instance.reset(); \\
+\>\>\>      instance.solve(); \\
+\>\>    \}\\
+\>  return !flag; \\
+\}
+\end{codeblock}
+Note that the main PEBBL header file \texttt{<pebbl/branching.h>}
+automatically includes the necessary UTILIB header files to define the
+method \texttt{InitializeTiming()}.
+
+Note that \texttt{setup($\cdots$)}, \texttt{reset()}, and \texttt{solve()}
+are all methods of the \texttt{branching} class that you typically do
+not override.  Calling \texttt{setup(argc,argv)} parses the command
+line, extracting and processing all command line arguments
+recognizable as PEBBL parameters.  It then calls your implementation of
+\texttt{setupProblem}, with \texttt{argc} and \texttt{argv} adjusted
+so that parameter-setting arguments are removed; \texttt{setup}'s
+returning \texttt{true} indicates both that all command line
+parameters were processed correctly, and that your
+\texttt{setupProblem} implementation returned \texttt{true},
+indicating it was successful.  The method \texttt{solve()} invokes the
+branch-and-bound search engine, and prints subproblem count and timing
+statistics upon termination.  It also uses your
+\texttt{serialPrintSolution($\cdots$)} implementation to write the
+final solution to a file whose name is derived from the first command
+line argument not recognizable as a parameter setting (if there is
+none, the file is called \texttt{solution.dat}).
+
+Supposing your driver were called \texttt{\emph{myDriver}}, both of the
+command lines
+\begin{codeblock}
+\emph{myDriver} \emph{datafile} \\
+\emph{myDriver} --relTolerance=0.05 --earlyOutputMinutes=2 \emph{datafile}
+\end{codeblock}
+would call setup with \texttt{argv[1]}  containing the null-terminated
+string \texttt{\emph{datafile}}.  In the second case, \texttt{setup} would
+automatically recognize the PEBBL parameters \texttt{relTolerance} and
+\texttt{earlyOutputMinutes}, and their settings would be reflected
+when executing \texttt{solve()}.  For a catalog of recognized
+parameters, refer to Section~\ref{sec:param}.  
+
+The \texttt{setup($\cdots$)} method automatically recognizes several
+special command-line arguments:
+
+\begin{description}
+
+\item[\texttt{--help}] Causes \texttt{setup} to print a usage line
+followed by a description of all available parameters, and then return
+\texttt{false} (so that the driver above would not attempt to solve a
+problem).  If you want to control the form of the usage line, override
+the method \texttt{void branching::write\_usage\_info(char*
+  progName,std::ostream\& os)}.
+
+\item[\texttt{--version}] must be the first argument if present.  It
+  causes \texttt{setup} to print the value of the \texttt{static}
+  \texttt{std::string} data member \texttt{branching::version\_info} and return
+  \texttt{false} (so that the driver above would then immediately
+  exit).  You may alter the contents of \texttt{version\_info}, for
+  example, in the constructor for your \texttt{branching}-derived
+  class.
+
+\item[\texttt{--param-file=\emph{file}}] allows multiple parameter
+  settings to be read from \texttt{\emph{file}} --- see the UTILIB
+  Parameter class documentation for a description of the file format.
+
+\end{description}
+
+Note that PEBBL applications can be invoked in ways other than the
+simple driver above; for example, they could be embedded in more
+complicated programs.  However, the techniques for doing so are
+not covered in this version of the user's guide.
+
+
+\subsection{Defining a parallel application}
+\label{sec:parMethods}
+Suppose now that your serial layer applications runs acceptably, and
+you wish to parallelize it.  Figure~\ref{fig:code2} outlines the
+recommended inheritance and pointer pattern for creating parallel
+layer classes from a serial application.  Here, the serial layer
+classes are \texttt{\emph{myBranching}} and
+\texttt{\emph{myBranchSub}}, and the respective parallel layer classes
+are \texttt{\emph{myParBranching}} and \texttt{\emph{myParSub}}.  Note
+that the header file \texttt{<pebbl/parBranching.h>} defines all the
+classes in both the serial and parallel layers.  You must configure
+with MPI options in order to develop a parallel application.
+Otherwise, none of the code for parallel PEBBL applications will be
+compiled.
+
+\begin{figure}[tbp]
+\begin{codeblock}
+\#include <pebbl/parBranching.h> \\
+\\
+using namespace pebbl; \\
+\\
+class myParSub;  // Forward declaration \\
+\\
+cla\=ss \emph{myParBranching} : \\
+\>virtual public parallelBranching, \\
+\>virtual public \emph{myBranching} \\
+\{\\
+public: \\
+\>$\vdots$\\
+\}; \\
+\\
+class \emph{myParBranchSub} : \\
+\> virtual public parallelBranchSub, \\
+\> virtual public \emph{myBranchSub} \\
+\{\\
+protected:\\
+\>  // A pointer to the global parallel branching object\\
+\>  \emph{myParBranching*} globalPtr;\\
+public:\\
+\>  // Return a pointer to the global branching object\\
+\>  \emph{myParBranching}* global() const \{ return globalPtr; \}\\
+\\
+\>  // Return a pointer to the parallel global base class object\\
+\>  parallelBranching* pGlobal() const \{ return global(); \}\\
+\>$\vdots$\\
+\};
+\end{codeblock}
+\vspace{-2ex}
+\caption{Standard code pattern for creating a parallel PEBBL application.}
+\label{fig:code2}
+\end{figure}
+Note that PEBBL uses \texttt{parallelBranchSub::pGlobal()} 
+to find the
+\texttt{parBranching} object associated with a subproblem object. The
+method \texttt{global()} in Figure~\ref{fig:code2} would be for your
+own use and might not be necessary if your
+\texttt{parBranching}-derived class does not encapsulate significantly
+more data than your \texttt{branching}-derived class.
+
+
+\subsubsection{Methods you should create ---
+  \texttt{parallelBranching}-derived class}
+\boxheader{Constructor}
+A constructor with no arguments is advised; it will automatically call
+the no-argument constructor for your serial application class, such as
+\texttt{\emph{myBranching}}. 
+\begin{codeblock}
+\emph{myParBranching}() \{ $\cdots$ \}; \\
+\end{codeblock}
+
+\boxheader{Destructor} 
+You should also have a destructor:
+\begin{codeblock}
+$\sim$\emph{myParBranching}() \{ $\cdots$ \}; \\
+\end{codeblock}
+
+\method{parallelBranchSub* blankParallelSub()}
+This method is \texttt{blankSub}, but should return a parallel
+subproblem with correctly initialized global pointers, as in:
+\begin{codeblock}
+par\=allelBranchSub* \emph{myBranching}::blankSub() \\
+\{ \\
+\>   \emph{myParSub}* newSP = new \emph{myParSub}; \\
+\>    newSP->setGlobalInfo(this);\\
+\};
+\end{codeblock}
+See below for a possible implementation of
+\texttt{\emph{myParSub}::setGlobalInfo}.
+
+\method{void pack(utilib::PackBuffer\& outBuffer)} 
+PEBBL uses this
+method when broadcasting the problem description.  It should write all
+the the information describing a problem instance (\emph{i.e.}
+everything read by \texttt{setupProblem($\cdots$)}) into the UTILIB
+\texttt{PackBuffer} supplied in the argument \texttt{outBuffer}.
+Writing to a \texttt{PackBuffer} is very similar to writing to an
+unformatted stream: for most native C++ datatypes, the \texttt{<<}
+operator, that is, ``\texttt{outBuffer << \emph{data}}'' will write
+scalar data.  Entire UTILIB arrays, for example of datatype
+\texttt{IntVector} or \texttt{DoubleVector}, may also be written with
+\texttt{<<}.  See the UTILIB documentation for the details of
+\texttt{PackBuffer}s.
+
+\method{void unpack(utilib::UnPackBuffer\& inBuffer)} 
+Again, PEBBL
+uses this method when broadcasting the problem description.  Its job
+is to read from
+\texttt{inBuffer} the information written by \texttt{pack}.  Most native C++
+datatypes, along with many UTILIB-supplied datatypes, may be read via
+the the \texttt{>>} operator, applied in exactly the same order as you
+used \texttt{<<} in \texttt{pack}.  For example, data written by
+\texttt{outBuffer << time << money;} in \texttt{pack} may be read via
+\texttt{inBuffer >> time >> money;} in \texttt{unpack}.  The
+\texttt{<<} can also read entire UTILIB arrays.
+
+\method{int spPackSize()} This method should return an upper bound on
+the number of bytes needed to pack all the information to describe
+\emph{a subproblem} --- that is, the maximum amount of space needed by
+the method \texttt{\emph{myParSub}::pack($\cdots$)} described below.
+It does \emph{not} refer to the amount of space needed by
+\texttt{\emph{myParBranching}::pack}, which PEBBL is able to detect
+automatically. In \texttt{PackBuffer}s and \texttt{UnPackBuffer}s,
+most C++ native datatypes require the same amount of space as their
+machine representations: \emph{i.e} a data member of type
+\texttt{\emph{x}} requires \texttt{sizeof(\emph{x})} bytes.  You
+should use \texttt{sizeof($\cdot$)} in your implementation to make
+sure it is portable between 32- and 64-bit architectures and varying
+compilers.  For UTILIB arrays, the space required is a single
+\texttt{sizeof(size\_t)} to hold the size of the array, plus storage
+for each of the data elements.  The \texttt{spPackSize()} method is
+called after the problem has been read and broadcast, so all
+information set by \texttt{\emph{myBranching}::setupProblem} and
+\texttt{\emph{myParBranching}::unpack} should be available in all
+processors.
+
+\method{void packSolution(PackBuffer\& outBuffer)}
+PEBBL uses this method to send problem solutions between processors.
+It should pack (typically using the \texttt{<<} operator) a full
+description of the current problem solution into \texttt{outBuffer}.
+
+\method{void unpackSolution(UnPackBuffer\& inBuffer)} 
+This method should
+read the information written by \texttt{packSolution}, typically using
+the \texttt{>>} operator.
+
+\method{int solutionBufferSize()}
+Should return an upper bound on the size (in bytes) of the buffer
+needed by \texttt{packSolution} and \texttt{unpackSolution}.
+
+~
+
+Note that it is possible to implement \texttt{packSolution} and
+\texttt{unpackSolution} via stubs and have
+\texttt{solutionBufferSize()} simply return $0$.  To do so, however,
+you should set the parameter \texttt{printSolutionSynch} to
+\texttt{false}.  This setting tells PEBBL's parallel layer that
+any processor is permitted to do I/O, and it is thus unnecessary to
+move subproblem solutions between processors.
+
+%%
+%% WEH TODO
+%% 
+%% Discuss interactions of packSolution and unpackSolution with
+%% enumeration, after parallel enumeration is working.
+%%
+
+
+\subsubsection{Methods you should create ---
+  \texttt{parallelBranchSub}-derived class}
+
+\boxheader{Constructor}
+Again, you need an empty-argument constructor, for example:
+\begin{codeblock}
+\emph{myParSub}() \{  $\cdots$ \}; \\
+\end{codeblock}
+
+\boxheader{Destructor} 
+You also need a destructor:
+\begin{codeblock}
+$\sim$\emph{myParSub}() \{ $\cdots$ \}; \\
+\end{codeblock}
+
+\method{parallelBranching* pGlobal() const}
+This method is similar to \texttt{bGlobal} but returns a pointer of
+type \texttt{parallelBranching*}, implementing the third dashed arrow
+in Figure~\ref{fig:parinherit}.  Given \texttt{globalPtr} as defined
+in Figure~\ref{fig:code2}, it could be implemented via
+\begin{codeblock}
+myParBranching* global() const \{ return globalPtr; \} \\
+parallelBranching* pGlobal() const \{ return global(); \}
+\end{codeblock}
+
+\method{void setGlobalInfo(\emph{myParBranching*} global\_)} 
+As in the
+serial, case, the purpose of this routine should be to ``bind'' a
+particular subproblem object to the problem instance description embodied in
+the object \texttt{global\_}.  It should also make sure that the
+corresponding serial-layer binding is also performed.  For example:
+\begin{codeblock}
+voi\=d setGlobalInfo(\emph{myParBranching*} global\_) \\
+\{ \\
+\> globalPtr = global\_; \\
+\> \emph{myBranching}::setGlobalInfo(global\_);
+  // Sets serial layer pointer etc. \\
+\> $\vdots$\\
+\}
+\end{codeblock}
+
+\method{void pack(utilib::PackBuffer\& outBuffer)}
+This method should pack the description of the subproblem into
+\texttt{outBuffer}, typically using the \texttt{<<} operator.
+
+\method{void unpack(utilib::UnPackBuffer\& inBuffer)}
+This method should unpack the description of the subproblem from
+\texttt{inBuffer}, typically using the \texttt{>>} operator.
+
+\method{virtual parallelBranchSub* makeParallelChild(int whichChild)}
+This method is similar to \texttt{makeChild}, but returns a
+\texttt{parallelBranchSub*}.  It should create the
+\texttt{whichChild}'th child of the present subproblem, counting from
+$0$ to $k-1$, where $k$ is the number of children.  PEBBL only calls
+this method for subproblems in the \texttt{separated} state.
+
+
+\subsubsection{Standard disambiguations}
+While the PEBBL ``diamond'' inheritance pattern is powerful, it may also lead
+to some ambiguities.  When an inherited method is defined in several
+different base classes, the C++ compiler may be unsure which
+implementation to use.  When such ambiguity occurs when compiling a
+parallel PEBBL application, the general rule is to use the
+implementation in either \texttt{parallelBranching} or
+\texttt{parallelBranchSub}, which will in turn automatically call the
+appropriate serial layer routine.  For example, it may be necessary to
+define
+\begin{codeblock}
+boo\=l s\=etup(int\& argc,char**\& argv) \\
+\>    \{  \\
+\>\>      return parallelBranching::setup(argc,argv); \\
+ \>   \}
+\end{codeblock}
+and similarly for a few other routines.
+
+
+\subsubsection{Selected additional methods --- incumbent heuristic}
+PEBBL's parallel layer provides facilities allowing careful control
+over how much CPU time per processor is spent on incumbent
+heuristics.  In the parallel setting, there are two possible levels of
+incumbent heuristic: a ``quick'' incumbent heuristic that is run for
+each bounded subproblem, much as in the serial layer, and a separate
+incumbent thread whose CPU usage is controlled by the thread
+scheduler.  We now consider the methods that implement this
+functionality.
+
+In your implementations of these methods, keep in mind that whenever
+you change the incumbent, you should do the following things, as
+outlined in the sample implementation of
+\texttt{branching::updateIncumbent()} above.
+\begin{itemize}
+\item Update \texttt{branching::bound} to reflect the value of the
+  incumbent.
+\item Copy a description of the solution into application-specific
+  data structures in your \texttt{branching}-derived class (such as
+  \texttt{\emph{myBranching}}) so that it can be output via your
+  \texttt{serialPrintSolution} method.
+\item Call \texttt{signalIncumbent()}.
+\end{itemize}
+In the parallel layer, the call to \texttt{signalIncumbent()} is
+crucial to making sure that all processors become aware of the new
+incumbent value.
+
+\method{void parallelBranchSub::quickIncumbentHeuristic()}
+The heuristic to be run for every bounded subproblem.  The default
+implementation is a stub, and you need not attempt to run your
+heuristic every time \texttt{quickIncumbentHeuristic()} is called.
+For example, your implementation could immediately return if the
+subproblem does not look particularly ``attractive''.  If you do run your
+heuristic and find an improved incumbent, you should call
+\texttt{updateIncumbent()} or perform a similar sequence of
+operations.  The process of calling \texttt{quickIncumbentHeuristic()}
+is separate from the heuristic thread and does not require existence
+of the heuristic thread.
+
+\method{bool parallelBranching::hasParallelIncumbentHeuristic()}
+Returns \texttt{false} by default.  Return \texttt{true} if your
+implementation has the capability to run a heuristic thread.  PEBBL
+will create a heuristic thread if this method returns \texttt{true} and
+the parameter \texttt{useIncumbentThread} is \texttt{true}.
+
+\method{void parallelBranchSub::feedToIncumbentThread()}
+This method is a ``hook'' called for each bounded subproblem.  It is
+intended to examine a subproblem, and if it seems
+sufficiently attractive, copy some representation of it to the data
+structures used by the routine \texttt{parallelIncumbentHeuristic}.
+In creating these data structures, you may want to make them able to
+store representations of more than one subproblem.
+
+\method{void parallelIncumbentHeuristic(double* controlParam)}
+This is the method invoked by the incumbent thread.  The argument
+\texttt{controlParam} is set by the scheduler to try to control the
+amount of CPU time each call uses.  If you wish, you may ignore the
+value of this argument, and simply set \texttt{*controlParam = 1} upon
+exit. If you wish to be more responsive to the scheduler, try to do an
+amount of work roughly proportional (in some sense of your own
+choosing) to \texttt{*controlParam}, and then set
+\texttt{*controlParam} equal to the amount of work performed.  
+
+\method{ThreadObj::ThreadState incumbentHeuristicState()} 
+This method indicates
+whether the incumbent thread is ready to run.  The default
+implementation is to return \texttt{ThreadObj::ThreadBlocked},
+indicating the thread is unable to run.  As soon as your thread has
+some data upon which to operate, you should return
+\texttt{ThreadObj::ThreadReady} instead.  
+
+\method{double incumbentThreadBias()}
+This method indicates the importance of running the incumbent
+heuristic relative to the regular branch-and-bound worker process. The
+default implementation uses a formula involving various standard parameters and
+the current relative gap between the best known search node and the
+incumbent; see Section~\ref{sec:pthread}.  You are free to override
+this method with something more specific to your application.
+
+
+
+\subsubsection{Selected additional methods --- ramp-up}
+Section~\ref{sec:rampup} describes how PEBBL can take advantage of
+non-tree parallelism during the early growth of the search tree.
+During the ramp-up phase, the methods \texttt{boundComputation},
+\texttt{splitComputation}, and \texttt{makeChild} are called
+synchronously on identical subproblems for all processors.  In your
+\texttt{\emph{myParSub}} class, you may further override the
+implementations of these methods in your \texttt{\emph{myBranchSub}}
+class, so they can exploit synchronous parallelism during ramp-up.
+The method \texttt{parallelBranchSub::rampingUp()} will return
+\texttt{true} during the ramp-up phase, and \texttt{false} otherwise.
+
+At any point in your implementation of ramp-up that you could change
+the incumbent in a way that might not be identical for all processors,
+you should call
+\texttt{parallelBranchSub::\linebreak[0]rampUpIncumbentSync()}, or the
+ramp-up phase may deadlock.
+
+\method{void parallelBranchSub::rampUpIncumbentHeuristic()} 
+This method substitutes for the usual
+\texttt{quickIncumbentHeuristic()} during the ramp-up phase; note that
+\texttt{feedToIncumbentThread()} is still called during ramp-up, even
+though the incumbent heuristic thread will not be running yet.  The
+default implementation of \texttt{rampUpIncumbentHeuristic()} is:
+\begin{codeblock}
+      if \=(bG\=lobal()->haveIncumbentHeuristic()) \\
+\>	\{ \\
+\>\>	  incumbentHeuristic(); \\
+\>\>	  pGlobal()->rampUpIncumbentSync();\\
+\>      \} \textrm{.}
+\end{codeblock}
+
+\method{bool parallelBranching::continueRampUp()} 
+Ramp up will
+continue as long as either this method or
+\texttt{forceContinueRampUp()} return \texttt{true}.  The default
+implementation is described in Section~\ref{sec:rampup}, but you are
+free to override it.
+
+\method{bool forceContinueRampUp()}
+Ramp up will
+continue as long as either this method or
+\texttt{continueRampUp()} return \texttt{true}.  The default
+implementation is described in Section~\ref{sec:rampup}, but you are
+free to override it.
+
+\method{void rampUpCleanUp()}
+PEBBL calls this method on all processors when the ramp-up phase is
+over.  The default implementation is a stub.
+
+\subsubsection{Selected additional methods --- checkpoints}
+If your application maintains data structures not written and read by
+your implementations of the methods
+\texttt{\emph{myParBranching}::\linebreak[0]pack},
+\texttt{\emph{myParBranching}::\linebreak[0]unpack},
+\texttt{\emph{myParSub}::\linebreak[0]pack}, and
+\texttt{\emph{myParSub}::\linebreak[0]unpack}, then PEBBL's
+checkpointing feature will neither save nor restore them.  In this
+case, you need to define a few extra methods in order for
+checkpointing to work properly:
+
+\method{void \emph{myParBranching}::appCheckpointWrite(PackBuffer\&
+  outBuf)}
+Write application-specific data to the \texttt{PackBuffer}
+  \texttt{outBuf}, typically using the \texttt{<<} operator.  This method
+  will be called separately for each processor and for each
+  checkpoint.  The default implementation is a stub.
+
+\method{void \emph{myParBranching}::appCheckpointRead(UnPackBuffer\& inBuf)}
+Read the information written by \texttt{appCheckpointWrite} from
+\texttt{inBuf}, typically using the \texttt{>>} operator.  This
+routine will be called on each processor when a checkpoint is read
+using the \texttt{--restart} option.  The default implementation is a stub.
+
+\method{void \emph{myParBranching}::appMergeGlobalData(UnPackBuffer\&
+inBuf)} 
+This method is similar to the \texttt{appCheckpointRead}
+routine, but invoked when restarting with \texttt{--reconfigure}.  It
+will be called on every processor, but multiple times --- once for
+each dataset written by \texttt{appCheckpointWrite} when the
+checkpoint was created.  When restarting with \texttt{--reconfigure},
+the number of worker and hub processors may be different from when the
+checkpoint was written.
+
+\subsubsection{Constructing a driver}
+
+\begin{figure}[tbp]
+\begin{codeblock}
+int \=main(int argc, char* argv[])\\
+\{ \\
+\>  bool flag = true; \\
+\\
+\>  InitializeTiming(); \\
+ \\
+\>  uMPI::init(\&argc,\&argv,MPI\_COMM\_WORLD); \\
+\>  CommonIO::begin(); \\
+\>  CommonIO::setIOFlush(1); \\
+\\
+\>  myParBranching instance; \\
+\>  flag = instance.setup(argc,argv); \\
+\>  if \=(fl\=ag) \\
+\>\>	    \{ \\
+\>\>\>	      instance.reset(); \\
+\>\>\>        instance.printConfiguration(); \\
+\>\>\>	      instance.solve(); \\
+\>\>	    \} \\
+ \\
+\>	CommonIO::end(); \\
+\>      uMPI::done(); \\
+ \\
+\>  return !flag; \\
+\}
+\end{codeblock} 
+\caption{Example parallel driver program.}
+\label{fig:pardriver}
+\end{figure}
+
+Driver programs for parallel PEBBL applications look quite similar to
+those for serial PEBBL applications; the main difference is that you
+need to initialize the MPI and UTILIB \texttt{CommonIO} environments
+before loading the problem. Figure~\ref{fig:pardriver} shows a simple
+parallel driver; note that the PEBBL header file
+\texttt{<pebbl/parBranching.h>} automatically defines the classes
+\texttt{uMPI} and \texttt{CommonIO} from UTILIB, along with the
+\texttt{InitializeTiming()} method.  The call to
+\texttt{printConfiguration()} is optional, and prints information on
+the number of worker and hub processors.
+
+A driver program can be built using the libraries in
+\texttt{acro/\linebreak[0]lib} and headers in
+\texttt{acro/\linebreak[0]include}.  For example,
+\begin{verbatim}
+   g++ -I. -Iacro/include knapsack.cpp -c -o knapsack.o
+\end{verbatim}
+can be used to build an object file, and 
+\begin{verbatim}
+   g++ -o knapsack knapsack.o -Lacro/lib -lpebbl -lutilib -lm
+\end{verbatim}
+is an example of how an executable can be built.  Note that a convenient
+way to build with MPI is with a the MPI compiler script \texttt{mpiCC}.  This 
+script can simply replace the \texttt{g++} compiler in this example.
+
+A parallel driver should in general be invoked with the
+\texttt{mpirun} command (or \texttt{mpiexec} in some batch
+environments).  For example, if your parallel driver were called
+\texttt{\emph{myParDriver}}, the command
+\begin{codeblock}
+mpirun -np 4 \emph{myParDriver} --useIncumbentThread=false \emph{datafile}
+\end{codeblock}
+would run it on four processors, without an incumbent heuristic
+thread, and with the input file \texttt{\emph{datafile}}.
+
+It is also possible to construct combined serial/parallel drivers that
+sense whether they are being run in serial or parallel, and invoke the
+appropriate PEBBL class, for example \texttt{\emph{myBranching}} or
+\texttt{\emph{myParBranching}}.  For example, see
+\texttt{pebbl/src/example/\linebreak[0]knapsack.cpp}
+This driver also illustrates the
+trapping of exceptions that may be thrown by PEBBL.
+%%
+%% WEH TODO
+%%
+%% Include a reference to the QSS example here.
+%%
+
+If MPI detects only one processor,
+such adaptive serial/parallel 
+drivers will use the serial application class, and otherwise the
+parallel one.  Note that in some cases, usually for debugging
+purposes, you may want to run your parallel class, but only on one
+processor.  To provide a means of doing so, the template function 
+\begin{codeblock}
+parallel\_exec\_test<\emph{myParBranching}>(int argc, char** argv, int
+nproc)
+\end{codeblock}
+scans the command line for the parameter \texttt{--forceParallel}; it
+returns \texttt{true} if either $\text{\texttt{nproc}} > 1$ or
+\texttt{--forceParallel} is present, and otherwise \texttt{false}.

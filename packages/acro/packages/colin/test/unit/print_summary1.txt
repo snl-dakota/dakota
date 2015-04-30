@@ -1,0 +1,12 @@
+Number of objectives: 1  { MIN }
+Real variables:    3
+Index        Label       Lower Bound T       Upper Bound T
+    1           x0                -1 H                 1 H 
+    2       _none_                -1 H                 1 H 
+    3       _none_                -1 H                 1 H 
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0

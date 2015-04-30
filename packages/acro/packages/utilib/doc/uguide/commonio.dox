@@ -1,0 +1,148 @@
+/*! 
+ * \page commonioPage
+ *
+
+\section CommonIOSec Managing Parallel Output with a Common I/O Trace
+
+
+\subsection CommonIOOverviewSec Overview
+
+Using print statements to trace interesting events is perhaps the
+simplest strategy for debugging software.  However, there are several
+caveats for using them for parallel debugging.  First, this technique
+can significantly impact the relative computation rates of processes
+during a parallel computation.  Printing and especially file I/O are often
+very slow when compared to other computation tasks.  Adding printing
+changes the behavior of asynchronous parallel programs so the precise
+error condition that a developer is tracking can disappear.
+
+A second caveat for print-based debugging is that the order in which
+information is presented to a screen may not reflect the true sequence
+of events.  For example, printing I/O for one process may be delayed
+while a buffer fills, allowing other processes' I/O to be displayed
+out of order.  Explicitly flushing buffers (e.g.  using
+\c flush(), can help, but even then communication delays can
+affect output ordering.
+
+Finally, it is difficult (and at best inconvenient) to simultaneously
+display I/O from multiple processes, especially for an execution using
+hundreds to thousands of processors.  Operating systems typically
+interleave the output of multiple processes, which can quickly lead
+to unintelligible output.  One solution to this problem is to stream
+each process' I/O to a different file.  In C, this can be done using \c
+fprintf() statements with a different file descriptor for each process.
+More sophisticated solutions can be developed in C++ by exploiting
+the extensibility of stream operators.  The utilib::CommonIO class
+provides new streams \ref utilib::ucout "ucout" and \ref utilib::ucerr "ucerr",
+which replace \c cout and \c cerr to control I/O in a flexible manner.
+The utilib::CommonIO class ensures that I/O streamed to \ref utilib::ucout
+"ucout" and \ref utilib::ucerr "ucerr" is printed as a single block,
+and thus it is unlikely to be fragmented on a screen.  Additionally,
+each line of the output can be tagged with a processor id and line number:
+\verbatim
+    [2]-00002 Printing line 2 from process 2
+    [3]-00007 Printing line 7 from process 3
+    [3]-00008 Printing line 8 from process 3
+    [1]-00003 Printing line 3 from process 1
+    [1]-00004 Printing line 4 from process 1
+    [0]-00003 Printing line 3 from process 0
+\endverbatim
+This facility makes it easy to extract and order output for each
+process.
+
+
+\subsection CommonIODetailsSec Using The CommonIO Class
+
+The CommonIO.h header file provides macro-based definitions for
+the symbols \ref utilib::ucout "ucout", \ref utilib::ucerr "ucerr" and 
+\ref utilib::ucin "ucin".  By default, these symbols are mapped
+to the standard C++ I/O streams.  I/O can be directed to/from other
+streams using the \c set_streams, \c set_cout, \c set_cerr and \c set_cin 
+methods.  utilib::CommonIO also allows users to mask these streams, which adds
+information about the processor ID and/or line number of the I/O.
+To begin masking, the user executes \c CommonIO::begin(), and
+similarly \c CommonIO::end() is called to end the masking of these streams.
+For example:
+\verbatim
+    CommonIO::begin()
+    ucout << "This text is rerouted through CommonIO's streams" << endl;
+    CommonIO::end()
+\endverbatim
+Note that calls to \c CommonIO::begin() and \c CommonIO::end() can be nested,
+enabling subroutines to use utilib::CommonIO without worrying whether the IO
+has already been redirected.  However, note that the formatting
+options for utilib::CommonIO streams described below are NOT reset after
+a call to \c CommonIO::end(); the user is responsible for resetting the
+state of the utilib::CommonIO streams after their use.
+
+Because a begin-end block can be nested in this fashion, calling
+\c CommonIO::end() does not necessarily turn off IO mapping;  IO mapping
+could have been initialized from an enclosing begin-end block.  The method
+\c CommonIO::map_off() can be called to explicitly turn off IO mapping
+regardless whether mapping has been initiated by a previous
+call to \c CommonIO::begin().  \c CommonIO::map_on() must be used to
+restart IO mapping; a subsequent call to \c CommonIO::begin() will be
+masked by the \c CommonIO::off() method.  Finally, note that an error is
+detected if a matching \c CommonIO::end() is not called for every
+\c CommonIO::begin() when the last utilib::CommonIO object is destroyed.
+
+utilib::CommonIO provides routines that manage parallel debugging, prepending
+tagging information, and providing a global debugging flag.  Tagging
+information is prepended after \c begin_tagging() is called. An optional
+argument specifies the value of the \c numDigits variable (by default
+\c numDigits=0). The format of the prepended IO is:
+\verbatim
+    [r]-000ii
+\endverbatim
+where 'r' is the rank of the current process and 'ii' is the index of the
+current IO; the index field has numDigits digits.  Tagging is stopped when
+\c end_tagging() is called.
+
+To facilitate tagging, the \ref utilib::ucout "ucout" and \ref
+utilib::ucerr "ucerr" macros map to \c strstream buffers.  When the
+stream is flushed by calling \c CommonIO::flush() or by using the IO
+manipulator \c Flush,
+\verbatim
+    ucout << Flush
+\endverbatim
+the IO is processed to insert the rank information after every end-of-line
+in the stream.  Using this facility makes it difficult to support the \c
+flush method for streams, since '\<stream\>.flush()' gets mapped to a flush
+operation on a \c strstream object.  This does NOT flush the \<stream\>
+object as with standard \c ucout and \c ucerr streams.  Consequently,
+the \c Flush IO manipulator has been created to provide a convenient
+means of flushing utilib::CommonIO streams.
+
+utilib::CommonIO can also be used to buffer IO generated by a process.
+If \c CommonIO::begin_buffered() is called, then the IO is mapped via
+\c strstream objects, but the IO is not flushed until \c CommonIO::end()
+is called.  If a new utilib::CommonIO begin/end block is started within
+a buffered begin/end block, IO within this block will continue to be
+buffered.
+
+
+\subsection CommonIODebuggingSec Managing Debugging IO
+
+utilib::CommonIO also supports mechanisms for controlling I/O using a
+'debugging level'.  Consequently, utilib::CommonIO is often used a base
+class for other UTILIB classes.
+
+The utilib::CommonIO class data member \c debug defines the
+'debugging level' of the IO.  This value is referenced by the \c
+verbosity() method, which determines if the given verbosity level is
+'high enough' to be printed.
+
+The debugging level is principally used by the \ref utilib::DEBUGPR "DEBUGPR"
+and \ref utilib::OUTPUTPR "OUTPUTPR" macros, and related macros
+(see CommonIO.h).  These macros accept two arguments: a debugging level
+and an arbitrary set of commands.  These commands are executed if the
+specified debugging level is greater than or equal to the \c CommonIO
+debugging level.
+
+The \c setIORank() method can be used to limit debugging IO to a limited
+number of processors.  By default, the \c verbosity() check allows all
+processors to perform IO.  By calling \c setIORank(x), 
+future calls to \c verbosity() will return \c false if \c x is not the rank of the current processor, thereby turning off debugging IO.
+
+
+*/

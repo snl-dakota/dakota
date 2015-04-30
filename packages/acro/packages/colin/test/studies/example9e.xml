@@ -1,0 +1,37 @@
+<ColinInput>
+  <Problem id="original" type="MO_MINLP0">
+     <Domain>
+	<RealVars num="3">
+	    <Lower value="0.0"/>
+	    <Upper value="20.0"/>
+	</RealVars>
+     </Domain>
+
+    <Objectives num="2"/>
+    <Constraints>
+        <Nonlinear num="2">
+          <Leq value="4.0"/>
+        </Nonlinear>
+     </Constraints>
+
+     <Driver>
+        <Command>../../../../python/bin/python example_fn2</Command>
+     </Driver>
+  </Problem>
+
+  <Problem id="reformulated" type="MO_UMINLP0" application="UnconstrainedMultiobjReformulation">
+     <BaseProblem id="original"/>
+  </Problem>
+
+  <Solver type="colin:rmoo">
+     <Problem id="reformulated"/>
+     <InitialPoint>
+       10.1 10.1 10.1
+     </InitialPoint>
+     <Options>
+        <Option name="max_iters">20</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

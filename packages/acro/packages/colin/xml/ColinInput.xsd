@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/ColinInput"
+            xmlns:tns="http://xml.netbeans.org/schema/ColinInput"
+            elementFormDefault="qualified" version="1.0">
+    <xsd:complexType name="ProblemType" abstract="true">
+        <xsd:attribute name="type" type="tns:NameType" default="MINLP0"/>
+        <xsd:attribute name="name" type="tns:NameType" default="default"/>
+    </xsd:complexType>
+    <xsd:complexType name="BoundType">
+        <xsd:attribute name="index" type="tns:IndexType" default="all"/>
+        <xsd:attribute name="type" type="tns:BoundEnforcement" default="hard"/>
+    </xsd:complexType>
+    <xsd:complexType name="RealBoundType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:BoundType">
+                <xsd:attribute name="value" type="tns:Ereal" use="required"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="IntegerBoundType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:BoundType">
+                <xsd:attribute name="value" type="tns:Einteger" use="required"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="RealBoundsType">
+        <xsd:sequence>
+            <xsd:element name="Lower" type="tns:RealBoundType" minOccurs="0" nillable="true"/>
+            <xsd:element name="Upper" type="tns:RealBoundType" minOccurs="0" nillable="true"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ExternalProblemDriverType" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ProblemType">
+                <xsd:sequence>
+                    <xsd:element name="Parameters">
+                        <xsd:complexType>
+                            <xsd:attribute name="binary" type="xsd:nonNegativeInteger" default="0"/>
+                            <xsd:attribute name="integer" type="xsd:nonNegativeInteger" default="0"/>
+                            <xsd:attribute name="real" type="xsd:nonNegativeInteger" default="0"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="IntegerBounds" type="tns:IntegerBoundsType" minOccurs="0"></xsd:element>
+                    <xsd:element name="RealBounds" type="tns:RealBoundsType" minOccurs="0"></xsd:element>
+                    <xsd:element name="NonlinearConstraintBounds" type="tns:RealBoundsType" minOccurs="0"></xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="SystemCallProblemType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ExternalProblemDriverType">
+                <xsd:sequence>             
+                    <xsd:element name="Driver">
+                        <xsd:complexType>
+                            <xsd:sequence>  
+                                <xsd:element name="WorkingDirectory" minOccurs="0" type="xsd:token" default="."/>
+                                <xsd:element name="RequestPrefix" minOccurs="0" default="coliny_request_" type="xsd:token"/>
+                                <xsd:element name="ResponsePrefix" minOccurs="0" default="coliny_response_" type="xsd:token"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:token" use="required"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:simpleType name="IndexType">
+        <xsd:union memberTypes="xsd:positiveInteger tns:IndexALLToken"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="IndexALLToken">
+        <xsd:restriction>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:pattern value="all"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="BoundEnforcement">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="hard">
+                <xsd:annotation>
+                    <xsd:documentation>Hard bound constraint that is always enforced</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="soft">
+                <xsd:annotation>
+                    <xsd:documentation>Soft bound constraint that may be violated</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="periodic">
+                <xsd:annotation>
+                    <xsd:documentation>Periodic bound constraint</xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NegativeInfinity">
+        <xsd:restriction base="xsd:string">
+            <xsd:whiteSpace value="preserve"/>
+            <xsd:pattern value="-Infinity"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="PositiveInfinity">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\+Infinity"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Infinity">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="Infinity"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Ereal">
+        <xsd:union memberTypes="xsd:double tns:Infinity tns:NegativeInfinity tns:PositiveInfinity"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="Einteger">
+        <xsd:union memberTypes="xsd:integer tns:Infinity tns:NegativeInfinity tns:PositiveInfinity"/>
+    </xsd:simpleType>
+    <xsd:complexType name="IntegerBoundsType">
+        <xsd:sequence>
+            <xsd:element name="Lower" type="tns:IntegerBoundType" minOccurs="0" nillable="true"/>
+            <xsd:element name="Upper" type="tns:IntegerBoundType" minOccurs="0" nillable="true"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="SolverType">
+        <xsd:sequence>
+            <xsd:element name="Problem" type="tns:NameType" minOccurs="1" maxOccurs="unbounded" default="default"/>
+            <xsd:element name="Options" type="tns:OptionsType" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="tns:NameType" use="required"/>
+    </xsd:complexType>
+    <xsd:complexType name="OptionsType">
+        <xsd:sequence>
+            <xsd:element name="Option" maxOccurs="unbounded" minOccurs="1">
+                <xsd:complexType mixed="true">
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="ColinInput">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="tns:Problem" maxOccurs="unbounded"/>
+                <xsd:element name="Solver" type="tns:SolverType"></xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="Problem" type="tns:ProblemType" abstract="true"/>
+    <xsd:element name="SystemCallProblem" type="tns:SystemCallProblemType" substitutionGroup="tns:Problem"/>
+    <xsd:element name="AmplProblem" substitutionGroup="tns:Problem" type="tns:AmplProblemType"/>
+    <xsd:simpleType name="NameType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[a-zA-Z0-9\-:_\.]+"/>
+            <xsd:whiteSpace value="collapse"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NLFileType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value=".*\.nl"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="AmplProblemType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ProblemType"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:simpleType name="BinaryPoint">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[01]+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="IntegerPoint">
+        <xsd:list itemType="tns:Einteger"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="newSimpleType">
+        <xsd:list itemType="tns:Ereal"/>
+    </xsd:simpleType>
+    <xsd:group name="ProblemTypes">
+        <xsd:sequence>
+            <xsd:element ref="tns:SystemCallProblem"/>
+            <xsd:element ref="tns:Problem"/>
+            <xsd:element ref="tns:AmplProblem"/>
+        </xsd:sequence>
+    </xsd:group>
+</xsd:schema>

@@ -1,0 +1,29 @@
+/*! 
+ * \page parallelPage
+
+
+\section ParallelSec Parallel Computing Utilities
+
+Developing parallel software is notoriously difficult, particularly
+because of inherent difficulties associated with the debugging of
+parallel software.  Parallel software coordinates threads of execution
+across multiple physical processors.  Thus parallel software often
+exhibits programming errors related to timing and synchronization
+that are not seen in serial codes.
+
+The remainder of this section describes UTILIB capabilities for developing
+and debugging parallel \if GeneratingHTML software: \endif \if GeneratingLATEX software. \endif
+
+\if GeneratingHTML
+
+ - \ref mpiPage "MPI Utilities" - describes a wrapper class that manages MPI errors.
+
+ - \ref mpePage "MPE Utilities" - describes a wrapper class that manages MPE logging events.
+
+ - \ref packPage "Parallel Communication with Packed Buffers" - describes UTILIB classes that simplify parallel communication with MPI.
+
+ - \ref commonioPage "Managing Parallel Output with a Common I/O Trace" - describes the UTILIB CommonIO class, which can be used to organize parallel print statements.
+
+\endif
+
+*/

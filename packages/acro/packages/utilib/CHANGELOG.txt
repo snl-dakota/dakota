@@ -1,0 +1,231 @@
+###############################################################################
+#                                                                             #
+# UTILIB Release 4.3 Changelog                                                #
+#                                                                             #
+###############################################################################
+
+-------------------------------------------------------------------------------
+UTILIB 4.3.4 (2014/09/26)
+-------------------------------------------------------------------------------
+
+- This is a patch release containing primarily portability and build
+  harness fixes.
+
+-------------------------------------------------------------------------------
+UTILIB 4.3.3 (2013/09/18)
+-------------------------------------------------------------------------------
+
+- Miscellaneous bug fixes for the Property and PropertyDict classes
+- This is a patch release containing primarily portability and build
+  harness fixes.
+
+-------------------------------------------------------------------------------
+UTILIB 4.3.2 (2013/04/29)
+-------------------------------------------------------------------------------
+
+- This is a patch release containing primarily portability and build
+  harness fixes.
+
+-------------------------------------------------------------------------------
+UTILIB 4.3.1 (2012/10/08)
+-------------------------------------------------------------------------------
+
+- This is a patch release containing primarily portability and build
+  harness fixes.
+
+-------------------------------------------------------------------------------
+UTILIB 4.3 (2011/11/04)
+-------------------------------------------------------------------------------
+
+- Introduced a CMake build harness
+
+- New XML helper functions: get_element_test() and UNEXPECTED_ELEMENT()
+
+- memmon now reports 0 memory for fast-running commands with no recorded
+  memory usage
+
+- TypeManager registration functions now return a bool indicating success.
+
+- Adding a const interface to PropertyDict::find()
+
+- Improved support for out-of-source builds
+
+- Portability fixes for AIX, MSVS
+
+-------------------------------------------------------------------------------
+UTILIB 4.2 (2010/12/21)
+-------------------------------------------------------------------------------
+
+- Integrated support for BOOST, which UTILIB conditionally depends on
+
+- Introduced a generic Property system: a specialized Any-based
+  container with event handlers for reading, validation, and "on change".
+
+- Introduced the PropertyDict class for creating "dictionaries" (name ->
+  property maps) of Properties
+
+- Complete rewrite of the TypeManager class to: 
+   - remove context_cast
+   - add support for arbitrary cast "cost" for determining preferred path
+   - add support for fallback casts: returns the shortest, least
+     error-prone result.
+   - supports multiple casts between a pair of types
+
+- Introduced an OStreamTee class to provide programmatic features that
+  mimic the UNIX "tee" utility
+
+- Added the ability to query the OptionParser for the existence of a
+  parameter
+
+- Squashing additional warnings in recent versions of GCC (4.3)
+
+- Portability fixes for Mac, Solaris, AIX platforms; ICC, PGI compilers
+
+- New timing routines for reporting system and user time
+
+- Efficiency improvements for deleting elements in SparseMatrix
+
+- New, more standards-compliant, EXCEPTION_MNGR macro
+
+- Numerous bugfixes: OptionParser, Any, BitArray, ReferenceCounted
+
+- Restructure of the repository layout
+
+-------------------------------------------------------------------------------
+UTILIB 4.1 (2009/09/10)
+-------------------------------------------------------------------------------
+
+- Numerous updates to the UTILIB tests.
+
+- Updates to resolve Windows portability issues
+
+- Resolving numerous compiler warnings
+
+- Fix for packing signed char into PackBuf
+
+- Resolving several (uncommon) issues with the Any, TypeManager, and
+  SerialStream classes
+
+- Changes to singleton management for the TypeManager and
+  SerializationManager
+
+- Reviving MPE event logging
+
+-------------------------------------------------------------------------------
+UTILIB 4.0 (2008/12/12)
+-------------------------------------------------------------------------------
+
+- Added the OptionParser class to (a) register options that can be set
+  with a convenient interface, and (b) support option/value parsing from
+  command-line arguments and XML blocks.  This class was based on the
+  design of the Python optparse package.
+
+- Added the SparseMatrix::addSpace method
+
+- Significantly extended the semantics of the Any class.  This can now support
+  a variety of operations on the contained type, and the user can configure
+  the Any class definition to enable/disable these capabilities.
+
+- Integrated cxxtest to support unit testing.  This capability does not 
+  currently test a large fraction of UTILIB, but that's the plan.
+
+- Integrated support for tinyxml, which UTILIB conditionally depends on.
+
+- Added a serialization capability (SerialStream), which can be used 
+  to stream arbitrary classes in a variety of formats (e.g. to a file, 
+  or using MPI).
+
+- Created the SmartHandle class to provide a light-weight management of 
+  dynamically allocated objects.
+
+- Integrated the build of a variety of utility commands, which were formerly
+  supported in the FAST tool: memmon, timer, complete_doe
+
+- Added the gcovr tool, which provides a textual summary of gcov statistics.
+
+- Misc fixes in the TypeManager class.
+
+- Setup a preliminary SCONS build system.  This almost works...
+
+- Integrated support for EXPAT for XML parsing.
+
+- Adding a utilib::SharedValue? class, which shares values with reference
+  counting. This provides a lightweight container object whose value
+  is shareable.
+
+- Depricated the AnyReference and AnyValue classes.  These capabilities
+  have been integrated into the Any class.
+
+-------------------------------------------------------------------------------
+UTILIB 3.3.0 (2007/09/20)
+-------------------------------------------------------------------------------
+
+- Added Any::operator<() and changed semantics of Any::operator()
+
+- bugfix: RMSparseMatrix::adjoinRow() now updates ncols
+
+- MixedIntVars Updates
+  Bug fix for MixedIntVars, which exposed a flaw in C++ code optimization!
+  Add get() method
+  More descripted I/O format
+
+- Rework of exception manager to ensure that temporary character strings are not
+  used when throwing an exception.
+
+- Rework of RNG API
+   This now uses a set_/get_ syntax that is more transparent than 'reseed'.
+
+- Bug fix in toUpper and toLower.
+
+- Augmenting the ParameterSet class to enable the writing
+  of parameter info in XML format.
+
+- Portability fixes (SOLARIS, IRIX)
+
+- New TypeManager mechanism added.
+
+- Bug fix for formatting scientific notation in a portable manner.
+
+
+-------------------------------------------------------------------------------
+UTILIB 3.2.0
+-------------------------------------------------------------------------------
+
+- Resolve test errors for qlist
+
+- Updated user manual to document factories.
+
+- Updated user manual to use a standard SAND format.
+
+- Fixed the 'aslong()' command.
+
+- Added a function to convert CharString to upper case.
+
+- Misc cleanup of CachedAllocator.
+
+- Fixed memory cleanup in AbstractSplayTree.  Updated splay test
+  to check that no memory is leaked.
+
+- Added a Factory object.
+
+- Added declaration of UTILIB_MPI_COMM_IS_POINTER
+
+- Fixed configuration caching.
+
+- Misc updates and revisions to autoconf configuration.
+
+- Added category information for tests.
+
+- Rework of tests to work with new EXACT experimental driver.
+
+
+-------------------------------------------------------------------------------
+UTILIB 3.0
+-------------------------------------------------------------------------------
+
+- Rework of many abstract data types to use iterator mechanisms.
+
+- Elimination of the sorting codes, but explicitly leveraging of
+  STL sorting to support a variety of sorting-related activities.
+
+- A significant rework of UTILIB documentation.

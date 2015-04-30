@@ -1,0 +1,11 @@
+================================
+Acro Release Test Plan Checklist
+================================
+
+ ___ Portability requirements and build platforms
+
+ ___ Test requirements
+    
+ ___ Save output of representative tests in directory
+
+

@@ -1,0 +1,31 @@
+/*!
+ * \page factoryPage
+
+\section factorySec A Templated Factory Class
+
+The class utilib::Factory defines an templated mechanism
+for defining a factory, which use strings to contruct objects.  Factories are
+managed globally, and factory registration can occur before \c main()
+begins.  The FACTORY_REGISTER and FACTORY_NAMED_REGISTER macros are used
+to register a factory.  For example, consider classes 
+\c B1 and \c B2, that are subclasses of class \c A.  We can register
+these classes as follows:
+\verbatim
+    FACTORY_REGISTER(b1_obj, A, return new B1(), "Constructs a B1 object")
+    FACTORY_NAMED_REGISTER(b2_obj, "b2-obj", A, return new B2(), "Constructs a B2 object")
+\endverbatim
+The first registration creates a factory that constructs a \c B1 class with string "b1_obj".  The second registration creates a factory that 
+constructs a \c B2 class with string "b2-obj".  In fact, the second
+registration could specify an arbitrary string for registration, while the
+first registration is restricted to symbols that can be appended to a class name.
+
+Factories are used as follows:
+\verbatim
+    A* b1 = factory_create<A>( "b1_obj" );
+    A* b2 = factory_create<A>( "b2-obj" );
+\endverbatim
+Objects constructed by this factory must be deleted by the user of the factory.
+
+*/
+
+

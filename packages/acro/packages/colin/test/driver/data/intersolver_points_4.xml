@@ -1,0 +1,41 @@
+<ColinInput>
+  <Problem type="NLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>shell_func_sumx</Command>
+        <RequestPrefix>request_prefix_</RequestPrefix>
+        <ResponsePrefix>response_prefix_</ResponsePrefix>
+        <KeepFiles />
+        <NoCounterSuffix />
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:test" id="a">
+     <InitialPoint>
+        10.0 10.0 10.0
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">29.0</Option>
+     </Options>
+  </Solver>
+
+  <Solver type="colin:test" id="b">
+     <InitialPoint>
+        9 9 9
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">26.0</Option>
+     </Options>
+  </Solver>
+
+  <Execute>
+    <solve:a>
+      <InitialPoint>
+        11 12 11
+      </InitialPoint>
+    </solve:a>
+    <solve:b/>
+  </Execute>
+</ColinInput>

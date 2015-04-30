@@ -1,0 +1,15 @@
+Third-party software that is distributed in the TPL subdirectories
+is assumed to contain its own copyright and licensing information.  However,
+this information needs to be integrated into the Acro license documentation:
+
+  http://software.sandia.gov/Acro/Documentation/LicenseInfo.html
+
+Third-party software that is distributed in a core Acro package needs
+to contain explicit licensing information within every file.  If these files
+did not originally contain this information, please add the following
+comment to each file:
+
+/* This is third-party software that is distributed with Acro.
+ * For licensing information concerning this file, see the Acro home page:
+ * http://software.sandia.gov/Acro
+ */

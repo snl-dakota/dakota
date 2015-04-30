@@ -1,0 +1,37 @@
+
+
+ bool:
+  -B                          B option
+  -b                          b option
+                              aliases: --alias-b -z
+  -A, --AAA                   A option
+  -a, --aaa                   a option
+                              aliases: --alias-a --alias-aaa
+
+ unsigned int:
+      --ddd                   ddd option
+
+
+
+options:
+
+  -B                          B option
+  -b                          b option
+                              aliases: --alias-b -z
+  -z                          z option
+  -A, --AAA                   A option
+  -a, --aaa                   a option
+                              aliases: --alias-a --alias-aaa
+      --cc                    cc option
+      --ddd                   ddd option
+      --ee                    ee option
+      --ff                    ff option
+      --gg                    gg option
+  -h, --help                  Display usage information
+      --s1                    s1 option
+      --s2                    s2 option
+                              aliases: --alias-s2
+      --s3                    s3 option
+      --s4                    s4 option
+      --s5                    s5 option
+

@@ -1,0 +1,52 @@
+<experimental-study name="scolib-ps">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>scolib</tag>
+    <tag>valgrind</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="test" filename="ps_problems"/>
+  
+      <factor name="config">
+        <level>solver=sco:ps max_neval=20000</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable>./scolib_test --ampl</executable>
+       <replication>5
+          <seeds>100 101 102 103 104</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value='Step-Length'</options>
+  </analysis>
+
+  <analysis name="ConstraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=0.001</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

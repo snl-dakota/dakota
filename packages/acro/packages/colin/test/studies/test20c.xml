@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ColinInput xmlns="http://xml.netbeans.org/schema/ColinInput"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation='http://xml.netbeans.org/schema/ColinInput ColinInput.xsd'>
+
+<!-- NOTE: this doesn't work right now... -->
+
+  <Problem id="old" type="NLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>shell_func5</Command>
+        <KeepFiles />
+     </Driver>
+  </Problem>
+
+  <Problem id="new" application="FiniteDiffReformulation" type="NLP1">
+     <BaseProblem id="old"/>
+     <!--NB: steps smaller that 1e-4 give 0 derivatives -->
+     <FiniteDifferences method="central" step="1e-4"/>
+  </Problem>
+
+  <Solver type="colin:test_g">
+     <Problem id="new" />
+     <InitialPoint>
+       10.0 10.0 10.0
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">29.0</Option>
+     </Options>
+  </Solver>
+
+  <Execute />
+</ColinInput>

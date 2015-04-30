@@ -1,0 +1,77 @@
+/*!
+ * \page sysPage
+
+\section sysSec Miscellaneous Classes and Utilities 
+
+
+UTILIB provides a variety of general utility classes:
+
+- utilib::AnyValue and utilib::AnyReference - Classes that store any
+object by value and reference respectively.  The utilib::AnyValue
+class was adapted from the \c boost::any class, in particular to include
+UTILIB exception management and stream operators.
+
+- utilib::CachedAllocator - A class that redefines the \c new and \c
+delete methods for a class to cache the allocation and deallocation
+of objects.
+
+- utilib::ClassRef - A data type that manages the reference counting
+for unspecified data elements.  This is a rather non-standard form of
+memory referencing, in which the reference object knows about all of
+the objects for which it is sharing memory.  This is not a scalable form
+of reference management.  However, it facilitates the use of reference
+sharing on an as-needed basis.  Further, it facilitates the fast access
+of data in the main objects.
+
+- utilib::Ereal - Defines an extension of 'real' data types (e.g. double,
+float, long double)  that can 'assume' all 'real' values, as well as
+negative infinity and positive infinity.  This is not meant to replace
+the use of IEEE arithmetic, but instead provide convenient container
+for managing data that may be infinite.
+
+- utilib::GenericKey - A generic key object for use with UTILIB abstract
+data types (e.g.  heaps, hash tables, etc).
+
+- utilib::PersistentPointer - A class that looks like a pointer, but does
+not delete the underlying pointer's memory when this class is deleted!
+
+- utilib::RefCount - An object used to maintain reference counts for
+shared data.
+
+- utilib::SmartPtr - Class that manages pointer deletion and allows for
+sharing of pointers with reference counters
+
+- Tuple# - The classes utilib::Tuple1 ... utilib::Tuple7 define n-tuples,
+which are fixed length lists.
+
+- utilib::ValuedContainer - A container class that contains a value that
+can be extracted.  For example, this is useful to sort objects that have
+a value with auxiliary information.
+
+
+
+Additionally, the following UTILIB headers define miscellaneous utilities and 
+support functions, including functions that are system-specific:
+
+  - _generic.h - Commonly used macros for 'standard' values (e.g. TRUE/FALSE)
+
+  - comments.h - Includes stream operators for processing comment lines and
+
+  - memdebug.h - Some experimental macros that can be used to debug memory allocation issues.
+
+  - nicePrint.h - Utilities for formatting output.
+
+  - seconds.h - Various utilities to query timing routines in a portable manner, including both system and wall-clock time.
+
+  - std_headers.h - Includes C and C++ headers to facilitate portability (especially for compilers that are not ANSI C++ compliant).
+white space.
+
+  - stl_auxillary.h - Defines functions and operators that can be applied to
+	the std::vector class.  In particular, this defines stream operators
+	for this class.
+
+  - string_ops.h - Defines functions for manipulating utilib::CharString objects.
+
+  - traits.h - Defines a macro for setting global traits.
+
+*/

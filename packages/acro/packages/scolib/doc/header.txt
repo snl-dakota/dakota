@@ -1,0 +1,9 @@
+/*  _________________________________________________________________________
+ *
+ *  Coliny: A C++ library of COLIN optimizers.
+ *  Copyright (c) 2003, Sandia National Laboratories.
+ *  This software is distributed under the GNU Lesser General Public License.
+ *  For more information, see the README.html file in the Coliny directory.
+ *  _________________________________________________________________________
+ */
+

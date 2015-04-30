@@ -1,0 +1,88 @@
+foo: type=   int, d =   0 (-101), i =   5 (   0), s =   0 (-101), l =   0 (-101)
+foo: type=double, d = 7.7 (   0), i =   0 (-101), s =   0 (-101), l =   0 (-101)
+foo: type= short, d =   0 (-101), i =   0 (-101), s =   7 (   0), l =   0 (-101)
+foo: type=  long, d =   0 (-101), i =   0 (-101), s =   0 (-101), l =   8 (   0)
+foo: type=double, d = 5.5 (   0), i =   0 (-101), s =   0 (-101), l =   0 (-101)
+foo: type=double, d = 6.5 (   0), i =   0 (-101), s =   0 (-101), l =   0 (-101)
+typeof<int> = 0; typeof<double> = 1
+reference tests: int(1), Any(1), int(0)
+i = 5, Any(&i) = 5, Any(i) = 5
+i = 6, Any(&i) = 6, Any(i) = 5
+i = 7, Any(&i) = 7, Any(i) = 6
+i = 6, Any(&i) = 6, Any(i) = 6
+Constructing FOO
+Copy Constructing FOO
+Constructing FOO
+j = 1; j = 6; j = 11
+Assignment failed: Any::operator=(): assignment to immutable Any from invalid type.
+Assignemnt failed: Any::set(value): assignment to immutable Any from invalid type.
+Assignemnt failed: Any::set<>(): assignment to immutable Any from invalid type.
+Extraction failed: Any::extract() - failed conversion from 
+refcount = 0
+refcount = 1
+refcount = 2
+refcount = 3
+Test AnyRef: (d = 1) 1 -> 2 (d = 2)
+Test cast double -> AnyRef: (d = 5) 5 -> 6 (d = 6)
+Test cast Any(is_ref = true) -> AnyRef: (d = 10) 10 -> 11 (d = 11, Any = 11)
+Test cast Any(is_ref = false) -> AnyRef: (d = 20) 20 -> 21 (d = 20, Any = 21)
+refcount = 0
+refcount = 0
+refcount = 1
+refcount = 2
+Test AnyFixedRef: (d = 1) 1 -> 3 (d = 3)
+Test cast double -> AnyFixedRef: (d = 5) 5 -> 7 (d = 7)
+Test cast Any(is_ref = true) -> AnyFixedRef: (d = 10) 10 -> 12 (d = 12, Any = 12)
+Test cast Any(is_ref = false) -> AnyFixedRef: (d = 20) 20 -> 22 (d = 20, Any = 22)
+Constructing FOO
+Copy Constructing FOO
+Copy Constructing FOO
+Copy Constructing FOO
+Copy Constructing FOO
+Constructing FOO
+Copy Constructing FOO
+Copy Constructing FOO
+Copy Constructing FOO
+Copy Constructing FOO
+Equality tests
+  test i   ref== i:  1
+  test i   ref== &i: 0
+  test i      == i:  1
+  test i      == &i: 1
+  test i      == j:  0
+  test i      == d:  0
+  test i      == j:  1
+  test v<i>   == v<i>:   1
+  test v<i>   == v<i>':  0
+  test v<i>   == v<d>:   0
+  test v<FOO> == v<FOO>: Comparing (correctly) failed
+  test m<i,d> == m<i,d>: 1
+  test m<i,d> == m<i,d>: 0
+  test l<c>   == l<c>:   1
+  test d<i>   == d<i>:   1
+  test s<i>   == s<i>:   1
+  test S<i>   == S<i>:   1
+  test M<i,d> == M<i,d>: 1
+LessThan tests
+  test i      <  i:  0
+  test i      <  &i: 0
+  test i      <  j:  1
+  test i      <  d:  0
+  test i      <  j:  0
+  test v<i>   <  v<i>:   0
+  test v<i>   <  v<i>':  1
+  (test v<i>  <  v<d>) + (test v<d>  <  v<i>):  1
+  test v<FOO> <  v<FOO>: Comparing (correctly) failed
+  test m<i,d> <  m<i,d>: 0
+  test m<i,d> <  m<i,d>: 1
+  test l<c>   <  l<c>:   0
+  test d<i>   <  d<i>:   0
+  test s<i>   <  s<i>:   0
+  test S<i>   <  S<i>:   0
+  test M<i,d> <  M<i,d>: 0
+Printing tests
+  (int) = 1
+  (dbl) = 5.5
+  (vec) = [ 5, 5, 5, 5, 5 ]
+  (map) = [ (2, 2.2), (4, 4.4), (8, 8.8) ]
+  (i&)  = 6

@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Script to bootstrap an Acro configuration.  The first argument indicates the
+# particular acro project, and it can be used to specialize the configuration
+# of Acro makefiles.
+#
+# NOTE: this script will be run from the root Acro directory.
+#
+
+if [ "$1" = "all" ]; then
+   #
+   # Copy file with cp_u only copy if they are newer
+   #
+   bin/cp_u bootstrap/root/* .
+   bin/cp_u bootstrap/packages/* packages
+   bin/cp_u bootstrap/tpl/* tpl
+else
+   echo "Customized bootstrapping is currently not supported."
+fi
+

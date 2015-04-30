@@ -1,0 +1,2892 @@
+=========================================================================
+Testing default error handling.
+
+=========================================================================
+Testing casting:
+
+Casting -6.000000e+000 to double: -6.000000e+000
+Casting -6 to int: -6
+
+Casting 7.000000e+000 to double: 7.000000e+000
+Casting 7 to int: 7
+
+Casting Infinity to double: 1.797693e+308
+Casting Infinity to int: 2147483647
+
+Casting -Infinity to double: -1.797693e+308
+Casting -Infinity to int: -2147483648
+
+Casting 0.000000e+000 to double: 0.000000e+000
+Casting 0 to int: 0
+
+Casting NaN to double: Caught std::invalid_argument
+Casting NaN to int: Caught std::invalid_argument
+
+Casting Indeterminate to double: Caught std::invalid_argument
+Casting Indeterminate to int: Caught std::invalid_argument
+
+Casting Ereal_Bad_Value to double: Caught std::runtime_error
+Casting Ereal_Bad_Value to int: Caught std::runtime_error
+
+=========================================================================
+Testing rounding:
+
+lround(Infinity):		1
+lround(-Infinity):		1
+lround(NaN):	Caught std::invalid_argument
+lround(Indeterminate):	Caught std::invalid_argument
+lround(Invalid):	Caught std::runtime_error
+lround(MAXDOUBLE):		1
+lround(-MAXDOUBLE):		1
+lround(10000):		1
+lround(-10000):		1
+lround(10000+1.6):		1
+lround(-10000+1.6):		1
+lround(10000-1.4):		1
+lround(-10000-1.4):		1
+
+=========================================================================
+Testing unary operations:
+
+testing -( -6 ): 6
+testing +( -6 ): -6
+
+testing -( 7 ): -7
+testing +( 7 ): 7
+
+testing -( Infinity ): -Infinity
+testing +( Infinity ): Infinity
+
+testing -( -Infinity ): Infinity
+testing +( -Infinity ): -Infinity
+
+testing -( 0 ): -0
+testing +( 0 ): 0
+
+testing -( NaN ): caught std::invalid_argument
+testing +( NaN ): caught std::invalid_argument
+
+testing -( Indeterminate ): caught std::invalid_argument
+testing +( Indeterminate ): caught std::invalid_argument
+
+testing -( Ereal_Bad_Value ): caught std::runtime_error
+testing +( Ereal_Bad_Value ): caught std::runtime_error
+
+=========================================================================
+Testing Ereal, Ereal:
+
+Comparing: -6.000000e+000 -6.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-1.200000e+001
+x-y	0.000000e+000
+x*y	3.600000e+001
+x/y	1.000000e+000
+
+Comparing: 7.000000e+000 7.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	1.400000e+001
+x-y	0.000000e+000
+x*y	4.900000e+001
+x/y	1.000000e+000
+
+Comparing: 0.000000e+000 0.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	0.000000e+000
+x-y	0.000000e+000
+x*y	0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: -6.000000e+000 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	1.000000e+000
+x-y	-1.300000e+001
+x*y	-4.200000e+001
+x/y	-8.571429e-001
+
+Comparing: 7.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	1.000000e+000
+x-y	1.300000e+001
+x*y	-4.200000e+001
+x/y	-1.166667e+000
+
+Comparing: 0.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-6.000000e+000
+x-y	6.000000e+000
+x*y	-0.000000e+000
+x/y	-0.000000e+000
+
+Comparing: -6.000000e+000 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-6.000000e+000
+x-y	-6.000000e+000
+x*y	-0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	7.000000e+000
+x-y	-7.000000e+000
+x*y	0.000000e+000
+x/y	0.000000e+000
+
+Comparing: 7.000000e+000 0.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	7.000000e+000
+x-y	7.000000e+000
+x*y	0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: -6.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: 7.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: 0.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Indeterminate
+x/y	0.000000e+000
+
+Comparing: -Infinity 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: -6.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: 7.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity 7.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: 0.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	Indeterminate
+x/y	0.000000e+000
+
+Comparing: Infinity 0.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: -6.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: 7.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate 7.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: 0.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate 0.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: -6.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: 7.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN 7.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: 0.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN 0.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: -6.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -6.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: 7.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value 7.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: 0.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value 0.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: -Infinity -Infinity
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-Infinity
+x-y	Indeterminate
+x*y	Infinity
+x/y	Indeterminate
+
+Comparing: Infinity Infinity
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	Infinity
+x-y	Indeterminate
+x*y	Infinity
+x/y	Indeterminate
+
+Comparing: Indeterminate Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: NaN NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: Ereal_Bad_Value Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: -Infinity Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Indeterminate
+x-y	-Infinity
+x*y	-Infinity
+x/y	Indeterminate
+
+Comparing: Infinity -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Indeterminate
+x-y	Infinity
+x*y	-Infinity
+x/y	Indeterminate
+
+Comparing: -Infinity Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate -Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: -Infinity NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN -Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: -Infinity Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -Infinity
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Infinity Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Infinity NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: Infinity Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value Infinity
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Indeterminate NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: Indeterminate Ereal_Bad_Value
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: NaN Ereal_Bad_Value
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+
+=========================================================================
+Testing Ereal, double
+
+Comparing: 2.000000e+001 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	1.400000e+001
+x-y	2.600000e+001
+x*y	-1.200000e+002
+x/y	-3.333333e+000
+
+Comparing: -6.000000e+000 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	1.400000e+001
+x-y	-2.600000e+001
+x*y	-1.200000e+002
+x/y	-3.000000e-001
+
+Comparing: 2.000000e+001 7.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	2.700000e+001
+x-y	1.300000e+001
+x*y	1.400000e+002
+x/y	2.857143e+000
+
+Comparing: 7.000000e+000 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	2.700000e+001
+x-y	-1.300000e+001
+x*y	1.400000e+002
+x/y	3.500000e-001
+
+Comparing: 2.000000e+001 0.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	2.000000e+001
+x-y	2.000000e+001
+x*y	0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	2.000000e+001
+x-y	-2.000000e+001
+x*y	0.000000e+000
+x/y	0.000000e+000
+
+Comparing: 2.000000e+001 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity 2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: 2.000000e+001 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: 2.000000e+001 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate 2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: 2.000000e+001 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN 2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: 2.000000e+001 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value 2.000000e+001
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: -2.000000e+001 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-2.600000e+001
+x-y	-1.400000e+001
+x*y	1.200000e+002
+x/y	3.333333e+000
+
+Comparing: -6.000000e+000 -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-2.600000e+001
+x-y	1.400000e+001
+x*y	1.200000e+002
+x/y	3.000000e-001
+
+Comparing: -2.000000e+001 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-1.300000e+001
+x-y	-2.700000e+001
+x*y	-1.400000e+002
+x/y	-2.857143e+000
+
+Comparing: 7.000000e+000 -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-1.300000e+001
+x-y	2.700000e+001
+x*y	-1.400000e+002
+x/y	-3.500000e-001
+
+Comparing: -2.000000e+001 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-2.000000e+001
+x-y	-2.000000e+001
+x*y	-0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-2.000000e+001
+x-y	2.000000e+001
+x*y	-0.000000e+000
+x/y	-0.000000e+000
+
+Comparing: -2.000000e+001 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: -2.000000e+001 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity -2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: -2.000000e+001 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate -2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: -2.000000e+001 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN -2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: -2.000000e+001 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -2.000000e+001
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+
+=========================================================================
+Testing Ereal, int
+
+Comparing: -6.000000e+000 -6.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-1.200000e+001
+x-y	0.000000e+000
+x*y	3.600000e+001
+x/y	1.000000e+000
+
+Comparing: -6.000000e+000 -6.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-1.200000e+001
+x-y	0.000000e+000
+x*y	3.600000e+001
+x/y	1.000000e+000
+
+Comparing: -6.000000e+000 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	1.000000e+000
+x-y	-1.300000e+001
+x*y	-4.200000e+001
+x/y	-8.571429e-001
+
+Comparing: 7.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	1.000000e+000
+x-y	1.300000e+001
+x*y	-4.200000e+001
+x/y	-1.166667e+000
+
+Comparing: -6.000000e+000 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-6.000000e+000
+x-y	-6.000000e+000
+x*y	-0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-6.000000e+000
+x-y	6.000000e+000
+x*y	-0.000000e+000
+x/y	-0.000000e+000
+
+Comparing: -6.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: -6.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: -6.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: Indeterminate -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Indeterminate
+x-y	Indeterminate
+x*y	Indeterminate
+x/y	Indeterminate
+
+Comparing: -6.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: NaN -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	NaN
+x-y	NaN
+x*y	NaN
+x/y	NaN
+
+Comparing: -6.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -6.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+
+=========================================================================
+Testing conservative error handling.
+
+=========================================================================
+Testing casting:
+
+Casting -6.000000e+000 to double: -6.000000e+000
+Casting -6 to int: -6
+
+Casting 7.000000e+000 to double: 7.000000e+000
+Casting 7 to int: 7
+
+Casting Infinity to double: 1.797693e+308
+Casting Infinity to int: 2147483647
+
+Casting -Infinity to double: -1.797693e+308
+Casting -Infinity to int: -2147483648
+
+Casting 0.000000e+000 to double: 0.000000e+000
+Casting 0 to int: 0
+
+Casting NaN to double: Caught std::invalid_argument
+Casting NaN to int: Caught std::invalid_argument
+
+Casting Indeterminate to double: Caught std::invalid_argument
+Casting Indeterminate to int: Caught std::invalid_argument
+
+Casting Ereal_Bad_Value to double: Caught std::runtime_error
+Casting Ereal_Bad_Value to int: Caught std::runtime_error
+
+=========================================================================
+Testing rounding:
+
+lround(Infinity):		1
+lround(-Infinity):		1
+lround(NaN):	Caught std::invalid_argument
+lround(Indeterminate):	Caught std::invalid_argument
+lround(Invalid):	Caught std::runtime_error
+lround(MAXDOUBLE):		1
+lround(-MAXDOUBLE):		1
+lround(10000):		1
+lround(-10000):		1
+lround(10000+1.6):		1
+lround(-10000+1.6):		1
+lround(10000-1.4):		1
+lround(-10000-1.4):		1
+
+=========================================================================
+Testing unary operations:
+
+testing -( -6 ): 6
+testing +( -6 ): -6
+
+testing -( 7 ): -7
+testing +( 7 ): 7
+
+testing -( Infinity ): -Infinity
+testing +( Infinity ): Infinity
+
+testing -( -Infinity ): Infinity
+testing +( -Infinity ): -Infinity
+
+testing -( 0 ): -0
+testing +( 0 ): 0
+
+testing -( NaN ): caught std::invalid_argument
+testing +( NaN ): caught std::invalid_argument
+
+testing -( Indeterminate ): caught std::invalid_argument
+testing +( Indeterminate ): caught std::invalid_argument
+
+testing -( Ereal_Bad_Value ): caught std::runtime_error
+testing +( Ereal_Bad_Value ): caught std::runtime_error
+
+=========================================================================
+Testing Ereal, Ereal:
+
+Comparing: -6.000000e+000 -6.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-1.200000e+001
+x-y	0.000000e+000
+x*y	3.600000e+001
+x/y	1.000000e+000
+
+Comparing: 7.000000e+000 7.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	1.400000e+001
+x-y	0.000000e+000
+x*y	4.900000e+001
+x/y	1.000000e+000
+
+Comparing: 0.000000e+000 0.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	0.000000e+000
+x-y	0.000000e+000
+x*y	0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: -6.000000e+000 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	1.000000e+000
+x-y	-1.300000e+001
+x*y	-4.200000e+001
+x/y	-8.571429e-001
+
+Comparing: 7.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	1.000000e+000
+x-y	1.300000e+001
+x*y	-4.200000e+001
+x/y	-1.166667e+000
+
+Comparing: 0.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-6.000000e+000
+x-y	6.000000e+000
+x*y	-0.000000e+000
+x/y	-0.000000e+000
+
+Comparing: -6.000000e+000 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-6.000000e+000
+x-y	-6.000000e+000
+x*y	-0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	7.000000e+000
+x-y	-7.000000e+000
+x*y	0.000000e+000
+x/y	0.000000e+000
+
+Comparing: 7.000000e+000 0.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	7.000000e+000
+x-y	7.000000e+000
+x*y	0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: -6.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: 7.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: 0.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Caught std::range_error
+x/y	0.000000e+000
+
+Comparing: -Infinity 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -6.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: 7.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity 7.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: 0.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	Caught std::range_error
+x/y	0.000000e+000
+
+Comparing: Infinity 0.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -6.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: 7.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate 7.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: 0.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate 0.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -6.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: 7.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN 7.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: 0.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN 0.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -6.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -6.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: 7.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value 7.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: 0.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value 0.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: -Infinity -Infinity
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-Infinity
+x-y	Caught std::range_error
+x*y	Infinity
+x/y	Caught std::range_error
+
+Comparing: Infinity Infinity
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	Infinity
+x-y	Caught std::range_error
+x*y	Infinity
+x/y	Caught std::range_error
+
+Comparing: Indeterminate Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Ereal_Bad_Value Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: -Infinity Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Caught std::range_error
+x-y	-Infinity
+x*y	-Infinity
+x/y	Caught std::range_error
+
+Comparing: Infinity -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Caught std::range_error
+x-y	Infinity
+x*y	-Infinity
+x/y	Caught std::range_error
+
+Comparing: -Infinity Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate -Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -Infinity NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN -Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -Infinity Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -Infinity
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Infinity Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Infinity NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN Infinity
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Infinity Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value Infinity
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Indeterminate NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate Ereal_Bad_Value
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: NaN Ereal_Bad_Value
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+
+=========================================================================
+Testing Ereal, double
+
+Comparing: 2.000000e+001 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	1.400000e+001
+x-y	2.600000e+001
+x*y	-1.200000e+002
+x/y	-3.333333e+000
+
+Comparing: -6.000000e+000 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	1.400000e+001
+x-y	-2.600000e+001
+x*y	-1.200000e+002
+x/y	-3.000000e-001
+
+Comparing: 2.000000e+001 7.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	2.700000e+001
+x-y	1.300000e+001
+x*y	1.400000e+002
+x/y	2.857143e+000
+
+Comparing: 7.000000e+000 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	2.700000e+001
+x-y	-1.300000e+001
+x*y	1.400000e+002
+x/y	3.500000e-001
+
+Comparing: 2.000000e+001 0.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	2.000000e+001
+x-y	2.000000e+001
+x*y	0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	2.000000e+001
+x-y	-2.000000e+001
+x*y	0.000000e+000
+x/y	0.000000e+000
+
+Comparing: 2.000000e+001 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity 2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: 2.000000e+001 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity 2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: 2.000000e+001 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate 2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: 2.000000e+001 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN 2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: 2.000000e+001 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value 2.000000e+001
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: -2.000000e+001 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-2.600000e+001
+x-y	-1.400000e+001
+x*y	1.200000e+002
+x/y	3.333333e+000
+
+Comparing: -6.000000e+000 -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-2.600000e+001
+x-y	1.400000e+001
+x*y	1.200000e+002
+x/y	3.000000e-001
+
+Comparing: -2.000000e+001 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-1.300000e+001
+x-y	-2.700000e+001
+x*y	-1.400000e+002
+x/y	-2.857143e+000
+
+Comparing: 7.000000e+000 -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-1.300000e+001
+x-y	2.700000e+001
+x*y	-1.400000e+002
+x/y	-3.500000e-001
+
+Comparing: -2.000000e+001 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-2.000000e+001
+x-y	-2.000000e+001
+x*y	-0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-2.000000e+001
+x-y	2.000000e+001
+x*y	-0.000000e+000
+x/y	-0.000000e+000
+
+Comparing: -2.000000e+001 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity -2.000000e+001
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: -2.000000e+001 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity -2.000000e+001
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: -2.000000e+001 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate -2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -2.000000e+001 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN -2.000000e+001
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -2.000000e+001 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -2.000000e+001
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+
+=========================================================================
+Testing Ereal, int
+
+Comparing: -6.000000e+000 -6.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-1.200000e+001
+x-y	0.000000e+000
+x*y	3.600000e+001
+x/y	1.000000e+000
+
+Comparing: -6.000000e+000 -6.000000e+000
+x==y	1
+x!=y	0
+x<y	0
+x<=y	1
+x>y	0
+x>=y	1
+x+y	-1.200000e+001
+x-y	0.000000e+000
+x*y	3.600000e+001
+x/y	1.000000e+000
+
+Comparing: -6.000000e+000 7.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	1.000000e+000
+x-y	-1.300000e+001
+x*y	-4.200000e+001
+x/y	-8.571429e-001
+
+Comparing: 7.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	1.000000e+000
+x-y	1.300000e+001
+x*y	-4.200000e+001
+x/y	-1.166667e+000
+
+Comparing: -6.000000e+000 0.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-6.000000e+000
+x-y	-6.000000e+000
+x*y	-0.000000e+000
+x/y	Caught std::domain_error
+
+Comparing: 0.000000e+000 -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-6.000000e+000
+x-y	6.000000e+000
+x*y	-0.000000e+000
+x/y	-0.000000e+000
+
+Comparing: -6.000000e+000 Infinity
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	Infinity
+x-y	-Infinity
+x*y	-Infinity
+x/y	0.000000e+000
+
+Comparing: Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	Infinity
+x-y	Infinity
+x*y	-Infinity
+x/y	-Infinity
+
+Comparing: -6.000000e+000 -Infinity
+x==y	0
+x!=y	1
+x<y	0
+x<=y	0
+x>y	1
+x>=y	1
+x+y	-Infinity
+x-y	Infinity
+x*y	Infinity
+x/y	0.000000e+000
+
+Comparing: -Infinity -6.000000e+000
+x==y	0
+x!=y	1
+x<y	1
+x<=y	1
+x>y	0
+x>=y	0
+x+y	-Infinity
+x-y	-Infinity
+x*y	Infinity
+x/y	Infinity
+
+Comparing: -6.000000e+000 Indeterminate
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: Indeterminate -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -6.000000e+000 NaN
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: NaN -6.000000e+000
+x==y	Caught invalid_argument
+x!=y	Caught invalid_argument
+x<y	Caught invalid_argument
+x<=y	Caught invalid_argument
+x>y	Caught invalid_argument
+x>=y	Caught invalid_argument
+x+y	Caught std::range_error
+x-y	Caught std::range_error
+x*y	Caught std::range_error
+x/y	Caught std::range_error
+
+Comparing: -6.000000e+000 Ereal_Bad_Value
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+Comparing: Ereal_Bad_Value -6.000000e+000
+x==y	Caught std::runtime_error
+x!=y	Caught std::runtime_error
+x<y	Caught std::runtime_error
+x<=y	Caught std::runtime_error
+x>y	Caught std::runtime_error
+x>=y	Caught std::runtime_error
+x+y	Caught std::runtime_error
+x-y	Caught std::runtime_error
+x*y	Caught std::runtime_error
+x/y	Caught std::runtime_error
+
+
+=========================================================================
+
+Testing input stream reader.
+String	Value
+0	0.000000e+000
+6.00	6.000000e+000
+-7.2	-7.200000e+000
+1.23456e+12	1.234560e+012
+-8.76543e-4	-8.765430e-004
+-Infinity	-Infinity
+-Inf	-Infinity
+-infinity	-Infinity
+-inf	-Infinity
++Infinity	Infinity
++Inf	Infinity
++infinity	Infinity
++inf	Infinity
+Infinity	Infinity
+Inf	Infinity
+infinity	Infinity
+inf	Infinity
+Indeterminate	Indeterminate
+Ind	Indeterminate
+indeterminate	Indeterminate
+ind	Indeterminate
+NaN	NaN
+nan	NaN
+Invalid	Ereal_Bad_Value
+invalid	Ereal_Bad_Value
+Inv	Ereal_Bad_Value
+inv	Ereal_Bad_Value
+gibberish	Caught std::runtime_error

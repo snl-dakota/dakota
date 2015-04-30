@@ -1,0 +1,18 @@
+_data=../../scolib/etc/ampl/text_book.mod _optimum=0.125 _opttol=1e-2
+_data=../../scolib/etc/ampl/text_book_unc.mod _optimum=0.0 _opttol=1e-2
+_data=../../scolib/etc/ampl/linear2.mod _optimum=-2.0
+### Following test not working in DAKOTA/COLINY (funcadd.c)
+#_data=../../scolib/etc/ampl/TestProblem0.mod _optimum=1.0
+#_data=../../scolib/etc/ampl/TestProblem1.mod _optimum=0.0
+_data=../../scolib/etc/ampl/TestProblem2.mod _optimum=27.0 _opttol=375 _termination='Max-Num-Evals'
+#_data=../../scolib/etc/ampl/TestProblem3.mod _optimum=0.1715728752538099023 _opttol=1e-4
+#_data=../../scolib/etc/ampl/TestProblem4.mod _optimum=1.3431457505076198045 _opttol=1e-3
+#_data=../../scolib/etc/ampl/TestProblem5.mod _optimum=1.33333333333333333 _opttol=1e-2 step_tolerance=1e-8
+### Following test not working in DAKOTA/COLINY (funcadd.c)
+_data=../../scolib/etc/ampl/TestProblem6.mod _optimum=1.0 _opttol=1e-2 _termination='Max-Num-Evals'
+_data=../../scolib/etc/ampl/TestProblem7.mod _optimum=0.0 _opttol=250 _termination='Max-Num-Evals'
+_data=../../scolib/etc/ampl/TestProblem8.mod _optimum=0.1715728752538099023 _opttol=1000 _termination='Max-Num-Evals'
+_data=../../scolib/etc/ampl/TestProblem9.mod _optimum=1.33333333333333333 _opttol=1e-3 _termination='Max-Num-Evals'
+_data=../../scolib/etc/ampl/TestProblem11.mod _optimum=0.0 _opttol=3100 _termination='Max-Num-Evals'
+_data=../../scolib/etc/ampl/TestProblem12.mod _optimum=19.4553 _opttol=300 _termination='Max-Num-Evals'
+#_data=../../scolib/etc/ampl/TestProblem13.mod _optimum=9.0 _opttol=1e-3

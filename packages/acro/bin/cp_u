@@ -1,0 +1,68 @@
+#! /usr/bin/env python
+#
+#  This script copies files after first checking whether an
+#  update is necessary.  It would have been simpler to use the Unix 'test'
+#  commend for this, specifically the '-nt' test.  However, this is not
+#  very portable.
+#
+
+import sys
+from optparse import OptionParser
+import os.path
+import shutil
+
+def do_copy(file,dest,directory=False):
+    file = file.replace('/',os.sep)
+    file = file.replace('\\',os.sep)
+    dest = dest.replace('/',os.sep)
+    dest = dest.replace('\\',os.sep)
+    #
+    # If we see a .libs directory, then check to see if it
+    # contains the source file.  If so, copy that file, which 
+    # is the executable, and not the libtool wrapper script.
+    #
+    if os.path.isdir(file):
+        print "ERROR: file '"+file+"' is a directory!"
+        sys.exit(1)
+    (dir,base) = os.path.split(file)
+    if dir == "":
+        dir = "."
+    if os.path.exists(dir+os.sep+".libs"):
+        tmp = dir+os.sep+".libs"+os.sep+base
+        if os.path.exists(tmp):
+            file=tmp
+    if not os.path.exists(file):
+        print "ERROR: file '"+file+"' does not exist!"
+        sys.exit(1)
+    if directory:
+        dest = dest+os.sep+base
+    if not os.path.exists(dest) or \
+       os.path.getmtime(file) > os.path.getmtime(dest):
+        print "Copying "+file+" to "+dest
+        shutil.copy2(file,dest)
+    
+###
+### MAIN ROUTINE
+###
+#
+# Check command line arguments
+#
+parser = OptionParser()
+parser.usage = "cp_u [options] <file1> [<file2> ... <filen>] <dir>"
+(options,args) = parser.parse_args(sys.argv)
+
+if len(args) <= 2:
+    parser.print_help();
+    sys.exit(1);
+
+dest = args[-1]
+if os.path.isdir(dest):
+    for file in args[1:-1]:
+        do_copy(file,dest,True)
+else:
+    if len(args) > 3:
+        print args
+        print "ERROR: multiple source files, but last argument ("+dest+") is not a directory"
+        sys.exit(1)
+    do_copy(args[1],args[2])
+

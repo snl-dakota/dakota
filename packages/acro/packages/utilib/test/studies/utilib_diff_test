@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+
+#
+# Read input parameters
+#
+(open INPUT, "$ARGV[0]") || die "ERROR: cannot open file $ARGV[0]";
+@lines = <INPUT>;
+close(INPUT);
+#
+# Find command-line parameter
+#
+foreach $line (@lines) {
+  chomp($line);
+  @words=split(/\s+/,$line);
+  if ($words[0] eq "_factor_1_value") {
+     $tmp = join(" ",@words[1 .. $#words]);
+     print "Command Line: $tmp\n";
+     `$tmp > $ARGV[2] 2>&1`;
+     }
+  if ($words[0] eq "_factor_1_level") {
+     $level = $words[1];
+     }
+  }
+#
+# Generate measurements
+#
+print "DIFFING " . $ARGV[2] . " and ${level}.qa\n";
+if (! -e $ARGV[2]) {
+   $diffs = "Missing file " . $ARGV[2]
+} elsif (! -e "${level}.qa") {
+   $diffs = "Missing file ${level}.qa"
+} else {
+  $diffs = `diff -w $ARGV[2] ${level}.qa 2>&1`;
+}
+open OUTPUT, ">$ARGV[1]";
+print OUTPUT "exit_status numeric/integer 0\n";
+if ($diffs eq "") {
+   print OUTPUT "diffs numeric/boolean 0\n";
+}
+else {
+   print OUTPUT "diffs numeric/boolean 1\n";
+}
+print OUTPUT "diff_output text/string \"\"\"\n";
+print OUTPUT "$diffs\n";
+print OUTPUT "\"\"\"\n";
+close(OUTPUT);

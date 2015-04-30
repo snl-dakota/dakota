@@ -1,0 +1,44 @@
+======================================
+Acro Project Release Process Checklist
+======================================
+
+Project: ___
+Version: ___
+
+___ Packages to include in release:
+
+___ Confirm that Acro packages have changelog and release manifests
+	(See manifest.txt for an example).
+
+___ Identify third-party requirements for this release
+    [thirdPartyRequirements.txt]
+        
+___ Define acceptance tests required for this release [releaseTestPlan.txt]
+        
+___ Perform software reviews to confirm software validity [softwareReview.txt]
+
+___ Documentation included in this release
+    ___ tutorial
+    ___ user guide
+    ___ code commenting
+    ___ web pages
+    ___ other:
+
+
+Release Action Checklist
+
+___ RELEASENOTES and CHANGELOG reflect significant changes and 
+    bug fixes for the capabilities developed by this project.
+
+___ The copyright documentation has been updated in the Acro web page, the
+    Acro user manual and any project-specific documentation.
+
+___ Confirm that third-party software contains copyright information, or
+    that it is labeled with a note about its copright status [copyright.txt]
+
+___ The Acro download web page has been updated to include updated
+    executables and tarballs.
+
+___ Confirm that all bugs with severity greater than normal have been 
+    resolved.  The following exceptions are allowed for this release:
+

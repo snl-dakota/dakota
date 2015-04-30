@@ -1,0 +1,30 @@
+
+Test6d - a simple minimization example converting vectors to BasicArrays (Test5d+constraints)
+TestOptSolver: iter 0 value 39.6 pt 4 : 9.9 9.9 9.9 9.9 viol 39613.9604
+TestOptSolver: iter 1 value 39.2 pt 4 : 9.8 9.8 9.8 9.8 viol 38061.2064
+TestOptSolver: iter 2 value 38.8 pt 4 : 9.7 9.7 9.7 9.7 viol 36554.7924
+TestOptSolver: iter 3 value 38.4 pt 4 : 9.6 9.6 9.6 9.6 viol 35093.7824
+TestOptSolver: iter 4 value 38 pt 4 : 9.5 9.5 9.5 9.5 viol 33677.25
+TestOptSolver: iter 5 value 37.6 pt 4 : 9.4 9.4 9.4 9.4 viol 32304.2784
+TestOptSolver: iter 6 value 37.2 pt 4 : 9.3 9.3 9.3 9.3 viol 30973.9604
+TestOptSolver: iter 7 value 36.8 pt 4 : 9.2 9.2 9.2 9.2 viol 29685.3984
+TestOptSolver: iter 8 value 36.4 pt 4 : 9.1 9.1 9.1 9.1 viol 28437.7044
+TestOptSolver: iter 9 value 36 pt 4 : 9 9 9 9 viol 27230
+TestOptSolver: iter 10 value 35.6 pt 4 : 8.9 8.9 8.9 8.9 viol 26061.4164
+TestOptSolver: iter 11 value 35.2 pt 4 : 8.8 8.8 8.8 8.8 viol 24931.0944
+TestOptSolver: iter 12 value 34.8 pt 4 : 8.7 8.7 8.7 8.7 viol 23838.1844
+TestOptSolver: iter 13 value 34.4 pt 4 : 8.6 8.6 8.6 8.6 viol 22781.8464
+TestOptSolver: iter 14 value 34 pt 4 : 8.5 8.5 8.5 8.5 viol 21761.25
+TestOptSolver: iter 15 value 33.6 pt 4 : 8.4 8.4 8.4 8.4 viol 20775.5744
+TestOptSolver: iter 16 value 33.2 pt 4 : 8.3 8.3 8.3 8.3 viol 19824.0084
+TestOptSolver: iter 17 value 32.8 pt 4 : 8.2 8.2 8.2 8.2 viol 18905.7504
+TestOptSolver: iter 18 value 32.4 pt 4 : 8.1 8.1 8.1 8.1 viol 18020.0084
+TestOptSolver: iter 19 value 32 pt 4 : 8 8 8 8 viol 17166
+TestOptSolver: iter 20 value 31.6 pt 4 : 7.9 7.9 7.9 7.9 viol 16342.9524
+TestOptSolver: iter 21 value 31.2 pt 4 : 7.8 7.8 7.8 7.8 viol 15550.1024
+TestOptSolver: iter 22 value 30.8 pt 4 : 7.7 7.7 7.7 7.7 viol 14786.6964
+TestOptSolver: iter 23 value 30.4 pt 4 : 7.6 7.6 7.6 7.6 viol 14051.9904
+TestOptSolver: iter 24 value 30 pt 4 : 7.5 7.5 7.5 7.5 viol 13345.25
+TestOptSolver: iter 25 value 29.6 pt 4 : 7.4 7.4 7.4 7.4 viol 12665.7504
+TestOptSolver: iter 26 value 29.2 pt 4 : 7.3 7.3 7.3 7.3 viol 12012.7764
+TestOptSolver: iter 27 value 28.8 pt 4 : 7.2 7.2 7.2 7.2 viol 11385.6224

@@ -1,0 +1,50 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: NewProblemTemplate - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP17F.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "../MOMHLib++/MO" /I "../MOMHLib++/HGA" /I "../MOMHLib++/SA" /I "../MOMHLib++/MOMSLS" /I "../MOMHLib++/common" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/NewProblemTemplate.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /c 
+"D:\MOMHLib++\MOMHLib++\MO\momhconstrainedsolution.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP17F.tmp" 
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP180.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/NewProblemTemplate.pdb" /debug /machine:I386 /out:"Debug/NewProblemTemplate.exe" /pdbtype:sept 
+".\Debug\global.obj"
+".\Debug\momethod.obj"
+".\Debug\newproblem.obj"
+".\Debug\newproblemmain.obj"
+".\Debug\newsolution.obj"
+".\Debug\nondominatedset.obj"
+".\Debug\sabase.obj"
+".\Debug\solution.obj"
+".\Debug\solutionsset.obj"
+".\Debug\tbnode.obj"
+".\Debug\tbtree.obj"
+".\Debug\tindexedpoint.obj"
+".\Debug\tlistset.obj"
+".\Debug\tmotools.obj"
+".\Debug\tquadnode.obj"
+".\Debug\tquadtree.obj"
+".\Debug\trandomgenerator.obj"
+".\Debug\weights.obj"
+".\Debug\momhconstrainedsolution.obj"
+]
+Creating command line "link.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP180.tmp"
+<h3>Output Window</h3>
+Compiling...
+momhconstrainedsolution.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+NewProblemTemplate.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

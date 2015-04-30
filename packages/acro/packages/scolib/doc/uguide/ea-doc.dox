@@ -1,0 +1,232 @@
+/*!
+ * \page ea-doc
+
+\section ea-doc Evolutionary Algorithms
+
+\subsection overview Overview
+
+Evolutionary search is an adaptive random search that maintains a
+collection of solutions that are ranked by their performance and uses
+a competition between these solutions to select solutions for further
+processing.  Research on evolutionary search algorithms incorporates
+elements of both biological evolution and global optimization.  These
+algorithms are inspired by biological evolutionary mechanisms and are
+often used to perform global optimization.
+
+
+The exemplars of evolutionary search algorithms are genetic algorithms,
+evolutionary strategie and evolutionary \if GeneratingHTML programming [
+BacHofSch91 , Fog95 , Gold89a ]. \endif \if GeneratingLaTeX \latexonly
+programming~\cite{BacHofSch91,Fog95,Gol89a}. \endlatexonly \endif The
+design and motivation for these algorithms are different, but they
+incorporate the same basic adaptive \if GeneratingLaTeX \latexonly
+components~\cite{BacHof91,HofBac90}. \endlatexonly \endif 
+\if GeneratingHTML components [ BacHof91, HofBac90 ]. \endif These methods
+use a collection of solutions (population of individuals) that are
+updated iteratively using %selection mechanisms and genetic operators.
+The general process of each iteration (generation) is described 
+\if GeneratingLaTeX \latexonly in Figure~\ref{fig1}. \endlatexonly \endif
+\if GeneratingHTML as follows: \endif
+
+\if GeneratingLaTeX
+\latexonly
+\begin{figure}[hb]
+\begin{center}
+\begin{tabbing}
+Initialize population (with uniformly generated solutions)\\
+Re\=peat\\
+  \> Evaluate solutions in the population\\
+  \> Perform competitive selection\\
+  \> Apply genetic operators\\
+  \> Perform local search (optional)\\
+Until convergence criteria satisfied
+\end{tabbing}
+\end{center}
+\caption{\label{fig1} Pseudo-algorithm for a genetic algorithm.}
+\end{figure}
+\endlatexonly
+\endif
+
+\if GeneratingHTML
+\htmlonly
+<ul>
+<li> Initialize population (with uniformly generated solutions)
+<li>Repeat
+<ul>
+<li>Evaluate solutions in the population
+<li> Perform competitive selection
+<li> Apply genetic operators
+<li> Perform local search (optional)
+</ul>
+<li>Until convergence criteria satisfied
+</ul>
+<b>EA-1:</b> Pseudo-algorithm for a genetic algorithm.
+\endhtmlonly
+\endif
+
+The \if GeneratingHTML %selection \else selection \endif mechanism performs a competition to select a subset
+of the solutions for further processing.  The genetic operators are
+used to generate deviates from the selected individuals.  Two types of
+genetic operators are commonly employed: mutation and recombination.
+Mutation uses a single individual to generate a deviate that is located
+in the local neighborhood of the individual.  Recombination uses two
+individuals to generate another individual that is typically located in
+the smallest hypercube that contains them both.  Local search is another
+genetic operator that is sometimes employed with evolutionary algorithms
+to refine solutions in their local neighborhood.
+
+Using these genetic operators, evolutionary search algorithms perform a
+global search.  Global convergence is not guaranteed for all
+evolutionary \if GeneratingLaTeX \latexonly algorithms~\cite{Rud94}, \endlatexonly \endif \if GeneratingHTML algorithms [Rud94], \endif
+but experiments with
+these algorithms indicate that they often converge to regions of the
+search space that contain near-optimal solutions. 
+
+\subsection gas Genetic Algorithms
+
+For historical reasons, the development of evolutionary algorithms
+within SGOPT has focused on Genetic Algorithms (GAs).  The GA
+was initially described using populations of binary strings in
+\f$\{0,1\}^n\f$, which are evaluated by the objective function (fitness \if GeneratingLaTeX \latexonly function)~\cite{Hol76,Gol89a,Mic96}. \endlatexonly \endif \if GeneratingHTML function) [Hol76,Gol89a,Mic96]. \endif
+When searching spaces other than
+\f$\{0,1\}^n\f$, the objective function decodes the binary string and performs
+the function evaluation.
+
+\if GeneratingLaTeX \latexonly Holland~\cite{Hol76} \endlatexonly \endif \if GeneratingHTML Holland [Hol76] \endif proposed a %selection mechanism that stochastically selects individuals with
+probability
+\f[
+p_i = \frac{f(x_i)}{\sum_{i} f(x_i)}
+\f]
+This %selection mechanism is called \e proportional \e selection, since
+the number of copies of an individual will be in proportion to the 
+its fraction of the population's total fitness.
+This method assumes the GA is minimizing \f$f(x)\f$ and that the global
+minimum is greater than or equal to zero, but it can be easily modified
+to perform %selection when maximizing a function, or when the 
+global minimum is negative.
+
+The binary GA proposed by Holland uses mutation and crossover operators.
+With binary strings, the mutation operator changes a single bit on a
+string, and it is typically used with low frequency.  The crossover
+operator picks two points on the the binary representation and
+generates the new sample by taking all of the bits between these points
+from one parent and the remaining bits from the other parent.  For
+example, if \f$n=10\f$ and the chosen points are \f$p_1=2\f$ and \f$p_2=6\f$:
+\verbatim
+Parent(1): 1111111111    Parent(2): 0000000000    Sample: 0011110000
+\endverbatim
+Crossover is typically used with high frequency, so most of the individuals 
+in each generation are generated using crossover.
+
+The manner in which the parameters of the objective function are encoded
+on each string does not affect the mechanisms of the GA, though it can
+affect the GA's search dynamics.  In particular, much research has
+been done examining how crossover composes and disrupts patterns in
+binary strings, based on their contribution to the total fitness of the
+\if GeneratingLaTeX \latexonly individual~\cite{Gol89b,SpeDej91a,SpeDej91b,VosLie91}. \endlatexonly \endif \if GeneratingHTML individual [Gol89b,SpeDej91a,SpeDej91b,VosLie91]. \endif
+This research
+has motivated the use of modified crossover operators that restrict the
+distribution of crossover points.  For example, if the binary string
+is decoded into a vector of integers or floating point values, then
+crossover is often applied only between the integer or floating point
+values on the binary 
+\if GeneratingLaTeX \latexonly string~\cite{Dav91}. \endlatexonly \endif \if GeneratingHTML string [Dav91]. \endif
+
+
+\subsection bggsga Panmictic and Geographically Structured Genetic Algorithms
+
+GAs can be distinguished by the manner in which the %selection mechanism
+and genetic operators are applied to the population.  \e Panmictic GAs
+employ %selection mechanisms (like proportional %selection) that use global
+information about the entire population to perform a global %selection.
+In proportional %selection the population's total fitness is used to
+perform %selection.  Panmictic GAs apply the crossover operator to pairs
+of individuals randomly taken from individuals selected from the entire
+population.
+
+\e Geographically \e structured genetic algorithms (GSGAs) perform a
+structured %selection in which individuals compete against a fixed subset
+of the population, and the genetic operators are applied to individuals
+selected from these subsets.  The most common way of structuring the
+%selection mechanism uses a toroidal two dimensional grid like the one
+in 
+\if GeneratingLaTeX \latexonly Figure~\ref{GSGAgrid}~\cite{AckLit93,ColJef91,McI92,SpiMan91}.  \endlatexonly \endif \if GeneratingHTML Figure EA-2 [AckLit93,ColJef91,McI92,SpiMan91]. \endif
+Every
+element of the population is assigned to a location on the grid.  The grid
+locations are not necessarily related to the individuals' solutions.
+They are often arbitrary designations used to perform %selection.  Thus,
+there are distinct notions of locality with respect to the population
+grid and the search space.  When local search is performed with GSGAs,
+it is performed in the search space.  When local %selection is performed,
+it is performed in the population grid.
+
+\if GeneratingLaTeX
+\latexonly
+\begin{figure}
+\begin{center}
+\ \psfig{figure=\figdir/GSGA.eps,height=1.5in}
+\end{center}
+\caption{\label{GSGAgrid}
+The two dimensional grid used by GSGAs to define population subsets.
+}
+\end{figure}
+\endlatexonly
+\endif
+
+\if GeneratingHTML
+<center>
+<img src="../figs/GSGA.gif"><p>
+<b>EA-2:</b> The two dimensional grid used by GSGAs to define population subsets.
+</center>
+\endif
+
+Two general methods of local %selection have been used to perform
+%selection in GSGAs: (1) fixed size neighborhoods have been used to
+define the set of neighboring \if GeneratingLaTeX \latexonly individuals~\cite{DavYamNak93,GorWhi93}, \endlatexonly \endif \if GeneratingHTML individuals [DavYamNak93,GorWhi93], \endif
+and (2) random walks have been used to stochastically sample the
+locations of neighboring \if GeneratingLaTeX \latexonly individuals~\cite{ColJef91,McI92}. \endlatexonly \endif \if GeneratingHTML individuals [ColJef91,McI92], \endif \if GeneratingLaTeX \latexonly Figure~\ref{GSGAgrid}  \endlatexonly \endif \if GeneratingHTML Figure <b>EA-2</b>  \endif
+illustrates the fixed size neighborhoods that
+could be used to perform %selection.  Proportional %selection is applied
+to the solutions in each of these neighborhoods.  Since one individual
+is assigned to each grid location, the %selection procedure is used to
+select only as many individuals as are necessary to use the genetic
+operators.  For example, two individuals will be selected if crossover
+is used.  The new individual generated from a genetic operator is
+assigned to the grid location at which %selection is performed.
+
+The early motivation for GSGAs came from SIMD designs for GAs.  \if GeneratingLaTeX \latexonly McInerney~\cite{McI92} \endlatexonly \endif \if GeneratingHTML McInerney [McI92] \endif
+describes a SIMD
+GSGA and analyzes the effect of different methods of local %selection.  He
+shows how local %selection encourages local regions of the 2D
+grid to form \e demes of very similar individuals, and argues that
+inter-deme competition enables GSGAs to perform search while
+maintaining diversity in the population.  He observes that %selection using
+random walks gave very good results in his experiments.  He notes that
+this method enabled good solutions to diffuse through the population,
+while strongly encouraging the formation of demes.
+
+\if GeneratingLaTeX \latexonly Gordon and Whitley~\cite{GorWhi93} \endlatexonly \endif \if GeneratingHTML Gordon and Whitley [GorWhi93] \endif argue that the
+algorithmic nature of GSGAs may be of interest, independent from their
+implementation on a particular architecture.  They experimentally
+compare GSGAs to panmictic GAs and observe that the GSGAs provide
+superior performance.  This philosophy is echoed by Davidor, Yamada and \if GeneratingLaTeX \latexonly Nakano~\cite{DavYamNak93} \endlatexonly \endif \if GeneratingHTML Nakano [DavYamNak93] \endif
+in their motivation for the ECO framework.
+The ECO framework provides a serial design for implementing a
+geographically structured GA.
+
+Finally, we note that our definition of GSGAs includes GAs which
+structure the %selection at a fine granularity.  A number of GAs have
+been proposed whose competitive %selection is intermediate between
+GSGAs and panmictic GAs.  \if GeneratingLaTeX \latexonly M\"{u}hlenbein~\cite{Muh91} \endlatexonly \endif \if GeneratingHTML Muhlenbein [Muh91] \endif
+makes a similar
+distinction and describes a GA which uses a set of independent
+subpopulations and structures the inter-population communication with a
+ladder structure.  These subpopulations are typically small, so they
+perform a localized search of the function.  For example, \if GeneratingLaTeX \latexonly Whitely~\cite{WhiDomDas91} \endlatexonly \endif \if GeneratingHTML Whitley [WhiDomDas91] \endif
+illustrates how a small population can
+perform a locallized search in the context of neural network
+optimization problems.  Inter-population communication enables
+populations to combine disparate solutions and enables them to perform
+a global search.
+
+*/

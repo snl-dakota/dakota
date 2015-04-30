@@ -1,0 +1,50 @@
+#! /usr/bin/env python
+
+import os
+import sys
+
+scriptdir, scriptname = os.path.split(os.path.abspath(__file__))
+pkgname =(scriptname.split('.',1) + [scriptname])[1]
+
+try:
+    import pyutilib.subprocess
+except ImportError:
+    print "Cannot execute %s tests without PyUtilib installed!" % \
+          pkgname.upper()
+    sys.exit(1)
+
+stars = '*'*72
+
+testdir = os.path.normpath(os.path.join(scriptdir,'..','test'))
+print
+print stars
+print "* %s test directory" % scriptname
+print "*   ",testdir
+print stars
+
+if not os.path.isdir(testdir):
+    print stars.replace('*','!')
+    print "!! ERROR: %s test directory does not exist " % scriptname
+    print stars.replace('*','!')
+    sys.exit(2)
+
+if os.path.isfile(os.path.join(testdir,'unit','runner')):
+    os.chdir(os.path.join(testdir,'unit'))
+    print
+    print stars
+    print "* Running 'runner' in "+os.getcwd()
+    print stars
+    print
+    sys.stdout.flush()
+    pyutilib.subprocess.run('./runner -v ', tee=True)
+
+os.chdir(testdir)
+print
+print stars
+print "* Running 'nosetests' in "+os.getcwd()
+print stars
+print
+pyutilib.subprocess.run( os.path.join(sys.exec_prefix,'bin','nosetests') + \
+                         ' -v --with-xunit --xunit-file=TEST-%s.xml' % pkgname,\
+                         stdout=sys.stdout )
+

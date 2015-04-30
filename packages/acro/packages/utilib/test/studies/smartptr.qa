@@ -1,0 +1,5 @@
+Pointer deleted when SmartPtr object is deleted
+Pointer deleted when another pointer is set in the smart pointer
+Pointer deleted when one smart pointer is set to another
+OK .. avoided deleteing a pointer when it was reinserted.
+Finishing up

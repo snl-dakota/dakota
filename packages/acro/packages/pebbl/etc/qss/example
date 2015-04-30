@@ -1,0 +1,8 @@
+#serialBB --debug=4000 --bound=0 --balanced_branching=true --using_dee=false --EnumerationCount=10 data/1n5z.boltz.out.single.2 >&! tmp.f
+serialBB --debug=4000 --bound=0 --balanced_branching=true --using_dee=false --limited_dee=true --EnumerationCount=1 data/1abo.boltz.out.single.2 >&! tmp.f
+serialBB --debug=4000 --bound=0 --balanced_branching=true --using_dee=true --limited_dee=true --EnumerationCount=1 data/1abo.boltz.out.single.2 >&! tmp.t
+#serialBB --bound=0 --balanced_branching=true --using_dee=true --limited_dee=true --EnumerationCount=5 1bbz.out2.2a 
+#serialBB --bound=0 --balanced_branching=true --using_dee=false --EnumerationCount=100 1bbz.out2.2a
+#serialBB --bound=0 --balanced_branching=true --using_dee=false --limited_dee=true --EnumerationCount=100 1bbz.out2.2a
+#serialBB --bound=0 --balanced_branching=true --limited_dee=true --EnumerationCount=1000 1bbz.out2.2a
+#serialBB --balanced_branching=true --limited_dee=true --EnumerationAbsTolerance=10.0 *boltz*data

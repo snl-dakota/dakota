@@ -1,0 +1,11 @@
+
+Test1b - Setup NLP1 application and downcast it before giving it to a NLP0 problem
+problem set up
+application set up
+application assigned to problem
+ANS: f_info= 8
+STATUS: 1
+ANS: f_info= 8
+STATUS: 1
+ANS: g_info= 3 : 8 4 2 
+ANS: cf_info= 0 : 

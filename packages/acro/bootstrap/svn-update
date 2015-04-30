@@ -1,0 +1,20 @@
+#! /usr/bin/env python
+
+import sys
+import commands
+
+projects = ["acro", "acro-pico", "acro-coliny", "acro-dakota", "acro-pebbl", "acro-appspack", "acro-utilib", "acro-optpp"]
+
+tmp = sys.argv[1]
+items = tmp.split("/")
+if items[-2] == "tpl":
+   new = "packages/tpl/"+items[-1]
+elif items[-2] == "packages":
+   new = "packages/"+items[-1]
+else:
+   new = items[-1]
+#new = "/".join(items[2:])
+for project in projects:
+  #print "svn cp -m \"Bootstrapping file " + tmp + "\" https://software.sandia.gov/svn/public/acro/" + sys.argv[1] + " https://software.sandia.gov/svn/public/acro/" + project + "/trunk/" + new
+  output = commands.getoutput("svn cp -m \"Bootstrapping file " + tmp + "\" https://software.sandia.gov/svn/public/acro/" + sys.argv[1] + " https://software.sandia.gov/svn/public/acro/" + project + "/trunk/" + new)
+  #print output

@@ -1,0 +1,11 @@
+John Siirola - jdsiiro@sandia.gov
+  lead developer
+
+William Hart - wehart@sandia.gov
+  core contributor
+
+Tom Taxon - tntaxon@anl.gov
+  contributor
+
+Jonathan Eckstein - jeckstei@rutcor.rutgers.edu
+  contributor

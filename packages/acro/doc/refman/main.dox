@@ -1,0 +1,20 @@
+/*! 
+
+\mainpage <center>Acro Reference Manual Index</center>
+
+<center>
+These links provide source code reference manuals that are
+generated with Doxygen.
+</center>
+
+Acro core package:
+<ul>
+<li> <a href="../../../packages/appspack/doc/html">appspack</a>
+<li> <a href="../../../packages/colin/doc/refman/html">colin</a>
+<li> <a href="../../../packages/coliny/doc/refman/html">coliny</a>
+<li> <a href="../../../packages/optpp/doc/refman/html">optpp</a>
+<li> <a href="../../../packages/pebbl/doc/refman/html">pebbl</a>
+<li> <a href="../../../packages/utilib/doc/refman/html">utilib</a>
+</ul>
+
+*/

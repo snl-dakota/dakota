@@ -1,0 +1,314 @@
+#!/usr/bin/env python
+#
+# svn.a 
+# A wrapper around svn to make it recognize acro projects, and to support
+# a more natural recursion for commits within acro directories.
+#
+# Version History
+#   1.0 - 12/19/2006
+#		Initial version developed during the SVN conversion of
+#		Acro.
+#
+
+import sys
+import os
+import re
+import commands
+
+#
+# Global configuration info
+#
+ACROROOTPUBLIC="https://software.sandia.gov/svn/public/acro/"
+ACROROOTPRIVATE="https://software.sandia.gov/svn/private/acro/"
+private_targets = ["acro-gnlp", "acro-limited", "acro-parpcx"]
+
+#
+# Perform a propget on a directory, and get trunk and non-trunk externals
+#
+def process_propget(dir, acroOnly):
+  lines = commands.getoutput("svn propget svn:externals " + dir)
+  trunks = []
+  nontrunks = []
+  for line in lines.split("\n"):
+    tmp = re.split('[\t ]*',line.strip())[0]
+    if tmp == "":
+       continue
+    external = re.split('[\t ]*',line.strip())[1]
+    tokens=external.split("/")
+    if ((acroOnly == 1) and (tokens[5] != "acro")):
+       nontrunks.append(tmp)
+    elif ((tokens[len(tokens)-1] == "trunk") or (tokens[len(tokens)-2] == "trunk")):
+       trunks.append(tmp)
+    else:
+       nontrunks.append(tmp)
+  return (trunks,nontrunks)
+
+#
+# Get a list of externals that are trunks that need to have commits performed
+# on them.
+#
+def get_trunk_externals(path, acroOnly):
+  externals = []
+  for root, dirs, files in os.walk(path, topdown=True):
+    #
+    # Get a list of external subdirectories, both trunks and nontrunks
+    #
+    (trunks,nontrunks) = process_propget(root, acroOnly)
+    #
+    # Prune directories starting with '.' or if they are not a trunk external or
+    # if they do not contain an .svn subdirectory (and hence they are not part
+    # of the SVN checkout).
+    #
+    i = len(dirs)-1
+    while i >= 0:
+      if dirs[i][0] == "." or\
+         dirs[i] in nontrunks or\
+         not os.path.exists(root+"/"+dirs[i]+"/.svn"):
+         del dirs[i]
+      i = i - 1
+    #
+    # Add the found trunks to the externals list
+    #
+    for trunk in trunks:
+      externals.append(root+"/"+trunk)
+  return externals
+
+def do_command(cmd, dir, quiet):
+    if not quiet:
+      print "  Performing \"",cmd,"\" in",dir
+    val = os.system("cd "+dir+" && "+cmd+" && cd -")
+    if val != 0:
+      print "  ERROR: Terminating recursive command early!"
+      print "  ERROR: Problem in",dir
+      
+    return val
+
+#
+# Do command in top directory first, then in trunks.  The reason
+# is that an "svn update -r 4561" done in the top directory,
+# does an "svn update" in all subdirectories.  We need to redo
+# with an "svn update -r 4561" in those subdirectories
+# that are acro trunks.  (Or in the case of a date instead of
+# a revision number, redo the command in all trunks, acro or
+# otherwise.)
+#
+def recursive_command(cmd, startdir, quiet, acroOnly):
+  val = do_command(cmd, startdir, quiet)
+  if val == 0 :
+    dirs = get_trunk_externals(startdir, acroOnly)
+    for dir in dirs:
+      val = do_command(cmd, dir, quiet)
+      if val != 0:
+        break
+  return val
+
+
+##
+## MAIN ROUTINES
+##
+
+#
+# No arguments
+#
+if len(sys.argv) == 1:
+   print "\n\
+svn.a <command> <command-options>\n\
+\n\
+svn.a is a wrapper around svn to make it recognize acro projects, and\n\
+to support a more natural recursion for commits within acro directories, \n\
+and updates and checkouts that specify a revision number or a date.\n\
+\n\
+The command\n\
+\n\
+  svn.a checkout acro\n\
+\n\
+checks out acro/trunk into the acro directory, and the command\n\
+\n\
+  svn.a checkout acro-<proj>\n\
+\n\
+checks out acro-<proj>/trunk into the acro-<proj> directory.  Further, svn.a\n\
+supports checkouts of branches in a natural manner.  The command\n\
+\n\
+  svn.a checkout acro/tpltrunks\n\
+\n\
+checks out acro/branches/tpltrunks (an Acro branch that uses trunk versions\n\
+of all third-party libraries) into the tpltrunks directory.\n\
+\n\
+The svn.a script also supports recursive commits with the 'rcommit' or 'rci'\n\
+commands.  The command\n\
+\n\
+  svn.a rcommit\n\
+\n\
+will recursively find all subdirectories that refer to svn:external \n\
+properties with names */trunk or */trunk/<dir>.  Commits will be performed \n\
+in the current directory, as well as each of these subdirectories.\n\
+\n\
+For updates, svn supports specification of a repository revision\n\
+number or a date.  Normally, update will recurse into all \n\
+subdirectories, but it will not apply the date or revision number in \n\
+subdirectories which are external links.  (Typically, externally\n\
+linked directories represent stable copies of other projects so the \n\
+revision number would be irrelevant and you would not want to apply \n\
+the date there.)  However:\n\
+\n\
+  svn.a rupdate -r 9999\n\
+\n\
+will perform a regular \"svn update -r 9999\" first, and then follow that \n\
+with an \"update -r 9999\" in all subdirectories which are acro trunks, \n\
+updating those subdirectories with Acro revision 9999.\n\
+\n\
+  svn.a rupdate -r {2007-01-01}\n\
+\n\
+will perform a regular \"svn update -r {date}\" first, and then follow that \n\
+with an \"update -r {2007-01-01}\" in all subdirectories which are trunks,\n\
+acro or otherwise.  (So this would include exact, fast, etc.)\n\
+\n\
+To check out a past version of the code, do a regular checkout first, \n\
+followed by an \"rupdate\".\n\
+\n\
+All other subversion commands are passed to svn. Type 'svn.a help' for svn\n\
+usage.\n\
+"
+   sys.exit(1)
+
+#
+# Execute SVN commands
+#
+i = 1
+#
+# Extend the semantics of checkouts to enable the specification of
+# acro* projects.
+#
+if sys.argv[1] == "checkout" or sys.argv[1] == "co":
+     cmd=sys.argv[i]
+     i = i+1
+     state=0
+     quiet=0
+     while (state == 0) and (i < len(sys.argv)):
+       if (sys.argv[i] == "-r") or\
+	  (sys.argv[i] == "--revision") or\
+	  (sys.argv[i] == "--username") or\
+	  (sys.argv[i] == "--password") or\
+	  (sys.argv[i] == "--config-dir"):
+
+          if (sys.argv[i] == "-r") or (sys.argv[i] == "--revision"):
+            print "WARNING WARNING WARNING WARNING WARNING WARNING WARNING"
+            print "   Revision number or date will not be applied"
+            print "   in externally linked acro trunks."
+            print "   Use \"svn.a rupdate\" after checkout is completed."
+            print "WARNING WARNING WARNING WARNING WARNING WARNING WARNING"
+         
+	  cmd=cmd + " " + sys.argv[i] + " " + sys.argv[i+1]
+	  i = i+2
+       elif sys.argv[i] == "-q":
+	  cmd=cmd + " " + sys.argv[i]
+	  quiet=1
+	  i = i+1
+       elif sys.argv[i][0] == "-":
+	  cmd=cmd + " " + sys.argv[i]
+	  i = i+1
+       elif sys.argv[i][:4] == "acro":
+	  state=1
+	  p=re.compile('/')
+	  private = sys.argv[i] in private_targets
+	  target = p.sub('/branches/', sys.argv[i])
+	  if not "/" in sys.argv[i]:
+	     target=target + "/trunk/"
+	  #print ":",target,":",private_targets
+	  if private:
+	     cmd=cmd + " " + ACROROOTPRIVATE + target
+	  else:
+	     cmd=cmd + " " + ACROROOTPUBLIC + target
+	  i = i+1
+          if i < len(sys.argv):
+	     j=i
+	     while j < len(sys.argv):
+	       cmd=cmd + " " + sys.argv[j]
+               j = j+1
+	  elif not "/" in sys.argv[i-1]:
+	     acropkg = target.split('/')[-3]
+	     cmd=cmd + " " + acropkg
+	  if quiet==0:
+	     print "(svn.a) svn " + cmd
+	  val = os.system("svn " + cmd)
+       else:
+	  state=1
+	  j=i
+	  while j < len(sys.argv):
+	    cmd=cmd + " " + sys.argv[j]
+            j = j+1
+	  val = os.system("svn " + cmd)
+
+#
+# Process the rcommit command, which performs a recursive commit
+#
+elif sys.argv[i] == "rcommit" or sys.argv[i] == "rci" or sys.argv[i] == "rco" :
+     if len(sys.argv) > 2 and sys.argv[-1][0] != "-":
+	commitdir = sys.argv[-1]
+        sys.argv.pop()
+        if commitdir==".":
+	   commitdir = os.getcwd()
+     else:
+	commitdir = os.getcwd()
+     cmd="svn commit"
+     i=2
+     quiet=False
+     while i<len(sys.argv):
+       if sys.argv[i]=="-q":
+          quiet=True
+       cmd=cmd+" "+sys.argv[i]
+       i=i+1
+
+     val = recursive_command(cmd, commitdir, quiet, 0)
+
+#
+# rupdate -r {REV or DATE}
+#
+# If a revision number is provided, only recurse into directories
+# which are acro trunks.
+#
+# If a date is provided, recurse into any trunk.
+#
+elif sys.argv[i] == "rupdate" or sys.argv[i] == "rup":
+
+     cmd = "svn update"
+     
+     i = i+1
+     quiet=0
+     acroOnly=1
+     must_recurse=0
+     while (i < len(sys.argv)):
+       if (sys.argv[i] == "-r") or (sys.argv[i] == "--revision"):
+          if sys.argv[i+1][0] == "{":
+            acroOnly = 0 
+	  cmd=cmd + " " + sys.argv[i] + " " + sys.argv[i+1]
+	  i = i+2
+          must_recurse=1
+       elif sys.argv[i] == "-q":
+	  cmd=cmd + " " + sys.argv[i]
+	  quiet=1
+       else:
+	  cmd=cmd + " " + sys.argv[i]
+          i = i+1
+
+     if must_recurse==1:
+       startdir = os.getcwd()
+       if len(sys.argv) > 4 and sys.argv[-1] != "-" and sys.argv[-1] != ".":
+         startdir = sys.argv[-1]
+
+       val = recursive_command(cmd, startdir, quiet, acroOnly)
+
+     else:
+       val = os.system(cmd)
+#
+# Send other commands to svn
+#
+else:
+     cmd=""
+     j=i
+     while j < len(sys.argv):
+       cmd=cmd + " " + sys.argv[j]
+       j = j+1
+     val = os.system("svn " + cmd)
+
+sys.exit(val)

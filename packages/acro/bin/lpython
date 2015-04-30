@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+#
+# This script searches for a local python installation, which is
+# applied, rather than the python executable on the user's path.
+#
+# Additionally, this script sets the PATH environmental variable to
+# point to the acro/bin directory.
+#
+
+import os
+import os.path
+from os.path import join
+import sys
+import signal
+
+sys.tracebacklimit=0
+process = None
+
+def signal_handler(signum, frame):
+    if not process is None:
+        if sys.platform == "win32":
+            from win32process import TerminateProcess
+            TerminateProcess(self._handle, 1)
+        else:
+            process.send_signal(signal.SIGTERM)
+    sys.exit(-signum)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGHUP, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+
+
+#
+# Recurse up the current path, looking for a subdirectory that
+# contains 'python/bin/python'
+#
+pexec = None
+curr = os.path.abspath(os.getcwd())
+while os.sep in curr:
+    if os.path.exists(join(curr,"python","bin","python")):
+        pexec = join(curr,"python","bin","python")
+        os.environ["PATH"] = join(curr,"bin")+os.pathsep+os.environ["PATH"]
+        break
+    if os.path.exists(join(curr,"python","bin","python.exe")):
+        pexec = join(curr,"python","bin","python.exe")
+        os.environ["PATH"] = join(curr,"bin")+os.pathsep+os.environ["PATH"]
+        break
+    if os.path.exists(join(curr,"bin","python")):
+        pexec = join(curr,"bin","python")
+        break
+    if os.path.exists(join(curr,"bin","python.exe")):
+        pexec = join(curr,"bin","python.exe")
+        break
+    if os.path.basename(curr) == "":
+        break
+    curr = os.path.dirname(curr)
+
+try:
+    import subprocess
+    if pexec is None:
+        process = subprocess.Popen(["python"]+sys.argv[1:])
+    else:
+        process = subprocess.Popen([pexec]+sys.argv[1:])
+    process.wait()
+
+except ImportError:
+    #
+    # For Python 2.3
+    #
+    if pexec is None:
+        os.system(" ".join(["python"]+sys.argv[1:]))
+    else:
+        os.system(" ".join([pexec]+sys.argv[1:]))
+

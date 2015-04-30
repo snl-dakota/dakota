@@ -1,0 +1,381 @@
+solvers:
+    ps:
+        executable: ./scolib_test --ampl 
+        ps_options: solver=sco\:ps
+
+    sw:
+        executable: ./scolib_test --ampl 
+        sw_options: solver=sco\:sw
+
+    plgo:
+        executable: ./scolib_test --ampl 
+        plgo_options: solver=sco\:plgo
+
+    ms:
+        executable: ./scolib_test --ampl 
+        ms_options: solver=sco\:ms
+
+    ms_ps:
+        executable: ./scolib_test --ampl 
+        ms_options: solver=sco\:ms-sco\:ps
+
+    ms_sw:
+        executable: ./scolib_test --ampl 
+        ms_options: solver=sco\:ms-sco\:sw
+
+    ea:
+        executable: ./scolib_test --ampl 
+        ms_options: solver=sco\:ea
+
+    direct:
+        executable: ./scolib_test --ampl 
+        ms_options: solver=sco\:direct
+
+problems:
+    text_book:
+        files: ../../scolib/etc/ampl/text_book.mod
+        optimum: 0.125
+    text_book_unc:
+        files: ../../scolib/etc/ampl/text_book_unc.mod
+        optimum: 0.0
+    linear1:
+        files: ../../scolib/etc/ampl/linear1.mod
+        optimum: 1.0
+    linear2:
+        files: ../../scolib/etc/ampl/linear2.mod
+        optimum: -2.0
+    TestProblem0:
+        files: ../../scolib/etc/ampl/TestProblem0.mod
+        optimum: 1.0
+    TestProblem1:
+        files: ../../scolib/etc/ampl/TestProblem1.mod
+        optimum: 0.0
+    TestProblem2:
+        files: ../../scolib/etc/ampl/TestProblem2.mod
+        optimum: 27.0
+    TestProblem3:
+        files: ../../scolib/etc/ampl/TestProblem3.mod
+        optimum: 0.1715728752538099023
+    TestProblem4:
+        files: ../../scolib/etc/ampl/TestProblem4.mod
+        optimum: 1.3431457505076198045
+    TestProblem5:
+        files: ../../scolib/etc/ampl/TestProblem5.mod
+        optimum: 1.33333333333333333
+    TestProblem6:
+        files: ../../scolib/etc/ampl/TestProblem6.mod
+        optimum: 1.0
+    TestProblem7:
+        files: ../../scolib/etc/ampl/TestProblem7.mod
+        optimum: 0.0
+    TestProblem8:
+        files: ../../scolib/etc/ampl/TestProblem8.mod
+        optimum: 0.1715728752538099023
+    TestProblem9:
+        files: ../../scolib/etc/ampl/TestProblem9.mod
+        optimum: 1.33333333333333333
+    TestProblem11:
+        files: ../../scolib/etc/ampl/TestProblem11.mod
+        optimum: 0.0
+    TestProblem12:
+        files: ../../scolib/etc/ampl/TestProblem12.mod
+        optimum: 19.4553
+    TestProblem13:
+        files: ../../scolib/etc/ampl/TestProblem13.mod
+        optimum: 9.0
+    Sinusoidal1:
+        files: ../../scolib/etc/ampl/Sinusoidal1.mod
+        optimum: -38.0
+
+test suites:
+    ms:
+        categories:
+            - nightly
+            - scolib
+        solver: ms
+        ms_options: max_neval=5000
+        seeds: 100
+        text_book:
+            opttol: 1e-2
+        text_book_unc:
+            opttol: 1e-2
+        linear2:
+        TestProblem2:
+            opttol: 375
+            termination_condition: maxEvaluations
+        TestProblem6:
+            opttol: 1e-2
+            termination_condition: maxEvaluations
+        TestProblem7:
+            opttol: 250
+            termination_condition: maxEvaluations
+        TestProblem8:
+            opttol: 1000
+            termination_condition: maxEvaluations
+        TestProblem9:
+            opttol: 1e-3
+            termination_condition: maxEvaluations
+        TestProblem11:
+            opttol: 3100
+            termination_condition: maxEvaluations
+        TestProblem12:
+            opttol: 300
+            termination_condition: maxEvaluations
+
+    ms_ps:
+        categories:
+            - scolib
+        solver: ms_ps
+        ms_options: max_neval=30000 debug=1000
+        seeds: 100
+        text_book:
+            opttol: 1e-2
+            ps_options: step_tolerance=1e-8
+        text_book_unc:
+            opttol: 1e-2
+        linear2:
+            opttol: 1e-4
+        TestProblem2:
+            opttol: 1e-3
+            ps_options: step_tolerance=1e-5
+        TestProblem6:
+            opttol: 1e-5
+        TestProblem7:
+            opttol: 1e-7
+            ps_options: step_tolerance=1e-5
+        TestProblem8:
+            opttol: 1e-4
+            ps_options: step_tolerance=1e-8
+        TestProblem9:
+            opttol: 1e-3
+            ps_options: step_tolerance=1e-10
+        TestProblem11:
+            opttol: 1e-7
+            ps_options: step_tolerance=1e-5
+
+    ms_ps_validate:
+        categories:
+            - scolib
+        solver: ms_ps
+        ms_options: max_neval=30000 debug=1000
+        seeds: 100
+        Sinusoidal1:
+            opttol: 0.0
+            ps_options: step_tolerance=1e-5 output_level=verbose initial_step=0.01 expansion_factor=1.0
+
+    ms_sw:
+        categories:
+            - scolib
+        solver: ms_sw
+        ms_options: max_neval=5000 debug=1000
+        seeds: 100
+        text_book_unc:
+            opttol: 1e-2
+        linear2:
+            opttol: 1e-4
+        TestProblem2:
+            opttol: 1e-3
+            sw_options: step_tolerance=1e-5
+        TestProblem6:
+            sw_options: step_tolerance=1e-5
+        TestProblem7:
+            opttol: 1e-7
+            sw_options: step_tolerance=1e-5
+
+    ms_sw_validate:
+        categories:
+            - scolib
+        solver: ms_sw
+        ms_options: max_neval=30000 debug=1000
+        seeds: 100
+        Sinusoidal1:
+            opttol: 0.0
+            sw_options: step_tolerance=1e-5 output_level=verbose initial_step=0.01 expansion_factor=1.0
+
+    plgo:
+        categories:
+            - smoke
+            - nightly
+            - scolib
+            - valgrind
+        solver: plgo
+        plgo_options: max_neval=5000 timelimit=30
+        linear2:
+            opttol: 1e-5
+        TestProblem2:
+            opttol: 375
+        TestProblem6:
+            opttol: 1e-2
+            absTolerance: 10.0
+        TestProblem7:
+            opttol: 1e-5
+            absTolerance: 0.01
+        TestProblem11:
+            opttol: 3100
+            absTolerance: 0.6
+        TestProblem12:
+            opttol: 300
+
+    sw:
+        categories:
+            - smoke
+            - nightly
+            - scolib
+            - valgrind
+        solver: sw
+        sw_options: max_neval=5000
+        seeds: 100
+        text_book_unc:
+            opttol: 1e-2
+        linear2:
+            opttol: 1e-3
+        TestProblem0:
+        TestProblem1:
+            opttol: 1e-8
+        TestProblem2:
+            opttol: 1e-3
+        TestProblem6:
+        TestProblem7:
+            opttol: 1e-8
+        TestProblem12:
+            opttol: 1e-4
+
+    ps:
+        categories:
+            - smoke
+            - nightly
+            - scolib
+            - valgrind
+        solver: ps
+        ps_options: max_neval=20000
+        seeds: 100 101 102 103 104
+        text_book:
+            opttol: 1e-2
+        text_book_unc:
+            opttol: 1e-2
+        linear2:
+            opttol: 1e-4
+        TestProblem0:
+        TestProblem1:
+            opttol: 1e-7
+        TestProblem2:
+            opttol: 1e-3
+        TestProblem3:
+            opttol: 1e-4
+        TestProblem4:
+            opttol: 1e-3
+        TestProblem5:
+            ps_options: step_tolerance=1e-8
+            opttol: 1e-2
+        TestProblem6:
+        TestProblem7:
+            opttol: 1e-7
+        TestProblem8:
+            ps_options: step_tolerance=1e-8
+            opttol: 1e-6
+        TestProblem9:
+            ps_options: step_tolerance=1e-6 initial_step=1e-3
+            opttol: 1e-7
+        TestProblem11:
+            opttol: 1e-7
+        TestProblem12:
+            opttol: 1e-4
+        TestProblem13:
+            opttol: 1e-3
+
+    ps_eval1:
+        inherit: ps
+        ps_options: max_neval=30000 output_level=none exploratory_move=simple
+        categories:
+            - nightly
+
+    ps_eval2:
+        inherit: ps
+        ps_options: max_neval=30000 output_level=none exploratory_move=multi_step
+        categories:
+            - nightly
+
+    ps_eval3:
+        inherit: ps
+        ps_options: max_neval=30000 output_level=none exploratory_move=adaptive
+        categories:
+            - nightly
+
+    ea:
+        categories:
+            - smoke
+            - nightly
+            - scolib
+            - valgrind
+        solver: ea
+        ea_options: max_neval=70000 output_level=verbose population_size=5 xover_rate=0.0 selection_type=linear_rank replacement_type=random keep_num=0 num_trial_points=50
+        seeds: 100        
+        text_book:
+            opttol: 1e-2
+        text_book_unc:
+            opttol: 1e-2
+        linear1:
+        linear2:
+        TestProblem2:
+        TestProblem6:
+            opttol: 1e-2
+        TestProblem7:
+            opttol: 1e-3
+        TestProblem8:
+            opttol: 1000
+        TestProblem9:
+            opttol: 1e-7
+        TestProblem11:
+            opttol: 3100
+        TestProblem12:
+            opttol: 300
+
+
+    ea_validate1:
+        categories:
+            scolib
+        solver: ea
+        ea_options: xover_rate=0.0 mutation_rate=0.0 population_size=50 max_iters=1 max_neval=50
+        replications: 30
+        linear1:
+
+    direct:
+        categories:
+            - smoke
+            - nightly
+            - scolib
+            - valgrind
+        solver: direct
+        direct_options: max_neval=5000 timelimit=30
+        seeds: 100        
+
+        text_book_unc:
+            opttol: 1e-2
+            termination_condition: other
+            termination_other: boxSizeLimit
+        TestProblem2:
+            opttol: 375
+            termination_condition: other
+            termination_other: boxSizeLimit
+        TestProblem6:
+            opttol: 1e-2
+            termination_condition: maxEvaluations
+        TestProblem7:
+            opttol: 250
+            termination_condition: other
+            termination_other: boxSizeLimit
+        TestProblem8:
+            opttol: 1000
+            termination_condition: other
+            termination_other: boxSizeLimit
+        TestProblem9:
+            opttol: 1e-4
+            termination_condition: other
+            termination_other: boxSizeLimit
+        TestProblem11:
+            opttol: 3100
+            termination_condition: maxEvaluations
+        TestProblem12:
+            opttol: 300
+            termination_condition: maxEvaluations
+

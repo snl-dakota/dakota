@@ -1,0 +1,193 @@
+#! /bin/bash
+#
+#  Check out an acro project, optionally as of a specified date.
+#  If the project builds, create a distribution tar file.  If
+#  a date was specified, include the date in the file name,
+#  otherwise, include the word "nightly" in the file name.
+#
+#  acro_votd_tarball project-name yyyymmdd
+#
+#  example: acro_votd_tarball acro-pico 20060601
+#    creates acro_pico_20060601.tar.gz
+#    which is the state of acro-pico on June 1, 2006.
+#
+#  example: acro_votd_tarball acro-pico
+#    creates acro_pico_nightly.tar.gz
+#    which is the state of acro-pico when this script ran.
+#
+#  If environment variable SOURCE_SAVE_DIR is set to a name, the
+#  sources will be saved in a directory of that name.
+
+acro_url=https://software.sandia.gov/svn/public/acro/
+
+project=$1
+
+if [ "${project:0:4}" = "acro" ] ; then
+  hasAcroRoot=yes
+else
+  hasAcroRoot=no
+fi
+
+checkoutDir=$project
+
+if [ $# = 2 ] ; then
+  day=$2
+  dashedDay=${day:0:4}-${day:4:2}-${day:6:2}
+  current=no
+  filename=${project//-/_}_$day
+else
+  day=`date +%Y%m%d`
+  dashedDay=`date +%Y-%m-%d`
+  current=yes
+  filename=${project//-/_}_nightly
+fi
+
+if [ "${SOURCE_SAVE_DIR}set" = "set" ] ; then
+  source_dir="temp"
+else
+  source_dir=$SOURCE_SAVE_DIR
+fi
+
+#
+# Figure out name of tar file that "make dist" will create
+# by parsing a line in configure.ac.
+#
+tarfile_name()
+{
+  fnm=$1
+
+  if [ ! -f $fnm ] ; then
+    echo "Can't find $fnm"
+    export tarname=0
+    return
+  fi
+
+  line=$(grep AC_INIT $fnm)
+
+  if [ "${line:-0}" = "0" ] ; then
+    line=$(grep ac_init $fnm)
+  fi
+
+  if [ "${line:-0}" = "0" ] ; then
+    echo "Can't find ac_init in $fnm"
+    export tarname=0
+    return
+  fi
+
+  line=${line//[/}
+  line=${line//]/}
+  line=${line// /}
+
+  pkgname=${line#*(}
+  pkgname=${pkgname%%,*}
+
+  pkgname=`echo $pkgname | tr [:upper:] [:lower:]`
+
+  ver=${line%,*}
+  ver=${ver#*,}
+
+  export tarname=$pkgname-$ver.tar.gz
+}
+
+
+if test -d $source_dir ; then
+   rm -Rf $source_dir
+fi
+mkdir $source_dir
+cd $source_dir
+
+#
+# CHECK OUT
+#
+
+mydir=`pwd`
+echo "check out $project to directory ${mydir}"
+
+if [ $current = yes ] ; then
+  svn co $acro_url/$project/trunk
+else
+  svn co -r { $dashedDay } $acro_url/$project/trunk
+fi
+
+if test -d trunk ; then
+  echo "  $project checked out"
+else
+  echo ""
+  echo "No $project project found for date $day"
+  echo "USAGE:"
+  echo "  acro_votd_tarball project-name yyyymmdd"
+  echo "  example: acro_votd_tarball acro 20060601"
+  echo "  example: acro_votd_tarball acro-pico 20060501"
+  echo "  You can omit the date, and get a current checkout."
+  exit
+fi
+
+#
+# CONFIGURE
+#
+
+cd trunk
+
+echo "bootstrap $project, determine make dist's tar file name"
+
+./setup 
+tarfile_name configure.ac
+
+echo "  Tar file name is $tarname"
+
+autoreconf -i -f -s
+
+if [ -f Makefile.in ] ; then
+  echo "  $project autoreconf'd"
+else
+  echo "$project failed autoreconf"
+  exit
+fi
+
+echo "configure $project"
+
+./configure 
+
+if [ -f Makefile ] ; then
+  echo "  $project configured"
+else
+  echo "$project failed configure"
+  exit
+fi
+
+#
+# BUILD
+#
+
+echo "build $project"
+
+(make 2>&1 ) > build.out
+
+if [ $? = 0 ] ; then
+  echo "  $project built successfully"
+else
+  echo "$project failed to build, no VOTD created"
+  exit
+fi
+
+#
+# MAKE DIST
+#
+
+echo "make $project distribution ($tarname)"
+
+(make dist 2>&1 ) > dist.out
+
+if [ -r $tarname ] ; then
+  mv $tarname ../../$filename.tar.gz
+  echo "  $filename.tar.gz created"
+else
+  echo "$project failed to make dist"
+fi
+
+cd ../..
+
+if [ $source_dir=temp ] ; then
+  rm -rf temp
+fi
+

@@ -1,0 +1,32 @@
+/*! 
+ * \page mpiPage
+ *
+
+\section mpiSec MPI Utilities
+
+MPI is a widely used standard for performing parallel communication on
+distributed-memory parallel computers.  The UTILIB mpi_utilib.h header
+provides dummy definitions for \c MPI_Request and \c MPI_Status, which
+can be used to simplify builds when MPI is not available.  Additionally, this
+header defines the \c mpi_datatype() functions, which return the MPI 
+data type value for a data.
+
+The utilib::uMPI class provides an object-oriented encapsulation of the
+MPI functions.  In particular, this class manages global data for 
+information like the number of processors, the rank of the current
+processor, etc.  Further utilib::uMPI manages MPE log messages, and 
+it automatically checks for error return codes for the MPI functions.  
+Finally, utilib::uMPI identifies whether any of the current processors
+can do I/O.  The following utilib::uMPI data elements are commonly used:
+
+- comm - The MPI communicator.
+
+- rank - The rank of the current process in this communicator.
+
+- size - The size of the current communicator.
+
+- ioProc - The rank of an I/O processor in this communicator.
+
+- iDoIO - A true/false (1/0) value that indicates whether the current processor can perform I/O.
+
+*/

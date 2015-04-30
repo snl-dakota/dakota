@@ -1,0 +1,57 @@
+
+
+options:
+
+  -B                          B option
+  -b                          b option
+  -z                          z option
+  -A, --AAA                   A option
+  -a, --aaa                   a option
+      --cc                    cc option
+      --ddd                   ddd option
+      --ee                    ee option
+      --ff                    ff option
+      --gg                    gg option
+  -h, --help                  Display usage information
+      --s1                    s1 option
+      --s2                    s2 option
+      --s3                    s3 option
+      --s4                    s4 option
+      --s5                    s5 option
+
+
+Values before option processing
+B_option   0	# default
+b_option   0	# default
+z_option   [ ]	# default
+AAA        0	# default
+aaa        0	# default
+cc         0	# default
+ddd        1	# default
+ee         1e-12	# default
+ff         0	# default
+gg         0	# default
+help       0	# default
+s1         ""	# default
+s2         string-val	# default
+s3         "string val"	# default
+s4         string-val	# default
+s5         "string val"	# default
+
+Values after option processing
+B_option   0	# default
+b_option   0	# default
+z_option   [ ]	# default
+AAA        0	# default
+aaa        1
+cc         0	# default
+ddd        1	# default
+ee         1e-12	# default
+ff         1
+gg         -1
+help       0	# default
+s1         ""	# default
+s2         string-val	# default
+s3         "string val"	# default
+s4         string-val	# default
+s5         "string val"	# default

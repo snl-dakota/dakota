@@ -1,0 +1,70 @@
+<experimental-study name="acro-mea-validate">
+  <tags>
+    <tag>TODO</tag>
+  </tags>
+
+  <experiment name="ea-ps">
+    <factors>
+      <factor name="test">
+        <level>_data=../etc/ampl/Sinusoidal1.mod _optimum=-38.0 _opttol=0.0 _step_tolerance=1e-5</level>
+      </factor>
+      <factor name="config">
+        <level>solver=scolib:ea-scolib:ps max_neval=20000 debug=1000 population_size=10 realarray_mutation_type=normal</level>
+      </factor>
+      <factor name="ps_params">
+        <level>debug=10000 output_level=verbose initial_step=0.01 expansion_factor=1.0 step_tolerance=_step_tolerance max_func_evaluations_this_trial=100</level>
+      </factor>
+    </factors>
+    <controls>
+       <executable>acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <experiment name="ea-sw">
+    <factors>
+      <factor name="test">
+        <level>_data=../etc/ampl/Sinusoidal1.mod _optimum=-38.0 _opttol=0.0 _step_tolerance=1e-5 realarray_mutation_type=normal</level>
+      </factor>
+      <factor name="config">
+        <level>solver=ea-sw max_neval=20000 debug=1000 population_size=10</level>
+      </factor>
+      <factor name="sw_params">
+        <level>debug=10000 output_level=verbose initial_step=0.01 expansion_factor=1.0 step_tolerance=_step_tolerance max_func_evaluations_this_trial=100</level>
+      </factor>
+    </factors>
+    <controls>
+       <executable>./acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="ea-ps-ConstraintViolation" type="validation">
+    <data experiment="ea-ps"/>
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="ea-ps-FinalValue" type="validation">
+    <data experiment="ea-ps"/>
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ea-sw-ConstraintViolation" type="validation">
+    <data experiment="ea-sw"/>
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="ea-sw-FinalValue" type="validation">
+    <data experiment="ea-sw"/>
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+</experimental-study>

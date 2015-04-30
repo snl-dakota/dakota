@@ -1,0 +1,52 @@
+<experimental-study name="scolib-plgo">
+  <tags>
+    <tag>Xsmoke</tag>
+    <tag>Xnightly</tag>
+    <tag>Xscolib</tag>
+    <tag>Xvalgrind</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="test" filename="plgo_problems"/>
+  
+      <factor name="config">
+        <level>solver=sco:plgo max_neval=5000</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable timelimit="30">./scolib_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value='Successful'</options>
+  </analysis>
+
+  <analysis name="ConstraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

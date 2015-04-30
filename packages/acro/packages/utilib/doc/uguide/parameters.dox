@@ -1,0 +1,248 @@
+/*!
+ * \page parametersPage
+
+\section parametersSec Class Parameter Initialization
+
+
+UTILIB contains definitions of several classes that can
+be used to control the initialization of name-value pairs that
+can be used to initialize classes:
+
+  - utilib::Parameter
+  - utilib::ParameterSet
+  - utilib::ParameterList
+
+The utilib::Parameter class provides a container object that can provide a reference to another data type.  As such, a utilib::Parameter instance provides mechanisms for 
+initializing and retrieving the value of this data.
+
+The utilib::ParameterSet class manages sets of utilib::Parameter objects, and as such 
+this
+class will probably be used more directly than the utilib::Parameter class.  Since 
+utilib::Parameter objects provide a reference to data, utilib::ParameterSet objects can be 
+used to initialize data in a class in a transparent manner.  For example,
+consider a class
+\code
+  class Example1
+  {
+    Example1()
+	{ a=1; }
+
+    void print()
+	{ cout << a << endl; }
+
+    int a;
+  };
+\endcode
+We can extend this class to support parameter initialization by (1) making Example1 a subclass of utilib::ParameterSet and (2) creating a parameter in the constructor.
+\code
+  class Example1 : public utilib::ParameterSet
+  {
+    Example1()
+	{
+	a=1;
+	create_parameter("a",a,"<int>","1","Class data for Example1");
+	}
+
+    void print()
+	{ cout << a << endl; }
+
+    int a;
+  };
+\endcode
+The utilib::ParameterSet::create_parameter() method creates a utilib::Parameter object in the utilib::ParameterSet base class of Example1.  This parameter object can be used to initialize the data in an Example1 object as illustrated below:
+\code
+  Example1 obj;                              // Create an Example1 object
+  obj.print();                               // Prints "1"
+  obj.set_parameter<int>("a",10);            // Set the value of obj.a to 10
+  obj.print();                               // Prints "10"
+\endcode
+
+Note that this use of a parameter class is qualitatively different from a
+design that stores parameters by value (e.g. as used by Sandia's Trilinos
+package).  If parameters are stored by value, then we cannot transparently
+initialize classes as we have illustrated here.  However, a database of 
+parameter values can be managed independent of any class instantiation.  
+This can, for example, allow parameters to be passed around and referenced
+where needed in user code.
+
+The following subsections provide more detail for how UTILIB parameters can be 
+used in practice.
+
+
+
+\subsection ParameterSetDocSec Common ParameterSet Methods
+
+The most basic operations for a utilib::ParameterSet object are the get/set methods,
+which are illustrated below:
+\code
+  Example1 obj;
+
+  obj.set_parameter("a",1);                  // Set a parameter with a value
+
+  obj.set_parameter_with_string("a","1");    // Set a parameter with a string
+                                             //  which is interpreted as a
+                                             //  value with the parameter's type
+
+  int value;
+  obj.get_parameter("a",value);              // Retrieve a parameter value using
+                                             // a given data element
+
+  value = obj.get_parameter<int>("a");       // Return a parameter value using
+                                             // a specified return type
+\endcode
+For all of these utilib::ParameterSet methods, checks are made to ensure consistency
+of the underlying parameter type with the types specified by the user.  If
+these checks fail, an exception is generated that throws std::runtime_error.
+
+In addition to these methods, parameters can be initialized in a utilib::ParameterSet 
+object with command-line arguments and file input.
+The utilib::ParameterSet::process_parameters method is used to with 
+command-line arguments.  This method supports
+the use of the GNU style uses parameter keywords preceded by two hyphens
+rather than keyword letters. This style is extensible to contexts in
+which there are too many parameters to use single-letter parameters. This
+style is easier to read than the alphabet soup of older styles, and it can be
+combined with single-letter parameters (for commonly used parameters).
+A parameter argument (if any) can be separated by either whitespace or a
+single = (equal sign) character:
+\code
+  program --param1 paramval --param2=paramval
+\endcode
+If a boolean parameter is specified without an argument, the argument is
+assumed to be \b true.
+
+Note that the utilib::ParameterSet::process_parameters method requires three arguments.
+The first two are the standard \b argc and \b argv values provided in \b main.
+The third parameter is the number of required arguments that follow the
+optional parameters.  Note that if this value is zero and optional arguments
+follow the command-line parameters, then the utilib::ParameterSet will assume that 
+arguments following the last parameter are the value of that last parameter.
+For example
+\code
+  program --param1 <val>
+\endcode
+in this case utilib::ParameterSet assumes that \<val\> is the value of parameter 
+\em param1, even though parameter \em param1 might be a boolean and the
+user intended \<val\> to be a regular argument to the program.
+
+Several parameters are specified by default in the utilib::ParameterSet class.  One of 
+these is the \em param-file parameter, which can be used to specify a file that 
+is read for parameter values.  For example, the command
+\code
+  obj.set_parameter("param-file","foobar");
+\endcode
+will trigger the utilib::ParameterSet class to open the file "foobar" and read it.  The format of such an input file must be of the form: \<parameter\> \<value\>.  Note
+that all or part of a line may be commented out using the "#" character.  
+Additionally, if a parameter file contains a \em param-file parameter line, then
+that initiates the recursive opening of the specified parameter file.
+
+
+\subsection ParameterListDocSec Using ParameterList Objects
+
+The use of a utilib::ParameterList object is motivated by the common scenario in 
+which you wish to use a single file or set of command-line parameters to
+initialize the parameters in a set of classes.  Rather than have each class
+process these data sources independently, the utilib::ParameterList class can be 
+used to process all parameters at once and then set the values in each class.
+For example, if \b Class1, \b Class2 and \b Class3 are subclasses of 
+utilib::ParameterSet, then we can do the following:
+\code
+  ParameterList plist;
+  plist.process_parameters(argc,argv,1);
+
+  Class1 c1;
+  c1.set_parameters(plist);
+  Class2 c2;
+  c2.set_parameters(plist);
+  Class3 c3;
+  c3.set_parameters(plist);
+\endcode
+Note that utilib::ParameterList supports command-line processing and file IO exactly
+like the utilib::ParameterSet class.  This example assumes that the parameters in each
+of these classes are independent, so when you set parameters they are removed 
+from the parameter list in \b plist.  If classes share parameter names that are
+defined in a consistent manner (e.g. a \b debug parameter), then you can 
+keep parameters in the list by passing a flag "false" as the second argument to
+utilib::ParameterSet::set_parameters.
+
+The utilib::ParameterList class also supports mechanisms that can be used to validate
+parameters that will later be used to initialize various class instances.
+This requires \em registering the parameters of all classes that will be used
+later:
+\code
+  ParameterList plist;
+  plist.register<Class1>();
+  plist.register<Class2>();
+  plist.register<Class3>();
+  plist.process_parameters(argc,argv,1);
+\endcode
+Registering parameters before a utilib::ParameterList is initialized allows the
+utilib::ParameterList to verify that only parameters registered for use were provided
+in the command-line or input file.  Note that this registration involves the
+construction of the specified object, so this can only be performed with
+classes that provide null-constructors.
+
+The following example 
+illustrates a typical setup to process command-line parameters after the 
+start of main:
+\code
+  int main(int argc, char* argv[])
+  {
+  try {
+    int debug=0;
+    ParameterSet global_parameters;
+    global_parameters.create_parameter("debug",debug,"<int>","0",
+		"A global debugging parameter");
+   
+    ParameterList plist;
+    plist.register(global_parameters);		   // Register an existing 
+                                                   //   ParameterSet object
+    plist.register<Class1>();                      // Register a class type that
+                                                   //   will be used later
+    plist.process_parameters(argc,argv,1);         // Process the command-line
+    global_parameters.set_parameters(plist,false); // Set the values of the
+                                                   //   global params, keeping
+                                                   //   params in plist
+
+                                                   // The "help" parameter 
+                                                   //   has been set to "true"
+    if (global_parameters.get_parameter<bool>("help")) {
+                                                   // Dump all of the registered
+                                                   //   parameters to "cout"
+       global_parameters.write_registered_parameters(cout);
+       return -1;                                  // ... and exit.
+       }
+
+    // OTHER CODE HERE
+    }
+  catch (std::runtime_error& err) {
+    cerr << "We caught an exception: " << err.what() << endl; 
+    }
+return 0;
+} 
+\endcode
+
+
+\subsection ParameterValidationDocSec Parameter Validation
+
+utilib::Parameter object includes data method utilib::Parameter::validator that can be used to 
+validate that the value provided when a parameter is set is an appropriate 
+value for that parameter.  For example, we might wish to ensure that a string is
+not empty, or that a double is non-negative.  When a parameter is created, an
+optional parameter can be specified that is an instance of an STL unary function, std::unary_function<Type,bool>, where \em Type is the type of the parameter 
+data. A variety of such functions are provided for numerical parameters:
+
+ - utilib::ParameterLowerBound  : enforces a lower bound on the parameter
+ - utilib::ParameterUpperBound  : enforces an upper 
+ - utilib::ParameterBounds      : enforces upper and lower bounds on the parameter
+ - utilib::ParameterNonnegative : forces the parameter to be non-negative
+ - utilib::ParameterPositive    : forces the parameter to be positive
+
+For example, we can force a debugging parameter to be non-negative as follows
+\code
+  create_parameter("debug",debug,"<int>","0",
+	"A debugging parameter",
+	utilib::ParameterNonnegative<int>());
+\endcode
+
+*/

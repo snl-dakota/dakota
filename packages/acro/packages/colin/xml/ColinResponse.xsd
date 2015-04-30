@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/ColinInput"
+            xmlns:tns="http://xml.netbeans.org/schema/ColinInput"
+            elementFormDefault="qualified">
+    <xsd:complexType name="ResponseType" abstract="true" mixed="true"></xsd:complexType>
+    <xsd:simpleType name="BinaryPoint">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[01]+"/>
+            <xsd:whiteSpace value="collapse"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="IntegerPoint">
+        <xsd:list itemType="xsd:integer"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="RealPoint">
+        <xsd:list itemType="xsd:double"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="NameType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[a-zA-Z0-9\-:_\.]+"/>
+            <xsd:whiteSpace value="collapse"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:element name="ColinResponse">
+        <xsd:complexType>
+            <xsd:all></xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="FOO" type="tns:ResponseType"/>
+    <xsd:complexType name="FunctionValues">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:RealPoint"/>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="FunctionValue">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:double"/>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="Gradients">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:RealPoint"/>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="NonlinearConstraints">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ResponseType"></xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="newComplexType"/>
+</xsd:schema>

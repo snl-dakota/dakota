@@ -1,0 +1,61 @@
+#! /usr/bin/env python
+
+import os
+import sys
+import glob
+import pyutilib.subprocess
+import optparse
+
+print ""
+print "*****************************"
+print " Executing test.acro"
+print "*****************************"
+
+parser = optparse.OptionParser(usage='test.acro [options] <dirs>')
+
+parser.add_option('--all',
+        action='store_true',
+        dest='all_cats',
+        default=False,
+        help='All tests are executed.')
+parser.add_option('--tag', '--cat','--category',
+        action='append',
+        dest='cats',
+        default=[],
+        help='Specify test categories.')
+
+_options, args = parser.parse_args(sys.argv)
+
+if _options.all_cats is True:
+    _options.cats = []
+elif len(_options.cats) == 0:
+    _options.cats = ['smoke']
+elif 'all' in _options.cats:
+    _options.cats = []
+if len(_options.cats) > 0:
+    os.environ['PYUTILIB_UNITTEST_CATEGORIES'] = ",".join(_options.cats)
+    print " ... with test categories: "+ os.environ['PYUTILIB_UNITTEST_CATEGORIES']
+
+if os.environ.get('PATH',None) is None:
+    os.environ['PATH'] = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname( os.path.abspath(__file__)))))
+else:
+    os.environ['PATH'] = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname( os.path.abspath(__file__)))))+os.sep+'python'+os.sep+'bin'+os.pathsep+os.environ['PATH']
+print os.environ['PATH']
+
+currdir = os.path.dirname(os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__)))))+os.sep
+
+if len(args[1:]) == 0:
+    files = glob.glob(currdir+'packages'+os.sep+'*')
+else:
+    files = [currdir+'packages'+os.sep+file for file in args[1:]]
+for file in files:
+    pkg = os.path.basename(file)
+    tester = file+os.sep+'python'+os.sep+'test.'+pkg
+    if os.path.exists(tester):
+        print ""
+        print "-----------------------------"
+        print " Running test."+pkg
+        print "-----------------------------"
+        print ""
+        pyutilib.subprocess.run(tester, tee=True)
+

@@ -1,0 +1,74 @@
+/*!
+ * \page refs
+
+\if GeneratingHTML
+
+\section refs References
+
+ - [AckLit93] \anchor AckLit93 "A case for Lamarackian evolution", D. H. Ackley. In Proc. Of the Third Conf. On Artificial Life, 1993.
+
+ - [BacHof91] \anchor BacHof91 "Extended %selection mechanisms in genetic algorithms", T. Bäck and F. Hoffmeister. In R. K. Belew and L. B. Booker, editors, Proc. Of the Fourth Intl. Conf. On Genetic Algorithms, pages 92-99, San Mateo, CA, 1991. Morgan-Kaufmann.
+
+ - [BacHofSch91] \anchor BacHofSch91 "A survey of evolution strategies", T. Bäck and F. Hoffmeister and H.P. Schwefel. In R.K. Belew and L. B. Booker, editors, Proc. Of the Fourth Intl. Conf. On Genetic Algorithms, pages 2-9, San Mateo, CA, 1991. Morgan-Kaufmann.
+
+ - [ColJef91] \anchor ColJef91 "Selection in massively parallel genetic algorithms", R. J. Collins and D. R. Jefferson. In Proc. of the Fourth Intl. Conf. on Genetic Algorithms, pages 249-256, 1991.
+
+ - [DavYamNak93] \anchor DavYamNak93 "The ECOlogical framework II: Improving GA performance at virtually zero cost." Y. Davidor, T. Yamada and R. Nakano. In S. Forrest, editor, Proc. of the Fifth Intl. Conf. on Genetic Algorithms, pages 171-176, San Mateo, CA, 1993. Morgan-Kaufmann.
+
+ - [Dav91] \anchor Dav91 "Handbook of Genetic Algorithms", L. Davis, editor. Van Nostrad Reinhold, 1991.
+
+ - [DenTor94] \anchor DenTor94 "Derivative-free pattern search methods for multidisciplinary design problems", J. E. Dennis and V. Torczon. In Proc. 5th AIAA/NASA/ISSMO Symp. Multidisciplinary Analysis and Optimization, pages 1568-1582, 1996.
+
+ - [EldHarBohRom96] \anchor EldHarBohRom96 "Utilizing object-oriented design to build advanced optimization strategies with generic implementation",  M. S. Eldred, W. E. Hart, W. J. Bohnhoff, V. J. Romero, S. A. Hutchinson and A. G. Salinger. In Proc. Sixth  AIAA/NASA/ISSMO Symp. Multidisciplinary Analysis and Optimization, pages 1568-1582, 1996.
+
+ - [ErmZhiKon89a] \anchor ErmZhiKon89a "Comparison of some random search procedures for a global extremum", S. Ermakov, A. Zhigyavskii and M. Kondratovich. U.S.S.R. Computational Mathematics and Mathematical Physics, 29(1):112-117, 1989.
+
+ - [Fog95] \anchor Fog95 "Evolutionary Computation", D. B. Fogel. IEEE Press, Piscataway, NJ, 1995.
+
+ - [Gol89b] \anchor Gol89b "Genetic Algorithms in Search, Optimization and Machine Learning", D. E. Goldberg. Addison-Wesley Publishing Co., Inc., 1989.
+
+ - [Gol89a] \anchor Gol89a "Genetic Algorithms and Walsh functions: Part 1, a gentle introduction", D. E. Goldberg. Complex Systems, 3:129-152, 1989.
+
+ - [GorWhi93] \anchor GorWhi93 "Serial and parallel genetic algorithms as function optimizers", V. S. Gordon and Whitley. In S. Forrest, editor, Proc of the Fifth Intl Conf on Genetic Algorithm, pages 177-183, San Mateo, CA, 1993. Morgan-Kaufmann.
+
+ - [Har94] \anchor Har94 "Adaptive Global Optimization with Local Search", W. E. Hart. PhD thesis, University of California, San Diego, May 1994. http://www.cs.sandia.gov/wehart/papers.html.
+		
+ - [HofBac90] \anchor HofBac90 "Genetic algorithms and evolutionary strategies: Similarities and differences", F. Hoffmeister and T. Bäck. In H. P. Schwefel and R. Männer, editors, Parallel Problem Solving from Nature, pages 455-469. Springer-Verlag, 1990.
+
+ - [Hol76] \anchor Hol76 "Adaptation in Natural and Artificial Systems", J. Holland. The University of Michigan Press, 1976.
+
+ - [McI92] \anchor McI92 "Biologically Influenced Algorithms and Parallelism in Non- Linear Optimization", J. M. McInerney. PhD thesis, University of California, San Diego, 1992.
+
+ - [Mic96] \anchor Mic96 "Genetic Algorithms + Data Structures = Evolution Programs", Z. Michalewicz. Springer-Verlag, 3rd edition, 1996.
+
+ - [MorWon91] \anchor MorWon91 "Systematic choice of initial points in local search: Extensions and application to neural networks", R. J. Morris and W. S. Wong. Information Processing Letters, 39:213-217,1991.
+
+ - [Muh91] \anchor Muh91 "Evolution in time and space - the parallel genetic algorithm", H. Mühlebein. In G. J. Rawlins, editor, Foundations of Genetic Algorithms, pages 316-337. Morgan-Kauffmann, San Mateo, CA, 1991.
+
+ - [PonEld96] \anchor PonEld96 "Discrete optimization of isolator locations for vibration isolation systems: An analysis and experimental investigation", E. R. Ponslet and M. S. Eldred. In  Proc 6th AIAA/USAF/NASA/ISSMO Symp Multidisciplinary Analysis and Optimization, pages 1703-1716, 1996.
+
+ - [Rud94] \anchor Rud94 "Convergence analysis of canonical genetic algorithms", G. Rudolph. IEEE Trans Neural Networks, 5(1):96-101,1994.
+
+ - [SolWet81] \anchor SolWet81 "Minimization by random search techniques", F. Solis and R. B. Wets. Mathematical Operations Research, 6:19-30, 1981.
+
+ - [SpeDej91a] \anchor SpeDej91a "An analysis of multi-point crossover", W. M. Spears and K. A. De Jong. In G. J. Rawlins, editor, Foundations of Genetic Algorithms, pages 301-315. Morgan-Kauffmann, San Mateo, CA, 1991.
+
+ - [SpeDej91b] \anchor SpeDej91b "On the virtues of parametrized uniform crossover", W. M. Spears and K. A. De Jong. In R. K. Belew and L. B. Booker, editors, Proc. of the Fourth Intl. Conf. On Genetic Algorithms, pages 230-236, San Mateo, CA, 1991. Morgan-Kauffman.
+
+ - [SpiMan91] \anchor SpiMan91 "A massively parallel genetic algorithm: Implementation and first analysis", P. Spiessens and B. Manderick. In Proc of the Fourth Intl Conf on Genetic Algorithms, pages 279-285, 1991.
+
+ - [Tor89] \anchor Tor89 "Multi-directional search: A direct search algorithm for parallel machines", V. Torczon. Technical Report TR90-7, Rice University, May 1989.
+
+ - [Tor91] \anchor Tor91  "On the convergence of the multidirectional search algorithm", V. Torczon. SIAM J. Optimization, 1:123-145, 1991.
+
+ - [Tor93] \anchor Tor93 "On the convergence of pattern search methods",  V. Torczon. SIAM J. Optimization, 7(1):1-25, Feb. 1997.
+
+ - [VosLie91] \anchor VosLie91 "Schema disruption", M. D. Vose and G.E. Liepens. In R. K. Belew and L. B. Booker, editors, Proc. of the Fourth Intl. Conf. On Genetic Algorithms, pages 237-242, San Mateo, CA, 1991. Morgan-Kauffman.
+
+ - [WhiDomDas91] \anchor WhiDomDas91 "Genetic reinforcement learning with multiplayer neural networks", D. Whitley, S. Dominic and R. Das. In R. K. Belew and L. B. Booker, editors, Proc. of the Fourth Intl. Conf. On Genetic Algorithms, pages 562-569, San Mateo, CA, 1991. Morgan-Kauffman.
+
+ - [WonMor89] \anchor WonMor89 "A new approach to choosing initial points in local search", W. S. Wong and R. J. Morris. Information Processing Letters, 30:67-72, 1989.
+
+\endif
+
+*/

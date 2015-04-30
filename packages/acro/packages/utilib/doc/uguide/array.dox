@@ -1,0 +1,224 @@
+/*!
+ * \page arrayPage
+
+\section arraySec Arrays and Matrices
+
+UTILIB defines several types of array classes: simple arrays, dense matrices 
+(two-dimensional arrays), sparse matrices, three-dimensional arrays, enumeration arrays, and bit arrays.
+
+
+
+\subsection arraySubSec Simple Arrays
+
+The utilib::BasicArray class provides a nice level of encapsulation for array
+data types, and the utilib::NumArray class extends this class to include
+numerical vector operations.  The primary advantage of using
+these classes over similar classes in STL is that UTILIB includes
+extra safety features such as runtime bounds checking
+and reference counting.
+
+
+These array classes have a pointer to the data in the field
+\c Data.  You can
+get this pointer using the data() function:
+\verbatim
+    utilib::BasicArray<int> vec1(5);
+    vec1 << 0;
+    int *intarray = vec1.data();
+\endverbatim
+This example uses a constructor that specifies a vector of length five.  You
+can also specify the initial content of a utilib::BasicArray explicitly:
+\verbatim
+    int array_of_ints[20];
+    utilib::BasicArray<int> vec2(20, array_of_ints);
+\endverbatim
+The first argument is the length of the array and the second is a pointer
+to an array of the appropriate type.  The data field in the utilib::BasicArray
+will point to this array.  One can also construct a copy of an existing
+array:
+\verbatim
+    utilib::BasicArray vec3(vec2);
+\endverbatim
+This will allocate a new integer vector and initialize it with the
+contents of \c vec2.  The Data field in \c vec3 points to
+the new copy.
+
+Frequently, one will need to use an empty constructor (i.e. start with a
+size-zero array) and then put in the true data.  More generally, you may
+want to grow and shrink the vector dynamically:
+\verbatim
+    vec3.resize(100);
+\endverbatim
+This will re-allocate a new array of 100 integers and copy the old data
+(if any) into the beginning of the array.  In this example, the first
+twenty elements are copied from the previously allocated memory for \c vec3.
+For a utilib::BasicArray object you cannot assume anything about the remaining 
+values, but for NumArray objects these array elements
+will be initialized to zero.  If an array is resized to a smaller value,
+then the first part of the previous array is retained.
+\verbatim
+    vec3.size() 
+\endverbatim
+returns the length of \c vec3.
+
+The equals (=) operator allocates new space. Thus
+\verbatim
+    utilib::BasicArray vec4;
+    vec4 = vec3;
+\endverbatim
+creates a new integer array and copies the contents of \c vec3 into that
+array.  The Data field of \c vec4 points to the new space.  If the
+vector already exists and you want to reuse the already-allocated space,
+use the \htmlonly << \endhtmlonly\latexonly {\tt <<} \endlatexonly
+operator:
+\verbatim
+    utilib::BasicArray vec5(100);
+    vec5 << vec4;
+\endverbatim
+This copies the contents of the Data array from \c vec4 into the
+array for \c vec5.  If the allocated array (\c vec5) is not the same size,
+then it will be resized by this operator.
+To copy by reference, use the \htmlonly &= \endhtmlonly\latexonly {\tt \&=}
+\endlatexonly operator.  Thus
+\verbatim
+    utilib::BasicArray<int> vec6 &= vec5;
+\endverbatim
+will have the data of \c vec6 point to the same array that
+the data of \c vec5 points to (reference counts are properly
+updated).
+
+The stream (<<) operator is overloaded to allow (re)initialization of a
+vector that has already been created.
+\verbatim
+    vec5 << 15;
+\endverbatim
+This sets every element of \c vec5 to 15.
+
+Getting array elements works looks like normal array references:
+\verbatim
+    int index, newvalue;
+    vec5[index] = newvalue;
+    newvalue = vec5[index];
+\endverbatim
+
+Iterators are provided for utilib::BasicArray and utilib::NumArray, which 
+have the same look-and-feel as those used for the STL \c std::vector class.
+For example:
+\verbatim
+    utilib::BasicArray<int>::iterator curr = vec5.begin();
+    utilib::BasicArray<int>::iterator end  = vec5.end();
+    while (curr != end) {
+      cout << *curr << " ";
+      curr++;
+    }
+    cout << *curr << endl;            /// ERROR HERE!
+\endverbatim
+However, these iterators also detect whether the iterator has gone beyond
+the bounds of the array.  In the previous example, the iterator would
+throw an exception at the last step, when the value of \c curr is being
+referenced.
+
+Notes:
+
+- The utilib::pvector class extends the STL \c std::vector class to 
+include some of the bounds checking that is used by utilib::BasicArray.  
+
+- The utilib::IntVector class is an alias for utilib::NumArray<int>, and
+the utilib::DoubleVector class is an alias for utilib::NumArray<double>
+
+- The utilib::MixedIntVars class is a simple container for one-dimensional
+arrays of doubles, integers and binary values.
+
+- Error checks for bounds an iterators cannot be turned off right now.
+
+
+\subsection strSubSec Character String
+
+The utilib::CharString class is a subclass of utilib::BasicArray that
+provides additional functionality for manipulating character strings.
+This class has a similar look-and-feel to the STL \c std::string class,
+though utilib::CharString is more heavily integrated into various
+UTILIB utilities.
+
+A variety of comparison operations are supported for strings (using the same
+lexicographical ordering as \c strcmp() ).  For
+example,
+\verbatim
+    utilib::CharString str_a = "abc";
+    utilib::CharString str_b = "xyz";
+    cout << (str_a == str_b);				/// False
+    cout << (str_a != str_b);				/// True
+    cout << (str_a < str_b);				/// True
+    cout << (str_a >= str_b);				/// False
+\endverbatim
+Similarly, this class include methods for easily setting strings:
+\verbatim
+    utilib::CharString str;
+    str = "file_";
+    str += 0;
+    cout << (str == "file_0");				/// True;
+\endverbatim
+Otherwise, this class looks much like a utilib::BasicArray.  One 
+additional difference is that the \c c_str() method can be used to 
+extract the underlying character string (as is done for \c std::string).
+
+
+\subsection matSubSec Matrices
+
+Dense and sparse matrices are supported by UTILIB.  The
+utilib::Basic2DArray and utilib::Num2DArray classes define dense matrices
+as an array-of-arrays.  Similarly, three-dimensional dense matrices are
+defined in utilib::Basic3DArray.  NOTE: These classes are not widely used,
+and thus they are not as mature as the one-dimensional array classes.
+
+The utilib::SparseMatrix class is a base class for defining sparse
+matrices.  utilib::CMSparseMatrix defines sparse matrices with column-major
+ordering, and utilib::RMSparseMatrix defines sparse matrices with row-major
+ordering.  These classes are heavily used by the PICO MILP solver, so they are
+relatively stable.  Sparse matrices can be setup by adjoining column or
+rows, or by initializing the sparse data structures directly.  To do the later, you need to initialize the following data (using a column-major ordering for
+example):
+
+- matval[i] - The array of values in the sparse matrix.
+
+- matind[i] - The row-indeces of the corresponding array values.
+
+- matbeg[i] - The index of \c matval that is the beginning of the i-th column.
+
+- matcnt[i] - The length of the i-th column.
+
+
+
+Notes:
+
+- The utilib::IntMatrix class is an alias for utilib::Num2DArray<int>, and the
+utilib::DoubleMatrix class is an alias for utilib::Num2DArray<double>.
+
+
+\subsection enumSubSec Enumerated and BitArrays
+
+The utilib::BitArray class employs a compressed data representation for
+boolean data.  The main elements of this array have the same look and 
+feel as a utilib::BasicArray object.  The elements of this array can be
+changed using the \c set() and \c reset() methods, which alternatively
+turn the array values to \c true and \c false.  For example:
+\verbatim
+    utilib::BitArray array(5);
+    array.set();			/// Turn all values on
+    array.reset(3);		        /// Turn off the 4th value
+    array.set(3);                       /// Turn the 4th value back on
+    array.put(2,0);			/// Turn off the 3rd value
+\endverbatim
+The utilib::BitArray object can also use standard array notation:
+\verbatim
+    utilib::BitArray array(5);
+    array[0] = false;			/// Turn off the 1st value
+    array[1] = true;			/// Turn on the 2nd value
+\endverbatim
+
+The utilib::TwoBitArray class provides a similar compressed array representation for arrays with values 0, 1, 2 or 3.  More generally, the utilib::EnumBitArray
+can be used to represent arrays for enumeration types that can be coerced
+to integer values.
+
+
+*/

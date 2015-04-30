@@ -1,0 +1,127 @@
+
+Test8c - a simple multi-objective minimization example with a shell command
+
+*****************************************************************************
+*****************************************************************************
+****** Coliny Solver: RandomMOO
+*****************************************************************************
+*****************************************************************************
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			0
+	Total # Func Evals:			0
+	Pareto Size:				0
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			1
+	Total # Func Evals:			2
+	Pareto Size:				2
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			2
+	Total # Func Evals:			4
+	Pareto Size:				4
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			3
+	Total # Func Evals:			6
+	Pareto Size:				6
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			4
+	Total # Func Evals:			8
+	Pareto Size:				8
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			5
+	Total # Func Evals:			10
+	Pareto Size:				10
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			6
+	Total # Func Evals:			12
+	Pareto Size:				12
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			7
+	Total # Func Evals:			14
+	Pareto Size:				14
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			8
+	Total # Func Evals:			16
+	Pareto Size:				2
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			9
+	Total # Func Evals:			18
+	Pareto Size:				3
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			10
+	Total # Func Evals:			20
+	Pareto Size:				4
+]
+)
+[ Termination: Unknown ]
+
+Multi-Objective Cache (Point/Values)
+------------------------------------
+4 : -5.336102431 -3.873563378 -2.979695039 0.2654740448  / 2 : -16.78226644 -0.0595867074 
+4 : -6.288340101 -2.617799027 -3.917435569 0.9503996318  / 2 : -58.73793534 -0.01702477273 
+4 : -4.982786663 -4.014411119 -3.773674984 0.3090993381  / 2 : -42.59744345 -0.02347558724 
+4 : -7.444409916 -2.10192419 -4.439035384 1.241983086  / 2 : -88.11861299 -0.01134834022 
+

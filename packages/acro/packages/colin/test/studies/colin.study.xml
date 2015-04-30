@@ -1,0 +1,61 @@
+<experimental-study name="colin">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>colin</tag>
+  </tags>
+
+  <experiment name="std">
+    <factors>
+      <factor name="test">
+        <level name="test1a">./tests test1a</level>
+        <level name="test1b">./tests test1b</level>
+        <level name="test1c">./tests test1c</level>
+        <level name="test1d">./tests test1d</level>
+        <level name="test1e">./tests test1e</level>
+        <level name="test1f">./tests test1f</level>
+        <level name="test2">./tests test2</level>
+        <level name="test3">./tests test3</level>
+        <level name="test4">./tests test4</level>
+        <level name="test5a">./tests test5a</level>
+        <level name="test5b">./tests test5b</level>
+        <level name="test5c">./tests test5c</level>
+        <level name="test5d">./tests test5d</level>
+        <level name="test6a">./tests test6a</level>
+        <level name="test6b">./tests test6b</level>
+        <level name="test6c">./tests test6c</level>
+        <level name="test6d">./tests test6d</level>
+        <level name="test7a">./tests test7a</level>
+        <level name="test7b">./tests test7b</level>
+        <level name="test7c">./tests test7c</level>
+        <level name="test7d">./tests test7d</level>
+        <level name="test8a">./tests test8a</level>
+        <level name="test8b">./tests test8b</level>
+        <level name="test8c">./tests test8c</level>
+        <level name="test8d">./tests test8d</level>
+        <level name="test9a">./tests test9a</level>
+        <level name="test9b">./tests test9b</level>
+        <level name="test9c">./tests test9c</level>
+        <level name="test9d">./tests test9d</level>
+        <level name="test9f">./tests test9f</level>
+        <level name="test20a">./tests test20a</level>
+        <level name="test20b">./tests test20b</level>
+        <level name="test20d">./tests test20d</level>
+        <level name="test20e">./tests test20e</level>
+        <level name="test20f">./tests test20f</level>
+        <level name="test21a">./tests test21a</level>
+        <level name="test21b">./tests test21b</level>
+      </factor>
+    </factors>
+    <controls>
+       <executable>./colin_diff_test</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="StdRegression" type="validation">
+    <data experiment="std"/>
+    <category>validation</category>
+    <options>_measurement='diffs' _value='False'</options>
+  </analysis>
+
+</experimental-study>

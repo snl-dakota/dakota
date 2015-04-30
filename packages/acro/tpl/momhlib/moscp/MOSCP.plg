@@ -1,0 +1,127 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: MOSCP - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP159.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "../MOMHLib++/MO" /I "../MOMHLib++/HGA" /I "../MOMHLib++/SA" /I "../MOMHLib++/MOMSLS" /I "../MOMHLib++/common" /I "../MOMHLib++/ParetoGA" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/MOSCP.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"D:\MOMHLib++\MOMHLib++\MO\global.cpp"
+"D:\MOMHLib++\MOMHLib++\HGA\hgabase.cpp"
+"D:\MOMHLib++\MOMHLib++\HGA\immogls.cpp"
+"D:\MOMHLib++\MOMHLib++\HGA\mogls.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\momethod.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\momhconstrainedsolution.cpp"
+"D:\MOMHLib++\MOMHLib++\MOMSLS\momsls.cpp"
+"D:\MOMHLib++\MOMHLib++\SA\mosa.cpp"
+"D:\MOMHLib++\moscp\MOSCP.cpp"
+"D:\MOMHLib++\moscp\moscpproblem.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\nondominatedset.cpp"
+"D:\MOMHLib++\MOMHLib++\ParetoGA\paretobase.cpp"
+"D:\MOMHLib++\MOMHLib++\HGA\pma.cpp"
+"D:\MOMHLib++\MOMHLib++\SA\psa.cpp"
+"D:\MOMHLib++\MOMHLib++\SA\sabase.cpp"
+"D:\MOMHLib++\MOMHLib++\SA\smosa.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\solution.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\solutionsset.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tbnode.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tbtree.cpp"
+"D:\MOMHLib++\MOMHLib++\ParetoGA\tindexedpoint.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tlistset.cpp"
+"D:\MOMHLib++\moscp\tmoscpsolution.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tmotools.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tquadnode.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tquadtree.cpp"
+"D:\MOMHLib++\MOMHLib++\Common\trandomgenerator.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\weights.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP159.tmp" 
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP15A.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "../MOMHLib++/MO" /I "../MOMHLib++/HGA" /I "../MOMHLib++/SA" /I "../MOMHLib++/MOMSLS" /I "../MOMHLib++/common" /I "../MOMHLib++/ParetoGA" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/MOSCP.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"D:\MOMHLib++\moscp\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP15A.tmp" 
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP15B.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/MOSCP.pdb" /debug /machine:I386 /out:"Debug/MOSCP.exe" /pdbtype:sept 
+".\Debug\global.obj"
+".\Debug\hgabase.obj"
+".\Debug\immogls.obj"
+".\Debug\mogls.obj"
+".\Debug\momethod.obj"
+".\Debug\momhconstrainedsolution.obj"
+".\Debug\momsls.obj"
+".\Debug\mosa.obj"
+".\Debug\MOSCP.obj"
+".\Debug\moscpproblem.obj"
+".\Debug\nondominatedset.obj"
+".\Debug\paretobase.obj"
+".\Debug\pma.obj"
+".\Debug\psa.obj"
+".\Debug\sabase.obj"
+".\Debug\smosa.obj"
+".\Debug\solution.obj"
+".\Debug\solutionsset.obj"
+".\Debug\StdAfx.obj"
+".\Debug\tbnode.obj"
+".\Debug\tbtree.obj"
+".\Debug\tindexedpoint.obj"
+".\Debug\tlistset.obj"
+".\Debug\tmoscpsolution.obj"
+".\Debug\tmotools.obj"
+".\Debug\tquadnode.obj"
+".\Debug\tquadtree.obj"
+".\Debug\trandomgenerator.obj"
+".\Debug\weights.obj"
+]
+Creating command line "link.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP15B.tmp"
+<h3>Output Window</h3>
+Compiling...
+StdAfx.cpp
+Compiling...
+global.cpp
+hgabase.cpp
+immogls.cpp
+mogls.cpp
+momethod.cpp
+momhconstrainedsolution.cpp
+momsls.cpp
+mosa.cpp
+MOSCP.cpp
+d:\momhlib++\moscp\moscpproblem.h(124) : warning C4786: 'std::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::const_iterator,std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::const_iterator>' : identifier was truncated to '255' characters in the debug information
+moscpproblem.cpp
+d:\momhlib++\moscp\moscpproblem.h(124) : warning C4786: 'std::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::const_iterator,std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::const_iterator>' : identifier was truncated to '255' characters in the debug information
+nondominatedset.cpp
+d:\program files\microsoft visual studio\vc98\include\utility(21) : warning C4786: 'std::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::iterator,bool>::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::iterator,bool>' : identifier was truncated to '255' characters in the debug information
+d:\program files\microsoft visual studio\vc98\include\utility(21) : warning C4786: 'std::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::iterator,std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::iterator>::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::iterator,std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::iterator>' : identifier was truncated to '255' characters in the debug information
+paretobase.cpp
+pma.cpp
+psa.cpp
+sabase.cpp
+smosa.cpp
+solution.cpp
+solutionsset.cpp
+tbnode.cpp
+tbtree.cpp
+tindexedpoint.cpp
+tlistset.cpp
+tmoscpsolution.cpp
+d:\momhlib++\moscp\moscpproblem.h(124) : warning C4786: 'std::pair<std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::const_iterator,std::_Tree<int,int,std::set<int,std::less<int>,std::allocator<int> >::_Kfn,std::less<int>,std::allocator<int> >::const_iterator>' : identifier was truncated to '255' characters in the debug information
+tmotools.cpp
+tquadnode.cpp
+tquadtree.cpp
+trandomgenerator.cpp
+weights.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+MOSCP.exe - 0 error(s), 5 warning(s)
+</pre>
+</body>
+</html>

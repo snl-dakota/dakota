@@ -1,0 +1,53 @@
+
+This directory contains files that (1) describe how Acro releases are
+managed, and (2) provide checklists for various elements of this release
+process.
+
+-----------------------------------------------------------------------
+Overview of Release Process
+-----------------------------------------------------------------------
+
+svn_release.txt
+
+   Provides an overview of how releases are managed in the subversion
+   repositories of Acro and it's related components.
+
+releaseProcess.txt
+
+   Describes how a toplevel Acro release is managed.
+
+-----------------------------------------------------------------------
+Release Checklists
+-----------------------------------------------------------------------
+
+release.txt
+
+   The top-level Acro release checklist.
+
+releaseComponents.txt
+
+  The components included in this release.
+
+projectRelease.txt
+
+   A checklist for an Acro subproject, which is tagged for this release.
+
+releaseTestPlan.txt
+
+   A checklist for testing this software.
+
+customerSatisfaction.txt
+
+   A checklist for post-release customer satisfaction updates.
+
+thirdPartyRequirements.txt
+
+   A checklist for the requirements on third-party software.
+
+softwareReview.txt
+
+   A checklist for reviewing  software components.
+
+copyright.txt
+
+   Information about the management of copyright information.

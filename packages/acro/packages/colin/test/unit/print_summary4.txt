@@ -1,0 +1,19 @@
+Number of objectives: 1  { MIN }
+Real variables:    0
+Integer variables: 3
+Index        Label       Lower Bound T       Upper Bound T
+    1          x_1                 9 H          Infinity N 
+    2          x_2         -Infinity N                 5 H 
+    3          x_3         -Infinity N          Infinity N 
+Binary variables:  4
+Index        Label
+    1          b_1 
+    2          b_2 
+    3          b_3 
+    4          b_4 
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0

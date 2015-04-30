@@ -1,0 +1,30 @@
+(data created)
+Single reads:
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+Chain reading:
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+Converting read:
+   l1:     [ OK ]: 1 : 5
+   l2:     [ OK ]: 1 : 3.1415
+   [ OK ]: get A as list<double> (correctly) threw exception
+Appending to an existing string
+   (appended d1a)
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+   double: [ OK ]
+Appending to an existing string (mixed read/write)
+   int:    [ OK ]
+   double: [ OK ]
+   (wrote c1)
+   A:      [ OK ]
+   char    [ OK ]
+sSerialStream to a truncated string
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+   char    [ OK ]

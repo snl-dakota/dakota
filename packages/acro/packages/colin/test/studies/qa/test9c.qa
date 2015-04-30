@@ -1,0 +1,17 @@
+
+Test9c - a simple minimization example with a shell command
+TestOptSolver: iter 0 value 79.86261683 pt 3 : 3.9 3.9 3.9 viol 0
+TestOptSolver: iter 1 value 74.61627522 pt 3 : 3.8 3.8 3.8 viol 0
+TestOptSolver: iter 2 value 69.4194898 pt 3 : 3.7 3.7 3.7 viol 0
+TestOptSolver: iter 3 value 64.77104738 pt 3 : 3.6 3.6 3.6 viol 0
+TestOptSolver: iter 4 value 60.26723769 pt 3 : 3.5 3.5 3.5 viol 0
+TestOptSolver: iter 5 value 56.03418046 pt 3 : 3.4 3.4 3.4 viol 0
+TestOptSolver: iter 6 value 51.56664695 pt 3 : 3.3 3.3 3.3 viol 0
+TestOptSolver: iter 7 value 47.70814055 pt 3 : 3.2 3.2 3.2 viol 0
+TestOptSolver: iter 8 value 43.85759031 pt 3 : 3.1 3.1 3.1 viol 0
+TestOptSolver: iter 9 value 40.51646972 pt 3 : 3 3 3 viol 0
+TestOptSolver: iter 10 value 37.13345693 pt 3 : 2.9 2.9 2.9 viol 0
+TestOptSolver: iter 11 value 34.06855859 pt 3 : 2.8 2.8 2.8 viol 0
+TestOptSolver: iter 12 value 31.21161143 pt 3 : 2.7 2.7 2.7 viol 0
+TestOptSolver: iter 13 value 28.3845711 pt 3 : 2.6 2.6 2.6 viol 0
+NEval: 450

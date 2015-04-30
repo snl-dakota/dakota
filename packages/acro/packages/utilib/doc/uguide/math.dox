@@ -1,0 +1,63 @@
+/*!
+ * \page mathPage
+
+\section mathSec Mathematical Routines
+
+The _math.h header includes several headers that define
+mathematical and array functions:
+
+  - math_basic.h - Defines basic mathematical routines and constants.
+
+  - math_array.h - Defines mathematical routines that are applied to arrays.
+
+  - math_matrix.h - Defines mathematical routines that are applied to
+	matrices.
+
+Note that the linpack.h header is not currently used in UTILIB.
+
+
+
+\subsection comparisonSec Comparison Mechanisms
+
+Many routines in UTILIB perform a comparison between two objects and
+return an integer flag.  If we are evaluating how \c A relates to \c B, then the
+standard comparison semantics for the return value \c x is that \c x is
+less than zero if \c A is before \c B in the order, \c x is greater than
+zero if \c A is after \c B in the order, and \c x is zero if they are equal.
+In the context of numerical values, \c A is before \c B if \c A is less than \c
+B.
+Finally, note that if the comparison function is a method of an object, like
+\verbatim
+    A.compare(B)
+\endverbatim
+then the comparison is evaluating how \c A relates to \c B (and not how
+\c B relates to \c A).
+
+The utilib::ComparisonBase class defines a generic mechanism for 
+defining comparison class.  Two subclasses of this have been developed:
+
+- utilib::SimpleCompare - A simple comparison class
+
+- utilib::Reverse - A class for performing a reverse-ordered comparison
+
+
+\subsection sortSec Sorting
+
+The sort.h header contains definitions for a variety of
+comparison, sorting and ordering functions:
+
+- sort - Sort an array object.
+
+- stable_sort - Perform a stable sort on an array object.
+
+- order - Fill an array \c ndx with the order of the elements.  Thus, \c ndx[i]
+	is the index of the i-th smallest value in the array.
+
+- rank - Fill an array \c ndx with the rank of the elements.  Thus, \c ndx[i]
+	is the rank of the i-th element of the array.
+
+These functions employ the STL sorting routines, which are portable and 
+robust.  Further, there are various instances of these functions that
+are applicable to utilib::BasicArray and std::vector objects.
+
+*/

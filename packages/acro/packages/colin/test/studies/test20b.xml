@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ColinInput xmlns="http://xml.netbeans.org/schema/ColinInput"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation='http://xml.netbeans.org/schema/ColinInput ColinInput.xsd'>
+
+  <Problem type="NLP1">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>shell_func5</Command>
+        <KeepFiles />
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:test_g">
+     <InitialPoint>
+       10.0 10.0 10.0
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">29.0</Option>
+     </Options>
+  </Solver>
+
+  <Execute />
+</ColinInput>

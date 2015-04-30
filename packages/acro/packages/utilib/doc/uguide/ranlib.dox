@@ -1,0 +1,93 @@
+/*!
+ * \page ranlibPage
+
+\section ranlibSec Random Numbers and Random Variables
+
+UTILIB supports a variety of classes for defining and using random generators
+as well as classes for generating samples 
+from different types of random variables.
+
+
+\subsection rngSec Random Number Generators
+
+The basic datatype for random number generators is utilib::RNG, and two
+classes are provided for encapsulating linear congruential generators:
+
+- utilib::LCG - encapsulates the unix random number generator, and 
+
+- utilib::PM_LCG -  encapsulates a portable random number \if GeneratingLATEX \latexonly generator~\cite{ParMil88}. \endlatexonly \endif \if GeneratingHTML generator [ \ref ParMil88 "ParMil88" ]. \endif
+
+The default_rng.h header provides an API for initializing and using a 
+global utilib::PM_LCG random number generator (which is particularly
+convenient for C code).
+
+The utilib::AnyRNG class is used to maintain a reference to \e
+some utilib::RNG object that has been created (or, in fact, any object that uses
+the same API as utilib::RNG).  This works like the
+utilib::AnyReference object, in that it can store a reference to any such
+object.  This utility was developed to enable codes to be developed with a 
+generic container class while allowing users to provide their favorite
+random number generator object.  This object provides more error checking
+than, say, a pointer to a utilib::RNG.
+
+
+\subsection rvSec Random Variables
+
+UTILIB includes a variety of classes for generating random variables using a
+random number generator.  In all cases, a random variable object \c rv acts
+like a functor when generating a random value:
+
+- utilib::Binomial - \c rv(p,n) generates a value from the binomial distribution with probability \c p and number of trials \c n.
+
+- utilib::Cauchy - \c rv(alpha,beta) generates a value from the Cauchy distribution with parameters \c alpha and \c beta.
+
+- utilib::DUniform - \c rv(l,h) generates a uniformly random integer value from \c l to \c h.
+
+- utilib::Exponential - \c rv(m) generates a value from the exponential distribution with mean \c m.
+
+- utilib::Geometric - \c rv(p) generates a value from the geometric distribution with probability of success \c p.
+
+- utilib::LogNormal - \c rv(scale,shape) generates a value from the log-normal distribution with parameters \c scale and \c shape.
+
+- utilib::Normal - \c rv(m,s) generates a value from the normal (or Gaussian) distribution with mean \c m and standard deviation \c s.
+
+- utilib::Uniform - \c rv(l,h) generates a value from the uniform distribution between low \c l and high \c h.
+
+- utilib::Triangular - \c rv(l,h) generates a value from the triangular distribution between low \c l and high \c h.
+
+Additionally, the following 
+
+- utilib::MNormal - rv(vec) generates a vector of random numbers from a normal distribution, using a user-specified covariance matrix.
+
+- utilib::MUniform  - rv(vec) generates a vector of random numbers from a uniform distribution, where the range may vary for eaCh dimension.
+
+These random variables distributions are described in detail in a variety of
+texts (e.g.  \if GeneratingLATEX Evans, Hastings and \latexonly Peacock~\cite{EvaHasPea93}).\endlatexonly \endif \if GeneratingHTML [\ref EvaHasPea93 "EvaHasPea93"]).  \endif Many of these classes are implemented using
+code from the RANLIB random number generator library (see the Random.h
+header file).
+
+The following base classes are used to define random variable objects:
+
+- utilib::RandomVariableBase - Abstract class for random variables.
+
+- utilib::SimpleRandomVariable - An abstract templated random variable class that generates values that are returned by value.
+
+- utilib::GeneralRandomVariable - An abstract templated random variable class that generates values that are returned by reference.
+
+- utilib::ExternalRandomVariable - A utilib::SimpleRandomVariable that generates points using an external function.
+
+
+\subsection sgSec Sample Generators
+
+The utilib::SampleGenerator class is an abstract base class for objects that
+generate a set of points sequentially.  Although the random variable 
+classes can be used in this fashion, there are often contexts where the
+sample is a function of all of the points that are sampled.  Thus, a 
+utilib::SampleGenerator subclass can contain context about the previously
+generated points for use when generating new points.
+
+The utilib::UniformSampleGenerator template class is a simple implementation
+where each sample is generated independently.  This class is specialized for
+generating utilib::BasicArray<double> and utilib::MixedIntVars samples.
+
+*/

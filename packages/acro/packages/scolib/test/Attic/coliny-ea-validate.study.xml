@@ -1,0 +1,76 @@
+<experimental-study name="scolib-ea-validate">
+  <tags>
+    <tag>validate</tag>
+  </tags>
+
+  <experiment name="exp1">
+    <factors>
+
+      <factor name="misc">
+        <level>_optimum=0.0 _data=../etc/ampl/linear1.mod</level>
+      </factor>
+  
+      <factor name="config">
+        <level>solver=sco:ea xover_rate=0.0 mutation_rate=0.0 population_size=50 max_iters=1 max_neval=50</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable>./scolib_test --ampl</executable>
+       <replication>300</replication>
+    </controls>
+  </experiment>
+
+  <experiment name="exp2">
+    <factors>
+      <factor name="test" filename="ea_problems"/>
+      <!--
+      <factor name="misc">
+        <level>_data=linear1</level>
+      </factor>
+      -->
+
+      <factor name="config">
+        <level>solver=sco:ea output_level=verbose population_size=10
+		debug=10000 xover_rate=0.0
+		selection_type=linear_rank
+		max_iters=100
+	</level>
+      </factor>
+
+      <factor name="replacement">
+        <level> replacement_type=chc</level>
+        <level> replacement_type='random'</level>
+        <level> replacement_type=elitist</level>
+        <level> replacement_type=exponential</level>
+      </factor>
+
+      <factor name="keep_num">
+        <level></level>
+        <level>keep_num=1</level>
+        <level>keep_num=9</level>
+        <level>keep_num=10</level>
+      </factor>
+
+      <factor name="num_trial">
+ 	<level>_value=910</level>
+        <level> num_trial_points=1 _value=110</level>
+        <level> num_trial_points=9 _value=910</level>
+        <level> num_trial_points=11 _value=1110</level>
+      </factor>
+
+    </factors>
+    <controls>
+       <executable>./scolib_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="NEval" type="validation">
+    <data experiment="exp2"/>
+    <options>_measurement='Num-Evaluations' _cmp_operator='le'</options>
+  </analysis>
+
+</experimental-study>

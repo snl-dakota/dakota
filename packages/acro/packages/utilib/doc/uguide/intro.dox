@@ -1,0 +1,97 @@
+/*! 
+ * \page introPage
+
+
+\section IntroductionSec Introduction
+
+\subsection Overview 
+
+UTILIB is a general-purpose C++ library that includes a variety of
+algorithmic utilities for software development.  These utilities define
+useful datatypes and classes as well as generic routines.  In particular,
+UTILIB provides a variety of services that facilitate the portability
+of codes, and in particular porting to parallel computing platforms
+at Sandia.  This library has proven useful in the development of several
+codes at Sandia, including the Coliny optimization library, the PICO
+parallel branch-and-bound library, and the DAKOTA optimization toolkit.
+
+It is worth noting some points about the design philosophy for the
+classes in UTILIB:
+
+- \b Encapsulation:  One of the chief advantages for using UTILIB data types 
+	(e.g. arrays) is the encapsulation of memory allocation that they
+	provide.  This feature has been heavily exploited in my subsequent
+	code, and thus memory allocation is generally quite robust.  Further,
+	some classes (e.g. \c LinkedList) include mechanisms for efficiently
+	'reallocating' memory.
+
+- \b Robustness:  A related aspect of UTILIB's design is robustness.  I have
+	almost always favored design considerations that ensure robustness.
+	For example, the default behavior for \c BasicArray's is to perform
+	bounds checking.  In practice, the performance hit that this causes
+	has been far outweighed by the hours saved tracking down obscure
+	errors.
+
+- \b Portability: Portability across many different architectures is another
+	very important aspect of UTILIB.  For example, the common 
+	definitions for sorting in \c sort.h have proven very effective
+	for defining portable sorting routines.
+
+- \b Efficiency: There is generally no \e best way to implement many 
+	algorithms and datatypes,
+	since there invariably are performance/utility trade-offs that 
+	need to be made.  In the design of UTILIB classes, I have generally
+	looked for solutions that admit a reasonably efficient capability while
+	providing the most general possible design.  For example, 
+	ADT's like splay trees are very general in their capabilities. Still,
+	they include methods that allow the user to track pointers to items
+	in the tree, which can later be used to efficiently remove those		items from the tree.
+
+- \b Parallelization: Support for parallelization is an important function
+	for UTILIB.  In particular, UTILIB includes mechanisms for managing		parallel I/O through the \c CommonIO class, and the \c uMPI class
+	provides wrappers for parallel communication with MPI.
+
+This user guide is focused on describing the capabilities and software components in the UTILIB library.  The components of the UTILIB library include
+
+ - \b Abstract \b Data \b Types: standard abstract data types like
+   trees and arrays
+
+ - \b Input/Output \b Routines: facilities for encapsulating error
+   routines as well as redirecting I/O through user-defined streams
+
+ - \b Mathematical \b Routines: commonly used mathematical routines,
+   especially array operations
+
+ - \b Random \b Number \b Generation: generators for commonly used
+   probability distributions and a portable random number generator
+
+ - \b System \b Support: miscellaneous routines, especially to support
+   portability between different operating systems
+
+These components of the libraries are described in greater detail in the
+following sections.  For further details on UTILIB, including instructions for downloading and installing this software, see the Acro web pages: http://software.sandia.gov/Acro .
+
+\subsection ChangeLog Changes in UTILIB 3.0 
+
+Although an official 2.0 of UTILIB was not distributed, there have
+been significant changes since the 1.0 release several years ago.
+In particular, there recently have been very significant changes to UTILIB,
+and from a user's perspective UTILIB looks very different from the way
+it did six months ago.  The 3.0 release signifies these changes, which
+are summarized as follows:
+
+- A complete rework of the configuration management process to use
+  autoconf tools.
+
+- Integration of UTILIB with the Acro framework, which supports 
+  nightly testing on a wide range of computing platforms (including
+  native Windows builds with MINGW).
+
+- Rework of many abstract data types to use iterator mechanisms.
+
+- Elimination of the sorting codes, but explicitly leveraging of
+  STL sorting to support a variety of sorting-related activities.
+
+- The extension of this document to include all aspects of UTILIB.
+
+*/

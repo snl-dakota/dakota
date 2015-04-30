@@ -1,0 +1,165 @@
+###############################################################################
+#                                                                             #
+# COLIN Change Log                                                            #
+#                                                                             #
+###############################################################################
+
+-------------------------------------------------------------------------------
+COLIN 3.3.3 (2014/11/04)
+-------------------------------------------------------------------------------
+
+- Ensuring files are closed so that temporary files can be cleanly
+  deleted on Windows
+
+-------------------------------------------------------------------------------
+COLIN 3.3.2 (2014/05/07)
+-------------------------------------------------------------------------------
+
+- Resolving compiler warnings
+
+-------------------------------------------------------------------------------
+COLIN 3.3.1 (2013/11/11)
+-------------------------------------------------------------------------------
+
+- Track changes in Utilib PropertyDict API
+
+- Only link against the AMPL ASL if HAVE_AMPL is set (CMake)
+
+-------------------------------------------------------------------------------
+COLIN 3.3 (2013/01/28)
+-------------------------------------------------------------------------------
+
+- Adding support for dynamically loading application / solver libraries.
+
+- New Labeled, Unlabeled cache views.
+
+- Caches now notify derivative views for annotation changes.
+
+- Renaming the ProblemTraits accessor methods.
+
+- Numerous minor bug fixes to output, results initialization, Pareto View.
+
+- Numerous fixes to the CMake build harness.
+
+-------------------------------------------------------------------------------
+COLIN 3.2 (2011/11/22)
+-------------------------------------------------------------------------------
+
+- Overhaul of Caching system.  Caches now support a more STL-like
+  interface.  Adding "Views" to to support automatically-maintained
+  windows into a cache: Subset_View and Pareto_View.
+
+- Prototype CMake build harness.
+
+- Deprecating much of the use of cp_u within the build harness.
+
+- Numerous bug fixes; including evaluation counting, MPI support,
+  caching and the evaluation manager.
+
+-------------------------------------------------------------------------------
+COLIN 3.1 (2010/12/21)
+-------------------------------------------------------------------------------
+
+- Significant increase in unit test coverage.  This resolved several
+  bugs in the reformulations.
+
+- All applications now provide both a synchronous and asynchronous
+  interface.  The SynchronousApplication and AsynchronousApplication
+  classes provide valid mock ups for the asynchronous and synchronous
+  interfaces (respectively) for applications who only support one
+  calling convention.
+
+- Introduced the ConcurrentEvaluationManager for managing
+  concurrently-spawned application evaluations (i.e., for supporting
+  evaluations within DAKOTA)
+
+- All callbacks within the Application hierarchy now use Boost signals.
+
+- Overhaul of Application, Solver, and EvaluationManager classes to
+  leverage utilib Properties for all configuration options.  This
+  greatly simplifies reformulations and better guarantees that
+  reformulation applications stay in sync with the base application that
+  they wrap.
+
+- Leveraging the utilib::TypeManager's "second-chance" casting to
+  support better casting among application types.
+
+- Overhaul of the AMPL application interface (ASL)
+
+-------------------------------------------------------------------------------
+COLIN 3.0 (2008/12/14)
+-------------------------------------------------------------------------------
+
+- A complete rework of COLIN to simplify templatization.  See the Acro
+  Trac pages (https://software.sandia.gov/trac/acro/wiki/Packages/Colin)
+  for complete details of this COLIN release.
+
+- The core interfaces now written using utilib::Any in lieu of template
+  parameters.
+
+- Data type conversions rely on the utilib::TypeManager instead of
+  explicit casting operators.
+
+- The colin::ProblemMngr() provides automatic problem reformulations
+  through a separate Type Manager instance.
+
+- Introduction of XML specifications for interfacing with analysis codes.
+
+- Introduction of XML specification for driving Colin, including
+  instantiating problems and solvers, running solvers, and printing
+  results.
+
+- Solution management (initial and final points) occurs entirely through
+  response caches.
+
+- Extensive use of handles, factories, and registries (managers) for
+  creating, manipulating, and scoping core objects.
+
+- Several core interfaces were renamed, including
+    OptApplication -> Application
+    OptSolver      -> Solver
+    OptProblem     -> Problem
+
+- Intruduction of the Evaluation and Queue managers to manage the
+  scheduling and processing of evaluation requests.
+
+- ColinSolver provides basic backward compatibility for Colin 2.0-based
+  solvers.  This interface is deprecated in favor of direct usage of the
+  Colin 3.0 API.
+
+
+-------------------------------------------------------------------------------
+COLIN 2.0 (2007/09/20)
+-------------------------------------------------------------------------------
+
+- Last changes needed to support COLIN 2.0 functionality in Dakota.
+
+- Revisions of COLIN to support multi-objective optimization.
+
+- Clarify ownership of OptSolverHandle within OptSolver objects (to avoid
+  a memory issue)
+
+- Misc fixes to memory deallocation errors.
+
+- Rework the management of generic COLIN solvers.  These changes were
+  needed to enable the use of OptSolverHandle within a Factory 
+  for constructing solvers.
+
+- Initial development of new asynchronous evaluator and ResponseSet object,
+  for managing multiple evaluations of the same point.
+
+- Fix for LAMMPI.
+
+-------------------------------------------------------------------------------
+COLIN 1.1
+-------------------------------------------------------------------------------
+
+- exposed method 'OptProblem::reset_neval_request_id()' to enable
+  DAKOTA to specify the asynchronous request IDs used within COLIN solvers.
+
+-------------------------------------------------------------------------------
+COLIN 1.0
+-------------------------------------------------------------------------------
+
+Initial release.
+

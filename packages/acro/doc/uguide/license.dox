@@ -1,0 +1,51 @@
+/*!
+ * \page licenses
+
+
+\section licenses Acro Licenses
+
+The Acro framework is licensed with the GNU lesser general public license
+(see below).  Acro includes a variety of third-party software packages,
+which have separate licensing policies.  These licenses are included here
+to provide a single point of reference for the use of Acro.  The following
+list describes the licenses for the different Acro packages:
+<ol>
+
+<li> UTILIB, PICO, SGOPT, Coliny, COLIN, APPSPACK, glpk<br>
+\ref licensesLGPL<br>
+academic, commercial
+
+<li> Any.h  (utilib/src/adt)<br>
+\ref licensesBOOST<br>
+academic, commercial
+
+<li> RANLIB (utilib/src/ranlib)<br>
+\ref licensesRANLIB<br>
+academic, commercial
+
+<li> COIN and CLP<br>
+\ref licensesCOIN<br>
+academic, commercial
+
+
+<li> SOPLEX<br>
+\ref licensesSOPLEX<br>
+academic
+
+<li> ampl<br>
+\ref licensesAMPL<br>
+academic, commercial
+
+</ol> 
+These licenses are provided in Appendix \ref licensesAppendix generally allow for unrestricted
+academic use.  The SOPLEX license is restricted to academic users,
+but the CLP linear programming license is available for commercial use.
+
+Please contact the original software developers
+if you have questions concerning the use of
+these software components.  Further, you can contact <a
+href="http://software.sandia.gov/mailman/private/acro-help/">acro-help@software.sandia.gov</a>
+for assisstance if you decide that you wish to build Acro without some
+particular software component.
+
+*/

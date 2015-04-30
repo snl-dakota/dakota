@@ -1,0 +1,4 @@
+#!/bin/sh
+#env
+valgrind $VG_OPTIONS $vg_options $@
+

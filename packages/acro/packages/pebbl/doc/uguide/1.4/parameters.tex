@@ -1,0 +1,444 @@
+\section{Parameters}
+\label{sec:param}
+This section describes various command line parameters that PEBBL
+recognizes.  The listing is not exhaustive, but contains the
+parameters you should typically find most useful.  A complete listing
+is produced by specifying the \texttt{help} parameter to driver
+programs constructed in the manner described in this guide.  You may
+add your own application parameters as described in Section~\ref{sec:seradd}.
+
+
+\subsection{Checkpointing}
+\vspace{-3ex}
+\pparamc{abortCheckpointCount}{int}{0}{Nonnegative} Primarily for
+debugging purposes. Causes an abort after writing this many
+checkpoints.  A zero value, which is the default, disables this feature.
+
+\pparam{checkpointDir}{string}{Current directory, or from environment
+variable} Directory to place checkpoint files.  The environment
+variable \texttt{PEBBL\_CHECKPOINT\_DIR}, if defined, provides a
+default value.  If this variable is undefined, the default is the process
+current directory.
+
+\pparamc{checkpointMinInterval}{double}{0}{Nonnegative}
+Minimum minutes of CPU time per processor between writing
+checkpoints.  
+
+\pparamc{checkpointMinutes}{double}{0}{Nonnegative}
+Desired minutes between starting to write successive checkpoints; the default
+value of $0$ disables checkpointing.
+
+\pparam{reconfigure}{bool}{\texttt{false}}
+Resume from a previously written checkpoint, reading the checkpoint
+files serially.  The configuration of worker and hub processors need
+not be identical to the run that wrote the checkpoint.
+
+\pparam{restart}{bool}{\texttt{false}} Restart from a previously saved
+checkpoint, attempting to read the checkpoint files in parallel.  The
+configuration of worker and hub processors must be identical to
+the run that wrote the checkpoint.
+
+\subsection{Debugging aids}
+\vspace{-3ex}
+\sparamc{debug}{int}{0}{Nonnegative}
+Debugging diagnostic output level.
+
+\sparam{debug-solver-params}{bool}{\texttt{false}}
+If \texttt{true}, print the value of all parameters.
+
+\pparamc{debugSeqDigits}{int}{0}{Lower bound: 0,  Upper bound: 10}
+Number of sequence digits prepended to output lines.  This feature
+allows you to run debug output through the unix \texttt{sort} utility
+to obtain output grouped by processor.
+
+\pparam{forceParallel}{bool}{\texttt{false}} Force the use of a parallel PEBBL
+solver, even if there is only one processor.  
+
+\pparam{hubDebug}{bool}{\texttt{false}}
+Supplies a specific debug level for hub operations.
+
+\sparam{printDepth}{bool}{\texttt{false}}
+Include subproblem depth in debugging output.
+
+\sparam{printIntMeasure}{bool}{\texttt{false}}
+Include subproblem ``integrality measures'' in debugging output.
+
+\pparam{workerDebug}{bool}{\texttt{false}}
+Supplies a specific debug level for the worker thread and related operations.
+
+
+\subsection{Enumeration}
+\vspace{-3ex}
+\sparamc{enumAbsTolerance}{double}{-1.0}{Lower bound: $-1$}
+Absolute tolerance for enumeration.  Find solutions
+that are within this additive distance of optimality.  The default
+value means the feature should not be used.
+
+\sparam{enumCutoff}{double}{(none)}
+If set, specifies an absolute threshold on enumerated solutions.  Only
+solutions with values strictly better than \texttt{enumCutoff} will be
+retained. 
+
+\sparamc{enumCount}{int}{0}{Nonnegative}
+        If positive, indicates that only the best \texttt{enumCount}
+        solutions (that meet other enumeration criteria, if any)
+        should be retained. 
+
+\sparamc{enumRelTolerance}{double}{-1.0}{Lower bound: $-1$}
+        Relative tolerance for enumeration.  Find solutions
+        that are within this multiplicative factor of being
+        optimal.  For example, a value of $0.1$ requests solutions
+        within 10\% of optimality.  The default value means the
+        feature is disabled.
+
+
+\subsection{General}
+\vspace{-3ex}
+\sparam{help}{bool}{\texttt{false}}
+If \texttt{true}, print usage information and parameter definitions, and then exit.
+
+\sparamc{randomSeed}{int}{1}{nonnegative}
+Global seed for random number generation.
+
+\sparam{version}{bool}{\texttt{false}}
+If \texttt{true}, print version information and exit. Should be used  on
+the command line only, and as the first parameter specified.
+
+
+\subsection{Incumbent}
+\vspace{-3ex}
+\sparam{startIncumbent}{double}{(none)}
+Value of some known feasible solution.
+
+\subsection{Output}
+\vspace{-3ex}
+\sparamc{earlyOutputMinutes}{double}{0}{Nonnegative} 
+If this many minutes have elapsed since its creation,
+output the current incumbent to a file in case of
+a crash or timeout.  The default value disables this
+feature.
+
+\sparam{output}{CharString}{See Section~\ref{sec:serialdriver}}
+File in which to write the final solution(s).  If omitted, output is
+written in the current directory, using a filename constructed as
+described in Section~\ref{sec:serialdriver}.
+
+\sparam{printFullSolution}{bool}{\texttt{false}}
+Print full solution(s) to standard output as well as writing it to a file.
+
+\pparam{printSolutionSynch}{bool}{\texttt{true}} Indicates that only
+MPI's designated I/O processor (typically processor 0) is allowed to
+write the solution.  If \texttt{false}, some communication overhead
+can be saved in the solution output process.
+
+\sparamc{statusPrintCount}{int}{100,000}{Nonnegative}
+The maximum number of subproblems bounded between status printouts.
+Status printouts are triggered by thresholds on wall clock time and the
+total number of subproblems bounded since the last status printout.
+Since the default value is large, the default behavior will typically
+be to trigger status printouts based on wall clock time.
+
+\sparamc{statusPrintSeconds}{double}{10.0}{Nonnegative}
+The maximum number of seconds elapsing between status printouts.
+
+\sparam{suppressWarnings}{bool}{\texttt{false}}
+Suppress warning messages.
+
+\pparam{trackIncumbent}{bool}{\texttt{false}}
+Print a message whenever there is a new incumbent.
+
+\subsection{Parallel work distribution}
+\vspace{-3ex}
+\pparamc{clusterSize}{int}{64}{Lower bound: 1}
+Maximum number of processors controlled by a single hub (including the
+hub itself).  Unless \texttt{numClusters} is set, this will be the
+size of all but the last cluster.
+
+\pparamc{hubsDontWorkSize}{int}{10}{Lower bound: 2}
+Size of cluster at or above which hubs do not also function as workers.
+ 
+\pparamc{numClusters}{int}{1}{Lower bound: 1}
+Forces a minimum number of processor clusters, even if all are smaller than
+\texttt{clusterSize}. 
+
+\pparam{qualityBalance}{bool}{\texttt{true}}
+If \texttt{true}, hubs shift work between workers based on each
+worker's best subproblem bound,
+as well as the total workload as measured by~\eqref{loadcalc} in
+Section~\ref{sec:betweenclusters}.  Note that this workload metric
+may already take some measure of quality into account if
+\texttt{loadMeasureDegree} is positive.
+
+\pparamc{hubLoadFac}{double}{0.10}{Lower bound: 0 , Upper bound: 1}
+The target fraction of subproblems to be controlled by hub
+processors at any given time.
+
+\pparamc{minScatterProb}{double}{0.05}{Lower bound: 0 , Upper bound: 1}
+\groupparams
+\pparamc{targetScatterProb}{double}{0.25}{Lower bound: 0,  Upper bound: 1}
+\groupparams
+\pparamc{maxScatterProb}{double}{0.90}{Lower bound: 0,  Upper bound:
+  1}
+\groupparams
+\pparamc{targetWorkerKeepFrac}{double}{0.70}{Lower bound: 0,  Upper bound: 1}
+These parameters control how frequently subproblems are released from
+workers.  Generally, you should observe the ordering
+$$
+\text{\texttt{minScatterProb}} \leq
+\text{\texttt{targetScatterProb}} \leq
+\text{\texttt{maxScatterProb}}.
+$$ 
+The release decision scheme uses the notion of a worker having its
+``fair share'' of work, as measured by the total weight of the
+subproblems; see~\eqref{loadcalc} in
+Section~\ref{sec:betweenclusters}.  The fair share is defined to be a
+fraction $\text{\texttt{targetWorkerKeepFrac}}/W$ of the total
+workload, where $W$ is the total number of worker processors.  If a
+worker has exactly its fair share, then it releases subproblems with
+probability \texttt{targetScatterProb}.  If it has more than its fair
+share, it uses a higher probability, linearly increasing up to
+\texttt{maxScatterProb} if it has 100\% of the work in the system.
+Similarly, if it has less than its fair share, it uses a lower
+probability, linearly decreasing down to \texttt{minScatterProb} if
+appears to have no work.
+
+\pparamc{minNonLocalScatterProb}{double}{0.0}{Lower bound: 0,  Upper bound: 1}
+\groupparams
+\pparamc{targetNonLocalScatterProb}{double}{0.33}
+        {Lower bound: 0, Upper bound: 1}
+\groupparams
+\pparamc{maxNonLocalScatterProb}{double}{default: 0.9}
+        {Lower bound: 0, Upper bound: 1}
+When there is more than one cluster, these parameters control the
+decision, once a worker has decided to release a subproblem, of
+whether it should be released to the worker controlling hub, or to a
+randomly chosen hub (which could also be the worker's own hub).  This
+decision is based on whether the worker's cluster has its ``fair
+share'' of the total workload: a fraction $w(c)/W$ of the total work,
+where $w(c)$ is the number of workers in the worker's cluster, and $W$
+is the total number of workers.  When the worker's cluster has its
+fair share, random scattering is performed with probability
+\texttt{targetNonLocalScatterProb}.  If the cluster has more than its
+fair share, a larger probability is used, increasing linearly to
+\texttt{maxNonLocalScatterProb} if the cluster has all the work in the
+system.  If the cluster has less work, a smaller probability is used,
+decreasing linearly to \texttt{minNonLocalScatterProb} if the cluster
+has no work.
+
+
+\subsection{Parallel thread control}
+\label{sec:pthread}
+\vspace{-3ex}
+\pparamc{incThreadBiasFactor}{double}{100.0}{Nonnegative}
+\groupparams
+\pparamc{incThreadBiasPower}{double}{1.0}{Nonnegative}
+\groupparams
+\pparamc{incThreadMaxBias}{double}{20.0}{Nonnegative}
+\groupparams
+\pparamc{incThreadMinBias}{double}{1.0}{Nonnegative}
+These parameters are used in computing the bias (priority) of the
+incumbent heuristic thread, if it is present.  If we represent the
+above parameters by $\phi$, $\pi$, $\overline{b}$, and
+$\underline{b}$, respectively, the formula for the incumbent thread
+bias $b$ is
+$$
+b = \max\left\{\underline{b},
+    \min\left\{\overline{b}, \phi r^{\pi} \right\} \right\},
+$$ 
+where $r$ is the current relative gap, that is, the relative
+difference between the incumbent value and the best known bound in the
+pool of active subproblems.
+
+\pparamc{timeSlice}{double}{0.01}{Lower bound: $10^{-7}$}
+Target thread timeslice in seconds.  This is the typical
+run time or ``granularity'' that the scheduler tries to acheive for
+each invocation of a compute thread.
+
+\pparam{useIncumbentThread}{bool}{\texttt{true}}
+Controls whether each worker dedicates a thread to incumbent search.
+If \texttt{false}, the only source of new incumbents will be terminal
+subproblems and  \texttt{quickIncumbentHeuristic()}.  This
+parameter is ignored if \texttt{haveParallelIncumbentHeuristic()}
+returns \texttt{false}.
+
+\pparamc{workerThreadBias}{double}{100.0}{Nonnegative}
+Scheduling priority for main worker thread.
+
+
+\subsection{Ramp-up (standard implementation)}
+The following parameters control the default implementation of the
+ramp-up crossover mechanism, that is, the transition from ramp-up to
+``regular'' parallel execution.  Your application may override
+\texttt{parallelBranching}'s default implementations of
+\texttt{continueRampUp()} or \texttt{forceContinueRampUp()} to ignore
+these parameters or interpret them differently.
+
+\pparamc{minRampUpSubprobsCreated}{int}{0}{Nonnegative}
+Force this many subproblem creations before ramp up ends.
+
+\pparamc{rampUpPoolLimit}{int}{0}{Nonnegative}
+Total subproblem pool size beyond which the ramp-up phase may end.
+
+\pparamc{rampUpPoolLimitFac}{double}{1}{Nonnegative}
+Desired average number of subproblems per worker processor
+immediately after ramp-up.
+
+
+\subsection{Search order and protocol}
+\label{sec:searchparams}
+\vspace{-3ex}
+\sparam{breadthFirst}{bool}{\texttt{false}}
+In serial, use breadth-first search; in parallel, use an approximation
+of breadth-first search based on treating all subproblem pools as FIFO
+queues.  Ignored if \texttt{depthFirst} is also specified.
+
+\sparam{depthFirst}{bool}{\texttt{false}} 
+In serial, use depth-first search; in
+parallel, use an approximation based on treating all
+subproblem pools as stacks.  Overrides \texttt{breadthFirst} if both
+are specified.
+
+\vspace{2ex}
+
+Note that if neither \texttt{breadthFirst} nor \texttt{depthFirst} is
+specified, then PEBBL uses best-first search.  That is, it tries to
+select the subproblem with the lowest possible bound for minimization
+problems, and the highest possible bound for maximization problems.
+In parallel, conformance to the best-first search order is only approximate.
+
+\sparam{initialDive}{bool}{\texttt{false}} 
+\groupparams
+\sparam{integralityDive}{bool}{\texttt{true}} 
+These options are useful for
+applications that do not have a good incumbent heuristic.  Setting
+\texttt{initialDive} is incompatible with the \texttt{breadthFirst}
+and \texttt{depthFirst} options, and \texttt{integralityDive} is only
+meaningful if \texttt{initialDive} is \texttt{true}.
+\texttt{InitialDive} specifies that the best-first search order should
+only be followed after the first incumbent is found.  Beforehand,
+PEBBL should ``dive'' in the tree to try to identify a feasible
+solution.  If \texttt{integralityDive} is \texttt{true}, then
+``diving'' means giving priority to processing subproblems with the
+\emph{lowest} value of the data member
+\texttt{branchSub::integralityMeasure} (a value of zero 
+is interpreted as meaning a subproblem is
+``integer feasible'').  If \texttt{integralityDive} is \texttt{false},
+it means selecting the subproblem with the highest possible depth.
+Both these techniques tend to produce initial search trees similar to
+classical depth-first search.  Once an incumbent is found, PEBBL
+reverts to best-first search.
+
+\sparam{eagerBounding}{bool}{\texttt{false}} 
+Specifies the search protocol
+implemented by the ``eager'' handler, as described in
+Section~\ref{sec:framework}.  This handler tries to bound subproblems
+as soon as they are created and keep all subproblems in the pool in
+either the \texttt{bounded} or possibly \texttt{beingBounded} or
+\texttt{beingSeparated} states.  This handler is recommended for
+applications in which subproblem bounds are typically computed very
+quickly.  This parameter is ignored if \texttt{lazyBounding} is also
+specified.
+
+\sparam{lazyBounding}{bool}{\texttt{false}} 
+Specifies the search protocol
+implemented by the ``lazy'' handler, as described in
+Section~\ref{sec:framework}.  This handler attempts to delay bounding
+subproblems as long as possible, and fill all subproblem pools with
+\texttt{boundable} and possibly \texttt{beingBounded} or
+\texttt{beingSeparated} problems.  Once a problem is
+\texttt{separated}, its children are created as soon
+as possible.  This option takes precedence over
+\texttt{eagerBounding}. 
+
+\vspace{2ex}
+
+If both \texttt{eagerBounding} and \texttt{lazyBounding} are
+\texttt{\texttt{false}}, which is the default, PEBBL uses the ``hybrid''
+handler described in Section~\ref{sec:framework}.  This handler simply
+chooses problems from the subproblem pool, attempts to advance them
+one state in Figure~\ref{fig:states}, and replaces them.  With this handler,
+the subproblem pools may contain a mix of all the possible states
+except \texttt{dead}.
+
+\sparamc{loadMeasureDegree}{int}{1}{Must be 0, 1, 2, or 3} 
+Used to
+measure the ``weight'' of a subproblem used to calculate worker and
+cluster workloads.  Specifically, if a subproblem has bound $b$ and
+the current incumbent value is $z$, its weight is ${\left|z -
+b\right|}^{\text{\texttt{loadMeasureDegree}}}$.  Note that subproblem
+weight is used primarily by the load balancing algorithms in the
+parallel layer, but \texttt{LoadMeasureDegree} exists in the serial
+layer because it is defined by the class \texttt{loadObject}, which
+both the serial and parallel layers use to track various subproblem
+statistics.  Its value should not materially affect the operation of the serial
+layer.  In the parallel layer, larger values put more load balancing
+stress on the quality of subproblems, and lower values more stress on
+quantity of subproblems; a value of zero sets a processor's workload
+equal to the number of subproblems it controls.  The parameter
+\texttt{qualityBalance} specifies additional attention to subproblem
+quality in load balancing, beyond that specified in
+\texttt{loadMeasureDegree}. 
+
+
+\subsection{Termination}
+\vspace{-3ex} 
+\sparamc{absTolerance}{double}{0}{Nonnegative} 
+When enumeration is not active, the absolute
+tolerance for optimal objective value.
+Subproblems are fathomed when
+their bounds are within \texttt{absTolerance} of the incumbent value.
+The final solution reported should be within this distance of the true
+optimum.  This parameter is used to set the \texttt{branching} class
+member \texttt{absTol}.  However, applications may adjust the value
+of \texttt{absTol}.  For example, in a linear pure integer program
+with all objective function coefficients integer, you may want to set
+\texttt{absTol} to at least $1$.  In this situation, you could
+alternatively design your \texttt{branching}-derived class to round up
+the value of \texttt{branchSub::bound} to the next integer.
+
+\sparamc{relTolerance}{double}{$10^{-7}$}{Nonnegative}
+When enumeration is not in use, the 
+relative tolerance for optimal objective value.  If the incumbent
+value is $z$ and the subproblem bound is $b$, a subproblem can be
+fathomed if ${\left|(z - b)/z\right|} \leq
+\text{\texttt{relTolerance}}$.  This parameter essentially controls the
+number of digits of precision of the final solution.  A
+value of zero is possible, but not recommended unless your bound
+calculations use only integer arithmetic, and there is no possibility
+of round-off error.  This parameter is used to set the data member
+\texttt{relTol} in the \texttt{branching} class.
+
+\sparamc{integerTolerance}{double}{$10^{-5}$}{Lower bound: 0,  Upper bound: 1}
+Tolerance for determining whether numbers are integers.  Note that
+this parameter does not affect PEBBL itself, but only applications that
+use the methods \texttt{isInteger(double)} or
+\texttt{isZero(double)} provided for convenience in class
+\texttt{pebblBase}, from which \texttt{branching} and
+\texttt{branchSub} are both derived.
+
+\sparamc{maxCPUMinutes}{double}{0}{Nonnegative}
+\groupparams
+\sparamc{maxSPBounds}{double}{0}{Nonnegative}
+\groupparams
+\sparamc{maxWallMinutes}{double}{0}{Nonnegative}
+These parameters control PEBBL's built-in abort function.  A PEBBL run
+will abort if the CPU time (per processor) exceeds
+\texttt{maxCPUMinutes}, the total number of subproblems bounded
+exceeds \texttt{maxSPBounds}, or the total wall clock time spent in
+the search exceeds \texttt{maxWallMinutes}.  In each case, a zero
+value, which is the default, means there is no limit.
+
+\sparam{printAbortMessage}{bool}{\texttt{true}}
+Instructs PEBBL to print an explanatory message when
+aborting due to the \texttt{maxCPUMinutes}, \texttt{maxSPBounds}, or
+\texttt{maxWallMinutes} limits.
+
+\sparam{rampUpOnly}{bool}{\texttt{false}}
+Forces PEBBL runs to terminate immediately after ramp-up.  This
+parameter is provided primarily for debugging or evaluating the
+performance of your application's ramp-up phase.
+
+\sparam{useAbort}{bool}{\texttt{false}}
+If \texttt{true}, force an abort when an error occurs.
+
+

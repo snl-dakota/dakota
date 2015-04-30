@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+
+%\documentclass[10pt]{book}
+\newcommand{\chaptermark}{1}{}
+
+\usepackage{makeidx}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{doxygen}
+\setcounter{tocdepth}{1}
+%\makeindex
+%\setlength{\footrulewidth}{0.4pt}
+
+
+
+\setlength{\topmargin}{-.25in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{6.5in}
+
+\setlength{\headwidth}{6.5in}
+%\setlength{\footrulewidth}{0pt}
+\setlength{\parindent}{3ex}
+\setlength{\parsep}{0pt}
+
+\setcounter{tocdepth}{1}
+
+\pagestyle{plain}
+
+\begin{document}
+
+\lhead{}
+\rhead{}
+\rfoot{}
+\lfoot{}
+\cfoot{}
+\chead{}
+
+%%
+%% Title Page
+%%
+
+\begin{center}
+SANDXXXX--XXXX
+
+Unlimited Release
+
+Printed December XXXX
+\end{center}
+
+\vspace{0.8in}
+
+\begin{center}
+{\bf \LARGE Acro User Manual\\
+[1ex]\Large Version 1.0}
+\vspace*{0.4in}
+
+William E. Hart\\
+Discrete Algorithms and Mathematics Department\\
+Sandia National Laboratories\\
+P. O. Box 5800\\
+Albuquerque, NM\\
+{\tt http://www.cs.sandia.gov/$\sim$wehart}\\
+{\tt wehart@sandia.gov}\\
+\end{center}
+
+\vspace*{1.0in}
+
+\begin{quote}
+{\bf\large Abstract}
+\input{../abstract}
+\end{quote}
+
+\vfill
+\newpage
+
+\pagestyle{fancy}
+\begin{quote}
+{\em acro} - From Greek akros, at the point, end, or top.\\
+
+{\em acro} - A generic term for warblers of the genus {\em Acrocephalus}, usually refering to the sedge and/or reed warblers. The sedge warbler is a small, quite plump, warbler with a striking broad creamy stripe above its eye, and greyish brown legs. It is brown above with blackish streaks and creamy white underneath. It spends summers in the UK and winters in Africa, south of the Sahara Desert. Its song is a noisy, rambling warble compared to the more rhythmic song of the reed warbler.\\
+
+{\em acro} - A Common Repository for Optimizers
+\end{quote}
+
+\vfill
+\newpage
+
+
+\pagenumbering{roman}
+%\tableofcontents
+
+\clearemptydoublepage
+\pagenumbering{arabic}
+\setcounter{page}{3}
+\cfoot{\thepage}
+
+
+\input{../uguide}
+
+%\newpage
+%\bibliographystyle{abbrv}
+%\bibliography{hart}
+
+\end{document}
+
+END-OF-DOC
+
+
+

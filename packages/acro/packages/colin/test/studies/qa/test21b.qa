@@ -1,0 +1,151 @@
+
+Test21b - Running COLIN from test21b.xml
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: pA
+Problem Type: MINLP0
+Number of objectives: 1
+Real variables:    3
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1          x_1              _none_               9.9 H          Infinity H 
+    2          x_2                  10                10 H                10 H 
+    3          x_3              _none_         -Infinity H              29.9 H 
+Integer variables: 5
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1          y_1              _none_                -1 H                 1 H 
+    2          y_2              _none_                 1 H                29 H 
+    3          y_3                  10                10 H                10 H 
+    4          y_4                   1                 1 H                 1 H 
+    5          y_5                   1                 1 H                 1 H 
+Binary variables:  4
+Index        Label           Fixed Val
+    1          z_1              _none_
+    2          z_2              _none_
+    3          z_3              _none_
+    4          z_4              _none_
+Nonlinear constraints:    6
+  Equality:               1
+  Inequality:             5
+Index         Lower Bound         Upper Bound
+    1                   0                   1 
+    2           -Infinity                   2 
+    3           -Infinity                   1 
+    4           -Infinity                   1 
+    5                   2                   2 
+    6           -Infinity                   1 
+Linear constraints:       3
+  Equality:               1
+  Inequality:             2
+Index         Lower Bound         Upper Bound
+    1           -Infinity                   2 
+    2                   2                   2 
+    3                   0            Infinity 
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: pB
+Problem Type: MINLP0
+Number of objectives: 1
+Real variables:    3
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1          x_1              _none_               9.9 H          Infinity H 
+    2          x_2              _none_                10 H                10 H 
+    3          x_3              _none_         -Infinity H              29.9 H 
+Integer variables: 5
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1          y_1                  11                -1 H                 1 H 
+    2          y_2                  13                 1 H                29 H 
+    3          y_3                  15                10 H                10 H 
+    4          y_4                  17                 1 H                 1 H 
+    5          y_5                  19                 1 H                 1 H 
+Binary variables:  4
+Index        Label           Fixed Val
+    1          z_1              _none_
+    2          z_2              _none_
+    3          z_3              _none_
+    4          z_4              _none_
+Nonlinear constraints:    6
+  Equality:               1
+  Inequality:             5
+Index         Lower Bound         Upper Bound
+    1                   0                   1 
+    2           -Infinity                   2 
+    3           -Infinity                   1 
+    4           -Infinity                   1 
+    5                   2                   2 
+    6           -Infinity                   1 
+Linear constraints:       3
+  Equality:               1
+  Inequality:             2
+Index         Lower Bound         Upper Bound
+    1           -Infinity                   2 
+    2                   2                   2 
+    3                   0            Infinity 
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: p1
+Problem Type: MINLP0
+Number of objectives: 1
+Real variables:    3
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1          x_1              _none_               9.9 H          Infinity H 
+    2          x_2              _none_         -Infinity H          Infinity H 
+    3          x_3              _none_         -Infinity H              29.9 H 
+Integer variables: 2
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1       _none_              _none_       -2147483648 H        2147483647 H 
+    2       _none_              _none_       -2147483648 H        2147483647 H 
+Binary variables:  0
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: p2
+Problem Type: NLP0
+Number of objectives: 1
+Real variables:    3
+Index        Label           Fixed Val       Lower Bound         Upper Bound  
+    1          x_1              _none_               9.9 H          Infinity H 
+    2          x_2              _none_         -Infinity H          Infinity H 
+    3          x_3              _none_         -Infinity H              29.9 H 
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+
+WARNING: no solver specified in test21b.xml
+
+This is a COLIN optimizer executable: test
+Usage:
+
+   colin <*.nl> -AMPL
+   colin [options] <colin-xml-input>
+
+
+*****************************************************************************
+Solvers:
+*****************************************************************************
+
+    colin:RandomMOO
+         A simple random multi-objective optimizer
+    colin:rmoo
+         An alias to RandomMOO
+    colin:test
+         A simple test minimizer
+    colin:test_a
+         A simple test minimizer using BasicArray<double> types
+    colin:test_g
+         A simple test minimizer using gradients

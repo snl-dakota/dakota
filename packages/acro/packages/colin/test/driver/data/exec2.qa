@@ -1,0 +1,21 @@
+Usage: colintest [options] <arg1> <arg2>
+Usage: colintest <*.nl> -AMPL
+Usage: colintest [options] <colin-xml-input>
+This is a COLIN optimizer executable.
+
+options:
+
+      --debug-solver-params   Print solver option values before running it.
+      --help-options          Print options for specified solver.
+      --help-solvers-xml      Print the list of solvers supported by this
+                              executable to a file using an XML format.
+  -s, --help-solvers          Print the list of solvers supported by this
+                              executable.
+  -h, --help                  Display usage information
+      --repetitions           The number of times that the solver is rerun (to
+                              check that solver reset() methods work).
+      --use-abort             Force an abort when an error occurs.
+      --verbose               Verbose printing during optimization.
+
+Additional optimizer options can be specified within AMPL or the COLIN XML
+input.

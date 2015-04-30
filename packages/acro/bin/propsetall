@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import os.path
+import commands
+
+def visit(arg, dirname, names):
+  #print dirname
+  #print names
+  if "Externals" in names:
+     print "Processing",dirname+"/Externals"
+     commands.getoutput("cd "+dirname+"; svn propset -F Externals svn:externals .")
+
+os.path.walk(".", visit, None) 
+

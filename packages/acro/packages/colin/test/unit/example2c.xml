@@ -1,0 +1,25 @@
+<!--
+	MINLP0 problem
+  -->
+
+<ColinInput>
+  <Problem type="MINLP0">
+     <Domain>
+        <IntegerVars num="3">
+           <Labels>
+              x_1 x_2 x_3
+           </Labels>
+           <Lower label="x_1" value="9.0"/>
+           <Upper label="x_2" value="5.0"/>
+        </IntegerVars>
+        <BinaryVars num="4">
+           <Labels>
+              b_1 b_2 b_3 b_4 b_5
+           </Labels>
+        </BinaryVars>
+     </Domain>
+     <Driver>
+        <Command>python example_fn1</Command>
+     </Driver>
+  </Problem>
+</ColinInput>

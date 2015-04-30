@@ -1,0 +1,91 @@
+#!/usr/bin/python
+#
+# Script to remove the .svn directories
+#   It is not recursive because Acro is so large, that so many
+#   processes were spawned that my machine crashed.
+#
+# This is useful if you want to send a special build to someone,
+# the .svn directories altogether are large.
+
+import os
+import os.path
+import sys
+
+####################################################3
+#
+# Recursive version
+#
+#for nm in $(ls -a) ; do
+#  if [ -d $nm ] ; then
+#    if [ "$nm" = ".svn" ] ; then
+#      rm -rf .svn
+#    else
+#      cd $nm
+#      removeSvnDirs $currDir/$nm
+#      cd ..
+#    fi
+#  fi
+#done
+#
+####################################################
+
+global nremove, L
+
+nremove = 0
+L = []
+
+# Delete everything reachable from directory "dir"
+
+def destroy(dir):
+  for root, dirs, files in os.walk(dir, topdown=False):
+    for name in files:
+        os.remove(os.path.join(root, name))
+    for name in dirs:
+        os.rmdir(os.path.join(root, name))
+
+# Delete .svn if found in this directory, and add other directories found
+# in this directory to list L
+
+def search():
+  global nremove, L
+  cwd = os.getcwd()
+  fnames = os.listdir(".")
+  for fname in fnames:
+    if os.path.isdir(fname):
+      if fname == ".svn":
+        destroy(fname)      # destroy contents of .svn
+        os.rmdir(fname)     # remove .svn
+        print "Remove " + cwd + "/.svn"
+        nremove = nremove + 1
+      else:
+        # visit this directory later
+        L.append((cwd, fname))
+  return 0        
+
+if len(sys.argv) < 2:
+  print "Needs directory to start in as command line argument"
+  sys.exit(0)
+
+rootDir = sys.argv[1]
+
+rd = os.path.realpath(rootDir)
+if os.path.exists(rd) == False:
+  print "Argument needs to be directory to start in"
+  sys.exit(0)
+
+print "Beginning in " + rd
+os.chdir(rd)
+
+search()
+
+while len(L) > 0:
+
+  nextdir = L.pop()
+  
+  os.chdir( nextdir[0] + "/" + nextdir[1] )
+
+  search()
+
+print "Successfully completed " + `nremove` + " deletions."
+
+

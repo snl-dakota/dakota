@@ -1,0 +1,68 @@
+/*!
+ * \page htPage
+
+\section htSec Hash Tables
+
+The class utilib::AbstractHashTable defines an abstract class that
+provides the core operations of a hash table with chaining.  Hash tables
+are data structures that are used when you are managing a large amount
+of data and need to be able find an item quickly.  A hash table uses
+a hash function that transforms the key to an integer that provides an
+index into a table (or array).  In general, it is impossible to prevent
+collisions, where two different keys are hashed to the same index.
+To counteract this, this hash table dynamically resizes the array to
+ensure that hashed keys are sparsely represented.  Further, conflicts
+are resolved by chaining, which uses a linked list of elements at a given
+point in the hash table.
+
+The utilib::SimpleHashTable class is a simple hash table object
+that maintains copies of the keys that are kept in the table.  The
+utilib::GenericHashTable class maintains references to the keys that
+are kept in the table.  The
+\c add() and \c remove() methods are used to insert and delete items
+this tree.  Iterators are supported for hash tables, though the
+data is in an arbitrary order within the iterator.
+
+The following example illustrates the use of a hash table:
+\verbatim
+    utilib::SimpleHashTable<int,char> ht;
+    //
+    // Initializing a heap with integers
+    //
+    char foo;
+    for (int i=0; i<10; i++)
+      ht.add(200*i % 13, foo);
+    //
+    // Printing a hash table (in an arbitrary order)
+    //
+    utilib::SimpleHashTable::iterator curr = ht.begin();
+    utilib::SimpleHashTable::iterator end  = ht.end();
+    while (curr != end) {
+      cout << *curr << " ";
+      curr++;
+      }
+\endverbatim
+
+The hash functions used for these hash tables are defined in hash_fn.h.  
+Many of these functions are based on the Bob Jenkins hash function, which
+are discussed in detail at http://burtleburtle.net/bob/hash .  In particular,
+these hash functions do not require that the hash table have a prime
+length.
+
+The utilib::LPHashTable class defines a limited precision hash table
+(for arrays of doubles).  The utilib::LPHashTable class is derived from
+utilib::AbstractHashTable, which defines the basic operations of the
+hash table. The keys are assumed to be classes for which the following
+operations are defined: 
+
+- \c size_type \c hash( \c size_type \c tablesize, \c unsigned \c int \c precision)
+
+- \c const \c int \c compare( \c KEY& \c key)
+
+- \c const \c int \c write( \c ostream& \c os)
+
+- \c const \c int \c read( \c istream& \c is)
+
+*/
+
+

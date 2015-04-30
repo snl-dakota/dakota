@@ -1,0 +1,43 @@
+
+Test1f - full test of NLP application
+application set up
+ANS: f_info = 8
+ANS: f_info = 8
+cf_info = 6 : 7 13 5 21 17 7
+response = AppResponse Data:
+  domain: [ 1, 2, 4 ]
+  seed:   0
+  nonlinear constraint: [ 21, 17, 7 ]
+  linear constraint: [ 7, 13, 5 ]
+  constraint: [ 7, 13, 5, 21, 17, 7 ]
+  (cf) = [ 7, 13, 5, 21, 17, 7 ]
+  (nlcf) = [ 21, 17, 7 ]
+nlcf_info =	3 : 21 17 7
+nleqcf_info =	0
+nlineqcf_info =	3 : 21 17 7
+lcf_info =	3 : 7 13 5
+leqcf_info =	0
+ineqlcf_info =	3 : 7 13 5
+cf_info =	6 : 7 13 5 21 17 7
+eqcf_info =	0
+ineqcf_info =	6 : 7 13 5 21 17 7
+cvf_info =	6 : 0 0 0 0 0 0
+Set constraint bounds
+cf_info =	6 : 7 13 5 21 17 7
+nlcf_info =	3 : 21 17 7
+nleqcf_info =	1 : 7
+nlineqcf_info =	2 : 21 17
+lcf_info =	3 : 7 13 5
+leqcf_info =	1 : 5
+ineqlcf_info =	2 : 7 13
+cf_info =	6 : 7 13 5 21 17 7
+eqcf_info =	2 : 5 7
+ineqcf_info =	4 : 7 13 21 17
+cvf_info =	6 : 0 12 -5 0 16 -3
+Set linear constraint matrix
+lcf_info =	3 : 1 4 3
+leqcf_info =	1 : 3
+ineqlcf_info =	2 : 1 4
+cf_info =	6 : 1 4 3 21 17 7
+deleting application
+done.

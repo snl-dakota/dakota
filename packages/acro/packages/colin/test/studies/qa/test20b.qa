@@ -1,0 +1,114 @@
+
+Test20b - Running COLIN from test20b.xml
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: default
+Problem Type: NLP1
+Number of objectives: 1
+Real variables:    3
+Index        Label       Lower Bound T       Upper Bound T
+    1       _none_         -Infinity N          Infinity N 
+    2       _none_         -Infinity N          Infinity N 
+    3       _none_         -Infinity N          Infinity N 
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+
+*****************************************************************************
+Options:
+*****************************************************************************
+
+-----------------------------------------------------------------------------
+  Category: Debugging
+-----------------------------------------------------------------------------
+    debug <int> (default: 0 )
+	General debugging level (>0)
+    output_dynamic <bool> (default: false )
+	If true, then only print output when an improving value is found
+    output_final <bool> (default: false )
+	If true, then only print output when finished with optimization
+    output_flush <bool> (default: true )
+	If true, then flush after every time debugging IO is generated
+    output_frequency <int> (default: 1 )
+	The frequency with which output is printed.
+	Aliases: output_freq
+    output_header <string> (default: normal )
+	Output level for the solver header:
+	  none    - No header output
+	  normal  - Simple header output
+	  verbose - Simple header output plus parameter information
+    output_level <string> (default: normal )
+	Output level for debugging:
+	  none    - No debugging output
+	  normal  - Normal I/O
+	  summary - Summary debugging information
+	  verbose - All debugging information
+
+-----------------------------------------------------------------------------
+  Category: General
+-----------------------------------------------------------------------------
+    constraint_tolerance <double> (default: 1e-8 )
+	Tolerance used to determine whether a constraint is violated
+    help <bool> (default: false )
+	Used to determine if parameter information has been requested.
+    param-file <string> (default: <null> )
+	Defines an auxillary parameter file that is processed immediately.
+	Aliases: param_file
+    precision <int> (default: 10 )
+	Used to control the precision of I/O
+
+-----------------------------------------------------------------------------
+  Category: Termination
+-----------------------------------------------------------------------------
+    function_value_tolerance <double> (default: 0.0 )
+	A function tolerance used for termination
+	Aliases: ftol
+    max_func_evaluations <int> (default: 0 (no limit) )
+	Max # of fevals allowed before termination (total ever allowed)
+	Aliases: max_function_evaluations max_neval
+    max_func_evaluations_this_trial <int> (default: 0 (no limit) )
+	Max # of fevals allowed in this minimization trial
+	Aliases: max_function_evaluations_this_trial max_neval_curr
+    max_iterations <unsigned int> (default: 0 (no limit) )
+	Maximum # of iterations before termination
+	Aliases: max_iters
+    max_time <double> (default: 0.0 (no limit) )
+	Max time allowed before termination
+    min_function_value <double> (default: -MAXDOUBLE )
+	Minimum solution value allowed before termination
+	Aliases: accuracy
+
+
+*****************************************************************************
+Option Values:
+*****************************************************************************
+constraint_tolerance            1e-08	# default
+debug                           0	# default
+function_value_tolerance        0	# default
+help                            false	# default
+max_func_evaluations            0	# default
+max_func_evaluations_this_trial 0	# default
+max_iterations                  0	# default
+max_time                        0	# default
+min_function_value              29
+output_dynamic                  false	# default
+output_final                    false	# default
+output_flush                    true	# default
+output_frequency                1	# default
+output_header                   normal	# default
+output_level                    normal	# default
+param-file                      	# default
+precision                       10	# default
+TestOptSolver_g: 0 21 3 : 9 8 7 0
+-----------------------------------------------------------------------
+Solver Statistics
+-----------------------------------------------------------------------
+Final-Stats: neval 4 constraint_violation Infinity
+Termination: Accuracy (21<=29)
+Final-Point: 3 : 9 8 7
+Final-Value: 21

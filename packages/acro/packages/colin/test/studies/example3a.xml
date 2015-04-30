@@ -1,0 +1,32 @@
+<!-- 
+	MINLP0 problem being passed to a MINLP solver.
+	Minimize just integer variables.
+  -->
+
+<ColinInput>
+  <Problem type="MINLP0">
+     <Domain>
+        <IntegerVars num="3">
+           <Labels>
+              x_1 x_2 x_3
+           </Labels>
+           <Lower label="x_1" value="9.0"/>
+           <Lower label="x_2" value="5.0"/>
+        </IntegerVars>
+     </Domain>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn1</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <InitialPoint>
+       i(3: 10 10 10)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

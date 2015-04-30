@@ -1,0 +1,98 @@
+/*!
+ * \page software
+
+\section software Software Management
+
+
+\subsection downloading Downloading
+
+The Acro software can be downloaded as a compressed tarfile from
+<a href="http://software.sandia.gov/Acro/">http://software.sandia.gov/Acro/</a>.
+
+Alternatively, Acro can be checked out from the Acro CVS (Concurrent Version System) repository. 
+The CVS respository for Acro can be accessed by executing
+\verbatim
+    cvs -d :ext:${userid}@software.sandia.gov:/space/CVS-Acro checkout acro
+\endverbatim
+This requires the use of an account (userid) on \b software.sandia.gov.
+Accounts on this machine are generally restricted to Sandians
+and academic collaborators working with Sandians.  The scripts
+\b cvs.a and \b ssh.cvs can be used to encapsulate the access to this
+repository in a convenient manner; these scripts can be downloaded from <a
+href="ftp://ftp.cs.sandia.gov/pub/papers/wehart/src/shells">ftp://ftp.cs.sandia.gov/pub/papers/wehart/src/shells</a>.
+
+By default,  the \b cvs.a script uses the unix command \b whoami to determine
+the user id for the cvs connection.  In general, the id ${userid} on software.sandia.gov will be selected by Sandia administrators.  If this does not match 
+your id provided by \b whoami, then you can set the \b ACRO_USER environmental
+variable to be id on software.sandia.gov.  For example, within a csh environment, you would do
+\verbatim
+   setenv ACRO_USER janedoe
+   cvs.a checkout acro
+\endverbatim
+to checkout Acro from the account janedoe@software.sandia.gov.
+
+The Acro CVS repository is organized into different modules that include different subsets of the
+Acro packages:
+\htmlonly
+<table>
+
+<tr>
+<td><b> acro </b></td>
+<td> The Acro repository with all software packages and an integrated configuration facility that builds them </td>
+</tr>
+
+<tr>
+<td><b> acro-coliny </b></td>
+<td> The Acro repository with the Coliny software package and all packages that it depends on
+</tr>
+
+<tr>
+<td><b> acro-pico </b></td>
+<td> The Acro repository with the PICO software package and all packages that it depends on
+</tr>
+
+</table>
+\endhtmlonly
+\latexonly
+\begin{itemize}
+
+\item {\bf acro} - The Acro repository with all software packages and an integerated configuration facility that builds them
+
+\item {\bf acro-coliny} -  The Acro repository with the Coliny software package and all packages that it depends on
+
+\item {\bf acro-pico} - The Acro repository with the PICO software package and all packages that it depends on
+\end{itemize}
+\endlatexonly
+
+\subsection softwareResources Online Resources
+
+The CVS repository for Acro is on software.sandia.gov.  This machine supports a variety of tools to facilitate the development of software tools, including
+<ol>
+
+<li> Bugzilla (<a href="http://software.sandia.gov/bugzilla/">http://software.sandia.gov/bugzilla/</a>) - online bug reporting
+
+<li> Mailman (<a href="http://software.sandia.gov/mailman/listinfo/">http://software.sandia.gov/mailman/listinfo/</a>) - mailing list management
+
+<li> Bonsai (<a href="http://software.sandia.gov/bonsai/cvsqueryform.cgi">http://software.sandia.gov/bonsai/cvsqueryform.cgi</a>) - a query interface to CVS
+</ol>
+
+The following mailing lists are supported for Acro:
+<ol>
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-announce/">acro-announce@software.sandia.gov</a> - general announcements
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-bugs/">acro-bugs@software.sandia.gov</a> - bug reports
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-checkins/">acro-checkins@software.sandia.gov</a> - CVS checking reports
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-developers/">acro-developers@software.sandia.gov</a> - a developers mailing list
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-help/">acro-help@software.sandia.gov</a> - a help list
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-misc-checkins/">acro-misc-checkins@software.sandia.gov</a> - CVS checking reports for miscellaneous acro components
+
+<li><a href="http://software.sandia.gov/mailman/private/acro-users/">acro-users@software.sandia.gov</a> - a general users' mailing list
+
+</ol>
+The mailman server also includes some mailing lists for specific Acro components like APPSPACK, PICO and Coliny.
+*/

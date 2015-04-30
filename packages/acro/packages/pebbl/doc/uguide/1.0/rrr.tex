@@ -1,0 +1,65 @@
+\documentclass[12pt,twoside,epsfig]{rutcor}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{alltt}
+
+\input{userdefs.tex}
+
+% Don't capitalize section names
+\newcommand{\secformat}[1]{#1}
+
+\title{
+PEBBL 1.0 User's Guide}
+\author{
+Jonathan Eckstein
+\affiliation{
+Business School and RUTCOR, Rutgers University,
+640 Bartholomew Road, Piscataway, NJ 08854-8003
+}
+\and
+Cynthia A. Phillips
+\affiliation{
+Sandia National Laboratories, Mail Stop 1110, P.O. Box
+5800, Albuqurque, NM 87185-1110}
+\and
+William E. Hart $^b$
+}
+
+%Repeat the names of the authors here
+\authornames{
+Jonathan Eckstein
+\and
+Cynthia A. Phillips
+\and
+William E. Hart
+}
+
+%Use the following command only if you need to make acknowledgement
+\acknowledgement{
+\input{acknowledge.tex}
+\\*[\parskip]
+\hspace*{1.5em}
+}
+
+\abstract{ 
+\input{abstract.tex}
+}
+
+%Leave the following empty
+\rrr{}
+\date{}
+
+%Use \maketitle conmmand right after \begin{document}
+\begin{document}
+\maketitle
+
+
+\input{mainbody.tex}
+
+\bibliographystyle{abbrv}
+\bibliography{pebbl}
+
+\end{document}

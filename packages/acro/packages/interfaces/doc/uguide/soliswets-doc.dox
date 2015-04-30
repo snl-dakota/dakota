@@ -1,0 +1,127 @@
+/*!
+ * \page soliswets-doc
+
+\section soliswets-doc Solis-Wets Local Search
+
+\subsection swoverview Overview
+
+The class SWOpt provides a framework for implementing the
+stochastic direct search algorithms described by Solis and \if GeneratingLaTeX \latexonly Wets~\cite{SolWet81}.  \endlatexonly \endif \if GeneratingHTML Wets [SolWet81].  \endif \if GeneratingLaTeX \latexonly Figure~\ref{swfig} \endlatexonly \endif \if GeneratingHTML Figure <b>SW-1</b> \endif
+provides pseudo-code for the
+main loop of SWOpt.  These algorithms generate a new iterate using
+coordinate-wise steps.  If the new iterate is better than the
+current iterate then it is accepted and the algorithm repeats.
+Otherwise the algorithm considers a step in the opposite direction.  If
+this new point is also worse that then current iterate then a new
+iterate is again generated in the neighborhood of the current iterate.
+SWOpt also defines mechanisms for expanding and contracting the
+step size of the offsets used to generate the new iterate.
+
+
+\if GeneratingLaTeX
+\latexonly
+\begin{figure}[htb]
+\fbox{\begin{minipage}{\textwidth}
+
+\begin{tabbing}
+best = INFTY\\
+bias = $\overline{0}$\\
+n\_succ = 0\\
+n\_fail = 0\\
+\\
+wh\=ile (rho $>$ rho\_lower\_bound)\\
+  \>generate dx\\
+  \>curr = f(x + dx + bias)\\
+  \>if \=(curr $<$ best)\\
+  \>   \>bias = 0.2 * bias + 0.4 * (dx + bias)\\
+  \>   \>x += dx + bias\\
+  \>   \>n\_succ++\\
+  \>   \>n\_fail=0\\
+  \>else\\
+  \>   \>curr = f(x - dx - bias)\\
+  \>   \>if \=(curr $<$ best)\\
+  \>    \>   \>bias = bias - 0.4 * (dx + bias)\\
+  \>   \>   \>x -= dx + bias\\
+  \>   \>   \>n\_succ++\\
+  \>   \>   \>n\_fail=0\\
+  \>   \>else\\
+  \>   \>   \>bias = bias/2\\
+  \>   \>   \>n\_fail++\\
+  \>   \>   \>n\_succ=0\\
+  \>   \>endif\\
+  \>endif\\
+  \\
+  \>if (n\_succ $\geq$ max\_succ)\\
+  \>   \>n\_succ=0\\
+  \>   \>rho = ex\_factor * rho\\
+  \>endif\\
+  \>if (n\_fail $\geq$ max\_fail)\\
+  \>   \>n\_fail=0\\
+  \>   \>rho = ct\_factor * rho\\
+  \>endif\\
+endwhile
+\end{tabbing}
+\end{minipage}}
+
+\caption{\label{swfig}
+Pseudo-code for the Solis-Wets algorithms.}
+\end{figure}
+\endlatexonly
+\endif
+
+
+\if GeneratingHTML
+\code
+best = INFTY
+bias = 0
+n_succ = 0
+n_fail = 0
+
+while (rho > rho_lower_bound)
+  generate dx
+  curr = f(x + dx + bias)
+  if (curr < best)
+     bias = 0.2 * bias + 0.4 * (dx + bias)
+     x += dx + bias
+     n_succ++
+     n_fail=0
+  else
+     curr = f(x - dx - bias)
+     if (curr < best)
+        bias = bias - 0.4 * (dx + bias)
+        x -= dx + bias
+        n_succ++
+        n_fail=0
+     else
+        bias = bias/2
+        n_fail++
+        n_succ=0
+     endif
+  endif
+  
+  if (n_succ >= max_succ)
+     n_succ=0
+     rho = ex_factor * rho
+  endif
+  if (n_fail >= max_fail)
+     n_fail=0
+     rho = ct_factor * rho
+  endif
+endwhile
+\endcode
+
+<b> SW-1:</b> Pseudo-code for the Solis-Wets algorithms.
+\endif
+
+Classes SWOpt1 and SWOpt2 differ in their definition of the
+private method \c gen_new_point, which is used to generate a new
+iterate.  SWOpt1 generates a iterate using normally distributed
+deviates with standard deviation \c rho.  SWOpt2 generates a new
+iterate using uniformly distributed deviates from the range
+\f$[-\f$ \c rho , \c rho \f$]\f$.
+
+\subsection swstatus Current Status
+
+These classes are stable.
+
+*/

@@ -1,0 +1,41 @@
+<!--
+  Experiment to test that the 'reset()' method in solvers is
+  working correctly.
+-->
+<experimental-study name="scolib-reps">
+  <tags>
+    <tag>scolib</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+
+      <factor name="test">
+        <level>_data=../etc/ampl/Sinusoidal1.mod</level>
+      </factor>
+
+      <factor name="config">
+        <level>solver=sco:direct max_iters=0 max_neval=10000 repetitions=1</level>
+        <level>solver=sco:ea max_iters=0 max_neval=10000 repetitions=1</level>
+        <level>solver=sco:ms max_iters=0 max_neval=10000 repetitions=1</level>
+<!--
+        <level>solver=sco:plgo max_iters=0 max_neval=10000 repetitions=1</level>
+-->
+        <level>solver=sco:ps max_iters=0 max_neval=10000 repetitions=1</level>
+        <level>solver=sco:sw max_iters=0 max_neval=10000 repetitions=1</level>
+      </factor>
+
+    </factors>
+    <controls>
+       <executable>./scolib_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Repetition" type="validation">
+    <category>validation</category>
+    <options>_measurement='Repetition-Check' _value="Pass"</options>
+  </analysis>
+</experimental-study>

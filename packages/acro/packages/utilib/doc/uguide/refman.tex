@@ -1,0 +1,188 @@
+%
+% A template to build SAND reports. See the examples for more details and
+% formatting suggestions. A command reference is available at
+% http://www.cs.sandia.gov/~rolf/SANDreport
+%
+\documentclass[pdf,12pt]{SANDreport}
+
+\usepackage{myoxygen}
+
+% ---------------------------------------------------------------------------- %
+% Set the title, author, and date
+%
+    \title{User Manual Reference Manual\\[1ex]\large Version 3.2}
+    \author{William E. Hart}		% Use First, Middle, Initial
+    \date{\today}		% Leave this here but empty
+
+
+% ---------------------------------------------------------------------------- %
+% These are mandatory
+%
+\SANDnum{SANDXXXX-YYYY}		% e.g. \SANDnum{SAND2006-0420}
+\SANDprintDate{Date - None}
+\SANDauthor{William E. Hart}		% One line, separated by commas
+
+
+% ---------------------------------------------------------------------------- %
+% These are optional
+%
+%\SANDrePrintDate{}	% May be repeated for successive printings
+%\SANDsupersed{}{}	% {Old SAND number}{Old date}
+
+
+% ---------------------------------------------------------------------------- %
+% Build your markings. See example files and SAND Report Guide
+%
+    %\SANDreleaseType{}
+    %\SANDmarkTopBottomCoverBackTitle{}
+    %\SANDmarkBottomCover{}
+    %\SANDmarkTopBottomCoverTitle{}
+    %\SANDmarkTop{}
+    %\SANDmarkBottom{}
+    %\SANDmarkTopBottom{}
+    %\SANDmarkCover{}
+    %\SANDmarkCoverTitle{}
+
+
+% ---------------------------------------------------------------------------- %
+% Start the document
+%
+\begin{document}
+    \maketitle
+
+    % ------------------------------------------------------------------------ %
+    % An Abstract is required for SAND reports
+    %
+    \begin{abstract}
+    \input{abstract}
+    \end{abstract}
+
+
+    % ------------------------------------------------------------------------ %
+    % The table of contents and list of figures and tables
+    %
+    \cleardoublepage		% TOC needs to start on an odd page
+    \tableofcontents
+    %\listoffigures
+    %\listoftables
+
+
+    % ---------------------------------------------------------------------- %
+    % An optional preface or Foreword
+    %\clearpage
+    %\chapter*{Preface}
+    %\addcontentsline{toc}{chapter}{Preface}
+
+
+    % ---------------------------------------------------------------------- %
+    % An optional executive summary
+    %\clearpage
+    %\chapter*{Summary}
+    %\addcontentsline{toc}{chapter}{Summary}
+
+
+    % ---------------------------------------------------------------------- %
+    % An optional glossary. We don't want it to be numbered
+    %\clearpage
+    %\chapter*{Nomenclature}
+    %\addcontentsline{toc}{chapter}{Nomenclature}
+    %\begin{description}
+	%\item[Term 1]
+	    %Description
+	%\item[Term 2]
+	    %Description
+	%\item[Term 3]
+	    %Description
+    %\end{description}
+
+
+    % ---------------------------------------------------------------------- %
+    % This is where the body of the report begins; usually with an Introduction
+    %
+    \SANDmain		% Start the main part of the report
+
+\include{introPage}
+
+\include{adtPage}
+\include{arrayPage}
+\include{llPage}
+\include{heapPage}
+\include{htPage}
+\include{setPage}
+\include{splayPage}
+
+\include{mathPage}
+
+\include{ranlibPage}
+
+\include{parametersPage}
+
+\include{parallelPage}
+\include{mpiPage}
+\include{mpePage}
+\include{packPage}
+\include{commonioPage}
+
+\include{sysPage}
+
+\include{factoryPage}
+
+\include{exceptionPage}
+
+    % ------------------------------------------------------------------------ %
+    % An Acknowledgment section is optional but important
+    %
+    %\clearpage
+    %\chapter*{Acknowledgment}
+    \input{acknowledgementsPage}
+
+
+    % ---------------------------------------------------------------------- %
+    % References
+    %
+    \clearpage
+    % If hyperref is included, then \phantomsection is already defined.
+    % If not, we need to define it.
+    \providecommand*{\phantomsection}{}
+    \phantomsection
+    \addcontentsline{toc}{chapter}{References}
+    \bibliographystyle{abbrv}
+    \bibliography{../uguide}
+
+
+    % ---------------------------------------------------------------------- %
+    %
+    %\appendix
+    %\chapter{}
+
+    % \printindex
+
+    \begin{SANDdistribution}[NM]% or [CA]
+	% \SANDdistCRADA	% If this report is about CRADA work
+	% \SANDdistPatent	% If this report has a Patent Caution or Patent Interest
+	% \SANDdistLDRD	% If this report is about LDRD work
+
+	% External Address Format: {num copies}{Address}
+	\SANDdistExternal{}{}
+	\bigskip
+
+	% The following MUST BE between the external and internal distributions!
+	% \SANDdistClassified % If this report is classified
+
+	% Internal Address Format: {num copies}{Mail stop}{Name}{Org}
+	\SANDdistInternal{1}{1318}{William E. Hart}{1415}
+
+	% Mail Channel Address Format: {num copies}{Mail Channel}{Name}{Org}
+	%\SANDdistInternalM{}{}{}{}
+    \end{SANDdistribution}
+
+
+    % The second printing
+    %\begin{SANDreDistribution}
+    %    \SANDdistExternal{}{}
+    %    \bigskip
+    %    \SANDdistInternal{}{}{}{}
+    %    \SANDdistInternalM{}{}{}{}
+    %\end{SANDreDistribution}
+
+\end{document}

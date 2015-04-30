@@ -1,0 +1,17 @@
+$Id: README 7616 2014-03-12 14:47:45Z jdsiiro $
+
+This directory contains software quality assurance procedures,
+checklists, and release archives.  The directories are:
+
+docs - This directory contains the checklists used in the software
+  release process and in the code review process, and information
+  about the release procedure.
+
+{major}_{minor} - Numbered directories contain the documents related to
+  a given software release, including the release checklist, installation
+  instructions, list of what's new in the release, customer feedback,
+  lessons learned, and whatever else would be relevant to maintain.
+
+The top level qa.html pulls these various software quality assurance
+components together into a browsable list.
+

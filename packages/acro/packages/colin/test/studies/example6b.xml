@@ -1,0 +1,45 @@
+<!-- 
+	MINLP0 problem being passed to a MINLP solver.
+	Minimize just continuous variables.
+        Using nonlinear constraints, which are reformulated to form an
+		unconstrained application.
+  -->
+
+<ColinInput>
+  <Problem id="original" type="MINLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+
+    <Constraints>
+        <Linear num="1">
+          <Fixed index="1" value="1.0"/>
+	  <Matrix>
+	   1 3
+	   1 1 1
+	  </Matrix>
+        </Linear>
+     </Constraints>
+
+     <Driver>
+        <Command>../../../../python/bin/python example_fn1</Command>
+     </Driver>
+  </Problem>
+
+  <Problem id="reformulated" type="UMINLP0" application="ConstraintPenaltyReformulation">
+     <BaseProblem id="original"/>
+     <Penalty value="100.0"/>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <Problem id="reformulated"/>
+     <InitialPoint>
+       r(3: 10.1 10.1 10.1)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

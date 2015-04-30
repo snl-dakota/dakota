@@ -1,0 +1,14 @@
+#! /bin/sh
+
+cd /var/www/html/Acro/releases/votd
+if test -d acro ; then
+   mv acro acro-del
+fi
+cvs -d /space/CVS-Acro -Q checkout acro
+cd acro
+./setup configure --enable-web-docs
+make docs
+cd ..
+if test -d acro-del ; then
+   rm -Rf acro-del
+fi

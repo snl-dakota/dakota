@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# Defer to a PYTHON environment variable first, otherwise try to use
+# lpython (for finding a local virtualenv, otherwise fal back on the
+# system python
+if test -z "$PYTHON"; then
+    PYTHON=`lpython -c 'import sys; sys.stdout.write(sys.executable)'`
+fi
+if test -z "$PYTHON"; then
+    PYTHON=`python -c 'import sys; sys.stdout.write(sys.executable)'`
+fi
+if test -n "$PYTHON"; then
+    echo "Using python $PYTHON"
+else
+    echo "ERROR: Cannot find python."
+    echo "Please set PYTHON envronment variable or add to PATH"
+    exit 1
+fi
+
+# Defer to a PYTHON_PIP environment variable first, otherwise try to use
+# lpython (for finding a local virtualenv, otherwise fal back on the
+# system python
+if test -z "$PYTHON_PIP"; then
+    PYTHON_PIP=`lbin -f pip | head -1`
+fi
+if test -z "$PYTHON_PIP"; then
+    PYTHON_PIP=`which pip | head -1`
+fi
+if test -n "$PYTHON_PIP"; then
+    echo "Using pip $PYTHON_PIP"
+else
+    echo "ERROR: Cannot find pip."
+    echo "Please set PYTHON_PIP envronment variable or add to PATH"
+    exit 1
+fi
+
+if [ 1 ]; then
+    # Install wheel if it's not already available
+    $PYTHON_PIP install wheel
+
+    # Clone virtualenv git repo
+    rm -Rf virtualenv_git
+    git clone https://github.com/pypa/virtualenv.git virtualenv_git
+
+    # Create a wheel file for virtualenv
+    $PYTHON_PIP wheel --wheel-dir virtualenv_git/virtualenv_support virtualenv
+
+    # Move virtualenv_support into ../pyutilib/virtualenv
+    rm -Rf ./virtualenv_support
+    mv virtualenv_git/virtualenv_support .
+fi
+
+# Create a zipfile with the wheel files
+zip -r virtualenv_support.zip virtualenv_support
+
+# Fill the template with the ZIP file
+$PYTHON `dirname $0`/rebuild.py wheels_template.py wheels.py
+cp wheels.py ../pyutilib/virtualenv
+
+# Generate ../pyutilib/virtualenv/vpy_install.py
+$PYTHON update.py

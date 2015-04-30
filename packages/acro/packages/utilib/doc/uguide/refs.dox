@@ -1,0 +1,27 @@
+/*!
+ * \page refsPage
+
+\if GeneratingHTML
+
+\section refsSec References
+
+ - [CorLeiRiv96] \anchor CorLeiRiv96 "Introduction to Algorithms", T. H. Cormen,
+C. E. Leiserson and R. L. Rivest, The MIT Press, 1996.
+
+ - [EvalHasPea93] \anchor EvaHasPea93 "Statistical Distributions, Second Ed.", M. Evans, N. Hastings, and B. Peacock, John Wiley and Sons, Inc., New York, 1993.
+
+ - [Knu] \anchor Knu "The Art of Computer Programming.  Volume 2, Seminumerical Algorithms", 2nd Ed.   D. E. Knuth, 
+
+ - [LewDen91] \anchor LewDen91 "Data Structures and Their Algorithms", Lewis and Denenberg, Harper Collins, 1991, pp 243-251.
+
+ - [ParMil88] \anchor ParMil88 "Random Number Generators: Good Ones are Hard to Find" Park, Steven K. and Miller, Keith W., Communications of the ACM, October, 1988.
+
+ - [SleTar85] \anchor SleTar85 "Self-adjusting Binary Search Trees" Sleator and Tarjan, JACM Volume 32, No 3, July 1985, pp 652-686.
+
+ - [Wei92] \anchor Wei92 "Data Structure and Algorithm Analysis", Mark Weiss, Benjamin Cummins, 1992, pp 119-130.
+
+ - [Woo93] \anchor Woo93 "Data Structures, Algorithms, and Performance", Derick Wood, Addison-Wesley, 1993, pp 367-375.
+
+\endif
+
+*/

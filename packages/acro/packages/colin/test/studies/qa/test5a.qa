@@ -1,0 +1,6 @@
+
+Test5a - a simple minimization example
+TestOptSolver: iter 0 value 29.7 pt 3 : 9.9 9.9 9.9 viol 0
+TestOptSolver: iter 1 value 29.4 pt 3 : 9.8 9.8 9.8 viol 0
+TestOptSolver: iter 2 value 29.1 pt 3 : 9.7 9.7 9.7 viol 0
+TestOptSolver: iter 3 value 28.8 pt 3 : 9.6 9.6 9.6 viol 0

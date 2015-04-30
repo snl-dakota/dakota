@@ -1,0 +1,25 @@
+<experimental-study name="lcov">
+  <tags>
+    <tag>lcov</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+      <factor name="test">
+        <level name="test1a">./tests test1a</level>
+      </factor>
+    </factors>
+    <controls>
+       <executable>./colin_diff_test</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="ColinLCOV" type="lcov">
+    <options>
+	_title="COLIN Code Coverage Statistics"
+	_lcov_dir="lcov_tmp"
+	_html_dir="/var/www/html/acro/debugging/colin"
+	_source_root="../../.."
+    </options>
+  </analysis>
+</experimental-study>

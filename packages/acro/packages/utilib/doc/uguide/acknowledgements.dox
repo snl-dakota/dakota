@@ -1,0 +1,63 @@
+/*! 
+ * \page acknowledgementsPage
+
+
+\section AcknowledgementsSec Acknowledgements
+
+The genesis of the UTILIB library is in the BBUMS library developed by
+Bill Hart and Brian Bartell while graduate students at U.C. San Diego.
+Although Brian would probably not recognize any of the UTILIB
+software, the design of some of the most widely used software, like
+array classes, is due to him.  The BBUMS library was subsequently
+reorganized and renamed the SGOPT library, which focuses on a methods
+for global optimization.  UTILIB  was the stdlib subdirectory in SGOPT,
+which was extracted from SGOPT when it became clear that several groups
+at Sandia would be interested in using the UTILIB components without
+the additional baggage of the optimizers in SGOPT.
+
+I would like to thank Cindy Phillips, Jonathan Eckstein, Lee Ann Riesen,
+John Siirola, Jean-Paul Watson, Mario Alleva, and Mike Eldred for their
+input on this software.  They have added functionality, identified
+numerous bugs, and helped refine the configuration process.
+
+UTILIB integrates and extends several tools developed by other authors:
+<ul>
+
+<li> Many of the C files in utilib/src/ranlib are taken from the RANLIB.C
+library of C routines for random number generation, which was developed by
+Barry W. Brown and James Lovato, Dept of Biomathematics at the University
+of Texas, Houston.  The C++ utilib::RNG class is adapted from the GNU
+class developed by Dirk Grunwald.
+
+<li> The utilib::AbstractSplay class was adapted from code developed
+by D. Sleator, which itself is adapted from simple top-down splay,
+at the bottom of 669 of \if GeneratingHTML [\ref SleTar85 "SleTar85"].
+\endif \if GeneratingLATEX \latexonly Sleator and Tarjan~\cite{SleTar85}.
+\endlatexonly \endif
+
+<li> The utilib::AnyValue class was adapted from the boost::any class
+developed by Kevlin Henney.
+
+<li> Many of UTILIB's hashing functions call the general-purpose hash
+function published by Bob Jenkins in DDJ.
+
+<li> I thank Roscoe Bartlett for many helpful discussions and for sharing
+his EXCEPTION macro, which inspired the exception management tools in
+exception_mngr.h.
+
+</ul>
+
+
+This work was supported in part by the Mathematics, Information and
+Computational Science program, U.S.  Department of Energy, Office of
+Energy Research, as well as the Laboratory Directed Research Program
+at Sandia National Laboratories.  This work was performed at Sandia
+National Laboratories.  Sandia is a multiprogram laboratory operated
+by Sandia corporation, a Lockheed Martin Company, for the United States
+Department of Energy under Contract DE-AC04-94AL85000.
+
+This document was prepared using the Doxygen software documentation tool,
+developed by Dimitri van Heesch, copyright 1997-2006.  We are grateful
+to David Gay for editorial comments on a draft of this document.
+
+*/

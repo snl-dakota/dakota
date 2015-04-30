@@ -1,0 +1,92 @@
+<experimental-study name="acro-ms">
+  <tags>
+    <tag>TODO</tag>
+  </tags>
+
+  <experiment name="ms">
+    <factors>
+  
+      <factor name="test" filename="../../scolib/test/ms_problems"/>
+  
+      <factor name="config">
+        <level>solver=scolib:ms max_neval=5000</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable>acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <experiment name="ms-ps">
+    <factors>
+  
+      <factor name="test" filename="../../scolib/test/ms_ps_problems"/>
+  
+      <factor name="config">
+        <level>solver=scolib:ms-scolib:ps max_neval=30000 debug=1000</level>
+      </factor>
+ 
+      <factor name="ps_params">
+        <level>step_tolerance=_step_tolerance</level>
+      </factor>
+ 
+    </factors>
+    <controls>
+       <executable>acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <experiment name="ms-sw">
+    <factors>
+  
+      <factor name="test" filename="../../scolib/test/ms_sw_problems"/>
+  
+      <factor name="config">
+        <level>solver=scolib:ms-scolib:sw max_neval=5000 debug=1000</level>
+      </factor>
+ 
+      <factor name="sw_params">
+        <level>step_tolerance=_step_tolerance</level>
+      </factor>
+ 
+    </factors>
+    <controls>
+       <executable>./acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="ms-ps-ConstraintViolation" type="validation">
+    <data experiment="ms-ps"/>
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="ms-ps-FinalValue" type="validation">
+    <data experiment="ms-ps"/>
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ms-sw-ConstraintViolation" type="validation">
+    <data experiment="ms-sw"/>
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="ms-sw-FinalValue" type="validation">
+    <data experiment="ms-sw"/>
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+</experimental-study>

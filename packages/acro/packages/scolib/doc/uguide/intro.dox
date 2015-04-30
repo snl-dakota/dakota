@@ -1,0 +1,98 @@
+/*!
+ * \page intro
+
+
+\section intro Introduction
+
+The Coliny optimization library contains a variety of optimization
+methods defined with a 
+\htmlonly
+<a href="http://software.sandia.gov/Acro/acro/packages/colin/doc/uguide/html/index.html">COLIN</a> optimization interface.
+\endhtmlonly
+\latexonly
+COLIN optimization interface~\cite{COLIN}.
+\endlatexonly
+Coliny and COLIN are revisions of the SGOPT optimization library~\cite{SGOPT}, 
+which also defined optimizers using C++ object-oriented abstractions.  The
+COLIN optimization interface generalizes the capabilities of SGOPT, and 
+in particular makes it easier to interface solvers and user applications that
+are defined on different search domain types.  Coliny provides a collection
+of optimization solvers, and in particular it replicates the 
+functionality in SGOPT.
+
+This document describes the algorithms that are implemented within Coliny
+at a high level.  Although the set of solvers included in Coliny 
+continues to grow, Coliny contains solvers that are well suited for
+<ul>
+
+<li> derivative-free local search
+
+<li> hybrid, global-local optimization
+
+<li> heuristic global optimization
+
+<li> unconstrained and bound-constrained optimization
+
+<li> continuous search domains
+
+</ul>
+Coliny is integrated into the 
+\htmlonly
+<a href="http://software.sandia.gov/Acro">Acro</a>
+\endhtmlonly
+\latexonly
+Acro
+\endlatexonly
+toolkit, and within that toolkit it
+depends on the following packages
+<ul>
+
+<li> \latexonly UTILIB \endlatexonly \htmlonly <a href="../../../../utilib/doc/html/index.html">UTILIB</a> \endhtmlonly - C++ utilities and data structures
+
+<li> PICO -   parallel branch-and-bound
+
+<li> APPSPACK - parallel pattern search
+
+<li> 3PO - third-party optimization
+
+<li> AMPL - interface routines for run Coliny solvers within AMPL
+
+</ul>
+Many of the optimizers defined by Coliny are currently included in
+the interface to the DAKOTA Iterator \if GeneratingLaTeX \latexonly
+Toolkit~\cite{EldHarBohRom96}. \endlatexonly \endif \if GeneratingHTML
+Toolkit [EldHarBohRom96]. \endif
+
+Historically, this software evolved as a library of algorithms used
+for research purposes.  Consequently, there are many places in this
+library where the software could be further polished, and some of the
+libraries are more stable than others.  Indications are made at the end
+of the sections describing each of the optimizers in Coliny concerning
+the stability of each optimizer.
+
+It will often be convenient to describe the methods and information in 
+optimization classes in five categories:
+<ul>
+
+<li> General Information - 
+	definitions of generic methods and data
+
+<li> Configuration Controls - 
+	definitions of methods and data that are used to parameterize the
+	operation of an optimizer
+
+<li> Termination Controls - 
+	definitions of methods and data that are used to determine when
+	an optimizer terminates
+
+<li> Debugging Controls - 
+	definitions of methods and data that are used to print debugging
+	information
+
+<li> Iteration Controls - 
+	defintions of methods and data that are used to define the 
+	optimizers main operations in each iteration
+
+</ul>
+
+*/

@@ -1,0 +1,33 @@
+<!-- 
+	MINLP0 problem being passed to a MINLP solver.
+	Minimize just continuous variables.
+	Specification of bounds with domain labels.
+  -->
+
+<ColinInput>
+  <Problem type="MINLP0">
+     <Domain>
+        <RealVars num="3">
+           <Labels>
+              x_1 x_2 x_3
+           </Labels>
+           <Lower label="x_1" value="9.0"/>
+           <Lower label="x_2" value="5.0"/>
+        </RealVars>
+     </Domain>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn1</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <InitialPoint>
+       r(3: 10.1 10.1 10.1)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

@@ -1,0 +1,8 @@
+\section{Introduction}
+
+The Acro Project is an effort to facilitate the design, development, integration and support of optimization software libraries. The goal of the Acro project is to develop optimization solvers and libraries using object-oriented software frameworks that facilitate the application of these solvers to large-scale engineering and scientific applications. Thus Acro includes both individual optimization solvers as well as optimization frameworks that provide abstract interfaces for flexible interoperability of solver components.
+
+This document describes the Acro command line interface (ACLI), which provides a mechanism for defining and solving optimization problems with a general XML syntax.  The goal of the ACLI is to provide a simple, flexible interface for the optimization solvers in Acro. Acro integrates a variety of optimization software packages, including both libraries developed at Sandia National Laboratories as well as publicly available third-party libraries. Thus, the ACLI provides a single framework that supports a wide range of optimization methods. This interface is designed to be easy for users.  Further, the XML driver syntax provides generic mechanisms that should simplify the integration of the ACLI into third-party applications.
+
+The ACLI is designed to be used in two different ways: (1) as an AMPL solver interface, and (2) as an interface for external applications. The next sections describe these usage models and provide examples for the use of ACLI. The remainder of this document describes the XML syntax used to drive ACLI (outside of AMPL).  This XML syntax allows the user to define, reformulate and solve optimization problems.
+

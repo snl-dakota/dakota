@@ -1,0 +1,5 @@
+#!/bin/sh
+
+bin/install_python --logfile python.log
+cd tests
+../python/bin/nosetests --with-xunit --xunit-file=TEST-vpykit.xml

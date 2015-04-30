@@ -1,0 +1,41 @@
+
+TODO List of Tasks for further development
+
+COLIN Optimizers to consider:
+
+NAg Methods (E04UCF and E04UAF) 
+Bit Climbing (BC) 
+Dynamic Hill Climbing (DHC) 
+Population Based Incremental Learning (PBIL) 
+Design of Experiment methods (DOE) 
+Numerical Recipes Methods (Num_Rcp) 
+Method of Successive Linear Approximation (APPROX) 
+Random Exploration with Shrinkage (RANDOM) 
+Adaptive Random Search (ADRANS) 
+Davidon, Fletcher, Powell Strategy (DAVID) 
+Fletcher's 1972 Method (FLETCH) 
+Jacobson and Oksman Method (JO) 
+Powell's Direct Search (PDS - Siddall's implementation) 
+Hooke and Jeeves Direct Search (SEEK - Siddall's implementation) 
+Simplex Method (SIMPLX - Siddall's implementation) 
+Rosenbrock's Rotating Co-ordinate Search (ROSE) 
+Complex Strategy of M.J. Box (COMP) 
+Two-membered Evolution Strategy (EVOL) 
+Multi-membered Evolution Strategy (KORR) 
+Repeated Fibonacci Search (FIBO) 
+Repeated Golden Section Search (GOLD) 
+Repeated Lagrangian Interpolation (LAGR) 
+Hooke and Jeeves Direct Search (HOJE - Schwefel's implementation) 
+Davies, Swann and Campey Search Method with Gram-Schmidt Orthogonalization (DSCP) 
+Davies, Swann and Campey Search Method with Palmer Orthogonalization (DSCP) 
+Powell's Direct Search (POWE - Schwefel's implementation) 
+Davidon, Fletcher, Powell Strategy (DFPS) 
+Simplex Method (SIMP - Schwefel's implementation) 
+Genetic Algorithm (GA) 
+Simulated Annealing (SA) 
+Evolutionary Programming (EP) 
+Evolution Strategy (ES) 
+
+Bayesian Optimization Algorithm (BOA)
+
+'progress rate' stopping rule for GAs

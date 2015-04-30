@@ -1,0 +1,9 @@
+/*  _________________________________________________________________________
+ *
+ *  COLIN: TODO
+ *  Copyright (c) TODO, Sandia National Laboratories.
+ *  This software is distributed under the GNU Lesser General Public License.
+ *  For more information, see the README file in the top COLIN directory.
+ *  _________________________________________________________________________
+ */
+

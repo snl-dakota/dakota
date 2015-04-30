@@ -1,0 +1,93 @@
+\documentclass[10pt]{article}
+
+\setlength{\topmargin}{-.25in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{6.5in}
+
+\usepackage{makeidx}
+%\usepackage{fancyheadings}
+\usepackage{fancyhdr}
+\usepackage{epsfig}
+\usepackage{graphics,color}
+\usepackage{float}
+\usepackage{myoxygen}
+%\usepackage{graphicx}
+%\usepackage{alltt}
+\usepackage{chapterbib}
+
+\setlength{\headwidth}{6.5in}
+\setlength{\footrulewidth}{0pt}
+\setlength{\parindent}{3ex}
+\setlength{\parsep}{0pt}
+
+%%\ifx\pdfoutput\undefined
+%%\usepackage[ps2pdf,
+%%            pagebackref=true,
+%%            colorlinks=true,
+%%            linkcolor=blue
+%%           ]{hyperref}
+%%\else
+%%\usepackage[pdftex,
+%%            pagebackref=true,
+%%            colorlinks=true,
+%%            linkcolor=blue
+%%           ]{hyperref}
+%%\fi
+
+\makeindex
+
+\setcounter{tocdepth}{1}
+
+\begin{document}
+
+\pagestyle{empty}
+\pagenumbering{roman}
+\setcounter{page}{2}
+
+%%
+%% Title Page
+%%
+\begin{center}
+SAND01--XXXX
+
+Unlimited Release
+
+Printed December 2001
+\end{center}
+
+\vspace{0.8in}
+
+\begin{center}
+{\bf \LARGE UTILIB Reference Manual\\[1ex]\Large Version 2.0}
+\vspace*{0.4in}
+
+William E. Hart\\
+Optimization and Uncertainty Estimation Dept\\
+Sandia National Laboratories\\
+P. O. Box 5800\\
+Albuquerque, NM\\
+{\tt http://www.cs.sandia.gov/$\sim$wehart}\\
+{\tt wehart@sandia.gov}\\
+
+\vspace*{1.0in}
+
+{\bf\large Abstract}
+\end{center}
+%\vspace*{0.2in}
+This document provides a reference manual for the UTILIB software library.
+\input{../uguide/abstract}
+
+\vfill
+\newpage
+
+\pagenumbering{roman}
+\input{acknowledgements}
+\newpage
+
+\tableofcontents
+\clearemptydoublepage
+
+\pagenumbering{arabic}
+

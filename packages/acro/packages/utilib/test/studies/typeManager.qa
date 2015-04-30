@@ -1,0 +1,35 @@
+LEXICAL TESTS
+result[1]: -200;
+   { Any != std::set<int> }
+   [ std::list<int> ]
+result[2]: 0;
+   std::set<int> == [1, 2, 5];  
+   std::list<int> == [1, 2, 5];  
+result[3]: 0;
+   std::set<int> == [1, 5];  
+   std::vector<int> == [1, 5];  
+result[4]: 0;
+   std::set<int> == [1, 5, 10];  
+   vector<double> == [1.000000e+000, 5.000000e+000, 1.000000e+001];  
+result[5]: 0;
+   vector<double> == [1.000000e+000, 5.000000e+000, 1.000000e+001];  
+   vector<int> == [1, 5, 10];  
+result[6]: 4;
+   vector<double> == [1.000000e+000, 6.750000e+000, 1.000000e+001];  
+   vector<int> == [1, 6, 10];  
+result[7]: 6;
+   vector<double> == [1.000000e+000, 6.750000e+000, 5.500000e+009];  
+   vector<int> == [1, 6, -2147483648];  
+result[8]: -202;
+   vector<double> == [1.000000e+000, 6.750000e+000, 5.500000e+009];  
+   [ vector<int> ]
+result[9]: -201;
+   std::vector<double> == [1.000000e+000, 6.750000e+000, 5.500000e+009];  
+   [ std::set<int> ]
+result[10]: 0;
+   set<int> == [1, 5, 10];  
+   vector<int> == [1, 5, 10];  
+
+EXCEPTION TESTS
+Caught expected bad_lexical_cast exception:
+Caught expected bad_lexical_cast exception:

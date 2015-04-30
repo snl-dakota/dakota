@@ -1,0 +1,51 @@
+<experimental-study name="scolib-ea">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>scolib</tag>
+    <tag>valgrind</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+      <factor name="test" filename="ea_problems"/>
+  
+      <factor name="config">
+        <level>solver=sco:ea max_neval=7000 output_level=verbose population_size=5 xover_rate=0.0 selection_type=linear_rank replacement_type='random' keep_num=0 num_trial_points=50</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable>./scolib_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value='Max-Num-Evals'</options>
+  </analysis>
+
+  <analysis name="ConstraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

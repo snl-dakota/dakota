@@ -1,0 +1,28 @@
+<!-- 
+	MO_NLP0 problem being passed to a MO_NLP solver.
+	Minimize just continuous variables.
+  -->
+
+<ColinInput>
+  <Problem type="MO_UNLP0">
+     <Domain>
+	<RealVars num="3">
+	    <Lower value="0.0"/>
+	    <Upper value="20.0"/>
+	</RealVars>
+     </Domain>
+     <Objectives num="2"/>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn2</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:rmoo">
+     <Options>
+        <Option name="max_iters">20</Option>
+     </Options>
+     <ArchivePoints filename="example7a.txt"/>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

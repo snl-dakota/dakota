@@ -1,0 +1,20 @@
+<!--
+	NLP0 problem that defines a 
+  -->
+
+<ColinInput>
+  <Problem type="NLP0">
+     <Domain>
+        <RealVars num="3">
+           <Labels>
+              x_1 x_2 x_3
+           </Labels>
+           <Lower label="x_1" value="9.0"/>
+           <Lower label="x_2" value="5.0"/>
+        </RealVars>
+     </Domain>
+     <Driver>
+        <Command>python example_fn1</Command>
+     </Driver>
+  </Problem>
+</ColinInput>

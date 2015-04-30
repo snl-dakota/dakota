@@ -1,0 +1,63 @@
+
+\documentclass[12pt,letter]{article}
+%\documentclass[12pt,letterpaper]{article}
+
+\usepackage{amsmath}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{fullpage}
+
+%\setlength{\oddsidemargin}{0in}
+%\setlength{\evensidemargin}{0in}
+%\setlength{\topmargin}{0in}
+%\setlength{\headheight}{0in}
+%\setlength{\headsep}{0in}
+%\setlength{\textheight}{9in}
+%\setlength{\textwidth}{6.5in}
+
+
+\input{userdefs.tex}
+
+\begin{document}
+
+
+\title{
+PEBBL 1.0 User Guide
+}
+
+\author{
+Jonathan Eckstein\thanks{
+Business School and RUTCOR, Rutgers University,
+640 Bartholomew Road, Piscataway, NJ 08854-8003
+}
+\and
+Cynthia A. Phillips\thanks{
+Sandia National Laboratories, Mail Stop 1110, P.O. Box
+5800, Albuqurque, NM 87185-1110}
+\and
+William E. Hart$^{\dagger}$
+}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract.tex}
+\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\input{mainbody.tex}
+
+\section*{Acknowledgements}
+
+\input{acknowledge.tex}
+
+\bibliographystyle{abbrv}
+\bibliography{pebbl}
+
+\end{document}

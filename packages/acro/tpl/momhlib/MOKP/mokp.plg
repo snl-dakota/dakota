@@ -1,0 +1,86 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: mokp - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP16B.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\MOMHLib++\mo" /I "..\MOMHLib++\hga" /I "..\MOMHLib++\sa" /I "..\MOMHLib++\paretoga" /I "..\MOMHLib++\momsls" /I "..\MOMHLib++\Common" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"mokp___0/mokp.pch" /YX /Fo"mokp___0/" /Fd"mokp___0/" /FD /c 
+"D:\MOMHLib++\MOMHLib++\MO\global.cpp"
+"D:\MOMHLib++\MOKP\mokpproblem.cpp"
+"D:\MOMHLib++\MOKP\mokpsolution.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\momethod.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\momhconstrainedsolution.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\nondominatedset.cpp"
+"D:\MOMHLib++\MOMHLib++\SA\sabase.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\solution.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\solutionsset.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tbnode.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tbtree.cpp"
+"D:\MOMHLib++\MOMHLib++\ParetoGA\tindexedpoint.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tmotools.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\tquadnode.cpp"
+"D:\MOMHLib++\MOMHLib++\Common\trandomgenerator.cpp"
+"D:\MOMHLib++\MOMHLib++\MO\weights.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP16B.tmp" 
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP16C.tmp" with contents
+[
+/nologo /MLd /W3 /Gm- /GX /ZI /Od /I "..\MOMHLib++\mo" /I "..\MOMHLib++\hga" /I "..\MOMHLib++\sa" /I "..\MOMHLib++\paretoga" /I "..\MOMHLib++\momsls" /I "..\MOMHLib++\Common" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"mokp___0/mokp.pch" /YX /Fo"mokp___0/" /Fd"mokp___0/" /FD /c 
+"D:\MOMHLib++\MOKP\main.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP16C.tmp" 
+Creating temporary file "C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP16D.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"mokp___0/mokp.pdb" /debug /machine:I386 /out:"mokp___0/mokp.exe" /pdbtype:sept 
+".\mokp___0\global.obj"
+".\mokp___0\main.obj"
+".\mokp___0\mokpproblem.obj"
+".\mokp___0\mokpsolution.obj"
+".\mokp___0\momethod.obj"
+".\mokp___0\momhconstrainedsolution.obj"
+".\mokp___0\nondominatedset.obj"
+".\mokp___0\sabase.obj"
+".\mokp___0\solution.obj"
+".\mokp___0\solutionsset.obj"
+".\mokp___0\tbnode.obj"
+".\mokp___0\tbtree.obj"
+".\mokp___0\tindexedpoint.obj"
+".\mokp___0\tmotools.obj"
+".\mokp___0\tquadnode.obj"
+".\mokp___0\trandomgenerator.obj"
+".\mokp___0\weights.obj"
+]
+Creating command line "link.exe @C:\DOCUME~1\Andrzej\USTAWI~1\Temp\RSP16D.tmp"
+<h3>Output Window</h3>
+Compiling...
+global.cpp
+mokpproblem.cpp
+mokpsolution.cpp
+momethod.cpp
+momhconstrainedsolution.cpp
+nondominatedset.cpp
+sabase.cpp
+solution.cpp
+solutionsset.cpp
+tbnode.cpp
+tbtree.cpp
+tindexedpoint.cpp
+tmotools.cpp
+tquadnode.cpp
+trandomgenerator.cpp
+weights.cpp
+Compiling...
+main.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+mokp.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

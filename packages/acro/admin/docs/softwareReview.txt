@@ -1,0 +1,52 @@
+======================================
+Acro Software Review Process Checklist
+======================================
+
+***************************** PLAN ****************************** 
+
+1. Review initiated by:
+
+2. Developer(s):
+
+3. Description of module covered by review: _____________________
+
+4. Assignment of reviewers software components:
+
+   Algorithm: ____________________________________________________
+   Module design: ________________________________________________
+   Code: _________________________________________________________
+   Interface: ____________________________________________________
+   Style,Conventions: ____________________________________________
+   Requirements linkage: _________________________________________
+   Testing & test linkage:________________________________________
+   Documentation: ________________________________________________
+
+*****************************  DO ****************************** 
+
+ ____ Developer(s) and reviewer(s) meet for high level discussion
+      of code to be reviewed. Date:______________________________
+
+ ____ Reviewer(s) review components assigned to them.
+
+***************************** CHECK **************************** 
+
+ ____ Verify that all code components have been reviewed.
+
+***************************** ACT **************************** 
+
+ ____ Record decisions of reviewers:
+
+ Module component                      Date        Acceptable (Y/N)
+ ====================================  ==========  ================
+ Algorithm                             __________       ____
+ Module design                         __________       ____
+ Code                                  __________       ____
+ Interface                             __________       ____
+ Style & Conventions                   __________       ____
+ Requirements Linkage                  __________       ____
+ Testing & Test Linkage                __________       ____
+ Documentation                         __________       ____
+
+
+
+

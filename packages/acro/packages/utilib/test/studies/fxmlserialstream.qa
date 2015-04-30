@@ -1,0 +1,33 @@
+(file created)
+Single reads:
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+Chain reading:
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+Converting read:
+   l1:     [ OK ]: 1 : 5
+   l2:     [ OK ]: 1 : 3.14159
+   [ OK ]: get A as list<double> (correctly) threw exception
+Appending to an existing file
+   (appended d1a)
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+   double: [ OK ]
+fXMLSerialStream appending to an existing file
+   int:    [ OK ]
+   double: [ OK ]
+   (wrote c1)
+   A:      [ OK ]
+   double: [ OK ]
+   char    [ OK ]
+fXMLSerialStream to a new/truncated file
+   int:    [ OK ]
+   double: [ OK ]
+   A:      [ OK ]
+   char    [ OK ]
+   wchar_t [ OK ]
+   string  [ OK ]

@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Script to checkout the top directory of each public
+# project, so that Externals can be fixed
+#
+ACRO=https://software.sandia.gov/svn/public/acro/
+ACRO_PRIVATE=https://software.sandia.gov/svn/private/acro/
+
+dirlist="$ACRO_PRIVATE/acro-gnlp/trunk \
+$ACRO/acro-appspack/trunk \
+$ACRO/acro-coliny/trunk \
+$ACRO/acro-dev/trunk \
+$ACRO/acro-limited/trunk \
+$ACRO/acro-optpp/trunk \
+$ACRO/acro-parpcx/trunk \
+$ACRO/acro-pebbl/trunk \
+$ACRO/acro-pico/trunk \
+$ACRO/acro-utilib/trunk"
+
+## Check out just the top directory of each trunk
+for i in $dirlist ; do
+  dirname=${i%/trunk}
+  dirname=${dirname##*/}
+
+  echo "Checking out the top only of $dirname"
+
+  svn co -N $i
+  mv trunk fixme-$dirname
+done

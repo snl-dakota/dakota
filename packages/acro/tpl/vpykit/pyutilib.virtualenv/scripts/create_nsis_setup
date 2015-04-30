@@ -1,0 +1,994 @@
+#!/usr/bin/env python
+"""Create a "virtual" Python installation
+"""
+
+#
+# This utility is deprecated and may be removed in the future.  I
+# believe that it's functionality has been migrated over to the
+# pyutilib.autodist.makensis.py utility
+#
+
+# If you change the version here, change it in setup.py 
+# and docs/conf.py as well.
+virtualenv_version = "1.6.1"
+
+import sys
+if sys.version_info <= (2,6):
+    print('ERROR: %s' % sys.exc_info()[1])
+    print('ERROR: this script requires Python 2.7 or greater.')
+    sys.exit(101)
+import os
+from os.path import join
+import optparse
+import shutil
+import logging
+import ConfigParser
+import msilib
+import subprocess
+import glob
+try:
+    basestring
+except NameError:
+    basestring = str
+
+def main():
+    parser = optparse.OptionParser(
+        version=virtualenv_version,
+        usage="%prog [OPTIONS] CONFIG_FILE")
+
+    parser.add_option(
+        '-v', '--verbose',
+        action='count',
+        dest='verbose',
+        default=0,
+        help="Increase verbosity")
+
+    parser.add_option(
+        '-q', '--quiet',
+        action='count',
+        dest='quiet',
+        default=0,
+        help='Decrease verbosity')
+
+    parser.add_option(
+        '-p', '--python',
+        dest='python',
+        metavar='PYTHON_EXE',
+        help='The Python interpreter to use. The default is the current'
+            'version of python (%s)' % sys.executable)
+
+    parser.add_option(
+        '--clear',
+        dest='clear',
+        action='store_true',
+        help="Clear out the non-root install and start from scratch")
+
+    options, args = parser.parse_args()
+
+    global logger
+
+    verbosity = options.verbose - options.quiet
+    logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
+
+    if not args:
+        print('You must provide a CONFIG_FILE')
+        parser.print_help()
+        sys.exit(2)
+    if len(args) > 1:
+        print('There must be only one argument: CONFIG_FILE (you gave %s)' % (
+            ' '.join(args)))
+        parser.print_help()
+        sys.exit(2)
+
+    config_file = args[0]
+    
+    installer = SetupTool(file=config_file)
+    logger.notify('Loaded "%s"' %(config_file))
+    logger.info('Configured as: %s'%(installer))
+    
+    # Run vpy_install --preinstall for program
+    installer.run_vpy_install(verbosity)
+    
+    # Find packages in preinstall directory
+    installer.find_packages()
+    
+    # Build MSI Installers
+    #installer.build_package_installers()
+    
+    # # Modify MSI installer
+    #installer.modify_package_installers()
+    
+    # # Write NSIS codes to NSH files
+    installer.create_data_nsh(file='dyn_data.nsh')
+    installer.create_packages_nsh(file='dyn_packages.nsh')
+    installer.create_uninstall_nsh(file='uninstall.nsh')
+    
+    # Compile the NSI codes
+    
+    # Create vpy_install testing directory
+    
+    # Test NSIS SetupTool in testing directory
+    
+    # Run tests in testing directory
+
+
+kl_software_config = ['product_name', 'product_authors',
+                      'copyright_year', 'copyright_holder', 'copyright_legal',
+                      'license_style', 'license_file']
+kl_python_config = ['python_exe', 'vpy_config_file', 'vpy_options', 
+                    'vpy_command', 'omit_list']
+kl_nsis_config = ['nsi_file', 'nsi_includes', 'nsis_path_var', 'nsis_exe',
+                  'nsis_options']
+kl_binary_config = ['build_command', 'download_from', 'add_file', 'add_directory']
+
+
+def _find_packages(path, exclude=None):
+    """
+    Generate a list of packages
+    """
+    pkg_list=[]
+    if not os.path.exists(path):
+        return []
+    pkg_list = glob.glob(path+os.sep+'*'+os.sep+'setup.py')
+    packages = map(lambda x:x.replace(path+os.sep,'').replace(os.sep+'setup.py',''), pkg_list)
+    if not exclude is None:
+        for pkg in packages:
+            if pkg in exclude: 
+                packages.remove(pkg)
+    return packages
+
+class SetupTool(object):
+    name = None
+    home_dir = None
+    config = {}
+    binaries = {}
+    python_config = {}
+    nsis_config = {}
+    uuid_list = {}
+    package_list = []
+    uninstall_head = """
+/*
+ * uninstall.nsh
+ *
+ * The uninstallation section.
+ */
+
+Function UninstallPrevious
+  ;
+  ; Get the installer from the registry
+  ;
+  ReadRegStr $2 ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString"
+  ;
+  ; Skip execution if this isn't installed
+  ;
+  StrCmp "$2" "" done
+  IfFileExists "$2" 0 done
+  ;
+  ; Execute installer silently
+  ;
+  ; This is a bit of a hack.  To ensure that the top-level installer waits,
+  ; we use the _? option.  But this prevents the uninstaller from deleting
+  ; itself.  Hence, we check to see if the uninstaller is exists, and if so
+  ; we explicitly delete it.  {SIGH}
+  ;
+  ClearErrors
+  ;;ExecWait '"$2" /S _?=$INSTDIR' $0
+  IfErrors 0 +3
+     MessageBox MB_OK "Failed to uninstall ${PRODUCT_NAME}" IDOK 0
+     Abort
+  ;Abort
+  IfFileExists $2 0 done
+    Delete $2
+    RMDir $INSTDIR
+done:
+FunctionEnd
+
+
+Section "Uninstall"
+  ; Remove from path
+  ;;Push $INSTDIR\bin
+  ;;Call un.RemoveFromPath
+  ;;${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR\\bin"
+
+"""
+    uninstall_tail = """
+  ; Is this a good idea?
+  RMDIR /r "$INSTDIR"
+
+  IfFileExists "$INSTDIR" 0 NoErrorMsg
+    IfSilent NoErrorMsg 0
+       MessageBox MB_OK "Note: $INSTDIR could not be removed!" IDOK 0 ; skipped if file doesn't exist
+       Abort
+    
+  NoErrorMsg:
+
+  SetShellVarContext all
+  ;Delete "$SMPROGRAMS\\${PRODUCT_NAME}\\Uninstall.lnk"
+  Delete "$SMPROGRAMS\\${PRODUCT_NAME}\\*.*"
+  RMDir "$SMPROGRAMS\\${PRODUCT_NAME}"
+
+  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\\${PRODUCT_NAME}"
+  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+
+  SetAutoClose false
+SectionEnd
+
+"""
+
+    data_head = """
+/*
+ * data.nsh
+ *
+ * The Pyomo data section.
+ */
+
+Section "" SEC02
+
+  SetOutPath "$INSTDIR"
+  SetOverwrite ifnewer
+"""
+    data_tail = """
+
+SectionEnd
+
+"""
+    
+    def __init__(self, name=None, file=None, config=None, software_config=None,
+                       python_config=None, nsis_config=None, uuid_list=None,
+                       binary_sections=None):
+        if name is not None: 
+            self.name = name
+        self.home_dir = os.path.abspath(os.path.curdir)
+        if software_config is not None:
+           self.config = software_config 
+        else:
+            self.config = dict.fromkeys(kl_software_config)
+        if python_config is not None:
+            self.python_config = python_config
+        else:
+            self.python_config = dict.fromkeys(kl_python_config)
+        if nsis_config is not None:
+            self.nsis_config = nsis_config
+        else:
+            self.nsis_config = dict.fromkeys(kl_nsis_config)
+        if uuid_list is not None:
+            self.uuid_list = uuid_list
+        if binary_sections is not None:
+            self.binary_sections = binary_sections
+        if isinstance(config,ConfigParser.ConfigParser):
+            st = self.initialize(config)
+        elif file is not None:
+            config = ConfigParser.SafeConfigParser()
+            list = config.read(file)
+            if len(list) > 1:
+                logger.fatal('Configuration file "%s" failed to load' % file)
+                sys.exit(3)
+            st = self.initialize(config)
+    
+    def run_vpy_install(self, verbosity=0):
+        args = [ self.python_config['python_exe'],
+                 self.python_config['vpy_command'],
+		 '--debug',
+                 '--preinstall',
+                 '--config='+self.python_config['vpy_config_file']
+               ]
+        if verbosity < 0:
+            for i in range(-verbosity):
+                args.append('-q')
+        if verbosity > 0:
+            for i in range(verbosity):
+                args.append('-v')
+        for opts in self.python_config['vpy_options'].split():
+            args.append(opts)
+        args.append('setup_python')
+        self.run(args)
+        
+    def find_packages(self, dir=None):
+        root = 'setup_python'
+        if dir is not None: root = dir
+        packages = _find_packages(root+'/src')
+        for pkg in packages:
+            py_pkg = Package(pkg, root_dir=root+'/src/'+pkg, 
+                             python=self.python_config['python_exe'])
+            if self.uuid_list.has_key(pkg):
+                py_pkg.uuid = self.uuid_list[pkg]
+            self.package_list.append(py_pkg)
+            logger.notify('Discovered package %s as a component' % pkg)
+        tpls = _find_packages(root+'/dist', exclude=['virtualenv', 'setuptools'])
+        for pkg in tpls:
+            if pkg in ['virtualenv', 'setuptools']:
+                continue
+            py_pkg = Package(pkg, root_dir=root+'/dist/'+pkg, is_tpl=True,
+                             python=self.python_config['python_exe'])
+            if self.uuid_list.has_key(pkg):
+                py_pkg.uuid = self.uuid_list[pkg]
+            self.package_list.append(py_pkg)
+            logger.notify('Discovered package %s as a tpl' % pkg)
+        return
+    
+    def build_package_installers(self):
+        logger.notify('Building Python MSI installers for packages')
+        for pkg in self.package_list:
+            logger.info('Building MSI for %s' % pkg.name)
+            pkg.build_msi()
+        os.chdir(self.home_dir)
+    
+    def modify_package_installers(self):
+        logger.notify('Adding registry keys')
+        for pkg in self.package_list:
+            if pkg.msi_file is None: 
+                logger.debug('Skipping %s' % pkg.name)
+                continue
+            logger.info('Modifying MSI for %s' % pkg.name)
+            pkg.load_msi()
+            #pkg.change_uuid()
+            pkg.add_registry_keys()
+        os.chdir(self.home_dir)
+    
+    def create_data_nsh(self, file=None):
+        if file is None:
+            fid = sys.stdout
+        elif isinstance(file,str):
+            fid = open(os.path.abspath(self.nsis_config['nsi_includes']+os.sep+file),'wt')
+        fid.write(self.data_head)
+        for pkg in self.package_list:
+            fid.write(pkg.get_nsis_data_code())
+        
+        # Get data from vpy_preinstall
+        dirs = glob.glob(self.home_dir+os.sep+'setup_python/*')
+        omit_list = self.python_config['omit_list'].split()
+        str_for_files = ''
+        for subd in omit_list:
+            str_for_files += '/x %s '%subd
+        for d in dirs:
+            subd = os.path.split(d)[1]
+            if not subd in omit_list:
+                if os.path.isdir(os.path.abspath(d)):
+                    fid.write('  File /r %s %s\n'%(str_for_files,d))
+                else:
+                    fid.write('  File %s\n'%d)
+        
+        # Get Binary sections data
+        
+        fid.write(self.data_tail)
+        if file is not None:
+            fid.close()
+    
+    def create_packages_nsh(self, file=None):
+        if file is None:
+            fid = sys.stdout
+        elif isinstance(file,str):
+            fid = open(os.path.abspath(self.nsis_config['nsi_includes']+os.sep+file),'wt')
+        # Do Subsection for Details
+        fid.write('SubSection "Python %s"\n'%self.config['product_name'])
+        for pkg in self.package_list:
+            if not pkg.is_tpl:
+                fid.write(pkg.get_nsis_install_code())
+        # End Subsection
+        fid.write('SubSectionEnd\n')
+        for pkg in self.package_list:
+            if pkg.is_tpl:
+                fid.write(pkg.get_nsis_install_code())
+        if file is not None:
+            fid.close()
+    
+    def create_uninstall_nsh(self, file=None):
+        if file is None:
+            fid = sys.stdout
+        elif isinstance(file,str):
+            fid = open(os.path.abspath(self.nsis_config['nsi_includes']+os.sep+file),'wt')
+        for pkg in self.package_list:
+            fid.write(pkg.get_nsis_uninstall_code())
+        fid.write(self.uninstall_head)
+        fid.write(self.uninstall_tail)
+        if file is not None:
+            fid.close()
+    
+    def initialize(self, config=None):
+        if config is None: return
+        if not isinstance(config,ConfigParser.ConfigParser):
+            logger.fatal('Configuration file failed to parse')
+            sys.exit(3)
+        section_list = config.sections()
+        if 'software_config' not in section_list:
+            logger.fatal('Configuration file has no [software_config] section!')
+            sys.exit(4)
+        for sec in section_list:
+            if sec == 'software_config':
+                for name, value in config.items(sec):
+                    if name in kl_software_config:
+                        self.config[name] = value
+                    else: logger.warn('Invalid key "%s" in [%s]' % (name, sec))
+            elif sec == 'python_config':
+                for name, value in config.items(sec):
+                    if name in kl_python_config:
+                        self.python_config[name] = value
+                    else: logger.warn('Invalid key "%s" in [%s]' % (name, sec))
+            elif sec == 'nsis_config':
+                for name, value in config.items(sec):
+                    if name in kl_nsis_config:
+                        self.nsis_config[name] = value
+                    else: logger.warn('Invalid key "%s" in [%s]' % (name, sec))
+            elif sec == 'uuid_list':
+                for name, value in config.items(sec):
+                    self.uuid_list[name] = value
+            elif sec.startswith('binary_'):
+                bin_cfg = dict.fromkeys(kl_binary_config)
+                for name, value in config.items(sec):
+                    if name in kl_binary_config:
+                        bin_cfg[name] = value
+                    else: logger.warn('Invalid key "%s" in [%s]' % (name, sec))
+                self.binaries[sec] = bin_cfg
+            else:
+                logger.warn('Unknown section [%s] in configuration!' % sec)
+        name = self.config['product_name']
+        if self.name is None:
+            self.name = name
+        self.python_config['omit_list'] += ' bin dist python.zip Lib Scripts src '
+ 
+    def __repr__(self):
+        str = 'SetupTool(name=%s, '%repr(self.name)
+        str += 'software_config=%s, '%repr(self.config)
+        str += 'python_config=%s, '%repr(self.python_config)
+        str += 'nsis_config=%s, '%repr(self.nsis_config)
+        str += 'uuid_list=%s, '%repr(self.uuid_list)
+        str += 'binary_sections=%s)'%repr(self.binaries)
+        return str
+
+    def run(self, cmd, dir=None):
+        cwd=os.getcwd()
+        if not dir is None:
+            os.chdir(dir)
+            cwd=dir
+        print "Running command '%s' in directory %s" % (" ".join(cmd), cwd)
+        sys.stdout.flush()
+        call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
+        if not dir is None:
+            os.chdir(cwd)
+ 
+class Package(object):
+    name = ''
+    root_dir = '.'
+    uuid = None
+    python_exe = 'python.exe'
+    setup_file = 'setup.py'
+    version = '0.0.0.0'
+    output_dir = None
+    msi_file = None
+    msi_db = None
+    components = {}
+    properties = {}
+    is_tpl = False
+    nsis_code = """
+Section "%(name)s"
+  %(req_text)s
+  DetailPrint ""
+  DetailPrint "--------------------------------------------------------------"
+  DetailPrint "Package: Python %(name)s"
+  DetailPrint "--------------------------------------------------------------"
+  DetailPrint ""
+  StrCpy $9 $PythonExecutable -11
+install:
+  DetailPrint "Installing %(name)s-%(version)s"
+  nsExec::ExecToLog '\"$PythonExecutable\" \"$INSTDIR\\%(name)s\\setup.py\" install' $0
+done:
+  DetailPrint "Package %(name)s complete."
+  DetailPrint ""
+SectionEnd
+"""
+    unins_code = """
+Section "un.%(name)s"
+  DetailPrint "--------------------------------------------------------------"
+  DetailPrint "Removing %(name)s Package"
+  DetailPrint "--------------------------------------------------------------"
+  nsExec::ExecToLog 'pip uninstall $(name)s -y' $0
+SectionEnd
+"""
+    
+    def __init__(self, name, root_dir=None, output_dir=None, is_tpl=False,
+                 python=None):
+        self.name = name
+        if not python is None:
+            self.python_exe = python
+        if not root_dir is None:
+            self.root_dir = os.path.abspath(root_dir)
+        if not output_dir is None:
+            self.output_dir = os.path.abspath(output_dir)
+        self.is_tpl = is_tpl
+        return
+    
+    def build_msi(self, python=None):
+        if python is None:
+            python = self.python_exe
+        args = [ python,
+                 self.setup_file,
+                 'bdist_msi']
+        if not self.output_dir is None:
+            args.append('--dist-dir')
+            args.append(self.output_dir)
+        else:
+            self.output_dir = self.root_dir + '/dist'
+        self.run(args, dir=self.root_dir)
+        msi_files = glob.glob(self.output_dir + '/' + self.name + '*win32.msi')
+        if len(msi_files) > 1:
+            logger.warn('Found multiple files after build (%d):'%len(msi_files))
+        if len(msi_files) > 0:
+            self.msi_file = msi_files[0]
+            logger.info('Created MSI file: %s'%self.msi_file)
+        else:
+            msi_files = glob.glob(self.output_dir + '/' + self.name + '*.msi')
+            if len(msi_files) > 0:
+                logger.warn('Omitting Python-version-specific MSI file: (%s)'%msi_files[0])
+            logger.warn('Failed to create universal MSI file for package %s' % self.name)
+    
+    def load_msi(self, msi_file=None):
+        if msi_file is not None:
+            self.msi_file = msi_file
+        if self.msi_file is None:
+            self.msi_db = None
+            logger.notify('Package "%s" skipped because there is no MSI file')
+        if not os.path.exists(self.msi_file):
+            # throw exception - file does not exist
+            return 2
+        self.msi_db = msilib.OpenDatabase(self.msi_file,msilib.MSIDBOPEN_DIRECT)
+        view = self.msi_db.OpenView("SELECT Property, Value FROM Property")
+        view.Execute(None)
+        try:
+            while True:
+                a = view.Fetch()
+                rec = a.GetString(1)
+                val = a.GetString(2)
+                self.properties[rec] = val
+                if rec == 'ProductVersion':
+                    self.version = val
+        except: # All done - yes there's probably a better way
+            pass
+        view.Close()
+        view = self.msi_db.OpenView("SELECT Component, ComponentId FROM Component")
+        view.Execute(None)
+        try:
+            while True:
+                a = view.Fetch()
+                rec = a.GetString(1)
+                val = a.GetString(2)
+                self.components[rec] = val
+        except: # All done - yes there's probably a better way
+            pass
+        view.Close()
+        self.msi_db.Commit()
+        return 0
+    
+    def print_info(self):
+        for key, value in self.properties.items():
+            print key, ':', value
+    
+    def change_uuid(self, uuid=None):
+        if self.msi_db is None: return
+        if uuid is not None:
+            self.uuid = uuid
+        if self.uuid is None and self.properties.has_key('ProductCode'):
+            self.uuid = self.properties['ProductCode']
+            logger.notify('Missing UUID for %s. Set to %s'%(self.name, self.uuid))
+            return
+        if self.uuid is None:
+            return
+        view = self.msi_db.OpenView("SELECT Property, Value FROM Property")
+        view.Execute(None)
+        a = view.Fetch()
+        rec = a.GetString(1)
+        val = a.GetString(2)
+        while rec != 'ProductCode':
+            a = view.Fetch()
+            rec = a.GetString(1)
+            val = a.GetString(2)
+        a.SetString(2,self.uuid)
+        view.Modify(msilib.MSIMODIFY_ASSIGN,a)
+        view.Close()
+        self.msi_db.Commit()
+        logger.info('Set ProductCode UUID for %s to %s'%(self.name, self.uuid))
+        self.properties['ProductCode'] = self.uuid
+        return 0
+    
+    def run(self, cmd, dir=None):
+        cwd=os.getcwd()
+        if not dir is None:
+            os.chdir(dir)
+            cwd=dir
+        print "Running command '%s' in directory %s" % (" ".join(cmd), cwd)
+        sys.stdout.flush()
+        call_subprocess(cmd, filter_stdout=filter_ez_setup, show_stdout=False)
+        if not dir is None:
+            os.chdir(cwd)
+
+    def add_registry_keys(self, program=None):
+        key = 'SOFTWARE\\'+self.name
+        if program is None:
+            program = self.name
+        finp = self.name.split('.')[0]
+        if finp in self.components:
+            comp = finp
+        elif 'site_packages' in self.components:
+            comp = 'site_packages'
+        elif 'scripts' in self.components:
+            comp = 'scripts'
+        else:
+            comp = self.components[0]
+        records = []
+        records.append( ('RegKey32',2,key,'ProductCode','[ProductCode]',comp) )
+        records.append( ('RegKey32.ver',2,key,'Version','[ProductVersion]',comp) )
+        try:
+            msilib.add_data(self.msi_db, "Registry", records)
+            logger.info('Added registry keys to HKLM\\SOFTWARE\\%s'%self.name)
+            self.msi_db.Commit()
+        except:
+            logger.warn('Failed to add keys to package %s'%self.name)
+            raise
+        return
+        
+        
+    def get_nsis_data_code(self):
+        return "  File /r %s\n"%(self.root_dir)
+        
+    def get_nsis_install_code(self):
+        if self.is_tpl: req_text = '' 
+        else: req_text = 'SectionIn RO'
+        return self.nsis_code % {'name': self.name,
+                                 'uuid': self.uuid,
+                                 'dir': os.path.split(self.root_dir)[1],
+                                 'req_text': req_text,
+                                 'version': self.version}
+        
+    def get_nsis_uninstall_code(self):
+        if self.is_tpl: return ""
+        return self.unins_code % {'name': self.name, 'uuid': self.uuid}
+    
+def call_subprocess(cmd, show_stdout=True,
+                    filter_stdout=None, cwd=None,
+                    raise_on_returncode=True, extra_env=None,
+                    remove_from_env=None):
+    cmd_parts = []
+    for part in cmd:
+        if len(part) > 45:
+            part = part[:20]+"..."+part[-20:]
+        if ' ' in part or '\n' in part or '"' in part or "'" in part:
+            part = '"%s"' % part.replace('"', '\\"')
+        cmd_parts.append(part)
+    cmd_desc = ' '.join(cmd_parts)
+    if show_stdout:
+        stdout = None
+    else:
+        stdout = subprocess.PIPE
+    logger.debug("Running command %s" % cmd_desc)
+    if extra_env or remove_from_env:
+        env = os.environ.copy()
+        if extra_env:
+            env.update(extra_env)
+        if remove_from_env:
+            for varname in remove_from_env:
+                env.pop(varname, None)
+    else:
+        env = None
+    try:
+        proc = subprocess.Popen(
+            cmd, stderr=subprocess.STDOUT, stdin=None, stdout=stdout,
+            cwd=cwd, env=env)
+    except Exception:
+        e = sys.exc_info()[1]
+        logger.fatal(
+            "Error %s while executing command %s" % (e, cmd_desc))
+        raise
+    all_output = []
+    if stdout is not None:
+        stdout = proc.stdout
+        encoding = sys.getdefaultencoding()
+        while 1:
+            line = stdout.readline().decode(encoding)
+            if not line:
+                break
+            line = line.rstrip()
+            all_output.append(line)
+            if filter_stdout:
+                level = filter_stdout(line)
+                if isinstance(level, tuple):
+                    level, line = level
+                logger.log(level, line)
+                if not logger.stdout_level_matches(level):
+                    logger.show_progress()
+            else:
+                logger.info(line)
+    else:
+        proc.communicate()
+    proc.wait()
+    if proc.returncode:
+        if raise_on_returncode:
+            if all_output:
+                logger.notify('Complete output from command %s:' % cmd_desc)
+                logger.notify('\n'.join(all_output) + '\n----------------------------------------')
+            raise OSError(
+                "Command %s failed with error code %s"
+                % (cmd_desc, proc.returncode))
+        else:
+            logger.warn(
+                "Command %s had error code %s"
+                % (cmd_desc, proc.returncode))
+
+
+def resolve_interpreter(exe):
+    """
+    If the executable given isn't an absolute path, search $PATH for the interpreter
+    """
+    if os.path.abspath(exe) != exe:
+        paths = os.environ.get('PATH', '').split(os.pathsep)
+        for path in paths:
+            if os.path.exists(os.path.join(path, exe)):
+                exe = os.path.join(path, exe)
+                break
+    if not os.path.exists(exe):
+        logger.fatal('The executable %s (from --python=%s) does not exist' % (exe, exe))
+        raise SystemExit(3)
+    if not is_executable(exe):
+        logger.fatal('The executable %s (from --python=%s) is not executable' % (exe, exe))
+        raise SystemExit(3)
+    return exe
+
+def is_executable(exe):
+    """Checks a file is executable"""
+    return os.access(exe, os.X_OK)
+
+class Logger(object):
+
+    """
+    Logging object for use in command-line script.  Allows ranges of
+    levels, to avoid some redundancy of displayed information.
+    """
+
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    NOTIFY = (logging.INFO+logging.WARN)/2
+    WARN = WARNING = logging.WARN
+    ERROR = logging.ERROR
+    FATAL = logging.FATAL
+
+    LEVELS = [DEBUG, INFO, NOTIFY, WARN, ERROR, FATAL]
+
+    def __init__(self, consumers):
+        self.consumers = consumers
+        self.indent = 0
+        self.in_progress = None
+        self.in_progress_hanging = False
+
+    def debug(self, msg, *args, **kw):
+        self.log(self.DEBUG, msg, *args, **kw)
+    def info(self, msg, *args, **kw):
+        self.log(self.INFO, msg, *args, **kw)
+    def notify(self, msg, *args, **kw):
+        self.log(self.NOTIFY, msg, *args, **kw)
+    def warn(self, msg, *args, **kw):
+        self.log(self.WARN, msg, *args, **kw)
+    def error(self, msg, *args, **kw):
+        self.log(self.WARN, msg, *args, **kw)
+    def fatal(self, msg, *args, **kw):
+        self.log(self.FATAL, msg, *args, **kw)
+    def log(self, level, msg, *args, **kw):
+        if args:
+            if kw:
+                raise TypeError(
+                    "You may give positional or keyword arguments, not both")
+        args = args or kw
+        rendered = None
+        for consumer_level, consumer in self.consumers:
+            if self.level_matches(level, consumer_level):
+                if (self.in_progress_hanging
+                    and consumer in (sys.stdout, sys.stderr)):
+                    self.in_progress_hanging = False
+                    sys.stdout.write('\n')
+                    sys.stdout.flush()
+                if rendered is None:
+                    if args:
+                        rendered = msg % args
+                    else:
+                        rendered = msg
+                    rendered = ' '*self.indent + rendered
+                if hasattr(consumer, 'write'):
+                    consumer.write(rendered+'\n')
+                else:
+                    consumer(rendered)
+
+    def start_progress(self, msg):
+        assert not self.in_progress, (
+            "Tried to start_progress(%r) while in_progress %r"
+            % (msg, self.in_progress))
+        if self.level_matches(self.NOTIFY, self._stdout_level()):
+            sys.stdout.write(msg)
+            sys.stdout.flush()
+            self.in_progress_hanging = True
+        else:
+            self.in_progress_hanging = False
+        self.in_progress = msg
+
+    def end_progress(self, msg='done.'):
+        assert self.in_progress, (
+            "Tried to end_progress without start_progress")
+        if self.stdout_level_matches(self.NOTIFY):
+            if not self.in_progress_hanging:
+                # Some message has been printed out since start_progress
+                sys.stdout.write('...' + self.in_progress + msg + '\n')
+                sys.stdout.flush()
+            else:
+                sys.stdout.write(msg + '\n')
+                sys.stdout.flush()
+        self.in_progress = None
+        self.in_progress_hanging = False
+
+    def show_progress(self):
+        """If we are in a progress scope, and no log messages have been
+        shown, write out another '.'"""
+        if self.in_progress_hanging:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+    def stdout_level_matches(self, level):
+        """Returns true if a message at this level will go to stdout"""
+        return self.level_matches(level, self._stdout_level())
+
+    def _stdout_level(self):
+        """Returns the level that stdout runs at"""
+        for level, consumer in self.consumers:
+            if consumer is sys.stdout:
+                return level
+        return self.FATAL
+
+    def level_matches(self, level, consumer_level):
+        """
+        >>> l = Logger()
+        >>> l.level_matches(3, 4)
+        False
+        >>> l.level_matches(3, 2)
+        True
+        >>> l.level_matches(slice(None, 3), 3)
+        False
+        >>> l.level_matches(slice(None, 3), 2)
+        True
+        >>> l.level_matches(slice(1, 3), 1)
+        True
+        >>> l.level_matches(slice(2, 3), 1)
+        False
+        """
+        if isinstance(level, slice):
+            start, stop = level.start, level.stop
+            if start is not None and start > consumer_level:
+                return False
+            if stop is not None or stop <= consumer_level:
+                return False
+            return True
+        else:
+            return level >= consumer_level
+
+    #@classmethod
+    def level_for_integer(cls, level):
+        levels = cls.LEVELS
+        if level < 0:
+            return levels[0]
+        if level >= len(levels):
+            return levels[-1]
+        return levels[level]
+
+    level_for_integer = classmethod(level_for_integer)
+
+# create a silent logger just to prevent this from being undefined
+# will be overridden with requested verbosity main() is called.
+logger = Logger([(Logger.LEVELS[-1], sys.stdout)])
+
+def mkdir(path):
+    if not os.path.exists(path):
+        logger.info('Creating %s', path)
+        os.makedirs(path)
+    else:
+        logger.info('Directory %s already exists', path)
+
+def copyfileordir(src, dest):
+    if os.path.isdir(src):
+        shutil.copytree(src, dest, True)
+    else:
+        shutil.copy2(src, dest)
+
+def copyfile(src, dest, symlink=True):
+    if not os.path.exists(src):
+        # Some bad symlink in the src
+        logger.warn('Cannot find file %s (bad symlink)', src)
+        return
+    if os.path.exists(dest):
+        logger.debug('File %s already exists', dest)
+        return
+    if not os.path.exists(os.path.dirname(dest)):
+        logger.info('Creating parent directories for %s' % os.path.dirname(dest))
+        os.makedirs(os.path.dirname(dest))
+    if not os.path.islink(src):
+        srcpath = os.path.abspath(src)
+    else:
+        srcpath = os.readlink(src)
+    if symlink and hasattr(os, 'symlink'):
+        logger.info('Symlinking %s', dest)
+        try:
+            os.symlink(srcpath, dest)
+        except (OSError, NotImplementedError):
+            logger.info('Symlinking failed, copying to %s', dest)
+            copyfileordir(src, dest)
+    else:
+        logger.info('Copying to %s', dest)
+        copyfileordir(src, dest)
+
+def writefile(dest, content, overwrite=True):
+    if not os.path.exists(dest):
+        logger.info('Writing %s', dest)
+        f = open(dest, 'wb')
+        f.write(content.encode('utf-8'))
+        f.close()
+        return
+    else:
+        f = open(dest, 'rb')
+        c = f.read()
+        f.close()
+        if c != content:
+            if not overwrite:
+                logger.notify('File %s exists with different content; not overwriting', dest)
+                return
+            logger.notify('Overwriting %s with new content', dest)
+            f = open(dest, 'wb')
+            f.write(content.encode('utf-8'))
+            f.close()
+        else:
+            logger.info('Content %s already in place', dest)
+
+def rmtree(dir):
+    if os.path.exists(dir):
+        logger.notify('Deleting tree %s', dir)
+        shutil.rmtree(dir)
+    else:
+        logger.info('Do not need to delete %s; already gone', dir)
+
+def make_exe(fn):
+    if hasattr(os, 'chmod'):
+        oldmode = os.stat(fn).st_mode & 0xFFF # 0o7777
+        newmode = (oldmode | 0x16D) & 0xFFF # 0o555, 0o7777
+        os.chmod(fn, newmode)
+        logger.info('Changed mode of %s to %s', fn, oct(newmode))
+
+def _find_file(filename, dirs):
+    for dir in dirs:
+        if os.path.exists(join(dir, filename)):
+            return join(dir, filename)
+    return filename
+
+def filter_ez_setup(line, project_name='setuptools'):
+    if not line.strip():
+        return Logger.DEBUG
+    if project_name == 'distribute':
+        for prefix in ('Extracting', 'Now working', 'Installing', 'Before',
+                       'Scanning', 'Setuptools', 'Egg', 'Already',
+                       'running', 'writing', 'reading', 'installing',
+                       'creating', 'copying', 'byte-compiling', 'removing',
+                       'Processing'):
+            if line.startswith(prefix):
+                return Logger.DEBUG
+        return Logger.DEBUG
+    for prefix in ['Reading ', 'Best match', 'Processing setuptools',
+                   'Copying setuptools', 'Adding setuptools',
+                   'Installing ', 'Installed ']:
+        if line.startswith(prefix):
+            return Logger.DEBUG
+    return Logger.INFO
+
+def filter_python_develop(line):
+    if not line.strip():
+        return Logger.DEBUG
+    for prefix in ['Searching for', 'Reading ', 'Best match: ', 'Processing ',
+                   'Moving ', 'Adding ', 'running ', 'writing ', 'Creating ',
+                   'creating ', 'Copying ']:
+        if line.startswith(prefix):
+            return Logger.DEBUG
+    return Logger.NOTIFY
+
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,40 @@
+###############################################################################
+#                                                                             #
+# Interfaces Change Log                                                       #
+#                                                                             #
+###############################################################################
+
+-------------------------------------------------------------------------------
+Interfaces 1.3 (2014/11/04)
+-------------------------------------------------------------------------------
+
+- Updating COBYLA wrapper to directly support bound constraints
+
+-------------------------------------------------------------------------------
+Interfaces 1.2 (2011/11/22)
+-------------------------------------------------------------------------------
+
+- Adding an interface to NSGA-II.  Due to licensing restrictions, we
+  cannot include the actual NSGA-II algorithm with the source
+  distribution.
+
+- Prototype CMake build harness
+
+- Deprecating much of the use of cp_u within the build harness.
+
+-------------------------------------------------------------------------------
+Interfaces 1.1 (2010/12/21)
+-------------------------------------------------------------------------------
+
+- Improved static registration system.
+
+- Tracking move of COLIN to use utilib Properties for configuring
+  objects.
+
+- Bug fixes for the Cobyla interface
+
+-------------------------------------------------------------------------------
+Interfaces 1.0 (2008/12/14)
+-------------------------------------------------------------------------------
+
+Initial release.

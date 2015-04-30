@@ -1,0 +1,21 @@
+
+Test9_ - test the sampling application
+  sample: 64.0115
+  sample: 64.0512
+  sample: 64.7658
+  sample: 64.0359
+mean = 64.2161
+EvalF = 64.2161
+  sample: 64.4491
+  sample: 64.082
+  sample: 64.5106
+  sample: 64.3338
+mean = 64.3439
+EvalF = 64.3439
+  sample: 64.0115
+  sample: 64.0512
+  sample: 64.7658
+  sample: 64.0359
+mean = 64.2161
+EvalF = 64.2161
+NEval: 12

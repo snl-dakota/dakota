@@ -1,0 +1,31 @@
+<ColinInput>
+  <Problem id="original" type="MO_NLP0">
+     <Domain>
+	<RealVars num="3">
+	    <Lower value="0.0"/>
+	    <Upper value="20.0"/>
+	</RealVars>
+     </Domain>
+    <Objectives num="2"/>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn2</Command>
+     </Driver>
+  </Problem>
+
+  <Problem id="reformulated" type="NLP0" application="WeightedMultiobjReformulation">
+    <BaseProblem id="original"/>
+    <Weights>1.0 3.0</Weights>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <Problem id="reformulated"/>
+     <InitialPoint>
+       r(3: 10.1 10.1 10.1)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

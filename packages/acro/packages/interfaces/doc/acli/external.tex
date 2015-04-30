@@ -1,0 +1,72 @@
+\section{Optimizing External Applications}
+
+In many cases, users have stand-alone code that needs to be used to compute a performance objective or evaluate the feasibility of a candidate design (or both). In this case, the ACLI needs to (1) setup the optimizer and problem, and (2) coordinate with the user code to perform these computations. Figure~\ref{fig:external1} illustrates the data files that ACLI interfaces with to perform optimization with an external application code.
+
+The ACLI leverages the COLIN optimization interface library to manage this process.  The COLIN library is responsible for deleting the COLIN request and response files (or keeping them, if the user indicates that in the COLIN input file). The remainder of this section describes the format of these data files and illustrates the use of the ACLI in a simple example.
+
+\subsection{COLIN Input Files}
+
+The COLIN input file defines the properties of the optimization problem that will be solved. Thus, this input file reflects features of the user-defined application that is used for optimization. Further, this input file configures and launches the solver that optimizes the optimization problem.
+
+Figure~\ref{fig:colin-input1} provides a simple example of a COLIN input file.  This example defines \emph{Problem} and \emph{Solver} elements.  The default problem name is ``default'', and by default a \emph{Solver} element uses the ``default'' solver.  When defining a problem, the user must specify the problem type.  The problem type categorizes the capabilities supported by the user application.  Table~\ref{table:types} summarizes the problem types currently supported by COLIN.
+
+\begin{figure}[htb]
+\begin{lstlisting}
+<ColinInput>
+  <Problem type="NLP0">
+     <Domain>
+        <RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>shell_func5</Command>
+        <KeepFiles />
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:test">
+     <InitialPoint>
+       10.0 10.0 10.0
+     </InitialPoint>
+     <Options>
+        <Option name="accuracy">29.0</Option>
+     </Options>
+  </Solver>
+</ColinInput>
+\end{lstlisting}
+\caption{Example of a COLIN input file.\label{fig:colin-input1}}
+\end{figure}
+
+\begin{table}[htbp]
+TODO
+\caption{Problem types currently supported by COLIN.\label{table:types}}
+\end{table}
+
+The \emph{Parameters} element in Figure~\ref{fig:colin-input1} is used to declare a problem with three continuous parameters.  The \emph{Driver} element is used to specify the command that is executed to compute objective evaluations; by default the driver supports no constraints (see below).  The \emph{Command} element specifies the command line that is executed, and the \emph{KeepFiles} element indicates that the temporary files used to communicate with the user application will not be deleted.
+
+The \emph{Solver} element is used to declare the optimizer that will be applied.  As noted before, the default problem has name "default".  The solver may require an initial point, which is specified with the \emph{InitialPoint} element.  Finally, the \emph{Options} element specifies parameters that control the execution of the solver.  These consist of a list of option-value pairs that are specified with \emph{Option} elements.
+
+Figures~\ref{fig:request} and~\ref{fig:response} provide examples of the XML files that COLIN uses to communicate with applications.  The COLIN request file is written by COLIN to request information from the user application.  COLIN executes the user application with a system call.  This creates a response file, which is subsequently read by COLIN.
+
+\begin{figure}[htb]
+\begin{lstlisting}
+<ColinRequest>
+  <Domain>
+    <Real size="3"> 0.1e-1 0.1 0.1</Real>
+  </Domain>
+  <Seed>100</Seed>
+  <Requests>
+    <FunctionValue/>
+  </Requests>
+</ColinRequest>
+\end{lstlisting}
+\caption{Example of a COLIN request file.\label{fig:request}}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{lstlisting}
+<ColinResponse>
+  <FunctionValue>13.4</FunctionValue>
+</ColinResponse>
+\end{lstlisting}
+\caption{Example of a COLIN response file.\label{fig:response}}
+\end{figure}

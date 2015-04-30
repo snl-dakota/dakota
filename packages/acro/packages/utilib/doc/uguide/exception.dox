@@ -1,0 +1,82 @@
+/*!
+ * \page exceptionPage
+
+\section exceptionSec Managing Exceptions
+
+A pervasive challenge for software development is the effective management
+of runtime error conditions (e.g. when an attempt to open a file fails).
+One effective strategy for debugging unexpected failures is to generate
+an \c abort() when an error is detected.  This generates a core file
+with debugging information, including the call-stack at the point
+of failure.
+
+Runtime error conditions are naturally managed in C++ code with the C++
+exception construct.  Exceptions allow for graceful, automatic management of
+erroneous states that require the code to step out of a given context back to
+a previous context.  However, this general mechanism makes it 
+difficult to debug the cause of an exception.  Different compilers have
+different semantics for how exceptions are managed, and how to 'catch' an 
+exception when using an interactive debugger.  Hence, it is difficult to
+debug exception events in a generic manner.
+
+The exception_mngr.h header defines macros that can be used to
+wrap exceptions in a generic fashion, trap exception events,
+and to manage what happens during an exception event.  The \ref
+utilib::exception_mngr::EXCEPTION_TEST "EXCEPTION_TEST" and \ref
+utilib::exception_mngr::EXCEPTION_MNGR "EXCEPTION_MNGR" macros can be used to 
+encapsulate exception events for this utility.  These macros  
+should be called within source code like a function,
+except that a semicolon should not be added after the macro.  For example,
+suppose that the exception <tt>std::out_of_range</tt> is thrown if 
+<tt>n > 100</tt> in the file <tt>my_source_file.cpp</tt>.
+To use the macro, the source code would contain (at line 225
+for instance):
+\verbatim
+    EXCEPTION_TEST( n>100, std::out_of_range , "Error, n = " << n << is bad" )
+\endverbatim
+When the program runs and with <tt>n = 125 > 100</tt> for instance,
+the <tt>std::out_of_range</tt> exception would be thrown with the
+error message:
+\verbatim
+    /home/bob/project/src/my_source_file.cpp:225: n > 100: Error, n = 125 is bad
+\endverbatim
+Similarly, the \ref utilib::exception_mngr::EXCEPTION_MNGR "EXCEPTION_MNGR" 
+macro can be used
+\verbatim
+    if (n>100)
+       EXCEPTION_MNGR( std::out_of_range , "Error, n = " << n << is bad" )
+\endverbatim
+which achieves the same result with an explicit conditional.
+
+These macros call the utilib::exception_mngr::handle_exception function, 
+which manages I/O and does one of the following:
+
+- throws the exception (this is the default behavior)
+
+- calls \c abort()
+
+- calls \c MPI_Abort() when MPI is being used, and then calls \c exit()
+
+The exception management can be configured to use these different options
+using the \c utilib::exception_mngr::set_mode() function.  For example, the
+following configures this utility to call \c abort():
+\verbatim
+    utilib::exception_mngr::set_mode(utilib::exception_mngr::Abort);
+\endverbatim
+This generates a core file in the same manner as described above for
+non-exception code debugging.
+
+Exceptions can also be debugged interactively by using and setting an
+'exit function' that is called before the exception is processed.  The
+default exit function is \c exit_fn(), and an alternative exit function
+can be specified with the \c utilib::exception_mngr::set_exit_function
+function.  An interactive debugger can break on the execution of \c
+exit_fn(), which leaves the user at a point where the code state that
+generated the exception event can be analyzed.
+
+Finally, note that the exception_mngr.h header also defines the \ref
+utilib::exception_mngr::STD_CATCH "STD_CATCH" macro, which performs a catch for
+all standard exception types.  This provides a convenient mechanism for 
+ensuring that all possible exceptions will be caught in a C++ \c main() function.
+
+*/

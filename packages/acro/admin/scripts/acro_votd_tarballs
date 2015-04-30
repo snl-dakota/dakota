@@ -1,0 +1,281 @@
+#! /bin/bash
+#
+# For each Acro project, create a "nightly" distribution:
+#   If there was already a nightly for this project, move it to "previous".
+#   Check out and build the project.
+#   If the project successfully builds, make a distribution tar file from it.
+#
+#   For published projects, maintain an html file listing the date of 
+#   the nightly and previous VOTD, with links to the tar files.
+#
+#   Unpublished projects appear in the directory, but not in the
+#   html file.
+#
+# Add the argument "debug" if you want the source directories saved.
+#
+
+releaseDir=/var/www/html/Acro/releases
+tarballDir=votd/tarballs
+
+trap cleanUp INT TERM
+
+debug_mode=no
+if [ $# = 1 ] ; then
+  if [ $1 = debug ] || [ $1 = DEBUG ] ; then
+    debug_mode=yes
+  fi
+fi
+
+if [ ! -d votd ] ; then
+  mkdir votd
+fi
+if [ ! -d votd/tarballs ] ; then
+  mkdir votd/tarballs
+fi
+
+cd $releaseDir
+
+export fnametmp=tmpTable.html
+export fname=votd/releaseFrame.html
+export dashedDay=`date +%Y-%m-%d`
+
+#
+# When changing the modules list, please update fast/codechecks/votds
+#
+
+#modules=(acro acro-appspack acro-coliny acro-pebbl acro-optpp acro-utilib acro-pico)
+#projects=(Acro APPSPACK Coliny PEBBL OPT++ UTILIB PICO)
+#publish=(  1     1       1     1      1      1     0 )
+
+modules=(acro acro-coliny acro-pebbl acro-optpp acro-utilib acro-pico)
+projects=(Acro Coliny PEBBL OPT++ UTILIB PICO)
+publish=(  1      1     1      1      1     1 )
+
+saveFiles ()
+{
+  save=$tarballDir/$1\_save.tar.gz
+  prev=$tarballDir/$1\_previous.tar.gz
+  nite=$tarballDir/$1\_nightly.tar.gz
+
+  if [ -f $prev ] ; then
+    mv $prev $save
+  fi
+  if [ -f $nite ] ; then
+    mv $nite $prev
+  fi
+}
+commitFiles ()
+{
+  mv $1\_nightly.tar.gz $tarballDir
+
+  save=$tarballDir/$1\_save.tar.gz
+
+  if [ -f $save ] ; then
+    rm -f $save
+  fi
+}
+restoreFiles ()
+{
+  save=$tarballDir/$1\_save.tar.gz
+  prev=$tarballDir/$1\_previous.tar.gz
+  nite=$tarballDir/$1\_nightly.tar.gz
+
+  if [ -f $prev ] ; then
+    mv $prev $nite
+  fi
+  if [ -f $save ] ; then
+    mv $save $prev
+  fi
+}
+# call testVOTD instead of acro_votd_tarball to test
+# this script without doing svn checkouts/builds
+testVOTD()
+{
+  sleep 3
+  filePrefix=${1//-/_}
+  nite=$filePrefix\_nightly.tar.gz
+  touch $nite
+}
+html_row ()
+{
+  # html_project_in_progress and html_project_done parse this line
+  #
+  echo "<tr align=left> <th>$1</th> <td>$2</td> <td>$3</td> </tr>" >> $fnametmp
+}
+
+html_start()
+{
+  echo "<HTML>" > $fnametmp
+  echo "<table border=2 cellspacing=5 cellpadding=2>" >> $fnametmp
+  #echo "<caption>VOTD Creation Dates</caption>" >> $fnametmp
+  echo "<tr align=center>" >> $fnametmp
+  echo "<th colspan=1></th><th><b>nightly</b></th><th><b>previous</b></th>" >> $fnametmp
+  echo "</tr>" >> $fnametmp
+}
+
+# bash:
+#   ${var#pattern}  remove shortest prefix matching pattern
+#   ${var##pattern} remove longest prefix matching pattern
+#   ${var%pattern}  remove shortest suffix matching pattern
+#   ${var%%pattern} remove longest suffix matching pattern
+
+html_project_done()
+{
+  module=$1
+  project=$2
+
+  rows=`grep "<td>" $fname`
+
+  while [ "${rows:-0}" != "0" ] ; do
+
+    remaining=${rows#*</tr>}
+    nextline=${rows%%${remaining}}
+
+    name=${nextline%%</th>*}
+    name=${name##*<th>}
+
+    if [ "$name" = "$project" ]; then
+
+      previous=${nextline##*<td>}
+      previous=${previous%</td> </tr>}
+
+      link="<a href=\"http://software.sandia.gov/Acro/releases/votd/tarballs/${module}_nightly.tar.gz\">$dashedDay</a>"
+      html_row $project "$link" "$previous"
+
+    else
+
+      echo $nextline >> $fnametmp
+
+    fi
+
+    rows=$remaining
+
+  done
+}
+
+#
+# rewrite all rows of table, listing one project as "processing"
+#
+html_project_in_progress()
+{
+  project=$1
+  found=no
+
+  if [ -f $fname ] ; then
+    rows=`grep "<td>" $fname`
+  else
+    rows=""
+  fi
+
+  while [ "${rows:-0}" != "0" ] ; do
+
+    remaining=${rows#*</tr>}
+    nextline=${rows%%${remaining}}
+
+    name=${nextline%%</th>*}
+    name=${name##*<th>}
+
+    if [ "$name" = "$project" ]; then
+      #
+      # The former nightly is now the previous votd
+      #
+      nightly=${nextline#*<td>}
+      nightly=${nightly%%</td>*}
+      nightly=`echo "$nightly" | sed 's/nightly/previous/g'`
+
+      html_row $project "processing" "$nightly"
+      found=yes
+
+    else
+
+      echo $nextline >> $fnametmp
+
+    fi
+
+    rows=$remaining
+
+  done
+
+  if [ $found = no ] ; then
+    html_row $project "processing" "none"
+  fi
+}
+
+html_end()
+{
+  echo "</table>" >> $fnametmp
+  echo "</HTML>" >> $fnametmp
+}
+
+cleanUp()
+{
+  if [ -f $fname.sav ] ; then
+    echo "Interrupted..."
+    echo "Reverting to state before starting to build this nightly"
+    mv $fname.sav $fname
+    restoreFiles $filePrefix
+  fi
+  exit
+}
+
+if [ ! -f $fname ] ; then
+  html_start
+  html_end
+
+  mv $fnametmp $fname
+fi
+
+j=0
+while [ $j -lt ${#modules[*]} ] ; do
+
+  filePrefix=${modules[$j]//-/_}
+
+  publishIt=${publish[$j]}
+
+  saveFiles $filePrefix
+
+  cp $fname $fname.sav
+
+  if [ $publishIt = 1 ] ; then
+    html_start
+    html_project_in_progress ${projects[$j]}
+    html_end
+    mv $fnametmp $fname
+  fi
+
+  if [ $debug_mode = yes ] ; then
+    export SOURCE_SAVE_DIR=$project-$dashedDay
+  else
+    unset SOURCE_SAVE_DIR
+  fi
+
+#
+  acro_votd_tarball ${modules[$j]}
+#    or
+# testVOTD ${modules[$j]}
+#
+
+  if [ -f $filePrefix\_nightly.tar.gz ] ; then
+
+    if [ $publishIt = 1 ] ; then
+      html_start
+      html_project_done $filePrefix ${projects[$j]}
+      html_end
+      mv $fnametmp $fname
+    fi
+
+    rm $fname.sav
+
+    commitFiles $filePrefix
+
+  else
+
+    cleanUp
+
+  fi
+
+  j=$((j+1))
+
+done
+
+

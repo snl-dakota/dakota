@@ -1,0 +1,32 @@
+<ColinInput>
+
+  <Problem id="original" type="S_NLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+
+     <StochasticObjective/>
+
+     <Driver>
+        <Command>../../../../python/bin/python example_fn3</Command>
+     </Driver>
+  </Problem>
+
+  <Problem id="reformulated" type="NLP0" application="SamplingReformulation">
+     <BaseProblem id="original"/>
+     <Samples num="1"/>
+     <Objective stat="mean"/>
+  </Problem>
+
+  <Solver id="A" type="colin:ls">
+     <Problem id="reformulated"/>
+     <InitialPoint>
+       r(3 : 10.1 10.1 10.1)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

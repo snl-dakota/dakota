@@ -1,0 +1,57 @@
+/*!
+ * \page llPage
+
+\section linkedlistSec Linked Lists, Queues and Stacks
+
+The utilib::LinkedList class defines a doubly-linked list.  The
+look-and-feel of utilib::LinkedList is quite similar to the STL \c
+std::list class.  Thus, general documentation of \c std::list is generally
+accurate for this class (e.g. see http://www.sgi.com/tech/stl/List.html).
+Doubly linked lists support O(1) insertion and deletion, but searching
+these data structures is O(n).  For example, the following example illustrates
+the setup of a simple list:
+\verbatim
+    utilib::LinkedList<int> mylist;
+    //
+    // Initializing a list with integers 0..9
+    //
+    for (int i=0; i<10; i++)
+      mylist.push_back(i);
+    //
+    // Printing the list
+    //
+    utilib::LinkedList<int>::iterator curr = mylist.begin();
+    utilib::LinkedList<int>::iterator end  = mylist.end();
+    while (curr != end) {
+      cout << *curr << " ";
+      curr++;
+      }
+\endverbatim
+
+The utilib::LinkedList object supports some additional features that
+differentiate it from the STL std::list class:
+
+- The \c add() and \c remove() methods can be used to insert and delete
+elements from a list such that the list acts like a queue (inserting and
+deleting from the front) or a stack (inserting and deleting from the end).
+This behavior can be configure with the \c stack_mode() and \c queue_mode()
+methods.  The utilib::QueueList and utilib::StackList classes leverage these
+mechanisms explicitly.
+
+- The utilib::LinkedList iterators validate that an iterator is valid
+before they are referenced to retrieve the value.  In the case of an
+error, an exception is thrown that can be used to trap the error.
+
+- The utilib::LinkedList manages a list of utilib::ListItem objects that
+store the data in the list.  The utilib::CachedAllocator class is used
+to cache these objects when they are deleted.  This minimizes memory
+allocations when lists are repeatedly filled and cleared.
+
+The utilib::OrderedList class is a derived linked list object that orders
+items that are inserted into the list.  This is an O(n) operation, so this 
+is generally not a useful class.  However, this provides a simple
+ordered container for short ordered lists.
+
+*/
+
+

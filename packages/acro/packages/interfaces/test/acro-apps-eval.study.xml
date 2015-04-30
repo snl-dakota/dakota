@@ -1,0 +1,42 @@
+<experimental-study name="acro-apps-eval">
+  <tags>
+    <tag>nightly</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="test" filename="apps_problems"/>
+  
+      <factor name="config">
+        <level>solver=apps:apps max_neval=25000</level>
+      </factor>
+  
+      <factor name="args">
+        <level></level>
+        <level>initial_step=0.1</level>
+        <level>contraction_factor=0.9</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable>./acro_test --ampl</executable>
+       <replication>5</replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value='Step-Length'</options>
+  </analysis>
+
+  <analysis name="ContraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+</experimental-study>

@@ -1,0 +1,191 @@
+\section{Downloading and Compiling PEBBL}
+\label{sec:downloadcompile}
+The PEBBL software project is supported by the Acro optimization
+project.  Acro supports the integration of PEBBL builds with auxiliary
+libraries, like UTILIB.  PEBBL in turn supports other Acro projects,
+such as PICO.
+
+Compiling PEBBL requires a unix-like environment such as Linux or the
+Cygwin Linux emulator for Microsoft Windows.  This guide assumes basic
+familiarity with the command-line interface to such environments.
+
+The instructions below describe how to download and compile PEBBL and
+a minimal set of supporting packages, collectively referred to as
+\texttt{acro-pebbl}.  You may also download and compile PEBBL as a
+component of larger packages such as PICO; to do so, see the
+documentation for those packages.
+
+
+\subsection{System requirements}
+\begin{itemize}
+\item A unix-like operating systems (including Linux, Mac OS X, or the
+  Cygwin emulator for windows)
+\vspace{-1.8ex}
+%% Make below optional if tarballs can be used
+\item The subversion (\texttt{svn}) version management system
+\vspace{-1.8ex}
+\item Python
+\vspace{-1.8ex}
+\item GNU autoconf
+\vspace{-1.8ex}
+\item GNU libtool
+\vspace{-1.8ex}
+\item A C/C++ compiler, such as gcc/g++
+\vspace{-1.8ex}
+\item For parallel execution, some form of MPI, such as OpenMPI or MPICH.
+\end{itemize}
+These packages should be readily installable in most unix-like
+systems.  In Ubuntu Linux, for example, subversion, Python, autoconf, libtool,
+gcc, and OpenMPI can all be easily installed from the standard package
+manager or software center.
+
+Note that Python is needed only because it is used in some of PEBBL's
+configuration and debugging utilities.  Branch-and-bound applications
+built with PEBBL will contain only C++ code unless the user explicitly
+includes code written in other languages.
+
+
+\subsection{Downloading PEBBL}
+
+%% \label{sec:download}
+%% You may obtain PEBBL in two ways, either by a conventional tarball or
+%% via the Subversion (\texttt{svn}) version control system.  
+
+%% \subsubsection{Tarball method}
+%% To obtain a tarball of PEBBL, fill in the form and follow the
+%% instructions on the webpage
+%% \begin{center}
+%% \url{https://software.sandia.gov/trac/acro/wiki/Downloads}
+%% \end{center}
+%% You should uncompress and unbundle the resulting downloaded file, for
+%% example via the command \texttt{tar -xzvf} \emph{filename}.  This
+%% operation should yield a directory named \texttt{acro-pebbl}.
+
+%% \subsubsection{Subversion method}
+
+%% Downloading via Subversion will allow you to efficiently track
+%% day-to-day changes in the most recent ``trunk'' version of PEBBL, and
+%% (with permission of the PEBBL team) to more easily contribute changes
+%% and enhancements to the PEBBL source code.
+
+%% The Subversion method requires that you have both Subversion and the
+%% Python language installed on your system.  First, download the Python
+%% script \texttt{svn.a} from
+%% \begin{center}
+%% \url{https://software.sandia.gov/svn/public/acro/acro-root/trunk/bin/svn.a}
+%% \end{center}
+%% Next, execute the \texttt{svn.a} script with the arguments
+%% \texttt{checkout acro-pebbl}; for example, if you stored
+%% \texttt{svn.a} in your path, you would execute the command
+%% \begin{codeblock}
+%%    svn.a checkout acro-pebbl
+%% \end{codeblock}
+%% As with the tarball method, the end result should be a directory named
+%% \texttt{acro-pebbl}.
+
+To install the latest version of PEBBL, make sure Subversion is
+already installed on your system and issue the following command:
+{\small
+\begin{codeblock}
+svn checkout https://software.sandia.gov/svn/acro/acro-pebbl/trunk acro-pebbl
+\end{codeblock}
+}
+\noindent This command will create a directory called
+\texttt{acro-pebbl}.  
+To download specific release, execute a command of the following form
+{\small
+\begin{codeblock}
+svn checkout \char`\\ \\
+~~~~https://software.sandia.gov/svn/acro/acro-pebbl/releases/\textit{release}
+ \char`\\ \\
+~~~~acro-pebbl-\textit{release}
+\end{codeblock}
+}
+\noindent This command will create a directory called
+\texttt{acro-pebbl-\textit{release}}. For example, to download release
+1.4.1, you would give the command
+{\small
+\begin{codeblock}
+svn checkout \char`\\ \\
+~~~~https://software.sandia.gov/svn/acro/acro-pebbl/releases/1.4.1
+ \char`\\ \\
+~~~~acro-pebbl-1.4.1
+\end{codeblock}
+}
+\noindent This command should produce a directory called
+\texttt{acro-pebbl-1.4.1}. 
+
+Throughout this guide, will assume that PEBBL resides in a directory
+called \texttt{acro-pebbl}.  Specific release checkout directories of
+the form \texttt{acro-pebbl-\textit{release}} may be used
+interchangeably with \texttt{acro-pebbl} in all directions and
+procedures below.
+
+
+\subsection{Compiling: Configuring and Building}
+\label{sec:compile}
+\label{sec:compiling}
+To configure and build PEBBL, enter the \texttt{acro-pebbl} directory
+(using \texttt{cd acro-pebbl}, for example).  Then issue the following
+commands:
+\begin{codeblock}
+./setup \\
+autoreconf -i -f \\
+./configure \textrm{[\emph{options}]} \\
+\textrm{[}make clean\textrm{]} \\
+make
+\end{codeblock}
+Note that to configure PEBBL, your system must have \texttt{autoconf}
+installed.  The \emph{options} after \texttt{./configure} may be
+omitted; if so, you will get a default configuration that effectively
+compiles only PEBBL's serial layer (see Section~\ref{sec:arch}).  See
+Section~\ref{sec:confopts} below for a description of the possible
+configuration options.  The \texttt{make clean} step is only required
+if you already configured PICO in the same directory, but have changed
+your system configuration or the arguments to \texttt{./configure}.
+If you do not need any options to \texttt{./configure}, you may
+replace the four-command sequence above with the simple command
+\begin{codeblock}
+./setup configure make
+\end{codeblock}
+This method is ``quiet'', redirecting all configuration and
+compilation output to the \texttt{test} subdirectory of
+\texttt{acro-pebbl}, in the files
+\begin{center}
+\begin{tabular}{ll}
+   \texttt{config.out} & The output of \texttt{autoreconf} 
+                         and \texttt{configure} \\
+   \texttt{config.xml} & Summary of \texttt{config.out} to detect errors\\
+   \texttt{build.out} & The output of \texttt{make}\\
+   \texttt{build.xml} & Summary of \texttt{build.out} to detect errors\\
+\end{tabular}
+\end{center}
+
+
+\subsubsection{Options for \texttt{configure}}
+\label{sec:configoptions}
+\label{sec:confopts}
+A full list of the possible configuration options may be be obtained
+by executing
+\begin{codeblock}
+configure --help
+\end{codeblock}
+Some of the more common options are as follows:
+\begin{description}
+\item[\texttt{--enable-validating}] ~ \\
+Increase internal error checking, with a slight performance and
+executable size penalty.  
+\item[\texttt{--with-debugging}] ~ \\
+Compile with additional debug printout capabilities and symbol table
+information for stack traces and system debugging tools.  There may
+be slight performance and executable size penalty.
+\item[\texttt{--without-optimization}] ~ \\
+Disable compiler optimization; yields faster compilation at the cost
+of slower execution and larger executable files.
+\item[\texttt{--with-mpi-compilers=yes}] ~ \\
+Enable MPI and the parallel layer, using MPI compilers found in the
+current shell path.
+\item[\texttt{--with-mpi-compilers=}\textmd{\emph{pathname}}] ~ \\ Enable MPI
+and the parallel layer, using MPI compilers installed at
+\emph{pathname}.
+\end{description}

@@ -1,0 +1,36 @@
+<!--
+  Experiment to test that the 'reset()' method in solvers is
+  working correctly.
+-->
+<experimental-study name="acro-reps">
+  <tags>
+    <tag>coliny</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+
+      <factor name="test">
+        <level>_data=../../scolib/etc/ampl/Sinusoidal1.mod</level>
+      </factor>
+
+      <factor name="config">
+        <level>solver=apps:apps max_iters=0 max_neval=10000 repetitions=1</level>
+        <level>solver=cobyla:cobyla max_iters=0 max_neval=10000 repetitions=1</level>
+        <level>solver=hj:hj max_iters=0 max_neval=10000 repetitions=1</level>
+      </factor>
+
+    </factors>
+    <controls>
+       <executable>./acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Repetition" type="validation">
+    <category>validation</category>
+    <options>_measurement='Repetition-Check' _value="Pass"</options>
+  </analysis>
+</experimental-study>

@@ -1,0 +1,88 @@
+\section{Downloading and Compiling PEBBL}
+
+
+The PEBBL software project is supported by the Acro optimization
+project.  Acro supports the integration of PEBBL builds with auxillary
+libraries, like UTILIB.
+
+
+\subsection{Downloading PEBBL}
+
+The Acro software library can be installed from a distribution file
+(tape, etc.) or using a checkout from the Concurrent Version System (CVS)
+repository. If you are accessing current files from the CVS repository,
+you need to use the {\bf cvs.a} and {\bf ssh.cvs} scripts, which can be
+downloaded from http://software.sandia.gov/Acro.  The Acro library can
+be checked out of the cvs repository by executing:
+\begin{verbatim}
+   cvs.a checkout acro-pebbl
+\end{verbatim}
+The use of {\bf cvs.a} requires an account on the machine software.sandia.gov,
+which is generally only available to Sandians and academic collaborators
+of Sandians.
+
+The latest version of PEBBL can also be acquired in compressed tarball
+form from 
+\begin{verbatim}
+   http://software/sandia.gov/Acro
+\end{verbatim}
+Once downloaded, compressed tarballs
+for the version of the day (VOTD), for example, 
+can be downloaded and extracted with the 
+following:
+\begin{verbatim}
+   gzip -d pebbl-VOTD.tar.gz | tar xf -
+\end{verbatim}
+
+
+\subsection{Configuring and Building}
+
+PEBBL can be configured using the standard build syntax:
+\begin{verbatim}
+   cd acro
+   ./configure
+   make
+\end{verbatim}
+This builds the library libpebbl.a in acro/lib, along with supporting
+libraries. The library headers are installed in acro/include.
+PEBBL developers using CVS need to build with the autoconf tools.  This can be
+done with the following syntax:
+\begin{verbatim}
+   cd acro
+   autoreconf
+   ./configure
+   make
+\end{verbatim}
+The acro/setup command can also be used to simplify this process:
+\begin{verbatim}
+   cd acro
+   ./setup configure make
+\end{verbatim}
+The {\bf setup} command generates the following files in the acro/test
+directory:
+\begin{verbatim}
+   config.out             The output of `autoreconf' and `configure'
+   config.xml             Summary of config.out to detect errors
+   build.out              The output of `make'
+   build.xml              Summary of build.out to detect errors
+\end{verbatim}
+
+The Acro build can be modified through the use of environment variables
+and with command line options to the {\bf configure} script.  If you set no
+environment variables and use no command line options, the {\bf configure}
+script will choose sensible values.
+\begin{verbatim}
+   configure --help
+\end{verbatim}
+This will list all the configuration options, and in some instances the
+default action.  Typical use might be to define where MPI is located,
+and in which directory to install the Acro libraries and header files:
+\begin{verbatim}
+   configure --with-mpi-compilers=/usr/local/mpich-1.2.4/ch_p4/bin
+          --prefix=/Net/usr/local
+\end{verbatim}
+A detailed discussion of these configuration options is given in the file
+\begin{verbatim}
+   acro/INSTALL
+\end{verbatim}
+and on the Acro web pages (see http://software/sandia.gov/Acro).

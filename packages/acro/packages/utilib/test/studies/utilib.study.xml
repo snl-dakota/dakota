@@ -1,0 +1,58 @@
+<experimental-study name="utilib">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>utilib</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+      <factor name="test">
+        <level name="array">./tests array</level>
+        <level name="bitarray">./tests bitarray</level>
+        <level name="commonio">./tests commonio</level>
+        <level name="commonio_debug">./tests commonio_debug</level>
+        <level name="ereal">./tests ereal</level>
+        <level name="exception_test">./tests exceptions</level>
+        <level name="factory">./tests factory</level>
+        <level name="heap">./tests heap</level>
+        <level name="iotest">./tests iotest</level>
+        <level name="iotest_debug">./tests iotest_debug</level>
+        <level name="listtest">./tests listtest</level>
+        <level name="lphash">./tests lphash</level>
+        <level name="malloc">./tests malloc</level>
+        <level name="math">./tests math</level>
+        <level name="multibitarray">./tests multibitarray</level>
+        <level name="olist">./tests olist</level>
+        <level name="pvector">./tests pvector</level>
+        <level name="qlist">./tests qlist</level>
+        <level name="smartptr">./tests smartptr</level>
+        <level name="sort_test">./tests sort</level>
+        <level name="splay">./tests splay</level>
+        <level name="stltest">./tests stl</level>
+        <level name="stringtest">./tests string</level>
+        <level name="tuple">./tests tuple</level>
+        <level name="typeManager">./tests typeManager</level>
+        <level name="vectest">./tests vector</level>
+        <level name="sregistry">./tests sregistry</level>
+	<!-- 
+        <level name="any">./tests any</level>
+        <level name="any-deprecated">./tests any-deprecated</level>
+        <level name="serialize">./tests serialize</level>
+        <level name="sserialstream">./tests sserialstream</level>
+        <level name="fserialstream">./tests fserialstream</level>
+        <level name="fserialstream-ref">./tests fserialstream-ref</level>
+        <level name="fxmlserialstream">./tests fxmlserialstream</level>
+	-->
+      </factor>
+    </factors>
+    <controls>
+       <executable>./utilib_diff_test</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="UtilibRegression" type="validation">
+    <category>validation</category>
+    <options>_measurement='diffs' _value='False'</options>
+  </analysis>
+</experimental-study>

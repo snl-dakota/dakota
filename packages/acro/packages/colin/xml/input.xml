@@ -1,0 +1,13 @@
+<ColinInput>
+  <SystemCallProblem>
+     <Parameters real="3"/>
+     <Driver name="foo"/>
+  </SystemCallProblem>
+
+  <Solver type="ps">
+     <Problem/>
+     <Options>
+       <Option name="debug">1</Option>
+     </Options>
+  </Solver>
+</ColinInput>

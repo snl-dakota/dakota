@@ -1,0 +1,107 @@
+#!/usr/bin/perl
+#
+#  This perl script copies files after first checking whether an
+#  update is necessary.  It would have been simpler to use the Unix 'test'
+#  commend for this, specifically the '-nt' test.  However, this is not
+#  very portable.
+#
+#  William E. Hart
+#  April, 2006
+#
+################################################################
+
+use File::stat;
+use POSIX qw(S_ISREG S_ISDIR);
+use File::Basename;
+use File::Copy;
+
+###
+### MAIN ROUTINE
+###
+#
+# Check command line arguments
+#
+sub print_help {
+   die "cp_u [--v] [--help] <file1> [<file2> ... <filen>] <dir>\n";
+}
+
+
+#
+# Process command line options
+#
+if ((! @ARGV) || (@ARGV && (($ARGV[0] eq "-h") || ($ARGV[0] eq "--help")))) {
+   print_help();
+}
+#
+# Process destination value
+#
+$dest = pop;
+if (-e $dest) {
+   $d_stat = stat($dest);
+   $dest_dir = S_ISDIR($d_stat->mode);
+} else {
+  $dest_dir = 0;
+}
+if (not $dest_dir) {
+   die "multiple source files, but last argument ($dest) is not a directory" if @ARGV > 1;
+   my $source = shift;
+   my $s_stat = stat($source) or die "cannot stat $source: $!\n";
+   die "$source: not a regular file\n" if not S_ISREG($s_stat->mode);
+   if (-e $dest) {
+      die "$dest: not a regular file\n" if not S_ISREG($d_stat->mode);
+      maybe_copy_file($source, $s_stat, $dest, $d_stat);
+   } else {
+      mycopy($source,$dest,$s_stat);
+   }
+   exit;
+   }
+
+my $ok = 1;
+$SIG{__WARN__} = sub { $ok = 0; warn $_[0] };
+foreach my $source (@ARGV) {
+  my $s_stat;
+  unless ($s_stat = stat($source)) {
+    warn "cannot stat $source: $!, skipping\n";
+    next;
+    }
+  unless (S_ISREG($s_stat->mode)) {
+    warn "$source is not a regular file, skipping\n";
+    next;
+    }
+  my $destf = "$dest/" . basename($source);
+  if (-e $destf) {
+     unless ($d_stat = stat($destf)) {
+       warn "cannot stat $destf: $!, skipping\n";
+       next;
+       }
+     unless (S_ISREG($d_stat->mode)) {
+       warn "$destf is not a regular file, skipping\n";
+       next;
+       }
+     eval {
+       maybe_copy_file($source, $s_stat, $destf, $d_stat);
+     };
+  } else {
+    mycopy($source,$destf,$s_stat);
+  }
+  warn $@ if $@;
+  }
+exit(not $ok);
+
+#
+# Copy file a file if it is newer than the destination file
+#
+sub maybe_copy_file( $$$$ ) {
+  my ($source, $s_stat, $dest, $d_stat) = @_;
+  if ($d_stat->mtime < $s_stat->mtime) {
+     #printf "Copying %s (%s) to %s (%s)\n", $source, $s_stat->mtime,$dest,$d_stat->mtime;
+     mycopy($source,$dest,$s_stat);   
+  }
+}
+
+sub mycopy( $$$$ ) {
+  my ($source, $dest, $s_stat) = @_;
+  print "Copying $source to $dest\n";
+  copy($source,$dest);
+  chmod $s_stat->mode, $dest;
+}

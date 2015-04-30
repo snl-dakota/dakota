@@ -1,0 +1,95 @@
+1	NLP0 problem being passed to a MINLP solver
+
+2       MINLP0 problem being passed to a MINLP solver.
+        Minimize just continuous variables.
+
+2a      MINLP0 problem being passed to a MINLP solver.
+        Minimize just continuous variables.
+        Specification of bounds with domain labels.
+
+3       MINLP0 problem being passed to a MINLP solver.
+        Minimize just integer variables.
+
+3a      MINLP0 problem being passed to a MINLP solver.
+        Minimize just integer variables.
+        Specification of bounds with domain labels.
+
+4       MINLP0 problem being passed to a MINLP solver.
+        Minimize just binary variables.
+
+5       MINLP0 problem being passed to a MINLP solver.
+        Minimize all variables.
+
+6       MINLP0 problem being passed to a UMINLP0 solver.
+        Minimize just continuous variables.
+        Using nonlinear constraints, which are reformulated to form an
+                unconstrained application.
+        Using an implicit reformulation, which uses a constraint
+                        violation penalty of 1.0.
+
+6a      MINLP0 problem being passed to a UMINLP0 solver.
+        Minimize just continuous variables.
+        Using nonlinear constraints, which are reformulated to form an
+                unconstrained application.
+
+6b      MINLP0 problem being passed to a UMINLP0 solver.
+        Minimize just continuous variables.
+        Using linear constraints, which are reformulated to form an
+                unconstrained application.
+
+7       MO_UNLP0 problem being passed to a MO_UNLP0 solver.
+        Minimize just continuous variables.
+
+7a      MO_UNLP0 problem being passed to a MO_UNLP0 solver.
+        Minimize just continuous variables.
+	Archive points to a file.
+
+8       S_NLP0 problem being passed to a MINLP solver.
+        Explicit reformulation to NLP0
+	Using 1 sample
+
+8a      S_NLP0 problem being passed to a MINLP solver.
+        Explicit reformulation to NLP0
+	Using 10 samples
+
+9	MO_NLP0 being passed to a MO_UNLP0 solver.
+	Using implicit casting to ignore unrealized constraints.
+
+9a	MO_NLP0 being passed to a MO_UNLP0 solver.
+	Using implicit casting to ignore contraints.
+
+9b	MO_NLP0 being passed to a MO_UNLP0 solver.
+	Using explicit casting to ignore contraints.
+
+9c	MO_MINLP0 being passed to a MO_UNLP0 solver.
+	Using implicit casting to ignore unrealized constraints.
+        Fixing integer variables
+
+9d	MO_MINLP0 being passed to a MO_UNLP0 solver.
+	Using implicit casting to ignore contraints.
+        Fixing integer variables
+
+9e	MO_MINLP0 being passed to a MO_UNLP0 solver.
+	Using explicit casting to ignore contraints.
+        Fixing integer variables
+
+10	MO_NLP0 being passed to a MINLP0 solver.
+	Using implicit casting to create a weighted-sum single objective.
+
+10a	MO_NLP0 being passed to a MINLP0 solver.
+	Using explicit casting to create a weighted-sum single objective.
+
+10b	MO_NLP0 being passed to a MINLP0 solver.
+	Using explicit casting to create a weighted-sum single objective.
+	Using the (1,1) weight vector
+
+10c	MO_NLP0 being passed to a MINLP0 solver.
+	Using explicit casting to create a weighted-sum single objective.
+	Using the (0,1) weight vector, which illustrates how to pick one
+		objective from a multi-objective solver.
+
+11	NLP0 problem being passed to a MINLP solver
+	Explicit specification that system calls are used to perform evals
+
+11a	NLP0 problem being passed to a MINLP solver
+	Explicit specification that forks are used to perform evals

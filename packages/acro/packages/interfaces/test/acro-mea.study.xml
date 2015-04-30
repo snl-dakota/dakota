@@ -1,0 +1,38 @@
+<experimental-study name="acro-mea">
+  <tags>
+    <tag>TODO</tag>
+  </tags>
+
+  <experiment name="ea-ps">
+    <factors>
+      <factor name="test" filename="../../scolib/test/ea_ps_problems"/>
+  
+      <factor name="config">
+        <level>solver=scolib:ea-scolib:ps max_neval=30000 output_level=verbose population_size=10 debug=10000 selection_type=linear_rank replacement_type=random keep_num=0</level>
+      </factor>
+  
+      <factor name="ps_config">
+        <level>constraint_penalty=100 max_func_evaluations_this_trial=6000 step_tolerance=_step_tolerance</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable>./acro_test --ampl</executable>
+       <replication>1
+          <seeds>100</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="ea-ps-ConstraintViolation" type="validation">
+    <data experiment="ea-ps"/>
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=1e-5</options>
+  </analysis>
+
+  <analysis name="ea-ps-FinalValue" type="validation">
+    <data experiment="ea-ps"/>
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+</experimental-study>

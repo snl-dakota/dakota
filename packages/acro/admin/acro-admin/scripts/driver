@@ -1,0 +1,162 @@
+#! /usr/bin/env python
+
+import os
+import sys
+import re
+import argparse
+import pyutilib.subprocess
+from gettext import gettext as _
+import datetime
+import ConfigParser
+
+class MyArgParser(argparse.ArgumentParser):
+
+    _parsing_known=[]
+    _extras=[]
+
+    def __init__(self, *arg, **kwd):
+        argparse.ArgumentParser.__init__(self, *arg, **kwd)
+
+    def parse_args(self, args=None, namespace=None):
+        args, argv = self.parse_known_args(args, namespace)
+        #print "HERE",args,argv,MyArgParser._parsing_known
+        if argv and len(MyArgParser._parsing_known) == 0:
+            msg = _('unrecognized arguments: %s')
+            self.error(msg % ' '.join(argv))
+        MyArgParser._extras += argv
+        return args
+
+    def parse_known_args(self, args=None, namespace=None):
+        #print "X",MyArgParser._parsing_known
+        if len(MyArgParser._parsing_known) == 0:
+            MyArgParser._extras=[]
+        MyArgParser._parsing_known.append(True)
+        args, argv = argparse.ArgumentParser.parse_known_args(self, args, namespace)
+        MyArgParser._parsing_known.pop()
+        return args, argv+MyArgParser._extras
+
+#
+# Setting up parser
+#
+parser=MyArgParser(description='todo')
+subparsers = parser.add_subparsers(dest='cmd')
+parent=MyArgParser()
+parent.add_argument('-v','--verbose', action='store_true', default=False, help='todo')
+#
+configure = subparsers.add_parser('configure', help='todo', parents=[parent], conflict_handler='resolve')
+configure.add_argument('--option',action='append', default=[], help='todo')
+#
+reconfigure = subparsers.add_parser('reconfigure', help='todo', parents=[parent], conflict_handler='resolve')
+#
+build = subparsers.add_parser('build', help='todo', parents=[parent], conflict_handler='resolve')
+build.add_argument('--check',action='store_true', default=False, help='todo')
+build.add_argument('--clean',action='store_true', default=False, help='todo')
+
+
+def get_section(config, hostname):
+    if config.has_section(hostname):
+        return hostname
+    for section in config.sections():
+        if section.startswith(hostname) and section[len(hostname)] == '.':
+            return section
+        if hostname.startswith(section) and hostname[len(section)] == '.':
+            return section
+    for section in config.sections():
+        if re.match(section.replace('.','\.').replace('*','.*'), hostname):
+            return section
+    return None
+
+def run_configure(options, args):
+    if not options.verbose:
+        print "  Configuring ...",
+    sys.stdout.flush()
+    OUTPUT=open('test/config.out','w')
+    cmd = 'autoreconf -i -f -v'
+    print >>OUTPUT, ''
+    print >>OUTPUT, '--- Starting autoconf at %s ---' % datetime.date.today().ctime()
+    print >>OUTPUT, 'Running command... %s' % cmd
+    print >>OUTPUT, ''
+    OUTPUT.flush()
+    pyutilib.subprocess.run('autoreconf -i -f -v', ostream=OUTPUT, tee=options.verbose)
+    cmd = './configure '+args
+    print >>OUTPUT, ''
+    print >>OUTPUT, '--- Starting configure at %s ---' % datetime.date.today().ctime()
+    print >>OUTPUT, 'Running command... %s' % cmd
+    print >>OUTPUT, ''
+    OUTPUT.flush()
+    pyutilib.subprocess.run(cmd, ostream=OUTPUT, tee=options.verbose)
+    OUTPUT.close()
+    OUTPUT=open('admin/config_args.txt','w')
+    print >>OUTPUT, args
+    OUTPUT.close()
+    if not options.verbose:
+        print "done."
+    sys.stdout.flush()
+
+
+(options, unknown) = parser.parse_known_args()
+
+if options.cmd == 'configure':
+    config = ConfigParser.ConfigParser()
+    config.read('config/siteconfig.ini')
+    args = ' '.join(unknown)
+    hostname = os.uname()[1]
+    section = get_section(config, hostname)
+    for opt in options.option:
+        print "  Using %s options for host %s" % (opt, hostname)
+        if section is not None and config.has_option(section,opt):
+            _custom_args = config.get(section,opt)
+            args = args + ' ' + _custom_args
+            print "    custom: \"%s\"" % _custom_args
+        elif config.has_option('_default_',opt):
+            _custom_args = config.get('_default_',opt)
+            args = args + ' ' + _custom_args
+            print "    default: \"%s\"" % _custom_args
+        else:
+            print "    No %s options available" % (opt,)
+    #
+    run_configure(options, args)
+
+elif options.cmd == 'reconfigure':
+    if len(unknown) > 0:
+        print "ERROR: no unknown arguments are allowed"
+        sys.exit(1)
+    if not os.path.exists('admin/config_args.txt'):
+        print "ERROR: config cache is not initialized!"
+        sys.exit(1)
+    INPUT=open('admin/config_args.txt','r')
+    args = INPUT.readline()
+    INPUT.close()
+    args.strip()
+    run_configure(options, args)
+
+elif options.cmd == 'build':
+    if not options.verbose:
+        print "  Building ...",
+    sys.stdout.flush()
+    if len(unknown) > 0:
+        print "ERROR: no unknown arguments are allowed"
+        sys.exit(1)
+    OUTPUT=open('test/make.out','w')
+    if options.clean:
+        print >>OUTPUT, ''
+        print >>OUTPUT, '--- Starting clean at %s ---' % datetime.date.today().ctime()
+        print >>OUTPUT, 'Running command... %s' % 'make clean'
+        print >>OUTPUT, ''
+        OUTPUT.flush()
+        pyutilib.subprocess.run('make clean', ostream=OUTPUT, tee=options.verbose)
+    if options.check:
+        cmd='make check'
+    else:
+        cmd='make'
+    print >>OUTPUT, ''
+    print >>OUTPUT, '--- Starting build at %s ---' % datetime.date.today().ctime()
+    print >>OUTPUT, 'Running command... %s' % cmd
+    print >>OUTPUT, ''
+    OUTPUT.flush()
+    pyutilib.subprocess.run(cmd, ostream=OUTPUT, tee=options.verbose)
+    OUTPUT.close()
+    if not options.verbose:
+        print "done."
+    sys.stdout.flush()
+

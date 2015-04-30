@@ -1,0 +1,355 @@
+#! /bin/bash
+#
+#  acro_release x.y.z {optional cvs module name}
+#
+#  example: acro_release 1.0.1
+#
+#  creates: acro_1_0_1.tar.gz plus any project tarfiles that have 
+#           changed since the last release
+#
+#  example: acro_release 1.0.1 utilib
+#
+#  creates: only the release 1.0.1 file for the utilib project
+#
+#  This script maintains an html file in the release directory that
+#  lists all external projects released and includes links 
+#  to the tar files.  
+#
+#  The new html file is written to a temporary file.  You must copy 
+#  it to the permanent file if it's correct.  (This is because
+#  the script may be interuppted, or may be re-run, any combination
+#  of situations so we don't know if you want every line in the
+#  new html file.)
+#
+
+#################################################
+# Set to 1 if you want to skip cvs checkout/build
+#
+#justTesting=1
+justTesting=0
+#
+#################################################
+
+#
+# releaseDir has to be an absolute pathname
+#
+export releaseDir=/var/www/html/Acro/releases
+export htmlDir=Acro/releases
+export cvsloc="-d /space/CVS-Acro"
+
+if [ $# -lt 1 ] ; then
+  echo "We need a version number, like 1.0.0"
+  exit
+fi
+
+if [ $# = 2 ] ; then
+  doModule=$2
+else
+  doModule=all
+fi
+
+version=$1
+versionname=${version//./_}
+tagprefix=release_$versionname
+
+export tempdir=temp_$versionname
+export tardir=$releaseDir/$versionname
+export downloaddir=$htmlDir/$versionname
+
+export fnamenew=$tardir/releaseFrame.html
+export dashedDay=`date +%Y-%m-%d`
+
+cleanUP()
+{
+  cd $releaseDir
+  if [ -d $tempdir ] ; then
+    rm -rf $tempdir
+  fi
+  exit
+}
+catchsig()
+{
+  echo "Script interrupted, cleaning up"
+  if [ -f $fnamenew ] ; then
+    echo "Externally released tar files created so far are listed in"
+    echo "$fnamenew"
+    html_end
+  fi
+  cleanUP
+}
+
+trap catchsig INT TERM
+
+tarfile_name()
+{
+  fnm=$1
+
+  if [ ! -f $fnm ] ; then
+    echo "Can't find $fnm"
+    export tarname=0
+    return
+  fi
+
+  line=$(grep AC_INIT $fnm)
+
+  if [ "${line:-0}" = "0" ] ; then
+    line=$(grep ac_init $fnm)
+  fi
+
+  if [ "${line:-0}" = "0" ] ; then
+    echo "Can't find ac_init in $fnm"
+    export tarname=0
+    return
+  fi
+
+  line=${line//[/}
+  line=${line//]/}
+  line=${line// /}
+
+  pkgname=${line#*(}
+  pkgname=${pkgname%%,*}
+
+  pkgname=`echo $pkgname | tr [:upper:] [:lower:]`
+
+  ver=${line%,*}
+  ver=${ver#*,}
+
+  export tarname=$pkgname-$ver.tar.gz
+}
+
+html_start()
+{
+if [ -f $fnamenew ] ; then
+  timestamp=$(date +%Y%m%d%H%M%S)
+  mv $fnamenew ${fnamenew%.html}.saved.$timestamp.html
+  echo "Saving your existing $fnamenew"
+  echo "                  as ${fnamenew%.html}.saved.$timestamp.html"
+  
+fi
+echo "<HTML>" > $fnamenew
+echo "<table border=2 cellspacing=5 cellpadding=2>" >> $fnamenew
+echo "" >> $fnamenew
+echo "<tr align=center>" >> $fnamenew
+echo "<th colspan=2>Project</th>" >> $fnamenew
+echo "          <th>Release Date</th>" >> $fnamenew
+echo "          <th>Project version</th>" >> $fnamenew
+echo "          <th>File size </th>" >> $fnamenew
+echo "</tr>" >> $fnamenew
+}
+
+html_acro()
+{
+echo "<tr align=center>" >> $fnamenew
+echo "          <td >Acro</td>   " >> $fnamenew
+echo "          <td>--</td>" >> $fnamenew
+echo "          <td>$dashedDay</td>" >> $fnamenew
+echo "          <td><a href="http://software.sandia.gov/$1">$version</a></td>" >> $fnamenew
+echo "          <td align=right>$2</td>" >> $fnamenew
+echo "</tr>" >> $fnamenew
+}
+
+html_project()
+{
+echo "<tr align=center>" >> $fnamenew
+echo "          <td></td>" >> $fnamenew
+echo "          <td>$1</td>" >> $fnamenew
+echo "          <td>$dashedDay</td>" >> $fnamenew
+echo "          <td><a href="http://software.sandia.gov/$2">$3</a></td>" >> $fnamenew
+echo "          <td align=right>$4</td>" >> $fnamenew
+echo "</tr>" >> $fnamenew
+}
+
+html_end()
+{
+echo "</table>" >> $fnamenew
+echo "</HTML>" >> $fnamenew
+}
+
+makeproject ()
+{
+  module=$1
+  name=$2 
+  tag=$3
+  ver=${4//./_}
+  type=$5
+  branch=$6
+
+  if [ "$branch" = "no" ] ; then
+    usetag=$tag
+  else
+    usetag=$branch
+  fi
+
+  savedir=$tardir/$type
+  getdir=$downloaddir/$type
+
+  if [ ! -d $savedir ] ; then
+    mkdir -p $savedir
+  fi
+
+  if [ "${module:0:4}" = "acro" ] ; then
+    dirname=acro
+  elif [ "$module" = "appspack" ] ; then
+    dirname=appspack
+  elif [ "$module" = "utilib" ] ; then
+    dirname=utilib
+  elif [ "$module" = "optpp" ] ; then
+    dirname=optpp
+  else
+    echo "Unrecognized project name $module"
+    return
+  fi
+
+  distfile=${module//-/_}_$ver.tar.gz
+
+  echo
+
+  if [ -f $savedir/$distfile ] ; then
+    echo "$savedir/$distfile already exists, skipping $name"
+    return
+  fi
+
+  echo "checkout $module ($usetag)"
+
+  if [ $justTesting = 1 ] ; then
+
+    sleep 2
+    tarname=$name_$ver.tar.gz
+    touch $tarname
+
+  else
+
+    cvs $cvsloc -Q checkout -r $usetag $module
+  
+    if test $? = 1 ; then
+      echo "cvs $cvsloc -Q checkout -r $usetag $module"
+      echo "FAILED"
+      return
+    fi
+
+    if [ ! -d acro/packages/utilib/utilib ] ; then
+      mkdir acro/packages/utilib/utilib
+    fi
+
+    tarfile_name $dirname/configure.ac
+  
+    if [ $tarname = 0 ] ; then
+      rm -rf $dirname
+      return
+    fi
+  
+    echo "configure $module"
+  
+    cd $dirname
+    if [ ! -x configure ] ; then
+      (autoreconf --install 2>&1 ) > /dev/null
+    fi
+  
+    if [ -x configure ] ; then
+      (./configure 2>&1 ) > /dev/null
+  
+      if [ -f Makefile ] ; then
+        echo "make $module distribution"
+        (make dist 2>&1) > /dev/null
+      fi
+    else
+      echo "autoreconf FAILED"
+      return
+    fi
+
+    if [ -f $tarname ] ; then
+      mv $tarname ..
+    fi
+    cd ..
+    rm -rf $dirname
+  fi
+
+  if [ -f $tarname ] ; then
+    fsize=$(ls -sh --block-size=1 $tarname)
+    fsize=${fsize%% *}
+
+    mv $tarname $savedir/$distfile
+    echo "created $savedir/$distfile"
+
+    if [ "$module" = "acro" ] ; then
+      html_acro $getdir/$distfile $fsize
+    elif [ $type = external ] ; then
+      html_project $name $getdir/$distfile $4 $fsize
+    fi
+  else
+    echo "make dist failed for $module, $tag"
+  fi
+
+  echo
+}
+
+cd $releaseDir
+
+if [ -d $tempdir ] ; then
+   rm -rf $tempdir
+fi
+mkdir $tempdir
+
+if [ ! -d $tardir ] ; then
+   mkdir $tardir
+fi
+
+cd $tempdir
+
+echo "Checking out an acro module to get project version information"
+
+cvs $cvsloc -Q checkout acro-utilib
+
+if [ ! -d acro ] ; then
+  echo "Acro checkout failed"
+  cleanUP
+fi
+
+cp acro/qa/docs/projectVersions.txt .
+
+rm -rf acro
+
+cvstag=none
+
+while read project pname pversion tag releaseType branch ; do
+  if [ "${tag:-0}" != "0" ] && [ ${tag##$tagprefix} != $tag ] ; then
+    cvstag=$tag
+    break
+  fi
+done < projectVersions.txt
+
+if [ "$cvstag" = "none" ] ; then
+  echo "No project information for $version found"
+  cleanUP
+fi
+
+html_start
+
+#
+# Create the acro release tar file
+#
+
+if [ $doModule = all ] || [ $doModule = acro ] ; then
+  makeproject acro Acro $cvstag $version external no
+fi
+
+#
+# Create the individual project tar files
+#
+
+while read project pname pversion tag releaseType branch ; do
+  if [ "${project:-0}" != "0" ] && [ "$project" != "#" ] ; then
+    if [ "${tag:-0}" != "0" ] && [ $tag = $cvstag ] ; then
+      if [ $doModule = all ] || [ $doModule = $project ] ; then
+        makeproject $project $pname $cvstag $pversion $releaseType $branch
+      fi
+    fi
+  fi
+done < projectVersions.txt
+
+html_end
+
+echo "DONE, new external release list has been written to"
+echo "      $fnamenew."
+
+cleanUP

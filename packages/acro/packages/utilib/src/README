@@ -1,0 +1,9 @@
+//
+// UTILIB source directory
+//
+utilib		Headers and includes
+
+libs		Sources use for library creation
+
+exec		Sources used for executables
+

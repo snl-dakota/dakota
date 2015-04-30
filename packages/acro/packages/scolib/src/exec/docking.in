@@ -1,0 +1,11 @@
+#help true
+output_level none
+debug 0
+#debug 1000000
+#output_level verbose
+accuracy 1e-5
+step_tolerance 1e-32
+expansion_factor 1.0
+step_selection fixed
+batch_eval all
+max_neval 25000

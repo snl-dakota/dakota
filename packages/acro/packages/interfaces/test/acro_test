@@ -1,0 +1,189 @@
+#! /usr/bin/env python
+##
+## BUG: this script cannot correctly handle AMPL option values that contain a white space.
+##
+
+import signal
+import commands
+import sys
+import re
+import os
+import random
+import math
+import types
+pathname = os.path.dirname(sys.argv[0])
+fullpath = os.path.abspath(pathname)
+os.sys.path = os.sys.path + [fullpath + "/../../fast"]
+os.sys.path = os.sys.path + [fullpath + "/../../pyutilib"]
+import pyutilib.subprocess
+from fast import exact
+
+#
+# Process the output log
+#
+def process_log(OUTPUT,logfile):
+        status = 1
+        leak_flag=False
+        valgrind_leaks="-1"
+        valgrind_errors="-1"
+        if os.path.exists(logfile):
+           INPUT = open(logfile,"r")
+           for line in INPUT:
+             #print "LINE",line
+             words = re.split('[ \t]+',line.strip())
+             if len(words) < 2:
+                continue
+
+             if len(words) == 3 and words[0:2] == ["Final","Value:"]:
+                status = 0
+                print >>OUTPUT, "Value numeric/double " + words[2]
+
+             elif len(words) >= 3 and words[0:2] == ["Final","Point:"]:
+                print >>OUTPUT, "Final-Point text/string \""," ".join(words[2:]),"\""
+
+             elif len(words) == 5 and words[0:3] == ["Number","of","Evaluations"]:
+                print >>OUTPUT, "Num-Evaluations numeric/integer " + words[4]
+
+             elif len(words) == 3 and words[0:2] == ["Constraint","Violation:"]:
+                print >>OUTPUT, "ConstraintViolation numeric/double " + words[2]
+
+             elif words[0] == "Termination:":
+                print >>OUTPUT, "TerminationStatus text/string \"" + words[1] + "\""
+
+             elif words[0] == "ModelStatus:":
+                print >>OUTPUT, "ModelStatus text/string \"" + words[1] + "\""
+
+             elif words[0] == "SolverStatus:":
+                print >>OUTPUT, "SolverStatus text/string \"" + words[1] + "\""
+
+             elif words[0] == "Repetition-Check:":
+                print >>OUTPUT, "Repetition-Check text/string \"" + words[1] + "\""
+
+             elif len(words) == 3 and words[0:2] == ["Solver", "Type:"]:
+                print >>OUTPUT, "Coliny-Solver text/string \"" + words[2] + "\""
+
+             elif len(words) == 4 and words[0:2] == ["CPU","RunTime"]:
+                print >>OUTPUT, "\"CPU RunTime\" numeric/double " + words[3]
+
+             elif len(words) == 4 and words[0:2] == ["WallClock","RunTime"]:
+                print >>OUTPUT, "\"WallClock RunTime\" numeric/double " + words[3]
+
+             elif words[0] == "Seed:":
+                print >>OUTPUT, "Seed numeric/integer",eval("int(" + words[1] + ")")
+
+             #
+             # When running under AMPL, the first set of valgrind statistics is the
+             # one's that we want
+             #
+             elif words[1] == "ERROR" and words[2] == "SUMMARY:" and valgrind_errors == "-1":
+                valgrind_errors = words[3]
+             elif leak_flag==True and words[1] == "definitely" and valgrind_leaks == "-1":
+                valgrind_leaks = words[3]
+                leak_flag=False
+
+             elif words[1] == "LEAK" and words[2] == "SUMMARY:":
+                leak_flag=True
+
+        #
+        # Remove commas from valgrind #'s
+        #
+        p = re.compile( ',' )
+        valgrind_errors = p.sub( "", valgrind_errors)
+        valgrind_leaks = p.sub( "", valgrind_leaks)
+        print >>OUTPUT, "\"Valgrind Errors\" numeric/integer " + valgrind_errors
+        print >>OUTPUT, "\"Valgrind Leaks\" numeric/integer " + valgrind_leaks
+        print >>OUTPUT, "exit_status numeric/integer " + `status`;
+
+
+
+##
+## MAIN
+##
+#
+# Setup signal handler
+#
+if sys.version_info[0:2] >= (2,4):
+   signal.signal(signal.SIGTERM, pyutilib.subprocess.signal_handler)
+   signal.signal(signal.SIGINT, pyutilib.subprocess.signal_handler)
+#
+# Process factors
+#
+(factor,option,solvers,solver_options) = exact.process_input_file(sys.argv[2],hybrid=True)
+option.set("seed", int(option["seed"]))
+#
+# Process the options and setup the command line
+#
+if "EXACT_DRIVER" in os.environ.keys():
+   driver = os.environ["EXACT_DRIVER"]
+else:
+   driver = ""
+cwd =  fullpath + "/" + os.path.dirname(sys.argv[2])
+if sys.argv[1] == "--shell":
+   #
+   # TODO - setup shell command tests
+   #
+   cmd = driver + " colinytest"
+   for key in option.keys():
+     if key[0] != '_':
+        try:
+           cmd = cmd + " --" + key + "=\"" + option[key] + "\""
+        except:
+           cmd = cmd + " --" + key + "=" + `option[key]` + ""
+   cmd = cmd + " " + option["_data"]
+elif sys.argv[1] == "--ampl":
+   #
+   # Run AMPL
+   #
+   modfile = os.path.splitext(sys.argv[2])[0] + ".mod"
+   cmd = driver + " ampl " + os.path.basename(modfile)
+   OUTPUT = open(modfile,"w")
+   words = re.split('[ \t]+',option["_data"])
+   for word in words:
+     if word[0] != "/":
+        print >>OUTPUT, "include ../../" + word + ";"
+     else:
+        print >>OUTPUT, "include " + word + ";"
+   if sys.platform == "cygwin":
+      solverpath = commands.getoutput("cygpath -d " + fullpath)
+   else:
+      solverpath = fullpath
+   print >>OUTPUT, "option solver \"" + solverpath + "/colinytest\";"
+
+   print >>OUTPUT, "option coliny_options (\"",
+   if option["_exact_debug"] == 1:
+      print >>OUTPUT, "output_header=verbose",
+   print >>OUTPUT, "seed=" + `option["seed"]`,
+   for key in solver_options[solvers[0]].keys():
+     if key[0] != '_':
+        val = solver_options[solvers[0]][key]
+        try:
+           print >>OUTPUT, key + "=" + val,
+        except:
+           print >>OUTPUT, key + "=" + `val`,
+   print >>OUTPUT, " \");"
+
+   if len(solvers) > 1:
+      for i in range(1,len(solvers)):
+        print >>OUTPUT, "option " + solvers[i] + "_options (\"",
+        for key in solver_options[solvers[i]].keys():
+          if key[0] != '_':
+             val = solver_options[solvers[i]][key]
+             try:
+                print >>OUTPUT, key + "=" + val,
+             except:
+                print >>OUTPUT, key + "=" + `val`,
+        print >>OUTPUT, " \");"
+        
+   print >>OUTPUT, "solve;"
+   OUTPUT.close()
+
+else:
+   raise IOError, "Unknown option " + sys.argv[1]
+print "Command Line: " + cmd
+pyutilib.subprocess.run(cmd,os.path.basename(sys.argv[4]),cwd=cwd)
+#
+# Generate a measurements file (*.out)
+#
+OUTPUT = open(sys.argv[3],"w")
+process_log(OUTPUT,sys.argv[4])
+OUTPUT.close()

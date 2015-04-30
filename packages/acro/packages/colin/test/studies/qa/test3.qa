@@ -1,0 +1,45 @@
+
+Test3 - a simple validation of async evaluations
+Sync Value: -100
+Async ID: (0-1:1-0:1)
+AsyncSync Value: -101
+Sync Value: -102
+Async ID: (0-1:2-0:2)
+AsyncSync Value: -103
+Sync Value: -104
+Async ID: (0-1:3-0:3)
+AsyncSync Value: -105
+Sync Value: -106
+Async ID: (0-1:4-0:4)
+AsyncSync Value: -107
+Sync Value: -108
+Async ID: (0-1:5-0:5)
+AsyncSync Value: -109
+Sync Value: -110
+Async ID: (0-1:6-0:6)
+AsyncSync Value: -111
+Sync Value: -112
+Async ID: (0-1:7-0:7)
+AsyncSync Value: -113
+Sync Value: -114
+Async ID: (0-1:8-0:8)
+AsyncSync Value: -115
+Sync Value: -116
+Async ID: (0-1:9-0:9)
+AsyncSync Value: -117
+Sync Value: -118
+Async ID: (0-1:10-0:10)
+AsyncSync Value: -119
+Sync Value: 10 : -120 -121 -122 -123 -124 -125 -126 -127 -128 -129
+AsyncSync Value: 10 : -130 -131 -132 -133 -134 -135 -136 -137 -138 -139
+queued: (0-1:12-0:21)
+queued: (0-1:12-0:22)
+queued: (0-1:12-0:23)
+queued: (0-1:12-0:24)
+queued: (0-1:12-0:25)
+return: (0-1:12-0:21): -140
+return: (0-1:12-0:22): -141
+return: (0-1:12-0:23): -142
+return: (0-1:12-0:24): -143
+return: (0-1:12-0:25): -144
+(Test done)

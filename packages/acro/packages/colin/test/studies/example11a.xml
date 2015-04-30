@@ -1,0 +1,26 @@
+<!--
+	NLP0 problem being passed to a MINLP solver
+  -->
+
+<ColinInput application="AnalysisCode">
+  <Problem type="NLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn1</Command>
+	<Method type="fork"/>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <InitialPoint>
+       r(3 : 10.0 10.0 10.0)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

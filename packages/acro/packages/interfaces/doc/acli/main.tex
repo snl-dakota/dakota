@@ -1,0 +1,54 @@
+\documentclass{article}
+
+\usepackage{url}
+\usepackage{fullpage}
+\usepackage{listings}
+\usepackage[usenames]{color}
+
+\begin{document}
+\definecolor{light-gray}{gray}{0.9}
+\lstset{backgroundcolor=\color{light-gray}}
+\lstset{aboveskip=1em,belowskip=1em}
+
+\title{Using the Acro Optimization Command Line Interface\\
+DRAFT}
+
+\author{
+William E. Hart \and John Siirola}
+
+\date{\today}
+
+\maketitle
+
+\begin{abstract}
+This document describes the Acro command line interface.  Acro's command line interface uses the COLIN optimization interface library, which provides a mechanism for defining and solving optimization problems with a general XML syntax. Further, COLIN provides a convenient mechanism for integrating new solvers.  The Acro optimization command line interface leverages this capability to integrate solvers from a variety of optimization libraries, including APPSPACK, Coliny and MOMHLib++.
+\if
+TODO - Update when new solvers are added.
+\fi
+\end{abstract}
+
+\pagestyle{plain}
+\pagenumbering{arabic}
+
+\input{intro}
+\input{ampl}
+\input{external}
+
+%\input{example}
+%\input{features}
+%\input{casestudies}
+%\input{flexibility}
+\input{conclusions}
+
+\section*{Acknowledgements}
+
+\if 0
+TODO: thank Jean-Paul Watson, John Berry and Cindy Phillips for critical feedback.  Thank UNM folks for being beta testers.
+\fi
+Sandia is a multiprogram laboratory operated by Sandia Corporation, a Lockheed Martin Company, for the United States Department of Energy's National Nuclear Security Administration under Contract DE-AC04-94-A
+L85000.
+
+\bibliographystyle{siam}
+\bibliography{hart}
+
+\end{document}

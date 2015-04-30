@@ -1,0 +1,85 @@
+/*! 
+
+\mainpage UTILIB 3.2: A Utility Library for Portable C/C++ Software
+
+
+<center>
+William E. Hart<br>
+Discrete Mathematics and Algorithms Department<br>
+Sandia National Laboratories<br>
+P.O. Box 5800<br>
+Albuquerque, NM<br>
+http://www.cs.sandia.gov/~wehart<br>
+wehart@sandia.gov
+</center>
+
+<center>
+<table borderwidth=0>
+<tr>
+<td width=500 align=left nowrap >
+This document describes the UTILIB software library.  UTILIB includes a 
+variety of generic components for C++ software development including
+abstract data types, I/O management, sorting routines, and random number
+generators.  The UTILIB library is a core component of the Acro optimization
+framework, and it has been used separately for other projects at Sandia,
+including DAKOTA and NETV.
+</td></tr></table>
+</center>
+
+<h2> Table of Contents</h2>
+
+\htmlonly
+<table borderwidth=0> <tr> <td align=left valign=top nowrap>
+\endhtmlonly
+User's Guide<br>
+<ul>
+<li> \ref introPage "Introduction"
+<li> \ref adtPage "Abstract Data Types "
+<ul>
+<li> \ref arrayPage "Array"
+<li> \ref htPage "Hash Tables"
+<li> \ref heapPage "Heaps"
+<li> \ref setPage "Sets"
+</ul>
+<li> \ref ranlibPage "Random Numbers and Random Variables"
+<li> \ref mathPage "Mathematical Routines"
+<li> \ref parametersPage "Class Parameters"
+<li> \ref parallelPage "Parallel Computing Utilities"
+<ul>
+<li> \ref mpiPage "MPI Utilities"
+<li> \ref mpePage "MPE Utilities"
+<li> \ref packPage "Parallel Communication with Packed Buffers"
+<li> \ref commonioPage "Managing Parallel Output with a Common I/O Trace"
+</ul>
+<li> \ref sysPage "Miscellaneous Classes and Utilities"
+<ul>
+<li> \ref factoryPage "A Templated Factory Class"
+</ul>
+<li> \ref exceptionPage "Managing Exceptions"
+<li> \ref refsPage "References"
+<li> \ref acknowledgementsPage "Acknowledgements"
+</ul>
+\htmlonly
+</td> <td align=left valign=top nowrap>
+\endhtmlonly
+\htmlonly <a href="../../refman/html/index.html">Reference Guide (with tree frame)</a>\endhtmlonly <br>
+<ul>
+<li> \htmlonly <a href="../../refman/html/namespaces.html">Namespace List</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/hierarchy.html">Class Hierarchy</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/classes.html">Class List</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/annotated.html">Compound List</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/files.html">File List</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/namespacemembers.html">Namespace Members</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/functions.html">Compound Members</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/globals.html">File Members</a> \endhtmlonly
+<li> \htmlonly <a href="../../refman/html/todo.html">Documented TODO List</a> \endhtmlonly
+</ul>
+\htmlonly
+</td> </tr> </table>
+\endhtmlonly
+
+\latexonly
+\ref acknowledgements
+\endlatexonly
+
+*/

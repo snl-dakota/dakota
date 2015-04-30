@@ -1,0 +1,229 @@
+*- Rework the Master-Slave mechanism
+
+*- Add attributes to response types, so you can ask for the i-th function value...
+WEH - I don't think that this is necessary.  The reformulation mechanisms
+	allow us to extract information that we need like this.  For example,
+	we could create a single-objective reformulation that maps to the
+	i-th function value.
+
+- For shell functions, control specification of the number of evaluations.  Right now, the
+  system call can generate a number of objectives that differs from the number specified by
+  problem->numObjectives()
+
+- Resolve an issue with new_application:
+
+   new_application(f) needs to return an application type that depends on
+   the domain of the function AND the characteristics of the function...
+
+*- Resolve semantic issues with the config_*() methods.  These cannot be
+  applied if we have an AMPL application, which sets this data! 
+JDS - I have started this by making the set_* methods in the constraint
+  system protected.  Eventually, I would like to have an AMPL
+  application, instead of coercing it though the DirectFuncApplication
+  mechanism. 
+
+*- Should we have the LoadAMPL mechanism use a customized name for 
+  the environmental variables that is uses?
+WEH - I don't recall what this idea was really about.  Should we consider
+	this "done"?
+
+*- Reformulations to support...
+
+  NLP0 -> UNLP0
+    ith var is uncertain; specify RV for this value
+
+  UNLP0 -> NLP0
+    specify performance statistic (e.g. mean)
+
+  MONLP0 -> NLP0
+    specify weights 
+
+- Add tests for 'fixed' semantics
+
+- Extend AMPL interface to recognized fixed and integer variables.
+
+- Rework the semantics of the SubspaceReformulation method
+
+  Right now, this uses a down-cast like wrapper.  Although this allows
+  changes in the baseproblem to propigate (e.g. bounds), it is difficult
+  (if not impossible) to propigate changes in the 'fixed' status in the
+  base problem.  Further, if we start nesting subspace reformulations,
+  then the management of these becomes increasingly complex.
+
+  Two other issues: the data in this class is duplicated from related
+  data in the base problem, but not completely.  Also, this data is not
+  managed in a manner that would enable further reformulations.
+
+  I _think_ that the right solution is to copy the Real/Int domain info
+  into the subspace reformulation, thereby creating a logically separate
+  problem formulation.
+
+- How should we perform error checking for nonlinear constraints?
+  The application may return a vector with a different number of constraint
+  values than was configured.  But we cannot assume a particular datatype to use
+  for error checking... :(
+JDS - See note a couple pages down re option for enabling/disabling
+  enhanced error checking.  What we will do is when it is enabled, we
+  will do a "throw-away" cast to a type we know so that we can check
+  the dimension, and then throw the temporary variable away.
+
+*- It isn't clear how we can/should support the CViol evaluation mechanism in a 
+  general way.  Applications typically know how to compute constraint evaluations,
+  so we could support the cvf_info requests in a generic manner.  But ... where
+  does this belong?  For example, it's not clear how to do this 
+  in the DirectFuncApplication without specializing the compute_response()
+  method based on ProblemT.  Hmmm...
+JDS - I think this is done.  See constraints overhaul ~r5065.  All the
+  magic works through registered callbacks.  CViol is handled by the
+  individual OptApplication constraint classes.  
+ 
+- Add constraint tolerance management in the ConstraintPenaltyApplication.
+  Should we support different tolerances for equality constraints? 
+
+*- Reconsider the constraint_violation() method used by ConstraintPenaltyApplication.
+  This does unnecessary copy operations.
+
+*- Should we support linear upper/lower bound constraints like we do
+  nonlinear constraints?  Specifically, there is no
+  has_linear_lower_bound method.
+JDS - yes.  linear constraint bounds are now supported, although the
+  has_*_*_bound() methods are currently deprecated until we verify that
+  they are needed.
+
+*- Consider getting rid of OptProblem.  How should contexts be managed between solvers and applications?
+  How does the API for applications change to address context mappings...?
+
+*- For the simplified constraint interface, we need to support
+  unified bounds management:
+    set/get_constraint_bounds()
+    has_constraint_lower/upper_bound()
+    consraint_lower/upper_bound_type()
+JDS - teh simplified constraint interface is gone.
+
+- Add verbose execution where each application called prints out info
+
+- Cast a solver domain to an embedded (i.e. wrapped/reformulated)
+  application domain
+
+- Think of mechanisms in XML to evaluate points (i.e. label point / set
+  of points, apply a problem o evaluate them).  This includes getting a
+  set of points from one solver and feeding them to another as initial
+  points.
+
+*- Resolve ConstraintPenaltyApplication semantics
+
+  The following error was commented out in this application:
+
+      if (GetOptProblemTrait(ProblemT, linear_constraints) ||
+            GetOptProblemTrait(ProblemT, nonlinear_constraints))
+      {
+         EXCEPTION_MNGR(std::runtime_error, "ConstraintPenaltyApplication - "
+                        "Attempting to create a constraint penalty "
+                        "application with constraints.");
+      }
+
+  This error assumes that a user would not want to see the constraint info.  However, eliminating
+  this restriction allows for the user to create an application with an augmented 
+  objective ... while still preserving constraint info.
+
+  This is currently being used in the coliny::PatternSearch ... though it isn't
+  strictly necessary.
+
+- Should we use signals to catch WM_QUIT and WM_CHAR when building with 
+  MINGW?  (See the Dakota/src/main.C example).
+
+*- Add bounds on objectives for a multi-objective apps.  These are goals.
+
+- Make initial_point a method.  Under the hood, it can refer to multipl points.
+
+- When an eval manager has synchronize() called, should the relative priority be
+	increased?  Only within a client?  Should this be controlable?
+
+- Add a flag to synchronize to clear the queue.  Bill thinks this should be the
+  default behavior.
+
+- Add seeding behavior to colin XML in/out files 
+	(default seed is 0 both ways)
+
+- Make test9c use a randomized shell
+
+*- How shall we do error checking when setting a linear constraint matrix.  This
+  should have a number of columns equal to the number of real+int+binary vars,
+  but we don't have information about these aspects of the problem.
+JDS - currently that error checking is done when
+  OptApplication_LinearConstraints::calculate_lcf() is called
+  (i.e. before calculating the lcf_info from a domain point)
+
+- Add error checking when fixing variables in a subspace application.
+
+- Add the ability to fix binary variables.
+
+*- The OptApplication_LinearConstraints needs to support (a) the evaluation
+  of constraints using the specified constraint matrix, and (b) passing
+  the evaluation request on to an underlying application if the 
+  local constraint does not exist.  It's not clear how to do this with the
+  current application structure.
+JDS - this is implemented in the constraints overhaul ~r5065
+
+- Setup the FD reformulation (to get test20c.xml working)
+
+- Setup ability to summarize all functions in a reformulation heirarchy.
+  For example, to summarize how many of each evaluation have been performed.
+
+- Should the SamplingApplication::xml_initialize method be better integrated
+  with the other XML initialization routines?  This _shouldn't_ call the
+  initialize routines for the Domain, etc, since this is a reformulation
+  initialize.
+ 
+- Extend the SamplingApplication::xml_initialize method to use the
+  response info registered in AppResponseXML(). 
+
+- Can we use the print summary mechanism for reformulations?  How does this
+  type of registration integrate with the standard OptApplication heirarchy?
+
+- print should take options indicating verbosity, or the components you
+  want printed (i.e., should wrapped applications also be printed?)
+
+- Rework solver interface.  Instead of using constraints, allow user to specify
+  ResponseValue sets, which only get treated as constraints if the user specified bounds.
+
+- Setup input/output data format with something like the following:
+
+<Points>
+  <Point>
+    <Variables> dlfkjldkjf </Variables>
+    <Response name="f1" value="1.0"/>
+    <Response name="f2" value="2.0"/>
+  </Point
+</Points>
+
+- Augment XML solver summary with solver ProblemT XML traits.
+
+- Add an option to enable enhanced error checking, especially for
+  response_info dimension checking.  Make it default to ON.
+
+- Add support for hybrid solvers in XML.
+
+- Move test21b to examples.
+
+- XML support for fixing a subset of the variables
+
+- Forked parallelization evaluation manager
+
+- Threaded parallelization evaluation manager.
+
+- Add XML hooks to control solver initialization strategy
+
+- Integration across caches: how do the points in one cache relate to points in another?  How can we visualize/analyze this?
+
+- Application result code management.  Support *at least* success,
+  general failure, convergence failure, invalid domain, etc.  Result
+  codes probably need to be managed for each response_info_type.
+
+- EXAMPLES
+  Stochastic example with multi-obj
+  Stochastic example with stochastic constraints
+  Fixing integer variables (subspace reformulation)
+  Finite Differenc reformulation
+
+

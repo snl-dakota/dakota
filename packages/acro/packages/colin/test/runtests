@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Run various tests
+#
+
+#
+# Run PyUnit unit tests
+#
+cd ..
+../../python/bin/nosetests --where=test $*
+cd test
+
+#
+# Run CxxTest unit tests
+#
+if [ -e unit/runner ]; then
+   cd unit
+   runner
+   cd ..
+fi
+
+exit
+#
+# Run EXACT tests
+#
+cd studies
+../../../../python/bin/exact -f colin.study.xml
+../../../../python/bin/exact -f example.study.xml

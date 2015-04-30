@@ -1,0 +1,22 @@
+*****************************************************************************
+Solvers defined in 'colintest'
+*****************************************************************************
+
+    colin:GradientDescent
+         A simple gradient descent local search
+    colin:RandomMOO
+         A simple random multi-objective optimizer
+    colin:SimpleMILocalSearch
+         A simple mixed-integer local search
+    colin:gd
+         An alias to colin:GradientDescent
+    colin:ls
+         An alias to colin:SimpleMILocalSearch
+    colin:rmoo
+         An alias to colin:RandomMOO
+    colin:test
+         A simple test minimizer
+    colin:test_a
+         A simple test minimizer using BasicArray<double> types
+    colin:test_g
+         A simple test minimizer using gradients

@@ -1,0 +1,71 @@
+Event Logging Capability for PICO
+=================================
+
+Jonathan Eckstein, September 24, 1998
+
+This feature allows PICO to generate event log files that can be viewed
+with viewers like upshot and jumpshot.  These viewers in turn allow the
+time sequence of events, thread activations, and messages to be visually
+inspected, an aid to debugging and development.
+
+Event logging uses the MPE extension library distributed with MPICH.  The
+MPICH people claim that MPE will work with other MPI's as well, although
+I haven't confirmed this.
+
+Event logging is compiled only if both the symbols UTILIB_VALIDATING and MPE
+are both defined.  Otherwise, the event logging macros all compile
+into no-ops.  Even if event logging is compiled, you must set the
+command line parameter "eventLog" to a non-zero value to obtain a log.
+Presently, "eventLog" can take values between 0 and 4.  0 means no log,
+and 1 through 4 produce successively more detailed logs:
+
+Level 1	  worker,incumbentCast,hub thread activations
+	  problem bounding and new incumbent signaling states
+
+Level 2	  level 1 + new incumbent messages, incumbent heuristic thread
+          activations, pruning states
+
+Level 3   level 2 + status print events, and workerAux, spReceive, and
+          spServe thread activations
+
+Level 4	  level 3 + worker->hub messages
+
+The default is to produce a text file called "event.alog" which can be
+viewed with the upshot viewer.  If the environment variable
+MPE_LOG_FORMAT is set to CLOG, then the output is a binary file called
+"event.clog" which can be viewed with jumpshot.  This mechanism is
+dictated by MPE, I'm afraid.  I have not had good luck with upshot, so
+I recommend jumpshot.  Getting jumpshot to work may require getting some
+patches from the MPICH people.
+
+You may have to do some makefile adjustments to make sure the MPE library
+gets linked in.  Check config/mp-solaris-rutgers (which also contains 
+changes to go from MPICH 1.1.0 to 1.1.1) and config/ms-rutgers to see
+one possible way to set up the compiles and links.
+
+If you want to add event logging to code for PICO derived classes:
+
+Place
+
+  IF_LOGGING_COMPILED(int myLogState;)
+
+in the header file for your class.  The name "myLogState" can be changed
+to whatever you like.
+
+Then place
+
+#ifdef EVENT_LOGGING_PRESENT
+  myLogState = logEvent::defineState("name of state","corresponding X color");
+#endif
+
+somewhere after "parallelSearch" is called, but before you log any events
+(thread constructors are a good place).
+
+Events are logged with the macro
+
+LOG_EVENT(level,what,myLogState)
+
+Here, "level" is the miminum logging level to log the event.  "what" is 
+"start" to make the start of a state, "end" for the end, and "point"
+for start and end in quick succession (for logging "point events").
+

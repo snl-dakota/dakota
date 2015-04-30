@@ -1,0 +1,12 @@
+Colin Solver Library 3.0: 
+
+TestOptSolver: iter 0 value 1.8 pt 1 : 1.8 viol 0
+TestOptSolver: iter 1 value 1.7 pt 1 : 1.7 viol 0
+TestOptSolver: iter 2 value 1.6 pt 1 : 1.6 viol 0
+TestOptSolver: iter 3 value 1.5 pt 1 : 1.5 viol 0
+TestOptSolver: iter 4 value 1.4 pt 1 : 1.4 viol 0
+TestOptSolver: iter 5 value 1.3 pt 1 : 1.3 viol 0
+TestOptSolver: iter 6 value 1.2 pt 1 : 1.2 viol 0
+TestOptSolver: iter 7 value 1.1 pt 1 : 1.1 viol 0
+Results from COLIN Solver: TestOptSolver.
+final f = 1.1

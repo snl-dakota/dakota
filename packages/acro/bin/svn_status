@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ "$1" = "-h"  -o  "$1" = "--help" ] ; then
+   echo "usage: svn_status [OPTION]"
+   echo "Succinctly summarize modified/added/deleted files managed by subversion."
+   echo "This script eliminates info on externals and unknown files."
+   exit 1
+fi
+
+svn status -q | grep -v Perform | grep -E ".+"

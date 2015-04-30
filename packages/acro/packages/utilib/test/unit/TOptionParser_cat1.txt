@@ -1,0 +1,33 @@
+
+
+ bool:
+  -B                          B option
+  -b                          b option
+  -A, --AAA                   A option
+  -a, --aaa                   a option
+
+ double:
+      --gg                    g option
+
+ float:
+      --ee                    e option
+      --ff                    f option
+
+ int:
+      --cc                    c option
+      --ddd                   d option
+
+ string:
+      --s1                    s1 option
+      --s2                    s2 option
+      --s3                    s3 option
+      --s4                    s4 option
+      --s5                    s5 option
+
+ unsigned int:
+      --ddd                   d option
+
+ uncategorized options:
+  -z                          z option
+  -h, --help                  Display usage information
+

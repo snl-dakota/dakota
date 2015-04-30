@@ -1,0 +1,141 @@
+###############################################################################
+#                                                                             #
+# PEBBL Release 1.3 Changelog                                                 #
+#                                                                             #
+###############################################################################
+
+-------------------------------------------------------------------------------
+PEBBL 1.3 (2008/12/14)
+-------------------------------------------------------------------------------
+
+- Update to PEBBL user guide.
+
+- Reworked the parallel eager handler to deal with heuristics in a consistent
+  manner.
+
+- Added the --output option to control where the final solution is written.
+
+- Reworked the stallForDebug mechanism.  Now, the user only needs to type <enter>.
+
+- Introduced the ability to enumerate all solutions better than a given 
+  absolute cutoff (.enumCutoff=xxx). The feature is similar to enumAbsTol, 
+  but isn't relative to the incumbent.
+
+- Developed a standard template driver to simplify the use of PEBBL in
+  applications.
+
+- Renamed the QSA example to Docking, since it is really tuned for a specific 
+  docking example.
+
+- Fixed numerous bugs in the last version of parallel enumeration.
+
+- Introduced a hypercube flow control scheme for messages hashing
+  subproblems to processors. I hope this will allow large-scale runs on
+  Odin, which does not deal gracefully with message overloads.
+
+- Implemented message throttling when enumCount is active. This
+  entailed splitting the repository manager thread into two separate
+  threads, and thus renaming reposThread.{h,cpp} to
+  reposThreads.{h,cpp}.
+
+- Fixed massive overcounting of hubs' local solution repository when
+  calculating cluster loads. This should fix the highly inflated
+  repository size estimates printed in parallel when enumCount was
+  not active.
+
+- Inserted a blank line to separate the repository statistics from
+  the subproblem statistics when running in serial (parallel still
+  looks OK).
+
+- Added a rootNode() method that identifies the root node from any other
+  node. Made an advanceChild() method, with the functionality of
+  operator++ (return current child, advance to next child). For
+  backward compatibility, operator++ now invokes advanceChild().
+
+- Migration of serial enumeration capabilities into the PEBBL core. To
+  implement enumeration, an application now only needs the ability to
+  branch a normally terminal subproblem if PEBBL asks it to. PEBBL
+  takes care of the rest.
+
+- SerialQSACache is deleted because applications to not have to define
+  application-specific cache objects anymore. 
+
+
+-------------------------------------------------------------------------------
+PEBBL 1.2 (2007/09/30)
+-------------------------------------------------------------------------------
+
+- Got rid of the pesky "incHeuristicExists" flag, and just call the
+  virtual function haveIncumbentHeuristic().  This gets rid of some
+  annoying initialization sequencing problems.
+
+- Added Boolean haltOnIncumbent parameter to PEBBL, which does what
+  it indicates when set to "true". Facilitates some experimential
+  analyses, and is in-line with what ILOG and DASH provide. Intend
+  to generalize to "haltOnNIncumbents".
+
+- Added some more forms of the "relGap" function (to be used, for
+  example, in PICO heuristics).
+
+- Recategorized some parameters, and merged the "Incumbent Management"
+  category into the "Incumbent" category.
+
+- Made the new relGap() function work properly during ramp-up.
+
+- Removed a possible inaccuracy in ramp-up status printouts (in which a
+  loaded current subproblem might not be counted).
+
+- Added a parameter noIncumbentMinBias that sets an alternate minimum
+  bias for the incumbent search thread to be used when no incumbent has
+  been found yet.
+
+- Added "./" to each executable tag so that tests will run in
+  environments without "." in the path.
+
+- Reworked initialization of the PEBBL parallel layer.  Moved as much code
+  as possible from the constructor and the searchFramework method to the
+  reset() method.  To support this, added a reset() method and supporting
+  code to the Scheduler class.
+
+- Reorganized initializations in serial layer so as much stuff as
+  possible happens in branching::reset(), and there is at least a prayer
+  that reset() could put an already-run problem back in a state to be
+  run again.  This required a little restructuring of how the pointer to
+  the subproblem handler is managed.
+
+- Changed "updateIncumbent" to "foundSolution" everywhere.
+
+- Created rudimentary solution class for PEBBL.  Does not contain hash
+  values etc. yet.  Converted PEBBL example applications to use this class.
+
+- Partial fix to enable the --randomSeed option to be processed correctly.
+  As it stood, the "randomSeed" member of the pebblParams class was being
+  set, but not used anywhere. I changed this to correctly reference the
+  randomSeed member in pebbl/gRandom. The next commit will complete the
+  fix.
+
+-------------------------------------------------------------------------------
+PEBBL 1.1
+-------------------------------------------------------------------------------
+
+- Resolved memory issues in BestIncumbentRepository by using a SimpleSplayTree
+  rather than a GenericSplayTree.
+
+- Rework of BestIncumbentRepository to avoid memory errors.
+
+- Added valgrind tests.
+
+- Changes in pseudorandom behavior to depend on a single random number
+  generator.
+
+- Renamed QSS example to QSA.  Revised this example to standardize the output.
+
+- Rework of tests to be compatible with new EXACT test driver. Fixes to 
+  make testing more robust.
+
+
+-------------------------------------------------------------------------------
+PEBBL 1.0
+-------------------------------------------------------------------------------
+
+- Initial release.

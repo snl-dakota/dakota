@@ -1,0 +1,32 @@
+
+------------------------
+XML Application Summary
+------------------------
+Problem Name: default
+Problem Type: NLP0
+Number of objectives: 1
+Real variables:    3
+Index        Label           Fixed Val       Lower Bound T       Upper Bound T
+    1       _none_              _none_         -Infinity N          Infinity N 
+    2       _none_              _none_         -Infinity N          Infinity N 
+    3       _none_              _none_         -Infinity N          Infinity N 
+Linear constraints:       0
+  Equality:               0
+  Inequality:             0
+Nonlinear constraints:    0
+  Equality:               0
+  Inequality:             0
+TestOptSolver: iter 0 value 29.7 pt 3 : 9.9 9.9 9.9 viol 0
+TestOptSolver: iter 1 value 29.4 pt 3 : 9.8 9.8 9.8 viol 0
+TestOptSolver: iter 2 value 29.1 pt 3 : 9.7 9.7 9.7 viol 0
+TestOptSolver: iter 3 value 28.8 pt 3 : 9.6 9.6 9.6 viol 0
+TestOptSolver: iter 0 value 28.5 pt 3 : 9.5 9.5 9.5 viol 0
+TestOptSolver: iter 1 value 28.2 pt 3 : 9.4 9.4 9.4 viol 0
+TestOptSolver: iter 2 value 27.9 pt 3 : 9.3 9.3 9.3 viol 0
+TestOptSolver: iter 3 value 27.6 pt 3 : 9.2 9.2 9.2 viol 0
+TestOptSolver: iter 4 value 27.3 pt 3 : 9.1 9.1 9.1 viol 0
+TestOptSolver: iter 5 value 27 pt 3 : 9 9 9 viol 0
+TestOptSolver: iter 6 value 26.7 pt 3 : 8.9 8.9 8.9 viol 0
+TestOptSolver: iter 7 value 26.4 pt 3 : 8.8 8.8 8.8 viol 0
+TestOptSolver: iter 8 value 26.1 pt 3 : 8.7 8.7 8.7 viol 0
+TestOptSolver: iter 9 value 25.8 pt 3 : 8.6 8.6 8.6 viol 0

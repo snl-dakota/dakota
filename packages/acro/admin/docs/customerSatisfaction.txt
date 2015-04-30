@@ -1,0 +1,55 @@
+=======================================
+Acro Customer Satisfaction Checklist
+=======================================
+
+***************************** PLAN ****************************** 
+
+1. Installation performed by:   
+   ____ Sandia      
+   ____ Customer     
+   ____ other: __________________________________________________
+
+2. Installation type:    
+   ____ Source       
+   ____ Executable
+
+3. Tools needed by customer:    
+   ____ Install and build: ______________________________________
+   ____ Third party libraries: __________________________________
+   ____ Other: __________________________________________________
+
+4. Customer Point of Contact: ___________________________________
+
+*****************************  DO  ****************************** 
+
+1. ____ Installation
+
+2. ____ Installation training
+
+3. ____ Product use training
+
+*****************************CHECK ****************************** 
+
+1. ____ Confirm successful install
+
+2. ____ Confirm successful acceptance test
+
+3. ____ One week point of contact follow up. Date completed: ______________
+
+        ____ Enter customer issues, problems, and complaints into Bugzilla    
+        ____ Enter Action Items to make customer happy into Bugzilla
+
+***************************** ACT  ****************************** 
+
+1. ____ Manager follow up:  Date completed: _____________ (within one month of delivery)
+        ____ Issues for discussion with customer:
+        ____ Ease of installation
+        ____ quality of training
+        ____ product meets needs and is actually being used
+        ____ quality of instruction manuals
+        ____ quality of support
+
+2. ____ Project leader:  Date: ________________________
+        ____ All Bugzilla customer issues and action items cleared. 
+
+3. ____ Lessons learned document checked in if applicable

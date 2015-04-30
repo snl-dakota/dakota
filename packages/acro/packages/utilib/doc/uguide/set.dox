@@ -1,0 +1,34 @@
+/*!
+ * \page setPage
+
+\section setSec A Hashed Set Class
+
+A container class that stores a set of values such that each value
+is represented uniquely.  
+For example, the following example illustrates
+the setup of a simple list:
+\verbatim
+    utilib::HashedSet<int> mylist;
+    //
+    // Initializing a list with integers 0..9
+    //
+    for (int i=0; i<10; i++)
+      mylist.insert(i);
+    //
+    // Printing the list
+    //
+    utilib::HashedSet<int>::iterator curr = mylist.begin();
+    utilib::HashedSet<int>::iterator end  = mylist.end();
+    while (curr != end) {
+      cout << *curr << " ";
+      curr++;
+      }
+\endverbatim
+This class is akin to the STL \c std::set class, though
+they have different APIs, and a hashtable is used to manage the underlying
+data structure.  Thus, the set is not stored in order, and insertions
+can be performed with O(1) effort.
+
+*/
+
+

@@ -1,0 +1,212 @@
+Test LocalCache & SerialEvaluator with nondeterministic application
+*** None ***
+  ( f )
+  [1,1] f(0.1, -) == 0.1
+  ( f )
+  [2,2] f(0.1, 0) == 0.1
+  ( f )
+  [3,3] f(0.1, 0) == 0.1
+  ( f )
+  [4,4] f(0.1, 10) == 10.1
+*** Local::Unique ***
+  ( f )
+  [1,1] f(0.1, 0) == 0.1
+  ( f )
+  [2,2] f(0.1, 0) == 0.1
+  ( f )
+  [3,3] f(0.1, 10) == 10.1
+*** Local::Exact ***
+  ( f )
+  [1,1] f(0.1, 0) == 0.1
+  [1,2] f(0.1, 0) == 0.1
+  ( f )
+  [2,3] f(0.1, 10) == 10.1
+  [2,4] f(0.1, 10) == 10.1
+  [2,5] f(0.1, -) == 0.1
+  ( f )
+  [3,6] f(1, 0) == 1
+  ( f )
+  [4,7] f(1 + std::numeric_limits<double>::epsilon(), 0) == 1
+  ( f )
+  [5,8] f(1 - std::numeric_limits<double>::epsilon(), 0) == 1
+*** Local::Epsilon ***
+  ( f )
+  [1,1] f(1, 0) == 1
+  [1,2] f(1 + std::numeric_limits<double>::epsilon(), 0) == 1
+  [1,3] f(1 - std::numeric_limits<double>::epsilon(), 0) == 1
+  ( nlcf )
+  [2,4] f(1, 0) == 1; cf = 1 : 100
+  ( f nlcf )
+  [3,5] f(1, 0) == 11; cf = 1 : 110
+  [3,6] f(1, 0) == 11; cf = 1 : 110
+*** Wrapped application ***
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  [1,1] f(0, 1) == 2.82475e+08
+  [2,2] f(0, 1) == 2.82475e+08
+  [30,61] f(0, 0) == 16807
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  ( f nlcf )
+  [3,3] f(0, 10) == 6.77269e+08
+  [60,92] f(0, 0) == 16807
+*** Seed == 0 ***
+  [60,93] f(0, 0) == 16807
+  ( f )
+  [61,94] f(0, 100) == 100
+  [61,95] f(0, 0) == 100
+  [61,96] f(0, 0) == 16807; cf = 1 : 16907
+  ( lcf )
+  [62,97] f(0, 0) == 16807; cf = 1 : 16907; lcf = 0
+*** Get AppResponses ***
+ALL:
+AppResponse Data:
+  domain: 0
+  seed:   100
+  SingleObjective Function Evaluation: 100
+  ( f )
+  ( f )
+  ( nlcf )
+  ( lcf )
+  ( f nlcf )
+ALL:
+AppResponse Data:
+  domain: -100
+  seed:   0
+  SingleObjective Function Evaluation: -100
+AppResponse Data:
+  domain: 0
+  seed:   100
+  SingleObjective Function Evaluation: 100
+AppResponse Data:
+  domain: 100
+  seed:   0
+  SingleObjective Function Evaluation: 100
+AppResponse Data:
+  domain: 200
+  seed:   0
+  Nonlinear Constraint Evaluation: 100
+AppResponse Data:
+  domain: 300
+  seed:   0
+  Linear Constraint Evaluation: [ ]
+F:
+AppResponse Data:
+  domain: -100
+  seed:   0
+  SingleObjective Function Evaluation: -100
+AppResponse Data:
+  domain: 0
+  seed:   100
+  SingleObjective Function Evaluation: 100
+AppResponse Data:
+  domain: 100
+  seed:   0
+  SingleObjective Function Evaluation: 100
+CF:
+AppResponse Data:
+  domain: 0
+  seed:   16807
+  SingleObjective Function Evaluation: 16807
+  Constraint Evaluation: [ 16907 ]
+  Linear Constraint Evaluation: [ ]
+  Nonlinear Constraint Evaluation: 16907
+AppResponse Data:
+  domain: 200
+  seed:   0
+  Constraint Evaluation: [ 100 ]
+  Nonlinear Constraint Evaluation: 100
+F(0):
+AppResponse Data:
+  domain: 0
+  seed:   100
+  SingleObjective Function Evaluation: 100
+CF(0):
+AppResponse Data:
+  domain: 0
+  seed:   16807
+  SingleObjective Function Evaluation: 16807
+  Constraint Evaluation: [ 16907 ]
+  Linear Constraint Evaluation: [ ]
+  Nonlinear Constraint Evaluation: 16907
+EqCF(0):
+AppResponse Data:
+  domain: 0
+  seed:   16807
+  SingleObjective Function Evaluation: 16807
+  Equality Constraint Evaluation: [ ]
+  Linear Constraint Evaluation: [ ]
+  Nonlinear Constraint Evaluation: 16907
+EqCF(1):
+EqCF(200):
+AppResponse Data:
+  domain: 200
+  seed:   0
+  Equality Constraint Evaluation: [ ]
+  Nonlinear Constraint Evaluation: 100
+EqCF(100):
+*(*,100):
+AppResponse Data:
+  domain: 0
+  seed:   100
+  SingleObjective Function Evaluation: 100
+AppResponse Data:
+  domain: 100
+  seed:   100
+  SingleObjective Function Evaluation: 200
+  Nonlinear Constraint Evaluation: 200

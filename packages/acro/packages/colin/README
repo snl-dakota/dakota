@@ -1,0 +1,109 @@
+
+
+
+Mapping MINLP0 -> NLP0
+----------------------
+
+When evaluating a MixedIntVars object, only the real vars are passed to the
+NLP0.  This effectively ignores the other parameters, which is probably 
+undesriable.
+
+Mapping NLP0 -> MINLP0
+----------------------
+When evaluating a real vectors, these vars are mapped into a MixedIntVars object, which has been previously initialized (perhapse with empty
+int and binary vars).  Thus, this mapping is dependent on the context
+of the point used to define it.
+
+
+
+
+LOCAL HERO
+RAGING BULL
+
+Test Codes
+----------
+test1				CommonIO test
+test2				OptProblem test modes
+test3				'any' test
+test4				ClassOptions test
+test5				OptSolver test
+test6				test gradient call
+test7				simple derived optimizer
+test8				simple derived optimizer with a generic datatype
+test9				simple optimizer testing command shell mode
+
+
+For each optimization domain, we have four files
+
+DomainDirectApp.*	Define the DirectApp class that executes 
+				linked-in functions over that domain
+DomainOptConstructors.*	Define functions that are used to construct an
+				DomainOptProblem object to use a DirectApp
+				application interface
+DomainOptProblem.*	Define an optimization problem over that domain
+DomainOptimizer		Define an optimizer over that domain
+
+
+
+
+How implement the asynch evaluations for different types of 
+return values?
+
+What is an appropriate Eval-Grad combo?
+
+Can I support seperate eval/grad/hessian functions?
+
+Support 'mode'd functionality 
+
+RealOpt/RealOptProblem hierarchy issues:
+----------------------------------------
+
+I) Goal: Avoid OPT++'s class distinctions between problems that use
+finite differencing and bound constraints.  This is a lot of classes
+to support, and it is difficult for a user to keep all of these class
+names in mind.  Further, the use of class distinctions for 
+bound-constrained problems does not generalize well to more general
+constrained problems.
+
+Issue: If a RealOptProblem0 can compute derivatives, then can we
+employ syntactic distinctions within an optimizer? We need to know when an 
+optimizer must perform finite differencing for us, but this is no longer 
+distinguishable syntactically.
+
+Solution:
+  a) Collapse the RealOptProblem heirarchy and use methods
+	to determine the availability of analytic and/or numerical
+	derivative information.
+  b) Use an explicit finite-difference class heirarchy.
+
+The problem with (b) is that since OptProblems encompass objective
+functions and constraints, a flexible problem formulation would
+recognize that different functions may have different levels of
+derivatives, and that the user may need to specify that a subset of the
+functions are computed with finite-differences and a subset are
+computed analytically.  This flexibility is not well supported by a
+syntactic class heirarchy.  Consequently, solution (a) is preferable.
+
+
+II) Goal: We want to distinguish RealOpt0 and RealOpt1, methods that
+require first-order and second-order information
+
+Issue: If we have a heirarchy like
+	RealOpt0
+	   |
+	RealOpt1
+
+then RealOpt1 has methods (and data) for RealOptProblem0 and RealOptProblem1
+
+Problem: How categorize methods like NPSOL, which can accept either
+first-order or second-order problems?
+
+Solution:  Follow OPT++ design and do not make this distinctions.  Everything
+becomes a RealOpt.
+
+Issue: If we have not collapsed the RealOptProblem heirarchy, then 
+how do we manage pointers to different types of OptProblems? OPT++ does
+this explicitly in derived subclasses.
+
+COLIN supports a notion of bound-constraints that are not enforced.  This provides a convenient framework for dealing with bound constraints in a dense manner without worrying about whether any particular bound constraint is enforced.
+

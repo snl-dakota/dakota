@@ -1,0 +1,44 @@
+\newenvironment{codeblockleft}{\begin{minipage}{6in}\ttfamily\begin{tabbing}}{\end{tabbing}\end{minipage}}
+
+\newenvironment{codeblock}{\begin{center}\begin{codeblockleft}}{\end{codeblockleft}\end{center}}
+
+\newcommand{\boxheader}[1]{\vspace{1.5ex}\pagebreak[1]\noindent\fbox{#1}\vspace{0.8ex}\\}
+
+\newcommand{\method}[1]{\boxheader{\texttt{#1}}}
+
+%% \newcommand{\paramtemplate}[5]{
+%% ~\\
+%% \noindent\fbox{\texttt{#1}}\\
+%% \mbox{\begin{tabular}{ll}
+%% Layer:& #2\\
+%% Datatype:&\texttt{#3}\\
+%% Default value:&#4 #5
+%% \end{tabular}
+%% }\vspace{1ex}\\}
+
+\newcommand{\paramtemplate}[5]{
+~\\
+\noindent
+\begin{minipage}{\textwidth}
+\fbox{\texttt{#1}}\\
+\begin{tabular}{ll}
+Layer:& #2\\
+Datatype:&\texttt{#3}\\
+Default value:&#4 #5
+\end{tabular}
+\end{minipage}
+\vspace{0.1ex}\\}
+
+
+\newcommand{\pparamc}[4]{\paramtemplate{#1}{Parallel only}{#2}{#3}{\\Constraints:&#4}}
+
+\newcommand{\pparam}[3]{\paramtemplate{#1}{Parallel only}{#2}{#3}{}}
+
+\newcommand{\sparamc}[4]{\paramtemplate{#1}{Serial and parallel}{#2}{#3}{\\Constraints&#4}}
+
+\newcommand{\sparam}[3]{\paramtemplate{#1}{Serial and parallel}{#2}{#3}{}}
+
+\newcommand{\groupparams}{\hspace*{\fill}
+
+\vspace{-3.5ex}
+}

@@ -1,0 +1,28 @@
+/*!
+ * \page refs
+
+
+\section refs References
+
+The following are sources of package-specific documentation that
+provide more detail on the use of Acro.
+\htmlonly
+<ol>
+
+<li> <a href="../../../packages/utilib/doc/html/index.html">UTILIB Users Guide</a><p>
+
+<li> <a href="../../../packages/utilib/doc/html/index-ref.html">UTILIB Reference Manual</a>
+
+</ol>
+\endhtmlonly
+\latexonly
+\begin{enumerate}
+
+\item W. E. Hart.
+{UTILIB} user manual version 1.0.
+Technical Report SAND2001-3788, Sandia National Laboratories, 2001.
+
+\end{enumerate}
+\endlatexonly
+
+*/

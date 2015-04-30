@@ -1,0 +1,31 @@
+/*!
+ * \page adtPage
+
+\section ADTSec Abstract Data Types
+
+UTILIB includes classes for a variety of standard abstract data types:
+
+\if GeneratingHTML
+- \ref arrayPage "Arrays and Matrices"
+- \ref htPage "Hash Tables"
+- \ref heapPage "Heaps"
+- \ref llPage "Linked Lists, Queues and Stacks"
+- \ref setPage "Sets"
+- \ref splayPage "Splay Trees"
+\endif
+\if GeneratingLATEX
+- Arrays and Matrices
+- Hash Tables
+- Heaps
+- Linked Lists, Queues and Stacks
+- Sets
+- Splay Trees
+\endif
+
+A detailed description of these data types is beyond the scope of this
+user guide, but these data structures are widely described by a variety of
+introductory algorithms \if GeneratingLATEX \latexonly texts~\cite{CorLeiRiv96,Knu,LewDen91,Wei92,Woo93}. \endlatexonly \endif \if GeneratingHTML texts [\ref CorLeiRiv96 "CorLeiRiv96",\ref Knu "Knu",\ref LewDen91 "LewDen91",\ref Wei92 "Wei92",\ref Woo93 "Woo93"]. \endif
+
+*/
+
+

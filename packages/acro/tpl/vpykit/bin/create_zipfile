@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import os
+import os.path
+from optparse import OptionParser
+import sys
+import re
+import shutil
+import zipfile
+
+vpykit_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+cwd = os.getcwd()
+
+def call(str):
+    str = str.replace('\\',os.sep)
+    str = str.replace('/',os.sep)
+    if str[0] == '.':
+        str = cwd + os.sep + str
+    currdir = os.getcwd()
+    print "Running command '%s' in directory '%s' " % (str,currdir)
+    tmp = re.split('[ \t]+',str)
+    try:
+        import subprocess
+        try:
+            popen = subprocess.Popen(tmp, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            return popen.communicate()[0], popen.returncode
+        except OSError:
+            tmp[0] += ".exe"
+            popen = subprocess.Popen(tmp, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+            return popen.communicate()[0], popen.returncode
+    except ImportError:
+        if os.path.exists(tmp[0]+".exe"):
+            tmp[0] += ".exe"
+        cmd = " ".join(tmp)
+        ans = os.system(cmd)
+        return ans, 0
+
+parser=OptionParser()
+parser.add_option("-c",
+    action="append",
+    dest="configs",
+    default=[os.path.join(vpykit_dir, 'default.ini')])
+parser.add_option("-d",
+    action="store",
+    dest="dest",
+    default='.')
+parser.add_option("--trunk",
+    action="store_true",
+    dest="trunk",
+    default=False)
+(options,args) = parser.parse_args()
+
+if os.path.exists(vpykit_dir+os.sep+'preinstall'):
+    shutil.rmtree(vpykit_dir+os.sep+'preinstall')
+configs = ''
+for config in options.configs:
+    configs += '--config %s ' % config
+if options.trunk:
+    configs += '--trunk '
+log,rc = call('%s/pyutilib.virtualenv/scripts/vpy_install %s --preinstall %s/preinstall' % (vpykit_dir, configs, vpykit_dir))
+print log
+
+if rc != 0:
+    sys.exit(rc)
+
+# Interesting idea to create a zipfile with the "test" code removed.
+# Alas, this tends to break third-party libraries (unittest2, Pyro)
+zin = zipfile.ZipFile(os.path.join(vpykit_dir, 'preinstall', 'python.zip'), 'r')
+zout = zipfile.ZipFile(os.path.join(vpykit_dir, 'preinstall', 'python_no_test.zip'), 'w')
+for item in zin.infolist():
+    buffer = zin.read(item.filename)
+    if not '/test/' in item.filename and not '/tests/' in item.filename:
+        zout.writestr(item, buffer)
+zout.close()
+zin.close()
+#
+
+destfile = os.path.join(os.path.abspath(options.dest), 'python.zip')
+if os.path.exists(destfile):
+    os.remove(destfile)
+shutil.copyfile(os.path.join(vpykit_dir, 'preinstall', 'python.zip'), destfile)
+print "Created zipfile", destfile
+

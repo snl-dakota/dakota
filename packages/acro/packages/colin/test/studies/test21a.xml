@@ -1,0 +1,30 @@
+<ColinInput>
+
+  <Problem type="MINLP0">
+     <Domain>
+	<RealVars num="3">
+           <Labels type="real">
+	       x_1 x_2 x_3
+	   </Labels>
+	   <Lower index="1" value="9.9"/>
+	   <Upper index="3" value="29.9"/>
+	</RealVars>
+     </Domain>
+
+     <Driver>
+        <Command>shell_func5</Command>
+        <KeepFiles />
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:test_a">
+     <InitialPoint>
+       10.0 10.0 10.0
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">29.0</Option>
+     </Options>
+  </Solver>
+
+  <Execute />
+</ColinInput>

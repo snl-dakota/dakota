@@ -1,0 +1,26 @@
+<ColinInput>
+  <Problem type="NLP0">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>shell_func5</Command>
+        <RequestPrefix>request_prefix_</RequestPrefix>
+        <ResponsePrefix>response_prefix_</ResponsePrefix>
+        <KeepFiles />
+        <NoCounterSuffix />
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:test">
+     <Problem id="default"/>
+     <InitialPoint>
+        10.0 10.0 10.0
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">29.0</Option>
+     </Options>
+  </Solver>
+
+  <Execute />
+</ColinInput>

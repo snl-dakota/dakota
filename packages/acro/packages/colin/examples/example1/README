@@ -1,0 +1,8 @@
+This is a simple example to illustrate the use of acro with a
+shell function (written in python) that is called from an XML-driven
+acro config file. This shell function performs a simple deterministic
+evaluation of a design point.
+
+Call:
+
+   ../acro acro.xml

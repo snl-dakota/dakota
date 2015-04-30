@@ -1,0 +1,17 @@
+<ColinInput>
+  <Problem type="NLP0">
+     <Parameters real="3"/>
+     <Driver>
+        <Command>xml_application --problem=TestProblem1</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="_TYPE_">
+     <InitialPoint>
+       10.333 11.333 12.333
+     </InitialPoint>
+     <Options>
+        _OPTIONLIST_
+     </Options>
+  </Solver>
+</ColinInput>

@@ -1,0 +1,10 @@
+_optimum=157 _data=../etc/knapsack/problems/animals.1
+_optimum=152 _data=../etc/knapsack/problems/animals.2
+_optimum=225 _data=../etc/knapsack/problems/nobranch
+_optimum=30571 _data=../etc/knapsack/problems/test-data.100.1
+_optimum=26950 _data=../etc/knapsack/problems/test-data.100.2
+_optimum=29110 _data=../etc/knapsack/problems/test-data.100.3
+_optimum=273709 _data=../etc/knapsack/problems/test-data.1000.1
+_optimum=275866 _data=../etc/knapsack/problems/test-data.1000.2
+_optimum=280115 _data=../etc/knapsack/problems/test-data.1000.3
+_optimum=277582 _data=../etc/knapsack/problems/test-data.1000.4

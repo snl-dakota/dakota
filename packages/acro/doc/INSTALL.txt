@@ -1,0 +1,368 @@
+
+====================================
+Basic Installation and Configuration
+====================================
+
+The Acro software library can be installed from a distribution file or
+using a checkout from the subversion repository.  The Acro library can
+be checked out of the repository by executing:
+
+  svn checkout https://software.sandia.gov/svn/public/acro/acro/trunk
+
+The latest stable branch is in the acro/stable directory, and the release
+branches are in the acro/releases directory.  Other Acro projects are
+also located in this repository, including
+
+  https://software.sandia.gov/svn/publicacro/acro-coliny
+  https://software.sandia.gov/svn/publicacro/acro-pico
+  https://software.sandia.gov/svn/publicacro/acro-pebbl
+
+The Acro track pages have "Getting Started" examples that illustrate
+the optimizers that Acro supports.  The simplest way to build Acro is
+to use the 'setup' command:
+
+  ./setup configure build
+
+This script creates logfiles in the acro/test directory that can be used
+to verify the installation.
+
+
+===================
+For Acro developers
+===================
+
+If you are working from the subversion repository, and not from a Acro
+release, you will have to have the GNU autotools installed on your
+machine.  If you downloaded a release with a "configure" script in the
+top directory, you can skip this section.
+
+Before you can configure and build, you will need to run autoreconf in
+the top level directory (where configure.ac is located).  autoreconf will
+run the programs and scripts in the autotools suite in the correct order
+to produce a configure script and auxiliary configuration files.
+
+We suggest running autoreconf this way:
+
+  autoreconf -i -f
+
+If you still encounter errors, try updating autoconf, automake, m4
+and libtool.  We know that these versions work:
+
+  autoconf (GNU Autoconf) 2.59
+  automake (GNU automake) 1.9.6
+  GNU M4 1.4.4
+  ltmain.sh (GNU libtool) 1.5.22 (1.1220.2.365 2005/12/18 22:14:06)
+
+If you add or remove source files, or want to change how a target is
+built, you need to edit the Makefile.am file that describes how that
+part of the code is built.  Makefile.am is a template that describes
+how the Makefile should be organized.
+
+autoreconf processes configure.ac and the Makefile.am files.  So if you
+modify any of these you will need to re-run autoreconf.
+
+------------------------------------------------------------------------------
+
+Configuring and building:
+
+The Acro software is configured using GNU autoconf.  So building
+it is like building any autoconf'd software:
+
+  {path-to-acro-top-directory}/configure
+  make
+
+The build can be modified through the use of environment variables and
+with command line options to the "configure" script.  If you set no
+environment variables and use no command line options, the "configure"
+script will choose sensible values.
+
+  configure --help
+
+This will list all the configuration options, and in some instances the
+default action.
+
+Typical use might be to define where MPI is located, and in which
+directory to install the Acro libraries and header files:
+
+  configure --with-mpi-compilers=/usr/local/mpich-1.2.4/ch_p4/bin
+            --prefix=/Net/usr/local
+
+Some of the important settings are listed here.
+
+See the special information about using cache files below.
+
+Build flags:
+===========
+
+Build flags can be specified with the following environment
+variables:
+
+  CPPFLAGS - C and C++ preprocessor flags
+  CFLAGS   - C compiler flags
+  CXXFLAGS - C++ compiler flags
+  LDFLAGS  - Link editor flags
+
+Alternatively, the following "configure" command line options can be
+used instead.  The command line option for each flag takes precedence
+over the analygous environment variable if both are set.
+
+  --with-cppflags=
+  --with-cflags=
+  --with-cxxflags=
+  --with-ldflags=
+
+Debugging:
+=========
+
+--with-debugging=yes
+
+  The default is to compile without debugging symbols.  If you choose
+  this option, Acro will be compiled with debugging symbols, and
+  optimization will be turned off.  The debugging flag is added to
+  any other flags you may have specified with environment variables or
+  "configure" command line options.
+
+Optimization:
+============
+
+--with-optimization=-O3
+--with-optimization=yes
+--with-optimization=no
+
+  The default, if debugging was not requested and no compile flags were
+  specified, is to compile with optimization level 2.  You can use this
+  option to specify a different level, to force optimization even when
+  debugging was requested, or to turn off optimization.  The optimization
+  level is added to any flags you may have specified with environment
+  variables or "configure" command line options.
+
+Special flags:
+=============
+
+The configure script has been programmed to recognize the need for
+special flags on certain platforms.  It will add these flags unless you
+have specified your own flags (using --with_*flags=) on the configure
+command line.
+
+MinGW Windows build:
+===================
+
+--with-compiler=mingw
+
+  This option specifies a MinGW build when compiling on Cygwin.  If it
+  is not selected, executables built on Cygwin will require the Cygwin
+  shared library for execution.
+
+
+Using MPI:
+=========
+
+There are several ways to tell "configure" how to build MPI applications
+on your system:
+
+--with-mpi-compilers={directory}
+
+  If you want Acro to be compiled with mpicc, etc., then provide the
+  directory where your MPI compilers (scripts or programs) are located.
+  This is the only "configure" option required to specify your MPI
+  installation if you use MPI compilers.
+
+--with-mpi={directory}
+
+  This option specifies that your MPI header files are located in
+  {directory}/include and your MPI libraries are in {directory}/lib.
+  You probably still need to specifiy --with-mpi-libs if you use this
+  option.
+
+--with-mpi-libs="-lpmpich -lmpich"
+
+  This option specifies the MPI libraries that should be linked with
+  your executables.
+
+--with-mpi-incdir={directory}
+
+  If your MPI installation is complicated, you can specify the location
+  of the directory containing the header files with this option.
+  If your MPI headers are in more than one directory, you can use the
+  --with-mpi-cppflags option to specify more include search paths.
+
+--with-mpi-libdir={directory}
+
+  Similarly, you can specify the directory containing the MPI libraries
+  with this option.
+
+--with-mpi-cppflags={flags}
+--with-mpi-ldflags={flags}
+
+  For maximum flexibility, these options allow you to specify more
+  preprocessor and link editor flags to be used when MPI applications
+  are built.
+
+--with-mpi-cc={path to MPI C compiler}
+--with-mpi-cxx={path to MPI C++ compiler}
+--with-mpi-f77={path to MPI Fortran compiler}
+
+  You can give the paths to the MPI compilers individually with these
+  three options.
+
+Using Cygwin:
+=============
+
+If you are building Acro on a Windows machine with Cygwin, try to
+avoid using pathnames with spaces when:
+
+ o typing in options to configure
+ o choosing which directories will hold the source and the compiled code
+
+These pathnames may end up as sources or targets in the makefile, and
+Make can not handle spaces, even escaped spaces, there.
+
+If you want to refer to a pathname that has a space in it, one solution
+is to mount the directory somewhere else.
+
+For example, under Cygwin you can:
+
+  mount -f -s -b "C:/Program Files" "/opt"
+
+Type "man mount" in Cygwin for more information.
+------------------------------------------------------------------------------
+
+Using cache files with configure:
+=================================
+An autoconf "cache file" is a file that lists the values of configuration 
+variables that were computed on a previous "configure" run.  The default
+name for a cache file is "./config.cache.
+
+The value of a cache file is that the configure script will run much
+faster once the cache file has been created.  For example, the configure
+script no longer needs to write a small program and compile it to figure
+out whether a platform has a usable "stdlib.h".
+
+The Acro configure scripts have been modified to be able to
+utilize cache files.
+
+Normally an autoconf'd package that follows GNU standards does
+not need to be modified in order to use cache files.  Because of
+Acro's non-standard options for specifying the build environment
+(--with-debugging, --with-mpi-compilers, --with-optimization, etc.),
+we did need to modify our configure script.
+
+How to use cache files with Acro:
+
+To cause the configure script to use a cache file, run configure
+with one of these options:
+
+  ./configure -C
+  ./configure --cache-file={file name}
+
+If no cache file is present, configure will create one.  If a cache
+file is present, configure will use it instead of running the
+tests it usually runs.
+
+Special concerns:
+
+Acro has a number of configure command line options that predate its
+conversion to autoconf.  The use of a cache file is not compatible 
+with the use of these non-standard Acro configure options:
+
+  --enable-mpi            Enable MPI support
+  --with-compiler         Use --with-compiler=mingw to build mingw executables
+                          and libraries
+  --with-vendor-compilers Search for commercial compilers before GNU compilers
+  --with-cc               set C compiler
+  --with-cxx              set C++ compiler
+  --with-f77              set Fortran compiler
+  --with-cppflags         set preprocessor flags (e.g., "-Dflag -Idir")
+  --with-fflags           set Fortran compiler flags
+  --with-cflags           set C compiler flags
+  --with-cxxflags         set C++ compiler flags
+  --with-ldflags          add extra linker (typically -L) flags
+  --with-libs             add extra library (typically -l) flags
+  --with-debugging        Build with debugging information. Default is no.
+  --with-optimization=flag Build with the specified optimization flag (Default
+                          -O2).
+  --with-mpi-compilers=DIR or --with-mpi-compilers=yes
+                          use MPI compilers (mpicc, etc.) found in directory
+                          DIR, or in your PATH if =yes
+  --with-mpi=MPIROOT      use MPI root directory. Automatically enables MPI.
+  --with-mpi-libs="LIBS"  MPI libraries [default "-lmpi"]
+  --with-mpi-incdir=DIR   MPI include directory [default MPIROOT/include]
+  --with-mpi-libdir=DIR   MPI library directory [default MPIROOT/lib]
+  --with-mpi-cppflags=flags Extra preprocessor flags for MPI
+  --with-mpi-ldflags=flags Extra link flags for MPI
+
+The standard way to specify the build environment in autoconf is with the
+following environment variables.  You can define them in the environment,
+or you set them on the configure command line.
+
+  CC          C compiler command
+  CFLAGS      C compiler flags
+  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
+              nonstandard directory <lib dir>
+  CPPFLAGS    C/C++ preprocessor flags, e.g. -I<include dir> if you have
+              headers in a nonstandard directory <include dir>
+  CXX         C++ compiler command
+  CXXFLAGS    C++ compiler flags
+  F77         Fortran 77 compiler command
+  FFLAGS      Fortran 77 compiler flags
+  CXXCPP      C++ preprocessor
+  CCAS        assembler compiler command (defaults to CC)
+  CCASFLAGS   assembler compiler flags (defaults to CFLAGS)
+  CPP         C preprocessor
+
+If you want to use the special options, and you don't try to
+use cache files, you will be fine.  If you want to use the special
+options to establish the cache file the first time you run 
+configure, you may.  But you must use the standard GNU environment
+variables thereafter (if you want to use the cache file).  There's
+an example below of doing this.
+
+When you run "configure -C", and the cache file already exists in
+the directory, you must have all of the standard GNU variables set
+to the same value that they are set to in the cache file.  If you
+don't, configure will exit with an error.  The reason is that all
+of the variable settings that were computed in the cache file were
+based on one specific environment.  If you change something (like the
+compiler, or a link flag) you invalidate all those variables.
+
+This is surprising.  You would expect that configure would use the
+build environment variables found in the cache file.  But the purpose
+of cache files is not to make your configure command line shorter,
+it is make configure run faster.
+
+Here is an example of using a cache file with special options.
+Suppose there is no cache file in the directory, then:
+
+  ./configure -C --with-debugging --with-mpi-compilers=/usr/bin
+
+The configure script will use your special options, and will create
+a cache file.  It will also print out the value of the standard GNU
+environment variables.  You must use those if you want to configure again
+in this directory and use the cache file.   Here is the configure output:
+
+configure: WARNING:  ============== COMPILE ENVIRONMENT ============== 
+configure: CCAS="mpicc" CCASFLAGS=""
+configure: CXXCPP="mpic++ -E" CC="mpicc" CFLAGS="-g"
+configure: CPP="mpicc -E" CPPFLAGS=""
+configure: CXX="mpic++" CXXFLAGS="-g -fpermissive"
+configure: F77="mpif77" FFLAGS="-g" LDFLAGS=""
+configure: WARNING:  ================================================= 
+configure: WARNING:  In subsequent configure runs that use the "-C" or 
+configure: WARNING:  "--cache-file=" options, you must provide the 
+configure: WARNING:  compile environment on the configure command line 
+configure: WARNING:  using the above flags.  The compile environment 
+configure: WARNING:  options (like "--with-debugging" or "--with-cc=") are not 
+configure: WARNING:  compatible with GNU autoconf's cache variable feature.
+configure: WARNING:  ================================================= 
+
+If I want to run configure again, using the cache file:
+
+./configure -C CCAS="mpicc" CCASFLAGS="" CXXCPP="mpic++ -E" CC="mpicc"
+CFLAGS="-g" CPP="mpicc -E" CPPFLAGS="" CXX="mpic++" CXXFLAGS="-g -fpermissive"
+F77="mpif77" FFLAGS="-g" LDFLAGS=""
+
+If you use any of the special options on the configure command line
+now, they will be ignored.  And if you omit or change any of the GNU
+environment variables, configure will exit with an error.
+
+If you forget these values, you can find them again in the config.log file.

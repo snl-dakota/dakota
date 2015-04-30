@@ -1,0 +1,34 @@
+<!--- example1
+
+	This example illustrates the use of acro with a COLIN
+	XML input file.  The shell_func script is used to evaluate
+	the test problem.
+--->
+
+<ColinInput>
+
+  <Problem type="MINLP0">
+     <Domain>
+        <IntegerVars num="3">
+          <Labels>
+           x_1 x_2 x_3
+          </Labels>
+          <Lower index="1" value="9"/>
+          <Upper index="3" value="29"/>
+        </IntegerVars>
+     </Domain>
+
+     <Driver>
+        <Command>shell_func</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="coliny:ea">
+     <InitialPoint>
+       0: 3: 10 10 10 0:
+     </InitialPoint>
+     <Options>
+        <Option name="accuracy">-1.0</Option>
+     </Options>
+  </Solver>
+</ColinInput>

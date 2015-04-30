@@ -1,0 +1,18 @@
+\section{Discussion and Future Work}
+\label{sec:conclusions}
+
+The ACLI leverages new features of COLIN 3.0, which is a very new capability in Acro.  Previously, Acro optimizers could be used from libraries directly, from domain-specific solvers, like PICO's mixed-integer programming solver, or from a Coliny executable.  The Coliny executable also supported an AMPL solver interface, but it supported a primitive system-call application interface.
+
+COLIN 3.0 development is ongoing to extend the ACLI in various directions.  These are briefly summarized here:
+\begin{itemize}
+
+\item Better support for multi-objective optimization and analysis.  In particular, integration with the optimization informatics tool that is currently being developed at Sandia.
+
+\item Support for gradient-based optimizers.  Hooks for commercial solvers like NPSOL and SNOPT are planned.  Further, direct integration and support for freely available solvers like IPOPT and MOOCHO is planned.
+
+\if 
+TODO: other priorities worth mentioning?
+\fi
+
+\end{itemize}
+

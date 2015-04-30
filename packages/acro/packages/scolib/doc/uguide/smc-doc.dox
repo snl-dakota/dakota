@@ -1,0 +1,42 @@
+/*!
+ * \page smc-doc
+
+
+\section smc-doc Stratified Monte Carlo
+
+\subsection smcoverove Overview
+
+The class sMC provides an abstract base class for stratified Monte Carlo
+sampling (sMC).  Stratified Monte Carlo sampling partitions the search
+domain into a finite number of disjoint regions, each of which is sampled
+independently.  In each iteration sMC samples a point from each region
+(from a fixed distribution), and the best of these points is reported.
+sMC reduces to standard Monte Carlo sampling algorithm (MC) in the case
+where there is a single region, the entire search domain.  Ermakov,
+Zhigyavskii and \if GeneratingLaTeX \latexonly Kondratovich~\cite{ErmZhiKon89a} and Hart~\cite{Har94} \endlatexonly \endif \if GeneratingHTML Kondratovich [ErmZhiKon89a] and Hart [Har94] \endif
+provide formal descriptions and theoretical analyses of sMC.  It is
+particularly interesting to note that for a given number of samples
+from the total search domain, the probability that sMC samples \if GeneratingHTML
+an epsilon-close point is greater than or equal to the probability that
+MC samples an epsilon-close point. \endif \if GeneratingLaTeX \latexonly
+an $\epsilon$-close point is greater than or equal to the probability that
+MC samples an $\epsilon$-close point. \endlatexonly \endif
+
+Classes sMCreal and sMCint provide a common interface for
+performing sMC on \f$R^n\f$ and \f$Z^n\f$.  The method \c set_lsopt in these
+classes defines a local search optimizer and specifies the frequency
+with which local search should be applied to the randomly generated
+points.  When \c freq = 1.0, this converts sMCreal to stratified
+multistart local search (see Morris and 
+\if GeneratingLaTeX \latexonly Wong~\cite{WonMor89,MorWon91} and Hart~\cite{Har94}). \endlatexonly \endif
+\if GeneratingHTML Wong [WonMor89,MorWon91] and Hart [Har94]). \endif
+
+\subsection smcstatus Current Status
+
+sMC and sMCreal are stable.  sMCint needs to be re-implemented.
+The termination rules described in \if GeneratingLaTeX \latexonly Hart~\cite{Har94}) \endlatexonly \endif \if GeneratingHTML Hart [Har94] \endif
+need to be incorporated into sMC.
+
+*/
+
+

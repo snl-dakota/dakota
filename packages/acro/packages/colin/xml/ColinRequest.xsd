@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/ColinInput"
+            xmlns:tns="http://xml.netbeans.org/schema/ColinInput"
+            elementFormDefault="qualified">
+    <xsd:complexType name="ParametersType">
+        <xsd:all>
+            <xsd:element name="Binary" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="size" type="xsd:positiveInteger" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Integer" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="size" type="xsd:positiveInteger" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Real" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="size" type="xsd:positiveInteger" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:all>
+    </xsd:complexType>
+    <xsd:complexType name="RequestsType">
+        <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="FunctionValues" minOccurs="0"/>
+            <xsd:element name="FunctionValue" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="index" use="required" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Gradients" minOccurs="0"/>
+            <xsd:element name="Gradient" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="index" use="required" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="NonlinearConstraints" minOccurs="0"/>
+            <xsd:element name="NonlinearConstraint" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="index" use="required" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Generic" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="Data" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:attribute name="id" type="xsd:string"/>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:simpleType name="BinaryPoint">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[01]+"/>
+            <xsd:whiteSpace value="collapse"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="IntegerPoint">
+        <xsd:list itemType="xsd:integer"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="RealPoint">
+        <xsd:list itemType="xsd:double"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="NameType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[a-zA-Z0-9\-:_\.]+"/>
+            <xsd:whiteSpace value="collapse"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:element name="ColinRequest">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element name="Parameters" type="tns:ParametersType"/>
+                <xsd:element name="Requests" type="tns:RequestsType"/>
+            </xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+    
+</xsd:schema>

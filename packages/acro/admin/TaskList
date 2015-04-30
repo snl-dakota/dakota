@@ -1,0 +1,24 @@
+. Nightly builds
+	Error levels
+		Config error
+		Compile error
+		Build/Link error
+		Run Error
+		Inconsistent QA result
+		Poor Run performance
+
+. Config tests
+	./configure ; make
+	./configure ; make install
+	./configure ; make ; make clean ; make
+	./configure ; make ; make clean ; make install
+
+. Centralize executables build
+	Make builds robust to individual failures
+
+. Assess package independence within Acro
+
+
+. Editing config fragments
+
+. Updating bin executables

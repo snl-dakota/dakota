@@ -1,0 +1,100 @@
+/*!
+ * \page install
+
+\section install Installation
+
+
+\subsection UNIXinstall Standard UNIX Installation
+
+After the Acro software has been downloaded, it must be configured
+for building on specific hosts for specific target platforms.  Installation
+on UNIX systems is performed by the following steps:
+<ol>
+<li> If you have an archive, unpack it as follows
+\verbatim
+    gunzip acro-$VERSION.tar.gz    # uncompress the archive
+    tar xf acro-$VERSION.tar       # unpack it
+\endverbatim
+
+<li> Move into the \b acro directory and run the \b configure script.
+\verbatim
+    cd acro
+    ./configure
+    make
+\endverbatim
+This will configure the software for your machine and compile the
+Acro library (see Section \ref configurationAppendix for more details concerning
+configuration options and the details of the configuration process).
+After building Acro, the Makefile scripts
+will create links to package header directories in the directory \b
+acro/include, and links to all package libraries are included in \b
+acro/lib.
+Note that the makefiles in Acro may not be portable to all \b
+make commands.  However, they do work with the GNU \b gmake command.
+</ol>
+
+You can remove object files, libraries, and executables by typing
+\verbatim
+    make clean
+\endverbatim
+If you wish to re-configure your Acro source from
+scratch or re-generate all custom makefiles, type
+\verbatim
+    make distclean
+\endverbatim
+This will remove all symbolic links, custom
+makefiles, and \b config.status files. This will require a
+re-configure of the system and is usually done in preparation for
+updating source in the CVS repository or creating tape archives
+for distribution.
+
+
+\subsection AcroInstall Custom UNIX Installation
+
+Acro can also be built with the following custom configure/build process
+\verbatim
+    cd acro
+    ./setup configure build
+\endverbatim
+This custom configure/build process overcomes a common problem with the 
+standard configure/build process: it can 
+create a voluminous output that is difficult to follow and which can mask
+the fact that there errors have occured.  This is a particular issue for
+large projects like Acro, which has many independent packages that 
+may fail to configure or build.
+
+The \b setup command performs the following actions
+<ol>
+<li> Pipe the configuration output into acro/test/config.out and generate a
+     test/config.xml summary file
+
+<li> Pipe the build output into acro/test/build.out and generate a 
+     test/build.xml summary file (this includes builds of Acro
+     executables and test executables)
+</ol>
+The XML files generated in the acro/test director provide a quick 
+reference to confirm that the software was configured and built properly.
+The use of \b setup can be extended to include configuration options, and to 
+perform tests.  For example the following configures using MPI and performs
+fast smoke tests of various Acro packages:
+\verbatim
+    cd acro
+    ./setup configure --with-mpi  build  smoke
+\endverbatim
+
+
+\subsection documentionInstall Setup Documentation
+
+The main Acro makefile includes several targets for generating
+documentation.  This documentation is generated with the \b doxygen utility, so documentation can be generated in several formats. The command
+\verbatim
+    make html
+\endverbatim
+creates HTML documentation, and the command
+\verbatim
+    make pdf
+\endverbatim
+creates documentation in a single PDF file.  This later command requires the
+use of \b latex, \b dvips and \b ghostscript packages.
+
+*/

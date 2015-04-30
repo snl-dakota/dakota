@@ -1,0 +1,82 @@
+#! /usr/bin/env python
+#
+# A script that replaces copyright statements in files with a
+# new copyright statement
+#
+# replaceCopyright old new file [file...]
+#
+
+import sys
+import os
+
+
+def match_head(file,lines):
+    INPUT=open(file)
+    i=0
+    for line in INPUT:
+        if line.strip() != lines[i].strip():
+            return False
+        i=i+1
+        if i == len(lines):
+            break
+    return True
+    
+
+INPUT = open(sys.argv[1])
+old_cr = INPUT.readlines()
+INPUT.close()
+for i in range(0,len(old_cr)):
+  old_cr[i] = old_cr[i].strip()
+
+INPUT = open(sys.argv[2])
+new_cr = INPUT.readlines()
+INPUT.close()
+
+#print old_cr
+#print ""
+#print new_cr
+
+for file in sys.argv[3:]:
+  INPUT = open(file)
+  OUTPUT = open(file+".tmp","w")
+  i=0
+  newfile=True
+  for line in INPUT:
+    if i == len(old_cr):
+        #
+        # Print new copyright
+        #
+        for crline in new_cr:
+            print >>OUTPUT, crline,
+        i=i+1
+    if i > len(old_cr):
+        #
+        # Print lines from the old file
+        #
+        print >>OUTPUT, line,
+    else:
+        #
+        # Keep checking that the copyright is what is expected
+        #
+        if line.strip() == old_cr[i]:
+            i=i+1
+        else:
+            INPUT.close()
+            if match_head(file,new_cr):
+                print "File",file,"is up to date."
+            else:
+                print "Unexpected line in file "+file
+                print "  Expected line:"
+                print old_cr[i]
+                print "  Current line:"
+                print line,
+            newfile=False
+            break
+  OUTPUT.close()
+  INPUT.close()
+  if newfile:
+    os.remove(file)
+    os.rename(file+".tmp",file)
+    print "Updating file",file
+
+

@@ -1,0 +1,63 @@
+/*! 
+ * \page packPage
+ *
+
+\section packSec Parallel Communication with Packed Buffers
+
+MPI provides a generic utility for packing data types into a buffer that
+can be reliably communicated between machines with different data
+representations.  The utilib::PackBuffer and utilib::UnPackBuffer classes
+provide a convenient mechanism for creating these packed buffers, and for
+unpacking data that has been received from another process.  In particular,
+these buffers leverage the C++ stream operators to allow for a simple syntax
+for packing and unpacking.
+
+For example, here's a simple example of how a utilib::PackBuffer can be created
+\verbatim
+    int i = -1;
+    char j[5] = "abcde";
+    utilib::PackBuffer pbuff;
+    pbuff << i;
+    pbuff << j;
+\endverbatim
+The \c buf() returns a pointer to a buffer that contains the packed data, 
+which is \c size() bytes long.  A utilib::PackBuffer object can be reused by
+calling the \c reset() method.
+
+The utilib::UnPackBuffer class has a similar usage.  For example:
+\verbatim
+    int i;
+    char j[5];
+    utilib::UnPackBuffer upbuff(buffer_data, buffer_len);
+    upbuff >> i;
+    upbuff >> j;
+\endverbatim
+Note that the \c setup() method can also be used to initialize a
+utilib::UnPackBuffer object, so this class can be initialized after it
+is constructed.
+
+Many UTILIB classes are instrumented to enable packing and unpacking with
+the stream operator.  Further, the utilib::PackObject class can be
+used as a base class to define these stream operators.  The derived class
+needs only redefine the \c read() and \c write() methods to make these
+stream operators functional.
+
+Note that enumerated types need to be explicitly coerced to and from integer
+types in order to be used with the PackBuffer and UnPackBuffer classes.
+Consequently, it is convenient to define stream operators for enumeration
+types.  The \ref utilib::ENUM_STREAMS "ENUM_STREAMS"  macro provides a 
+generic mechanism for setting up these streams for an enumeration type.
+
+For example, the COLIN library uses this macro to define stream 
+operators for an enumerated type that describes bound constraints:
+\verbatim
+enum bound_type_enum    {
+                        no_bound=0,
+                        hard_bound=1,
+                        soft_bound=2,
+                        periodic_bound=3
+                        };
+
+ENUM_STREAMS( bound_type_enum )
+\endverbatim
+*/

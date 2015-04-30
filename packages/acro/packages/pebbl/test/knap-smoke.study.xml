@@ -1,0 +1,33 @@
+<experimental-study name="knap-smoke">
+  <tags>
+    <tag>nightly</tag>
+    <tag>smoke</tag>
+    <tag>valgrind</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+      <factor name="test" filename="knap_problems"/>
+    </factors>
+    <controls>
+       <executable>./pebbl_test --knapsack</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+      <options>_measurement='Value' _cmp_operator='eq'</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>
+

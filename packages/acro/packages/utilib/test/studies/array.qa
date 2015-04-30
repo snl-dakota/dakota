@@ -1,0 +1,189 @@
+Initial a:
+Linked a:
+Linked a:
+Linked a:
+Linked a:
+Linked a:
+Resized a:
+Assigning...
+After assignment a:
+b: 
+a after a[1] &= b:
+b: 
+Should be 4 2 1: 4 2 1
+Should be 1 1 0: 1 1 0
+
+c: 
+a after a[0].resize(5):
+
+a after a[2] &= c:
+b: 
+c: 
+a after a[0] = c:
+b: 
+c: 
+c: 
+a after b.resize(3):
+b: 
+a after b << c:
+b: 
+c: 
+Making 5 thangs in t1:
+Thang 1/1 created.
+Thang 2/2 created.
+Thang 3/3 created.
+Thang 4/4 created.
+Thang 5/5 created.
+
+Resizing t1 to 6 thangs:
+Thang 6/6 created.
+Thang 7/7 created.
+Thang 8/8 created.
+Thang 9/9 created.
+Thang 10/10 created.
+Thang 11/11 created.
+Thang 6 copied from thang 1
+Thang 7 copied from thang 2
+Thang 8 copied from thang 3
+Thang 9 copied from thang 4
+Thang 10 copied from thang 5
+Thang 5/5 destroyed.
+Thang 4/4 destroyed.
+Thang 3/3 destroyed.
+Thang 2/2 destroyed.
+Thang 1/1 destroyed.
+
+Making another 3 thangs in t2:
+Thang 12/12 created.
+Thang 13/13 created.
+Thang 14/14 created.
+
+t2 &= t1
+Thang 14/14 destroyed.
+Thang 13/13 destroyed.
+Thang 12/12 destroyed.
+
+Making a pointer array of 4 thangs:
+Thang 15/15 created.
+Thang 16/16 created.
+Thang 17/17 created.
+Thang 18/18 created.
+
+Creating t3 to point to it:
+
+t3 &= t1:
+
+t2.resize(8):
+Thang 19/19 created.
+Thang 20/20 created.
+Thang 21/21 created.
+Thang 22/22 created.
+Thang 23/23 created.
+Thang 24/24 created.
+Thang 25/25 created.
+Thang 26/26 created.
+Thang 19 copied from thang 1
+Thang 20 copied from thang 2
+Thang 21 copied from thang 3
+Thang 22 copied from thang 4
+Thang 23 copied from thang 5
+Thang 24 copied from thang 11
+Thang 11/11 destroyed.
+Thang 10/5 destroyed.
+Thang 9/4 destroyed.
+Thang 8/3 destroyed.
+Thang 7/2 destroyed.
+Thang 6/1 destroyed.
+
+Deleting the first pointer array:
+Thang 18/18 destroyed.
+Thang 17/17 destroyed.
+Thang 16/16 destroyed.
+Thang 15/15 destroyed.
+
+Making a new pointer array of 7 thangs:
+Thang 27/27 created.
+Thang 28/28 created.
+Thang 29/29 created.
+Thang 30/30 created.
+Thang 31/31 created.
+Thang 32/32 created.
+Thang 33/33 created.
+
+Setting t1 data to the new 7 thangs with assumption:
+Thang 26/26 destroyed.
+Thang 25/25 destroyed.
+Thang 24/11 destroyed.
+Thang 23/5 destroyed.
+Thang 22/4 destroyed.
+Thang 21/3 destroyed.
+Thang 20/2 destroyed.
+Thang 19/1 destroyed.
+
+d's:
+
+Chaining and resizing:
+Thang 34/34 created.
+Thang 35/35 created.
+Thang 36/36 created.
+Thang 37/37 created.
+Thang 38/38 created.
+
+d's after first chaining:
+
+Chaining again:
+
+d's after second chaining:
+
+Chaining yet again:
+Thang 35/35 destroyed.
+Thang 34/34 destroyed.
+
+d's after third chaining:
+
+Deleting d[1]:
+
+Deleting d[0]:
+
+Deleting d[3]:
+
+Deleting d[2]:
+Thang 38/38 destroyed.
+Thang 37/37 destroyed.
+Thang 36/36 destroyed.
+
+Making strings:
+
+Resized s2 to 5:
+
+s3 = s2:
+
+Resized s2 to 4:
+
+s3 &= s1:
+
+s1 = Woof
+
+CharString comparison tests:
+-1 1 10000111
+1 -1 01001011
+0 0 00110000
+0 0 00110000
+-1 1001
+1 0011
+1 0011
+0 0100
+1 -1 01001011
+0 0 00110000
+mivars:  b(3 : 0 1 0)  i(4 : -1 1 -1 1)  r(5 : -2 2 -2 2 -2)
+mivars2: b(3 : 0 1 0)  i(4 : -1 1 -1 1)  r(5 : -2 2 -2 2 -2)
+mivars equal: 1
+
+Done.
+Thang 33/33 destroyed.
+Thang 32/32 destroyed.
+Thang 31/31 destroyed.
+Thang 30/30 destroyed.
+Thang 29/29 destroyed.
+Thang 28/28 destroyed.
+Thang 27/27 destroyed.

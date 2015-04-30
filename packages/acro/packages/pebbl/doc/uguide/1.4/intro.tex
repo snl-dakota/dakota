@@ -1,0 +1,58 @@
+\section{Introduction}
+
+
+\subsection{What is PEBBL?}
+
+PEBBL (\emph{P}arallel \emph{E}numeration and
+\emph{Branch}-and-\emph{B}ound \emph{L}ibrary) is a C++ class library
+for constructing serial and parallel branch-and-bound optimization
+algorithms.  It is a \emph{framework}, \emph{shell}, or
+\emph{skeleton} that handles the generic aspects of branch and bound,
+allowing the developer to focus primarily on the unique aspects of
+their particular branch-and-bound algorithm.  
+It is thus similar to other software projects such
+as PUBB~\cite{SHH95,SHH97}, BoB~\cite{bob95}, PPBB-Lib~\cite{PPBB96},
+and ALPS~\cite{RLS04} (PEBBL's development has significantly
+influenced the architecture of ALPS).  PEBBL has a number of unique
+features, including very flexible parallelization strategies and the
+ability to enumerate near-optimal solutions.
+
+In principle, one can build an arbitrary branch-and-bound method atop
+PEBBL by defining a relatively small number of abstract methods.  By
+defining a few more methods, the algorithm can be immediately
+parallelized.  PEBBL contains numerous tuning parameters that can
+adapt the resulting parallel implementation to any parallel
+architecture that supports an MPI message passing
+library~\cite{SOHWD96}.
+
+
+\subsection{The Genealogy of PEBBL}
+
+Most of the development work on PEBBL has been carried out by
+\begin{itemize}
+\item Jonathan Eckstein, Rutgers University
+\item William Hart, Sandia National Laboratories
+\item Cynthia A. Phillips, Sandia National Laboratories.
+\end{itemize}
+PEBBL is a relatively new name for what was conceived as the ``core''
+layer of the PICO (\emph{P}arallel \emph{I}nteger and
+\emph{C}ombinatorial \emph{O}ptimization) package.  PICO was designed
+to solve mixed integer programming problems, but included a ``core''
+layer supporting implementation of arbitrary branch and bound
+algorithms.  In the Spring of 2006, the development team decided to
+distribute this core layer as a software package in its own right,
+changing its name from ``the PICO core'' to PEBBL.  Much of PEBBL's
+basic design is thus described in preliminary
+publications concerning PICO~\cite{EHP97,EPH00,EPH00a}.  In fact,
+significant portions of this user guide are derived
+from Eckstein \emph{et al.}~\cite{EPH00a,EPH00}.
+
+PEBBL's parallelization strategies are partially patterned after
+CMMIP~\cite{Eck94,Eck97}, a parallel mixed integer programming solver
+developed for the Thinking Machines CM-5 parallel supercomputer.
+CMMIP, however, was specifically designed for mixed integer
+programming, and to take advantage of particular features of the CM-5
+architecture.  PEBBL is more generic in two senses: it is a framework that
+one can use to implement any branch-and-bound algorithm, and it is
+designed to run in a generic message-passing environment.  The ABACUS
+package~\cite{JT98} also influenced some of PEBBL's design.

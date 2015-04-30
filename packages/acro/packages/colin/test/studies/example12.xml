@@ -1,0 +1,26 @@
+<!--
+	NLP0 problem being passed to a MINLP solver
+  -->
+
+<ColinInput>
+  <Problem type="UNLP1">
+     <Domain>
+	<RealVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn4</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:gd">
+     <InitialPoint>
+       2.0 2.0 2.0
+     </InitialPoint>
+     <Options>
+        <Option name="debug">1000</Option>
+        <Option name="sufficient_objective_value">2.0</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

@@ -1,0 +1,5 @@
+$Id: README 325 2005-10-07 17:28:29Z lafisk $
+
+This directory contains code requirements documents and
+code review checklists.  A blank code review checklist
+can be found in ../docs/softwareReview.txt.

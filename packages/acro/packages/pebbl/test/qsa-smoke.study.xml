@@ -1,0 +1,109 @@
+<experimental-study name="qsa-smoke">
+  <tags>
+    <tag>nightly</tag>
+    <tag>smoke</tag>
+    <tag>valgrind</tag>
+  </tags>
+
+  <experiment name="exp1">
+    <factors>
+      <factor name="test" filename="qsa_problems"/>
+    </factors>
+    <controls>
+       <filter name="filter1">
+         <factor name="test" comparison="value">.*_data=.*boltz.out.single.*[0-9]</factor>
+       </filter>
+       <executable>./pebbl_test --qsa</executable>
+    </controls>
+  </experiment>
+
+  <experiment name="exp2">
+    <factors>
+      <factor name="test" filename="qsa_problems"/>
+      <factor name="misc">
+	<level name="controls">debug-solver-params=true</level>
+      </factor>
+      <factor name="bound">
+	<level name="0">bound=0</level>
+	<level name="2">bound=2</level>
+      </factor>
+      <factor name="branching">
+	<level name="balanced">balanced_branching=true</level>
+	<level name="normal">balanced_branching=false</level>
+      </factor>
+      <factor name="dee">
+	<level name="yes-limited">using_dee=true limited_dee=true</level>
+	<level name="yes">using_dee=true</level>
+	<level name="no">using_dee=false</level>
+      </factor>
+    </factors>
+    <controls>
+       <filter name="filter1">
+         <factor name="test" comparison="value">.*_data=.*boltz.out.single.*[0-9]</factor>
+       </filter>
+       <executable>./pebbl_test --qsa</executable>
+    </controls>
+  </experiment>
+
+  <experiment name="exp3">
+    <factors>
+      <factor name="test" filename="qsa_problems"/>
+      <factor name="misc">
+	<level name="controls">debug-solver-params=true</level>
+      </factor>
+      <factor name="bound">
+	<level name="0">bound=0</level>
+	<level name="2">bound=2</level>
+      </factor>
+      <factor name="branching">
+	<level name="balanced">balanced_branching=true</level>
+	<level name="normal">balanced_branching=false</level>
+      </factor>
+      <factor name="dee">
+	<level name="yes-limited">using_dee=true limited_dee=true</level>
+	<level name="yes">using_dee=true</level>
+	<level name="no">using_dee=false</level>
+      </factor>
+      <factor name="enum">
+	<level name="1000">enumCount=1</level>
+      </factor>
+    </factors>
+    <controls>
+       <filter name="filter1">
+         <factor name="test" comparison="value">.*_data=.*boltz.out.single.*[0-9]</factor>
+       </filter>
+       <executable>./pebbl_test --qsa</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="FinalValue.exp1" type="validation">
+    <data experiment="exp1"/>
+    <category>validation</category>
+    <options>_measurement='Value' _cmp_operator='eq'</options>
+  </analysis>
+
+  <analysis name="FinalValue.exp2" type="validation">
+    <data experiment="exp2"/>
+    <category>validation</category>
+    <options>_measurement='Value' _cmp_operator='eq'</options>
+  </analysis>
+
+  <analysis name="FinalValue.exp3" type="validation">
+    <data experiment="exp3"/>
+    <category>validation</category>
+    <options>_measurement='Value' _cmp_operator='eq'</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <data experiment="exp1"/>
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <data experiment="exp1"/>
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

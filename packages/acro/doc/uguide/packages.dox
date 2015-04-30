@@ -1,0 +1,180 @@
+/*!
+ * \page packages
+
+\section packages Software Overview
+
+Acro integrates a variety of optimization software packages, including
+libraries developed at Sandia National Laboratories as well as publicly
+available third-party libraries.  The goal of this integration is to 
+provide a single framework that includes a wide range of optimization methods.
+
+\subsection Acro Capabilities
+
+Three classes of optimizers are well-represented in Acro:
+
+<ol>
+
+<li> branch-and-bound methods for integer programming
+
+<li> heuristic global optimization methods
+
+<li> derivative free local optimization methods
+
+</ol>
+
+\subsubsection PackagesIP Integer Programming
+
+The \b PICO package defines an object-oriented scalable library for
+branch-and-bound.  In particular, \b PICO includes a well-developed
+parallel mixed integer linear programming (MILP) solver.  \b PICO
+depends on \b UTILIB for many basic data structures and system utilities.
+Additionally, \b PICO uses the \b COIN interface library to encapsulate
+linear programming solvers.  Two publicly available linear programming
+solvers are integrated into Acro: \b SOPLEX and \b CLP (which is included
+in \b COIN).  The \b mpPCx parallel linear programming solver is also
+being developed at Sandia (this is currently not part of Acro).
+
+\b PICO has been integrated with the \b GLPK package to support a public
+domain interface to AMPL integer programming problems.  \b PICO has also
+been integrated with the \b AMPL package, which includes the AMPL 
+routines for setting up an AMPL solver.
+
+
+
+\subsubsection PackagesGlobal Global Optimization
+
+The \b COLIN package defines a general-purpose interface for optimization
+solvers.  Although many C++ optimization software libraries have been
+developed, these designs invariably incorporate specific features that
+facilitate the development and application of the author's algorithms.
+By contrast, COLIN is intended to provide a generic interface for
+optimizers that is simple to use and which can encapsulate the basic
+algorithmic interface of a wide range of general-purpose optimizers.
+As such, COLIN can be used as 'middle-ware' to facilitate the interface
+of an optimizer to (a) other optimizers to form hybrid solution
+strategies and (b) to generic user-interfaces like AMPL or Excel, for
+which well-defined APIs exist.
+
+The \b Coliny package defines a variety optimizers using COLIN.
+In particular, \b Coliny includes global optimization heuristics
+like multi-start local search, evolutionary algorithms and DIRECT.
+Additionally, \b Coliny includes COLIN interfaces to several other
+global optimization solvers, including a Lipshitzian solver defined using
+\b PICO.  The \b 3po package includes COLIN interfaces for a variety of
+other publicly available optimizers.
+
+
+
+\subsubsection PackagesDS Derivative Free Optimization
+
+Derivative free optimizers perform local optimization on continuous search
+domains without the aid of gradients or other derivative information.
+The \b Coliny solver includes several derivative free methods, and
+in particular a variety of pattern search methods.  The \b APPSPACK
+package defines a parallel pattern search method that exploits a novel
+asynchronous parallel search.
+
+
+\subsection PackagesApplications End-User Applications
+
+The principal goal of Acro is to provide support of optimization libraries.
+However, there are several end-user applications that can be build within Acro.
+<ol>
+
+<li> \b PICO - a solver for mixed-integer linear programming problems. \b
+PICO can be use with AMPL, or with user-input files in standard formats
+(LP, MPS, etc).
+
+<li> \b coliny - a solver for derivative-free and heuristic global optimization.
+\b coliny is principally indended for use with AMPL.
+
+</ol>
+Documentation for the use of these solvers is currently being developed.
+
+
+
+\subsection PackagesOverview Overview of Acro Packages
+
+Acro is organized around a set of closely related software packages.
+\htmlonly
+The following figure illustrates the dependencies between the Acro
+packages.  The dashed lines indicate packages and dependencies that are
+currently being developed.
+<center>
+<img src="../acro.jpg" alt="[Acro Package Dependencies]">
+</center>
+\endhtmlonly
+\latexonly
+Figure~\ref{fig:acro} illustrates the dependencies between these
+packages;  the dashed lines indicate packages and dependencies that are
+currently being developed.
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.8]{../acro.jpg}
+\end{center}
+\caption{\label{fig:acro} An illustration of inter-package dependencies
+within Acro.}
+\end{figure}
+\endlatexonly
+
+
+<ol>
+
+<li> \b 3po  - A library of third party optimizers that are publicly
+available.
+
+<li> \b CMO  - An example of the use of the MW software
+for parallel master-worker.
+This is not a core Acro package, and thus it will be reconstituted
+shortly.
+
+<li> \b COIN - A subset of the COIN optimization repository that includes
+linear and integer programming interfaces for a variety of third-party
+software projects.  This package uses the Acro configure/makefile's,
+since COIN does not have a sufficiently flexible configure/build process.
+See <a href="http://www.coin-or.org">http://www.coin-or.org</a> for
+further information on this software.
+
+<li> \b SOPLEX - The SOPLEX linear programming library.  SOPLEX contains
+an implementation of the revised simplex algorithm. It features primal
+and dual solving routines for linear programs and is implemented
+as a C++ class library that can be used with other programs.  See <a
+href="http://www.zib.de/Optimization/Software/Soplex/">http://www.zib.de/Optimization/Software/Soplex/</a>
+for further information on this software.
+
+<li> \b ampl - This package includes C files provided by AMPL to setup
+solvers that can be used by AMPL.  In particular, this package provides
+the ability to read the AMPL *.nl file format.
+
+<li> \b appspack - An asyncronous parallel pattern search
+method developed at Sandia National Laboratories.  See <a
+href="http://software.sandia.gov/appspack/">http://software.sandia.gov/appspack/</a>
+for further information on this software.
+
+<li> \b colin - A general-purpose C++ optimization interface developed at Sandia National Laboratories.  This library provides a middle-ware layer for optimizers that facilitates the use of hybrid optimizers, as well as optimizers applied to novel, user-defined search domains.
+
+<li> \b coliny - Coliny is a collection of C++ optimizers that are derived directly
+from the COLIN interface.  This library includes methods such as pattern search, evolutionary algorithms, multistart local search and DIRECT.  Coliny is a revision of the older SGOPT library, which is now deprecated.
+
+<li> \b glpk  - The GNU linear programming toolkit.  GLPK is intended for solving large-scale linear programming (LP), mixed integer programming (MIP), and other related problems.   See <a href="http://www.gnu.org/software/glpk/glpk.html">http://www.gnu.org/software/glpk/glpk.html</a> for further information on this software.
+
+<li> \b pico - PICO defines a flexible branch-and-bound engine that uses an
+object-oriented model to allow it to be easily adapted to new applications.  
+A novel feature of PICO is its ability to scale up parallel branch-and-bound 
+to thousands of processors.  PICO also includes solvers for mixed-integer linear programming.
+
+<li> \b sgopt - SGOPT defines a collection of C++ optimizers.  This software has
+been superceded by Coliny, and its use is now deprecated.
+
+<li> \b tmf - TMF is a Templatized Metaheuristics Framework that is under 
+development.
+
+<li> \b utilib - UTILIB is a library of C and C++ utility methods.
+It includes classes of standard data structures, general-purpose
+mathematical routines, sorting methods, random number generates, tools
+for processing command-line options and tools to support parallelization
+of software.
+
+</ol>
+
+*/

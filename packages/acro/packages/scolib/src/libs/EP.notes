@@ -1,0 +1,40 @@
+These notes concern the expected scale of the initial steps taken by an EP.
+
+An EP/ES performs mutation in each dimension by adding
+\[
+x_i += x_i + N(0,\sigma_i),
+\]
+where $N(0,\sigma_i)$ is a normally distributed random variable with 
+standard deviation $\sigma_i$.  If we assume that all of the dimensions
+have been scaled properly, then the initial values for the $\sigma_i$ will
+be scaled to a constant value, $\sigma$.
+
+Now the sum of the squares of $n$ normally distributed random variables
+is a chi-squared variate, so
+\[
+\sum_{i=1}^n N(0,\sigma_i) \equiv \sigma \sum_{i=1}^n N(0,1) \equiv \sigma \Chi^2(n).
+\]
+Now the positive square root of the chi-squared variate $\Chi^2(n)$ has
+expectation 
+\[
+2^(1/2) \Gamma[(n+1)/2] \Gamma[n/2],
+\]
+where $\Gamma$ is the gamma function.  Thus we have 
+\[
+E\left[ \sqrt{\sum_{i=1}^n N(0,\sigma_i) \right] = \sigma 2^(1/2) \Gamma[(n+1)/2] \Gamma[n/2].
+\]
+For large $n$, this expectations approaches $\sigma \sqrt{n}$.  For the value
+$n=10$, the expectation is approximately $3.084 \sigma$.
+
+
+
+Now, suppose we have a 10-dimensional problem defined over $[-100,100]$.  Then
+if we want to set the search scale equal to a fraction of 0.1 of the domain,
+then we need to have $3.084 \sigma = 0.1*200$, which implies that
+$\sigma = 6.485$.
+
+Citations:
+
+Statistical Distributions, 2nd Ed.  Merran Evans, Nicholas Hasting and
+Brian Peacock.  John Wiley and Sons, Inc.  NY, NY. 1993.
+

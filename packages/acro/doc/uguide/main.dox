@@ -1,0 +1,63 @@
+/*! 
+
+\mainpage <center>Acro Users Manual</center>
+
+<center>
+William E. Hart<br>
+Discrete Mathematics and Algorithms Dept<br>
+Sandia National Laboratories<br>
+P.O. Box 5800<br>
+Albuquerque, NM<br>
+http://www.cs.sandia.gov/~wehart<br>
+wehart@sandia.gov
+</center>
+
+<center>
+<table borderwidth=0><tr><td width=700 align=left nowrap>
+This document provides a user's guide for the Acro software library.  
+The Acro Project is an effort to facilitate the design, development,
+integration and support of optimization software libraries.  The goal
+of the Acro Project is to develop (parallel) optimization solvers and
+libraries using object-oriented software frameworks that facilitate the
+application of these solvers to large-scale engineering and scientific
+applications.  Thus Acro includes both individual optimization solvers
+as well as optimization frameworks that provide abstract interfaces for
+flexible interoperability of solver components.  Acro has been written
+to support optimizers that are broadly useful for DOE's engineering and
+scientific applications.  In particular, many solvers included in Acro
+can exploit parallel computing resources to solve optimization problems
+more quickly.
+</td></tr></table>
+</center>
+
+<h2> Table of Contents</h2>
+
+<ul>
+<li> \ref intro
+<li> \ref packages 
+<li> \ref software
+<li> \ref install  ( \ref configurationAppendix )
+<li> \ref licenses ( \ref licensesAppendix )
+<li> \ref refs
+<li> \ref acknowledgements
+</ul>
+
+<table width=100%>
+<tr>
+<td>
+<i>acro</i> - From Greek akros, at the point, end, or top.
+<p>
+<i>acro</i> - A generic term for warblers of the genus Acrocephalus, usually refering to the sedge and/or reed warblers. The sedge warbler is a small, quite plump, warbler with a striking broad creamy stripe above its eye, and greyish brown legs. It is brown above with blackish streaks and creamy white underneath. It spends summers in the UK and winters in Africa, south of the Sahara Desert. Its song is a noisy, rambling warble compared to the more rhythmic song of the reed warbler.
+<p>
+<i>acro</i> - A Common Repository for Optimizers
+</td>
+<td align=center>
+<img src="http://software.sandia.gov/~wehart/sedgewarbler_tcm3-22214-left.jpg"><br>
+\htmlonly
+<font size="-1">Mike Langman</font>
+\endhtmlonly
+</td>
+</tr>
+</table>
+
+*/

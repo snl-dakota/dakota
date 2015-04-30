@@ -1,0 +1,48 @@
+#! /usr/bin/env python
+##
+## A python script that reads an XML input file, computes a simple function,
+## and writes out an XML file.
+##
+
+import sys
+from os.path import abspath, dirname
+from coopr.opt import colin
+
+class Problem(colin.OptProblem):
+
+    def __init__(self):
+        self.response_types = [colin.response_enum.FunctionValue, \
+                                colin.response_enum.Gradient, \
+                                colin.response_enum.NonlinearConstraintValues]
+
+    def function_value(self, point):
+        val=0.0
+        for i in range(0,len(point.reals)):
+            val = val + (point.reals[i] - 3.0)*(point.reals[i] - 3.0)
+        for i in range(0,len(point.ints)):
+            val = val + (point.ints[i] - 2)*(point.ints[i] - 2)
+        for i in range(0,len(point.bits)):
+            val = val + (point.bits[i] - 1)*(point.bits[i] - 1)
+        return val
+
+    def gradient(self, point):
+        val=[]
+        for i in range(0,len(point.reals)):
+            val.append( 2.0*(point.reals[i] - 3.0) )
+        return val
+
+    def nonlinear_constraint_values(self, point):
+        val=[]
+        tmp=0
+        for i in range(0,len(point.reals)):
+            tmp = tmp + (point.reals[i] - 10.0)*(point.reals[i] - 10.0)
+        val.append(tmp)
+        tmp=0
+        for i in range(0,len(point.ints)):
+            tmp = tmp + (point.ints[i] - 10)*(point.ints[i] - 10)
+        val.append(tmp)
+        return val
+
+
+instance = Problem()
+instance.main(sys.argv)

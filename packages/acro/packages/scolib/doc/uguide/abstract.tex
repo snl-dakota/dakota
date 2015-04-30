@@ -1,0 +1,18 @@
+This document provides a user's guide for the Coliny optimization library.
+Coliny is a C++ library that includes implementations of a variety of
+optimization algorithms. Coliny relies on the COLIN optimization library
+interface to define the basic framework for defining optimization
+problems.  Thus Coliny can be viewed as a collection of optimizers,
+any of which could be used independently.
+
+The optimizers currently supported within Coliny are evolutionary
+algorithms (genetic algorithms, evolutionary programming, genetic
+programming and evolutionary pattern search), direct search (Solis-Wets
+search, simple pattern search), TABU search, multi-start local search,
+random sampling, DIRECT and GRASP.  Additionally, Coliny includes
+interfaces with a variety of third-party optimizers, including APPS
+(direct search), and COBYLA2 (direct search).  Many of the optimizers in
+Coliny are written to exploit implicit parallelism in the execution of
+function evaluations, and a simple asynchronous master-slave algorithm
+can be used to use these algorithms in parallel on a wide-range of
+computing platforms.

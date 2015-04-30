@@ -1,0 +1,143 @@
+
+Test8b - a simple multi-objective minimization example with a different domain
+
+*****************************************************************************
+*****************************************************************************
+****** Coliny Solver: RandomMOO
+*****************************************************************************
+*****************************************************************************
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			0
+	Total # Func Evals:			0
+	Pareto Size:				0
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			1
+	Total # Func Evals:			2
+	Pareto Size:				2
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			2
+	Total # Func Evals:			4
+	Pareto Size:				4
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			3
+	Total # Func Evals:			6
+	Pareto Size:				6
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			4
+	Total # Func Evals:			8
+	Pareto Size:				8
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			5
+	Total # Func Evals:			10
+	Pareto Size:				10
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			6
+	Total # Func Evals:			12
+	Pareto Size:				12
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			7
+	Total # Func Evals:			14
+	Pareto Size:				14
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			8
+	Total # Func Evals:			16
+	Pareto Size:				16
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			9
+	Total # Func Evals:			18
+	Pareto Size:				18
+]
+)
+(---COLIN--- Begin Optimizer Iteration -----------------------------------------
+[
+Normal:
+	Optimizer Type:				RandomMOO
+	Optimizer Name:				default
+	Iteration Number:			10
+	Total # Func Evals:			20
+	Pareto Size:				20
+]
+)
+[ Termination: Unknown ]
+
+Multi-Objective Cache (Point/Values)
+------------------------------------
+4 : -9.999843473 -7.369244237 5.112106444 -0.8269973615  / 2 : 20897.73287 4.785208071e-05 
+4 : -9.464282775 -7.790223556 4.689921473 -2.22403376  / 2 : 15012.41662 6.661152733e-05 
+4 : -2.32995845 0.3883274414 6.619306922 -9.308557789  / 2 : 56455569.25 1.771304432e-08 
+4 : -8.183614026 -8.273479699 3.445342341 -2.887565341  / 2 : 11258.46665 8.882204224e-05 
+4 : -4.750940127 -9.050709726 4.721637692 -3.435315477  / 2 : 37210.03903 2.687446791e-05 
+4 : -8.818871501 -8.620866389 3.588813593 -3.182352327  / 2 : 18256.93028 5.47737207e-05 
+4 : 7.694142572 -4.545800665 -1.271771887 5.329895558  / 2 : 651743.2253 1.534346597e-06 
+4 : -7.59533393 -7.570009772 4.45485814 -2.500021215  / 2 : 12683.87708 7.884024685e-05 
+4 : -0.2696523398 7.953125731 8.184162033 -8.788713449  / 2 : 35900603.14 2.785468523e-08 
+4 : -2.725494287 8.805631535 6.045495106 -7.671250768  / 2 : 12047883.32 8.300213186e-08 
+4 : -4.458363994 8.27634884 0.5949478739 -0.711083501  / 2 : 4711.955895 0.0002122260951 
+4 : -4.371989753 7.615003727 -0.09292139684 -1.597057741  / 2 : 3424.076996 0.0002920495074 
+4 : -7.492692488 -9.682645975 3.769106024 7.364942635  / 2 : 8668464.345 1.153606868e-07 
+4 : -0.853137866 7.400905936 6.054610582 -9.928649594  / 2 : 94484759.51 1.058371747e-08 
+4 : -5.336102431 -3.873563378 -2.979695039 0.2654740448  / 2 : 953.500635 0.001048767 
+4 : -1.22189001 9.208890082 7.246421503 -8.103787862  / 2 : 18751622.91 5.332871744e-08 
+4 : -1.692107688 0.7460795114 -0.64165263 -4.25575257  / 2 : 107602.9182 9.293428256e-06 
+4 : -7.830298258 -8.41432744 2.651362396 -2.843940047  / 2 : 9700.678659 0.0001030855711 
+4 : 0.6889968229 -0.03039761913 9.107215199 4.965853018  / 2 : 940362.957 1.063419175e-06 
+4 : -5.614433809 8.792223677 0.0733480586 -0.4195000466  / 2 : 6007.307121 0.000166463938 
+

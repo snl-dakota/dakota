@@ -1,0 +1,96 @@
+<ColinInput>
+  <Problem id="pA" type="MINLP0">
+     <Domain> 
+	<RealVars num="3">
+	   <Labels>
+	      x_1 x_2 x_3
+	   </Labels>
+	   <Lower index="1" value="9.9"/>
+	   <Upper index="3" value="29.9"/>
+	   <Fixed index="2" value="10.0"/>
+	</RealVars>
+
+	<IntegerVars num="5">
+           <Labels>
+	      y_1 y_2 y_3 y_4 y_5
+	   </Labels>
+	   <Fixed value="1"/>
+	   <Lower index="1" value="-1"/>
+	   <Upper index="2" value="29"/>
+	   <Fixed index="3" value="10"/>
+	</IntegerVars>
+
+	<BinaryVars num="4">
+           <Labels type="binary">
+	      z_1 z_2 z_3 z_4
+	   </Labels>
+	   <Fixed index="1" value="1"/>
+	   <Fixed index="3" value="0"/>
+	</BinaryVars>
+     </Domain>
+
+     <Constraints>
+        <Linear num="3">
+          <Lower index="3" value="0.0"/>
+          <Upper index="1" value="2.0"/>
+          <Fixed index="2" value="2.0"/>
+          <Matrix>
+            3 4
+            0 2 0 9
+            1 2 3 2
+            3 4 5 4
+          </Matrix>
+        </Linear>
+      
+        <Nonlinear num="6">
+          <Geq index="1" value="0.0"/>
+          <Leq value="1.0"/>
+          <Leq index="2" value="2.0"/>
+          <Equal index="5" value="2.0"/>
+        </Nonlinear>
+     </Constraints>
+
+     <Driver>
+        <Command>shell_func5</Command>
+        <KeepFiles />
+     </Driver>
+  </Problem>
+
+
+  <Problem id="pB" type="MINLP0" application="SubspaceReformulation">
+    <BaseProblem id="pA"/>
+    <FixedDomain>
+	<Integer>11 13 15 17 19</Integer>
+    </FixedDomain>
+  </Problem>
+
+
+  <Problem id="p1" type="MINLP0">
+     <Domain >
+	<RealVars num="3">
+           <Labels>
+	      x_1 x_2 x_3
+	   </Labels>
+	   <Lower index="1" value="9.9"/>
+	   <Upper index="3" value="29.9"/>
+	</RealVars>
+
+	<IntegerVars num="2">
+	</IntegerVars>
+     </Domain>
+
+     <Driver>
+        <Command>shell_func5</Command>
+        <KeepFiles />
+     </Driver>
+  </Problem>
+
+
+  <Problem id="p2" type="NLP0" application="SubspaceReformulation">
+    <BaseProblem id="p1"/>
+    <FixedDomain>
+	<Integer>11 13</Integer>
+    </FixedDomain>
+  </Problem>
+
+</ColinInput>

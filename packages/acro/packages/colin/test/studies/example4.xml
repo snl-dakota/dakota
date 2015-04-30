@@ -1,0 +1,26 @@
+<!-- 
+	MINLP0 problem being passed to a MINLP solver.
+	Minimize just binary variables.
+  -->
+
+<ColinInput>
+  <Problem type="MINLP0">
+     <Domain>
+	<BinaryVars num="3"/>
+     </Domain>
+     <Driver>
+        <Command>../../../../python/bin/python example_fn1</Command>
+     </Driver>
+  </Problem>
+
+  <Solver type="colin:ls">
+     <InitialPoint>
+       b(3: 0 0 0)
+     </InitialPoint>
+     <Options>
+        <Option name="sufficient_objective_value">1e-3</Option>
+     </Options>
+  </Solver>
+
+  <Execute/>
+</ColinInput>

@@ -1,0 +1,322 @@
+
+THE ACRO SOFTWARE RELEASE PROCESS
+
+
+Version Numbers for Acro and Acro Projects
+==========================================
+
+Acro uses release numbers with the format (major).(minor).(interim).
+Major releases reflect major changes in core Acro functionality.
+
+Releases for Acro projects like acro, acro-pico and acro-coliny are managed
+separately, and thus they have independent release numbers.
+
+
+Released vs. Development Projects
+=================================
+
+As Acro grows in scope, there will be many contexts where a question
+arises as to whether we should form a new Acro project and whether 
+a new Acro project should be integrated into the next Acro release.  The
+Acro project 'acro' contains packages for all Acro projects that have been
+publicly released, and the project acro-dev contains additional packages for
+Acro projects that are under development and which have not been 
+released within Acro.
+
+In general, the criteria for releasing a new project in Acro are:
+
+1. Is the project's functionality sufficiently stable for an initial release?
+2. Have tests been developed to document the stability of this functionality?
+3. Is there adequate documentation for the project?
+   At a minimum, such documentation should include source-level documentation
+   via doxygen, as well as updates to the Acro web pages.
+4. Have copyright and licensing issues been resolved?
+5. Can releases be generated with 'make dist'?
+
+Note that even when projects are not released with Acro, the release
+process can be used to define Alpha or Beta versions of the software.  The
+only requirement is that software that is not ready for public release
+must reside on the private Acro repository:
+
+  http://software.sandia.gov/svn/private/acro
+
+or in some other private subversion repository.
+
+
+Manage Release Branches
+=======================
+
+The Acro source code is maintained with subversion.  This allows for the 
+flexible management of bug fixes in release branches.  Stable branches
+will maintain stable code snapshots, and these branches can be patched
+to support increment releases for bug fixes.  The incremental version
+numbers are provided to support this capability.
+
+A related issue concerns whether/how the release branch will be
+used for testing.  Testing will occur principally on the trunk
+of acro projects.  Code will be merged into stable branches when 
+regular nightly tests confirm that the code is stable across the
+range of required compute platforms.  The stable code branches will
+also be tested before releases are generated.  This release model is intended
+to minimize the management of the release.
+
+
+Release Requirements
+====================
+
+The release checklists provide information on various requirements for
+the release process.  In particular, portability tests and software tests
+are an important component of these requirements.  In practice,
+the initial requirement specifications may be edited such that 
+requirements are removed in contexts where they are not critical to
+application customers.  However, the final version of the release
+documentation needs to accurately reflect the set of tests that were
+successfully passed.
+
+Similarly, the open problems/issues/bugs in the Bugzilla database need to
+be resolved.  For consistency across Acro projects, we require that all bugs
+with severity 'major' or worse be resolved prior to an Acro release.  In
+contexts where such bugs cannot be resolved, those exceptions need to be
+explicitly documented, including reasons why the bug could not be treated with
+a 'normal' severity as well as why the release should proceed without
+resolving this bug.
+
+
+General Release Process
+=======================
+
+A software release of Acro occurs in four stages, called "Plan", 
+"Do", "Check" and "Act".  The progress of the four stages is
+documented the release.txt checklist and some supporting information.  
+The checklists used in this process have ___ fields that can be used
+to indicate that a checklist item is required, and how it is completed.
+For example:
+
+  _X_	This item is required but not finished
+  _O_	This item will be omitted from this release
+  weh   'weh' has completed this checklist item
+
+These comments provide a _minimal_ amount of documentation for 
+the status of these items.  Further annotation of how items were
+completed is encouraged to help document the release process.
+
+
+The "Plan" stage is where decisions about the release process are
+made, and where the release checklists are initially developed:
+
+- Create the subversion release directory:
+     https://software.sandia.gov/svn/public/acro/(project-name)/dist/(major).(minor).(interim)
+
+- Fill out the "PLAN" section of the release checklist, and flush out
+  the related documents.  This checklist includes references to other
+  checklists that may need to be filled out for specific release
+  activities.
+
+
+The "Do" stage is where the planned activities are carried out.  
+
+
+The "Check" stage is where we verify that the planned activities
+occured successfully.  This process will leverage the nightly builds 
+with the Acro Version Of The Day (VOTD).  The nightly VOTD builds will be 
+used to track the resolution of testing failures, as well as the
+portability requirements for the release.
+
+
+The "Act" stage is where we release the code 
+and begin the process of ensuring it meets customer's need.
+
+- Create the release branch.
+
+- Archive software tarballs, documentation, executables and test results.
+
+Verification of this process will begin at least a week before the 
+release date, using the VOTD tarballs to confirm the release process.
+
+
+
+Management of the Acro Subversion Repository
+============================================
+
+An Acro project (acro-pico, acro-coliny, etc) is composed of one or
+more Acro packages. In the SVN repository, the project has external 
+links to the packages that it uses.  Some packages (colin, coliny, 
+parpcx, pebbl, and pico) are part of the Acro repository.  Others 
+(appspack, exact, optpp and utilib) have their own SVN repository.
+
+>From time to time we will create releases of the 4 Acro packages
+that have their own SVN repository.  We will not release the
+other Acro packages individually.  They will be released as part
+of their Acro projects.
+
+>From time to time we will also create releases of the Acro projects.
+
+While developing code and creating releases, we will make use of
+"stable" branches of packages, which are implemented as directory
+copies in svn.  "stable" branches represent code thought be stable,
+but which can be tested and in which bugs can be fixed.  
+
+The "trunk" directory of each Acro project can contain links to
+either the "trunk" of its constituent packages or to a "stable"
+directory of that package, whichever makes sense.
+
+When a package or project is released, the stable directory that was
+being tested for the release is copied to a release directory.  The
+release directory is frozen by setting the revision number for each
+external link to the revision representing the release.
+
+In these examples, the URL is "https://software.sandia.gov/svn/public/"
+
+==============================
+Example of releasing an Acro package (UTILIB 3.5.0):
+==============================
+
+UTILIB is maintained at "https://software.sandia.gov/svn/public/utilib"
+
+1. If you want to begin the release with the trunk code, copy it
+   to a new stable directory:
+
+   svn copy URL/utilib/trunk URL/utilib/stable/3.5
+
+   If you want to begin the release with the latest stable copy of
+   UTILIB (suppose it is 3.5), then you can skip the creation of the 
+   stable directory.
+
+2. Test the code in the stable/3.5, according to the test plan which
+   you have checked into URL/utilib/admin/3_5.  Fix bugs as you find them,
+   and merge them back into URL/utilib/trunk when appropriate.
+
+3. When ready to create the release:
+
+   svn copy URL/utilib/stable/3.5 URL/utilib/releases/3.5.0
+
+4. Archive any tarfiles, release announcements, etc. in
+
+   URL/utilib/dist/3.5.0
+
+==============================
+Example of a patch to an Acro package release (UTILIB 3.5.1):
+==============================
+
+1. Continue after the release to fix bugs in URL/utilib/stable/3.5.  Merge
+   the bug fixes into URL/utilib/trunk if appropriate.
+
+2. Create the patch release directory:
+
+   svn copy URL/utilib/stable/3.5 URL/utilib/releases/3.5.1
+
+3. Archive tarfiles, release announcements, etc in a dist directory:
+
+   URL/utilib/dist/3.5.1
+
+Previously, we released Acro packages with 2 digit release numbers.  It
+seems that to be consistent under the new SVN structure, we should go to
+3 digit release numbers.
+
+==============================
+Example of releasing an Acro project (acro-pico 2.5.0)
+==============================
+
+acro-pico is maintained at "https://software.sandia.gov/svn/public/acro/acro-pico"
+
+We have:
+
+URL/acro/acro-pico/
+  trunk/
+  stable/
+  releases/
+  dist/
+
+And acro-pico/trunk includes the following Acro packages:
+  https://software.sandia.gov/svn/public/exact/exact/trunk
+  https://software.sandia.gov/svn/public/exact/fast/trunk
+  https://software.sandia.gov/svn/public/acro/pebbl/trunk
+  https://software.sandia.gov/svn/public/acro/pico/trunk
+  https://software.sandia.gov/svn/public/utilib/utilib/trunk
+
+It also contains a tpl directory with links to third party libraries.
+We assume these are links into directories that will not be changing.
+The links for third party libraries in the acro-pico stable and release 
+directories can be the same as the links in the acro-pico trunk.
+
+1. Choose or create a stable directory for each acro-pico subpackage.  These
+   stable copies of the subpackages will be the version of code included
+   in the acro-pico release.
+
+   For packages which are not part of the Acro repository (exact, fast and
+   utilib), we could also choose a release branch of the package.
+
+   Suppose we want this release of acro-pico to be based on release 3.5
+   of UTILIB, on the latest stable directory of package PICO (say its 2),
+   and on the trunks of pebbl, fast and exact.
+
+   The UTILIB release and the stable PICO directory already exist.  We
+   create the others
+
+   svn copy URL/exact/exact/trunk URL/exact/exact/stable/5
+   svn copy URL/exact/fast/trunk URL/exact/fast/stable/5
+   svn copy URL/acro/pebbl/trunk URL/acro/pebbl/stable/12
+
+2. Create a stable branch of acro-pico for testing.  It is composed of
+   external links to stable acro packages.
+
+   svn copy URL/acro/acro-pico/trunk URL/acro/acro-pico/stable/2.5
+
+   The external links in URL/acro/acro-pico/stable/2.5/packages should point
+   to these directories
+
+    https://software.sandia.gov/svn/public/exact/exact/stable/5
+    https://software.sandia.gov/svn/public/exact/fast/stable/5
+    https://software.sandia.gov/svn/public/acro/pebbl/stable/12
+    https://software.sandia.gov/svn/public/acro/pico/stable/2
+    https://software.sandia.gov/svn/public/utilib/utilib/releases/3.5.0
+
+   You could change the links in the tpl directory to point to different
+   versions of the third party libraries, but this probably would not be
+   necessary.
+
+3. Test the code in URL/acro/acro-pico/stable/2.5, according to the test plan you
+   had created and checked into URL/acro/acro-pico/trunk/admin/2.5.
+   (Maybe "admin" shouldn't be in trunk, may we should have URL/acro/acro-pico/admin.)
+
+4. When bugs are found in the stable directories of subpackages, fix them.
+   Remember to merge them into the subpackage's trunk if appropriate.
+
+5. When testing and debugging are done, create the release:
+
+   svn copy URL/acro/acro-pico/stable/2.5 URL/acro/acro-pico/releases/2.5.0
+
+6. Modify the external links in the packages directory of the just created
+   release directory.  You want them to point to the same directories, but
+   at the repository revision number representing the point in time when
+   the release was created.
+
+7. Copy tarfiles, announcements, anything else that was part of the release but
+   is not part of the repository to a dist directory:
+
+   URL/acro/acro-pico/dist/2.5.0
+
+==============================
+Example of releasing a patch to an Acro project release (acro-pico 2.5.1)
+==============================
+
+1. Continue fixing bugs in URL/acro/acro-pico/stable/2.5, and merging the
+   bux fixes into the package trunks if appropriate.
+
+2. Copy the updated stable version of acro-pico to a new release directory
+
+   svn copy URL/acro/acro-pico/stable/2.5 URL/acro/acro-pico/releases/2.5.1
+
+3. Freeze the external links in releases/2.5.1/packages.
+
+4. Create a new dist directory: URL/acro/acro-pico/dist/2.5.1
+   containing tarfiles, etc.
+
+==============================
+Releasing all of "public" Acro
+==============================
+
+URL/acro/acro/stable/x.y can contain links into releases or stable directories
+of Acro packages.  Testing the stable directory and creating the release 
+and dist directory follow the process used when releasing a project.
+

@@ -1,0 +1,130 @@
+###############################################################################
+#                                                                             #
+# SCOLIB Change Log                                                           #
+#                                                                             #
+###############################################################################
+
+-------------------------------------------------------------------------------
+SCOLIB 2.3.2 (2013/11/11)
+-------------------------------------------------------------------------------
+
+- Minor improvements to the TGPO solver
+  - Improved performance (separated TGP regression from EGO evaluation)
+  - Improved user output
+  - Additional error checks and squashed some bugs
+
+-------------------------------------------------------------------------------
+SCOLIB 2.3.1 (2013/04/29)
+-------------------------------------------------------------------------------
+
+- Minor improvements to the TGPO solver
+  - Improved R interface
+  - Improving some default parameters
+  - Catching some edge conditions associated with unevaluated initial points
+
+-------------------------------------------------------------------------------
+SCOLIB 2.3 (2013/01/28)
+-------------------------------------------------------------------------------
+
+- Adding two new SCOLIB solvers:
+  - TGPO: a Treed Gaussian Process guided Optimizer
+  - StateMachinePS: A "pattern search" that uses stencil moves defined
+    by a state machine
+
+- Numerous fixes to the CMake build harness
+
+-------------------------------------------------------------------------------
+SCOLIB 2.2 (2011/11/22)
+-------------------------------------------------------------------------------
+
+- Fixes for the EA when the final point set contains duplicate points,
+  and for reading the initial population from the inter-solver cache.
+
+- Prototype CMake build harness
+
+- Deprecating much of the use of cp_u within the build harness.
+
+-------------------------------------------------------------------------------
+SCOLIB 2.1 (2010/12/21)
+-------------------------------------------------------------------------------
+
+- Improved static registration system.
+
+- Tracking move of COLIN to use utilib Properties for configuring
+  objects.
+
+- Re-enabled the dynamic constraint penalty within the SolisWets
+  optimizer.
+
+- Reconstituting the EAminlp solver.
+
+- Return additional points from solvers:
+    * EA: return best point and final population
+    * Direct: return best point and final "Pareto" set 
+
+-------------------------------------------------------------------------------
+SCOLIB 2.0 (2008/12/14)
+-------------------------------------------------------------------------------
+
+- Renamed Coliny to SCOLIB!   This reflects the fact that Coliny is an ensemble
+  of COLIN optimizers, not all of which lie within the SCOLIB library.
+
+- This is a major rework that uses the COLIN 3.0 solver interface.  Not all
+  solvers are working properly (e.g. hybrids), but the basic functionality
+  of these solvers has been reworked.
+
+
+-------------------------------------------------------------------------------
+Coliny 1.2
+-------------------------------------------------------------------------------
+
+- Misc fixes for portability in the coliny solver.
+
+- Added a 'random' multi-objective optimizer: RandomMOO.  This was mostly
+  developed to exercise the MO capabilities in COLIN, but it can provide
+  a baseline for comparison for other MO solvers.  The output of this 
+  solver has not been finalized.
+
+- Fixed convergence issues in ea-ps tests.  The 'value' used for in
+  the EA was changed to reflect a penalized constraint ... which led to
+  solutions that were more feasible.  This changed the required
+  convergence tolerance.
+
+- Added the ability to register solvers with a Factory object.  Solver
+  registration led to a rework of the coliny solver and show_options
+  example (which was significantly simplified).  With this factory,
+  an end-user application no longer needs to include coliny.h, and
+  all of the Coliny headers, to use Coliny.
+
+- Registered several new hybrid EA solvers ... which have not been
+  tested and validated.
+
+- Setup a MSVC++ configuration.
+
+- Added the MultiStatePS class, which is still under development.
+
+- Added valgrind tests.
+
+- Integrated an NSGA2 code.  This code works, but the output for this
+  solver has not been finalized.
+
+- Added seeding to Coliny tests.
+
+- Revised experimental tests to conform to the new style supported by 
+  EXACT.  Reworked the coliny test script to support independent 
+  parameterization of hybrid solvers.
+
+
+-------------------------------------------------------------------------------
+Coliny 1.1
+-------------------------------------------------------------------------------
+
+- exposed method 'OptProblem::reset_neval_request_id()' to enable
+  DAKOTA to specify the asynchronous request IDs used within COLIN solvers.
+
+
+-------------------------------------------------------------------------------
+Coliny 1.0
+-------------------------------------------------------------------------------
+
+Initial release.

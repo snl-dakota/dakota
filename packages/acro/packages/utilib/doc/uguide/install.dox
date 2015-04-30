@@ -1,0 +1,369 @@
+/*! 
+ * \page installPage
+
+
+\section InstallationSec Installation
+
+\subsection downloadingSec Downloading
+
+The UTILIB software can be downloaded either as a compressed tar file or 
+directly from the UTILIB Concurrent Version System (CVS) repository.  
+The latest release of UTILIB is available at
+\verbatim
+    http://www.cs.sandia.gov/~wehart/UTILIB
+\endverbatim
+and earlier versions are available in the same directory.
+
+The CVS repository for UTILIB can be accessed by executing
+\verbatim
+    cvs -d :ext:GEUutili@gaston.cs.sandia.gov:/usr/local/cvs/cvsroot checkout utilib
+\endverbatim
+The password for this repository is 'anonymous'. 
+The developer's password for this repository is restricted; please contact
+Bill Hart at wehart@sandia.gov to request the password to commit changes to 
+this repository.
+If you are accessing this repository throught a
+firewall (e.g. Sandia's SRN firewall), or you expect to checkout updates
+frequently, then the script \c cvs-u can be used to encapsulate the
+access to the CVS repository.  The \c cvs-u script can be downloaded at
+\verbatim
+    ftp://ftp.cs.sandia.gov/pub/papers/wehart/src/cvs-shells.tar
+\endverbatim
+Note that this script uses the \p ssh command, version 1.x.
+
+
+\subsection UNIXinstallSec Installation on Unix
+
+Installation of UTILIB on UNIX systems is performed by the following steps:
+<ol>
+<li> Unpack the archive, unless you have already done that
+\verbatim
+    gunzip utilib-$VERSION.tar.gz    # uncompress the archive
+    tar xf utilib-$VERSION.tar       # unpack it
+\endverbatim
+
+<li> Move into the \c utilib directory and run the configure script.
+\verbatim
+    ./configure
+\endverbatim
+
+The \c configure script automates much of the setup activity
+associated with building large suites of programs like UTILIB on various
+hardware platforms.  This includes
+
+<ol>
+<li> making symbolic links so that files used for configuration can be                accessed from one location
+<li> generating Makefiles so that objects, libraries, executables and other           'targets' can be created for specific and unique hardware platforms
+<li> calling itself recursively so that sub-directories can also be configured
+</ol>
+
+By default, the configure script does not assume that UTILIB relies on any
+other software libraries.  There are a number of configuration options 
+that can be used to customize the installation.
+The full %parameter list for the \c configure script is:
+
+\verbatim
+   configure hosttype [--target=target] [--srcdir=dir] [--rm]
+                      [--site=site] [--prefix=dir] [--exec-prefix=dir]
+                      [--program-prefix=string] [--tmpdir=dir]
+                      [--with-package[=yes/no]] [--without-package]
+                      [--enable-feature[=yes/no]] [--disable-feature]
+                      [--norecursion] [--nfp] [-s] [-v] [-V | --version]
+                      [--help]
+\endverbatim
+
+Many of these options are not necessary since system information can be
+often acquired from your local machine.  Refer to the Cygnus
+\c configure documentation for complete information (see
+utilib/doc/configure.ps).  The following options are either commonly
+used or specific to UTILIB (examples of arguments are provided):
+
+<table>
+<tr>
+<td>            [--with-compiler=\<gcc,CC\>]</td>
+<td>
+Sets up a specific compiler;
+						The native compiler is the 
+						default.
+</td>
+</tr>
+
+<tr>
+<td>
+		[--target=\<solaris\>]		
+</td>
+<td>
+Optional flag to specify the
+						target machine that you
+						are cross-compiling for.
+</td>
+</tr>
+
+<tr>
+<td>
+ 		[--site=\<snl980\>] 		
+</td>
+<td>
+Specifies the site-specific
+						locations for MPI, etc.
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-debugging]		
+</td>
+<td>
+Turns on the DEBUGGING macro and sets the OPTIMIZATION macro to \<flag\>
+						(code is compiled with -g by default).
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-mpi]			
+</td>
+<td>
+Turns on the use of the MPI
+						package.
+</td>
+</tr>
+						
+<tr>
+<td>
+		[--with-mpe]			
+</td>
+<td>
+Turns on the use of the MPE
+						package.
+</td>
+</tr>
+						
+<tr>
+<td>
+		[--with-swig]			
+</td>
+<td>
+Enables the use of swig to
+						wrap UTILIB for use with the
+						Python scripting language.
+</td>
+</tr>
+						
+<tr>
+<td>
+		[--with-static]			
+</td>
+<td>
+Enables the compilation of 
+						statically linked libraries
+						(the default).
+</td>
+</tr>
+						
+<tr>
+<td>
+		[--with-insure]			
+</td>
+<td>
+Enables the compilation with the insure++ debugging tool.
+</td>
+</tr>
+						
+<tr>
+<td>
+		[--with-shared]			
+</td>
+<td>
+Enables the compilation of 
+						dynamically linked libraries,
+						which can be shared.
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-optimization=\<level\>]			
+</td>
+<td>
+Sets the optimization level used when compiling the source files.  This is overridden by the --with-debugging flag.
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-ansi]			
+</td>
+<td>
+Sets up the compiler to use ANSI standard constructs for C++. (the default)
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-ansiheaders]			
+</td>
+<td>
+Creates flags that force the use of ANSI standard C++ header conventions. (the dfault)
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-gprof]			
+</td>
+<td>
+Sets the compiler to use flags that for executables to dump output files that can be read by gprof to profile the code.
+</td>
+</tr>
+
+<tr>
+<td>
+		[--with-malloc]			
+</td>
+<td>
+Enables the use of a utilib malloc facility (thereby replacing the system allocation utilities).
+</td>
+</tr>
+
+
+</table>
+
+  The configure script creates Makefiles from \c Makefile.in template
+files, which outline the basic `targets' that need to get built.
+Variables that are package, site or hardware dependent are stored in
+individual `fragment' files.  These `fragment' files are added to the
+custom created Makefiles when users and code developers (recursively)
+configure this repository with specific host, target, package and/or
+site parameters.
+
+  Running \c configure takes a while, so be patient. Verbose output will
+always be displayed unless the user/developer wishes to silence it by
+specifying the %parameter, `--silent'. If you wish to configure only one
+level/directory, remember to use the option `--norecursion'. All
+generated "config.status" files include this %parameter as a default for
+easy makefile re-generation;  after editing a Makefile.in file, you can
+construct the associate Makefile file by typing \c config.status.
+
+  After the \c configure command is completed, three files will be
+generated in each configured directory (specified by the file,
+`configure.in').
+
+<ol>
+<li>    Makefile-${target}
+
+      The suffix, ${target}, will depend on the target specified.
+      Native builds have identical host and target values.
+
+<li> Makefile
+
+      This will be a symbolic link to the file mentioned above. A user
+      or developer will simply type \c make and the last generated
+      Makefile-${target} will then be referenced.
+
+<li> config.status
+
+      A `recording' of the configuration process (i.e., what commands
+      were executed to generate the makefile). It can be used by the
+      custom makefile to re-generate itself with a command such as
+      this
+\verbatim
+    make Makefile.
+\endverbatim
+</ol>
+
+  Fragment files exist so that \c configure can support multi-platform
+environments. UTILIB can be configured for code development and
+execution on the following platforms :
+
+\verbatim
+    SPARC-SUN-SOLARIS2.5.1   (Sun ULTRAsparc)
+    MIPS-SGI-IRIX6.4         (SGI Octane)
+    HPPA1.1-HP-HPUX9.05      (HP 9000/700 series)
+    PENTIUM-INTEL-COUGAR     (Intel TFLOP supercomputer at SNL)
+    i686-UNKNOWN-LINUX	     (Red Hat 7.1)
+    i686-UNKNOWN-CYGWIN	     (Cygwin 1.3.x)
+\endverbatim
+
+The fragment files for these platforms and for the packages that UTILIB
+relies on are located in the \c utilib/config directory.  There are five 
+types of files in this directory:
+
+\verbatim
+    mf-<host>-<target>-<site>
+    Automatically generated by the configure scripts.
+
+    mh-<host>
+    Fragments that define the utilities provided by the host (e.g. the 
+    definition of MAKE.
+
+    mp-<target>-<site>
+    Fragments that define information for the packages that are used by 
+    UTILIB (e.g. MPI).
+
+    ms-<site>
+    Fragments that define the site-specific general configuration 
+    information. If this does not exist for a given site, then the 
+    default ms-default fragment is used.
+
+    mt-<target>
+    Fragments needed to specfy how to compile code for a target 
+    architecture (e.g. compiler name/location).
+\endverbatim
+
+
+<li>Compile the program by running make.
+
+\verbatim
+    make
+\endverbatim
+
+Note that the makefiles in UTILIB may not be portable to all \c make commands.
+However, they do work with the GNU \c gmake command.
+The latest file \c Makefile-${target}
+generated by \c configure will be referenced by this command. 
+The target directory for the library is created for the
+particular target platform as a subdirectory of utilib/lib.
+
+Prior to making object files header
+files are linked into the directory \c utilib/include.  
+
+
+<li> Optional: Generate the html library documentation.
+
+\verbatim
+    make html
+\endverbatim
+
+This requires the \c doxygen utility.
+
+<li> Optional: Generate the postscript version of the user manual.
+
+\verbatim
+    make ps
+\endverbatim
+
+This requires the \c doxygen, \c latex, and \c dvips.
+
+<li> Optional: Generate the PDF version of the user manual.
+
+\verbatim
+    make pdf
+\endverbatim
+
+This requires the \c doxygen, \c latex, \c dvips and ghostscript packages.
+
+</ol>
+
+\subsection WINinstallSec Installation on Windows
+
+UTILIB was originally developed under UNIX, but it has been ported to Windows 
+NT using Microsoft's Visual C++ (version 6.0).  A MSVC++ project is provided in
+\c utilib/src/vcpp.  This project defines a DLL that will be compiled for
+UTILIB, and it can be easily included in a user's workspace.  The project
+file relies on the environmental variable `UTILIB', which is defined from the
+MS Windows Control Panel under \c System/Environment.  This variable should be
+set to the path of the \c utilib directory.  Note: this project file is out of date.
+
+
+*/
