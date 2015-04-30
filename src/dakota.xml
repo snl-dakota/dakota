@@ -2645,7 +2645,7 @@
           </keyword>
           <keyword  id="categorical" name="categorical" code="{N_vam(categorical,discreteDesignSetIntCat)}" label="categorical" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN integer" />
-              <keyword id="adjacency" name="adjacency" code="{N_vam(newivec,Var_Info_ddsia)}" label="adjacency" help="" minOccurs="0">
+              <keyword id="adjacency_matrix" name="adjacency_matrix" code="{N_vam(newivec,Var_Info_ddsia)}" label="adjacency_matrix" help="" minOccurs="0">
                 <param type="INTEGERLIST"/>
               </keyword>
           </keyword>
@@ -2666,7 +2666,7 @@
             <alias name="set_values"/>
             <param type="STRINGLIST" />
           </keyword>
-          <keyword id="adjacency1" name="adjacency" code="{N_vam(newivec,Var_Info_ddssa)}" label="adjacency" help="" minOccurs="0">
+          <keyword id="adjacency_matrix1" name="adjacency_matrix" code="{N_vam(newivec,Var_Info_ddssa)}" label="adjacency_matrix" help="" minOccurs="0">
             <param type="INTEGERLIST"/>
           </keyword>
           <keyword  id="initial_point3" name="initial_point" code="{N_vam(strL,discreteDesignSetStrVars)}" label="Initial point" help="VarCommands.html#VarDDSRV" minOccurs="0" >
@@ -2688,7 +2688,7 @@
           </keyword>
           <keyword  id="categorical1" name="categorical" code="{N_vam(categorical,discreteDesignSetRealCat)}" label="categorical" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN integer" />
-            <keyword id="adjacency2" name="adjacency" code="{N_vam(newivec,Var_Info_ddsra)}" label="adjacency" help="" minOccurs="0">
+            <keyword id="adjacency_matrix2" name="adjacency_matrix" code="{N_vam(newivec,Var_Info_ddsra)}" label="adjacency_matrix" help="" minOccurs="0">
               <param type="INTEGERLIST"/>
             </keyword>
           </keyword>

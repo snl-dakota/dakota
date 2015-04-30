@@ -1392,9 +1392,9 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
     #define P &DataVariablesRep::
     static KW<RealMatrixArray, DataVariablesRep> RMAdv[] = {	
       // must be sorted by string (key)
-	{"discrete_design_set_int.adjacency", P discreteDesignSetIntAdj},
-	{"discrete_design_set_real.adjacency", P discreteDesignSetRealAdj},
-	{"discrete_design_set_str.adjacency", P discreteDesignSetStrAdj}
+	{"discrete_design_set_int.adjacency_matrix", P discreteDesignSetIntAdj},
+	{"discrete_design_set_real.adjacency_matrix", P discreteDesignSetRealAdj},
+	{"discrete_design_set_str.adjacency_matrix", P discreteDesignSetStrAdj}
 	};
     #undef P
     KW<RealMatrixArray, DataVariablesRep> *kw;

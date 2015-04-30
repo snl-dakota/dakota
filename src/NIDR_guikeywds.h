@@ -2388,7 +2388,7 @@ static GuiKeyWord
 		{"upper_bounds",13,0,3,0,2215,0,0.,0.,0.,0,"{Upper bounds} VarCommands.html#VarDDRIV",0,"discrete_design_range"}
 		},
 	kw_344[1] = {
-		{"adjacency",13,0,1,0,2229}
+		{"adjacency_matrix",13,0,1,0,2229}
 		},
 	kw_345[7] = {
 		{"categorical",15,1,3,0,2227,kw_344,0.,0.,0.,0,0,0,"integer"},
@@ -2400,7 +2400,7 @@ static GuiKeyWord
 		{"set_values",5,0,2,1,2224}
 		},
 	kw_346[1] = {
-		{"adjacency",13,0,1,0,2255}
+		{"adjacency_matrix",13,0,1,0,2255}
 		},
 	kw_347[7] = {
 		{"categorical",15,1,3,0,2253,kw_346,0.,0.,0.,0,0,0,"integer"},
@@ -2412,7 +2412,7 @@ static GuiKeyWord
 		{"set_values",6,0,2,1,2250}
 		},
 	kw_348[7] = {
-		{"adjacency",13,0,3,0,2241},
+		{"adjacency_matrix",13,0,3,0,2241},
 		{"descriptors",15,0,5,0,2245,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarDDSRV",0,"string"},
 		{"elements",15,0,2,1,2239},
 		{"elements_per_variable",0x80d,0,1,0,2237,0,0.,0.,0.,0,0,0,"string"},

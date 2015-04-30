@@ -41,15 +41,15 @@ variables,
 #           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s2,#s4,#s5,#s6,#s7
 #           descriptors      'y3'   'y4' 	       	       	#s2,#s4,#s5,#s6,#s7
 #	    categorical 'yes' 'yes' 				#s6,#s7
-#	    adjacency 1 1 0 0 					#s6,#s7
-#	    	      1 1 1 0					#s6,#s7
-#		      0 1 1 1					#s6,#s7
-#		      0 0 1 1					#s6,#s7
-#		      1 0 1 0 1					#s6,#s7
-#		      0 1 0 1 0					#s6,#s7
-#		      1 0 1 0 1					#s6,#s7
-#		      0 1 0 1 0					#s6,#s7
-#		      1 0 1 0 1					#s6,#s7
+#	    adjacency_matrix 1 1 0 0				#s6,#s7
+#	    	      	     1 1 1 0   				#s6,#s7
+#		      	     0 1 1 1				#s6,#s7
+#		      	     0 0 1 1				#s6,#s7
+#		      	     1 0 1 0 1				#s6,#s7
+#		      	     0 1 0 1 0				#s6,#s7
+#		      	     1 0 1 0 1				#s6,#s7
+#		      	     0 1 0 1 0				#s6,#s7
+#		      	     1 0 1 0 1				#s6,#s7
 #         integer = 2						#s3,#s4,#s5,#s7
 #           elements_per_variable = 2 2	  			#s3,#s4,#s5,#s7
 #           elements = 4 7 8 9					#s3,#s4,#s5,#s7
@@ -58,11 +58,11 @@ variables,
 #       discrete_design_set string = 1			#s8
 #	    elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'  	#s8
 #           descriptors = 'ancomp'    				#s8
-#	    adjacency 1 1 0 0 0					#s8
-#	    	      1 1 0 0 0					#s8
-#                     0 0 1 1 1					#s8
-#                     0 0 1 1 1					#s8
-#                     0 0 1 1 1					#s8
+#	    adjacency_matrix 1 1 0 0 0				#s8
+#	    	      	     1 1 0 0 0				#s8
+#                     	     0 0 1 1 1				#s8
+#                     	     0 0 1 1 1				#s8
+#                     	     0 0 1 1 1				#s8
 
 interface,
        direct							#s0,#s2,#s4,#s6,#s7

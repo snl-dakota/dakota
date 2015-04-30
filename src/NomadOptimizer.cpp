@@ -63,11 +63,11 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
 
      discreteSetRealCat = probDescDB.get_ba("variables.discrete_design_set_real.categorical");
 
-     discreteSetIntAdj = probDescDB.get_rma("variables.discrete_design_set_int.adjacency");
+     discreteSetIntAdj = probDescDB.get_rma("variables.discrete_design_set_int.adjacency_matrix");
 
-     discreteSetRealAdj = probDescDB.get_rma("variables.discrete_design_set_real.adjacency");
+     discreteSetRealAdj = probDescDB.get_rma("variables.discrete_design_set_real.adjacency_matrix");
 
-     discreteSetStrAdj = probDescDB.get_rma("variables.discrete_design_set_str.adjacency");
+     discreteSetStrAdj = probDescDB.get_rma("variables.discrete_design_set_str.adjacency_matrix");
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):

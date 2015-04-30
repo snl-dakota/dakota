@@ -1986,7 +1986,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 integer {N_vam(newiarray,Var_Info_nddsi)} ]
       elements ALIAS set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
       [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetIntCat)}
-        [ adjacency INTEGERLIST {N_vam(newivec,Var_Info_ddsia)} ]
+        [ adjacency_matrix INTEGERLIST {N_vam(newivec,Var_Info_ddsia)} ]
        ]
       [ initial_point INTEGERLIST LEN integer {N_vam(ivec,discreteDesignSetIntVars)} ]
       [ descriptors STRINGLIST LEN integer {N_vam(strL,discreteDesignSetIntLabels)} ]
@@ -1994,7 +1994,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
     [ string INTEGER > 0 {N_vam(pintz,numDiscreteDesSetStrVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 string {N_vam(newiarray,Var_Info_nddss)} ]
       elements ALIAS set_values STRINGLIST {N_vam(newsarray,Var_Info_ddss)}
-      [ adjacency INTEGERLIST {N_vam(newivec,Var_Info_ddssa)} ]
+      [ adjacency_matrix INTEGERLIST {N_vam(newivec,Var_Info_ddssa)} ]
       [ initial_point STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrVars)} ]
       [ descriptors STRINGLIST LEN string {N_vam(strL,discreteDesignSetStrLabels)} ]
      ]
@@ -2002,7 +2002,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
       [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetRealCat)}
-        [ adjacency INTEGERLIST {N_vam(newivec,Var_Info_ddsra)} ]
+        [ adjacency_matrix INTEGERLIST {N_vam(newivec,Var_Info_ddsra)} ]
        ]
       [ initial_point REALLIST LEN real {N_vam(rvec,discreteDesignSetRealVars)} ]
       [ descriptors STRINGLIST LEN real {N_vam(strL,discreteDesignSetRealLabels)} ]

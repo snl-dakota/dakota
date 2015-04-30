@@ -2263,7 +2263,7 @@ static KeyWord
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(ivec,discreteDesignRangeUpperBnds)}
 		},
 	kw_361[1] = {
-		{"adjacency",13,0,1,0,0,0.,0.,0,N_vam(newivec,Var_Info_ddsia)}
+		{"adjacency_matrix",13,0,1,0,0,0.,0.,0,N_vam(newivec,Var_Info_ddsia)}
 		},
 	kw_362[7] = {
 		{"categorical",15,1,3,0,kw_361,0.,0.,0,N_vam(categorical,discreteDesignSetIntCat)},
@@ -2275,7 +2275,7 @@ static KeyWord
 		{"set_values",5,0,2,1,0,0.,0.,-4,N_vam(newivec,Var_Info_ddsi)}
 		},
 	kw_363[1] = {
-		{"adjacency",13,0,1,0,0,0.,0.,0,N_vam(newivec,Var_Info_ddsra)}
+		{"adjacency_matrix",13,0,1,0,0,0.,0.,0,N_vam(newivec,Var_Info_ddsra)}
 		},
 	kw_364[7] = {
 		{"categorical",15,1,3,0,kw_363,0.,0.,0,N_vam(categorical,discreteDesignSetRealCat)},
@@ -2287,7 +2287,7 @@ static KeyWord
 		{"set_values",6,0,2,1,0,0.,0.,-4,N_vam(newrvec,Var_Info_ddsr)}
 		},
 	kw_365[7] = {
-		{"adjacency",13,0,3,0,0,0.,0.,0,N_vam(newivec,Var_Info_ddssa)},
+		{"adjacency_matrix",13,0,3,0,0,0.,0.,0,N_vam(newivec,Var_Info_ddssa)},
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vam(strL,discreteDesignSetStrLabels)},
 		{"elements",15,0,2,1,0,0.,0.,0,N_vam(newsarray,Var_Info_ddss)},
 		{"elements_per_variable",0x80d,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddss)},

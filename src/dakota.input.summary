@@ -2039,7 +2039,7 @@ KEYWORD12 variables
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
 	    elements ALIAS set_values INTEGERLIST
 	    [ categorical STRINGLIST
-	      [ adjacency INTEGERLIST ]
+	      [ adjacency_matrix INTEGERLIST ]
 	      ]
 	    [ initial_point INTEGERLIST ]
 	    [ descriptors STRINGLIST ]
@@ -2047,7 +2047,7 @@ KEYWORD12 variables
 	  [ string INTEGER > 0
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
 	    elements ALIAS set_values STRINGLIST
-	    [ adjacency INTEGERLIST ]
+	    [ adjacency_matrix INTEGERLIST ]
 	    [ initial_point STRINGLIST ]
 	    [ descriptors STRINGLIST ]
 	    ]
@@ -2055,7 +2055,7 @@ KEYWORD12 variables
 	    [ elements_per_variable ALIAS num_set_values INTEGERLIST ]
 	    elements ALIAS set_values REALLIST
 	    [ categorical STRINGLIST
-	      [ adjacency INTEGERLIST ]
+	      [ adjacency_matrix INTEGERLIST ]
 	      ]
 	    [ initial_point REALLIST ]
 	    [ descriptors STRINGLIST ]
