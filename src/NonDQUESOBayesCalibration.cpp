@@ -1335,7 +1335,10 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
     RealVector residuals;
     for (i=0; i<num_exp; i++) {
       NonDQUESOInstance->expData.form_residuals_deprecated(resp, i, residuals);
-      result += NonDQUESOInstance->expData.apply_covariance(residuals, i);
+      if (NonDQUESOInstance->expData.variance_active())
+	result += NonDQUESOInstance->expData.apply_covariance(residuals, i);
+      else
+	result += residuals.dot(residuals);
     }
     /*ShortArray total_asv;
     bool interrogate_field_data = 

@@ -693,6 +693,13 @@ bool ExperimentData::variance_type_active(short variance_type)
   return vt_it != varianceTypes.end();
 }
 
+bool ExperimentData::variance_active()
+{
+  return (variance_type_active(SCALAR_SIGMA) || 
+	  variance_type_active(DIAGONAL_SIGMA) || 
+	  variance_type_active(MATRIX_SIGMA));
+}
+
 bool ExperimentData::interpolate_flag()
 {
   return interpolateFlag;
