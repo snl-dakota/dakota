@@ -557,10 +557,6 @@ void test_linear_interpolate_1d_no_extrapolation()
     sim_hessians[i](1,1)=3.*sim_pts(i,0)+0.1;
   }
 
-  // dummy objects to satisfy API
-  RealMatrix sim_grads, interp_grads;
-  RealSymMatrixArray sim_hessians, interp_hessians;
-
   // Interpolate the simulation data onto the coordinates of the field data
   RealVector interp_vals;
   RealMatrix interp_grads;
@@ -620,10 +616,6 @@ void test_linear_interpolate_1d_with_extrapolation()
   RealVector sim_vals( num_sim_pts, false );
   for ( int i=0; i<num_sim_pts; i++)
     sim_vals[i] = 0.5*(3.*std::pow(sim_pts(i,0),2)-1.);
-
-  // dummy objects to satisfy API
-  RealMatrix sim_grads, interp_grads;
-  RealSymMatrixArray sim_hessians, interp_hessians;
 
   // Interpolate the simulation data onto the coordinates of the field data
   RealVector interp_vals;
