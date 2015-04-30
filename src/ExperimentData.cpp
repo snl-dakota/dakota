@@ -88,8 +88,12 @@ void ExperimentData::initialize(const StringArray& variance_types,
     simulationSRD = srd.copy();
 
     parse_sigma_types(variance_types);
-
   }
+  else
+    {
+      experimentLengths.sizeUninitialized(1);
+      experimentLengths[0] = srd.num_functions();
+    }
 }
 
 /** Validate user-provided sigma specifcation. User can specify 0, 1,
@@ -335,6 +339,9 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
       allExperiments[i].write(Cout);
     }
   }
+
+  // store the lengths (number of functions) of each experiment
+  per_exp_length(experimentLengths);
 
   // TODO: exists extra data in scalar_data_stream
 
@@ -671,17 +678,60 @@ bool ExperimentData::interpolate_flag()
   return interpolateFlag;
 }
 
+RealVector ExperimentData::
+residuals_view( const RealVector& residuals, size_t experiment ){
+  int exp_offset = 0;
+  if ( experiment > 0 ) 
+    exp_offset = experimentLengths[experiment-1];
+  RealVector exp_resid(Teuchos::View, residuals.values()+exp_offset,
+		       experimentLengths[experiment]);
+  return exp_resid;
+}
+  
+/// Return a view (to allowing updaing in place) of the gradients associated
+/// with a given experiment, from a matrix contaning gradients from
+/// all experiments
+RealMatrix ExperimentData::
+gradients_view( const RealMatrix &gradients, size_t experiment){
+  int exp_offset = 0;
+  if ( experiment > 0 ) 
+    exp_offset = experimentLengths[experiment-1];
+  RealMatrix exp_grads(Teuchos::View, gradients, gradients.numRows(),
+		       experimentLengths[experiment], 0, exp_offset );
+  return exp_grads;
+}
+  
+/// Return a view (to allowing updaing in place) of the hessians associated
+/// with a given experiment, from an array contaning the hessians from 
+/// all experiments
+RealSymMatrixArray ExperimentData::
+hessians_view( const RealSymMatrixArray &hessians, 
+	       size_t experiment ){
+  int num_hess = experimentLengths[experiment];
+  int exp_offset = 0;
+  if ( experiment > 0 ) 
+    exp_offset = experimentLengths[experiment-1];
+  RealSymMatrixArray exp_hessians( num_hess );
+  size_t i, cntr;
+  for (i=0,cntr=0; i<num_hess; ++i,++cntr)
+    exp_hessians[i] = RealSymMatrix(Teuchos::View, hessians[cntr],
+				    hessians[cntr].numRows());
+  return exp_hessians;
+}
+
 Real ExperimentData::
 apply_covariance(const RealVector& residuals, size_t experiment)
 {
-  return(allExperiments[experiment].apply_covariance(residuals));
+  RealVector exp_resid = residuals_view( residuals, experiment );
+  return(allExperiments[experiment].apply_covariance(exp_resid));
 }
 
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment, 
 			  RealVector& weighted_residuals)
 {
-  allExperiments[experiment].apply_covariance_inv_sqrt(residuals, 
+  RealVector exp_resid = residuals_view( residuals, experiment );
+  allExperiments[experiment].apply_covariance_inv_sqrt(exp_resid, 
 						       weighted_residuals);
 }
 
@@ -689,15 +739,17 @@ void ExperimentData::
 apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment, 
 			  RealMatrix& weighted_gradients)
 {
-  allExperiments[experiment].apply_covariance_inv_sqrt(gradients, 
-						      weighted_gradients);
+  RealMatrix exp_grads = gradients_view( gradients, experiment );
+  allExperiments[experiment].apply_covariance_inv_sqrt(exp_grads, 
+						       weighted_gradients);
 }
 
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
 			  RealSymMatrixArray& weighted_hessians)
 {
-  allExperiments[experiment].apply_covariance_inv_sqrt(hessians, 
+  RealSymMatrixArray exp_hessians = hessians_view( hessians, experiment );
+  allExperiments[experiment].apply_covariance_inv_sqrt(exp_hessians, 
 						       weighted_hessians);
 }
 
@@ -722,11 +774,11 @@ form_residuals(const Response& sim_resp, const ShortArray &total_asv,
 }
 
 void ExperimentData::
-form_residuals(const Response& sim_resp, size_t exp_num, 
+form_residuals(const Response& sim_resp, size_t exp_ind, 
 	       const ShortArray &total_asv, size_t exp_offset, 
 	       Response &residual_resp )
 {
-  size_t res_size = allExperiments[exp_num].function_values().length();
+  size_t res_size = allExperiments[exp_ind].function_values().length();
 
   RealVector resid_fns = sim_resp.function_values();
   size_t i,j;
@@ -741,15 +793,15 @@ form_residuals(const Response& sim_resp, size_t exp_num,
     Cout << "interpolate " << interpolateFlag << '\n';
   if (!interpolateFlag) {
 
-    short asv = total_asv[exp_num];
+    short asv = total_asv[exp_ind];
     RealMatrix sim_grads = sim_resp.function_gradients_view();
     RealSymMatrixArray sim_hessians = sim_resp.function_hessians_view();
 
-    //resid_fns -= allExperiments[exp_num].function_values();
+    //resid_fns -= allExperiments[exp_ind].function_values();
     // residuals = resid_fns;
     for (i=0; i<resid_fns.length(); i++){
       residuals[i]=
-	resid_fns[i]-allExperiments[exp_num].function_value(i);
+	resid_fns[i]-allExperiments[exp_ind].function_value(i);
 
       if ( asv & 2 ){
 	RealVector sim_grad_i = 
@@ -763,7 +815,7 @@ form_residuals(const Response& sim_resp, size_t exp_num,
   }else{   
     if (num_scalars() > 0) {
       for (i=0; i<num_scalars(); i++) 
-        residuals[i]= resid_fns[i]-allExperiments[exp_num].function_value(i);
+        residuals[i]= resid_fns[i]-allExperiments[exp_ind].function_value(i);
     }
 
     // interpolate the simulation data onto the coordinates of the experiment
@@ -774,20 +826,20 @@ form_residuals(const Response& sim_resp, size_t exp_num,
     // if so need to pass exp_offset to interpolate function above
     // and inside that function set offset =  exp_offset and 
     // then increment in usual way
-    interpolate_simulation_data(sim_resp, exp_num, total_asv, exp_offset,
+    interpolate_simulation_data(sim_resp, exp_ind, total_asv, exp_offset,
 				residual_resp);
 
     if (outputLevel >= DEBUG_OUTPUT) 
       Cout << "interp values" << residuals << '\n';
 
-    if (total_asv[exp_num] & 1) {
+    if (total_asv[exp_ind] & 1) {
       // compute the residuals, i.e. subtract the experiment data values
       // from the (interpolated) simulation values.
       size_t cntr = num_scalars();
       for (i=0; i<num_fields(); i++){
-	size_t num_field_fns = field_data_view(i,exp_num).length();
+	size_t num_field_fns = field_data_view(i,exp_ind).length();
 	for (j=0; j<num_field_fns; j++, cntr++)
-	  residuals[cntr] -= field_data_view(i,exp_num)[j];
+	  residuals[cntr] -= field_data_view(i,exp_ind)[j];
       }
       if (outputLevel >= DEBUG_OUTPUT) 
 	Cout << "residuals in exp space" << residuals << '\n';
@@ -796,15 +848,15 @@ form_residuals(const Response& sim_resp, size_t exp_num,
 }
 
 void ExperimentData::
-interpolate_simulation_data( const Response &sim_resp, size_t exp_num,
+interpolate_simulation_data( const Response &sim_resp, size_t exp_ind,
 			     const ShortArray &total_asv, size_t exp_offset,
 			     Response &interp_resp ){
   size_t offset = exp_offset + num_scalars();
-  IntVector field_lens = field_lengths(exp_num);
+  IntVector field_lens = field_lengths(exp_ind);
   for (size_t field_num=0; field_num<num_fields(); field_num++){ 
-    RealMatrix exp_coords = field_coords_view(field_num,exp_num);
+    RealMatrix exp_coords = field_coords_view(field_num,exp_ind);
     interpolate_simulation_field_data( sim_resp, exp_coords, field_num, 
-				       total_asv[exp_num],
+				       total_asv[exp_ind],
 				       offset, interp_resp );
     offset += field_lens[field_num]; 
   }
@@ -1008,7 +1060,6 @@ form_residuals_deprecated(const Response& sim_resp, size_t experiment,
 
 }
 
-
 /** Add the data back to the residual to recover the model, for use in
     surrogated-based LSQ where DB lookup will fail (need approx eval
     DB).  best_fns contains primary and secondary responses */
@@ -1026,6 +1077,78 @@ recover_model(size_t num_pri_fns, RealVector& best_fns) const
   }
   for (size_t i=0; i<num_pri_fns; ++i)
     best_fns[i] += experiment0.function_value(i);
+}
+
+RealSymMatrix ExperimentData::
+build_hessian_of_sum_square_residuals( const Response& resp, 
+				       bool gradients_only )
+{
+  RealSymMatrix ssr_hessian;
+  const ShortArray &asrv = resp.active_set_request_vector();
+  // following assumse asrv are all the same
+  Cout << gradients_only << "\n";
+
+  if (!gradients_only)
+    gradients_only = ( (asrv[0] & 5) != 5 );
+  Cout << gradients_only << "\n";
+  size_t residual_resp_offset = 0;
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
+    // The following intializes ssr_hessian to zero the first time it is called
+    // then simply adds to the entries
+    build_hessian_of_sum_square_residuals_from_response( resp, exp_ind, 
+							 ssr_hessian, 
+							 exp_ind==0,
+							 gradients_only);
+  }
+  return ssr_hessian;
+}
+
+void ExperimentData::
+build_hessian_of_sum_square_residuals_from_response( const Response& resp, 
+						     int exp_ind,
+						     RealSymMatrix &ssr_hessian,
+						     bool initialize_hessian,
+						     bool gradients_only)
+{
+  const RealSymMatrixArray &func_hessians = resp.function_hessians();
+  const RealMatrix &func_gradients = resp.function_gradients();
+  const RealVector &residuals = resp.function_values();
+  const ShortArray &asrv = resp.active_set_request_vector();
+  
+  bool apply_covariance = false;
+  if ( ( variance_type_active(MATRIX_SIGMA) ) ||
+       ( variance_type_active(SCALAR_SIGMA) ) || 
+       ( variance_type_active(DIAGONAL_SIGMA) ) )
+    apply_covariance= true;
+
+  RealVector scaled_residuals;
+  RealMatrix scaled_gradients;
+  RealSymMatrixArray scaled_hessians;
+  //if ( apply_covariance ){
+  if ( false ){
+    apply_covariance_inv_sqrt(residuals, exp_ind, scaled_residuals);
+      apply_covariance_inv_sqrt(func_gradients, exp_ind, scaled_gradients);
+    if ( !gradients_only )
+      apply_covariance_inv_sqrt(func_hessians, exp_ind, scaled_hessians);
+  }else{
+    scaled_residuals = residuals_view( residuals, exp_ind );
+    scaled_gradients = gradients_view( func_gradients, exp_ind );
+    if ( !gradients_only )
+      scaled_hessians = hessians_view( func_hessians, exp_ind );
+  }
+
+  /*scaled_residuals.print(std::cout);
+  scaled_gradients.print(std::cout);
+  Cout << "\nSize:" << scaled_hessians.size();
+  for (size_t j=0;j<scaled_hessians.size();j++)
+  scaled_hessians[j].print(std::cout);*/
+
+  build_hessian_of_sum_square_residuals_from_function_data( scaled_hessians, 
+							    scaled_gradients, 
+							    scaled_residuals,
+							    ssr_hessian,
+							    initialize_hessian,
+							    gradients_only);
 }
 
 }  // namespace Dakota

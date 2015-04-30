@@ -450,6 +450,7 @@ void CovarianceMatrix::get_main_diagonal( RealVector &diagonal ) const {
 ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
 {
   numBlocks_ = source.numBlocks_;
+  numDOF_ = source.numDOF_;
   covMatrices_.resize(source.covMatrices_.size());
   for( size_t i=0; i<source.covMatrices_.size(); ++i)
     covMatrices_[i] = source.covMatrices_[i];
@@ -481,6 +482,8 @@ IntVector scalar_map_indices ){
     throw( std::runtime_error( msg ) );
   }
 
+  numDOF_ = 0;
+
   numBlocks_ = matrix_map_indices.length() + diagonal_map_indices.length() + 
     scalar_map_indices.length();
 
@@ -491,6 +494,7 @@ IntVector scalar_map_indices ){
     if ( index >= numBlocks_ )
       throw( std::runtime_error( "matrix_map_indices was out of bounds." ) );
     covMatrices_[index].set_covariance( matrices[i] );
+    numDOF_ += matrices[i].numRows();
   }
 
   for (int i=0; i<diagonals.size(); i++){
@@ -498,6 +502,7 @@ IntVector scalar_map_indices ){
     if ( index >= numBlocks_ )
       throw( std::runtime_error( "diagonal_map_indices was out of bounds." ) );
     covMatrices_[index].set_covariance( diagonals[i] );
+    numDOF_ += diagonals[i].length();
   }
 
   for (int i=0; i<scalars.length(); i++ ){
@@ -505,11 +510,16 @@ IntVector scalar_map_indices ){
     if ( index >= numBlocks_ )
       throw( std::runtime_error( "scalar_map_indices was out of bounds." ) );
     covMatrices_[index].set_covariance( scalars[i] );
-    }
+  }
+  numDOF_ += scalars.length();
 }
 
 Real ExperimentCovariance::apply_experiment_covariance( const RealVector &vector)
   const{
+  if ( vector.length() != num_dof() ){
+    throw(std::runtime_error("apply_covariance_inverse: vector is inconsistent with covariance matrix"));
+  }
+
   int shift = 0;
   Real result = 0.;
   for (int i=0; i<covMatrices_.size(); i++ ){
@@ -523,6 +533,9 @@ Real ExperimentCovariance::apply_experiment_covariance( const RealVector &vector
 
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt( 
 		  const RealVector &vector, RealVector &result ) const{
+  if ( vector.length() != num_dof() )
+    throw(std::runtime_error("apply_covariance_inverse_sqrt: vector is inconsistent with covariance matrix"));
+
   int shift = 0;
   result.sizeUninitialized( vector.length() );
   for (int i=0; i<covMatrices_.size(); i++ ){
@@ -536,6 +549,9 @@ void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt(
 
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt_to_gradients(
 const RealMatrix &gradients, RealMatrix &result ) const{
+
+  if ( gradients.numCols() != num_dof() )
+    throw(std::runtime_error("apply_covariance_inverse_sqrt_to_gradients: gradients is inconsistent with covariance matrix"));
 
   int shift = 0;
   int num_grads = gradients.numRows();
@@ -552,6 +568,10 @@ const RealMatrix &gradients, RealMatrix &result ) const{
 
 void ExperimentCovariance::apply_experiment_covariance_inverse_sqrt_to_hessians( 
 	const RealSymMatrixArray &hessians, RealSymMatrixArray &result ) const {
+
+  if ( hessians.size() != num_dof() )
+    throw(std::runtime_error("apply_covariance_inverse_sqrt_to_hessians: hessians is inconsistent with covariance matrix"));
+
   // perform deep copy of hessians
   result.resize( hessians.size() );
   for (int i=0; i<hessians.size(); i++ ){
@@ -597,23 +617,22 @@ void build_hessian_of_sum_square_residuals_from_function_data(
 		 const RealSymMatrixArray &func_hessians, 
 		 const RealMatrix &func_gradients,
                  const RealVector &residuals,
-		 const ShortArray &asrv,
-		 RealSymMatrix &ssr_hessian ){
+		 RealSymMatrix &ssr_hessian,
+		 bool initialize,
+		 bool gradients_only ){
   // This function assumes that residuals are r = ( approx - data )
   // NOT r = ( data - approx )
 
   // func_gradients is the transpose of the Jacobian of the functions
   int num_rows = func_gradients.numRows(), num_residuals = residuals.length();
-  ssr_hessian.shape( num_rows ); // initialize to zero
+  if ( initialize )
+    ssr_hessian.shape( num_rows ); // initialize to zero
   for ( int k=0; k<num_rows; k++ ) {
     for ( int j=0; j<=k; j++ ) {
       Real &hess_jk = ssr_hessian(j,k);
       for ( int i=0; i<num_residuals; i++ ) {
-	//hess_jk += ( func_gradients(j,i)*func_gradients(k,i) - 
-	//		      residuals[i]*func_hessians[i](j,k) );
-	short rv_i = asrv[i];
-	if (rv_i & 2) hess_jk += func_gradients(j,i)*func_gradients(k,i);
-	if ( (rv_i & 5) == 5 ) hess_jk += residuals[i]*func_hessians[i](j,k);
+	hess_jk += func_gradients(j,i)*func_gradients(k,i);
+	if (!gradients_only) hess_jk += residuals[i]*func_hessians[i](j,k);
       }
       // we adopt convention and compute hessian of sum square residuals
       // multiplied by 1/2 e.g. r'r/2. Thus we do not need following 
@@ -628,7 +647,9 @@ void build_hessian_of_sum_square_residuals_from_function_data(
 // data
 void build_hessian_of_sum_square_residuals_from_response(
 		 const Response& resp,
-		 RealSymMatrix &ssr_hessian ){
+		 RealSymMatrix &ssr_hessian,
+		 bool initialize,
+		 bool gradients_only){
   const RealSymMatrixArray &func_hessians = resp.function_hessians();
   const RealMatrix &func_gradients = resp.function_gradients();
   const RealVector &residuals = resp.function_values();
@@ -636,52 +657,15 @@ void build_hessian_of_sum_square_residuals_from_response(
   build_hessian_of_sum_square_residuals_from_function_data( func_hessians, 
 							    func_gradients, 
 							    residuals,
-							    asrv,
-							    ssr_hessian );
-}
-
-void build_hessian_of_sum_square_residuals_from_response(
-		 const Response& resp, ExperimentCovariance &exper_cov, 
-		 RealSymMatrix &ssr_hessian )
-{
-  const RealSymMatrixArray &func_hessians = resp.function_hessians();
-  const RealMatrix &func_gradients = resp.function_gradients();
-  const RealVector &residuals = resp.function_values();
-  const ShortArray &asrv = resp.active_set_request_vector();
-
-  if ( exper_cov.num_blocks() > 0 ){
-    RealSymMatrixArray scaled_hessians;
-    RealMatrix scaled_gradients;
-    RealVector scaled_residuals;
-    exper_cov.apply_experiment_covariance_inverse_sqrt_to_hessians(
-						       func_hessians,
-						       scaled_hessians);
-    exper_cov.apply_experiment_covariance_inverse_sqrt_to_gradients(
-						       func_gradients,
-						       scaled_gradients);
-    exper_cov.apply_experiment_covariance_inverse_sqrt(residuals, 
-						       scaled_residuals);
-    // The reason the call to build_hessian... is explicilty listed 
-    // once in each coniditional statement is to avoid additional copies 
-    // needed by using only one function call after the conditional 
-    // The additional copies are needed to convert residuals, func_gradients, and
-    // func_hessians to be copied into scaled_residuals etc.
-    // when exper_cov is empty
-    build_hessian_of_sum_square_residuals_from_function_data( scaled_hessians, 
-							      scaled_gradients, 
-							      scaled_residuals,
-							      asrv,
-							      ssr_hessian );
-  }else
-    build_hessian_of_sum_square_residuals_from_function_data( func_hessians, 
-							      func_gradients, 
-							      residuals,
-							      asrv,
-							      ssr_hessian );
+							    ssr_hessian,
+							    initialize,
+							    gradients_only);
 }
 
 void build_hessian_of_sum_square_residuals_from_function_gradients(
-       const RealMatrix &func_gradients, RealSymMatrix &ssr_hessian )
+		 const RealMatrix &func_gradients, 
+		 RealSymMatrix &ssr_hessian,
+		 bool initialize)
 {
   // This function assumes that residuals are r = ( approx - data )
   // NOT r = ( data - approx )
@@ -689,7 +673,8 @@ void build_hessian_of_sum_square_residuals_from_function_gradients(
   // func_gradients is the transpose of the Jacobian of the functions
   int num_rows      = func_gradients.numRows(),
       num_residuals = func_gradients.numCols();
-  ssr_hessian.shape( num_rows ); // initialize to zero
+  if ( initialize )
+    ssr_hessian.shape( num_rows ); // initialize to zero
   for ( int k=0; k<num_rows; k++ ) {
     for ( int j=0; j<=k; j++ ) {
       Real &hess_jk = ssr_hessian(j,k);

@@ -208,6 +208,20 @@ public:
   /// Apply the experiment data covariance to the residual data
   void scale_residuals( Response& residual_response, ShortArray &total_asv );
 
+  /// Build the hessian of the ssr from residuals, function gradients and
+  /// function hessians
+  RealSymMatrix build_hessian_of_sum_square_residuals(const Response& resp,
+						      bool gradients_only);
+
+  /// Update the hessian of ssr with the values from the hessian associated
+  /// with a single experiment
+  void build_hessian_of_sum_square_residuals_from_response( 
+						     const Response& resp, 
+						     int exp_ind,
+						     RealSymMatrix &ssr_hessian,
+						     bool initialize_hessian,
+						     bool gradients_only);
+
 private:
 
   // initialization helpers
@@ -230,6 +244,23 @@ private:
   void read_scalar_sigma(std::ifstream& scalar_data_stream, 
 			 RealVector& sigma_scalars, 
 			 IntVector& scalar_map_indices);
+
+
+  /// Return a view (to allowing updaing in place) of the residuals associated
+  /// with a given experiment, from a vector contaning residuals from
+  /// all experiments
+  RealVector residuals_view( const RealVector& residuals, size_t experiment );
+  
+  /// Return a view (to allowing updaing in place) of the gradients associated
+  /// with a given experiment, from a matrix contaning gradients from
+  /// all experiments
+  RealMatrix gradients_view( const RealMatrix &gradients, size_t experiment);
+  
+  /// Return a view (to allowing updaing in place) of the hessians associated
+  /// with a given experiment, from an array contaning the hessians from 
+  /// all experiments
+  RealSymMatrixArray hessians_view( const RealSymMatrixArray &hessians, 
+				    size_t experiment );
 
   //
   //- Heading: Data
@@ -292,6 +323,9 @@ private:
   /// Vector of numExperiments configurations at which data were
   /// gathered; empty if no configurations specified.
   std::vector<RealVector> allConfigVars;
+
+  /// Length of each experiment
+  IntVector experimentLengths;
 
 };
 

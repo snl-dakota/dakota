@@ -173,16 +173,20 @@ private:
 
   /// The number of block covariance matrices
   int numBlocks_;
+
+  /// The number of entries along the diagonal;
+  int numDOF_;
+
 public:
 
   /// Default Constructor
-  ExperimentCovariance() : numBlocks_(0) {};
+  ExperimentCovariance() : numBlocks_(0), numDOF_(0) {};
 
   /// Assignment operator
   ExperimentCovariance & operator=(const ExperimentCovariance& source);
 
   /// Deconstructor
-  ~ExperimentCovariance(){};
+  ~ExperimentCovariance(){numBlocks_=0;numDOF_=0;};
 
   /// Set the experiment covariance matrix blocks
   void set_covariance_matrices( std::vector<RealMatrix> &matrices, 
@@ -225,6 +229,10 @@ public:
     return numBlocks_;
   };
 
+  int num_dof() const{
+    return numDOF_;
+  }
+
 };
 
 /** \brief Construct the hessian of the sum of squares of residuals
@@ -241,7 +249,8 @@ void build_hessian_of_sum_square_residuals_from_response(
 // data
 void build_hessian_of_sum_square_residuals_from_response(
 		 const Response& resp,
-		 RealSymMatrix &ssr_hessian );
+		 RealSymMatrix &ssr_hessian, 
+		 bool initialize );
 
 /** \brief Construct the hessian of the sum of squares of residuals
  *  
@@ -249,7 +258,10 @@ void build_hessian_of_sum_square_residuals_from_response(
  * residual vector
  */
 void build_hessian_of_sum_square_residuals_from_function_gradients(
-       const RealMatrix &func_gradients, RealSymMatrix &ssr_hessian );
+		   const RealMatrix &func_gradients, 
+		   RealSymMatrix &ssr_hessian,
+		   bool initialize,
+		   bool gradients_only );
 
 /** \brief Construct the hessian of the sum of squares of residuals
  *  
@@ -265,8 +277,9 @@ void build_hessian_of_sum_square_residuals_from_function_data(
 		 const RealSymMatrixArray &func_hessians, 
 		 const RealMatrix &func_gradients,
                  const RealVector &residuals,
-		 const ShortArray &asrv,
-		 RealSymMatrix &ssr_hessian );
+		 RealSymMatrix &ssr_hessian,
+		 bool initialize,
+		 bool gradients_only);
 
 /**
  * \brief Computes the eigenvalues and, optionally, eigenvectors of a

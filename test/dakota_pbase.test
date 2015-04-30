@@ -2866,33 +2866,33 @@ Test Number 29 succeeded
 <<<<< Best data captured at function evaluation 33
 dakota_cantilever_queso.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
+<<<<< Function evaluation summary: 1586 total (1586 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8727141660e+07
-                      2.5002397601e+00
+                      2.8196870629e+07
+                      2.5117183757e+00
 <<<<< Best log posterior       =
-                     -3.0473907151e+01
+                     -2.0716026921e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
+<<<<< Function evaluation summary: 1607 total (1607 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8626895001e+07
-                      2.5014413312e+00
+                      2.8499991505e+07
+                      2.5075186580e+00
 <<<<< Best log posterior       =
-                     -3.0545204301e+01
+                     -2.1112971636e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
+<<<<< Function evaluation summary: 1586 total (1586 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8727141660e+07
-                      2.5002397601e+00
+                      2.8179517806e+07
+                      2.5137518371e+00
 <<<<< Best log posterior       =
-                     -3.0473907151e+01
+                     -2.0736173640e+01
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
+<<<<< Function evaluation summary: 1607 total (1607 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8626895001e+07
-                      2.5014413312e+00
+                      2.8499991505e+07
+                      2.5075186580e+00
 <<<<< Best log posterior       =
-                     -3.0545204301e+01
+                     -2.1112971636e+01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 1740 total (1740 new, 0 duplicate)
 <<<<< Best parameters          =

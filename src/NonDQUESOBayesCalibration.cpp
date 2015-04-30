@@ -526,35 +526,19 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   RealMatrix prop_covar;
   if (precondRequestValue & 4) { 
     // try to use full misfit Hessian; fall back if indefinite
-
-    /* RealVector residuals; RealMatrix func_gradients; 
-       RealSymMatrixArray func_hessians;
-    for (i=0; i<num_exp; i++) {
-    NonDQUESOInstance->expData.form_residuals(resp, i, residuals);
-    NonDQUESOInstance->expData.form_gradients(resp, i, func_gradients);
-    NonDQUESOInstance->expData.form_hessians(resp, i, func_hessians);
-    // Note inside build_hessian_... we need to be able to update 
-    // log_like_hessian and not create  anew.
-    build_hessian_of_sum_square_residuals_from_function_data(func_hessians,
-    func_gradients, residuals, emulator_resp.active_set_request_vector,
-    log_like_hess);
-    }
-    }*/
-
-    build_hessian_of_sum_square_residuals_from_response(emulator_resp,
-							log_like_hess);
+    log_like_hess = expData.build_hessian_of_sum_square_residuals(emulator_resp,
+								  false);
     bool ev_truncation =
       get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
     if (ev_truncation) { // fallback to Gauss-Newton
-      build_hessian_of_sum_square_residuals_from_function_gradients(
-        emulator_resp.function_gradients(), log_like_hess);
+      log_like_hess = 
+	expData.build_hessian_of_sum_square_residuals(emulator_resp,true);
       get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
     }
   }
   else { 
-    // use Gauss-Newton approximate Hessian
-    build_hessian_of_sum_square_residuals_from_function_gradients(
-      emulator_resp.function_gradients(), log_like_hess);
+    log_like_hess = 
+      expData.build_hessian_of_sum_square_residuals(emulator_resp,true);
     get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
   }
 
