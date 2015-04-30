@@ -237,8 +237,10 @@ private:
 
   /// Load a single experiment exp_index into exp_resp
   void load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
-		       size_t num_sigma_matrices, size_t num_sigma_diagonals, 
-		       size_t num_sigma_scalars, Response& exp_resp);
+		       size_t num_field_sigma_matrices, 
+		       size_t num_field_sigma_diagonals, 
+		       size_t num_field_sigma_scalars, 
+		       size_t num_field_sigma_none, Response& exp_resp);
 
   /// read or default populate the scalar sigma
   void read_scalar_sigma(std::ifstream& scalar_data_stream, 
@@ -278,8 +280,8 @@ private:
   /// number of configuration (state) variables to read for each experiment
   size_t numConfigVars;
 
-  // empty varianceType indicates none specified?!?
-  /// type of variance specified for each variable, one per response group
+  /// type of variance specified for each variable, one per response
+  /// group; empty varianceType indicates none specified by user
   UShortArray varianceTypes;
 
   /// path to prepend to any data file names
