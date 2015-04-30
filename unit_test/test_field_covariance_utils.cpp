@@ -520,23 +520,42 @@ void test_linear_interpolate_1d_no_extrapolation()
   // Generate field coordinates on [0,1]
   int num_field_pts = 6;
   Real field_pts_array[] = {1./6.,2./5.,7./12.,2./3.,6./7.,1.};
-  RealMatrix field_pts( Teuchos::View, field_pts_array, 1, 1, num_field_pts );
+  RealMatrix field_pts( Teuchos::View, field_pts_array, 1, num_field_pts, 1 );
   // Generate field data which is the 3rd degree Legendre polynomial 1/2(5x^3-3x)
   RealVector field_vals( num_field_pts, false );
   for ( int i=0; i<num_field_pts; i++)
-    field_vals[i] = 0.5*(5.*std::pow(field_pts(0,i),3)-3.*field_pts(0,i));
+    field_vals[i] = 0.5*(5.*std::pow(field_pts(i,0),3)-3.*field_pts(i,0));
   
   // Generate simulation coordinates on equally spaced on [0,1]
   int num_sim_pts = 11;
-  RealMatrix sim_pts( 1, num_sim_pts, false );
+  RealMatrix sim_pts( num_sim_pts, 1, false );
   Real dx = 1./(num_sim_pts-1); 
   for ( int i=0; i<num_sim_pts; i++)
-    sim_pts(0,i) = i*dx;
+    sim_pts(i,0) = i*dx;
   // Generate simulation data which is the 2nd degree Legendre polynomial
   // 1/2(3x^2-1)
   RealVector sim_vals( num_sim_pts, false );
   for ( int i=0; i<num_sim_pts; i++)
-    sim_vals[i] = 0.5*(3.*std::pow(sim_pts(0,i),2)-1.);
+    sim_vals[i] = 0.5*(3.*std::pow(sim_pts(i,0),2)-1.);
+  // Generate gradients of simulation data which is [3x,4x]
+  int num_vars = 2;
+  RealMatrix sim_grads( num_vars, num_sim_pts, false );
+  for ( int i=0; i<num_sim_pts; i++){
+    sim_grads(0,i) = 3.*sim_pts(i,0);
+    sim_grads(1,i) = 4.*sim_pts(i,0);
+  }
+  // Generate gradients of simulation data which we assume is also 
+  // [3x+0.2,3x+0.05;3x+0.05,3x+0.1]
+  // Note interp sets num_vars from gradients and so hessian must be
+  // consistent with grads
+  RealSymMatrixArray sim_hessians( num_sim_pts );
+  for ( int i=0; i<num_sim_pts; i++){
+    sim_hessians[i].shapeUninitialized(num_vars);
+    //symmetric so do not have to set all entries, just upper triangular ones
+    sim_hessians[i](0,0)=3.*sim_pts(i,0)+0.2;
+    sim_hessians[i](0,1)=3.*sim_pts(i,0)+0.05;
+    sim_hessians[i](1,1)=3.*sim_pts(i,0)+0.1;
+  }
 
   // dummy objects to satisfy API
   RealMatrix sim_grads, interp_grads;
@@ -544,7 +563,9 @@ void test_linear_interpolate_1d_no_extrapolation()
 
   // Interpolate the simulation data onto the coordinates of the field data
   RealVector interp_vals;
-  linear_interpolate_1d( sim_pts, sim_vals, sim_grads, sim_hessians,
+  RealMatrix interp_grads;
+  RealSymMatrixArray interp_hessians;
+  linear_interpolate_1d( sim_pts, sim_vals, sim_grads, sim_hessians, 
 			 field_pts, interp_vals, interp_grads, interp_hessians );
   interp_vals -= field_vals;
 
@@ -553,6 +574,26 @@ void test_linear_interpolate_1d_no_extrapolation()
   RealVector diff( Teuchos::View, diff_array, num_field_pts );
   diff -= interp_vals;
   BOOST_CHECK( diff.normInf() < 10.*std::numeric_limits<double>::epsilon() );
+
+  RealMatrix true_grads(num_vars,num_field_pts,false);
+  for ( int i=0; i<num_field_pts; i++){
+    true_grads(0,i) = 3.*field_pts(i,0);
+    true_grads(1,i) = 4.*field_pts(i,0);
+  }
+  true_grads -= interp_grads;
+  BOOST_CHECK( true_grads.normInf()<10.*std::numeric_limits<double>::epsilon() );
+
+  RealSymMatrixArray true_hessians( num_sim_pts );
+  for ( int i=0; i<num_field_pts; i++){
+    true_hessians[i].shapeUninitialized(num_vars);
+    //symmetric so do not have to set all entries, just upper triangular ones
+    true_hessians[i](0,0)=3.*field_pts(i,0)+0.2;
+    true_hessians[i](0,1)=3.*field_pts(i,0)+0.05;
+    true_hessians[i](1,1)=3.*field_pts(i,0)+0.1;
+    true_hessians[i] -= interp_hessians[i];
+    BOOST_CHECK( true_hessians[i].normInf()<
+		 10.*std::numeric_limits<double>::epsilon() );
+  }
 }
 
 void test_linear_interpolate_1d_with_extrapolation()
@@ -562,23 +603,23 @@ void test_linear_interpolate_1d_with_extrapolation()
   // Generate field coordinates on [-1/6,11/10]
   int num_field_pts = 6;
   Real field_pts_array[] = {-1./6.,2./5.,7./12.,2./3.,6./7.,11./10.};
-  RealMatrix field_pts( Teuchos::View, field_pts_array, 1, 1, num_field_pts );
+  RealMatrix field_pts( Teuchos::View, field_pts_array, 1, num_field_pts, 1 );
   // Generate field data which is the 3rd degree Legendre polynomial 1/2(5x^3-3x)
   RealVector field_vals( num_field_pts, false );
   for ( int i=0; i<num_field_pts; i++)
-    field_vals[i] = 0.5*(5.*std::pow(field_pts(0,i),3)-3.*field_pts(0,i));
+    field_vals[i] = 0.5*(5.*std::pow(field_pts(i,0),3)-3.*field_pts(i,0));
   
   // Generate simulation coordinates on equally spaced on [0,1]
   int num_sim_pts = 11;
-  RealMatrix sim_pts( 1, num_sim_pts, false );
+  RealMatrix sim_pts( num_sim_pts, 1, false );
   Real dx = 1./(num_sim_pts-1); 
   for ( int i=0; i<num_sim_pts; i++)
-    sim_pts(0,i) = i*dx;
+    sim_pts(i,0) = i*dx;
   // Generate simulation data which is the 2nd degree Legendre polynomial
   // 1/2(3x^2-1)
   RealVector sim_vals( num_sim_pts, false );
   for ( int i=0; i<num_sim_pts; i++)
-    sim_vals[i] = 0.5*(3.*std::pow(sim_pts(0,i),2)-1.);
+    sim_vals[i] = 0.5*(3.*std::pow(sim_pts(i,0),2)-1.);
 
   // dummy objects to satisfy API
   RealMatrix sim_grads, interp_grads;
@@ -586,8 +627,10 @@ void test_linear_interpolate_1d_with_extrapolation()
 
   // Interpolate the simulation data onto the coordinates of the field data
   RealVector interp_vals;
-  linear_interpolate_1d( sim_pts, sim_vals, sim_grads, sim_hessians, field_pts, 
-			 interp_vals, interp_grads, interp_hessians );
+  RealMatrix sim_grads, interp_grads;
+  RealSymMatrixArray sim_hessians, interp_hessians;
+  linear_interpolate_1d( sim_pts, sim_vals, sim_grads, sim_hessians, 
+			 field_pts, interp_vals, interp_grads, interp_hessians );
   interp_vals -= field_vals;
 
   Real diff_array[] = {-7.38425925925926e-1,1.8e-1,3.91261574074074e-1,
@@ -650,6 +693,8 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
     truth_ssr_hessian(1,1) += 1./25.*( 10.*x2*y2*(2.*x2-3.*y2) + 
 				       (7.*y2-2.*x2)*(2.*x2-y2)*(2.*x2-y2) );
   }
+  // hack until build hessian can use covariance for multiple experiments
+  truth_ssr_hessian *=2;
   
   truth_ssr_hessian -= ssr_hessian;
   BOOST_CHECK( truth_ssr_hessian.normInf() < 
@@ -713,6 +758,9 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
 				     diagonal_map_indices, 
 				     scalar_map_indices );
   
+  // must reset ssr_hessian because if it is the right size
+  // the build_hessians... function will assume we want to add to it
+  ssr_hessian.shape(0);
   build_hessian_of_sum_square_residuals_from_response(resp, exper_cov,
 						      ssr_hessian);
 
@@ -723,6 +771,9 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
   RealSymMatrix truth_noise_scaled_ssr_hessian( Teuchos::View, true,
 					  truth_noise_scaled_ssr_hessian_array,
 					  2, 2 );
+
+  // hack until build hessian can use covariance for multiple experiments
+  truth_noise_scaled_ssr_hessian *=2;
   
   truth_noise_scaled_ssr_hessian -= ssr_hessian;
   BOOST_CHECK( truth_noise_scaled_ssr_hessian.normInf() < 
@@ -737,6 +788,9 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
   resp1.function_gradients(func_gradients);
   resp1.function_hessians(func_hessians);
   
+  // must reset ssr_hessian because if it is the right size
+  // the build_hessians... function will assume we want to add to it
+  ssr_hessian.shape(0);
   build_hessian_of_sum_square_residuals_from_response(resp1, exper_cov,
 						      ssr_hessian);
 
@@ -747,6 +801,9 @@ void test_build_hessian_of_sum_square_residuals_from_function_hessians()
   RealSymMatrix truth_noise_scaled_gn_ssr_hessian( Teuchos::View, true,
 					truth_noise_scaled_gn_ssr_hessian_array,
 					2, 2 );
+
+  // hack until build hessian can use covariance for multiple experiments
+  truth_noise_scaled_gn_ssr_hessian *=2;
   
   truth_noise_scaled_gn_ssr_hessian -= ssr_hessian;
   BOOST_CHECK( truth_noise_scaled_gn_ssr_hessian.normInf() < 
