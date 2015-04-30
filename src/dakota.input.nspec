@@ -1294,6 +1294,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                )
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
              ]
+            [ logit_transform {N_mdm(true,logitTransform)} ]
            )
           |
           ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}

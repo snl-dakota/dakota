@@ -17,6 +17,7 @@ method,
 # diagonal and matrix formats from file
 #	    diagonal filename 'dakota_cantilever_queso.diag.dat'	#p2
 #	    matrix   filename 'dakota_cantilever_queso.matrix.dat'	#p3
+	  logit_transform         # default is off
 
 variables,								
         uniform_uncertain 2

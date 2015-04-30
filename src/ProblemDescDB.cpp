@@ -2969,6 +2969,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
 	{"nond.calibrate_sigma", P calibrateSigmaFlag},
 	{"nond.cross_validation", P crossValidation},
+	{"nond.logit_transform", P logitTransform},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},

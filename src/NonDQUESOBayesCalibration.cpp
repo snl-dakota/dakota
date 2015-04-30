@@ -217,7 +217,8 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   calibrateSigmaFlag(probDescDB.get_bool("method.nond.calibrate_sigma")),
-  precondRequestValue(0)
+  precondRequestValue(0),
+  logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
@@ -1207,7 +1208,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   // logit transform addresses high rejection rates in corners of bounded
   // domains.  It is hardwired on at this time, although potentially redundant
   // in some cases (e.g., WIENER u-space type).
-  calIpMhOptionsValues->m_doLogitTransform = true;
+  calIpMhOptionsValues->m_doLogitTransform = logitTransform;
 }
 
 

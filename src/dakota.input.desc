@@ -1249,6 +1249,7 @@ TAG "method/bayes_calibration/queso/emulator/pce/expansion_order/posterior_adapt
 TAG "method/bayes_calibration/queso/emulator/sc"
 TAG "method/bayes_calibration/queso/emulator/sc/sparse_grid_level"
 TAG "method/bayes_calibration/queso/emulator/use_derivatives"
+TAG "method/bayes_calibration/queso/logit_transform"
 TAG "method/bayes_calibration/gpmsa"
 TAG "method/bayes_calibration/gpmsa/emulator_samples"
 TAG "method/bayes_calibration/gpmsa/import_points_file"

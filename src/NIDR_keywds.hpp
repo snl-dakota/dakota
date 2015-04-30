@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1479 distinct keywords (plus 205 aliases) **/
+/** 1480 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -440,9 +440,10 @@ static KeyWord
 		{"sc",8,1,1,1,kw_76,0.,0.,0,N_mdm(type,emulatorType_SC_EMULATOR)},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
-	kw_78[2] = {
+	kw_78[3] = {
 		{0,0,7,0,0,kw_63},
-		{"emulator",8,5,1,0,kw_77}
+		{"emulator",8,5,1,0,kw_77},
+		{"logit_transform",8,0,2,0,0,0.,0.,0,N_mdm(true,logitTransform)}
 		},
 	kw_79[8] = {
 		{0,0,1,0,0,kw_27},
@@ -451,7 +452,7 @@ static KeyWord
 		{"dream",8,6,1,1,kw_57,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_DREAM)},
 		{"gpmsa",8,3,1,1,kw_68,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_GPMSA)},
 		{"likelihood_scale",10,0,3,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
-		{"queso",8,1,1,1,kw_78,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_QUESO)},
+		{"queso",8,2,1,1,kw_78,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_QUESO)},
 		{"standardized_space",8,0,2,0,0,0.,0.,0,N_mdm(true,standardizedSpace)}
 		},
 	kw_80[4] = {

@@ -1435,6 +1435,7 @@ KEYWORD12 method
 		)
 	      [ use_derivatives ]
 	      ]
+	    [ logit_transform ]
 	    [ dram
 	    | delayed_rejection
 	    | adaptive_metropolis

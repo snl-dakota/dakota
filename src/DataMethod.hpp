@@ -911,6 +911,8 @@ public:
   /// flag indicating adaptive refinement of the emulator in regions
   /// of high posterior probability
   bool adaptPosteriorRefine;
+  /// flag indicating user activation of logit transform option within QUESO
+  bool logitTransform;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
   /// number of updates of the proposal covariance from computing the

@@ -176,6 +176,10 @@ protected:
   short precondRequestValue;
   /// local Response in which to store computed residuals
   Response residualResponse;
+  /// flag indicating user activation of logit transform option
+  /** this option is useful for preventing rejection or resampling for
+      out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
+  bool logitTransform;
 
 private:
 

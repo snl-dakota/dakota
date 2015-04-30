@@ -6669,6 +6669,7 @@ static bool
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
 	MP_(latinizeFlag),
+	MP_(logitTransform),
 	MP_(mainEffectsFlag),
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),

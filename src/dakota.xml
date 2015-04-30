@@ -1736,6 +1736,7 @@
                             </oneOf>
 			    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
                           </keyword>
+			  <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
                         </keyword>
                         <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
                           <keyword  id="emulator_samples4" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help=""  >

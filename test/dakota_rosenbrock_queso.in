@@ -19,6 +19,7 @@ method,
 	  proposal_covariance
 	    derivatives	
 	    proposal_updates = 50 # default update is every 100 samples
+	  logit_transform         # default is off
 #	  output verbose
 
 variables,								
