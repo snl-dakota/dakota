@@ -14,9 +14,10 @@ Be default, methods do not import points from a file.
 
 <b> Usage Tips </b>
 
-Although Dakota parses input files without regard to whitespace, the
-import_points_file must be in one of two formats:
+Dakota parses input files without regard to whitespace, but the
+import_points_file must be in one of three formats:
 \li \c annotated (default)
+\li \c custom_annotated
 \li \c freeform
 
 Topics::	

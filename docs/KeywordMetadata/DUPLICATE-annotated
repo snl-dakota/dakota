@@ -1,35 +1,41 @@
 Blurb::
-Denotes annotated file format
+Selects annotated tabular file format
 
 Description::
-An annotated file is a text file with one leading row of
-comments/column labels and one leading column of evaluation/row IDs
-surrounding num\_rows x num\_cols whitespace-separated numeric data,
-(newlines separating rows are not currently required, but may be in
-the future). The numeric data in a row may correspond to variables,
-variables followed by responses, data point for calibration, etc.,
-depending on context.
+An annotated tabular file is a whitespace-separated text file with one
+leading header row of comments/column labels.  Each subsequent row
+contains an evaluation ID and interface ID, followed by data for
+variables, or variables followed by responses, depending on context.
 
 <b> Default Behavior </b>
 
-By default, Dakota expects point files to be in annotated format.  To
-explicitly specify this in the Dakota input file, however, the \c
-annotated keyword must be used in conjunction with the \c
-import_points_file keyword.
+By default, Dakota imports and exports tabular files in annotated
+format.  The \c annotated keyword can be used to explicitly specify
+this.
 
 <b> Usage Tips </b>
 
+\li To specify pre-Dakota 6.1 tabular format, which did not include
+interface_id, specify \c custom_annotated \c header \c eval_id
+
 \li Prior to October 2011, calibration and surrogate data files were
-free-form format. They now default to annotated format, though \c
+in free-form format. They now default to \c annotated format, though \c
 freeform remains an option.
-\li For both formats, a warning will be generated if a specific number
-of data are expected, but extra is found and an error generated when
-there is insufficient data.
+
+\li When importing tabular data, a warning will be generated if a
+specific number of data are expected, but extra is found and an error
+generated when there is insufficient data.
+
 \li Some TPLs like SCOLIB and JEGA manage their own file I/O and only
-support the free-form option.
+support the \c freeform option.
 
 Topics::	file_formats
 Examples::
+
+Import an annotated points file containing a header row, leading
+eval_id and interface_id columns, and data for variables to perform a
+parameter study.
+
 \verbatim
 method
   list_parameter_study

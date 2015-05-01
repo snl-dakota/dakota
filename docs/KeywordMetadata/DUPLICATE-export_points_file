@@ -3,9 +3,16 @@ Output file for evaluations of a surrogate model
 
 Description::
 File of points (input variable values and predicted approximate
-outputs from the surrogate) evaluated on the surrogate model. Note
-that the export points contain test point values and the emulator
-predictions at these points.
+outputs from the surrogate) evaluated on the surrogate model. The
+export points contain test point values and the emulator predictions
+at these points.
+
+<b> Usage Tips </b>
+
+Dakota exports tabular data in one of three formats:
+\li \c annotated (default)
+\li \c custom_annotated
+\li \c freeform
 
 Topics::
 Examples::

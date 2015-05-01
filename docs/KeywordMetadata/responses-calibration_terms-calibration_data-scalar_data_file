@@ -1,13 +1,18 @@
 Blurb::
-This refers to the specification of scalar data in a mixed-case where the 
-user is calibrating both scalar and field data. 
+Specify a scalar data file to complement field data files (mixed case)
+
 Description::
 
-If the user is specifying BOTH scalar and field calibration terms, AND 
-has associated experimental data to provide for each, the scalar data may be provided 
-in the file named by \c scalar_data_file.  This file follows the same format as: 
-\ref responses-calibration_terms-calibration_data_file. 
+When calibrating both scalar and field calibration terms, to
+associated experimental data, the scalar data may be provided in the
+file named by \c scalar_data_file.  This file follows the same format
+as: \ref responses-calibration_terms-calibration_data_file.
 
+<b> Default Behavior </b>
+
+If \c scalar_data_file is omitted, all calibration data, including for
+scalar responses, will be read from the generic field \c
+calibration_data format.
 
 Topics::	
 Examples::

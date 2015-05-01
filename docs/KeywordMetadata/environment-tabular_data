@@ -13,6 +13,11 @@ There is no dependence between the \c graphics flag and the \c
 tabular_data flag; they may be used independently or
 concurrently.
 
+Dakota exports tabular data in one of three formats:
+\li \c annotated (default)
+\li \c custom_annotated
+\li \c freeform
+
 Topics::	dakota_output
 Examples::
 Theory::

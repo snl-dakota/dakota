@@ -4,7 +4,7 @@ Description:: Specify a base filename for the restart file Dakota
 should write.  This option is overridden by any command-line
 -write_restart option.
 
-Topics::	dakota_IO
+Topics::	dakota_IO, command_line_options
 Examples::
 Theory::
 Faq::

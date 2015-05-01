@@ -1,14 +1,13 @@
 Blurb::
-Supply calibration data in a text file (ONLY FOR SCALAR DATA)
+Specify a text file containing calibration data for scalar responses
+
 Description::
 
-This specification block outlines keywords that allow scalar calibration 
-data to be read into Dakota.  
-
-\c calibration_data_file specifies a text file containing data which
-Dakota will attempt to match by calibrating the model variables. The
-options for it related to either:
-  \li format: whether the data file is in \c annotated, or \c freeform format
+Enables text file import of experimental observations for use in
+calibration, for scalar responses only.  Dakota will calibrate model
+variables to best match tese data.  Key options include:
+  \li format: whether the data file is in \c annotated, \c
+    custom_annotated, or \c freeform format
   \li content: where \c num_experiments, \c
     num_config_variables, and \c variance_type indicate which
     columns appear in the data.
@@ -17,20 +16,22 @@ While some components may be omitted, the most complete version of a
 an annotated calibration data file could include columns corresponding
 to:
 \verbatim
-index | configuration xvars | y data observations | y data variances
+exp_id | configuration xvars | y data observations | y data variances
 \endverbatim
 
-Here each such row in the file corresponds to an experiment or
-replicate observation of an experiment to be compared to the model
-output.  NOTE:  the \c calibration_data_file is meant when 
-you have ONLY scalar calibration terms.  If you have field calibration 
-terms, you should use \c calibration_data and the associated specification 
-below it.  
-If you have both scalar and field calibration terms, you should 
-still use the \c calibration_data specification.  Within this specification, a scalar 
-data file can be specified by \c scalar_data_file and uses the format described here.
+Each row in the file corresponds to an experiment or replicate
+observation of an experiment to be compared to the model output.
 
-<b> Simple case </b>
+<b> Usage Tips </b>
+
+\li The \c calibration_data_file used when ONLY scalar calibration
+terms are present.  If there are field calibration terms, instead use
+\c calibration_data.  For mixed scalar and field calibration terms, on
+may use the \c calibration_data specification, together with its
+sub-specification \c scalar_data_file, which uses the format described
+here.
+
+<b> Simple Case </b>
 
 In the simplest case, no data content descriptors are specified, so
 the data file must contain only the \f$ y^{Data} \f$ observations which

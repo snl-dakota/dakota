@@ -5,7 +5,7 @@ methods.) Specify a base filename to which Dakota will write any
 post-run output data. This option is overridden by any command-line
 -post_run arguments.
 
-Topics::	dakota_IO, command_line_options
+Topics::	dakota_IO
 Examples::
 Theory::
 Faq::

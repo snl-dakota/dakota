@@ -5,7 +5,7 @@ methods.) Specify a base filename from which Dakota will read any
 pre-run input data. This option is overridden by any command-line
 -pre_run arguments.
 
-Topics::	dakota_IO, command_line_options
+Topics::	dakota_IO
 Examples::
 Theory::
 Faq::

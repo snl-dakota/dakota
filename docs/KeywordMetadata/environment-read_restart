@@ -4,7 +4,11 @@ Description:: Specify a base filename for the restart file Dakota
 should read.  This option is overridden by any command-line
 -read_restart option.
 
-Topics::	dakota_IO
+<b> Default Behavior </b>
+
+No restart file is read.
+
+Topics::	dakota_IO, command_line_options
 Examples::
 Theory::
 Faq::

@@ -5,7 +5,11 @@ directed.  Output will (necessarily) be redirected after the input
 file is parsed.  This option is overridden by any command-line -output
 option.
 
-Topics::	dakota_IO
+<b> Default Behavior </b>
+
+Output to console (screen).
+
+Topics::	dakota_IO, command_line_options
 Examples::
 Theory::
 Faq::

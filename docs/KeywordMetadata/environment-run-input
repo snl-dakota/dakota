@@ -5,7 +5,7 @@ methods.) Specify a base filename from which Dakota will read any run
 input data, such as parameter sets to evaluate. This option is
 overridden by any command-line -run arguments.
 
-Topics::	dakota_IO, command_line_options
+Topics::	dakota_IO
 Examples::
 Theory::
 Faq::
