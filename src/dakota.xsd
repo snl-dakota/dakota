@@ -86,11 +86,12 @@
 		<attribute name="name" type="string" use="required"></attribute>
 		<attribute name="id" type="string" use="optional"></attribute>
 		<attribute name="maxOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>
-        <attribute name="minOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>      
+		<attribute name="minOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>      
 		<attribute name="code" type="string" use="required"></attribute>		
-        <attribute name="label" type="string" use="optional" ></attribute>
-        <attribute name="help" type="string" use="optional" ></attribute>           
-	    <attribute name="group" type="string" use="optional" ></attribute>                                                  
+		<attribute name="label" type="string" use="optional" ></attribute>
+		<attribute name="help" type="string" use="optional" ></attribute>           
+		<attribute name="group" type="string" use="optional" ></attribute>                                                  
+		<attribute name="default" type="string" use="optional" ></attribute>                                                  
 	</complexType>
 
 	<simpleType name="argTypeType">

@@ -126,7 +126,7 @@
       <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Graphics flag" help="EnvCommands.html#EnvOutput" minOccurs="0" />
       <keyword  id="tabular_data" name="tabular_data" code="{N_stm(true,tabularDataFlag)}" label="tabular_data" help="" minOccurs="0" >
         <alias name="tabular_graphics_data"/>
-        <keyword  id="tabular_data_file" name="tabular_data_file" code="{N_stm(str,tabularDataFile)}" label="tabular_data_file" help="" minOccurs="0" >
+        <keyword  id="tabular_data_file" name="tabular_data_file" code="{N_stm(str,tabularDataFile)}" label="tabular_data_file" help="" minOccurs="0" default="dakota_tabular.dat">
           <alias name="tabular_graphics_file"/>
           <param type="OUTPUT_FILE" />
         </keyword>
