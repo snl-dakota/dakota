@@ -29,49 +29,87 @@ a surrogate, points at which to run a list parameter study, post-run
 input data, and least squares and Bayesian calibration data. Dakota
 writes and reads tabular data with C++ stream operators/conversions,
 so most integer and floating point formats are acceptable for imported
-numeric data.
+numeric data.  Dakota supports the following tabular formats:
+\begin{itemize}
 
-By default, Dakota tabular import data must be formatted similarly to
-its tabular output~\ref{output:tabular}; in an annotated columnar
-format.  Annotated tabular input (default for all tabular I/O and
-explicitly specified via {\tt annotated}) is given in a text file with
-one leading row (header) of comments/column labels and two leading
-columns (identifiers), one for evaluation ID and one for interface ID.
-These leading labels surround num\_rows x num\_cols of
-whitespace-separated numeric data, (newlines separating rows are not
-currently required, but may be in the future).  The numeric data in a
-row may correspond to variables, variables followed by responses, data
-point for calibration, etc., depending on context.  {\bf Notes:}
-\begin{enumerate}
-\item As of Dakota 6.1, the default/\texttt{annotated} option requires
-  two leading columns, one for the evaluation ID and one for the
-  interface ID.  This format is shown in Figure~\ref{output:tabcont}.
-  Prior to Dakota 6.1, the annotated format required only one leading
-  column, but now requires two.
+\item \textbf{Annotated:} In most contexts, Dakota tabular data
+  defaults to ``annotated'' tabular format.  An annotated tabular file
+  is a whitespace-separated text file with one leading header row of
+  comments/column labels.  In most imports/exports, each subsequent
+  row contains an evaluation ID and interface ID, followed by data for
+  variables, or variables followed by responses, depending on context.
+  This example shows 5 variables, followed by the 1 text\_book
+  response:
+\begin{footnotesize}
+\begin{verbatim}
+%eval_id interface     TF1ln     TF1ln    hpu_r1    hpu_r2 ModelForm      text_book 
+1               I1   0.97399    1.0476        12     4.133         3     14753 
+2               I1   0.94468    1.0636     4.133        12         3     14753 
+3               I1    1.0279    1.0035        12     4.133         3     14753  
+\end{verbatim}
+\end{footnotesize}
+Another example is shown in Figure~\ref{output:tabcont}. \emph{{\bf
+    Note:} Dakota 6.1 and newer include a column for the interface ID.
+  See the discussion of custom-annotated format for
+  importing/exporting Dakota 6.0 format files.}
 
-\item Variables should appear in input specification order as
-  documented in the reference manual.  As of Dakota 6.1, the annotated
-  format requires columns for all of the variables (active and
-  inactive), not only the active variables as in previous versions.
-  To import data corresponding only to the active variables, use the
-  keyword \texttt{active\_only} when specifying the import file.
-\end{enumerate}
+  For scalar experiment data files, each subsequent row contains an
+  experiment ID, followed by data for configuration variables,
+  observations, and/or observation errors, depending on context.  This
+  example shows 3 data points for each of two experiments.
+\begin{verbatim}
+%experiment d1 d2 d3
+1	82	15.5	2.02
+2	82.2	15.45	2
+\end{verbatim}
 
-When optionally specifying \texttt{freeform} for a given tabular
-import, the data file must be provided in a free-form format, omitting
-the leading one row and two columns. The raw num\_rows x num\_cols
-numeric data entries may appear separated with any whitespace
-including arbitrary spaces, tabs, and newlines.  In this format,
-vectors may therefore appear as a single row or single column (or
-mixture; entries will populate the vector in order).
+\item \textbf{Free-form:} When optionally specifying \texttt{freeform}
+  for a given tabular import, the data file must be provided in a
+  free-form format, omitting the leading header row and ID
+  column(s). The raw num\_rows x num\_cols numeric data entries may
+  appear separated with any whitespace including arbitrary spaces,
+  tabs, and newlines.  In this format, vectors may therefore appear as
+  a single row or single column (or mixture; entries will populate the
+  vector in order).  This example shows the free-form version of the
+  annotated data above:
+\begin{verbatim}
+   0.97399    1.0476        12     4.133         3     14753 
+   0.94468    1.0636     4.133        12         3     14753 
+    1.0279    1.0035        12     4.133         3     14753 
+\end{verbatim}
+
+\item \textbf{Custom-annotated:} In Dakota 6.2 and newer, a
+  custom-annotated format is supported, to allow
+  backward-compatibility with Dakota 6.0 tabular formats, which had a
+  header and evaluation ID, but no interface ID.  This can be
+  specified, for example, with
+\begin{verbatim}
+method
+  list_parameter_study
+    import_points_file = 'dakota_pstudy.3.dat'
+      custom_annotated header eval_id
+\end{verbatim}
+  The \texttt{custom\_annotated} keyword has options to control
+  \texttt{header} row, \texttt{eval\_id} column, and
+  \texttt{interface\_id} column.
+
+\end{itemize}
+
+In tabular files, variables appear in input specification order as
+documented in the reference manual.  As of Dakota 6.1, tabular I/O has
+columns for all of the variables (active and inactive), not only the
+active variables as in previous versions.  To import data
+corresponding only to the active variables, use the keyword
+\texttt{active\_only} when specifying the import file.
 
 {\bf Attention:} Prior to October 2011, samples, calibration, and
 surrogate data files were free-form format.  They now default to
-annotated format, though {\tt freeform} remains an option.  For both
-formats, a warning will be generated if a specific number of data are
-expected, but extra is found and an error generated when there is
-insufficient data.  Some TPLs like SCOLIB and JEGA manage their own
-file I/O and only support the free-form option.
+annotated format, though there are {\tt freeform} and {\tt
+  custom\_annotated} options.  For both formats, a warning will be
+generated if a specific number of data are expected, but extra is
+found and an error generated when there is insufficient data.  Some
+TPLs like SCOLIB and JEGA manage their own file I/O and only support
+the free-form option.
 
 
 \section{Data Imports}\label{input:import}
@@ -131,13 +169,13 @@ a linear regression (see Section~\ref{uq:expansion}).  However, Dakota
 also supports the option of importing a set of response PCE
 coefficients from a file specified with \\
 \texttt{import\_expansion\_file = \emph{STRING}}.  Each row of the
-file must be comprised of a coefficient followed by its associated
-multi-index (the same format used for output described in
-Section~\ref{sec:output:pce}).  This file import can be used to
-evaluate moments analytically or compute probabilities numerically
-from a known response expansion.  Refer to the Method Specification
-chapter in the Dakota Reference Manual~\cite{RefMan} for additional
-information on this specification.
+free-form formatted file must be comprised of a coefficient followed
+by its associated multi-index (the same format used for output
+described in Section~\ref{sec:output:pce}).  This file import can be
+used to evaluate moments analytically or compute probabilities
+numerically from a known response expansion.  Refer to the Method
+Specification chapter in the Dakota Reference Manual~\cite{RefMan} for
+additional information on this specification.
 
 \subsection{Surrogate construction and evaluation data}
 
@@ -145,30 +183,34 @@ Global data fit surrogates, including some stochastic expansions, may
 be constructed from a variety of data sources.  One of these sources
 is an auxiliary data file, as specified by the keyword \texttt{import\
   points\_file = \emph{STRING}}.  The file may be in annotated
-(default) or free-form format with columns corresponding to variables
-and responses.  Surfpack global surrogate models may also be evaluated
-at a user-provided file containing \texttt{challenge\_points}.  Refer
-to the Model Specification chapter in the Dakota Reference
-Manual~\cite{RefMan} for additional information on this specification.
+(default), custom\_annotated, or free-form format with columns
+corresponding to variables and responses.  Surfpack global surrogate
+models may also be evaluated at a user-provided file containing
+\texttt{challenge\_points}.  Refer to the Model Specification chapter
+in the Dakota Reference Manual~\cite{RefMan} for additional
+information on this specification.
 
 \subsection{Variables/responses import to post-run}
 
 The post-run mode (supported only for sampling, parameter study, and
 DACE methods) requires specification of a file containing parameter
-and response data in annotated tabular format (see Section
-~\ref{input:tabularformat}; free-form is not supported).  Leading
-columns for evaluation and interface IDs are followed by columns for
-variables (active and inactive by default), then those for responses,
-with an ignored header row of labels and then one row per evaluation.
-Typically this file would be generated by executing \texttt{dakota -i
-  dakota.in -pre\_run ::variables.dat} and then adding columns of
-response data to variables.dat to make varsresponses.dat.  The file is
-specified at the command line with:
+and response data.  Annotated is the default format (see Section
+~\ref{input:tabularformat}), where leading columns for evaluation and
+interface IDs are followed by columns for variables (active and
+inactive by default), then those for responses, with an ignored header
+row of labels and then one row per evaluation.  Typically this file
+would be generated by executing \texttt{dakota -i dakota.in -pre\_run
+  ::variables.dat} and then adding columns of response data to
+variables.dat to make varsresponses.dat.  The file is specified at the
+command line with:
 \begin{small}
 \begin{verbatim}
     dakota -i dakota.in -post_run varsresponses.dat::
 \end{verbatim}
 \end{small}
+To import post-run data in other formats, specify \texttt{post\_run}
+in the input file instead of at the command-line, and provide a format
+option.
 
 % LocalWords:  WordPad pre num whitespace freeform TPLs SCOLIB JEGA AMPL nl GAs
 % LocalWords:  PCE multi dakota dat varsresponses Surfpack

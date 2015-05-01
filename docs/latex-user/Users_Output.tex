@@ -315,26 +315,26 @@ Section~\ref{input:tabularformat}) file contains the complete history
 of data requests from NPSOL (8 requests map into a total of 40
 function evaluations when including the central finite
 differencing). The first column is the data request number, the second
-column is the interface ID (which is EMPTY if the user does not
-specify a name for the interface), the third and fourth columns are
-the design parameter values (labeled in the example as ``\texttt{H}''
-and ``\texttt{D}''), the fifth column is the objective function
-(labeled ``\texttt{obj\_fn}''), and the sixth column is the nonlinear
-equality constraint (labeled ``\texttt{nln\_eq\_con\_1}'').
+column is the interface ID (which is \texttt{NO\_ID} if the user does
+not specify a name for the interface), the third and fourth columns
+are the design parameter values (labeled in the example as
+``\texttt{H}'' and ``\texttt{D}''), the fifth column is the objective
+function (labeled ``\texttt{obj\_fn}''), and the sixth column is the
+nonlinear equality constraint (labeled ``\texttt{nln\_eq\_con\_1}'').
 
 \begin{figure}
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
 %eval_id interface             H              D         obj_fn   nln_eq_con_1 
-       1     EMPTY           4.5            4.5    107.1314511     8.04440764 
-       2     EMPTY   5.801246882    3.596476363    94.33737399    -4.59103645 
-       3     EMPTY   5.197920019    3.923577479     97.7797214  -0.6780884711 
-       4     EMPTY   4.932877133    4.044776216    98.28930566  -0.1410680284 
-       5     EMPTY   4.989328733    4.026133158     98.4270019 -0.005324671422 
-       6     EMPTY   4.987494493    4.027041977    98.43249058 -7.307058453e-06 
-       7     EMPTY   4.987391669     4.02708372    98.43249809 -2.032538049e-08 
-       8     EMPTY   4.987389423    4.027084627    98.43249812 -9.691802916e-12 
+       1     NO_ID           4.5            4.5    107.1314511     8.04440764 
+       2     NO_ID   5.801246882    3.596476363    94.33737399    -4.59103645 
+       3     NO_ID   5.197920019    3.923577479     97.7797214  -0.6780884711 
+       4     NO_ID   4.932877133    4.044776216    98.28930566  -0.1410680284 
+       5     NO_ID   4.989328733    4.026133158     98.4270019 -0.005324671422 
+       6     NO_ID   4.987494493    4.027041977    98.43249058 -7.307058453e-06 
+       7     NO_ID   4.987391669     4.02708372    98.43249809 -2.032538049e-08 
+       8     NO_ID   4.987389423    4.027084627    98.43249812 -9.691802916e-12 
 \end{verbatim}
 \end{small}
 \end{bigbox}
@@ -350,7 +350,9 @@ that the interface defines which simulation is being run though the
 interface is important when using hybrid methods, multi-fidelity
 methods, or nested models.  In more common, simpler analyses, users
 typically ignore the first two columns and only focus on the columns
-of inputs (variables) and outputs (responses).
+of inputs (variables) and outputs (responses).  \emph{To generate tabular
+output in Dakota 6.0 format, use the custom-annotated format described
+in Section~\ref{input:tabularformat}.}
 
 {\bf Attention:} As of Dakota 6.1, the tabular file will include
 columns for all of the variables (both active and inactive) present in
@@ -496,7 +498,8 @@ Section~\ref{uq:expansion}).  One may output the PCE coefficients to a
 file using the keyword \texttt{export\_expansion\_file =
   \emph{STRING}}.  Each row of the exported file will contain a
 coefficient, followed by the multi-index indicating which basis terms
-correspond to it.
+correspond to it.  Only free-form format
+(Section~\ref{input:tabularformat}) is supported for this file.
 
 When using numerical integration schemes with structured rules, Dakota
 can also output the integration points and corresponding weights to a
@@ -513,10 +516,10 @@ Most Dakota surrogate models, including all those implemented in
 Surfpack and some stochastic expansion approaches support the keyword
 \texttt{export\_points\_file = \emph{STRING}}.  When specified, any
 approximate evaluations performed on the surrogate model will be
-output to the specified data file.  The data file will be exported in
-the same format as top-level tabular output data described in
-Section~\ref{output:tabular}.  This facilitates plotting or external
-diagnostics of the surrogate model.
+output to the specified data file.  The data file can be exported in
+any of the tabular formats described in
+Section~\ref{input:tabularformat} (default annotated).  This
+facilitates plotting or external diagnostics of the surrogate model.
 
 In addition, the Surfpack family of global surrogate models supports
 export (serialization) of surrogate models to text ({\tt .sps}) or
@@ -530,9 +533,10 @@ of the surrogate model from build data.
 
 The pre-run mode (supported only for select methods) permits
 specification of an output file to which Dakota will write parameter
-(variables) data in tabular format (see Section~\ref{output:tabular})
-with data columns corresponding to each variable.  This file can be
-generated with sampling, parameter study, and DACE methods by invoking
+(variables) data in any supported tabular format (default annotated; see
+Section~\ref{input:tabularformat}) with data columns corresponding to
+each variable.  This file can be generated with sampling, parameter
+study, and DACE methods by invoking
 \begin{small}
 \begin{verbatim}
     dakota -i dakota.in -pre_run ::variables.dat
@@ -540,7 +544,10 @@ generated with sampling, parameter study, and DACE methods by invoking
 \end{small}
 for example, to output the variables (samples) in an LHS study.  If a
 user adds the corresponding response values to this file, it may then
-be imported using Dakota's post-run mode.
+be imported using Dakota's post-run mode.  Command line pre-run will
+always export in annotated format.  To export pre-run data in other
+formats, specify \texttt{pre\_run} in the input file instead of at the
+command-line, and provide a format option.
 
 % LocalWords:  NPSOL npsol sqp fn nln eq infeasible differencing Majr Minr gZ
 % LocalWords:  Violtn nZ Conv Fortran Fortran ftn09 MATLAB TECplot Minitab dat
