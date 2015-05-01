@@ -1,0 +1,13 @@
+Blurb::
+Specify the number of samples taken on the emulator to estimate the Probability of Failure in POF Darts
+Description::
+The last step of the POF Darts method involves constructing an emulator over the points identified thus far, 
+and sampling that emulator extensively to estimate the probability of failure.  \c emulator_samples allows 
+one to specify the number of samples taken on the emulator.  The default is 1E+6.  
+If the probability of failure estimate is zero, the user may want to increase the number of 
+emulator samples. 
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
