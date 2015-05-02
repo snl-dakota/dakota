@@ -1,0 +1,8 @@
+Blurb::Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion.
+
+Description::Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion. To avoid requiring the user to calculate N from n and p, the collocation_ratio allows for specification of a constant factor applied to N (e.g., collocation_ratio = 2. produces samples = 2N). In addition, the default linear relationship with N can be overridden using a real-valued exponent specified using ratio_order. In this case, the number of samples becomes \f$cN^o\f$ where \f$c\f$ is the collocation_ratio and \f$o\f$ is the ratio_order. The use_derivatives flag informs the regression approach to include derivative matching equations (limited to gradients at present) in the least squares solutions, enabling the use of fewer collocation points for a given expansion order and dimension (number of points required becomes \f$\frac{cN^o}{n+1}\f$).
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

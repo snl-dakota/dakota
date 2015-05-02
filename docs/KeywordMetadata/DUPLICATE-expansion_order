@@ -1,6 +1,10 @@
-Blurb::
-The maximum order of a polynomial expansion
-Description::
+Blurb::The (initial) order of a polynomial expansion
+
+Description::When the expansion_order for a a polynomial chaos expansion 
+is specified, the coefficients may be computed by integration based on
+random samples or by regression using either random or sub-sampled
+tensor product quadrature points.
+
 Multidimensional integration by Latin hypercube sampling
    (specified with \c expansion_samples). In this case, the
    expansion order \e p cannot be inferred from the numerical
