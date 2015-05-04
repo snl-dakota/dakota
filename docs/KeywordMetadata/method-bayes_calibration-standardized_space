@@ -3,7 +3,8 @@ Blurb::Perform the MCMC process in a standardized probability space.
 Description::This option transforms the inference process (the MCMC sampling
 and any emulator model management) into a standardized probability space.  
 
-The variable transformations performed are as described in \ref DUPLICATE-askey.
+The variable transformations performed are as described in \ref
+method-polynomial_chaos-askey.
 
 <b> Default Behavior </b>
 
@@ -31,10 +32,11 @@ Topics::
 
 Examples::
 \verbatim
+method,
         bayes_calibration queso
           samples = 2000 seed = 348
           dram
-	  standardized_space
+          standardized_space
 \endverbatim
 
 Theory::

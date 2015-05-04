@@ -18,10 +18,11 @@ Topics::
 
 Examples::
 \verbatim
+method,
         bayes_calibration queso
           samples = 2000 seed = 348
           dram
-	  logit_transform
+          logit_transform
 \endverbatim
 
 Theory::

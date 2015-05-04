@@ -14,8 +14,8 @@ method,
         bayes_calibration queso
          samples = 1000 seed = 348
           dram
-	  proposal_covariance
-	    matrix filename 'dakota_cantilever_queso.matrix.dat'
+          proposal_covariance
+            matrix filename 'dakota_cantilever_queso.matrix.dat'
 \endverbatim
 
 Theory::

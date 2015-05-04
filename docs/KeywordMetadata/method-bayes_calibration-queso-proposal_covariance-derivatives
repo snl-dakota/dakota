@@ -43,8 +43,7 @@ method,
           samples = 2000 seed = 348
           delayed_rejection
           emulator pce sparse_grid_level = 2
-          proposal_covariance derivatives
-            proposal_updates = 50 # restarted chains, each with 40 new points
+          proposal_covariance derivatives # default proposal_updates
 \endverbatim
 Theory::
 Faq::
