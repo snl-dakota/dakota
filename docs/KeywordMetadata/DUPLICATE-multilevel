@@ -1,0 +1,25 @@
+Blurb::  The use of the multilevel algorithm for the MCMC algorithm. 
+Description::  This keyword specifies the use of the multilevel algorithm which is described in [\cite Prudencio "Prudencio and Cheung, 2012"].
+ 
+<b> Default Behavior </b>
+
+There are five possibilities for the MCMC algorithm currently:  dram, delayed_rejection, adaptive_metropolis, metropolis_hastings, and multilevel.
+The default is dram.
+
+<b> Usage Tips </b>
+
+The multilevel algorithm is a more experimental algorithm than the other MCMC approaches mentioned above. 
+It works well in cases where the prior can be "evolved" to a posterior in a structured way. 
+
+Topics::	bayesian_calibration	
+Examples::
+\verbatim
+method,
+        bayes_calibration queso
+          multilevel
+          samples = 10000 seed = 348
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

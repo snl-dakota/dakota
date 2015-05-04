@@ -1,8 +1,1 @@
-Blurb::  The use of Delayed Rejection for the MCMC algorithm. 
-Description::  This keyword specifies the use of the Delayed Rejection algorithm in which there can be a delay in rejecting samples from the chain.  That is, the "DR" part of DRAM is used but the "AM" part is not:  specifying this keyword involves a regular Metropolis-Hastings algorithm. 
- 
-Topics::	bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-delayed_rejection

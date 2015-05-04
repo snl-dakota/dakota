@@ -1,0 +1,27 @@
+Blurb::  The use of Metropolis-Hastings for the MCMC algorithm. 
+Description::  This keyword specifies the use of a Metropolis-Hastings algorithm for the MCMC chain generation.  Note that this means there is no delayed rejection and no adaptive proposal covariance updating as in DRAM. 
+
+<b> Default Behavior </b>
+
+There are five possibilities for the MCMC algorithm currently:  dram, delayed_rejection, adaptive_metropolis, metropolis_hastings, and multilevel.
+The default is dram.
+
+<b> Usage Tips </b>
+
+If the user wants to use Metropolis-Hastings, possibly as a comparison to the other methods which 
+involve more chain adaptation, this is the MCMC type to use. 
+
+
+Topics::	bayesian_calibration	
+Examples::
+Examples::
+\verbatim
+method,
+        bayes_calibration queso
+          metropolis_hastings 
+          samples = 10000 seed = 348
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

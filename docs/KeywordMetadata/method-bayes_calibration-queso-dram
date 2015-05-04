@@ -1,8 +1,1 @@
-Blurb::  The use of the DRAM for the MCMC algorithm. 
-Description::  The type of Markov Chain Monte Carlo used.  This keyword specifies the use of DRAM, (Delayed Rejection Adaptive Metropolis). 
-DRAM is described in [\cite Haario "Haario et al. 2006"].  
-Topics::	bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-dram

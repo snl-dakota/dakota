@@ -1,8 +1,1 @@
-Blurb::  The use of Adaptive Metropolis for the MCMC algorithm. 
-Description::  This keyword specifies the use of the Adaptive Metropolis algorithm.  That is, the "AM" part of DRAM is used but the "DR" part is not:  specifying this keyword involves only the Adaptive Metropolis part of the MCMC algorithm in which the covariance of the proposal density is updated adaptively.
- 
-Topics::	bayesian_calibration	
-Examples::
-Theory::
-Faq::
-See_Also::	
+DUPLICATE-adaptive_metropolis

@@ -1,9 +1,0 @@
-Blurb::
-Select delayed rejection
-Description::
-The use of a delayed approach in rejecting points in the Markov Chain Monte Carlo algorithm.  If proposed samples are rejected, they are not immediately rejected:  they are considered for a few more stages until finally accepted or rejected. 
-Topics::  bayesian_calibration
-Examples::
-Theory::
-Faq::
-See_Also::	
