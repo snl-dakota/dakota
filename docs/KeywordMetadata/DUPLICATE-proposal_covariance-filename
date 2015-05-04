@@ -1,0 +1,31 @@
+Blurb::Uses a file to import a user-specified MCMC proposal covariance.
+
+Description::This keyword selection results in definition of the MCMC
+proposal covariance from importing data a user-specified filename.
+This import must be declared as either a full matrix or a matrix diagonal.
+
+<b> Default Behavior </b>
+
+This option is not the default, and generally implies special a priori
+knowledge from the user.
+
+<b> Usage Tips </b>
+
+This option is not supported for the case of transformations to
+standardized probability space.
+
+Topics::
+
+Examples::
+\verbatim
+method,									
+        bayes_calibration queso
+         samples = 1000 seed = 348
+          dram
+          proposal_covariance
+            filename ... # See leaf nodes for required format option
+\endverbatim
+
+Theory::
+Faq::
+See_Also::
