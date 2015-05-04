@@ -1,0 +1,42 @@
+Blurb::Restarts the MCMC chain with updated derivative-based proposal covariance.
+
+Description::
+When employing derivative-based proposal covariance, this specification
+defines the number of restarts that are performed
+during the course of the total sample size of the MCMC chain.  For each 
+restart, a new chain is initiated from the final point in the previous 
+acceptance chain using updated proposal covariance corresponding to the
+derivatives values at the new starting point.
+
+<b> Default Behavior </b>
+
+If proposal_updates is not specified, then the default frequency for
+restarting the chain with updated proposal covariance is every 100 
+samples.
+
+<b> Expected Output </b>
+
+Each restarted chain will generate a new QUESO header and sampling summary,
+and the chain diagnostics will be appended within the outputData directory.
+
+<b> Usage Tips </b>
+
+proposal_updates should be tailored to the size of the total chain,
+accounting for the relative expense of derivative-based proposal updates.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+        bayes_calibration queso
+          samples = 2000 seed = 348
+          delayed_rejection
+          emulator pce sparse_grid_level = 2
+          proposal_covariance derivatives
+            proposal_updates = 50 # restarted chains, each with 40 new points
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

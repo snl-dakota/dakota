@@ -1,0 +1,31 @@
+Blurb::Uses the covariance of the prior distributions to define the
+MCMC proposal covariance.
+
+Description::This keyword selection results in definition of the MCMC
+proposal covariance from the covariance of the prior distributions.
+This covariance is currently assumed to be diagonal without correlation.
+
+<b> Default Behavior </b>
+
+This is the default proposal_covariance option.
+
+<b> Usage Tips </b>
+
+Since this proposal covariance is defined globally, the chain does not
+need to be periodically restarted using local updates to this proposal.
+However, it is usually effective to adapt the proposal using one of
+the adaptive metropolis MCMC options.
+
+Topics::	bayesian_calibration
+
+Examples::
+\verbatim
+method,
+        bayes_calibration queso
+          samples = 2000 seed = 348
+          dram
+          proposal_covariance prior
+\endverbatim
+Theory::
+Faq::
+See_Also::
