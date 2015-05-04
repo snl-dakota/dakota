@@ -11,16 +11,18 @@ method-polynomial_chaos-askey.
 The default for the Gaussian process and no emulator options is to
 perform the MCMC process in the original probability space (no
 transformation).  Polynomial chaos and stochastic collocation
-emulators are always formed in standardized probability space, and
-their .
+emulators, on the other hand, are always formed in standardized
+probability space, such that the MCMC process is also performed in
+this standardized space.
 
 <b> Expected Output </b>
 
 The user will see the truth model evaluations performed in the
 original space, whereas any diagnostics relating to the MCMC samples
 (e.g., QUESO data in the outputData directory) will report points and
-response data (i.e., response gradients and Hessians) that correspond
-to the transformed space.
+response data (response gradients and Hessians, if present, will
+differ but response values will not) that correspond to the
+transformed space.
 
 <b> Usage Tips </b>
 
