@@ -4,32 +4,32 @@
     <!ENTITY method_approx_import_format
         "<optional>
           <oneOf>
-            <keyword  id='annotated' name='annotated' code='{N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}' label='annotated' help=''  />
+            <keyword  id='annotated' name='annotated' code='{N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
-              <keyword  id='custom_annotated' name='custom_annotated' code='{N_mdm(utype,approxImportFormat_TABULAR_NONE)}' label='custom_annotated' help='' >
-		<keyword  id='header' name='header' code='{N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)}' label='header' help='' minOccurs='0' />
-		<keyword  id='eval_id' name='eval_id' code='{N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)}' label='eval_id' help='' minOccurs='0' />
-		<keyword  id='interface_id' name='interface_id' code='{N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)}' label='interface_id' help='' minOccurs='0' />
+              <keyword  id='custom_annotated' name='custom_annotated' code='{N_mdm(utype,approxImportFormat_TABULAR_NONE)}' label='custom_annotated' help='' default='annotated format' >
+		<keyword  id='header' name='header' code='{N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)}' label='header' help='' minOccurs='0' default='no header' />
+		<keyword  id='eval_id' name='eval_id' code='{N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)}' label='eval_id' help='' minOccurs='0' default='no eval_id column' />
+		<keyword  id='interface_id' name='interface_id' code='{N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)}' label='interface_id' help='' minOccurs='0' default='no interface_id column' />
 	      </keyword>
 	    </required>
-            <keyword  id='freeform' name='freeform' code='{N_mdm(utype,approxImportFormat_TABULAR_NONE)}' label='freeform' help=''  />
+            <keyword  id='freeform' name='freeform' code='{N_mdm(utype,approxImportFormat_TABULAR_NONE)}' label='freeform' help='' default='annotated format' />
           </oneOf>
         </optional>"
     >
     <!ENTITY method_approx_export_format
         "<optional>
           <oneOf>
-            <keyword  id='annotated' name='annotated' code='{N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}' label='annotated' help=''  />
+            <keyword  id='annotated' name='annotated' code='{N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
-              <keyword  id='custom_annotated' name='custom_annotated' code='{N_mdm(utype,approxExportFormat_TABULAR_NONE)}' label='custom_annotated' help='' >
-		<keyword  id='header' name='header' code='{N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)}' label='header' help='' minOccurs='0' />
-		<keyword  id='eval_id' name='eval_id' code='{N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)}' label='eval_id' help='' minOccurs='0' />
-		<keyword  id='interface_id' name='interface_id' code='{N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)}' label='interface_id' help='' minOccurs='0' />
+              <keyword  id='custom_annotated' name='custom_annotated' code='{N_mdm(utype,approxExportFormat_TABULAR_NONE)}' label='custom_annotated' help='' default='annotated format' >
+		<keyword  id='header' name='header' code='{N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)}' label='header' help='' minOccurs='0' default='no header' />
+		<keyword  id='eval_id' name='eval_id' code='{N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)}' label='eval_id' help='' minOccurs='0' default='no eval_id column' />
+		<keyword  id='interface_id' name='interface_id' code='{N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)}' label='interface_id' help='' minOccurs='0' default='no interface_id column' />
 	      </keyword>
 	    </required>
-            <keyword  id='freeform' name='freeform' code='{N_mdm(utype,approxExportFormat_TABULAR_NONE)}' label='freeform' help=''  />
+            <keyword  id='freeform' name='freeform' code='{N_mdm(utype,approxExportFormat_TABULAR_NONE)}' label='freeform' help='' default='annotated format' />
           </oneOf>
         </optional>"
     >
@@ -37,15 +37,15 @@
     <!ENTITY response_scalar_data_format
         "<optional>
           <oneOf>
-            <keyword  id='annotated' name='annotated' code='{N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}' label='annotated' help=''  />
+            <keyword  id='annotated' name='annotated' code='{N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}' label='annotated' help='' default='annotated format' />
             <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
             <required>
-        	<keyword  id='custom_annotated' name='custom_annotated' code='{N_rem(utype,scalarDataFormat_TABULAR_NONE)}' label='custom_annotated' help='' >
-        	  <keyword  id='header' name='header' code='{N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)}' label='header' help='' minOccurs='0' />
-        	  <keyword  id='exp_id' name='exp_id' code='{N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)}' label='exp_id' help='' minOccurs='0' />
+        	<keyword  id='custom_annotated' name='custom_annotated' code='{N_rem(utype,scalarDataFormat_TABULAR_NONE)}' label='custom_annotated' help='' default='annotated format' >
+        	  <keyword  id='header' name='header' code='{N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)}' label='header' help='' minOccurs='0' default='no header' />
+        	  <keyword  id='exp_id' name='exp_id' code='{N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)}' label='exp_id' help='' minOccurs='0' default='no exp_id column' />
         	</keyword>
             </required>
-            <keyword  id='freeform' name='freeform' code='{N_rem(utype,scalarDataFormat_TABULAR_NONE)}' label='freeform' help=''  />
+            <keyword  id='freeform' name='freeform' code='{N_rem(utype,scalarDataFormat_TABULAR_NONE)}' label='freeform' help='' default='annotated format' />
           </oneOf>
         </optional>"
     >
@@ -54,106 +54,106 @@
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
   <input>
     <!-- **** TOPLEVEL *** -->
-    <keyword id="environment" name="environment" minOccurs="0" maxOccurs="1" code="{NIDRProblemDescDB::env_start}" label="Environment" help="EnvCommands.html">
-      <keyword  id="check" name="check" code="{N_stm(true,checkFlag)}" label="check" help="" minOccurs="0" />
-      <keyword  id="output_file" name="output_file" code="{N_stm(str,outputFile)}" label="output_file" help="" minOccurs="0" >
+    <keyword id="environment" name="environment" minOccurs="0" maxOccurs="1" code="{NIDRProblemDescDB::env_start}" label="Environment" help="EnvCommands.html" default="no environment" >
+      <keyword  id="check" name="check" code="{N_stm(true,checkFlag)}" label="check" help="" minOccurs="0" default="no check; proceed to run" />
+      <keyword  id="output_file" name="output_file" code="{N_stm(str,outputFile)}" label="output_file" help="" minOccurs="0" default="output to console, not file" >
         <param type="OUTPUT_FILE" />
       </keyword>
-      <keyword  id="error_file" name="error_file" code="{N_stm(str,errorFile)}" label="error_file" help="" minOccurs="0" >
+      <keyword  id="error_file" name="error_file" code="{N_stm(str,errorFile)}" label="error_file" help="" minOccurs="0" default="errors to console, not file" >
         <param type="OUTPUT_FILE" />
       </keyword>
-      <keyword  id="read_restart" name="read_restart" code="{N_stm(str,readRestart)}" label="read_restart" help="" minOccurs="0" >
+      <keyword  id="read_restart" name="read_restart" code="{N_stm(str,readRestart)}" label="read_restart" help="" minOccurs="0" default="no restart read" >
         <param type="STRING" />
-        <keyword  id="stop_restart" name="stop_restart" code="{N_stm(int,stopRestart)}" label="stop_restart" help="" minOccurs="0" >
+        <keyword  id="stop_restart" name="stop_restart" code="{N_stm(int,stopRestart)}" label="stop_restart" help="" minOccurs="0" default="read all records" >
           <param type="INTEGER" constraint=">= 0" />
         </keyword>
       </keyword>
-      <keyword  id="write_restart" name="write_restart" code="{N_stm(str,writeRestart)}" label="write_restart" help="" minOccurs="0" >
+      <keyword  id="write_restart" name="write_restart" code="{N_stm(str,writeRestart)}" label="write_restart" help="" minOccurs="0" default="dakota.rst" >
         <param type="STRING" />
       </keyword>
-      <keyword  id="pre_run" name="pre_run" code="{N_stm(true,preRunFlag)}" label="pre_run" help="" minOccurs="0" >
-        <keyword  id="input" name="input" code="{N_stm(str,preRunInput)}" label="input" help="" minOccurs="0" >
+      <keyword  id="pre_run" name="pre_run" code="{N_stm(true,preRunFlag)}" label="pre_run" help="" minOccurs="0" default="pre-run, run, post-run all executed" >
+        <keyword  id="input" name="input" code="{N_stm(str,preRunInput)}" label="input" help="" minOccurs="0" default="no pre-run specific input read">
           <param type="STRING" />
         </keyword>
-        <keyword  id="output" name="output" code="{N_stm(str,preRunOutput)}" label="output" help="" minOccurs="0" >
+        <keyword  id="output" name="output" code="{N_stm(str,preRunOutput)}" label="output" help="" minOccurs="0" default="no pre-run specific output written" >
           <param type="STRING" />
           <optional>
-            <oneOf>
-              <keyword  id="annotated" name="annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  />
+            <oneOf label="tabular format">
+              <keyword  id="annotated" name="annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated format" />
 	      <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	      <required>
-		<keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-		  <keyword  id="header" name="header" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-		  <keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-		  <keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		<keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+		  <keyword  id="header" name="header" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+		  <keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
+		  <keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
 		</keyword>
 	      </required>
-              <keyword  id="freeform" name="freeform" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="freeform" help=""  />
+              <keyword  id="freeform" name="freeform" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated format" />
             </oneOf>
           </optional>
         </keyword>
       </keyword>
-      <keyword  id="run" name="run" code="{N_stm(true,runFlag)}" label="run" help="" minOccurs="0" >
-        <keyword  id="input1" name="input" code="{N_stm(str,runInput)}" label="input" help="" minOccurs="0" >
+      <keyword  id="run" name="run" code="{N_stm(true,runFlag)}" label="run" help="" minOccurs="0" default="pre-run, run, post-run all executed" >
+        <keyword  id="input1" name="input" code="{N_stm(str,runInput)}" label="input" help="" minOccurs="0" default="no run specific input read" >
           <param type="STRING" />
         </keyword>
-        <keyword  id="output1" name="output" code="{N_stm(str,runOutput)}" label="output" help="" minOccurs="0" >
+        <keyword  id="output1" name="output" code="{N_stm(str,runOutput)}" label="output" help="" minOccurs="0" default="no run specific output written" >
           <param type="STRING" />
         </keyword>
       </keyword>
-      <keyword  id="post_run" name="post_run" code="{N_stm(true,postRunFlag)}" label="post_run" help="" minOccurs="0" >
-        <keyword  id="input2" name="input" code="{N_stm(str,postRunInput)}" label="input" help="" minOccurs="0" >
+      <keyword  id="post_run" name="post_run" code="{N_stm(true,postRunFlag)}" label="post_run" help="" minOccurs="0" default="pre-run, run, post-run all executed" >
+        <keyword  id="input2" name="input" code="{N_stm(str,postRunInput)}" label="input" help="" minOccurs="0" default="no post-run specific input read" >
           <param type="STRING" />
           <optional>
-            <oneOf>
-              <keyword  id="annotated" name="annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  />
+            <oneOf label="tabular format">
+              <keyword  id="annotated" name="annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated format" />
 	      <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	      <required>
-		<keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-		  <keyword  id="header" name="header" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-		  <keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-		  <keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		<keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+		  <keyword  id="header" name="header" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+		  <keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
+		  <keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
 		</keyword>
 	      </required>
-              <keyword  id="freeform" name="freeform" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="freeform" help=""  />
+              <keyword  id="freeform" name="freeform" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated format" />
             </oneOf>
           </optional>
         </keyword>
-        <keyword  id="output2" name="output" code="{N_stm(str,postRunOutput)}" label="output" help="" minOccurs="0" >
+        <keyword  id="output2" name="output" code="{N_stm(str,postRunOutput)}" label="output" help="" minOccurs="0" default="no post-run specific output written" >
           <param type="STRING" />
         </keyword>
       </keyword>
-      <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Graphics flag" help="EnvCommands.html#EnvOutput" minOccurs="0" />
-      <keyword  id="tabular_data" name="tabular_data" code="{N_stm(true,tabularDataFlag)}" label="tabular_data" help="" minOccurs="0" >
+      <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Graphics flag" help="EnvCommands.html#EnvOutput" minOccurs="0" default="graphics off" />
+      <keyword  id="tabular_data" name="tabular_data" code="{N_stm(true,tabularDataFlag)}" label="tabular_data" help="" minOccurs="0" default="no tabular data output" >
         <alias name="tabular_graphics_data"/>
         <keyword  id="tabular_data_file" name="tabular_data_file" code="{N_stm(str,tabularDataFile)}" label="tabular_data_file" help="" minOccurs="0" default="dakota_tabular.dat">
           <alias name="tabular_graphics_file"/>
           <param type="OUTPUT_FILE" />
         </keyword>
         <optional>
-          <oneOf>
-            <keyword  id="annotated" name="annotated" code="{N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  />
+          <oneOf label="tabular format">
+            <keyword  id="annotated" name="annotated" code="{N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated format" />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
-              <keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-		<keyword  id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-		<keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-		<keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+              <keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+		<keyword  id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+		<keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
+		<keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
 	      </keyword>
 	    </required>
-            <keyword  id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="freeform" help=""  />
+            <keyword  id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="freeform" help=""  default="annotated format" />
           </oneOf>
         </optional>
       </keyword>
-      <keyword  id="output_precision" name="output_precision" code="{N_stm(int,outputPrecision)}" label="Numeric output precision" help="EnvCommands.html#EnvOutput" minOccurs="0" >
+      <keyword  id="output_precision" name="output_precision" code="{N_stm(int,outputPrecision)}" label="Numeric output precision" help="EnvCommands.html#EnvOutput" minOccurs="0" default="10" >
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
-      <keyword  id="results_output" name="results_output" code="{N_stm(true,resultsOutputFlag)}" label="Enable results output" help="EnvCommands.html#EnvOutput" minOccurs="0" >
-        <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="File name for results output" help="EnvCommands.html#EnvOutput" minOccurs="0" >
+      <keyword  id="results_output" name="results_output" code="{N_stm(true,resultsOutputFlag)}" label="Enable results output" help="EnvCommands.html#EnvOutput" minOccurs="0" default="no results output" >
+        <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="File name for results output" help="EnvCommands.html#EnvOutput" minOccurs="0" default="dakota_results.txt" >
           <param type="OUTPUT_FILE" />
         </keyword>
       </keyword>
-      <keyword  id="top_method_pointer" name="top_method_pointer" code="{N_stm(str,topMethodPointer)}" label="Method pointer" help="EnvCommands.html#EnvMethPtr" minOccurs="0" >
+      <keyword  id="top_method_pointer" name="top_method_pointer" code="{N_stm(str,topMethodPointer)}" label="Method pointer" help="EnvCommands.html#EnvMethPtr" minOccurs="0" default="see discussion">
         <alias name="method_pointer"/>
         <param type="STRING" in_taglist="method" />
       </keyword>
