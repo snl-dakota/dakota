@@ -353,7 +353,7 @@
             <alias name="approx_model_pointer"/>
             <param type="STRING" in_taglist="model" />
           </keyword>
-          <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mdm(ushint,softConvLimit)}" label="Soft convergence limit for SBL iterations" help="MethodCommands.html#MethodSBL" minOccurs="0" >
+          <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mdm(ushint,softConvLimit)}" label="Soft convergence limit for SBL iterations" help="MethodCommands.html#MethodSBL" minOccurs="0" default="5" >
             <param type="INTEGER" />
           </keyword>
           <keyword  id="truth_surrogate_bypass" name="truth_surrogate_bypass" code="{N_mdm(true,surrBasedLocalLayerBypass)}" label="Flag for bypassing lower level surrogates in truth verifications" help="MethodCommands.html#MethodSBL" minOccurs="0" default="no bypass" />
@@ -587,7 +587,7 @@
                   <keyword  id="display_format" name="display_format" code="{N_mdm(str,displayFormat)}" label="display_format" help="" minOccurs="0" >
                     <param type="STRING" />
                   </keyword>
-                  <keyword  id="variable_neighborhood_search" name="variable_neighborhood_search" code="{N_mdm(Real,vns)}" label="variable_neighborhood_search" help="" minOccurs="0" >
+                  <keyword  id="variable_neighborhood_search" name="variable_neighborhood_search" code="{N_mdm(Real,vns)}" label="variable_neighborhood_search" help="" minOccurs="0" default="0.0" >
                     <param type="REAL" />
                   </keyword>
                   <keyword  id="neighbor_order" name="neighbor_order" code="{N_mdm(pint,neighborOrder)}" label="Neighbor Order" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" >
@@ -611,7 +611,7 @@
                           <keyword  id="unique_roulette_wheel" name="unique_roulette_wheel" code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" label="unique_roulette_wheel" help=""  />
                           <keyword  id="below_limit" name="below_limit" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" label="Below limit selection" help="MethodCommands.html#MethodJEGADC" minOccurs="1" default="6" >
                             <param type="REAL" />
-                            <keyword  id="shrinkage_fraction" name="shrinkage_fraction" code="{N_mdm(Real01,shrinkagePercent)}" label="shrinkage_fraction" help="" minOccurs="0" >
+                            <keyword  id="shrinkage_fraction" name="shrinkage_fraction" code="{N_mdm(Real01,shrinkagePercent)}" label="shrinkage_fraction" help="" minOccurs="0" default="0.9" >
                               <alias name="shrinkage_percentage"/>
                               <param type="REAL" />
                             </keyword>
@@ -686,7 +686,7 @@
                       </keyword>
                     </keyword>
                   </oneOf>
-                  <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" >
+                  <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >
                     <param type="INTEGER" constraint=">= 0" />
                   </keyword>
                   <keyword  id="log_file" name="log_file" code="{N_mdm(str,logFile)}" label="log_file" help="" minOccurs="0" default="JEGAGlobal.log" >
@@ -868,7 +868,7 @@
                   </keyword>
                 </keyword>
                 <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea" help="" minOccurs="1" group="Optimization: Global" >
-                  <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" >
+                  <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="50" >
                     <param type="INTEGER" constraint="> 0" />
                   </keyword>
                   <keyword  id="initialization_type1" name="initialization_type" code="{0}" label="Initialization type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="unique_random" >
@@ -953,7 +953,7 @@
                 <param type="INTEGER" constraint="> 0" />
               </keyword>
               <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options" help="" minOccurs="0" default="no dump of specification options" />
-              <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" >
+              <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
                 <param type="STRINGLIST" />
               </keyword>
             </required>
@@ -985,7 +985,7 @@
               <keyword  id="regression_diagnostics" name="regression_diagnostics" code="{N_mdm(true,regressDiag)}" label="Regression diagnostics post-processing" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="no regression diagnostics" />
             </keyword>
             <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
-              <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" >
+              <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
                 <param type="STRINGLIST" />
               </keyword>
             </keyword>
@@ -1042,7 +1042,7 @@
                         <oneOf>
                           <keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
                             <alias name="nond_polynomial_chaos"/>
-                            <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" >
+                            <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no refinement" >
                               <oneOf>
                                 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
                                 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
@@ -1242,7 +1242,7 @@
                                 <keyword  id="random1" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
                               </oneOf>
                             </keyword>
-                            <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" >
+                            <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="no refinement">
                               <alias name="sample_refinement"/>
                               <oneOf>
                                 <keyword  id="import" name="import" code="{N_mdm(utype,integrationRefine_IS)}" label="import" help=""  />
@@ -1265,7 +1265,7 @@
                             <alias name="nond_stoch_collocation"/>
                             <optional>
                               <oneOf>
-                                <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement" help="" minOccurs="1" >
+                                <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement" help="" minOccurs="1" default="no refinement" >
                                   <oneOf>
                                     <keyword  id="uniform2" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
                                     <keyword  id="dimension_adaptive1" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
@@ -1276,7 +1276,7 @@
                                     </keyword>
                                   </oneOf>
                                 </keyword>
-                                <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1" >
+                                <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1"  default="no refinement" >
                                   <oneOf>
                                     <keyword  id="uniform3" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
                                     <keyword  id="dimension_adaptive2" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
@@ -1529,7 +1529,7 @@
                           </keyword>
                         </keyword>
                       </keyword>
-                      <keyword  id="misc_options2" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" >
+                      <keyword  id="misc_options2" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
                         <param type="STRINGLIST" />
                       </keyword>
                     </keyword>
@@ -1755,11 +1755,11 @@
                       </oneOf>
                       <optional>
                         <oneOf>
-                          <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" />
-                          <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help=""  />
-                          <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help=""  />
-                          <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help=""  />
-                          <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help=""  />
+                          <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+                          <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+                          <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+                          <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+                          <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
                         </oneOf>
                       </optional>
                       <keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
@@ -1904,7 +1904,7 @@
                   </keyword>
                 </keyword>
                 <keyword  id="psuade_moat" name="psuade_moat" code="{N_mdm(utype,methodName_PSUADE_MOAT)}" label="PSUADE MOAT method" help="MethodCommands.html#MethodPSUADE" minOccurs="1" group="DACE" >
-                  <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions" help="MethodCommands.html#MethodPSUADE" minOccurs="0" >
+                  <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions" help="MethodCommands.html#MethodPSUADE" minOccurs="0" default="3" >
                     <param type="INTEGERLIST" />
                   </keyword>
                 </keyword>
@@ -1987,8 +1987,8 @@
                     </oneOf>
                     <optional>
                       <oneOf>
-                        <keyword  id="sqp3" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
-                        <keyword  id="nip2" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+                        <keyword  id="sqp3" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help="" default="sqp" />
+                        <keyword  id="nip2" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help="" default="sqp" />
                       </oneOf>
                     </optional>
                     <keyword  id="integration" name="integration" code="{0}" label="Integration method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="First-order integration" >
@@ -2310,7 +2310,7 @@
                   </keyword>
                 </keyword>
                 <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial neural network" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="ANN maximum nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" >
+                  <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="ANN maximum nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="numTrainingData - 1">
 		    <alias name="nodes"/>
                     <param type="INTEGER" />
                   </keyword>
@@ -2396,7 +2396,7 @@
 		  </keyword>
 		</oneOf>
 	      </optional>
-              <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="reuse_points" help="" minOccurs="0" >
+              <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="reuse_points" help="" minOccurs="0" default="all for import; none otherwise">
                 <alias name="reuse_samples"/>
                 <oneOf>
                   <keyword  id="all" name="all" code="{N_mom(lit,approxPointReuse_all)}" label="all" help=""  />
@@ -2635,9 +2635,9 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_design_set" name="discrete_design_set" code="{0}" label="discrete_design_set" help="" minOccurs="0" group="Design Variables" >
-        <keyword  id="integer" name="integer" code="{N_vam(pintz,numDiscreteDesSetIntVars)}" label="integer" help="" minOccurs="0" >
+        <keyword  id="integer" name="integer" code="{N_vam(pintz,numDiscreteDesSetIntVars)}" label="integer" help="" minOccurs="0" default="no discrete design set integer variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddsi)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddsi)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN1 integer" />
           </keyword>
@@ -2658,9 +2658,9 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string" name="string" code="{N_vam(pintz,numDiscreteDesSetStrVars)}" label="string" help="" minOccurs="0" >
+        <keyword  id="string" name="string" code="{N_vam(pintz,numDiscreteDesSetStrVars)}" label="string" help="" minOccurs="0" default="no discrete design set string variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable1" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddss)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable1" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddss)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN1 string" />
           </keyword>
@@ -2678,9 +2678,9 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real" name="real" code="{N_vam(pintz,numDiscreteDesSetRealVars)}" label="real" help="" minOccurs="0" >
+        <keyword  id="real" name="real" code="{N_vam(pintz,numDiscreteDesSetRealVars)}" label="real" help="" minOccurs="0" default="no discrete design set real variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable2" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddsr)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable2" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nddsr)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN1 real" />
           </keyword>
@@ -2942,7 +2942,7 @@
       </keyword>
       <keyword  id="histogram_bin_uncertain" name="histogram_bin_uncertain" code="{N_vam(pintz,numHistogramBinUncVars)}" label="histogram bin uncertain variables" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" group="Continuous Aleatory Uncertain" default="no histogram bin uncertain variables" >
         <param type="INTEGER" constraint="> 0" />
-        <keyword  id="pairs_per_variable3" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhbp)}" label="key to apportionment among bin-based histogram variables" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" >
+        <keyword  id="pairs_per_variable3" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhbp)}" label="key to apportionment among bin-based histogram variables" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" default="equal distribution" >
           <alias name="num_pairs"/>
           <param type="INTEGERLIST" constraint="LEN histogram_bin_uncertain" />
         </keyword>
@@ -3046,7 +3046,7 @@
       <keyword  id="histogram_point_uncertain" name="histogram_point_uncertain" code="{0}" label="histogram point uncertain variables" help="VarCommands.html#VarDAUV_Point_Histogram" minOccurs="0" group="Discrete Aleatory Uncertain" default="no histogram point uncertain variables" >
         <keyword  id="integer1" name="integer" code="{N_vam(pintz,numHistogramPtIntUncVars)}" label="integer" help="" minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="pairs_per_variable" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhpip)}" label="pairs_per_variable" help="" minOccurs="0" >
+          <keyword  id="pairs_per_variable" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhpip)}" label="pairs_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_pairs"/>
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
@@ -3065,7 +3065,7 @@
         </keyword>
         <keyword  id="string1" name="string" code="{N_vam(pintz,numHistogramPtStrUncVars)}" label="string" help="" minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="pairs_per_variable1" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhpsp)}" label="pairs_per_variable" help="" minOccurs="0" >
+          <keyword  id="pairs_per_variable1" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhpsp)}" label="pairs_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_pairs"/>
             <param type="INTEGERLIST" constraint="LEN string" />
           </keyword>
@@ -3084,7 +3084,7 @@
         </keyword>
         <keyword  id="real1" name="real" code="{N_vam(pintz,numHistogramPtRealUncVars)}" label="real" help="" minOccurs="0" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="pairs_per_variable2" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhprp)}" label="pairs_per_variable" help="" minOccurs="0" >
+          <keyword  id="pairs_per_variable2" name="pairs_per_variable" code="{N_vam(newiarray,Var_Info_nhprp)}" label="pairs_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_pairs"/>
             <param type="INTEGERLIST" constraint="LEN real" />
           </keyword>
@@ -3157,9 +3157,9 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_uncertain_set" name="discrete_uncertain_set" code="{0}" label="discrete_uncertain_set" help="" minOccurs="0" group="Epistemic Uncertain" >
-        <keyword  id="integer2" name="integer" code="{N_vam(pintz,numDiscreteUncSetIntVars)}" label="integer" help="" minOccurs="0" >
+        <keyword  id="integer2" name="integer" code="{N_vam(pintz,numDiscreteUncSetIntVars)}" label="integer" help="" minOccurs="0" default="no discrete uncertain set integer variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable3" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndusi)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable3" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndusi)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
@@ -3182,9 +3182,9 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string2" name="string" code="{N_vam(pintz,numDiscreteUncSetStrVars)}" label="string" help="" minOccurs="0" >
+        <keyword  id="string2" name="string" code="{N_vam(pintz,numDiscreteUncSetStrVars)}" label="string" help="" minOccurs="0" default="no discrete uncertain set string variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable4" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nduss)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable4" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_nduss)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN string" />
           </keyword>
@@ -3204,9 +3204,9 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real2" name="real" code="{N_vam(pintz,numDiscreteUncSetRealVars)}" label="real" help="" minOccurs="0" >
+        <keyword  id="real2" name="real" code="{N_vam(pintz,numDiscreteUncSetRealVars)}" label="real" help="" minOccurs="0" default="no discrete uncertain set real variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable5" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndusr)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable5" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndusr)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN real" />
           </keyword>
@@ -3268,9 +3268,9 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_state_set" name="discrete_state_set" code="{0}" label="discrete_state_set" help="" minOccurs="0" group="State Variables" >
-        <keyword  id="integer3" name="integer" code="{N_vam(pintz,numDiscreteStateSetIntVars)}" label="integer" help="" minOccurs="0" >
+        <keyword  id="integer3" name="integer" code="{N_vam(pintz,numDiscreteStateSetIntVars)}" label="integer" help="" minOccurs="0" default="no discrete state set integer variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable6" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndssi)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable6" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndssi)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN1 integer" />
           </keyword>
@@ -3288,9 +3288,9 @@
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
-        <keyword  id="string3" name="string" code="{N_vam(pintz,numDiscreteStateSetStrVars)}" label="string" help="" minOccurs="0" >
+        <keyword  id="string3" name="string" code="{N_vam(pintz,numDiscreteStateSetStrVars)}" label="string" help="" minOccurs="0" default="no discrete state set string variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable7" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndsss)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable7" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndsss)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN1 string" />
           </keyword>
@@ -3305,9 +3305,9 @@
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
-        <keyword  id="real3" name="real" code="{N_vam(pintz,numDiscreteStateSetRealVars)}" label="real" help="" minOccurs="0" >
+        <keyword  id="real3" name="real" code="{N_vam(pintz,numDiscreteStateSetRealVars)}" label="real" help="" minOccurs="0" default="no discrete state set real variables" >
           <param type="INTEGER" constraint="> 0" />
-          <keyword  id="elements_per_variable8" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndssr)}" label="elements_per_variable" help="" minOccurs="0" >
+          <keyword  id="elements_per_variable8" name="elements_per_variable" code="{N_vam(newiarray,Var_Info_ndssr)}" label="elements_per_variable" help="" minOccurs="0" default="equal distribution" >
             <alias name="num_set_values"/>
             <param type="INTEGERLIST" constraint="LEN1 real" />
           </keyword>
@@ -3377,10 +3377,10 @@
               <keyword  id="directory_save" name="directory_save" code="{N_ifm(true,dirSave)}" label="directory_save" help="" minOccurs="0" default="remove work directory" >
                 <alias name="dir_save"/>
               </keyword>
-              <keyword  id="link_files" name="link_files" code="{N_ifm(strL,linkFiles)}" label="Files to link" help="" minOccurs="0" >
+              <keyword  id="link_files" name="link_files" code="{N_ifm(strL,linkFiles)}" label="Files to link" help="" minOccurs="0" default="no linked files">
                 <param type="STRINGLIST" />
               </keyword>
-              <keyword  id="copy_files" name="copy_files" code="{N_ifm(strL,copyFiles)}" label="Files to copy" help="" minOccurs="0" >
+              <keyword  id="copy_files" name="copy_files" code="{N_ifm(strL,copyFiles)}" label="Files to copy" help="" minOccurs="0" default="no copied files">
                 <param type="STRINGLIST" />
               </keyword>
               <keyword  id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="replace" help="" minOccurs="0" default="do not overwrite files" />
@@ -3442,12 +3442,12 @@
       <keyword  id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of evaluation servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="no override of auto configure" >
         <param type="INTEGER" constraint="> 0" />
       </keyword>
-      <keyword  id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message passing configuration for scheduling of evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="no override of auto configure" >
+      <keyword  id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message passing configuration for scheduling of evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
         <oneOf>
           <keyword  id="master2" name="master" code="{N_ifm(type,evalScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
           <keyword  id="peer2" name="peer" code="{0}" label="Peer scheduling of evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="1" >
             <oneOf>
-              <keyword  id="dynamic1" name="dynamic" code="{N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}" label="dynamic" help=""  />
+              <keyword  id="dynamic1" name="dynamic" code="{N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}" label="dynamic" help="" default="dynamic (see discussion)" />
               <keyword  id="static1" name="static" code="{N_ifm(type,evalScheduling_PEER_STATIC_SCHEDULING)}" label="static" help=""  />
             </oneOf>
           </keyword>
@@ -3627,7 +3627,7 @@
                   <param type="INTEGER" constraint=">= 0" />
 		</keyword>
 
-		<keyword  id="variance_type1" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+		<keyword  id="variance_type1" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
                   <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
 		</keyword>
 
@@ -3651,7 +3651,7 @@
 		<keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" default="0" >
 		  <param type="INTEGER" constraint=">= 0" />
 		</keyword>
-		<keyword  id="variance_type" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+		<keyword  id="variance_type" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
 		  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
 		</keyword>
               </keyword>
@@ -3766,7 +3766,7 @@
               <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central" help=""  />
             </oneOf>
           </optional>
-          <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size" help="" minOccurs="0" >
+          <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size" help="" minOccurs="0" default="0.001" >
             <alias name="fd_gradient_step_size"/>
             <param type="REALLIST" />
           </keyword>
