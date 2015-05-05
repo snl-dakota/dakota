@@ -2,25 +2,24 @@ Blurb::
 1-0 matrix defining which categorical variable levels are related.
 
 Description::
-The <tt>adjacency_matrix</tt> is associated with
-<tt>discrete_design_set</tt> variables that are specified to be
-categorical.  It is a \f$k \times k\f$ symmetric matrix, where \f$k\f$
-is the number of levels (or values) associated with a categorical
-variable.  Entry \f$i,j\f$ of the matrix should be 1 if level \f$i\f$
-and level \f$j\f$ are related by some subjective criteria or if
-\f$i=j\f$; it should be 0 otherwise.
+The \c adjacency_matrix keyword is associated with \c
+discrete_design_set variables that are specified to be categorical.
+It is a \f$k \times k\f$ symmetric matrix, where \f$k\f$ is the number
+of levels (or values) associated with a categorical variable.  Entry
+\f$i,j\f$ of the matrix should be 1 if level \f$i\f$ and level \f$j\f$
+are related by some subjective criteria or if \f$i=j\f$; it should be
+0 otherwise.
 
 <b> Default Behavior </b>
 
-The <tt>adjacency_matrix</tt> keyword is only relevant for
-<tt>discrete_design_set real</tt> and <tt>discrete_design_set
-integer</tt> variables if one or more of them have been specified to
-be <tt>categorical</tt>.  It is always relevant for
-<tt>discrete_design_set string</tt> variables.  If the user does not
-define an adjacency matrix, the default is method dependent.
-Currently, the only method that makes use of the adjacency matrix is
-<tt>mesh_adaptive_search</tt>, which uses a tri-diagonal adjacency
-matrix by default.
+The \c adjacency_matrix keyword is only relevant for \c
+discrete_design_set \c real and \c discrete_design_set \c integer
+variables if one or more of them have been specified to be \c
+categorical.  It is always relevant for \c discrete_design_set \c
+string variables.  If the user does not define an adjacency matrix,
+the default is method dependent.  Currently, the only method that
+makes use of the adjacency matrix is \c mesh_adaptive_search, which
+uses a tri-diagonal adjacency matrix by default.
 
 <b> Expected Output </b>
 
@@ -28,18 +27,17 @@ The expected output is method dependent.
 
 <b> Usage Tips </b>
 
-If an adjacency matrix is defined for one type of (categorical)
-<tt>discrete_design_set</tt> variable, if must be defined for all
-variables of that type, even for those not defined to be categorical.
-Those for the non-categorical set variables will be ignored.
+If an adjacency matrix is defined for one type of (categorical) \c
+discrete_design_set variable, if must be defined for all variables of
+that type, even for those not defined to be categorical.  Those for
+the non-categorical set variables will be ignored.
 
 Topics::
 
 Examples::
 
 The following example shows a variables specification where some real
-and some integer <tt>discrete_design_set</tt> variables are
-categorical.
+and some integer \c discrete_design_set variables are categorical.
 
 \verbatim
 variables
@@ -79,10 +77,10 @@ Note that for the real case, the user wants to define an adjacency
 matrix for the categorical variable, so adjacency matrices for both
 variables must be specified.  The matrix for the first one will be
 ignored.  Note that no adjacency matrix is not specified for either
-integer categorical variable.  The default will be used in both
-cases.  Currently the only method taking advantage of adjacency
-matrices is <tt>mesh_adaptive_search</tt>, which uses a tri-diagonal adjacency
-matrix by default.  Thus, the matrices used would be
+integer categorical variable.  The default will be used in both cases.
+Currently the only method taking advantage of adjacency matrices is \c
+mesh_adaptive_search, which uses a tri-diagonal adjacency matrix by
+default.  Thus, the matrices used would be
 
 \verbatim
 z1: 1 1

@@ -1,11 +1,31 @@
 Blurb::
-This is the name of a file where NOMAD will write its
-own output.
+Name of file where mesh adaptive search records all evaluation points.
+
 Description::
-\c history_file: This is the name of a file where NOMAD will write its
-own output.
+The \c history_file is used to specify the name of a file to which
+mesh adaptive direct search will write its own list of evaluated
+points.
+
+<b> Default Behavior </b>
+
+By default, mesh adaptive direct search will write the list of
+evaluation points in a file named mads_history.xxxx, where xxxx
+corresponds to a randomly generated number.
+
 Topics::	
+
 Examples::
+
+The example below shows the syntax for specifying the name of the
+history file.
+
+\verbatim
+method
+  mesh_adaptive_search
+    history_file = 'output.log'
+    seed = 1234
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	
