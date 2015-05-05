@@ -45,14 +45,14 @@ add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
           ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
   DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
-          ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
+          ${Dakota_SOURCE_DIR}/src/dakota.xml
 	  ${ref_kw_md}
 	  ${ref_topic_md}
 	  ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
 	  ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
   COMMAND ${JAVA_EXE} 
   ARGS -jar ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
-    ${Dakota_SOURCE_DIR}/src/dakota.input.nspec 
+    ${Dakota_SOURCE_DIR}/src/dakota.xml
     ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
     ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
     ${Dakota_SOURCE_DIR}/docs/TopicMetadata
