@@ -21,18 +21,18 @@ The likelihood function is used to describe how well a model's
 predictions are supported by the data.  
 %The likelihood function can be written generally as:
 %\begin{equation*}
-%  \mathcal{L}\left( {\theta ;d} \right) = f\left( {\mathcal{M}\left( \theta  \right) - d} \right)
+%  \mathcal{L}\left( {\theta ;d} \right) = f\left( {q\left( \theta  \right) - d} \right)
 %\end{equation*}
 The specific likelihood function currently used in Dakota is a Gaussian
-likelihood. This means that we assume the difference between the model
-(e.g. computer simulation) and the experimental observations are Gaussian:
+likelihood. This means that we assume the difference between the model quantity of interest
+(e.g. result from a computer simulation) and the experimental observations are Gaussian:
 \begin{equation}
-d_i = \mathcal{M}(\theta) + \epsilon_i, \label{eq:model}
+d_i = q_i(\theta) + \epsilon_i, \label{eq:model}
 \end{equation}
-where $\theta$ are the parameters of model $\mathcal{M}$ and
+where $\theta$ are the parameters of a model quantity of interest $q$ and
 $\epsilon_i$ is a random variable that can encompass both measurement
-errors on $d_i$ and modeling errors associated with the simulation
-$\mathcal{M}(\theta)$. %We further assume that all experiments and
+errors on $d_i$ and modeling errors associated with the simulation quantity of interest 
+$q_i(\theta)$. %We further assume that all experiments and
 %observations are independent.  
 If we have $n$ observations, the probabilistic model defined by 
 Eq.~(\ref{eq:model}) results in a likelihood function for $\theta$ 
@@ -48,7 +48,7 @@ as shown in Eq.~\ref{eq:Likelihood}:
 \end{equation}
 where the residual vector $\boldsymbol{r}$ is defined from the
 differences between the model predictions and the corresponding
-observational data (i.e., $r = \mathcal{M}(\theta) - d$),
+observational data (i.e., $r = q(\theta) - d$),
 $\boldsymbol{\Sigma}_d$ is the covariance matrix of the Gaussian data
 uncertainties, and we omit the leading multivariate normal (MVN)
 constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma}_d|}$ for 
@@ -87,19 +87,19 @@ from the MLE for cases of non-uniform prior probability.
 
 \section{Proposal Densities} \label{uq:bayes:prop}
 
-When derivatives of $\mathcal{M}(\theta)$ are readily available (e.g.,
+When derivatives of $q(\theta)$ are readily available (e.g.,
 from adjoint-capable simulations or from emulator models such as
 polynomial chaos, stochastic collocation, or Gaussian processes), we
 can form derivatives of the misfit function as
 \begin{eqnarray}
-\nabla_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
-\nabla^2_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) + \nabla^2_\theta \mathcal{M}(\theta) \cdot \left[\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
+\nabla_\theta M(\theta) &=& \nabla_\theta q(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
+\nabla^2_\theta M(\theta) &=& \nabla_\theta q(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta q(\theta) + \nabla^2_\theta q(\theta) \cdot \left[\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
 \end{eqnarray}
 Neglecting the second term in Eq.~\ref{eq:hess_misfit} (a
 three-dimensional Hessian tensor dotted with the residual vector)
 results in the Gauss-Newton approximation to the misfit Hessian:
 \begin{equation}
-\nabla^2_\theta M(\theta) \approx \nabla_\theta \mathcal{M}(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) \label{eq:hess_misfit_gn}
+\nabla^2_\theta M(\theta) \approx \nabla_\theta q(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta q(\theta) \label{eq:hess_misfit_gn}
 \end{equation}
 This approximation requires only gradients of the residuals, enabling
 its use in cases where models or model emulators only provide
