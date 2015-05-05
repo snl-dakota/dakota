@@ -32,47 +32,80 @@ d_i = \mathcal{M}(\theta) + \epsilon_i,
 where $\theta$ are the parameters of model $\mathcal{M}$ and
 $\epsilon_i$ is a random variable that can encompass both measurement
 errors on $d_i$ and modeling errors associated with the simulation
-$\mathcal{M}(\theta)$. We further assume that all experiments and
-observations are independent.  If we have $n$ observations, the
-probabilistic model defined by Eq.~(\ref{eq:model}) results in a
-likelihood function for $\theta$ that is the product of $n$ normal
-probability density functions as shown in
-Equation~\ref{eqn:Likelihood}.
-\begin{equation}\label{eqn:Likelihood}  
-\mathcal{L}({\theta};d) = \prod_{i=1}^n \frac{1}{\sigma \sqrt{2\pi}} \exp
-\left[ - \frac{\left(d_i-\mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
+$\mathcal{M}(\theta)$. %We further assume that all experiments and
+%observations are independent.  
+If we have $n$ observations, the probabilistic model defined by 
+Eq.~(\ref{eq:model}) results in a likelihood function for $\theta$ 
+%that is the product of $n$ normal probability density functions 
+as shown in Equation~\ref{eqn:Likelihood}.
+\begin{equation}\label{eqn:Likelihood}
+\mathcal{L}(\theta;d) \propto % = \frac{1}{(2\pi)^n |\boldsymbol{\Gamma}_d|} 
+\exp \left(
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Gamma}_d^{-1} \boldsymbol{r} 
+\right)
+%\mathcal{L}({\theta};d) = \prod_{i=1}^n \frac{1}{\sigma \sqrt{2\pi}} \exp
+%\left[ - \frac{\left(d_i-\mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
 \end{equation}
 
 The negative log-likelihood is known as the misfit function:
 \begin{equation}
-  {\text M}\left( {\theta ;d} \right) = \frac{1}{2} r^T \Gamma_d^{-1} r
+  M\left( {\theta ;d} \right) = \frac{1}{2} 
+  \boldsymbol{r}^T \boldsymbol{\Gamma}_d^{-1} \boldsymbol{r} % + C
 \end{equation}
-where the residual $r$ is defined from the difference between model 
-and data
+where the residual vector $\boldsymbol{r}$ is defined from the
+differences between the model predictions and the corresponding
+observational data
 \begin{equation}
 r = \mathcal{M}(\theta) - d
 \end{equation}
-and $\Gamma_d$ is the covariance matrix of the Gaussian data
-uncertainties.  Dropping $\Gamma_d$ from this expression (or
+and $\boldsymbol{\Gamma}_d$ is the covariance matrix of the Gaussian data
+uncertainties.  Dropping $\boldsymbol{\Gamma}_d$ from this expression (or
 equivalently, taking it to be the identity) results in ordinary least
-squares (OLS).  Minimizing this misfit function results in a point 
-known as the maximum likelihood estimate (MLE), which will be the
-same as the OLS estimate for conditions of constant data covariance.
+squares (OLS).  Minimizing the misfit function is equivalent to
+maximizing the likelihood function and results in a solution known as the
+maximum likelihood estimate (MLE), which will be the same as the OLS
+estimate under conditions of constant residual weighting (any multiple
+of identity in the data covariance matrix).
 
 When incorporating the prior density, the maximum a posteriori
-probability (MAP) point is the point that maximizes the posterior
+probability (MAP) point is the solution that maximizes the posterior
 probability in Equation~\ref{eqn:BayesThm}.  This point will differ
 from the MLE for cases of non-uniform prior probability.
+
+%\begin{equation}
+%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\Gamma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d})\right]
+%\end{equation}
+%\begin{equation}
+%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\Gamma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
+%\end{equation}
 
 \section{Proposal Densities} \label{uq:bayes:prop}
 
 When derivatives are readily available (e.g., from emulator models such
 as polynomial chaos, stochastic collocation, or Gaussian processes),
-we can form the Hessian of the misfit function using either a full
-Hessian 
+we can form derivatives of the misfit function as
+\begin{eqnarray}
+\nabla_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Gamma_{\mathbf{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
+\nabla^2_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Gamma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) + \nabla^2_\theta \mathcal{M}(\theta) \cdot \left[\Gamma_{\mathbf{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit} 
+\end{eqnarray}
+Neglecting the second term in Eq.~\ref{eq:hess_misfit} (a
+three-dimensional Hessian tensor dotted with the residual vector)
+results in the Gauss-Newton approximation to the Hessian:
 \begin{equation}
-\nabla^2 {\text M} = 
+\nabla^2_\theta M(\theta) \approx \nabla_\theta \mathcal{M}(\theta)^T\,\Gamma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) \label{eq:hess_misfit_gn}
 \end{equation}
-or a Gauss-Newton approximation\begin{equation}
-\nabla^2 {\text M} = 
-\end{equation}
+This approximation requires only gradients of the residuals, enabling
+its use in cases where models or model emulators only provide
+first-order derivative information.  Since the second term in
+Eq.~\ref{eq:hess_misfit} includes the residual vector, it becomes less
+important as the residuals are driven toward zero.  This makes the
+Gauss-Newton approximation a good approximation for solutions with
+small residuals.
+
+To form the MVN proposal density for the MCMC process, we define the
+proposal covariance to be the inverse of the misfit Hessian.  Since
+the full Hessian may be indefinite while the Gauss-Newton
+approximation is at least positive semi-definite, we may first attempt
+to invert the full Hessian, with recourse to inverting the
+Gauss-Newton approximate Hessian.
+
