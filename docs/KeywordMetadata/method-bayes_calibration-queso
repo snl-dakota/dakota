@@ -16,13 +16,25 @@ possible to build the Gaussian process from points read in from the
 \c import_points_file and to export approximation-based sample evaluations 
 using \c export_points_file. For \c pce or \c sc, the user can define a \c sparse_grid_level. 
 
-In terms of the MCMC sampling, one can specify the following for the QUESO method: 
-With the \c metropolis type, we have the options \c hastings for a standard 
-Metropolis-Hastings algorithm, or \c adaptive for the adaptive Metropolis 
-in which the covariance of the proposal density is updated adaptively. 
-For the delayed rejection part of the DRAM algorithm, one specifies \c rejection, 
-followed by \c standard (no delayed rejection) or \c delayed. Finally, the user 
-has two scale factors which help control the scaling involved in the problem. 
+In terms of the MCMC sampling, one can specify one of the following MCMC algorithms to use: 
+\c dram for DRAM (Delayed Rejection Adaptive Metropolis), \c delayed_rejection for delayed_rejection only, 
+\c adaptive_metropolis for adaptive metropolis only, 
+\c metropolis_hastings for Metropolis Hastings, 
+and \c multilevel for the multilevel MCMC algorithm. 
+
+There are a variety of ways the user can specify the proposal covariance matrix which 
+is very important in governing the samples generated in the chain.  
+The proposal covariance specifies the covariance structure of a multivariate normal distribution. 
+The user can specify \c proposal_covariance, followed by \c derivatives, \c prior, 
+\c values, or \c filename.  The derivative specification involves 
+forming the Hessian of the misfit function (the negative
+log likelihood).  When derivative information is available inexpensively (e.g. from an emulator), 
+the derived-based proposal covariance forms a more
+accurate proposal distribution, resulting in lower rejection rates and
+faster chain mixing.  The prior setting involves constructing the proposal from the variance of the prior distributions of the parameters being calibrated.  When specifying the proposal covariance with values or from a file, the user 
+can choose to specify only the diagonals of the covariance matrix with \c diagonal or to specify the full covariance matrix with \c matrix. 
+ 
+There are two other controls for QUESO. 
 The \c likelihood_scale is a number which scales the likelihood by dividing 
 the log of the likelihood (e.g. dividing the sum of squared differences 
 between the experimental data and simulation data or SSE). This 
@@ -32,18 +44,13 @@ involves multiplying many likelihoods together, where the SSE term is large
 and the likelihood becomes very small). 
 In some respects, the \c likelihood_scale can be seen as a normalizing factor
 for the SSE. If the SSE is large, the \c likelihood_scale should be large. 
-The second factor is a \c proposal_covariance_scale.  This allows the user 
-to specify the diagonal values of the proposal 
-covariance matrix. 
-This may be useful when the input variables being calibrated 
-are of different magnitudes: one may want to take a larger step in a direction 
-with a larger magnitude, for example. The \c proposal_covariance_scale 
-should be followed by a list of the size of the number of 
-parameters being calibrated, with values for the proposal covariance diagonal 
-for each.  Finally, we offer the option 
+The second factor is a \c logit_transform,  
+which performs an internal variable transformation from bounded domains to unbounded domains
+ in order to reduce sample rejection due to an out-of-bounds condition.
+ 
+Finally, we offer the option 
 to calibrate the sigma terms with the \c calibrate_sigma flag. 
-The sigma terms refer to the error associated 
-with the Gaussian process: sigma is used in the likelihood calculation. 
+The sigma terms refer to the variance/covariance of the measurement error. 
 If experimental measurement error is available to inform sigma, that is 
 very useful, but often measurement uncertainty is not available. Note that 
 if \c calibrate_sigma is specified, a separate sigma term will be calibrated 
@@ -51,7 +58,7 @@ for each calibration term. Thus, if there are 50 calibration terms (e.g.
 experimental points against which we are trying to match the model), 
 50 sigma values will be added to the calibration process. Calibration 
 of the sigma values is turned off by default: only the design parameters are 
-calibrated in default mode. 
+calibrated in default mode.  Currently, \c calibrate_sigma is only applicable to scalar responses.
 
 
 Topics::	bayesian_calibration, package_queso

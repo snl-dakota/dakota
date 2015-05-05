@@ -23,7 +23,11 @@ in construction of the emulator, \c emulator_samples. The emulator
 involves Gaussian processes in GPMSA, so the user does not specify anything 
 about emulator type. At this point, the only controls active for GPMSA 
 are \c emulator_samples, \c seed and \c rng, and \c samples (the number of MCMC
-samples).  NOTE: the GPMSA method is in a very preliminary, prototype state at this time. 
+samples) and the type of MCMC algorithm (e.g. \c dram, \c delayed_rejection, 
+\c adaptive_metropolis, \c metropolis_hastings, or \c multilevel).  
+NOTE: the GPMSA method is in a very preliminary, prototype state at this time. 
+The user will need to modify certain data structures in the code for their particular application and recompile to run
+with GPMSA.
 
 Topics::	package_queso, bayesian_calibration
 Examples::

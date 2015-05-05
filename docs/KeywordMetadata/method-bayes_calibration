@@ -1,8 +1,8 @@
 Blurb::
 Bayesian calibration
 Description::
-Currently, we are in the process of incorporating Bayesian calibration 
-methods in %Dakota. These methods take prior information on parameter 
+Bayesian calibration 
+methods in %Dakota take prior information on parameter 
 values (in the form of prior distributions) and observational data 
 (e.g. from experiments) and produce posterior distributions on the 
 parameter values. When the computational simulation is then executed
@@ -41,11 +41,10 @@ computational simulation. GPMSA also has extensive features for
 calibration, such as the capability to include a "model discrepancy" term
 and the capability to model functional data such as time series data. 
  
-As mentioned above, the Bayesian capability in %Dakota currently relies 
-on the QUESO library developed by The University of Texas at Austin. 
-This integrated capability is still in prototype form and available to 
-close collaborators of the %Dakota team.
-If you are interested in this capability, contact the %Dakota developers 
+The Bayesian capabilities are under active development.  At this stage, 
+the QUESO methods in %Dakota are the most advanced and robust, followed 
+by DREAM, followed by GPMSA, which is in a very prototype form at this time. 
+If you are interested in these capabilities, contact the %Dakota developers 
 at dakota-developers@development.sandia.gov.
 
 Topics::	bayesian_calibration, package_queso
