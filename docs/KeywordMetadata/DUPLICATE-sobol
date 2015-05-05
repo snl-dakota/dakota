@@ -1,9 +1,0 @@
-Blurb::
-Determine dimension preference for refinement of a polynomial chaos expansion from the sobol sensitivity indices of the PCE.
-Description::
-Determine dimension preference for refinement of a polynomial chaos expansion from the sobol sensitivity indices of the PCE. High indices result in high dimension preference.
-Topics::
-Examples::
-Theory::
-Faq::
-See_Also::	

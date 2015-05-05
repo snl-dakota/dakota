@@ -1,0 +1,20 @@
+Blurb::
+Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices.
+
+Description::
+Determine dimension preference for refinement of a stochastic expansion from the total Sobol' sensitivity indices obtained from global sensitivity analysis. High indices indicate high importance for resolving statistical quantities of interest and therefore result in high dimension preference.
+
+Topics::
+Examples::
+\verbatim
+method,
+        polynomial_chaos                        
+          sparse_grid_level = 3
+          dimension_adaptive p_refinement sobol 
+            max_iterations  = 20                
+            convergence_tol = 1.e-4
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	
