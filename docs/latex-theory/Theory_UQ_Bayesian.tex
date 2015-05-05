@@ -6,14 +6,15 @@ Bayesian inference.
 
 \section{Fundamentals} \label{uq:bayes:basic}
 
-Bayes Theorem~\cite{Jaynes}, shown in Equation~\ref{eqn:BayesThm}, is
-used for inference: to derive the plausible parameter values, based on
-the prior probability density and the data $d$. The result is the
-posterior parameter density of the parameters $f_{\Theta |D}\left(
-{\theta |d} \right)$.
+Bayes Theorem~\cite{Jaynes}, shown in Eq.~\ref{eq:BayesThm}, is used
+for performing inference.  In particular, we derive the plausible
+parameter values based on the prior probability density and the data
+$d$. A typical case involves the use of a conservative prior notion of
+an uncertainty, which is then constrained to be consistent with the
+observational data.  The result is the posterior parameter density of
+the parameters $f_{\Theta |D}\left( {\theta |d} \right)$.
 \begin{equation}
-  \label{eqn:BayesThm}
-  {f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}}
+{f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}} \label{eq:BayesThm}
 \end{equation}
 
 The likelihood function is used to describe how well a model's
@@ -24,10 +25,9 @@ predictions are supported by the data.
 %\end{equation*}
 The specific likelihood function currently used in Dakota is a Gaussian
 likelihood. This means that we assume the difference between the model
-(e.g. computer simulation) and the experimental observations are
-Gaussian:
-\begin{equation}\label{eq:model}
-d_i = \mathcal{M}(\theta) + \epsilon_i,
+(e.g. computer simulation) and the experimental observations are Gaussian:
+\begin{equation}
+d_i = \mathcal{M}(\theta) + \epsilon_i, \label{eq:model}
 \end{equation}
 where $\theta$ are the parameters of model $\mathcal{M}$ and
 $\epsilon_i$ is a random variable that can encompass both measurement
@@ -37,62 +37,67 @@ $\mathcal{M}(\theta)$. %We further assume that all experiments and
 If we have $n$ observations, the probabilistic model defined by 
 Eq.~(\ref{eq:model}) results in a likelihood function for $\theta$ 
 %that is the product of $n$ normal probability density functions 
-as shown in Equation~\ref{eqn:Likelihood}.
-\begin{equation}\label{eqn:Likelihood}
-\mathcal{L}(\theta;d) \propto % = \frac{1}{(2\pi)^n |\boldsymbol{\Gamma}_d|} 
+as shown in Eq.~\ref{eq:Likelihood}:
+\begin{equation}
+\mathcal{L}(\theta;d) \propto % = \frac{1}{(2\pi)^n |\boldsymbol{\Sigma}_d|} 
 \exp \left(
--\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Gamma}_d^{-1} \boldsymbol{r} 
-\right)
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} \boldsymbol{r} 
+\right), \label{eq:Likelihood}
 %\mathcal{L}({\theta};d) = \prod_{i=1}^n \frac{1}{\sigma \sqrt{2\pi}} \exp
 %\left[ - \frac{\left(d_i-\mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
 \end{equation}
+where the residual vector $\boldsymbol{r}$ is defined from the
+differences between the model predictions and the corresponding
+observational data (i.e., $r = \mathcal{M}(\theta) - d$), 
+$\boldsymbol{\Sigma}_d$ is the covariance matrix of the Gaussian data
+uncertainties, and we omit the leading multivariate normal (MVN)
+constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma}_d|}$
+for simplicity (in practice, this can be omitted from likelihood
+calculations as the normalization factor in the denominator of 
+Eq.~\ref{eq:BayesThm} will account for it).
 
 The negative log-likelihood is known as the misfit function:
 \begin{equation}
-  M\left( {\theta ;d} \right) = \frac{1}{2} 
-  \boldsymbol{r}^T \boldsymbol{\Gamma}_d^{-1} \boldsymbol{r} % + C
+M(\theta;d) = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} 
+\boldsymbol{r} % + C
+\label{eq:misfit}
 \end{equation}
-where the residual vector $\boldsymbol{r}$ is defined from the
-differences between the model predictions and the corresponding
-observational data
-\begin{equation}
-r = \mathcal{M}(\theta) - d
-\end{equation}
-and $\boldsymbol{\Gamma}_d$ is the covariance matrix of the Gaussian data
-uncertainties.  Dropping $\boldsymbol{\Gamma}_d$ from this expression (or
-equivalently, taking it to be the identity) results in ordinary least
-squares (OLS).  Minimizing the misfit function is equivalent to
-maximizing the likelihood function and results in a solution known as the
-maximum likelihood estimate (MLE), which will be the same as the OLS
-estimate under conditions of constant residual weighting (any multiple
-of identity in the data covariance matrix).
+It is evident that dropping $\boldsymbol{\Sigma}_d$ from this
+expression (or equivalently, taking it to be the identity) results in
+the ordinary least squares (OLS) approach commonly used in
+deterministic calibration.  Minimizing the misfit function is
+equivalent to maximizing the likelihood function and results in a
+solution known as the maximum likelihood estimate (MLE), which will be
+the same as the OLS estimate when the residuals have no relative
+weighting (any multiple of identity in the data covariance matrix).
 
-When incorporating the prior density, the maximum a posteriori
+When incorporating the prior density, the maximum {\it a posteriori}
 probability (MAP) point is the solution that maximizes the posterior
-probability in Equation~\ref{eqn:BayesThm}.  This point will differ
+probability in Eq.~\ref{eq:BayesThm}.  This point will differ
 from the MLE for cases of non-uniform prior probability.
 
 %\begin{equation}
-%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\Gamma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d})\right]
+%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\Sigma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d})\right]
 %\end{equation}
 %\begin{equation}
-%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\Gamma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
+%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\Sigma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
 %\end{equation}
 
 \section{Proposal Densities} \label{uq:bayes:prop}
 
-When derivatives are readily available (e.g., from emulator models such
-as polynomial chaos, stochastic collocation, or Gaussian processes),
-we can form derivatives of the misfit function as
+When derivatives of $\mathcal{M}(\theta)$ are readily available (e.g.,
+from adjoint-capable simulations or from emulator models such as
+polynomial chaos, stochastic collocation, or Gaussian processes), we
+can form derivatives of the misfit function as
 \begin{eqnarray}
-\nabla_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Gamma_{\mathbf{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
-\nabla^2_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Gamma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) + \nabla^2_\theta \mathcal{M}(\theta) \cdot \left[\Gamma_{\mathbf{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit} 
+\nabla_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
+\nabla^2_\theta M(\theta) &=& \nabla_\theta \mathcal{M}(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) + \nabla^2_\theta \mathcal{M}(\theta) \cdot \left[\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
 \end{eqnarray}
 Neglecting the second term in Eq.~\ref{eq:hess_misfit} (a
 three-dimensional Hessian tensor dotted with the residual vector)
-results in the Gauss-Newton approximation to the Hessian:
+results in the Gauss-Newton approximation to the misfit Hessian:
 \begin{equation}
-\nabla^2_\theta M(\theta) \approx \nabla_\theta \mathcal{M}(\theta)^T\,\Gamma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) \label{eq:hess_misfit_gn}
+\nabla^2_\theta M(\theta) \approx \nabla_\theta \mathcal{M}(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta \mathcal{M}(\theta) \label{eq:hess_misfit_gn}
 \end{equation}
 This approximation requires only gradients of the residuals, enabling
 its use in cases where models or model emulators only provide
@@ -106,6 +111,65 @@ To form the MVN proposal density for the MCMC process, we define the
 proposal covariance to be the inverse of the misfit Hessian.  Since
 the full Hessian may be indefinite while the Gauss-Newton
 approximation is at least positive semi-definite, we may first attempt
-to invert the full Hessian, with recourse to inverting the
-Gauss-Newton approximate Hessian.
+to invert the full Hessian, followed by recourse when necessary to
+inverting the Gauss-Newton approximate Hessian.
 
+\section{Rosenbrock Example} \label{uq:bayes:ex}
+
+Defining two residuals as:
+\begin{eqnarray}
+r_1 &=& 10 (\theta_2 - \theta_1^2) \label{eq:rosen_r1} \\
+r_2 &=& 1 - \theta_1 \label{eq:rosen_r2}
+\end{eqnarray}
+and defining $\boldsymbol{\Sigma}_d = \text{diag}(\boldsymbol{.5})$,
+it is evident from Eq.~\ref{eq:misfit} that $M(\theta;d)$ is exactly
+the Rosenbrock function\footnote{The two-dimensional Rosenbrock test
+  function is defined as $100 (x_2 - x_1^2)^2 + (1 - x_1)^2$} with its
+well-known banana-shaped contours.
+
+Figure~\ref{fig:rosen_prop_covar} shows the effect of different
+proposal covariance options, with the default prior covariance in
+Figure~\ref{fig:rosen_prop_covar}(a) and the misfit Hessian-based
+proposal covariance in Figure~\ref{fig:rosen_prop_covar}(b).  A
+uniform prior on $[-2,2]$ is used.
+\begin{figure}[htbp]
+  \begin{subfigmatrix}{2}
+  \subfigure[Proposal covariance defined from uniform prior.]{\includegraphics{images/rosen_00_prior}}
+  \subfigure[Proposal covariance defined from misfit Hessian.]{\includegraphics{images/rosen_00_pce_hessian}}
+  \end{subfigmatrix}
+  \caption{Depiction of proposal covariance at (0,0) with contours at one/two/three standard deviations.  2000 MCMC samples are performed and every 20th sample is plotted.}
+\label{fig:rosen_prop_covar}
+\end{figure}
+Rejection rates for 2000 MCMC samples were 73.4\% for the former and
+25.6\% for the latter.  Reducing the number of MCMC samples to 40
+results in a similar 72.5\% rejection rate for prior-based proposal
+covariance and a reduced 17.5\% rate for misfit Hessian-based proposal
+covariance.  The prior-based proposal covariance only provides a
+global scaling and omits information on the structure of the
+likelihood; as a result, the rejection rates are relatively high for
+this problem and are not a strong function of location or chain
+length.  The misfit Hessian-based proposal covariance, on the other
+hand, provides accurate local information on the structure of the
+likelihood, resulting in low rejection rates for samples in the
+vicinity of this Hessian update.  This implies the need to regularly
+update the misfit Hessian-based proposal covariance to sustain these
+improvements in rejection rate.
+
+In Figure~\ref{fig:rosen_restart}, we show a result for a total of
+2000 MCMC samples initiated from $(-1,1)$, where we restart the chain
+with an updated misfit Hessian-based proposal covariance every 40
+samples (Dakota specification: \texttt{proposal\_updates = 50}).  This
+case uses a standard normal prior, resulting in differences in the MLE
+and MAP estimates, as shown in Figure~\ref{fig:rosen_restart}(a).
+Figure~\ref{fig:rosen_restart}(b) shows the history of rejection rates
+for each of the 50 chains compared to the rejection rate for a single
+2000-sample chain using prior-based proposal covariance.
+\begin{figure}[htbp]
+  \begin{subfigmatrix}{2}
+  \subfigure[Restarted chain.]{\includegraphics{images/rosen_restart_mle_map}}
+  \subfigure[Rejection rates.]{\includegraphics{images/rosen_restart_reject}}
+  \end{subfigmatrix}
+  \caption{2000 MCMC sample chain with 50 misfit Hessian proposal
+    updates and standard normal prior.}
+\label{fig:rosen_restart}
+\end{figure}
