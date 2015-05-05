@@ -118,7 +118,7 @@ scalar responses.  That is, if the user specifies
 \texttt{response\_functions=5}, Dakota treats the five responses as five separate scalar quantities.  There are some cases where responses are a ``field'' quantity, meaning that the responses are a function of one or more independent variables such as time and/or spatial location.  In these cases, the responses should be treated as field data.  For example, it can become 
 extremely cumbersome to represent 5000 values from a 
 time-temperature trace or a current-voltage curve in Dakota.  
-Currently, we ignore the independent variable in Dakota.  
+With scalar response quantities, we ignore the independent variable(s).  
 For example, if we have a response $R$ as a function of time $t$, 
 the user currently gives Dakota a set of discrete responses at particular times and Dakota doesn't know the times.  
 
@@ -136,11 +136,11 @@ quantities.
 
 The field response capability is in a prototype, experimental 
 stage as of Dakota 6.1.  For all three major response 
-types (\texttt{objection\_functions}, \texttt{calibration\_terms}, and \texttt{response\_functions}), one can specify field responses (e.g. with \texttt{field\_objectives}, \texttt{field\_calibration\_terms}, and \texttt{field\_responses}).  For each 
-type of field response, one can specify the length of the field (e.g. \texttt{lengths=5000}) and the number of independent coordinates (\texttt{num\_coordinates\_per\_field}).  The user can specify the independent coordinates either through a list of points (\texttt{coordinate\_list}) or through a data file (\texttt{coordinate\_data\_file}).  In the case of field data from physical experiments used to calibrate field data from simulation experiments, the specification is more involved:  the user should refer to the Dakota Reference manual to get the syntax. 
-Note that at this time, field responses may be specified by the user as outlined above.  However, we currently present these responses as many individual scalar responses to the methods (e.g. in the case of optimization methods, all of the field responses will be summed and the overall sum will be presented to the optimizer.).   
-In future versions, we are planning some additional features with methods 
-that can handle field data, such as the calibration methods (both deterministic and Bayesian). 
+types (\texttt{objective\_functions}, \texttt{calibration\_terms}, and \texttt{response\_functions}), one can specify field responses (e.g. with \texttt{field\_objectives}, \texttt{field\_calibration\_terms}, and \texttt{field\_responses}).  
+For each type of field response, one can specify the length of the field (e.g. \texttt{lengths=5000}) and the number of independent coordinates (\texttt{num\_coordinates\_per\_field}).  The user can specify the independent coordinates either through a list of points (\texttt{coordinate\_list}) or through a data file (\texttt{coordinate\_data\_file}).  In the case of field data from physical experiments used to calibrate field data from simulation experiments, the specification is more involved:  the user should refer to the Dakota Reference manual to get the syntax. 
+Note that at this time, field responses may be specified by the user as outlined above.  All methods can handle field data, but currently the calibration methods are the only methods specialized for field data, specifically they interpolate the simulation field data to the experiment field data points to calculate the residual terms.  This is applicable to \texttt{nl2sol}, \texttt{nlssol}, \texttt{optpp\_g\_newton}, 
+the MCMC Bayesian methods, as well as general optimization methods that recast the residuals into a sum-of-squares error.  The other methods simply handle the field responses as a number of scalar responses currently. In future versions, we are planning some additional features with methods 
+that can handle field data, including reduction of the field data. 
  
 \section{Dakota Results File Data Format}\label{responses:results}
 

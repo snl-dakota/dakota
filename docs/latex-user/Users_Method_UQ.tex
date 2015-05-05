@@ -2206,7 +2206,7 @@ calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 
-We have three preliminary implementations of Bayesian calibration methods 
+There are three implementations of Bayesian calibration methods 
 in Dakota, where a ``prior distribution'' on a parameter is 
 updated through a Bayesian framework involving experimental data and 
 a likelihood function. 
@@ -2266,6 +2266,24 @@ as shown in Equation~\ref{eqn:Likelihood}.
 %\mathcal{L}\left( {{\theta};d} \right) = \prod\limits_{i = 1}^n {\frac{1}{{\sigma \sqrt {2\pi } }}  \exp \left[  - \frac{\left(d_i - \mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
 \end{equation}
 
+In Equation~\ref{eqn:Likelihood}, the $\sigma^2$ term refers to the measurement error, assumed 
+constant across all observations in this case.  A more general case, which we support, is to 
+have a full covariance matrix, $\Sigma$, that specifies the covariance between each observation $i$ and $j$. 
+In this case, the likelihood is commonly written in log form, where the log-likelihood is given in Equation~\ref{eqn:LogLikelihood}. 
+\begin{equation}\label{eqn:LogLikelihood}  
+\mathcal{L}({\theta};d) =-0.5 {R}^{T} {\Sigma}^{-1} {R}
+\end{equation}
+
+where $R$ is the vector of residuals $d_i-\mathcal{M}(\theta)$.  There are now four options to specify 
+the measurement error for Bayesian calibration methods, with \texttt{variance\_type} being 
+equal to \texttt{none} for no measurement error specified (in this case, the variance is one), 
+\texttt{scalar} where a constant value $\sigma^2$ is given for all observations, \texttt{diagonal} where a 
+value is specified for the diagonal elements of the covariance matrix $\Sigma$ meaning that each observation 
+has its own measurement error but there are no cross terms, and \texttt{matrix} where the full covariance 
+matrix $\Sigma$ is specified.  Note that the \texttt{diagonal} and \texttt{matrix} terms are only available 
+for field response data.  For scalar responses, the only variance values that are specified are with \texttt{none} or 
+\texttt{sigma}.  Finally, all the sigma values should be given as variances ($\sigma^2$).
+
 Markov Chain Monte Carlo (MCMC) is the standard method used to compute 
 posterior parameter densities, given the observational data 
 and the priors. There are many references that 
@@ -2292,7 +2310,8 @@ for global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace sampling
 ~\cite{Vrugt}.
 The GPMSA calibration capability uses the GPMSA code developed at 
-Los Alamos National Laboratory.
+Los Alamos National Laboratory. At this point, the QUESO implementation 
+is the most robust and the one that we recommend. 
 
 In the QUESO method, the user can run the MCMC sampling with 
 the simulation model $\mathcal{M}(\theta)$ directly. However, 
@@ -2303,28 +2322,35 @@ on the emulator more quickly. One can specify a Gaussian process,
 a polynomial chaos expansion or a stochastic collocation 
 as the emulator for the \texttt{queso} method. The specification 
 details for these are listed in the Reference Manual. 
-One can also specify various settings for the MCMC DRAM sampling: 
-the sampling can use a standard Metropolis-Hastings algorithm 
-or the adaptive Metropolis in which the covariance of the proposal 
-density is updated adaptively. There is also a setting to control 
-the delayed rejection. Finally, there are two scale factors 
-which control the scaling of the problem. The 
-\texttt{likelihood\_scale} is a number 
-which scales the likelihood by dividing
-the log of the likelihood (e.g. dividing the sum of squared differences
-between the experimental data and simulation data or SSE).  This
-is useful for situations with very small likelihoods (e.g. the model is either
-very far away from the data or there is a lot of data so the likelihood function
-involves multiplying many likelihoods together, where the SSE term is large
-and the likelihood becomes very small).
-In some respects, the \texttt{likelihood\_scale} can be seen as a normalizing factor
-for the SSE.  If the SSE is large, the likelihood scale should be large.
-The second factor is a \texttt{proposal\_covariance\_scale} 
-which is a vector that defines the diagonals of the proposal covariance
-in the different input directions. This may be useful when the 
-input variables being calibrated are of different magnitudes:  
-one may want to take a larger step in a direction
-with a larger magnitude, for example.
+One can also specify various settings for the MCMC sampling: 
+the sampling can use a standard Metropolis-Hastings algorithm \texttt{metropolis\_hastings},
+adaptive Metropolis \texttt{adaptive\_metropolis}, delayed rejection \texttt{delayed\_rejection},
+the full DRAM, \texttt{dram} which involves both delayed rejection and adaptive Metropolis, 
+or a multi-level algorithm, \texttt{multilevel}. 
+
+There are also controls to specify the proposal covariance which governs how the samples 
+are generated in the chain.  
+The proposal covariance specifies the covariance structure of a multivariate normal distribution. 
+The user can specify \texttt{proposal\_covariance}, followed by \texttt{derivatives}, \texttt{prior}, 
+\texttt{values}, or \texttt{filename}.  The derivative specification involves 
+forming the Hessian of the misfit function (the negative
+log likelihood).  When derivative information is available inexpensively (e.g. from an emulator), 
+the derivative-based proposal covariance forms a more
+accurate proposal distribution, resulting in lower rejection rates and
+faster chain mixing.  Note that the derivative-based proposal covariance may also be updated 
+by adding high-likelihood evaluations of the actual simulation to the emulator build points in 
+an adaptive fashion, thus refining the Hessian.  
+The \texttt{prior} setting means that Dakota will form the proposal from the variance of the prior distributions of the 
+parameters being calibrated.  When specifying the proposal covariance with values or from a file, the user 
+can choose to specify only the diagonals of the covariance matrix or to specify the full covariance matrix.
+An additional control for QUESO is to perform a logit transformation, \texttt{logit\_transform}, which 
+performs an internal variable transformation from bounded domains to unbounded domains in order to reduce sample rejection due to an out-of-bounds condition.
+This option can be helpful when regions of high posterior density exist
+in the corners of a multi-dimensional bounded domain.  In these cases,
+it may be difficult to generate feasible samples from the proposal density,
+such that transformation to unbounded domains may greatly reduce sample
+rejection rates.
+The specification details for keywords governing the proposal covariance are listed in the Reference Manual. 
     
 For the DREAM method, one can define the number of chains used with
 \texttt{chains}.  The total number of generations per chain in DREAM is
@@ -2364,7 +2390,8 @@ the simulation and the observational data results in addition
 to the error term $\epsilon$, but GPMSA has a sophisticated 
 model for the discrepancy term. 
 At this point, the GPMSA implementation in Dakota is an early 
-prototype. 
+prototype. The user will have to edit the GPMSA class in the Dakota source to tailor it to their problem 
+and recompile before running GPMSA.
  
 %At this point, the GPMSA library is a standalone C++ library which has 
 %its own methods to create Gaussian process models, perform MCMC updating, 
@@ -2380,20 +2407,20 @@ in~\ref{uq:figure18}.
 Note that the method is \texttt{bayes\_calibration queso}, 
 specifying the QUESO algorithm. The number of 
 samples indicates the number of samples that the MCMC algorithm 
-will take, in this case 5000 (this usually will need to be larger). 
-For this example, we are using the \texttt{text\_book} analytic 
+will take, in this case 1000 (this usually will need to be larger). 
+For this example, we are using the \texttt{cantilever3} analytic 
 example, so we do not need to specify an emulator, but the lines 
 commented out give an idea of the options if the user wanted to 
 specify an emulator. This example is using the full DRAM (delayed
 rejection adaptive metropolis). The proposal covariance 
-used is the default unless the user uncomments that line. 
+used has diagonal values of 1.e6 and 0.1.  
 The calibration terms in the responses section refers to the 
 number of outputs that will be used in the calibration process:  
-in this case, it is just one. The calibration data file 
+in this case, it is just two. The calibration data file 
 has the observational data:  in this case, it is a freeform file 
 (e.g. no header or annotation) with ten experiments. For each 
-experiment, there is one standard deviation value indicating the 
-error associated with that experiment. 
+experiment, there are two experiment values, one for stress and one for displacement, followed 
+by two variance values for the error associated with that experiment, one for stress and one for displacement. 
 
 \begin{figure}[htbp!]
 \centering
@@ -2402,37 +2429,40 @@ error associated with that experiment.
 \begin{verbatim}
 
 method,
-        bayes_calibration queso
+       bayes_calibration queso
 #       emulator
 #       gp
 #        emulator_samples = 50
-#       points_file = 'ros.txt' freeform
-#        pce 
+#        points_file = 'ros.txt' freeform
+#       pce 
 #        sparse_grid_level = 3 
-          samples = 5000 #seed = 348                                    
-          mcmc_type dram 
-          rejection delayed
-          metropolis adaptive
-          output verbose
-          #proposal_covariance_scale = 0.1 0.3
-          #calibrate_sigma
+        samples = 1000  seed = 348                                    
+        dram 
+        proposal_covariance
+         diagonal values 1.0e6 1.0e-1
+        logit_transform
+         output verbose
  
 variables,
-       continuous_design = 2
-         lower_bounds = 0. 0.
-         upper_bounds = 3. 3.
-         initial_point = 1. 1.
+       uniform_uncertain = 2
+         lower_bounds = 1.0e6 0.1
+         upper_bounds = 1.0e8 10.0
+         initial_point = 2.85e7 2.5
+       continuous_state = 4
+          initial_state 3 40000 500 1000
+          descriptors 't' 'R' 'X' 'Y'
 
 interface,
-         direct 
-           analysis_driver = 'text_book'
+         system
+           analysis_driver = 'cantilever3'
 
 responses,
-        calibration_terms = 1
-        calibration_data_file = 'dakota_queso.test10.txt'
+        calibration_terms = 2
+        calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
           freeform
           num_experiments = 10
           variance_type = 'scalar'
+        descriptors = 'stress' 'displacement'
         no_gradients
         no_hessians
 \end{verbatim}
@@ -2451,12 +2481,9 @@ from which Dakota is run.  The file \texttt{display\_sub0.txt}
 contains information regarding the MCMC process.  The 
 Matlab files contained in the \texttt{outputData} directory
 contain the chain files.  The files to load in Matlab are 
-\texttt{file\_cal\_ip\_raw.m} or \texttt{file\_cal\_ip\_filt.m}, containing 
-the full chain or the filtered chain (every 20th step 
-in the chain).  Note that the chain values in these Matlab files 
-are currently in scaled space.  There are instructions in the Dakota 
-run output about how to transform them back to the original space. 
-The rejection rate for the chain is in the file \texttt{tgaCalOutput.m}.
+\texttt{raw\_chain.m} or \texttt{filtered\_chain.m}, containing 
+the full chain or the filtered chain values of the parameters. 
+There are corresponding files containing the log likelihood values. 
 In addition, if verbose output is specified, 
 the values that Dakota generates are 
 written to a file in the run directory called QuesoOutput.txt. 
