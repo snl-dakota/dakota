@@ -1,7 +1,8 @@
 \chapter{Bayesian Methods}\label{uq:bayes}
 
 
-This chapter covers theoretical aspects of methods for performing
+This chapter covers specialized approaches for accelerating the 
+Markov chain Monte Carlo (MCMC) sampling process using within
 Bayesian inference.
 
 \section{Fundamentals} \label{uq:bayes:basic}
@@ -48,7 +49,7 @@ as shown in Eq.~\ref{eq:Likelihood}:
 \end{equation}
 where the residual vector $\boldsymbol{r}$ is defined from the
 differences between the model predictions and the corresponding
-observational data (i.e., $r = q(\theta) - d$),
+observational data (i.e., $r_i = q_i(\theta) - d_i$ for $i = 1,\dots,n$),
 $\boldsymbol{\Sigma}_d$ is the covariance matrix of the Gaussian data
 uncertainties, and we omit the leading multivariate normal (MVN)
 constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma}_d|}$ for 
@@ -79,10 +80,10 @@ probability in Eq.~\ref{eq:BayesThm}.  This point will differ
 from the MLE for cases of non-uniform prior probability.
 
 %\begin{equation}
-%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\Sigma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d})\right]
+%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma}_d^{-1}(f(\xi)-\mathbf{d})\right]
 %\end{equation}
 %\begin{equation}
-%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\Sigma_{\mathbf{d}}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
+%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma}_d^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
 %\end{equation}
 
 \section{Proposal Densities} \label{uq:bayes:prop}
@@ -92,14 +93,14 @@ from adjoint-capable simulations or from emulator models such as
 polynomial chaos, stochastic collocation, or Gaussian processes), we
 can form derivatives of the misfit function as
 \begin{eqnarray}
-\nabla_\theta M(\theta) &=& \nabla_\theta q(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
-\nabla^2_\theta M(\theta) &=& \nabla_\theta q(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta q(\theta) + \nabla^2_\theta q(\theta) \cdot \left[\Sigma_{\mathbf{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
+\nabla_\theta M(\theta) &=& \nabla_\theta \boldsymbol{q}(\theta)^T\,\boldsymbol{\Sigma}_d^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
+\nabla^2_\theta M(\theta) &=& \nabla_\theta \boldsymbol{q}(\theta)^T\,\boldsymbol{\Sigma}_d^{-1}\,\nabla_\theta \boldsymbol{q}(\theta) + \nabla^2_\theta \boldsymbol{q}(\theta) \cdot \left[\boldsymbol{\Sigma}_d^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
 \end{eqnarray}
 Neglecting the second term in Eq.~\ref{eq:hess_misfit} (a
 three-dimensional Hessian tensor dotted with the residual vector)
 results in the Gauss-Newton approximation to the misfit Hessian:
 \begin{equation}
-\nabla^2_\theta M(\theta) \approx \nabla_\theta q(\theta)^T\,\Sigma_{\mathbf{d}}^{-1}\,\nabla_\theta q(\theta) \label{eq:hess_misfit_gn}
+\nabla^2_\theta M(\theta) \approx \nabla_\theta \boldsymbol{q}(\theta)^T\,\boldsymbol{\Sigma}_d^{-1}\,\nabla_\theta \boldsymbol{q}(\theta) \label{eq:hess_misfit_gn}
 \end{equation}
 This approximation requires only gradients of the residuals, enabling
 its use in cases where models or model emulators only provide
@@ -129,11 +130,11 @@ that $M(\theta;d)$ is exactly the Rosenbrock function\footnote{The
   two-dimensional Rosenbrock test function is defined as $100 (x_2 -
   x_1^2)^2 + (1 - x_1)^2$} with its well-known banana-shaped contours.
 
+Assuming a uniform prior on $[-2,2]$,
 Figure~\ref{fig:rosen_prop_covar} shows the effect of different
 proposal covariance options, with the default prior covariance in
 Figure~\ref{fig:rosen_prop_covar}(a) and the misfit Hessian-based
-proposal covariance in Figure~\ref{fig:rosen_prop_covar}(b).  A
-uniform prior on $[-2,2]$ is used.
+proposal covariance in Figure~\ref{fig:rosen_prop_covar}(b).
 \begin{figure}[htbp]
   \begin{subfigmatrix}{2}
   \subfigure[Proposal covariance defined from uniform prior.]{\includegraphics{images/rosen_00_prior}}
@@ -143,19 +144,21 @@ uniform prior on $[-2,2]$ is used.
 \label{fig:rosen_prop_covar}
 \end{figure}
 Rejection rates for 2000 MCMC samples were 73.4\% for the former and
-25.6\% for the latter.  Reducing the number of MCMC samples to 40
-results in a similar 72.5\% rejection rate for prior-based proposal
-covariance and a reduced 17.5\% rate for misfit Hessian-based proposal
-covariance.  The prior-based proposal covariance only provides a
-global scaling and omits information on the structure of the
-likelihood; as a result, the rejection rates are relatively high for
-this problem and are not a strong function of location or chain
-length.  The misfit Hessian-based proposal covariance, on the other
-hand, provides accurate local information on the structure of the
-likelihood, resulting in low rejection rates for samples in the
-vicinity of this Hessian update.  This implies the need to regularly
-update the misfit Hessian-based proposal covariance to sustain these
-improvements in rejection rate.
+25.6\% for the latter.  Reducing the number of MCMC samples to 40, for
+purposes of assessing locality, results in a similar 72.5\% rejection
+rate for prior-based proposal covariance and a reduced 17.5\% rate for
+misfit Hessian-based proposal covariance.  The prior-based proposal
+covariance only provides a global scaling and omits information on the
+structure of the likelihood; as a result, the rejection rates are
+relatively high for this problem and are not a strong function of
+location or chain length.  The misfit Hessian-based proposal
+covariance, on the other hand, provides accurate local information on
+the structure of the likelihood, resulting in low rejection rates for
+samples in the vicinity of this Hessian update.  Once the chain moves
+away from this vicinity, however, the misfit Hessian-based approach
+may become inaccurate and actually impede progress. This implies the
+need to regularly update the misfit Hessian-based proposal covariance
+to sustain these MCMC improvements.
 
 In Figure~\ref{fig:rosen_restart}, we show a result for a total of
 2000 MCMC samples initiated from $(-1,1)$, where we restart the chain
@@ -171,7 +174,6 @@ for each of the 50 chains compared to the rejection rate for a single
   \subfigure[Restarted chain.]{\includegraphics{images/rosen_restart_mle_map}}
   \subfigure[Rejection rates.]{\includegraphics{images/rosen_restart_reject}}
   \end{subfigmatrix}
-  \caption{2000 MCMC sample chain with 50 misfit Hessian proposal
-    updates and standard normal prior.}
+  \caption{MCMC chain with 2000 total samples, 50 proposal updates using the inverse of the misfit Hessian, and standard normal prior.}
 \label{fig:rosen_restart}
 \end{figure}
