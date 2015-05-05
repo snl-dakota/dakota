@@ -48,13 +48,15 @@ as shown in Eq.~\ref{eq:Likelihood}:
 \end{equation}
 where the residual vector $\boldsymbol{r}$ is defined from the
 differences between the model predictions and the corresponding
-observational data (i.e., $r = \mathcal{M}(\theta) - d$), 
+observational data (i.e., $r = \mathcal{M}(\theta) - d$),
 $\boldsymbol{\Sigma}_d$ is the covariance matrix of the Gaussian data
 uncertainties, and we omit the leading multivariate normal (MVN)
-constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma}_d|}$
-for simplicity (in practice, this can be omitted from likelihood
-calculations as the normalization factor in the denominator of 
-Eq.~\ref{eq:BayesThm} will account for it).
+constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma}_d|}$ for 
+simplicity\footnote{In practice, omitting this MVN constant can avoid 
+  precision loss due to subtractive cancellation in log-likelihood 
+  calculations; further, this shortcut will be canceled out by the 
+  normalization factor in the denominator of Eq.~\ref{eq:BayesThm}.}. 
+  % exception: calibrate sigma? (could rescale sigma after the fact)
 
 The negative log-likelihood is known as the misfit function:
 \begin{equation}
@@ -121,11 +123,11 @@ Defining two residuals as:
 r_1 &=& 10 (\theta_2 - \theta_1^2) \label{eq:rosen_r1} \\
 r_2 &=& 1 - \theta_1 \label{eq:rosen_r2}
 \end{eqnarray}
-and defining $\boldsymbol{\Sigma}_d = \text{diag}(\boldsymbol{.5})$,
-it is evident from Eq.~\ref{eq:misfit} that $M(\theta;d)$ is exactly
-the Rosenbrock function\footnote{The two-dimensional Rosenbrock test
-  function is defined as $100 (x_2 - x_1^2)^2 + (1 - x_1)^2$} with its
-well-known banana-shaped contours.
+with $\boldsymbol{d} = \boldsymbol{0}$ and $\boldsymbol{\Sigma}_d =
+\text{diag}(\boldsymbol{.5})$, it is evident from Eq.~\ref{eq:misfit}
+that $M(\theta;d)$ is exactly the Rosenbrock function\footnote{The
+  two-dimensional Rosenbrock test function is defined as $100 (x_2 -
+  x_1^2)^2 + (1 - x_1)^2$} with its well-known banana-shaped contours.
 
 Figure~\ref{fig:rosen_prop_covar} shows the effect of different
 proposal covariance options, with the default prior covariance in
