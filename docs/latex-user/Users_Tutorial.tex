@@ -22,10 +22,10 @@ Department of Energy users: Dakota may already be available on your
 target system. Sandia users should visit
 \url{http://dakota.sandia.gov/sandia_only/} for information on
 supported Dakota installations on engineering networks and cluster
-computers, as well as for Sandia-specific downloads. At other DOE
-institutions, contact your system administrator about Dakota
-availability. If not available for your target platform, you may
-still download Dakota as described below. 
+computers, as well as for Sandia-specific downloads. At other
+DOE institutions, contact your system administrator about Dakota
+availability. If Dakota is not available for your target platform,
+you may still download Dakota as described below.
 
 Getting started with Dakota typically involves the following steps:
 \begin{enumerate}
@@ -96,9 +96,11 @@ the variables and responses for each function evaluation.
 analysis is interrupted, it can be often be restarted without 
 losing all progress.
 \end{enumerate}
-In addition to the files, some plots are created due to the specification 
-of \texttt{graphics}. These can be helpful when processing the 
-data or diagnosing unexpected results.
+In addition to the files, some plots are created due to the specification
+of \texttt{graphics}. These can be helpful when processing the data or
+diagnosing unexpected results.  If your particular installation or build
+of Dakota does not support graphics, you will instead get a warning to
+this effect.
 
 Dakota has some data processing capabilities for output analysis. 
 The output file will contain the relevant results. 
@@ -119,7 +121,7 @@ described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:ros
   \item Explore the many methods available in Dakota in
     Chapters~\ref{ps}--~\ref{nls}.
   \item Try running the other examples in the same directory. These are mentioned
-    throughout the manual, and listed in Table~\ref{tutorial:examples:table} 
+    throughout the manual and are listed in Table~\ref{tutorial:examples:table} 
     for convenience.
   \item Learn the syntax needed to use these methods. For help running Dakota, 
 see Section~\ref{tutorial:installation:running} and for input file 
@@ -291,12 +293,11 @@ Advanced cases are discussed in Chapter~\ref{adv_meth}.
 \end{figure}
 
 For a more concrete example, a simple Dakota
-input file, \texttt{rosen\_multidim.in},
-for a two-dimensional parameter study on Rosenbrock's
-function is shown in Figure~\ref{tutorial:rosenbrock_multidim}.
-This input file will be used to
-describe the basic format and syntax used in all Dakota input files.
-The results are shown later, in Section~\ref{tutorial:examples:param_study}.
+input file, \texttt{rosen\_multidim.in}, is shown in
+Figure~\ref{tutorial:rosenbrock_multidim} for a two-dimensional parameter
+study on Rosenbrock's function.  This input file will be used to describe
+the basic format and syntax used in all Dakota input files.  The results
+are shown later, in Section~\ref{tutorial:examples:param_study}.
 
 \begin{figure}[ht!]
   \centering
@@ -312,8 +313,8 @@ The results are shown later, in Section~\ref{tutorial:examples:param_study}.
 
 Additional syntax features for Dakota input files include use of the \#
 symbol to indicate a comment, use of single or double quotes for string inputs
-(e.g., \texttt{'x1'}), the use of commas and/or white space for separation of
-specifications, and the optional use of ``='' symbols to indicate
+(e.g., \texttt{'x1'}), use of commas and/or white space for separation of
+specifications, and optional use of ``='' symbols to indicate
 supplied data. See the Dakota Reference
 Manual~\cite{RefMan} for additional details on this input file syntax.
 
@@ -389,17 +390,15 @@ The \texttt{analysis\_driver} keyword indicates the name of the test
 function. With \texttt{fork} or \texttt{system}, default file names
 would be used for passing data between Dakota and the simulation code.
 
-The \emph{responses} block of the input file specifies the types of
-data that the interface will return to Dakota. For the example shown
-in Figure~\ref{tutorial:rosenbrock_multidim}, the assignment
-\texttt{num\_objective\_functions = 1}
-indicates that there is only one objective
-function. Since there are no constraints
-associated with Rosenbrock's function, the keywords for
-constraint specifications are omitted. The keywords
-\texttt{no\_gradients} and \texttt{no\_hessians} indicate that no
-derivatives will be provided to the method; none are needed for
-a parameter study.
+The \emph{responses} block of the input file specifies the types
+of data that the interface will return to Dakota. For the example
+shown in Figure~\ref{tutorial:rosenbrock_multidim}, the assignment
+\texttt{response\_functions = 1} indicates that there is only one response
+function. Since there are no constraints associated with Rosenbrock's
+function, the keywords for constraint specifications are omitted. The
+keywords \texttt{no\_gradients} and \texttt{no\_hessians} indicate that
+no derivatives will be provided to the method; none are needed for a
+parameter study.
 
 \section{Examples}\label{tutorial:examples}
 
@@ -480,14 +479,13 @@ executed by Dakota using the command noted in the comments:
 \end{small}
 
 The output of the Dakota run is written to the file named
-\texttt{rosen\_multidim.out} while the screen output, 
-or standard output, is redirect to \texttt{rosen\_multidim}.
- For comparison, files named 
-\texttt{rosen\_multidim.out.sav} and
-\texttt{rosen\_multidim.stdout.sav} are
-included in the \texttt{Dakota/examples/users} directory. As
-for many of the examples, Dakota provides a report on the best design
-point located during the study at the end of these output files.
+\texttt{rosen\_multidim.out} while the screen output, or
+standard output, is redirect to \texttt{rosen\_multidim.stdout}.
+For comparison, files named \texttt{rosen\_multidim.out.sav}
+and \texttt{rosen\_multidim.stdout.sav} are included in the
+\texttt{Dakota/examples/users} directory. As for many of the examples,
+Dakota provides a report on the best design point located during the
+study at the end of these output files.
 
 This 2-D parameter study produces the grid of data samples shown in
 Figure~\ref{tutorial:rosenbrock_multidim_graphics}. In general, a multidimensional 
@@ -505,7 +503,7 @@ history plots created by Dakota are not particularly instructive. More
 interesting visualizations can be created by importing Dakota's
 tabular data into an external graphics/plotting package. Common
 graphics and plotting packages include Mathematica, Matlab, Microsoft
-Excel, Origin, Tecplot, and many others. (Sandia National Laboratories
+Excel, Origin, Tecplot, Gnuplot and many others. (Sandia National Laboratories
 and the Dakota developers do not endorse any of these commercial
 products.)
 
@@ -565,17 +563,17 @@ the convergence tolerance for three successive iterations).
 \end{figure}
 
 The Dakota command is noted in the file, and copies of the outputs
-are in the \texttt{Dakota/examples/users} directory, with \texttt{.sav} 
-appended to the name.  When this
-example problem is executed, Dakota creates some iteration history
-graphics similar to the screen capture shown in Figure~
-\ref{tutorial:rosenbrock_grad_graphics}(a). These plots show
-how the objective function and design parameters change in value
-during the optimization steps. The scaling of the horizontal and
-vertical axes can be changed by moving the scroll knobs on each plot.
-Also, the ``Options'' button allows the user to plot the vertical axes
-using a logarithmic scale. Note that log-scaling is only allowed if
-the values on the vertical axis are strictly greater than zero.
+are in the \texttt{Dakota/examples/users} directory, with \texttt{.sav}
+appended to the name.  When this example problem is executed using
+Dakota with graphics support enabled, Dakota creates some iteration
+history graphics similar to the screen capture shown in Figure~
+\ref{tutorial:rosenbrock_grad_graphics}(a). These plots show how the
+objective function and design parameters change in value during the
+optimization steps. The scaling of the horizontal and vertical axes
+can be changed by moving the scroll knobs on each plot.  Also, the
+``Options'' button allows the user to plot the vertical axes using a
+logarithmic scale. Note that log-scaling is only allowed if the values
+on the vertical axis are strictly greater than zero.
 
 \begin{figure}[ht!]
   \centering
@@ -969,23 +967,22 @@ standard error (stderr), respectively. By default, Dakota will echo
 the input file to the output stream, but ``\texttt{-no\_input\_echo}''
 can override this behavior.
 
-The ``\texttt{-parser}'' input
-is for debugging and will not be further described here. The
-``\texttt{-read\_restart}'' and ``\texttt{-write\_restart}'' command
-line inputs provide the names of restart databases to read from and
-write to, respectively. The ``\texttt{-stop\_restart}'' command line
-input limits the number of function evaluations read from the restart
-database (the default is all the evaluations) for those cases in which
-some evaluations were erroneous or corrupted. Restart management is an
-important technique for retaining data from expensive engineering
-applications. This advanced topic is discussed in detail in
-Chapter~\ref{restart}. Note that these command line inputs can be
-abbreviated so long as the abbreviation is unique, so the following
-are valid, unambiguous specifications: ``\texttt{-h}'',
+The ``\texttt{-parser}'' input is for debugging and will not
+be further described here. The ``\texttt{-read\_restart}''
+and ``\texttt{-write\_restart}'' options provide the names of
+restart databases to read from and write to, respectively. The
+``\texttt{-stop\_restart}'' option limits the number of
+function evaluations read from the restart database (the default is all
+the evaluations) for those cases in which some evaluations were erroneous
+or corrupted. Restart management is an important technique for retaining
+data from expensive engineering applications. This advanced topic is
+discussed in detail in Chapter~\ref{restart}. Note that these command
+line options can be abbreviated so long as the abbreviation is unique.
+Accordingly, the following are valid, unambiguous specifications: ``\texttt{-h}'',
 ``\texttt{-v}'', ``\texttt{-c}'', ``\texttt{-i}'', ``\texttt{-o}'',
 ``\texttt{-e}'', ``\texttt{-re}'', ``\texttt{-s}'', ``\texttt{-w}'',
-``\texttt{-pr}'', ``\texttt{-ru}'', and ``\texttt{-po}'' and can be
-used in place of the longer forms of the command line inputs.
+``\texttt{-pr}'', ``\texttt{-ru}'', and ``\texttt{-po}'' and can be used
+in place of the longer forms of the command line options.
 
 To run Dakota with a particular input file, the following syntax can
 be used:
@@ -1051,10 +1048,10 @@ Refer to~\cite{And86} for more information on Unix redirection and
 background commands.
 
 The ``\texttt{-pre\_run}'', ``\texttt{-run}'', and
-``\texttt{-post\_run}'' switches instruct Dakota to run one or more
+``\texttt{-post\_run}'' options instruct Dakota to run one or more
 execution phases, excluding others. For example pre-run might
-generate variable sets, run (core run) invoke the simulation to
-evaluate variables, producing responses, and post-run accepts
+generate variable sets, run (core run) might invoke the simulation to
+evaluate variables and produce responses, and post-run might accept
 variable/response sets and analyzes the results (for example,
 calculate correlations from a set of samples). Currently only two
 modes are supported and only for sampling, parameter study, and DACE
@@ -1078,7 +1075,7 @@ After reading this chapter, you should understand the mechanics of
 acquiring, installing, and excuting Dakota to perform simple studies.
 You should have a high-level appreciation for what inputs Dakota
 requires, how it behaves during interfacing and operation for a few
-kinds of studies, and what representative output results.  To
+kinds of studies, and what representative output is obtained.  To
 effectively use Dakota, you will need to understand the character of
 your problem, select a Dakota method to help you meet your analysis
 goals, and develop an interface to your computational model.
