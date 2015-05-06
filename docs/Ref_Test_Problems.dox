@@ -95,7 +95,7 @@ increase in the optimal objective function is observed.
 
 \page rosenbrock Rosenbrock
 
-The Rosenbrock function [\cite Gil81 "Gill et al, 1981"] is a well known test problem
+The Rosenbrock function \cite Gil81 is a well-known test problem
 for optimization algorithms. The standard formulation includes two design variables,
 and computes a single objective function.
 This problem can also be posed as a least-squares optimization 

@@ -17,8 +17,7 @@ Belief represents the smallest possible probability
 that is consistent with the evidence, while plausibility represents
 the largest possible probability that is consistent with the evidence.
 For more information about the Dempster-Shafer theory of evidence, see
-\cite Obe03 "Oberkampf and Helton, 2003" and 
-\cite Helton2004 "Helton and Oberkampf, 2004".
+\cite Obe03 and \cite Helton2004.
 
 
 Similar to the interval approaches, one may use global or local 
