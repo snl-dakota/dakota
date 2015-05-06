@@ -1,3 +1,5 @@
 Dakota variables can be grouped by their valid domains. 
--# Continuous variables are defined by a single interval of real numbers
--# Discrete variables are defined by a finite set of real numbers 
+-# Mixed: continuous and discrete variables are treated separately
+-# Relaxed: noncategorical discrete variables are relaxed and treated as continuous variables (categorical variables are non-relaxable and remain discrete)
+
+Refer to \ref variables-mixed and \ref variables-relaxed for additional information.

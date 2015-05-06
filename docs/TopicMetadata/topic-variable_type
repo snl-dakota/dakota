@@ -1,5 +1,7 @@
-Dakota variables can be grouped by their type or usage.
-Each type is intended to be used with a set of methods,
-i.e.: design variables used with optimization methods.
-However, the user can also change how methods use the 
-different variable types - see \ref variables-active.
+Dakota variables can be grouped by their type, including \c all, \c
+design, \c uncertain, \c aleatory, \c epistemic, or \c state.
+There are certain situations where the user may want to explicitly
+control the subset of variables that is considered active for a
+certain %Dakota method, and override the default alignments between
+methods and variable types.  Refer to \ref variables-active for
+additional information.
