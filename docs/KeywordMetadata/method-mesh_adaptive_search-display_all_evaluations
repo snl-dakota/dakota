@@ -3,9 +3,9 @@ Shows mesh adaptive search's internally held list of all evaluations
 
 Description:: 
 If set, \c display_all_evaluations will instruct the mesh adaptive
-direct search method to print out its own record of information
-associated with all evaluations completed when used in conjunction
-with \c display_format, which specifies what information to report.
+direct search method to print out its own record of all evaluations.
+The information reported may be controlled using 
+\ref method-mesh_adaptive_search-display_format.
 
 <b> Default Behavior </b>
 
@@ -93,4 +93,5 @@ best feasible solution                   : ( 1 0.5 1 ) h=0 f=0.0625
 
 Theory::
 Faq::
-See_Also::	
+See_Also::
+method-mesh_adaptive_search-display_format

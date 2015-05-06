@@ -4,16 +4,16 @@ Number of dimensions in which to perturb categorical variables.
 Description::
 The \c neighbor_order keyword allows the user to specify the number of
 categorical dimensions to perturb when determining neighboring points
-that will be used the mesh adaptive direct search method to augment
+that will be used by the mesh adaptive direct search method to augment
 its search.  When greater than 1, the neighbors are defined from the
 tensor product of the admissible 1-dimensional perturbations.
 
 <b> Default Behavior </b>
 
 By default, the categorical neighbors will be defined by perturbing
-only one catgorical variable at a time (according to the corresponding
-adjacency matrix) while leaving the others fixed at their current
-values.
+only one categorical variable at a time (according to the corresponding
+adjacency_matrix; see \ref variables-discrete_design_set-string-adjacency_matrix)
+while leaving the others fixed at their current values.
 
 <b> Usage Tips </b>
 
@@ -35,14 +35,14 @@ variables
       num_set_values = 3 5
       set_values = 1.2 2.3 3.4
                    1.2 3.3 4.4 5.5 7.7
-      adjacency = 1 1 0
-                  1 1 1
-                  0 1 1
-                  1 0 1 0 1
-                  0 1 0 1 0
-                  1 0 1 0 1
-                  0 1 0 1 0
-                  1 0 1 0 1
+      adjacency_matrix = 1 1 0
+                         1 1 1
+                         0 1 1
+                         1 0 1 0 1
+                         0 1 0 1 0
+                         1 0 1 0 1
+                         0 1 0 1 0
+                         1 0 1 0 1
 \endverbatim
 
 Also suppose that we have the following method specification.
@@ -87,3 +87,4 @@ the following:
 Theory::
 Faq::
 See_Also::
+variables-discrete_design_set-string-adjacency_matrix

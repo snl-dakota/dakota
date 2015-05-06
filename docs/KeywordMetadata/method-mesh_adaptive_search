@@ -36,7 +36,7 @@ Topics::
 
 Examples::
 
-The following is an example of a %Dakota input file the makes use of
+The following is an example of a %Dakota input file that makes use of
 \c mesh_adaptive_search to optimize the textbook function.
 
 \verbatim

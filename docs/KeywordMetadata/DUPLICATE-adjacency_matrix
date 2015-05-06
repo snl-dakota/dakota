@@ -3,12 +3,14 @@ Blurb::
 
 Description::
 The \c adjacency_matrix keyword is associated with \c
-discrete_design_set variables that are specified to be categorical.
-It is a \f$k \times k\f$ symmetric matrix, where \f$k\f$ is the number
-of levels (or values) associated with a categorical variable.  Entry
-\f$i,j\f$ of the matrix should be 1 if level \f$i\f$ and level \f$j\f$
+discrete_design_set variables that are specified to be categorical. Each
+such variable is associated with one \f$k \times k\f$ symmetric matrix, where
+\f$k\f$ is the number of values (or levels) of the variable. Entry \f$i,j\f$ of 
+a matrix should be 1 if level \f$i\f$ and level \f$j\f$
 are related by some subjective criteria or if \f$i=j\f$; it should be
-0 otherwise.
+0 otherwise. The matrices for all variables of the same type (\c string, 
+\c real, or \c integer) are entered sequentially as a list of integers as 
+shown in the examples below.
 
 <b> Default Behavior </b>
 
@@ -18,8 +20,8 @@ variables if one or more of them have been specified to be \c
 categorical.  It is always relevant for \c discrete_design_set \c
 string variables.  If the user does not define an adjacency matrix,
 the default is method dependent.  Currently, the only method that
-makes use of the adjacency matrix is \c mesh_adaptive_search, which
-uses a tri-diagonal adjacency matrix by default.
+makes use of the adjacency matrix is \ref method-mesh_adaptive_search,
+which uses a tri-diagonal adjacency matrix by default.
 
 <b> Expected Output </b>
 
@@ -57,15 +59,15 @@ variables
       elements  =  1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7
       descriptors  'y3'            'y4'
       categorical  'no'            'yes'
-      adjacency_matrix 1 1 0 0
-      		       1 1 1 0
-		       0 1 1 1
-		       0 0 1 1
-		       1 0 1 0 1
-		       0 1 0 1 0
-		       1 0 1 0 1
-		       0 1 0 1 0
-		       1 0 1 0 1
+      adjacency_matrix 1 1 0 0  # Begin entry of 4x4 matrix for y3
+                       1 1 1 0
+                       0 1 1 1
+                       0 0 1 1
+                       1 0 1 0 1 # Begin entry of 5x5 matrix for y4
+                       0 1 0 1 0
+                       1 0 1 0 1
+                       0 1 0 1 0
+                       1 0 1 0 1
     integer = 2
       elements_per_variable = 2 3
       elements  =  4  7  8  9  12
@@ -76,7 +78,7 @@ variables
 Note that for the real case, the user wants to define an adjacency
 matrix for the categorical variable, so adjacency matrices for both
 variables must be specified.  The matrix for the first one will be
-ignored.  Note that no adjacency matrix is not specified for either
+ignored.  Note that no adjacency matrix is specified for either
 integer categorical variable.  The default will be used in both cases.
 Currently the only method taking advantage of adjacency matrices is \c
 mesh_adaptive_search, which uses a tri-diagonal adjacency matrix by
@@ -106,12 +108,13 @@ variables,
     elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'
     descriptors = 'ancomp'
     adjacency_matrix 1 1 0 0 0
-    		     1 1 0 0 0
-		     0 0 1 1 1
-		     0 0 1 1 1
-		     0 0 1 1 1
+                     1 1 0 0 0
+                     0 0 1 1 1
+                     0 0 1 1 1
+                     0 0 1 1 1
 \endverbatim
 
 Theory::
 Faq::
 See_Also::
+method-mesh_adaptive_search
