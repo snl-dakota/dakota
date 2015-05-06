@@ -69,9 +69,9 @@ global gradient-enhanced interpolants (Hermite interpolation
 polynomials) are also restricted to uniform or transformed uniform
 random variables (due to the need to compute collocation weights by
 integration of the basis polynomials) and share the variable support
-shown in these tables for Piecewise SE. Due to numerical instability
-in these high-order basis polynomials, they are deactivated by default
-but can be activated by developers using a compile-time switch.
+shown in \ref topic-variable_support for Piecewise SE. Due to numerical 
+instability in these high-order basis polynomials, they are deactivated 
+by default but can be activated by developers using a compile-time switch.
 
 <b> Interpolation grid type (Group 3) </b> 
 

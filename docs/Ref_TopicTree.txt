@@ -30,16 +30,15 @@ models
  nested_models
  advanced_model_recursion
   hybrid_and_recursions_logic
-variables_and_responses
+variables
  variable_domain
-  continuous_variables
   discrete_variables
  variable_type
   design_variables
   aleatory_uncertain_variables
   epistemic_uncertain_variables
   state_variables
- variables_management
+responses
  response_types
 interface
  simulation_file_management
@@ -60,6 +59,7 @@ methods
   epistemic_uncertainty_quantification_methods
    interval_estimation
    evidence_theory
+  variable_support
  optimization_and_calibration
   local_optimization_methods
    unconstrained

@@ -65,6 +65,9 @@ Extended is partially automated and partially under the user's control. -->
   correlations are also unsupported by Wiener expansions, then %Dakota
   will exit with an error.
 
+Refer to \ref topic-variable_support for additional information on
+supported variable types, with and without correlation.
+
 <b> Coefficient estimation approach (Group 2) </b>
 
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, seven
