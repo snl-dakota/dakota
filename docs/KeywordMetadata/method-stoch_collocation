@@ -1,8 +1,34 @@
-Blurb::
-Uncertainty quantification with stochastic collocation
+Blurb:: Uncertainty quantification with stochastic collocation
+
 Description::
-Stochastic collocation is a general framework for approximate representation of random response functions in terms of finite-dimensional interpolation bases.
-The following provides details on the various stochastic collocation method options in Dakota.
+Stochastic collocation is a general framework for approximate
+representation of random response functions in terms of
+finite-dimensional interpolation bases.  
+
+The stochastic collocation (SC) method is very similar to 
+\ref method-polynomial_chaos, with the key difference that the orthogonal
+polynomial basis functions are replaced with interpolation polynomial
+bases. The interpolation polynomials may be either local or global
+and either value-based or gradient-enhanced. In the local case,
+valued-based are piecewise linear splines and gradient-enhanced are
+piecewise cubic splines, and in the global case, valued-based are
+Lagrange interpolants and gradient-enhanced are Hermite interpolants. 
+A value-based expansion takes the form
+
+\f[R = \sum_{i=1}^{N_p} r_i L_i(\xi) \f]
+
+where \f$N_p\f$ is the total number of collocation points, \f$r_i\f$
+is a response value at the \f$i^{th}\f$ collocation point, \f$L_i\f$
+is the \f$i^{th}\f$ multidimensional interpolation polynomial, and
+\f$\xi\f$ is a vector of standardized random variables.
+
+Thus, in PCE, one forms coefficients for known orthogonal polynomial
+basis functions, whereas SC forms multidimensional interpolation
+functions for known coefficients.
+
+<!--
+The following provides details on the various stochastic collocation
+method options in Dakota.
 
 The groups and optional keywords relating to method specification are: 
 \li Group 1 
@@ -13,23 +39,22 @@ The groups and optional keywords relating to method specification are:
 \li \c use_derivatives
 \li \c fixed_seed
 
-In addition, this method
-treats variables that are not aleatoric-uncertain different,
-despite the \ref variables-active keyword.
+In addition, this method treats variables that are not
+aleatoric-uncertain different, despite the \ref variables-active keyword.
 
-Group 5 and the remainder of the optional keywords relate 
-to the output of the method.
+Group 5 and the remainder of the optional keywords relate to the output 
+of the method.
+-->
 
+<b> Basis polynomial family (Group 2) </b> 
 
-<b> stoch_collocation Group 2 </b> 
-
-SC supports four types of bases:
-
-the option of \c piecewise local basis
-functions. These are piecewise linear splines, or in the case of
+In addition to the \ref method-stoch_collocation-askey and \ref
+method-stoch_collocation-wiener basis types also supported by \ref
+method-polynomial_chaos, SC supports the option of \c piecewise local 
+basis functions. These are piecewise linear splines, or in the case of
 gradient-enhanced interpolation via the \c use_derivatives
 specification, piecewise cubic Hermite splines. Both of these basis
-selections provide local support only over the range from the
+options provide local support only over the range from the
 interpolated point to its nearest 1D neighbors (within a tensor grid
 or within each of the tensor grids underlying a sparse grid), which
 exchanges the fast convergence of global bases for smooth functions
@@ -48,51 +73,7 @@ shown in these tables for Piecewise SE. Due to numerical instability
 in these high-order basis polynomials, they are deactivated by default
 but can be activated by developers using a compile-time switch.
 
-Another distinguishing characteristic of stochastic collocation
-relative to polynomial chaos is the ability to reformulate the
-interpolation problem from a \c nodal interpolation approach into a \c
-hierarchical formulation in which each new level of interpolation
-defines a set of incremental refinements (known as hierarchical
-surpluses) layered on top of the interpolants from previous levels.
-This formulation lends itself naturally to uniform or adaptive
-refinement strategies, since the hierarchical surpluses can be
-interpreted as error estimates for the interpolant. Either global or
-local/piecewise interpolants in either value-based or
-gradient-enhanced approaches can be formulated using \c hierarchical
-interpolation. The primary restriction for the hierarchical case is
-that it currently requires a sparse grid approach using nested
-quadrature rules (Genz-Keister, Gauss-Patterson, or Newton-Cotes for
-standard normals and standard uniforms in a transformed space: Askey,
-Wiener, or Piecewise settings may be required), although this
-restriction can be relaxed in the future. A selection of \c
-hierarchical interpolation will provide greater precision in the
-increments to mean, standard deviation, covariance, and
-reliability-based level mappings induced by a grid change within
-uniform or goal-oriented adaptive refinement approaches (see following
-section).
-
-Automated expansion refinement can be selected as either \c
-p_refinement or \c h_refinement, and either refinement specification
-can be either \c uniform or \c dimension_adaptive. The \c
-dimension_adaptive case can be further specified as either \c sobol or
-\c generalized (\c decay not supported). Each of these automated
-refinement approaches makes use of the \c max_iterations and \c
-convergence_tolerance iteration controls.
-The \c h_refinement specification involves use of the same piecewise
-interpolants (linear or cubic Hermite splines) described above for the
-\c piecewise specification option (it is not necessary to redundantly
-specify \c piecewise in the case of \c h_refinement). In future
-releases, the \c hierarchical interpolation approach will enable local
-refinement in addition to the current \c uniform and \c
-dimension_adaptive options.
-
-The \c variance_based_decomp and covariance controls.
-Interpolation points for these dimensions are based on
-Gauss-Legendre rules if non-nested, Gauss-Patterson rules if nested,
-and Newton-Cotes points in the case of piecewise bases. Again, when
-probability integrals are evaluated, only the aleatory random variable
-domain is integrated, leaving behind a polynomial relationship between
-the statistics and the remaining design/state/epistemic variables.
+<b> Interpolation grid type (Group 3) </b> 
 
 To form the multidimensional interpolants \f$L_i\f$ of the expansion,
 two options are provided.
@@ -115,6 +96,114 @@ two options are provided.
  overridden by the \c unrestricted keyword.
 </ol>
 
+Another distinguishing characteristic of stochastic collocation
+relative to \ref method-polynomial_chaos is the ability to reformulate the
+interpolation problem from a \c nodal interpolation approach into a \c
+hierarchical formulation in which each new level of interpolation
+defines a set of incremental refinements (known as hierarchical
+surpluses) layered on top of the interpolants from previous levels.
+This formulation lends itself naturally to uniform or adaptive
+refinement strategies, since the hierarchical surpluses can be
+interpreted as error estimates for the interpolant. Either global or
+local/piecewise interpolants in either value-based or
+gradient-enhanced approaches can be formulated using \c hierarchical
+interpolation. The primary restriction for the hierarchical case is
+that it currently requires a sparse grid approach using nested
+quadrature rules (Genz-Keister, Gauss-Patterson, or Newton-Cotes for
+standard normals and standard uniforms in a transformed space: Askey,
+Wiener, or Piecewise settings may be required), although this
+restriction can be relaxed in the future. A selection of \c
+hierarchical interpolation will provide greater precision in the
+increments to mean, standard deviation, covariance, and
+reliability-based level mappings induced by a grid change within
+uniform or goal-oriented adaptive refinement approaches (see following
+section).
+
+It is important to note that, while \c quadrature_order and \c
+sparse_grid_level are array inputs, only one scalar from these arrays
+is active at a time for a particular expansion estimation.  These
+scalars can be augmented with a \c dimension_preference to support
+anisotropy across the random dimension set.  The array inputs are
+present to support advanced use cases such as multifidelity UQ, where
+multiple grid resolutions can be employed.
+
+<b> Automated refinement type (Group 1) </b> 
+
+Automated expansion refinement can be selected as either \c
+p_refinement or \c h_refinement, and either refinement specification
+can be either \c uniform or \c dimension_adaptive. The \c
+dimension_adaptive case can be further specified as either \c sobol or
+\c generalized (\c decay not supported). Each of these automated
+refinement approaches makes use of the \c max_iterations and \c
+convergence_tolerance iteration controls.
+The \c h_refinement specification involves use of the same piecewise
+interpolants (linear or cubic Hermite splines) described above for the
+\c piecewise specification option (it is not necessary to redundantly
+specify \c piecewise in the case of \c h_refinement). In future
+releases, the \c hierarchical interpolation approach will enable local
+refinement in addition to the current \c uniform and \c
+dimension_adaptive options.
+
+<b> Covariance type (Group 5) </b> 
+
+These two keywords are used to specify how this method computes, stores,
+and outputs the covariance of the responses.  In particular, the diagonal
+covariance option is provided for reducing post-processing overhead and 
+output volume in high dimensional applications.
+
+<b> Active Variables </b>
+
+The default behavior is to form expansions over aleatory 
+uncertain continuous variables. To form expansions 
+over a broader set of variables, one needs to specify 
+\c active followed by \c state, \c epistemic, \c design, or \c all 
+in the variables specification block. 
+
+For continuous design, continuous state, and continuous epistemic
+uncertain variables included in the expansion, interpolation points
+for these dimensions are based on Gauss-Legendre rules if non-nested,
+Gauss-Patterson rules if nested, and Newton-Cotes points in the case
+of piecewise bases. Again, when probability integrals are evaluated,
+only the aleatory random variable domain is integrated, leaving behind
+a polynomial relationship between the statistics and the remaining
+design/state/epistemic variables.
+
+<b> Optional Keywords regarding method outputs </b>
+
+Each of these sampling specifications refer to sampling on the SC
+approximation for the purposes of generating approximate statistics.
+\li \c sample_type
+\li \c samples
+\li \c seed
+\li \c fixed_seed
+\li \c rng
+\li \c probability_refinement 
+\li \c distribution
+\li \c reliability_levels
+\li \c response_levels
+\li \c probability_levels
+\li \c gen_reliability_levels
+
+Since SC approximations are formed on structured grids, there should
+be no ambiguity with simulation sampling for generating the SC expansion.
+
+When using the \c probability_refinement control, the number of
+refinement samples is not under the user's control (these evaluations
+are approximation-based, so management of this expense is less
+critical). This option allows for refinement of probability and
+generalized reliability results using importance sampling.
+
+<b> Multi-fidelity UQ </b>
+
+When using multifidelity UQ, the high fidelity expansion generated
+from combining the low fidelity and discrepancy expansions retains the
+polynomial form of the low fidelity expansion (only the coefficients
+are updated).  Refer to \ref method-polynomial_chaos for information
+on the multifidelity interpretation of array inputs for \c
+quadrature_order and \c sparse_grid_level.
+
+<b> Usage Tips </b>
+
 If \e n is small, then tensor-product Gaussian quadrature is again the
 preferred choice. For larger \e n, tensor-product quadrature quickly
 becomes too expensive and the sparse grid approach is preferred. For
@@ -125,66 +214,36 @@ growth used for non-nested Gauss rules (integrand precision
 \f$i=4l+1\f$ for sparse grid level \e l and \f$i=2m-1\f$ for tensor
 grid order \e m).
 
+<b> Additional Resources </b>
 
-
-<b> stoch_collocation Group 5 </b> 
-
-These two keywords are used to specify how this method outputs the
-covariance of the responses.
-
-
-<b> Optional Keywords regarding method outputs </b>
-
-Each of
-these sampling specifications refer to sampling on the PCE
-approximation for the purposes of generating approximate statistics.
-\li \c sample_type
-\li \c samples
-\li \c seed
-\li \c fixed_seed
-\li \c rng
-\li \c probability_refinement 
-\li \c reliability_levels
-\li \c response_levels
-\li \c probability_levels
-\li \c gen_reliability_levels
-
-which should be distinguished from simulation sampling for generating
-the PCE coefficients as described in options 4 and 5 above (although
-options 4 and 5 will share the \c sample_type, \c seed, and \c rng
-settings, if provided). 
-
-When using the \c probability_refinement control,
-the number of refinement samples is not under the user's control
-(these evaluations are approximation-based, so management of this
-expense is less critical). This option allows for refinement of
-probability and generalized reliability results using importance
-sampling.
+%Dakota provides access to SC methods through the NonDStochCollocation
+class. Refer to the Uncertainty Quantification Capabilities chapter of
+the Users Manual \cite UsersMan and the Stochastic Expansion Methods
+chapter of the Theory Manual \cite TheoMan for additional information
+on the SC algorithm.
 
 Topics::
+
 Examples::
+\verbatim
+method,
+	stoch_collocation
+	  sparse_grid_level = 2	
+	  samples = 10000 seed = 12347 rng rnum2	
+	  response_levels = .1 1. 50. 100. 500. 1000.	
+	  variance_based_decomp
+\endverbatim
+
 Theory::
-The stochastic collocation (SC) method is very similar to the PCE
-method, with the key difference that the orthogonal
-polynomial basis functions are replaced with interpolation polynomial
-bases. The interpolation polynomials may be either local or global
-and either value-based or gradient-enhanced. In the local case,
-valued-based are piecewise linear splines and gradient-enhanced are
-piecewise cubic splines, and in the global case, valued-based are
-Lagrange interpolants and gradient-enhanced are Hermite interpolants. 
-A value-based expansion takes the form
+As mentioned above, a value-based expansion takes the form
 
 \f[R = \sum_{i=1}^{N_p} r_i L_i(\xi) \f]
 
-where \f$N_p\f$ is the total number of collocation points, \f$r_i\f$
-is a response value at the \f$i^{th}\f$ collocation point, \f$L_i\f$
-is the \f$i^{th}\f$ multidimensional interpolation polynomial, and
-\f$\xi\f$ is a vector of standardized random variables. The
-\f$i^{th}\f$ interpolation polynomial assumes the value of 1 at the
-\f$i^{th}\f$ collocation point and 0 at all other collocation points,
-involving either a global Lagrange polynomial basis or local piecewise
-splines. It is easy to see that the approximation reproduces the
-response values at the collocation points and interpolates between
+The \f$i^{th}\f$ interpolation polynomial assumes the value of 1 at
+the \f$i^{th}\f$ collocation point and 0 at all other collocation
+points, involving either a global Lagrange polynomial basis or local
+piecewise splines. It is easy to see that the approximation reproduces
+the response values at the collocation points and interpolates between
 these values at other points. A gradient-enhanced expansion (selected
 via the \c use_derivatives keyword) involves both type 1 and type 2
 basis functions as follows:
@@ -210,14 +269,6 @@ interpolation properties can be similarly numerically challenging such
 that the use of local cubic splines is recommended due to numerical
 stability.
 
-Thus, in PCE, one forms coefficients for known orthogonal polynomial
-basis functions, whereas SC forms multidimensional interpolation
-functions for known coefficients. %Dakota provides access to SC
-methods through the NonDStochCollocation class. Refer to the
-Uncertainty Quantification Capabilities chapter of the Users Manual
-[\cite UsersMan "Adams et al., 2010"] for additional information on the
-SC algorithm.
-
 <!-- Rhe orthogonal polynomials used in defining
 the Gauss points that make up the interpolation grid are governed by
 the Wiener, Askey, or Extended options. The Wiener option uses
@@ -236,11 +287,6 @@ the Wiener/Askey/Extended selection defaults to Extended, can be
 overridden by the user using the keywords \c askey or \c wiener, and
 automatically falls back from Extended/Askey to Wiener on a per
 variable basis as needed to support prescribed correlations.-->
-
-When using multifidelity UQ, the
-high fidelity expansion generated from combining the low fidelity and
-discrepancy expansions retains the polynomial form of the low fidelity
-expansion (only the coefficients are updated).
 
 Faq::
 See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-polynomial_chaos

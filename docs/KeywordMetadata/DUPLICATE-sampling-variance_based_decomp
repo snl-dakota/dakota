@@ -48,7 +48,7 @@ method,
 Theory::
 In this context, we take sensitivity analysis to be global, not local
 as when calculating derivatives of output variables with respect to
-input variables. Our definition is similar to that of \cite Sal04:
+input variables. Our definition is similar to that of \cite Sal04 :
 "The study of how uncertainty in the output of a model can be
 apportioned to different sources of uncertainty in the model input."
 

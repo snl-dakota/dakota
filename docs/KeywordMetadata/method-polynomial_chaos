@@ -12,10 +12,7 @@ multidimensional orthogonal polynomial and \f$\xi\f$ is a vector of
 standardized random variables. An important distinguishing feature of
 the methodology is that the functional relationship between random
 inputs and outputs is captured, not merely the output statistics as in
-the case of many nondeterministic methodologies. %Dakota provides
-access to PCE methods through the NonDPolynomialChaos class. Refer to
-the Uncertainty Quantification Capabilities chapter of the Users
-Manual~\cite UsersMan and the chapter of the Theory Manual~\cite TheoryMan for additional information on the PCE algorithm.
+the case of many nondeterministic methodologies.
 
 <!--
 Groups 1 and 2, plus the optional keywords \c p_refinement and
@@ -156,6 +153,28 @@ are approximation-based, so management of this expense is less
 critical). This option allows for refinement of probability and
 generalized reliability results using importance sampling.
 
+<b> Multi-fidelity UQ </b>
+
+The advanced use case of multifidelity UQ automatically becomes active
+if the model selected for iteration by the method specification is a
+multifidelity surrogate model (see \ref
+model-surrogate-hierarchical). In this case, an expansion will first
+be formed for the model discrepancy (the difference between response
+results if \c additive \c correction or the ratio of results if \c
+multiplicative \c correction), using the first \c quadrature_order, \c
+sparse_grid_level, or \c expansion_order value along with any
+specified refinement strategy. Second, an expansion will be formed for
+the low fidelity surrogate model, using the second \c
+quadrature_order, \c sparse_grid_level, or \c expansion_order value
+(if present; the first is reused if not present) along with any
+specified refinement strategy. Then the two expansions are combined
+(added or multiplied) into an expansion that approximates the high
+fidelity model, from which the final set of statistics are
+generated. For polynomial chaos expansions, this high fidelity
+expansion can differ significantly in form from the low fidelity and
+discrepancy expansions, particularly in the \c multiplicative case
+where it is expanded to include all of the basis products.
+
 <b> Usage Tips </b>
 
 If \e n is small (e.g., two or three), then tensor-product Gaussian
@@ -195,30 +214,26 @@ described previously, since the ability to evolve the index sets of a
 sparse grid in an unstructured manner eliminates the motivation for
 restricting the exponential growth of nested rules.
 
-<b> Multi-fidelity UQ </b>
+<b> Additional Resources </b>
 
-The advanced use case of multifidelity UQ automatically becomes active
-if the model selected for iteration by the method specification is a
-multifidelity surrogate model (see \ref model-surrogate-hierarchical). In this
-case, an expansion will first be formed for the model discrepancy (the
-difference between response results if \c additive \c correction or
-the ratio of results if \c multiplicative \c correction), using the
-first \c quadrature_order or \c sparse_grid_level value along with any
-specified refinement strategy. Second, an expansion will be formed
-for the low fidelity surrogate model, using the second \c
-quadrature_order or \c sparse_grid_level value (if present; the first
-is reused if not present) along with any specified refinement
-strategy. Then the two expansions are combined (added or multiplied)
-into an expansion that approximates the high fidelity model, from
-which the final set of statistics are generated. For polynomial chaos
-expansions, this high fidelity expansion can differ significantly in 
-form from the low fidelity and discrepancy expansions, particularly in
-the \c multiplicative case where it is expanded to include all of the
-basis products.
-
+%Dakota provides access to PCE methods through the NonDPolynomialChaos
+class. Refer to the Uncertainty Quantification Capabilities chapter of
+the Users Manual \cite UsersMan and the Stochastic Expansion Methods
+chapter of the Theory Manual \cite TheoMan for additional information
+on the PCE algorithm.
 
 Topics::
+
 Examples::
+\verbatim
+method,
+	polynomial_chaos
+	  sparse_grid_level = 2	
+	  samples = 10000 seed = 12347 rng rnum2	
+	  response_levels = .1 1. 50. 100. 500. 1000.	
+	  variance_based_decomp
+\endverbatim
+
 Theory::
 
 Faq::
