@@ -2272,11 +2272,11 @@ normal probability density functions:
 where ${\sigma_d}^2$ refers to the measurement error of the data,
 assumed constant across all data observations in this case.
 
-We also support the more general case of a full covariance matrix, $\boldsymbol{\Sigma}_d$, that specifies the covariance between each observation $i$ and $j$. 
+We also support the more general case of a full covariance matrix, $\boldsymbol{\Sigma_d}$, that specifies the covariance between each observation $i$ and $j$. 
 In this case, the likelihood is commonly written in log form, where the log-likelihood is: %given in Equation~\ref{eqn:LogLikelihood}. 
 \begin{equation}\label{eqn:LogLikelihood}  
-\log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma}^{-1} {R}
--\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} \boldsymbol{r},
+\log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma_d}^{-1} {R}
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r},
 \end{equation}
 where $\boldsymbol{r}$ is the vector of residuals between the data
 points and the model quantity of interest, $q(\boldsymbol{\theta})-\boldsymbol{d}$.
@@ -2287,11 +2287,11 @@ to \texttt{none} for no measurement error specified (in this case, the
 variance is one), \texttt{scalar} where a constant value
 ${\sigma_d}^2$ is given for all observations, \texttt{diagonal} where
 a value is specified for the diagonal elements of the covariance
-matrix $\Sigma_d$ meaning that each observation has its own
+matrix $\boldsymbol{\Sigma_d}$ meaning that each observation has its own
 measurement error but there are no cross terms, and \texttt{matrix}
-where the full covariance matrix $\Sigma_d$ is specified.  Note that
-the \texttt{diagonal} and \texttt{matrix} terms are only available for
-field response data.  For scalar responses, variance types
+where the full covariance matrix $\boldsymbol{\Sigma_d}$ is specified.  
+Note that the \texttt{diagonal} and \texttt{matrix} terms are only 
+available for field response data.  For scalar responses, variance types
 can be specified to be \texttt{none} or \texttt{scalar}.  %Finally,
 %all the sigma values should be given as variances (${\sigma_d}^2$).
 

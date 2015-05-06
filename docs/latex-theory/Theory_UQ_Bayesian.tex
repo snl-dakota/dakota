@@ -1,9 +1,8 @@
 \chapter{Bayesian Methods}\label{uq:bayes}
 
 
-This chapter covers specialized approaches for accelerating the 
-Markov chain Monte Carlo (MCMC) sampling process using within
-Bayesian inference.
+This chapter covers specialized approaches for accelerating the Markov
+chain Monte Carlo (MCMC) sampling process used within Bayesian inference.
 
 \section{Fundamentals} \label{uq:bayes:basic}
 
@@ -30,7 +29,7 @@ likelihood. This means that we assume the difference between the model quantity 
 \begin{equation}
 d_i = q_i(\boldsymbol{\theta}) + \epsilon_i, \label{eq:model}
 \end{equation}
-where $\boldsymbol{\theta}$ are the parameters of a model quantity of interest $q$ and
+where $\boldsymbol{\theta}$ are the parameters of a model quantity of interest $q_i$ and
 $\epsilon_i$ is a random variable that can encompass both measurement
 errors on $d_i$ and modeling errors associated with the simulation quantity of interest 
 $q_i(\boldsymbol{\theta})$. %We further assume that all experiments and
@@ -40,9 +39,9 @@ Eq.~(\ref{eq:model}) results in a likelihood function for $\boldsymbol{\theta}$
 %that is the product of $n$ normal probability density functions 
 as shown in Eq.~\ref{eq:Likelihood}:
 \begin{equation}
-\mathcal{L}(\boldsymbol{\theta;d}) \propto % = \frac{1}{(2\pi)^n |\boldsymbol{\Sigma}_d|} 
+\mathcal{L}(\boldsymbol{\theta;d}) \propto % = \frac{1}{(2\pi)^n |\boldsymbol{\Sigma_d}|} 
 \exp \left(
--\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} \boldsymbol{r} 
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r} 
 \right), \label{eq:Likelihood}
 %\mathcal{L}({\theta};d) = \prod_{i=1}^n \frac{1}{\sigma \sqrt{2\pi}} \exp
 %\left[ - \frac{\left(d_i-\mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
@@ -50,9 +49,9 @@ as shown in Eq.~\ref{eq:Likelihood}:
 where the residual vector $\boldsymbol{r}$ is defined from the
 differences between the model predictions and the corresponding
 observational data (i.e., $r_i = q_i(\boldsymbol{\theta}) - d_i$ for $i = 1,\dots,n$),
-$\boldsymbol{\Sigma}_d$ is the covariance matrix of the Gaussian data
+$\boldsymbol{\Sigma_d}$ is the covariance matrix of the Gaussian data
 uncertainties, and we omit the leading multivariate normal (MVN)
-constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma}_d|}$ for 
+constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}$ for 
 simplicity\footnote{In practice, omitting this MVN constant can avoid 
   precision loss due to subtractive cancellation in log-likelihood 
   calculations; further, this shortcut will be canceled out by the 
@@ -61,11 +60,11 @@ simplicity\footnote{In practice, omitting this MVN constant can avoid
 
 The negative log-likelihood is known as the misfit function:
 \begin{equation}
-M(\boldsymbol{\theta;d}) = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} 
+M(\boldsymbol{\theta;d}) = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} 
 \boldsymbol{r} % + C
 \label{eq:misfit}
 \end{equation}
-It is evident that dropping $\boldsymbol{\Sigma}_d$ from this
+It is evident that dropping $\boldsymbol{\Sigma_d}$ from this
 expression (or equivalently, taking it to be the identity) results in
 the ordinary least squares (OLS) approach commonly used in
 deterministic calibration.  Minimizing the misfit function is
@@ -80,10 +79,10 @@ probability in Eq.~\ref{eq:BayesThm}.  This point will differ
 from the MLE for cases of non-uniform prior probability.
 
 %\begin{equation}
-%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma}_d^{-1}(f(\xi)-\mathbf{d})\right]
+%p(\mathbf{d}|\xi) \;=\; \text{exp}\left[-\frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma_d}^{-1}(f(\xi)-\mathbf{d})\right]
 %\end{equation}
 %\begin{equation}
-%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma}_d^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
+%-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma_d}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
 %\end{equation}
 
 \section{Proposal Densities} \label{uq:bayes:prop}
@@ -93,14 +92,14 @@ from adjoint-capable simulations or from emulator models such as
 polynomial chaos, stochastic collocation, or Gaussian processes), we
 can form derivatives of the misfit function as
 \begin{eqnarray}
-\nabla_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma}_d^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
-\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma}_d^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) + \nabla^2_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \cdot \left[\boldsymbol{\Sigma}_d^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
+\nabla_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma_d}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
+\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma_d}^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) + \nabla^2_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \cdot \left[\boldsymbol{\Sigma_d}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
 \end{eqnarray}
 Neglecting the second term in Eq.~\ref{eq:hess_misfit} (a
 three-dimensional Hessian tensor dotted with the residual vector)
 results in the Gauss-Newton approximation to the misfit Hessian:
 \begin{equation}
-\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) \approx \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma}_d^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \label{eq:hess_misfit_gn}
+\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) \approx \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma_d}^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \label{eq:hess_misfit_gn}
 \end{equation}
 This approximation requires only gradients of the residuals, enabling
 its use in cases where models or model emulators only provide
@@ -124,7 +123,7 @@ Defining two residuals as:
 r_1 &=& 10 (\theta_2 - \theta_1^2) \label{eq:rosen_r1} \\
 r_2 &=& 1 - \theta_1 \label{eq:rosen_r2}
 \end{eqnarray}
-with $\boldsymbol{d} = \boldsymbol{0}$ and $\boldsymbol{\Sigma}_d =
+with $\boldsymbol{d} = \boldsymbol{0}$ and $\boldsymbol{\Sigma_d} =
 \text{diag}(\boldsymbol{.5})$, it is evident from Eq.~\ref{eq:misfit}
 that $M(\theta;d)$ is exactly the Rosenbrock function\footnote{The
   two-dimensional Rosenbrock test function is defined as $100 (x_2 -
@@ -145,35 +144,36 @@ proposal covariance in Figure~\ref{fig:rosen_prop_covar}(b).
 \end{figure}
 Rejection rates for 2000 MCMC samples were 73.4\% for the former and
 25.6\% for the latter.  Reducing the number of MCMC samples to 40, for
-purposes of assessing locality, results in a similar 72.5\% rejection
-rate for prior-based proposal covariance and a reduced 17.5\% rate for
-misfit Hessian-based proposal covariance.  The prior-based proposal
-covariance only provides a global scaling and omits information on the
-structure of the likelihood; as a result, the rejection rates are
-relatively high for this problem and are not a strong function of
-location or chain length.  The misfit Hessian-based proposal
-covariance, on the other hand, provides accurate local information on
-the structure of the likelihood, resulting in low rejection rates for
-samples in the vicinity of this Hessian update.  Once the chain moves
-away from this vicinity, however, the misfit Hessian-based approach
-may become inaccurate and actually impede progress. This implies the
-need to regularly update the misfit Hessian-based proposal covariance
-to sustain these MCMC improvements.
+purposes of assessing local proposal accuracy, results in a similar
+72.5\% rejection rate for prior-based proposal covariance and a
+reduced 17.5\% rate for misfit Hessian-based proposal covariance.  The
+prior-based proposal covariance only provides a global scaling and
+omits information on the structure of the likelihood; as a result, the
+rejection rates are relatively high for this problem and are not a
+strong function of location or chain length.  The misfit Hessian-based
+proposal covariance, on the other hand, provides accurate local
+information on the structure of the likelihood, resulting in low
+rejection rates for samples in the vicinity of this Hessian update.
+Once the chain moves away from this vicinity, however, the misfit
+Hessian-based approach may become inaccurate and actually impede
+progress. This implies the need to regularly update the misfit
+Hessian-based proposal covariance to sustain these MCMC improvements.
 
 In Figure~\ref{fig:rosen_restart}, we show a result for a total of
 2000 MCMC samples initiated from $(-1,1)$, where we restart the chain
 with an updated misfit Hessian-based proposal covariance every 40
-samples (Dakota specification: \texttt{proposal\_updates = 50}).  This
-case uses a standard normal prior, resulting in differences in the MLE
-and MAP estimates, as shown in Figure~\ref{fig:rosen_restart}(a).
-Figure~\ref{fig:rosen_restart}(b) shows the history of rejection rates
-for each of the 50 chains compared to the rejection rate for a single
-2000-sample chain using prior-based proposal covariance.
+samples (Dakota specification: \texttt{samples = 2000
+  proposal\_updates = 50}).  This case uses a standard normal prior,
+resulting in differences in the MLE and MAP estimates, as shown in
+Figure~\ref{fig:rosen_restart}(a).  Figure~\ref{fig:rosen_restart}(b)
+shows the history of rejection rates for each of the 50 chains
+compared to the rejection rate for a single 2000-sample chain using
+prior-based proposal covariance.
 \begin{figure}[htbp]
   \begin{subfigmatrix}{2}
   \subfigure[Restarted chain.]{\includegraphics{images/rosen_restart_mle_map}}
   \subfigure[Rejection rates.]{\includegraphics{images/rosen_restart_reject}}
   \end{subfigmatrix}
-  \caption{MCMC chain with 2000 total samples, 50 proposal updates using the inverse of the misfit Hessian, and standard normal prior.}
+  \caption{MCMC chain with 2000 total samples (black points), 50 proposal updates using the inverse of the misfit Hessian (performed at red circles), and standard normal prior.}
 \label{fig:rosen_restart}
 \end{figure}
