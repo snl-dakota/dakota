@@ -310,25 +310,27 @@ program name is \c dakota_restart_util and it has the
 following options, as shown by the usage message returned when
 executing the utility without any options:
 \verbatim
-Usage: 
-  dakota_restart_util print <restart_file>
-  dakota_restart_util to_neutral <restart_file> <neutral_file>
-  dakota_restart_util from_neutral <neutral_file> <restart_file>
-  dakota_restart_util to_pdb <restart_file> <pdb_file>
-  dakota_restart_util to_tabular <restart_file> <text_file>
-  dakota_restart_util remove <double> <old_restart_file> <new_restart_file>
-  dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>
-  dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>
+Usage:
+  dakota_restart_util command <arg1> [<arg2> <arg3> ...] --options
+    dakota_restart_util print <restart_file>
+    dakota_restart_util to_neutral <restart_file> <neutral_file>
+    dakota_restart_util from_neutral <neutral_file> <restart_file>
+    dakota_restart_util to_tabular <restart_file> <text_file> [--custom_annotated [header] [eval_id] [interface_id]]
+    dakota_restart_util remove <double> <old_restart_file> <new_restart_file>
+    dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>
+    dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>
+options:
+  --help                 show dakota_restart_util help message
+  --custom_annotated arg tabular file options: header, eval_id, interface_id
 \endverbatim
 
 Several of these functions involve format conversions. In particular,
 the binary format used for restart files can be converted to ASCII
 text and printed to the screen, converted to and from a neutral file
-format, converted to a PDB format for use at Lawrence Livermore
-National Laboratory, or converted to a tabular format for importing
-into 3rd-party graphics programs. In addition, a restart file with
-corrupted data can be repaired by value or id, and multiple restart
-files can be combined to create a master database.
+format, or converted to a tabular format for importing into 3rd-party
+graphics programs. In addition, a restart file with corrupted data can
+be repaired by value or id, and multiple restart files can be combined
+to create a master database.
 
 \section dakota_restart_utility-print Print Command
 
@@ -457,24 +459,46 @@ which results in a report similar to the following:
 \endverbatim
 
 The contents of the generated tabular file are similar to the following 
-(from the example in \cite UsersMan).
+(from the example in the Restart section of \cite UsersMan).
 Note that while evaluations resulting from numerical derivative offsets would be
 reported (as described above), derivatives returned as part of the
 evaluations are not reported (since they do not readily fit within a
 compact tabular format):
 \verbatim
-%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2
-       1            0.9            1.1         0.0002           0.26           0.76
-       2   0.6433962264   0.6962264151   0.0246865569  0.06584549662   0.1630331079
-       3   0.5310576935   0.5388046558  0.09360081618  0.01261994597  0.02478161031
-       4    0.612538853   0.6529854907  0.03703861037  0.04871110113   0.1201206246
-       5   0.5209215947   0.5259311717   0.1031862798  0.00839372202  0.01614279999
-       6   0.5661606434   0.5886684401  0.06405197568  0.02620365411  0.06345021064
-       7   0.5083873357    0.510239856   0.1159458957 0.003337755086 0.006151042802
-       8   0.5001577143   0.5001800249   0.1248312163 6.772666885e-05 0.0001012002012
-       9   0.5000000547   0.5000000598   0.1249999428 2.485652461e-08 3.238746073e-08
-      10            0.5            0.5          0.125 2.942091015e-15 3.60822483e-15
+%eval_id interface             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
+1            NO_ID            0.9            1.1         0.0002           0.26           0.76 
+2            NO_ID        0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
+3            NO_ID        0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
+4            NO_ID            0.9        1.10011 0.0002004407265       0.259945   0.7602420121 
+5            NO_ID            0.9        1.09989 0.0001995607255       0.260055   0.7597580121 
+6            NO_ID     0.58256179   0.4772224441   0.1050555937   0.1007670171 -0.06353963386 
+7            NO_ID   0.5826200462   0.4772224441   0.1050386469   0.1008348962 -0.06356876195 
+8            NO_ID   0.5825035339   0.4772224441   0.1050725476   0.1006991449 -0.06351050577 
+9            NO_ID     0.58256179   0.4772701663   0.1050283245    0.100743156 -0.06349408333 
+10           NO_ID     0.58256179   0.4771747219   0.1050828704   0.1007908783 -0.06358517983 
+...
 \endverbatim
+
+<b>Controlling tabular format:</b> The command-line option <tt>--custom_annotated</tt> gives control of headers in the resulting tabular file.  It supports options
+
+\li \c header: include %-commented header row with labels
+\li \c eval_id: include leading column with evaluation ID
+\li \c interface_id: include leading column with interface ID
+
+For example, to recover Dakota 6.0 tabular format, which contained a
+header row, leading column with evaluation ID, but no interface ID:
+\verbatim
+dakota_restart_util to_tabular dakota.rst dakota.m --custom_annotated header eval_id
+\endverbatim
+Resulting in
+\verbatim
+%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
+1                   0.9            1.1         0.0002           0.26           0.76 
+2               0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
+3               0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
+...
+\endverbatim
+
 
 \section dakota_restart_utility-concat Concatenation of Multiple Restart Files
 

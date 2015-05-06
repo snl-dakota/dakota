@@ -138,31 +138,31 @@ for managing restart files from Dakota executions. The executable
 program name is \texttt{dakota\_restart\_util} and it has the
 following options, as shown by the usage message returned when
 executing the utility without any options:
-\begin{tiny}
+\begin{footnotesize}
 \begin{verbatim}
-Usage: "dakota_restart_util print <restart_file>"
-       "dakota_restart_util to_neutral <restart_file> <neutral_file>"
-       "dakota_restart_util from_neutral <neutral_file> <restart_file>"
-       "dakota_restart_util to_pdb <restart_file> <pdb_file>"
-       "dakota_restart_util to_tabular <restart_file> <text_file>"
-       "dakota_restart_util remove <double> <old_restart_file>
-          <new_restart_file>"
-       "dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file>
-          <new_restart_file>"
-       "dakota_restart_util cat <restart_file_1> ... <restart_file_n>
-          <new_restart_file>"
+Usage:
+  dakota_restart_util command <arg1> [<arg2> <arg3> ...] --options
+    dakota_restart_util print <restart_file>
+    dakota_restart_util to_neutral <restart_file> <neutral_file>
+    dakota_restart_util from_neutral <neutral_file> <restart_file>
+    dakota_restart_util to_tabular <restart_file> <text_file>
+      [--custom_annotated [header] [eval_id] [interface_id]]
+    dakota_restart_util remove <double> <old_restart_file> <new_restart_file>
+    dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>
+    dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>
+options:
+  --help                 show dakota_restart_util help message
+  --custom_annotated arg tabular file options: header, eval_id, interface_id
 \end{verbatim}
-\end{tiny}
+\end{footnotesize}
 
 Several of these functions involve format conversions. In particular,
 the binary format used for restart files can be converted to ASCII
 text and printed to the screen, converted to and from a neutral file
-format, converted to a PDB format for use at Lawrence Livermore
-National Laboratory (if enabled at compile time), or converted to a
-tabular format for importing into 3rd-party graphics programs. In
-addition, a restart file with corrupted data can be repaired by value
-or id, and multiple restart files can be combined to create a master
-database.
+format, or converted to a tabular format for importing into 3rd-party
+graphics programs. In addition, a restart file with corrupted data can
+be repaired by value or id, and multiple restart files can be combined
+to create a master database.
 
 \subsection{Print}\label{restart:utility:print}
 
@@ -319,21 +319,48 @@ Note that while evaluations resulting from numerical derivative offsets would be
 reported (as described above), derivatives returned as part of the
 evaluations are not reported (since they do not readily fit within a
 compact tabular format):
-\begin{small}
+\begin{footnotesize}
 \begin{verbatim}
 %eval_id interface             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       1     EMPTY           0.9            1.1         0.0002           0.26           0.76 
-       2     EMPTY    0.58256179   0.4772224441   0.1050555937   0.1007670171 -0.06353963386 
-       3     EMPTY           0.5   0.4318131566   0.1667232695  0.03409342169 -0.06353739777 
-       4     EMPTY           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
-       5     EMPTY           0.5   0.3757758727   0.2143316122  0.06211206365  -0.1087924935 
-       6     EMPTY           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
-       7     EMPTY  0.5005468682  -0.5204065326    5.405888123   0.5107504335  0.02054952507 
-       8     EMPTY  0.5000092554   0.4156974409   0.1790558059  0.04216053506 -0.07720026537 
-       9     EMPTY   0.500000919   0.4302129149   0.1679019175   0.0348944616  -0.0649173074 
-      10     EMPTY    0.50037519  -0.2214765079    2.288391116   0.3611135847  -0.2011357515 
+       1     NO_ID           0.9            1.1         0.0002           0.26           0.76 
+       2     NO_ID    0.58256179   0.4772224441   0.1050555937   0.1007670171 -0.06353963386 
+       3     NO_ID           0.5   0.4318131566   0.1667232695  0.03409342169 -0.06353739777 
+       4     NO_ID           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
+       5     NO_ID           0.5   0.3757758727   0.2143316122  0.06211206365  -0.1087924935 
+       6     NO_ID           0.5   0.3695495062   0.2204806721  0.06522524692  -0.1134331625 
+       7     NO_ID  0.5005468682  -0.5204065326    5.405888123   0.5107504335  0.02054952507 
+       8     NO_ID  0.5000092554   0.4156974409   0.1790558059  0.04216053506 -0.07720026537 
+       9     NO_ID   0.500000919   0.4302129149   0.1679019175   0.0348944616  -0.0649173074 
+      10     NO_ID    0.50037519  -0.2214765079    2.288391116   0.3611135847  -0.2011357515 
+...
  \end{verbatim}
-\end{small}
+\end{footnotesize}
+
+\textbf{Controlling tabular format:} The command-line option
+\texttt{--custom\_annotated} gives control of headers in the resulting
+tabular file.  It supports options:
+\begin{itemize}
+\item {\tt header}: include \%-commented header row with labels
+\item {\tt eval\_id}: include leading column with evaluation ID
+\item {\tt interface\_id}: include leading column with interface ID
+\end{itemize}
+For example, to recover Dakota 6.0 tabular format, which contained a
+header row, leading column with evaluation ID, but no interface ID:
+\begin{footnotesize}
+\begin{verbatim}
+dakota_restart_util to_tabular dakota.rst dakota.m --custom_annotated header eval_id
+\end{verbatim}
+\end{footnotesize}
+Resulting in
+\begin{footnotesize}
+\begin{verbatim}
+%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
+1                   0.9            1.1         0.0002           0.26           0.76 
+2               0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
+3               0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
+...
+\end{verbatim}
+\end{footnotesize}
 
 \subsection{Concatenation of Multiple Restart Files}\label{restart:utility:concatenation}
 
