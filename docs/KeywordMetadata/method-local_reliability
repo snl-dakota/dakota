@@ -23,7 +23,7 @@ Topics::        uncertainty_quantification, reliability_methods
 Examples::
 Theory::
 The Mean Value method (MV, also known as MVFOSM in 
-[\cite Hal00 "Haldar and Mahadevan, 2000"]) is the simplest,
+\cite Hal00) is the simplest,
 least-expensive method in that it estimates the response means,
 response standard deviations, and all CDF/CCDF forward/inverse
 mappings from a single evaluation of response functions and gradients
@@ -38,7 +38,7 @@ sign convention and the distance of the MPP from the origin in the
 transformed standard normal space ("u-space") define the reliability
 index, as explained in the section on Reliability Methods in the
 Uncertainty Quantification chapter of the Users Manual 
-[\cite UsersMan "Adams et al., 2010"]. The reliability can
+\cite UsersMan. The reliability can
 then be converted to a probability using either first- or second-order
 integration, may then be refined using importance sampling, and
 finally may be converted to a generalized reliability index. 

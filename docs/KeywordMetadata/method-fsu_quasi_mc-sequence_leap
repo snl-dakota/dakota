@@ -17,6 +17,6 @@ one is mainly for high-dimensional sets of random deviates. In this case,
 setting a leap value to the next prime number larger than the largest
 prime base can help maintain uniformity when generating sample sets for high
 dimensions. For more information about the efficacy of leaped 
-Halton sequences, see [\cite Robinson1999 "Robinson and Atcitty, 1999"]. 
+Halton sequences, see \cite Robinson1999. 
 Faq::
 See_Also::	

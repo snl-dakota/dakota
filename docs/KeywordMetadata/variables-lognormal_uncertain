@@ -9,7 +9,7 @@ The lognormal is often used to model:
 -# variables which are the product of a large number of other quantities, by the Central Limit Theorem
 -# quantities which cannot have negative values. 
 
-Within the lognormal uncertain optional group specification, the number of lognormal uncertain variables, the means, and either standard deviations or error factors must be specified, and the distribution lower and upper bounds and variable descriptors are optional specifications. These distribution bounds can be used to truncate the tails of lognormal distributions, which as for bounded normal, can result in the mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution (see "bounded lognormal" and "bounded lognormal-n" distribution types in [\cite Wyss1998 "Wyss and Jorgensen, 1998"]). 
+Within the lognormal uncertain optional group specification, the number of lognormal uncertain variables, the means, and either standard deviations or error factors must be specified, and the distribution lower and upper bounds and variable descriptors are optional specifications. These distribution bounds can be used to truncate the tails of lognormal distributions, which as for bounded normal, can result in the mean and the standard deviation of the sample data being different from the mean and standard deviation of the underlying distribution (see "bounded lognormal" and "bounded lognormal-n" distribution types in \cite Wyss1998). 
 
 For the lognormal variables, one may specify either the mean 
 \f$\mu\f$
@@ -24,7 +24,7 @@ of the actual lognormal distribution (option 2), or the mean
 and standard deviation 
 \f$\zeta\f$ ("zeta") 
 of the underlying normal distribution (option 3).
-<!-- This approach diverges from that of [\cite Wyss1998 "Wyss and Jorgensen, 1998"], which assumes that a specification of mean and standard deviation provides parameters of the underlying normal distribution, and a specification of mean and error factor provides statistics of the actual lognormal distribution. --> 
+<!-- This approach diverges from that of \cite Wyss1998, which assumes that a specification of mean and standard deviation provides parameters of the underlying normal distribution, and a specification of mean and error factor provides statistics of the actual lognormal distribution. --> 
 
 The conversion equations from lognormal mean
 \f$\mu\f$ and either lognormal error factor 

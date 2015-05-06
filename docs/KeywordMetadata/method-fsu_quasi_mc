@@ -50,9 +50,9 @@ etc. and the second and third variables are generated according to a Halton
 sequence with bases 2 and 3, respectively. 
 
 For more information about 
-these sequences, see [\cite Halton1960 "Halton, 1960",
-\cite Halton1964 "Halton and Smith, 1964", and 
-\cite Kocis1997 "Kocis and Whiten, 1997"].
+these sequences, see \cite Halton1960,
+\cite Halton1964, and 
+\cite Kocis1997.
  
 Faq::
 See_Also::	method-dace, method-fsu_cvt, method-psuade_moat

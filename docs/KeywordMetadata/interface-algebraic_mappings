@@ -2,7 +2,7 @@ Blurb::
 Use AMPL to define algebraic input-output mappings 
 Description::
 If desired, one can define algebraic input-output mappings using the
-AMPL code [\cite Fou03 "Fourer et al., 2003"] and save these
+AMPL code \cite Fou03 and save these
 mappings in 3 files: \c stub.nl, \c stub.col, and
 \c stub.row, where \c stub is a particular root name
 describing a particular problem. These files names can be
@@ -12,7 +12,7 @@ alternatively, just the \c stub itself.
 
 %Dakota then uses \c stub.col and \c stub.row to extract
 the input and output identifier strings and employs the AMPL solver
-library [\cite Gay97 "Gay, 1997"] to process the DAG specification in
+library \cite Gay97 to process the DAG specification in
 \c stub.nl. The variable and objective function names declared
 within AMPL should be a subset of the variable descriptors and
 response descriptors used by %Dakota (see \ref variables and \ref

@@ -1,5 +1,5 @@
 Blurb::  The use of the multilevel algorithm for the MCMC algorithm. 
-Description::  This keyword specifies the use of the multilevel algorithm which is described in [\cite Prudencio "Prudencio and Cheung, 2012"].
+Description::  This keyword specifies the use of the multilevel algorithm which is described in \cite Prudencio.
  
 <b> Default Behavior </b>
 

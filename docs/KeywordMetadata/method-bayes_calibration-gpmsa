@@ -10,9 +10,9 @@ statistical model of the system response, and it is used to incorporate
 the observational data to improve system predictions and constrain or
 calibrate the unknown parameters. The GPMSA code draws heavily
 on the theory developed in the seminal Bayesian calibration paper
-by Kennedy and O'Hagan [\cite Kenn01 "Kennedy and O'Hagan 2001"]. 
+by Kennedy and O'Hagan \cite Kenn01. 
 The particular approach in GPMSA has been developed
-by the Los Alamos group and document in [\cite Hig08 "Higdon et al. 2008"]. 
+by the Los Alamos group and document in \cite Hig08. 
 GPMSA uses
 Gaussian process models in the emulation, but the emulator is
 actually a set of basis functions (e.g. from a singular value

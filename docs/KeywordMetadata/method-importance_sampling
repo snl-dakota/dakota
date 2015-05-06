@@ -47,14 +47,14 @@ in importance sampling is that one generates samples that preferentially
 samples important regions in the space (e.g. in or near the failure region 
 or user-defined region of interest), and then appropriately weights 
 the samples to obtain an unbiased estimate of the failure probability
-[\cite Srinivasan2002 "Srinivasan, 2002"]. 
+\cite Srinivasan2002. 
 In importance sampling, the samples are generated from a density which is 
 called the importance density: it is not the original probability density 
 of the input distributions. The importance density should be centered near the 
 failure region of interest. For black-box simulations such as those commonly 
 interfaced with %Dakota, it is difficult to specify the importance density a priori: 
 the user often does not know where the failure region lies, especially in a high-dimensional 
-space.[\cite Swiler2010 "Swiler and West, 2010"]. 
+space.\cite Swiler2010. 
 We have developed two importance sampling approaches which do not 
 rely on the user explicitly specifying an importance density. 
 

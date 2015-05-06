@@ -1,4 +1,4 @@
-The JEGA library [\cite Eddy2001 "Eddy and Lewis, 2001"] contains two global
+The JEGA library \cite Eddy2001 contains two global
 optimization methods. The first is a Multi-objective Genetic Algorithm (MOGA)
 which performs Pareto optimization. The second is a Single-objective
 Genetic Algorithm (SOGA) which performs optimization on a single

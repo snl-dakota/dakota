@@ -6,7 +6,7 @@ augmented Lagrangian function. The augmented Lagrangian is modified by
 adding to its penalty term a potential reduction function to handle
 the perturbed complementarity condition. The cost per linesearch
 iteration is one function evaluation. For more information, see
-[\cite Tapia1 "Tapia and Argaez"].
+\cite Tapia1.
 
 If the function evaluation is expensive or noisy, set the \c
 merit_function to "argaez_tapia" or "van_shanno".

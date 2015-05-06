@@ -1,4 +1,4 @@
-The NPSOL library [\cite Gil86 "Gill et al., 1986"] contains a
+The NPSOL library \cite Gil86 contains a
 sequential quadratic programming (SQP) implementation (the \c
 npsol_sqp method). SQP is a nonlinear programming optimizer for
 constrained minimization.

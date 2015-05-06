@@ -48,7 +48,7 @@ dynamic or \c static scheduling (default configuration of a peer
 partition employs a dynamic scheduler when it can be supported; i.e.,
 when the peer 1 local scheduling can be asynchronous). The
 ParallelLibrary class and the Parallel Computing chapter of the Users
-Manual [\cite UsersMan "Adams et al., 2010"] provide additional details
+Manual \cite UsersMan provide additional details
 on parallel configurations.
 
 When performing asynchronous local evaluations, the \c
@@ -82,7 +82,7 @@ When employing mappings with simulation codes, the interface invokes the simulat
 - In the direct function case, the simulation is internal to Dakota and communication occurs through the function parameter list. The direct case can involve linked simulation codes or test functions which are compiled into the Dakota executable. The test functions allow for rapid testing of algorithms without process creation overhead or engineering simulation expense.
 - The grid case is experimental and under development, but is intended to support simulations which are external to Dakota and geographically distributed.
 
-When employing algebraic mappings, the AMPL solver library [\cite Gay97 "Gay, 1997"] is used to evaluate a directed acyclic graph (DAG) specification from a separate stub.nl file. Separate stub.col and stub.row files are also required to declare the string identifiers of the subset of inputs and outputs, respectively, that will be used in the algebraic mappings.
+When employing algebraic mappings, the AMPL solver library \cite Gay97 is used to evaluate a directed acyclic graph (DAG) specification from a separate stub.nl file. Separate stub.col and stub.row files are also required to declare the string identifiers of the subset of inputs and outputs, respectively, that will be used in the algebraic mappings.
 
 Faq::
 See_Also::	

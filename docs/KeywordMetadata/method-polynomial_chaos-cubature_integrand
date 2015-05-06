@@ -2,8 +2,8 @@ Blurb::
 Cubature using Stroud rules and their extensions
 Description::
 Multi-dimensional integration by Stroud cubature rules 
-[\cite stroud "Stroud, 1971"] and extensions 
-[\cite xiu_cubature "Xiu, 2008"], as specified with \c cubature_integrand. 
+\cite stroud and extensions 
+\cite xiu_cubature, as specified with \c cubature_integrand. 
    A total-order
    expansion is used, where the isotropic order \e p of the
    expansion is half of the integrand order, rounded down. The

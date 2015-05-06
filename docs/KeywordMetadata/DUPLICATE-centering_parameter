@@ -4,7 +4,7 @@ Description::
 The \c centering_parameter specification is a parameter (between 0 and
 1) that controls how closely the algorithm should follow the "central
 path".
-See [ \cite Wright1 "Wright" ] for the definition of central
+See  \cite Wright1 for the definition of central
 path. The larger the value, the more closely the algorithm follows the
 central path, which results in small steps. A value of 0 indicates
 that the algorithm will take a pure Newton step. Default values are

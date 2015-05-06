@@ -69,8 +69,8 @@ Faq::
 <b>Difference between bin and point histograms:</b> A (continuous) bin
 histogram specifies bins of non-zero width, whereas a (discrete) point
 histogram specifies individual point values, which can be thought of
-as bins with zero width. In the terminology of LHS [\cite Wyss1998
-"Wyss and Jorgensen, 1998"], the bin pairs specification defines a
+as bins with zero width. In the terminology of LHS \cite Wyss1998, 
+the bin pairs specification defines a
 "continuous linear" distribution and the point pairs specification
 defines a "discrete histogram" distribution (although the points are
 real-valued, the number of possible values is finite).

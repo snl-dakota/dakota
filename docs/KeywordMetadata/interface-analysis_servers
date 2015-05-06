@@ -7,7 +7,7 @@ servers. That is, if the automatic configuration is
 undesirable for some reason, the user can enforce a desired number of
 partitions at the analysis parallelism level. Refer to ParallelLibrary 
 and the Parallel Computing chapter of the Users Manual 
-[\cite UsersMan "Adams et al., 2010"] for additional information.
+\cite UsersMan for additional information.
 
 Topics::	concurrency_and_parallelism
 Examples::

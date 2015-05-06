@@ -10,8 +10,8 @@ resizing logic is currently based only on the trust region ratio.  For
 infeasible iterates, constraint relaxation can be used for balancing
 constraint satisfaction and progress made toward an optimum. The
 command \c constraint_relax followed by a method name specifies the
-type of relaxation to be used. Currently, \c homotopy [\cite Perez2004
-"Perez et al., 2004"] is the only available method for constraint
+type of relaxation to be used. Currently, \c homotopy \cite Perez2004
+is the only available method for constraint
 relaxation, and this method is dependent on the presence of the NPSOL
 library within the %Dakota executable.
 

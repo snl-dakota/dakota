@@ -4,12 +4,12 @@ Description::
 The
 format of data in the parameters files can be modified for direct
 usage with the APREPRO pre-processing tool 
-[\cite Sja92 "Sjaardema, 1992"] 
+\cite Sja92 
 using the \c aprepro specification
 
 Without this keyword, the parameters file are written in
 DPrePro format. DPrePro is a utility included with Dakota,
-described in the Users Manual [\cite UsersMan "Adams et al., 2010"].
+described in the Users Manual \cite UsersMan.
 
 Topics::	file_formats
 Examples::

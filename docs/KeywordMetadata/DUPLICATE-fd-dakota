@@ -4,7 +4,7 @@ Description::
 The \c dakota routine is the default since it can execute
 in parallel and exploit the concurrency in finite difference
 evaluations (see Exploiting Parallelism in the Users Manual 
-[\cite UsersMan "Adams et al., 2010"]).
+\cite UsersMan).
 
 When the \c method_source is \c dakota, the user may also specify the
 type of scaling desired when determining the finite difference step

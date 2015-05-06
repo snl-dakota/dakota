@@ -25,7 +25,7 @@ Note, this will not allow the use of \c file_tag, because the
 exact command must be specified.
 
 For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual [\cite UsersMan "Adams et al., 2010"].
+chapter of the Users Manual \cite UsersMan.
 Topics::	
 Examples::
 In the following example, the analysis_driver command is run without any edits from Dakota.

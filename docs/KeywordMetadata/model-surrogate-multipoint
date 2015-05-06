@@ -7,7 +7,7 @@ comes from the current and previous iterates of a minimization algorithm.
 
 Currently, only the
 Two-point Adaptive Nonlinearity %Approximation (TANA-3) method of
-[\cite Xu98 "Xu and Grandhi, 1998"] is supported with the \c tana keyword.
+\cite Xu98 is supported with the \c tana keyword.
 
 The
 truth model to be used to generate the value/gradient data used in the

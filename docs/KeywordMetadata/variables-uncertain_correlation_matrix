@@ -10,14 +10,14 @@ depends on the nondeterministic method in use.
 When the method is a
 nondeterministic sampling method (i.e., \ref method-sampling), then the
 correlation matrix specifies <i>rank correlations</i> 
-[\cite Iman1982 "Iman and Conover, 1982"].
+\cite Iman1982.
 
 When the method is 
 a reliability (i.e., \c local_reliability or \c
 global_reliability) or stochastic expansion (i.e., \c
 polynomial_chaos or \c stoch_collocation) method, then the
 correlation matrix specifies <i>correlation coefficients</i>
-(normalized covariance) [\cite Hal00 "Haldar and Mahadevan, 2000"].
+(normalized covariance) \cite Hal00.
 
 In either of these cases, specifying the identity matrix results in
 uncorrelated uncertain variables (the default). The matrix input

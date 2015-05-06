@@ -11,7 +11,7 @@ partitions at the iterator parallelism level. Currently, \c hybrid,
 \c multi_start, and \c pareto_set component-based iterators support 
 concurrency in their sub-iterators. Refer to ParallelLibrary 
 and the Parallel Computing chapter of the Users Manual 
-[\cite UsersMan "Adams et al., 2010"] for additional information.
+\cite UsersMan for additional information.
 
 Topics::	concurrency_and_parallelism  
 Examples::

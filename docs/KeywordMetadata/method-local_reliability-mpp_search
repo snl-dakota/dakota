@@ -18,12 +18,12 @@ except that all approximations are performed in u-space. The order of
 the Taylor-series approximation is determined by the corresponding \c
 responses specification and may be first or second-order. If
 second-order (methods named \f$AMV^2\f$ and \f$AMV^2+\f$ in
-[\cite Eld06a "Eldred and Bichon, 2006"]), the series may employ 
+\cite Eld06a), the series may employ 
 analytic, finite difference, or quasi Hessians (BFGS or SR1).
 The \c x_two_point MPP search option uses an x-space Taylor series 
 approximation at the uncertain variable means for the initial MPP 
 prediction, then utilizes the Two-point Adaptive Nonlinear 
-%Approximation (TANA) outlined in [\cite Xu98 "Xu and Grandhi, 1998"] 
+%Approximation (TANA) outlined in \cite Xu98 
 for all subsequent MPP predictions. The \c u_two_point approach is 
 identical to \c x_two_point, but all the approximations are performed 
 in u-space. The \c x_taylor_mpp and \c u_taylor_mpp, \c x_two_point 
@@ -45,9 +45,9 @@ In addition to the MPP search specifications, one may select among
 different integration approaches for computing probabilities at the
 MPP by using the \c integration keyword followed by either \c
 first_order or \c second_order. Second-order integration employs the
-formulation of [\cite Hoh88 "Hohenbichler and Rackwitz, 1988"] 
-(the approach of [\cite Bre84 "Breitung, 1984"] and the correction 
-of [\cite Hon99 "Hong 1999"] are also implemented, but are not active). 
+formulation of \cite Hoh88 
+(the approach of \cite Bre84 and the correction 
+of \cite Hon99 are also implemented, but are not active). 
 Combining the \c no_approx option of the MPP search with first- and 
 second-order integrations results in the traditional first- and 
 second-order reliability methods (FORM and SORM). These integration 
@@ -57,10 +57,10 @@ importance sampling (\c import), adaptive importance sampling (\c
 adapt_import), or multimodal adaptive importance sampling (\c
 mm_adapt_import), along with the specification of number of samples
 (\c samples) and random seed (\c seed). Additional details 
-on these methods are available in [\cite Eld04 "Eldred et al., 2004"] 
-and [\cite Eld06a "Eldred and Bichon, 2006"] and in the Uncertainty 
+on these methods are available in \cite Eld04 
+and \cite Eld06a and in the Uncertainty 
 Quantification Capabilities chapter of the Users Manual 
-[\cite UsersMan "Adams et al., 2010"].
+\cite UsersMan.
 
 Topics::        uncertainty_quantification, reliability_methods	
 Examples::

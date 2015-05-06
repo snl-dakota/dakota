@@ -21,9 +21,9 @@ When \c variance_based_decomp is specified, sensitivity indices for
 main effects, total effects, and any interaction effects will be
 reported.  Each of these effects represents the percent contribution
 to the variance in the model response, where main effects include the
-aggregated set of \i univariate terms for each individual variable,
-interaction effects represent the set of \i mixed terms (the complement
-of the univariate set), and total effects represent the \i complete set
+aggregated set of \em univariate terms for each individual variable,
+interaction effects represent the set of \em mixed terms (the complement
+of the univariate set), and total effects represent the \em complete set
 of terms (univariate and mixed) that contain each individual variable.
 The aggregated set of main and interaction sensitivity indices will 
 sum to one, whereas the sum of total effects sensitivity indices will 

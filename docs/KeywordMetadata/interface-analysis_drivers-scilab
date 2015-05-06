@@ -4,7 +4,7 @@ Description::
 %Dakota supports library-linked interfaces to Matlab, Scilab, and
 Python scientific computation software, but they must be explicitly
 enabled when compiling %Dakota from source. First consult the Users
-Manual [\cite UsersMan "Adams et al., 2010"] for discussion and
+Manual \cite UsersMan for discussion and
 examples. 
 
 Contact the %Dakota users mailing list for assistance

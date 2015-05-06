@@ -37,7 +37,7 @@ of concurrent evaluations. However, if \c numerical_gradients with \c
 method_source \c dakota is specified, then the finite difference
 function evaluations can be performed concurrently (using any of the
 parallel modes described in the Users Manual 
-[\cite UsersMan "Adams et al., 2010"]). 
+\cite UsersMan). 
 
 An important related
 observation is the fact that NPSOL uses two different line searches

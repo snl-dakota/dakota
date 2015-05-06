@@ -24,7 +24,7 @@ gradients will not be used when a trial point is rejected in the line
 search phase), the run time will usually decrease (since gradient
 evaluations needed at the start of each new optimization cycle were
 already performed in parallel during the line search phase). Refer to
-[\cite Byr88 "Byrd et al., 1998"] for additional details. The
+\cite Byr88 for additional details. The
 speculative specification is implemented for the gradient-based
 optimizers in the DOT, CONMIN, and OPT++ libraries, and it can be used
 with dakota numerical or analytic gradient selections in the responses
