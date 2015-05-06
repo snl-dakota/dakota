@@ -1043,10 +1043,10 @@
                           <keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
                             <alias name="nond_polynomial_chaos"/>
                             <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no refinement" >
-                              <oneOf>
+                              <oneOf label="p-refinement type">
                                 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
                                 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
-                                  <oneOf>
+                                  <oneOf label="dimension adaptivity estimation approach">
                                     <keyword  id="sobol" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
                                     <keyword  id="decay" name="decay" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}" label="decay" help=""  />
                                     <keyword  id="generalized" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
@@ -1055,13 +1055,13 @@
                               </oneOf>
                             </keyword>
                             <optional>
-                              <oneOf>
+                              <oneOf label="Basis polynomial family">
                                 <keyword  id="askey" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help=""  />
                                 <keyword  id="wiener" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help=""  />
                                 <!-- #		      | piecewise {NIDRProblemDescDB::method_piecewise} -->
                               </oneOf>
                             </optional>
-                            <oneOf>
+                            <oneOf label="Coefficient estimation approach">
                               <required>
                                 <oneOf>
                                   <keyword  id="quadrature_order" name="quadrature_order" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
@@ -1081,7 +1081,7 @@
                                   <param type="REALLIST" />
                                 </keyword>
                                 <optional>
-                                  <oneOf>
+                                  <oneOf label="Nesting of quadrature rules">
                                     <keyword  id="nested" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested" help=""  default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
                                     <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" help=""  />
                                   </oneOf>
@@ -1230,7 +1230,7 @@
                               </keyword>
                             </keyword>
                             <optional>
-                              <oneOf>
+                              <oneOf label="Covariance type">
                                 <keyword  id="diagonal_covariance" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance" help=""  default="diagonal_covariance for response vector > 10; else full_covariance" />
                                 <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance" help=""  />
                               </oneOf>
@@ -1264,12 +1264,12 @@
                           <keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation" help="" minOccurs="1" group="Uncertainty Quantification" >
                             <alias name="nond_stoch_collocation"/>
                             <optional>
-                              <oneOf>
+                              <oneOf label="Automated refinement type">
                                 <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement" help="" minOccurs="1" default="no refinement" >
-                                  <oneOf>
+                                  <oneOf label="p-refinement type">
                                     <keyword  id="uniform2" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
                                     <keyword  id="dimension_adaptive1" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
-                                      <oneOf>
+                                      <oneOf label="dimension adaptivity estimation approach">
                                         <keyword  id="sobol1" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
                                         <keyword  id="generalized2" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
                                       </oneOf>
@@ -1277,10 +1277,10 @@
                                   </oneOf>
                                 </keyword>
                                 <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1"  default="no refinement" >
-                                  <oneOf>
+                                  <oneOf label="h-refinement type">
                                     <keyword  id="uniform3" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
                                     <keyword  id="dimension_adaptive2" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
-                                      <oneOf>
+                                      <oneOf label="dimension adaptivity estimation approach">
                                         <keyword  id="sobol2" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
                                         <keyword  id="generalized3" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
                                       </oneOf>
@@ -1291,13 +1291,13 @@
                               </oneOf>
                             </optional>
                             <optional>
-                              <oneOf>
+                              <oneOf label="Basis polynomial family">
                                 <keyword  id="piecewise" name="piecewise" code="{NIDRProblemDescDB::method_piecewise}" label="piecewise" help=""  />
                                 <keyword  id="askey1" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help=""  />
                                 <keyword  id="wiener1" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help=""  />
                               </oneOf>
                             </optional>
-                            <oneOf>
+                            <oneOf label="Interpolation grid type">
                               <keyword  id="quadrature_order1" name="quadrature_order" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for collocation points" help="MethodCommands.html#MethodNonDSC"  >
                                 <param type="INTEGERLIST" />
                               </keyword>
@@ -1322,7 +1322,7 @@
                             </keyword>
                             <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="use function values only" />
                             <optional>
-                              <oneOf>
+                              <oneOf label="Nesting of quadrature rules">
                                 <keyword  id="nested1" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested" help=""  default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
                                 <keyword  id="non_nested1" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" help=""  />
                               </oneOf>
@@ -1336,7 +1336,7 @@
                               </keyword>
                             </keyword>
                             <optional>
-                              <oneOf>
+                              <oneOf label="Covariance type">
                                 <keyword  id="diagonal_covariance1" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance" help=""  default="diagonal_covariance for response vector > 10; else full_covariance" />
                                 <keyword  id="full_covariance1" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance" help=""  />
                               </oneOf>
