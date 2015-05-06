@@ -32,6 +32,7 @@ models
   hybrid_and_recursions_logic
 variables
  variable_domain
+  continuous_variables
   discrete_variables
  variable_type
   design_variables

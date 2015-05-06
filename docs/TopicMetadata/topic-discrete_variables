@@ -1,10 +1,10 @@
 This page discusses discrete state, design, and uncertain variables
 (which have \c discrete in their keyword name) as they have similar
 specifications. These include:
+-# Integer ranges
 -# Set of integers
 -# Set of strings
 -# Set of reals
--# Range(s)
 and each is described below.
 
 In addition, some uncertain variables, e.g., binomial, are discrete,
@@ -31,11 +31,11 @@ contain alphanumeric, dash, underscore, and colon. White space, quote
 characters, and backslash/metacharacters are not permitted.
 
 Examples are given on the pages:
-- \ref variables-discrete_design_set-integer
-- \ref variables-discrete_design_set-string
-- \ref variables-discrete_design_set-real 
-- \ref variables-discrete_uncertain_set-integer
-- \ref variables-discrete_uncertain_set-real
+- discrete design set \ref variables-discrete_design_set-integer
+- discrete design set \ref variables-discrete_design_set-real 
+- discrete design set \ref variables-discrete_design_set-string
+- discrete uncertain set \ref variables-discrete_uncertain_set-integer
+- discrete uncertain set \ref variables-discrete_uncertain_set-real
 
 
 <b> Range </b>

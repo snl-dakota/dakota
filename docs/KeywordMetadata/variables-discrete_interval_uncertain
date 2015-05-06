@@ -27,7 +27,7 @@ Dempster-Shafer theory of evidence.
 
 Note that the intervals can be overlapping or disjoint.  
 
-Topics:: 	continuous_variables, epistemic_uncertain_variables
+Topics:: 	discrete_variables, epistemic_uncertain_variables
 Examples::
 
 Let d1 be 2, 3 or 4 with probability 0.2, 4 or 5 with probability 0.5 and 6 with probability 0.3. 
