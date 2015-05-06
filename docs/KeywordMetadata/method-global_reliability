@@ -16,12 +16,13 @@ reliability levels if desired. At this time, inverse reliability
 analysis (mapping probability or generalized reliability levels into
 response levels) is not implemented. 
 
-The Gaussian process model
-approximation to the limit state is formed over the aleatory uncertain
-variables by default, but may be extended to also capture the effect
-of design, epistemic uncertain, and state variables. If this is
-desired, one must use the appropriate controls to specify the active
-variables in the variables specification block. 
+The Gaussian process model approximation to the limit state is formed
+over the aleatory uncertain variables by default, but may be extended
+to also capture the effect of design, epistemic uncertain, and state
+variables. If this is desired, one must use the appropriate controls
+to specify the active variables in the variables specification
+block.  Refer to \ref topic-variable_support for additional information
+on supported variable types.
 
 Topics::	uncertainty_quantification, reliability_methods
 Examples::

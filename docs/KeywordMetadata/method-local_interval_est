@@ -9,6 +9,11 @@ methods to calculate these bounds.
 \li \c sqp
 \li \c nip
 
+<b> Additional Resources </b>
+
+Refer to \ref topic-variable_support for information on supported
+variable types.
+
 Topics::         uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation	
 Examples::
 Theory::

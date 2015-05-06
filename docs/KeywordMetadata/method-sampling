@@ -18,7 +18,8 @@ expanded (to include design or state variables) through use of the
 file.  If continuous design and/or state variables are designated as
 active, the sampling algorithm will treat them as parameters with
 uniform probability distributions between their upper and lower
-bounds.
+bounds.  Refer to \ref topic-variable_support for additional 
+information on supported variable types, with and without correlation.
 
 The following keywords change how the samples are selected:
 \li sample_type

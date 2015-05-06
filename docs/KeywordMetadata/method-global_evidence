@@ -1,9 +1,6 @@
 Blurb::
 Evidence theory with evidence measures computed with global optimization methods
 Description::
-<b> See the topic page \ref topic-evidence_theory for important
-background information and usage notes </b>
-
 \c global_evidence allows the user to specify
 several global approaches for calculating the belief and plausibility functions: 
 \li \c lhs - note: this takes the minimum and maximum of the samples as the bounds per
@@ -28,6 +25,15 @@ calculations on the surrogate and not on the original model. If one
 uses optimization methods instead to find the minimum and maximum
 sample values within each cell, this can also be computationally
 expensive.
+
+<b> Additional Resources </b>
+
+See the topic page \ref topic-evidence_theory for important
+background information and usage notes.
+
+Refer to \ref topic-variable_support for information on supported
+variable types.
+
 
 Topics:: epistemic_uncertainty_quantification_methods, evidence_theory
 Examples::
