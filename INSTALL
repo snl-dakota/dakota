@@ -54,7 +54,7 @@ bin-dist      examples	 Example problems from the Users Manual, examples of
 			 examples, and platform installation examples.
 
 bin-dist      test	 Files for regression and unit testing of the
-src-dist      		 Dakota system. Test simulator programs and Dakota
+src-dist      unit_test	 Dakota system. Test simulator programs and Dakota
 			 input files are provided for testing different
 			 capabilities. 
 
