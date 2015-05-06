@@ -755,7 +755,7 @@
               <keyword  id="linear_inequality_constraint_matrix" name="linear_inequality_constraint_matrix" code="{N_mdm(RealDL,linearIneqConstraintCoeffs)}" label="linear_inequality_constraint_matrix" help="" minOccurs="0" default="no linear inequality constraints" >
                 <param type="REALLIST" />
               </keyword>
-              <keyword  id="linear_inequality_lower_bounds" name="linear_inequality_lower_bounds" code="{N_mdm(RealDL,linearIneqLowerBnds)}" label="linear_inequality_lower_bounds" help="" minOccurs="0" default="vector values = -DBL_MAX" >
+              <keyword  id="linear_inequality_lower_bounds" name="linear_inequality_lower_bounds" code="{N_mdm(RealDL,linearIneqLowerBnds)}" label="linear_inequality_lower_bounds" help="" minOccurs="0" default="vector values = -infinity" >
                 <param type="REALLIST" />
               </keyword>
               <keyword  id="linear_inequality_upper_bounds" name="linear_inequality_upper_bounds" code="{N_mdm(RealDL,linearIneqUpperBnds)}" label="linear_inequality_upper_bounds" help="" minOccurs="0" default="vector values = 0 ." >
@@ -1018,7 +1018,7 @@
                   <keyword  id="dakota" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
                 </oneOf>
               </keyword>
-              <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodEG" minOccurs="0" />
+              <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodEG" minOccurs="0" default="use function values only"/>
               <keyword  id="import_points_file" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodEG" minOccurs="0" default="no point import from a file" >
                 <param type="INPUT_FILE" />
 		&method_approx_import_format;
@@ -1180,7 +1180,7 @@
                                           </oneOf>
                                         </optional>
                                         <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" />
-                                        <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
+                                        <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
                                         <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
                                         <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
                                           <alias name="reuse_samples"/>
@@ -1320,7 +1320,7 @@
                             <keyword  id="dimension_preference2" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="Dimension preference for anisotropic tensor and sparse grids" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="isotropic grids" >
                               <param type="REALLIST" />
                             </keyword>
-                            <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" />
+                            <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="use function values only" />
                             <optional>
                               <oneOf>
                                 <keyword  id="nested1" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested" help=""  default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
@@ -1588,7 +1588,7 @@
                                 <keyword  id="dakota1" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
                               </oneOf>
                             </keyword>
-                            <keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
+                            <keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
                             <keyword  id="import_points_file4" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
                               <param type="INPUT_FILE" />
 			      &method_approx_import_format;
@@ -1664,7 +1664,7 @@
                             <keyword  id="dakota2" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
                           </oneOf>
                         </keyword>
-                        <keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
+                        <keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
                         <keyword  id="import_points_file5" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
                           <param type="INPUT_FILE" />
 			  &method_approx_import_format;
@@ -1734,7 +1734,7 @@
                                 </keyword>
                               </keyword>
                             </oneOf>
-			    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
+			    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
                           </keyword>
 			  <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
                         </keyword>
@@ -1851,7 +1851,7 @@
                             </keyword>
                           </keyword>
                         </oneOf>
-			<keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" />
+			<keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
                       </keyword>
                     </keyword>
                   </oneOf>
@@ -2063,7 +2063,7 @@
                     <param type="OUTPUT_FILE" />
 		    &method_approx_export_format;
                   </keyword>
-                  <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" />
+                  <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="use function values only" />
                   <keyword  id="seed9" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed for initial GP construction" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" >
                     <param type="INTEGER" constraint="> 0" />
                   </keyword>
@@ -2238,7 +2238,7 @@
                   <oneOf>
                     <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="dakota" help="" minOccurs="1" >
                       <keyword  id="point_selection" name="point_selection" code="{N_mom(true,pointSelection)}" label="GP point selection" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point selection" />
-                      <keyword  id="trend" name="trend" code="{0}" label="GP trend function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic trend" >
+                      <keyword  id="trend" name="trend" code="{0}" label="GP trend function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
                         <oneOf>
                           <keyword  id="constant" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="constant" help=""  />
                           <keyword  id="linear" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="linear" help=""  />
@@ -2247,7 +2247,7 @@
                       </keyword>
                     </keyword>
                     <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="surfpack" help="" minOccurs="1" >
-                      <keyword  id="trend1" name="trend" code="{0}" label="Surfpack GP trend function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic trend" >
+                      <keyword  id="trend1" name="trend" code="{0}" label="Surfpack GP trend function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
                         <oneOf>
                           <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="constant" help=""  />
                           <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="linear" help=""  />
@@ -2440,7 +2440,7 @@
 		  </oneOf>
 		</optional>
               </keyword>
-              <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Surfpack GP gradient enhancement" help="ModelCommands.html#ModelSurrG" minOccurs="0" />
+              <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Surfpack GP gradient enhancement" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="use function values only" />
               <keyword  id="correction" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no surrogate correction" >
                 <oneOf label="correction order">
                   <keyword  id="zeroth_order" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="zeroth_order" help=""  />
@@ -2590,15 +2590,15 @@
       </optional>
       <keyword  id="continuous_design" name="continuous_design" code="{N_vam(pintz,numContinuousDesVars)}" label="Continuous design variables" help="VarCommands.html#VarCDV" minOccurs="0" group="Design Variables" default="no continuous design variables" >
         <param type="INTEGER" constraint="> 0" />
-        <keyword  id="initial_point" name="initial_point" code="{N_vam(rvec,continuousDesignVars)}" label="Initial point" help="VarCommands.html#VarCDV" minOccurs="0" >
+        <keyword  id="initial_point" name="initial_point" code="{N_vam(rvec,continuousDesignVars)}" label="Initial point" help="VarCommands.html#VarCDV" minOccurs="0" default="0.0" >
           <alias name="cdv_initial_point"/>
           <param type="REALLIST" constraint="LEN continuous_design" />
         </keyword>
-        <keyword  id="lower_bounds" name="lower_bounds" code="{N_vam(rvec,continuousDesignLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarCDV" minOccurs="0" >
+        <keyword  id="lower_bounds" name="lower_bounds" code="{N_vam(rvec,continuousDesignLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarCDV" minOccurs="0" default="-infinity" >
           <alias name="cdv_lower_bounds"/>
           <param type="REALLIST" constraint="LEN continuous_design" />
         </keyword>
-        <keyword  id="upper_bounds" name="upper_bounds" code="{N_vam(rvec,continuousDesignUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarCDV" minOccurs="0" >
+        <keyword  id="upper_bounds" name="upper_bounds" code="{N_vam(rvec,continuousDesignUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarCDV" minOccurs="0" default="infinity" >
           <alias name="cdv_upper_bounds"/>
           <param type="REALLIST" constraint="LEN continuous_design" />
         </keyword>
@@ -2610,26 +2610,26 @@
           <alias name="cdv_scales"/>
           <param type="REALLIST" constraint="LEN1 continuous_design" />
         </keyword>
-        <keyword  id="descriptors" name="descriptors" code="{N_vam(strL,continuousDesignLabels)}" label="Descriptors" help="VarCommands.html#VarCDV" minOccurs="0" >
+        <keyword  id="descriptors" name="descriptors" code="{N_vam(strL,continuousDesignLabels)}" label="Descriptors" help="VarCommands.html#VarCDV" minOccurs="0" default="cdv_{i}" >
           <alias name="cdv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN continuous_design" />
         </keyword>
       </keyword>
       <keyword  id="discrete_design_range" name="discrete_design_range" code="{N_vam(pintz,numDiscreteDesRangeVars)}" label="Discrete design range variables" help="VarCommands.html#VarDDRIV" minOccurs="0" group="Design Variables" default="no discrete design variables" >
         <param type="INTEGER" constraint="> 0" />
-        <keyword  id="initial_point1" name="initial_point" code="{N_vam(ivec,discreteDesignRangeVars)}" label="Initial point" help="VarCommands.html#VarDDRIV" minOccurs="0" >
+        <keyword  id="initial_point1" name="initial_point" code="{N_vam(ivec,discreteDesignRangeVars)}" label="Initial point" help="VarCommands.html#VarDDRIV" minOccurs="0" default="0" >
           <alias name="ddv_initial_point"/>
           <param type="INTEGERLIST" constraint="LEN discrete_design_range" />
         </keyword>
-        <keyword  id="lower_bounds1" name="lower_bounds" code="{N_vam(ivec,discreteDesignRangeLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarDDRIV" minOccurs="0" >
+        <keyword  id="lower_bounds1" name="lower_bounds" code="{N_vam(ivec,discreteDesignRangeLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarDDRIV" minOccurs="0" default="INT_MIN" >
           <alias name="ddv_lower_bounds"/>
           <param type="INTEGERLIST" constraint="LEN discrete_design_range" />
         </keyword>
-        <keyword  id="upper_bounds1" name="upper_bounds" code="{N_vam(ivec,discreteDesignRangeUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarDDRIV" minOccurs="0" >
+        <keyword  id="upper_bounds1" name="upper_bounds" code="{N_vam(ivec,discreteDesignRangeUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarDDRIV" minOccurs="0" default="INT_MAX" >
           <alias name="ddv_upper_bounds"/>
           <param type="INTEGERLIST" constraint="LEN discrete_design_range" />
         </keyword>
-        <keyword  id="descriptors1" name="descriptors" code="{N_vam(strL,discreteDesignRangeLabels)}" label="Descriptors" help="VarCommands.html#VarDDRIV" minOccurs="0" >
+        <keyword  id="descriptors1" name="descriptors" code="{N_vam(strL,discreteDesignRangeLabels)}" label="Descriptors" help="VarCommands.html#VarDDRIV" minOccurs="0" default="ddriv_{i}" >
           <alias name="ddv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN discrete_design_range" />
         </keyword>
@@ -2651,7 +2651,7 @@
                 <param type="INTEGERLIST"/>
               </keyword>
           </keyword>
-          <keyword  id="initial_point2" name="initial_point" code="{N_vam(ivec,discreteDesignSetIntVars)}" label="Initial point" help="VarCommands.html#VarDDSIV" minOccurs="0" >
+          <keyword  id="initial_point2" name="initial_point" code="{N_vam(ivec,discreteDesignSetIntVars)}" label="Initial point" help="VarCommands.html#VarDDSIV" minOccurs="0" default="middle set value, or rounded down" >
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
           <keyword  id="descriptors2" name="descriptors" code="{N_vam(strL,discreteDesignSetIntLabels)}" label="Descriptors" help="VarCommands.html#VarDDSIV" minOccurs="0" >
@@ -2671,7 +2671,7 @@
           <keyword id="adjacency_matrix1" name="adjacency_matrix" code="{N_vam(newivec,Var_Info_ddssa)}" label="adjacency_matrix" help="" minOccurs="0">
             <param type="INTEGERLIST"/>
           </keyword>
-          <keyword  id="initial_point3" name="initial_point" code="{N_vam(strL,discreteDesignSetStrVars)}" label="Initial point" help="VarCommands.html#VarDDSRV" minOccurs="0" >
+          <keyword  id="initial_point3" name="initial_point" code="{N_vam(strL,discreteDesignSetStrVars)}" label="Initial point" help="VarCommands.html#VarDDSRV" minOccurs="0" default="middle set value, or rounded down" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
           <keyword  id="descriptors3" name="descriptors" code="{N_vam(strL,discreteDesignSetStrLabels)}" label="Descriptors" help="VarCommands.html#VarDDSRV" minOccurs="0" >
@@ -2694,7 +2694,7 @@
               <param type="INTEGERLIST"/>
             </keyword>
           </keyword>
-          <keyword  id="initial_point4" name="initial_point" code="{N_vam(rvec,discreteDesignSetRealVars)}" label="initial_point" help="" minOccurs="0" >
+          <keyword  id="initial_point4" name="initial_point" code="{N_vam(rvec,discreteDesignSetRealVars)}" label="initial_point" help="" minOccurs="0" default="middle set value, or rounded down" >
             <param type="REALLIST" constraint="LEN real" />
           </keyword>
           <keyword  id="descriptors4" name="descriptors" code="{N_vam(strL,discreteDesignSetRealLabels)}" label="Descriptors" help="VarCommands.html#VarCAUV_Normal" minOccurs="0" >
@@ -2712,18 +2712,18 @@
           <alias name="nuv_std_deviations"/>
           <param type="REALLIST" constraint="LEN normal_uncertain" />
         </keyword>
-        <keyword  id="lower_bounds2" name="lower_bounds" code="{N_vam(rvec,normalUncLowerBnds)}" label="Distribution lower bounds" help="VarCommands.html#VarCAUV_Normal" minOccurs="0" >
+        <keyword  id="lower_bounds2" name="lower_bounds" code="{N_vam(rvec,normalUncLowerBnds)}" label="Distribution lower bounds" help="VarCommands.html#VarCAUV_Normal" minOccurs="0" default="-infinity" >
           <alias name="nuv_lower_bounds"/>
           <param type="REALLIST" constraint="LEN normal_uncertain" />
         </keyword>
-        <keyword  id="upper_bounds2" name="upper_bounds" code="{N_vam(rvec,normalUncUpperBnds)}" label="Distribution upper bounds" help="VarCommands.html#VarCAUV_Normal" minOccurs="0" >
+        <keyword  id="upper_bounds2" name="upper_bounds" code="{N_vam(rvec,normalUncUpperBnds)}" label="Distribution upper bounds" help="VarCommands.html#VarCAUV_Normal" minOccurs="0" default="infinity" >
           <alias name="nuv_upper_bounds"/>
           <param type="REALLIST" constraint="LEN normal_uncertain" />
         </keyword>
         <keyword  id="initial_point5" name="initial_point" code="{N_vam(rvec,normalUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN normal_uncertain" />
         </keyword>
-        <keyword  id="descriptors5" name="descriptors" code="{N_vae(caulbl,CAUVar_normal)}" label="Descriptors" help="VarCommands.html#VarCAUV_Lognormal" minOccurs="0" >
+        <keyword  id="descriptors5" name="descriptors" code="{N_vae(caulbl,CAUVar_normal)}" label="Descriptors" help="VarCommands.html#VarCAUV_Lognormal" minOccurs="0" default="nuv_{i}" >
           <alias name="nuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN normal_uncertain" />
         </keyword>
@@ -2754,18 +2754,18 @@
             </oneOf>
           </keyword>
         </oneOf>
-        <keyword  id="lower_bounds3" name="lower_bounds" code="{N_vam(RealLb,lognormalUncLowerBnds)}" label="Distribution lower bounds" help="VarCommands.html#VarCAUV_Lognormal" minOccurs="0" >
+        <keyword  id="lower_bounds3" name="lower_bounds" code="{N_vam(RealLb,lognormalUncLowerBnds)}" label="Distribution lower bounds" help="VarCommands.html#VarCAUV_Lognormal" minOccurs="0" default="0" >
           <alias name="lnuv_lower_bounds"/>
           <param type="REALLIST" constraint="LEN lognormal_uncertain" />
         </keyword>
-        <keyword  id="upper_bounds3" name="upper_bounds" code="{N_vam(RealUb,lognormalUncUpperBnds)}" label="Distribution upper bounds" help="VarCommands.html#VarCAUV_Lognormal" minOccurs="0" >
+        <keyword  id="upper_bounds3" name="upper_bounds" code="{N_vam(RealUb,lognormalUncUpperBnds)}" label="Distribution upper bounds" help="VarCommands.html#VarCAUV_Lognormal" minOccurs="0" default="infinity" >
           <alias name="lnuv_upper_bounds"/>
           <param type="REALLIST" constraint="LEN lognormal_uncertain" />
         </keyword>
         <keyword  id="initial_point6" name="initial_point" code="{N_vam(RealLb,lognormalUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN lognormal_uncertain" />
         </keyword>
-        <keyword  id="descriptors6" name="descriptors" code="{N_vae(caulbl,CAUVar_lognormal)}" label="Descriptors" help="VarCommands.html#VarCAUV_Uniform" minOccurs="0" >
+        <keyword  id="descriptors6" name="descriptors" code="{N_vae(caulbl,CAUVar_lognormal)}" label="Descriptors" help="VarCommands.html#VarCAUV_Uniform" minOccurs="0" default="lnuv_{i}" >
           <alias name="lnuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN lognormal_uncertain" />
         </keyword>
@@ -2783,7 +2783,7 @@
         <keyword  id="initial_point7" name="initial_point" code="{N_vam(rvec,uniformUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN uniform_uncertain" />
         </keyword>
-        <keyword  id="descriptors7" name="descriptors" code="{N_vae(caulbl,CAUVar_uniform)}" label="Descriptors" help="VarCommands.html#VarCAUV_Loguniform" minOccurs="0" >
+        <keyword  id="descriptors7" name="descriptors" code="{N_vae(caulbl,CAUVar_uniform)}" label="Descriptors" help="VarCommands.html#VarCAUV_Loguniform" minOccurs="0" default="uuv_{i}" >
           <alias name="uuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN uniform_uncertain" />
         </keyword>
@@ -2801,7 +2801,7 @@
         <keyword  id="initial_point8" name="initial_point" code="{N_vam(RealLb,loguniformUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN loguniform_uncertain" />
         </keyword>
-        <keyword  id="descriptors8" name="descriptors" code="{N_vae(caulbl,CAUVar_loguniform)}" label="Descriptors" help="VarCommands.html#VarCAUV_Triangular" minOccurs="0" >
+        <keyword  id="descriptors8" name="descriptors" code="{N_vae(caulbl,CAUVar_loguniform)}" label="Descriptors" help="VarCommands.html#VarCAUV_Triangular" minOccurs="0" default="luuv_{i}" >
           <alias name="luuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN loguniform_uncertain" />
         </keyword>
@@ -2823,7 +2823,7 @@
         <keyword  id="initial_point9" name="initial_point" code="{N_vam(rvec,triangularUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN triangular_uncertain" />
         </keyword>
-        <keyword  id="descriptors9" name="descriptors" code="{N_vae(caulbl,CAUVar_triangular)}" label="Descriptors" help="VarCommands.html#VarCAUV_Exponential" minOccurs="0" >
+        <keyword  id="descriptors9" name="descriptors" code="{N_vae(caulbl,CAUVar_triangular)}" label="Descriptors" help="VarCommands.html#VarCAUV_Exponential" minOccurs="0" default="tuv_{i}" >
           <alias name="tuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN triangular_uncertain" />
         </keyword>
@@ -2837,7 +2837,7 @@
         <keyword  id="initial_point10" name="initial_point" code="{N_vam(RealLb,exponentialUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN exponential_uncertain" />
         </keyword>
-        <keyword  id="descriptors10" name="descriptors" code="{N_vae(caulbl,CAUVar_exponential)}" label="Descriptors" help="VarCommands.html#VarCAUV_Beta" minOccurs="0" >
+        <keyword  id="descriptors10" name="descriptors" code="{N_vae(caulbl,CAUVar_exponential)}" label="Descriptors" help="VarCommands.html#VarCAUV_Beta" minOccurs="0" default="euv_{i}" >
           <alias name="euv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN exponential_uncertain" />
         </keyword>
@@ -2863,7 +2863,7 @@
         <keyword  id="initial_point11" name="initial_point" code="{N_vam(rvec,betaUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN beta_uncertain" />
         </keyword>
-        <keyword  id="descriptors11" name="descriptors" code="{N_vae(caulbl,CAUVar_beta)}" label="Descriptors" help="VarCommands.html#VarCAUV_Gamma" minOccurs="0" >
+        <keyword  id="descriptors11" name="descriptors" code="{N_vae(caulbl,CAUVar_beta)}" label="Descriptors" help="VarCommands.html#VarCAUV_Gamma" minOccurs="0" default="buv_{i}" >
           <alias name="buv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN beta_uncertain" />
         </keyword>
@@ -2881,7 +2881,7 @@
         <keyword  id="initial_point12" name="initial_point" code="{N_vam(RealLb,gammaUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN gamma_uncertain" />
         </keyword>
-        <keyword  id="descriptors12" name="descriptors" code="{N_vae(caulbl,CAUVar_gamma)}" label="Descriptors" help="VarCommands.html#VarCAUV_Gumbel" minOccurs="0" >
+        <keyword  id="descriptors12" name="descriptors" code="{N_vae(caulbl,CAUVar_gamma)}" label="Descriptors" help="VarCommands.html#VarCAUV_Gumbel" minOccurs="0" default="gauv_{i}" >
           <alias name="gauv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN gamma_uncertain" />
         </keyword>
@@ -2899,7 +2899,7 @@
         <keyword  id="initial_point13" name="initial_point" code="{N_vam(rvec,gumbelUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN gumbel_uncertain" />
         </keyword>
-        <keyword  id="descriptors13" name="descriptors" code="{N_vae(caulbl,CAUVar_gumbel)}" label="Descriptors" help="VarCommands.html#VarCAUV_Frechet" minOccurs="0" >
+        <keyword  id="descriptors13" name="descriptors" code="{N_vae(caulbl,CAUVar_gumbel)}" label="Descriptors" help="VarCommands.html#VarCAUV_Frechet" minOccurs="0" default="guuv_{i}" >
           <alias name="guuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN gumbel_uncertain" />
         </keyword>
@@ -2917,7 +2917,7 @@
         <keyword  id="initial_point14" name="initial_point" code="{N_vam(rvec,frechetUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN frechet_uncertain" />
         </keyword>
-        <keyword  id="descriptors14" name="descriptors" code="{N_vae(caulbl,CAUVar_frechet)}" label="Descriptors" help="VarCommands.html#VarCAUV_Weibull" minOccurs="0" >
+        <keyword  id="descriptors14" name="descriptors" code="{N_vae(caulbl,CAUVar_frechet)}" label="Descriptors" help="VarCommands.html#VarCAUV_Weibull" minOccurs="0" default="fuv_{i}" >
           <alias name="fuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN frechet_uncertain" />
         </keyword>
@@ -2935,7 +2935,7 @@
         <keyword  id="initial_point15" name="initial_point" code="{N_vam(RealLb,weibullUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN weibull_uncertain" />
         </keyword>
-        <keyword  id="descriptors15" name="descriptors" code="{N_vae(caulbl,CAUVar_weibull)}" label="Descriptors" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" >
+        <keyword  id="descriptors15" name="descriptors" code="{N_vae(caulbl,CAUVar_weibull)}" label="Descriptors" help="VarCommands.html#VarCAUV_Bin_Histogram" minOccurs="0" default="wuv_{i}" >
           <alias name="wuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN weibull_uncertain" />
         </keyword>
@@ -2963,7 +2963,7 @@
         <keyword  id="initial_point16" name="initial_point" code="{N_vam(rvec,histogramBinUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN histogram_bin_uncertain" />
         </keyword>
-        <keyword  id="descriptors16" name="descriptors" code="{N_vae(caulbl,CAUVar_histogram_bin)}" label="Descriptors" help="VarCommands.html#VarDAUV_Poisson" minOccurs="0" >
+        <keyword  id="descriptors16" name="descriptors" code="{N_vae(caulbl,CAUVar_histogram_bin)}" label="Descriptors" help="VarCommands.html#VarDAUV_Poisson" minOccurs="0" default="hbuv_{i}" >
           <alias name="huv_bin_descriptors"/>
           <param type="STRINGLIST" constraint="LEN histogram_bin_uncertain" />
         </keyword>
@@ -2976,7 +2976,7 @@
         <keyword  id="initial_point17" name="initial_point" code="{N_vam(IntLb,poissonUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="INTEGERLIST" constraint="LEN poisson_uncertain" />
         </keyword>
-        <keyword  id="descriptors17" name="descriptors" code="{N_vae(dauilbl,DAUIVar_poisson)}" label="Descriptors" help="VarCommands.html#VarDAUV_Binomial" minOccurs="0" >
+        <keyword  id="descriptors17" name="descriptors" code="{N_vae(dauilbl,DAUIVar_poisson)}" label="Descriptors" help="VarCommands.html#VarDAUV_Binomial" minOccurs="0" default="puv_{i}" >
           <param type="STRINGLIST" constraint="LEN poisson_uncertain" />
         </keyword>
       </keyword>
@@ -2992,7 +2992,7 @@
         <keyword  id="initial_point18" name="initial_point" code="{N_vam(IntLb,binomialUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="INTEGERLIST" constraint="LEN binomial_uncertain" />
         </keyword>
-        <keyword  id="descriptors18" name="descriptors" code="{N_vae(dauilbl,DAUIVar_binomial)}" label="Descriptors" help="VarCommands.html#VarDAUV_Negative_Binomial" minOccurs="0" >
+        <keyword  id="descriptors18" name="descriptors" code="{N_vae(dauilbl,DAUIVar_binomial)}" label="Descriptors" help="VarCommands.html#VarDAUV_Negative_Binomial" minOccurs="0" default="biuv_{i}" >
           <param type="STRINGLIST" constraint="LEN binomial_uncertain" />
         </keyword>
       </keyword>
@@ -3008,7 +3008,7 @@
         <keyword  id="initial_point19" name="initial_point" code="{N_vam(IntLb,negBinomialUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="INTEGERLIST" constraint="LEN negative_binomial_uncertain" />
         </keyword>
-        <keyword  id="descriptors19" name="descriptors" code="{N_vae(dauilbl,DAUIVar_negative_binomial)}" label="Descriptors" help="VarCommands.html#VarDAUV_Geometric" minOccurs="0" >
+        <keyword  id="descriptors19" name="descriptors" code="{N_vae(dauilbl,DAUIVar_negative_binomial)}" label="Descriptors" help="VarCommands.html#VarDAUV_Geometric" minOccurs="0" default="nbuv_{i}" >
           <param type="STRINGLIST" constraint="LEN negative_binomial_uncertain" />
         </keyword>
       </keyword>
@@ -3021,7 +3021,7 @@
         <keyword  id="initial_point20" name="initial_point" code="{N_vam(IntLb,geometricUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="INTEGERLIST" constraint="LEN geometric_uncertain" />
         </keyword>
-        <keyword  id="descriptors20" name="descriptors" code="{N_vae(dauilbl,DAUIVar_geometric)}" label="Descriptors" help="VarCommands.html#VarDAUV_Hypergeometric" minOccurs="0" >
+        <keyword  id="descriptors20" name="descriptors" code="{N_vae(dauilbl,DAUIVar_geometric)}" label="Descriptors" help="VarCommands.html#VarDAUV_Hypergeometric" minOccurs="0" default="geuv_{i}" >
           <param type="STRINGLIST" constraint="LEN geometric_uncertain" />
         </keyword>
       </keyword>
@@ -3039,7 +3039,7 @@
         <keyword  id="initial_point21" name="initial_point" code="{N_vam(IntLb,hyperGeomUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="INTEGERLIST" constraint="LEN hypergeometric_uncertain" />
         </keyword>
-        <keyword  id="descriptors21" name="descriptors" code="{N_vae(dauilbl,DAUIVar_hypergeometric)}" label="Descriptors" help="VarCommands.html#VarDAUV_Point_Histogram" minOccurs="0" >
+        <keyword  id="descriptors21" name="descriptors" code="{N_vae(dauilbl,DAUIVar_hypergeometric)}" label="Descriptors" help="VarCommands.html#VarDAUV_Point_Histogram" minOccurs="0" default="hguv_{i}" >
           <param type="STRINGLIST" constraint="LEN hypergeometric_uncertain" />
         </keyword>
       </keyword>
@@ -3059,7 +3059,7 @@
           <keyword  id="initial_point22" name="initial_point" code="{N_vam(ivec,histogramPointIntUncVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
-          <keyword  id="descriptors22" name="descriptors" code="{N_vae(dauilbl,DAUIVar_histogram_point_int)}" label="Descriptors" help="VarCommands.html#VarCEUV_Interval" minOccurs="0" >
+          <keyword  id="descriptors22" name="descriptors" code="{N_vae(dauilbl,DAUIVar_histogram_point_int)}" label="Descriptors" help="VarCommands.html#VarCEUV_Interval" minOccurs="0" default="hpiv_{i}" >
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
@@ -3078,7 +3078,7 @@
           <keyword  id="initial_point23" name="initial_point" code="{N_vam(strL,histogramPointStrUncVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
-          <keyword  id="descriptors23" name="descriptors" code="{N_vae(dauslbl,DAUSVar_histogram_point_str)}" label="Descriptors" help="VarCommands.html#VarDIUV" minOccurs="0" >
+          <keyword  id="descriptors23" name="descriptors" code="{N_vae(dauslbl,DAUSVar_histogram_point_str)}" label="Descriptors" help="VarCommands.html#VarDIUV" minOccurs="0" default="hpsv_{i}" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
@@ -3097,7 +3097,7 @@
           <keyword  id="initial_point24" name="initial_point" code="{N_vam(rvec,histogramPointRealUncVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="REALLIST" constraint="LEN real" />
           </keyword>
-          <keyword  id="descriptors24" name="descriptors" code="{N_vae(daurlbl,DAURVar_histogram_point_real)}" label="Descriptors" help="VarCommands.html#VarDUSIV" minOccurs="0" >
+          <keyword  id="descriptors24" name="descriptors" code="{N_vae(daurlbl,DAURVar_histogram_point_real)}" label="Descriptors" help="VarCommands.html#VarDUSIV" minOccurs="0" default="hpruv_{i}" >
             <param type="STRINGLIST" constraint="LEN real" />
           </keyword>
         </keyword>
@@ -3126,7 +3126,7 @@
         <keyword  id="initial_point25" name="initial_point" code="{N_vam(rvec,continuousIntervalUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="REALLIST" constraint="LEN continuous_interval_uncertain" />
         </keyword>
-        <keyword  id="descriptors25" name="descriptors" code="{N_vae(ceulbl,CEUVar_interval)}" label="Descriptors" help="VarCommands.html#VarDUSRV" minOccurs="0" >
+        <keyword  id="descriptors25" name="descriptors" code="{N_vae(ceulbl,CEUVar_interval)}" label="Descriptors" help="VarCommands.html#VarDUSRV" minOccurs="0" default="ciuv_{i}" >
           <alias name="iuv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN continuous_interval_uncertain" />
         </keyword>
@@ -3152,7 +3152,7 @@
         <keyword  id="initial_point26" name="initial_point" code="{N_vam(ivec,discreteIntervalUncVars)}" label="initial_point" help="" minOccurs="0" >
           <param type="INTEGERLIST" constraint="LEN discrete_interval_uncertain" />
         </keyword>
-        <keyword  id="descriptors26" name="descriptors" code="{N_vae(deuilbl,DEUIVar_interval)}" label="Descriptors" help="VarCommands.html#VarCSV" minOccurs="0" >
+        <keyword  id="descriptors26" name="descriptors" code="{N_vae(deuilbl,DEUIVar_interval)}" label="Descriptors" help="VarCommands.html#VarCSV" minOccurs="0" default="diuv_{i}" >
           <param type="STRINGLIST" constraint="LEN discrete_interval_uncertain" />
         </keyword>
       </keyword>
@@ -3178,7 +3178,7 @@
           <keyword  id="initial_point27" name="initial_point" code="{N_vam(ivec,discreteUncSetIntVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
-          <keyword  id="descriptors27" name="descriptors" code="{N_vae(deuilbl,DEUIVar_set_int)}" label="Descriptors" help="VarCommands.html#VarDSRIV" minOccurs="0" >
+          <keyword  id="descriptors27" name="descriptors" code="{N_vae(deuilbl,DEUIVar_set_int)}" label="Descriptors" help="VarCommands.html#VarDSRIV" minOccurs="0" default="dusiv_{i}" >
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
@@ -3200,7 +3200,7 @@
           <keyword  id="initial_point28" name="initial_point" code="{N_vam(strL,discreteUncSetStrVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
-          <keyword  id="descriptors28" name="descriptors" code="{N_vae(deuslbl,DEUSVar_set_str)}" label="Descriptors" help="VarCommands.html#VarDSSIV" minOccurs="0" >
+          <keyword  id="descriptors28" name="descriptors" code="{N_vae(deuslbl,DEUSVar_set_str)}" label="Descriptors" help="VarCommands.html#VarDSSIV" minOccurs="0" default="dussv_{i}" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
@@ -3224,45 +3224,45 @@
           <keyword  id="initial_point29" name="initial_point" code="{N_vam(rvec,discreteUncSetRealVars)}" label="initial_point" help="" minOccurs="0" >
             <param type="REALLIST" constraint="LEN real" />
           </keyword>
-          <keyword  id="descriptors29" name="descriptors" code="{N_vae(deurlbl,DEURVar_set_real)}" label="Descriptors" help="VarCommands.html#VarDSSRV" minOccurs="0" >
+          <keyword  id="descriptors29" name="descriptors" code="{N_vae(deurlbl,DEURVar_set_real)}" label="Descriptors" help="VarCommands.html#VarDSSRV" minOccurs="0" default="dusrv_{i}" >
             <param type="STRINGLIST" constraint="LEN real" />
           </keyword>
         </keyword>
       </keyword>
       <keyword  id="continuous_state" name="continuous_state" code="{N_vam(pintz,numContinuousStateVars)}" label="Continuous state variables" help="VarCommands.html#VarCSV" minOccurs="0" group="State Variables" default="No continuous state variables" >
         <param type="INTEGER" constraint="> 0" />
-        <keyword  id="initial_state" name="initial_state" code="{N_vam(rvec,continuousStateVars)}" label="Initial states" help="VarCommands.html#VarCSV" minOccurs="0" >
+        <keyword  id="initial_state" name="initial_state" code="{N_vam(rvec,continuousStateVars)}" label="Initial states" help="VarCommands.html#VarCSV" minOccurs="0" default="0.0" >
           <alias name="csv_initial_state"/>
           <param type="REALLIST" constraint="LEN continuous_state" />
         </keyword>
-        <keyword  id="lower_bounds10" name="lower_bounds" code="{N_vam(rvec,continuousStateLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarCSV" minOccurs="0" >
+        <keyword  id="lower_bounds10" name="lower_bounds" code="{N_vam(rvec,continuousStateLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarCSV" minOccurs="0" default="-infinity" >
           <alias name="csv_lower_bounds"/>
           <param type="REALLIST" constraint="LEN continuous_state" />
         </keyword>
-        <keyword  id="upper_bounds10" name="upper_bounds" code="{N_vam(rvec,continuousStateUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarCSV" minOccurs="0" >
+        <keyword  id="upper_bounds10" name="upper_bounds" code="{N_vam(rvec,continuousStateUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarCSV" minOccurs="0" default="infinity" >
           <alias name="csv_upper_bounds"/>
           <param type="REALLIST" constraint="LEN continuous_state" />
         </keyword>
-        <keyword  id="descriptors30" name="descriptors" code="{N_vam(strL,continuousStateLabels)}" label="descriptors" help="" minOccurs="0" >
+        <keyword  id="descriptors30" name="descriptors" code="{N_vam(strL,continuousStateLabels)}" label="descriptors" help="" minOccurs="0" default="csv_{i}" >
           <alias name="csv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN continuous_state" />
         </keyword>
       </keyword>
       <keyword  id="discrete_state_range" name="discrete_state_range" code="{N_vam(pintz,numDiscreteStateRangeVars)}" label="Discrete state range variables" help="VarCommands.html#VarDSRIV" minOccurs="0" group="State Variables" default="No discrete state variables" >
         <param type="INTEGER" constraint="> 0" />
-        <keyword  id="initial_state1" name="initial_state" code="{N_vam(ivec,discreteStateRangeVars)}" label="Initial states" help="VarCommands.html#VarDSRIV" minOccurs="0" >
+        <keyword  id="initial_state1" name="initial_state" code="{N_vam(ivec,discreteStateRangeVars)}" label="Initial states" help="VarCommands.html#VarDSRIV" minOccurs="0" default="0" >
           <alias name="dsv_initial_state"/>
           <param type="INTEGERLIST" constraint="LEN discrete_state_range" />
         </keyword>
-        <keyword  id="lower_bounds11" name="lower_bounds" code="{N_vam(ivec,discreteStateRangeLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarDSRIV" minOccurs="0" >
+        <keyword  id="lower_bounds11" name="lower_bounds" code="{N_vam(ivec,discreteStateRangeLowerBnds)}" label="Lower bounds" help="VarCommands.html#VarDSRIV" minOccurs="0" default="INT_MIN" >
           <alias name="dsv_lower_bounds"/>
           <param type="INTEGERLIST" constraint="LEN discrete_state_range" />
         </keyword>
-        <keyword  id="upper_bounds11" name="upper_bounds" code="{N_vam(ivec,discreteStateRangeUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarDSRIV" minOccurs="0" >
+        <keyword  id="upper_bounds11" name="upper_bounds" code="{N_vam(ivec,discreteStateRangeUpperBnds)}" label="Upper bounds" help="VarCommands.html#VarDSRIV" minOccurs="0" default="INT_MAX" >
           <alias name="dsv_upper_bounds"/>
           <param type="INTEGERLIST" constraint="LEN discrete_state_range" />
         </keyword>
-        <keyword  id="descriptors31" name="descriptors" code="{N_vam(strL,discreteStateRangeLabels)}" label="descriptors" help="" minOccurs="0" >
+        <keyword  id="descriptors31" name="descriptors" code="{N_vam(strL,discreteStateRangeLabels)}" label="descriptors" help="" minOccurs="0" default="dsriv_{i}" >
           <alias name="dsv_descriptors"/>
           <param type="STRINGLIST" constraint="LEN discrete_state_range" />
         </keyword>
@@ -3281,10 +3281,10 @@
           <keyword  id="categorical4" name="categorical" code="{N_vam(categorical,discreteStateSetIntCat)}" label="categorical" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
-          <keyword  id="initial_state2" name="initial_state" code="{N_vam(ivec,discreteStateSetIntVars)}" label="Initial state" help="VarCommands.html#VarDSSIV" minOccurs="0" >
+          <keyword  id="initial_state2" name="initial_state" code="{N_vam(ivec,discreteStateSetIntVars)}" label="Initial state" help="VarCommands.html#VarDSSIV" minOccurs="0" default="middle set value, or rounded down" >
             <param type="INTEGERLIST" constraint="LEN integer" />
           </keyword>
-          <keyword  id="descriptors32" name="descriptors" code="{N_vam(strL,discreteStateSetIntLabels)}" label="descriptors" help="" minOccurs="0" >
+          <keyword  id="descriptors32" name="descriptors" code="{N_vam(strL,discreteStateSetIntLabels)}" label="descriptors" help="" minOccurs="0" default="dssiv_{i}" >
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
         </keyword>
@@ -3298,10 +3298,10 @@
             <alias name="set_values"/>
             <param type="STRINGLIST" />
           </keyword>
-          <keyword  id="initial_state3" name="initial_state" code="{N_vam(strL,discreteStateSetStrVars)}" label="Initial state" help="VarCommands.html#VarDSSRV" minOccurs="0" >
+          <keyword  id="initial_state3" name="initial_state" code="{N_vam(strL,discreteStateSetStrVars)}" label="Initial state" help="VarCommands.html#VarDSSRV" minOccurs="0" default="middle set value, or rounded down" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
-          <keyword  id="descriptors33" name="descriptors" code="{N_vam(strL,discreteStateSetStrLabels)}" label="descriptors" help="" minOccurs="0" >
+          <keyword  id="descriptors33" name="descriptors" code="{N_vam(strL,discreteStateSetStrLabels)}" label="descriptors" help="" minOccurs="0" default="dsssv_{i}" >
             <param type="STRINGLIST" constraint="LEN string" />
           </keyword>
         </keyword>
@@ -3318,10 +3318,10 @@
           <keyword  id="categorical5" name="categorical" code="{N_vam(categorical,discreteStateSetRealCat)}" label="categorical" help="" minOccurs="0" >
             <param type="STRINGLIST" constraint="LEN integer" />
           </keyword>
-          <keyword  id="initial_state4" name="initial_state" code="{N_vam(rvec,discreteStateSetRealVars)}" label="initial_state" help="" minOccurs="0" >
+          <keyword  id="initial_state4" name="initial_state" code="{N_vam(rvec,discreteStateSetRealVars)}" label="initial_state" help="" minOccurs="0" default="middle set value, or rounded down" >
             <param type="REALLIST" constraint="LEN real" />
           </keyword>
-          <keyword  id="descriptors34" name="descriptors" code="{N_vam(strL,discreteStateSetRealLabels)}" label="descriptors" help="" minOccurs="0" >
+          <keyword  id="descriptors34" name="descriptors" code="{N_vam(strL,discreteStateSetRealLabels)}" label="descriptors" help="" minOccurs="0" default="dssrv_{i}" >
             <param type="STRINGLIST" constraint="LEN real" />
           </keyword>
         </keyword>
@@ -3492,22 +3492,22 @@
           <keyword  id="sense" name="sense" code="{N_rem(strL,primaryRespFnSense)}" label="Optimization sense" help="RespCommands.html#RespFnOpt" minOccurs="0" default="vector values = 'minimize'" >
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
-          <keyword  id="primary_scale_types" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Objective function scaling types" help="RespCommands.html#RespFnOpt" minOccurs="0" default="vector values = 'none'" >
+          <keyword  id="primary_scale_types" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Objective function scaling types" help="RespCommands.html#RespFnOpt" minOccurs="0" default="no scaling" >
             <alias name="objective_function_scale_types"/>
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
-          <keyword  id="primary_scales" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Objective function scales" help="RespCommands.html#RespFnOpt" minOccurs="0" >
+          <keyword  id="primary_scales" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Objective function scales" help="RespCommands.html#RespFnOpt" minOccurs="0" default="1.0 (no scaling)" >
             <alias name="objective_function_scales"/>
             <param type="REALLIST" constraint="LEN1 objective_functions" />
           </keyword>
-          <keyword  id="weights" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Multi-objective weightings" help="RespCommands.html#RespFnOpt" minOccurs="0" >
+          <keyword  id="weights" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Multi-objective weightings" help="RespCommands.html#RespFnOpt" minOccurs="0" default="equal weights" >
             <alias name="multi_objective_weights"/>
             <param type="REALLIST" constraint="LEN objective_functions" />
           </keyword>
           <keyword  id="nonlinear_inequality_constraints" name="nonlinear_inequality_constraints" code="{N_rem(sizet,numNonlinearIneqConstraints)}" label="Number of nonlinear inequality constraints" help="RespCommands.html#RespFnOpt" minOccurs="0" default="0" >
             <alias name="num_nonlinear_inequality_constraints"/>
             <param type="INTEGER" constraint=">= 0" />
-            <keyword  id="lower_bounds12" name="lower_bounds" code="{N_rem(RealDL,nonlinearIneqLowerBnds)}" label="Nonlinear inequality constraint lower bounds" help="RespCommands.html#RespFnOpt" minOccurs="0" default="vector values = -DBL_MAX" >
+            <keyword  id="lower_bounds12" name="lower_bounds" code="{N_rem(RealDL,nonlinearIneqLowerBnds)}" label="Nonlinear inequality constraint lower bounds" help="RespCommands.html#RespFnOpt" minOccurs="0" default="vector values = -infinity" >
               <alias name="nonlinear_inequality_lower_bounds"/>
               <param type="REALLIST" constraint="LEN nonlinear_inequality_constraints" />
             </keyword>
@@ -3515,11 +3515,11 @@
               <alias name="nonlinear_inequality_upper_bounds"/>
               <param type="REALLIST" constraint="LEN nonlinear_inequality_constraints" />
             </keyword>
-            <keyword  id="scale_types1" name="scale_types" code="{N_rem(strL,nonlinearIneqScaleTypes)}" label="Nonlinear constraint scaling types (for inequalities or equalities)" help="RespCommands.html#RespFnOpt" minOccurs="0" default="vector values = 'none'" >
+            <keyword  id="scale_types1" name="scale_types" code="{N_rem(strL,nonlinearIneqScaleTypes)}" label="Nonlinear constraint scaling types (for inequalities or equalities)" help="RespCommands.html#RespFnOpt" minOccurs="0" default="no scaling" >
               <alias name="nonlinear_inequality_scale_types"/>
               <param type="STRINGLIST" constraint="LEN1 nonlinear_inequality_constraints" />
             </keyword>
-            <keyword  id="scales1" name="scales" code="{N_rem(RealDL,nonlinearIneqScales)}" label="Nonlinear constraint scales (for inequalities or equalities)" help="RespCommands.html#RespFnOpt" minOccurs="0" >
+            <keyword  id="scales1" name="scales" code="{N_rem(RealDL,nonlinearIneqScales)}" label="Nonlinear constraint scales (for inequalities or equalities)" help="RespCommands.html#RespFnOpt" minOccurs="0" default="1.0 (no scaling)" >
               <alias name="nonlinear_inequality_scales"/>
               <param type="REALLIST" constraint="LEN1 nonlinear_inequality_constraints" />
             </keyword>
@@ -3531,11 +3531,11 @@
               <alias name="nonlinear_equality_targets"/>
               <param type="REALLIST" constraint="LEN nonlinear_equality_constraints" />
             </keyword>
-            <keyword  id="scale_types2" name="scale_types" code="{N_rem(strL,nonlinearEqScaleTypes)}" label="Nonlinear scaling types (for inequalities or equalities)" help="RespCommands.html#RespFnLS" minOccurs="0" default="vector values = 'none'" >
+            <keyword  id="scale_types2" name="scale_types" code="{N_rem(strL,nonlinearEqScaleTypes)}" label="Nonlinear scaling types (for inequalities or equalities)" help="RespCommands.html#RespFnLS" minOccurs="0" default="no scaling" >
               <alias name="nonlinear_equality_scale_types"/>
               <param type="STRINGLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
-            <keyword  id="scales2" name="scales" code="{N_rem(RealDL,nonlinearEqScales)}" label="Nonlinear scales (for inequalities or equalities)" help="RespCommands.html#RespFnLS" minOccurs="0" >
+            <keyword  id="scales2" name="scales" code="{N_rem(RealDL,nonlinearEqScales)}" label="Nonlinear scales (for inequalities or equalities)" help="RespCommands.html#RespFnLS" minOccurs="0" default="1.0 (no scaling)" >
               <alias name="nonlinear_equality_scales"/>
               <param type="REALLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
@@ -3591,17 +3591,17 @@
               </oneOf>
             </optional>
 	  </keyword>
-          <keyword  id="primary_scale_types1" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Calibration scaling types" help="RespCommands.html#RespFnLS" minOccurs="0" default="vector values = 'none'" >
+          <keyword  id="primary_scale_types1" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Calibration scaling types" help="RespCommands.html#RespFnLS" minOccurs="0" default="no scaling" >
             <alias name="calibration_term_scale_types"/>
             <alias name="least_squares_term_scale_types"/>
             <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
           </keyword>
-          <keyword  id="primary_scales1" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Calibration scales" help="RespCommands.html#RespFnLS" minOccurs="0" >
+          <keyword  id="primary_scales1" name="primary_scales" code="{N_rem(RealDL,primaryRespFnScales)}" label="Calibration scales" help="RespCommands.html#RespFnLS" minOccurs="0" default="1.0 (no scaling)" >
             <alias name="calibration_term_scales"/>
             <alias name="least_squares_term_scales"/>
             <param type="REALLIST" constraint="LEN1 calibration_terms" />
           </keyword>
-          <keyword  id="weights1" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Calibration term weights" help="RespCommands.html#RespFnLS" minOccurs="0" >
+          <keyword  id="weights1" name="weights" code="{N_rem(RealDL,primaryRespFnWeights)}" label="Calibration term weights" help="RespCommands.html#RespFnLS" minOccurs="0" default="equal weights" >
             <alias name="calibration_weights"/>
             <alias name="least_squares_weights"/>
             <param type="REALLIST" constraint="LEN calibration_terms" />
@@ -3663,7 +3663,7 @@
           <keyword  id="nonlinear_inequality_constraints1" name="nonlinear_inequality_constraints" code="{N_rem(sizet,numNonlinearIneqConstraints)}" label="Number of nonlinear inequality constraints" help="RespCommands.html#RespFnLS" minOccurs="0" default="0" >
             <alias name="num_nonlinear_inequality_constraints"/>
             <param type="INTEGER" constraint=">= 0" />
-            <keyword  id="lower_bounds13" name="lower_bounds" code="{N_rem(RealDL,nonlinearIneqLowerBnds)}" label="Nonlinear inequality lower bounds" help="RespCommands.html#RespFnLS" minOccurs="0" default="vector values = -DBL_MAX" >
+            <keyword  id="lower_bounds13" name="lower_bounds" code="{N_rem(RealDL,nonlinearIneqLowerBnds)}" label="Nonlinear inequality lower bounds" help="RespCommands.html#RespFnLS" minOccurs="0" default="vector values = -infinity" >
               <alias name="nonlinear_inequality_lower_bounds"/>
               <param type="REALLIST" constraint="LEN nonlinear_inequality_constraints" />
             </keyword>
@@ -3671,11 +3671,11 @@
               <alias name="nonlinear_inequality_upper_bounds"/>
               <param type="REALLIST" constraint="LEN nonlinear_inequality_constraints" />
             </keyword>
-            <keyword  id="scale_types3" name="scale_types" code="{N_rem(strL,nonlinearIneqScaleTypes)}" label="scale_types" help="" minOccurs="0" default="vector values = 'none'" >
+            <keyword  id="scale_types3" name="scale_types" code="{N_rem(strL,nonlinearIneqScaleTypes)}" label="scale_types" help="" minOccurs="0" default="no scaling" >
               <alias name="nonlinear_inequality_scale_types"/>
               <param type="STRINGLIST" constraint="LEN1 nonlinear_inequality_constraints" />
             </keyword>
-            <keyword  id="scales3" name="scales" code="{N_rem(RealDL,nonlinearIneqScales)}" label="scales" help="" minOccurs="0" >
+            <keyword  id="scales3" name="scales" code="{N_rem(RealDL,nonlinearIneqScales)}" label="scales" help="" minOccurs="0" default="1.0 (no scaling)" >
               <alias name="nonlinear_inequality_scales"/>
               <param type="REALLIST" constraint="LEN1 nonlinear_inequality_constraints" />
             </keyword>
@@ -3687,11 +3687,11 @@
               <alias name="nonlinear_equality_targets"/>
               <param type="REALLIST" constraint="LEN nonlinear_equality_constraints" />
             </keyword>
-            <keyword  id="scale_types4" name="scale_types" code="{N_rem(strL,nonlinearEqScaleTypes)}" label="scale_types" help="" minOccurs="0" default="vector values = 'none'" >
+            <keyword  id="scale_types4" name="scale_types" code="{N_rem(strL,nonlinearEqScaleTypes)}" label="scale_types" help="" minOccurs="0" default="no scaling" >
               <alias name="nonlinear_equality_scale_types"/>
               <param type="STRINGLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
-            <keyword  id="scales4" name="scales" code="{N_rem(RealDL,nonlinearEqScales)}" label="scales" help="" minOccurs="0" >
+            <keyword  id="scales4" name="scales" code="{N_rem(RealDL,nonlinearEqScales)}" label="scales" help="" minOccurs="0" default="1.0 (no scaling)" >
               <alias name="nonlinear_equality_scales"/>
               <param type="REALLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
@@ -3775,7 +3775,7 @@
       <oneOf label="Hessian type">
         <keyword  id="no_hessians" name="no_hessians" code="{N_rem(lit,hessianType_none)}" label="no_hessians" help=""  />
         <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians" help="RespCommands.html#RespHessNum" minOccurs="1" >
-          <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessNum" minOccurs="0" >
+          <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessNum" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
             <alias name="fd_hessian_step_size"/>
             <param type="REALLIST" />
           </keyword>
@@ -3805,7 +3805,7 @@
         <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians" help="RespCommands.html#RespHessMixed" minOccurs="1" >
           <keyword  id="id_numerical_hessians" name="id_numerical_hessians" code="{N_rem(intset,idNumericalHessians)}" label="Numerical Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
             <param type="INTEGERLIST" />
-            <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessMixed" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
               <alias name="fd_hessian_step_size"/>
               <param type="REALLIST" />
             </keyword>
