@@ -2218,36 +2218,41 @@ permissible parameter values - the support, as well as the relative
  plausibility of each permissible parameter value. In the context of 
 calibration or any inference step, the probability density function 
 that describes knowledge before the incorporation of data is called 
-the prior, $f_\Theta\left( \theta  \right)$.
+the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}  \right)$.
  
 When data is available, the likelihood function describes how well 
 each parameter value is supported by the data. Bayes Theorem~\cite{Jaynes}, 
 shown in Equation~\ref{eqn:BayesThm}, is used for inference:  to 
 derive the plausible parameter values, based on the prior probability 
-density and the data $d$. The result is the posterior parameter density 
-of the parameters $f_{\Theta |D}\left( {\theta |d} \right)$. It is 
+density and the data $\boldsymbol{d}$. The result is the posterior parameter density 
+of the parameters $f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}} \right)$. It is 
 interpreted the same way as the prior, but includes the information 
 derived from the data.
  
 \begin{equation}
-  \label{eqn:BayesThm}
-  {f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}}
+{f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}} \label{eq:BayesThm}
 \end{equation}
+
+
+%\begin{equation}
+%  \label{eqn:BayesThm}
+%  {f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}}
+%\end{equation}
 
 The likelihood function is used to describe how well a model's 
 predictions are supported by the data. 
 The likelihood function can be written generally as:
 \begin{equation*}
-  \mathcal{L}\left( {\theta ;d} \right) =  \mathcal{F}(q(\theta) - d)
+  \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d})
 \end{equation*}
-where $\theta$ are the parameters of model quantity of interest $q$. 
+where $\boldsymbol{\theta}$ are the parameters of model quantity of interest $q$. 
 The form of the function $\mathcal{F}$ can greatly influence the results. 
 The specific likelihood function used in Dakota is based on 
 Gaussian probability density functions. This means that we assume 
 the difference between the model quantity (e.g. quantity of interest returned from a computer simulation)
 and the experimental observations are Gaussian: 
 \begin{equation}\label{eq:model}
-d_i = q_i(\theta) + \epsilon_i,
+d_i = q_i(\boldsymbol{\theta}) + \epsilon_i,
 \end{equation}
 where $\epsilon_i$ is a random variable that can encompass both
 measurement errors on $d_i$ and modeling errors associated with the
@@ -2255,13 +2260,13 @@ simulation quantity of interest $q_i$, for each of $n$ observations.
 
 If we assume that all experiments and observations are independent,
 then the probabilistic model defined by Eq.~(\ref{eq:model}) results
-in a likelihood function for $\theta$ that is the product of $n$
+in a likelihood function for $\boldsymbol{\theta}$ that is the product of $n$
 normal probability density functions:
 %as shown in Equation~\ref{eqn:Likelihood}.
 \begin{equation}\label{eqn:Likelihood}  
-\mathcal{L}({\theta};d) = \prod_{i=1}^n
+\mathcal{L}(\boldsymbol{{\theta};d}) = \prod_{i=1}^n
 \frac{1}{\sigma_d \sqrt{2\pi}} \exp
-\left[ - \frac{\left(d_i-q_i({\theta})\right)^2}{2{\sigma_d}^2} \right],
+\left[ - \frac{\left(d_i-q_i(\boldsymbol{{\theta}})\right)^2}{2{\sigma_d}^2} \right],
 %\mathcal{L}\left( {{\theta};d} \right) = \prod\limits_{i = 1}^n {\frac{1}{{\sigma \sqrt {2\pi } }}  \exp \left[  - \frac{\left(d_i - \mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
 \end{equation}
 where ${\sigma_d}^2$ refers to the measurement error of the data,
@@ -2270,11 +2275,11 @@ assumed constant across all data observations in this case.
 We also support the more general case of a full covariance matrix, $\boldsymbol{\Sigma}_d$, that specifies the covariance between each observation $i$ and $j$. 
 In this case, the likelihood is commonly written in log form, where the log-likelihood is: %given in Equation~\ref{eqn:LogLikelihood}. 
 \begin{equation}\label{eqn:LogLikelihood}  
-\log{\mathcal{L}({\theta};d)} \propto % =-0.5 {R}^{T} {\Sigma}^{-1} {R}
+\log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma}^{-1} {R}
 -\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} \boldsymbol{r},
 \end{equation}
 where $\boldsymbol{r}$ is the vector of residuals between the data
-points and the model quantity of interest, $q(\theta)-d$.
+points and the model quantity of interest, $q(\boldsymbol{\theta})-\boldsymbol{d}$.
 
 There are now four options to specify the measurement error for
 Bayesian calibration methods, with \texttt{variance\_type} being equal
@@ -2298,7 +2303,7 @@ research area.  Note that
 MCMC algorithms may require hundreds of thousands of steps to
 converge, depending on dimensionality, response nonlinearity, and the
 desired set of posterior statistics.  Since each iteration involves an
-evaluation of the model to obtain $q(\theta)$, surrogate models of
+evaluation of the model to obtain $q(\boldsymbol{\theta})$, surrogate models of
 expensive simulations are often employed to make the MCMC process
 tractable.
  
@@ -2482,7 +2487,7 @@ responses,
 \end{figure}
 
 When the input file shown in~\ref{uq:figure18} is run, Dakota will run
-the MCMC algorithm and generate a posterior sample of $\theta$ in
+the MCMC algorithm and generate a posterior sample of $\boldsymbol{\theta}$ in
 accordance with Bayes Theorem~\ref{eqn:BayesThm} and the likelihood
 function~\ref{eqn:Likelihood}. Dakota's final output summary will
 currently report an evaluation count summary and the best sample point
