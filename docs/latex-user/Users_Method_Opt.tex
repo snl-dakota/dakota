@@ -377,7 +377,11 @@ The
 \texttt{mesh\_adaptive\_search}~\cite{AuLeTr09a},~\cite{Nomad},~\cite{Le2011a}
 is similar in spirit to and falls in the same class of methods as the
 pattern search methods.  The primary difference is that its underlying
-searach structure is that of a mesh.
+search structure is that of a mesh.  The
+\texttt{mesh\_adaptive\_search} also provides a unique optimization
+capability in Dakota in that it can explicitly treat categorical
+variables, i.e., non-relaxable discrete variables as described in
+Section~\ref{variables:design:ddv}.
 
 {\bf Simplex} methods for nonlinear optimization problem are similar
 to pattern search methods, but their search directions are defined by
