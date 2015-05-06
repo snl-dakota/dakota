@@ -2238,97 +2238,103 @@ The likelihood function is used to describe how well a model's
 predictions are supported by the data. 
 The likelihood function can be written generally as:
 \begin{equation*}
-  \mathcal{L}\left( {\theta ;d} \right) = f\left( {q(\theta) - d} \right)
+  \mathcal{L}\left( {\theta ;d} \right) =  \mathcal{F}(q(\theta) - d)
 \end{equation*}
 where $\theta$ are the parameters of model quantity of interest $q$. 
-The function $f$ can greatly influence the results. 
+The form of the function $\mathcal{F}$ can greatly influence the results. 
 The specific likelihood function used in Dakota is based on 
 Gaussian probability density functions. This means that we assume 
 the difference between the model quantity (e.g. quantity of interest returned from a computer simulation)
 and the experimental observations are Gaussian: 
-
 \begin{equation}\label{eq:model}
 d_i = q_i(\theta) + \epsilon_i,
 \end{equation}
 where $\epsilon_i$ is a random variable that can encompass both
 measurement errors on $d_i$ and modeling errors associated with the
-simulation quantity of interest $q_i$. We further 
-assume that all experiments and observations are independent. 
-If we have $n$ observations,  
-the probabilistic model defined by Eq.~(\ref{eq:model}) results in a
-likelihood function for $\theta$ that is the product of $n$ normal
-probability density functions
-as shown in Equation~\ref{eqn:Likelihood}.
+simulation quantity of interest $q_i$, for each of $n$ observations.
+
+If we assume that all experiments and observations are independent,
+then the probabilistic model defined by Eq.~(\ref{eq:model}) results
+in a likelihood function for $\theta$ that is the product of $n$
+normal probability density functions:
+%as shown in Equation~\ref{eqn:Likelihood}.
 \begin{equation}\label{eqn:Likelihood}  
 \mathcal{L}({\theta};d) = \prod_{i=1}^n
 \frac{1}{\sigma_d \sqrt{2\pi}} \exp
-\left[ - \frac{\left(d_i-q_i({\theta})\right)^2}{2{\sigma_d}^2} \right]
+\left[ - \frac{\left(d_i-q_i({\theta})\right)^2}{2{\sigma_d}^2} \right],
 %\mathcal{L}\left( {{\theta};d} \right) = \prod\limits_{i = 1}^n {\frac{1}{{\sigma \sqrt {2\pi } }}  \exp \left[  - \frac{\left(d_i - \mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
 \end{equation}
+where ${\sigma_d}^2$ refers to the measurement error of the data,
+assumed constant across all data observations in this case.
 
-In Equation~\ref{eqn:Likelihood}, the ${\sigma_d}^2$ term refers to the measurement error of the data, assumed 
-constant across all data observations in this case.  A more general case, which we support, is to 
-have a full covariance matrix, $\Sigma_d$, that specifies the covariance between each observation $i$ and $j$. 
-In this case, the likelihood is commonly written in log form, where the log-likelihood is given in Equation~\ref{eqn:LogLikelihood}. 
+We also support the more general case of a full covariance matrix, $\boldsymbol{\Sigma}_d$, that specifies the covariance between each observation $i$ and $j$. 
+In this case, the likelihood is commonly written in log form, where the log-likelihood is: %given in Equation~\ref{eqn:LogLikelihood}. 
 \begin{equation}\label{eqn:LogLikelihood}  
 \log{\mathcal{L}({\theta};d)} \propto % =-0.5 {R}^{T} {\Sigma}^{-1} {R}
--\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} \boldsymbol{r} 
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_d^{-1} \boldsymbol{r},
 \end{equation}
+where $\boldsymbol{r}$ is the vector of residuals between the data
+points and the model quantity of interest, $q(\theta)-d$.
 
-where $\boldsymbol{r}$ is the vector of residuals between the data points and the model quantity of interest, $q(\theta)-d$.  
-There are now four options to specify 
-the measurement error for Bayesian calibration methods, with \texttt{variance\_type} being 
-equal to \texttt{none} for no measurement error specified (in this case, the variance is one), 
-\texttt{scalar} where a constant value ${\sigma_d}^2$ is given for all observations, \texttt{diagonal} where a 
-value is specified for the diagonal elements of the covariance matrix $\Sigma_d$ meaning that each observation 
-has its own measurement error but there are no cross terms, and \texttt{matrix} where the full covariance 
-matrix $\Sigma_d$ is specified.  Note that the \texttt{diagonal} and \texttt{matrix} terms are only available 
-for field response data.  For scalar responses, the only variance values that are specified are with \texttt{none} or 
-\texttt{sigma}.  Finally, all the sigma values should be given as variances (${\sigma_d}^2$).
+There are now four options to specify the measurement error for
+Bayesian calibration methods, with \texttt{variance\_type} being equal
+to \texttt{none} for no measurement error specified (in this case, the
+variance is one), \texttt{scalar} where a constant value
+${\sigma_d}^2$ is given for all observations, \texttt{diagonal} where
+a value is specified for the diagonal elements of the covariance
+matrix $\Sigma_d$ meaning that each observation has its own
+measurement error but there are no cross terms, and \texttt{matrix}
+where the full covariance matrix $\Sigma_d$ is specified.  Note that
+the \texttt{diagonal} and \texttt{matrix} terms are only available for
+field response data.  For scalar responses, variance types
+can be specified to be \texttt{none} or \texttt{scalar}.  %Finally,
+%all the sigma values should be given as variances (${\sigma_d}^2$).
 
-Markov Chain Monte Carlo (MCMC) is the standard method used to compute 
-posterior parameter densities, given the observational data 
-and the priors. There are many references that 
-describe the basic algorithm~\cite{Gilks}, and in addition, the algorithms 
-are an active research area.  One variation used in Dakota is DRAM: 
-Delayed Rejection and Adaptive Metropolis~\cite{Haario}. Note that 
-MCMC algorithms take tens or hundreds of thousands of steps to converge. 
-Since each iteration involves an evaluation of the model to obtain 
-$q(\theta)$, often surrogate models of the simulation 
-model are employed.
+Markov Chain Monte Carlo (MCMC) is the standard method used to compute
+posterior parameter densities, given the observational data and the
+priors. There are many references that describe the basic
+algorithm~\cite{Gilks}, and in addition, the algorithms are an active
+research area.  Note that
+MCMC algorithms may require hundreds of thousands of steps to
+converge, depending on dimensionality, response nonlinearity, and the
+desired set of posterior statistics.  Since each iteration involves an
+evaluation of the model to obtain $q(\theta)$, surrogate models of
+expensive simulations are often employed to make the MCMC process
+tractable.
  
-As mentioned above, we have three implementations of a Bayesian 
-calibration:  one called QUESO, one called DREAM, and one called GPMSA. 
-They are specified with the \texttt{bayes\_calibration} \texttt{queso}
-or \texttt{bayes\_calibration} \texttt{dream} or 
-\texttt{bayes\_calibration} \texttt{gpmsa}, respectively.
-The QUESO method uses components from the QUESO library
+As mentioned above, we have three implementations for Bayesian
+calibration: QUESO, DREAM, and GPMSA.  They are specified with the
+\texttt{bayes\_calibration} keyword in combination with the
+\texttt{queso}, \texttt{dream}, or \texttt{gpmsa} selections,
+respectively.  The QUESO method uses components from the QUESO library
 (Quantification of Uncertainty for Estimation, Simulation, and
-Optimization) developed at The University of Texas at Austin.
-DREAM uses the DREAM code developed by John Burkardt. 
-It is based on the DiffeRential Evolution Adaptive
-Metropolis approach which runs multiple different chains simultaneously
-for global exploration, and automatically tunes the proposal covariance
-during the process by a self-adaptive randomized subspace sampling
-~\cite{Vrugt}.
-The GPMSA calibration capability uses the GPMSA code developed at 
-Los Alamos National Laboratory. At this point, the QUESO implementation 
-is the most robust and the one that we recommend. 
+Optimization) developed at The University of Texas at Austin.  It
+implements the DRAM algorithm, among others.  DRAM indicates the use
+of Delayed Rejection and Adaptive Metropolis~\cite{Haario}, where
+these two algorithm options can be activated in any combination.
+%
+DREAM uses an implementation of DiffeRential Evolution Adaptive Metropolis
+developed by John Burkardt.  The DREAM approach runs multiple
+different chains simultaneously for global exploration, and
+automatically tunes the proposal covariance during the process by a
+self-adaptive randomized subspace sampling~\cite{Vrugt}.  
+%
+The GPMSA capability is based on the GPMSA Matlab toolbox developed at
+Los Alamos National Laboratory. At this point, the QUESO
+implementation is the most well-developed within Dakota and is the one
+that we recommend.
 
 In the QUESO method, the user can run the MCMC sampling with 
 the simulation model directly. However, 
 if the model is expensive, we recommend that the user employs 
 a surrogate model (an emulator) because the Monte Carlo Markov Chain 
-will be much faster:  the MCMC can generate thousands of samples 
-on the emulator more quickly. One can specify a Gaussian process,
-a polynomial chaos expansion or a stochastic collocation 
+will be much faster: the MCMC can generate thousands of samples 
+on the emulator in very little time. One can specify a Gaussian process,
+a polynomial chaos expansion, or a stochastic collocation expansion
 as the emulator for the \texttt{queso} method. The specification 
 details for these are listed in the Reference Manual. 
 One can also specify various settings for the MCMC sampling: 
-the sampling can use a standard Metropolis-Hastings algorithm \texttt{metropolis\_hastings},
-adaptive Metropolis \texttt{adaptive\_metropolis}, delayed rejection \texttt{delayed\_rejection},
-the full DRAM, \texttt{dram} which involves both delayed rejection and adaptive Metropolis, 
-or a multi-level algorithm, \texttt{multilevel}. 
+the sampling can use a standard Metropolis-Hastings algorithm (\texttt{metropolis\_hastings}), adaptive Metropolis (\texttt{adaptive\_metropolis}) for adapting the proposal covariance during the sampling, delayed rejection (\texttt{delayed\_rejection}) for backtracking from sample rejections, the full DRAM (\texttt{dram}) which involves both delayed rejection and adaptive Metropolis, or a multi-level algorithm (\texttt{multilevel}).
 
 There are also controls to specify the proposal covariance which governs how the samples 
 are generated in the chain.  
@@ -2339,26 +2345,26 @@ forming the Hessian of the misfit function (the negative
 log likelihood).  When derivative information is available inexpensively (e.g. from an emulator), 
 the derivative-based proposal covariance forms a more
 accurate proposal distribution, resulting in lower rejection rates and
-faster chain mixing.  Note that the derivative-based proposal covariance may also be updated 
-by adding high-likelihood evaluations of the actual simulation to the emulator build points in 
-an adaptive fashion, thus refining the Hessian.  
+faster chain mixing.  Note that the derivative-based proposal covariance 
+should be updated periodically based on a \texttt{proposal\_updates} specification.
+%may also be updated by adding high-likelihood evaluations of the actual simulation to the emulator build points in an adaptive fashion, thus refining the Hessian.  
 The \texttt{prior} setting means that Dakota will form the proposal from the variance of the prior distributions of the 
 parameters being calibrated.  When specifying the proposal covariance with values or from a file, the user 
 can choose to specify only the diagonals of the covariance matrix or to specify the full covariance matrix.
-An additional control for QUESO is to perform a logit transformation, \texttt{logit\_transform}, which 
-performs an internal variable transformation from bounded domains to unbounded domains in order to reduce sample rejection due to an out-of-bounds condition.
+An additional control for QUESO is to perform a logit transformation (\texttt{logit\_transform}) which 
+performs an internal variable transformation from bounded domains to unbounded domains. %in order to reduce sample rejection due to an out-of-bounds condition.
 This option can be helpful when regions of high posterior density exist
 in the corners of a multi-dimensional bounded domain.  In these cases,
 it may be difficult to generate feasible samples from the proposal density,
 such that transformation to unbounded domains may greatly reduce sample
 rejection rates.
 The specification details for keywords governing the proposal covariance are listed in the Reference Manual. 
-For more detail about the formulation of the various proposal covariance options, see the Theory Manual. 
+For more detail about derivative-based formulations involving the misfit Hessian, refer to the Theory Manual. 
     
-For the DREAM method, one can define the number of chains used with
-\texttt{chains}.  The total number of generations per chain in DREAM is
+For the DREAM method, one can define the number of chains used with the
+\texttt{chains} specification.  The total number of generations per chain in DREAM is
 the number of samples divided by the number of chains.
-The minimum number of chains is three.
+%The minimum number of chains is three.
 The number of chains randomly selected to be used in the crossover
 each time a crossover occurs is \texttt{crossover\_chain\_pairs}.
 There is an extra adaptation during burn-in, in which DREAM estimates a
@@ -2366,16 +2372,15 @@ distribution of crossover probabilities that favors large jumps over
 smaller ones in each of the chains.
 Normalization is required to ensure that all of the input dimensions contribute
 equally.  In this process, a discrete number of candidate points for
-each crossover value is generated.  This parameter is \texttt{num\_cr}.
-The \texttt{gr\_threshold} is the convergence tolerance for the Gelman-Rubin
-statistic which will govern the convergence of the multiple chain
+each crossover value is generated, which can be specified with \texttt{num\_cr}.
+The \texttt{gr\_threshold} control is the convergence tolerance for the Gelman-Rubin
+statistic, which governs the convergence of the multiple chain
 process.  The integer \texttt{jump\_step} forces a long jump every 
 \texttt{jump\_step} generations.
-For more details about these parameters, see \cite{Vrugt}. 
+For more details about these parameters, refer to \cite{Vrugt}. 
 
-GPMSA is another code that provides the capability for Bayesian 
-calibration.
-A key part of GPMSA is the construction of an emulator from simulation runs 
+For the GPMSA capability, a key part of the algorithm involves the 
+construction of an emulator from simulation runs 
 collected at various settings of input parameters. The emulator is a 
 statistical model of the system response, and it is used to incorporate 
 the observational data to improve system predictions and constrain or 
@@ -2385,17 +2390,17 @@ by Kennedy and O'Hagan~\cite{Kenn01}. The particular approach developed
 by the Los Alamos group is provided in~\cite{Hig08}. GPMSA uses 
 Gaussian process models in the emulation, but the emulator is 
 actually a set of basis functions (e.g. from a singular value 
-decomposition) which have GPs as the coefficients. One major 
-difference between GPMSA and the QUESO implementation in Dakota 
-is that the QUESO implementation does not have an explicit 
-``discrepancy'' function $\delta$ which models the difference between 
-the simulation and the observational data results in addition 
-to the error term $\epsilon$, but GPMSA has a sophisticated 
-model for the discrepancy term. 
+decomposition) which have GPs as the coefficients. 
 At this point, the GPMSA implementation in Dakota is an early 
-prototype. The user will have to edit the GPMSA class in the Dakota source to tailor it to their problem 
-and recompile before running GPMSA.
- 
+prototype. The user will have to edit the GPMSA class in the Dakota 
+source to tailor it to their problem and recompile before running GPMSA.
+%One major difference between the GPMSA toolbox and the current
+%implementation in Dakota is that the current Dakota implementation
+%does not have an explicit ``discrepancy'' function $\delta$ which
+%models the difference between the simulation and the observational
+%data results in addition to the error term $\epsilon$, but GPMSA has a
+%sophisticated model for the discrepancy term.
+
 %At this point, the GPMSA library is a standalone C++ library which has 
 %its own methods to create Gaussian process models, perform MCMC updating, 
 %etc. The GPMSA C++ library is an alpha-version and undergoing development, 
@@ -2404,18 +2409,20 @@ and recompile before running GPMSA.
 %will involve more interoperability and sharing of optimization 
 %algorithms and surrogate models between Dakota and GPMSA, for example. 
 
+\subsection{Bayesian Calibration Example}\label{uq:bayesian:ex}
+
 We briefly describe the process of running QUESO from Dakota.
 The user will create a Dakota input file such as the one shown 
 in~\ref{uq:figure18}. 
 Note that the method is \texttt{bayes\_calibration queso}, 
-specifying the QUESO algorithm. The number of 
+specifying the QUESO algorithm with the DRAM (delayed
+rejection adaptive metropolis) solver. The number of 
 samples indicates the number of samples that the MCMC algorithm 
-will take, in this case 1000 (this usually will need to be larger). 
+will generate in its acceptance chain\footnote{If delayed rejection is active, the number of simulation evaluations will typically be higher due to backtracking.}, in this case 1000 (this usually will need to be larger). 
 For this example, we are using the \texttt{cantilever3} analytic 
 example, so we do not need to specify an emulator, but the lines 
 commented out give an idea of the options if the user wanted to 
-specify an emulator. This example is using the full DRAM (delayed
-rejection adaptive metropolis). The proposal covariance 
+specify an emulator.  The proposal covariance 
 used has diagonal element values of 1.e6 and 0.1.  
 The calibration terms in the responses section refers to the 
 number of outputs that will be used in the calibration process:  
@@ -2423,14 +2430,13 @@ in this case, it is just two. The calibration data file
 has the observational data:  in this case, it is a freeform file 
 (e.g. no header or annotation) with ten experiments. For each 
 experiment, there are two experiment values, one for stress and one for displacement, followed 
-by two variance values for the error associated with that experiment, one for stress and one for displacement. 
+by two variance values for the error associated with that experiment for each quantity of interest. 
 
 \begin{figure}[htbp!]
 \centering
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
-
 method,
        bayes_calibration queso
 #       emulator
@@ -2475,37 +2481,47 @@ responses,
 \label{uq:figure18}
 \end{figure}
 
-When the input file shown in~\ref{uq:figure18} is run, 
-Dakota will run the MCMC algorithm and generate a posterior sample of 
-$\theta$ in accordance with Bayes Theorem~\ref{eqn:BayesThm} and 
-the likelihood function~\ref{eqn:Likelihood}. The MCMC sample output 
-is put into a directory called \texttt{outputData} in the directory 
-from which Dakota is run.  The file \texttt{display\_sub0.txt} 
-contains information regarding the MCMC process.  The 
-Matlab files contained in the \texttt{outputData} directory
-contain the chain files.  The files to load in Matlab are 
-\texttt{raw\_chain.m} or \texttt{filtered\_chain.m}, containing 
-the full chain or the filtered chain values of the parameters. 
-There are corresponding files containing the log likelihood values. 
-In addition, if verbose output is specified, 
-the values that Dakota generates are 
-written to a file in the run directory called QuesoOutput.txt. 
-The first columns of this file are the sample inputs, the next columns 
-are the responses, and the final column is the log of the 
-likelihood.  Note that this file contains ALL values generated, 
-including the ones rejected, so it is not the actual MCMC
+When the input file shown in~\ref{uq:figure18} is run, Dakota will run
+the MCMC algorithm and generate a posterior sample of $\theta$ in
+accordance with Bayes Theorem~\ref{eqn:BayesThm} and the likelihood
+function~\ref{eqn:Likelihood}. Dakota's final output summary will
+currently report an evaluation count summary and the best sample point
+that was visited during the MCMC process, as measured by maximum
+posterior probability (an estimate of the MAP point).
+
+A variety of auxilliary output also exists.  The MCMC sample output is
+put into a directory called \texttt{outputData} in the directory from
+which Dakota is run.  The file \texttt{display\_sub0.txt} contains
+information regarding the MCMC process.  The Matlab files contained in
+the \texttt{outputData} directory contain the chain files.  The files
+to load in Matlab are \texttt{raw\_chain.m} or
+\texttt{filtered\_chain.m}, containing the full chain or the filtered
+chain values of the parameters\footnote{The full chain will be output
+  in cases of adaptive posterior refinement or proposal updating,
+  since these use cases access the entire acceptance chain to identify
+  refinement data or restarting points, respectively.}.  There are
+corresponding files containing the log likelihood values.  In
+addition, if verbose output is specified, the values that Dakota
+generates are written to a file in the run directory called
+QuesoOutput.txt.  The first columns of this file are the sample
+inputs, the next columns are the responses, and the final column is
+the log-likelihood.  Note that this file contains ALL values
+generated, including the ones rejected, so it is not the actual MCMC
 chain which contains only the accepted points.
 
-We expect to continue development of Bayesian calibration methods, 
-so check for updates to this capability. The QUESO and GPMSA capabilities
-in Dakota currently rely on the QUESO library developed by The University of 
-Texas at Austin. This integrated capability is still in prototype form and 
-available to close collaborators of the Dakota team.  DREAM is distributed 
-with Dakota.
-If you are interested in these capabilities, contact the Dakota developers at  
-dakota-developers@development.sandia.gov.
+%We expect to continue development of Bayesian calibration methods, 
+%so check for updates to this capability. The QUESO and GPMSA capabilities
+%in Dakota currently rely on the QUESO library developed by The University of 
+%Texas at Austin. This integrated capability is still in prototype form and 
+%available to close collaborators of the Dakota team.  DREAM is distributed 
+%with Dakota.
+%
+%Bayesian methods are currently an active development area within
+%Dakota, so we recommend monitoring our updates to these capabilities.
+%If you would like additional information on emerging capabilities, 
+%contact the Dakota developers at dakota-developers@development.sandia.gov.
   
-\section{Uncertainty Quantification Usage Guidelines }\label{usage:uq}
+\section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
 
 The choice of uncertainty quantification method depends on how the
 input uncertainty is characterized, the computational budget, and the
