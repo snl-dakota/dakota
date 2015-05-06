@@ -59,21 +59,21 @@ second-order information may involve analytic, finite-difference, or
 quasi-Newton Hessians.
 
 Correcting surrogate models with additive corrections involves
-\anchor eq-correct_val_add
+<!-- cannot reuse anchor in a DUPLICATE: \anchor eq-correct_val_add -->
 \f{equation}
 \hat{f_{hi_{\alpha}}}({\bf x}) = f_{lo}({\bf x}) + \alpha({\bf x}) 
 \f}
 where multifidelity notation has been adopted for clarity. For
 multiplicative approaches, corrections take the form
-\anchor eq-correct_val_mult
+<!-- cannot reuse anchor in a DUPLICATE: \anchor eq-correct_val_mult -->
 \f{equation}
 \hat{f_{hi_{\beta}}}({\bf x}) = f_{lo}({\bf x}) \beta({\bf x})
 \f}
 where, for local corrections, \f$\alpha({\bf x})\f$ and \f$\beta({\bf x})\f$
 are first or second-order Taylor series approximations to the exact
 correction functions:
-\anchor eq-taylor_a
-\anchor eq-taylor_b
+<!-- cannot reuse anchor in a DUPLICATE: \anchor eq-taylor_a -->
+<!-- cannot reuse anchor in a DUPLICATE: \anchor eq-taylor_b -->
 \f{eqnarray}
 \alpha({\bf x}) & = & A({\bf x_c}) + \nabla A({\bf x_c})^T 
 ({\bf x} - {\bf x_c}) + \frac{1}{2} ({\bf x} - {\bf x_c})^T 
@@ -83,8 +83,8 @@ correction functions:
 B({\bf x_c}) ({\bf x} - {\bf x_c})
 \f}
 where the exact correction functions are
-\anchor eq-exact_B
-\anchor eq-exact_A 
+<!-- cannot reuse anchor in a DUPLICATE: \anchor eq-exact_B -->
+<!-- cannot reuse anchor in a DUPLICATE: \anchor eq-exact_A -->
 \f{eqnarray}
 A({\bf x}) & = & f_{hi}({\bf x}) - f_{lo}({\bf x})    \\
 B({\bf x}) & = & \frac{f_{hi}({\bf x})}{f_{lo}({\bf x})} 

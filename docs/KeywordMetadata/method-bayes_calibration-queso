@@ -64,7 +64,7 @@ Note that as of Dakota 6.2, the field data capability may be used with QUESO.
 That is, the user can specify field simulation data and field experiment data,
 and Dakota will interpolate and provide the proper residuals to the Bayesian calibration.
 
-Topics::	bayesian_calibration, package_queso, field_calibration_terms
+Topics::	bayesian_calibration, package_queso
 Examples::
 Theory::
 Faq::

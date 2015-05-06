@@ -51,7 +51,7 @@ and Dakota will interpolate and provide the proper residuals to the Bayesian cal
 If you are interested in these capabilities, contact the %Dakota developers 
 at dakota-developers@development.sandia.gov.
 
-Topics::	bayesian_calibration, package_queso, field_calibration_terms
+Topics::	bayesian_calibration, package_queso
 Examples::
 Theory::
 Faq::
