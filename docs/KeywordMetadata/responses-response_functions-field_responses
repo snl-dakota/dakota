@@ -23,7 +23,7 @@ on response functions is quantified, and can also be used in parameter
 study and design of experiments methods (although these methods are
 not restricted to this data set), in which the effect of parameter
 variations on response functions is evaluated. 
-As of Dakota 6.1, field response functions will be translated back to scalar responses. 
+Currently, field response functions will be translated back to scalar responses. 
 So, a field of length 100 will be treated as 100 separate scalar responses.  
 However, in future versions of Dakota, we plan to implement methods which can exploit the nature of field data.
 

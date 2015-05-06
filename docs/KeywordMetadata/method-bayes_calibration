@@ -44,10 +44,14 @@ and the capability to model functional data such as time series data.
 The Bayesian capabilities are under active development.  At this stage, 
 the QUESO methods in %Dakota are the most advanced and robust, followed 
 by DREAM, followed by GPMSA, which is in a very prototype form at this time. 
+Note that as of Dakota 6.2, the field data capability may be used with QUESO and DREAM. 
+That is, the user can specify field simulation data and field experiment data, 
+and Dakota will interpolate and provide the proper residuals to the Bayesian calibration. 
+
 If you are interested in these capabilities, contact the %Dakota developers 
 at dakota-developers@development.sandia.gov.
 
-Topics::	bayesian_calibration, package_queso
+Topics::	bayesian_calibration, package_queso, field_calibration_terms
 Examples::
 Theory::
 Faq::

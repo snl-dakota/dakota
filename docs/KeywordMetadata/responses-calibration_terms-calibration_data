@@ -53,7 +53,8 @@ For each experiment, there are four main types of data related to fields:
    This is used when there is more than one experiment.  If \c num_config_variables is positive, 
    the configuration variables for each experiment should be placed in a file named 
    experiment.NUM.config, where the number of items in that config file are the 
-   \c num_config_variables.
+   \c num_config_variables.  Currently, configuration variables are not being used.  However, the intent is that 
+   they will be used as state variables for the simulation (for example) and not as variables that would be calibrated.
 
    </li>
 </ul>
@@ -82,5 +83,9 @@ experiment data.  If the \c interpolate keyword is not specified,
 Dakota will assume that the simulation field data and the experiment
 field data is taken at the same set of independent coordinate values and 
 simply construct the difference between these field terms to create the set of residuals for the sum-of-squares calculation.
- 
+When \c interpolate is specified, the simulation coordinates are assumed fixed and the same for each simulation.  
+These coordinates are provided in \c coordinate_data_file or \c coordinate_list.  However, the experiment coordinates 
+for each experiment can be different, and are provided in the files numbered by experiment with the file names given by 
+response_descriptor.NUM.coords, as indicated above. 
+
 

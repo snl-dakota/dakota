@@ -6,6 +6,9 @@ there can be different configuration variables (e.g. experimental settings,
 boundary conditions, etc.) per experiment.
 See \ref responses-calibration_terms-calibration_data or 
 \ref responses-calibration_terms-calibration_data_file.
+Note:  as of Dakota 6.2, configuration variables are not used.  However, the intent is to 
+treat them as state variables which will be passed to the simulation, and not treated as 
+parameters which are calibrated. 
 
 Topics::	
 Examples::
