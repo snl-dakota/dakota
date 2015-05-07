@@ -1,0 +1,25 @@
+# ACRO now checked in as a snapshot
+#https://software.sandia.gov/svn/acro/acro-dakota/trunk acro
+# JEGA now checked in as a snapshot
+# https://software.sandia.gov/svn/JEGA/trunk JEGA
+# Formerly in pecos/packages
+CONMIN        -r2751 https://software.sandia.gov/svn/tpl/conmin/tags/1.0
+DDACE         -r445  https://software.sandia.gov/svn/ddace/ddace/tags/dakota-6.2
+FSUDace       -r2751 https://software.sandia.gov/svn/tpl/FSUDace/trunk
+LHS           -r5365 https://software.sandia.gov/svn/LHS/trunk
+NCSUOpt       -r2751 https://software.sandia.gov/svn/tpl/NCSUOpt/trunk
+NL2SOL        -r2751 https://software.sandia.gov/svn/tpl/NL2SOL/trunk
+NOMAD         -r2751 https://software.sandia.gov/svn/tpl/NOMAD/trunk
+OPTPP         -r761  https://software.sandia.gov/svn/optpp/optpp/tags/dakota-6.2
+PSUADE        -r2751 https://software.sandia.gov/svn/tpl/PSUADE/trunk
+VPISparseGrid -r2751 https://software.sandia.gov/svn/tpl/VPISparseGrid/trunk
+ampl          -r2751 https://software.sandia.gov/svn/tpl/ampl/trunk
+dfftpack      -r2751 https://software.sandia.gov/svn/tpl/dfftpack/tags/1.0
+dream         -r2751 https://software.sandia.gov/svn/tpl/dream/trunk
+fftw          -r2751 https://software.sandia.gov/svn/tpl/fftw/tags/3.2.2
+hopspack      -r225  https://software.sandia.gov/svn/hopspack/tags/dakota-6.2
+nidr          -r126  https://software.sandia.gov/svn/nidr/trunk
+pecos         -r1011 https://software.sandia.gov/svn/pecos/branches/1.5
+queso         -r2751 https://software.sandia.gov/svn/tpl/queso/trunk
+surfpack      -r747  https://software.sandia.gov/svn/surfpack/tags/dakota-6.2
+teuchos       -r2751 https://software.sandia.gov/svn/tpl/teuchos/tags/11.0.3
