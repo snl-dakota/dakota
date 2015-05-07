@@ -35,15 +35,22 @@ support the \c freeform option.
 Topics::	file_formats
 Examples::
 
-Import a freeform points file containing only data for variables to
-perform a parameter study.
-
+Export a freeform tabular file containing only data for variables and
+responses.  Input file fragment:
 \verbatim
-method
-  list_parameter_study
-    import_points_file = 'dakota_pstudy.7.dat'
+environment
+  tabular_data
+    tabular_data_file = 'dakota_summary.dat'
     freeform
 \endverbatim
+Resulting tabular file:
+\verbatim
+            0.9            1.1         0.0002           0.26           0.76 
+        0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
+        0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
+...
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	

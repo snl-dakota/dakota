@@ -32,16 +32,25 @@ support the \c freeform option.
 Topics::	file_formats
 Examples::
 
-Import an annotated points file containing a header row, leading
-eval_id and interface_id columns, and data for variables to perform a
-parameter study.
-
+Export an annotated top-level tabular data file containing a header
+row, leading eval_id and interface_id columns, and data for variables
+and responses.  Input file fragment:
 \verbatim
-method
-  list_parameter_study
-    import_points_file = 'dakota_pstudy.3.dat'
+environment
+  tabular_data
+    tabular_data_file = 'dakota_summary.dat'
     annotated
 \endverbatim
+Resulting tabular file:
+\verbatim
+%eval_id interface             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
+1            NO_ID            0.9            1.1         0.0002           0.26           0.76 
+2            NO_ID        0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
+3            NO_ID        0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
+...
+\endverbatim
+
+
 Theory::
 Faq::
 See_Also::	

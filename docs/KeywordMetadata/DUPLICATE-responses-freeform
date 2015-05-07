@@ -35,6 +35,14 @@ responses
   scalar_data_file 'shock_experiment.dat'
     freeform
 \endverbatim
+
+Example data file with two measured quantities, three experiments:
+\verbatim
+	18.23		83.21
+	34.14		93.24
+	22.41		88.92
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	

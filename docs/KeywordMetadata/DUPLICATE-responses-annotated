@@ -37,6 +37,16 @@ responses
   scalar_data_file 'shock_experiment.dat'
     annotated
 \endverbatim
+
+Example data file with two measured quantities, three experiments:
+\verbatim
+%exp_id		velocity	stress
+1		18.23		83.21
+2		34.14		93.24
+3		22.41		88.92
+\endverbatim
+
+
 Theory::
 Faq::
 See_Also::	

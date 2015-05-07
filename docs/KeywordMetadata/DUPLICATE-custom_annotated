@@ -33,16 +33,24 @@ support the \c freeform option.
 Topics::	file_formats
 Examples::
 
-Import a custom-annotated points file in Dakota 6.0 format, which
+Export a custom-annotated tabular file in Dakota 6.0 format, which
 contained only header and eval_id (no interface_id), and data for
-variables, to perform a parameter study:
-
+variables and responses.  Input file fragment:
 \verbatim
-method
-  list_parameter_study
-    import_points_file = 'dakota_pstudy.3.dat'
+environment
+  tabular_data
+    tabular_data_file = 'dakota_summary.dat'
     custom_annotated header eval_id
 \endverbatim
+Resulting tabular file:
+\verbatim
+%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2 
+1                   0.9            1.1         0.0002           0.26           0.76 
+2               0.90009            1.1 0.0001996404857   0.2601620081       0.759955 
+3               0.89991            1.1 0.0002003604863   0.2598380081       0.760045 
+...
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	
