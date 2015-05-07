@@ -1,19 +1,20 @@
-This page discusses discrete state, design, and uncertain variables
+This page discusses discrete design, uncertain, and state variables
 (which have \c discrete in their keyword name) as they have similar
 specifications. These include:
 -# Integer ranges
--# Set of integers
--# Set of strings
--# Set of reals
+-# Sets of integers
+-# Sets of reals
+-# Sets of strings
 and each is described below.
 
-In addition, some uncertain variables, e.g., binomial, are discrete,
-real-valued random variables specified using parameters. These are
-described on their individual keyword pages.
+In addition, some aleatory uncertain variables, e.g., \ref
+variables-binomial_uncertain, are discrete integer-valued random
+variables specified using parameters. These are described on their
+individual keyword pages.
 
 <b> Sets </b>
 
-Sets of integers, strings, and reals have similar specifications,
+Sets of integers, reals, and strings have similar specifications,
 though different value types.
 
 The variables are specified using three keywords:
@@ -36,6 +37,7 @@ Examples are given on the pages:
 - discrete design set \ref variables-discrete_design_set-string
 - discrete uncertain set \ref variables-discrete_uncertain_set-integer
 - discrete uncertain set \ref variables-discrete_uncertain_set-real
+- discrete uncertain set \ref variables-discrete_uncertain_set-string
 
 
 <b> Range </b>

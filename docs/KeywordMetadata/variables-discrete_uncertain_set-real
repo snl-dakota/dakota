@@ -1,21 +1,7 @@
 Blurb::
 Discrete, epistemic uncertain variable - real numbers within a set
 Description::
-In addition to continuous and discrete aleatory probability
-distributions, %Dakota provides support for continuous and discrete
-epistemic uncertainties through the keywords:
-
-\li \ref variables-continuous_interval_uncertain
-\li \ref variables-discrete_interval_uncertain
-\li \ref variables-discrete_uncertain_set-integer
-\li \ref variables-discrete_uncertain_set-string
-\li \ref variables-discrete_uncertain_set-real
-
-Interval-based and set variables do
-not represent probability distributions.
-
-Discrete set
-variables may be used to specify categorical choices which are
+Discrete set variables may be used to specify categorical choices which are
 epistemic. For example, if we have three possible forms for a physics
 model (model 1, 2, or 3) and there is epistemic uncertainty about
 which one is correct, a discrete uncertain set 
@@ -26,6 +12,21 @@ which the discrete variable may take any value defined within the real
 set (for example, a parameter may have two allowable real values,
 3.285 or 4.79). 
 
+Other epistemic types include:
+\li \ref variables-continuous_interval_uncertain
+\li \ref variables-discrete_interval_uncertain
+\li discrete_uncertain_set \ref variables-discrete_uncertain_set-integer
+\li discrete_uncertain_set \ref variables-discrete_uncertain_set-string
+
+<!--
+\li discrete_uncertain_set \ref variables-discrete_uncertain_set-real
+
+In addition to continuous and discrete aleatory probability
+distributions, %Dakota provides support for continuous and discrete
+epistemic uncertainties through the keywords:
+
+Interval-based and set variables do not represent probability distributions.
+-->
 
 Topics::	discrete_variables, epistemic_uncertain_variables
 Examples::
@@ -36,7 +37,7 @@ discrete_uncertain_set
  integer
  num_set_values  2           3
  set_values      2.1  1.3    0.4  5  2.6
- descriptors     'd1'        'd2'
+ descriptors     'dr1'       'dr2'
 \endverbatim
 
 Theory::

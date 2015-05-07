@@ -2,30 +2,31 @@ Blurb::
 Epistemic uncertain variable - values from one or more discrete intervals
 
 Description::
+Discrete interval uncertain variables are epistemic types.  They can
+specify a single interval per variable which may be used in interval
+analysis, where the goal is to determine the interval bounds on the
+output corresponding to the interval bounds on the input. Permissible
+values are any integer within the bound.  More detailed continuous
+interval representations can specify a set of belief structures based
+on intervals that may be contiguous, overlapping, or disjoint. This is
+used in specifying the inputs necessary for an epistemic uncertainty
+analysis using Dempster-Shafer theory of evidence.
+
+Other epistemic types include:
+\li \ref variables-continuous_interval_uncertain
+\li discrete_uncertain_set \ref variables-discrete_uncertain_set-integer
+\li discrete_uncertain_set \ref variables-discrete_uncertain_set-string
+\li discrete_uncertain_set \ref variables-discrete_uncertain_set-real
+
+<!--
+\li \ref variables-discrete_interval_uncertain
+
 In addition to continuous and discrete aleatory probability
 distributions, %Dakota provides support for continuous and discrete
 epistemic uncertainties through the keywords:
 
-\li \ref variables-continuous_interval_uncertain
-\li \ref variables-discrete_interval_uncertain
-\li \ref variables-discrete_uncertain_set-integer
-\li \ref variables-discrete_uncertain_set-real
-
-Interval-based and set variables do
-not represent probability distributions.
-
-In the case of discrete
-intervals, they can specify a single interval per variable which may
-be used in interval analysis, where the goal is to determine the
-interval bounds on the output corresponding to the interval bounds on
-the input. Permissible values are any integer within the bound.
-More detailed continuous interval representations can
-specify a set of belief structures based on intervals that may be
-contiguous, overlapping, or disjoint. This is used in specifying the
-inputs necessary for an epistemic uncertainty analysis using
-Dempster-Shafer theory of evidence.
-
-Note that the intervals can be overlapping or disjoint.  
+Interval-based and set variables do not represent probability distributions.
+-->
 
 Topics:: 	discrete_variables, epistemic_uncertain_variables
 Examples::
