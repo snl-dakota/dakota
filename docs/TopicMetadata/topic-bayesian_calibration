@@ -1,3 +1,9 @@
+See the discussion of Bayesian Calibration in the Dakota User's Manual
+\cite UsersMan.
+
+<!--
+The following information is outdated; user manual has more up to data info
+
 We have three preliminary implementations of Bayesian calibration methods 
 in Dakota, where a ``prior distribution'' on a parameter is 
 updated through a Bayesian framework involving experimental data and 
@@ -230,10 +236,11 @@ responses,
         no_gradients
         no_hessians
 \endverbatim
+-->
 <!--
 \caption{Dakota input file for UQ example using Bayesian Calibration}
 -->
-
+<!--
 When the input file shown in \ref figUQ18 is run, 
 Dakota will run the MCMC algorithm and generate a posterior sample of 
 \f$\theta\f$ in accordance with Bayes Theorem \ref eqnBayesThm and 
@@ -253,3 +260,4 @@ available to close collaborators of the Dakota team.  DREAM is distributed
 with Dakota.
 If you are interested in these capabilities, contact the Dakota developers at  
 dakota-developers@development.sandia.gov.
+-->

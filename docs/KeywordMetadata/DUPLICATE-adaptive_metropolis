@@ -1,16 +1,24 @@
-Blurb::  The use of Adaptive Metropolis for the MCMC algorithm. 
-Description::  This keyword specifies the use of the Adaptive Metropolis algorithm.  That is, the "AM" part of DRAM is used but the "DR" part is not:  specifying this keyword involves only the Adaptive Metropolis part of the MCMC algorithm in which the covariance of the proposal density is updated adaptively.
+Blurb::  Use the Adaptive Metropolis MCMC algorithm
+
+Description::  
+This keyword specifies the use of the Adaptive Metropolis algorithm.
+That is, the "AM" part of DRAM is used but the "DR" part is not:
+specifying this keyword activates only the Adaptive Metropolis part of
+the MCMC algorithm, in which the covariance of the proposal density is
+updated adaptively.
  
 <b> Default Behavior </b>
 
-There are five possibilities for the MCMC algorithm currently:  dram, delayed_rejection, adaptive_metropolis, metropolis_hastings, and multilevel.
-The default is dram.
+Five MCMC algorithm variants are supported: \c dram, \c
+delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
+\c multilevel.  The default is \c dram.
 
 <b> Usage Tips </b>
 
-If the user knows very little about the proposal covariance, but doesn't want to incur the 
-cost of using full dram with both delayed rejection and adaptive metropolis, specifying 
-only adaptive_metropolis offers a good strategy.
+If the user knows very little about the proposal covariance, but
+doesn't want to incur the cost of using full dram with both delayed
+rejection and adaptive metropolis, specifying only \c
+adaptive_metropolis offers a good strategy.
 
 Topics::	bayesian_calibration	
 Examples::

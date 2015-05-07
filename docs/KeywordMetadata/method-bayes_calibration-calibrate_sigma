@@ -1,7 +1,9 @@
 Blurb::
-Calibrate the \c sigma term(s) in the likelihood function
-Description::  This feature allows one to calibrate the observational error (the \c sigma terms) 
-as well as the model parameters. 
+Calibrate the experimental error term(s) in the likelihood function
+
+Description::  
+When enabled, the observational error (sigma) terms will be calibrated in addition to the model parameters. 
+
 Topics::	
 Examples::
 Theory::

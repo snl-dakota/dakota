@@ -3,7 +3,7 @@
     <!-- Reusable definition for a method's approximation data import format -->
     <!ENTITY method_approx_import_format
         "<optional>
-          <oneOf>
+          <oneOf label='tabular format' >
             <keyword  id='annotated' name='annotated' code='{N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
@@ -19,7 +19,7 @@
     >
     <!ENTITY method_approx_export_format
         "<optional>
-          <oneOf>
+          <oneOf label='tabular format' >
             <keyword  id='annotated' name='annotated' code='{N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
@@ -36,7 +36,7 @@
     <!-- Legacy scalar data format supports exp_id and header options -->
     <!ENTITY response_scalar_data_format
         "<optional>
-          <oneOf>
+          <oneOf label='tabular format' >
             <keyword  id='annotated' name='annotated' code='{N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}' label='annotated' help='' default='annotated format' />
             <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
             <required>
@@ -1693,7 +1693,7 @@
                       <oneOf>
                         <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
                           <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-                            <oneOf>
+                            <oneOf label="emulator type" >
                               <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
                                 <alias name="kriging"/>
                                 <oneOf>
@@ -1754,7 +1754,7 @@
                         </keyword>
                       </oneOf>
                       <optional>
-                        <oneOf>
+                        <oneOf label="MCMC algorithm type" >
                           <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
                           <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
                           <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
@@ -1810,7 +1810,7 @@
                         <param type="INTEGER" constraint=">= 0" />
                       </keyword>
                       <keyword  id="emulator1" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-                        <oneOf>
+                        <oneOf label="emulator type" >
                           <keyword  id="gaussian_process4" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
                             <alias name="kriging"/>
                             <oneOf>
@@ -2168,7 +2168,7 @@
                 <keyword  id="import_points_file10" name="import_points_file" code="{N_mdm(str,pstudyFilename)}" label="import_points_file" help="" minOccurs="1" default="no point import from a file" >
                   <param type="INPUT_FILE" />
 		  <optional>
-		    <oneOf>
+		    <oneOf label="tabular_format" >
 		      <keyword  id="annotated" name="annotated" code="{N_mdm(utype,pstudyFileFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
 		      <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		      <required>
@@ -2417,7 +2417,7 @@
                 <alias name="samples_file"/>
                 <param type="INPUT_FILE" />
 		<optional>
-		  <oneOf>
+		  <oneOf label="tabular format" >
 		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,approxImportFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
@@ -2435,7 +2435,7 @@
               <keyword  id="export_points_file11" name="export_points_file" code="{N_mom(str,approxExportFile)}" label="File export of global approximation-based sample results" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point export to a file" >
                 <param type="OUTPUT_FILE" />
 		<optional>
-		  <oneOf>
+		  <oneOf label="tabular format" >
 		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,approxExportFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
@@ -2482,7 +2482,7 @@
               <keyword  id="challenge_points_file" name="challenge_points_file" code="{N_mom(str,approxChallengeFile)}" label="Challenge file for surrogate metrics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no user challenge data" >
                 <param type="STRING" />
 		<optional>
-		  <oneOf>
+		  <oneOf label="tabular format" >
 		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,approxChallengeFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>

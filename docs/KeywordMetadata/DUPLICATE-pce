@@ -1,7 +1,13 @@
 Blurb::
-Use a Polynomial Chaos Expansion surrogate model
-Description::
-This specifies the use of a polynomial chaos expansion (PCE) model to be used as a surrogate model in the likelihood calculations used in the Bayesian computations. When using PCE as a surrogate within the Bayesian framework, the PCE coefficients can be computed either from integration using a sparse grid or from regression using a random/unstructured data set. 
+Polynomial Chaos Expansion surrogate model
+
+Description:: 
+Selects a polynomial chaos expansion (PCE) surrogate model to use in
+the Bayesian likelihood calculations. When using PCE as a surrogate
+within the Bayesian framework, the PCE coefficients can be computed
+either from integration using a sparse grid or from regression using a
+random/unstructured data set.
+
 Topics::	
 Examples::
 Theory::

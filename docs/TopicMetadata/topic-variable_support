@@ -14,12 +14,13 @@ specification \c active \c all must be listed in the variables
 specification block. 
 Additional notes include:
 - we have four variants for stochastic expansions (SE), listed as
-  Wiener, Askey, Extended, and Piecewise which draw from different sets 
-  of basis polynomials.  The term stochastic expansion indicates polynomial 
-  chaos and stochastic collocation collectively, although the Piecewise 
-  option is only currently supported for stochastic collocation.  Refer to 
-  \ref MethodNonDPCE and \ref MethodNonDSC for additional information on 
-  these three options.  
+  Wiener, Askey, Extended, and Piecewise which draw from different
+  sets of basis polynomials.  The term stochastic expansion indicates
+  polynomial chaos and stochastic collocation collectively, although
+  the Piecewise option is only currently supported for stochastic
+  collocation.  Refer to \ref method-polynomial_chaos and \ref
+  method-stoch_collocation for additional information on these three
+  options.
 - methods supporting the epistemic interval distributions have differing
   approaches: \c sampling and the \c lhs option of \c 
   global_interval_est model the interval basic probability
