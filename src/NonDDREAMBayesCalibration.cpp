@@ -383,11 +383,8 @@ double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
 			 cntr );
       cntr += residuals.length();
     }
-    if (NonDDREAMInstance->expData.variance_active()){
-      for (i=0; i<num_exp; i++)
-  	result += NonDDREAMInstance->expData.apply_covariance(total_residuals, i);	
-    }else
-      result = total_residuals.dot(total_residuals);
+    for (i=0; i<num_exp; i++)
+      result += NonDDREAMInstance->expData.apply_covariance(total_residuals, i);
     // replace with data_difference core which needs to be raised to expData
   }
 

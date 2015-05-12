@@ -147,10 +147,10 @@ public:
   RealMatrix field_coords_view(size_t response, size_t experiment);
 
   /// whether the specified variance type (enum value) is present and active
-  bool variance_type_active(short variance_type);
+  bool variance_type_active(short variance_type) const;
 
   /// whether any variance type is active
-  bool variance_active();
+  bool variance_active() const;
 
   /// apply the covariance responses to compute the triple product
   /// v'*inv(C)*v for the given experiment

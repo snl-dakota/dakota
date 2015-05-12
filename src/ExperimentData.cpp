@@ -692,14 +692,14 @@ field_coords_view(size_t response, size_t experiment)
   return(allExperiments[experiment].field_coords_view(response));
 }
 
-bool ExperimentData::variance_type_active(short variance_type) 
+bool ExperimentData::variance_type_active(short variance_type) const
 {
   UShortArray::const_iterator vt_it = 
     std::find(varianceTypes.begin(), varianceTypes.end(), variance_type);
   return vt_it != varianceTypes.end();
 }
 
-bool ExperimentData::variance_active()
+bool ExperimentData::variance_active() const
 {
   return (variance_type_active(SCALAR_SIGMA) || 
 	  variance_type_active(DIAGONAL_SIGMA) || 
@@ -752,7 +752,10 @@ Real ExperimentData::
 apply_covariance(const RealVector& residuals, size_t experiment)
 {
   RealVector exp_resid = residuals_view( residuals, experiment );
-  return(allExperiments[experiment].apply_covariance(exp_resid));
+  if ( variance_active() )
+    return(allExperiments[experiment].apply_covariance(exp_resid));
+  else 
+    return exp_resid.dot( exp_resid );
 }
 
 void ExperimentData::
@@ -760,8 +763,14 @@ apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment,
 			  RealVector& weighted_residuals)
 {
   RealVector exp_resid = residuals_view( residuals, experiment );
-  allExperiments[experiment].apply_covariance_inv_sqrt(exp_resid, 
-						       weighted_residuals);
+  if ( variance_active() ) 
+    allExperiments[experiment].apply_covariance_inv_sqrt(exp_resid, 
+							 weighted_residuals);
+  else{
+    // Return a deep copy
+    weighted_residuals.sizeUninitialized( exp_resid.length() );
+    weighted_residuals.assign( exp_resid );
+  }
 }
 
 void ExperimentData::
@@ -769,8 +778,15 @@ apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment,
 			  RealMatrix& weighted_gradients)
 {
   RealMatrix exp_grads = gradients_view( gradients, experiment );
-  allExperiments[experiment].apply_covariance_inv_sqrt(exp_grads, 
-						       weighted_gradients);
+  if ( variance_active() ) 
+    allExperiments[experiment].apply_covariance_inv_sqrt(exp_grads, 
+							 weighted_gradients);
+  else{
+    // Return a deep copy
+    weighted_gradients.shapeUninitialized( exp_grads.numRows(),
+					   exp_grads.numCols() );
+    weighted_gradients.assign( exp_grads );
+  }
 }
 
 void ExperimentData::
@@ -778,13 +794,29 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
 			  RealSymMatrixArray& weighted_hessians)
 {
   RealSymMatrixArray exp_hessians = hessians_view( hessians, experiment );
-  allExperiments[experiment].apply_covariance_inv_sqrt(exp_hessians, 
-						       weighted_hessians);
+  if ( variance_active() ) 
+    allExperiments[experiment].apply_covariance_inv_sqrt(exp_hessians, 
+							 weighted_hessians);
+  else{
+    // Return a deep copy
+    size_t num_hess = exp_hessians.size();
+    weighted_hessians.resize( num_hess );
+    if ( !exp_hessians.empty() ){
+      for (size_t i=0; i<num_hess; ++i)
+	if (exp_hessians[i].numRows()) // else leave exp_hessians[i] empty
+	  weighted_hessians[i] = RealSymMatrix(Teuchos::Copy, 
+					       exp_hessians[i],
+					       exp_hessians[i].numRows());
+    }
+  }
+  
 }
 
 void ExperimentData::get_main_diagonal( RealVector &diagonal, 
 					size_t experiment ) const{
-  allExperiments[experiment].get_covariance_diagonal( diagonal );
+  if ( !variance_active() )
+    throw( std::runtime_error("ExperimentData::get_main_diagonal - covariance matrix is empty") );
+    allExperiments[experiment].get_covariance_diagonal( diagonal );
 }
 
 void ExperimentData::
