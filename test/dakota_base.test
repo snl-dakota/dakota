@@ -11794,7 +11794,7 @@ Test Number 0 succeeded
                       6.1595239695e-03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 104 total (101 new, 3 duplicate)
+<<<<< Function evaluation summary (UQ_I): 104 total (102 new, 2 duplicate)
 <<<<< Best parameters          =
                       7.8989185917e+00 b
                       2.5000000000e+01 h
@@ -11954,7 +11954,7 @@ Test Number 16 succeeded
                       4.8058550412e-04
 <<<<< Best data not found in evaluation cache
 Test Number 17 succeeded
-<<<<< Function evaluation summary (UQ_I): 263 total (257 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 261 total (255 new, 6 duplicate)
 <<<<< Best parameters          =
                       8.6711520727e+00 b
                       2.5000000000e+01 h
