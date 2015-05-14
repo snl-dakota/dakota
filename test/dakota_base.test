@@ -12146,9 +12146,9 @@ Test Number 11 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_short_column_analytic2.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 128 total (100 new, 28 duplicate)
+<<<<< Function evaluation summary (UQ_I): 128 total (101 new, 27 duplicate)
   response_fn_1: 30 val (18 n, 12 d), 39 grad (27 n, 12 d), 30 Hess (18 n, 12 d)
-  response_fn_2: 110 val (82 n, 28 d), 119 grad (91 n, 28 d), 110 Hess (82 n, 28 d)
+  response_fn_2: 110 val (83 n, 27 d), 119 grad (92 n, 27 d), 110 Hess (83 n, 27 d)
 <<<<< Best parameters          =
                       8.6486104252e+00 b
                       2.5000000000e+01 h
@@ -12170,21 +12170,21 @@ Test Number 1 succeeded
                       6.2056137125e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 276 total (238 new, 38 duplicate)
+<<<<< Function evaluation summary (UQ_I): 284 total (244 new, 40 duplicate)
   response_fn_1: 30 val (18 n, 12 d), 39 grad (27 n, 12 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 198 val (177 n, 21 d), 207 grad (186 n, 21 d), 30 Hess (25 n, 5 d)
+  response_fn_2: 206 val (183 n, 23 d), 215 grad (192 n, 23 d), 30 Hess (25 n, 5 d)
 <<<<< Best parameters          =
-                      8.6486104051e+00 b
+                      8.6486104049e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1621526013e+02
+                      2.1621526012e+02
 <<<<< Best constraint values   =
-                      6.2056136622e-03
+                      6.2056136649e-03
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 66 total (48 new, 18 duplicate)
+<<<<< Function evaluation summary (UQ_I): 66 total (49 new, 17 duplicate)
   response_fn_1: 15 val (8 n, 7 d), 20 grad (13 n, 7 d), 15 Hess (8 n, 7 d)
-  response_fn_2: 56 val (38 n, 18 d), 61 grad (43 n, 18 d), 56 Hess (38 n, 18 d)
+  response_fn_2: 56 val (39 n, 17 d), 61 grad (44 n, 17 d), 56 Hess (39 n, 17 d)
 <<<<< Best parameters          =
                       8.6491209874e+00 b
                       2.5000000000e+01 h
@@ -12194,9 +12194,9 @@ Test Number 3 succeeded
                       2.5005890008e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 66 total (49 new, 17 duplicate)
+<<<<< Function evaluation summary (UQ_I): 66 (50 new, 16 duplicate)
   response_fn_1: 15 val (8 n, 7 d), 20 grad (13 n, 7 d), 15 Hess (8 n, 7 d)
-  response_fn_2: 56 val (39 n, 17 d), 61 grad (44 n, 17 d), 56 Hess (39 n, 17 d)
+  response_fn_2: 56 val (40 n, 16 d), 61 grad (45 n, 16 d), 56 Hess (40 n, 16 d)
 <<<<< Best parameters          =
                       8.6491209909e+00 b
                       2.5000000000e+01 h
@@ -12206,9 +12206,9 @@ Test Number 4 succeeded
                       2.5005890032e+00
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 133 total (109 new, 24 duplicate)
+<<<<< Function evaluation summary (UQ_I): 140 total (112 new, 28 duplicate)
   response_fn_1: 15 val (8 n, 7 d), 20 grad (13 n, 7 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 93 val (81 n, 12 d), 98 grad (86 n, 12 d), 15 Hess (10 n, 5 d)
+  response_fn_2: 100 val (84 n, 16 d), 105 grad (89 n, 16 d), 15 Hess (10 n, 5 d)
 <<<<< Best parameters          =
                       8.6491209909e+00 b
                       2.5000000000e+01 h
@@ -12242,16 +12242,16 @@ Test Number 7 succeeded
                       4.8138684081e-04
 <<<<< Best data not found in evaluation cache
 Test Number 8 succeeded
-<<<<< Function evaluation summary (UQ_I): 4921 total (4901 new, 20 duplicate)
+<<<<< Function evaluation summary (UQ_I): 4879 total (4855 new, 24 duplicate)
   response_fn_1: 23 val (13 n, 10 d), 30 grad (20 n, 10 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 4884 val (4874 n, 10 d), 4891 grad (4881 n, 10 d), 4884 Hess (4874 n, 10 d)
+  response_fn_2: 4842 val (4828 n, 14 d), 4849 grad (4835 n, 14 d), 4842 Hess (4828 n, 14 d)
 <<<<< Best parameters          =
-                      8.6509466891e+00 b
+                      8.6509470717e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1627366723e+02
+                      2.1627367679e+02
 <<<<< Best constraint values   =
-                      4.8348865507e-04
+                      4.8346065966e-04
 <<<<< Best data not found in evaluation cache
 Test Number 9 succeeded
 <<<<< Function evaluation summary (UQ_I): 99 total (69 new, 30 duplicate)
@@ -12278,16 +12278,16 @@ Test Number 10 succeeded
                       4.8137549813e-04
 <<<<< Best data not found in evaluation cache
 Test Number 11 succeeded
-<<<<< Function evaluation summary (UQ_I): 4626 total (4602 new, 24 duplicate)
+<<<<< Function evaluation summary (UQ_I): 4988 total (4964 new, 24 duplicate)
   response_fn_1: 23 val (13 n, 10 d), 30 grad (20 n, 10 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 4589 val (4575 n, 14 d), 4596 grad (4582 n, 14 d), 4589 Hess (4575 n, 14 d)
+  response_fn_2: 4951 val (4937 n, 14 d), 4958 grad (4944 n, 14 d), 4951 Hess (4937 n, 14 d)
 <<<<< Best parameters          =
-                      8.6509741441e+00 b
+                      8.6509737906e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1627435360e+02
+                      2.1627434477e+02
 <<<<< Best constraint values   =
-                      4.8342806980e-04
+                      4.8336465926e-04
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_short_column_analytic2_verify.in
 Test Number 0 succeeded
