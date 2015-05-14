@@ -63,6 +63,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["text_book_ouu"]          = TEXT_BOOK_OUU;
   driverTypeMap["scalable_text_book"]     = SCALABLE_TEXT_BOOK;
   driverTypeMap["scalable_monomials"]     = SCALABLE_MONOMIALS;
+  driverTypeMap["mogatest1"]              = MOGATEST1;
+  driverTypeMap["mogatest2"]              = MOGATEST2;
+  driverTypeMap["mogatest3"]              = MOGATEST3;
   driverTypeMap["herbie"]                 = HERBIE;
   driverTypeMap["smooth_herbie"]          = SMOOTH_HERBIE;
   driverTypeMap["shubert"]                = SHUBERT;
@@ -128,6 +131,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
     case TEXT_BOOK:     case TEXT_BOOK1: case TEXT_BOOK2: case TEXT_BOOK3:
     case TEXT_BOOK_OUU: case SCALABLE_TEXT_BOOK: case SCALABLE_MONOMIALS:
+    case MOGATEST1:     case MOGATEST2:          case MOGATEST3:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
@@ -246,6 +250,12 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = scalable_text_book(); break;
   case SCALABLE_MONOMIALS:
     fail_code = scalable_monomials(); break;
+  case MOGATEST1:
+    fail_code = mogatest1(); break;
+  case MOGATEST2:
+    fail_code = mogatest2(); break;
+  case MOGATEST3:
+    fail_code = mogatest3(); break;
   case HERBIE:
     fail_code = herbie(); break;
   case SMOOTH_HERBIE:
@@ -2752,6 +2762,163 @@ int TestDriverInterface::scalable_monomials()
   return 0; // no failure
 }
 
+
+int TestDriverInterface::mogatest1()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: mogatest1 direct fn does not yet support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if ( (numACV + numADIV + numADRV) != 3) {
+    Cerr << "Error: Bad number of variables in mogatest1 direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 2) {
+    Cerr << "Error: Bad number of functions in mogatest1 direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // kernel shared with standlone driver in test/mogatest1.cpp
+  double f0 = 0.0;
+  double f1 = 0.0;
+  for (size_t i=0; i<numVars; i++) {
+    // orders all continuous vars followed by all discrete vars.  This is 
+    // fine in the direct case so long as everything is self-consistent.
+    Real x_i;
+    if (i<numACV)
+      x_i = xC[i];
+    else if (i<numACV+numADIV)
+      x_i = (Real)xDI[i-numACV];
+    else
+      x_i = xDR[i-numACV-numADIV];
+
+    f0 = pow(x_i-(1/sqrt(3.0)),2) + f0;
+    f1 = pow(x_i+(1/sqrt(3.0)),2) + f1;
+  }  
+  f0 = 1-exp(-1*f0);
+  f1 = 1-exp(-1*f1);
+
+  if (directFnASV[0] & 1)
+    fnVals[0] = f0;
+  if (directFnASV[1] & 1)
+    fnVals[1] = f1;
+  if (directFnASV[0] & 2 || directFnASV[1] & 2) {
+    Cerr << "Error: Analytic gradients not supported in mogatest1."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (directFnASV[0] & 4 || directFnASV[1] & 4) {
+    Cerr << "Error: Analytic Hessians not supported in mogatest1."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  return 0; // no failure
+}
+
+
+int TestDriverInterface::mogatest2()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: mogatest2 direct fn does not yet support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 2 || numADIV > 0 || numADRV > 0) {
+    // TODO: allow discrete variables
+    Cerr << "Error: Bad number of variables in mogatest2 direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 2) {
+    Cerr << "Error: Bad number of functions in mogatest2 direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // kernel shared with standlone driver in test/mogatest2.cpp
+  double f0=0;
+  double f1=0;
+  const double PI = 3.14159265358979;
+  f0 = xC[0];
+  f1 = sin(2*PI*4*xC[0]);
+  f1 = f1*(-1*xC[0]/(1+10*xC[1]));
+  f1 = f1+1-pow((xC[0]/(1+10*xC[1])),2);
+  f1 = f1*(1+10*xC[1]);
+
+  if (directFnASV[0] & 1)
+    fnVals[0] = f0;
+  if (directFnASV[1] & 1)
+    fnVals[1] = f1;
+  if (directFnASV[0] & 2 || directFnASV[1] & 2) {
+    Cerr << "Error: Analytic gradients not supported in mogatest2."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (directFnASV[0] & 4 || directFnASV[1] & 4) {
+    Cerr << "Error: Analytic Hessians not supported in mogatest2."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  return 0; // no failure
+}
+
+int TestDriverInterface::mogatest3()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: mogatest3 direct fn does not yet support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 2 || numADIV > 0 || numADRV > 0) {
+    // TODO: allow discrete variables
+    Cerr << "Error: Bad number of variables in mogatest3 direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 4) {
+    Cerr << "Error: Bad number of functions in mogatest3 direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // kernel shared with standlone driver in test/mogatest3.cpp
+  double f0=0;
+  double f1=0;
+  double g0=0;
+  double g1=0;
+  f0 = pow(xC[0]-2,2)+pow(xC[1]-1,2)+2;
+  f1 = 9*xC[0]-pow(xC[1]-1,2);
+  g0 = (xC[0]*xC[0])+(xC[1]*xC[1])-225;
+  g1 = xC[0]-3*xC[1]+10;
+
+  if (directFnASV[0] & 1)
+    fnVals[0] = f0;
+  if (directFnASV[1] & 1)
+    fnVals[1] = f1;
+  if (directFnASV[2] & 1)
+    fnVals[2] = g0;
+  if (directFnASV[3] & 1)
+    fnVals[3] = g1;
+  if (directFnASV[0] & 2 || directFnASV[1] & 2 || 
+      directFnASV[2] & 2 || directFnASV[3] & 2) {
+    Cerr << "Error: Analytic gradients not supported in mogatest3."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (directFnASV[0] & 4 || directFnASV[1] & 4|| 
+      directFnASV[2] & 4 || directFnASV[3] & 4) {
+    Cerr << "Error: Analytic Hessians not supported in mogatest3."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  return 0; // no failure
+}
 
 /// 1D Herbie function and its derivatives (apart from a multiplicative factor)
 void TestDriverInterface::

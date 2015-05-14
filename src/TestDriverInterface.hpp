@@ -94,6 +94,11 @@ private:
   int scalable_text_book(); ///< scalable version of the text_book test function
   int scalable_monomials(); ///< simple monomials for UQ exactness testing
 
+  // multi-objective test functions
+  int mogatest1();  ///< MOP2 from Van Veldhuizen, pp. 5-13
+  int mogatest2();  ///< MOP2? from Van Veldhuizen, pp. 5-13
+  int mogatest3();  ///< Srinivas' from Van Veldhuizen, pp. B-5
+
   // suite of separable test functions TODO add docs
 
   /// 1D components of herbie function
