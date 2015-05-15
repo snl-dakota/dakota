@@ -61,8 +61,8 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
-    << fieldLengths << numCoordsPerField << coordList
-    << coordDataFileName << readFieldCoords << varianceType;
+    << fieldLengths << numCoordsPerField 
+    << readFieldCoords << varianceType;
 }
 
 
@@ -94,8 +94,8 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> idNumericalGrads >> idAnalyticGrads
     >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
     // field data
-    >> fieldLengths >> numCoordsPerField >> coordList
-    >> coordDataFileName >> readFieldCoords >> varianceType;
+    >> fieldLengths >> numCoordsPerField
+    >> readFieldCoords >> varianceType;
 
 }
 
@@ -128,8 +128,8 @@ void DataResponsesRep::write(std::ostream& s) const
     << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     // field data
-    << fieldLengths << numCoordsPerField << coordList
-    << coordDataFileName << readFieldCoords << varianceType;
+    << fieldLengths << numCoordsPerField  
+    << readFieldCoords << varianceType;
 }
 
 

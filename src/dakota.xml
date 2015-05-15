@@ -3562,16 +3562,7 @@
             <keyword  id="num_coordinates_per_field" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field" help="" minOccurs="0" >
               <param type="INTEGERLIST" />
             </keyword>
-            <optional>
-              <oneOf>
-                <keyword  id="coordinate_list" name="coordinate_list" code="{N_rem(RealL,coordList)}" label="coordinate_list" help=""  >
-                  <param type="REALLIST" />
-                </keyword>
-                <keyword  id="coordinate_data_file" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >
-                  <param type="STRING" />
-                </keyword>
-              </oneOf>
-            </optional>
+	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
           </keyword>
         </keyword>
         <keyword  id="calibration_terms" name="calibration_terms" code="{N_rem(sizet,numLeastSqTerms)}" label="Calibration (Least squares)" help="RespCommands.html#RespFnLS" minOccurs="1" >
@@ -3589,16 +3580,7 @@
             <keyword  id="num_coordinates_per_field1" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field" help="" minOccurs="0" >
               <param type="INTEGERLIST" />
             </keyword>
-            <optional>
-              <oneOf>
-                <keyword  id="coordinate_list1" name="coordinate_list" code="{N_rem(RealL,coordList)}" label="coordinate_list" help=""  >
-                  <param type="REALLIST" />
-                </keyword>
-                <keyword  id="coordinate_data_file1" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >
-                  <param type="STRING" />
-                </keyword>
-              </oneOf>
-            </optional>
+	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
 	  </keyword>
           <keyword  id="primary_scale_types1" name="primary_scale_types" code="{N_rem(strL,primaryRespFnScaleTypes)}" label="Calibration scaling types" help="RespCommands.html#RespFnLS" minOccurs="0" default="no scaling" >
             <alias name="calibration_term_scale_types"/>
@@ -3645,9 +3627,6 @@
 		  &response_scalar_data_format;
 		</keyword>
 		<keyword  id="interpolate1" name="interpolate" code="{N_rem(true,interpolateFlag)}" label="Interpolate between simulation and experiment data" help="RespCommands.html#RespFnLS" minOccurs="0" />
-
-		<keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
-		
               </keyword>
 	      <!-- Legacy data specification option -->
 	      <keyword  id="calibration_data_file" name="calibration_data_file" code="{N_rem(str,scalarDataFileName)}" label="Calibration data file name" help="RespCommands.html#RespFnLS" default="none" >
@@ -3722,16 +3701,7 @@
             <keyword  id="num_coordinates_per_field2" name="num_coordinates_per_field" code="{N_rem(ivec,numCoordsPerField)}" label="num_coordinates_per_field" help="" minOccurs="0" >
               <param type="INTEGERLIST" />
             </keyword>
-            <optional>
-              <oneOf>
-                <keyword  id="coordinate_list2" name="coordinate_list" code="{N_rem(RealL,coordList)}" label="coordinate_list" help=""  >
-                  <param type="REALLIST" />
-                </keyword>
-                <keyword  id="coordinate_data_file2" name="coordinate_data_file" code="{N_rem(str,coordDataFileName)}" label="coordinate_data_file" help=""  >
-                  <param type="STRING" />
-                </keyword>
-              </oneOf>
-            </optional>
+	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
           </keyword>
         </keyword>
       </oneOf>

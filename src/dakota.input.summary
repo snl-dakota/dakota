@@ -2375,8 +2375,7 @@ KEYWORD12 responses
 	  [ field_objectives ALIAS num_field_objectives INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
-	    [ coordinate_list REALLIST
-	    | coordinate_data_file STRING ]
+	    [ read_field_coordinates ]
 	    ]
 	  )
 	|
@@ -2385,8 +2384,7 @@ KEYWORD12 responses
 	  [ field_calibration_terms INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
-	    [ coordinate_list REALLIST
-	    | coordinate_data_file STRING ]
+	    [ read_field_coordinates ]
 	    ]
 	  [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST ]
 	  [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST ]
@@ -2406,7 +2404,6 @@ KEYWORD12 responses
 		( freeform
 		]
 	      [ interpolate ]
-	      [ read_field_coordinates ]
 	      )
 	  |
 	  ( calibration_data_file ALIAS least_squares_data_file STRING
@@ -2440,8 +2437,7 @@ KEYWORD12 responses
 	  [ field_responses ALIAS num_field_responses INTEGER >= 0
 	    lengths INTEGERLIST
 	    [ num_coordinates_per_field INTEGERLIST ]
-	    [ coordinate_list REALLIST
-	    | coordinate_data_file STRING ]
+	    [ read_field_coordinates ]
 	    ]
 	  )
 	no_gradients

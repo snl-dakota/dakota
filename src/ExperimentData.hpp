@@ -323,8 +323,8 @@ private:
   /// format (calculated from variance types strings
   size_t scalarSigmaPerRow;
 
-  /// whether to read coordinate data files for fields
-  bool readFieldCoords;
+  /// whether to read coordinate data files for simulation fields
+  bool readSimFieldCoords;
 
   /// archived shared data for use in sizing fields, total functions
   /// (historically we read all functions, including constraints,

@@ -2335,11 +2335,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     [ field_objectives ALIAS num_field_objectives INTEGER >= 0 {N_rem(sizet,numFieldObjectiveFunctions)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
-      [ 
-        coordinate_list REALLIST {N_rem(RealL,coordList)}
-        |
-        coordinate_data_file STRING {N_rem(str,coordDataFileName)}
-       ]
+      [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
    )
   |
@@ -2348,11 +2344,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     [ field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
       lengths INTEGERLIST LEN calibration_terms {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
-      [ 
-        coordinate_list REALLIST {N_rem(RealL,coordList)}
-        |
-        coordinate_data_file STRING {N_rem(str,coordDataFileName)}
-       ]
+      [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
     [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
     [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
@@ -2377,7 +2369,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
            ]
          ]
         [ interpolate {N_rem(true,interpolateFlag)} ]
-        [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
        )
       |
       ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,scalarDataFileName)}
@@ -2416,11 +2407,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     [ field_responses ALIAS num_field_responses INTEGER >= 0 {N_rem(sizet,numFieldResponseFunctions)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
-      [ 
-        coordinate_list REALLIST {N_rem(RealL,coordList)}
-        |
-        coordinate_data_file STRING {N_rem(str,coordDataFileName)}
-       ]
+      [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
    )
   no_gradients {N_rem(lit,gradientType_none)}

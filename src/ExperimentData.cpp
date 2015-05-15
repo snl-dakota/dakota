@@ -28,7 +28,8 @@ ExperimentData(const ProblemDescDB& pddb,
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
   scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
-  scalarSigmaPerRow(0), readFieldCoords(false), 
+  scalarSigmaPerRow(0), 
+  readSimFieldCoords(pddb.get_bool("responses.read_field_coordinates")), 
   interpolateFlag(pddb.get_bool("responses.interpolate")),
   outputLevel(output_level)
 { 
@@ -47,7 +48,7 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   numExperiments(num_experiments), numConfigVars(num_config_vars),
   dataPathPrefix(data_prefix), scalarDataFilename(scalar_data_filename),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
-  readFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
+  readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
   initialize(variance_types, srd);
 }
@@ -68,6 +69,14 @@ void ExperimentData::initialize(const StringArray& variance_types,
     }
 
     if (interpolateFlag) {
+      // can't interpolate if there are no simulation coordinates
+      if (!readSimFieldCoords) {
+	Cerr << "\nError: calibration data 'interpolate' option not available " 
+	     << "if simulation coordinates are not read in also. " 
+             << "Please specify simulation coordinates with read_field_coordinates.\n";
+	abort_handler(-1);
+      }
+         
       // can't use normInf as the vector is a 1 x num_fields matrix
       bool multiple_coords = false;
       const IntVector coords_per_field = srd.num_coords_per_field();

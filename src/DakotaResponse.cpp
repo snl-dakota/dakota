@@ -24,6 +24,8 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/filesystem/operations.hpp>
+#include "boost/filesystem/path.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -75,16 +77,26 @@ Response(BaseConstructor, const Variables& vars,
   ShortArray asv(num_fns, asv_value);
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
-  
-  const String& coord_file
-    = problem_db.get_string("responses.coord_data_filename");
-  if (!coord_file.empty() ) {
-    RealMatrix coord_values;
-    read_coord_values(coord_file,coord_values);
-    //Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
-    field_coords(coord_values,0);
-  } 
 
+  if (problem_db.get_bool("responses.read_field_coordinates")) {
+    size_t num_fields = shared_data().num_field_response_groups(); 
+    const StringArray& field_labels = shared_data().field_group_labels();
+
+    for (size_t field_index = 0; field_index < num_fields; ++field_index) {
+      const String& field_name = field_labels[field_index];
+      std::string coord_file = field_name + ".coords";
+    //boost::filesystem::path coord_path_and_file = dataPathPrefix / filename;
+    //boost::filesystem::path coord_file = filename;
+    //const String& coord_file
+    //= problem_db.get_string("responses.coord_data_filename");
+      if (!coord_file.empty() ) {
+        RealMatrix coord_values;
+        read_coord_values(coord_file,coord_values);
+    //Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
+        field_coords(coord_values,field_index);
+      }  
+    }
+  }
 #ifdef REFCOUNT_DEBUG
   Cout << "Response::Response(BaseConstructor) called to build base class "
        << "data for letter object." << std::endl;

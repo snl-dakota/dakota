@@ -1560,7 +1560,6 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<RealVector, DataResponsesRep> RVdr[] = {	
       // must be sorted by string (key)
-	{"coordinate_list", P coordList},
 	{"exp_config_variables", P expConfigVars},
 	{"exp_observations", P expObservations},
 	{"exp_std_deviations", P expStdDeviations},
@@ -2374,7 +2373,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<String, DataResponsesRep> Sdr[] = {	
       // must be sorted by string (key)
-	{"coord_data_filename", P coordDataFileName},
 	{"fd_gradient_step_type", P fdGradStepType},
 	{"fd_hessian_step_type", P fdHessStepType},
 	{"gradient_type", P gradientType},
@@ -3058,7 +3056,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"central_hess", P centralHess},
 	{"ignore_bounds", P ignoreBounds},
 	{"interpolate", P interpolateFlag},
-	{"read_field_coords", P readFieldCoords}};
+	{"read_field_coordinates", P readFieldCoords}};
     #undef P
 
     KW<bool, DataResponsesRep> *kw;

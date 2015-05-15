@@ -7084,7 +7084,6 @@ static IntVector
 	MP_(numCoordsPerField);
 
 static RealVector
-	MP_(coordList),
 	MP_(expConfigVars),
 	MP_(expObservations),
 	MP_(primaryRespFnWeights),
@@ -7122,7 +7121,6 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
-	MP_(coordDataFileName),
 	MP_(scalarDataFileName),
         MP_(idResponses);
 

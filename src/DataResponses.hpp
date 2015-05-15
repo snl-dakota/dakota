@@ -242,11 +242,7 @@ public:
   IntVector fieldLengths;
   /// number of coordinates per field
   IntVector numCoordsPerField;
-  /// values of coordinates per field
-  RealVector coordList;
-  /// data file which contains the values of the simulation coordinates per field
-  String coordDataFileName;
-  /// Field data related storage:  whether to read experimental field coordinates
+  /// Field data related storage:  whether to read simulation field coordinates
   bool readFieldCoords;
    /// Array which specifies the sigma type per response (none, one 
   /// constant value, one per response (vector) or a full covariance matrix

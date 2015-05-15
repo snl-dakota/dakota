@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1480 distinct keywords (plus 205 aliases) **/
+/** 1476 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1993,11 +1993,10 @@ static KeyWord
 		{"custom_annotated",8,2,1,0,kw_328,0.,0.,0,N_rem(utype,scalarDataFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_rem(utype,scalarDataFormat_TABULAR_NONE)}
 		},
-	kw_330[6] = {
+	kw_330[5] = {
 		{"interpolate",8,0,5,0,0,0.,0.,0,N_rem(true,interpolateFlag)},
 		{"num_config_variables",0x29,0,2,0,0,0.,0.,0,N_rem(sizet,numExpConfigVars)},
 		{"num_experiments",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numExperiments)},
-		{"read_field_coordinates",8,0,6,0,0,0.,0.,0,N_rem(true,readFieldCoords)},
 		{"scalar_data_file",11,3,4,0,kw_329,0.,0.,0,N_rem(str,scalarDataFileName)},
 		{"variance_type",0x80f,0,3,0,0,0.,0.,0,N_rem(strL,varianceType)}
 		},
@@ -2013,11 +2012,10 @@ static KeyWord
 		{"num_experiments",0x29,0,2,0,0,0.,0.,0,N_rem(sizet,numExperiments)},
 		{"variance_type",0x80f,0,4,0,0,0.,0.,0,N_rem(strL,varianceType)}
 		},
-	kw_333[4] = {
-		{"coordinate_data_file",11,0,3,0,0,0.,0.,0,N_rem(str,coordDataFileName)},
-		{"coordinate_list",14,0,3,0,0,0.,0.,0,N_rem(RealL,coordList)},
+	kw_333[3] = {
 		{"lengths",13,0,1,1,0,0.,0.,0,N_rem(ivec,fieldLengths)},
-		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)}
+		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)},
+		{"read_field_coordinates",8,0,3,0,0,0.,0.,0,N_rem(true,readFieldCoords)}
 		},
 	kw_334[6] = {
 		{"nonlinear_equality_scale_types",0x807,0,2,0,0,0.,0.,3,N_rem(strL,nonlinearEqScaleTypes)},
@@ -2038,12 +2036,12 @@ static KeyWord
 		{"upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
 	kw_336[18] = {
-		{"calibration_data",8,6,6,0,kw_330,0.,0.,0,N_rem(true,calibrationDataFlag)},
+		{"calibration_data",8,5,6,0,kw_330,0.,0.,0,N_rem(true,calibrationDataFlag)},
 		{"calibration_data_file",11,6,6,0,kw_332,0.,0.,0,N_rem(str,scalarDataFileName)},
 		{"calibration_term_scale_types",0x807,0,3,0,0,0.,0.,12,N_rem(strL,primaryRespFnScaleTypes)},
 		{"calibration_term_scales",0x806,0,4,0,0,0.,0.,12,N_rem(RealDL,primaryRespFnScales)},
 		{"calibration_weights",6,0,5,0,0,0.,0.,13,N_rem(RealDL,primaryRespFnWeights)},
-		{"field_calibration_terms",0x29,4,2,0,kw_333,0.,0.,0,N_rem(sizet,numFieldLeastSqTerms)},
+		{"field_calibration_terms",0x29,3,2,0,kw_333,0.,0.,0,N_rem(sizet,numFieldLeastSqTerms)},
 		{"least_squares_data_file",3,6,6,0,kw_332,0.,0.,-5,N_rem(str,scalarDataFileName)},
 		{"least_squares_term_scale_types",0x807,0,3,0,0,0.,0.,7,N_rem(strL,primaryRespFnScaleTypes)},
 		{"least_squares_term_scales",0x806,0,4,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnScales)},
@@ -2099,11 +2097,10 @@ static KeyWord
 		{"id_quasi_hessians",13,2,4,0,kw_342,0.,0.,0,N_rem(intset,idQuasiHessians)},
 		{"relative",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_relative)}
 		},
-	kw_344[4] = {
-		{"coordinate_data_file",11,0,3,0,0,0.,0.,0,N_rem(str,coordDataFileName)},
-		{"coordinate_list",14,0,3,0,0,0.,0.,0,N_rem(RealL,coordList)},
+	kw_344[3] = {
 		{"lengths",13,0,1,1,0,0.,0.,0,N_rem(ivec,fieldLengths)},
-		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)}
+		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)},
+		{"read_field_coordinates",8,0,3,0,0,0.,0.,0,N_rem(true,readFieldCoords)}
 		},
 	kw_345[6] = {
 		{"nonlinear_equality_scale_types",0x807,0,2,0,0,0.,0.,3,N_rem(strL,nonlinearEqScaleTypes)},
@@ -2124,11 +2121,11 @@ static KeyWord
 		{"upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
 	kw_347[15] = {
-		{"field_objectives",0x29,4,8,0,kw_344,0.,0.,0,N_rem(sizet,numFieldObjectiveFunctions)},
+		{"field_objectives",0x29,3,8,0,kw_344,0.,0.,0,N_rem(sizet,numFieldObjectiveFunctions)},
 		{"multi_objective_weights",6,0,4,0,0,0.,0.,13,N_rem(RealDL,primaryRespFnWeights)},
 		{"nonlinear_equality_constraints",0x29,6,6,0,kw_345,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
 		{"nonlinear_inequality_constraints",0x29,8,5,0,kw_346,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
-		{"num_field_objectives",0x21,4,8,0,kw_344,0.,0.,-4,N_rem(sizet,numFieldObjectiveFunctions)},
+		{"num_field_objectives",0x21,3,8,0,kw_344,0.,0.,-4,N_rem(sizet,numFieldObjectiveFunctions)},
 		{"num_nonlinear_equality_constraints",0x21,6,6,0,kw_345,0.,0.,-3,N_rem(sizet,numNonlinearEqConstraints)},
 		{"num_nonlinear_inequality_constraints",0x21,8,5,0,kw_346,0.,0.,-3,N_rem(sizet,numNonlinearIneqConstraints)},
 		{"num_scalar_objectives",0x21,0,7,0,0,0.,0.,5,N_rem(sizet,numScalarObjectiveFunctions)},
@@ -2140,15 +2137,14 @@ static KeyWord
 		{"sense",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnSense)},
 		{"weights",14,0,4,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
 		},
-	kw_348[4] = {
-		{"coordinate_data_file",11,0,3,0,0,0.,0.,0,N_rem(str,coordDataFileName)},
-		{"coordinate_list",14,0,3,0,0,0.,0.,0,N_rem(RealL,coordList)},
+	kw_348[3] = {
 		{"lengths",13,0,1,1,0,0.,0.,0,N_rem(ivec,fieldLengths)},
-		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)}
+		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)},
+		{"read_field_coordinates",8,0,3,0,0,0.,0.,0,N_rem(true,readFieldCoords)}
 		},
 	kw_349[4] = {
-		{"field_responses",0x29,4,2,0,kw_348,0.,0.,0,N_rem(sizet,numFieldResponseFunctions)},
-		{"num_field_responses",0x21,4,2,0,kw_348,0.,0.,-1,N_rem(sizet,numFieldResponseFunctions)},
+		{"field_responses",0x29,3,2,0,kw_348,0.,0.,0,N_rem(sizet,numFieldResponseFunctions)},
+		{"num_field_responses",0x21,3,2,0,kw_348,0.,0.,-1,N_rem(sizet,numFieldResponseFunctions)},
 		{"num_scalar_responses",0x21,0,1,0,0,0.,0.,1,N_rem(sizet,numScalarResponseFunctions)},
 		{"scalar_responses",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numScalarResponseFunctions)}
 		},
