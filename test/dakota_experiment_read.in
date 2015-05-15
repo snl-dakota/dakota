@@ -53,7 +53,7 @@ responses,
 #        lengths = 5				#s2,#s3,#s4,#s8
 #        lengths = 50				#s5,#s6
 #        num_coordinates_per_field = 1          #s5,#s6,#s8
-#         coordinate_data_file = 'oscB.coords'  #s5,#s6,#s8
+#         read_field_coordinates                #s5,#s6,#s8
 #	response_descriptors = 'oscillator'     #s2
 #	response_descriptors = 'oscillatorA'    #s3,#s4
 #	response_descriptors = 'oscillatorB'    #s5,#s6
