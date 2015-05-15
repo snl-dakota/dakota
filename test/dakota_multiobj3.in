@@ -48,7 +48,7 @@ variables,
 	  descriptors'intake_dia' 'flatness'
 
 interface,
-	system #asynchronous
+	direct
 	  analysis_driver=  'cyl_head'
 
 responses,

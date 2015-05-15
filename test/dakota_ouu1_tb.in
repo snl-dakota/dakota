@@ -85,7 +85,7 @@ variables,
 
 interface,
 	id_interface = 'UQ_I'
-	system asynch evaluation_concurrency = 5
+	direct
 	  analysis_driver = 'text_book_ouu'
 
 responses,

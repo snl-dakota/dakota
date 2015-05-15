@@ -58,7 +58,7 @@ variables,
 					0.3 1
 
 interface,
-	system asynch
+	direct
 	  analysis_driver = 'log_ratio'
 
 responses,

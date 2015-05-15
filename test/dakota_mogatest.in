@@ -67,8 +67,9 @@ variables,
 #             set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#s4,#s5,#s6,#s7
 
 interface,
-	fork                                    #s0,#s1,#s2,#s4,#s5,#s6,#s7
-#	direct                                  #s3
+	direct						#s0,#s1,#s2,#s3,#s4,#s6
+# retain some fork tests of external mogatest drivers that have low eval count
+#	fork						#s5,#s7
 	  analysis_driver = 'mogatest1'			#s0,#s4,#s5,#s6,#s7
 #	  analysis_driver = 'mogatest2'			#s1
 #	  analysis_driver = 'mogatest3'			#s2

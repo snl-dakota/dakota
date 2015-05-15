@@ -4321,12 +4321,12 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 69 total (65 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      5.0000022554e-01 x2
+                      5.0000008514e-01 x2
 <<<<< Best objective function  =
-                      1.2499988723e-01
+                      1.2499995743e-01
 <<<<< Best constraint values   =
-                     -1.1276860468e-07
-                      2.2553726020e-07
+                     -4.2567859460e-08
+                      8.5135726191e-08
 <<<<< Best data captured at function evaluation 64
 dakota_sbuq_hierarchical.in
 Test Number 0 succeeded

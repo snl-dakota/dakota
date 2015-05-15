@@ -12660,7 +12660,7 @@ Test Number 1 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 52 total (52 new, 0 duplicate)
-<<<<< Function evaluation summary (UQ_I): 83 total (75 new, 8 duplicate)
+<<<<< Function evaluation summary (UQ_I): 89 total (81 new, 8 duplicate)
 <<<<< Best parameters          =
                       8.6778751283e+00 b
                       2.4250000000e+01 h
@@ -12693,7 +12693,7 @@ Test Number 4 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 179 total (179 new, 0 duplicate)
-<<<<< Function evaluation summary (UQ_I): 113 total (93 new, 20 duplicate)
+<<<<< Function evaluation summary (UQ_I): 111 total (91 new, 20 duplicate)
 <<<<< Best parameters          =
                       8.6681831746e+00 b
                       2.5000000000e+01 h
@@ -12704,7 +12704,7 @@ Test Number 5 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 70 total (70 new, 0 duplicate)
-<<<<< Function evaluation summary (UQ_I): 132 total (92 new, 40 duplicate)
+<<<<< Function evaluation summary (UQ_I): 132 total (91 new, 41 duplicate)
 <<<<< Best parameters          =
                       8.6701727181e+00 b
                       2.5000000000e+01 h
@@ -12726,7 +12726,7 @@ Test Number 7 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 8 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 70 total (70 new, 0 duplicate)
-<<<<< Function evaluation summary (UQ_I): 197 total (157 new, 40 duplicate)
+<<<<< Function evaluation summary (UQ_I): 196 total (156 new, 40 duplicate)
 <<<<< Best parameters          =
                       8.6701727130e+00 b
                       2.5000000000e+01 h
@@ -12737,14 +12737,14 @@ Test Number 8 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 70 total (70 new, 0 duplicate)
-<<<<< Function evaluation summary (UQ_I): 132 total (89 new, 43 duplicate)
+<<<<< Function evaluation summary (UQ_I): 132 total (91 new, 41 duplicate)
 <<<<< Best parameters          =
                       8.6702000167e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1675500042e+02
 <<<<< Best constraint values   =
-                      3.0510078222e-04
+                      3.0510078429e-04
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 70 total (70 new, 0 duplicate)
@@ -13768,48 +13768,48 @@ Test Number 0 succeeded
                       1.0013529993e+00 x1
                       1.0026805414e+00 x2
 <<<<< Best objective function  =
-                      1.9050696345e-06
+                      1.9050696338e-06
 <<<<< Best data captured at function evaluation 38
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9794883595e-01 x1
-                      9.9572819717e-01 x2
+                      9.9794883625e-01 x1
+                      9.9572819760e-01 x2
 <<<<< Best objective function  =
-                      7.2238178647e-06
+                      7.2238223384e-06
 <<<<< Best data captured at function evaluation 54
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -8.6064674203e-01 x1
-                      7.3943464779e-01 x2
+                     -8.6064674053e-01 x1
+                      7.3943464518e-01 x2
 <<<<< Best objective function  =
-                      3.4621696697e+00
+                      3.4621696641e+00
 <<<<< Best data captured at function evaluation 22
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9586770370e-01 x1
-                      9.9173956683e-01 x2
+                      9.9586771499e-01 x1
+                      9.9173958950e-01 x2
 <<<<< Best objective function  =
-                      1.7092556167e-05
+                      1.7092462372e-05
 <<<<< Best data captured at function evaluation 195
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 234 total (234 new, 0 duplicate)
+<<<<< Function evaluation summary: 255 total (255 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8392605885e-01 x1
-                      9.6808828989e-01 x2
+                      9.9330130384e-01 x1
+                      9.8659118539e-01 x2
 <<<<< Best objective function  =
-                      2.5842086529e-04
-<<<<< Best data captured at function evaluation 234
+                      4.5189440954e-05
+<<<<< Best data captured at function evaluation 255
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 582 total (582 new, 0 duplicate)
+<<<<< Function evaluation summary: 588 total (588 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9728292030e-01 x1
-                      9.9455495646e-01 x2
+                      9.9712893993e-01 x1
+                      9.9424471095e-01 x2
 <<<<< Best objective function  =
-                      7.4158891952e-06
-<<<<< Best data captured at function evaluation 580
+                      8.2888328512e-06
+<<<<< Best data captured at function evaluation 586
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -13825,7 +13825,7 @@ Test Number 7 succeeded
                       9.9999334619e-01 x2
 <<<<< Best residual terms =
                      -1.6598357466e-07
-                      3.3186106952e-06
+                      3.3186106982e-06
 <<<<< Best data captured at function evaluation 29
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 291 total (260 new, 31 duplicate)
@@ -13868,8 +13868,8 @@ Test Number 12 succeeded
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
 <<<<< Best residual terms =
-                      1.5543122345e-14
-                      2.2204460493e-16
+                     -1.2212453271e-14
+                      0.0000000000e+00
 <<<<< Best data captured at function evaluation 36
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
@@ -13886,7 +13886,7 @@ Test Number 14 succeeded
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
 <<<<< Best residual terms =
-                     -1.3322676296e-14
+                     -1.2212453271e-14
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 36
 Test Number 15 succeeded
@@ -13895,8 +13895,8 @@ Test Number 15 succeeded
                       1.0013529993e+00 x1
                       1.0026805414e+00 x2
 <<<<< Best residual terms =
-                     -2.7287821130e-04
-                     -1.3529993039e-03
+                     -2.7287821042e-04
+                     -1.3529993038e-03
 <<<<< Best data captured at function evaluation 39
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
@@ -13904,17 +13904,17 @@ Test Number 16 succeeded
                       9.9999713984e-01 x1
                       9.9999402239e-01 x2
 <<<<< Best residual terms =
-                     -2.5729995978e-06
-                      2.8601572867e-06
+                     -2.5729995123e-06
+                      2.8601579213e-06
 <<<<< Best data captured at function evaluation 34
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9940112014e-01 x1
-                      9.9859369520e-01 x2
+                      9.9859369519e-01 x2
 <<<<< Best residual terms =
-                     -2.0890373837e-03
-                      5.9887986082e-04
+                     -2.0890373860e-03
+                      5.9887986270e-04
 <<<<< Best data captured at function evaluation 180
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 58 total (44 new, 14 duplicate)
@@ -13923,7 +13923,7 @@ Test Number 18 succeeded
                       9.9999334619e-01 x2
 <<<<< Best residual terms =
                      -1.6598357466e-07
-                      3.3186106952e-06
+                      3.3186106982e-06
 <<<<< Best data captured at function evaluation 58
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
@@ -15122,64 +15122,64 @@ Test Number 2 succeeded
 dakota_sbo_textbook.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 100 total (96 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -2.7755575616e-16
-                      5.5511151231e-16
-<<<<< Best data captured at function evaluation 45
+                     -6.1672889018e-14
+                      1.2334577804e-13
+<<<<< Best data captured at function evaluation 56
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 100 total (96 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -2.7755575616e-16
-                      5.5511151231e-16
-<<<<< Best data captured at function evaluation 45
+                     -6.1672889018e-14
+                      1.2334577804e-13
+<<<<< Best data captured at function evaluation 56
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 100 total (96 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -2.7755575616e-16
-                      5.5511151231e-16
-<<<<< Best data captured at function evaluation 45
+                     -6.1672889018e-14
+                      1.2334577804e-13
+<<<<< Best data captured at function evaluation 56
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 232 total (232 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      0.0000000000e+00
-                      0.0000000000e+00
-<<<<< Best data captured at function evaluation 61
+                     -6.3837823916e-14
+                      1.2784218129e-13
+<<<<< Best data captured at function evaluation 49
 Test Number 4 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 232 total (232 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      0.0000000000e+00
-                      0.0000000000e+00
-<<<<< Best data captured at function evaluation 61
+                     -6.3837823916e-14
+                      1.2784218129e-13
+<<<<< Best data captured at function evaluation 49
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 208 total (208 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
@@ -15189,20 +15189,20 @@ Test Number 5 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      3.6304292905e-14
-                     -7.2608585810e-14
+                     -4.2688075297e-14
+                      8.5376150594e-14
 <<<<< Best data captured at function evaluation 45
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 229 total (225 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      5.0000006640e-01 x2
+                      5.0000001725e-01 x2
 <<<<< Best objective function  =
-                      1.2499996680e-01
+                      1.2499999138e-01
 <<<<< Best constraint values   =
-                     -3.3199297311e-08
-                      6.6398599008e-08
+                     -8.6244757447e-09
+                      1.7248951767e-08
 <<<<< Best data captured at function evaluation 224
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
@@ -15213,8 +15213,8 @@ Test Number 7 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      5.5511151231e-17
-                     -1.1102230246e-16
+                      8.3266726847e-17
+                     -1.6653345369e-16
 <<<<< Best data captured at function evaluation 49
 dakota_sbouu2_cantilever.in
 Test Number 0 succeeded
@@ -20372,7 +20372,7 @@ Test Number 3 succeeded
   -3.0000000001e-01   9.9397673448e-01  -2.5107783447e+00  -2.5107783447e+00
   -2.0000000004e-01   9.9645193902e-01  -2.6922993549e+00  -2.6922993549e+00
   -1.0000000000e-01   9.9801895910e-01  -2.8811649887e+00  -2.8811649887e+00
-  -2.3754276324e-11   9.9895710720e-01  -3.0777374961e+00  -3.0777374961e+00
+  -2.3753776723e-11   9.9895710720e-01  -3.0777374961e+00  -3.0777374961e+00
    4.9999999981e-02   9.9926112487e-01  -3.1790177822e+00  -3.1790177822e+00
    9.9999999951e-02   9.9948525836e-01  -3.2823429132e+00  -3.2823429132e+00
    1.4999999987e-01   9.9964764972e-01  -3.3877438030e+00  -3.3877438030e+00
@@ -20419,7 +20419,7 @@ Test Number 4 succeeded
   -3.0000000001e-01   9.9397673448e-01  -2.5107783447e+00  -2.5107783447e+00
   -2.0000000004e-01   9.9645193902e-01  -2.6922993549e+00  -2.6922993549e+00
   -1.0000000000e-01   9.9801895910e-01  -2.8811649887e+00  -2.8811649887e+00
-  -2.4059865211e-11   9.9895710720e-01  -3.0777374961e+00  -3.0777374961e+00
+  -2.4060142767e-11   9.9895710720e-01  -3.0777374961e+00  -3.0777374961e+00
    4.9999999980e-02   9.9926112487e-01  -3.1790177822e+00  -3.1790177822e+00
    9.9999999951e-02   9.9948525836e-01  -3.2823429132e+00  -3.2823429132e+00
    1.4999999987e-01   9.9964764972e-01  -3.3877438030e+00  -3.3877438030e+00
@@ -20466,7 +20466,7 @@ Test Number 5 succeeded
   -3.0000000000e-01   9.9397673448e-01  -2.5107783448e+00  -2.5107783448e+00
   -2.0000000000e-01   9.9645193902e-01  -2.6922993549e+00  -2.6922993549e+00
   -1.0000000000e-01   9.9801895910e-01  -2.8811649887e+00  -2.8811649887e+00
-   2.2204460493e-16   9.9895710720e-01  -3.0777374961e+00  -3.0777374961e+00
+   5.5511151231e-17   9.9895710720e-01  -3.0777374961e+00  -3.0777374961e+00
    5.0000000000e-02   9.9926112487e-01  -3.1790177823e+00  -3.1790177823e+00
    1.0000000000e-01   9.9948525836e-01  -3.2823429132e+00  -3.2823429132e+00
    1.5000000000e-01   9.9964764972e-01  -3.3877438033e+00  -3.3877438033e+00
@@ -20637,7 +20637,7 @@ Test Number 9 succeeded
   -4.0000000036e+00   7.5390076820e-02   1.4367812714e+00   1.4367812714e+00
   -3.5000000036e+00   1.3970952367e-01   1.0816253237e+00   1.0816253237e+00
   -3.0000000032e+00   2.4456790666e-01   6.9168397410e-01   6.9168397410e-01
-  -2.5000000021e+00   3.9764919889e-01   2.5943659437e-01   2.5943659437e-01
+  -2.5000000021e+00   3.9764919889e-01   2.5943659436e-01   2.5943659436e-01
   -1.9999999980e+00   5.8912021906e-01  -2.2528243686e-01  -2.2528243686e-01
   -1.9000000000e+00   6.2917735108e-01  -3.2967532803e-01  -3.2967532803e-01
   -1.8000000000e+00   6.6888976969e-01  -4.3684955115e-01  -4.3684955115e-01
@@ -20658,7 +20658,7 @@ Test Number 9 succeeded
   -2.9999999989e-01   9.9397673448e-01  -2.5107783450e+00  -2.5107783450e+00
   -2.0000000017e-01   9.9645193902e-01  -2.6922993546e+00  -2.6922993546e+00
   -9.9999999741e-02   9.9801895910e-01  -2.8811649892e+00  -2.8811649892e+00
-   3.3870306559e-10   9.9895710720e-01  -3.0777374968e+00  -3.0777374968e+00
+   3.3870295457e-10   9.9895710720e-01  -3.0777374968e+00  -3.0777374968e+00
    4.9999999195e-02   9.9926112487e-01  -3.1790177806e+00  -3.1790177806e+00
    9.9999999417e-02   9.9948525836e-01  -3.2823429121e+00  -3.2823429121e+00
    1.4999999916e-01   9.9964764972e-01  -3.3877438015e+00  -3.3877438015e+00
@@ -20689,7 +20689,7 @@ Test Number 10 succeeded
   -1.9000000000e+00   6.2917735108e-01  -3.2967532803e-01  -3.2967532803e-01
   -1.8000000000e+00   6.6888976969e-01  -4.3684955115e-01  -4.3684955115e-01
   -1.7000000000e+00   7.0779413419e-01  -5.4695196764e-01  -5.4695196764e-01
-  -1.6000000000e+00   7.4541815983e-01  -6.6014048513e-01  -6.6014048513e-01
+  -1.6000000000e+00   7.4541815983e-01  -6.6014048512e-01  -6.6014048512e-01
   -1.5000000000e+00   7.8129818021e-01  -7.7658502468e-01  -7.7658502468e-01
   -1.4000000001e+00   8.1499871764e-01  -8.9646855990e-01  -8.9646855990e-01
   -1.3000000000e+00   8.4613297566e-01  -1.0199882177e+00  -1.0199882177e+00
@@ -20705,14 +20705,14 @@ Test Number 10 succeeded
   -2.9999999989e-01   9.9397673448e-01  -2.5107783450e+00  -2.5107783450e+00
   -2.0000000017e-01   9.9645193902e-01  -2.6922993546e+00  -2.6922993546e+00
   -9.9999999741e-02   9.9801895910e-01  -2.8811649892e+00  -2.8811649892e+00
-   3.3859270943e-10   9.9895710720e-01  -3.0777374968e+00  -3.0777374968e+00
+   3.3859276494e-10   9.9895710720e-01  -3.0777374968e+00  -3.0777374968e+00
    4.9999999195e-02   9.9926112487e-01  -3.1790177806e+00  -3.1790177806e+00
    9.9999999417e-02   9.9948525836e-01  -3.2823429121e+00  -3.2823429121e+00
    1.4999999916e-01   9.9964764972e-01  -3.3877438015e+00  -3.3877438015e+00
    1.9999999911e-01   9.9976318712e-01  -3.4952455768e+00  -3.4952455768e+00
    2.4999999802e-01   9.9984384326e-01  -3.6048664574e+00  -3.6048664574e+00
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 295 total (295 new, 0 duplicate)
+<<<<< Function evaluation summary: 294 total (294 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -9.0000000514e+00   4.8995030000e-05   3.8955155867e+00   3.8955155867e+00
@@ -20731,7 +20731,7 @@ Test Number 11 succeeded
   -4.0000000036e+00   7.5390076820e-02   1.4367812714e+00   1.4367812714e+00
   -3.5000000036e+00   1.3970952367e-01   1.0816253237e+00   1.0816253237e+00
   -3.0000000032e+00   2.4456790666e-01   6.9168397410e-01   6.9168397410e-01
-  -2.5000000021e+00   3.9764919890e-01   2.5943659434e-01   2.5943659434e-01
+  -2.5000000021e+00   3.9764919890e-01   2.5943659433e-01   2.5943659433e-01
   -1.9999999981e+00   5.8912021904e-01  -2.2528243680e-01  -2.2528243680e-01
   -1.9000000000e+00   6.2917735108e-01  -3.2967532803e-01  -3.2967532803e-01
   -1.8000000000e+00   6.6888976969e-01  -4.3684955115e-01  -4.3684955115e-01
@@ -20752,7 +20752,7 @@ Test Number 11 succeeded
   -2.9999999989e-01   9.9397673448e-01  -2.5107783450e+00  -2.5107783450e+00
   -2.0000000016e-01   9.9645193902e-01  -2.6922993546e+00  -2.6922993546e+00
   -9.9999999738e-02   9.9801895910e-01  -2.8811649893e+00  -2.8811649893e+00
-   3.4353209166e-10   9.9895710720e-01  -3.0777374968e+00  -3.0777374968e+00
+   3.4353259126e-10   9.9895710720e-01  -3.0777374968e+00  -3.0777374968e+00
    4.9999999198e-02   9.9926112487e-01  -3.1790177806e+00  -3.1790177806e+00
    9.9999999427e-02   9.9948525836e-01  -3.2823429121e+00  -3.2823429121e+00
    1.4999999918e-01   9.9964764972e-01  -3.3877438015e+00  -3.3877438015e+00

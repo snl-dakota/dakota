@@ -119,7 +119,7 @@ variables,
 
 interface,
 	id_interface = 'UQ_I'
-	system asynch
+	direct
 	  analysis_driver = 'short_column'
 
 responses,

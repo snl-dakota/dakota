@@ -61,7 +61,7 @@ variables
         descriptors      'x1'  'x2'  'x3'
 
 interface
-    fork
+    direct
       analysis_driver = 'mogatest1'
 
 responses

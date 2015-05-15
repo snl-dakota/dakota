@@ -69,7 +69,7 @@ variables,
 					0   0   1
 
 interface,
-	system asynch
+	direct
 	  analysis_driver = 'short_column'
 
 responses,
