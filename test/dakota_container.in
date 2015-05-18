@@ -1,33 +1,36 @@
 #@ *: DakotaConfig=HAVE_NPSOL
+#@ s0: UserMan=container_opt_npsol
 # DAKOTA INPUT FILE : dakota_container.in
+# Dakota Input File: container_opt_npsol.in             #s0
 
-environment,
-	graphics
-	tabular_graphics_data
+environment
+  graphics
+  tabular_data
+    tabular_data_file = 'container_opt_npsol.dat'   #s0
 
-method,
-	npsol_sqp
+method
+  npsol_sqp
 
-variables,
-	continuous_design = 2
-	  descriptors'H' 'D'
-	  initial_point 4.5 4.5
-	  lower_bounds  0.0 0.0
+variables
+  continuous_design = 2
+    descriptors'H' 'D'
+    initial_point 4.5 4.5
+    lower_bounds  0.0 0.0
 
-interface,
-	system
-	  analysis_driver = 'container'			#s0
+interface
+  fork
+    analysis_driver = 'container'               #s0
 # Lack of extension on script wrapper to allow Unix and Windows testing
 #	  analysis_driver = 'dakota_container-driver'	#s1
-	  parameters_file = 'container.in'
-	  results_file    = 'container.out'
-	  file_tag
+    parameters_file = 'container.in'
+    results_file    = 'container.out'
+    file_tag
 
-responses,
-	objective_functions = 1
-	nonlinear_equality_constraints = 1
-	numerical_gradients
-	  method_source dakota
-	  interval_type central
-	  fd_gradient_step_size = 0.001
-	no_hessians
+responses
+  objective_functions = 1
+  nonlinear_equality_constraints = 1
+  numerical_gradients
+    method_source dakota
+    interval_type central
+    fd_gradient_step_size = 0.001
+  no_hessians

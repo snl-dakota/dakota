@@ -1,53 +1,54 @@
 #@ s6: DakotaConfig=HAVE_NPSOL
+#@ s7: UserMan=textbook_nls_datafile
 # DAKOTA INPUT FILE - dakota_textbook_nips.in
+## Dakota Input File: textbook_nls_datafile.in		#s7
 
-method,
-	optpp_q_newton,			#s0,#s1
-#	optpp_fd_newton			#s2,#s3
-#	optpp_newton			#s4
-#	optpp_g_newton			#s5
-#	nlssol_sqp			#s6
-#       nl2sol                          #s7,#s8,#s9
-#       coliny_ea                       #s10       
-#       seed = 3247                     #s10
-	  merit_function el_bakry	#s0,#s1,#s2,#s3,#s4,#s5
-	  max_iterations = 50
-	  convergence_tolerance = 1e-8
-#	  linear_inequality_constraint_matrix = 1. 1.	#s5,#s6
-#	  linear_inequality_upper_bounds = 1.05	      	#s5,#s6
-#	  output debug
+method
+  optpp_q_newton              #s0,#s1
+#  optpp_fd_newton					  #s2,#s3
+#  optpp_newton						    #s4
+#  optpp_g_newton					    #s5
+#  nlssol_sqp						      #s6
+#  nl2sol                     #s7,#s8,#s9
+#  coliny_ea                  #s10       
+#    seed = 3247              #s10
+    merit_function el_bakry   #s0,#s1,#s2,#s3,#s4,#s5
+    max_iterations = 50
+    convergence_tolerance = 1e-8
+#    linear_inequality_constraint_matrix = 1. 1.  #s5,#s6
+#    linear_inequality_upper_bounds = 1.05	      #s5,#s6
+#    output debug
 
-variables,
-	continuous_design = 2
-	  initial_point    0.9    1.1
-	  upper_bounds     5.8    2.9
-	  lower_bounds     0.5   -2.9
-	  descriptors      'x1'   'x2'
+variables
+  continuous_design = 2
+    initial_point    0.9    1.1
+    upper_bounds     5.8    2.9
+    lower_bounds     0.5   -2.9
+    descriptors      'x1'   'x2'
 
-interface,
-	system
-	  analysis_driver = 'text_book'
-	  parameters_file = 'text_book.in'
-	  results_file    = 'text_book.out'
-	  file_tag #file_save
+interface
+  fork
+    analysis_driver = 'text_book'
+    parameters_file = 'text_book.in'
+    results_file    = 'text_book.out'
+    file_tag #file_save
 
-responses,
-	objective_functions = 1			#s0,#s1,#s2,#s3,#s4
-	nonlinear_inequality_constraints = 2	#s0,#s1,#s2,#s3,#s4
-#	calibration_terms = 2			#s5,#s6
-# 	calibration_terms = 3			#s7,#s8,#s9,#s10
-#         calibration_data_file = 'dakota_textbook_nips.lsq.dat' #s7
-# 	    freeform  #s7,#s9,#s10
-#         calibration_data_file = 'dakota_textbook_nips.lsq.ann' #s8
-#         calibration_data_file = 'dakota_textbook_nips.rep.dat' #s9,#s10
-#         num_experiments = 4  #s9,#s10
-#	nonlinear_inequality_constraints = 1	#s5,#s6
-	analytic_gradients	 			#s0,#s2,#s4,#s5,#s6,#s7,#s8,#s9
-#       no_gradients                                    #s10
-#	numerical_gradients	        		#s1,#s3
-#	  method_source vendor	        		#s1,#s3
-#	  interval_type forward	        		#s1,#s3
-#	  fd_gradient_step_size = 1.e-5	 	 	#s1,#s3
-	no_hessians					#s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10
-#	analytic_hessians				#s4
-
+responses
+  objective_functions = 1               #s0,#s1,#s2,#s3,#s4
+  nonlinear_inequality_constraints = 2	#s0,#s1,#s2,#s3,#s4
+#  calibration_terms = 2				        #s5,#s6
+#  calibration_terms = 3				        #s7,#s8,#s9,#s10
+#    calibration_data_file = 'dakota_textbook_nips.lsq.dat' #s7
+#      freeform 	     				          #s7,#s9,#s10
+#    calibration_data_file = 'dakota_textbook_nips.lsq.ann' #s8
+#    calibration_data_file = 'dakota_textbook_nips.rep.dat' #s9,#s10
+#    num_experiments = 4     				    #s9,#s10
+#  nonlinear_inequality_constraints = 1	#s5,#s6
+  analytic_gradients	 	                #s0,#s2,#s4,#s5,#s6,#s7,#s8,#s9
+#  no_gradients                         #s10
+#  numerical_gradients	                #s1,#s3
+#    method_source vendor	              #s1,#s3
+#    interval_type forward	            #s1,#s3
+#    fd_gradient_step_size = 1.e-5      #s1,#s3
+  no_hessians			                      #s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10
+#  analytic_hessians		                #s4

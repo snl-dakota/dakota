@@ -1,67 +1,80 @@
-# Dakota INPUT FILE - rosen_multidim.in #s0
-## Dakota INPUT FILE - dakota_rosenbrock_vector.in #s1
-## Dakota INPUT FILE - rosen_grad_opt.in #s2
-## Dakota INPUT FILE - dakota_rosenbrock_ps_opt.in #s4
-## Dakota INPUT FILE - dakota_rosenbrock_ea_opt.in #s5
-## Dakota INPUT FILE - rosen_sampling.in #s6
-## Dakota INPUT FILE - rosen_syscall.in #s7
-## Dakota INPUT FILE - dakota_rosenbrock_ls.in #s8
-# Included Dakota example using the rosenbrock analysis code #s0,#s2,#s6,#s7
-# in a multidimensional parameter study.  Usage:			      #s0
+#@ s0: UserMan=rosen_multidim
+#@ s1: UserMan=rosen_ps_vector
+#@ s2: UserMan=rosen_grad_opt
+#@ s4: UserMan=rosen_opt_patternsearch
+#@ s5: UserMan=rosen_opt_ea
+#@ s6: UserMan=rosen_sampling
+#@ s7: UserMan=rosen_syscall
+#@ s8: UserMan=rosen_opt_nls
+#@ s9: UserMan=rosen_opt_scaled
+# Dakota Input File: rosen_multidim.in          	#s0
+## Dakota Input File: rosen_ps_vector.in 		      #s1
+## Dakota Input File: rosen_grad_opt.in 		      #s2
+## Dakota Input File: rosen_opt_patternsearch.in 	#s4
+## Dakota Input File: rosen_opt_ea.in 			      #s5
+## Dakota Input File: rosen_sampling.in 		      #s6
+## Dakota Input File: rosen_syscall.in 			      #s7
+## Dakota Input File: rosen_opt_nls.in 			      #s8
+## Dakota Input File: rosen_opt_scaled.in		      #s9
+# Usage:						                              #s0
 #   dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout #s0
-## with gradient-based optimization, bounded design variables.  Usage: 	       #s2
+## Usage: 	       		   		      			          #s2
 ##   dakota -i rosen_grad_opt.in -o rosen_grad_opt.out > rosen_grad_opt.stdout #s2
-## with a random sampling uncertainty quantification method.  Usage: 	       #s6
+## Usage: 	       		    		       	 		        #s6
 ##   dakota -i rosen_sampling.in -o rosen_sampling.out > rosen_sampling.stdout #s6
-## with gradient-based optimization, bounded design variables, and 	    #s7
-## analysis code called with fork.  Usage:				    #s7
-##   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout #s7
+## Usage:				    	       	 		                #s7
+##   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout   #s7
 
 environment
   graphics
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_multidim.dat' #s0
-#    tabular_graphics_file = 'rosen_grad_opt.dat' #s2
-#    tabular_graphics_file = 'rosen_sampling.dat' #s6
-#    tabular_graphics_file = 'rosen_syscall.dat' #s7
+  tabular_data
+    tabular_data_file = 'rosen_multidim.dat'            #s0
+#    tabular_data_file = 'rosen_ps_vector.dat' 		      #s1
+#    tabular_data_file = 'rosen_grad_opt.dat' 		      #s2
+#    tabular_data_file = 'rosen_opt_patternsearch.dat'	#s4
+#    tabular_data_file = 'rosen_opt_ea.dat' 		        #s5
+#    tabular_data_file = 'rosen_sampling.dat' 		      #s6
+#    tabular_data_file = 'rosen_syscall.dat' 		        #s7
+#    tabular_data_file = 'rosen_opt_nls.dat'		        #s8
+#    tabular_data_file = 'rosen_opt_scaled.dat'		      #s9
 
 method
-#  max_iterations = 100      #s2,#s3,#s7,#s8
-#  max_iterations = 100      #s5
-#  max_iterations = 1000      #s4
-#  max_function_evaluations = 2000  #s4
-#  max_function_evaluations = 2000  #s5
-#  convergence_tolerance = 1e-4    #s2,#s3,#s7,#s8
-  multidim_parameter_study     #s0
-    partitions = 8 8           #s0
-#  vector_parameter_study      #s1
-#    final_point = 1.1  1.3     #s1
-#    num_steps = 10      #s1
-#  conmin_frcg        #s2,#s7,#s9
-#    scaling        #s9
-#    output verbose      #s9
-#  optpp_g_newton                      #s3
-#  nl2sol          #s8
-#  coliny_pattern_search                   #s4
-#    solution_accuracy = 1e-4    #s4
-#    initial_delta = 0.5      #s4
-#    threshold_delta = 1e-4    #s4
+#  max_iterations = 100               #s2,#s3,#s7,#s8
+#  max_iterations = 100      		      #s5
+#  max_iterations = 1000      		    #s4
+#  max_function_evaluations = 2000  	#s4
+#  max_function_evaluations = 2000  	#s5
+#  convergence_tolerance = 1e-4    	  #s2,#s3,#s7,#s8
+  multidim_parameter_study     		    #s0
+    partitions = 8 8           		    #s0
+#  vector_parameter_study      		    #s1
+#    final_point = 1.1  1.3     	    #s1
+#    num_steps = 10      		          #s1
+#  conmin_frcg        			          #s2,#s7,#s9
+#    scaling        			            #s9
+#    output verbose      		          #s9
+#  optpp_g_newton                     #s3
+#  nl2sol          			              #s8
+#  coliny_pattern_search              #s4
+#    solution_accuracy = 1e-4    	    #s4
+#    initial_delta = 0.5      		    #s4
+#    threshold_delta = 1e-4    		    #s4
 #    exploratory_moves basic_pattern  #s4
-#    contraction_factor = 0.75    #s4
-#  coliny_ea        #s5
-#    seed = 11011011      #s5
-#    population_size = 50      #s5
-#    fitness_type merit_function    #s5
-#    mutation_type offset_normal    #s5
-#    mutation_rate 1.0      #s5
-#    crossover_type two_point    #s5
-#    crossover_rate 0.0      #s5
-#    replacement_type chc = 10    #s5
-#  sampling                     #s6
-#    sample_type random         #s6
-#    samples = 200              #s6
-#    seed = 17                  #s6
-#    response_levels = 100.0    #s6
+#    contraction_factor = 0.75    	  #s4
+#  coliny_ea        	  		          #s5
+#    seed = 11011011      		        #s5
+#    population_size = 50      		    #s5
+#    fitness_type merit_function    	#s5
+#    mutation_type offset_normal    	#s5
+#    mutation_rate 1.0      		      #s5
+#    crossover_type two_point    	    #s5
+#    crossover_rate 0.0      		      #s5
+#    replacement_type chc = 10    	  #s5
+#  sampling                    		    #s6
+#    sample_type random         	    #s6
+#    samples = 200              	    #s6
+#    seed = 17                  	    #s6
+#    response_levels = 100.0    	    #s6
 
 model
   single
@@ -76,31 +89,31 @@ variables
     upper_bounds      2.0      2.0     #s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
     descriptors       'x1'     "x2"    #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9
 #    scale_types = 'value' 'log'       #s9
-#    scales = 4.0 0.1      #s9
-#  uniform_uncertain = 2      #s6
-#    lower_bounds       -2.0  -2.0  #s6
-#    upper_bounds        2.0   2.0  #s6
-#    descriptors         'x1'  'x2'  #s6
+#    scales = 4.0 0.1      	           #s9
+#  uniform_uncertain = 2      	       #s6
+#    lower_bounds       -2.0  -2.0     #s6
+#    upper_bounds        2.0   2.0     #s6
+#    descriptors         'x1'  'x2'    #s6
 
 interface
   analysis_driver = 'rosenbrock'
-    direct          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9
+    direct				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9
 #    system
 #    fork                             #s7
 #    parameters_file = 'params.in'    #s7
 #    results_file    = 'results.out'  #s7
 
 responses
-#  objective_functions = 1             #s1,#s2,#s4,#s5,#s7,#s9
+#  objective_functions = 1                    #s1,#s2,#s4,#s5,#s7,#s9
 #    objective_function_scale_types = 'value' #s9
-#    objective_function_scales = 50.0  #s9
-#  calibration_terms = 2    #s3,#s8
-  response_functions = 1    #s6,#s0
-  no_gradients        #s0,#s1,#s4,#s5,#s6
-##  analytic_gradients      #s2
-#  numerical_gradients      #s2,#s7
-#    method_source dakota      #s2,#s7
-#    interval_type forward      #s2,#s7
-#    fd_gradient_step_size = 1.e-5    #s2,#s7
-#  analytic_gradients      #s3,#s8,#s9
+#    objective_function_scales = 50.0  		    #s9
+#  calibration_terms = 2       	 		          #s3,#s8
+  response_functions = 1			                #s6,#s0
+  no_gradients         				                #s0,#s1,#s4,#s5,#s6
+##  analytic_gradients      			            #s2
+#  numerical_gradients      			            #s2,#s7
+#    method_source dakota      			          #s2,#s7
+#    interval_type forward      		          #s2,#s7
+#    fd_gradient_step_size = 1.e-5    		    #s2,#s7
+#  analytic_gradients        			            #s3,#s8,#s9
   no_hessians

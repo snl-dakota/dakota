@@ -1,133 +1,135 @@
+#@ s1: UserMan=rosen_uq_pce
 # DAKOTA INPUT FILE : dakota_uq_rosenbrock_pce.in
+## Dakota Input File: rosen_uq_pce.in			#s1
 
-environment,
-	#graphics
+environment
+  #graphics
 
-method,
-	polynomial_chaos
-	  quadrature_order   = 5	#s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
-# 	  expansion_order    = 4	#s14,#s15,#s16,#s17,#s18,#s19
-# 	  dimension_preference = 4 2	#s14,#s15,#s16,#s17,#s18
-	  dimension_preference = 5 3	#s0,#s1,#s2,#s3,#s4,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
+method
+  polynomial_chaos
+    quadrature_order   = 5        #s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
+#    expansion_order    = 4	      #s14,#s15,#s16,#s17,#s18,#s19
+#    dimension_preference = 4 2	  #s14,#s15,#s16,#s17,#s18
+    dimension_preference = 5 3	  #s0,#s1,#s2,#s3,#s4,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
 # One SSG level higher for n=5 relative to n=2:
 # One SSG level higher for anisotropic relative to isotropic:
-#	  sparse_grid_level  = 2	#s6,#s7,#s8,#s9,#s10,#s11,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37
-#	  sparse_grid_level  = 3	#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-#	  dimension_preference = 2 1	#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-#	  cubature_integrand = 5   	#s52,#s53
-#	  cubature_integrand = 2	#s54,#s55,#s56,#s57,#s58,#s59,#s60,#s61,#s62,#s63,#s64,#s65
-#	  collocation_points = 24	#s14,#s15,#s16,#s17,#s18
-#	  collocation_points = 252	#s19
-	  samples = 10000		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-	  seed = 12347 rng rnum2	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-	  response_levels = .1 1. 50. 100. 500. 1000.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-#	  response_levels = 10.		#s12,#s13
-#	  compute reliabilities		#s12,#s13
-	  variance_based_decomp #interaction_order = 1
+#    sparse_grid_level  = 2	      #s6,#s7,#s8,#s9,#s10,#s11,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37
+#    sparse_grid_level  = 3	      #s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+#    dimension_preference = 2 1	  #s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+#    cubature_integrand = 5   	  #s52,#s53
+#    cubature_integrand = 2	      #s54,#s55,#s56,#s57,#s58,#s59,#s60,#s61,#s62,#s63,#s64,#s65
+#    collocation_points = 24	    #s14,#s15,#s16,#s17,#s18
+#    collocation_points = 252	    #s19
+    samples = 10000		            #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+    seed = 12347 rng rnum2	      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+    response_levels = .1 1. 50. 100. 500. 1000.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+#	  response_levels = 10.		      #s12,#s13
+#	  compute reliabilities		      #s12,#s13
+    variance_based_decomp #interaction_order = 1
 
-variables,
-#	active all				#s12
-	normal_uncertain = 2			#s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
-      	  means             =  0.   0. 		#s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
-	  std_deviations    =  1.   1.		#s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
-#	  lower_bounds      = -2.  -2. 		#s20,#s29,#s43,#s57
-#	  upper_bounds      =  2.   2.		#s20,#s29,#s43,#s57
-	  descriptors       = 'x1' 'x2'		#s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
-#	uniform_uncertain = 2			#s1,#s7,#s15,#s39,#s53
-#      	  lower_bounds      = -2.  -2. 		#s1,#s7,#s15,#s39,#s53
-#	  upper_bounds      =  2.   2.		#s1,#s7,#s15,#s39,#s53
-#	  descriptors       = 'x1' 'x2'		#s1,#s7,#s15,#s39,#s53
-#	exponential_uncertain = 2		#s2,#s8,#s16,#s40,#s54
-#	  betas             =  2.   2.		#s2,#s8,#s16,#s40,#s54
-#	  descriptors       = 'x1' 'x2'		#s2,#s8,#s16,#s40,#s54
-#	beta_uncertain = 2			#s3,#s9,#s17,#s41,#s55
-#	  alphas            =  1.5  1.5		#s3,#s9,#s17,#s41,#s55
-#	  betas             =  2.   2.		#s3,#s9,#s17,#s41,#s55
-#      	  lower_bounds      = -2.  -2. 		#s3,#s9,#s17,#s41,#s55
-#	  upper_bounds      =  2.   2.		#s3,#s9,#s17,#s41,#s55
-#	  descriptors       = 'x1' 'x2'		#s3,#s9,#s17,#s41,#s55
-#	gamma_uncertain = 2			#s4,#s10,#s18,#s42,#s56
-#	  alphas            =  2.5  2.5		#s4,#s10,#s18,#s42,#s56
-#	  betas             =  2.   2.		#s4,#s10,#s18,#s42,#s56
-#	  descriptors       = 'x1' 'x2'		#s4,#s10,#s18,#s42,#s56
-#	normal_uncertain = 1			#s5,#s11,#s19
-#      	  means             =  0. 		#s5,#s11,#s19
-#	  std_deviations    =  1.		#s5,#s11,#s19
-#	  descriptors       = 'x1'		#s5,#s11,#s19
-#	uniform_uncertain = 1			#s5,#s11,#s19
-#      	  lower_bounds      = -2. 		#s5,#s11,#s19
-#	  upper_bounds      =  2.		#s5,#s11,#s19
-#	  descriptors       = 'x2'		#s5,#s11,#s19
-#	exponential_uncertain = 1		#s5,#s11,#s19
-#	  betas             =  2.		#s5,#s11,#s19
-#	  descriptors       = 'x3'		#s5,#s11,#s19
-#	beta_uncertain = 1			#s5,#s11,#s19
-#	  alphas            =  1.5		#s5,#s11,#s19
-#	  betas             =  2.		#s5,#s11,#s19
-#      	  lower_bounds      = -2. 		#s5,#s11,#s19
-#	  upper_bounds      =  2.		#s5,#s11,#s19
-#	  descriptors       = 'x4'		#s5,#s11,#s19
-#	gamma_uncertain = 1			#s5,#s11,#s19
-#	  alphas            =  2.5		#s5,#s11,#s19
-#	  betas             =  2.		#s5,#s11,#s19
-#	  descriptors       = 'x5'		#s5,#s11,#s19
-#	continuous_design = 2			#s12,#s13
-#	  initial_point     = -1.5 -1.5		#s12,#s13
-#	  lower_bounds      = -2.  -2.		#s12,#s13
-#	  upper_bounds      =  2.   2.		#s12,#s13
-#	  descriptors       = 'x1' 'x2'		#s12,#s13
-#	normal_uncertain = 2			#s12,#s13
-#      	  means             =  0.   0. 		#s12,#s13
-#	  std_deviations    =  1.   1.		#s12,#s13
-#	  descriptors       = 'x3' 'x4'		#s12,#s13
-#	lognormal_uncertain = 2			#s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
-#    	  means             =  1.   1.		#s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
-#	  std_deviations    =  0.5  0.5		#s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
-#	  lower_bounds      =  0.25 0.25	#s22,#s31,#s45,#s59
-#	  upper_bounds      =  2.5  2.5		#s22,#s31,#s45,#s59
-#	  descriptors       = 'x1' 'x2'		#s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
-#	loguniform_uncertain = 2		#s23,#s32,#s46,#s60
-#	  lower_bounds      =  0.1 0.1		#s23,#s32,#s46,#s60
-#	  upper_bounds      =  10. 10.		#s23,#s32,#s46,#s60
-#	  descriptors       = 'x1' 'x2'		#s23,#s32,#s46,#s60
-#	triangular_uncertain = 2		#s24,#s33,#s47,#s61
-#      	  modes             =  0.   0. 		#s24,#s33,#s47,#s61
-#	  lower_bounds      = -2.  -2. 		#s24,#s33,#s47,#s61
-#	  upper_bounds      =  2.   2.		#s24,#s33,#s47,#s61
-#	  descriptors       = 'x1' 'x2'		#s24,#s33,#s47,#s61
-#	gumbel_uncertain = 2			#s25,#s34,#s48,#s62
-#	  alphas            = 1.5 2.0 		#s25,#s34,#s48
-#	  betas             = 2.5 3.0 		#s25,#s34,#s48
-#	  alphas            = 1.5 1.5 		#s62
-#	  betas             = 2.5 2.5 		#s62
-#	  descriptors       = 'x1' 'x2'		#s25,#s34,#s48,#s62
-#	frechet_uncertain = 2			#s26,#s35,#s49,#s63
-#	  alphas            = 2.5 3.0 		#s26,#s35,#s49
-#	  betas             = 3.5 4.0 		#s26,#s35,#s49
-#	  alphas            = 2.5 2.5 		#s63
-#	  betas             = 3.5 3.5 		#s63
-#	  descriptors       = 'x1' 'x2'		#s26,#s35,#s49,#s63
-#	weibull_uncertain = 2			#s27,#s36,#s50,#s64
-#	  alphas            = 1.5 2.0 		#s27,#s36,#s50
-#	  betas             = 2.5 3.0 		#s27,#s36,#s50
-#	  alphas            = 1.5 1.5 		#s64
-#	  betas             = 2.5 2.5 		#s64
-#	  descriptors       = 'x1' 'x2'		#s27,#s36,#s50,#s64
-#	histogram_bin_uncertain = 2		#s28,#s37,#s51,#s65
-#	  num_pairs =  3        4		#s28,#s37,#s51
-#	  abscissas =  1  4  6  1  2  3  4	#s28,#s37,#s51
-#	  counts    = 17 21  0 12 24 12  0	#s28,#s37,#s51
-#	  num_pairs =  4           4		#s65
-#	  abscissas =  1  2  3  4  1  2  3  4	#s65
-#	  counts    = 12 24 12  0 12 24 12  0	#s65
-#	  descriptors   = 'x1' 'x2'		#s28,#s37,#s51,#s65
+variables
+#	active all                              #s12
+  normal_uncertain = 2				            #s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
+    means             =  0.   0. 		      #s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
+    std_deviations    =  1.   1.		      #s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
+#    lower_bounds      = -2.  -2. 		    #s20,#s29,#s43,#s57
+#    upper_bounds      =  2.   2.		      #s20,#s29,#s43,#s57
+    descriptors       = 'x1' 'x2'		      #s0,#s6,#s14,#s20,#s29,#s38,#s43,#s52,#s57
+#  uniform_uncertain = 2			            #s1,#s7,#s15,#s39,#s53
+#    lower_bounds      = -2.  -2. 		    #s1,#s7,#s15,#s39,#s53
+#    upper_bounds      =  2.   2.		      #s1,#s7,#s15,#s39,#s53
+#    descriptors       = 'x1' 'x2'		    #s1,#s7,#s15,#s39,#s53
+#  exponential_uncertain = 2			        #s2,#s8,#s16,#s40,#s54
+#    betas             =  2.   2.		      #s2,#s8,#s16,#s40,#s54
+#    descriptors       = 'x1' 'x2'		    #s2,#s8,#s16,#s40,#s54
+#  beta_uncertain = 2				              #s3,#s9,#s17,#s41,#s55
+#    alphas            =  1.5  1.5		    #s3,#s9,#s17,#s41,#s55
+#    betas             =  2.   2.		      #s3,#s9,#s17,#s41,#s55
+#    lower_bounds      = -2.  -2. 		    #s3,#s9,#s17,#s41,#s55
+#    upper_bounds      =  2.   2.		      #s3,#s9,#s17,#s41,#s55
+#    descriptors       = 'x1' 'x2'		    #s3,#s9,#s17,#s41,#s55
+#  gamma_uncertain = 2				            #s4,#s10,#s18,#s42,#s56
+#    alphas            =  2.5  2.5		    #s4,#s10,#s18,#s42,#s56
+#    betas             =  2.   2.		      #s4,#s10,#s18,#s42,#s56
+#    descriptors       = 'x1' 'x2'		    #s4,#s10,#s18,#s42,#s56
+#  normal_uncertain = 1				            #s5,#s11,#s19
+#    means             =  0. 			        #s5,#s11,#s19
+#    std_deviations    =  1.			        #s5,#s11,#s19
+#    descriptors       = 'x1'			        #s5,#s11,#s19
+#  uniform_uncertain = 1			            #s5,#s11,#s19
+#    lower_bounds      = -2. 			        #s5,#s11,#s19
+#    upper_bounds      =  2.			        #s5,#s11,#s19
+#    descriptors       = 'x2'			        #s5,#s11,#s19
+#  exponential_uncertain = 1			        #s5,#s11,#s19
+#    betas             =  2.			        #s5,#s11,#s19
+#    descriptors       = 'x3'			        #s5,#s11,#s19
+#  beta_uncertain = 1				              #s5,#s11,#s19
+#    alphas            =  1.5			        #s5,#s11,#s19
+#    betas             =  2.			        #s5,#s11,#s19
+#    lower_bounds      = -2. 			        #s5,#s11,#s19
+#    upper_bounds      =  2.			        #s5,#s11,#s19
+#    descriptors       = 'x4'			        #s5,#s11,#s19
+#  gamma_uncertain = 1				            #s5,#s11,#s19
+#    alphas            =  2.5			        #s5,#s11,#s19
+#    betas             =  2.			        #s5,#s11,#s19
+#    descriptors       = 'x5'			        #s5,#s11,#s19
+#  continuous_design = 2			            #s12,#s13
+#    initial_point     = -1.5 -1.5		    #s12,#s13
+#    lower_bounds      = -2.  -2.		      #s12,#s13
+#    upper_bounds      =  2.   2.		      #s12,#s13
+#    descriptors       = 'x1' 'x2'		    #s12,#s13
+#  normal_uncertain = 2				            #s12,#s13
+#    means             =  0.   0. 		    #s12,#s13
+#    std_deviations    =  1.   1.		      #s12,#s13
+#    descriptors       = 'x3' 'x4'		    #s12,#s13
+#  lognormal_uncertain = 2			          #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
+#    means             =  1.   1.		      #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
+#    std_deviations    =  0.5  0.5		    #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
+#    lower_bounds      =  0.25 0.25		    #s22,#s31,#s45,#s59
+#    upper_bounds      =  2.5  2.5		    #s22,#s31,#s45,#s59
+#    descriptors       = 'x1' 'x2'		    #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
+#  loguniform_uncertain = 2			          #s23,#s32,#s46,#s60
+#    lower_bounds      =  0.1 0.1		      #s23,#s32,#s46,#s60
+#    upper_bounds      =  10. 10.		      #s23,#s32,#s46,#s60
+#    descriptors       = 'x1' 'x2'		    #s23,#s32,#s46,#s60
+#  triangular_uncertain = 2			          #s24,#s33,#s47,#s61
+#    modes             =  0.   0. 		    #s24,#s33,#s47,#s61
+#    lower_bounds      = -2.  -2. 		    #s24,#s33,#s47,#s61
+#    upper_bounds      =  2.   2.		      #s24,#s33,#s47,#s61
+#    descriptors       = 'x1' 'x2'		    #s24,#s33,#s47,#s61
+#  gumbel_uncertain = 2				            #s25,#s34,#s48,#s62
+#    alphas            = 1.5 2.0 		      #s25,#s34,#s48
+#    betas             = 2.5 3.0 		      #s25,#s34,#s48
+#    alphas            = 1.5 1.5 		      #s62
+#    betas             = 2.5 2.5 		      #s62
+#    descriptors       = 'x1' 'x2'		    #s25,#s34,#s48,#s62
+#  frechet_uncertain = 2			            #s26,#s35,#s49,#s63
+#    alphas            = 2.5 3.0 		      #s26,#s35,#s49
+#    betas             = 3.5 4.0 		      #s26,#s35,#s49
+#    alphas            = 2.5 2.5 		      #s63
+#    betas             = 3.5 3.5 		      #s63
+#    descriptors       = 'x1' 'x2'		    #s26,#s35,#s49,#s63
+#  weibull_uncertain = 2			            #s27,#s36,#s50,#s64
+#    alphas            = 1.5 2.0 		      #s27,#s36,#s50
+#    betas             = 2.5 3.0 		      #s27,#s36,#s50
+#    alphas            = 1.5 1.5 		      #s64
+#    betas             = 2.5 2.5 		      #s64
+#    descriptors       = 'x1' 'x2'		    #s27,#s36,#s50,#s64
+#  histogram_bin_uncertain = 2			      #s28,#s37,#s51,#s65
+#    num_pairs =  3        4			        #s28,#s37,#s51
+#    abscissas =  1  4  6  1  2  3  4		  #s28,#s37,#s51
+#    counts    = 17 21  0 12 24 12  0		  #s28,#s37,#s51
+#    num_pairs =  4           4			      #s65
+#    abscissas =  1  2  3  4  1  2  3  4	#s65
+#    counts    = 12 24 12  0 12 24 12  0	#s65
+#    descriptors   = 'x1' 'x2'			      #s28,#s37,#s51,#s65
 
-interface,
-	direct
-	analysis_driver = 'rosenbrock'		#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s14,#s15,#s16,#s17,#s18,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51,#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60,#s61,#s62,#s63,#s64,#s65
-#	analysis_driver = 'generalized_rosenbrock'	#s5,#s11,#s12,#s13,#s19
+interface
+  direct
+  analysis_driver = 'rosenbrock'              #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s14,#s15,#s16,#s17,#s18,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51,#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60,#s61,#s62,#s63,#s64,#s65
+#  analysis_driver = 'generalized_rosenbrock'	#s5,#s11,#s12,#s13,#s19
 
-responses,
-	response_functions = 1
-	no_gradients
-	no_hessians
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians

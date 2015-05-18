@@ -1,12 +1,15 @@
+#@ s0: UserMan=mogatest1_opt_sbo
 # DAKOTA INPUT FILE - dakota_su_mogatest1.in
+# Dakota Input File: mogatest1_opt_sbo.in       #s0
 
 # Surrogate-based optimization to minimize Rosenbrock's function.
 
-environment,
-    tabular_graphics_data
-    method_pointer = 'SBGO'
+environment
+  tabular_data
+    tabular_data_file = 'mogatest1_opt_sbo.dat'
+  method_pointer = 'SBGO'
 
-method,
+method
     id_method = 'SBGO'
     surrogate_based_global
     model_pointer = 'SURROGATE'
@@ -18,7 +21,7 @@ method,
 ###############################################
 # begin opt specification
 ###############################################
-method,
+method
     id_method = 'MOGA'
     moga
     output silent
@@ -40,7 +43,7 @@ method,
     convergence_type metric_tracker
         percent_change = 0.05 num_generations = 10
 
-model,
+model
     id_model = 'SURROGATE'
     surrogate global
         dace_method_pointer = 'SAMPLING'
@@ -48,7 +51,7 @@ model,
 #	polynomial quadratic
         gaussian_process dakota
 
-method,
+method
     id_method = 'SAMPLING'
     model_pointer = 'TRUTH'
     sampling
@@ -56,24 +59,24 @@ method,
       seed = 531
       sample_type lhs
 
-model,
+model
     id_model = 'TRUTH'
     single
       interface_pointer = 'TRUE_FN'
 
-variables,
+variables
     continuous_design = 3
         initial_point      0     0     0
         upper_bounds       4     4     4
         lower_bounds      -4    -4    -4
         descriptors      'x1'  'x2'  'x3'
 
-interface,
+interface
     id_interface = 'TRUE_FN'
     direct
       analysis_driver = 'mogatest1'
 
-responses,
+responses
     objective_functions = 2
     no_gradients
     no_hessians

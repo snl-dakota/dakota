@@ -4,8 +4,10 @@
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=4 CheckOutput='dakota.out.1'
 #@ p3: MPIProcs=4
+#@ s0: UserMan=qsf_multistart_strat
 
 # DAKOTA INPUT FILE - dakota_multistart.in
+# Dakota Input File: qsf_multistart_strat.in                  #s0
 
 # Demonstrates the use of the multi_start environment for a
 # multimodal test problem.  The global optimum is at the
@@ -17,41 +19,41 @@
 # multiprocessor iterator partitions. Parallel tests 2 and 3 include
 # an idle partition due to over-allocation
 
-environment,
-	top_method_pointer = 'MS'
-	  graphics
+environment
+  top_method_pointer = 'MS'
+  graphics
 
 method
-	id_method = 'MS'
-        multi_start
-#	  iterator_servers = 3         #p0,#p2
-#	  iterator_scheduling peer     #p0,#p2
-#	  iterator_servers = 2         #p1,#p3
-#	  iterator_scheduling master   #p1,#p3
-#	  processors_per_iterator = 1  #p2,#p3
-          method_pointer = 'NLP'
-	  random_starts = 3 seed = 123
-	  starting_points = -.8  -.8
-			    -.8   .8
-			     .8  -.8
-			     .8   .8
-			      0.   0.
+  id_method = 'MS'
+  multi_start
+#    iterator_servers = 3         #p0,#p2
+#    iterator_scheduling peer     #p0,#p2
+#    iterator_servers = 2         #p1,#p3
+#    iterator_scheduling master   #p1,#p3
+#    processors_per_iterator = 1  #p2,#p3
+    method_pointer = 'NLP'
+    random_starts = 3 seed = 123
+    starting_points = -0.8  -0.8
+                      -0.8   0.8
+                       0.8  -0.8
+                       0.8   0.8
+                       0.0   0.0
 
-method,
-	id_method = 'NLP'
-	dot_bfgs
+method
+  id_method = 'NLP'
+  dot_bfgs
 
-variables,
-	continuous_design = 2
-	  lower_bounds    -1.0     -1.0
-	  upper_bounds     1.0 	1.0
-	  descriptors      'x1'     'x2'
+variables
+  continuous_design = 2
+    lower_bounds    -1.0     -1.0
+    upper_bounds     1.0      1.0
+    descriptors      'x1'     'x2'
 
-interface,
-	system #asynchronous
- 	  analysis_driver = 'quasi_sine_fcn'
+interface
+  fork #asynchronous
+    analysis_driver = 'quasi_sine_fcn'
 
-responses,
-	objective_functions = 1
- 	analytic_gradients
-	no_hessians
+responses
+  objective_functions = 1
+  analytic_gradients
+  no_hessians

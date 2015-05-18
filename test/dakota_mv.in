@@ -1,34 +1,34 @@
 #@ s*: Label=SmokeTest
-
+#@ s0: UserMan=textbook_uq_meanvalue
 # DAKOTA INPUT FILE - dakota_mv.in
+# Dakota Input File: textbook_uq_meanvalue.in     #s0
+environment
+  #graphics
 
-interface,
-	system asynch
-	  analysis_driver = 'text_book'
+method
+  local_reliability
 
-variables,
-	lognormal_uncertain = 2
-       	  means                 =  1.      1.
-	  std_deviations        =  0.5     0.5
-	  descriptors           =  'TF1ln' 'TF2ln'
-#	uncertain_correlation_matrix =  1       0.3	#s1,#s4
-#					0.3     1	#s1,#s4
+interface
+  fork asynch
+    analysis_driver = 'text_book'
 
-responses,
-	response_functions = 3
-	numerical_gradients				#s0,#s1,#s3,#s4
-	  method_source dakota
-	  interval_type central
-	  fd_gradient_step_size = 1.e-4			#s0,#s1,#s3,#s4
-#	mixed_gradients					#s2
-#	  id_numerical_gradients = 1			#s2
-#	  id_analytic_gradients  = 2 3			#s2
-#	  fd_gradient_step_size  = 1.e-4 1.e-3		#s2
-	no_hessians					#s0,#s1,#s2
-#	numerical_hessians				#s3,#s4
+variables
+  lognormal_uncertain = 2
+    means                 =  1.      1.
+    std_deviations        =  0.5     0.5
+    descriptors           =  'TF1ln' 'TF2ln'
+#    uncertain_correlation_matrix =  1       0.3  #s1,#s4
+#    				     0.3     1		                    #s1,#s4
 
-environment,
-	#graphics
-
-method,
-        local_reliability
+responses
+  response_functions = 3
+  numerical_gradients                             #s0,#s1,#s3,#s4
+    method_source dakota
+    interval_type central
+    fd_gradient_step_size = 1.e-4                 #s0,#s1,#s3,#s4
+#  mixed_gradients                                #s2
+#    id_numerical_gradients = 1				            #s2
+#    id_analytic_gradients  = 2 3			            #s2
+#    fd_gradient_step_size  = 1.e-4 1.e-3		      #s2
+  no_hessians						                          #s0,#s1,#s2
+#  numerical_hessians					                    #s3,#s4

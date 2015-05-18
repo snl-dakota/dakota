@@ -1,66 +1,68 @@
 #@ *: DakotaConfig=HAVE_DOT
+#@ s0: UserMan=textbook_pareto_strat
 # DAKOTA INPUT FILE - dakota_pareto.in
+# Dakota Input File: textbook_pareto_strat.in	#s0
 
 # Demonstrates the use of the Pareto set optimization environment.
 # The different Pareto optima define a 3-D trade-off surface.
 
-environment,
-	top_method_pointer = 'PS'
-	  graphics				#s0,#s1
+environment
+  top_method_pointer = 'PS'
+  graphics                                #s0,#s1
 
 method
-	id_method = 'PS'
-        pareto_set
-#         iterator_servers = 3
-	  opt_method_pointer = 'NLP'		#s0,#s1
-#	  opt_method_pointer = 'SBLO'		#s2
-#	  random_weight_sets = 5 seed = 123	#s1
-	  multi_objective_weight_sets = 	#s0,#s2
-				1.   0.   0.	#s0,#s2
-				0.   1.   0.	#s0,#s2
-				0.   0.   1.	#s0,#s2
-			      .333 .333 .333	#s0,#s2
+  id_method = 'PS'
+  pareto_set
+#    iterator_servers = 3
+    opt_method_pointer = 'NLP'            #s0,#s1
+#    opt_method_pointer = 'SBLO'	        #s2
+#    random_weight_sets = 5 seed = 123	  #s1
+    multi_objective_weight_sets = 	      #s0,#s2
+      1.0    0.0    0.0			              #s0,#s2
+      0.0    1.0    0.0			              #s0,#s2
+      0.0    0.0    1.0			              #s0,#s2
+      0.333  0.333  0.333	                #s0,#s2
 
-#method,					#s2
-#	id_method = 'SBLO'			#s2
-#	model_pointer = 'SURROGATE'		#s2
-#	surrogate_based_local			#s2
-#	  approx_method_pointer = 'NLP'		#s2
+#method,                                  #s2
+#  id_method = 'SBLO'			                #s2
+#  model_pointer = 'SURROGATE'		        #s2
+#  surrogate_based_local		              #s2
+#    approx_method_pointer = 'NLP'	      #s2
 
-method,
-	id_method = 'NLP'
-	dot_bfgs
-#          convergence_tolerance = 1e-8		#s2
+method
+  id_method = 'NLP'
+  dot_bfgs
+#          convergence_tolerance = 1e-8   #s2
 
-#method,					#s2
-#	id_method = 'SAMPLING'			#s2
-#	model_pointer = 'TRUTH'			#s2
-#	sampling				#s2
-#	  seed = 531				#s2
-#	  sample_type lhs			#s2
+#method,				                          #s2
+#  id_method = 'SAMPLING'		              #s2
+#  model_pointer = 'TRUTH'		            #s2
+#  sampling                               #s2
+#    seed = 531				                    #s2
+#    sample_type lhs			                #s2
 
-#model,						#s2
-#	id_model = 'SURROGATE'			#s2
-#	surrogate global			#s2
-#	  dace_method_pointer = 'SAMPLING'	#s2
-#	  polynomial quadratic			#s2
+#model,					                          #s2
+#  id_model = 'SURROGATE'		              #s2
+#  surrogate global			                  #s2
+#    dace_method_pointer = 'SAMPLING'	    #s2
+#    polynomial quadratic		              #s2
 
-model,
-#	id_model = 'TRUTH'			#s2
-        single
+model
+#  id_model = 'TRUTH'                     #s2
+  single
 
-variables,
-	continuous_design = 2
-	  initial_point     0.9    1.1
-	  upper_bounds      5.8    2.9
-	  lower_bounds      0.5   -2.9
-	  descriptors       'x1'   'x2'
+variables
+  continuous_design = 2
+    initial_point     0.9    1.1
+    upper_bounds      5.8    2.9
+    lower_bounds      0.5   -2.9
+    descriptors       'x1'   'x2'
 
-interface,
-	system #asynchronous
- 	  analysis_driver = 'text_book'
+interface
+  fork #asynchronous
+    analysis_driver = 'text_book'
 
-responses,
-	objective_functions = 3
- 	analytic_gradients
-	no_hessians
+responses
+  objective_functions = 3
+  analytic_gradients
+  no_hessians

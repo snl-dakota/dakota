@@ -32,7 +32,7 @@ my $parallelism = "serial";  # whether DAKOTA runs in parallel
 my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
-my $test_props_file = "";    # write test properties to this file
+my $test_props_dir = "";     # write test properties to this directory
 my $using_qsub = 0;
 my $using_slurm = 0;
 
@@ -98,7 +98,8 @@ if ($mode eq "base") {
 }
 
 if ($mode eq "test_props") {
-  open (PROPERTIES_OUT, ">${test_props_file}");
+  open (PROPERTIES_OUT, ">${test_props_dir}/dakota_tests.props");
+  open (USEREXAMPLES_OUT, ">${test_props_dir}/dakota_usersexamples.props");
 }
 
 # for each input file perform test actions
@@ -206,6 +207,8 @@ foreach my $file (@test_inputs) {
     # open temporary input file
     open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
 
+    my $last_line_blank = 0;  # for detecting subsequent blank lines
+
     # read input file until EOF
     while (<INPUT_MASTER>) { # read each line of file
 
@@ -220,19 +223,32 @@ foreach my $file (@test_inputs) {
 	if (/$test0_tag/) {   # line is initially uncommented
 	  if (/$test_tag/) {  # leave uncommented
 	    s/#[sp]\d+,?//g;    # remove tags
+	    s/\s*([\r\n])/$1/g; # remove trailing whitespace, leave newline
 	    print INPUT_TMP;
+	    $last_line_blank = 0;
 	  }
 	  # else don't output inactive line to STDOUT
 	}
 	elsif (/$test_tag/) { # line is initially commented
 	  s/^#//;             # uncomment line
 	  s/#[sp]\d+,?//g;      # remove tags
+	  s/\s*([\r\n])/$1/g;   # remove trailing whitespace, leave newline
 	  print INPUT_TMP;
+	  $last_line_blank = 0;
 	}
 	elsif (/^#/) {        # inactive line: do not output to STDOUT
 	}
 	else {                # active line not tagged by test number
-	  print INPUT_TMP;
+	  s/\s*([\r\n])/$1/g;   # remove trailing whitespace, leave newline
+	  # in extract mode, don't print subsequent blank lines
+	  if (/^\s*$/) {
+	    print INPUT_TMP if ($last_line_blank == 0);
+	    $last_line_blank = 1;
+	  }
+	  else {
+	    print INPUT_TMP;
+	    $last_line_blank = 0;
+	  }
 	}
       }
       # runs a particular test (normal output)
@@ -262,8 +278,6 @@ foreach my $file (@test_inputs) {
 
     }  # end read each line of file
 
-    # print extra carriage return in case last stored line has newline escape
-    print INPUT_TMP "\n";
     # close both files
     close (INPUT_MASTER); # or could rewind it
     close (INPUT_TMP);
@@ -391,6 +405,7 @@ foreach my $file (@test_inputs) {
 
 if ($mode eq "test_props") {
   close(PROPERTIES_OUT);
+  close(USEREXAMPLES_OUT);
 }
 
 if ($mode eq "base") {
@@ -442,7 +457,7 @@ sub process_command_line {
   	     'man'            => \$opt_man,
   	     'output-dir=s'   => \$output_dir,
   	     'parallel'       => \$opt_parallel,
-	     'test-properties=s' => \$test_props_file
+	     'test-properties=s' => \$test_props_dir
 	     ) || pod2usage(1);
   pod2usage(0) if $opt_help;
   pod2usage(-exitstatus => 0, -verbose => 2) if $opt_man;
@@ -453,7 +468,7 @@ sub process_command_line {
   }
   
   # extraction and baseline options
-  if ($test_props_file) {
+  if ($test_props_dir) {
     # short-circuits any other mode
     $mode = "test_props";
   }
@@ -726,6 +741,7 @@ sub parse_key_val {
   my $restart_re = "(Restart)=(read|write|none)";
   my $timeout_absolute_re = "(TimeoutAbsolute)=([0-9]+)";
   my $timeout_delay_re = "(TimeoutDelay)=([0-9]+)";
+  my $user_man_re = "(UserMan)=(\\w+)";
   my $will_fail_re = "(WillFail)=(true)";
 
   # TODO: cleanup workdir option
@@ -745,6 +761,7 @@ sub parse_key_val {
     "${restart_re}",
     "${timeout_absolute_re}",
     "${timeout_delay_re}",
+    "${user_man_re}",
     "${will_fail_re}"
   );
 
@@ -899,6 +916,22 @@ sub write_test_options {
     }
     print(PROPERTIES_OUT "${input_file}:parallel: ${prop_par}\n") if $prop_par;
   }
+  
+  # match s[0-9]+: UserMan=extracted_file
+  my $property = "UserMan";    
+  # iterate all test selection types
+  while ( my ($test_select, $opts) = each %test_opts) {
+    if (exists $test_opts{$test_select}{"$property"}){
+	my $prop_vals = $test_opts{$test_select}{"$property"};
+	# Only support s[0-9]+ (serial) for user manual
+	if ($test_select =~ /^s([\*0-9]+)$/) {
+	  # prop_vals should be the output file name
+	  # write extracted_file source_file test_num
+	  print (USEREXAMPLES_OUT "${prop_vals} ${input_file} ${1}\n");
+	}
+    }
+  }
+
 }
 
 
@@ -1438,10 +1471,11 @@ for generated intermediate, diff, and baseline files
 save test input, output, error, and restart of the last subtest run;
 or set environment variable DAKOTA_TEST_SAVE_OUTPUT
 
-=item B<--test-properties=propsfile>
+=item B<--test-properties=props_dir>
 
-write test properties for specified tests to propsfile; short circuits
-any other modes or requests
+write dakota_tests.props and dakota_usersexamples.props for specified
+tests to specified directory; short circuits any other modes or
+requests
 
 =back
 
@@ -1604,6 +1638,11 @@ terminate each test if total test time exceeds <int-seconds>
 =item TimeoutDelay=<int-seconds>
 
 terminate each test if output has not changed in <int-seconds>
+
+=item UserMan=extracted_filename
+
+the specified test (must be a single test selection) will be extracted
+to extracted_filename for inclusion in Dakota User's Manual
 
 =item WillFail=true
 

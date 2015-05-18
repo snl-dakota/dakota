@@ -241,19 +241,19 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # to binary tree.
   execute_process(COMMAND "${PERL_EXECUTABLE}" 
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl" 
-    "--test-properties=${CMAKE_CURRENT_BINARY_DIR}/dakota_test.properties" 
+    "--test-properties=${CMAKE_CURRENT_BINARY_DIR}" 
     "dakota_*.in" 
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_VARIABLE test_props_output  # Let errors go to the console
     RESULT_VARIABLE test_props_code
     )
   if ( (NOT test_props_code EQUAL 0) OR 
-       (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.properties") )
+       (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dakota_tests.props") )
     message(FATAL_ERROR "Could not get test properties.  Exit code: "
       "${test_props_code}; output:\n" ${test_props_output})
   endif()
 
-  file(READ "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.properties" test_props)
+  file(READ "${CMAKE_CURRENT_BINARY_DIR}/dakota_tests.props" test_props)
 
   # Iterate the list of test files and create tests for each
   foreach(test_input_file ${dakota_test_input_files})

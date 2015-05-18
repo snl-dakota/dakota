@@ -7,45 +7,46 @@
 #@ s6: DakotaConfig=HAVE_DOT
 #@ s7: DakotaConfig=HAVE_DOT
 #@ s8: DakotaConfig=HAVE_DOT
-## DAKOTA INPUT FILE - dakota_textbook.in #s8
-
+#@ s9: UserMan=textbook_opt_conmin
+## DAKOTA INPUT FILE - dakota_textbook.in     #s8
+## Dakota Input File: textbook_opt_conmin.in	#s9
 # This tester populates a test matrix of fork/system vs. synch/asynch
 # vs. temporary/named files for the 1 piece interface.
 
-environment,
-	  graphics				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
-#	  graphics,tabular_graphics_data	#s9
+environment
+  graphics                #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+#  tabular_data                                      #s9
+#    tabular_data_file = 'textbook_opt_conmin.dat'            #s9
 
-method,
-	dot_mmfd,				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
-##       DOT performs better, but may not be available 	#s9
-##       dot_mmfd,				#s9
-#	conmin_mfd,				#s9
-	  max_iterations = 50,
-	  convergence_tolerance = 1e-4
+method
+  dot_mmfd,                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+## dot_mmfd #DOT performs better but may not be available     #s9
+#  conmin_mfd				      				                            #s9
+    max_iterations = 50
+    convergence_tolerance = 1e-4
 
-variables,
-	continuous_design = 2
-	  initial_point    0.9    1.1
-	  upper_bounds     5.8    2.9
-	  lower_bounds     0.5   -2.9
-	  descriptors      'x1'   'x2'
+variables
+  continuous_design = 2
+    initial_point    0.9    1.1
+    upper_bounds     5.8    2.9
+    lower_bounds     0.5   -2.9
+    descriptors      'x1'   'x2'
 
-interface,
-	fork					#s0,#s1,#s2,#s3
-#	system 					#s4,#s5,#s6,#s7
-#	direct					#s8,#s9
-#	  asynchronous				#s2,#s3,#s6,#s7
-	  analysis_driver =       'text_book'
-#	  parameters_file=        'tb.in'	#s1,#s3,#s5,#s7
-#	  results_file=           'tb.out'	#s1,#s3,#s5,#s7
-#	  file_tag				#s3,#s7
+interface
+  fork                                  #s0,#s1,#s2,#s3
+#  system 				                      #s4,#s5,#s6,#s7
+#  direct				                        #s8,#s9
+#    asynchronous			                  #s2,#s3,#s6,#s7
+    analysis_driver =       'text_book'
+#    parameters_file=        'tb.in'    #s1,#s3,#s5,#s7
+#    results_file=           'tb.out'	  #s1,#s3,#s5,#s7
+#    file_tag				                    #s3,#s7
 
-responses,
-	objective_functions = 1
-	nonlinear_inequality_constraints = 2
-	numerical_gradients
-	  method_source dakota
-	  interval_type central
-	  fd_gradient_step_size = 1.e-4
-	no_hessians
+responses
+  objective_functions = 1
+  nonlinear_inequality_constraints = 2
+  numerical_gradients
+    method_source dakota
+    interval_type central
+    fd_gradient_step_size = 1.e-4
+  no_hessians

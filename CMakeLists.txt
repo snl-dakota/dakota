@@ -191,7 +191,7 @@ if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
 
-# Perl is required for examples, and required when system tests are enabled
+# Perl is required for examples, docs, and system tests
 find_package(Perl REQUIRED)
 
 # Python is optionally required by Dakota, Teuchos, and Acro; probe

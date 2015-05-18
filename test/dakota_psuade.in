@@ -1,28 +1,30 @@
 #@ s1: DependsOn=s0
 #@ s1: ExecArgs='-post_run dakota_psuade.0.dat::'
+#@ s0: UserMan=morris_ps_moat
 # DAKOTA INPUT FILE : dakota_psuade.in
-environment					#s0,#s1
-  tabular_data					#s0
+# Dakota Input File: morris_ps_moat.in      #s0
+environment                                 #s0,#s1
+  tabular_data					                    #s0
     tabular_data_file 'dakota_psuade.0.dat'	#s0
 
-method,
-	psuade_moat
-	  samples = 84
-	  partitions = 3
-	  seed = 500
+method
+  psuade_moat
+    samples = 84
+    partitions = 3
+    seed = 500
 
-variables,
-	continuous_design = 20
-	  lower_bounds =	0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-				0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-	  upper_bounds =   	1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
-				1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+variables
+  continuous_design = 20
+    lower_bounds = 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+                   0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+    upper_bounds = 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+                   1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
 
-interface,
-	system asynchronous evaluation_concurrency = 5
-	  analysis_driver = 'morris'
+interface
+  fork asynchronous evaluation_concurrency = 5
+    analysis_driver = 'morris'
 
-responses,
-	objective_functions = 1
-	no_gradients
-	no_hessians
+responses
+  objective_functions = 1
+  no_gradients
+  no_hessians
