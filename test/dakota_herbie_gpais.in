@@ -15,7 +15,7 @@
 	
 environment, 
 #	graphics
-        tabular_graphics_data
+        tabular_data
 
 method,
 #	importance_sampling 

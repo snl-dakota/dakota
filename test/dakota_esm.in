@@ -2,7 +2,7 @@
 # This is a regression test only, not a verification test
 
 environment 
-	tabular_graphics_data
+	tabular_data
 
 method,
 	efficient_subspace

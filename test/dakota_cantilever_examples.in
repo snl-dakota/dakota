@@ -11,7 +11,7 @@
 #     (data generated with E = 2.85e7, w = 2.5, t = 3.0)
 
 environment
-    tabular_graphics_data
+    tabular_data
     graphics
 
 method

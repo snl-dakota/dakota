@@ -1,7 +1,7 @@
 # DAKOTA INPUT FILE - dakota_uq_short_column_sop_exp.in
 
 environment,
-	tabular_graphics_data
+	tabular_data
 	  method_pointer = 'OUTER'
 
 #############################

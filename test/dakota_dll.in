@@ -5,8 +5,8 @@
 #    dll_tester 1 dakota_dll.in
 
 environment
-  tabular_graphics_data
-    tabular_graphics_file = 'rosen_multidim.dat' 
+  tabular_data
+    tabular_data_file = 'rosen_multidim.dat' 
 
 method
   multidim_parameter_study     

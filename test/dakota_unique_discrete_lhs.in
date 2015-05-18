@@ -7,7 +7,7 @@
 
 environment,
 	output_precision = 16
-	tabular_graphics_data
+	tabular_data
 
 method,
 	sampling

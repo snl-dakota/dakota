@@ -3,7 +3,7 @@
 
 strategy,
 	single_method
-	  tabular_graphics_data
+	  tabular_data
 
 method,
 	nl2sol					

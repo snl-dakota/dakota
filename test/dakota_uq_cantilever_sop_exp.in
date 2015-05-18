@@ -3,7 +3,7 @@
 # DAKOTA INPUT FILE - dakota_uq_cantilever_sop_exp.in
 
 environment,
-	  tabular_graphics_data #output_precision = 16
+	  tabular_data #output_precision = 16
 	  method_pointer = 'OUTER'
 
 #############################

@@ -5,8 +5,8 @@
 # strategy
 #  single_method
 #    method_pointer = 'EvalSurrogate'
-#  tabular_graphics_data
-#    tabular_graphics_file = 'dak_surrogate_evals.dat'
+#  tabular_data
+#    tabular_data_file = 'dak_surrogate_evals.dat'
 
 
 # Method to perform evaluations of the surrogate model

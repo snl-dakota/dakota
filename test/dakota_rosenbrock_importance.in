@@ -20,7 +20,7 @@
 # in the method block for adapt_import and mm_adapt_import.
 
 environment,
-	  tabular_graphics_data
+	  tabular_data
 
 method,
         importance_sampling

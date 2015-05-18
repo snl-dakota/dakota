@@ -4,7 +4,7 @@
 # DAKOTA INPUT FILE - dakota_nomad.in
 
 environment,
-#	tabular_graphics_data
+#	tabular_data
 
 method,
 	mesh_adaptive_search

@@ -1,7 +1,7 @@
 # DAKOTA with Excel for Rosenbrock
 
 strategy
-  tabular_graphics_data
+  tabular_data
   single_method
 
 method

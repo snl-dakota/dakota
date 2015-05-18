@@ -1,6 +1,6 @@
 
 environment,
-#	graphics tabular_graphics_data
+#	graphics tabular_data
 	method_pointer = 'SBUQ'
 
 method,

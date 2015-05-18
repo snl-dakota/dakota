@@ -4,7 +4,7 @@
 # DAKOTA INPUT FILE - dakota_uq_cantilever_interval.in
 
 environment,    
-	tabular_graphics_data    
+	tabular_data    
 
 method,									 
 	global_interval_est lhs		#s0

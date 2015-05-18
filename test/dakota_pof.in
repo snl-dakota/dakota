@@ -5,7 +5,7 @@
 # example tests multiple functions. 
 
 environment
-#  tabular_graphics_data
+#  tabular_data
 
 method
    pof_darts

@@ -5,7 +5,7 @@
 
 environment,
 	  graphics
-	  tabular_graphics_data
+	  tabular_data
 
 method,
 	dace oas seed = 5

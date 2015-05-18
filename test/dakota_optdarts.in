@@ -2,7 +2,7 @@
 
 environment,
 	#graphics
-        tabular_graphics_data
+        tabular_data
 
 method,
         genie_opt_darts

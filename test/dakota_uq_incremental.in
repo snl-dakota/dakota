@@ -5,7 +5,7 @@
 # dakota_incremental_sampling.in
 
 environment,
-	  tabular_graphics_data
+	  tabular_data
 
 method,
 	sampling

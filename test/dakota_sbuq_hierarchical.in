@@ -10,7 +10,7 @@
 #   hybrid:          p2 (peer), p3 (ded master)
 
 environment,
-	graphics tabular_graphics_data
+	graphics tabular_data
 	method_pointer = 'SBUQ'
 
 method,

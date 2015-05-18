@@ -1,7 +1,7 @@
 # DAKOTA INPUT FILE : dakota_vbd.in
 
 environment,
-	  tabular_graphics_data
+	  tabular_data
 
 method,
 	fsu_quasi_mc halton			#s0

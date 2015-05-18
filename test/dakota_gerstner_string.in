@@ -3,7 +3,7 @@
 # level to Gerstner.
 
 environment,
-        tabular_graphics_data
+        tabular_data
 #	output_precision = 16
 
 method,

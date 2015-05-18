@@ -1,6 +1,6 @@
 # Test global surrogates with piecewise local decomposition
 environment
-	  tabular_graphics_data
+	  tabular_data
           method_pointer = 'UQ'
 
 method,

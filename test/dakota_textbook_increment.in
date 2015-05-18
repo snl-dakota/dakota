@@ -5,7 +5,7 @@
 # DAKOTA INPUT FILE - dakota_textbook_lhs.in
 
 environment,
-        tabular_graphics_data
+        tabular_data
 
 method,
         sampling,

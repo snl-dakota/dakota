@@ -4,7 +4,7 @@
 #
 
 strategy,
-        single_method graphics tabular_graphics_data
+        single_method graphics tabular_data
 
 method,
 #	npsol_sqp

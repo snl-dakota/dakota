@@ -24,7 +24,7 @@
 
 environment,
 #	  graphics
-	  tabular_graphics_data
+	  tabular_data
 
 method,
 	npsol_sqp					#s0,#s1,#s2,#s3,#s4

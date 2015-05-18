@@ -3,7 +3,7 @@
 # DAKOTA INPUT FILE - dakota_uq_cantilever_ivp_exp.in
 
 environment,    
-   tabular_graphics_data    
+   tabular_data    
    method_pointer = 'EPISTEMIC'
 
 #################################
