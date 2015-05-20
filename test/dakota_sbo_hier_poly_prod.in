@@ -70,8 +70,8 @@ model,
 
 interface,
 	id_interface = 'LOFI_FN'
-	system asynchronous
- 	  analysis_driver = 'lf_poly_prod'
+	direct 
+ 	  analysis_drivers = 'lf_poly_prod'
 
 model,
 	id_model = 'HIFI'
@@ -80,5 +80,5 @@ model,
 
 interface,
 	id_interface = 'HIFI_FN'
-	system
- 	  analysis_driver = 'poly_prod'
+	direct
+ 	  analysis_drivers = 'poly_prod'

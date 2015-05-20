@@ -86,9 +86,9 @@ model,
 	  responses_pointer = 'TRUE_RESP'
 
 interface,
-	system #asynchronous
+	direct
 	id_interface = 'TRUE_FN'
- 	  analysis_driver =    'illumination'
+ 	  analysis_drivers =    'illumination'
 
 responses,
 	id_responses = 'TRUE_RESP'

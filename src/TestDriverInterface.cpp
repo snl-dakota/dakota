@@ -42,6 +42,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["lf_rosenbrock"]          = LF_ROSENBROCK;
   driverTypeMap["mf_rosenbrock"]          = MF_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
+  driverTypeMap["lf_poly_prod"]           = LF_POLY_PROD;
+  driverTypeMap["poly_prod"]              = POLY_PROD;
   driverTypeMap["gerstner"]               = GERSTNER;
   driverTypeMap["scalable_gerstner"]      = SCALABLE_GERSTNER;
   driverTypeMap["log_ratio"]              = LOGNORMAL_RATIO;
@@ -66,6 +68,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["mogatest1"]              = MOGATEST1;
   driverTypeMap["mogatest2"]              = MOGATEST2;
   driverTypeMap["mogatest3"]              = MOGATEST3;
+  driverTypeMap["illumination"]           = ILLUMINATION;
+  driverTypeMap["barnes"]                 = BARNES;
+  driverTypeMap["barnes_lf"]              = BARNES_LF;
   driverTypeMap["herbie"]                 = HERBIE;
   driverTypeMap["smooth_herbie"]          = SMOOTH_HERBIE;
   driverTypeMap["shubert"]                = SHUBERT;
@@ -132,6 +137,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case TEXT_BOOK:     case TEXT_BOOK1: case TEXT_BOOK2: case TEXT_BOOK3:
     case TEXT_BOOK_OUU: case SCALABLE_TEXT_BOOK: case SCALABLE_MONOMIALS:
     case MOGATEST1:     case MOGATEST2:          case MOGATEST3:
+    case ILLUMINATION:  case LF_POLY_PROD:       case POLY_PROD:
+    case BARNES:        case BARNES_LF:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
@@ -208,6 +215,10 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = lf_rosenbrock(); break;
   case MF_ROSENBROCK:
     fail_code = mf_rosenbrock(); break;
+  case LF_POLY_PROD:
+    fail_code = lf_poly_prod(); break;
+  case POLY_PROD:
+    fail_code = poly_prod(); break;
   case GERSTNER:
     fail_code = gerstner(); break;
   case SCALABLE_GERSTNER:
@@ -256,6 +267,12 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = mogatest2(); break;
   case MOGATEST3:
     fail_code = mogatest3(); break;
+  case ILLUMINATION:
+    fail_code = illumination(); break;
+  case BARNES:
+    fail_code = barnes(); break;
+  case BARNES_LF:
+    fail_code = barnes_lf(); break;
   case HERBIE:
     fail_code = herbie(); break;
   case SMOOTH_HERBIE:
@@ -1017,6 +1034,95 @@ int TestDriverInterface::mf_rosenbrock()
   }
 
   return 0; // no failure
+}
+
+/// modified lo-fi Rosenbrock to test SBO with hierarchical approximations
+int TestDriverInterface::lf_poly_prod()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: lf_poly_prod direct fn does not yet support multiprocessor "
+      << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+
+  if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
+    Cerr << "Error: lf_poly_prod direct fn assumes no discrete variables in "
+	 << "derivative or hessian mode." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numACV != 2) {
+    Cerr << "Error: Bad number of variables in lf_poly_prod direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numFns != 1 ) {
+    Cerr << "Error: Bad number of functions in lf_poly_prod direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if (directFnASV[0] & 1)
+    fnVals[0] = xC[0]*xC[0] - 0.5*xC[1];
+
+  if (directFnASV[0] & 2) {
+    fnGrads[0][0] = 2.0*xC[0];
+    fnGrads[0][1] = -0.5;
+  }
+
+  if (directFnASV[0] & 4) 
+    fnHessians[0](0,0) = 2.0;
+  
+  return 0;
+}
+
+/// modified lo-fi Rosenbrock to test SBO with hierarchical approximations
+int TestDriverInterface::poly_prod() 
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: poly_prod direct fn does not yet support multiprocessor "
+      << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+
+  if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
+    Cerr << "Error: poly_prod direct fn assumes no discrete variables in "
+	 << "derivative or hessian mode." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numACV != 2) {
+    Cerr << "Error: Bad number of variables in poly_prod direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numFns != 1 ) {
+    Cerr << "Error: Bad number of functions in poly_prod direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // Compute and output responses
+  double x0_sq = xC[0]*xC[0], x1_sq = xC[1]*xC[1];
+  double t2 = x0_sq - 0.5*xC[1];
+  double t1 = xC[0] + x1_sq/2.;
+  
+  if (directFnASV[0] & 1)
+    fnVals[0] = t1*t2;
+
+  if (directFnASV[0] & 2) {
+    fnGrads[0][0] = 2.0*xC[0]*t1 + t2;
+    fnGrads[0][1] = t2*xC[1] - t1/2.0;
+  }
+
+  if (directFnASV[0] & 4) {
+    fnHessians[0](0,0) = 4.0*xC[0] + 2.*t1;
+    fnHessians[0](1,1) = t2 - xC[1];
+    fnHessians[0](1,0) = 2.*xC[0]*xC[1] - 0.5;
+  }
+  return 0;
 }
 
 
@@ -2763,6 +2869,9 @@ int TestDriverInterface::scalable_monomials()
 }
 
 
+
+
+
 int TestDriverInterface::mogatest1()
 {
   if (multiProcAnalysisFlag) {
@@ -2919,6 +3028,419 @@ int TestDriverInterface::mogatest3()
 
   return 0; // no failure
 }
+
+int TestDriverInterface::illumination()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: illumination direct fn does not yet support multiprocessor "
+      << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+
+  if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
+    Cerr << "Error: illumination direct fn assumes no discrete variables in "
+	 << "derivative or hessian mode." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  size_t const num_vars = numACV; // keep everything consistent with standalone
+
+  if ( num_vars != 7) {
+    Cerr << "Error: Bad number of variables in illumination direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numFns != 1 ) {
+    Cerr << "Error: Bad number of functions in illumination direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // compute function and gradient values
+  double A[11][7] ={ 
+  { 0.347392, 0.205329, 0.191987, 0.077192, 0.004561, 0.024003, 0.000000},
+  { 0.486058, 0.289069, 0.379202, 0.117711, 0.006667, 0.032256, 0.000000},
+  { 0.752511, 0.611283, 2.417907, 0.701700, 0.473047, 0.285597, 0.319187},
+  { 0.303582, 0.364620, 1.898185, 0.693173, 0.607718, 0.328582, 0.437394},
+  { 0.540946, 0.411549, 1.696545, 0.391735, 0.177832, 0.110119, 0.083817},
+  { 0.651840, 0.540687, 3.208793, 0.639020, 0.293811, 0.156842, 0.128499},
+  { 0.098008, 0.245771, 0.742564, 0.807976, 0.929739, 0.435144, 0.669797},
+  { 0.000000, 0.026963, 0.000000, 0.246606, 0.414657, 0.231777, 0.372202},
+  { 0.285597, 0.320457, 0.851227, 0.584677, 0.616436, 0.341447, 0.477329},
+  { 0.324622, 0.306394, 0.991904, 0.477744, 0.376266, 0.158288, 0.198745},
+  { 0.000000, 0.050361, 0.000000, 0.212042, 0.434397, 0.286455, 0.462731} };
+
+  // KRD found bugs in previous computation; this Hessian no longer used:
+  double harray[7][7] ={ 
+  { 1.929437, 1.572662, 6.294004, 1.852205, 1.222324, 0.692036, 0.768564},
+  { 1.572662, 1.354287, 5.511537, 1.787932, 1.320048, 0.724301, 0.870382},
+  { 6.294004, 5.511537, 25.064512, 7.358494, 5.133563, 2.791970, 3.257364},
+  { 1.852205, 1.787932, 7.358494, 2.883178, 2.497491, 1.321922, 1.747230},
+  { 1.222324, 1.320048, 5.133563, 2.497491, 2.457733, 1.295927, 1.816568},
+  { 0.692036, 0.724301, 2.791970, 1.321922, 1.295927, 0.694642, 0.968982},
+  { 0.768564, 0.870382, 3.257364, 1.747230, 1.816568, 0.968982, 1.385357} };
+
+
+  // Calculation of grad(f) = df/dx_I and hess(f) = d^2f/(dx_I dx_J):
+  //
+  // U = sum_{i=0:10}{ ( 1 - sum_{j=0:6}{ A[i][j]*x[j] } )^2 }
+  // dU/dx_I = sum_{i=0:10}{ 2.0*( 1 - sum_{j=0:6}{ A[i][j]*x[j] } )*-A[i][I] }
+  // d^2U/(dx_I dx_J) = sum_{i=0:10){ 2.0 * A[i][I] * A[i][J] }
+  //
+  // f = sqrt(U)
+  // df/dx_I = 0.5*(dU/dx_I)/sqrt(U) 
+  //         = 0.5*(dU/dx_I)/f  
+  // d^2f/(dx_I dx_J)
+  //   = -0.25 * U^(-1.5) * dU/dx_I * dU/dx_J + 0.5/sqrt(U) * d2U/(dx_I dx_J)
+  //   = ( -df/dx_I * df/dx_J  + 0.5 * d2U/(dx_I dx_J) ) / f
+  //
+  // so to (efficiently) compute grad(f) we precompute f
+  // and to (efficiently) compute hess(f) we precompute f and grad(f)
+
+  size_t Ider, Jder;
+  double grad[7];
+  for(Ider=0; Ider<num_vars; ++Ider) 
+    grad[Ider] = 0.0;
+  
+  // **** f: (f is required to calculate any derivative of f; perform always)
+  double U = 0.0;
+  for (size_t i=0; i<11; i++) {
+    double dtmp = 0.0;
+    for (size_t j =0; j<num_vars; j++)
+      dtmp += A[i][j] * xC[j];
+    dtmp = 1.0 - dtmp;
+    U += dtmp*dtmp;
+
+    // precompute grad(U) unconditionally as it might be needed (cheap)
+    for(Ider=0; Ider<num_vars; ++Ider) 
+      grad[Ider] -= dtmp*2.0*A[i][Ider]; //this is grad(U)
+  }
+  double fx = sqrt(U);
+  if (directFnASV[0] & 1)
+    fnVals[0] = fx;
+
+  // **** df/dx: 
+  if (directFnASV[0] & 6) { // gradient required for itself and to calcuate the Hessian
+    for(Ider=0; Ider<num_vars; ++Ider) 
+      grad[Ider] *= (0.5/fx); // this is now updated to be grad(f) 
+    
+    if (directFnASV[0] & 2) { // if ASV demands gradient, print it
+      for (int Ider=0; Ider<num_vars; ++Ider) 
+	fnGrads[0][Ider] = grad[Ider];
+    }
+  }
+  
+  // **** the hessian ddf/dxIdxJ
+  if (directFnASV[0] & 4) {
+    for(Ider=0; Ider<num_vars; ++Ider) {
+      for(Jder=Ider; Jder<num_vars; ++Jder) {
+	// define triangular part of hess(U)
+	for(size_t i=0; i<11; ++i)
+	  fnHessians[0](Ider,Jder) += A[i][Ider]*A[i][Jder]; // this is 0.5*hess(U)
+
+	fnHessians[0](Jder,Ider) = fnHessians[0](Ider,Jder) // this is hess(f)
+	  = (fnHessians[0](Ider,Jder)- grad[Ider]*grad[Jder])/fx;
+      }
+    }
+  }
+  return 0;
+}
+
+/// barnes test for SBO perforamnce from Rodriguez, Perez, Renaud, et al.
+int TestDriverInterface::barnes()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: barnes direct fn does not yet support multiprocessor "
+      << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  
+  if ( hessFlag ) {
+    Cerr << "Error: barnes direct fn does not yet support analytic Hessians."
+      << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( gradFlag && (numADIV || numADRV) ) {
+    Cerr << "Error: barnes direct fn assumes no discrete variables in "
+	 << "derivative mode." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numACV != 2) {
+    Cerr << "Error: Bad number of variables in barnes direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numFns != 4 ) {
+    Cerr << "Error: Bad number of functions in barnes direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+
+  // Verification test for SBO performance.
+  // Taken from Rodriguez, Perez, Renaud, et al.
+  // Constraints g >= 0.
+
+  double a[] = { 75.196,   -3.8112,    0.12694,    -2.0567e-3,  1.0345e-5,
+		 -6.8306,   0.030234, -1.28134e-3,  3.5256e-5, -2.266e-7,
+		  0.25645, -3.4604e-3, 1.3514e-5, -28.106,     -5.2375e-6,
+		 -6.3e-8,   7.0e-10,   3.4054e-4,  -1.6638e-6, -2.8673,
+		  0.0005};
+  double x1 = xC[0], x2 = xC[1], x1x2 = x1*x2, x2_sq = x2*x2, x1_sq = x1*x1;
+
+  // **** f
+  if (directFnASV[0] & 1) {
+    double f = a[0] + a[1]*x1 + a[2]*x1_sq + a[3]*x1_sq*x1 + a[4]*x1_sq*x1_sq
+      + a[5]*x2 + a[6]*x1x2 + a[7]*x1*x1x2 + a[8]*x1x2*x1_sq
+      + a[9]*x2*x1_sq*x1_sq + a[10]*x2_sq + a[11]*x2*x2_sq + a[12]*x2_sq*x2_sq
+      + a[13]/(x2+1.) + a[14]*x2_sq*x1_sq + a[15]*x1*x1_sq*x2_sq
+      + a[16]*x1x2*x2_sq*x1_sq + a[17]*x1*x2_sq + a[18]*x1x2*x2_sq
+      + a[19]*exp(a[20]*x1x2);
+    fnVals[0] = f;
+  }
+
+  // **** g1
+  if (directFnASV[1] & 1)
+    fnVals[1] = x1x2/700. - 1.;
+
+  // **** g2
+  if (directFnASV[2] & 1)
+    fnVals[2] = x2/5. - x1_sq/625.;
+
+  // **** g3
+  if (directFnASV[3] & 1)
+    fnVals[3] = pow(x2/50. - 1., 2.) - x1/500. + 0.11;
+
+  // **** df/dx
+  if (directFnASV[0] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[0][i] = a[1] + 2.*a[2]*x1 + 3.*a[3]*x1_sq + 4.*a[4]*x1_sq*x1
+	  + a[6]*x2 + 2.*a[7]*x1x2 + 3.*a[8]*x2*x1_sq + 4.*a[9]*x1x2*x1_sq
+	  + 2.*a[14]*x2_sq*x1 + 3.*a[15]*x1_sq*x2_sq + 3.*a[16]*x2*x2_sq*x1_sq
+	  + a[17]*x2_sq + a[18]*x2*x2_sq + a[19]*a[20]*x2*exp(a[20]*x1x2);
+	break;
+      case 1:
+	fnGrads[0][i] = a[5] + a[6]*x1 + a[7]*x1_sq + a[8]*x1*x1_sq
+	  + a[9]*x1_sq*x1_sq + 2.*a[10]*x2 + 3.*a[11]*x2_sq + 4.*a[12]*x2*x2_sq
+	  - a[13]/pow(x2+1., 2.) + 2.*a[14]*x2*x1_sq + 2.*a[15]*x1*x1_sq*x2
+	  + 3.*a[16]*x1*x2_sq*x1_sq + 2.*a[17]*x1x2 + 3.*a[18]*x1*x2_sq
+	  + a[19]*a[20]*x1*exp(a[20]*x1x2);
+	break;
+      }
+    }
+  }
+
+  // **** dg1/dx
+  if (directFnASV[1] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[1][i] = x2/700.;
+	break;
+      case 1:
+	fnGrads[1][i] = x1/700.;
+	break;
+      }
+    }
+  }
+
+  // **** dg2/dx
+  if (directFnASV[2] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[2][i] = -2.*x1/625.;
+	break;
+      case 1:
+	fnGrads[2][i] = 0.2;
+	break;
+      }
+    }
+  }
+
+  // **** dg3/dx
+  if (directFnASV[3] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[3][i] = -1./500.;
+	break;
+      case 1:
+	fnGrads[3][i] = 2.*(x2/50. - 1.)/50.;
+	break;
+      }
+    }
+  }
+  return 0;
+}
+
+/// lo-fi barnes test for SBO perforamnce from Rodriguez, Perez, Renaud, et al.
+int TestDriverInterface::barnes_lf()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: barnes_lf direct fn does not yet support multiprocessor "
+      << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  
+  if ( hessFlag ) {
+    Cerr << "Error: barnes_lf direct fn does not yet support analytic Hessians."
+      << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( gradFlag && (numADIV || numADRV) ) {
+    Cerr << "Error: barnes_lf direct fn assumes no discrete variables in "
+	 << "derivative mode." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numACV != 2) {
+    Cerr << "Error: Bad number of variables in barnes_lf direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  if ( numFns != 4 ) {
+    Cerr << "Error: Bad number of functions in barnes_lf direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  
+  // Verification test for SBO performance.
+  // Taken from Rodriguez, Perez, Renaud, et al.
+  // Constraints g >= 0.
+
+  double a[] = { 75.196,   -3.8112,    0.12694,    -2.0567e-3,  1.0345e-5,
+		 -6.8306,   0.030234, -1.28134e-3,  3.5256e-5, -2.266e-7,
+		  0.25645, -3.4604e-3, 1.3514e-5, -28.106,     -5.2375e-6,
+		 -6.3e-8,   7.0e-10,   3.4054e-4,  -1.6638e-6, -2.8673,
+		  0.0005};
+  // Taylor series of Barnes function about the point (p1,p2)
+  double p1  = 30.0;
+  double p2  = 40.0;
+  double x1  = xC[0]-p1; 
+  double x12 = x1*x1;
+  double x13 = x12*x1;
+  double x2  = xC[1]-p2; 
+  double x22 = x2*x2;
+  double x23 = x22*x2;
+  
+  // **** f
+  if (directFnASV[0] & 1) {
+    fnVals[0] = 
+      - 2.74465943148169
+      + 0.01213957527281*x1
+      + 0.00995748775273*x12 
+      - 5.557060816484793e-04*x13 
+      + (1.15084419109172+0.00947331101091*x1+2.994070392732408e-05*x12)*x2
+      + (-0.02997939337414-1.676054720545071e-04*x1)*x22
+      - 0.00132216646850*x23;
+  }
+
+  // **** g1
+  if (directFnASV[1] & 1)
+    fnVals[1] = (xC[0]+xC[1]-50.)/10.;
+
+  // **** g2
+  if (directFnASV[2] & 1)
+    fnVals[2] = (-0.64*xC[0]+xC[1])/6.;
+
+  // **** g3
+  if (directFnASV[3] & 1) {
+    if (xC[1] > 50)
+      fnVals[3] =
+	-0.00599508167546*xC[0]
+	+ 0.0134054101569*xC[1]
+	- 0.34054101569933;
+    else
+      fnVals[3] =
+	-0.00599508167546*xC[0]
+	- 0.01340541015699*xC[1]
+	+ 1.;
+  }
+
+  // **** df/dx
+  if (directFnASV[0] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[0][i] =    
+	  - 0.58530968989099+0.01991497550546*xC[0]-0.00166711824495*x12 
+	  + (0.00767686877527+ 5.988140785464816e-05*xC[0])*x2 
+	  - 1.676054720545071e-04*x22; 
+	break;
+      case 1:
+	fnGrads[0][i] =  
+	    0.86664486076442+0.00947331101091*xC[0]+2.994070392732408e-05*x12
+	  + 2*(-0.02495122921250-1.676054720545071e-04*xC[0])*x2
+	  - 0.00396649940550*x22;
+	break;
+      }
+    }
+  }
+
+  // **** dg1/dx
+  if (directFnASV[1] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[1][i] = 1./10.;
+	break;
+      case 1:
+	fnGrads[1][i] = 1./10.;
+	break;
+      }
+    }
+  }
+
+  // **** dg2/dx
+  if (directFnASV[2] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[2][i] = -0.64/6.;
+	break;
+      case 1:
+	fnGrads[2][i] = 1./6.;
+	break;
+      }
+    }
+  }
+
+  // **** dg3/dx
+  if (directFnASV[3] & 2) {
+    for (size_t i=0; i<numDerivVars; i++) {
+      int var_index = directFnDVV[i] - 1;
+      switch (var_index) {
+      case 0:
+	fnGrads[3][i] = -0.00599508167546;
+	break;
+      case 1:
+	if (xC[1] > 50)
+	  fnGrads[3][i] = 0.01340541015692;
+	else
+	  fnGrads[3][i] = -0.01340541015692;
+	break;
+      }
+    }
+  }
+  return 0;
+}
+
 
 /// 1D Herbie function and its derivatives (apart from a multiplicative factor)
 void TestDriverInterface::

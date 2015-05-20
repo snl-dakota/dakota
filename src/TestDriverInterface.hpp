@@ -69,6 +69,11 @@ private:
   int mf_rosenbrock(); ///< alternate Rosenbrock formulations for
                        ///< multifidelity or model form studies
 
+  int lf_poly_prod(); ///< modified low fidelity Rosenbrock to test SBO with 
+                      ///< hierarchical approximations
+  int poly_prod();    ///< modified low fidelity Rosenbrock to test SBO with 
+                      ///< hierarchical approximations
+
   int gerstner(); ///< the isotropic/anisotropic Gerstner test function family
   int scalable_gerstner(); ///< scalable versions of the Gerstner test family
 
@@ -98,6 +103,12 @@ private:
   int mogatest1();  ///< MOP2 from Van Veldhuizen, pp. 5-13
   int mogatest2();  ///< MOP2? from Van Veldhuizen, pp. 5-13
   int mogatest3();  ///< Srinivas' from Van Veldhuizen, pp. B-5
+
+  int illumination(); ///< illumination example in Boyd as a general 
+                      ///< minimization problem
+  int barnes();     ///< barnes test for SBO perforamnce from Rodriguez, 
+                    ///< Perez, Renaud, et al.
+  int barnes_lf();  ///< lo-fi barnes test for SBO perforamnce 
 
   // suite of separable test functions TODO add docs
 

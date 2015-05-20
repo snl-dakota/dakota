@@ -83,7 +83,7 @@ model,
 	  responses_pointer = 'TRUE_RESP'
 
 interface,
-	system #asynchronous
+	direct #system #asynchronous
 	id_interface = 'TRUE_FN'
  	  analysis_driver = 'barnes'
 
