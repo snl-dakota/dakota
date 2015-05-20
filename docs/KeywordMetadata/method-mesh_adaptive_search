@@ -59,7 +59,7 @@ responses,
         objective_functions = 1
         no_gradients
         no_hessians
-\end verbatim
+\endverbatim
 
 The best function value and associated parameters are found at the end
 of the %Dakota output.
