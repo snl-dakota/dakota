@@ -321,13 +321,20 @@ void COLINOptimizer::find_optimum()
     const RealVector&  cv_init = iteratedModel.continuous_variables();
     const IntVector&  div_init = iteratedModel.discrete_int_variables();
     const RealVector& drv_init = iteratedModel.discrete_real_variables();
-    IntVector dv_init(numDiscreteIntVars+numDiscreteRealVars);
+    StringMultiArrayConstView dsv_init = 
+	    iteratedModel.discrete_string_variables();
+    IntVector dv_init(numDiscreteIntVars
+		    + numDiscreteRealVars
+		    + numDiscreteStringVars);
 
     // Initialize the continuous variables in COLIN's mixed-variable
     // object.
 
-    MixedIntVars miv_init(0, numDiscreteIntVars+numDiscreteRealVars,
-			  cv_init.length());
+    MixedIntVars miv_init(0,
+		    numDiscreteIntVars
+		    + numDiscreteRealVars
+		    + numDiscreteStringVars,
+		    cv_init.length());
     TypeManager()->lexical_cast(cv_init, miv_init.Real());
 
     // Need to consolidate all of the discrete variables in one place.
@@ -338,9 +345,10 @@ void COLINOptimizer::find_optimum()
     // is necessary to allow usage beyond design optimization; e.g., for
     // epistemic interval estimation.
 
-    const     BitArray& di_set_bits = iteratedModel.discrete_int_sets();
-    const  IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
-    const RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
+    const       BitArray& di_set_bits = iteratedModel.discrete_int_sets();
+    const    IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
+    const   RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
+    const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
     size_t i, index, dsi_cntr;
     for (i=0, dsi_cntr=0; i<numDiscreteIntVars; ++i) {
       if (di_set_bits[i]) { // this active discrete int var is a set type
@@ -377,6 +385,20 @@ void COLINOptimizer::find_optimum()
       else
 	dv_init[i+numDiscreteIntVars] = (int)index;
     }
+
+    // Finally, for active discrete string vars
+
+    for (i=0; i<numDiscreteStringVars; ++i) {
+      index = set_value_to_index(dsv_init[i], dssv_values[i]);
+      if (index == _NPOS) {
+	Cerr << "\nError: failure in discrete string set lookup within "
+	     << "COLINOptimizer::find_optimum()" << std::endl;
+	abort_handler(-1);
+      }
+      else
+	dv_init[i+numDiscreteIntVars+numDiscreteRealVars] = (int)index;
+    }
+
 
     // Now initialize the discrete variables in COLIN's mixed-variable object
 
@@ -937,9 +959,10 @@ void COLINOptimizer::post_run(std::ostream& s)
   // determine the size of those sets and the number of non-set
   // integer variables.
 
-  const     BitArray& di_set_bits = iteratedModel.discrete_int_sets();
-  const  IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
-  const RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
+  const       BitArray& di_set_bits = iteratedModel.discrete_int_sets();
+  const    IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
+  const   RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
   size_t i, j, dsi_cntr;
 
   // Iterate through points returned by COLIN.
@@ -983,6 +1006,15 @@ void COLINOptimizer::post_run(std::ostream& s)
       Real dakota_value
 	= set_index_to_value(ddv[j+numDiscreteIntVars], dsrv_values[j]);
       tmpVariableHolder.discrete_real_variable(dakota_value, j);
+    }
+
+    // And again for the active discrete string vars, which are all set types
+
+    for (j=0; j<numDiscreteStringVars; ++j) {
+      String dakota_value
+	= set_index_to_value(ddv[j+numDiscreteIntVars+numDiscreteRealVars],
+	    dssv_values[j]);
+      tmpVariableHolder.discrete_string_variable(dakota_value, j);
     }
 
     // BMA: cautiously optimistic implementation, assuming we can
