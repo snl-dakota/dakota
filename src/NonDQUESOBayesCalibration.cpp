@@ -270,18 +270,16 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Size our Queso covariance matrix and initialize trailing diagonal if
   // calibrating sigma terms
   proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
-  if (calibrateSigma)
+  if (calibrateSigma) {
+    Real uniform_variance_factor = 1.99 * 1.99 / 12.; // uniform on [.01,2.]
     for (int i=0; i<numFunctions; i++) {
       // assuming the sigma terms are uniformly distributed
-      Real sigma_i = std::sqrt( expData.scalar_sigma_est(i));
-      Real variance_estimate_uniform_sigma = 
-        (1./12.)*std::pow((2.*sigma_i-0.01*sigma_i),2);
+      Real var_i = uniform_variance_factor * expData.scalar_sigma_est(i);
       if (outputLevel > NORMAL_OUTPUT )  
-        Cout << "Diagonal estimate for sigma_i " 
-             << variance_estimate_uniform_sigma << '\n';
-      (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = 
-        variance_estimate_uniform_sigma;
-     }
+        Cout << "Diagonal estimate for sigma_i " << var_i << '\n';
+      (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = var_i;
+    }
+  }
   // initialize proposal covariance (must follow parameter domain init)
   // This is the leading sub-matrix in the case of calibrating sigma terms
   if (proposalCovarType == "user") // either filename OR data values defined
