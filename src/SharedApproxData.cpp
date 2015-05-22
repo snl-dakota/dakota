@@ -54,16 +54,15 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
     problem_db.set_db_model_nodes(actual_model_ptr);
 
     if (problem_db.get_string("responses.gradient_type") != "none") {
-      if (!global_approx || approxType == "global_polynomial" ||
-	  approxType == "global_kriging" ||
+      if (!global_approx || approxType == "global_polynomial"      ||
+	  approxType == "global_regression_orthogonal_polynomial"  ||
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
-	  strends(approxType, "_interpolation_polynomial") ||
-	  strends(approxType, "_orthogonal_polynomial"))
+	  strends(approxType, "_interpolation_polynomial")         ||
 #else
-	  approxType == "global_orthogonal_polynomial"             ||
 	  approxType == "piecewise_nodal_interpolation_polynomial" ||
-	  approxType == "piecewise_hierarchical_interpolation_polynomial")
+	  approxType == "piecewise_hierarchical_interpolation_polynomial" ||
 #endif
+	  approxType == "global_kriging")
 	buildDataOrder |= 2;
       else
 	Cerr << "Warning: use_derivatives is not currently supported by "
@@ -104,16 +103,15 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
   bool global_approx = strbegins(approxType, "global_");
   buildDataOrder = 1;
   if (data_order & 2) {
-    if (!global_approx || approxType == "global_polynomial" ||
-	approxType == "global_kriging" ||
+    if (!global_approx || approxType == "global_polynomial"      ||
+        approxType == "global_regression_orthogonal_polynomial"  ||
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
-	strends(approxType, "_interpolation_polynomial") ||
-	strends(approxType, "_orthogonal_polynomial"))
+	strends(approxType, "_interpolation_polynomial")         ||
 #else
-        approxType == "global_orthogonal_polynomial"             ||
 	approxType == "piecewise_nodal_interpolation_polynomial" ||
-	approxType == "piecewise_hierarchical_interpolation_polynomial")
+	approxType == "piecewise_hierarchical_interpolation_polynomial" ||
 #endif
+	approxType == "global_kriging")
       buildDataOrder |= 2;
     else
       Cerr << "Warning: use_derivatives is not currently supported by "
