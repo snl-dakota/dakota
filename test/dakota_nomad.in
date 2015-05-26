@@ -65,8 +65,8 @@ variables,
 #                     	     0 0 1 1 1				#s8
 
 interface,
-       direct							#s0,#s2,#s4,#s6,#s7
-#	fork asynch evaluation_concurrency 4			#s1,#s3,#s5,#s8
+       direct							#s0,#s2,#s3,#s4,#s5,#s6,#s7
+#	fork asynch evaluation_concurrency 4			#s1,#s8
 	  analysis_driver = 'text_book'	   			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 #          analysis_driver = 'gerstner_string'			#s8
 #          parameters_file = 'params.in'			#s8
