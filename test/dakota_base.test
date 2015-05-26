@@ -8876,7 +8876,7 @@ Test Number 2 succeeded
                       3.2000000000e-03
 <<<<< Best data captured at function evaluation 86
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 515 total (515 new, 0 duplicate)
+<<<<< Function evaluation summary: 532 total (532 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -8910,9 +8910,9 @@ Test Number 4 succeeded
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000381470e+00 x1
-                      1.0006284714e+00 x2
-                      1.0002298355e+00 x3
+                      1.0006790161e+00 x1
+                      1.0001945496e+00 x2
+                      1.0001068115e+00 x3
                                      1 y1
                                      1 y2
                                      4 z1
@@ -8921,7 +8921,7 @@ Test Number 5 succeeded
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
                       2.4820032000e+03
-<<<<< Best data captured at function evaluation 474
+<<<<< Best data captured at function evaluation 423
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
