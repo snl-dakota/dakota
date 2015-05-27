@@ -7,7 +7,7 @@ For example, if the \c field_responses = 2, an example would be
 \c lengths = 50 200, indicating that the first field response has 50 field elements 
 but the second one has 200. 
 The coordinate values (e.g. the independent variables) corresponding to these field 
-responses are defined either with \c coordinate_list or \c coordinate_data_file. 
+responses are read in files labeled response_descriptor.coords. 
 
 Topics::	
 Examples::

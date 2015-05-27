@@ -26,8 +26,8 @@ For each experiment, there are four main types of data related to fields:
 
    Field coordinates specify independent variables (e.g. spatial or temporal coordinates) upon which 
    the field depends.  For example, the voltage level above might be a function of time, so time is 
-   the field coordinate.  If the user has field coordinates to read, they need to specify 
-   \c read_field_coordinates.  The field coordinates will then be read from a file named 
+   the field coordinate.  For the calibration data, the 
+   field coordinates are read from a file named 
    response_descriptor.NUM.coords, similar to the pattern for field values.  The number of columns 
    in the coords file should be equal to the number of field coordinates.  
 
@@ -84,8 +84,8 @@ Dakota will assume that the simulation field data and the experiment
 field data is taken at the same set of independent coordinate values and 
 simply construct the difference between these field terms to create the set of residuals for the sum-of-squares calculation.
 When \c interpolate is specified, the simulation coordinates are assumed fixed and the same for each simulation.  
-These coordinates are provided in \c coordinate_data_file or \c coordinate_list.  However, the experiment coordinates 
+These simulation coordinates are provided in response_descriptor.coords.  
+However, the experiment coordinates 
 for each experiment can be different, and are provided in the files numbered by experiment with the file names given by 
 response_descriptor.NUM.coords, as indicated above. 
-
 

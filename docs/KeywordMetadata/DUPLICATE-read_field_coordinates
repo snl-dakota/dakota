@@ -1,0 +1,15 @@
+Blurb::
+Add context to data: flag to indicate that field coordinates should be read
+Description::
+ Field coordinates specify independent variables (e.g. spatial or temporal coordinates) upon which
+   the field depends.  For example, the voltage level above might be a function of time, so time is
+   the field coordinate.  If the user has field coordinates to read, they need to specify
+   \c read_field_coordinates.  The field coordinates will then be read from a file named
+   response_descriptor.coords, where response_descriptor is the user-provided descriptor for the 
+   field response.  The number of columns in the coords file should be equal to the number of field coordinates.
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -8,7 +8,8 @@ For example, if the \c field_responses = 2, an example would be
 (perhaps x, y locations), but the second response only has one (for example, time where the field response 
 is only dependent upon time). 
 The actual coordinate values (e.g. the independent variables) corresponding to these field 
-responses are defined either with \c coordinate_list or \c coordinate_data_file. 
+responses are defined in a file call response_descriptor.coords, 
+where response_descriptor is the name of the individual field.
 
 Topics::	
 Examples::
