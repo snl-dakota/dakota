@@ -138,9 +138,9 @@ variables,
 #=======================================================================
 interface,
 	system					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	system					#s8,#s9,#s10,#s11,#s14,#s15,#s16
-#	system					#s17,#s18,#s19,#s20,#s21,#s22
-# 	system					#s23,#s24
+#	system					#s10,#s11,#s14,#s15,#s16
+#	system					#s17,#s18,#s19,#s20,
+#	direct					#s8,#s9,#s21,#s22,#s23,#s24
 # OPT and MULTIOBJ
 	  analysis_driver=  'cyl_head'		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 #	  analysis_driver=  'cyl_head'		#s8,#s9,#s20,#s21,#s22,#s23,#s24

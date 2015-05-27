@@ -155,15 +155,13 @@ variables,
 #           descriptors      'z1'   'z2'                        #s32
 
 interface,
-	system asynch				#s0,#s1
-#	system asynch				#s6,#s7,#s10,#s11
-#	system asynch				#s14,#s15,#s20
-#	system asynch				#s22,#s23,#s26,#s27
-#	system asynch				#s28,#s29,#s32,#s33
-#       direct                                  #s2,#s3,#s8,#s9
-#	direct					#s16,#s17,#s21,#s24,#s25
-#	fork asynch evaluation_concurrency 100	#s4,#s5,#s12,#s13
-#	fork asynch evaluation_concurrency 100	#s18,#s19,#s30,#s31
+	system asynch				#s0,#s6,#s10,#s20,#s22
+#       direct                                  #s1,#s2,#s3,#s5,#s7,#s8,#s9
+#       direct                                  #s11,#s14,#s15,#s16,#s17
+#	direct					#s19,#s21,#s23,#s24,#s25
+#	direct					#s26,#s27,#s28,#s29
+#	direct					#s31,#s32,#s33
+#	fork asynch evaluation_concurrency 100	#s4,#s12,#s13,#s18,#s30
 	  analysis_driver = 'text_book'
 
 responses,
