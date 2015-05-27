@@ -28,7 +28,7 @@ method,
 #	  threshold_delta = 1.e-4		#p11,#p12,#p13,#p14,#p15,#p16
 #	  threshold_delta = 1.e-4 	        #p17,#p18,#p19
 #	SYNCHRONIZATION FOR APPS/PS
-#	  synchronization nonblocking		#p13,#p14,#p17,#p18
+#	  synchronization nonblocking		#p13,#p14,#p17
 #	EXPLORATORY MOVES FOR PS
 #	    exploratory_moves basic_pattern
 #	    exploratory_moves multi_step
@@ -58,6 +58,7 @@ interface,
 #         asynchronous                          #p1,#p3,#p5,#p7
 #         asynchronous                          #p9,#p11,#p13
 #         asynchronous                          #p15,#p17,#p19
+#         evaluation_scheduling master		#p14
 #	ALL METHODS
 	  analysis_driver = 'text_book'
 
