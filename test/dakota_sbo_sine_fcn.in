@@ -101,7 +101,8 @@ model,
 	  responses_pointer = 'TRUE_RESP'
 
 interface,
-	system #asynchronous
+	system asynchronous 
+    evaluation_concurrency = 5
 	id_interface = 'TRUE_FN'
  	  analysis_driver =    'quasi_sine_fcn'
 

@@ -20,7 +20,7 @@ variables,
 	  descriptors      'x1'   'x2'
 
 interface,
-	system
+  direct
 	  analysis_driver = 'rosenbrock'
 
 responses,

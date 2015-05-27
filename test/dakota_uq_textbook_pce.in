@@ -25,7 +25,8 @@ variables,
 	  descriptors       =  'TF1ln'   'TF2ln'
 
 interface,
-	system asynch evaluation_concurrency = 5
+  direct
+#	system asynch evaluation_concurrency = 5
 	  analysis_driver = 'text_book'
 
 responses,

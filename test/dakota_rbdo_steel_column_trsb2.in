@@ -90,7 +90,7 @@ responses,
 ##########################################
 interface,
 	id_interface = 'OPTIONAL_I'
-	fork
+  direct
 	  analysis_driver = 'steel_column_cost'
 
 responses,
@@ -149,7 +149,7 @@ variables,
 
 interface,
 	id_interface = 'UQ_I'
-	fork
+  direct
 	  analysis_driver = 'steel_column_perf'
 	  deactivate evaluation_cache restart_file
 

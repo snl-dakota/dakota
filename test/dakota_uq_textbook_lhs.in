@@ -106,7 +106,8 @@ variables,
 #	    set_values = 3.1 5.2 6.3 7.4	      #s9
 
 interface,
-	system asynch evaluation_concurrency = 5
+  direct
+#	system asynch evaluation_concurrency = 5
 	  analysis_driver = 'text_book'
 
 responses,

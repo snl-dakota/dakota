@@ -57,7 +57,7 @@ responses,
 ##########################################
 interface,
 	id_interface = 'OPTIONAL_I'
-	system
+  direct
 	  analysis_driver = 'cyl_head'
 
 responses,
@@ -160,5 +160,6 @@ variables,
 
 interface,
 	id_interface = 'UQ_ACTUAL'
-	system asynch evaluation_concurrency = 5
+  direct
+#	system asynch evaluation_concurrency = 5
 	  analysis_driver = 'text_book_ouu'

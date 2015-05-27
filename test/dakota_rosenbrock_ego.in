@@ -18,7 +18,7 @@ variables
     descriptors     'x1' 'x2'
 
 interface
-  fork
+  direct
     analysis_driver = 'rosenbrock'
 
 responses

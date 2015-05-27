@@ -12629,12 +12629,12 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 407 total (407 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   4.8171820539e-06   6.2100004482e-03   2.4858252977e+00   2.4999808815e+00
+   4.8171820540e-06   6.2100004482e-03   2.4858252977e+00   2.4999808815e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 407 total (407 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -7.5139001798e-08   6.2096657751e-03   2.4858443720e+00   2.4999999744e+00
+  -7.5139001354e-08   6.2096657751e-03   2.4858443720e+00   2.4999999744e+00
 dakota_rbdo_short_column_trsb.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 52 total (52 new, 0 duplicate)
@@ -13163,8 +13163,8 @@ Test Number 2 succeeded
                       3.9999999765e+03
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 19 total (16 new, 3 duplicate)
- nln_ineq_con_1: 13 val (10 n, 3 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 19 total (17 new, 2 duplicate)
+ nln_ineq_con_1: 13 val (11 n, 2 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 135 total (135 new, 0 duplicate)
   response_fn_1: 116 val (116 n, 0 d), 135 grad (135 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
@@ -13172,7 +13172,7 @@ Test Number 3 succeeded
                       1.7499999893e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -5.2203432482e-03
+                     -5.2203432483e-03
 <<<<< Best constraint values   =
                       3.9999999786e+03
 <<<<< Best data not found in evaluation cache
@@ -13440,21 +13440,21 @@ Test Number 3 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 26 total (26 new, 0 duplicate)
-         obj_fn: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 26 val (26 n, 0 d), 26 grad (26 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 11 total (10 new, 1 duplicate)
- nln_ineq_con_1: 11 val (10 n, 1 d), 5 grad (5 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 49 total (49 new, 0 duplicate)
-  response_fn_1: 49 val (49 n, 0 d), 49 grad (49 n, 0 d), 49 Hess (49 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 25 total (25 new, 0 duplicate)
+         obj_fn: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 12 total (11 new, 1 duplicate)
+ nln_ineq_con_1: 12 val (11 n, 1 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 52 total (52 new, 0 duplicate)
+  response_fn_1: 52 val (52 n, 0 d), 52 grad (52 n, 0 d), 52 Hess (52 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
-                      1.7499920898e+01 d
+                      1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -2.9947394318e+00
+                     -2.9947711903e+00
 <<<<< Best constraint values   =
-                      3.9999841796e+03
+                      4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 25 total (25 new, 0 duplicate)
@@ -13486,7 +13486,7 @@ Test Number 6 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.5134176105e-03
+                      3.5134176106e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
@@ -13503,7 +13503,7 @@ Test Number 7 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.5134175320e-03
+                      3.5134175319e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
@@ -13520,7 +13520,7 @@ Test Number 8 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.5269108874e-03
+                      3.5269108875e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
@@ -13936,13 +13936,13 @@ Test Number 19 succeeded
 <<<<< Best data captured at function evaluation 74
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
+<<<<< Function evaluation summary: 39 total (38 new, 1 duplicate)
 <<<<< Best parameters          =
-                      9.8765432099e-01 x1
-                      9.7546105777e-01 x2
+                      9.8759410734e-01 x1
+                      9.7668038409e-01 x2
 <<<<< Best objective function  =
-                      1.5241579028e-04
-<<<<< Best data captured at function evaluation 27
+                      3.3300102016e-04
+<<<<< Best data captured at function evaluation 26
 dakota_rosenbrock_fail.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
@@ -14002,32 +14002,32 @@ Test Number 1 succeeded
                       1.0008236228e+00 x1
                       1.0016117795e+00 x2
 <<<<< Best objective function  =
-                      8.0899733603e-07
+                      8.0899733487e-07
 <<<<< Best data captured at function evaluation 47
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9557149023e-01 x1
-                      9.9092076665e-01 x2
+                      9.9557149020e-01 x1
+                      9.9092076660e-01 x2
 <<<<< Best objective function  =
-                      2.5459656353e-05
+                      2.5459656559e-05
 <<<<< Best data captured at function evaluation 55
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 96 total (96 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9995869284e-01 x1
-                      9.9991578379e-01 x2
+                      9.9995869282e-01 x1
+                      9.9991578376e-01 x2
 <<<<< Best objective function  =
-                      1.9634331409e-09
+                      1.9634328083e-09
 <<<<< Best data captured at function evaluation 95
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 244 total (244 new, 0 duplicate)
+<<<<< Function evaluation summary: 243 total (243 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9993703498e-01 x1
-                      9.9986799646e-01 x2
+                      9.9999152419e-01 x1
+                      9.9998244218e-01 x2
 <<<<< Best objective function  =
-                      7.6581595095e-09
-<<<<< Best data captured at function evaluation 240
+                      1.0859635793e-10
+<<<<< Best data captured at function evaluation 239
 dakota_rosenbrock_importance.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 650 total (650 new, 0 duplicate)
@@ -15289,12 +15289,12 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 370000 total (370000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0517612086e+00 w
-                      5.2675898501e+00 t
+                      4.0517612088e+00 w
+                      5.2675898502e+00 t
 <<<<< Best objective function  =
-                      2.1343016217e+01
+                      2.1343016219e+01
 <<<<< Best constraint values   =
-                      1.1220275476e+01
+                      1.1220275477e+01
                       1.2456323718e+02
 <<<<< Best data not found in evaluation cache
 dakota_sbouu3_tbch.in
@@ -18769,27 +18769,27 @@ dakota_scaling.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (13 new, 2 duplicate)
 <<<<< Best parameters          =
-                      1.9133239653e+00 intake_dia
-                      1.7866760347e+00 flatness
+                      1.9133932913e+00 intake_dia
+                      1.7867041189e+00 flatness
 <<<<< Best objective function  =
-                     -2.3670554263e+00
+                     -2.3670814706e+00
 <<<<< Best constraint values   =
-                     -4.4821326722e-01
-                     -3.3199859479e-01
-                     -3.0387907018e-03
-<<<<< Best data captured at function evaluation 12
+                     -4.4818766375e-01
+                     -3.3199438217e-01
+                     -3.0434911010e-03
+<<<<< Best data captured at function evaluation 13
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 43 total (16 new, 27 duplicate)
+<<<<< Function evaluation summary: 43 total (20 new, 23 duplicate)
 <<<<< Best parameters          =
-                      2.1301977077e+00 intake_dia
+                      2.1400997667e+00 intake_dia
                       2.9175923523e+00 flatness
 <<<<< Best objective function  =
-                     -2.2920710032e+00
+                     -2.2963926875e+00
 <<<<< Best constraint values   =
-                      7.5870517985e-02
+                      1.9791642616e-01
                      -1.6236114716e-01
                      -1.6554068758e-01
-<<<<< Best data captured at function evaluation 13
+<<<<< Best data captured at function evaluation 19
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 9 total (8 new, 1 duplicate)
 <<<<< Best parameters          =
@@ -18848,7 +18848,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                      -4.4086848029e-01
                      -3.3471647504e-01
-                      3.3435476610e-12
+                      3.3433256164e-12
 <<<<< Best data captured at function evaluation 37
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
@@ -18889,18 +18889,18 @@ Test Number 9 succeeded
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 77 total (77 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9977029571e-01 x1
-                      9.9955634291e-01 x2
+                      9.9977029552e-01 x1
+                      9.9955634255e-01 x2
 <<<<< Best objective function  =
-                      7.7409023663e-08
+                      7.7409203673e-08
 <<<<< Best data captured at function evaluation 76
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 204 total (202 new, 2 duplicate)
 <<<<< Best parameters          =
-                      9.9873710729e-01 x1
-                      9.9746836963e-01 x2
+                      9.9873710705e-01 x1
+                      9.9746836914e-01 x2
 <<<<< Best objective function  =
-                      1.6004331384e-06
+                      1.6004337486e-06
 <<<<< Best data captured at function evaluation 204
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
@@ -18975,7 +18975,7 @@ Test Number 16 succeeded
                       1.1106946630e-01
                       1.5105902752e-02
 <<<<< Best constraint values   =
-                      1.6098233857e-15
+                      1.6653345369e-15
 <<<<< Best data captured at function evaluation 9
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 280 total (280 new, 0 duplicate)
@@ -18983,10 +18983,10 @@ Test Number 17 succeeded
                       5.3351424779e-01 x1
                       5.1648575221e-01 x2
 <<<<< Best residual terms =
-                      1.0200956497e-01
-                      2.6394576487e-02
+                      1.0200956498e-01
+                      2.6394576488e-02
 <<<<< Best constraint values   =
-                      4.0834369996e-07
+                      4.0834316933e-07
 <<<<< Best data captured at function evaluation 248
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
@@ -19008,7 +19008,7 @@ Test Number 19 succeeded
                       1.0201147308e-01
                       2.6392615300e-02
 <<<<< Best constraint values   =
-                     -1.1700255742e-07
+                     -1.1700255736e-07
 <<<<< Best data captured at function evaluation 178
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
@@ -19020,7 +19020,7 @@ Test Number 20 succeeded
                      -3.3739308601e-01
                      -3.3471647504e-01
 <<<<< Best constraint values   =
-                      0.0000000000e+00
+                     -1.1102230246e-16
 <<<<< Best data captured at function evaluation 41
 Test Number 21 succeeded
 <<<<< Function evaluation summary: 217 total (217 new, 0 duplicate)
@@ -65621,77 +65621,77 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -4.0000000000e+00  He3  He0
    1.0000000000e+00  He4  He0
   -1.6000000000e+01  He0  He1
-  -1.1796119637e-16  He1  He1
-  -5.5858095926e-16  He2  He1
-  -5.5511151231e-16  He3  He1
-   5.1000870194e-16  He4  He1
+  -6.5225602697e-16  He1  He1
+  -8.3960616237e-16  He2  He1
+  -1.3877787808e-17  He3  He1
+   5.2388648974e-16  He4  He1
    1.2000000000e+01  He0  He2
-  -6.7654215563e-16  He1  He2
-   1.0200174039e-15  He2  He2
-   2.8680761469e-16  He3  He2
-  -3.6776137691e-16  He4  He2
+  -1.1726730698e-15  He1  He2
+   1.9151347175e-15  He2  He2
+  -3.5619655373e-16  He3  He2
+  -2.2320108724e-16  He4  He2
   -4.0000000000e+00  He0  He3
-  -4.4408920985e-16  He1  He3
-   2.3592239273e-16  He2  He3
-   4.6259292693e-17  He3  He3
-   1.3106799596e-17  He4  He3
+   9.2518585385e-17  He1  He3
+  -3.1918911958e-16  He2  He3
+   1.0177044392e-16  He3  He3
+   1.0331242035e-16  He4  He3
    1.0000000000e+00  He0  He4
-   5.1232166657e-16  He1  He4
-  -4.6490589156e-16  He2  He4
-   5.7824115866e-17  He3  He4
-  -1.1564823173e-18  He4  He4
+   4.3136790436e-16  He1  He4
+  -1.7462882991e-16  He2  He4
+   1.3415194881e-16  He3  He4
+  -3.6236445943e-17  He4  He4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.0000000000e+00  He0  He0
-   1.3877787808e-17  He1  He0
+  -3.4694469520e-17  He1  He0
    1.0000000000e+00  He2  He0
    0.0000000000e+00  He3  He0
-  -1.0697461435e-16  He4  He0
+  -1.6320856703e-16  He4  He0
   -5.0000000000e-01  He0  He1
   -1.3877787808e-17  He1  He1
-   1.2143064332e-17  He2  He1
-   0.0000000000e+00  He3  He1
-   3.1225022568e-17  He4  He1
-   7.5894152074e-17  He0  He2
-  -1.2143064332e-17  He1  He2
-   8.3266726847e-17  He2  He2
+  -3.4694469520e-17  He2  He1
+   1.1564823173e-18  He3  He1
+   1.0408340856e-17  He4  He1
+   2.7755575616e-17  He0  He2
+   1.2143064332e-17  He1  He2
+   5.2041704279e-17  He2  He2
    0.0000000000e+00  He3  He2
-  -8.6736173799e-18  He4  He2
-   1.0986582015e-17  He0  He3
+   2.3129646346e-18  He4  He2
+   2.7177334457e-17  He0  He3
    0.0000000000e+00  He1  He3
-   6.9388939039e-18  He2  He3
+  -2.3129646346e-18  He2  He3
    0.0000000000e+00  He3  He3
-  -2.3129646346e-18  He4  He3
-  -2.8333816774e-17  He0  He4
-   2.8912057933e-19  He1  He4
-  -2.5442610981e-17  He2  He4
+   0.0000000000e+00  He4  He3
+  -1.5612511284e-17  He0  He4
+   3.7585675313e-18  He1  He4
+  -2.8912057933e-17  He2  He4
    0.0000000000e+00  He3  He4
-   5.6860380601e-18  He4  He4
+   2.1202175817e-18  He4  He4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.0000000000e+00  He0  He0
   -5.0000000000e-01  He1  He0
-   8.8037216406e-17  He2  He0
-   8.3844968006e-18  He3  He0
-  -3.4549909230e-17  He4  He0
-  -7.2858385991e-17  He0  He1
-  -3.4694469520e-17  He1  He1
-   1.7347234760e-18  He2  He1
-   3.4694469520e-18  He3  He1
-  -8.6736173799e-19  He4  He1
+   4.8572257327e-17  He2  He0
+   1.0986582015e-17  He3  He0
+  -2.8044696195e-17  He4  He0
+   4.3801767768e-17  He0  He1
+   3.1225022568e-17  He1  He1
+  -1.7347234760e-18  He2  He1
+  -1.1564823173e-18  He3  He1
+   3.7585675313e-18  He4  He1
    1.0000000000e+00  He0  He2
-  -7.4593109467e-17  He1  He2
-   7.6327832943e-17  He2  He2
-   5.7824115866e-18  He3  He2
-  -2.6020852140e-17  He4  He2
-   1.8214596498e-17  He0  He3
-  -4.6259292693e-18  He1  He3
-  -3.4694469520e-18  He2  He3
-   0.0000000000e+00  He3  He3
-  -3.8549410577e-19  He4  He3
-  -1.1029950101e-16  He0  He4
-   3.1514143147e-17  He1  He4
-  -5.2041704279e-18  He2  He4
-  -3.4694469520e-18  He3  He4
-   5.4932910073e-18  He4  He4
+  -3.6429192996e-17  He1  He2
+   4.6837533851e-17  He2  He2
+   1.1564823173e-18  He3  He2
+  -2.5442610981e-17  He4  He2
+  -1.9660199394e-17  He0  He3
+   1.1564823173e-18  He1  He3
+   3.4694469520e-18  He2  He3
+   7.7098821155e-19  He3  He3
+   3.8549410577e-19  He4  He3
+  -1.7087026238e-16  He0  He4
+   2.6020852140e-18  He1  He4
+   2.3129646346e-18  He2  He4
+   0.0000000000e+00  He3  He4
+   2.5057116875e-18  He4  He4
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.0000000000e+01  3.6441734317e+01
@@ -65704,17 +65704,17 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       5.0000000000e-01  5.0000000000e-01 TF1ln
                       5.0000000000e-01  5.0000000000e-01 TF2ln
-                      3.0417793027e-32 TF1ln TF2ln 
+                      3.1792040403e-32 TF1ln TF2ln 
 response_fn_2 Sobol' indices:
                                   Main             Total
                       8.8888888889e-01  8.8888888889e-01 TF1ln
                       1.1111111111e-01  1.1111111111e-01 TF2ln
-                      4.7365096541e-32 TF1ln TF2ln 
+                      2.6537412481e-32 TF1ln TF2ln 
 response_fn_3 Sobol' indices:
                                   Main             Total
                       1.1111111111e-01  1.1111111111e-01 TF1ln
                       8.8888888889e-01  8.8888888889e-01 TF2ln
-                      5.0301248072e-32 TF1ln TF2ln 
+                      2.1367122772e-32 TF1ln TF2ln 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   1.3880000000e-01
@@ -65752,49 +65752,49 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -1.6000000000e+01  He1  He0
   -1.6000000000e+01  He0  He1
    1.2000000000e+01  He2  He0
-   8.5709217501e-14  He1  He1
+   3.9968028887e-14  He1  He1
    1.2000000000e+01  He0  He2
   -4.0000000000e+00  He3  He0
-  -1.5126788711e-14  He2  He1
-  -2.3092638912e-14  He1  He2
+  -1.7291723609e-14  He2  He1
+  -1.5321077740e-14  He1  He2
   -4.0000000000e+00  He0  He3
    1.0000000000e+00  He4  He0
-   2.6756374893e-14  He3  He1
-   5.4400928207e-14  He2  He2
-   1.6875389974e-14  He1  He3
+   1.2323475573e-14  He3  He1
+   2.5868196474e-14  He2  He2
+   1.2545520178e-14  He1  He3
    1.0000000000e+00  He0  He4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.0000000000e+00  He0  He0
-  -2.6367796835e-16  He1  He0
+   2.6367796835e-16  He1  He0
   -5.0000000000e-01  He0  He1
    1.0000000000e+00  He2  He0
-   3.3306690739e-15  He1  He1
-  -1.1796119637e-16  He0  He2
-  -8.8123952580e-16  He3  He0
-   1.2073675393e-15  He2  He1
-   1.5265566589e-16  He1  He2
-  -3.5388358910e-16  He0  He3
-   2.7321894747e-17  He4  He0
-   1.2836953722e-15  He3  He1
-   2.6645352591e-15  He2  He2
-   7.2858385991e-16  He1  He3
-  -4.1633363423e-16  He0  He4
+   4.7739590059e-15  He1  He1
+  -9.3675067703e-16  He0  He2
+  -1.2663481375e-15  He3  He0
+   8.6042284408e-16  He2  He1
+   1.1518563880e-15  He1  He2
+  -9.8532293435e-16  He0  He3
+   3.1398494915e-16  He4  He0
+   1.0547118734e-15  He3  He1
+   2.3453461395e-15  He2  He2
+   1.2698175844e-15  He1  He3
+  -4.4755865680e-16  He0  He4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.0000000000e+00  He0  He0
   -5.0000000000e-01  He1  He0
-  -1.6514567491e-15  He0  He1
-   1.4571677198e-16  He2  He0
-   2.4702462298e-15  He1  He1
+  -1.9359513992e-15  He0  He1
+   1.2490009027e-16  He2  He0
+   2.2204460493e-15  He1  He1
    1.0000000000e+00  He0  He2
-   3.4694469520e-18  He3  He0
-  -8.7083118494e-16  He2  He1
-  -1.4571677198e-16  He1  He2
-  -1.3739009930e-15  He0  He3
-   2.1553939189e-16  He4  He0
-  -4.8225312632e-16  He3  He1
-   2.0122792321e-16  He2  He2
-   1.0547118734e-15  He1  He3
-   7.1644079558e-16  He0  He4
+   7.1123662515e-17  He3  He0
+  -9.1072982489e-16  He2  He1
+   3.8857805862e-16  He1  He2
+  -1.0720591082e-15  He0  He3
+   1.8626593323e-16  He4  He0
+  -7.2858385991e-16  He3  He1
+   1.3183898417e-16  He2  He2
+   1.2143064332e-15  He1  He3
+   5.6898930012e-16  He0  He4
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.0000000000e+01  3.6441734317e+01
@@ -65804,17 +65804,17 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       5.0000000000e-01  5.0000000000e-01 TF1ln
                       5.0000000000e-01  5.0000000000e-01 TF2ln
-                      2.0114599131e-29 TF1ln TF2ln 
+                      5.4195216158e-30 TF1ln TF2ln 
 response_fn_2 Sobol' indices:
                                   Main             Total
                       8.8888888889e-01  8.8888888889e-01 TF1ln
                       1.1111111111e-01  1.1111111111e-01 TF2ln
-                      2.4678523920e-29 TF1ln TF2ln 
+                      2.9011823496e-29 TF1ln TF2ln 
 response_fn_3 Sobol' indices:
                                   Main             Total
                       1.1111111111e-01  1.1111111111e-01 TF1ln
                       8.8888888889e-01  8.8888888889e-01 TF2ln
-                      7.0636262609e-30 TF1ln TF2ln 
+                      8.4413322219e-30 TF1ln TF2ln 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   1.3880000000e-01
