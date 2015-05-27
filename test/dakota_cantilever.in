@@ -36,7 +36,8 @@ variables,
 	  descriptors       'R'    'E'    'X'    'Y'
 
 interface,
-	system asynchronous evaluation_concurrency = 2
+  direct
+#	system asynchronous evaluation_concurrency = 2
 	  analysis_driver = 'cantilever'
 
 responses,

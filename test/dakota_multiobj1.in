@@ -39,7 +39,7 @@ variables
     descriptors      'x1'   'x2'
 
 interface
-  fork asynchronous
+  direct
     analysis_driver=  'text_book'
 
 responses
