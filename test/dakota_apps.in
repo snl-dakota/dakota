@@ -44,6 +44,7 @@ method,
 #	max_function_evaluations 500		#s2,#s5,#s6,#s8,#s10,#s11
 #	max_function_evaluations 500		#s13,#s14,#s20,#s21,#s22
 #	max_function_evaluations 500		#p2,#p5,#p6,#p8,#p10,#p11
+
 #	max_function_evaluations 500		#p13,#p14,#p20,#p21,#p22,#p23
 #	max_function_evaluations 500		#p24,#p25,#p26,#p27,#p28,#p29
 #	constraint_tolerance	1.e-6		#s2,#s4,#s6,#s8,#s10,#s12
@@ -158,14 +159,14 @@ variables,
 		descriptors	'x1'  'x2'  'x3'
 
 interface,
-	system					#s0,#s2,#s3,#s13,#s15,#s18,#s20
+	system					#s0,#s2,#s3,#s13,#s18,#s20
 #	system					#p0,#p2,#p3,#p13,#p15,#p18
 #	system					#p20,#p22,#p24,#p26,#p28
-#	fork					#s1,#s4,#s5,#s7,#s8,#s11,#s16,#s19
+#	fork					#s1,#s4,#s7,#s8,#s11,#s19
 #	fork					#p1,#p4,#p5,#p7,#p8,
 #	fork					#p11,#p16,#p19
 #	fork					#p23,#p25,#p27,#p29
-#       direct					#s6,#s9,#s10,#s12,#s14,#s17,#s21,#s22
+#       direct					#s5,#s6,#s9,#s10,#s12,#s14,#s15,#s16,#s17,#s21,#s22
 #       direct					#p6,#p9,#p10,#p12,#p14,#p17,#p21
 		asynchronous			#s0,#s3,#s7,#s8,#s11,#s18,#s19,#s20
 #		asynchronous			#p0,#p3,#p7,#p8,#p11,#p18,#p19
@@ -175,7 +176,12 @@ interface,
 #		evaluation_concurrency 2	#p22,#p23,#p24,#p25
 #		evaluation_concurrency 2	#p26,#p27,#p28,#p29
 #		evaluation_scheduling master	#p24,#p25,#p28,#p29
-		analysis_driver = 'text_book'
+		analysis_driver = 'text_book'   #s0
+#		analysis_driver = 'text_book'   #s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,
+#		analysis_driver = 'text_book'   #s14,#s16,#s17,#s18,#s19,#s20,#s21,#s22
+#		analysis_driver = 'text_book'   #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15
+#                analysis_driver = 'text_book'   #p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24,#p25,#p26,#p27,#p28,#p29
+#		analysis_driver = 'scalable_text_book' #s5, #s15
 
 responses,
 	objective_functions = 1
@@ -197,3 +203,4 @@ responses,
 #	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 #s22
 	no_gradients
 	no_hessians
+
