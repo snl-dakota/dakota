@@ -281,7 +281,7 @@ class JEGAOptimizer :
     protected:
 
         /**
-         * \brief Loads the JEGA-style Design class into equivolent
+         * \brief Loads the JEGA-style Design class into equivalent
          *        Dakota-style Variables and Response objects.
          *
          * This version is meant for the case where a Variables and a Response

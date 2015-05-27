@@ -261,7 +261,8 @@ class JEGAOptimizer::Evaluator :
             const Design& from,
             RealVector& intoCont,
             IntVector&  intoDiscInt,
-            RealVector& intoDiscReal
+            RealVector& intoDiscReal,
+	    StringMultiArray& intoDiscString
             ) const;
 
         /**
@@ -938,15 +939,26 @@ JEGAOptimizer::LoadDakotaResponses(
     // The next set of variables represent the discrete integer variables.
     for(size_t i=0; i<this->numDiscreteIntVars; ++i)
         di_vars[i] = static_cast<int>(
-            des.GetVariableValue(i + this->numContinuousVars)
-            );
+            des.GetVariableValue(i + this->numContinuousVars));
 
     // The next set of variables represent the discrete real variables.
     for(size_t i=0; i<this->numDiscreteRealVars; ++i)
         dr_vars[i] = des.GetVariableValue(
-            i + this->numContinuousVars + this->numDiscreteIntVars
-            );
+            i + this->numContinuousVars + this->numDiscreteIntVars);
 
+    // Finally, set the discrete string vars. These are mapped to discrete
+    // integers in JEGA, so they must be unmapped. Here, they also are set in
+    // vars using the single value setter to avoid creating a 
+    // StringMultiArrayConstView
+    const StringSetArray& dssv_values = 
+      iteratedModel.discrete_design_set_string_values();
+    for(size_t i=0; i<this->numDiscreteStringVars; ++i) {
+      const int &element_index = static_cast<int>(des.GetVariableValue(i +
+	    this->numContinuousVars + this->numDiscreteIntVars +
+	    this->numDiscreteRealVars));
+      const String &ds_var = set_index_to_value(element_index, dssv_values[i]);
+      vars.discrete_string_variable(ds_var, i);
+    }
     vars.continuous_variables(c_vars);
     vars.discrete_int_variables(di_vars);
     vars.discrete_real_variables(dr_vars);
@@ -1364,7 +1376,7 @@ JEGAOptimizer::LoadTheDesignVariables(
     // In particular, the Model (iteratedModel) has most of the
     // info.  We will create a shorthand for it here to ease syntax.
     Model& m = this->iteratedModel;
-    size_t i, dsi_cntr;
+    size_t i, j, dsi_cntr;
 
     // Loop over all continuous variables and add an info object.  Don't worry
     // about the precision so much.  It is only considered by the operators
@@ -1398,7 +1410,7 @@ JEGAOptimizer::LoadTheDesignVariables(
         pConfig.AddContinuumIntegerVariable(dilabels[i], dilbs[i], diubs[i]);
     }
 
-    // Finally, load in the "discrete set of real" variables.
+    // Next, load in the "discrete set of real" variables.
     const RealSetArray& dsrv = m.discrete_set_real_values();
     StringMultiArrayConstView drlabels = m.discrete_real_variable_labels();
     for(i=0; i<this->numDiscreteRealVars; ++i)
@@ -1408,9 +1420,24 @@ JEGAOptimizer::LoadTheDesignVariables(
 	JEGA::DoubleVector(dak_set.begin(), dak_set.end()) );
     }
 
+    // Finally, load in the "discrete set of string" variables. These must
+    // be mapped to discrete integer variables.
+    StringMultiArrayConstView dslabels = m.discrete_string_variable_labels();
+    const StringSetArray& dssv_values = m.discrete_set_string_values();
+    for (i=0; i<this->numDiscreteStringVars; ++i) {
+      const size_t &num_elements = dssv_values[i].size(); //assume > 0
+      IntArray element_index(num_elements);
+      for (j=0; j<num_elements; ++j)
+	element_index[j] = j;
+      pConfig.AddDiscreteIntegerVariable(dslabels[i],
+	            JEGA::IntVector(element_index.begin(), 
+		      element_index.end()) );
+    }
+
     // Now make sure that an info was created for each variable.
     EDDY_ASSERT(pConfig.GetDesignTarget().GetNDV() == (this->numContinuousVars +
-		this->numDiscreteIntVars + this->numDiscreteRealVars));
+		this->numDiscreteIntVars + this->numDiscreteRealVars + 
+		this->numDiscreteStringVars));
 }
 
 void
@@ -1879,20 +1906,26 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     const Design& from,
     RealVector& intoCont,
     IntVector&  intoDiscInt,
-    RealVector& intoDiscReal
+    RealVector& intoDiscReal,
+    StringMultiArray& intoDiscString
     ) const
 {
     EDDY_FUNC_DEBUGSCOPE
 
     size_t num_cv  = this->_model.cv(), num_div = this->_model.div(),
-           num_drv = this->_model.drv();
+           num_drv = this->_model.drv(), num_dsv = this->_model.dsv();
 
-    // "into" vectors may not yet be sized. If not, size them.  If they are,
+    // "into" containers may not yet be sized. If not, size them.  If they are,
     // don't size them b/c it will be a lot of wasted effort.
     if(intoCont.length()     != num_cv)  intoCont.size(num_cv);
     if(intoDiscInt.length()  != num_div) intoDiscInt.size(num_div);
     if(intoDiscReal.length() != num_drv) intoDiscReal.size(num_drv);
-
+    // Strings are multi_arrays, not vectors
+    if(intoDiscString.num_elements() != num_dsv) {
+      StringMultiArray::extent_gen extents;
+      intoDiscString.resize(extents[num_dsv]);
+    }
+    
     // Because we cannot easily distinguish real from integral variables
     // (true of both continuum and discrete), we will rely on the fact that
     // the infos are stored in the order in which we added them which is the
@@ -1924,12 +1957,22 @@ JEGAOptimizer::Evaluator::SeparateVariables(
       intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
     }
 
-    // Finally, process the "discrete set of real" variables.
+    // Next process the "discrete set of real" variables.
     // These will also be discrete nature in JEGA.
     for(i=0; i<num_drv; ++i, ++dvi_cntr)
     {
       EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
       intoDiscReal[i] = dvis[dvi_cntr]->WhichValue(from);
+    }
+    // Finally, process the "discrete set of string" variables.
+    // These will also be discrete in JEGA, and must be mapped
+    // back to their associated string values.
+    const StringSetArray& dssv_values = _model.discrete_set_string_values();
+    for(i=0; i<num_dsv; ++i, ++dvi_cntr)
+    {
+      EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
+      const int &element_index = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
+      intoDiscString[i] = set_index_to_value(element_index, dssv_values[i]);
     }
 }
 
@@ -1986,10 +2029,11 @@ JEGAOptimizer::Evaluator::Evaluate(
     // first, let's see if we can avoid any evaluations.
     ResolveClones(group);
 
-    // we'll prepare Vectors for repeated use without re-construction
-    RealVector contVars;
-    IntVector  discIntVars;
-    RealVector discRealVars;
+    // we'll prepare containers for repeated use without re-construction
+    RealVector       contVars;
+    IntVector        discIntVars;
+    RealVector       discRealVars;
+    StringMultiArray discStringVars;
 
     // prepare to iterate over the group
     DesignDVSortSet::const_iterator it(group.BeginDV());
@@ -2041,7 +2085,8 @@ JEGAOptimizer::Evaluator::Evaluate(
 
         // extract the real and continuous variables
         // from the current Design
-        this->SeparateVariables(**it, contVars, discIntVars, discRealVars);
+        this->SeparateVariables(**it, contVars, discIntVars, discRealVars,
+	    discStringVars);
 
         // send this guy out for evaluation using the _model.
 
@@ -2049,7 +2094,18 @@ JEGAOptimizer::Evaluator::Evaluate(
         this->_model.continuous_variables(contVars);
         this->_model.discrete_int_variables(discIntVars);
         this->_model.discrete_real_variables(discRealVars);
-
+	// Strings set by calling single value setter for each
+	for (size_t i=0; i<discStringVars.num_elements(); ++i)
+	  this->_model.discrete_string_variable(discStringVars[i],i);
+	// Could use discrete_string_varables to avoid overhead of repeated 
+	// function calls, but it takes a StringMultiArrayConstView, which
+	// must be created from discStringVars. Maybe there's a simpler way,
+	// but...
+	// const size_t &dsv_len = discStringVars.num_elements();
+	// StringMultiArrayConstView dsv_view = discStringVars[ 
+	//   boost::indices[idx_range(0,dsv_len)]];
+        // this->_model.discrete_string_variables(dsv_view);
+	
         // now request the evaluation in synchronous or asyncronous mode.
         if(this->_model.asynch_flag())
         {
