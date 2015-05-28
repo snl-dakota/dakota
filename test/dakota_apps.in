@@ -159,29 +159,29 @@ variables,
 		descriptors	'x1'  'x2'  'x3'
 
 interface,
-	system					#s0,#s2,#s3,#s13,#s18,#s20
-#	system					#p0,#p2,#p3,#p13,#p15,#p18
-#	system					#p20,#p22,#p24,#p26,#p28
-#	fork					#s1,#s4,#s7,#s8,#s11,#s19
-#	fork					#p1,#p4,#p5,#p7,#p8,
-#	fork					#p11,#p16,#p19
+	system					#s0,#s2,#s3,#s13,#s18
+#	system					#p0,#p2,#p3,#p13,#p18
+#	system					#p22,#p24,#p26,#p28
+#	fork					#s1,#s4,#s7,#s8
+#	fork					#p1,#p4,#p7,#p8,
 #	fork					#p23,#p25,#p27,#p29
-#       direct					#s5,#s6,#s9,#s10,#s12,#s14,#s15,#s16,#s17,#s21,#s22
-#       direct					#p6,#p9,#p10,#p12,#p14,#p17,#p21
-		asynchronous			#s0,#s3,#s7,#s8,#s11,#s18,#s19,#s20
+#       direct					#s5,#s6,#s9,#s10,#s11,#s12,#s14,#s15,#s16,#s17,#s19,#s20,#s21,#s22
+#       direct					#p5,#p6,#p9,#p10,#p11,#p12,#p14,#p15,#p16,#p17,#p19,#p20,#p21
+		asynchronous			#s0,#s3,#s7,#s8,#s18
 #		asynchronous			#p0,#p3,#p7,#p8,#p11,#p18,#p19
 #		asynchronous			#p20,#p22,#p23,#p24,#p25,#p26
 #		asynchronous			#p27,#p28,#p29
-#		evaluation_concurrency 10	#s3,#s8,#s18,#s19
+#		evaluation_concurrency 10	#s3,#s8,#s18
 #		evaluation_concurrency 2	#p22,#p23,#p24,#p25
 #		evaluation_concurrency 2	#p26,#p27,#p28,#p29
-#		evaluation_scheduling master	#p24,#p25,#p28,#p29
-		analysis_driver = 'text_book'   #s0
+#		evaluation_scheduling master	#p5,#p24,#p25,#p28,#p29
+		analysis_driver = 'text_book'   #s0,#p0
 #		analysis_driver = 'text_book'   #s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,
 #		analysis_driver = 'text_book'   #s14,#s16,#s17,#s18,#s19,#s20,#s21,#s22
-#		analysis_driver = 'text_book'   #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15
+#		analysis_driver = 'text_book'   #p1,#p2,#p3,#p4,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14
 #                analysis_driver = 'text_book'   #p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24,#p25,#p26,#p27,#p28,#p29
 #		analysis_driver = 'scalable_text_book' #s5, #s15
+#		analysis_driver = 'scalable_text_book' #p5, #p15
 
 responses,
 	objective_functions = 1
