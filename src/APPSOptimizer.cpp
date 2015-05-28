@@ -64,12 +64,47 @@ void APPSOptimizer::find_optimum()
   // Retrieve best iterate and convert from HOPS vector to DAKOTA
   // vector.
 
-  std::vector<double> bestX(numContinuousVars);
+  std::vector<double> bestX(numTotalVars);
   bool state = optimizer.getBestX(bestX);
-  RealVector variableHolder(numContinuousVars, false);
-  for (int i=0; i<numContinuousVars; i++)
-    variableHolder[i] = bestX[i];
-  bestVariablesArray.front().continuous_variables(variableHolder);
+
+  RealVector contVars(numContinuousVars);
+  IntVector  discIntVars(numDiscreteIntVars);
+  RealVector discRealVars(numDiscreteRealVars);
+
+  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
+  const IntSetArray& set_int_vars = iteratedModel.discrete_set_int_values();
+  const RealSetArray& set_real_vars = iteratedModel.discrete_set_real_values();
+  const StringSetArray& set_string_vars = iteratedModel.discrete_set_string_values();
+
+  size_t i, dsi_cntr;
+
+  for(i=0; i<numContinuousVars; i++)
+    contVars[i] = bestX[i];
+  bestVariablesArray.front().continuous_variables(contVars);
+
+  for(i=0, dsi_cntr=0; i<numDiscreteIntVars; i++)
+  { 
+    // This active discrete int var is a set type
+    // Map from index back to value.
+    if (int_set_bits[i]) {
+      discIntVars[i] = 
+	set_index_to_value(bestX[i+numContinuousVars], set_int_vars[dsi_cntr]);
+      ++dsi_cntr;
+    }
+    // This active discrete int var is a range type
+    else
+      discIntVars[i] = bestX[i+numContinuousVars];
+  }
+
+  // For real sets and strings, map from index back to value.
+  bestVariablesArray.front().discrete_int_variables(discIntVars);
+  for (i=0; i<numDiscreteRealVars; i++)
+    discRealVars = 
+      set_index_to_value(bestX[i+numContinuousVars+numDiscreteIntVars], set_real_vars[i]);
+  bestVariablesArray.front().discrete_real_variables(discRealVars);
+
+  for (i=0; i<numDiscreteStringVars; i++)
+    bestVariablesArray.front().discrete_string_variable(set_index_to_value(bestX[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars], set_string_vars[i]), i);
 
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
@@ -85,14 +120,14 @@ void APPSOptimizer::find_optimum()
       -optimizer.getBestF() : optimizer.getBestF();
     if (numNonlinearEqConstraints > 0) {
       optimizer.getBestNonlEqs(bestEqs);
-      for (int i=0; i<numNonlinearEqConstraints; i++)
+      for (i=0; i<numNonlinearEqConstraints; i++)
 	best_fns[constraintMapIndices[i]+1] = (bestEqs[i] -
 					       constraintMapOffsets[i]) /
 	                                       constraintMapMultipliers[i];
     }
     if (numNonlinearIneqConstraints > 0) {
       optimizer.getBestNonlIneqs(bestIneqs);
-      for (int i=0; i<bestIneqs.size(); i++)
+      for (i=0; i<bestIneqs.size(); i++)
 	best_fns[constraintMapIndices[i+numNonlinearEqConstraints]+1] = (bestIneqs[i] -
 				       constraintMapOffsets[i+numNonlinearEqConstraints]) /
                                        constraintMapMultipliers[i+numNonlinearEqConstraints];
@@ -313,38 +348,138 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // in order to capture any reassignment at the strategy layer (after
   // iterator construction).  
 
-  HOPSPACK::Vector init_point(numContinuousVars), tmp_vector(numContinuousVars);
-  HOPSPACK::Vector lower(numContinuousVars), upper(numContinuousVars);
+  numTotalVars = numContinuousVars + numDiscreteIntVars 
+             + numDiscreteRealVars + numDiscreteStringVars;
+
+  HOPSPACK::Vector init_point(numTotalVars), tmp_vector(numTotalVars);
+  HOPSPACK::Vector lower(numTotalVars), upper(numTotalVars);
   HOPSPACK::Vector lin_ineq_lower_bnds(numLinearIneqConstraints);
   HOPSPACK::Vector lin_ineq_upper_bnds(numLinearIneqConstraints);
   HOPSPACK::Vector lin_eq_targets(numLinearEqConstraints);
   HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
-  const RealVector& init_pt
+  const RealVector& init_pt_cont
     = iteratedModel.continuous_variables();
-  const RealVector& lower_bnds
+  const RealVector& lower_bnds_cont
     = iteratedModel.continuous_lower_bounds();
-  const RealVector& upper_bnds
+  const RealVector& upper_bnds_cont
     = iteratedModel.continuous_upper_bounds();
+
+  const IntVector& init_pt_int = iteratedModel.discrete_int_variables();
+  const IntVector& lower_bnds_int = iteratedModel.discrete_int_lower_bounds();
+  const IntVector& upper_bnds_int = iteratedModel.discrete_int_upper_bounds();
+
+  const RealVector& init_pt_real = iteratedModel.discrete_real_variables();
+  const RealVector& lower_bnds_real = iteratedModel.discrete_real_lower_bounds();
+  const RealVector& upper_bnds_real = iteratedModel.discrete_real_upper_bounds();
+
+  const StringMultiArrayConstView init_pt_string = 
+    iteratedModel.discrete_string_variables();
+
+  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
+  const IntSetArray& init_pt_set_int = 
+    iteratedModel.discrete_set_int_values();
+  const RealSetArray& init_pt_set_real = 
+    iteratedModel.discrete_set_real_values();
+  const StringSetArray& init_pt_set_string = 
+    iteratedModel.discrete_set_string_values();
+
+  vector<char> variable_types;
   bool setScales = false;
 
-  for (int i=0; i<numContinuousVars; i++) {
-    init_point[i] = init_pt[i];
-    if (lower_bnds[i] > -bigRealBoundSize)
-      lower[i] = lower_bnds[i];
+  size_t i, index, dsi_cntr;
+
+  for (i=0; i<numContinuousVars; i++) {
+    init_point[i] = init_pt_cont[i];
+    variable_types.push_back('C');
+    if (lower_bnds_cont[i] > -bigRealBoundSize)
+      lower[i] = lower_bnds_cont[i];
     else {
       lower[i] = HOPSPACK::dne();
       setScales = true;
     }
-    if (upper_bnds[i] < bigRealBoundSize)
-      upper[i] = upper_bnds[i];
+    if (upper_bnds_cont[i] < bigRealBoundSize)
+      upper[i] = upper_bnds_cont[i];
     else {
       upper[i] = HOPSPACK::dne();
       setScales = true;
     }
   }
+  for(i=0, dsi_cntr=0; i<numDiscreteIntVars; i++)
+  {
+    if (int_set_bits[i]) {
+      index = set_value_to_index(init_pt_int[i], 
+				 init_pt_set_int[dsi_cntr]);
+      if (index == _NPOS) {
+	Cerr << "\nError: failure in discrete integer set lookup within "
+	     << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+	abort_handler(-1);
+      }
+      else {
+	init_point[i+numContinuousVars] = (int)index;
+	variable_types.push_back('O');
+      }
+      lower[i+numContinuousVars] = 0;
+      upper[i+numContinuousVars] = 
+	init_pt_set_int[dsi_cntr].size() - 1;
+      ++dsi_cntr;
+    }
+    else 
+    {
+      init_point[i+numContinuousVars] = init_pt_int[i];
+      variable_types.push_back('I');
+      if (lower_bnds_int[i] > -bigIntBoundSize)
+	lower[i+numContinuousVars] = lower_bnds_int[i];
+      else
+      {
+	lower[i] = HOPSPACK::dne();
+	setScales = true;
+      }
+      if (upper_bnds_int[i] < bigIntBoundSize)
+	upper[i+numContinuousVars] = upper_bnds_int[i];
+      else
+      {
+	upper[i] = HOPSPACK::dne();
+	setScales = true;
+      }
+    }
+  }
+  for (i=0; i<numDiscreteRealVars; i++) {
+    index = set_value_to_index(init_pt_real[i], 
+			       init_pt_set_real[i]);
+    if (index == _NPOS) {
+      Cerr << "\nError: failure in discrete real set lookup within "
+	   << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+      abort_handler(-1);
+    }
+    else {
+      init_point[i+numContinuousVars+numDiscreteIntVars] = (int)index;
+      variable_types.push_back('O');
+    }
+    lower[i+numContinuousVars+numDiscreteIntVars] = 0;
+    upper[i+numContinuousVars+numDiscreteIntVars] = 
+	init_pt_set_real[i].size() - 1;
+  }
+  for (i=0; i<numDiscreteStringVars; i++) {
+    index = set_value_to_index(init_pt_string[i], 
+			       init_pt_set_string[i]);
+    if (index == _NPOS) {
+      Cerr << "\nError: failure in discrete string set lookup within "
+	   << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+      abort_handler(-1);
+    }
+    else {
+      init_point[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] =
+	(int)index;
+      variable_types.push_back('O');
+    }
+    lower[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] = 0;
+    upper[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] = 
+	init_pt_set_real[i].size() - 1;
+  }
 
   problemParams->setParameter("Number Unknowns", (int) numContinuousVars);
+  problemParams->setParameter("Variable Types", variable_types);
   problemParams->setParameter("Initial X", init_point);
   problemParams->setParameter("Lower Bounds", lower);
   problemParams->setParameter("Upper Bounds", upper);

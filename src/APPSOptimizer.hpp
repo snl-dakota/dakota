@@ -86,6 +86,9 @@ protected:
   //- Heading: Private data
   //
 
+  /// Total across all types of variables
+  int numTotalVars;
+
   /// Pointer to APPS parameter list
   HOPSPACK::ParameterList  params;
 
