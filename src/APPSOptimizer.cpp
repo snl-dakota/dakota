@@ -417,7 +417,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
       }
       else {
 	init_point[i+numContinuousVars] = (int)index;
-	variable_types.push_back('O');
+	variable_types.push_back('C');
       }
       lower[i+numContinuousVars] = 0;
       upper[i+numContinuousVars] = 
@@ -427,7 +427,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
     else 
     {
       init_point[i+numContinuousVars] = init_pt_int[i];
-      variable_types.push_back('I');
+      variable_types.push_back('C');
       if (lower_bnds_int[i] > -bigIntBoundSize)
 	lower[i+numContinuousVars] = lower_bnds_int[i];
       else
@@ -454,7 +454,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
     }
     else {
       init_point[i+numContinuousVars+numDiscreteIntVars] = (int)index;
-      variable_types.push_back('O');
+      variable_types.push_back('C');
     }
     lower[i+numContinuousVars+numDiscreteIntVars] = 0;
     upper[i+numContinuousVars+numDiscreteIntVars] = 
@@ -471,14 +471,14 @@ void APPSOptimizer::initialize_variables_and_constraints()
     else {
       init_point[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] =
 	(int)index;
-      variable_types.push_back('O');
+      variable_types.push_back('C');
     }
     lower[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] = 0;
     upper[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] = 
-	init_pt_set_real[i].size() - 1;
+	init_pt_set_string[i].size() - 1;
   }
 
-  problemParams->setParameter("Number Unknowns", (int) numContinuousVars);
+  problemParams->setParameter("Number Unknowns", (int) numTotalVars);
   problemParams->setParameter("Variable Types", variable_types);
   problemParams->setParameter("Initial X", init_point);
   problemParams->setParameter("Lower Bounds", lower);
