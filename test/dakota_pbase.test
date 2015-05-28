@@ -2532,6 +2532,7 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 25
+Using test option MPIProcs = 2
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 287 total (287 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2543,17 +2544,19 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -2.0019531250e-01
 <<<<< Best data captured at function evaluation 215
+Using test option MPIProcs = 2
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
                       1.0000000000e+00 x3
 <<<<< Best objective function  =
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 29
+<<<<< Best data captured at function evaluation 23
+Using test option MPIProcs = 2
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Function evaluation summary: 98 total (98 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.2271967622e-01 x1
                       1.1761084488e+00 x2
@@ -2562,9 +2565,10 @@ Test Number 3 succeeded
                       1.3318448984e-01
 <<<<< Best constraint values   =
                      -2.0027442923e-01
-<<<<< Best data captured at function evaluation 63
+<<<<< Best data captured at function evaluation 74
+Using test option MPIProcs = 2
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 402 total (402 new, 0 duplicate)
+<<<<< Function evaluation summary: 383 total (383 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -2575,9 +2579,10 @@ Test Number 4 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 23
+<<<<< Best data captured at function evaluation 24
+Using test option MPIProcs = 2
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
+<<<<< Function evaluation summary: 191 total (191 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.1091092410e+00 x1
                       1.0783907590e+00 x2
@@ -2588,7 +2593,8 @@ Test Number 5 succeeded
                       6.9092792906e-01
                       6.0837200851e-01
                       4.9475855980e-01
-<<<<< Best data captured at function evaluation 21
+<<<<< Best data captured at function evaluation 17
+Using test option MPIProcs = 2
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 198 total (198 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2600,18 +2606,20 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                      -2.0092773438e-01
 <<<<< Best data captured at function evaluation 143
+Using test option MPIProcs = 2
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 80 total (80 new, 0 duplicate)
+<<<<< Function evaluation summary: 439 total (439 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      5.0000000000e-01 x2
+                      4.9882812500e-01 x1
+                      4.9843750000e-01 x2
                       1.0000000000e+00 x3
 <<<<< Best objective function  =
-                      1.2500000000e-01
+                      1.2637292040e-01
 <<<<< Best constraint values   =
-                     -0.0000000000e+00
-                     -0.0000000000e+00
-<<<<< Best data captured at function evaluation 21
+                     -3.8925170898e-04
+                     -9.7412109375e-04
+<<<<< Best data captured at function evaluation 370
+Using test option MPIProcs = 2
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2621,26 +2629,29 @@ Test Number 8 succeeded
 <<<<< Best objective function  =
                       1.6857017976e-06
 <<<<< Best data captured at function evaluation 38
+Using test option MPIProcs = 3
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 73 total (73 new, 0 duplicate)
+<<<<< Function evaluation summary: 99 total (99 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.8524375893e-01 x1
-                      1.0856546786e+00 x2
-                      1.7438578036e+00 x3
+                      3.6070719918e-01 x1
+                      6.6019123832e-01 x2
+                      2.6183943633e+00 x3
 <<<<< Best objective function  =
-                      3.3581357739e-01
+                      7.0405754471e+00
 <<<<< Best constraint values   =
-                     -2.0031708191e-01
-<<<<< Best data captured at function evaluation 49
+                     -1.9998593562e-01
+<<<<< Best data captured at function evaluation 73
+Using test option MPIProcs = 3
 Test Number 10 succeeded
-<<<<< Function evaluation summary: 95 total (95 new, 0 duplicate)
+<<<<< Function evaluation summary: 96 total (96 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
                       1.0000000000e+00 x3
 <<<<< Best objective function  =
                       0.0000000000e+00
-<<<<< Best data captured at function evaluation 17
+<<<<< Best data captured at function evaluation 20
+Using test option MPIProcs = 2
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 144 total (144 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2652,6 +2663,7 @@ Test Number 11 succeeded
 <<<<< Best constraint values   =
                      -2.0045627808e-01
 <<<<< Best data captured at function evaluation 102
+Using test option MPIProcs = 2
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2661,6 +2673,7 @@ Test Number 12 succeeded
 <<<<< Best objective function  =
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 34
+Using test option MPIProcs = 2
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 244 total (244 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2673,6 +2686,7 @@ Test Number 13 succeeded
                       1.0945025633e-03
                       1.0631667211e-03
 <<<<< Best data captured at function evaluation 241
+Using test option MPIProcs = 2
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2685,6 +2699,7 @@ Test Number 14 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 31
+Using test option MPIProcs = 2
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 71 total (71 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2698,6 +2713,7 @@ Test Number 15 succeeded
                       6.7674799344e-01
                       4.5177319986e-01
 <<<<< Best data captured at function evaluation 51
+Using test option MPIProcs = 2
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 206 total (206 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2707,6 +2723,7 @@ Test Number 16 succeeded
 <<<<< Best objective function  =
                       8.7648399372e-09
 <<<<< Best data captured at function evaluation 206
+Using test option MPIProcs = 2
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 224 total (224 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2719,6 +2736,7 @@ Test Number 17 succeeded
                      -3.5149085931e-04
                      -1.7872543449e-03
 <<<<< Best data captured at function evaluation 177
+Using test option MPIProcs = 2
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 250 total (250 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2732,6 +2750,7 @@ Test Number 18 succeeded
                       6.0837200851e-01
                       4.9475855980e-01
 <<<<< Best data captured at function evaluation 26
+Using test option MPIProcs = 2
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2744,6 +2763,7 @@ Test Number 19 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 35
+Using test option MPIProcs = 2
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 61 total (61 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2756,8 +2776,9 @@ Test Number 20 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 33
+Using test option MPIProcs = 3
 Test Number 21 succeeded
-<<<<< Function evaluation summary: 332 total (332 new, 0 duplicate)
+<<<<< Function evaluation summary: 320 total (320 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0439146078e-01 x1
                       5.0498353922e-01 x2
@@ -2767,7 +2788,8 @@ Test Number 21 succeeded
 <<<<< Best constraint values   =
                       1.9189761028e-03
                       2.8126444882e-03
-<<<<< Best data captured at function evaluation 293
+<<<<< Best data captured at function evaluation 281
+Using test option MPIProcs = 2
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2780,6 +2802,7 @@ Test Number 22 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 33
+Using test option MPIProcs = 2
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2792,6 +2815,7 @@ Test Number 23 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 33
+Using test option MPIProcs = 3
 Test Number 24 succeeded
 <<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2804,6 +2828,7 @@ Test Number 24 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 33
+Using test option MPIProcs = 3
 Test Number 25 succeeded
 <<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2816,8 +2841,9 @@ Test Number 25 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 33
+Using test option MPIProcs = 2
 Test Number 26 succeeded
-<<<<< Function evaluation summary: 468 total (468 new, 0 duplicate)
+<<<<< Function evaluation summary: 461 total (461 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -2828,8 +2854,9 @@ Test Number 26 succeeded
                      -0.0000000000e+00
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 25
+Using test option MPIProcs = 2
 Test Number 27 succeeded
-<<<<< Function evaluation summary: 499 total (499 new, 0 duplicate)
+<<<<< Function evaluation summary: 449 total (449 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -2839,9 +2866,10 @@ Test Number 27 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best data captured at function evaluation 27
+<<<<< Best data captured at function evaluation 28
+Using test option MPIProcs = 3
 Test Number 28 succeeded
-<<<<< Function evaluation summary: 476 total (476 new, 0 duplicate)
+<<<<< Function evaluation summary: 442 total (442 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -2851,9 +2879,10 @@ Test Number 28 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best data captured at function evaluation 34
+<<<<< Best data captured at function evaluation 29
+Using test option MPIProcs = 3
 Test Number 29 succeeded
-<<<<< Function evaluation summary: 448 total (448 new, 0 duplicate)
+<<<<< Function evaluation summary: 444 total (444 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -2863,7 +2892,7 @@ Test Number 29 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best data captured at function evaluation 33
+<<<<< Best data captured at function evaluation 28
 dakota_cantilever_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
