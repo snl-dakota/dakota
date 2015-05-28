@@ -2928,7 +2928,7 @@ Test Number 6 succeeded
                      -2.0092773438e-01
 <<<<< Best data captured at function evaluation 143
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Function evaluation summary: 648 total (648 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -2938,7 +2938,7 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                      -0.0000000000e+00
                      -0.0000000000e+00
-<<<<< Best data captured at function evaluation 28
+<<<<< Best data captured at function evaluation 25
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
 <<<<< Best parameters          =
