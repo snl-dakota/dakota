@@ -244,6 +244,7 @@ private:
         double*** _sample_basis;  // centers of rbs for a given cell
         
         double _max_vsize;     // size of biggest Voronoi cell
+        double _disc_min_jump; // minimum jump for discontinuity detection
         double _disc_min_grad; // minimum gradient for discontinuity detection
         
         double _f_min, _f_max; //minimum and maximum function values;

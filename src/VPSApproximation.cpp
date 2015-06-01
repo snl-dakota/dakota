@@ -38,6 +38,7 @@ namespace Dakota
     VPSApproximation::VPSApproximation(const ProblemDescDB& problem_db,
                                        const SharedApproxData& shared_data):
                                        Approximation(BaseConstructor(), problem_db, shared_data),
+                                       _disc_min_jump(problem_db.get_real("model.surrogate.discont_jump_thresh")),
                                        _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_thresh"))
     {
 
@@ -73,8 +74,6 @@ namespace Dakota
         if (_use_derivatives) std::cout << "*** VPS:: Use derivatives!!" << std::endl;
         else                  std::cout << "*** VPS:: Do not use derivatives!!" << std::endl;
 
-        
-
     }
     
     /// Alternate constructor (to call VPS from another method like POF-darts)
@@ -88,7 +87,8 @@ namespace Dakota
         
         std::cout << "*** VPS:: Initializing, Surrogate order = " << surrogateOrder << std::endl;
         
-        _disc_min_grad = DBL_MAX;
+        //_disc_min_jump = DBL_MAX;
+        //_disc_min_grad = DBL_MAX;
         
     }
     
@@ -249,16 +249,27 @@ namespace Dakota
             std::cout << "*** VPS:: GP subsurrogates are initiated" << std::endl;
         }
         
+        // ---------------------------
+        if (_disc_min_jump < 1E-10)
+        {
+            _disc_min_jump = DBL_MAX;
+            std::cout << "*** VPS: No discontinuity detection information based on function values!" << std::endl;
+        }
+        else
+        {
+            std::cout << "*** VPS: Discontinuity jump threshold = " << _disc_min_jump << std::endl;
+        }
+        // ---------------------------
         if (_disc_min_grad < 1E-10)
         {
             _disc_min_grad = DBL_MAX;
-            std::cout << "*** VPS: Discontinuity detection is disabled!" << std::endl;
+            std::cout << "*** VPS: No discontinuity detection information based on gradient!" << std::endl;
         }
         else
         {
             std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
         }
-
+        // ---------------------------
         
         std::cout<< "VPS::    Transfering data to surrogate ... " << std::endl;
         
@@ -639,9 +650,11 @@ namespace Dakota
                 h += dx * dx;
             }
             h = sqrt(h);
+            
+            double jump = fabs(_fval[ipoint] - _fval[ineighbor]);
             double grad = fabs(_fval[ipoint] - _fval[ineighbor]) / h;
             
-            if (grad > _disc_min_grad) continue; // gradient of two point exceeds threshold
+            if ((jump > _disc_min_jump) || (grad > _disc_min_grad)) continue; // gradient of two point exceeds threshold
             
             // a hit
             num_misses = 0;
