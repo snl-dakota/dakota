@@ -41,32 +41,39 @@ namespace Dakota
                                        _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_thresh"))
     {
 
-      const String& surrogate_type = problem_db.get_string("model.surrogate.type");
-      if (surrogate_type != "global_kriging" && surrogate_type != "global_polynomial" &&
-	  surrogate_type != "global_radial_basis") {
-	Cerr << "\nError: Piecewise decomp not available for " << surrogate_type 
-	     << " surrogate; consider GP, RBF, or polynomial" << std::endl;
-	abort_handler(-1);
-      }
+        const String& surrogate_type = problem_db.get_string("model.surrogate.type");
+      
+        if (surrogate_type != "global_kriging" && surrogate_type != "global_polynomial" &&
+	        surrogate_type != "global_radial_basis")
+        {
+            Cerr << "\nError: Piecewise decomp not available for " << surrogate_type
+                 << " surrogate; consider polynomial regression, GP, or RBF" << std::endl;
+            abort_handler(-1);
+        }
 
         std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
         std::cout << "*** VPS:: Initializing, Surrogate type " << surrogate_type << std::endl;
-    
-        //*** Test function for debugging only
-        _vps_test_function = SmoothHerbie;
         
         // Default subsurrogate is LS_polynomial
         _vps_subsurrogate = LS;
         _vps_subsurrogate_basis = polynomial;
         
         // switch to GP or radial basis functions if requested
-	if (surrogate_type == "global_kriging") _vps_subsurrogate = GP;
+        if (surrogate_type == "global_kriging") _vps_subsurrogate = GP;
         else if (surrogate_type == "global_radial_basis") _vps_subsurrogate_basis = radial;
 
-	if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == polynomial) {
-	  surrogateOrder = problem_db.get_short("model.surrogate.polynomial_order");
-	}
+	
+        if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == polynomial)
+        {
+            surrogateOrder = problem_db.get_short("model.surrogate.polynomial_order");
+        }
+        
+        _use_derivatives = problem_db.get_bool("model.surrogate.derivative_usage");
+        
+        if (_use_derivatives) std::cout << "*** VPS:: Use derivatives!!" << std::endl;
+        else                  std::cout << "*** VPS:: Do not use derivatives!!" << std::endl;
 
+        
 
     }
     
@@ -79,7 +86,7 @@ namespace Dakota
         
         surrogateOrder = dat->approxOrder;
         
-        std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+        std::cout << "*** VPS:: Initializing, Surrogate order = " << surrogateOrder << std::endl;
         
         _disc_min_grad = DBL_MAX;
         
@@ -98,6 +105,14 @@ namespace Dakota
     
     bool VPSApproximation::VPS_execute()
     {
+        
+        //*** Test function for debugging only
+        _vps_test_function = SmoothHerbie;
+        
+        #ifdef DEBUG_TEST_FUNCTION
+        std::cout<< "*** VPS::Debug Mode ***" << std::endl;
+        #endif
+        
         initiate_random_number_generator(1234567890);
         
         clock_t start_time, end_time; double cpu_time, total_time(0.0);
@@ -203,7 +218,7 @@ namespace Dakota
         
         std::cout << "VPS::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
         
-        #ifdef DEBUG_TEST_FUNCTION
+        //#ifdef DEBUG_TEST_FUNCTION
         std::vector<double> contours;
         contours.push_back(_f_min - 2 * (_f_max - _f_min));
         size_t num_contours(20);
@@ -212,7 +227,9 @@ namespace Dakota
         isocontouring_solid("vps_surrogate.ps", false, true, contours);
         isocontouring_solid("vps_test_function.ps", true, false, contours);
         plot_neighbors();
-        #endif
+        //#endif
+        
+        
         
         return true;
     }
@@ -223,7 +240,7 @@ namespace Dakota
         if (_vps_subsurrogate == LS)
         {
             if( _vps_subsurrogate_basis == polynomial)
-                std::cout << "*** VPS:: LS_polynomials subsurrogates are initiated " << surrogateOrder << std::endl;
+                std::cout << "*** VPS:: LS_polynomials subsurrogates are initiated with order = " << surrogateOrder << std::endl;
             else
                 std::cout << "*** VPS:: LS_RBF subsurrogates are initiated!" << std::endl;
         }
@@ -337,7 +354,61 @@ namespace Dakota
             if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
             if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
         }
+        
+        // Retrieve function gradients: If first point has gradients, I am assuming all points have
+        if (_use_derivatives && approxData.response_active_bits(0) & 2)
+        {
+            _use_gradient = true;
+            _fgrad = new double*[_num_inserted_points];
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            {
+                double* fn_grad = grad_f_test(_sample_points[ipoint]);
+                _fgrad[ipoint] = new double[_n_dim];
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    _fgrad[ipoint][idim] = fn_grad[idim];
+                }
+                delete[] fn_grad;
+            }
+            std::cout<< "*** VPS:: has gradient!!!! " << std::endl;
+        }
+        else
+        {
+            _use_gradient = false;
+            std::cout<< "*** VPS:: has NO gradient!!!! " << std::endl;
+        }
+        
+        // Retrieve function hessians: If first point has gradients, I am assuming all points have
+        if (_use_derivatives && approxData.response_active_bits(0) & 4)
+        {
+            _use_hessian = true;
+            _fhess = new double**[_num_inserted_points];
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            {
+                double** fn_hessian = hessian_f_test(_sample_points[ipoint]);
+                _fhess[ipoint] = new double*[_n_dim];
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    _fhess[ipoint][idim] = new double[_n_dim];
+                    for (size_t jdim = 0; jdim < _n_dim; jdim++)
+                    {
+                        _fhess[ipoint][idim][jdim] = fn_hessian[idim][jdim];
+                    }
+                    delete[] fn_hessian[idim];
+                }
+                delete[] fn_hessian;
+            }
+            std::cout<< "*** VPS:: has hessian!!!! " << std::endl;
+        }
+        else
+        {
+            _use_hessian = false;
+            std::cout<< "*** VPS:: has NO hessian!!!! " << std::endl;
+        }
+
         #else
+        
+        // Retrieve function values
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
             const RealVector& c_vars = approxData.continuous_variables(ipoint);
@@ -360,6 +431,54 @@ namespace Dakota
             
             if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
             if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
+        }
+        
+        // Retrieve function gradients: If first point has gradient, I am assuming all points have gradients
+        if (_use_derivatives && approxData.response_active_bits(0) & 2)
+        {
+            _use_gradient = true;
+            _fgrad = new double*[_num_inserted_points];
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            {
+                RealVector fn_grad = approxData.response_gradient(ipoint);
+                _fgrad[ipoint] = new double[_n_dim];
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    _fgrad[ipoint][idim] = fn_grad[idim];
+                }
+            }
+            std::cout<< "*** VPS:: has gradient!!!! " << std::endl;
+        }
+        else
+        {
+            _use_gradient = false;
+            std::cout<< "*** VPS:: has NO gradient!!!! " << std::endl;
+        }
+        
+        // Retrieve function hessians: If first point has hessian, I am assuming all points have hessians
+        if (_use_derivatives && approxData.response_active_bits(0) & 4)
+        {
+            _use_hessian = true;
+            _fhess = new double**[_num_inserted_points];
+            for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+            {
+                RealSymMatrix fn_hessian = approxData.response_hessian(ipoint);
+                _fhess[ipoint] = new double*[_n_dim];
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    _fhess[ipoint][idim] = new double[_n_dim];
+                    for (size_t jdim = 0; jdim < _n_dim; jdim++)
+                    {
+                        _fhess[ipoint][idim][jdim] = fn_hessian(idim, jdim);
+                    }
+                }
+            }
+            std::cout<< "*** VPS:: has hessian!!!! " << std::endl;
+        }
+        else
+        {
+            _use_hessian = false;
+            std::cout<< "*** VPS:: has NO hessian!!!! " << std::endl;
         }
         #endif
         
@@ -854,6 +973,78 @@ namespace Dakota
             t[k_dim] = 0;
         }
         
+        // re-order perm:
+        size_t num_basis = m;
+        //std::cout << "*** VPS:: num_basis = " << num_basis << std::endl;
+        if (num_basis >= _n_dim + 1)
+        {
+            // reorder first order terms
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                // search fot the corresponding basis and bring it to its proper location
+                for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+                {
+                    size_t sum(0), sig_dim(0);
+                    for (size_t jdim = 0; jdim < _n_dim; jdim++)
+                    {
+                        sum += perm[ibasis][jdim];
+                        if (perm[ibasis][jdim] == 1) sig_dim = jdim;
+                    }
+                    if (sum == 1 && sig_dim == idim)
+                    {
+                        // move this basis to location idim + 1
+                        size_t* tmp = perm[ibasis];
+                        perm[ibasis] = perm[idim + 1];
+                        perm[idim + 1] = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (num_basis >= _n_dim * (_n_dim + 1) / 2 + _n_dim + 1)
+        {
+            // reorder second order terms
+            size_t iloc(_n_dim + 1);
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                for (size_t jdim = idim; jdim < _n_dim; jdim++)
+                {
+                    // search fot the corresponding basis and bring it to its proper location
+                    for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+                    {
+                        size_t sum(0), sig_dim_i(_n_dim), sig_dim_j(_n_dim);
+                        for (size_t kdim = 0; kdim < _n_dim; kdim++)
+                        {
+                            sum += perm[ibasis][kdim];
+                            if (perm[ibasis][kdim] > 0 && sig_dim_i == _n_dim)
+                            {
+                                sig_dim_i = kdim;
+                                sig_dim_j = sig_dim_i;
+                            }
+                            else if (perm[ibasis][kdim] > 0 && sig_dim_i < _n_dim) sig_dim_j = kdim;
+                        }
+                        if (sum == 2 && sig_dim_i == idim && sig_dim_j == jdim)
+                        {
+                            // move this basis to location iloc
+                            size_t* tmp = perm[ibasis];
+                            perm[ibasis] = perm[iloc];
+                            perm[iloc] = tmp; iloc++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        /*
+        for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+        {
+            for (size_t idim = 0; idim < num_dim; idim++) std::cout << perm[ibasis][idim] << " ";
+            std::cout << std::endl;
+        }
+        */
+        
         delete[] t;
     }
     
@@ -935,44 +1126,143 @@ namespace Dakota
         delete[] dart;
         return;
     }
-    
+    // =======================
     void VPSApproximation::VPS_LS_retrieve_weights(size_t cell_index)
     {
         size_t num_basis = _num_cell_basis_functions[cell_index];
-        size_t num_neighbors =_vps_ext_neighbors[cell_index][0];
-        
-        double** H = new double*[num_basis]; // columns of the LS matrix
-        double*  fval = new double[num_neighbors + 1];
-        
-        for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
-        {
-            H[ibasis] = new double[num_neighbors + 1];
-            
-            for (size_t ipoint = 0; ipoint <= num_neighbors; ipoint++)
-            {
-                size_t neighbor = cell_index;
-                if (ipoint > 0) neighbor = _vps_ext_neighbors[cell_index][ipoint];
-                
-                H[ibasis][ipoint] = evaluate_basis_function(_sample_points[neighbor], cell_index, ibasis);
-            }
-        }
-        for (size_t ipoint = 0; ipoint <= num_neighbors; ipoint++)
-        {
-            size_t neighbor = cell_index;
-            if (ipoint > 0) neighbor = _vps_ext_neighbors[cell_index][ipoint];
-            fval[ipoint] = _fval[neighbor];
-        }
+        size_t num_basis_resolved(0);
         
         _vps_w[cell_index] = new double[num_basis];
+
+        if (_use_derivatives && _use_gradient && surrogateOrder >= 1 && _vps_subsurrogate_basis == polynomial)
+        {
+            _vps_w[cell_index][0] = f_test(_sample_points[cell_index]); num_basis_resolved++;
+            
+            double* gradf = _fgrad[cell_index];
+            for (size_t idim = 1; idim <= _n_dim; idim++)
+            {
+                _vps_w[cell_index][idim] = gradf[idim - 1];
+                num_basis_resolved++;
+            }
+            delete[] gradf;
+        }
         
-        constrained_LeastSquare(num_basis, num_neighbors + 1, H, _vps_w[cell_index], fval);
+        if (_use_derivatives && _use_hessian && surrogateOrder >= 2 && _vps_subsurrogate_basis == polynomial)
+        {
+            size_t iloc = _n_dim + 1;
+         
+            double** H_f = _fhess[cell_index];
+            
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                for (size_t jdim = idim; jdim < _n_dim; jdim++)
+                {
+                    _vps_w[cell_index][iloc] = H_f[idim][jdim];
+                    
+                    if (jdim == idim) _vps_w[cell_index][iloc] *= 0.5;
+                    
+                    num_basis_resolved++;
+                    
+                    iloc++;
+                }
+                delete[] H_f[idim];
+            }
+            
+            delete[] H_f;
+            
+        }
+        
+
+        if (num_basis_resolved == num_basis)
+        {
+            // Case (enough info from evals/grads/hessians)
+            // No neighbor tracking or regression is needed!
+            return;
+        }
+        
+
+        size_t num_neighbors =_vps_ext_neighbors[cell_index][0];
+        // Case (not enough info from evals/grads/hessians)
+        // Grab neighbors and perform regression
+        
+        // Extend system matrix to account for gradient and Hessian information
+        // H * w = b
+        
+        double** H = new double*[num_basis]; // columns of the LS matrix
+        size_t num_rows = num_basis_resolved + num_neighbors + 1;
+        double*  b = new double[num_rows];
         
         for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
         {
+            H[ibasis] = new double[num_rows];
+            
+            for (size_t irow = 0; irow < num_basis_resolved; irow++)
+            {
+                if (ibasis == irow) H[ibasis][irow] = 1.0;
+                else                H[ibasis][irow] = 0.0;
+            }
+            
+            for (size_t irow = num_basis_resolved; irow < num_rows; irow++)
+            {
+                size_t neighbor = cell_index;
+                if (irow > num_basis_resolved) neighbor = _vps_ext_neighbors[cell_index][irow - num_basis_resolved];
+                
+                H[ibasis][irow] = evaluate_basis_function(_sample_points[neighbor], cell_index, ibasis);
+            }
+        }
+        
+        // Extend function evals to account for gradient and Hessian information
+        for (size_t irow = 0; irow < num_basis_resolved; irow++)
+        {
+            b[irow] = _vps_w[cell_index][irow];
+        }
+        
+        for (size_t irow = num_basis_resolved; irow < num_rows; irow++)
+        {
+            size_t neighbor = cell_index;
+            if (irow > num_basis_resolved) neighbor = _vps_ext_neighbors[cell_index][irow - num_basis_resolved];
+            b[irow] = _fval[neighbor];
+        }
+        
+        //////////////////////////////////////////////////////////////////////////////////
+
+        if (num_basis_resolved > 0)
+        {
+            // std::cout << "******* Number of bases resvoled " << num_basis_resolved << std::endl;
+            // Case (Some coefficients have been already found)
+            // Reconstruct "reduced system", and solve for the rest of coefficients
+
+            
+            // Unkown w coefficients --> f2 = f2 - H3 * w1
+            for (size_t irow = num_basis_resolved; irow < num_rows; irow++)
+            {
+                for (size_t ibasis = 0; ibasis < num_basis_resolved; ibasis++)
+                {
+                    b[irow] -= H[ibasis][irow] * _vps_w[cell_index][ibasis];
+                }
+            }
+            
+            for (size_t irow = num_basis_resolved; irow < num_rows; irow++)
+            {
+                for (size_t ibasis = 0; ibasis < num_basis_resolved; ibasis++)
+                {
+                    H[ibasis][irow] = 0.0;
+                }
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////////
+        
+        // Solve a constrined Least Squares problem
+        
+        constrained_LeastSquare(num_basis, num_neighbors + 1, H, _vps_w[cell_index], b);
+        
+        for (size_t ibasis = 0; ibasis < num_basis; ibasis++)
+        {
+            // std::cout << "******* Basis Coefficient " << _vps_w[cell_index][ibasis] << std::endl;
             delete[] H[ibasis];
         }
         delete[] H;
-        delete[] fval;
+        delete[] b;
     }
     
     double VPSApproximation::evaluate_basis_function(double* x, size_t icell, size_t ibasis)
@@ -981,7 +1271,7 @@ namespace Dakota
         {
             double* y = new double[_n_dim];
             // shift origin
-            for (size_t idim = 0; idim < _n_dim; idim++) y[idim] = (x[idim] - _sample_points[icell][idim]) / _vps_dfar[icell];
+            for (size_t idim = 0; idim < _n_dim; idim++) y[idim] = (x[idim] - _sample_points[icell][idim]);// / _vps_dfar[icell];
             double f_basis = vec_pow_vec(_n_dim, y, _vps_t[icell][ibasis]);
             delete[] y;
             return f_basis;
@@ -1005,7 +1295,7 @@ namespace Dakota
             return exp(-dst_sq / r_sq);
         }
     }
-    
+    // =======================
     int VPSApproximation::constrained_LeastSquare(size_t n, size_t m, double** H, double* w, double* f)
     {
         bool constrained = true;
@@ -1597,6 +1887,48 @@ namespace Dakota
         }
         return 0.0;
     }
+    
+    double* VPSApproximation::grad_f_test(double* x)
+    {
+        double eps = 1E-4;
+        double* grad = new double[_n_dim];
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            x[idim]+= eps;
+            double fp = f_test(x);
+            x[idim]-= 2 * eps;
+            double fm = f_test(x);
+            x[idim]+=eps;
+            grad[idim] = (fp - fm) / (2 * eps);
+        }
+        return grad;
+    }
+    
+    double** VPSApproximation::hessian_f_test(double* x)
+    {
+        double eps = 1E-4;
+        double** H = new double*[_n_dim];
+        for (size_t idim = 0; idim < _n_dim; idim++)
+            H[idim] = new double[_n_dim];
+            
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            x[idim] += eps;
+            double* gradi_fp = grad_f_test(x);
+            x[idim] -= 2 * eps;
+            double* gradi_fm = grad_f_test(x);
+            x[idim] +=eps;
+            
+            for (size_t jdim = 0; jdim < _n_dim; jdim++)
+            {
+                H[idim][jdim] = (gradi_fp[jdim] - gradi_fm[jdim]) / (2 * eps);
+            }
+            delete[] gradi_fp; delete[] gradi_fm;
+        }
+        return H;
+    }
+
+
     
     void VPSApproximation::generate_poisson_disk_sample(double r)
     {

@@ -120,7 +120,11 @@ namespace Dakota
         // Debugging METHODS
         //////////////////////////////////////////////////////////////
         
-        double f_test(double* x); // some test functions for debugging
+        double f_test(double* x);                       // some test functions for debugging
+        
+        double* grad_f_test(double* x);
+        
+        double** hessian_f_test(double* x);
         
         void generate_poisson_disk_sample(double r);
         
@@ -226,6 +230,8 @@ private:
         size_t _num_inserted_points;
         double** _sample_points; // points coordinates
         double* _fval;           // a single function evaluation at each point
+        double** _fgrad;         // gradient vectors at each point
+        double*** _fhess;        // hessian matrix at each point
         
         size_t** _sample_neighbors;  // cell direct neighbors
         size_t** _vps_ext_neighbors; // cell extended neighbors
@@ -255,6 +261,13 @@ private:
         SharedApproxData sharedData;
         std::vector<Approximation> gpApproximations; // One approximation for each cell
         Variables gpEvalVars;
+        
+
+        // Debugging variables
+        bool _use_derivatives;
+        bool _use_gradient;
+        bool _use_hessian;
+
 
 };
 
