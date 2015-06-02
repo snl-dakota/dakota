@@ -218,7 +218,7 @@ namespace Dakota
         
         std::cout << "VPS::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
         
-        //#ifdef DEBUG_TEST_FUNCTION
+        #ifdef DEBUG_TEST_FUNCTION
         std::vector<double> contours;
         contours.push_back(_f_min - 2 * (_f_max - _f_min));
         size_t num_contours(20);
@@ -227,7 +227,7 @@ namespace Dakota
         isocontouring_solid("vps_surrogate.ps", false, true, contours);
         isocontouring_solid("vps_test_function.ps", true, false, contours);
         plot_neighbors();
-        //#endif
+        #endif
         
         
         
@@ -1702,8 +1702,8 @@ namespace Dakota
         size_t qlen = indx = sizeof Q / sizeof Q[0];
         for (i = 0; i < qlen; i++) Q[i] = 0;
         
-        double c = 0.0, zc = 0.0,	/* current CSWB and SWB `borrow` */
-        zx = 5212886298506819.0 / 9007199254740992.0,	/* SWB seed1 */
+        double c = 0.0; zc = 0.0;	/* current CSWB and SWB `borrow` */
+        zx = 5212886298506819.0 / 9007199254740992.0;	/* SWB seed1 */
         zy = 2020898595989513.0 / 9007199254740992.0;	/* SWB seed2 */
         
         size_t j;

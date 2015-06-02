@@ -131,8 +131,8 @@ void NonDPOFDarts::quantify_uncertainty()
         size_t qlen = indx = sizeof Q / sizeof Q[0];
         for (i = 0; i < qlen; i++) Q[i] = 0;
         
-        double c = 0.0, zc = 0.0,	/* current CSWB and SWB `borrow` */
-        zx = 5212886298506819.0 / 9007199254740992.0,	/* SWB seed1 */
+        c = 0.0; zc = 0.0;	/* current CSWB and SWB `borrow` */
+        zx = 5212886298506819.0 / 9007199254740992.0;	/* SWB seed1 */
         zy = 2020898595989513.0 / 9007199254740992.0;	/* SWB seed2 */
         
         size_t j;
