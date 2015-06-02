@@ -2,7 +2,7 @@ Blurb::
 Samples variables as a specified values
 
 Description::
-Dakota's list parameter study allows for evaluations at user selected
+%Dakota's list parameter study allows for evaluations at user selected
 points of interest.
 
 <b> Default Behavior </b>
@@ -29,11 +29,16 @@ set that is specified.
   exhausted. 
 \li Since the initial values from the variables specification
   will not be used, they need not be specified.
-\li For discrete set types,
-  the actual values should be specified, not the set indices, although
-  the values will be validated for membership within the set value
-  specifications. 
-
+\li When the points are specified in the \c %Dakota input file using the
+   \c list_of_points keyword, discrete set values must be referred to using 0-based
+  indexes, and not the values themselves. However, when using \c import_points_file,
+  refer to discrete set values directly, not by index.
+\li For both \c list_of_points and \c import_points_file, \c %Dakota expects the values
+  for each evaluation to be ordered by type. The type ordering matches that of the
+  \ref variables section of this Reference Manual and of the listing in the Parameters 
+   file format section of the %Dakota User's Manual \cite UsersMan. When multiple 
+  variables are present for a single type, the ordering within that type must match 
+  the order specified by the user in the variables section of her input file. 
 Topics::	parameter_studies
 Examples::
 This shows the method and variables block of a Dakota input file
