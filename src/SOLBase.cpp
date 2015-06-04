@@ -129,6 +129,12 @@ void SOLBase::allocate_workspace(int num_cv, int num_nln_con,
     realWorkSpaceSize = 2*num_cv*num_cv + num_cv*num_lin_con 
       + 2*num_cv*num_nln_con + 20*num_cv + 11*num_lin_con + 21*num_nln_con;
  
+  // BMA, 20150604: workaround for out of bounds indexing:
+  // At line 375 of file packages/NPSOL/npsolsubs.f
+  // Fortran runtime error: Array reference out of bounds for array 'w', upper bound of dimension 1 exceeded (99 > 98)
+  // TODO: look into updated NPSOL, as this may be masking a bug
+  realWorkSpaceSize += 1;
+
   // in subroutine nlssol() in nlssolsubs.f, subroutine nlloc() adds the
   // following to the result from nploc().
   realWorkSpaceSize += 3*num_lsq + num_lsq*num_cv;
