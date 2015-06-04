@@ -355,12 +355,6 @@ private:
 				       const Response& raw_response, 
 				       Response& residual_response);
 
-  /// Convenience function to map data from passed fn, grad, hess,
-  /// into subset of residual_response, based on ASV
-  void copy_residuals(const RealVector& fn_vals, RealMatrix& fn_grad, 
-		      const RealSymMatrixArray& fn_hess, size_t offset, 
-		      size_t num_fns, Response& residual_response);
-
   //  scaling initialization helper functions:
 
   /// initialize scaling types, multipliers, and offsets; perform error

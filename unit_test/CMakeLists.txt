@@ -83,6 +83,7 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     expt_data_reader.cpp
     file_reader.cpp
     data_conversions.cpp
+    reduced_basis.cpp
     )
   dakota_add_unit_test(NAME sample_unit_tests 
     SOURCES sample_unit_test_driver.cpp ${dakota_sample_unit_tests}
@@ -90,7 +91,11 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
     "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files" 
-    dakota_unit_test_copied_files
+    dakota_expt_data_unit_test_copied_files
+    )
+  FILE( COPY 
+    "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" 
     )
 endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
 

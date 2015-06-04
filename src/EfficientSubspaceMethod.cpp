@@ -460,38 +460,11 @@ append_sample_matrices(unsigned int diff_samples)
 void EfficientSubspaceMethod::
 compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
 {
-    Teuchos::LAPACK<int, Real> la;
-
-    // ----
-    // compute the SVD of the derivative matrix
-    // ----
-    char JOBU = 'O'; // overwrite A with U
-    char JOBVT = 'N'; // don't compute V
-    int M = numContinuousVars; // number of rows
-    int N = totalSamples*numFunctions; // number of columns
-    int LDA = M;
-    int num_singular_values = std::min(M, N);
-    Real* singular_values = new Real[num_singular_values];
-    Real* U = NULL;
-    int LDU = 1;
-    Real* VT = NULL;
-    int LDVT = 1;
-    int info = 0;
-
-    // TODO: tighten work bound
-    int work_size = 5*std::max(M, N);
-    double* work = new Real[work_size];
-    // Not used by real SVD?
-    double* RWORK = NULL;
-
-    la.GESVD(JOBU, JOBVT, M, N, derivativeMatrix[0], LDA, singular_values,
-	     U, LDU, VT, LDVT, work, work_size, RWORK, &info);
-      
-    if (info != 0) {
-      Cerr << "\nError: Efficient subspace method SVD phase, info = " << info 
-	   << std::endl;
-      abort_handler(-1);
-    }
+    RealVector singular_values;
+    Dakota::compute_svd( derivativeMatrix,
+                         numContinuousVars,
+                         totalSamples*numFunctions,
+                         singular_values );
 
     // TODO: if a reducedRank met the tolerance, but we added more
     // samples to meet construction error, need to allow this bigger
@@ -506,6 +479,7 @@ compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
     double user_svtol = inf_norm * userSVTol;
     double mach_svtol = inf_norm * std::numeric_limits<Real>::epsilon();
 
+    int num_singular_values = singular_values.length();
     reducedRank = num_singular_values;
     double sv_small = 1., sv_large = DBL_MAX;
     for (unsigned int i=0; i<num_singular_values; ++i) {
@@ -536,9 +510,6 @@ compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
 	Cout << singular_values[i] << " ";
       Cout << "]" << std::endl;
     }
-
-    delete[] singular_values;
-    delete[] work;
 }
 
 
