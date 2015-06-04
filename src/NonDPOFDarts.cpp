@@ -253,13 +253,7 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         
         // Estmate max radius of spheres based on number of evaluation and unifrom distribution
-        _diag = 0.0;
-        for (size_t idim = 0; idim < _n_dim; idim++)
-        {
-            double dx = _xmax[idim] - _xmin[idim];
-            _diag += dx * dx;
-        }
-        _diag = sqrt(_diag);
+        _diag = sqrt(_n_dim);
         
         _fval = new double*[numFunctions];
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _fval[resp_fn_count] = new double[_total_budget];
@@ -312,15 +306,6 @@ void NonDPOFDarts::quantify_uncertainty()
                 // adjust prior sphere radii to reflect current response function and threshold
                 for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(isample);
                 
-                /*
-                if (resp_fn_count == 1)
-                {
-                    Cout << "pof:: Plotting in mps_shphere.ps ... ";
-                    plot_vertices_2d();
-                    return;
-                }
-                */
-                
                 start_time = clock();
                 if (kd == 0)
                 {
@@ -370,8 +355,8 @@ void NonDPOFDarts::quantify_uncertainty()
         size_t num_prior_disks = _num_inserted_points;
         while(true)
         {
-            // sampling from a bounding box
-            for (size_t idim = 0; idim < _n_dim; idim++) _dart[idim] = _xmin[idim] + generate_a_random_number() * (_xmax[idim] - _xmin[idim]);
+            // sampling from a unit bounding box
+            for (size_t idim = 0; idim < _n_dim; idim++) _dart[idim] = generate_a_random_number();
             
             if (valid_dart(_dart))
             {
@@ -391,7 +376,6 @@ void NonDPOFDarts::quantify_uncertainty()
                 {
                     std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking all disks!" << std::endl;
                     shrink_big_spheres();
-                    
                 }
             }
         }
@@ -426,11 +410,11 @@ void NonDPOFDarts::quantify_uncertainty()
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
                 // check if this flat has a point
-                for (size_t jdim = 0; jdim < _n_dim; jdim++) _dart[jdim] = _xmin[jdim] + generate_a_random_number() * (_xmax[jdim] - _xmin[jdim]);
+                for (size_t jdim = 0; jdim < _n_dim; jdim++) _dart[jdim] = generate_a_random_number();
                 
                 _flat_dim = _line_flat[idim];
                 _num_flat_segments = 1;
-                _line_flat_start[0] = _xmin[_flat_dim]; _line_flat_end[0] = _xmax[_flat_dim];
+                _line_flat_start[0] = 0.0; _line_flat_end[0] = 1.0;
                 
                 if (_num_inserted_points == 0 || valid_line_flat(_flat_dim, _dart))
                 {
@@ -601,7 +585,12 @@ void NonDPOFDarts::quantify_uncertainty()
         _sample_neighbors[_num_inserted_points] = 0;
         
         for (size_t idim = 0; idim < _n_dim; idim++) _sample_points[_num_inserted_points][idim] = x[idim];
-        compute_response(x);
+        
+        
+        double* x_actual = new double[_n_dim];
+        for (size_t idim = 0; idim < _n_dim; idim++) x_actual[idim] = _xmin[idim] + x[idim] * (_xmax[idim] - _xmin[idim]);
+        compute_response(x_actual);
+        
         _num_inserted_points++;
         
         // Adjusting Spheres radii due to new point
@@ -715,14 +704,14 @@ void NonDPOFDarts::quantify_uncertainty()
             double t_end(1.0);
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
-                if (tmp_pnt[idim] > _xmax[idim])
+                if (tmp_pnt[idim] > 1.0)
                 {
-                    double t = (_xmax[idim] - _sample_points[ipoint][idim]) / (tmp_pnt[idim] - _sample_points[ipoint][idim]);
+                    double t = (1.0 - _sample_points[ipoint][idim]) / (tmp_pnt[idim] - _sample_points[ipoint][idim]);
                     if (t < t_end) t_end = t;
                 }
-                if (tmp_pnt[idim] < _xmin[idim])
+                if (tmp_pnt[idim] < 0.0)
                 {
-                    double t = (_sample_points[ipoint][idim] - _xmin[idim]) / (_sample_points[ipoint][idim] - tmp_pnt[idim]);
+                    double t = (_sample_points[ipoint][idim]) / (_sample_points[ipoint][idim] - tmp_pnt[idim]);
                     if (t < t_end) t_end = t;
                 }
             }
@@ -975,15 +964,15 @@ void NonDPOFDarts::quantify_uncertainty()
     {
         clock_t start_time, end_time; double cpu_time, total_time(0.0);
         
-	start_time = clock();
+        start_time = clock();
         
-	build_surrogate();
+        build_surrogate();
             
-	end_time = clock();
-	cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
+        end_time = clock();
+        cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
             
-	std::cout.precision(4);
-	std::cout <<  "pof::    Surrogates built in " << std::fixed << cpu_time << " seconds." << std::endl;
+        std::cout.precision(4);
+        std::cout <<  "pof::    Surrogates built in " << std::fixed << cpu_time << " seconds." << std::endl;
 
          // evaluate the surrogate for the given function
         double** num_fMC_samples = new double*[numFunctions];
@@ -1017,8 +1006,6 @@ void NonDPOFDarts::quantify_uncertainty()
                 // evaluate sample point using surrogate
                 double surrogate_value = eval_surrogate(resp_fn_count, tmp_pnt);
                 
-                
-
                 size_t num_levels = requestedRespLevels[resp_fn_count].length();
                 for (size_t level_count = 0; level_count < num_levels; level_count++)
                 {
