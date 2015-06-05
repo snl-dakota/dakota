@@ -87,8 +87,7 @@ namespace Dakota
         
         std::cout << "*** VPS:: Initializing, Surrogate order = " << surrogateOrder << std::endl;
         
-        //_disc_min_jump = DBL_MAX;
-        //_disc_min_grad = DBL_MAX;
+        _disc_min_jump = DBL_MAX; _disc_min_grad = DBL_MAX;
         
     }
     
@@ -444,6 +443,17 @@ namespace Dakota
             if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
         }
         
+        // scale input domain to be a unit box
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _sample_points[ipoint][idim] = (_sample_points[ipoint][idim] - _xmin[idim]) / (_xmax[idim] - _xmin[idim]);
+            }
+        }
+        _diag = sqrt(_n_dim);
+        
+        
         // Retrieve function gradients: If first point has gradient, I am assuming all points have gradients
         if (_use_derivatives && approxData.response_active_bits(0) & 2)
         {
@@ -455,7 +465,7 @@ namespace Dakota
                 _fgrad[ipoint] = new double[_n_dim];
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
-                    _fgrad[ipoint][idim] = fn_grad[idim];
+                    _fgrad[ipoint][idim] = fn_grad[idim] * (_xmax[idim] - _xmin[idim]);
                 }
             }
             std::cout<< "*** VPS:: has gradient!!!! " << std::endl;
@@ -480,7 +490,7 @@ namespace Dakota
                     _fhess[ipoint][idim] = new double[_n_dim];
                     for (size_t jdim = 0; jdim < _n_dim; jdim++)
                     {
-                        _fhess[ipoint][idim][jdim] = fn_hessian(idim, jdim);
+                        _fhess[ipoint][idim][jdim] = fn_hessian(idim, jdim) * (_xmax[idim] - _xmin[idim]) * (_xmax[jdim] - _xmin[jdim]);
                     }
                 }
             }
@@ -573,18 +583,18 @@ namespace Dakota
                 tmp_pnt[idim] += _sample_points[ipoint][idim];
             }
             
-            // trim line spoke with domain boundaries
+            // trim line spoke with domain boundaries (0-1)
             double t_end(1.0);
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
-                if (tmp_pnt[idim] > _xmax[idim])
+                if (tmp_pnt[idim] > 1.0)
                 {
-                    double t = (_xmax[idim] - _sample_points[ipoint][idim]) / (tmp_pnt[idim] - _sample_points[ipoint][idim]);
+                    double t = (1.0 - _sample_points[ipoint][idim]) / (tmp_pnt[idim] - _sample_points[ipoint][idim]);
                     if (t < t_end) t_end = t;
                 }
-                if (tmp_pnt[idim] < _xmin[idim])
+                if (tmp_pnt[idim] < 0.0)
                 {
-                    double t = (_sample_points[ipoint][idim] - _xmin[idim]) / (_sample_points[ipoint][idim] - tmp_pnt[idim]);
+                    double t = _sample_points[ipoint][idim] / (_sample_points[ipoint][idim] - tmp_pnt[idim]);
                     if (t < t_end) t_end = t;
                 }
             }
@@ -770,7 +780,10 @@ namespace Dakota
     
     double VPSApproximation::VPS_evaluate_surrogate(double* x)
     {
-        size_t iclosest = retrieve_closest_cell(x);
+        double* x_vps = new double[_n_dim];
+        for (size_t idim = 0; idim < _n_dim; idim++) x_vps[idim] = (x[idim] - _xmin[idim]) / (_xmax[idim] - _xmin[idim]);
+        
+        size_t iclosest = retrieve_closest_cell(x_vps);
         
         if (_vps_subsurrogate == LS)
         {
@@ -779,7 +792,8 @@ namespace Dakota
             for (size_t ibasis = 0; ibasis < _num_cell_basis_functions[iclosest]; ibasis++)
             {
                 double wi = _vps_w[iclosest][ibasis];
-                double yi = evaluate_basis_function(x, iclosest, ibasis);
+                
+                double yi = evaluate_basis_function(x_vps, iclosest, ibasis);
                 f_VPS += wi * yi;
             }
             return f_VPS;
@@ -788,7 +802,7 @@ namespace Dakota
         {
             // GP Surrogate
             
-            RealVector c_vars(Teuchos::View, const_cast<Real*>(x), _n_dim);
+            RealVector c_vars(Teuchos::View, const_cast<Real*>(x_vps), _n_dim);
             
             double f_gp = gpApproximations[iclosest].value(c_vars);
             
@@ -798,6 +812,7 @@ namespace Dakota
         {
             std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
         }
+        delete[] x_vps;
         return 0.0;
     }
     
