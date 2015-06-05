@@ -191,7 +191,7 @@ namespace Dakota
                         double dx = _sample_points[ipoint][idim] - _sample_points[neighbor][idim];
                         dst += dx * dx;
                     }
-                    dst = sqrt(dst);
+                    dst = std::sqrt(dst);
                     if (dst > _vps_dfar[ipoint]) _vps_dfar[ipoint] = dst;
                 }
             }
@@ -347,11 +347,11 @@ namespace Dakota
             double DX = _xmax[idim] - _xmin[idim];
             _diag += DX * DX;
         }
-        _diag = sqrt(_diag);
+        _diag = std::sqrt(_diag);
 
         // generate Poisson-disk sample
         size_t num_points(0);
-        double h_mps = _diag / sqrt(_n_dim);
+        double h_mps = _diag / std::sqrt((double) _n_dim);
         
         double r_mps = 0.8 * h_mps / pow(_num_inserted_points, 1.0 / _n_dim);
         std::cout << "VPS::DEBUG: h = " << h_mps << " , r_MPS = " << r_mps;
@@ -434,7 +434,7 @@ namespace Dakota
                 double DX = _xmax[idim] - _xmin[idim];
                 _diag += DX * DX;
             }
-            _diag = sqrt(_diag);
+            _diag = std::sqrt(_diag);
                 
             // response from approxData
             _fval[ipoint] = approxData.response_function(ipoint);
@@ -451,7 +451,7 @@ namespace Dakota
                 _sample_points[ipoint][idim] = (_sample_points[ipoint][idim] - _xmin[idim]) / (_xmax[idim] - _xmin[idim]);
             }
         }
-        _diag = sqrt(_n_dim);
+        _diag = std::sqrt((double)_n_dim);
         
         
         // Retrieve function gradients: If first point has gradient, I am assuming all points have gradients
@@ -573,7 +573,7 @@ namespace Dakota
                 tmp_pnt[idim] = sum;
                 sf += tmp_pnt[idim] * tmp_pnt[idim];
             }
-            sf = 1.0 / sqrt(sf);
+            sf = 1.0 / std::sqrt(sf);
             for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] *= sf;
             
             // scale line spoke to extend outside bounding box
@@ -615,7 +615,7 @@ namespace Dakota
                     
                     norm+= nH[idim] * nH[idim];
                 }
-                norm = 1.0 / sqrt(norm);
+                norm = 1.0 / std::sqrt(norm);
                 for (size_t idim = 0; idim < _n_dim; idim++) nH[idim] *= norm;
                 
                 if (trim_line_using_Hyperplane(_n_dim, _sample_points[ipoint], tmp_pnt, qH, nH))
@@ -630,7 +630,7 @@ namespace Dakota
                 double dx = _sample_points[ipoint][idim] - tmp_pnt[idim];
                 dst += dx * dx;
             }
-            dst = sqrt(dst);
+            dst = std::sqrt(dst);
             if (dst > _sample_vsize[ipoint]) _sample_vsize[ipoint] = dst;
             
             if (ineighbor == ipoint) continue; // boundary neighbor
@@ -659,7 +659,7 @@ namespace Dakota
                 double dx = _sample_points[ipoint][idim] - _sample_points[ineighbor][idim];
                 h += dx * dx;
             }
-            h = sqrt(h);
+            h = std::sqrt(h);
             
             double jump = fabs(_fval[ipoint] - _fval[ineighbor]);
             double grad = fabs(_fval[ipoint] - _fval[ineighbor]) / h;
@@ -1110,7 +1110,7 @@ namespace Dakota
                 dart[idim] = sum;
                 sf += dart[idim] * dart[idim];
             }
-            sf = r / sqrt(sf);
+            sf = r / std::sqrt(sf);
             for (size_t idim = 0; idim < _n_dim; idim++) dart[idim] *= sf;
 
             // translate to match active cell origin
@@ -1475,7 +1475,7 @@ namespace Dakota
                     {
                         return false;
                     }
-                    LD[i][j] = sqrt(A[i][i] - sum);
+                    LD[i][j] = std::sqrt(A[i][i] - sum);
                 }
                 else        LD[i][j] = 1.0 / LD[j][j] * (A[i][j] - sum);
                 
@@ -1540,7 +1540,7 @@ namespace Dakota
             r[i] = b[i];
             beta += r[i] * r[i];
         }
-        beta = sqrt(beta);
+        beta = std::sqrt(beta);
         
         rNorm = beta;
         ro = beta;
@@ -1595,7 +1595,7 @@ namespace Dakota
             {
                 wNorm += w[i] * w[i];
             }
-            wNorm = sqrt(wNorm);
+            wNorm = std::sqrt(wNorm);
             HT[im][im + 1] = wNorm;
             
             for (size_t i = 0; i < n; i++)
@@ -1612,7 +1612,7 @@ namespace Dakota
                 RT[im][ik - 1] = gamma;
             }
             
-            double delta = sqrt(pow(RT[im][im], 2) + pow(HT[im][im + 1], 2));
+            double delta = std::sqrt(pow(RT[im][im], 2) + pow(HT[im][im + 1], 2));
             c[im] = RT[im][im] / delta;
             s[im] = HT[im][im + 1] / delta;
             RT[im][im] = c[im] * RT[im][im] + s[im] * HT[im][im + 1];
@@ -1643,7 +1643,7 @@ namespace Dakota
                 rr[i] -= QT[im][0] * QT[im][i];
                 rNorm += rr[i] * rr[i];
             }
-            rNorm = sqrt(rNorm);
+            rNorm = std::sqrt(rNorm);
             
             if (rNorm < eps * ro && rNorm < eps)
                 break;
@@ -1909,7 +1909,7 @@ namespace Dakota
                 double dx = x[idim];
                 h += dx * dx;
             }
-            h = sqrt(h);
+            h = std::sqrt(h);
             if (h < 0.5) return 1.0;
             return 0.0;
         }

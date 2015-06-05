@@ -253,7 +253,7 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         
         // Estmate max radius of spheres based on number of evaluation and unifrom distribution
-        _diag = sqrt(_n_dim);
+        _diag = std::sqrt((double)_n_dim);
         
         _fval = new double*[numFunctions];
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) _fval[resp_fn_count] = new double[_total_budget];
@@ -508,7 +508,7 @@ void NonDPOFDarts::quantify_uncertainty()
             if (hh < fabs(_sample_points[index][_n_dim]))
             {
                 double r_sq = fabs(_sample_points[index][_n_dim]);
-                double v = sqrt(r_sq - hh);
+                double v = std::sqrt(r_sq - hh);
                 double proj = _sample_points[index][flat_dim];
                 double segmin = proj - v;
                 double segmax = proj + v;
@@ -690,7 +690,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 tmp_pnt[idim] = sum;
                 sf += tmp_pnt[idim] * tmp_pnt[idim];
             }
-            sf = 1.0 / sqrt(sf);
+            sf = 1.0 / std::sqrt(sf);
             for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] *= sf;
             
             // scale line spoke to extend outside bounding box
@@ -731,7 +731,7 @@ void NonDPOFDarts::quantify_uncertainty()
                     nH[idim] =  _sample_points[jpoint][idim] -  _sample_points[ipoint][idim];
                     norm+= nH[idim] * nH[idim];
                 }
-                norm = 1.0 / sqrt(norm);
+                norm = 1.0 / std::sqrt(norm);
                 for (size_t idim = 0; idim < _n_dim; idim++) nH[idim] *= norm;
                 
                 if (trim_line_using_Hyperplane(_n_dim, _sample_points[ipoint], tmp_pnt, qH, nH))
@@ -746,7 +746,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 double dx = _sample_points[ipoint][idim] - tmp_pnt[idim];
                 dst += dx * dx;
             }
-            dst = sqrt(dst);
+            dst = std::sqrt(dst);
             if (dst > _sample_vsize[ipoint]) _sample_vsize[ipoint] = dst;
             
             if (ineighbor == ipoint) continue; // boundary neighbor
@@ -819,7 +819,7 @@ void NonDPOFDarts::quantify_uncertainty()
                     double dx = _sample_points[isample][idim] - _sample_points[last_point][idim];
                     dst += dx * dx;
                 }
-                dst = sqrt(dst);
+                dst = std::sqrt(dst);
                 double L = fabs(_fval[resp_fn_count][isample] - _fval[resp_fn_count][last_point]) / dst;
                 if (L > _Lip[resp_fn_count]) _Lip[resp_fn_count] = L;
             }
@@ -849,7 +849,7 @@ void NonDPOFDarts::quantify_uncertainty()
                     double dx = _sample_points[isample][idim] - _sample_points[neighbor][idim];
                     dst += dx * dx;
                 }
-                dst = sqrt(dst);
+                dst = std::sqrt(dst);
                 double grad = fabs(_fval[_active_response_function][isample] - _fval[_active_response_function][neighbor]) / dst;
                 if (grad > local_L) local_L = grad;
             }
@@ -878,10 +878,10 @@ void NonDPOFDarts::quantify_uncertainty()
                     double dx = _sample_points[isample][idim] - _sample_points[jsample][idim];
                     dst += dx * dx;
                 }
-                dst = sqrt(dst);
+                dst = std::sqrt(dst);
                 
-                double r_i = sqrt(fabs(_sample_points[isample][_n_dim]));
-                double r_j = sqrt(fabs(_sample_points[jsample][_n_dim]));
+                double r_i = std::sqrt(fabs(_sample_points[isample][_n_dim]));
+                double r_j = std::sqrt(fabs(_sample_points[jsample][_n_dim]));
                 
                 if (r_i + r_j > dst)
                 {
@@ -912,7 +912,7 @@ void NonDPOFDarts::quantify_uncertainty()
             if (fabs(_sample_points[isample][_n_dim]) > rr_max) rr_max = fabs(_sample_points[isample][_n_dim]);
         }
         
-        Cout << "maximum radius = " << sqrt(rr_max) << std::endl;
+        Cout << "maximum radius = " << std::sqrt(rr_max) << std::endl;
         
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
@@ -1305,7 +1305,7 @@ void NonDPOFDarts::quantify_uncertainty()
         // plot filled circles
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
-            double r = sqrt(fabs(_sample_points[index][2]));
+            double r = std::sqrt(fabs(_sample_points[index][2]));
             
             file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
             
@@ -1318,7 +1318,7 @@ void NonDPOFDarts::quantify_uncertainty()
         // plot discs boundaries
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
-            double r = sqrt(fabs(_sample_points[index][2]));
+            double r = std::sqrt(fabs(_sample_points[index][2]));
             file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
             file << "circ"     << std::endl;
         }
@@ -1349,7 +1349,7 @@ void NonDPOFDarts::quantify_uncertainty()
         double s(0.01);
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
-            double r = sqrt(fabs(_sample_points[index][2]));
+            double r = std::sqrt(fabs(_sample_points[index][2]));
             s = r * 0.05;
             
             // plot vertex
@@ -1939,7 +1939,7 @@ void NonDPOFDarts::quantify_uncertainty()
         // plot filled circles
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
-            double r = sqrt(fabs(_sample_points[index][2]));
+            double r = std::sqrt(fabs(_sample_points[index][2]));
             
             file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
             
@@ -1951,7 +1951,7 @@ void NonDPOFDarts::quantify_uncertainty()
         // plot discs boundaries
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
-            double r = sqrt(fabs(_sample_points[index][2]));
+            double r = std::sqrt(fabs(_sample_points[index][2]));
             file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
             file << "circ"     << std::endl;
         }
@@ -1977,7 +1977,7 @@ void NonDPOFDarts::quantify_uncertainty()
         double s(0.01);
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
-            double r = sqrt(fabs(_sample_points[index][2]));
+            double r = std::sqrt(fabs(_sample_points[index][2]));
             s = r * 0.05;
             
             // plot vertex
