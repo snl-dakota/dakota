@@ -91,7 +91,7 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
     "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files" 
-    dakota_expt_data_unit_test_copied_files
+    dakota_unit_test_copied_files
     )
   FILE( COPY 
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
