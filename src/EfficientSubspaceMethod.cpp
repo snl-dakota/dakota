@@ -461,10 +461,12 @@ void EfficientSubspaceMethod::
 compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
 {
     RealVector singular_values;
+    RealMatrix V_transpose;
     Dakota::compute_svd( derivativeMatrix,
                          numContinuousVars,
                          totalSamples*numFunctions,
-                         singular_values );
+                         singular_values,
+                         V_transpose );
 
     // TODO: if a reducedRank met the tolerance, but we added more
     // samples to meet construction error, need to allow this bigger

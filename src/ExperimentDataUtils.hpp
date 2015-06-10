@@ -255,7 +255,7 @@ bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian
 /**
  * \brief Compute the SVD of an arbitrary matrix
  */
-void compute_svd( RealMatrix &, int nrows, int ncols, RealVector & svd_vals );
+void compute_svd( RealMatrix &, int nrows, int ncols, RealVector & svd_vals, RealMatrix & VTrans);
 
 
 } // namespace dakota

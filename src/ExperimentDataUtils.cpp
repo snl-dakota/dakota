@@ -727,15 +727,16 @@ bool get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 }
 
 void
-compute_svd( RealMatrix & matrix, int num_rows, int num_cols, RealVector & svd_vals )
+compute_svd( RealMatrix & matrix, int num_rows, int num_cols, RealVector & svd_vals, RealMatrix & VT )
 {
   Teuchos::LAPACK<int, Real> la;
 
   // ----
   // compute the SVD of the incoming matrix
   // ----
+
   char JOBU = 'O'; // overwrite A with U
-  char JOBVT = 'N'; // don't compute V
+  char JOBVT = 'A'; // compute V
   int M = num_rows;
   int N = num_cols;
   int LDA = M;
@@ -743,8 +744,8 @@ compute_svd( RealMatrix & matrix, int num_rows, int num_cols, RealVector & svd_v
   svd_vals.resize(num_singular_values);
   Real* U = NULL;
   int LDU = 1;
-  Real* VT = NULL;
-  int LDVT = 1;
+  VT.reshape(N, N);
+  int LDVT = N;
   int info = 0;
 
   // TODO: tighten work bound
@@ -754,7 +755,7 @@ compute_svd( RealMatrix & matrix, int num_rows, int num_cols, RealVector & svd_v
   double* RWORK = NULL;
 
   la.GESVD(JOBU, JOBVT, M, N, matrix[0], LDA, &svd_vals[0],
-      U, LDU, VT, LDVT, work, work_size, RWORK, &info);
+      U, LDU, VT[0], LDVT, work, work_size, RWORK, &info);
 
   if (info != 0) {
     Cerr << "\nError: Efficient subspace method SVD phase, info = " << info 
