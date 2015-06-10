@@ -536,11 +536,17 @@ if(HAVE_ACRO)
     ${Acro_SOURCE_DIR}/packages/scolib/src
     ${Acro_SOURCE_DIR}/packages/utilib/src
     ${Acro_SOURCE_DIR}/packages/colin/src
+    ${Acro_SOURCE_DIR}/packages/pebbl/src/bb
+    ${Acro_SOURCE_DIR}/packages/pebbl/src/comm
+    ${Acro_SOURCE_DIR}/packages/pebbl/src/misc
+    ${Acro_SOURCE_DIR}/packages/pebbl/src/pbb
+    ${Acro_SOURCE_DIR}/packages/pebbl/src/sched
     ${Acro_SOURCE_DIR}/tpl/tinyxml
     )
 
   list(APPEND interface_src COLINApplication.cpp)
-  list(APPEND iterator_src COLINOptimizer.cpp)
+  list(APPEND iterator_src COLINOptimizer.cpp 
+  	      		   PEBBLOptimizer.cpp PEBBLBranching.cpp)
 
   foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
     string(TOUPPER "${acro_dep}" ACRODEP)
