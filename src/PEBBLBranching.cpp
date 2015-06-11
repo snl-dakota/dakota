@@ -238,7 +238,7 @@ pebbl::solution* PebbldBranchSub::extractSolution()
 	  variableNames[i] = tempChar;
      }
      
-     //     return new pebbl::arraySolution<double> (objFn, new_x, globalPtr, varDesc.c_str(),variableNames);
+     return new pebbl::arraySolution<double> (objFn, new_x, globalPtr);
 };
 
 }
