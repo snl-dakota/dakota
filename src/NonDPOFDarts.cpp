@@ -65,9 +65,15 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
     */
 
     if (lipschitzType == "local")
+    {
         _use_local_L = true;
+        std::cout<< "pof: using local Lipschitz" << std::endl;
+    }
     else if (lipschitzType == "global")
+    {
         _use_local_L = false;       // Global Lipschitz: less sampling time - less accuracy
+        std::cout<< "pof: using global Lipschitz" << std::endl;
+    }
   
     _eval_error = false;
     
@@ -374,7 +380,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 _num_successive_misses_p++;
                 if (_num_successive_misses_p + _num_successive_misses_m > _max_num_successive_misses)
                 {
-                    std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking all disks!" << std::endl;
+                    std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking BIG disks!" << std::endl;
                     shrink_big_spheres();
                 }
             }
@@ -586,7 +592,6 @@ void NonDPOFDarts::quantify_uncertainty()
         
         for (size_t idim = 0; idim < _n_dim; idim++) _sample_points[_num_inserted_points][idim] = x[idim];
         
-        
         double* x_actual = new double[_n_dim];
         for (size_t idim = 0; idim < _n_dim; idim++) x_actual[idim] = _xmin[idim] + x[idim] * (_xmax[idim] - _xmin[idim]);
         compute_response(x_actual);
@@ -610,30 +615,6 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             update_global_L();
             for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(isample);
-        }
-        
-        // shrink radii of large Voronoi cells
-        _max_vsize = 0.0;
-        for (size_t isample = 0; isample < _num_inserted_points; isample++)
-        {
-            if (_sample_vsize[isample] > _max_vsize) _max_vsize = _sample_vsize[isample];
-        }
-        for (size_t isample = 0; isample < _num_inserted_points; isample++)
-        {
-            double rr = fabs(_sample_points[isample][_n_dim]);
-            double rr_max = 0.64 * _sample_vsize[isample] * _sample_vsize[isample];
-            if (_sample_vsize[isample] >  0.8 * _max_vsize && rr > rr_max)
-            {
-                _sample_points[isample][_n_dim] = rr_max;
-                if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
-            }
-            else if (rr > _sample_vsize[isample] * _sample_vsize[isample])
-            {
-                // A disk radius should not exceed the Voronoi size around its seed
-                rr_max = _sample_vsize[isample] * _sample_vsize[isample];
-                _sample_points[isample][_n_dim] = rr_max;
-                if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
-            }
         }
     }
     
@@ -835,6 +816,8 @@ void NonDPOFDarts::quantify_uncertainty()
         
         if (_use_local_L)
         {
+            r = _sample_vsize[isample];
+            
             size_t num_neighbors = 0;
             if (_sample_neighbors[isample]!= 0) num_neighbors = _sample_neighbors[isample][0];
             
@@ -860,7 +843,7 @@ void NonDPOFDarts::quantify_uncertainty()
             L = _Lip[_active_response_function]; // Global Lipschitz constant
         }
         
-        if (L > 1E-10) r = fabs(_fval[_active_response_function][isample]  - _failure_threshold) / L;
+        if (L > 1E-10) r = fabs(_fval[_active_response_function][isample]  - _failure_threshold) / L; // radius based on Lipschitz
         
         _sample_points[isample][_n_dim] = r * r;
         if (_fval[_active_response_function][isample] < _failure_threshold) _sample_points[isample][_n_dim] = - _sample_points[isample][_n_dim];
@@ -912,11 +895,11 @@ void NonDPOFDarts::quantify_uncertainty()
             if (fabs(_sample_points[isample][_n_dim]) > rr_max) rr_max = fabs(_sample_points[isample][_n_dim]);
         }
         
-        Cout << "maximum radius = " << std::sqrt(rr_max) << std::endl;
+        std::cout << "\npof:: maximum radius = " << std::sqrt(rr_max) << std::endl;
         
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
-            if (fabs(_sample_points[isample][_n_dim]) > 0.81 * rr_max) _sample_points[isample][_n_dim] *= 0.81;
+            if (fabs(_sample_points[isample][_n_dim]) > 0.95 * 0.95 * rr_max) _sample_points[isample][_n_dim] *= (0.95 * 0.95);
         }
     }
     
@@ -1123,17 +1106,29 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         */
         
-        double E = 2.7182818284590452353602874713526;
+        // circular cone
+        double h = 0.0;
+        for (size_t idim = 0; idim < _n_dim; idim++)
+        {
+            double dx = x[idim];
+            h += dx * dx;
+        }
+        h = std::sqrt(h);
+        return h;
+
+        // herbie
         double fval = 1.0;
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
             double xm = x[idim] - 1.0;
             double xp = x[idim] + 1.0;
-            double wherb = pow(E, - xm * xm) + pow(E, -0.8 * xp * xp) ;// - 0.05 * sin(8 * (x[idim] + 0.1));
+            double wherb = exp(- xm * xm) + exp(-0.8 * xp * xp);// - 0.05 * sin(8 * (x[idim] + 0.1));
             fval *= wherb;
         }
         fval = -fval;
         return fval;
+
+        
         return 0.0;
     }
     
@@ -1307,10 +1302,15 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             double r = std::sqrt(fabs(_sample_points[index][2]));
             
-            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
+            double x = _xmin[0] + _sample_points[index][0] * (_xmax[0] - _xmin[0]);
+            double y = _xmin[1] + _sample_points[index][1] * (_xmax[1] - _xmin[1]);
+            double rs = r * (_xmax[0] - _xmin[0]);
             
-            if (_sample_vsize[index] >  0.8 * _max_vsize) file << "bluefcirc"     << std::endl; // large Vcell
-            else if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
+            
+            file << x * scale << "  " << y * scale << "  " << rs * scale << "  ";
+            
+            //if (_sample_vsize[index] >  0.8 * _max_vsize) file << "bluefcirc"     << std::endl; // large Vcell
+            if (_sample_points[index][2] > 0) file << "greenfcirc"     << std::endl; // non-failure disk
             else                              file << "redfcirc"     << std::endl; // non-failure disk
            
         }
@@ -1319,7 +1319,11 @@ void NonDPOFDarts::quantify_uncertainty()
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
             double r = std::sqrt(fabs(_sample_points[index][2]));
-            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << r * scale << "  ";
+            double x = _xmin[0] + _sample_points[index][0] * (_xmax[0] - _xmin[0]);
+            double y = _xmin[1] + _sample_points[index][1] * (_xmax[1] - _xmin[1]);
+            double rs = r * (_xmax[0] - _xmin[0]);
+            
+            file << x * scale << "  " << y * scale << "  " << rs * scale << "  ";
             file << "circ"     << std::endl;
         }
         
@@ -1350,10 +1354,14 @@ void NonDPOFDarts::quantify_uncertainty()
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
             double r = std::sqrt(fabs(_sample_points[index][2]));
-            s = r * 0.05;
+            
+            double x = _xmin[0] + _sample_points[index][0] * (_xmax[0] - _xmin[0]);
+            double y = _xmin[1] + _sample_points[index][1] * (_xmax[1] - _xmin[1]);
+            double rs = r * (_xmax[0] - _xmin[0]);
+            s = rs * 0.05;
             
             // plot vertex
-            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << s * scale << " ";
+            file << x * scale << "  " << y * scale << "  " << s * scale << " ";
             file << "blackfcirc"     << std::endl; // non-failure disk
         }
         
