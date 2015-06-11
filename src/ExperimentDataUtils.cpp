@@ -727,6 +727,23 @@ bool get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 }
 
 void
+compute_column_averages( RealMatrix & matrix, RealVector & avg_vals )
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  avg_vals.resize(num_cols);
+
+  RealVector ones_vec(num_rows);
+  ones_vec.putScalar(1.0);
+
+  for( int i=0; i<num_cols; ++i ) {
+    const RealVector & col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    avg_vals(i) = col_vec.dot(ones_vec)/(Real) num_rows;
+  }
+}
+
+void
 compute_svd( RealMatrix & matrix, int num_rows, int num_cols, RealVector & svd_vals, RealMatrix & VT )
 {
   Teuchos::LAPACK<int, Real> la;

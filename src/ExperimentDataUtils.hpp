@@ -253,6 +253,11 @@ bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian
 						    RealMatrix &covariance );
 
 /**
+ * \brief Compute the averages of each column of an arbitrary matrix
+ */
+void compute_column_averages( RealMatrix & matrix, RealVector & avg_vals );
+
+/**
  * \brief Compute the SVD of an arbitrary matrix
  */
 void compute_svd( RealMatrix &, int nrows, int ncols, RealVector & svd_vals, RealMatrix & VTrans);
