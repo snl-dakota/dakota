@@ -103,22 +103,16 @@ TEUCHOS_UNIT_TEST(reduced_basis, simple_api)
   const RealMatrix & U_mat = reduced_basis.get_left_singular_vector();
   const RealMatrix & VT_mat = reduced_basis.get_right_singular_vector_transpose();
 
-  // Reconstruct matrix using SVD and compare to original (implies original matrix does njot get changed).
-  RealMatrix reconstructed_mat(U_mat);
-  RealVector col1 = Teuchos::getCol(Teuchos::View, reconstructed_mat, 0);
-  RealVector col2 = Teuchos::getCol(Teuchos::View, reconstructed_mat, 1);
-  col1.scale(singular_values[0]);
-  col2.scale(singular_values[1]);
-  // Manually do matrix multiply; I had hoped RealMatrix would support this ...
-  Real prod1, prod2;
-  for( int row=0; row<reconstructed_mat.numRows(); ++row ) {
-    prod1 = reconstructed_mat(row, 0)*VT_mat(0, 0) +
-                 reconstructed_mat(row, 1)*VT_mat(1, 0);
-    prod2 = reconstructed_mat(row, 0)*VT_mat(0, 1) +
-                 reconstructed_mat(row, 1)*VT_mat(1, 1);
-    reconstructed_mat(row, 0) = prod1;
-    reconstructed_mat(row, 1) = prod2;
-  }
+  RealMatrix S(2,2);
+  S(0,0) = singular_values(0);
+  S(1,1) = singular_values(1);
+
+  // Reconstruct matrix using SVD and compare to original (implies original matrix does not get changed).
+  RealMatrix reconstructed_mat( matrix.numRows(), matrix.numCols() );
+  int ierr = reconstructed_mat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, U_mat, S, 0.0);
+  RealMatrix temp_matrix(reconstructed_mat);
+  ierr += reconstructed_mat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, temp_matrix, VT_mat, 0.0);
+  TEST_EQUALITY( ierr, 0 )
 
   reconstructed_mat -= matrix;
   Real diff = 1.0 + reconstructed_mat.normFrobenius();
