@@ -393,9 +393,34 @@ void NonDPOFDarts::quantify_uncertainty()
         _num_successive_misses_p = 0;
         _num_successive_misses_m = 0;
         size_t num_prior_disks = _num_inserted_points;
+        size_t nVsampling(0);
         while (true)
         {
             _num_darts++;
+            
+            nVsampling++;
+            if (_use_local_L && nVsampling == 10)
+            {
+                // Sample a point at Futhest Voronoi Corner of larger Voronoi cell
+                _max_vsize = 0.0; size_t ilargest(_num_inserted_points);
+                for (size_t isample = 0; isample < _num_inserted_points; isample++)
+                {
+                    if (_sample_vsize[isample] > _max_vsize)
+                    {
+                        _max_vsize = _sample_vsize[isample];
+                        ilargest = isample;
+                    }
+                }
+                sample_furthest_vertex(ilargest, _dart);
+                add_point(_dart);
+                if (_num_inserted_points - num_prior_disks == samples)
+                {
+                    std::cout<< "\npof:: Simulation Budget has been exhausted!" << std::endl;
+                    return;
+                }
+                nVsampling = 0;
+                continue;
+            }
             
             // randomize the d flats
             for (size_t idim = 0; idim < _n_dim; idim++) _line_flat[idim] = idim;
@@ -588,7 +613,8 @@ void NonDPOFDarts::quantify_uncertainty()
     void NonDPOFDarts::add_point(double* x)
     {
         _sample_points[_num_inserted_points] = new double[_n_dim + 1];
-        _sample_neighbors[_num_inserted_points] = 0;
+        _sample_neighbors[_num_inserted_points] = new size_t[1];
+        _sample_neighbors[_num_inserted_points][0] = 0;
         
         for (size_t idim = 0; idim < _n_dim; idim++) _sample_points[_num_inserted_points][idim] = x[idim];
         
@@ -603,6 +629,9 @@ void NonDPOFDarts::quantify_uncertainty()
         {
             retrieve_neighbors(_num_inserted_points - 1, true);
             assign_sphere_radius_POF(_num_inserted_points - 1);
+            
+            verify_neighbor_consistency();
+            
             size_t num_neighbors = 0;
             if (_sample_neighbors[_num_inserted_points - 1] != 0) num_neighbors = _sample_neighbors[_num_inserted_points - 1][0];
             for (size_t i = 1; i <= num_neighbors; i++)
@@ -610,6 +639,8 @@ void NonDPOFDarts::quantify_uncertainty()
                 size_t neighbor = _sample_neighbors[_num_inserted_points - 1][i];
                 assign_sphere_radius_POF(neighbor); // adjusting radius of old disks due to new L
             }
+            
+            
         }
         else
         {
@@ -639,6 +670,44 @@ void NonDPOFDarts::quantify_uncertainty()
             _fval[resp_fn_count][_num_inserted_points] = fval;
         }
     }
+    
+    void NonDPOFDarts::verify_neighbor_consistency()
+    {
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            size_t num_neighbors(_sample_neighbors[ipoint][0]);
+            for (size_t i = 1; i <= num_neighbors; i++)
+            {
+                size_t neighbor = _sample_neighbors[ipoint][i];
+                if (add_neighbor(neighbor, ipoint)) assign_sphere_radius_POF(neighbor);
+            }
+        }
+    }
+
+    
+    bool NonDPOFDarts::add_neighbor(size_t ipoint, size_t ineighbor)
+    {
+        bool found(false);
+        size_t num_neighbors(_sample_neighbors[ipoint][0]);
+        for (size_t i = 1; i <= num_neighbors; i++)
+        {
+            if (_sample_neighbors[ipoint][i] == ineighbor) {found = true; break;}
+        }
+        if (!found)
+        {
+            // adding jpoint to ipoint neighbors
+            size_t* tmp  = new size_t[num_neighbors + 2];
+            for (size_t i = 0; i <= num_neighbors; i++) tmp[i] = _sample_neighbors[ipoint][i];
+            tmp[num_neighbors + 1] = ineighbor;
+            tmp[0]++;
+            delete[] _sample_neighbors[ipoint];
+            _sample_neighbors[ipoint] = tmp;
+            return true;
+        }
+        return false; // Neighbor is already there
+    }
+    
+    
     
     void NonDPOFDarts::retrieve_neighbors(size_t ipoint, bool update_point_neighbors)
     {
@@ -779,6 +848,94 @@ void NonDPOFDarts::quantify_uncertainty()
         delete[] tmp_neighbors;
     }
 
+    void NonDPOFDarts::sample_furthest_vertex(size_t ipoint, double* fv)
+    {
+        double* tmp_pnt = new double[_n_dim];    // end of spoke
+        double* qH = new double[_n_dim];         // mid-ppint
+        double* nH = new double[_n_dim];         // normal vector
+        
+        double vsize = 0.0;
+        for (size_t ispoke = 0; ispoke < 10000; ispoke++)
+        {
+            // sample point uniformly from a unit sphere
+            double sf = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double sum(0.0);
+                // select 12 random numbers from 0.0 to 1.0
+                for (size_t i = 0; i < 12; i++) sum += generate_a_random_number();
+                sum -= 6.0;
+                tmp_pnt[idim] = sum;
+                sf += tmp_pnt[idim] * tmp_pnt[idim];
+            }
+            sf = 1.0 / std::sqrt(sf);
+            for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] *= sf;
+            
+            // scale line spoke to extend outside bounding box
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                tmp_pnt[idim] *= _diag;
+                tmp_pnt[idim] += _sample_points[ipoint][idim];
+            }
+            
+            // trim line spoke with domain boundaries
+            double t_end(1.0);
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                if (tmp_pnt[idim] > 1.0)
+                {
+                    double t = (1.0 - _sample_points[ipoint][idim]) / (tmp_pnt[idim] - _sample_points[ipoint][idim]);
+                    if (t < t_end) t_end = t;
+                }
+                if (tmp_pnt[idim] < 0.0)
+                {
+                    double t = (_sample_points[ipoint][idim]) / (_sample_points[ipoint][idim] - tmp_pnt[idim]);
+                    if (t < t_end) t_end = t;
+                }
+            }
+            for (size_t idim = 0; idim < _n_dim; idim++) tmp_pnt[idim] = _sample_points[ipoint][idim] + t_end * (tmp_pnt[idim] - _sample_points[ipoint][idim]);
+            
+            // trim spoke using Voronoi faces
+            size_t ineighbor(ipoint);
+            for (size_t jpoint = 0; jpoint < _num_inserted_points; jpoint++)
+            {
+                if (jpoint == ipoint) continue;
+                
+                // trim line spoke via hyperplane between
+                double norm(0.0);
+                for (size_t idim = 0; idim < _n_dim; idim++)
+                {
+                    qH[idim] = 0.5 * (_sample_points[ipoint][idim] + _sample_points[jpoint][idim]);
+                    nH[idim] =  _sample_points[jpoint][idim] -  _sample_points[ipoint][idim];
+                    norm+= nH[idim] * nH[idim];
+                }
+                norm = 1.0 / std::sqrt(norm);
+                for (size_t idim = 0; idim < _n_dim; idim++) nH[idim] *= norm;
+                
+                if (trim_line_using_Hyperplane(_n_dim, _sample_points[ipoint], tmp_pnt, qH, nH))
+                {
+                    ineighbor = jpoint;
+                }
+            }
+            
+            double dst = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = _sample_points[ipoint][idim] - tmp_pnt[idim];
+                dst += dx * dx;
+            }
+            dst = std::sqrt(dst);
+            if (dst > vsize)
+            {
+                vsize = dst;
+                for (size_t idim = 0; idim < _n_dim; idim++) fv[idim] = tmp_pnt[idim];
+            }
+            
+        } // end of spoke loop
+        
+        delete[] tmp_pnt; delete[] qH; delete[] nH;
+    }
+
     
     
     
@@ -836,7 +993,7 @@ void NonDPOFDarts::quantify_uncertainty()
                 double grad = fabs(_fval[_active_response_function][isample] - _fval[_active_response_function][neighbor]) / dst;
                 if (grad > local_L) local_L = grad;
             }
-            L = local_L;
+            L = 1.0 * local_L;
         }
         else
         {
@@ -1107,6 +1264,7 @@ void NonDPOFDarts::quantify_uncertainty()
         */
         
         // circular cone
+        /*
         double h = 0.0;
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
@@ -1115,6 +1273,7 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         h = std::sqrt(h);
         return h;
+        */
 
         // herbie
         double fval = 1.0;
@@ -1174,7 +1333,7 @@ void NonDPOFDarts::quantify_uncertainty()
         file << " gsave" << std::endl;
         file << " grestore" << std::endl;
         file << " 1 0 0 setrgbcolor" << std::endl;
-        file << " 0.01 setlinewidth" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
         file << " stroke" << std::endl;
         file << "} def" << std::endl;
         
@@ -1199,7 +1358,7 @@ void NonDPOFDarts::quantify_uncertainty()
         file << " gsave" << std::endl;
         file << " grestore" << std::endl;
         file << " 0 0 1 setrgbcolor" << std::endl;
-        file << " 0.02 setlinewidth" << std::endl;
+        file << " 0.0 setlinewidth" << std::endl;
         file << " stroke" << std::endl;
         file << "} def" << std::endl;
         

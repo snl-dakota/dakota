@@ -94,7 +94,14 @@ protected:
     
     void compute_response(double* x);
     
+    void verify_neighbor_consistency();
+    
+    bool add_neighbor(size_t ipoint, size_t ineighbor);
+
     void retrieve_neighbors(size_t ipoint, bool update_point_neighbors);
+    
+    void sample_furthest_vertex(size_t ipoint, double* fv);
+
     
     ////////////////////////////////////////////////////////////////
     // POF METHODS
