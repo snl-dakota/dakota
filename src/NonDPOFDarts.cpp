@@ -75,8 +75,6 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
         std::cout<< "pof: using global Lipschitz" << std::endl;
     }
   
-    _eval_error = false;
-    
     if (emulatorSamples==0)
         emulatorSamples = 1E6;         // number of samples to evaluate surrogate
 
@@ -98,10 +96,32 @@ NonDPOFDarts::~NonDPOFDarts()
 
 void NonDPOFDarts::quantify_uncertainty()
 {
+    _eval_error = false; _safety_factor = 2.0;
     
     Cout << "I am now computing uncertainty! " << '\n';
     
-    if (fabs(seed - 1.0) < 1E-10) seed  = time(0);
+    if (fabs(seed - 1.0) < 1E-10) seed  = time(0); // Automated seed
+    else if (fabs(seed - 1.0) < 2)
+    {
+        seed = 1234567890;
+        
+        _eval_error = true;
+        
+        std::cout << "Evaluate Error: (0: No, 1: SmoothHerbie, 2: Herbie, 3: PlanarCross, 4: CircularCone) ";
+        std::cin >> _test_function;
+        
+        if (_test_function == 0) _eval_error = false;
+        if (_test_function == 1) std::cout << "\nSmooth Herbie" << std::endl;
+        if (_test_function == 2) std::cout << "\nHerbie" << std::endl;
+        if (_test_function == 3) std::cout << "\nPlanar cross" << std::endl;
+        if (_test_function == 4) std::cout << "\nCircular Cone" << std::endl;
+
+    }
+    
+   
+
+    
+    
     
     std::cout<< "seed = " << seed << std::endl;
     
@@ -294,7 +314,7 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::execute(size_t kd)
     {
-       
+        
         clock_t start_time, end_time; double cpu_time, total_time(0.0);
        
         _num_inserted_points = 0; _num_darts = 0;
@@ -332,13 +352,26 @@ void NonDPOFDarts::quantify_uncertainty()
                 std::cout.precision(4);
                 std::cout<<  "pof::    Execution Time = " << std::fixed << cpu_time << " seconds." << std::endl;
                 
+                /*
+                for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+                {
+                    std::cout << "Sample Point :" << ipoint << " - num neighbors = " << _sample_neighbors[ipoint][0] << std::endl;
+                    
+                    for (size_t i = 1; i < _sample_neighbors[ipoint][0]; i++)
+                    {
+                        std::cout << "   Neighbor: " << i << " : " << _sample_neighbors[ipoint][i] << std::endl;
+                    }
+                }
+                */
+
+                
             }
         }
         
         std::cout <<  "pof:: Building Surrogates ..." << std::endl;
         estimate_pof_surrogate();
         
-        if (_n_dim == 2 && false)
+        if (_n_dim == 2 && _eval_error)
         {
             std::cout <<  "pof::    Plotting 2d disks ...";
             plot_vertices_2d(true, true);
@@ -380,8 +413,15 @@ void NonDPOFDarts::quantify_uncertainty()
                 _num_successive_misses_p++;
                 if (_num_successive_misses_p + _num_successive_misses_m > _max_num_successive_misses)
                 {
-                    std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking BIG disks!" << std::endl;
-                    shrink_big_spheres();
+                    std::cout<< "\npof:: Void-finding budget has been exhausted, Increaing Lipschitz Multiplier!" << std::endl;
+                    _safety_factor *= 1.5;
+                    for (size_t isample = 0; isample < _num_inserted_points; isample++)
+                    {
+                        assign_sphere_radius_POF(isample);
+                    }
+                    
+                    //std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking BIG disks!" << std::endl;
+                    //shrink_big_spheres();
                 }
             }
         }
@@ -389,7 +429,6 @@ void NonDPOFDarts::quantify_uncertainty()
     
     void NonDPOFDarts::line_dart_throwing_games(size_t game_index)
     {
-        
         _num_successive_misses_p = 0;
         _num_successive_misses_m = 0;
         size_t num_prior_disks = _num_inserted_points;
@@ -399,7 +438,7 @@ void NonDPOFDarts::quantify_uncertainty()
             _num_darts++;
             
             nVsampling++;
-            if (_use_local_L && nVsampling == 10)
+            if (_use_local_L && nVsampling == 25)
             {
                 // Sample a point at Futhest Voronoi Corner of larger Voronoi cell
                 _max_vsize = 0.0; size_t ilargest(_num_inserted_points);
@@ -495,8 +534,14 @@ void NonDPOFDarts::quantify_uncertainty()
                 _num_successive_misses_p++;
                 if (_num_successive_misses_p + _num_successive_misses_m > _max_num_successive_misses) 
                 {
-                    std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking all disks!" << std::endl;
-                    shrink_big_spheres();
+                    std::cout<< "\npof:: Void-finding budget has been exhausted, Increaing Lipschitz Multiplier!" << std::endl;
+                    _safety_factor *= 1.5;
+                    for (size_t isample = 0; isample < _num_inserted_points; isample++)
+                    {
+                        assign_sphere_radius_POF(isample);
+                    }
+                    //std::cout<< "\npof:: Void-finding budget has been exhausted, shrinking all disks!" << std::endl;
+                    //shrink_big_spheres();
                 }
             }
             else 
@@ -993,12 +1038,15 @@ void NonDPOFDarts::quantify_uncertainty()
                 double grad = fabs(_fval[_active_response_function][isample] - _fval[_active_response_function][neighbor]) / dst;
                 if (grad > local_L) local_L = grad;
             }
-            L = 1.0 * local_L;
+            L = _safety_factor * local_L; // going conservative
+            if (L < 0.1) L = 0.1;
         }
         else
         {
             L = _Lip[_active_response_function]; // Global Lipschitz constant
         }
+        
+        // std::cout << "point " << isample << " L = " << L << std::endl;
         
         if (L > 1E-10) r = fabs(_fval[_active_response_function][isample]  - _failure_threshold) / L; // radius based on Lipschitz
         
@@ -1008,20 +1056,25 @@ void NonDPOFDarts::quantify_uncertainty()
         if (_use_local_L)
         {
             // make sure that last disk does not overlap with a disk of different color
+            
+            // A sphere shouldn't contain a sample point that is not its neighbor
+            
             for (size_t jsample = 0; jsample < _num_inserted_points; jsample++)
             {
-                if (_sample_points[isample][_n_dim] * _sample_points[jsample][_n_dim] > 0.0) continue; // same color
+                //if (_sample_points[isample][_n_dim] * _sample_points[jsample][_n_dim] > 0.0) continue; // same color
                 
-                double dst = 0.0;
+                if (isample == jsample) continue;
+                
+                double dst_sq = 0.0;
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
                     double dx = _sample_points[isample][idim] - _sample_points[jsample][idim];
-                    dst += dx * dx;
+                    dst_sq += dx * dx;
                 }
-                dst = std::sqrt(dst);
                 
                 double r_i = std::sqrt(fabs(_sample_points[isample][_n_dim]));
                 double r_j = std::sqrt(fabs(_sample_points[jsample][_n_dim]));
+                double dst = std::sqrt(dst_sq);
                 
                 if (r_i + r_j > dst)
                 {
@@ -1251,7 +1304,7 @@ void NonDPOFDarts::quantify_uncertainty()
     
     double NonDPOFDarts::f_true(double* x)
     {
-        // return text book
+        
         /*
         if (_active_response_function == 0)
         {
@@ -1263,30 +1316,55 @@ void NonDPOFDarts::quantify_uncertainty()
         }
         */
         
-        // circular cone
-        /*
-        double h = 0.0;
-        for (size_t idim = 0; idim < _n_dim; idim++)
+        if (_test_function == 1) // Smooth Herbie
         {
-            double dx = x[idim];
-            h += dx * dx;
+            double fval = 1.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double xm = x[idim] - 1.0;
+                double xp = x[idim] + 1.0;
+                double wherb = exp(- xm * xm) + exp(-0.8 * xp * xp);
+                fval *= wherb;
+            }
+            fval = -fval;
+            return fval;
         }
-        h = std::sqrt(h);
-        return h;
-        */
-
-        // herbie
-        double fval = 1.0;
-        for (size_t idim = 0; idim < _n_dim; idim++)
+        if (_test_function == 2) // Herbie
         {
-            double xm = x[idim] - 1.0;
-            double xp = x[idim] + 1.0;
-            double wherb = exp(- xm * xm) + exp(-0.8 * xp * xp);// - 0.05 * sin(8 * (x[idim] + 0.1));
-            fval *= wherb;
+            double fval = 1.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double xm = x[idim] - 1.0;
+                double xp = x[idim] + 1.0;
+                double wherb = exp(- xm * xm) + exp(-0.8 * xp * xp) - 0.05 * sin(8 * (x[idim] + 0.1));
+                fval *= wherb;
+            }
+            fval = -fval;
+            return fval;
         }
-        fval = -fval;
-        return fval;
-
+        if (_test_function == 3) // Planar Cross
+        {
+            const double PI = 3.14159265359;
+            double fval = 1.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double wcross = (1 + cos(2 * PI * x[idim])) / 2.0;
+                fval *= wcross;
+            }
+            fval = pow(fval, 1.0/_n_dim);
+            return fval;
+        }
+        if (_test_function == 4) // Circular Cone
+        {
+            double h = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double dx = x[idim];
+                h += dx * dx;
+            }
+            h = std::sqrt(h);
+            return h;
+        }
         
         return 0.0;
     }
@@ -1517,7 +1595,9 @@ void NonDPOFDarts::quantify_uncertainty()
             double x = _xmin[0] + _sample_points[index][0] * (_xmax[0] - _xmin[0]);
             double y = _xmin[1] + _sample_points[index][1] * (_xmax[1] - _xmin[1]);
             double rs = r * (_xmax[0] - _xmin[0]);
-            s = rs * 0.05;
+            s = 0.002 * (_xmax[0] - _xmin[0]);
+            if (r * 0.05 < s) s = r * 0.05;
+
             
             // plot vertex
             file << x * scale << "  " << y * scale << "  " << s * scale << " ";

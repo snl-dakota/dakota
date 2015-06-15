@@ -170,6 +170,7 @@ protected:
     // Variables of the POF dart algorithm
     
     bool _eval_error;
+    size_t _test_function;
     
     size_t _n_dim; // dimension of the problem
     double* _xmin; // lower left corner of the domain
@@ -204,6 +205,7 @@ protected:
     double* _line_flat_end;
     double* _line_flat_length;
     
+    double _safety_factor;
     double* _Lip;
     double** _fval;
     size_t _active_response_function;
