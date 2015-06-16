@@ -689,6 +689,37 @@ add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy)
 }
 
 
+void Approximation::
+add(const RealMatrix& sample_vars, const RealVector& sample_resp)
+{
+  if (approxRep)
+    approxRep->add(sample_vars, sample_resp);
+  else { // not virtual: all derived classes use following definition
+    size_t num_samples = sample_vars.numCols();
+    if (sample_resp.length() != num_samples) {
+      Cerr << "\nError: incompatible approx build data sizes.\n";
+      abort_handler(-1);
+    }
+    size_t num_vars = sample_vars.numRows();
+    bool anchor_flag = false, deep_copy = true;
+    for (size_t i=0; i<num_samples; ++i) {
+
+      // add variable values (column of samples matrix)
+      add(sample_vars[i], anchor_flag, deep_copy);
+
+      // add response value
+      short asv_val = 1;
+      Real fn_val = sample_resp[i];
+      RealVector empty_grad;
+      RealSymMatrix empty_hess;
+      short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+      Pecos::SurrogateDataResp sdr(fn_val, empty_grad, empty_hess, asv_val, mode);
+      approxData.push_back(sdr);
+    }
+  }
+}
+
+
 /* Old 3D graphics capability:
 void Approximation::draw_surface()
 {

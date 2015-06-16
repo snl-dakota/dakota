@@ -176,6 +176,10 @@ public:
   void add(const Response& response, int fn_index, bool anchor_flag,
 	   bool deep_copy);
 
+  /// add data from the provided samples and response matrices,
+  /// assuming continuous variables and function values only
+  void add(const RealMatrix& sample_vars, const RealVector& sample_resp);
+
   /// appends to popCountStack (number of entries to pop from end of
   /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
   void pop_count(size_t count);

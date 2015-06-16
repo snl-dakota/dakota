@@ -167,3 +167,52 @@ TEUCHOS_UNIT_TEST(reduced_basis, simple_api2)
 
 //----------------------------------------------------------------
 
+#include "DakotaApproximation.hpp"
+#include "DataMethod.hpp"
+
+// test construction and evaluation of a GP surrogate from data
+// matrices; one approximation per response
+TEUCHOS_UNIT_TEST(reduced_basis, gp_surr0)
+{
+  size_t num_vars = 2, num_samples = 5;
+  
+  // training data, one sample per row
+  RealMatrix doe_vars(num_vars, num_samples);
+  RealVector doe_resp(num_samples);
+  
+  doe_vars(0,0) =  0.0;  doe_vars(1,0) =  0.0; 
+  doe_vars(0,1) = -1.0;  doe_vars(1,1) =  1.0; 
+  doe_vars(0,2) =  1.0;  doe_vars(1,2) =  1.0; 
+  doe_vars(0,3) = -1.0;  doe_vars(1,3) = -1.0; 
+  doe_vars(0,4) =  1.0;  doe_vars(1,4) = -1.0; 
+
+  // true response is 2*x1.^2 + 2*x1 + 6*x2 + x2.^3
+  doe_resp(0) =   0.0;
+  doe_resp(1) =   7.0;
+  doe_resp(2) =  11.0;
+  doe_resp(3) =  -7.0;
+  doe_resp(4) =  -3.0;
+  
+  // configure the surrogate
+  // String approx_type("global_gaussian");  // Dakota GP
+  String approx_type("global_kriging");  // Surfpack GP
+  UShortArray approx_order;
+  short data_order = 1;  // assume only function values
+  short output_level = Dakota::QUIET_OUTPUT;
+  SharedApproxData shared_approx_data(approx_type, approx_order, num_vars, 
+				      data_order, output_level);
+
+  // construct the GP
+  Approximation gp_approx(shared_approx_data);
+  gp_approx.add(doe_vars, doe_resp);
+  gp_approx.build();
+
+  // check the value of the surrogate
+  RealVector eval_vars(2);
+  eval_vars(0) = -1.0;
+  eval_vars(1) =  1.0;
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), 7.0, 1.e-8);
+}
+
+//----------------------------------------------------------------
+
