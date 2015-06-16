@@ -727,7 +727,7 @@ bool get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 }
 
 void
-compute_column_averages( RealMatrix & matrix, RealVector & avg_vals )
+compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
 {
   int num_cols = matrix.numCols();
   int num_rows = matrix.numRows();
