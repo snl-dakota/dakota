@@ -18,6 +18,12 @@
 #include "DakotaResponse.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "ReducedBasis.hpp"
+
+#include "Teuchos_LAPACK.hpp"
+#include "Teuchos_SerialDenseSolver.hpp"
+#include "Teuchos_SerialDenseHelpers.hpp"
+#include "DakotaApproximation.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -124,6 +130,117 @@ void NonDLHSSampling::post_run(std::ostream& s)
     compute_statistics(allSamples, allResponses);
 
   Analyzer::post_run(s);
+ 
+  bool pcaFlag = false;
+  if (pcaFlag) {
+    
+    IntRespMCIter r_it; size_t f, s, v;
+    RealMatrix responseMatrix;
+    responseMatrix.reshape(numSamples,numFunctions);
+    for (s=0, r_it=allResponses.begin(); s<numSamples; ++s, ++r_it) {
+      for (f=0; f<numFunctions; ++f) 
+        responseMatrix(s,f) = r_it->second.function_value(f);
+    }
+    Cout << "numFunctions " << numFunctions<< "\n";
+    Cout << "numSamples " << numSamples<< "\n";
+    for (s=0; s<numSamples; ++s) {
+      for (f=0; f<numFunctions; ++f) {
+        Cout << responseMatrix(s,f) << "  " ;
+      }  
+      Cout << "\n";
+    }
+    ReducedBasis pcaReducedBasis; 
+    pcaReducedBasis.set_matrix(responseMatrix);
+    pcaReducedBasis.update_svd();
+    
+    RealVector singular_values;
+    singular_values = pcaReducedBasis.get_singular_values();
+
+    // for now get the first factor score
+    RealMatrix factor_scores(numSamples, numFunctions);
+    RealMatrix principal_comp(numSamples, numFunctions);
+    principal_comp = pcaReducedBasis.get_right_singular_vector_transpose();
+    Cout << "principal components" << '\n';
+    for (s=0; s<numSamples; ++s) {
+      for (f=0; f<numFunctions; ++f) {
+        Cout << principal_comp(s,f) << "  " ;
+      }  
+      Cout << "\n";
+    }
+    
+    int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
+			responseMatrix, principal_comp, 0.);
+ 
+    Cout << "myerr" << myerr <<'\n';
+    Cout << "FactorScores" << '\n';
+    
+    for (s=0; s<numSamples; ++s) {
+      for (f=0; f<numFunctions; ++f) {
+        Cout << factor_scores(s,f) << " " ;
+      }
+      Cout << "\n";
+    }
+    
+    //Dakota::compute_svd( responseMatrix,
+    //                     numSamples,
+    //                     numFunctions,
+    //                     singular_values );
+    Cout << "singular values " << singular_values <<'\n';
+
+//Build GPs
+    int num_signif_Pcomps = 1;
+    String approx_type; 
+    approx_type = "global_kriging";  // Surfpack GP
+    UShortArray approx_order;
+    short data_order = 1;  // assume only function values
+    short output_level = NORMAL_OUTPUT;
+    SharedApproxData sharedData;
+
+    sharedData = SharedApproxData(approx_type, approx_order, numContinuousVars, data_order, output_level);
+	           
+    std::vector<Approximation> gpApproximations;
+
+// build one GP for each Principal Component
+    for (int i = 0; i < num_signif_Pcomps; ++i) {
+      gpApproximations.push_back(Approximation(sharedData));
+    }           
+    for (int i = 0; i < num_signif_Pcomps; ++i) {
+      RealVector factor_i = Teuchos::getCol(Teuchos::View,factor_scores,i);
+      gpApproximations[i].add(allSamples, factor_i );
+      gpApproximations[i].build();
+    }
+
+// Now form predictions based on new input points
+   
+    Real pca_coeff;
+    RealVector this_pred(numFunctions);
+    get_parameter_sets(iteratedModel); // NOTE:  allSamples is now different
+   
+    RealMatrix predMatrix;
+    predMatrix.reshape(numSamples, numFunctions);
+
+    for (int j = 0; j < numSamples; j++) { 
+     //this_pred = mean_vec;
+      this_pred = 0.0;
+      for (int i = 0; i < num_signif_Pcomps; ++i) {
+        RealVector new_sample = Teuchos::getCol(Teuchos::View,allSamples,j);
+        pca_coeff=gpApproximations[i].value(new_sample);
+        Cout << "pca_coeff " << pca_coeff << "\n";
+        // need Row, not column
+        RealVector local_pred = Teuchos::getCol(Teuchos::View,principal_comp,i);
+        local_pred *= pca_coeff;
+        this_pred += local_pred;
+      }
+      Teuchos::setCol(this_pred,j,predMatrix);
+    }   
+    Cout << "Prediction Matrix " << "\n";
+    for (s=0; s<numSamples; ++s) {
+      for (f=0; f<numFunctions; ++f) {
+        Cout << predMatrix(s,f) << "  " ;
+      }  
+      Cout << "\n";
+    }
+  }
 }
 
 
