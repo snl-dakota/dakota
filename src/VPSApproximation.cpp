@@ -130,6 +130,8 @@ namespace Dakota
         {
             VPS_retrieve_neighbors(isample, false);
         }
+        //std::cout << "updating neighbors ... DONE." << std::endl;
+        
         
         if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == radial)
         {
@@ -155,13 +157,15 @@ namespace Dakota
                 _vps_ext_neighbors[isample][ineighbor] = _sample_neighbors[isample][ineighbor];
             }
         }
+        //std::cout << "extending neighbors ... DONE" << std::endl;
+
         
         if (_vps_subsurrogate == LS)
         {
             // extend neighbors for all points to match the desired order per cell
-            //std::cout << "adjusting extending neighbors!" << std::endl;
+            std::cout << "adjusting extending neighbors!" << std::endl;
             VPS_adjust_extend_neighbors_of_all_points();
-            //std::cout << "adjusting extending neighbors - done!" << std::endl;
+            std::cout << "adjusting extending neighbors - done!" << std::endl;
         }
          
         if (_vps_subsurrogate == GP)
@@ -646,13 +650,6 @@ namespace Dakota
                 }
             }
             
-            if (!new_neighbor)
-            {
-                // old neighbor = a miss
-                num_misses++;
-                continue;
-            }
-            
             double h(0.0);
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
@@ -664,7 +661,16 @@ namespace Dakota
             double jump = fabs(_fval[ipoint] - _fval[ineighbor]);
             double grad = fabs(_fval[ipoint] - _fval[ineighbor]) / h;
             
-            if ((jump > _disc_min_jump) || (grad > _disc_min_grad)) continue; // gradient of two point exceeds threshold
+            if ((jump > _disc_min_jump) || (grad > _disc_min_grad)) new_neighbor = false; // gradient of two point exceeds threshold
+
+            
+            if (!new_neighbor)
+            {
+                // old neighbor = a miss
+                num_misses++;
+                continue;
+            }
+            
             
             // a hit
             num_misses = 0;
@@ -703,7 +709,11 @@ namespace Dakota
         {
             while (_vps_ext_neighbors[ipoint][0] < 2 * _num_cell_basis_functions[ipoint] && _vps_ext_neighbors[ipoint][0] < _num_inserted_points - 1)
             {
+                size_t num_old_neighbors = _vps_ext_neighbors[ipoint][0];
                 VPS_extend_neighbors(ipoint);
+                
+                size_t num_new_neighbors = _vps_ext_neighbors[ipoint][0];
+                if (num_old_neighbors == num_new_neighbors) break; // No more neighbors to add
             }
         }
     }
@@ -1208,8 +1218,10 @@ namespace Dakota
             return;
         }
         
-
         size_t num_neighbors =_vps_ext_neighbors[cell_index][0];
+
+        if (num_basis > num_basis_resolved + num_neighbors + 1) num_basis = num_basis_resolved + num_neighbors + 1;
+        
         // Case (not enough info from evals/grads/hessians)
         // Grab neighbors and perform regression
         
