@@ -156,6 +156,13 @@ void NonDLHSSampling::post_run(std::ostream& s)
     RealVector singular_values;
     singular_values = pcaReducedBasis.get_singular_values();
 
+    RealVector column_means = pcaReducedBasis.get_column_means();
+
+    // Get the centered version of the original response matrix
+    RealMatrix centered_matrix = pcaReducedBasis.get_matrix();
+    Cout << "Centered matrix\n";
+    centered_matrix.print(std::cout);
+
     // for now get the first factor score
     RealMatrix factor_scores(numSamples, numFunctions);
     RealMatrix principal_comp(numSamples, numFunctions);
@@ -169,14 +176,15 @@ void NonDLHSSampling::post_run(std::ostream& s)
     }
     
     int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
-			responseMatrix, principal_comp, 0.);
+			centered_matrix, principal_comp, 0.);
  
     Cout << "myerr" << myerr <<'\n';
     Cout << "FactorScores" << '\n';
     
+    RealMatrix f_scores(Teuchos::Copy, factor_scores, numSamples, numSamples, 0, 0);
     for (s=0; s<numSamples; ++s) {
-      for (f=0; f<numFunctions; ++f) {
-        Cout << factor_scores(s,f) << " " ;
+      for (f=0; f<numSamples; ++f) {
+        Cout << f_scores(s,f) << " " ;
       }
       Cout << "\n";
     }
@@ -205,7 +213,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
       gpApproximations.push_back(Approximation(sharedData));
     }           
     for (int i = 0; i < num_signif_Pcomps; ++i) {
-      RealVector factor_i = Teuchos::getCol(Teuchos::View,factor_scores,i);
+      RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
       gpApproximations[i].add(allSamples, factor_i );
       gpApproximations[i].build();
     }
@@ -227,11 +235,13 @@ void NonDLHSSampling::post_run(std::ostream& s)
         pca_coeff=gpApproximations[i].value(new_sample);
         Cout << "pca_coeff " << pca_coeff << "\n";
         // need Row, not column
-        RealVector local_pred = Teuchos::getCol(Teuchos::View,principal_comp,i);
-        local_pred *= pca_coeff;
+        RealVector local_pred(numFunctions);
+        for( int k=0; k<numFunctions; ++k )
+          local_pred(k) = pca_coeff*principal_comp(i,k);
         this_pred += local_pred;
       }
-      Teuchos::setCol(this_pred,j,predMatrix);
+      for( int k=0; k<numFunctions; ++k )
+        predMatrix(j,k) = this_pred(k)+column_means(k);
     }   
     Cout << "Prediction Matrix " << "\n";
     for (s=0; s<numSamples; ++s) {

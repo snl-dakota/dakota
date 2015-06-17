@@ -38,9 +38,15 @@ class ReducedBasis
 
     void set_matrix(const RealMatrix &);
 
+    const RealMatrix & get_matrix()
+      { return matrix; }
+
     void center_matrix();
 
     void update_svd(bool center_matrix_by_col_means = true);
+
+    const RealVector & get_column_means() const
+      { return column_means; }
 
     const RealVector & get_singular_values() const
       { return S_values; }
