@@ -163,9 +163,9 @@ namespace Dakota
         if (_vps_subsurrogate == LS)
         {
             // extend neighbors for all points to match the desired order per cell
-            std::cout << "adjusting extending neighbors!" << std::endl;
+            // std::cout << "adjusting extending neighbors!" << std::endl;
             VPS_adjust_extend_neighbors_of_all_points();
-            std::cout << "adjusting extending neighbors - done!" << std::endl;
+            // std::cout << "adjusting extending neighbors - done!" << std::endl;
         }
          
         if (_vps_subsurrogate == GP)
