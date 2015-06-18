@@ -211,11 +211,12 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       for (i=0; i<numSamples; i++) {
         temp_x = sample_values_first[i][cntr];
         if (n_l_bnds[k] > -dbl_inf || n_u_bnds[k] < dbl_inf) {
-      	  Real Phi_l = (n_l_bnds[k] > -dbl_inf) ? 
-	    Pecos::Phi((n_l_bnds[k]-mean_x)/sigma_x): 0.;
-      	  Real Phi_u = (n_u_bnds[k] <  dbl_inf) ? 
-	    Pecos::Phi((n_u_bnds[k]-mean_x)/sigma_x) : 1.;
-          Real Phi_x = Pecos::Phi((temp_x-mean_x)/sigma_x);
+      	  Real Phi_l = (n_l_bnds[k] > -dbl_inf) ? Pecos::NormalRandomVariable::
+	    std_cdf((n_l_bnds[k]-mean_x)/sigma_x): 0.;
+      	  Real Phi_u = (n_u_bnds[k] <  dbl_inf) ? Pecos::NormalRandomVariable::
+	    std_cdf((n_u_bnds[k]-mean_x)/sigma_x) : 1.;
+          Real Phi_x
+	    = Pecos::NormalRandomVariable::std_cdf((temp_x-mean_x)/sigma_x);
           Real cdf = (Phi_x-Phi_l)/(Phi_u - Phi_l);
 	  if (cdf < (2*sample_ranks_first(cntr,i)-1)/(numSamples*2) ) {
 	    int index_temp = static_cast<int>(sample_ranks_first(cntr,i))-1;
@@ -250,11 +251,12 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       for (i=0; i<numSamples; i++) {
         temp_x = log(sample_values_first[i][cntr]);
         if (ln_l_bnds[k] > 0 || ln_u_bnds[k] < dbl_inf) {
-      	  Real Phi_l = (ln_l_bnds[k] > 0 ) ? 
-	    Pecos::Phi((log(ln_l_bnds[k])-lambda)/zeta): 0.;
-      	  Real Phi_u = (ln_u_bnds[k] < dbl_inf) ? 
-	    Pecos::Phi((log(ln_u_bnds[k])-lambda)/zeta) : 1.;
-          Real Phi_x = Pecos::Phi((temp_x-lambda)/(zeta));
+      	  Real Phi_l = (ln_l_bnds[k] > 0.) ? Pecos::NormalRandomVariable::
+	    std_cdf((log(ln_l_bnds[k])-lambda)/zeta): 0.;
+      	  Real Phi_u = (ln_u_bnds[k] < dbl_inf) ? Pecos::NormalRandomVariable::
+	    std_cdf((log(ln_u_bnds[k])-lambda)/zeta) : 1.;
+          Real Phi_x
+	    = Pecos::NormalRandomVariable::std_cdf((temp_x-lambda)/(zeta));
           Real cdf = (Phi_x - Phi_l)/(Phi_u - Phi_l);
 	  if (cdf < (2*sample_ranks_first(cntr,i)-1)/(numSamples*2) ) {
 	    int index_temp = static_cast<int>(sample_ranks_first(cntr,i))-1;

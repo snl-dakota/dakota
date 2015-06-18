@@ -191,24 +191,18 @@ void NonDSampling::get_parameter_sets(Model& model)
     }
     break;
   case ALEATORY_UNCERTAIN:
-    {
-      lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-				 numSamples, allSamples, backfillFlag);
-      break;
-    }
+    lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
+			       numSamples, allSamples, backfillFlag);
+    break;
   case EPISTEMIC_UNCERTAIN:
-    {
-      lhsDriver.generate_samples(model.epistemic_distribution_parameters(),
-				 numSamples, allSamples, backfillFlag);
-      break;
-    }
+    lhsDriver.generate_samples(model.epistemic_distribution_parameters(),
+			       numSamples, allSamples, backfillFlag);
+    break;
   case UNCERTAIN:
-    {
-      lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-				 model.epistemic_distribution_parameters(),
-				 numSamples, allSamples, backfillFlag);
-      break;
-    }
+    lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
+			       model.epistemic_distribution_parameters(),
+			       numSamples, allSamples, backfillFlag);
+    break;
   case ACTIVE: case ALL: {
     // extract design and state bounds
     RealVector  cdv_l_bnds,   cdv_u_bnds,   csv_l_bnds,   csv_u_bnds;
@@ -287,13 +281,13 @@ void NonDSampling::get_parameter_sets(Model& model)
 	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
   	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets, model.aleatory_distribution_parameters(),
+	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
 	  empty_edp, numSamples, allSamples, sampleRanks);
       else
 	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
   	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets, model.aleatory_distribution_parameters(),
+	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
 	  empty_edp, numSamples, allSamples, sampleRanks);
     }
     else if ( samplingVarsMode == ACTIVE &&
@@ -315,25 +309,24 @@ void NonDSampling::get_parameter_sets(Model& model)
 	  model.epistemic_distribution_parameters(), numSamples, allSamples,
 	  sampleRanks);
     }
-    else 
-      {
-	if ( !backfillFlag )
-	  lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
+    else {
+      if ( !backfillFlag )
+	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
 	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets, model.aleatory_distribution_parameters(),
+	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
 	  model.epistemic_distribution_parameters(), numSamples, allSamples,
 	  sampleRanks);
-	else
-	  lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
+      else
+	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
 	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets, model.aleatory_distribution_parameters(),
+	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
 	  model.epistemic_distribution_parameters(), numSamples, allSamples,
 	  sampleRanks);
 	  // warning sampleRanks will empty. 
 	  // See comment in lhs_driver.cpp generate_unique_samples()
-      }
+    }
     break;
   }
   }
@@ -1082,9 +1075,10 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 	  Real cdf_prob = (Real)bin_accumulator/(Real)num_samp;
 	  Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
 	  if (respLevelTarget == PROBABILITIES)
-	    computedProbLevels[i][j]   =  computed_prob;
+	    computedProbLevels[i][j] = computed_prob;
 	  else
-	    computedGenRelLevels[i][j] = -Pecos::Phi_inverse(computed_prob);
+	    computedGenRelLevels[i][j]
+	      = -Pecos::NormalRandomVariable::inverse_std_cdf(computed_prob);
 	}
 	break;
       }
@@ -1107,7 +1101,8 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
     }
     for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
       Real p = (j<pl_len) ? requestedProbLevels[i][j] :
-	Pecos::Phi(-requestedGenRelLevels[i][j-pl_len]);
+	Pecos::NormalRandomVariable::
+	std_cdf(-requestedGenRelLevels[i][j-pl_len]);
       // since each sample has 1/N probability, a probability level can be
       // directly converted to an index within a sorted array (index =~ p * N)
       Real cdf_p_x_obs = (cdfFlag) ? p*(Real)num_samp : (1.-p)*(Real)num_samp;

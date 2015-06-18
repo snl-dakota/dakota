@@ -456,7 +456,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	Real p = requestedProbLevels[respFnCount][index];
 	Cout << "\n>>>>> Performance Measure Approach (PMA) for probability "
 	     << "level " << index+1 << " = " << p << '\n';
-	requestedTargetLevel = -Pecos::Phi_inverse(p);
+	requestedTargetLevel = -Pecos::NormalRandomVariable::inverse_std_cdf(p);
 	Real gen_beta_cdf = (cdfFlag) ?
 	  requestedTargetLevel : -requestedTargetLevel;
 	pmaMaximizeG = (gen_beta_cdf < 0.);
@@ -837,7 +837,7 @@ void NonDGlobalReliability::importance_sampling()
       // RIA z-bar -> p
       computedProbLevels[respFnCount][levelCount] = p;
       // RIA z-bar -> generalized beta
-      Real gen_beta = -Pecos::Phi_inverse(p);
+      Real gen_beta = -Pecos::NormalRandomVariable::inverse_std_cdf(p);
       computedGenRelLevels[respFnCount][levelCount] = gen_beta;
       switch (respLevelTarget) {
       case PROBABILITIES:
@@ -919,8 +919,8 @@ expected_improvement(const RealVector& expected_values,
   }
   else{
     snv /= stdv; // now snv is the standard normal variate
-    cdf = Pecos::Phi(snv);
-    pdf = Pecos::phi(snv);
+    cdf = Pecos::NormalRandomVariable::std_cdf(snv);
+    pdf = Pecos::NormalRandomVariable::std_pdf(snv);
   }
   ei = (pmaMaximizeG) ? (penalized_mean - fnStar)*(1.-cdf) + stdv*pdf
                       : (fnStar - penalized_mean)*cdf      + stdv*pdf;
@@ -958,17 +958,18 @@ expected_feasibility(const RealVector& expected_values,
     cdfm = cdfp = cdfz = (snvz > 0.) ? 1. : 0.;
   }
   else {
-    snvz /= stdv;             pdfz = Pecos::phi(snvz); cdfz = Pecos::Phi(snvz);
-    Real snvp = snvz + alpha; pdfp = Pecos::phi(snvp); cdfp = Pecos::Phi(snvp);
-    Real snvm = snvz - alpha; pdfm = Pecos::phi(snvm); cdfm = Pecos::Phi(snvm);
+    snvz /= stdv; Real snvp = snvz + alpha, snvm = snvz - alpha;
+    pdfz = Pecos::NormalRandomVariable::std_pdf(snvz);
+    cdfz = Pecos::NormalRandomVariable::std_cdf(snvz);
+    pdfp = Pecos::NormalRandomVariable::std_pdf(snvp);
+    cdfp = Pecos::NormalRandomVariable::std_cdf(snvp);
+    pdfm = Pecos::NormalRandomVariable::std_pdf(snvm);
+    cdfm = Pecos::NormalRandomVariable::std_cdf(snvm);
   }
   // calculate expected feasibility function
-  Real ef = (mean - zbar)*(2.*cdfz     -cdfm -cdfp)- //exploit
-                     stdv*(2.*pdfz     -pdfm -pdfp - //explore
-			   alpha*cdfp + alpha*cdfm);
-  //Real ef = (mean - zbar)*(2.*Phi(snvz) - Phi(snvm) - Phi(snvp)) -  //exploit
-  //                   stdv*(2.*phi(snvz) - phi(snvm) - phi(snvp)  -  //explore
-  //   		              alpha*Phi(snvp) + alpha*Phi(snvm));
+  Real ef = (mean - zbar)*(2.*cdfz - cdfm - cdfp) //exploit
+          - stdv*(2.*pdfz - pdfm - pdfp //explore
+	  - alpha*cdfp + alpha*cdfm);
 
   return -ef;  // return -EF because we are maximizing
 }

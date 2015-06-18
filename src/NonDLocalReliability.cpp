@@ -497,7 +497,7 @@ void NonDLocalReliability::mean_value()
 	fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
       // evaluate dg/ds at the variable means and store in finalStatistics
       RealVector final_stat_grad;
-      dg_ds_eval(natafTransform.x_means(), fn_grad_mean_x, final_stat_grad);
+      dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
       finalStatistics.function_gradient(final_stat_grad, statCount);
     }
     statCount++;
@@ -516,12 +516,10 @@ void NonDLocalReliability::mean_value()
     statCount++;
 
     // if inputs are uncorrelated, compute importance factors
-    if (!natafTransform.x_correlation() && std_dev > Pecos::SMALL_NUMBER) {
-      const Pecos::RealVector& x_std_devs = natafTransform.x_std_deviations();
+    if (!natafTransform.x_correlation() && std_dev > Pecos::SMALL_NUMBER)
       for (i=0; i<numUncertainVars; i++)
-        impFactor(i,respFnCount) = std::pow(x_std_devs[i] / std_dev *
+        impFactor(i,respFnCount) = std::pow(ranVarStdDevsX[i] / std_dev *
 					    fnGradsMeanX(i,respFnCount), 2);
-    }
 
     // compute probability/reliability levels for requested response levels and
     // compute response levels for requested probability/reliability levels.
@@ -679,7 +677,7 @@ void NonDLocalReliability::mpp_search()
 	fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
       // evaluate dg/ds at the variable means and store in finalStatistics
       RealVector final_stat_grad;
-      dg_ds_eval(natafTransform.x_means(), fn_grad_mean_x, final_stat_grad);
+      dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
       finalStatistics.function_gradient(final_stat_grad, statCount);
     }
     statCount++;
@@ -913,6 +911,9 @@ void NonDLocalReliability::initial_taylor_series()
     break;
   }
 
+  ranVarMeansX   = natafTransform.x_means();
+  ranVarStdDevsX = natafTransform.x_std_deviations();
+
   momentStats.shape(2, numFunctions); // init to 0
   if (init_ts_flag) {
     bool correlation_flag = natafTransform.x_correlation();
@@ -921,7 +922,7 @@ void NonDLocalReliability::initial_taylor_series()
     Cout << "\n>>>>> Evaluating response at mean values\n";
     if (mppSearchType && mppSearchType < NO_APPROX)
       uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-    iteratedModel.continuous_variables(natafTransform.x_means());
+    iteratedModel.continuous_variables(ranVarMeansX);
     activeSet.request_vector(asrv);
     iteratedModel.compute_response(activeSet);
     const Response& curr_resp = iteratedModel.current_response();
@@ -932,14 +933,13 @@ void NonDLocalReliability::initial_taylor_series()
 
     // compute the covariance matrix from the correlation matrix
     RealSymMatrix covariance;
-    const Pecos::RealVector& x_std_devs = natafTransform.x_std_deviations();
     if (correlation_flag) {
       covariance.shapeUninitialized(numUncertainVars);
       const Pecos::RealSymMatrix& x_corr_mat
 	= natafTransform.x_correlation_matrix();
       for (i=0; i<numUncertainVars; i++) {
 	for (j=0; j<=i; j++) {
-	  covariance(i,j) = x_std_devs[i]*x_std_devs[j]*x_corr_mat(i,j);
+	  covariance(i,j) = ranVarStdDevsX[i]*ranVarStdDevsX[j]*x_corr_mat(i,j);
 	  //if (i != j)
 	  //  covariance(j,i) = covariance(i,j);
 	}
@@ -948,7 +948,7 @@ void NonDLocalReliability::initial_taylor_series()
     else {
       covariance.shape(numUncertainVars); // inits to 0
       for (i=0; i<numUncertainVars; i++)
-	covariance(i,i) = std::pow(x_std_devs[i], 2);
+	covariance(i,i) = std::pow(ranVarStdDevsX[i], 2);
     }
 
     // MVFOSM computes a first-order mean, which is just the response evaluated
@@ -1014,7 +1014,7 @@ void NonDLocalReliability::initialize_class_data()
 
   // define ranVarMeansU for use in the transformed AMV option
   //if (mppSearchType == AMV_U)
-  natafTransform.trans_X_to_U(natafTransform.x_means(), ranVarMeansU);
+  natafTransform.trans_X_to_U(ranVarMeansX, ranVarMeansU);
   // must follow transform_correlations()
 
   /*
@@ -1612,12 +1612,11 @@ void NonDLocalReliability::update_level_data()
       Real factor = (cdfFlag) ? 1./norm_grad_u : -1./norm_grad_u;
       if (integrationOrder == 2 && respLevelTarget != RELIABILITIES) {
 	factor *= dp2_dbeta_factor(computedRelLevel, cdfFlag);
-	// factor for second-order dbeta*/ds
-	if (respLevelTarget == GEN_RELIABILITIES)
-	  factor *= -1. / Pecos::phi(-computedGenRelLevel);
+	if (respLevelTarget == GEN_RELIABILITIES) // for 2nd-order dbeta*/ds
+	  factor /= -Pecos::NormalRandomVariable::std_pdf(-computedGenRelLevel);
       }
-      else if (respLevelTarget == PROBABILITIES) // factor for first-order dp/ds
-	factor *= -Pecos::phi(-computedRelLevel);
+      else if (respLevelTarget == PROBABILITIES)  // for 1st-order dp/ds
+	factor *= -Pecos::NormalRandomVariable::std_pdf(-computedRelLevel);
 
       // apply factor:
       size_t i, num_final_grad_vars
@@ -1720,18 +1719,18 @@ update_pma_maximize(const RealVector& mpp_u, const RealVector& fn_grad_u,
 
 void NonDLocalReliability::assign_mean_data()
 {
-  const Pecos::RealVector& x_means = natafTransform.x_means();
-  mostProbPointX = x_means;
+  mostProbPointX = ranVarMeansX;
   mostProbPointU = ranVarMeansU;
   computedRespLevel = fnValsMeanX(respFnCount);
   for (size_t i=0; i<numUncertainVars; i++)
     fnGradX[i] = fnGradsMeanX(i,respFnCount);
   SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
   SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  natafTransform.trans_grad_X_to_U(fnGradX, fnGradU, x_means, x_dvv, cv_ids);
+  natafTransform.trans_grad_X_to_U(fnGradX, fnGradU, ranVarMeansX,
+				   x_dvv, cv_ids);
   if (taylorOrder == 2 && iteratedModel.hessian_type() != "quasi") {
     fnHessX = fnHessiansMeanX[respFnCount];
-    natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, x_means, fnGradX,
+    natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, ranVarMeansX, fnGradX,
 				     x_dvv, cv_ids);
     curvatureDataAvailable = true; kappaUpdated = false;
   }
@@ -1978,7 +1977,7 @@ PMA2_constraint_eval(const Variables& sub_model_vars,
     //                 (term in brackets computed in dp2_dbeta_factor())
     //   dbeta*/du_i = -1/phi(-beta*) * dp_2/du (in factor below)
     Real factor = -nondLocRelInstance->dp2_dbeta_factor(comp_rel, cdf)
-                / comp_rel / Pecos::phi(-comp_gen_rel);
+      / comp_rel / Pecos::NormalRandomVariable::std_pdf(-comp_gen_rel);
     size_t i, num_vars = u.length();
     RealVector grad_f = recast_response.function_gradient_view(1);
     for (i=0; i<num_vars; ++i)
@@ -2170,7 +2169,8 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     bool apply_correction = true;
     Real psi_m_beta;
     if (secondOrderIntType != BREITUNG)
-      psi_m_beta = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr);
+      psi_m_beta = Pecos::NormalRandomVariable::std_pdf(-beta_corr)
+	         / Pecos::NormalRandomVariable::std_cdf(-beta_corr);
     Real kterm = (secondOrderIntType == BREITUNG) ? beta_corr : psi_m_beta;
     int i, num_kappa = numUncertainVars - 1;
     for (i=0; i<num_kappa; i++) {
@@ -2194,7 +2194,8 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
 	p_corr /= std::sqrt(1. + ktk);
 	if (secondOrderIntType == HONG) {
 	  Real hterm = num_kappa * kappa[i] / 2. / (1. + ktk);
-	  C1 += Pecos::Phi(-beta_corr-hterm) / Pecos::Phi(-beta_corr)
+	  C1 += Pecos::NormalRandomVariable::std_cdf(-beta_corr-hterm)
+	     /  Pecos::NormalRandomVariable::std_cdf(-beta_corr)
 	     *  exp(psi_m_beta*hterm);
 	}
       }
@@ -2288,7 +2289,8 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
       // --> dPsi/dbeta(-beta_corr)
       //       = -Psi(-beta_corr) (-beta_corr + Psi(-beta_corr) )
       //       =  Psi(-beta_corr) ( beta_corr - Psi(-beta_corr) )
-      kterm = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr); // psi_m_beta
+      kterm = Pecos::NormalRandomVariable::std_pdf(-beta_corr)
+	    / Pecos::NormalRandomVariable::std_cdf(-beta_corr); // psi_m_beta
       dpsi_m_beta_dbeta = kterm*(beta_corr - kterm); // orig (kterm + beta_corr)
       break;
     }
@@ -2317,7 +2319,8 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
       // verify p_corr within (0,1) for consistency with probability()
       Real p1_corr = probability(beta_corr), p2_corr = p1_corr * prod2;
       if (p2_corr >= 0. && p2_corr <= 1.) // factor for second-order dp/ds:
-	return p1_corr * sum - Pecos::phi(-beta_corr) * prod2;
+	return p1_corr * sum
+	  - Pecos::NormalRandomVariable::std_pdf(-beta_corr) * prod2;
     }
 
     // if not returned, then there was an exception
@@ -2325,7 +2328,7 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
     warningBits |= 2; // second warning in output summary
   }
 
-  return -Pecos::phi(-beta);
+  return -Pecos::NormalRandomVariable::std_pdf(-beta);
 }
 
 
@@ -2445,7 +2448,8 @@ reliability_residual(const Real& p, const Real& beta,
   // this case.
   Real psi_m_beta;
   if (secondOrderIntType != BREITUNG)
-    psi_m_beta = Pecos::phi(-beta) / Pecos::Phi(-beta);
+    psi_m_beta = Pecos::NormalRandomVariable::std_pdf(-beta)
+               / Pecos::NormalRandomVariable::std_cdf(-beta);
   Real kterm = (secondOrderIntType == BREITUNG) ? beta : psi_m_beta;
   for (i=0; i<num_kappa; i++)
     if (1. + kterm * kappa[i] <= curvatureThresh) {
@@ -2465,14 +2469,15 @@ reliability_residual(const Real& p, const Real& beta,
     prod *= std::sqrt(1. + ktk);
     if (secondOrderIntType == HONG) {
       Real hterm = num_kappa * kappa[i] / 2. / (1. + ktk);
-      C1 += Pecos::Phi(-beta - hterm) / Pecos::Phi(-beta)
+      C1 += Pecos::NormalRandomVariable::std_cdf(-beta - hterm)
+	 /  Pecos::NormalRandomVariable::std_cdf(-beta)
 	 *  exp(psi_m_beta * hterm);
     }
   }
   if (secondOrderIntType == HONG)
-    res = p * prod - C1 * Pecos::Phi(-beta);
+    res = p * prod - C1 * Pecos::NormalRandomVariable::std_cdf(-beta);
   else
-    res = p * prod - Pecos::Phi(-beta);
+    res = p * prod - Pecos::NormalRandomVariable::std_cdf(-beta);
 
   return false;
 }
@@ -2485,7 +2490,8 @@ reliability_residual_derivative(const Real& p, const Real& beta,
   int i, j, num_kappa = numUncertainVars - 1;
   Real psi_m_beta, dpsi_m_beta_dbeta;
   if (secondOrderIntType != BREITUNG) {
-    psi_m_beta = Pecos::phi(-beta) / Pecos::Phi(-beta);
+    psi_m_beta = Pecos::NormalRandomVariable::std_pdf(-beta)
+               / Pecos::NormalRandomVariable::std_cdf(-beta);
     dpsi_m_beta_dbeta = psi_m_beta*(beta + psi_m_beta);
   }
 
@@ -2509,7 +2515,7 @@ reliability_residual_derivative(const Real& p, const Real& beta,
     //dres_dbeta = p * sum + C1 * phi(-beta) - Phi(-beta) * dC1_dbeta;
   }
   else
-    dres_dbeta = p * sum + Pecos::phi(-beta);
+    dres_dbeta = p * sum + Pecos::NormalRandomVariable::std_pdf(-beta);
 
   return dres_dbeta;
 }

@@ -47,7 +47,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // initialize_random_variables() called in NonDIntegration ctor
-  check_variables(natafTransform.x_types());
+  check_variables(natafTransform.x_random_variables());
 
   // define ExpansionConfigOptions
   short refine_type
@@ -130,10 +130,10 @@ NonDSparseGrid(Model& model, const UShortArray& ssg_level_seq,
   ssgDriver->track_unique_product_weights(track_uniq_prod_wts);
   ssgDriver->track_collocation_indices(track_colloc_indices);
 
-  // local natafTransform not yet updated: x_types would have to be passed in
+  // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
-  //check_variables(x_types);
+  //check_variables(x_ran_vars);
 }
 
 

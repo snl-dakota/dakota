@@ -2549,13 +2549,15 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
     // extract mean & stdev, if needed
     if (!num_IP || !num_U) {
       if (num_Lam)  // lambda/zeta
-	Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
+	Pecos::LognormalRandomVariable::
+	  moments_from_params((*Lam)[j], (*Z)[j], mean, stdev);
       else {
 	mean = (*M)[j];
 	if (num_Sd) // mean/std_deviation
 	  stdev = (*Sd)[j];
 	else        // mean/error_factor
-	  Pecos::lognormal_std_deviation_from_err_factor(mean, (*Ef)[j], stdev);
+	  Pecos::LognormalRandomVariable::
+	    std_deviation_from_error_factor(mean, (*Ef)[j], stdev);
       }
     }
 
@@ -2616,7 +2618,8 @@ static void Vgen_UniformUnc(DataVariablesRep *dv, size_t offset)
   }
   else
     for(i = offset, j = 0; j < n; ++i, ++j)
-      Pecos::moments_from_uniform_params((*L)[j], (*U)[j], (*V)[i], stdev);
+      Pecos::UniformRandomVariable::
+	moments_from_params((*L)[j], (*U)[j], (*V)[i], stdev);
 }
 
 static void 
@@ -2671,7 +2674,8 @@ static void Vgen_LoguniformUnc(DataVariablesRep *dv, size_t offset)
   }
   else
     for(i = offset, j = 0; j < n; ++i, ++j)
-      Pecos::moments_from_loguniform_params((*L)[j], (*U)[j], (*V)[i], stdev);
+      Pecos::LoguniformRandomVariable::
+	moments_from_params((*L)[j], (*U)[j], (*V)[i], stdev);
 }
 
 static void Vchk_TriangularUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2716,8 +2720,8 @@ static void Vgen_TriangularUnc(DataVariablesRep *dv, size_t offset)
   else {
     M = &dv->triangularUncModes;
     for(i = offset, j = 0; j < n; ++i, ++j)
-      Pecos::moments_from_triangular_params((*L)[j], (*U)[j], (*M)[j],
-					    (*V)[i], stdev);
+      Pecos::TriangularRandomVariable::
+	moments_from_params((*L)[j], (*M)[j], (*U)[j], (*V)[i], stdev);
   }
 }
 
@@ -2743,7 +2747,7 @@ static void Vgen_ExponentialUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_exponential_params((*B)[j], mean, stdev);
+    Pecos::ExponentialRandomVariable::moments_from_params((*B)[j], mean, stdev);
     (*L)[i] = 0.;
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
@@ -2784,8 +2788,8 @@ static void Vgen_BetaUnc(DataVariablesRep *dv, size_t offset)
   }
   else
     for(i = offset, j = 0; j < n; ++i, ++j)
-      Pecos::moments_from_beta_params((*L)[j], (*U)[j], (*A)[j],
-				      (*B)[j], (*V)[i], stdev);
+      Pecos::BetaRandomVariable::
+	moments_from_params((*A)[j], (*B)[j], (*L)[j], (*U)[j], (*V)[i], stdev);
 }
 
 static void Vchk_GammaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2811,7 +2815,8 @@ static void Vgen_GammaUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_gamma_params((*A)[j], (*B)[j], mean, stdev);
+    Pecos::GammaRandomVariable::
+      moments_from_params((*A)[j], (*B)[j], mean, stdev);
     (*L)[i] = 0.;
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
@@ -2842,7 +2847,8 @@ static void Vgen_GumbelUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_gumbel_params((*A)[j], (*B)[j], mean, stdev);
+    Pecos::GumbelRandomVariable::
+      moments_from_params((*A)[j], (*B)[j], mean, stdev);
     (*L)[i] = mean - 3.*stdev;
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
@@ -2873,7 +2879,8 @@ static void Vgen_FrechetUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_frechet_params((*A)[j], (*B)[j], mean, stdev);
+    Pecos::FrechetRandomVariable::
+      moments_from_params((*A)[j], (*B)[j], mean, stdev);
     (*L)[i] = 0.;
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
@@ -2904,7 +2911,8 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_weibull_params((*A)[j], (*B)[j], mean, stdev);
+    Pecos::WeibullRandomVariable::
+      moments_from_params((*A)[j], (*B)[j], mean, stdev);
     (*L)[i] = 0.;
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
@@ -3029,7 +3037,9 @@ static void Vgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
       else if ((*IP)[j] > (*U)[i]) (*V)[i] =  (*U)[i];
       else                         (*V)[i] = (*IP)[j];
     }
-    else Pecos::moments_from_histogram_bin_params(hist_bin_pairs, (*V)[i], stdev);
+    else
+      Pecos::HistogramBinRandomVariable::
+	moments_from_params(hist_bin_pairs, (*V)[i], stdev);
   }
 }
 
@@ -3696,7 +3706,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
       else                    (*V)[i] = (*IP)[j];
     }
     else
-      Pecos::moments_from_uniform_params(lb, ub, (*V)[i], stdev);
+      Pecos::UniformRandomVariable::moments_from_params(lb, ub, (*V)[i], stdev);
     // TO DO: if disjoint cells, repair V[i] to lie inside nearest cell
   }
 }

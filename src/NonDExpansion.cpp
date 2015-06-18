@@ -216,37 +216,7 @@ void NonDExpansion::initialize(short u_space_type)
   initialize_random_variable_correlations();
   // for lightweight ctor, defer until call to requested_levels()
   //initialize_final_statistics();
-
-  // check for correlations that are not supported for (1) use in extended
-  // u-space and (2) use by Der Kiureghian & Liu for basic u-space (bounded
-  // normal, bounded lognormal, loguniform, triangular, and beta vars).
-  size_t i, j;
-  if (natafTransform.x_correlation()) {
-
-    const Pecos::ShortArray&    x_types = natafTransform.x_types();
-    Pecos::ShortArray           u_types = natafTransform.u_types(); // copy
-    const Pecos::RealSymMatrix& x_corr  = natafTransform.x_correlation_matrix();
-
-    // We can only decorrelate in std normal space; therefore, if a variable
-    // with a u_type other than STD_NORMAL is correlated with anything, revert
-    // its u_type to STD_NORMAL.   Note: loop below must check all columns,
-    // despite symmetry, since only rows are checked for u_type.
-    bool u_space_modified = false;
-    for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
-      if (u_types[i] != Pecos::STD_NORMAL)
-	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
-	  if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER) {
-	    Cerr << "\nWarning: in NonDExpansion, u-space type for random "
-		 << "variable " << i-numContDesVars+1 << " changed to\n"
-		 << "         STD_NORMAL due to decorrelation requirements.\n";
-	    u_types[i] = Pecos::STD_NORMAL; u_space_modified = true; break;
-	  }
-
-    if (u_space_modified) // update ranVarTypesU in natafTransform
-      natafTransform.initialize_random_variable_types(x_types, u_types);
-
-    verify_correlation_support(); // Der Kiureghian & Liu correlation warping
-  }
+  verify_correlation_support(u_space_type); // correlation warping factors
 }
 
 
@@ -626,7 +596,7 @@ void NonDExpansion::initialize_expansion()
     = uSpaceModel.subordinate_model().aleatory_distribution_parameters();
   const Pecos::AleatoryDistParams& adp_x
     = iteratedModel.aleatory_distribution_parameters();
-  adp_u.update_partial(adp_x, natafTransform.x_types(),
+  adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
 		       natafTransform.u_types());
   // now perform the general recursion
   uSpaceModel.update_from_subordinate_model(); // recurse_flag = true
@@ -1668,16 +1638,17 @@ void NonDExpansion::compute_statistics()
       RealVector exp_grad_x;
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
       SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-      natafTransform.trans_grad_U_to_X(exp_grad_u, exp_grad_x,
-				       natafTransform.x_means(), x_dvv, cv_ids);
+      RealVector x_means(natafTransform.x_means());
+      natafTransform.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_means,
+				       x_dvv, cv_ids);
       Teuchos::setCol(exp_grad_x, (int)i, expGradsMeanX);
 
 #ifdef TEST_HESSIANS
       const RealSymMatrix& exp_hess_u
 	= poly_approxs[i].hessian(uSpaceModel.current_variables());
       //RealSymMatrix exp_hess_x;
-      //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x,
-      //			       natafTransform.x_means(), x_dvv, cv_ids);
+      //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means,
+      //                                 x_dvv, cv_ids);
       write_data(Cout, exp_hess_u, true, true, true); //exp_hess_x
 #endif // TEST_HESSIANS
     }
@@ -1814,7 +1785,8 @@ void NonDExpansion::compute_statistics()
 	      finalStatistics.function_value(p, cntr);
 	    }
 	    else if (respLevelTarget == GEN_RELIABILITIES) {
-	      computedGenRelLevels[i][j] = gen_beta = -Pecos::Phi_inverse(p);
+	      computedGenRelLevels[i][j] = gen_beta
+		= -Pecos::NormalRandomVariable::inverse_std_cdf(p);
 	      finalStatistics.function_value(gen_beta, cntr);
 	    }
 	  }
@@ -1950,7 +1922,7 @@ void NonDExpansion::update_final_statistics_gradients()
   // > All vars: bookkeep the two dg/ds approaches
   // > Distinct vars: PCE/SC approximations for dg/ds are formed
 
-  // for all_variables, finalStatistics design grads are in extended u-space
+  // for all_variables, finalStatistics design grads are in u-space
   // -> transform to the original design space
   if (numContDesVars || numContEpistUncVars || numContStateVars) {
     // this approach is more efficient but less general.  If we can assume
@@ -1960,9 +1932,9 @@ void NonDExpansion::update_final_statistics_gradients()
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
     size_t num_final_grad_vars = final_dvv.size();
-    Real factor;
-    const Pecos::RealVector& x_l_bnds = natafTransform.x_lower_bounds();
-    const Pecos::RealVector& x_u_bnds = natafTransform.x_upper_bounds();
+    Real factor, x = 0.; // x is a dummy for common pdf API (unused by uniform)
+    const std::vector<Pecos::RandomVariable>& x_ran_vars
+      = natafTransform.x_random_variables();
 
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
     int num_final_stats = final_stat_grads.numCols();
@@ -1970,10 +1942,11 @@ void NonDExpansion::update_final_statistics_gradients()
       size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
       if ( deriv_j <  numContDesVars ||
 	   deriv_j >= numContDesVars+numContAleatUncVars ) {
-	// augmented design variable sensitivity
-	factor = 2. / (x_u_bnds(deriv_j) - x_l_bnds(deriv_j));
+	// augmented design var sensitivity: 2/range (see jacobian_dZ_dX())
+	factor = x_ran_vars[deriv_j].pdf(x)
+	       / Pecos::UniformRandomVariable::std_pdf();
 	for (size_t i=0; i<num_final_stats; ++i)
-	  final_stat_grads(j,i) *= factor; // see jacobian_dZ_dX()
+	  final_stat_grads(j,i) *= factor;
       }
       // else inserted design variable sensitivity: no scaling required
     }

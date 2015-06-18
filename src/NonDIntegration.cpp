@@ -45,7 +45,7 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
   initialize_random_variable_types(EXTENDED_U);
   // Note: initialize_random_variable_parameters() is performed at run time
   initialize_random_variable_correlations();
-  verify_correlation_support();
+  verify_correlation_support(EXTENDED_U);
   initialize_final_statistics(); // default statistics set
 }
 
@@ -89,7 +89,7 @@ void NonDIntegration::quantify_uncertainty()
   //if (standAloneMode)
   //  initialize_random_variable_parameters(); // capture any dist param updates
   //else
-  check_variables(natafTransform.x_types()); // deferred from alternate ctor
+  check_variables(natafTransform.x_random_variables());//deferred from alt ctors
 
   // generate integration points
   get_parameter_sets(iteratedModel);
@@ -108,19 +108,25 @@ void NonDIntegration::quantify_uncertainty()
 
 /** Virtual function called from probDescDB-based constructors and from
     NonDIntegration::quantify_uncertainty() */
-void NonDIntegration::check_variables(const Pecos::ShortArray& x_types)
+void NonDIntegration::
+check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars)
 {
   // base class default definition of virtual function
   bool err_flag = false;
 
-  numContDesVars   = std::count(x_types.begin(), x_types.end(),
-				(short)Pecos::CONTINUOUS_DESIGN);
-  numContStateVars = std::count(x_types.begin(), x_types.end(),
-				(short)Pecos::CONTINUOUS_STATE);
+  numContDesVars = numContIntervalVars = numContStateVars = 0;
+  size_t i, num_v = x_ran_vars.size(); short x_type;
+  for (i=0; i<num_v; ++i) {
+    x_type = x_ran_vars[i].type();
+    if      (x_type == Pecos::CONTINUOUS_DESIGN)   ++numContDesVars;
+    else if (x_type == Pecos::CONTINUOUS_INTERVAL) ++numContIntervalVars;
+    else if (x_type == Pecos::CONTINUOUS_STATE)    ++numContStateVars;
+  }
 
-  if (x_types.size()    != numContinuousVars ||
-      numContinuousVars != numContDesVars      + numContAleatUncVars +
-                           numContEpistUncVars + numContStateVars) {
+  if (x_ran_vars.size()   != numContinuousVars   ||
+      numContEpistUncVars != numContIntervalVars ||
+      numContinuousVars   != numContDesVars      + numContAleatUncVars +
+                             numContEpistUncVars + numContStateVars) {
     Cerr << "Error: mismatch in active variable counts in NonDIntegration::"
 	 << "check_variables()." << std::endl;
     err_flag = true;

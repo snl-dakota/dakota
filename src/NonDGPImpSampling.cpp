@@ -513,10 +513,10 @@ RealVector NonDGPImpSampling::calcExpIndicator(const int resp_fn_count, const Re
     }
     else{
       snv/=stdv;
-      ei(i)= Pecos::Phi(snv); //the expected indicator is the fraction of the 
-      //mapped problem's cdf that fails, the simple mapping is at most a 
-      //change in sign of the snv and might be the identity mapping (not 
-      //even a change in sign)
+      ei(i)= Pecos::NormalRandomVariable::std_cdf(snv);
+      //the expected indicator is the fraction of the mapped problem's cdf
+      //that fails, the simple mapping is at most a change in sign of the
+      //snv and might be the identity mapping (not even a change in sign)
     }
 
     //Cout << "EI " << ei(i) << " respThresh= " << respThresh << " mu= " << gpMeans[i][resp_fn_count] << " stdv= " << stdv << '\n';
@@ -547,10 +547,10 @@ Real NonDGPImpSampling::calcExpIndPoint(const int resp_fn_count, const Real resp
   }
   else{
     snv/=stdv;
-    ei= Pecos::Phi(snv); //the expected indicator is the fraction of the 
-    //mapped problem's cdf that fails, the simple mapping is at most a 
-    //change in sign of the snv and might be the identity mapping (not 
-    //even a change in sign)
+    ei= Pecos::NormalRandomVariable::std_cdf(snv);
+    //the expected indicator is the fraction of the mapped problem's cdf
+    //that fails, the simple mapping is at most a change in sign of the
+    //snv and might be the identity mapping (not even a change in sign)
   }
 
   //Cout << "EI " << ei << " respThresh= " << respThresh << " mu= " << this_mean(resp_fn_count) << " stdv= " << stdv << '\n';

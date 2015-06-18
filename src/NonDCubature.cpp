@@ -39,7 +39,7 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
   // natafTransform available: initialize_random_variables() called in
   // NonDIntegration ctor
   const Pecos::ShortArray& u_types = natafTransform.u_types();
-  check_variables(natafTransform.x_types());
+  check_variables(natafTransform.x_random_variables());
   check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
@@ -63,7 +63,7 @@ NonDCubature(Model& model, const Pecos::ShortArray& u_types,
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
-  //check_variables(x_types);
+  //check_variables(x_ran_vars);
   check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
 }
 

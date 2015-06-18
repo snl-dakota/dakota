@@ -3955,7 +3955,7 @@ continuous_probability_density(Real c_var, unsigned short cv_type,
       // NIDR always defines bounds (default to +/-inf).  Could detect this and
       // use Pecos::normal_pdf() but single bound cases make this approach more
       // complicated than warranted.
-      return Pecos::bounded_normal_pdf(c_var,
+      return Pecos::BoundedNormalRandomVariable::pdf(c_var,
 	       aleatDistParams.normal_mean(dist_index),
 	       aleatDistParams.normal_std_deviation(dist_index),
 	       aleatDistParams.normal_lower_bound(dist_index),
@@ -3969,68 +3969,72 @@ continuous_probability_density(Real c_var, unsigned short cv_type,
       Real mean, stdev;
       const RealVector& lambdas = aleatDistParams.lognormal_lambdas();
       if (!lambdas.empty())
-	Pecos::moments_from_lognormal_params(lambdas[dist_index],
+	Pecos::LognormalRandomVariable::moments_from_params(lambdas[dist_index],
 	  aleatDistParams.lognormal_zeta(dist_index), mean, stdev);
       else {
 	mean = aleatDistParams.lognormal_mean(dist_index);
 	const RealVector& err_facts
 	  = aleatDistParams.lognormal_error_factors();
 	if (!err_facts.empty())
-	  Pecos::lognormal_std_deviation_from_err_factor(mean,
+	  Pecos::LognormalRandomVariable::std_deviation_from_error_factor(mean,
 	    err_facts[dist_index], stdev);
 	else
 	  stdev = aleatDistParams.lognormal_std_deviation(dist_index);
       }
-      return Pecos::bounded_lognormal_pdf(c_var, mean, stdev,
+      return Pecos::BoundedLognormalRandomVariable::pdf(c_var, mean, stdev,
 	       aleatDistParams.lognormal_lower_bound(dist_index),
 	       aleatDistParams.lognormal_upper_bound(dist_index));
       break;
     }
     case UNIFORM_UNCERTAIN:
-      return Pecos::uniform_pdf(aleatDistParams.uniform_lower_bound(dist_index),
+      return Pecos::UniformRandomVariable::pdf(
+	       aleatDistParams.uniform_lower_bound(dist_index),
 	       aleatDistParams.uniform_upper_bound(dist_index));
       break;
     case LOGUNIFORM_UNCERTAIN:
-      return Pecos::loguniform_pdf(c_var,
+      return Pecos::LoguniformRandomVariable::pdf(c_var,
 	       aleatDistParams.loguniform_lower_bound(dist_index),
 	       aleatDistParams.loguniform_upper_bound(dist_index));
       break;
     case TRIANGULAR_UNCERTAIN:
-      return Pecos::triangular_pdf(c_var,
+      return Pecos::TriangularRandomVariable::pdf(c_var,
 	       aleatDistParams.triangular_mode(dist_index),
 	       aleatDistParams.triangular_lower_bound(dist_index),
 	       aleatDistParams.triangular_upper_bound(dist_index));
       break;
     case EXPONENTIAL_UNCERTAIN: 
-      return Pecos::exponential_pdf(c_var,
+      return Pecos::ExponentialRandomVariable::pdf(c_var,
 	       aleatDistParams.exponential_beta(dist_index));
       break;
     case BETA_UNCERTAIN:
-      return Pecos::beta_pdf(c_var, aleatDistParams.beta_alpha(dist_index),
-			     aleatDistParams.beta_beta(dist_index),
-			     aleatDistParams.beta_lower_bound(dist_index),
-			     aleatDistParams.beta_upper_bound(dist_index));
+      return Pecos::BetaRandomVariable::pdf(c_var,
+	       aleatDistParams.beta_alpha(dist_index),
+	       aleatDistParams.beta_beta(dist_index),
+	       aleatDistParams.beta_lower_bound(dist_index),
+	       aleatDistParams.beta_upper_bound(dist_index));
       break;
     case GAMMA_UNCERTAIN:
-      return Pecos::gamma_pdf(c_var, aleatDistParams.gamma_alpha(dist_index),
-			      aleatDistParams.gamma_beta(dist_index));
+      return Pecos::GammaRandomVariable::pdf(c_var,
+	       aleatDistParams.gamma_alpha(dist_index),
+	       aleatDistParams.gamma_beta(dist_index));
       break;
     case GUMBEL_UNCERTAIN:
-      return Pecos::gumbel_pdf(c_var, aleatDistParams.gumbel_alpha(dist_index),
-			       aleatDistParams.gumbel_beta(dist_index));
+      return Pecos::GumbelRandomVariable::pdf(c_var,
+	       aleatDistParams.gumbel_alpha(dist_index),
+	       aleatDistParams.gumbel_beta(dist_index));
       break;
     case FRECHET_UNCERTAIN:
-      return Pecos::frechet_pdf(c_var,
-				aleatDistParams.frechet_alpha(dist_index),
-				aleatDistParams.frechet_beta(dist_index));
+      return Pecos::FrechetRandomVariable::pdf(c_var,
+	       aleatDistParams.frechet_alpha(dist_index),
+	       aleatDistParams.frechet_beta(dist_index));
       break;
     case WEIBULL_UNCERTAIN:
-      return Pecos::weibull_pdf(c_var,
-				aleatDistParams.weibull_alpha(dist_index),
-				aleatDistParams.weibull_beta(dist_index));
+      return Pecos::WeibullRandomVariable::pdf(c_var,
+	       aleatDistParams.weibull_alpha(dist_index),
+	       aleatDistParams.weibull_beta(dist_index));
       break;
     case HISTOGRAM_BIN_UNCERTAIN:
-      return Pecos::histogram_bin_pdf(c_var,
+      return Pecos::HistogramBinRandomVariable::pdf(c_var,
 	       aleatDistParams.histogram_bin_pairs(dist_index));
       break;
     default:
@@ -4097,7 +4101,7 @@ RealRealPair Model::continuous_distribution_bounds(size_t cv_index) const
     case GUMBEL_UNCERTAIN: default:
       lwr = -(upr = std::numeric_limits<Real>::infinity());  break;
     }
-    return std::pair<Real, Real>(lwr, upr);
+    return RealRealPair(lwr, upr);
   }
 }
 
@@ -4127,7 +4131,7 @@ continuous_distribution_moment(size_t cv_index,
       break;
     case LOGNORMAL_UNCERTAIN:
       if (!aleatDistParams.lognormal_lambdas().empty()) // lambda/zeta
-	Pecos::moments_from_lognormal_params(
+	Pecos::LognormalRandomVariable::moments_from_params(
 	  aleatDistParams.lognormal_lambda(dist_index),
 	  aleatDistParams.lognormal_zeta(dist_index), mean, stdev);
       else if (moment_id == 1)
@@ -4135,61 +4139,61 @@ continuous_distribution_moment(size_t cv_index,
       else if (!aleatDistParams.lognormal_std_deviations().empty())// mean/stdev
 	return aleatDistParams.lognormal_std_deviation(dist_index);
       else { // mean/err_fact
-	Pecos::lognormal_std_deviation_from_err_factor(
+	Pecos::LognormalRandomVariable::std_deviation_from_error_factor(
 	  aleatDistParams.lognormal_mean(dist_index),
 	  aleatDistParams.lognormal_error_factor(dist_index), stdev);
 	return stdev;
       }
       break;
     case UNIFORM_UNCERTAIN:
-      Pecos::moments_from_uniform_params(
+      Pecos::UniformRandomVariable::moments_from_params(
 	aleatDistParams.uniform_lower_bound(dist_index),
 	aleatDistParams.uniform_upper_bound(dist_index), mean, stdev);
       break;
     case LOGUNIFORM_UNCERTAIN:
-      Pecos::moments_from_uniform_params(
+      Pecos::LoguniformRandomVariable::moments_from_params(
 	aleatDistParams.loguniform_lower_bound(dist_index),
 	aleatDistParams.loguniform_upper_bound(dist_index), mean, stdev);
       break;
     case TRIANGULAR_UNCERTAIN:
-      Pecos::moments_from_triangular_params(
+      Pecos::TriangularRandomVariable::moments_from_params(
 	aleatDistParams.triangular_lower_bound(dist_index),
-	aleatDistParams.triangular_upper_bound(dist_index),
-	aleatDistParams.triangular_mode(dist_index), mean, stdev);
+	aleatDistParams.triangular_mode(dist_index),
+	aleatDistParams.triangular_upper_bound(dist_index), mean, stdev);
       break;
     case EXPONENTIAL_UNCERTAIN:
-      Pecos::moments_from_exponential_params(
+      Pecos::ExponentialRandomVariable::moments_from_params(
 	aleatDistParams.exponential_beta(dist_index), mean, stdev);
       break;
     case BETA_UNCERTAIN:
-      Pecos::moments_from_beta_params(
-	aleatDistParams.beta_lower_bound(dist_index),
-	aleatDistParams.beta_upper_bound(dist_index),
+      Pecos::BetaRandomVariable::moments_from_params(
 	aleatDistParams.beta_alpha(dist_index),
-	aleatDistParams.beta_beta(dist_index), mean, stdev);
+	aleatDistParams.beta_beta(dist_index),
+	aleatDistParams.beta_lower_bound(dist_index),
+	aleatDistParams.beta_upper_bound(dist_index), mean, stdev);
       break;
     case GAMMA_UNCERTAIN:
-      Pecos::moments_from_gamma_params(
+      Pecos::GammaRandomVariable::moments_from_params(
 	aleatDistParams.gamma_alpha(dist_index),
 	aleatDistParams.gamma_beta(dist_index), mean, stdev);
       break;
     case GUMBEL_UNCERTAIN:
-      Pecos::moments_from_gumbel_params(
+      Pecos::GumbelRandomVariable::moments_from_params(
 	aleatDistParams.gumbel_alpha(dist_index),
 	aleatDistParams.gumbel_beta(dist_index), mean, stdev);
       break;
     case FRECHET_UNCERTAIN:
-      Pecos::moments_from_frechet_params(
+      Pecos::FrechetRandomVariable::moments_from_params(
 	aleatDistParams.frechet_alpha(dist_index),
 	aleatDistParams.frechet_beta(dist_index), mean, stdev);
       break;
     case WEIBULL_UNCERTAIN:
-      Pecos::moments_from_weibull_params(
+      Pecos::WeibullRandomVariable::moments_from_params(
 	aleatDistParams.weibull_alpha(dist_index),
 	aleatDistParams.weibull_beta(dist_index), mean, stdev);
       break;
     case HISTOGRAM_BIN_UNCERTAIN:
-      Pecos::moments_from_histogram_bin_params(
+      Pecos::HistogramBinRandomVariable::moments_from_params(
 	aleatDistParams.histogram_bin_pairs(dist_index), mean, stdev);
       break;
     default:

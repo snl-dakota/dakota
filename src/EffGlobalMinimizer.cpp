@@ -512,8 +512,8 @@ expected_improvement(const RealVector& means, const RealVector& variances)
   }
   else{
     snv/=stdv; 
-    cdf = Pecos::Phi(snv);
-    pdf = Pecos::phi(snv);
+    cdf = Pecos::NormalRandomVariable::std_cdf(snv);
+    pdf = Pecos::NormalRandomVariable::std_pdf(snv);
   }
 
   Real ei  = (meritFnStar - mean)*cdf + stdv*pdf;
@@ -543,8 +543,8 @@ expected_violation(const RealVector& means, const RealVector& variances)
       }
       else{
 	snv/=stdv; //now snv is the standard normal variate
-	cdf = Pecos::Phi(snv);
-	pdf = Pecos::phi(snv);
+	cdf = Pecos::NormalRandomVariable::std_cdf(snv);
+	pdf = Pecos::NormalRandomVariable::std_pdf(snv);
       }
       ev[cntr++] = (lbnd-mean)*cdf + stdv*pdf;
     }
@@ -557,8 +557,8 @@ expected_violation(const RealVector& means, const RealVector& variances)
       }
       else{
 	snv/=stdv;
-	cdf = Pecos::Phi(snv);
-	pdf = Pecos::phi(snv);
+	cdf = Pecos::NormalRandomVariable::std_cdf(snv);
+	pdf = Pecos::NormalRandomVariable::std_pdf(snv);
       }
       ev[cntr++] = (mean-ubnd)*(1.-cdf) + stdv*pdf;
     }
@@ -577,8 +577,8 @@ expected_violation(const RealVector& means, const RealVector& variances)
     }
     else{
       snv/=stdv;
-      cdf = Pecos::Phi(snv);
-      pdf = Pecos::phi(snv);
+      cdf = Pecos::NormalRandomVariable::std_cdf(snv);
+      pdf = Pecos::NormalRandomVariable::std_pdf(snv);
     }
     ev[cntr++] = (zbar-mean)*(2.*cdf-1.) + 2.*stdv*pdf;
   }

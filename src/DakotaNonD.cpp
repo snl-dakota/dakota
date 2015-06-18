@@ -528,20 +528,24 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   }
   // Nataf is a nonlinear tranformation for all variables except Normals.
   // Nonlinear mappings require special ASV logic for transforming Hessians.
-  const Pecos::ShortArray& x_types = natafTransform.x_types();
+  const std::vector<Pecos::RandomVariable>& x_ran_vars
+    = natafTransform.x_random_variables();
   const Pecos::ShortArray& u_types = natafTransform.u_types();
-  bool nonlinear_vars_map = false;
-  for (i=numContDesVars; i<num_cdv_cauv; ++i)
-    if ( x_types[i] != u_types[i] &&
-	 !( x_types[i] == Pecos::NORMAL && u_types[i] == Pecos::STD_NORMAL ) &&
-	 !( ( x_types[i] == Pecos::UNIFORM ||
-	      x_types[i] == Pecos::HISTOGRAM_BIN ) &&
-	    u_types[i] == Pecos::STD_UNIFORM ) &&
-	 !( x_types[i] == Pecos::EXPONENTIAL &&
-	    u_types[i] == Pecos::STD_EXPONENTIAL ) &&
-	 !( x_types[i] == Pecos::BETA   && u_types[i] == Pecos::STD_BETA ) &&
-	 !( x_types[i] == Pecos::GAMMA  && u_types[i] == Pecos::STD_GAMMA ) )
+  bool nonlinear_vars_map = false; short x_type, u_type;
+  for (i=numContDesVars; i<num_cdv_cauv; ++i) {
+    x_type = x_ran_vars[i].type(); u_type = u_types[i];
+    if ( x_type != u_type &&
+	 !( x_type == Pecos::NORMAL && u_type == Pecos::STD_NORMAL ) &&
+	 !( ( x_type == Pecos::UNIFORM || x_type == Pecos::HISTOGRAM_BIN ||
+	      x_type == Pecos::CONTINUOUS_DESIGN   ||
+	      x_type == Pecos::CONTINUOUS_INTERVAL ||
+	      x_type == Pecos::CONTINUOUS_STATE ) &&
+	    u_type == Pecos::STD_UNIFORM ) &&
+	 !( x_type == Pecos::EXPONENTIAL && u_type == Pecos::STD_EXPONENTIAL) &&
+	 !( x_type == Pecos::BETA   && u_type == Pecos::STD_BETA ) &&
+	 !( x_type == Pecos::GAMMA  && u_type == Pecos::STD_GAMMA ) )
       { nonlinear_vars_map = true; break; }
+  }
 
   // There is no additional response mapping beyond that required by the
   // nonlinear variables mapping.
@@ -611,19 +615,20 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
       const Pecos::RealVector& x_nuv_u_bnds   = x_adp.normal_upper_bounds();
       size_t n_cntr = 0, x_n_cntr = 0;;
       for (i=numContDesVars; i<num_cdv_cauv; ++i) {
-	if (u_types[i] == Pecos::BOUNDED_NORMAL) {
+	x_type = x_ran_vars[i].type(); u_type = u_types[i];
+	if (u_type == Pecos::BOUNDED_NORMAL) {
 	  nuv_means[n_cntr]    = x_nuv_means[x_n_cntr];
 	  nuv_std_devs[n_cntr] = x_nuv_std_devs[x_n_cntr];
 	  nuv_l_bnds[n_cntr]   = x_nuv_l_bnds[x_n_cntr];
 	  nuv_u_bnds[n_cntr]   = x_nuv_u_bnds[x_n_cntr];
 	  ++n_cntr;
 	}
-	else if (u_types[i] == Pecos::STD_NORMAL) {
+	else if (u_type == Pecos::STD_NORMAL) {
 	  nuv_means[n_cntr]  = 0.;	 nuv_std_devs[n_cntr] = 1.;
 	  nuv_l_bnds[n_cntr] = -dbl_inf; nuv_u_bnds[n_cntr]   = dbl_inf;
 	  ++n_cntr;
 	}
-	if (x_types[i] == Pecos::NORMAL || x_types[i] == Pecos::BOUNDED_NORMAL)
+	if (x_type == Pecos::NORMAL || x_type == Pecos::BOUNDED_NORMAL)
 	  ++x_n_cntr;
       }
     }
@@ -737,8 +742,8 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 	c_l_bnds[i] =     0.; c_u_bnds[i] = 1.+bound; break;
       case Pecos::STD_GAMMA: {
 	Real mean, stdev;
-	Pecos::moments_from_gamma_params(gauv_alphas[guuv_cntr], 1.,
-					 mean, stdev);
+	Pecos::GammaRandomVariable::
+	  moments_from_params(gauv_alphas[guuv_cntr], 1., mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++gauv_cntr; break;
       }
       case Pecos::BOUNDED_NORMAL: case Pecos::BOUNDED_LOGNORMAL:
@@ -758,21 +763,24 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
       }
       case Pecos::GUMBEL: { // unbounded distribution
 	Real mean, stdev;
-	Pecos::moments_from_gumbel_params(guuv_alphas[guuv_cntr],
-					  guuv_betas[guuv_cntr], mean, stdev);
+	Pecos::GumbelRandomVariable::
+	  moments_from_params(guuv_alphas[guuv_cntr], guuv_betas[guuv_cntr],
+			      mean, stdev);
 	c_l_bnds[i] = mean - bound*stdev; c_u_bnds[i] = mean + bound*stdev;
 	++guuv_cntr; break;
       }
       case Pecos::FRECHET: { // semibounded distribution
 	Real mean, stdev;
-	Pecos::moments_from_frechet_params(fuv_alphas[fuv_cntr],
-					   fuv_betas[fuv_cntr], mean, stdev);
+	Pecos::FrechetRandomVariable::
+	  moments_from_params(fuv_alphas[fuv_cntr], fuv_betas[fuv_cntr],
+			      mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++fuv_cntr; break;
       }
       case Pecos::WEIBULL: { // semibounded distribution
 	Real mean, stdev;
-	Pecos::moments_from_weibull_params(wuv_alphas[wuv_cntr],
-					   wuv_betas[wuv_cntr], mean, stdev);
+	Pecos::WeibullRandomVariable::
+	  moments_from_params(wuv_alphas[wuv_cntr], wuv_betas[wuv_cntr],
+			      mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++wuv_cntr; break;
       }
       }
@@ -917,24 +925,25 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 
   bool map_derivs = ( (u_grad_flag || u_hess_flag) &&
 		      u_dvv != u_vars.inactive_continuous_variable_ids() );
-  const Pecos::ShortArray& x_types = nondInstance->natafTransform.x_types();
+  const std::vector<Pecos::RandomVariable>& x_ran_vars
+    = nondInstance->natafTransform.x_random_variables();
   const Pecos::ShortArray& u_types = nondInstance->natafTransform.u_types();
-  size_t num_types = x_types.size();
-  bool nonlinear_vars_map = false;
-  for (i=0; i<num_types; ++i)
-    if ( x_types[i] != u_types[i] &&
-	 !( x_types[i] == Pecos::NORMAL && u_types[i] == Pecos::STD_NORMAL ) &&
-	 !( ( x_types[i] == Pecos::CONTINUOUS_DESIGN ||
-	      x_types[i] == Pecos::UNIFORM ||
-	      x_types[i] == Pecos::HISTOGRAM_BIN ||
-	      x_types[i] == Pecos::CONTINUOUS_INTERVAL ||
-	      x_types[i] == Pecos::CONTINUOUS_STATE ) &&
-	    u_types[i] == Pecos::STD_UNIFORM ) &&
-	 !( x_types[i] == Pecos::EXPONENTIAL &&
-	    u_types[i] == Pecos::STD_EXPONENTIAL ) &&
-	 !( x_types[i] == Pecos::BETA   && u_types[i] == Pecos::STD_BETA ) &&
-	 !( x_types[i] == Pecos::GAMMA  && u_types[i] == Pecos::STD_GAMMA ) )
+  size_t num_types = u_types.size();
+  bool nonlinear_vars_map = false; short x_type, u_type;
+  for (i=0; i<num_types; ++i) {
+    x_type = x_ran_vars[i].type(); u_type = u_types[i];
+    if ( x_type != u_type &&
+	 !( x_type == Pecos::NORMAL && u_type == Pecos::STD_NORMAL ) &&
+	 !( ( x_type == Pecos::UNIFORM || x_type == Pecos::HISTOGRAM_BIN ||
+	      x_type == Pecos::CONTINUOUS_DESIGN   ||
+	      x_type == Pecos::CONTINUOUS_INTERVAL ||
+	      x_type == Pecos::CONTINUOUS_STATE ) &&
+	    u_type == Pecos::STD_UNIFORM ) &&
+	 !( x_type == Pecos::EXPONENTIAL && u_type == Pecos::STD_EXPONENTIAL) &&
+	 !( x_type == Pecos::BETA        && u_type == Pecos::STD_BETA ) &&
+	 !( x_type == Pecos::GAMMA       && u_type == Pecos::STD_GAMMA ) )
       { nonlinear_vars_map = true; break; }
+  }
 
   RealVector   fn_grad_x,  fn_grad_us; RealSymMatrix      fn_hess_us;
   RealMatrix jacobian_xu, jacobian_xs; RealSymMatrixArray hessian_xu;
@@ -1040,12 +1049,11 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     variables are in x-space. */
 void NonD::initialize_random_variables(short u_space_type)
 {
-  if (natafTransform.is_null())
-    initialize_random_variable_transformation();
+  initialize_random_variable_transformation();
   initialize_random_variable_types(u_space_type);
   initialize_random_variable_parameters();
   initialize_random_variable_correlations();
-  verify_correlation_support();
+  verify_correlation_support(u_space_type);
 }
 
 
@@ -1057,23 +1065,31 @@ void NonD::initialize_random_variables(short u_space_type)
 void NonD::
 initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
 {
-  if (natafTransform.is_null())
-    initialize_random_variable_transformation();
+  initialize_random_variable_transformation();
 
   natafTransform.initialize_random_variables(transform); // or could use copy()
 
-  // infer numContDesVars and numContStateVars, but don't update continuous
-  // aleatory/epistemic uncertain counts (these may be u-space counts).
-  const Pecos::ShortArray& x_types = transform.x_types();
-  numContDesVars = std::count(x_types.begin(), x_types.end(),
-			      (short)Pecos::CONTINUOUS_DESIGN);
-  numContStateVars = std::count(x_types.begin(), x_types.end(),
-				(short)Pecos::CONTINUOUS_STATE);
+  // infer numCont{Des,Interval,State}Vars, but don't update continuous
+  // aleatory uncertain counts (these may be u-space counts).
+  const std::vector<Pecos::RandomVariable>& x_ran_vars
+    = natafTransform.x_random_variables();
+  numContDesVars = numContIntervalVars = numContStateVars = 0;
+  size_t i, num_v = x_ran_vars.size(); short x_type;
+  for (i=0; i<num_v; ++i) {
+    x_type = x_ran_vars[i].type();
+    if      (x_type == Pecos::CONTINUOUS_DESIGN)   ++numContDesVars;
+    else if (x_type == Pecos::CONTINUOUS_INTERVAL) ++numContIntervalVars;
+    else if (x_type == Pecos::CONTINUOUS_STATE)    ++numContStateVars;
+  }
+  numContEpistUncVars = numContIntervalVars;
 }
 
 
 void NonD::initialize_random_variable_transformation()
-{ natafTransform = Pecos::ProbabilityTransformation("nataf"); /* for now */ }
+{
+  if (natafTransform.is_null())
+    natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
+}
 
 
 /** Build ProbabilityTransformation::ranVar arrays containing the
@@ -1312,270 +1328,30 @@ void NonD::initialize_random_variable_types(short u_space_type)
     variables are in x-space. */
 void NonD::initialize_random_variable_parameters()
 {
-  size_t num_active_vars = iteratedModel.cv();
-  RealVector x_means(num_active_vars, false),
-    x_std_devs(num_active_vars, false), x_l_bnds(num_active_vars, false),
-    x_u_bnds(num_active_vars, false);
-  RealVectorArray x_addtl(num_active_vars);
-  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  // Be consistent with NonD active view logic
+  //short active_view = iteratedModel.current_variables().view().first;
+  // Note: {Aleatory,Epistemic}DistParams handles always have reps, so
+  // default constructed objects are safe to interrogate for empty arrays.
+  const Pecos::AleatoryDistParams&  adp = (numAleatoryUncVars)  ?
+    iteratedModel.aleatory_distribution_parameters()  :
+    Pecos::AleatoryDistParams();
+  const Pecos::EpistemicDistParams& edp = (numEpistemicUncVars) ?
+    iteratedModel.epistemic_distribution_parameters() :
+    Pecos::EpistemicDistParams();
 
   const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
   const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
+  size_t csv_start = numContinuousVars - numContStateVars;
+  RealVector cd_l_bnds(Teuchos::View, c_l_bnds.values(), numContDesVars),
+             cd_u_bnds(Teuchos::View, c_u_bnds.values(), numContDesVars),
+             cs_l_bnds(Teuchos::View, const_cast<Real*>(&c_l_bnds[csv_start]),
+		       numContStateVars),
+             cs_u_bnds(Teuchos::View, const_cast<Real*>(&c_u_bnds[csv_start]),
+		       numContStateVars);
 
-  size_t i, av_cntr = 0;
-  for (i=0; i<numContDesVars; ++i, ++av_cntr) {
-    const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
-    const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
-    // unlike uniform/loguniform/beta/triangular, design bounds are optional
-    if (lwr == -dbl_inf || upr == dbl_inf) {
-      Cerr << "Error: bounds specification required for design variable "
-	   << "transformation to standard uniform." << std::endl;
-      abort_handler(-1);
-    }
-    else
-      Pecos::moments_from_uniform_params(lwr, upr, x_means[av_cntr],
-					 x_std_devs[av_cntr]);
-  }
-  Pecos::AleatoryDistParams& adp
-    = iteratedModel.aleatory_distribution_parameters();
-  if (numNormalVars) {
-    const Pecos::RealVector& n_means    = adp.normal_means();
-    const Pecos::RealVector& n_std_devs = adp.normal_std_deviations();
-    const Pecos::RealVector& n_l_bnds   = adp.normal_lower_bounds();
-    const Pecos::RealVector& n_u_bnds   = adp.normal_upper_bounds();
-    for (i=0; i<numNormalVars; ++i, ++av_cntr) {
-      x_means[av_cntr]    = n_means[i];
-      x_std_devs[av_cntr] = n_std_devs[i];
-      x_l_bnds[av_cntr]   = n_l_bnds[i];
-      x_u_bnds[av_cntr]   = n_u_bnds[i];
-    }
-  }
-  if (numLognormalVars) {
-    const Pecos::RealVector& ln_means     = adp.lognormal_means();
-    const Pecos::RealVector& ln_std_devs  = adp.lognormal_std_deviations();
-    const Pecos::RealVector& ln_lambdas   = adp.lognormal_lambdas();
-    const Pecos::RealVector& ln_zetas     = adp.lognormal_zetas();
-    const Pecos::RealVector& ln_err_facts = adp.lognormal_error_factors();
-    const Pecos::RealVector& ln_l_bnds    = adp.lognormal_lower_bounds();
-    const Pecos::RealVector& ln_u_bnds    = adp.lognormal_upper_bounds();
-    // DAKOTA/UQ uses the mean/std dev or mean/error factor of the actual
-    // lognormal distribution or the mean/std dev (lambda/zeta) of the
-    // corresponding normal distribution
-    bool ln_l_z = !ln_lambdas.empty(), ln_m_s = !ln_std_devs.empty();
-    Real mean, stdev, lambda, zeta, err_fact;
-    for (i=0; i<numLognormalVars; ++i, ++av_cntr) {
-      Pecos::all_from_lognormal_spec(ln_means, ln_std_devs, ln_lambdas,
-				     ln_zetas, ln_err_facts, i, mean, stdev,
-				     lambda, zeta, err_fact);
-      if (!ln_err_facts.empty()) {
-	x_addtl[av_cntr].sizeUninitialized(3);
-	x_addtl[av_cntr][2] = err_fact;
-      }
-      else
-	x_addtl[av_cntr].sizeUninitialized(2);
-      x_means[av_cntr]    = mean;
-      x_std_devs[av_cntr] = stdev;
-      x_l_bnds[av_cntr]   = ln_l_bnds[i];
-      x_u_bnds[av_cntr]   = ln_u_bnds[i];
-      x_addtl[av_cntr][0] = lambda;
-      x_addtl[av_cntr][1] = zeta;
-    }
-  }
-  if (numUniformVars) {
-    const Pecos::RealVector& u_l_bnds = adp.uniform_lower_bounds();
-    const Pecos::RealVector& u_u_bnds = adp.uniform_upper_bounds();
-    for (i=0; i<numUniformVars; ++i, ++av_cntr) {
-      const Real& lwr = x_l_bnds[av_cntr] = u_l_bnds[i];
-      const Real& upr = x_u_bnds[av_cntr] = u_u_bnds[i];
-      Pecos::moments_from_uniform_params(lwr, upr, x_means[av_cntr],
-					 x_std_devs[av_cntr]);
-    }
-  }
-  if (numLoguniformVars) {
-    // see SAND98-0210 LHS manual, pp. 43-44
-    const Pecos::RealVector& lu_l_bnds = adp.loguniform_lower_bounds();
-    const Pecos::RealVector& lu_u_bnds = adp.loguniform_upper_bounds();
-    for (i=0; i<numLoguniformVars; ++i, ++av_cntr) {
-      const Real& lwr = x_l_bnds[av_cntr] = lu_l_bnds[i];
-      const Real& upr = x_u_bnds[av_cntr] = lu_u_bnds[i];
-      Pecos::moments_from_loguniform_params(lwr, upr, x_means[av_cntr],
-					    x_std_devs[av_cntr]);
-    }
-  }
-  if (numTriangularVars) {
-    // See Haldar and Mahadevan, p. 99
-    const Pecos::RealVector& t_modes  = adp.triangular_modes();
-    const Pecos::RealVector& t_l_bnds = adp.triangular_lower_bounds();
-    const Pecos::RealVector& t_u_bnds = adp.triangular_upper_bounds();
-    for (i=0; i<numTriangularVars; ++i, ++av_cntr) {
-      const Real& mode = t_modes[i];
-      const Real& lwr  = x_l_bnds[av_cntr] = t_l_bnds[i];
-      const Real& upr  = x_u_bnds[av_cntr] = t_u_bnds[i];
-      Pecos::moments_from_triangular_params(lwr, upr, mode, x_means[av_cntr],
-					    x_std_devs[av_cntr]);
-      x_addtl[av_cntr].sizeUninitialized(1);
-      x_addtl[av_cntr][0] = mode;
-    }
-  }
-  if (numExponentialVars) {
-    // DAKOTA employs the 1/beta exp(-x/beta) definition, which differs from
-    // the lambda exp(-lambda x) LHS definition (lambda_LHS = 1/beta_DAKOTA).
-    const Pecos::RealVector& e_betas = adp.exponential_betas();
-    for (i=0; i<numExponentialVars; ++i, ++av_cntr) {
-      const Real& beta = e_betas[i];
-      Pecos::moments_from_exponential_params(beta, x_means[av_cntr],
-					     x_std_devs[av_cntr]);
-      // use default distribution bounds, not default global DACE bounds
-      x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = dbl_inf;
-      x_addtl[av_cntr].sizeUninitialized(1);
-      x_addtl[av_cntr][0] = beta;
-    }
-  }
-  if (numBetaVars) {
-    // See Haldar and Mahadevan, p. 72
-    const Pecos::RealVector& b_alphas = adp.beta_alphas();
-    const Pecos::RealVector& b_betas  = adp.beta_betas();
-    const Pecos::RealVector& b_l_bnds = adp.beta_lower_bounds();
-    const Pecos::RealVector& b_u_bnds = adp.beta_upper_bounds();
-    for (i=0; i<numBetaVars; ++i, ++av_cntr) {
-      const Real& alpha = b_alphas[i];
-      const Real& beta  = b_betas[i];
-      const Real& lwr   = x_l_bnds[av_cntr] = b_l_bnds[i];
-      const Real& upr   = x_u_bnds[av_cntr] = b_u_bnds[i];
-      Pecos::moments_from_beta_params(lwr, upr, alpha, beta, x_means[av_cntr],
-				      x_std_devs[av_cntr]);
-      x_addtl[av_cntr].sizeUninitialized(2);
-      x_addtl[av_cntr][0] = alpha;
-      x_addtl[av_cntr][1] = beta;
-    }
-  }
-  if (numGammaVars) {
-    // This follows the Gamma(alpha,beta) definition in Law & Kelton, which
-    // differs from the LHS definition (beta_LK = 1/beta_LHS).
-    const Pecos::RealVector& ga_alphas = adp.gamma_alphas();
-    const Pecos::RealVector& ga_betas  = adp.gamma_betas();
-    for (i=0; i<numGammaVars; ++i, ++av_cntr) {
-      const Real& alpha = ga_alphas[i]; const Real& beta = ga_betas[i];
-      Pecos::moments_from_gamma_params(alpha, beta, x_means[av_cntr],
-				       x_std_devs[av_cntr]);
-      // use default distribution bounds, not default global DACE bounds
-      x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = dbl_inf;
-      x_addtl[av_cntr].sizeUninitialized(2);
-      x_addtl[av_cntr][0] = alpha;
-      x_addtl[av_cntr][1] = beta;
-    }
-  }
-  if (numGumbelVars) {
-    // See Haldar and Mahadevan, p. 90
-    const Pecos::RealVector& gu_alphas = adp.gumbel_alphas();
-    const Pecos::RealVector& gu_betas  = adp.gumbel_betas();
-    for (i=0; i<numGumbelVars; ++i, ++av_cntr) {
-      const Real& alpha = gu_alphas[i]; const Real& beta = gu_betas[i];
-      Pecos::moments_from_gumbel_params(alpha, beta, x_means[av_cntr],
-					x_std_devs[av_cntr]);
-      // use default distribution bounds, not default global DACE bounds
-      x_l_bnds[av_cntr] = -dbl_inf;
-      x_u_bnds[av_cntr] =  dbl_inf;
-      x_addtl[av_cntr].sizeUninitialized(2);
-      x_addtl[av_cntr][0] = alpha;
-      x_addtl[av_cntr][1] = beta;
-    }
-  }
-  if (numFrechetVars) {
-    const Pecos::RealVector& f_alphas = adp.frechet_alphas();
-    const Pecos::RealVector& f_betas  = adp.frechet_betas();
-    for (i=0; i<numFrechetVars; ++i, ++av_cntr) {
-      const Real& alpha = f_alphas[i]; const Real& beta = f_betas[i];
-      Pecos::moments_from_frechet_params(alpha, beta, x_means[av_cntr],
-					 x_std_devs[av_cntr]);
-      // use default distribution bounds, not default global DACE bounds
-      x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = dbl_inf;
-      x_addtl[av_cntr].sizeUninitialized(2);
-      x_addtl[av_cntr][0] = alpha;
-      x_addtl[av_cntr][1] = beta;
-    }
-  }
-  if (numWeibullVars) {
-    const Pecos::RealVector& w_alphas = adp.weibull_alphas();
-    const Pecos::RealVector& w_betas  = adp.weibull_betas();
-    for (i=0; i<numWeibullVars; ++i, ++av_cntr) {
-      const Real& alpha = w_alphas[i]; const Real& beta = w_betas[i];
-      Pecos::moments_from_weibull_params(alpha, beta, x_means[av_cntr],
-					 x_std_devs[av_cntr]);
-      // use default distribution bounds, not default global DACE bounds
-      x_l_bnds[av_cntr] = 0.;
-      x_u_bnds[av_cntr] = dbl_inf;
-      x_addtl[av_cntr].sizeUninitialized(2);
-      x_addtl[av_cntr][0] = alpha;
-      x_addtl[av_cntr][1] = beta;
-    }
-  }
-  if (numHistogramBinVars) {
-    const Pecos::RealRealMapArray& hist_bin_prs = adp.histogram_bin_pairs();
-    for (i=0; i<numHistogramBinVars; ++i, ++av_cntr) {
-      // histogram bnds already processed for global bnds in NIDRProblemDescDB
-      x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
-      x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
-      Pecos::moments_from_histogram_bin_params(hist_bin_prs[i],
-					       x_means[av_cntr],
-					       x_std_devs[av_cntr]);
-      Pecos::copy_data(hist_bin_prs[i], x_addtl[av_cntr]);
-    }
-  }
-
-  // discrete int aleatory uncertain
-
-  // discrete string aleatory uncertain
-
-  // discrete real aleatory uncertain
-  /*
-  if (numHistogramPtVars) {
-    const Pecos::RealRealMapArray& hist_pt_prs = adp.histogram_point_pairs();
-    for (i=0; i<numHistogramPtVars; ++i, ++av_cntr) {
-      // histogram bnds already processed for global bnds in NIDRProblemDescDB
-      x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
-      x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
-      Pecos::moments_from_histogram_pt_params(hist_pt_prs[i], x_means[av_cntr],
-					      x_std_devs[av_cntr]);
-      Pecos::copy_data(hist_pt_prs[i], x_addtl[av_cntr]);
-    }
-  }
-  */
-
-  // continuous epistemic uncertain
-  for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {
-    // interval bnds already processed for global bnds in NIDRProblemDescDB
-    const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
-    const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
-    Pecos::moments_from_uniform_params(lwr, upr, x_means[av_cntr],
-				       x_std_devs[av_cntr]);
-  }
-
-  // discrete int epistemic uncertain
-
-  // discrete string epistemic uncertain
-
-  // discrete real epistemic uncertain
-
-  for (i=0; i<numContStateVars; ++i, ++av_cntr) {
-    const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
-    const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];
-    // unlike uniform/loguniform/beta/triangular, state bounds are optional
-    if (lwr == -dbl_inf || upr == dbl_inf) {
-      Cerr << "Error: bounds specification required for state variable "
-	   << "transformation to standard uniform." << std::endl;
-      abort_handler(-1);
-    }
-    else
-      Pecos::moments_from_uniform_params(lwr, upr, x_means[av_cntr],
-					 x_std_devs[av_cntr]);
-  }
-
-  natafTransform.initialize_random_variable_parameters(x_means, x_std_devs,
-    x_l_bnds, x_u_bnds, x_addtl);
+  natafTransform.initialize_random_variable_parameters(cd_l_bnds, cd_u_bnds,
+						       adp, edp,
+						       cs_l_bnds, cs_u_bnds);
 }
 
 
@@ -1586,31 +1362,52 @@ void NonD::initialize_random_variable_correlations()
   if (!uncertain_corr.empty()) {
     natafTransform.initialize_random_variable_correlations(uncertain_corr);
     if (numContDesVars || numContEpistUncVars || numContStateVars)
-      // expand ProbabilityTransformation::corrMatrixX to include design + state
-      // + epistemic uncertain vars.  TO DO: propagate through model recursion?
+      // expand ProbabilityTransformation::corrMatrixX to include design,
+      // epistemic, state vars.  TO DO: propagate through model recursion?
       natafTransform.reshape_correlation_matrix(numContDesVars,
 	numContAleatUncVars, numContEpistUncVars+numContStateVars);
   }
 }
 
 
-void NonD::verify_correlation_support()
+void NonD::verify_correlation_support(short u_space_type)
 {
-  // Check for correlations among variable types (bounded normal, bounded
-  // lognormal, loguniform, triangular, beta, and histogram) that are not
-  // supported by Der Kiureghian & Liu for correlation warping estimation when
-  // transforming to std normals.
   if (natafTransform.x_correlation()) {
-    bool err_flag = false;
-    const Pecos::ShortArray&    x_types = natafTransform.x_types();
-    const Pecos::RealSymMatrix& x_corr  = natafTransform.x_correlation_matrix();
+    const std::vector<Pecos::RandomVariable>& x_ran_vars
+      = natafTransform.x_random_variables();
+    const Pecos::ShortArray& u_types   = natafTransform.u_types();
+    const Pecos::RealSymMatrix& x_corr = natafTransform.x_correlation_matrix();
     size_t i, j, num_cdv_cauv = numContDesVars+numContAleatUncVars;
+
+    // We can only decorrelate in std normal space; therefore, if a variable
+    // with a u_type other than STD_NORMAL is correlated with anything, revert
+    // its u_type to STD_NORMAL.
+    if (u_space_type != STD_NORMAL_U) {
+      for (i=numContDesVars; i<num_cdv_cauv; ++i)
+	if (u_types[i] != Pecos::STD_NORMAL)
+	  // since we don't check all rows, check *all* columns despite symmetry
+	  for (j=numContDesVars; j<num_cdv_cauv; ++j)
+	    if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER) {
+	      Cerr << "\nWarning: u-space type for random variable "
+		   << i-numContDesVars+1 << " changed to\n         "
+		   << "STD_NORMAL due to decorrelation requirements.\n";
+	      natafTransform.u_type(Pecos::STD_NORMAL, i);
+	      break; // out of inner loop
+	    }
+    }
+
+    // Check for correlations among variable types (bounded normal, bounded
+    // lognormal, loguniform, triangular, beta, and histogram) that are not
+    // supported by Der Kiureghian & Liu for correlation warping estimation
+    // when transforming to std normals.
+    bool err_flag = false;
     for (i=numContDesVars; i<num_cdv_cauv; ++i) {
       bool distribution_error = false;
-      if ( x_types[i] == Pecos::BOUNDED_NORMAL    ||
-	   x_types[i] == Pecos::BOUNDED_LOGNORMAL ||
-	   x_types[i] == Pecos::LOGUNIFORM || x_types[i] == Pecos::TRIANGULAR ||
-	   x_types[i] == Pecos::BETA || x_types[i] == Pecos::HISTOGRAM_BIN )
+      short x_type = x_ran_vars[i].type();
+      if ( x_type == Pecos::BOUNDED_NORMAL    || x_type == Pecos::LOGUNIFORM ||
+	   x_type == Pecos::BOUNDED_LOGNORMAL || x_type == Pecos::TRIANGULAR ||
+	   x_type == Pecos::BETA || x_type == Pecos::HISTOGRAM_BIN )
+	// since we don't check all rows, check *all* columns despite symmetry
 	for (j=numContDesVars; j<num_cdv_cauv; ++j)
 	  if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER)
 	    { distribution_error = true; break; }
@@ -1804,7 +1601,8 @@ void NonD::update_system_final_statistics()
       case PROBABILITIES:
 	finalStatistics.function_value(system_p, cntr); break;
       case RELIABILITIES: case GEN_RELIABILITIES:
-	finalStatistics.function_value(-Pecos::Phi_inverse(system_p), cntr);
+	finalStatistics.function_value(
+	  -Pecos::NormalRandomVariable::inverse_std_cdf(system_p), cntr);
 	break;
       }
     }
@@ -1836,7 +1634,8 @@ void NonD::update_system_final_statistics_gradients()
 	  else {
 	    component_grad[s] = finalStatistics.function_gradient_copy(index+l);
 	    Real component_beta = finalStatistics.function_value(index+l);
-	    component_grad[s].scale(-Pecos::phi(-component_beta));
+	    component_grad[s].scale(
+	      -Pecos::NormalRandomVariable::std_pdf(-component_beta));
 	  }
 	  index += rl_len + requestedProbLevels[s].length() +
 	    requestedRelLevels[s].length() + requestedGenRelLevels[s].length();
@@ -1873,7 +1672,8 @@ void NonD::update_system_final_statistics_gradients()
 	// define any scaling for system metric type
 	if (respLevelTarget != PROBABILITIES) {
 	  Real sys_beta = finalStatistics.function_value(cntr);
-	  factor *= -1./Pecos::phi(-sys_beta); scale = true;
+	  factor /= -Pecos::NormalRandomVariable::std_pdf(-sys_beta);
+	  scale = true;
 	}
 	if (scale) final_stat_grad.scale(factor);
 	finalStatistics.function_gradient(final_stat_grad, cntr);
@@ -2007,9 +1807,11 @@ void NonD::print_system_mappings(std::ostream& s) const
     for (i=0; i<rl_len; ++i, ++cntr) {
       switch (respLevelTarget) {
       case PROBABILITIES:
-	prob    = final_stats[cntr]; gen_rel = -Pecos::Phi_inverse(prob); break;
+	prob    =  final_stats[cntr];
+	gen_rel = -Pecos::NormalRandomVariable::inverse_std_cdf(prob); break;
       default:
-	gen_rel = final_stats[cntr]; prob    =  Pecos::Phi(-gen_rel);     break;
+	gen_rel =  final_stats[cntr];
+	prob    =  Pecos::NormalRandomVariable::std_cdf(-gen_rel);     break;
       }
       s << "  " << std::setw(width) << i+1 << "  " << std::setw(width) << prob
 	<< "  " << std::setw(g_width) << gen_rel << '\n';

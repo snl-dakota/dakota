@@ -99,7 +99,7 @@ protected:
   //
 
   /// verify self-consistency of variables data
-  void check_variables(const Pecos::ShortArray& x_types);
+  void check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars);
 
   /// output integration points and weights to a tabular file
   void print_points_weights(const String& tabular_name);

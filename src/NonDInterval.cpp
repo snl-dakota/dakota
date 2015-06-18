@@ -438,7 +438,7 @@ void NonDInterval::compute_evidence_statistics()
         pl_gl_len = pl_len + gl_len;
 
     for (j=0; j<rl_len; ++j) { // z -> belief/plausibility
-      Real z = requestedRespLevels[i].operator[](j);
+      Real z = requestedRespLevels[i][j];
       // z -> belief (based on CCBF)
       bel_index = 0;
       Real prob;
@@ -454,7 +454,7 @@ void NonDInterval::compute_evidence_statistics()
 	prob = (z > ccBelVal[i][numCells-1]) ? 0. : ccBelFn[i][bel_index];
       }
       if (respLevelTarget == PROBABILITIES) {
-	computedProbLevels[i].operator[](j) = prob;
+	computedProbLevels[i][j] = prob;
 	finalStatistics.function_value(prob, cntr++);
       }
       else {
@@ -464,8 +464,8 @@ void NonDInterval::compute_evidence_statistics()
 	else if (1.- prob < Pecos::SMALL_NUMBER)
 	  beta = -Pecos::LARGE_NUMBER; // Phi(+Inf) = 1
 	else
-	  beta = -Pecos::Phi_inverse(prob);
-	computedGenRelLevels[i].operator[](j) = beta;
+	  beta = -Pecos::NormalRandomVariable::inverse_std_cdf(prob);
+	computedGenRelLevels[i][j] = beta;
 	finalStatistics.function_value(beta, cntr++);
       }
       // z -> plausibility (based on CCPF)
@@ -493,7 +493,7 @@ void NonDInterval::compute_evidence_statistics()
 	else if (1.- prob < Pecos::SMALL_NUMBER)
 	  beta = -Pecos::LARGE_NUMBER; // Phi(+Inf) = 1
 	else
-	  beta = -Pecos::Phi_inverse(prob);
+	  beta = -Pecos::NormalRandomVariable::inverse_std_cdf(prob);
 	computedGenRelLevels[i][j+rl_len] = beta;
 	finalStatistics.function_value(beta, cntr++);
       }
@@ -502,26 +502,24 @@ void NonDInterval::compute_evidence_statistics()
     for (j=0; j<pl_gl_len; ++j) { // belief/plausibility -> z
       Real cc_prob;
       if (j<pl_len)
-	cc_prob = (cdfFlag) ? 1. - requestedProbLevels[i].operator[](j) :
-	  requestedProbLevels[i].operator[](j);
+	cc_prob = (cdfFlag) ? 1. - requestedProbLevels[i][j] :
+	  requestedProbLevels[i][j];
       else
 	cc_prob = (cdfFlag) ?
-	  Pecos::Phi(requestedGenRelLevels[i].operator[](j)) :
-	  Pecos::Phi(-requestedGenRelLevels[i].operator[](j));
+	  Pecos::NormalRandomVariable::std_cdf(requestedGenRelLevels[i][j]) :
+	  Pecos::NormalRandomVariable::std_ccdf(requestedGenRelLevels[i][j]);
       // belief -> z (based on CCBF)
       bel_index = 0;
       if (cdfFlag) {
         while (cc_prob < ccPlausFn[i][bel_index] && bel_index < numCells-1)
 	  bel_index++;
-        const Real& z = computedRespLevels[i].operator[](j) =
-	  ccPlausVal[i][bel_index]; 
+        const Real& z = computedRespLevels[i][j] = ccPlausVal[i][bel_index]; 
 	finalStatistics.function_value(z, cntr++);
       } 
       else {
         while (cc_prob < ccBelFn[i][bel_index] && bel_index < numCells-1)
 	  bel_index++;
-        const Real& z = computedRespLevels[i].operator[](j) =
-	  ccBelVal[i][bel_index]; 
+        const Real& z = computedRespLevels[i][j] = ccBelVal[i][bel_index]; 
 	finalStatistics.function_value(z, cntr++);
       }
       // plausibility -> z (based on CCPF)

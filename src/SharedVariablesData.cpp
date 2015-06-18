@@ -43,9 +43,9 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 		       const std::pair<short,short>& view):
   variablesId(problem_db.get_string("variables.id")),
   variablesCompsTotals(NUM_VC_TOTALS, 0), variablesView(view), cvStart(0), 
-  divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0), idsvStart(0),
-  idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0), numICV(0),
-  numIDIV(0), numIDSV(0), numIDRV(0)
+  divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
+  idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
+  numICV(0), numIDIV(0), numIDSV(0), numIDRV(0)
 {
   initialize_components_totals(problem_db);
   relax_noncategorical(problem_db); // defines allRelaxedDiscrete{Int,Real}

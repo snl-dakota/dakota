@@ -56,7 +56,7 @@ public:
   void initialize_random_variable_correlations();
   /// verify that correlation warping is supported by Nataf for given
   /// variable types
-  void verify_correlation_support();
+  void verify_correlation_support(short u_space_type);
   /// perform correlation warping for variable types supported by Nataf
   void transform_correlations();
 

@@ -43,7 +43,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 
   // natafTransform available: initialize_random_variables() called in
   // NonDIntegration ctor
-  check_variables(natafTransform.x_types());
+  check_variables(natafTransform.x_random_variables());
 
   Pecos::ExpansionConfigOptions
     ec_options(Pecos::QUADRATURE,
@@ -83,10 +83,10 @@ NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
 
   tpqDriver->mode(driver_mode);
 
-  // local natafTransform not yet updated: x_types would have to be passed in
+  // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
-  //check_variables(x_types);
+  //check_variables(x_ran_vars);
 }
 
 
@@ -105,10 +105,10 @@ NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref,
 
   tpqDriver->mode(driver_mode);
 
-  // local natafTransform not yet updated: x_types would have to be passed in
+  // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
-  //check_variables(x_types);
+  //check_variables(x_ran_vars);
 }
 
 
@@ -129,10 +129,10 @@ NonDQuadrature(Model& model, int num_rand_samples, int seed,
 
   tpqDriver->mode(driver_mode);
 
-  // local natafTransform not yet updated: x_types would have to be passed in
+  // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
-  //check_variables(x_types);
+  //check_variables(x_ran_vars);
 }
 
 

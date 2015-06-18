@@ -271,11 +271,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // calibrating sigma terms
   proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
   if (calibrateSigma) {
+    // sigma terms utilize uniform priors
     Real uniform_variance_factor = 1.99 * 1.99 / 12.; // uniform on [.01,2.]
     for (int i=0; i<numFunctions; i++) {
-      // assuming the sigma terms are uniformly distributed
       Real var_i = uniform_variance_factor * expData.scalar_sigma_est(i);
-      if (outputLevel > NORMAL_OUTPUT )  
+      if (outputLevel >= DEBUG_OUTPUT )  
         Cout << "Diagonal estimate for sigma_i " << var_i << '\n';
       (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = var_i;
     }

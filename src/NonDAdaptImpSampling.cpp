@@ -448,7 +448,8 @@ select_rep_points(const RealVectorArray& var_samples_u,
     for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
       uSpaceModel.continuous_variable(repPointsU[i][cntr], j);
     
-    //Real phi_beta = Pecos::phi(repPointsU[i].normFrobenius());
+    //Real phi_beta = Pecos::NormalRandomVariable::
+    //  std_pdf(repPointsU[i].normFrobenius());
     //repWeights[i] = phi_beta;
     //sum_density  += phi_beta;
     Real rep_pdf = uSpaceModel.continuous_probability_density();
@@ -696,7 +697,9 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 	uSpaceModel.continuous_variable(sample_i[cntr], k);
 
       // calculate ratio of pdf relative to origin to pdf relative to rep pt
-      // pdf_ratio1 = Pecos::phi(sample_i.normFrobenius()) / recentered_pdf;
+      //pdf_ratio1
+      //  = Pecos::NormalRandomVariable::std_pdf(sample_i.normFrobenius())
+      //  / recentered_pdf;
       pdf_ratio = uSpaceModel.continuous_probability_density()
 	        / recentered_density(sample_i);
 
@@ -733,10 +736,12 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
 	// calculate recentered u-space pdf
         recentered_pdf = rep_wt *
-	  Pecos::phi(distance(rep_pt, rep_sample) / n_std_devs);
+	  Pecos::NormalRandomVariable::std_pdf(distance(rep_pt, rep_sample)
+	                                       / n_std_devs);
 
 	// calculate ratio of pdf relative to origin to pdf relative to rep pt
-        pdf_ratio = Pecos::phi(rep_sample.normFrobenius()) / recentered_pdf;
+        pdf_ratio = Pecos::NormalRandomVariable::
+	  std_pdf(rep_sample.normFrobenius()) / recentered_pdf;
 
 	// add sample's contribution to sum
 	sum_prob += pdf_ratio;
@@ -775,10 +780,9 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
 
   // Previous code:
   //recentered_pdf =  0.;
-  //for (j=0; j<num_rep_pts; ++j) {
-  //  recentered_pdf += repWeights[j] * 
-  //    Pecos::phi(distance(repPointsU[j], sample_i) / n_std_devs);
-  //} 
+  //for (j=0; j<num_rep_pts; ++j)
+  //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
+  //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
@@ -787,9 +791,9 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
     for (j=0; j<numUncertainVars; ++j) {
       std::pair<Real, Real> dist_bounds
 	= uSpaceModel.continuous_distribution_bounds(j+numContDesVars);
-      rep_pdf *=
-	Pecos::bounded_normal_pdf(sample_point[j], rep_pt_i[j], stdev,
-				  dist_bounds.first, dist_bounds.second);
+      rep_pdf *= Pecos::BoundedNormalRandomVariable::
+	pdf(sample_point[j], rep_pt_i[j], stdev,
+	    dist_bounds.first, dist_bounds.second);
     }
     local_pdf += repWeights[i] * rep_pdf;
   } 

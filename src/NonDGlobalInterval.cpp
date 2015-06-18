@@ -539,8 +539,8 @@ EIF_objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
     }
     else{
       snv /= stdv; // now snv is the standard normal variate
-      Phi_snv = Pecos::Phi(snv); 
-      phi_snv = Pecos::phi(snv);
+      Phi_snv = Pecos::NormalRandomVariable::std_cdf(snv); 
+      phi_snv = Pecos::NormalRandomVariable::std_pdf(snv);
     }
     Real ei = (approx_fn_star - mean)*Phi_snv + stdv*phi_snv;
     // both bounds maximize EIF -> minimize -EIF
@@ -580,8 +580,8 @@ EIF_objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
     }
     else{
       snv /= stdv; // now snv is the standard normal variate   
-      Phi_snv = Pecos::Phi(snv);
-      phi_snv = Pecos::phi(snv);
+      Phi_snv = Pecos::NormalRandomVariable::std_cdf(snv);
+      phi_snv = Pecos::NormalRandomVariable::std_pdf(snv);
     }
     Real ei = (-approx_fn_star - mean)*Phi_snv + stdv*phi_snv;
     // both bounds maximize EIF -> minimize -EIF

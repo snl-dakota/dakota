@@ -43,7 +43,7 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
   initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
   // Note: initialize_random_variable_parameters() is performed at run time
   initialize_random_variable_correlations();
-  verify_correlation_support();
+  verify_correlation_support(STD_NORMAL_U);
   initialize_final_statistics(); // default statistics set
 
   // RealVectors are sized within derived classes

@@ -293,6 +293,10 @@ private:
   // p=0.5 -> median function values).  Used to determine the sign of beta.
   //RealVector medianFnVals;
 
+  /// vector of means for all uncertain random variables in x-space
+  RealVector ranVarMeansX;
+  /// vector of std deviations for all uncertain random variables in x-space
+  RealVector ranVarStdDevsX;
   /// vector of means for all uncertain random variables in u-space
   RealVector ranVarMeansU;
   /// flag indicating user specification of (any portion of) initialPtU
@@ -373,7 +377,7 @@ inline Real NonDLocalReliability::signed_norm(Real norm_mpp_u)
 // generalized reliability --> probability
 // or     FORM reliability --> probability
 inline Real NonDLocalReliability::probability(Real beta)
-{ return Pecos::Phi(-beta); }
+{ return Pecos::NormalRandomVariable::std_cdf(-beta); }
 
 
 inline Real NonDLocalReliability::
@@ -403,7 +407,7 @@ inline Real NonDLocalReliability::reliability(Real p)
 	   << "reliability()." << std::endl; abort_handler(-1); return  0.;
     }
   }
-  else return -Pecos::Phi_inverse(p);
+  else return -Pecos::NormalRandomVariable::inverse_std_cdf(p);
 }
 
 

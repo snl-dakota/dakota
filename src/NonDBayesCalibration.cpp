@@ -77,10 +77,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // define local natafTransform
     initialize_random_variable_transformation();
     initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
-    // TO DO: see NonDExpansion::initialize() for per-variable fall back logic
     // Note: initialize_random_variable_parameters() is performed at run time
     initialize_random_variable_correlations();
-    verify_correlation_support();
+    verify_correlation_support(ASKEY_U);
     //initialize_final_statistics(); // statistics set is not default
     break;
   }
@@ -276,7 +275,7 @@ void NonDBayesCalibration::initialize_model()
 	initialize_random_variable_transformation();
 	initialize_random_variable_types(ASKEY_U);
 	initialize_random_variable_correlations();
-	//verify_correlation_support();
+	verify_correlation_support(ASKEY_U);
       }
       initialize_random_variable_parameters();
       //initialize_final_statistics_gradients(); // not required
