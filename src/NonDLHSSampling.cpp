@@ -55,7 +55,7 @@ NonDLHSSampling(Model& model, unsigned short sample_type, int samples,
 		short sampling_vars_mode): 
   NonDSampling(RANDOM_SAMPLING, model, sample_type, samples, seed, rng,
 	       vary_pattern, sampling_vars_mode),
-  numResponseFunctions(numFunctions), varBasedDecompFlag(false)
+  numResponseFunctions(numFunctions), pcaFlag(false), varBasedDecompFlag(false)
 { }
 
 
@@ -73,7 +73,7 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const String& rng, const RealVector& lower_bnds,
 		const RealVector& upper_bnds): 
   NonDSampling(sample_type, samples, seed, rng, lower_bnds, upper_bnds),
-  numResponseFunctions(0), varBasedDecompFlag(false)
+  numResponseFunctions(0), pcaFlag(false), varBasedDecompFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
