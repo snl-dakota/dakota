@@ -64,6 +64,8 @@ public:
 
   /// compute the prior PDF for a particular MCMC sample
   Real prior_density(const QUESO::GslVector& qv);
+  /// compute the log prior PDF for a particular MCMC sample
+  Real log_prior_density(const QUESO::GslVector& qv);
 
 protected:
 
