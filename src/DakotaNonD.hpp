@@ -43,7 +43,7 @@ public:
   void initialize_random_variables(short u_space_type);
   /// alternate form: initialize natafTransform based on incoming data
   void initialize_random_variables(
-    const Pecos::ProbabilityTransformation& transform);
+    const Pecos::ProbabilityTransformation& transform, bool deep_copy = false);
 
   /// instantiate natafTransform
   void initialize_random_variable_transformation();

@@ -74,13 +74,18 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = true; break; // natafTransform defined w/i NonDExpansion
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    // define local natafTransform
+
+    // define local natafTransform, whether standardized space or not,
+    // since we utilize x-space bounds, moments, density routines
     initialize_random_variable_transformation();
     initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
-    // Note: initialize_random_variable_parameters() is performed at run time
+    // initialize_random_variable_parameters() is performed at run time
     initialize_random_variable_correlations();
-    verify_correlation_support(ASKEY_U);
     //initialize_final_statistics(); // statistics set is not default
+
+    // only needed if Nataf transform will actually be performed
+    if (standardizedSpace)
+      verify_correlation_support(ASKEY_U);
     break;
   }
 
@@ -88,51 +93,36 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // likelihood evaluations
   switch (emulatorType) {
 
-  case PCE_EMULATOR: { // instantiate a NonDPolynomialChaos iterator
+  case PCE_EMULATOR: case SC_EMULATOR: {
     const UShortArray& level_seq
       = probDescDB.get_usa("method.nond.sparse_grid_level");
-    if (!level_seq.empty())
-      stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
-	Pecos::COMBINED_SPARSE_GRID, level_seq, // ssg level sequence
-	probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
-	EXTENDED_U, false, false));
-    else // regression: least squares, compressed sensing, orthog least interp
-      stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
-	Pecos::DEFAULT_REGRESSION,
+    const RealVector& dim_pref
+      = probDescDB.get_rv("method.nond.dimension_preference");    // not exposed
+    bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
+    NonD* se_rep;
+    if (emulatorType == SC_EMULATOR) // SC sparse grid interpolation
+      se_rep = new NonDStochCollocation(iteratedModel,
+	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
+	false, derivs);
+    else if (level_seq.empty()) // PCE with regression: LeastSq, CS, OLI
+      se_rep = new NonDPolynomialChaos(iteratedModel, Pecos::DEFAULT_REGRESSION,
 	probDescDB.get_usa("method.nond.expansion_order"), // exp_order sequence
-	probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
-	probDescDB.get_real("method.nond.collocation_ratio"), randomSeed,
-	EXTENDED_U, false,
-	probDescDB.get_bool("method.derivative_usage"),        // not exposed
-	probDescDB.get_bool("method.nond.cross_validation"))); // not exposed
-
+	dim_pref, probDescDB.get_real("method.nond.collocation_ratio"),
+	randomSeed, EXTENDED_U, false, derivs,	
+	probDescDB.get_bool("method.nond.cross_validation")); // not exposed
+    else // PCE with spectral projection via sparse grid
+      se_rep = new NonDPolynomialChaos(iteratedModel,
+	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
+	false, false);
+    stochExpIterator.assign_rep(se_rep);
     // no level mappings
-    NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
     RealVectorArray empty_rv_array; // empty
     se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
 			     empty_rv_array, respLevelTarget,
 			     respLevelTargetReduce, cdfFlag);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-    break;
-  }
-
-  case SC_EMULATOR: { // instantiate a NonDStochCollocation iterator
-    stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
-      Pecos::COMBINED_SPARSE_GRID,
-      probDescDB.get_usa("method.nond.sparse_grid_level"), // ssg level sequence
-      probDescDB.get_rv("method.nond.dimension_preference"), // not exposed
-      EXTENDED_U, false,
-      probDescDB.get_bool("method.derivative_usage")));      // not exposed
-
-    // no level mappings
-    NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
-    RealVectorArray empty_rv_array; // empty
-    se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
-			     empty_rv_array, respLevelTarget,
-			     respLevelTargetReduce, cdfFlag);
-    // extract NonDExpansion's uSpaceModel for use in likelihood evals
-    mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
+    natafTransform = se_rep->variable_transformation();   // shared rep
     break;
   }
 
@@ -168,6 +158,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	probDescDB.get_string("method.random_number_generator"),
 	true, ACTIVE_UNIFORM);
       lhs_iterator.assign_rep(lhs_rep, false);
+
+      // natafTransform is not fully updated at this point, but using
+      // a shallow copy allows run time updates to propagate
+      lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
       ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
       gp_set.request_values(deriv_order); // for misfit Hessian
@@ -269,34 +263,11 @@ void NonDBayesCalibration::initialize_model()
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     stochExpIterator.run(pl_iter); break;
   }
-  case GP_EMULATOR: case KRIGING_EMULATOR:
-    if (standardizedSpace) {
-      if (natafTransform.is_null()) { // reentrancy: recover from clear below
-	initialize_random_variable_transformation();
-	initialize_random_variable_types(ASKEY_U);
-	initialize_random_variable_correlations();
-	verify_correlation_support(ASKEY_U);
-      }
-      initialize_random_variable_parameters();
-      //initialize_final_statistics_gradients(); // not required
-      transform_correlations();
-
-      // local natafTransform updating complete (Note: cannot perform these
-      // operations within DataFitSurrModel::daceIterator as its model lacks
-      // x-space data).  Once done, we must transfer settings to daceIterator
-      // and can choose to clear local to prune the redundancy (with the cost
-      // of rebuilding it again if executed multiple times).
-      NonD* lhs_iter = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-      lhs_iter->initialize_random_variables(natafTransform); // transfer
-      natafTransform = Pecos::ProbabilityTransformation();   // clear local
-    }
-    mcmcModel.build_approximation(); break;
-  case NO_EMULATOR:
-    if (standardizedSpace) {
-      initialize_random_variable_parameters();
-      //initialize_final_statistics_gradients(); // not required
-      transform_correlations();
-    }
+  default: // GPs and NO_EMULATOR
+    initialize_random_variable_parameters(); // standardizedSpace or not
+    //initialize_final_statistics_gradients(); // not required
+    if (standardizedSpace) transform_correlations();
+    if (emulatorType)      mcmcModel.build_approximation();
     break;
   }
 }

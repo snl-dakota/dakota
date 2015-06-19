@@ -1063,11 +1063,16 @@ void NonD::initialize_random_variables(short u_space_type)
     directly.  This allows for the use of inverse transformations to
     return the transformed space variables to their original states. */
 void NonD::
-initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
+initialize_random_variables(const Pecos::ProbabilityTransformation& transform,
+			    bool deep_copy)
 {
-  initialize_random_variable_transformation();
-
-  natafTransform.initialize_random_variables(transform); // or could use copy()
+  if (deep_copy) {
+    initialize_random_variable_transformation();
+    natafTransform.initialize_random_variables(transform);
+    // TO DO: ranVars deep copy not yet implemented
+  }
+  else
+    natafTransform = transform; // shared rep
 
   // infer numCont{Des,Interval,State}Vars, but don't update continuous
   // aleatory uncertain counts (these may be u-space counts).
@@ -1328,7 +1333,8 @@ void NonD::initialize_random_variable_types(short u_space_type)
     variables are in x-space. */
 void NonD::initialize_random_variable_parameters()
 {
-  // Be consistent with NonD active view logic
+  // Be consistent with NonD active view logic.  Active counts are sufficient
+  // for now, but could formalize with active view check as in NonD ctors.
   //short active_view = iteratedModel.current_variables().view().first;
   // Note: {Aleatory,Epistemic}DistParams handles always have reps, so
   // default constructed objects are safe to interrogate for empty arrays.

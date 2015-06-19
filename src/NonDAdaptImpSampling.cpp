@@ -574,17 +574,16 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
       n_u_bnds[i] = c_u_bnds[i+numContDesVars];
     }
   }
-  else
-    // Apply distribution bounds to the std normal samples to avoid violating
-    // physical constraints.  This is the standard mode for cases without
+  else {
+    // Apply u-space distribution bounds to the std normal samples to avoid
+    // violating physical constraints.  This is the standard mode for cases w/o
     // artificial bound constraints (PCE, SC, local reliability, stand-alone).
     // Note: local reliability employs artificial bounds for the MPP search,
     // but these are not relevant for the AIS process on the truth model.
-    for (i=0; i<numUncertainVars; ++i) {
-      std::pair<Real, Real> bnds
-	= uSpaceModel.continuous_distribution_bounds(i+numContDesVars);
-      n_l_bnds[i] = bnds.first; n_u_bnds[i] = bnds.second;
-    }
+    RealRealPairArray u_bnds = natafTransform.u_bounds();
+    for (i=0, j=numContDesVars; i<numUncertainVars; ++i, ++j)
+      { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
+  }
 
   // generate u-space samples by centering std normals around rep points
   RealMatrix lhs_samples_array;
@@ -776,7 +775,7 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
 Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point) 
 {
-  size_t i, j, num_rep_pts = repPointsU.size();
+  size_t i, j, k, num_rep_pts = repPointsU.size();
 
   // Previous code:
   //recentered_pdf =  0.;
@@ -784,17 +783,14 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
   //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
+  RealRealPairArray u_bnds = natafTransform.u_bounds();
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
     const RealVector& rep_pt_i = repPointsU[i];
-    for (j=0; j<numUncertainVars; ++j) {
-      std::pair<Real, Real> dist_bounds
-	= uSpaceModel.continuous_distribution_bounds(j+numContDesVars);
-      rep_pdf *= Pecos::BoundedNormalRandomVariable::
-	pdf(sample_point[j], rep_pt_i[j], stdev,
-	    dist_bounds.first, dist_bounds.second);
-    }
+    for (j=0, k=numContDesVars; j<numUncertainVars; ++j, ++k)
+      rep_pdf *= Pecos::BoundedNormalRandomVariable::pdf(sample_point[j],
+	rep_pt_i[j], stdev, u_bnds[k].first, u_bnds[k].second);
     local_pdf += repWeights[i] * rep_pdf;
   } 
   return local_pdf;

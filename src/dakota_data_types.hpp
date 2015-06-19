@@ -133,6 +133,7 @@ typedef std::map<int, short>           IntSizetMap;
 typedef std::map<int, Real>            IntRealMap;
 typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;
+typedef std::vector<RealRealPair>      RealRealPairArray;
 typedef std::vector<IntRealMap>        IntRealMapArray;
 typedef std::vector<RealRealMap>       RealRealMapArray;
 typedef std::vector<StringRealMap>     StringRealMapArray;

@@ -118,7 +118,7 @@ template<class V,class M>
 double QuesoJointPdf<V,M>::
 lnValue(const V& domainVector, const V* domainDirection, 
 	V* gradVector, M* hessianMatrix, V* hessianEffect) const
-{ return std::log(NonDQUESOInstance->prior_density(domainVector)); }
+{ return NonDQUESOInstance->log_prior_density(domainVector); }
 
 template<class V,class M>
 double QuesoJointPdf<V,M>::
@@ -661,7 +661,7 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
     // extract GSL sample vector from QUESO vector sequence:
     mcmc_chain.getPositionValues(chain_pos, mcmc_sample);
     // evaluate log of posterior from log likelihood and log prior:
-    Real log_prior     = std::log(prior_density(mcmc_sample)),
+    Real log_prior     = log_prior_density(mcmc_sample),
          log_posterior = loglike_vals[chain_pos] + log_prior;
     //std::log(mcmcModel.continuous_probability_density(mcmc_sample));
     if (outputLevel > NORMAL_OUTPUT)
@@ -915,10 +915,10 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
-  for (size_t i=0; i<numContinuousVars; i++) {
-    RealRealPair bnds = mcmcModel.continuous_distribution_bounds(i);
-    paramMins[i] = bnds.first; paramMaxs[i] = bnds.second;
-  }
+  RealRealPairArray bnds = (standardizedSpace) ?
+    natafTransform.u_bounds() : natafTransform.x_bounds();
+  for (size_t i=0; i<numContinuousVars; i++)
+    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   // if calibrateSigma, the parameter domain is expanded by sigma terms 
   if (calibrateSigma) {
     //RealVector covariance_diagonal;
@@ -928,10 +928,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
       // TODO: Need to be able to get sigma from new covariance class.
       // Also need to sync up this with the logic in the ctor.  Also need
       // a default if there's no experimental data (may not be sensible)
-      //paramMins[numContinuousVars+j] = 1.;
-      //paramMaxs[numContinuousVars+j] = 1.;
+      //paramMins[numContinuousVars+j] = paramMaxs[numContinuousVars+j] = 1.;
       //Real std_j = std::sqrt( covariance_diagonal[j] );
-      Real std_j = std::sqrt( expData.scalar_sigma_est(j));
+      Real std_j = std::sqrt(expData.scalar_sigma_est(j));
       Cout << " scalar_sigma_est " << std_j;
       paramMins[numContinuousVars+j] = .01 * std_j;
       paramMaxs[numContinuousVars+j] =  2. * std_j;
@@ -942,30 +941,22 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
   const RealVector& init_pt = mcmcModel.continuous_variables();
-  if (standardizedSpace) {
+  if (standardizedSpace) { // param domain in u-space
     switch (emulatorType) {
-    case PCE_EMULATOR: case SC_EMULATOR:
-      // init_pt already propagated through transform
+    case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
       for (size_t i=0; i<numContinuousVars; i++)
 	(*paramInitials)[i] = init_pt[i];
       break;
-    default: {
-      // init_pt not already propagated through transform
+    default: { // init_pt not already propagated to u-space: use local nataf
       RealVector u_pt;
-      if (emulatorType == NO_EMULATOR) // use local nataf
-	natafTransform.trans_X_to_U(init_pt, u_pt);
-      else { // use nataf in DataFitSurrModel::daceIterator
-	NonD* nond_iterator
-	  = (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-	nond_iterator->variable_transformation().trans_X_to_U(init_pt, u_pt);
-      }
+      natafTransform.trans_X_to_U(init_pt, u_pt);
       for (size_t i=0; i<numContinuousVars; i++)
 	(*paramInitials)[i] = u_pt[i];
       break;
     }
     }
   }
-  else
+  else // init_pt and param domain in x-space
     for (size_t i=0; i<numContinuousVars; i++)
       (*paramInitials)[i] = init_pt[i];
   if (calibrateSigma)
@@ -982,14 +973,15 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 /** Must be called after paramMins/paramMaxs set above */
 void NonDQUESOBayesCalibration::prior_proposal_covariance()
 {
-  int total_num_params = numContinuousVars;
-  // int total_num_params = paramSpace->dimGlobal();
-  // QUESO::GslVector covDiag(paramSpace->zeroVector());
+  //int total_num_params = paramSpace->dimGlobal();
+  //QUESO::GslVector covDiag(paramSpace->zeroVector());
 
   // diagonal covariance from variance of prior marginals
   Real stdev;
-  for (int i=0; i<total_num_params; i++) {
-    stdev = mcmcModel.continuous_distribution_moment(i, 2);
+  RealRealPairArray dist_moments = (standardizedSpace) ?
+    natafTransform.u_moments() : natafTransform.x_moments();
+  for (int i=0; i<numContinuousVars; i++) {
+    stdev = dist_moments[i].second;
     (*proposalCovMatrix)(i,i) = stdev * stdev;
   }
   //proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
@@ -1001,8 +993,8 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
     Cout << "QUESO ProposalCovMatrix"; 
     if (standardizedSpace) Cout << " (scaled space)";
     Cout << '\n'; 
-    for (size_t i=0; i<total_num_params; i++) {
-      for (size_t j=0; j<total_num_params; j++) 
+    for (size_t i=0; i<numContinuousVars; i++) {
+      for (size_t j=0; j<numContinuousVars; j++) 
 	Cout <<  (*proposalCovMatrix)(i,j) << "  "; 
       Cout << '\n'; 
     }
@@ -1229,23 +1221,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   s << "<<<<< Best parameters          =\n";
   if (standardizedSpace) {
     RealVector u_rv, x_rv; copy_gsl(qv, u_rv);
-    switch (emulatorType) {
-    case PCE_EMULATOR:     case SC_EMULATOR: {
-      NonD* nond_iterator = (NonD*)stochExpIterator.iterator_rep();
-      nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
-      break;
-    }
-    // GPs use nataf in lhs_iterator
-    case KRIGING_EMULATOR: case GP_EMULATOR: {
-      NonD* nond_iterator
-    	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep();
-      nond_iterator->variable_transformation().trans_U_to_X(u_rv, x_rv);
-      break;
-    }
-    default: //case NO_EMULATOR:
-      natafTransform.trans_U_to_X(u_rv, x_rv);
-      break;
-    }
+    natafTransform.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv);
   }
   else
@@ -1439,6 +1415,12 @@ Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
   //    pdf *= ; // sigma priors
   //}
   return pdf;
+}
+
+
+Real NonDQUESOBayesCalibration::log_prior_density(const QUESO::GslVector& qv)
+{
+  return std::log(prior_density(qv)); // TO DO
 }
 
 } // namespace Dakota
