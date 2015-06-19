@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1476 distinct keywords (plus 205 aliases) **/
+/** 1477 distinct keywords (plus 205 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1415,13 +1415,14 @@ static KeyWord
 	kw_248[1] = {
 		{"drop_tolerance",10,0,1,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)}
 		},
-	kw_249[8] = {
+	kw_249[9] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,2,0,0,kw_28},
 		{0,0,4,0,0,kw_33},
 		{0,0,2,0,0,kw_220},
 		{0,0,1,0,0,kw_221},
 		{"backfill",8,0,3,0,0,0.,0.,0,N_mdm(true,backfillFlag)},
+		{"principal_components",8,0,4,0,0,0.,0.,0,N_mdm(true,pcaFlag)},
 		{"sample_type",8,4,1,0,kw_247},
 		{"variance_based_decomp",8,1,2,0,kw_248,0.,0.,0,N_mdm(true,vbdFlag)}
 		},
@@ -1746,7 +1747,7 @@ static KeyWord
 		{"nond_local_reliability",0,3,10,1,kw_189,0.,0.,-20,N_mdm(utype,methodName_LOCAL_RELIABILITY)},
 		{"nond_pof_darts",0,3,10,1,kw_215,0.,0.,14,N_mdm(utype,methodName_POF_DARTS)},
 		{"nond_polynomial_chaos",0,20,10,1,kw_245,0.,0.,14,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
-		{"nond_sampling",0,3,10,1,kw_249,0.,0.,16,N_mdm(utype,methodName_RANDOM_SAMPLING)},
+		{"nond_sampling",0,4,10,1,kw_249,0.,0.,16,N_mdm(utype,methodName_RANDOM_SAMPLING)},
 		{"nond_stoch_collocation",0,18,10,1,kw_260,0.,0.,20,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"nonlinear_cg",8,1,10,1,kw_261,0.,0.,0,N_mdm(utype,methodName_NONLINEAR_CG)},
 		{"npsol_sqp",8,0,10,1,kw_263,0.,0.,0,N_mdm(utype,methodName_NPSOL_SQP)},
@@ -1762,7 +1763,7 @@ static KeyWord
 		{"polynomial_chaos",8,20,10,1,kw_245,0.,0.,0,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
 		{"psuade_moat",8,1,10,1,kw_274,0.,0.,0,N_mdm(utype,methodName_PSUADE_MOAT)},
 		{"richardson_extrap",8,4,10,1,kw_275,0.,0.,0,N_mdm(utype,methodName_RICHARDSON_EXTRAP)},
-		{"sampling",8,3,10,1,kw_249,0.,0.,0,N_mdm(utype,methodName_RANDOM_SAMPLING)},
+		{"sampling",8,4,10,1,kw_249,0.,0.,0,N_mdm(utype,methodName_RANDOM_SAMPLING)},
 		{"scaling",8,0,8,0,0,0.,0.,0,N_mdm(true,methodScaling)},
 		{"soga",8,3,10,1,kw_281,0.,0.,0,N_mdm(utype,methodName_SOGA)},
 		{"speculative",8,0,5,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},

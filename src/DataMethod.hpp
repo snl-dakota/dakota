@@ -767,6 +767,9 @@ public:
   /// the \c backfill option allows one to augment in LHS sample 
   /// by enforcing the addition of unique discrete variables to the sample
   bool backfillFlag;
+  /// Flag to specify the calculation of principal components when 
+  /// using LHS  
+  bool pcaFlag;
 
   // NonD
 

@@ -6685,6 +6685,7 @@ static bool
 	MP_(methodUseDerivsFlag),
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
+	MP_(pcaFlag),
 	MP_(printPopFlag),
 	MP_(pstudyFileActive),
 	MP_(randomizeOrderFlag),

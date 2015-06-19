@@ -1387,6 +1387,8 @@
                             </keyword>
                             <keyword  id="backfill1" name="backfill" code="{N_mdm(true,backfillFlag)}" label="backfill" help="" minOccurs="0" >
                             </keyword>
+                            <keyword  id="principal_comp" name="principal_components" code="{N_mdm(true,pcaFlag)}" label="principal_comp" help="" minOccurs="0" >
+                            </keyword>
                           </keyword>
                         </oneOf>
                         <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />

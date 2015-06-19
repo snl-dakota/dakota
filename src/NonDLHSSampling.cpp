@@ -36,6 +36,7 @@ namespace Dakota {
 NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   numResponseFunctions(0),
+  pcaFlag(probDescDB.get_bool("method.principal_components")),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
 { 
   if (model.primary_fn_type() == GENERIC_FNS)
@@ -131,7 +132,6 @@ void NonDLHSSampling::post_run(std::ostream& s)
 
   Analyzer::post_run(s);
  
-  bool pcaFlag = false;
   if (pcaFlag) {
     
     IntRespMCIter r_it; size_t f, s, v;

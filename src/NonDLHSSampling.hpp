@@ -90,6 +90,8 @@ private:
 
   /// flags computation of variance-based decomposition indices
   bool varBasedDecompFlag;
+  /// flag to specify the calculation of principal components
+  bool pcaFlag;
 };
 
 

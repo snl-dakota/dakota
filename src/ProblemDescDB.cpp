@@ -2972,6 +2972,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},
 	{"nond.tensor_grid", P tensorGridFlag},
+	{"principal_components", P pcaFlag},
 	{"print_each_pop", P printPopFlag},
 	{"pstudy.file_active", P pstudyFileActive},
 	{"quality_metrics", P volQualityFlag},
