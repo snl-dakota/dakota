@@ -1390,10 +1390,10 @@ Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
   Real pdf = 1.;
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.x_pdf(qv[i], i);
+      pdf *= natafTransform.u_pdf(qv[i], i);
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.u_pdf(qv[i], i);
+      pdf *= natafTransform.x_pdf(qv[i], i);
 
   // Not necessary for relative pdf comparisons with uniform sigma priors:
   //if (calibrateSigma)
@@ -1416,10 +1416,10 @@ Real NonDQUESOBayesCalibration::log_prior_density(const QUESO::GslVector& qv)
   Real log_pdf = 0.;
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.x_log_pdf(qv[i], i);
+      log_pdf += natafTransform.u_log_pdf(qv[i], i);
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.u_log_pdf(qv[i], i);
+      log_pdf += natafTransform.x_log_pdf(qv[i], i);
 
   // Not necessary for relative pdf comparisons with uniform sigma priors:
   //if (calibrateSigma)
