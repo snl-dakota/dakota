@@ -551,26 +551,6 @@ public:
   /// set epistDistParams
   void epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp);
 
-  /// compute a multivariate probability density from the marginals for the
-  /// aleatory random variables within the current active continuous variables
-  /// (must be uncorrelated)
-  Real continuous_probability_density() const;
-  /// compute a multivariate probability density from the marginals for the
-  /// aleatory random variables within the provided active continuous variables
-  /// (must be uncorrelated)
-  Real continuous_probability_density(const RealVector& c_vars) const;
-
-  /// compute a univariate probability density for a particular active
-  /// continuous variable at the current value
-  Real continuous_probability_density(size_t cv_index) const;
-  /// compute a univariate probability density for a particular active
-  /// continuous variable at the provided value
-  Real continuous_probability_density(Real c_var, size_t cv_index) const;
-  /// compute a univariate probability density for a particular active
-  /// continuous variable at the provided value
-  Real continuous_probability_density(Real c_var, unsigned short cv_type,
-				      size_t dist_index) const;
-
   // LABELS and TAGS
 
   /// return the active continuous variable labels from currentVariables
@@ -2704,47 +2684,6 @@ inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
       userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
   else
     userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
-}
-
-
-inline Real Model::continuous_probability_density() const
-{
-  // any setting of active continuous vars must occur prior to usage
-  // (similar to compute_response())
-
-  if (modelRep) // envelope fwd to letter
-    return modelRep->continuous_probability_density(
-      modelRep->currentVariables.continuous_variables());
-  else
-    return continuous_probability_density(
-      currentVariables.continuous_variables());
-}
-
-
-inline Real Model::
-continuous_probability_density(Real c_var, size_t cv_index) const
-{
-  if (modelRep) // envelope fwd to letter
-    return modelRep->continuous_probability_density(c_var, cv_index);
-  else {
-    UShortMultiArrayConstView cv_types
-      = currentVariables.continuous_variable_types();
-    unsigned short dist_type = cv_types[cv_index];
-    size_t dist_index = cv_index - find_index(cv_types, dist_type);
-    return continuous_probability_density(c_var, dist_type, dist_index);
-  }
-}
-
-
-inline Real Model::
-continuous_probability_density(size_t cv_index) const
-{
-  if (modelRep) // envelope fwd to letter
-    return modelRep->continuous_probability_density(
-      modelRep->currentVariables.continuous_variable(cv_index), cv_index);
-  else
-    return continuous_probability_density(
-      currentVariables.continuous_variable(cv_index), cv_index);
 }
 
 

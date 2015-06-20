@@ -663,7 +663,6 @@ chain_to_local(unsigned short batch_size, std::map<Real, size_t>& local_best)
     // evaluate log of posterior from log likelihood and log prior:
     Real log_prior     = log_prior_density(mcmc_sample),
          log_posterior = loglike_vals[chain_pos] + log_prior;
-    //std::log(mcmcModel.continuous_probability_density(mcmc_sample));
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "MCMC sample: " << mcmc_sample << " log prior = " << log_prior
 	   << " log posterior = " << log_posterior << std::endl;
@@ -1381,46 +1380,53 @@ Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
   // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
   // which may in turn call back to our GenericVectorRV prior plug-in
 
-  // Mirrors Model::continuous_probability_density() for efficiency:
-  // > avoid incurring overhead of GslVector -> RealVector copy
-  // > avoid repeated dist_index lookups when looping over single var version
-
-  // error trap on correlated random variables
-  // TO DO: add support for evaluation of correlated prior density
-  const Pecos::AleatoryDistParams& a_dist
-    = mcmcModel.aleatory_distribution_parameters();
-  if (!a_dist.uncertain_correlations().empty()) {
-    Cerr << "Error: prior_density() currently uses a product of marginal "
-	 << "densities\n       and can only be used for independent random "
-	 << "variables at this time.\n       Consider use of variable "
-	 << "transformation option." << std::endl;
+  if (natafTransform.x_correlation()) {
+    Cerr << "Error: prior_density() uses a product of marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  UShortMultiArrayConstView cv_types
-    = mcmcModel.continuous_variable_types();
-  Real pdf = 1.; size_t i, dist_index = 0, num_cv = cv_types.size();
-  for (i=0; i<num_cv; ++i) {
-    // design/epistemic/state return 1.
-    pdf *= mcmcModel.continuous_probability_density(qv[i], cv_types[i],
-						    dist_index);
-    // shortcut: increment distribution index if same type, else reset
-    if (i+1 < num_cv)
-      dist_index = (cv_types[i] == cv_types[i+1]) ? dist_index + 1 : 0;
-  }
+  Real pdf = 1.;
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      pdf *= natafTransform.x_pdf(qv[i], i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      pdf *= natafTransform.u_pdf(qv[i], i);
 
-  // TO DO
-  //if (calibrateSigma) {
-  //  for (i=num_cv; i<total; ++i)
-  //    pdf *= ; // sigma priors
-  //}
+  // Not necessary for relative pdf comparisons with uniform sigma priors:
+  //if (calibrateSigma)
+  //  for (i=numContinuousVars; i<total; ++i)
+  //    pdf /= range; // uniform sigma priors
+
   return pdf;
 }
 
 
 Real NonDQUESOBayesCalibration::log_prior_density(const QUESO::GslVector& qv)
 {
-  return std::log(prior_density(qv)); // TO DO
+  if (natafTransform.x_correlation()) {
+    Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  Real log_pdf = 0.;
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_pdf += natafTransform.x_log_pdf(qv[i], i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_pdf += natafTransform.u_log_pdf(qv[i], i);
+
+  // Not necessary for relative pdf comparisons with uniform sigma priors:
+  //if (calibrateSigma)
+  //  for (i=numContinuousVars; i<total; ++i)
+  //    log_pdf -= std::log(range); // uniform sigma priors
+
+  return log_pdf;
 }
 
 } // namespace Dakota

@@ -99,7 +99,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     const RealVector& dim_pref
       = probDescDB.get_rv("method.nond.dimension_preference");    // not exposed
     bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
-    NonD* se_rep;
+    NonDExpansion* se_rep;
     if (emulatorType == SC_EMULATOR) // SC sparse grid interpolation
       se_rep = new NonDStochCollocation(iteratedModel,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
@@ -148,58 +148,36 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       { samples = 0; sample_reuse = "all"; }
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
-    Iterator lhs_iterator;
-    if (standardizedSpace) {
-      Model g_u_model;
-      transform_model(iteratedModel, g_u_model, true); // global bnds
+    Iterator lhs_iterator; Model lhs_model;
+    if (standardizedSpace) transform_model(iteratedModel,lhs_model,true);//glbal
+    else                   lhs_model = iteratedModel; // shared rep
+    NonDLHSSampling* lhs_rep = new
+      NonDLHSSampling(lhs_model, sample_type, samples, randomSeed,
+        probDescDB.get_string("method.random_number_generator"), true,
+	ACTIVE_UNIFORM);
+    lhs_iterator.assign_rep(lhs_rep, false);
 
-      NonDLHSSampling* lhs_rep = new NonDLHSSampling(g_u_model,
-	sample_type, samples, randomSeed,
-	probDescDB.get_string("method.random_number_generator"),
-	true, ACTIVE_UNIFORM);
-      lhs_iterator.assign_rep(lhs_rep, false);
-
-      // natafTransform is not fully updated at this point, but using
-      // a shallow copy allows run time updates to propagate
+    // natafTransform is not fully updated at this point, but using
+    // a shallow copy allows run time updates to propagate
+    if (standardizedSpace)
       lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
-      ActiveSet gp_set = g_u_model.current_response().active_set(); // copy
-      gp_set.request_values(deriv_order); // for misfit Hessian
-      mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
-	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-        outputLevel, sample_reuse,
-	probDescDB.get_string("method.export_points_file"),
-	probDescDB.get_ushort("method.export_points_file_format"),
-	import_pts_file,
-        probDescDB.get_ushort("method.import_points_file_format"),
-        probDescDB.get_bool("method.import_points_file_active")), false);
-    }
-    else {
-      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel,
-	sample_type, samples, randomSeed,
-	probDescDB.get_string("method.random_number_generator"),
-	true, ACTIVE_UNIFORM), false);
-
-      ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
-      gp_set.request_values(deriv_order); // for misfit Hessian
-      mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
-	gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-        outputLevel, sample_reuse,
-	probDescDB.get_string("method.export_points_file"),
-	probDescDB.get_ushort("method.export_points_file_format"),
-	import_pts_file,
-        probDescDB.get_ushort("method.import_points_file_format"),
-	probDescDB.get_bool("method.import_points_file_active")), false);
-    }
+    ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
+    gp_set.request_values(deriv_order); // for misfit Hessian
+    mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, lhs_model,
+      gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
+      outputLevel, sample_reuse,
+      probDescDB.get_string("method.export_points_file"),
+      probDescDB.get_ushort("method.export_points_file_format"),import_pts_file,
+      probDescDB.get_ushort("method.import_points_file_format"),
+      probDescDB.get_bool("method.import_points_file_active")), false);
     break;
   }
 
   case NO_EMULATOR:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) // recast to standardized probability space
-      transform_model(iteratedModel, mcmcModel); // no global bounds
-    else
-      mcmcModel = iteratedModel; // shared rep
+    if (standardizedSpace) transform_model(iteratedModel, mcmcModel);// !global
+    else                   mcmcModel = iteratedModel; // shared rep
     break;
   }
 

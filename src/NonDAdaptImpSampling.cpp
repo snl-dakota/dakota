@@ -322,10 +322,6 @@ select_rep_points(const RealVectorArray& var_samples_u,
   //size_t closestpt;
   //Real mindist = DBL_MAX, closestbeta, ddist;
 
-  // update designPoint once; update uncertain vars for each sample
-  for (j=0; j<numContDesVars; ++j)
-    uSpaceModel.continuous_variable(designPoint[j], j);
-
   for (i=0; i<num_samples; i++) {
     //TMW: Modified this to exclude the previous repPointsU
     //const RealVector& sample_i = (i<numRepPoints) ? repPointsU[i] :
@@ -430,7 +426,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // define repPointsU and calculate repWeights
   repPointsU.resize(new_rep_pts);
   repWeights.sizeUninitialized(new_rep_pts);
-  Real sum_density = 0.;
+  Real sum_density = 0., rep_pdf;
   for (i=0; i<new_rep_pts; ++i) {
     size_t idx = min_indx[i]; 
     size_t pt_idx;
@@ -443,16 +439,15 @@ select_rep_points(const RealVectorArray& var_samples_u,
       //var_samples_u[fail_idx - numRepPoints];
     repPointsU[i] = var_samples_u[pt_idx];
 
-    // update uSpaceModel with the u-space rep point so that we can 
-    // calculate the density function of the representative point
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-      uSpaceModel.continuous_variable(repPointsU[i][cntr], j);
-    
     //Real phi_beta = Pecos::NormalRandomVariable::
     //  std_pdf(repPointsU[i].normFrobenius());
     //repWeights[i] = phi_beta;
     //sum_density  += phi_beta;
-    Real rep_pdf = uSpaceModel.continuous_probability_density();
+
+    rep_pdf = 1.;
+    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      rep_pdf *= natafTransform.u_pdf(repPointsU[i][cntr], j);
+
     repWeights[i] = rep_pdf;
     sum_density  += rep_pdf;
   }
@@ -580,7 +575,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // artificial bound constraints (PCE, SC, local reliability, stand-alone).
     // Note: local reliability employs artificial bounds for the MPP search,
     // but these are not relevant for the AIS process on the truth model.
-    RealRealPairArray u_bnds = natafTransform.u_bounds();
+    RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
     for (i=0, j=numContDesVars; i<numUncertainVars; ++i, ++j)
       { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
   }
@@ -674,10 +669,6 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   if (compute_cov)
     failure_ratios.reserve(batch_size);
 
-  // get design point
-  for (j=0; j<numContDesVars; ++j)
-    uSpaceModel.continuous_variable(designPoint[j], j);
-
   // calculate the probability of failure using all samples relative
   // to each of the representative points
   for (i=0; i<batch_size; i++) {
@@ -690,17 +681,15 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
       const RealVector& sample_i = var_samples_u[i];
 
-      // update uSpaceModel with the u-space sample point so that we can 
-      // calculate the density of the original density function
-      for (k=numContDesVars, cntr=0; cntr<numUncertainVars; ++k, ++cntr)
-	uSpaceModel.continuous_variable(sample_i[cntr], k);
-
       // calculate ratio of pdf relative to origin to pdf relative to rep pt
       //pdf_ratio1
       //  = Pecos::NormalRandomVariable::std_pdf(sample_i.normFrobenius())
       //  / recentered_pdf;
-      pdf_ratio = uSpaceModel.continuous_probability_density()
-	        / recentered_density(sample_i);
+
+      pdf_ratio = 1.;
+      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+	pdf_ratio *= natafTransform.u_pdf(sample_i[cntr], j);
+      pdf_ratio /= recentered_density(sample_i);
 
       // add sample's contribution to sum_prob
       sum_prob += pdf_ratio;
@@ -783,7 +772,7 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
   //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
-  RealRealPairArray u_bnds = natafTransform.u_bounds();
+  RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
