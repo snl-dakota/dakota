@@ -1346,10 +1346,10 @@ void NonD::initialize_random_variable_parameters()
     Pecos::EpistemicDistParams();
 
   RealVector cd_l_bnds, cd_u_bnds, cs_l_bnds, cs_u_bnds;
-  if (numContinuousVars || numContStateVars) {
+  if (numContDesVars || numContStateVars) {
     const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
     const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-    if (numContinuousVars) {
+    if (numContDesVars) {
       cd_l_bnds = RealVector(Teuchos::View, c_l_bnds.values(), numContDesVars);
       cd_u_bnds = RealVector(Teuchos::View, c_u_bnds.values(), numContDesVars);
     }
