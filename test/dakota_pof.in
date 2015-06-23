@@ -11,7 +11,7 @@ method
    pof_darts
      model_pointer = 'SURR' 
       samples = 100
-      lipschitz local                      #s1,#s2
+#      lipschitz local                      #s1,#s2
       seed = 8493
       response_levels = -0.9 -0.8 -0.5       #s0,#s2,#s3 
       #num_response_levels = 1 1
@@ -23,13 +23,13 @@ model,
         surrogate global,			 
 	  actual_model_pointer = 'TRUTH'
           reuse_samples all
-#	  gaussian_process		     #s0,#s1
-#	    surfpack		     	     #s0,#s1
-	  polynomial 			     #s2,#s3
-	    linear	     		     #s2,#s3
+	  gaussian_process		     #s0,#s1
+	    surfpack		     	     #s0,#s1
+#	  polynomial 			     #s2,#s3
+#	    linear	     		     #s2,#s3
 ##	surrogate_order = 4                  #s3
-	    piecewise_decomp		     #s2,#s3		  
-	      cell_type = 'vornonoi'	     #s2,#s3
+#	    piecewise_decomp		     #s2,#s3		  
+#	      cell_type = 'vornonoi'	     #s2,#s3
 #	      discontinuity_detection		 
 #	        jump_threshold 20.0		 
 
