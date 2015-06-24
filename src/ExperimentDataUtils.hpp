@@ -257,12 +257,6 @@ bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian
  */
 void compute_column_means( RealMatrix & matrix, RealVector & avg_vals );
 
-/**
- * \brief Compute the SVD of an arbitrary matrix
- */
-void compute_svd( RealMatrix &, int nrows, int ncols, RealVector & svd_vals, RealMatrix & VTrans);
-
-
 } // namespace dakota
 
 #endif //EXPERIMENT_DATA_UTILS

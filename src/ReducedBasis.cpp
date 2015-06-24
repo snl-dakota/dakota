@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 #include "ReducedBasis.hpp"
-
+#include "dakota_linear_algebra.hpp"
 #include <Teuchos_SerialDenseHelpers.hpp>
 
 namespace Dakota {
@@ -62,7 +62,7 @@ ReducedBasis::update_svd(bool do_center)
     center_matrix();
 
   workingMatrix = matrix; // because the matrix gets overwritten by U_matrix values
-  compute_svd(workingMatrix, workingMatrix.numRows(), workingMatrix.numCols(), S_values, VT_matrix);
+  svd(workingMatrix, S_values, VT_matrix);
   U_matrix = workingMatrix;
 
   is_valid_svd = true;

@@ -18,7 +18,7 @@
 #include "NonDLHSSampling.hpp"
 #include "Teuchos_LAPACK.hpp"
 #include "RecastModel.hpp"
-
+#include "dakota_linear_algebra.hpp"
 
 // TODO: Ultimately (like NonDAdaptiveSampling) want this method to
 // result in a approximation (reduced model) that can be used in other
@@ -460,13 +460,19 @@ append_sample_matrices(unsigned int diff_samples)
 void EfficientSubspaceMethod::
 compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
 {
+  // Want eigenvalues of derivMatrix*derivMatrix^T, so perform SVD of
+  // derivMatrix and square them
+
     RealVector singular_values;
     RealMatrix V_transpose;
-    Dakota::compute_svd( derivativeMatrix,
-                         numContinuousVars,
-                         totalSamples*numFunctions,
-                         singular_values,
-                         V_transpose );
+    // BMA: This overwrites the derivativeMatrix with left singular
+    // vectors, probably not what we want...
+    svd(derivativeMatrix, singular_values, V_transpose);
+
+    // TODO: bootstrap to assess error in eigenvalues and subspace
+    RealVector eigen_values(singular_values.length());
+    for (int i=0; i<singular_values.length(); ++i)
+      eigen_values[i] = singular_values[i]*singular_values[i];
 
     // TODO: if a reducedRank met the tolerance, but we added more
     // samples to meet construction error, need to allow this bigger

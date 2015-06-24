@@ -743,42 +743,5 @@ compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
   }
 }
 
-void
-compute_svd( RealMatrix & matrix, int num_rows, int num_cols, RealVector & svd_vals, RealMatrix & VT )
-{
-  Teuchos::LAPACK<int, Real> la;
-
-  // ----
-  // compute the SVD of the incoming matrix
-  // ----
-
-  char JOBU = 'O'; // overwrite A with U
-  char JOBVT = 'A'; // compute V
-  int M = num_rows;
-  int N = num_cols;
-  int LDA = M;
-  int num_singular_values = std::min(M, N);
-  svd_vals.resize(num_singular_values);
-  Real* U = NULL;
-  int LDU = 1;
-  VT.reshape(N, N);
-  int LDVT = N;
-  int info = 0;
-
-  // TODO: tighten work bound
-  int work_size = 5*std::max(M, N);
-  double* work = new Real[work_size];
-  // Not used by real SVD?
-  double* RWORK = NULL;
-
-  la.GESVD(JOBU, JOBVT, M, N, matrix[0], LDA, &svd_vals[0],
-      U, LDU, VT[0], LDVT, work, work_size, RWORK, &info);
-
-  if (info != 0) {
-    Cerr << "\nError: Efficient subspace method SVD phase, info = " << info 
-      << std::endl;
-    abort_handler(-1);
-  }
-}
 
 } //namespace Dakota

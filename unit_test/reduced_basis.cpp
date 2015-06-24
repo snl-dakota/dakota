@@ -3,6 +3,7 @@
 #include "ReducedBasis.hpp"
 #include "dakota_tabular_io.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_linear_algebra.hpp"
 
 #include <string>
 
@@ -71,7 +72,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, compute_svd)
   // --------------- What we are testing
   RealVector singular_values;
   RealMatrix VTranspose;
-  compute_svd(matrix, NUM_ROWS, 2, singular_values, VTranspose);
+  svd(matrix, singular_values, VTranspose);
   // --------------- What we are testing
 
   //std::cout << "\nSingular values:\n" << std::endl;
