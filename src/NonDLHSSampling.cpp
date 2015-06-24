@@ -149,14 +149,11 @@ void NonDLHSSampling::post_run(std::ostream& s)
       }  
       Cout << "\n";
     }
+
+    // Compute the SVD (includes centering the matrix)
     ReducedBasis pcaReducedBasis; 
     pcaReducedBasis.set_matrix(responseMatrix);
     pcaReducedBasis.update_svd();
-    
-    RealVector singular_values;
-    singular_values = pcaReducedBasis.get_singular_values();
-
-    RealVector column_means = pcaReducedBasis.get_column_means();
 
     // Get the centered version of the original response matrix
     RealMatrix centered_matrix = pcaReducedBasis.get_matrix();
@@ -164,9 +161,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
     centered_matrix.print(std::cout);
 
     // for now get the first factor score
-    RealMatrix factor_scores(numSamples, numFunctions);
-    RealMatrix principal_comp(numSamples, numFunctions);
-    principal_comp = pcaReducedBasis.get_right_singular_vector_transpose();
+    RealMatrix principal_comp = pcaReducedBasis.get_right_singular_vector_transpose();
     Cout << "principal components" << '\n';
     for (s=0; s<numSamples; ++s) {
       for (f=0; f<numFunctions; ++f) {
@@ -175,6 +170,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
       Cout << "\n";
     }
     
+    RealMatrix factor_scores(numSamples, numFunctions);
     int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
 			centered_matrix, principal_comp, 0.);
  
@@ -193,10 +189,13 @@ void NonDLHSSampling::post_run(std::ostream& s)
     //                     numSamples,
     //                     numFunctions,
     //                     singular_values );
+    RealVector singular_values = pcaReducedBasis.get_singular_values();
     Cout << "singular values " << singular_values <<'\n';
 
 //Build GPs
-    int num_signif_Pcomps = 1;
+    // Get number of principal components to retain
+    ReducedBasis::VarianceExplained truncation(0.95);
+    int num_signif_Pcomps = truncation.get_num_components(pcaReducedBasis);
     String approx_type; 
     approx_type = "global_kriging";  // Surfpack GP
     UShortArray approx_order;
@@ -227,7 +226,9 @@ void NonDLHSSampling::post_run(std::ostream& s)
     RealMatrix predMatrix;
     predMatrix.reshape(numSamples, numFunctions);
 
-    for (int j = 0; j < numSamples; j++) { 
+    RealVector column_means = pcaReducedBasis.get_column_means();
+
+    for (int j = 0; j < numSamples; j++) {
      //this_pred = mean_vec;
       this_pred = 0.0;
       for (int i = 0; i < num_signif_Pcomps; ++i) {
@@ -242,12 +243,12 @@ void NonDLHSSampling::post_run(std::ostream& s)
       }
       for( int k=0; k<numFunctions; ++k )
         predMatrix(j,k) = this_pred(k)+column_means(k);
-    }   
+    }
     Cout << "Prediction Matrix " << "\n";
     for (s=0; s<numSamples; ++s) {
       for (f=0; f<numFunctions; ++f) {
         Cout << predMatrix(s,f) << "  " ;
-      }  
+      }
       Cout << "\n";
     }
   }

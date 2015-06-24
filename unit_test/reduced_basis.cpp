@@ -217,3 +217,83 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr0)
 
 //----------------------------------------------------------------
 
+TEUCHOS_UNIT_TEST(reduced_basis, spectral_sums)
+{
+  // Use the response submatrix
+  RealMatrix matrix = get_parameter_and_response_submatrices().second;
+
+  ReducedBasis reduced_basis;
+  reduced_basis.set_matrix(matrix);
+  reduced_basis.update_svd();
+
+  RealVector singular_values  = reduced_basis.get_singular_values();
+
+  Real computed_eigen_sum = 0.0;
+  Real computed_sval_sum  = 0.0;
+  for( int i=0; i<singular_values.length(); ++i ) {
+    computed_sval_sum  += singular_values(i);
+    computed_eigen_sum += singular_values(i)*singular_values(i);
+  }
+
+  Real eigen_sum = reduced_basis.get_eigen_values_sum();
+  Real sval_sum  = reduced_basis.get_singular_values_sum();
+  
+  TEST_FLOATING_EQUALITY(eigen_sum, 86.00739691478532, 1.e-14); // from Matlab eig
+  TEST_FLOATING_EQUALITY(computed_eigen_sum, eigen_sum, 1.e-8);
+  TEST_FLOATING_EQUALITY(computed_sval_sum, sval_sum, 1.e-8);
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(reduced_basis, truncations)
+{
+  // Use the response submatrix
+  RealMatrix matrix = get_parameter_and_response_submatrices().second;
+
+  ReducedBasis reduced_basis;
+  reduced_basis.set_matrix(matrix);
+  reduced_basis.update_svd();
+
+  ReducedBasis::Untruncated                trunc1;
+  ReducedBasis::NumComponents              trunc2(5);
+  ReducedBasis::VarianceExplained          trunc3(0.99);
+  ReducedBasis::HeuristicVarianceExplained trunc4(0.99);
+
+  //reduced_basis.get_singular_values(ReducedBasis::Untruncated()).print(std::cout);
+  //reduced_basis.get_singular_values(ReducedBasis::VarianceExplained(0.99)).print(std::cout);
+  //reduced_basis.get_singular_values(ReducedBasis::HeuristicVarianceExplained(0.99)).print(std::cout);
+
+  RealVector singular_values  = reduced_basis.get_singular_values();
+  RealVector singular_values1 = reduced_basis.get_singular_values(trunc1);
+  RealVector singular_values2 = reduced_basis.get_singular_values(trunc2);
+  RealVector singular_values3 = reduced_basis.get_singular_values(trunc3);
+  RealVector singular_values4 = reduced_basis.get_singular_values(trunc4);
+
+  int num_values  = singular_values.length();
+  int num_values1 = trunc1.get_num_components(reduced_basis);
+  int num_values2 = trunc2.get_num_components(reduced_basis);
+  int num_values3 = trunc3.get_num_components(reduced_basis);
+  int num_values4 = trunc4.get_num_components(reduced_basis);
+
+  // Test lengths
+  TEST_EQUALITY( num_values , 50 );
+  TEST_EQUALITY( num_values1, 50 );
+  TEST_EQUALITY( num_values2, 5  );
+  TEST_EQUALITY( num_values3, 4  );
+  TEST_EQUALITY( num_values4, 5  );
+
+  Real ratio3 = 0.0;
+  for( int i=0; i<num_values3; ++i )
+    ratio3 += singular_values3(i)*singular_values3(i);
+  ratio3 /= reduced_basis.get_eigen_values_sum();
+  TEST_FLOATING_EQUALITY(ratio3, 0.9994559642736607, 1.e-12);
+
+  Real ratio4 = singular_values(num_values4-1)*singular_values(num_values4-1)/(singular_values(0)*singular_values(0));
+
+  // Create order 1.0 values for comparison
+  Real test_val =                 1.0 + ratio4;
+  const Real matlab_based_value = 1.0 + 4.602723195500141e-04;
+  TEST_FLOATING_EQUALITY(test_val, matlab_based_value, 1.e-12);
+
+}
+
