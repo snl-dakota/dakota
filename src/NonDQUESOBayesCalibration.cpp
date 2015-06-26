@@ -528,6 +528,9 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     bool ev_truncation =
       get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
     if (ev_truncation) { // fallback to Gauss-Newton
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
+	     << "Hessian.\n";
       ShortArray asrv_override(numFunctions, 2); // override asrv in response
       expData.build_hessian_of_sum_square_residuals(emulator_resp,
 						    asrv_override, log_hess);
@@ -543,12 +546,12 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "Hessian of negative log-posterior (from misfit and log-prior):\n";
-    write_data(Cout, log_hess, true, true, true);
+    write_data(Cout, log_hess);
     //Cout << "2x2 determinant = " << log_hess(0,0) * log_hess(1,1) -
     //  log_hess(0,1) * log_hess(1,0) << '\n';
 
     Cout << "Positive definite covariance from inverse of Hessian:\n";
-    write_data(Cout, prop_covar, true, true, true);
+    write_data(Cout, prop_covar);
     //Cout << "2x2 determinant = " << prop_covar(0,0) * prop_covar(1,1) -
     //  prop_covar(0,1) * prop_covar(1,0) << '\n';
   }
@@ -712,7 +715,7 @@ void NonDQUESOBayesCalibration::aggregated_to_all()
     if (outputLevel >= NORMAL_OUTPUT) {
       Cout << "Best point " << i+1 << ": Log posterior = " << it->first
 	   << " Sample:";
-      write_col_vector_trans(Cout, (int)i, false, false, true, allSamples);
+      write_col_vector_trans(Cout, (int)i, allSamples, false, false, true);
     }
   }
 }
@@ -736,7 +739,7 @@ local_to_all(const std::map<Real, size_t>& local_best)
     if (outputLevel >= NORMAL_OUTPUT) {
       Cout << "Best point " << i+1 << ": Log posterior = " << cit->first
 	   << " Sample:";
-      write_col_vector_trans(Cout, (int)i, false, false, true, allSamples);
+      write_col_vector_trans(Cout, (int)i, allSamples, false, false, true);
     }
   }
 }

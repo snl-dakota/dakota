@@ -1282,7 +1282,8 @@ void read_data(std::istream& s,
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m,
-                bool brackets, bool row_rtn, bool final_rtn)
+                bool brackets = true, bool row_rtn = true,
+		bool final_rtn = true)
 {
   OrdinalType i, j, nrows = m.numRows();
   s << std::scientific << std::setprecision(write_precision);
@@ -1305,7 +1306,8 @@ void write_data(std::ostream& s,
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
                 const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
-                bool brackets, bool row_rtn, bool final_rtn)
+                bool brackets = true, bool row_rtn = true,
+		bool final_rtn = true)
 {
   OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
   s << std::scientific << std::setprecision(write_precision);
@@ -1358,6 +1360,7 @@ void read_lower_triangle(std::istream& s,
       { s >> token; sm(i,j) = std::atof(token.c_str()); }
 }
 
+
 /// generic input stream template for reading the lower triangle of a
 /// SerialSymDenseMatrix
 template <typename IStreamType, typename OrdinalType, typename ScalarType>
@@ -1375,7 +1378,7 @@ void read_lower_triangle(IStreamType& s,
 template <typename OrdinalType, typename ScalarType>
 void write_lower_triangle(std::ostream& s,
   const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm,
-  bool row_rtn)
+  bool row_rtn = true)
 {
   OrdinalType i, j, nrows = sm.numRows();
   s << std::scientific << std::setprecision(write_precision);
@@ -1431,8 +1434,9 @@ void read_col_vector_trans(IStreamType& s, OrdinalType col,
 /// ostream insertion operator for a column vector from a SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_col_vector_trans(std::ostream& s, OrdinalType col,
-  OrdinalType num_items, bool brackets, bool break_line, bool final_rtn,
-  const Teuchos::SerialDenseMatrix<OrdinalType,ScalarType>& sdm)
+  OrdinalType num_items, 
+  const Teuchos::SerialDenseMatrix<OrdinalType,ScalarType>& sdm,
+  bool brackets = true, bool break_line = true, bool final_rtn = true)
 {
   s << std::scientific << std::setprecision(write_precision);
   if (brackets) s << " [ ";
@@ -1450,11 +1454,11 @@ void write_col_vector_trans(std::ostream& s, OrdinalType col,
 /// ostream insertion operator for a column vector from a SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_col_vector_trans(std::ostream& s, OrdinalType col,
-  bool brackets, bool break_line, bool final_rtn,
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+  bool brackets = true, bool break_line = true, bool final_rtn = true)
 {
-  write_col_vector_trans(s, col, sdm.numRows(), brackets, break_line,
-                         final_rtn, sdm);
+  write_col_vector_trans(s, col, sdm.numRows(), sdm, brackets, break_line,
+                         final_rtn);
 }
 
 

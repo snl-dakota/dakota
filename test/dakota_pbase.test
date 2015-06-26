@@ -4203,10 +4203,10 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083421977e+00
-                      1.0161065159e+00
+                      1.0083422100e+00
+                      1.0161065402e+00
 <<<<< Best log posterior       =
-                     -1.3864058754e+00
+                     -1.3864058756e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4238,24 +4238,24 @@ Test Number 5 succeeded
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 63 total (63 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0085862604e+00
-                      1.0186123092e+00
+                      1.0004967656e+00
+                      1.0005067144e+00
 <<<<< Best log posterior       =
-                     -1.3865546982e+00
+                     -1.3863183310e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.4407433277e-01
-                      2.9242765088e-01
+                      5.4486796080e-01
+                      2.9467695058e-01
 <<<<< Best log posterior       =
-                     -2.2377989420e+00
+                     -2.2373658646e+00
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 75 total (74 new, 1 duplicate)
+<<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.6602397267e-01
-                      3.1944254475e-01
+                      5.4876460880e-01
+                      3.0133493343e-01
 <<<<< Best log posterior       =
-                     -2.2375140687e+00
+                     -2.2374668130e+00
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 3279 total (3229 new, 50 duplicate)
 <<<<< Best parameters          =
@@ -4264,19 +4264,19 @@ Test Number 9 succeeded
 <<<<< Best log posterior       =
                      -2.7727002376e+00
 Test Number 10 succeeded
-<<<<< Function evaluation summary: 3411 total (3361 new, 50 duplicate)
+<<<<< Function evaluation summary: 3262 total (3212 new, 50 duplicate)
 <<<<< Best parameters          =
-                      5.4407433277e-01
-                      2.9242765088e-01
+                      5.4486796079e-01
+                      2.9467695058e-01
 <<<<< Best log posterior       =
-                     -2.2377989420e+00
+                     -2.2373658646e+00
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083423155e+00
-                      1.0161067493e+00
+                      1.0083423163e+00
+                      1.0161067509e+00
 <<<<< Best log posterior       =
-                     -1.3864058778e+00
+                     -1.3864058779e+00
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4287,17 +4287,17 @@ Test Number 12 succeeded
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 3279 total (3229 new, 50 duplicate)
 <<<<< Best parameters          =
-                      1.0083422798e+00
-                      1.0161066787e+00
+                      1.0083423169e+00
+                      1.0161067521e+00
 <<<<< Best log posterior       =
-                     -1.3864058771e+00
+                     -1.3864058779e+00
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9654995530e-01
-                      9.9382763765e-01
+                      9.7455555331e-01
+                      9.4673701588e-01
 <<<<< Best log posterior       =
-                     -1.3863259327e+00
+                     -1.3870745474e+00
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 3598 total (3549 new, 49 duplicate)
 <<<<< Best parameters          =

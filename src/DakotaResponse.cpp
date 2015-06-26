@@ -686,7 +686,7 @@ void Response::write(std::ostream& s) const
   for (i=0; i<ng; ++i) {
     if (asv[i] & 2) { // & 2 masks off 1st and 3rd bit
       // NOTE: col_vec is WRITTEN-out like a row_vec for historical consistency
-      write_col_vector_trans(s, (int)i, true, true, false, functionGradients);
+      write_col_vector_trans(s, (int)i, functionGradients, true, true, false);
       s << fn_labels[i] << " gradient\n";
     }
   }
@@ -801,7 +801,7 @@ void Response::write_annotated_rep(std::ostream& s) const
   // Write the function gradients if present
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      write_col_vector_trans(s, (int)i, false, false, false, functionGradients);
+      write_col_vector_trans(s, (int)i, functionGradients, false, false, false);
 
   // Write the function Hessians if present
   for (i=0; i<num_fns; ++i)

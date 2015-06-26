@@ -1875,7 +1875,7 @@ PMA_objective_eval(const Variables& sub_model_vars,
   }
   if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
     Cout << "PMA_objective_eval(): sub-model Hessian:\n";
-    write_data(Cout, fn_hess_u, true, true, true);
+    write_data(Cout, fn_hess_u);
   }
 #endif // DEBUG
 }

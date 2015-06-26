@@ -1362,8 +1362,8 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
 	  recast_grad[xj_index] *= cvScaleMultipliers[xj_index];
       }
       if (outputLevel > NORMAL_OUTPUT) {
-	write_col_vector_trans(Cout, i, true, true, false, 
-			       recast_response.function_gradients());
+	write_col_vector_trans(Cout, i, recast_response.function_gradients(),
+			       true, true, false);
 	Cout << recast_labels[i] << " gradient\n";
       }
     }
@@ -1534,8 +1534,8 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
 	  native_grad[xj_index] /= cvScaleMultipliers[xj_index];
       }
       if (outputLevel > NORMAL_OUTPUT) {
-	write_col_vector_trans(Cout, i, true, true, false, 
-			       native_response.function_gradients());
+	write_col_vector_trans(Cout, i, native_response.function_gradients(),
+			       true, true, false);
 	Cout << native_labels[i] << " gradient\n";
       }
     }

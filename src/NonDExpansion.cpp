@@ -1649,7 +1649,7 @@ void NonDExpansion::compute_statistics()
       //RealSymMatrix exp_hess_x;
       //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means,
       //                                 x_dvv, cv_ids);
-      write_data(Cout, exp_hess_u, true, true, true); //exp_hess_x
+      write_data(Cout, exp_hess_u); //exp_hess_x
 #endif // TEST_HESSIANS
     }
 
@@ -2071,13 +2071,13 @@ void NonDExpansion::print_covariance(std::ostream& s)
   case DIAGONAL_COVARIANCE:
     if (!respVariance.empty()) {
       s << "\nVariance vector for response functions:\n";
-      write_col_vector_trans(s, 0, true, true, true, respVariance);
+      write_col_vector_trans(s, 0, respVariance);
     }
     break;
   case FULL_COVARIANCE:
     if (!respCovariance.empty()) {
       s << "\nCovariance matrix for response functions:\n";
-      write_data(s, respCovariance, true, true, true);
+      write_data(s, respCovariance);
     }
     break;
   }
@@ -2204,7 +2204,7 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       s << fn_labels[i] << ":\n";
-      write_col_vector_trans(s, (int)i, true, true, true, expGradsMeanX);
+      write_col_vector_trans(s, (int)i, expGradsMeanX);
     }
   }
 }

@@ -443,8 +443,8 @@ void Optimizer::objective_reduction(const Response& full_response,
 		       full_response.function_gradients(), sense, full_wts,
 		       obj_grad);
     if (outputLevel > NORMAL_OUTPUT) {
-      write_col_vector_trans(Cout, 0, true, true, false,
-			     reduced_response.function_gradients());
+      write_col_vector_trans(Cout, 0, reduced_response.function_gradients(),
+			     true, true, false);
       Cout << " obj_fn gradient\n";
     }
   }
