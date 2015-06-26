@@ -60,7 +60,8 @@ NonDIntegration::NonDIntegration(unsigned short method_name, Model& model):
   // standard space and does not include a DataFit recursion.
 
   // initialize_random_variables(natafTransform) is called externally (e.g.,
-  // NonDExpansion::initialize_expansion()) and passed data from outer context.
+  // NonDExpansion::initialize_u_space_model()) to allow access to data from
+  // outer context.
 }
 
 
@@ -76,7 +77,8 @@ NonDIntegration(unsigned short method_name, Model& model,
   // standard space and does not include a DataFit recursion.
 
   // initialize_random_variables(natafTransform) is called externally (e.g.,
-  // NonDExpansion::initialize_expansion()) and passed data from outer context.
+  // NonDExpansion::initialize_u_space_model()) to allow access to data from
+  // outer context.
 }
 
 

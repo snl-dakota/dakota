@@ -430,17 +430,20 @@ void NonDExpansion::initialize_u_space_model()
     shared_data_rep->random_variables_key(random_vars_key);
   }
 
+  // share natafTransform instance with u-space sampler
+  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+  if (!u_space_sampler.is_null())
+    ((NonD*)u_space_sampler.iterator_rep())->
+      initialize_random_variables(natafTransform); // shared rep
+
   // if numerical integration, manage u_space_sampler updates
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::CUBATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) {
-    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-    Model&    g_u_model       = uSpaceModel.subordinate_model();
     shared_data_rep->integration_iterator(u_space_sampler);
-    u_space_sampler.output_level(outputLevel); // for tabular output of pts/wts
     numSamplesOnModel = u_space_sampler.maximum_evaluation_concurrency()
-                      / g_u_model.derivative_concurrency();
+      / uSpaceModel.subordinate_model().derivative_concurrency();
     // maxEvalConcurrency already updated for expansion samples and regression
     if (numSamplesOnModel) // optional with default = 0
       maxEvalConcurrency *= numSamplesOnModel;
@@ -473,11 +476,12 @@ void NonDExpansion::construct_expansion_sampler()
     unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
     int orig_seed = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
-    expansionSampler.assign_rep(new NonDLHSSampling(uSpaceModel, sample_type,
-      numSamplesOnExpansion, orig_seed, rng, false, ALEATORY_UNCERTAIN), false);
-
+    NonD* exp_sampler_rep
+      = new NonDLHSSampling(uSpaceModel, sample_type, numSamplesOnExpansion,
+			    orig_seed, rng, false, ALEATORY_UNCERTAIN);
+    expansionSampler.assign_rep(exp_sampler_rep, false);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
-    NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
+
     // publish output verbosity
     exp_sampler_rep->output_level(outputLevel);
     // publish level mappings to expansion sampler, but suppress reliability
@@ -488,6 +492,10 @@ void NonDExpansion::construct_expansion_sampler()
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag);
+    // publish natafTransform instance (shared rep: distribution parameter
+    // updates do not need to be explicitly propagated) so that u-space
+    // sampler has access to x-space data to perform inverse transforms
+    exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
 
     unsigned short int_refine
       = probDescDB.get_ushort("method.nond.integration_refinement");
@@ -500,16 +508,18 @@ void NonDExpansion::construct_expansion_sampler()
       int refine_samples = probDescDB.get_int("method.nond.refinement_samples");
       if (!refine_samples) refine_samples = 1000; // context-specific default
       bool vary_pattern = true;
-      importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
-	sample_type, refine_samples, orig_seed, rng, vary_pattern, int_refine,
-	cdfFlag, false, false), false);
+      NonDAdaptImpSampling* imp_sampler_rep
+	= new NonDAdaptImpSampling(uSpaceModel,	sample_type, refine_samples,
+				   orig_seed, rng, vary_pattern, int_refine,
+				   cdfFlag, false, false);
+      importanceSampler.assign_rep(imp_sampler_rep, false);
  
-      NonDAdaptImpSampling* imp_sampler_rep = 
-        (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
       imp_sampler_rep->output_level(outputLevel);
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
 	cdfFlag);
+      // needed if export_points_file:
+      imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
     }
   }
 }
@@ -601,13 +611,8 @@ void NonDExpansion::initialize_expansion()
   // now perform the general recursion
   uSpaceModel.update_from_subordinate_model(); // recurse_flag = true
 
-  // propagate latest natafTransform settings to u-space sampler
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (!u_space_sampler.is_null())
-    ((NonD*)u_space_sampler.iterator_rep())->
-      initialize_random_variables(natafTransform);
-
   // if a sub-iterator, reset any refinements that may have occurred
+  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
   if (subIteratorFlag && numUncertainQuant && refineType &&
       !u_space_sampler.is_null())
     u_space_sampler.reset();
@@ -1668,11 +1673,6 @@ void NonDExpansion::compute_statistics()
 
   // Estimate CDF/CCDF statistics by sampling on the expansion
   if (expSampling) {
-    NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
-
-    // pass x-space data so that u-space Models can perform inverse transforms
-    exp_sampler_rep->initialize_random_variables(natafTransform);
 
     // response fn is active for z->p, z->beta*, p->z, or beta*->z
     ShortArray sampler_asv(numFunctions, 0);
@@ -1702,6 +1702,8 @@ void NonDExpansion::compute_statistics()
 
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     expansionSampler.run(pl_iter);
+    NonDSampling* exp_sampler_rep
+      = (NonDSampling*)expansionSampler.iterator_rep();
     exp_sampler_rep->
       compute_distribution_mappings(expansionSampler.all_responses());
     exp_sampler_rep->update_final_statistics();
@@ -1711,12 +1713,6 @@ void NonDExpansion::compute_statistics()
     // Update probability estimates with importance sampling, if requested.
     RealVectorArray imp_sampler_stats;
     if (impSampling) {
-      NonDAdaptImpSampling* imp_sampler_rep
-	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-      bool x_data_flag = false;
-
-      // This is needed if export_points_file:
-      imp_sampler_rep->initialize_random_variables(natafTransform);
 
       // response fn is active for z->p, z->beta*, p->z, or beta*->z
       //ActiveSet sampler_set = importanceSampler.active_set(); // copy
@@ -1728,6 +1724,9 @@ void NonDExpansion::compute_statistics()
 
       sampler_cntr = 0;
       imp_sampler_stats.resize(numFunctions);
+      NonDAdaptImpSampling* imp_sampler_rep
+	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+      bool x_data_flag = false;
       for (i=0; i<numFunctions; ++i) {
 	sampler_cntr += 2;
 	size_t rl_len = requestedRespLevels[i].length();

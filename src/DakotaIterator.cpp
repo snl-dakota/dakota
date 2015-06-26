@@ -175,9 +175,9 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(model.output_level()), //outputLevel(NORMAL_OUTPUT),
-  summaryOutputFlag(false), resultsDB(iterator_results_db),
-  methodId("NO_SPECIFICATION"), iteratorRep(NULL), referenceCount(1)
+  outputLevel(model.output_level()), summaryOutputFlag(false),
+  resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
+  iteratorRep(NULL), referenceCount(1)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
 

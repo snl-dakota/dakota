@@ -158,21 +158,20 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
+  NonDLHSSampling* lhs_sampler_rep;
   // instantiate the Nataf Recast and Gaussian Process DataFit recursions
   if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
-    // For additional generality, could develop on the fly envelope ctor:
-    //Iterator dace_iterator(iteratedModel, dace_method, ...);
-
     // The following uses on the fly derived ctor:
-    dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-      samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
-    //String dace_method = "lhs";
-    //dace_iterator.assign_rep(new DDACEDesignCompExp(iteratedModel, samples,
-    //                         symbols, lhs_seed, dace_method), false);
+    lhs_sampler_rep = new NonDLHSSampling(iteratedModel, sample_type, samples,
+      lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
+    //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
+    //lhs_sampler_rep = new DDACEDesignCompExp(iteratedModel, samples, symbols,
+    //                                         lhs_seed, dace_method);
     //unsigned short dace_method = FSU_HAMMERSLEY;
-    //dace_iterator.assign_rep(new FSUDesignCompExp(iteratedModel, samples,
-    //                         lhs_seed, dace_method), false);
+    //lhs_sampler_rep = new FSUDesignCompExp(iteratedModel, samples, lhs_seed,
+    //                                       dace_method);
+    dace_iterator.assign_rep(lhs_sampler_rep, false);
 
     // Construct g-hat(x) using a GP approximation over the active/uncertain
     // vars (same view as iteratedModel: not the typical All view for DACE).
@@ -211,14 +210,17 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //Iterator dace_iterator(g_u_model, dace_method, ...);
 
     // The following use on-the-fly derived ctors:
-    dace_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
-      samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
+    lhs_sampler_rep = new NonDLHSSampling(g_u_model, sample_type,
+      samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
-    //dace_iterator.assign_rep(new DDACEDesignCompExp(g_u_model, samples,
-    //                         symbols, lhs_seed, dace_method), false);
-    //unsigned short dace_method = FSU_HAMMERSLEY; // method enum
-    //dace_iterator.assign_rep(new FSUDesignCompExp(g_u_model, samples,
-    //                         lhs_seed, dace_method), false);
+    //lhs_sampler_rep = new DDACEDesignCompExp(g_u_model, samples, symbols,
+    //                                         lhs_seed, dace_method);
+    //unsigned short dace_method = FSU_HAMMERSLEY;
+    //lhs_sampler_rep = new FSUDesignCompExp(g_u_model, samples, lhs_seed,
+    //                                       dace_method);
+    dace_iterator.assign_rep(lhs_sampler_rep, false);
+    // share nataf instance to provide data for performing inverse transforms
+    lhs_sampler_rep->initialize_random_variables(natafTransform); // shared rep
 
     // Construct G-hat(u) using a GP approximation over the active/uncertain
     // variables (using the same view as iteratedModel/g_u_model: not the
@@ -304,10 +306,17 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   bool x_model_flag = false, use_model_bounds = true;
   integrationRefinement = MMAIS; vary_pattern = true;
 
-  importanceSampler.assign_rep(new
+  NonDAdaptImpSampling* importance_sampler_rep = new
     NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
 			 rng, vary_pattern, integrationRefinement, cdfFlag,
-			 x_model_flag, use_model_bounds), false);
+			 x_model_flag, use_model_bounds);
+  importanceSampler.assign_rep(importance_sampler_rep, false);
+
+  // if approximation is built in x-space, then importanceSampler must perform
+  // inverse transformations on gp_inputs; if approximation is built in u-space,
+  // only the cdfFlag is needed to define which samples are failures
+  if (mppSearchType == EGRA_X) // share the ProbabilityTransformation rep
+    importance_sampler_rep->initialize_random_variables(natafTransform);
 }
 
 
@@ -414,12 +423,6 @@ void NonDGlobalReliability::optimize_gaussian_process()
     Model& g_hat_x_model = uSpaceModel.subordinate_model();
     g_hat_x_model.continuous_lower_bounds(x_l_bnds);
     g_hat_x_model.continuous_upper_bounds(x_u_bnds);
-  }
-  else {
-    NonDLHSSampling* lhs_sampler_rep
-      = (NonDLHSSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
-    // pass x-space data so that u-space Models can perform inverse transforms
-    lhs_sampler_rep->initialize_random_variables(natafTransform);
   }
 
   // Build initial GP once for all response functions
@@ -756,21 +759,14 @@ void NonDGlobalReliability::optimize_gaussian_process()
 
 void NonDGlobalReliability::importance_sampling()
 {
-  // rep needed for access to functions not mapped to Iterator level
-  NonDAdaptImpSampling* importance_sampler_rep
-    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-  // if the approximation is built in x-space, then importanceSampler must
-  // perform inverse transformations on gp_inputs
-  // if the approximation is build in u-space, only the cdfFlag is needed
-  // to define which samples are failures
-  if (mppSearchType == EGRA_X)
-    importance_sampler_rep->initialize_random_variables(natafTransform);
   bool x_data_flag = (mppSearchType == EGRA_X);
-
   size_t i;
   statCount = 0;
   const ShortArray& final_res_asv = finalStatistics.active_set_request_vector();
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  // rep needed for access to functions not mapped to Iterator level
+  NonDAdaptImpSampling* importance_sampler_rep
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
 
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
 

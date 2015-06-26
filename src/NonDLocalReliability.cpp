@@ -339,29 +339,30 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // AIS is performed in u-space WITHOUT a surrogate: pass a truth u-space
     // model when available, construct one when not.
+    NonDAdaptImpSampling* import_sampler_rep = NULL;
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: {
       Model g_u_model;
       transform_model(iteratedModel, g_u_model); // global bounds not needed
-      importanceSampler.assign_rep(new
-        NonDAdaptImpSampling(g_u_model, sample_type, refine_samples,
-	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
-	  x_model_flag, use_model_bounds), false);
+      import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
+	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	cdfFlag, x_model_flag, use_model_bounds);
       break;
     }
     case AMV_U: case AMV_PLUS_U: case TANA_U:
-      importanceSampler.assign_rep(new
-	NonDAdaptImpSampling(uSpaceModel.truth_model(), sample_type,
-	  refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	  cdfFlag, x_model_flag, use_model_bounds), false);
+      import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel.truth_model(),
+	sample_type, refine_samples, refine_seed, rng, vary_pattern,
+	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds);
       break;
     case NO_APPROX:
-      importanceSampler.assign_rep(new
-        NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
-	  refine_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
-	  x_model_flag, use_model_bounds), false);
+      import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel, sample_type,
+	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
+	cdfFlag, x_model_flag, use_model_bounds);
       break;
     }
+    importanceSampler.assign_rep(import_sampler_rep, false);
+    // set up the x-space data within the importance sampler
+    import_sampler_rep->initialize_random_variables(natafTransform);
   }
 
   // Size the output arrays.  Relative to sampling methods, the output storage
@@ -1040,14 +1041,6 @@ void NonDLocalReliability::initialize_class_data()
   // higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
   mppModel.update_from_subordinate_model(); // recurse_flag = true
-
-  // set up the x-space data within the importance sampler
-  if (integrationRefinement) { // IS/AIS/MMAIS
-    // rep needed for access to functions not mapped to Iterator level
-    NonDAdaptImpSampling* importance_sampler_rep
-      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-    importance_sampler_rep->initialize_random_variables(natafTransform);
-  }
 }
 
 
@@ -2223,14 +2216,14 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
 
   if (integrationRefinement) { // IS/AIS/MMAIS
     // rep needed for access to functions not mapped to Iterator level
-    NonDAdaptImpSampling* importance_sampler_rep
+    NonDAdaptImpSampling* import_sampler_rep
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
     bool x_data_flag = false;
-    importance_sampler_rep->
+    import_sampler_rep->
       initialize(mpp_u, x_data_flag, respFnCount, p, requestedTargetLevel);
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     importanceSampler.run(pl_iter);
-    p = importance_sampler_rep->final_probability();
+    p = import_sampler_rep->final_probability();
     if (outputLevel > NORMAL_OUTPUT)
       Cout << " refined = " << std::setw(wpp7) << p;
   }
