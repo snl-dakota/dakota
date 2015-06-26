@@ -5,17 +5,17 @@ method,
 	bayes_calibration queso
 	  samples = 2000 seed = 348
 	  delayed_rejection
-	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14
-	    pce sparse_grid_level = 2				#p0,#p7
+	  emulator			#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p16,#p17,#p19,#p20,#p22,#p23
+	    pce sparse_grid_level = 2				#p0,#p7,#p16,#p19,#p22
 #	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
 #	    pce expansion_order = 4 collocation_ratio = 1.2	#p6
 #	    sc  sparse_grid_level = 2				#p2
-#	    gaussian_process surfpack emulator_samples = 30	#p3,#p5,#p8,#p11,#p14
+#	    gaussian_process surfpack emulator_samples = 30	#p3,#p5,#p8,#p11,#p14,#p17,#p20,#p23
 #	    gaussian_process dakota   emulator_samples = 30	#p4,#p12
 #	    posterior_adaptive					#p5,#p6,#p8,#p14
 #	      max_iterations = 10				#p5,#p6,#p8,#p14
 #	      convergence_tolerance = 1.e-13			#p6
-#	    standardized_space					#p11,#p12,#p13,#p14
+#	    standardized_space					#p11,#p12,#p13,#p14,#p17,#p20,#p23
 	  proposal_covariance
 	    derivatives	
 	    proposal_updates = 50 # default update is every 100 samples
@@ -23,13 +23,19 @@ method,
 #	  output verbose
 
 variables,								
-	uniform_uncertain 2		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
-	  upper_bounds   2.  2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
-	  lower_bounds  -2. -2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
 #	normal_uncertain 2  		#p7,#p8,#p10
+	uniform_uncertain 2		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15
+#	exponential_uncertain 2  	#p16,#p17,#p18
+#	beta_uncertain 2     		#p19,#p20,#p21
+#	gamma_uncertain 2     		#p22,#p23,#p24
 #	  means          0.  0.		#p7,#p8,#p10
 #	  std_deviations 1.  1.		#p7,#p8,#p10
-	  initial_point -1.  1.
+#	  alphas         2.  2.		#p19,#p20,#p21,#p22,#p23,#p24
+#	  betas          2.  2.		#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24
+	  lower_bounds  -2. -2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21
+	  upper_bounds   2.  2.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21
+	  initial_point -1.  1.		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21
+#	  initial_point .2  .2		#p16,#p17,#p18,#p22,#p23,#p24
 	  descriptors  'x1' 'x2'
 
 interface,								
@@ -38,10 +44,10 @@ interface,
 
 responses,								
 	calibration_terms = 2
-        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13
-          freeform num_experiments = 1 variance_type = 'scalar'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13
+        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21
+          freeform num_experiments = 1 variance_type = 'scalar'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21
   	descriptors = 'f1' 'f2'
- 	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14
-	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p15
-#	analytic_gradients	#p9,#p10,#p13,#p15
-#	analytic_hessians	#p9,#p10,#p13
+ 	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p16,#p17,#p19,#p20,#p22,#p23
+	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p15,#p16,#p17,#p19,#p20,#p22,#p23
+#	analytic_gradients	#p9,#p10,#p13,#p15,#p18,#p21,#p24
+#	analytic_hessians	#p9,#p10,#p13,#p18,#p21,#p24
