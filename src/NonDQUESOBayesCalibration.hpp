@@ -93,6 +93,10 @@ protected:
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
   void precondition_proposal();
+  /// compute the (approximate) Hessian of the negative log posterior
+  /// by augmenting the (approximate) Hessian of the negative log
+  /// likelihood with the Hessian of the negative log prior
+  void augment_hessian_with_log_prior(RealSymMatrix& log_hess);
 
   /// perform the MCMC process
   void run_queso_solver();

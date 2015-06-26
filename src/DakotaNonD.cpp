@@ -1068,8 +1068,9 @@ initialize_random_variables(const Pecos::ProbabilityTransformation& transform,
 {
   if (deep_copy) {
     initialize_random_variable_transformation();
-    natafTransform.initialize_random_variables(transform);
-    // TO DO: ranVars deep copy not yet implemented
+    natafTransform.copy(transform);
+    // TO DO: deep copy of randomVarsX not yet implemented in
+    // Pecos::ProbabilityTransformation::copy()
   }
   else
     natafTransform = transform; // shared rep

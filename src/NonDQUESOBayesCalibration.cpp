@@ -163,11 +163,9 @@ QuesoVectorRV<V,M>::QuesoVectorRV(const char* prefix,
 				  NonDQUESOBayesCalibration*   nond_queso_ptr)
   : QUESO::BaseVectorRV<V,M>(((std::string)(prefix)+"generic").c_str(),imageSet)
 {
-  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
+  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54))
     *m_env.subDisplayFile() << "Entering QuesoVectorRV<V,M>::constructor()"
-                            << ": prefix = " << m_prefix
-                            << std::endl;
-  }
+                            << ": prefix = " << m_prefix << std::endl;
 
   m_pdf = new QuesoJointPdf<V,M>(m_prefix.c_str(),
 				 m_imageSet, nond_queso_ptr);
@@ -176,11 +174,9 @@ QuesoVectorRV<V,M>::QuesoVectorRV(const char* prefix,
   // m_unifiedCdf = NULL; // FIX ME: complete code
   // m_mdf        = NULL; // FIX ME: complete code
 
-  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
+  if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54))
     *m_env.subDisplayFile() << "Leaving QuesoVectorRV<V,M>::constructor()"
-                            << ": prefix = " << m_prefix
-                            << std::endl;
-  }
+                            << ": prefix = " << m_prefix << std::endl;
 }
 
 // Destructor ---------------------------------------
@@ -447,9 +443,9 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
 
 void NonDQUESOBayesCalibration::init_residual_response()
 {
-  // The residual response is sized based on total experiment data
-  // size.  It has to allocate space for derivatives in the case of
-  // preconditioned proposal covariance.
+  // The residual response is sized based on total experiment data size.
+  // It has to allocate space for derivatives in the case of preconditioned
+  // proposal covariance.
   const Response& resp = mcmcModel.current_response();
   residualResponse = resp.copy(false);  // false: SRD can be shared until resize
   size_t total_residuals = 
@@ -511,51 +507,54 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     abort_handler(METHOD_ERROR);
   }
 
-  // update mcmcModel's continuous variables from paramInitials
+  // update mcmcModel's continuous variables from paramInitials (start of
+  // current MCMC chain)
   for (size_t i=0; i<numContinuousVars; ++i)
     mcmcModel.continuous_variable((*paramInitials)[i], i);
   // update request vector values
   ActiveSet set = mcmcModel.current_response().active_set(); // copy
   set.request_values(precondRequestValue);
-  // compute response (echoed to Cout if outputLevel > NORMAL)
+  // compute response (emulator case echoed to Cout if outputLevel > NORMAL)
   mcmcModel.compute_response(set);
 
-  // compute Hessian of log-likelihood misfit r^T r (where is Gamma inverse?)
-  RealSymMatrix log_like_hess;
+  // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
+  RealSymMatrix log_hess;
   const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
   if (precondRequestValue & 4) {
     // try to use full misfit Hessian; fall back if indefinite
-    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_like_hess);
+    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+    augment_hessian_with_log_prior(log_hess);
     bool ev_truncation =
-      get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
+      get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
     if (ev_truncation) { // fallback to Gauss-Newton
       ShortArray asrv_override(numFunctions, 2); // override asrv in response
       expData.build_hessian_of_sum_square_residuals(emulator_resp,
-						    asrv_override,
-						    log_like_hess);
-      get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
+						    asrv_override, log_hess);
+      augment_hessian_with_log_prior(log_hess);
+      get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
     }
   }
   else {
-    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_like_hess);
-    get_positive_definite_covariance_from_hessian(log_like_hess, prop_covar);
+    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+    augment_hessian_with_log_prior(log_hess);
+    get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
   }
 
   if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "Hessian of misfit (negative log-likelihood):\n";
-    write_data(Cout, log_like_hess, true, true, true);
-    //Cout << "2x2 determinant = " << log_like_hess(0,0)*log_like_hess(1,1) -
-    //  log_like_hess(0,1)*log_like_hess(1,0) << '\n';
+    Cout << "Hessian of negative log-posterior (from misfit and log-prior):\n";
+    write_data(Cout, log_hess, true, true, true);
+    //Cout << "2x2 determinant = " << log_hess(0,0) * log_hess(1,1) -
+    //  log_hess(0,1) * log_hess(1,0) << '\n';
 
-    Cout << "Positive definite covariance from inverse of misfit Hessian:\n";
+    Cout << "Positive definite covariance from inverse of Hessian:\n";
     write_data(Cout, prop_covar, true, true, true);
-    //Cout << "2x2 determinant = " << prop_covar(0,0)*prop_covar(1,1) -
-    //  prop_covar(0,1)*prop_covar(1,0) << '\n';
+    //Cout << "2x2 determinant = " << prop_covar(0,0) * prop_covar(1,1) -
+    //  prop_covar(0,1) * prop_covar(1,0) << '\n';
   }
 
   // pack GSL proposalCovMatrix
-  int i, j, nv = log_like_hess.numRows();
+  int i, j, nv = log_hess.numRows();
   if (!proposalCovMatrix) {
     proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
     if ((paramSpace->dimGlobal() != nv) || 
@@ -1427,6 +1426,20 @@ Real NonDQUESOBayesCalibration::log_prior_density(const QUESO::GslVector& qv)
   //    log_pdf -= std::log(range); // uniform sigma priors
 
   return log_pdf;
+}
+
+
+void NonDQUESOBayesCalibration::
+augment_hessian_with_log_prior(RealSymMatrix& log_hess)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_hess(i, i) -= natafTransform.u_log_pdf_hessian((*paramInitials)[i],i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_hess(i, i) -= natafTransform.x_log_pdf_hessian((*paramInitials)[i],i);
 }
 
 } // namespace Dakota
