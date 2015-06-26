@@ -44,8 +44,8 @@ interface,
 
 responses,								
 	calibration_terms = 2
-        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21
-          freeform num_experiments = 1 variance_type = 'scalar'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21
+        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24
+          freeform num_experiments = 1 variance_type = 'scalar'  #p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24
   	descriptors = 'f1' 'f2'
  	no_gradients		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p16,#p17,#p19,#p20,#p22,#p23
 	no_hessians		#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p15,#p16,#p17,#p19,#p20,#p22,#p23

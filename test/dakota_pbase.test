@@ -4350,24 +4350,24 @@ Test Number 21 succeeded
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.3521801494e+00
-                      1.8250754067e+00
+                      1.2742430692e+00
+                      1.6265479889e+00
 <<<<< Best log posterior       =
-                     -2.1341477575e+00
+                     -2.1839005759e+00
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.3521801494e+00
-                      1.8250754067e+00
+                      1.2742430692e+00
+                      1.6265479890e+00
 <<<<< Best log posterior       =
-                     -2.1341477576e+00
+                     -2.1839005759e+00
 Test Number 24 succeeded
-<<<<< Function evaluation summary: 3901 total (3849 new, 52 duplicate)
+<<<<< Function evaluation summary: 3938 total (3888 new, 50 duplicate)
 <<<<< Best parameters          =
-                      1.3480541296e+00
-                      1.8125070123e+00
+                      1.3101963079e+00
+                      1.7272623860e+00
 <<<<< Best log posterior       =
-                     -3.5211917544e+00
+                     -3.5821631546e+00
 dakota_sbo_hierarchical.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
