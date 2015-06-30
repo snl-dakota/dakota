@@ -22209,40 +22209,40 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary: 20 total (10 new, 10 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2286037803e+04  1.0788806704e+04  2.4344507268e+00  7.7265620087e+00
+ response_fn_1  1.2285837331e+04  1.0788851301e+04  2.4344799470e+00  7.7265995430e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  7.2367208372e+03  1.7335354768e+04  8.2047838646e+03  1.5757825059e+04
+ response_fn_1  7.2364994933e+03  1.7335175168e+04  8.2048177802e+03  1.5757890196e+04
 Simple Correlation Matrix among all inputs and outputs:
                      TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
         TF1n  1.00000e+00 
         TF2n -1.15284e-01  1.00000e+00 
         TF1u -7.38970e-03 -4.53055e-02  1.00000e+00 
         TF2u -1.26149e-01 -1.32205e-01  3.81467e-02  1.00000e+00 
-        TF1e -8.98938e-02 -3.47913e-02  5.18757e-02  1.44275e-01  1.00000e+00 
-response_fn_1 -3.12102e-01  9.07291e-01 -3.44753e-02 -3.61545e-02 -1.81452e-01  1.00000e+00 
+        TF1e  2.20351e-04 -5.44705e-02  9.47501e-02  7.82330e-02  1.00000e+00 
+response_fn_1 -3.12077e-01  9.07286e-01 -3.44728e-02 -3.61753e-02 -2.06437e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-        TF1n -5.60446e-01 
-        TF2n  9.41007e-01 
-        TF1u  3.35066e-02 
-        TF2u  2.40453e-01 
-        TF1e -4.97365e-01 
+        TF1n -5.24333e-01 
+        TF2n  9.37708e-01 
+        TF1u  5.30925e-02 
+        TF2u  2.01635e-01 
+        TF1e -4.53936e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                      TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
         TF1n  1.00000e+00 
         TF2n  3.90977e-02  1.00000e+00 
         TF1u -3.75940e-02 -2.25564e-02  1.00000e+00 
         TF2u -1.57895e-01 -5.41353e-02  1.05263e-02  1.00000e+00 
-        TF1e  2.40602e-02 -5.41353e-02  6.76692e-02  1.95489e-01  1.00000e+00 
-response_fn_1  7.51880e-03  9.33835e-01  1.51880e-01  1.35338e-01 -1.11278e-01  1.00000e+00 
+        TF1e  2.10526e-02 -6.16541e-02  9.47368e-02  1.92481e-01  1.00000e+00 
+response_fn_1  7.51880e-03  9.33835e-01  1.51880e-01  1.35338e-01 -1.12782e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-        TF1n  5.66096e-02 
-        TF2n  9.71961e-01 
-        TF1u  6.17696e-01 
-        TF2u  6.63758e-01 
-        TF1e -4.38016e-01 
+        TF1n  5.49953e-02 
+        TF2n  9.71740e-01 
+        TF1u  6.21907e-01 
+        TF2u  6.61678e-01 
+        TF1e -4.32508e-01 
 dakota_textbook_lsq.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)

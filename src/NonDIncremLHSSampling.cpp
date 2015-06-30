@@ -111,7 +111,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     abort_handler(-1);
   }
 
-  size_t v, s;
+  size_t v, s, cntr;
   RealVectorArray sample_values_first(numSamples); // views OK
   // Restart records have negative eval IDs in the cache, so walk them
   // in reverse eval ID order (-1 to -numSamples).  May not work in
@@ -196,9 +196,9 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 	int index = static_cast<int>(rank) - 1;
 	sampleRanks(v,s) = (switch_ranks[v][index]) ? 2.*rank-1. : 2.*rank;
       }
-    for (s=numSamples; s<samplesRef; ++s)
+    for (s=numSamples,cntr=0; s<samplesRef; ++s,++cntr)
       for (v=0; v<numContinuousVars; ++v) {
-	Real rank = sample_ranks_second(v,s-numSamples);
+	Real rank = sample_ranks_second(v,cntr);
 	int index = static_cast<int>(rank)-1;
 	sampleRanks(v,s) = (switch_ranks[v][index]) ? 2.*rank : 2.*rank-1.;
       }
