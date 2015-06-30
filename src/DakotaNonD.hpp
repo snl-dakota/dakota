@@ -47,6 +47,8 @@ public:
 
   /// instantiate natafTransform
   void initialize_random_variable_transformation();
+  /// initializes ranVarTypesX within natafTransform (u-space not needed)
+  void initialize_random_variable_types();
   /// initializes ranVarTypesX and ranVarTypesU within natafTransform
   void initialize_random_variable_types(short u_space_type);
   /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,

@@ -1332,6 +1332,90 @@ void NonD::initialize_random_variable_types(short u_space_type)
     uncertain variable distribution types and their corresponding
     means/standard deviations.  This function is used when the Model
     variables are in x-space. */
+void NonD::initialize_random_variable_types()
+{
+  size_t i, av_cntr = 0, num_active_vars = iteratedModel.cv();
+  ShortArray x_types(num_active_vars);
+  Pecos::AleatoryDistParams& adp
+    = iteratedModel.aleatory_distribution_parameters();
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+
+  for (i=0; i<numContDesVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::CONTINUOUS_DESIGN;
+
+  const RealVector& n_l_bnds = adp.normal_lower_bounds();
+  const RealVector& n_u_bnds = adp.normal_upper_bounds();
+  for (i=0; i<numNormalVars; ++i, ++av_cntr)
+    x_types[av_cntr] = (n_l_bnds[i] > -dbl_inf || n_u_bnds[i] < dbl_inf) ?
+      Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
+
+  const RealVector& ln_l_bnds = adp.lognormal_lower_bounds();
+  const RealVector& ln_u_bnds = adp.lognormal_upper_bounds();
+  for (i=0; i<numLognormalVars; ++i, ++av_cntr)
+    x_types[av_cntr] = (ln_l_bnds[i] > 0. || ln_u_bnds[i] < dbl_inf) ?
+      Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
+
+  for (i=0; i<numUniformVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::UNIFORM;
+
+  for (i=0; i<numLoguniformVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::LOGUNIFORM;
+
+  for (i=0; i<numTriangularVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::TRIANGULAR;
+
+  for (i=0; i<numExponentialVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::EXPONENTIAL;
+
+  for (i=0; i<numBetaVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::BETA;
+
+  for (i=0; i<numGammaVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::GAMMA;
+
+  for (i=0; i<numGumbelVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::GUMBEL;
+
+  for (i=0; i<numFrechetVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::FRECHET;
+
+  for (i=0; i<numWeibullVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::WEIBULL;
+
+  for (i=0; i<numHistogramBinVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HISTOGRAM_BIN;
+
+  // discrete int aleatory uncertain
+
+  // discrete string aleatory uncertain
+
+  // discrete real aleatory uncertain
+  /*
+  for (i=0; i<numHistogramPtVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HISTOGRAM_POINT;
+  */
+
+  // continuous epistemic uncertain
+  for (i=0; i<numContIntervalVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::CONTINUOUS_INTERVAL;
+
+  // discrete int epistemic uncertain
+
+  // discrete string epistemic uncertain
+
+  // discrete real epistemic uncertain
+
+  for (i=0; i<numContStateVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
+
+  natafTransform.initialize_random_variable_types(x_types);
+}
+
+
+/** Build ProbabilityTransformation::ranVar arrays containing the
+    uncertain variable distribution types and their corresponding
+    means/standard deviations.  This function is used when the Model
+    variables are in x-space. */
 void NonD::initialize_random_variable_parameters()
 {
   // Be consistent with NonD active view logic.  Active counts are sufficient
