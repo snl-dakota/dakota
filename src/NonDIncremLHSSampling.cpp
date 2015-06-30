@@ -143,10 +143,10 @@ void NonDIncremLHSSampling::quantify_uncertainty()
         rawData[rank_count] = sample_values_first[rank_count][v];
       }
       std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<numSamples; ++s) {
+      for (s=0; s<numSamples; ++s)
         final_rank[rank_col[s]] = s;
+      for (s=0; s<numSamples; ++s) // can't be combined with loop above
         sample_ranks_first(v, s) = (Real)final_rank[s] + 1.;
-      }
     }
 
 #ifdef DEBUG
