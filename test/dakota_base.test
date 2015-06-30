@@ -10497,12 +10497,12 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.8373813968e-01  4.0278972520e-01  1.2361052787e+00  6.1741637759e-01
+ response_fn_1  3.8345917960e-01  4.0239502241e-01  1.2396523282e+00  6.4231750456e-01
  response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
  response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  9.5599728100e-02  6.7187655125e-01  2.7705295391e-01  7.3533702374e-01
+ response_fn_1  9.5603121387e-02  6.7131523780e-01  2.7678146343e-01  7.3461645030e-01
  response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
  response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
@@ -10524,13 +10524,13 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
           x2 -7.22482e-02  1.00000e+00 
-response_fn_1 -7.07343e-01 -6.25603e-01  1.00000e+00 
-response_fn_2  8.61628e-01 -5.31298e-01 -2.62978e-01  1.00000e+00 
-response_fn_3 -5.83075e-01  8.33989e-01 -1.21825e-01 -8.92771e-01  1.00000e+00 
+response_fn_1 -7.06235e-01 -6.26941e-01  1.00000e+00 
+response_fn_2  8.61628e-01 -5.31298e-01 -2.62005e-01  1.00000e+00 
+response_fn_3 -5.83075e-01  8.33989e-01 -1.22814e-01 -8.92771e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          x1 -9.67150e-01  9.74285e-01 -9.49997e-01 
-          x2 -9.59837e-01 -9.26578e-01  9.77252e-01 
+          x1 -9.67182e-01  9.74285e-01 -9.49997e-01 
+          x2 -9.60117e-01 -9.26578e-01  9.77252e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
@@ -10548,34 +10548,34 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1877500000e-01
-  -8.0000000000e-01   4.3698600000e-01
-  -5.0000000000e-01   8.2178200000e-01
+  -9.0000000000e-01   2.1875300000e-01
+  -8.0000000000e-01   4.3572800000e-01
+  -5.0000000000e-01   8.2167200000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 200000 total (200000 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e+00   2.8754000000e-01
+   2.0000000000e+00   3.0100000000e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   1.0000000000e-01   1.9333000000e-01
+   1.0000000000e-01   1.9200000000e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1417700000e-01
-  -8.0000000000e-01   4.3779900000e-01
-  -5.0000000000e-01   8.2300300000e-01
+  -9.0000000000e-01   2.1515000000e-01
+  -8.0000000000e-01   4.3897800000e-01
+  -5.0000000000e-01   8.2255600000e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1113700000e-01
-  -8.0000000000e-01   4.3070000000e-01
-  -5.0000000000e-01   8.2366800000e-01
+  -9.0000000000e-01   2.1515000000e-01
+  -8.0000000000e-01   4.3897800000e-01
+  -5.0000000000e-01   8.2255600000e-01
 dakota_portal_frame.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
