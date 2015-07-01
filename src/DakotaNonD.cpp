@@ -1431,20 +1431,18 @@ void NonD::initialize_random_variable_parameters()
     Pecos::EpistemicDistParams();
 
   RealVector cd_l_bnds, cd_u_bnds, cs_l_bnds, cs_u_bnds;
-  if (numContDesVars || numContStateVars) {
-    const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
-    const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-    if (numContDesVars) {
-      cd_l_bnds = RealVector(Teuchos::View, c_l_bnds.values(), numContDesVars);
-      cd_u_bnds = RealVector(Teuchos::View, c_u_bnds.values(), numContDesVars);
-    }
-    if (numContStateVars) {
-      size_t csv_start = numContinuousVars - numContStateVars;
-      cs_l_bnds	= RealVector(Teuchos::View,
-	const_cast<Real*>(&c_l_bnds[csv_start]), numContStateVars);
-      cs_u_bnds = RealVector(Teuchos::View,
-	const_cast<Real*>(&c_u_bnds[csv_start]), numContStateVars);
-    }
+  const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
+  const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
+  if (numContDesVars) {
+    cd_l_bnds = RealVector(Teuchos::View, c_l_bnds.values(), numContDesVars);
+    cd_u_bnds = RealVector(Teuchos::View, c_u_bnds.values(), numContDesVars);
+  }
+  if (numContStateVars) {
+    size_t csv_start = numContinuousVars - numContStateVars;
+    cs_l_bnds	= RealVector(Teuchos::View,
+      const_cast<Real*>(&c_l_bnds[csv_start]), numContStateVars);
+    cs_u_bnds = RealVector(Teuchos::View,
+      const_cast<Real*>(&c_u_bnds[csv_start]), numContStateVars);
   }
   natafTransform.initialize_random_variable_parameters(cd_l_bnds, cd_u_bnds,
 						       adp, edp,

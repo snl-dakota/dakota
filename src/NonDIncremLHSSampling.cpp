@@ -94,33 +94,33 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   numSamples = previousSamples;
   sampleRanksMode = GET_RANKS;
 
-  //NOW:  instead of getting the original parameter sets by calling 
+  //NOW: instead of getting the original parameter sets by calling 
   //LHS with the seed, we read it from the restart file.
 
   // Now read in variable and response data
   size_t num_evals = data_pairs.size();
-  if (num_evals > numSamples){
-    Cout << "Warning: The number of function evaluations in the restart " 
-         << "file does not equal the number of previous samples.  "  
-         << "Only the previous number of samples will be taken. \n";
-  }          
+  if (num_evals > numSamples)
+    Cout << "Warning: The number of function evaluations in the restart file ("
+	 << num_evals << ") does not equal the number of previous samples ("
+	 << numSamples << ").  Only the trailing " << numSamples
+	 << " samples will be used. \n";
   else if (num_evals < numSamples) {
-    Cerr << "Error: Number of function evaluations in the restart file "
-	 << "is less than the number of previous samples.  Incremental " 
-	 << "sampling cannot proceed."  << std::endl;
+    Cerr << "Error: Number of function evaluations in the restart file ("
+	 << num_evals << ") is less than the number of previous samples ("
+	 << numSamples << ").  Incremental sampling cannot proceed."<<std::endl;
     abort_handler(-1);
   }
 
   size_t v, s, cntr;
-  RealVectorArray sample_values_first(numSamples); // views OK
+  RealVectorArray sample1_values(numSamples); // views OK
   // Restart records have negative eval IDs in the cache, so walk them
   // in reverse eval ID order (-1 to -numSamples).  May not work in
   // context of partial or concatenated restart.
   PRPCacheCRevIter prp_rev_iter = data_pairs.rbegin();
   for (s=0; s<numSamples; ++s, ++prp_rev_iter)
-    sample_values_first[s] = prp_rev_iter->variables().continuous_variables();
+    sample1_values[s] = prp_rev_iter->variables().continuous_variables();
 #ifdef DEBUG
-  Cout << "\nsample1\n" << sample_values_first << '\n';
+  Cout << "\nsample1\n" << sample1_values << '\n';
 #endif
 
   if (sampleType == SUBMETHOD_INCREMENTAL_RANDOM) {
@@ -134,23 +134,23 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     // sample, and ranks of combined sample
     IntArray rank_col(numSamples), final_rank(numSamples);
     rawData.resize(numSamples);
-    RealMatrix sample_ranks_first(numContinuousVars, numSamples, false);
-    
+    IntMatrix sample1_ranks(numContinuousVars, numSamples, false);
+
     // store sample values and ranks returned by 1st get_parameter_sets() call
     for (v=0; v<numContinuousVars; ++v) {
       for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
         rank_col[rank_count] = rank_count;
-        rawData[rank_count] = sample_values_first[rank_count][v];
+        rawData[rank_count] = sample1_values[rank_count][v];
       }
       std::sort(rank_col.begin(), rank_col.end(), rank_sort);
       for (s=0; s<numSamples; ++s)
         final_rank[rank_col[s]] = s;
       for (s=0; s<numSamples; ++s) // can't be combined with loop above
-        sample_ranks_first(v, s) = (Real)final_rank[s] + 1.;
+        sample1_ranks(v, s) = final_rank[s] + 1;
     }
 
 #ifdef DEBUG
-    Cout << "rank1\n" << sample_ranks_first << '\n';
+    Cout << "rank1\n" << sample1_ranks << '\n';
 #endif //DEBUG
 
     // initialize the matrix which identifies whether the sample 2 rank should
@@ -164,11 +164,10 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     for (v=0; v<numContinuousVars; ++v) {
       const Pecos::RandomVariable& rv = x_ran_vars[v];
       for (s=0; s<numSamples; ++s) {
-	Real val = sample_values_first[s][v], rank = sample_ranks_first(v,s);
-	if ( rv.cdf(val) < (rank - .5)/numSamples ) {
-	  int index = static_cast<int>(rank) - 1;
-	  switch_ranks[v][index] = true;
-	}
+	Real  val = sample1_values[s][v];
+	int rank1 = sample1_ranks(v,s);
+	if ( rv.cdf(val) < (rank1 - .5)/numSamples )
+	  switch_ranks[v][rank1 - 1] = true;
       }
     }
 #ifdef DEBUG
@@ -181,26 +180,32 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     get_parameter_sets(iteratedModel);
     get_parameter_sets(iteratedModel);
     // store sample ranks returned by 2nd get_parameter_sets() call
-    RealMatrix sample_ranks_second = sampleRanks;
+    int num_samp2 = samplesRef - numSamples;
+    IntMatrix sample2_ranks(numContinuousVars, num_samp2, false);
+    for (s=0; s<num_samp2; ++s) {
+      int* s2r_s = sample2_ranks[s]; Real* sR_s = sampleRanks[s];
+      for (v=0; v<numContinuousVars; ++v)
+	s2r_s[v] = (int)std::floor(sR_s[v]+.5); // round to nearest integer
+    }
 
 #ifdef DEBUG
     Cout << "lhs2 test\nsample2\n"; write_data(Cout, allSamples, false);
-    Cout << "rank2\n" << sample_ranks_second;
+    Cout << "rank2\n" << sample2_ranks;
 #endif // DEBUG
 
     // calculate the combined ranks  
     sampleRanks.shapeUninitialized(numContinuousVars, samplesRef);
     for (s=0; s<numSamples; ++s)
       for (v=0; v<numContinuousVars; ++v) {
-	Real rank = sample_ranks_first(v,s);
-	int index = static_cast<int>(rank) - 1;
-	sampleRanks(v,s) = (switch_ranks[v][index]) ? 2.*rank-1. : 2.*rank;
+	int rank1 = sample1_ranks(v,s), index = rank1 - 1,
+	  comb_rank = (switch_ranks[v][index]) ? 2*rank1-1 : 2*rank1;
+	sampleRanks(v,s) = (Real)comb_rank;
       }
     for (s=numSamples,cntr=0; s<samplesRef; ++s,++cntr)
       for (v=0; v<numContinuousVars; ++v) {
-	Real rank = sample_ranks_second(v,cntr);
-	int index = static_cast<int>(rank)-1;
-	sampleRanks(v,s) = (switch_ranks[v][index]) ? 2.*rank : 2.*rank-1.;
+	int rank2 = sample2_ranks(v,cntr), index = rank2 - 1,
+	  comb_rank = (switch_ranks[v][index]) ? 2*rank2 : 2*rank2-1;
+	sampleRanks(v,s) = (Real)comb_rank;
       }
 
 #ifdef DEBUG
@@ -224,12 +229,11 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
   // need to put the first set back  
   for (s=0; s<previousSamples; ++s)
-    copy_data(sample_values_first[s], allSamples[s], (int)numContinuousVars);
+    copy_data(sample1_values[s], allSamples[s], (int)numContinuousVars);
   
 #ifdef DEBUG
   numSamples = samplesRef;
-  Cout <<"\nallSamples\n";
-  write_data(Cout, allSamples, false, true, true);
+  Cout <<"\nallSamples\n"; write_data(Cout, allSamples, false, true, true);
 #endif //DEBUG
 
   // evaluate full parameter set of size samplesRef, where the first half
