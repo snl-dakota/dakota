@@ -164,10 +164,10 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     for (v=0; v<numContinuousVars; ++v) {
       const Pecos::RandomVariable& rv = x_ran_vars[v];
       for (s=0; s<numSamples; ++s) {
-	Real  val = sample1_values[s][v];
-	int rank1 = sample1_ranks(v,s);
-	if ( rv.cdf(val) < (rank1 - .5)/numSamples )
-	  switch_ranks[v][rank1 - 1] = true;
+	Real val  = sample1_values[s][v];
+	int rank1 = sample1_ranks(v,s), index = rank1 - 1;
+	if ( rv.cdf(val) < (Real)(2*rank1 - 1) / (Real)(2*numSamples) )
+	  switch_ranks[v][index] = true;
       }
     }
 #ifdef DEBUG
