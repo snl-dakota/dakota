@@ -46,10 +46,18 @@ execute_process(
   )
 
 # Probe the CMakeCache.txt for location of the known Boost dynlib dependency
+# The FindBoost.cmake probe was updated in 2.8.11 (or thereabouts) to cache
+# the variable Boost_LIBRARY_DIR:PATH instead of Boost_LIBRARY_DIRS:FILEPATH.
+# Check both.
 
 file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
       Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" )
-string( REGEX REPLACE "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" "\\1"
+if( "${Boost_LIBRARY_DIRS_PAIR}" STREQUAL "")
+  file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
+        Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIR:PATH=(.*)$" )
+endif()
+
+string( REGEX REPLACE "^Boost_LIBRARY_DIR.+=(.*)$" "\\1"
         Cached_Boost_LIBRARY_DIRS "${Boost_LIBRARY_DIRS_PAIR}" )
 
 #message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
