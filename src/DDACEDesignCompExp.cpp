@@ -13,6 +13,7 @@
 #include "DDACEDesignCompExp.hpp"
 #include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
 #include "DDaceSampler.h"
 #include "DDaceRandomSampler.h"
 #include "DDaceOASampler.h"
@@ -113,12 +114,11 @@ void DDACEDesignCompExp::extract_trends()
 
 void DDACEDesignCompExp::post_input()
 {
-  if (!seedSpec) {
-    Cerr << "\nError (DACE): post_run mode requires user-specified seed.\n";
-    abort_handler(-1);
+  if (parallelLib.command_line_user_modes() && 
+      !parallelLib.command_line_post_run_input().empty()) {
+    // apply any corrections to user spec to update numSamples before post input
+    resolve_samples_symbols();
   }
-  // apply any corrections to user spec to update numSamples before post input
-  resolve_samples_symbols();
   // call convenience function from Analyzer
   read_variables_responses(numSamples, numContinuousVars);
 }
@@ -126,8 +126,15 @@ void DDACEDesignCompExp::post_input()
 
 void DDACEDesignCompExp::post_run(std::ostream& s)
 {
-  // main effects require generating the symbolMapping for post-run
+  // Main effects require the symbolMapping.  It should only be empty
+  // if pre-run get_parameter_sets wasn't called in this execution, in
+  // which case, we need a fixed seed to properly regenerate it.
   if (mainEffectsFlag && symbolMapping.empty()) {
+    if (!seedSpec) {
+      Cerr << "\nError (DACE): calculating main effects in post_run mode "
+	   << "requires user-specified seed.\n";
+      abort_handler(-1);
+    }
     boost::shared_ptr<DDaceSamplerBase> ddace_sampler = 
       create_sampler(iteratedModel);
     symbolMapping = ddace_sampler->getP();
