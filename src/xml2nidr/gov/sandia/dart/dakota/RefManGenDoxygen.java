@@ -8,11 +8,14 @@ import java.util.Map.Entry;
 // generate the Doxygen from the topic tree, meta data files, and spec data
 public class RefManGenDoxygen {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 
+		String usage_msg = 
+				"Usage: tool.java dakota.(xml|input.nspec) metadata_dir topic_file topic_metadata_dir topics_intro_file output_dir";
+		
 		if (args.length < 6 || args.length > 6) {
-			System.err.println("Usage: tool.java file.nspec metadata_dir output_dir");
+			System.err.println(usage_msg);
 			System.exit(1);
 		}
 		String input_spec = args[0];
@@ -24,10 +27,24 @@ public class RefManGenDoxygen {
 				
 		// TODO: check for existence of all the above
 		
-		// Now parse the NIDR specification into a spec data tree
+		// Now parse the XML or NIDR specification into a spec data tree
 		// TODO: count and report keyword stats
-		RefManNIDRSpec spec_data = new RefManNIDRSpec(input_spec);
-		spec_data.print_debug(output_dir + "/DEBUG-nspec.txt");
+		RefManInputSpec spec_data = new RefManInputSpec(); 
+		if (input_spec.endsWith("xml")) {
+			XMLToRefManSpec xml2spec = new XMLToRefManSpec(input_spec);
+			xml2spec.parse();
+			spec_data = xml2spec.refman_spec_data();
+		}
+		else if (input_spec.endsWith("nspec")) {
+			NIDRToRefManSpec nidr2spec = new NIDRToRefManSpec(input_spec);
+			nidr2spec.parse();
+			spec_data = nidr2spec.refman_spec_data();
+		}
+		else {
+			System.err.println(usage_msg);
+			System.exit(1);
+		}
+		spec_data.printDebug(output_dir + "/DEBUG-nspec.txt");
 		
 		// parse the topic tree file into a data structure before parsing keywords from spec
 		// so we can insert keywords into topics
@@ -51,7 +68,7 @@ public class RefManGenDoxygen {
 		OutputStreamWriter kw_os = new FileWriter(output_dir + "/DakotaKeywords.dox");
 		
 		// print Doxygen for all keywords, managing the sequencing of output
-		for (Entry<String, RefManNIDRSpec.KeywordMetaData> mdentry: spec_data.get_entries()) {
+		for (Entry<String, RefManInputSpec.KeywordMetaData> mdentry: spec_data.get_entries()) {
 			
 			// the data in the spec
 			String kwname = mdentry.getKey();

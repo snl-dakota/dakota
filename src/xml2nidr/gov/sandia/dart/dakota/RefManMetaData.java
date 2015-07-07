@@ -3,8 +3,6 @@
  */
 package gov.sandia.dart.dakota;
 
-import gov.sandia.dart.dakota.RefManNIDRSpec.KeywordMetaData;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,14 +27,14 @@ public class RefManMetaData {
 	}
 	
 	// parse metadata from provided directory
-	RefManMetaData(String dirname, RefManNIDRSpec spec_data) throws IOException {
+	RefManMetaData(String dirname, RefManInputSpec spec_data) throws IOException {
 		metadataStore = new LinkedHashMap<String, KeywordMetaData>();
 		topicTree = null;
 		parse_metadata_files(dirname, spec_data);
 	}
 	
 	// parse metadata from provided directory
-	RefManMetaData(String dirname, RefManTopicTree topic_tree, RefManNIDRSpec spec_data) throws IOException {
+	RefManMetaData(String dirname, RefManTopicTree topic_tree, RefManInputSpec spec_data) throws IOException {
 		metadataStore = new LinkedHashMap<String, KeywordMetaData>();
 		topicTree = topic_tree;
 		parse_metadata_files(dirname, spec_data);
@@ -66,7 +64,7 @@ public class RefManMetaData {
 		
 	
 	// write a doxygen page for each keyword
-//	void print_doxygen(RefManNIDRSpec spec_data) {
+//	void print_doxygen(NIDRToRefManSpec spec_data) {
 //		for (Map.Entry<String, KeywordMetaData> mdentry: metadataStore.entrySet()) {
 //			String kwname = mdentry.getKey();
 //			KeywordMetaData mdcontents = mdentry.getValue();
@@ -94,7 +92,7 @@ public class RefManMetaData {
 	//   Field:: Multi-line
 	//     string
 	//   NextField::
-	void parse_metadata_files(String metadata_dir, RefManNIDRSpec spec_data) throws IOException {
+	void parse_metadata_files(String metadata_dir, RefManInputSpec spec_data) throws IOException {
 		
 		// iterate over directory contents
 		File mddir = new File(metadata_dir);

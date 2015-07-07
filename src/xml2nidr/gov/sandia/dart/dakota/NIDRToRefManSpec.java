@@ -1,5 +1,6 @@
 package gov.sandia.dart.dakota;
 
+import gov.sandia.dart.dakota.RefManInputSpec;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRBaseListener;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRLexer;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRParser;
@@ -11,14 +12,10 @@ import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.RequiredGroupContext;
 import gov.sandia.dart.dakota.nidr.antlr.NIDRParser.ToplevelContext;
 
 import java.io.IOException;
-import java.io.FileWriter;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -28,26 +25,68 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+
+/**
+ * Parse dakota.input.nspec into a NIDRToRefManSpec object for reference manual generation
+ */
 @SuppressWarnings("serial")
-public class RefManNIDRSpec extends NIDRBaseListener{
+public class NIDRToRefManSpec extends NIDRBaseListener {
 	static class Required extends ArrayList<Object> {}
 	static class Optional extends ArrayList<Object> {}
 	static class Alternatives extends ArrayList<Object> {}
-	// keep this insertion ordered with Linked for printing purposes
-	static class KeywordMetaData extends LinkedHashMap<String, String> {}
 	
-	public RefManNIDRSpec(String input_spec) throws IOException {
-		ANTLRFileStream input = new ANTLRFileStream(input_spec);
+	public static void main(String[] args) throws Exception {		
+		// default file name for testing only
+		String dakota_nspec = "dakota.input.nspec";
+		NIDRToRefManSpec translator = new NIDRToRefManSpec(dakota_nspec);			
+		translator.parse();
+		RefManInputSpec test_spec_data = translator.refman_spec_data();
+		test_spec_data.printDebug("debug.nspec.txt");
+	}
+	
+	// -----
+	// Public client API
+	// -----
+	
+	public NIDRToRefManSpec(String input_nspec) throws IOException {
+		ANTLRFileStream input = new ANTLRFileStream(input_nspec);
 		NIDRLexer lexer = new NIDRLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		NIDRParser parser = new NIDRParser(tokens);
 		ParseTree tree = parser.input();
 		ParseTreeWalker walker = new ParseTreeWalker();
-		//RefManNIDRSpec tool = new RefManNIDRSpec();
+		//NIDRToRefManSpec tool = new NIDRToRefManSpec();
 		walker.walk(this, tree);
-		// parse the spec, generating input spec data structure
-		parse();
+		spec_data = new RefManInputSpec();
 	}
+	
+	public RefManInputSpec refman_spec_data() {
+		return spec_data;
+	}
+	
+	// -----
+	// Core data members and convenience functions
+	// -----
+	
+	// container to hold the final data after parse
+	private RefManInputSpec spec_data;
+
+	// the current hierarchical keyword context such as [strategy, tabular_graphics_data, tabular_graphics_file]
+	private List<String> context = new ArrayList<String>();
+	
+	// get the context as a string
+	private String context_string() {
+		String hierarchy_string = new String(context.get(0));
+		for (String s: context.subList(1,context.size())) {
+			hierarchy_string += "-" + s;
+		}
+		return hierarchy_string;
+	}
+
+	
+	// -----
+	// NIDR-related parse machinery
+	// -----
 	
 	private Map<String, Integer> keywordCounts = new HashMap<String, Integer>();
 	
@@ -178,391 +217,14 @@ public class RefManNIDRSpec extends NIDRBaseListener{
 	}
 
 	
-	// the current hierarchical keyword context such as [strategy, tabular_graphics_data, tabular_graphics_file]
-	List<String> context = new ArrayList<String>();
-	
-	// get the context as a string
-	private String context_string() {
-		String hierarchy_string = new String(context.get(0));
-		for (String s: context.subList(1,context.size())) {
-			hierarchy_string += "-" + s;
-		}
-		return hierarchy_string;
-	}
-	
-	// container to store final data: a map from keyword (hierarchical) to contents)
-	// for now used linked to keep in parsed order for testing (not strictly needed)
-	// KeywordMetaData stores Field, Value pairs
-	Map<String, KeywordMetaData> spec_data = new LinkedHashMap<String, KeywordMetaData>();
-	
-	
-	public Set<Map.Entry<String, KeywordMetaData>> get_entries() {
-		return spec_data.entrySet();
-	}
-	
-	public boolean entry_exists(String kwname) {
-		return spec_data.containsKey(kwname);
-	}
-	
-	// Append data to the "Children" field for immediate children of this keyword
-	private void append_children(String value) {
-		
-		// the hierarchical keyword context
-		String kw_hier = context_string();
-		String field = "Children";
+	// -----
+	// Main reference manual parse machinery
+	// -----
 
-		if (spec_data.containsKey(kw_hier)) {
-			KeywordMetaData kw_md = spec_data.get(kw_hier);
-			if (kw_md.containsKey(field)) {
-				// append to existing child data
-				String curr_children = kw_md.get(field);
-				curr_children += "\n" + value;
-				kw_md.put(field, curr_children);
-			}
-			else {
-				kw_md.put(field, value);
-			}
-		}
-		else {
-			// create the key and insert
-			KeywordMetaData kw_md = new KeywordMetaData();
-			kw_md.put(field, value);
-			spec_data.put(kw_hier, kw_md);
-		}	
-	}
-	
-	
-	private void add_data(String field, String value) {
-		
-		// the hierarchical keyword context
-		String kw_hier = context_string();
-		
-		// all fields should be single entry except Children
-		if (spec_data.containsKey(kw_hier)) {
-			KeywordMetaData kw_md = spec_data.get(kw_hier);
-			if (kw_md.containsKey(field)) {
-				System.out.println("Warning: spec_data multiple insertion of field " + field + " for keyword " + kw_hier);
-			}
-			else {
-				kw_md.put(field, value);
-			}
-		}
-		else {
-			// create the key and insert
-			KeywordMetaData kw_md = new KeywordMetaData();
-			kw_md.put(field, value);
-			spec_data.put(kw_hier,  kw_md);
-		}
-	}
-	
-	public void print_debug(String output_file) throws IOException {
-		OutputStreamWriter os = new FileWriter(output_file);
-		for (KeywordMetaData kw_md: spec_data.values()) {
-			for (Map.Entry<String, String> entry: kw_md.entrySet()) {
-				if (entry.getKey().equals("Children"))
-					os.append(entry.getValue() + "\n");
-				else
-					os.append(entry.getKey() + ":: " + entry.getValue() + "\n");
-			}
-			os.append("\n");
-		}
-		os.close();	
-	}
-	
-	// print the doxy spec for this KW, including alias, arguments, and spec table
-	public void doxy_print(String kwname, OutputStreamWriter kw_os, RefManMetaData meta_data) throws IOException {
-		kw_os.append("<h2>Specification</h2>\n");
-	
-		String alias = "none";
-		if (spec_data.containsKey(kwname) && spec_data.get(kwname).containsKey("Alias")) {
-			alias = spec_data.get(kwname).get("Alias");
-			if (alias.trim().isEmpty())
-				alias = "none";
-		}
-		
-		String argument = "none";
-		if (spec_data.containsKey(kwname) && spec_data.get(kwname).containsKey("Argument")) {
-			argument = spec_data.get(kwname).get("Argument");
-			if (argument.trim().isEmpty())
-				argument = "none";
-		}
-		
-		kw_os.append("\n<p><b>Alias: </b>" + alias + "</p>\n");
-		kw_os.append("<p><b>Argument(s): </b>" + argument + "</p>\n");
-		
-		if (spec_data.containsKey(kwname) && spec_data.get(kwname).containsKey("Children")) {
-
-			String children = spec_data.get(kwname).get("Children");
-			String[] lines = children.split("\\n");
-
-			// save the indices of each new context (required/optional keyword or group)
-			// TODO: store these in a better data structure
-			int index = 0;
-			ArrayList<String> category = new ArrayList<String>();
-			ArrayList<Integer> start_inds = new ArrayList<Integer>(), end_inds = new ArrayList<Integer>();
-			// first find the indices of the relevant rows (beginning Choose_One, ending with Req/Opt or Choose)
-			boolean in_group = false;
-			for (String line: lines) {
-				if ( line.contains("_Choose_One") || 
-					 line.startsWith("Required_Keyword") || line.startsWith("Optional_Keyword")) {
-					// Save optional or required in category
-					category.add(line.split(":")[0]);
-					start_inds.add(index);
-					if (in_group)
-						end_inds.add(index-1);
-					in_group = true;
-				}
-				++index;	
-			}
-			if (in_group)
-				end_inds.add(index-1);
-		
-			// iterate over the children (some choose groups, some single keyword)
-			int num_children = start_inds.size();
-			
-			// print header for the spec table
-			String header = "<table class=\"spec-table\">\n";
-			header += " <tr>\n";
-			header += "  <th width=\"2%\" class=\"border-heavy-right\"> </th>\n";
-			header += "  <th width=\"10%\">Required/Optional</th>\n";
-			header += "  <th width=\"15%\">Description of Group</th>\n";
-			header += "  <th width=\"20%\">Dakota Keyword</th>\n";
-			header += "  <th width=\"52%\">Dakota Keyword Description</th>\n";
-			header += " </tr>\n";
-			kw_os.append(header);
-			
-			int group_num = 0;
-			for (int ci = 0; ci<num_children; ++ci) {
-				
-				int start_row = start_inds.get(ci);
-				int end_row = end_inds.get(ci);
-				// number of sub keywords, not counting the *_Choose_One label
-				int num_sub_kw = end_inds.get(ci) - start_inds.get(ci);
-				String group_type = category.get(ci);
-							
-				if (group_type.contains("Choose_One")) {
-					if (num_sub_kw < 1)
-						System.err.println("Warning (doxy_print): found choose group with no items.");
-					++group_num;
-					String sg = doxy_format_subgroup(group_type, lines, start_row, end_row, kwname, meta_data, group_num);
-					kw_os.append(sg);
-				}
-				else if (group_type.contains("Keyword")) {
-					if (num_sub_kw != 0)
-						System.err.println("Warning (doxy_print): found bare keyword with more than one row.");
-					String skw = doxy_format_subkw(group_type, lines[start_row], kwname, meta_data);
-					kw_os.append(skw);
-				} 
-				else {
-					System.err.println("Warning (doxy_print): unexpected keyword subgroup type " + group_type + ".");
-				}
-			}
-			
-			// footer for the spec table
-			String footer = "</table>\n";
-			kw_os.append(footer);
-			
-		}
-		
-	}
-	
-	
-	// print a formatted table entry for a single required or optional keyword (*_Keyword followed by keyword name)
-	private String doxy_format_subkw(String group_type, String line, String kwname, RefManMetaData meta_data) {
-	
-		// Required or Optional
-		String reqopt = group_type.split("_", 2)[0];
-				
-		String [] splitline = line.split(":{2}?", 2);
-		// data may be absent or on next line; not trimming here to preserve user formatting
-		String subkw = "";
-		if (splitline.length > 1)
-			subkw = splitline[1].trim();
-
-		String subkw_blurb = meta_data.get_blurb(kwname + "-" + subkw); 
-		String subkw_ref = "\\subpage " + kwname + "-" + subkw; 
-		
-		// print the table entries for this sub kw
-		String table_subgroup = new String();
-		table_subgroup += " <tr>\n";
-		table_subgroup += "  <th class=\"border-heavy-right\"></th>\n";
-		table_subgroup += "  <td class=\"border-light-right\" colspan=\"2\"><strong>" + reqopt + "</strong></td>\n";
-		table_subgroup += "  <td class=\"border-light-right\"> " + subkw_ref + "</td>\n";
-		table_subgroup += "  <td> " + subkw_blurb + "</td>\n";
-		table_subgroup += " </tr>\n";
-		
-		return table_subgroup;
-		
-	}
-	
-	// print a formatted table entry for a choose group (leading line followed by subkeywords)
-	private String doxy_format_subgroup(String group_type, String [] lines, int start, int end, String kwname, 
-			RefManMetaData meta_data, int group_num) {
-		
-		String table_subgroup = new String();
-		
-		// Required or Optional
-		String reqopt = group_type.split("_", 2)[0];
-		
-		int num_subkw = end-start;
-		
-		for(int index = 1; index <= num_subkw; ++index) {
-		
-			// skip the *_Choose line
-			String subkw = lines[start + index].trim();
-			String subkw_blurb = meta_data.get_blurb(kwname + "-" + subkw);
-			String subkw_ref = "\\subpage " + kwname + "-" + subkw; 
-			
-			if (index == 1) {
-				// first row
-				table_subgroup += " <tr>\n";
-				table_subgroup += "  <th class=\"border-heavy-right\" rowspan=\""+ num_subkw +"\" > </th>\n";
-				table_subgroup += "  <td class=\"border-light-right vert-align-mid\" rowspan=\"" + num_subkw + "\"><strong>" + reqopt + "</strong><div><em>(Choose One)</em></div></td>\n";
-				table_subgroup += "  <td class=\"border-light-right vert-align-mid\" rowspan=\"" + num_subkw + "\"><strong>Group " + group_num + "</strong></td>\n";
-				table_subgroup += "  <td class=\"border-light-right border-light-bottom\">" + subkw_ref + "</td>\n";
-				table_subgroup += "  <td class=\"border-light-bottom\">" + subkw_blurb + "</td>\n";
-				table_subgroup += " </tr>\n";
-			}
-			else if (index == num_subkw) {
-				// last row
-				table_subgroup += " <tr>\n";
-				table_subgroup += "  <td class=\"border-light-right\">" + subkw_ref + "</td>\n";
-				table_subgroup += "  <td>" + subkw_blurb + "</td>\n";
-				table_subgroup += " </tr>\n";
-			}
-			else {
-				// middle row
-				table_subgroup += " <tr>\n";
-				table_subgroup += "  <td class=\"border-light-right border-light-bottom\">" + subkw_ref + "</td>\n";
-				table_subgroup += "  <td class=\"border-light-bottom\">" + subkw_blurb + "</td>\n";
-				table_subgroup += " </tr>\n";
-			}
-		}
-	
-		return table_subgroup;
-	}
-
-	
-	// deprecated function
-	private void doxy_print_kws(String kwname, OutputStreamWriter kw_os, RefManMetaData meta_data, String reqopt) throws IOException {
-		
-		if (spec_data.containsKey(kwname) && spec_data.get(kwname).containsKey("Children")) {
-
-			String children = spec_data.get(kwname).get("Children");
-
-			// print all required KW together
-			boolean found_required = false;
-			int index = 0;
-			for (String line: children.split("\\n")) {
-				if (line.startsWith(reqopt + "_Keyword")) {
-					++index;
-					if (!found_required) {
-						found_required = true;
-						kw_os.append("<table class=\"keyword\">\n");
-						kw_os.append(" <tr>\n");
-						kw_os.append("  <th> </th>\n");
-						kw_os.append("  <th class=\"kwtype\" colspan=\"2\">" + reqopt + " Keywords</th>\n");
-						kw_os.append(" </tr>\n");					
-					}
-					String [] splitline = line.split(":{2}?", 2);
-					//field = splitline[0].trim();
-					// data may be absent or on next line; not trimming here to preserve user formatting
-					String subkw = "";
-					if (splitline.length > 1)
-						subkw = splitline[1].trim();
-
-					String subkw_blurb = meta_data.get_blurb(kwname + "-" + subkw); 
-					kw_os.append("<tr>\n");
-					kw_os.append("  <td>" + index + "</td>\n");
-					kw_os.append("  <td class=\"kwname\">\\subpage " + kwname + "-" + subkw + "</td>\n");
-					kw_os.append("  <td class=\"emph-italic\">" + subkw_blurb + "</td>\n");
-					kw_os.append(" </tr>\n");
-				}
-			}
-			if (found_required)
-				kw_os.append("</table>\n");
-		}
-	}
-	
-	// deprecated function
-	private void doxy_print_choose(String kwname, OutputStreamWriter kw_os, RefManMetaData meta_data) throws IOException {
-
-		if (spec_data.containsKey(kwname) && spec_data.get(kwname).containsKey("Children")) {
-
-			String children = spec_data.get(kwname).get("Children");
-			String[] lines = children.split("\\n");
-			
-			int index = 0;
-			ArrayList<Integer> start_inds = new ArrayList<Integer>(), end_inds = new ArrayList<Integer>();
-			// first find the indices of the relevant rows (beginning Choose_One, ending with Req/Opt or Choose)
-			boolean in_choose = false;
-			for (String line: lines) {
-				if (line.contains("_Choose_One")) {
-					start_inds.add(index);
-					if (in_choose)
-						end_inds.add(index-1);
-					in_choose = true;
-				}
-				if (in_choose && (line.startsWith("Required_Keyword") || line.startsWith("Optional_Keyword"))) {
-					end_inds.add(index-1);
-					in_choose = false;
-				}
-				++index;	
-			}
-			if (in_choose)
-				end_inds.add(index-1);
-						
-			// no group names for now
-			String group_name = "";
-			
-			int num_choose = start_inds.size();
-			for (int ci = 0; ci<num_choose; ++ci) {
-				int row = start_inds.get(ci);
-				
-				// print header with Choose One
-				String [] splitline = lines[row].split(":{2}?", 2);
-				String group_type = splitline[0].trim().replace("_", " ");
-				int num_sub_kw = end_inds.get(ci) - start_inds.get(ci);
-				
-				kw_os.append("<table class=\"keyword\">\n");
-				kw_os.append(" <tr>\n");
-				kw_os.append("  <th> </th>\n");
-				kw_os.append("  <th class=\"kwtype\" colspan=\"2\">" + group_type + "</th>\n");
-				kw_os.append(" </tr>\n");
-				 
-				// print first sub kw
-				++row;
-				String subkw1 = lines[row].trim();
-				String subkw1_blurb = meta_data.get_blurb(kwname + "-" + subkw1);
-				
-				kw_os.append(" <tr>");
-				kw_os.append("  <th class=\"kwtype\" rowspan=" + num_sub_kw + ">" + group_name + "</th>\n");
-				kw_os.append("  <td class=\"kwname\">\\subpage " + kwname + "-" + subkw1 + "</td>\n");
-				kw_os.append("  <td class=\"emph-italic\">" + subkw1_blurb + "</td>\n");
-				kw_os.append(" </tr>\n");
-
-				// print rest kw, going until 
-				++row;
-				for ( ; row <= end_inds.get(ci); ++row) {
-					String subkw = lines[row].trim();
-					String subkw_blurb = meta_data.get_blurb(kwname + "-" + subkw);
-					kw_os.append("<tr>\n");
-					kw_os.append("<td class=\"kwname\">\\subpage " + kwname + "-" + subkw + "</td>\n");
-					kw_os.append("<td class=\"emph-italic\">" + subkw_blurb + "</td>\n");
-					kw_os.append("</tr>\n");
-				}
-				kw_os.append("</table>\n\n");
-				
-				
-			}
-		}
-	}
-	
-	
+	// parse the spec, generating input spec data structure
 	@SuppressWarnings("unchecked")
-	private void parse() throws IOException {
+	public void parse() throws IOException {
 		try {
-			printHeader();
 			for (Object o: toplevels) {
 				Map<Object, Object> toplevel = (Map<Object, Object>) o;				
 
@@ -586,7 +248,6 @@ public class RefManNIDRSpec extends NIDRBaseListener{
 				context.remove(context.size()-1);
 						
 			}
-			printFooter();
 		} finally {
 			;
 		}
@@ -756,11 +417,11 @@ public class RefManNIDRSpec extends NIDRBaseListener{
 			String header_str = option_str;
 			if (!option_str.contains("Choose") && option_str.contains("Optional")) {
 				header_str = "Optional_Choose_One::";
-				append_children(header_str);
+				spec_data.appendChild(context_string(), header_str);
 			}
 			else if (!option_str.contains("Choose") && option_str.contains("Required")) {
 				header_str = "Required_Choose_One::";
-				append_children(header_str);
+				spec_data.appendChild(context_string(), header_str);
 			}		
 			// else already has a choose header; don't append another in immediate children mode
 			
@@ -805,7 +466,7 @@ public class RefManNIDRSpec extends NIDRBaseListener{
 	
 	// print the tag followed by keyword "name" field
 	private void printTaggedKeyword(String tag, Map<Object, Object> keyword) {
-		append_children(tag + " " + keyword.get("name").toString());
+		spec_data.appendChild(context_string(), tag + " " + keyword.get("name").toString());
 	}
 		
 	@SuppressWarnings({ "unchecked" })
@@ -813,8 +474,8 @@ public class RefManNIDRSpec extends NIDRBaseListener{
 		
 		String hierarchy_string = context_string();
 		
-		add_data("Keyword_Hierarchy", hierarchy_string);
-		add_data("Name", keyword.get("name").toString());
+		spec_data.addData(hierarchy_string, "Keyword_Hierarchy", hierarchy_string);
+		spec_data.addData(hierarchy_string, "Name", keyword.get("name").toString());
 		
 		// TODO: multiple aliases aren't supported, but we print them for now
 		StringBuilder alias_builder = new StringBuilder();
@@ -823,22 +484,13 @@ public class RefManNIDRSpec extends NIDRBaseListener{
 			for (String alias: aliases)
 				alias_builder.append(alias).append(" ");			
 		}
-		add_data("Alias", alias_builder.toString());
+		spec_data.addData(hierarchy_string, "Alias", alias_builder.toString());
 		
 		StringBuilder param_builder = new StringBuilder();
 		if (keyword.containsKey("param"))
 			param_builder.append(keyword.get("param"));
-		add_data("Argument", param_builder.toString());
+		spec_data.addData(hierarchy_string, "Argument", param_builder.toString());
 		
 	}
 	
-	
-	private void printHeader() {
-	}
-
-	private void printFooter() {
-	}
-
-
-
 }
