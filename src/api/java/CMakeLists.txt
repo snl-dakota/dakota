@@ -7,9 +7,6 @@
 #  _______________________________________________________________________
 
 # Build the Dakota Java API underneath
-
-# TODO: relax Java to only find needed components
-find_package(Java 1.6 REQUIRED)
 find_package(SWIG 2.0 REQUIRED)
 FIND_PACKAGE(JNI REQUIRED)
 

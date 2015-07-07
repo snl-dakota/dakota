@@ -1,12 +1,6 @@
 # TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
-find_program(JAVA_EXE java)
-if(${JAVA_EXE} MATCHES "java-NOTFOUND")
-  message(WARNING
-    "Java executable not found.  Cannot build reference manual without java")
-endif()
-
 find_package(Doxygen REQUIRED)
 find_package(LATEX REQUIRED)
 # Only required for PDFs of Doxygen, but unconditional currently
@@ -40,18 +34,22 @@ set(dox_dev_deps
 
 
 # Generate the doxygen files for ref man keywords and topics,
-# specifying only required dependencies
+# specifying only required dependencies.  The genrefman Java tool
+# takes dakota.xml together with reference metadata files to create
+# reference manual doxygen.
+get_target_property(genrefman_jar genrefman JAR_FILE)
 add_custom_command( 
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
           ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
-  DEPENDS ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
+  DEPENDS genrefman
           ${Dakota_SOURCE_DIR}/src/dakota.xml
 	  ${ref_kw_md}
 	  ${ref_topic_md}
 	  ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt
 	  ${Dakota_SOURCE_DIR}/docs/Ref_Topics_Intro.dox
-  COMMAND ${JAVA_EXE} 
-  ARGS -jar ${Dakota_SOURCE_DIR}/docs/nidr2refman.jar 
+  COMMAND ${Java_JAVA_EXECUTABLE} 
+  ARGS -classpath ${genrefman_jar} 
+    gov.sandia.dart.dakota.RefManGenDoxygen
     ${Dakota_SOURCE_DIR}/src/dakota.xml
     ${Dakota_SOURCE_DIR}/docs/KeywordMetadata
     ${Dakota_SOURCE_DIR}/docs/Ref_TopicTree.txt

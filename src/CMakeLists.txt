@@ -1033,30 +1033,22 @@ set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
-# Build the XML to NIDR translator, to be used only by Dakota maintainers
-#option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
 
-# WJB- ToDo:  Consider: Moving logic into xml2nidr/CMakeLists.txt (modularity?) 
+if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
+  # Build Java utilities needed for XML (dakota.xml) to NIDR 
+  # (dakota.input.nspec) translation and/or reference manual generation.
+  add_subdirectory(java_utils)
+endif()
+
 if (ENABLE_SPEC_MAINT)
-  #add_subdirectory(xml2nidr)
-  find_package(Java 1.6 REQUIRED)
-  include(UseJava)
+  get_target_property(xml2nidr_jar xml2nidr JAR_FILE)
 
-  # WJB- ToDo: If Java MATCHES "-NOTFOUND" then issue stop message
-
-  add_jar(xml2nidr
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.java
-    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/Indenter.java
-    )
-
-  get_target_property(xml2nidrJar xml2nidr JAR_FILE)
-
-  # WJB - Perhaps combine custom_comman with custom_target?
+  # WJB - Perhaps combine custom_command with custom_target?
   # Use dakota.xml to create dakota.input.nspec
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml ${xml2nidrJar}
-    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidrJar}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
+    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
       gov.sandia.dart.dakota.XMLToNIDRTranslator
       ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
       ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
@@ -1068,7 +1060,6 @@ if (ENABLE_SPEC_MAINT)
 
 endif()
 
-option(DAKOTA_API_JAVA "Enable Dakota library Java API" OFF)
 if (DAKOTA_API_JAVA)
   add_subdirectory(api/java)
 endif()

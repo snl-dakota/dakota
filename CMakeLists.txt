@@ -457,6 +457,31 @@ add_subdirectory(packages)
 # ModelCenter portion will not
 option(DAKOTA_DLL_API "Enable DAKOTA DLL API." ON)
 
+option(ENABLE_SPEC_MAINT "Enable DAKOTA specification maintenance mode." OFF)
+if(ENABLE_SPEC_MAINT AND NOT UNIX)
+  message(FATAL_ERROR 
+    "DAKOTA specification maintenance mode only available on UNIX platforms")
+endif()
+
+option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
+if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
+  message(FATAL_ERROR 
+    "DAKOTA documentation build only available on UNIX platforms")
+endif()
+
+option(DAKOTA_API_JAVA "Enable Dakota library Java API" OFF)
+
+if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS OR DAKOTA_API_JAVA)
+  # Each of these requires compiling Java code with Java 1.6 or newer 
+  # TODO: relax Java to only find needed components
+  find_package(Java 1.6 REQUIRED)
+  if (NOT Java_FOUND)
+    message(SEND_ERROR "Dakota spec maint, docs, and Java API require JDK.")
+  endif()
+  include(UseJava)
+endif()
+
+
 add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
@@ -467,20 +492,8 @@ if(BUILD_TESTING)
   add_subdirectory(unit_test)
 endif()
 
-option(ENABLE_SPEC_MAINT "Enable DAKOTA specification maintenance mode."
-  OFF)
-if(ENABLE_SPEC_MAINT AND NOT UNIX)
-  message(FATAL_ERROR "DAKOTA specification maintenance mode only available on UNIX platforms")
-endif()
-
-
-option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
 if(ENABLE_DAKOTA_DOCS)
-  if(UNIX)
-    add_subdirectory(docs)
-  else()
-    message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
-  endif()
+  add_subdirectory(docs)
 endif()
 
 add_subdirectory(examples)
