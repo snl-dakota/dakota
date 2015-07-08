@@ -1,0 +1,31 @@
+Blurb::
+Specifies the number of components to retain to explain the specified percent variance. 
+
+Description::
+Dakota can calculate the principal components of the response matrix of 
+N samples * L responses using the keyword \c principal_components. 
+Principal components analysis (PCA) is a data reduction method.  
+\c percent_variance_explained is a threshold that determines the number of components that are retained to explain at least that amount of variance.  For example, if the user specifies \c percent_variance_explained = 0.99, the number of components that accounts for at least 99 percent of the variance in the responses will be retained.  The default for this percentage is 0.95.  In many applications, only a few principal components explain the majority of the variance, resulting in significant data reduction. 
+
+<b> Expected Outputs </b>
+
+<b> Usage Tips </b>
+\c percent_variance_explained should be a real number between 0.0 and 1.0. 
+Typically, it will be between 0.9 and 1.0.
+
+Topics::	
+Examples::
+\verbatim
+method,
+  sampling
+    sample_type lhs
+    samples = 100
+    principal_components 
+    percent_variance_explained = 0.98
+\endverbatim
+Theory::
+There is an extensive statistical literature available on PCA. 
+We recommend that the interested user peruse some of this in using the PCA capability.
+
+Faq::
+See_Also::	
