@@ -16,6 +16,7 @@ William Bohnhoff                                   _/  _/_/  _/
 John P. Eddy	                               	    _/_/_/       
 Keith R. Dalbey
 Mohamed S.Ebeida
+Russell W. Hooper
 Kenneth T. Hu
 John D. Jakeman
 Laura P. Swiler
@@ -58,12 +59,15 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   ampl		    MIT License (old style with disclaimer)
   CONMIN	    Public Domain
   DDACE		    GNU Lesser General Public License (LGPL) [SNL]
+  dfftpack	    Public Domain
   DOT		    Commercial license (optional add-on)
   dream		    GNU Lesser General Public License (LGPL)
+  fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
+  LHS		    GNU Lesser General Public License (LGPL) [SNL]
   motif/SciPlot	    GNU Library General Public License (old LGPL)
   NCSUOpt	    MIT License
   nidr		    BSD License [SNL]
@@ -72,19 +76,12 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   NOMAD		    GNU Lesser General Public License (LGPL)
   NPSOL		    Commercial license (optional add-on)
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
-    teuchos	    BSD License [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
-    dfftpack	    Public Domain
-    fftw	    GNU General Public License (GPL; disabled by default)
-    LHS		    GNU Lesser General Public License (LGPL) [SNL]
-    teuchos	    BSD License [SNL]
-    VPISparseGrid   GNU Lesser General Public License (LGPL)
   PSUADE	    GNU Lesser General Public License (LGPL)
   queso		    GNU Lesser General Public License (LGPL)
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
-    CONMIN	    Public Domain	      
-    NCSUOpt	    MIT License
   teuchos	    BSD License [SNL]
+  VPISparseGrid     GNU Lesser General Public License (LGPL)
 
 Third-party system libraries: In addition to standard compiler and
 system runtime libraries, Dakota requires the following external
