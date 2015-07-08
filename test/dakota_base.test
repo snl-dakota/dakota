@@ -10597,6 +10597,21 @@ Test Number 3 succeeded
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -1.0231815395e-12   1.2640106440e-02   2.3481657370e+00   2.2370937575e+00
+dakota_princ_comp.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+response_fn_1_1  5.0000000000e-01  1.1102230246e-16  3.0000000000e+00 -3.0000000000e+00
+response_fn_1_2  4.9332256376e-01  3.7371251339e-03  4.3751246612e-01 -3.0000000000e+00
+response_fn_1_3  4.7608069542e-01  1.4183799442e-02  3.4969276412e-01 -3.0000000000e+00
+response_fn_1_4  4.5220860445e-01  3.0112651316e-02  2.8372348001e-01 -3.0000000000e+00
+response_fn_1_5  4.2507480117e-01  5.0245748018e-02  2.3959021954e-01 -3.0000000000e+00
+response_fn_1_6  3.9726326239e-01  7.3315887534e-02  2.1670773739e-01 -3.0000000000e+00
+response_fn_1_7  3.7044868976e-01  9.8113094587e-02  2.1395126265e-01 -3.0000000000e+00
+response_fn_1_8  3.4537110324e-01  1.2351387503e-01  2.2965762167e-01 -3.0000000000e+00
+response_fn_1_9  3.2190612501e-01  1.4849298089e-01  2.6162355975e-01 -3.0000000000e+00
+response_fn_1_10  2.9921895303e-01  1.7211979492e-01  3.0713155934e-01 -3.0000000000e+00
 dakota_pstudy.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
