@@ -37,7 +37,8 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   numResponseFunctions(0),
   pcaFlag(probDescDB.get_bool("method.principal_components")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
+  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
+  percentVarianceExplained(probDescDB.get_real("method.percent_variance_explained"))
 { 
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
@@ -143,59 +144,82 @@ void NonDLHSSampling::post_run(std::ostream& s)
     }
     Cout << "numFunctions " << numFunctions<< "\n";
     Cout << "numSamples " << numSamples<< "\n";
-    for (s=0; s<numSamples; ++s) {
-      for (f=0; f<numFunctions; ++f) {
-        Cout << responseMatrix(s,f) << "  " ;
-      }  
-      Cout << "\n";
+    if (outputLevel == DEBUG_OUTPUT) {
+      Cout << "Original Data " << '\n';
+      for (s=0; s<numSamples; ++s) {
+        for (f=0; f<numFunctions; ++f) {
+          Cout << responseMatrix(s,f) << "  " ;
+        }  
+        Cout << "\n";
+      }
+      Cout << std::endl;
     }
-
     // Compute the SVD (includes centering the matrix)
     ReducedBasis pcaReducedBasis; 
     pcaReducedBasis.set_matrix(responseMatrix);
     pcaReducedBasis.update_svd();
 
+    /*ReducedBasis::VarianceExplained trunc(0.99);
+    RealVector sing_values = pcaReducedBasis.get_singular_values(trunc);
+    int num_values = sing_values.length();
+    Cout << "num_values " << num_values << '\n'; 
+    */
+
     // Get the centered version of the original response matrix
     RealMatrix centered_matrix = pcaReducedBasis.get_matrix();
-    Cout << "Centered matrix\n";
-    centered_matrix.print(std::cout);
+    if (outputLevel == DEBUG_OUTPUT) {
+      Cout << "Centered matrix\n";
+      centered_matrix.print(std::cout);
+      Cout << std::endl;
+    }
 
     // for now get the first factor score
     RealMatrix principal_comp = pcaReducedBasis.get_right_singular_vector_transpose();
-    Cout << "principal components" << '\n';
-    for (s=0; s<numSamples; ++s) {
-      for (f=0; f<numFunctions; ++f) {
-        Cout << principal_comp(s,f) << "  " ;
-      }  
-      Cout << "\n";
+    
+    if (outputLevel == DEBUG_OUTPUT) {
+      Cout << "principal components" << '\n';
+      for (s=0; s<numSamples; ++s) {
+        for (f=0; f<numFunctions; ++f) {
+          Cout << principal_comp(s,f) << "  " ;
+        }  
+        Cout << "\n";
+      }
+      Cout << std::endl;
     }
     
     RealMatrix factor_scores(numSamples, numFunctions);
     int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
 			centered_matrix, principal_comp, 0.);
  
-    Cout << "myerr" << myerr <<'\n';
-    Cout << "FactorScores" << '\n';
-    
     RealMatrix f_scores(Teuchos::Copy, factor_scores, numSamples, numSamples, 0, 0);
-    for (s=0; s<numSamples; ++s) {
-      for (f=0; f<numSamples; ++f) {
-        Cout << f_scores(s,f) << " " ;
+    if (outputLevel == DEBUG_OUTPUT) {
+      Cout << "myerr" << myerr <<'\n';
+      Cout << "FactorScores" << '\n';
+      for (s=0; s<numSamples; ++s) {
+        for (f=0; f<numSamples; ++f) {
+          Cout << f_scores(s,f) << " " ;
+        }
+        Cout << "\n";
       }
-      Cout << "\n";
+      Cout << std::endl;
     }
-    
     //Dakota::compute_svd( responseMatrix,
     //                     numSamples,
     //                     numFunctions,
     //                     singular_values );
     RealVector singular_values = pcaReducedBasis.get_singular_values();
-    Cout << "singular values " << singular_values <<'\n';
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "singular values " << singular_values <<'\n';
+    Cout << std::endl;
 
 //Build GPs
     // Get number of principal components to retain
-    ReducedBasis::VarianceExplained truncation(0.95);
+    Cout << "percent_variance_explained " << percentVarianceExplained << '\n';
+    ReducedBasis::VarianceExplained truncation(percentVarianceExplained);
     int num_signif_Pcomps = truncation.get_num_components(pcaReducedBasis);
+    Cout << "number of significant principal components " <<  num_signif_Pcomps << '\n';
+    Cout << std::endl;
+
     String approx_type; 
     approx_type = "global_kriging";  // Surfpack GP
     UShortArray approx_order;
@@ -234,7 +258,8 @@ void NonDLHSSampling::post_run(std::ostream& s)
       for (int i = 0; i < num_signif_Pcomps; ++i) {
         RealVector new_sample = Teuchos::getCol(Teuchos::View,allSamples,j);
         pca_coeff=gpApproximations[i].value(new_sample);
-        Cout << "pca_coeff " << pca_coeff << "\n";
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "pca_coeff " << pca_coeff << "\n";
         // need Row, not column
         RealVector local_pred(numFunctions);
         for( int k=0; k<numFunctions; ++k )
@@ -244,6 +269,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
       for( int k=0; k<numFunctions; ++k )
         predMatrix(j,k) = this_pred(k)+column_means(k);
     }
+    Cout << std::endl;
     Cout << "Prediction Matrix " << "\n";
     for (s=0; s<numSamples; ++s) {
       for (f=0; f<numFunctions; ++f) {

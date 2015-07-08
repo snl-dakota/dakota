@@ -994,6 +994,7 @@ TAG "method/sampling/variance_based_decomp"
 TAG "method/sampling/variance_based_decomp/drop_tolerance"
 TAG "method/sampling/backfill"
 TAG "method/sampling/principal_components"
+TAG "method/sampling/principal_components/percent_variance_explained"
 TAG "method/polynomial_chaos/fixed_seed"
 	DESC "{Fixed seed flag} MethodCommands.html#MethodNonDMC"
 

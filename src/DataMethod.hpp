@@ -770,6 +770,9 @@ public:
   /// Flag to specify the calculation of principal components when 
   /// using LHS  
   bool pcaFlag;
+  /// The percentage of variance explained by using a truncated 
+  /// number of principal components in PCA
+  Real percentVarianceExplained;
 
   // NonD
 

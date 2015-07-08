@@ -1388,6 +1388,9 @@
                             <keyword  id="backfill1" name="backfill" code="{N_mdm(true,backfillFlag)}" label="backfill" help="" minOccurs="0" >
                             </keyword>
                             <keyword  id="principal_comp" name="principal_components" code="{N_mdm(true,pcaFlag)}" label="principal_comp" help="" minOccurs="0" >
+                              <keyword  id="perc_var_explained" name="percent_variance_explained" code="{N_mdm(Real,percentVarianceExplained)}" label="percent_variance_explained" help="" minOccurs="0" >
+                                <param type="REAL" />
+                              </keyword>
                             </keyword>
                           </keyword>
                         </oneOf>

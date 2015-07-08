@@ -2447,6 +2447,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"optpp.gradient_tolerance", P gradientTolerance},
 	{"optpp.max_step", P maxStep},
 	{"optpp.steplength_to_boundary", P stepLenToBoundary},
+	{"percent_variance_explained", P percentVarianceExplained},
 	{"sbl.trust_region.contract_threshold",
 	 P surrBasedLocalTRContractTrigger},
 	{"sbl.trust_region.contraction_factor", P surrBasedLocalTRContract},

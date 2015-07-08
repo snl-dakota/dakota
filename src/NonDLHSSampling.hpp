@@ -92,6 +92,9 @@ private:
   bool varBasedDecompFlag;
   /// flag to specify the calculation of principal components
   bool pcaFlag;
+  /// Threshold to keep number of principal components that explain 
+  /// this much variance
+  Real percentVarianceExplained;
 };
 
 

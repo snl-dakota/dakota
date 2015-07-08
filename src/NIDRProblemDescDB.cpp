@@ -6576,6 +6576,7 @@ static Real
 	MP_(minBoxSize),
 	MP_(mutationRate),
 	MP_(mutationScale),
+	MP_(percentVarianceExplained),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction

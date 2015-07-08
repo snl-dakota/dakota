@@ -914,7 +914,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
                ]
               [ backfill {N_mdm(true,backfillFlag)} ]
-              [ principal_components {N_mdm(true,pcaFlag)} ]
+              [ principal_components {N_mdm(true,pcaFlag)}
+                [ percent_variance_explained REAL {N_mdm(Real,percentVarianceExplained)} ]
+               ]
              )
             [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
            )

@@ -1030,7 +1030,9 @@ KEYWORD12 method
 	    [ drop_tolerance REAL ]
 	    ]
 	  [ backfill ]
-	  [ principal_components ]
+	  [ principal_components
+	    [ percent_variance_explained REAL ]
+	    ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
