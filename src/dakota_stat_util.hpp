@@ -188,6 +188,13 @@ class BootstrapSamplerWithGS : public BootstrapSampler<Data>
 public:
 
   //
+  //- Heading: Type definitions and aliases
+  //
+
+  /// Used for size and indexing
+  typedef unsigned int uint;
+
+  //
   //- Heading: Constructors and destructor
   //
 
