@@ -14,18 +14,18 @@ set(DAKOTA_LIBDIRS)
 # All external TPL library directories
 set(EXT_TPL_LIBDIRS)
 
-# Dakota core libraries 
-set(DAKOTA_LIBS) 
-# Libraries from CMake-built packages from Dakota or its parent 
-set(DAKOTA_PKG_LIBS) 
+# Dakota core libraries
+set(DAKOTA_LIBS)
+# Libraries from CMake-built packages from Dakota or its parent
+set(DAKOTA_PKG_LIBS)
 # Libraries from packages built with ExternalProject_add within Dakota
-set(DAKOTA_EXTPROJ_LIBS) 
+set(DAKOTA_EXTPROJ_LIBS)
 # External third-party libraries installed on the system
 set(EXT_TPL_LIBS)
 
 # QUESO libraries have to be managed at end of link due to conflicts
 # with gslcblas (QUESO package built with ExternalProject_add within Dakota)
-set(QUESO_EXTPROJ_LIBS) 
+set(QUESO_EXTPROJ_LIBS)
 # QUESO external LIBS to be linked last
 set(QUESO_TPL_LIBS)
 
@@ -67,7 +67,7 @@ if (BUILD_IN_TRILINOS OR DAKOTA_BUILDING_TEUCHOS)
 	if (${dep_pkg}_LIBRARIES)
 	  list(APPEND EXPORT_TARGETS ${${dep_pkg}_LIBRARIES})
 	  list(APPEND DAKOTA_PKG_LIBS ${${dep_pkg}_LIBRARIES})
-	  message(STATUS 
+	  message(STATUS
 	    "Adding Teuchos dependency ${dep_pkg}_LIBRARIES to Dakota libraries")
 	endif()
       endif()
@@ -77,7 +77,7 @@ if (BUILD_IN_TRILINOS OR DAKOTA_BUILDING_TEUCHOS)
     if(KokkosCore_LIBRARIES)
       list(APPEND EXPORT_TARGETS ${KokkosCore_LIBRARIES})
       list(APPEND DAKOTA_PKG_LIBS ${KokkosCore_LIBRARIES})
-      message(STATUS 
+      message(STATUS
 	"Adding Teuchos dependency KokkosCore_LIBRARIES to Dakota libraries")
     endif()
     if(KokkosTPL_LIBRARIES)
@@ -108,7 +108,7 @@ if(DAKOTA_SVN_checkout)
         //       Lower priority - a post-5.4 release task
         " )
   set(DAKOTA_BUILDINFO_PATH "${Dakota_BINARY_DIR}/generated/src/")
-  
+
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
     message(STATUS
       "Found a generated file: ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp in the source tree; please remove!")
@@ -164,7 +164,7 @@ if(HAVE_VFORK)
 endif(HAVE_VFORK)
 
 # Override source code defaults for fork vs. vfork.  Currently, vfork
-# is the default on all platforms. To override and use fork, set  
+# is the default on all platforms. To override and use fork, set
 # DAKOTA_PREFER_FORK to true. DAKOTA_PREFER_VFORK does nothing and
 # is reserved for future functionality.
 set(DAKOTA_PREFER_FORK OFF)
@@ -245,7 +245,7 @@ if(DAKOTA_DL_SOLVER)
   else()
     message(WARNING "DL solver requested, but dlfcn.h not found; disabling.")
     add_definitions("-DNO_NIDR_DYNLIB")
-    set(DAKOTA_DL_SOLVER OFF CACHE BOOL 
+    set(DAKOTA_DL_SOLVER OFF CACHE BOOL
       "DAKOTA DL solver is disabled due to no dlfcn.h" FORCE)
   endif(DAKOTA_HAVE_DLFCN_H)
 endif(DAKOTA_DL_SOLVER)
@@ -253,7 +253,7 @@ endif(DAKOTA_DL_SOLVER)
 option(DAKOTA_USAGE_TRACKING
   "Toggle DAKOTA usage tracking, default is disabled." OFF
   )
-set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING 
+set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING
   "<URL;proxy> for usage tracking"
   )
 if(DAKOTA_USAGE_TRACKING)
@@ -264,7 +264,7 @@ if(DAKOTA_USAGE_TRACKING)
     list(APPEND EXT_TPL_LIBS ${CURL_LIBRARIES})
   else()
     message(WARNING "Tracking requested, but curl not found; disabling.")
-    set(DAKOTA_USAGE_TRACKING OFF CACHE BOOL 
+    set(DAKOTA_USAGE_TRACKING OFF CACHE BOOL
       "Toggle DAKOTA usage tracking, default is disabled." FORCE)
   endif(CURL_FOUND)
 endif(DAKOTA_USAGE_TRACKING)
@@ -295,33 +295,33 @@ if(DAKOTA_SCILAB)
     # Scilab compilation options
     add_definitions("-DDAKOTA_SCILAB")
     list(APPEND EXT_TPL_INCDIRS ${SCILAB_INCLUDES_PATH})
-      
-    # Scilab linking options 
+
+    # Scilab linking options
     # TODO: Don't appear to get used anywhere!
     set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/lib/scilab")
     set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/lib/scilab")
     set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/lib/thirdparty")
     set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/lib/thirdparty")
-      
+
     if (EXISTS ${SCILAB_ROOT}/thirdparty/java/lib/amd64)
       set(SCI_ARCH "amd64")
     else()
       set(SCI_ARCH "i386")
     endif()
-      
+
     set(SCI_LINK_FLAGS
       "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}")
-    set(SCI_LINK_FLAGS 
+    set(SCI_LINK_FLAGS
       "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}")
-    set(SCI_LINK_FLAGS 
+    set(SCI_LINK_FLAGS
       "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}/server")
-    set(SCI_LINK_FLAGS 
+    set(SCI_LINK_FLAGS
       "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}/")
 
     list(APPEND EXT_TPL_LIBS ${SCILAB_LIBRARY})
 
   else() # SCILAB_ROOT
-    message(SEND_ERROR 
+    message(SEND_ERROR
       "Scilab requested, but not found; consider setting SCILAB_USER_PATH")
   endif() # SCILAB_ROOT
 endif() #DAKOTA_SCILAB
@@ -356,7 +356,7 @@ if(DAKOTA_PYTHON)
 	"${DAKOTA_PYTHON_NUMPY}")
     endif()
   else()
-    message(SEND_ERROR 
+    message(SEND_ERROR
       "Python requested via DAKOTA_PYTHON, but Python headers/libraries "
       "associated with Python installed with ${PYTHON_EXECUTABLE} not found"
       )
@@ -370,7 +370,7 @@ if(DAKOTA_MODELCENTER)
   # client is using an installed Dakota.
   list(APPEND EXT_TPL_INCDIRS
     "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/include")
-  list(APPEND EXT_TPL_LIBDIRS 
+  list(APPEND EXT_TPL_LIBDIRS
     "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/lib/i686-cygwin-cygwinNT")
   list(APPEND EXT_TPL_LIBS PHXCppApi)
 endif(DAKOTA_MODELCENTER)
@@ -417,13 +417,13 @@ set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
-    dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp 
-    dakota_linear_algebra.cpp dakota_tabular_io.cpp 
-    CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp 
+    dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp
+    dakota_linear_algebra.cpp dakota_tabular_io.cpp
+    CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
-    ReducedBasis.cpp
+    ReducedBasis.cpp dakota_stat_util.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -447,7 +447,7 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
 
 ## DB sources.
 set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
-  DataMethod.cpp DataModel.cpp DataVariables.cpp DataInterface.cpp 
+  DataMethod.cpp DataModel.cpp DataVariables.cpp DataInterface.cpp
   DataResponses.cpp)
 
 ## Model sources.
@@ -462,7 +462,7 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
 ## Interface sources.
 set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
     DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
-    GaussProcApproximation.cpp VPSApproximation.cpp 
+    GaussProcApproximation.cpp VPSApproximation.cpp
     PecosApproximation.cpp SharedApproxData.cpp
     SharedPecosApproxData.cpp SharedSurfpackApproxData.cpp
     ApplicationInterface.cpp ProcessApplicInterface.cpp
@@ -473,14 +473,14 @@ if(HAVE_SYS_WAIT_H AND HAVE_UNISTD_H)
 elseif(WIN32)
   list(APPEND interface_src SpawnApplicInterface.cpp)
 endif()
-## Always build the plugin interfaces  
+## Always build the plugin interfaces
 set(interface_src ${interface_src} PluginSerialDirectApplicInterface.cpp
   PluginParallelDirectApplicInterface.cpp)
 
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
   list(APPEND interface_src SurfpackApproximation.cpp)
-  list(APPEND DAKOTA_INCDIRS ${Surfpack_BINARY_DIR} 
+  list(APPEND DAKOTA_INCDIRS ${Surfpack_BINARY_DIR}
     ${Surfpack_SOURCE_DIR}/src)
   list(APPEND DAKOTA_PKG_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
@@ -503,10 +503,10 @@ set(env_src DakotaEnvironment.cpp ExecutableEnvironment.cpp
 
 ## Iterator sources.
 set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
-    ParamStudy.cpp DakotaVerification.cpp RichExtrapVerification.cpp 
+    ParamStudy.cpp DakotaVerification.cpp RichExtrapVerification.cpp
     DakotaNonD.cpp
     NonDReliability.cpp NonDLocalReliability.cpp NonDGlobalReliability.cpp
-    NonDInterval.cpp NonDLHSInterval.cpp NonDLHSEvidence.cpp 
+    NonDInterval.cpp NonDLHSInterval.cpp NonDLHSEvidence.cpp
     NonDLHSSingleInterval.cpp
     NonDLocalInterval.cpp NonDLocalEvidence.cpp NonDLocalSingleInterval.cpp
     NonDGlobalInterval.cpp NonDGlobalEvidence.cpp NonDGlobalSingleInterval.cpp
@@ -517,8 +517,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDIncremLHSSampling.cpp
     NonDPOFDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp
-    NonlinearCGOptimizer.cpp 
-    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp 
+    NonlinearCGOptimizer.cpp
+    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
     MetaIterator.cpp ConcurrentMetaIterator.cpp SeqHybridMetaIterator.cpp
     EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp
@@ -547,7 +547,7 @@ if(HAVE_ACRO)
     )
 
   list(APPEND interface_src COLINApplication.cpp)
-  list(APPEND iterator_src COLINOptimizer.cpp 
+  list(APPEND iterator_src COLINOptimizer.cpp
   	      		   PEBBLOptimizer.cpp PEBBLBranching.cpp)
 
   foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
@@ -575,7 +575,7 @@ if(HAVE_ADAPTIVE_SAMPLING)
     # The MS_Complex class requires this unconditionally
     add_definitions("-DHAVE_DIONYSUS")
     # TODO: Using build tree as these don't currently get installed
-    list(APPEND DAKOTA_INCDIRS 
+    list(APPEND DAKOTA_INCDIRS
       ${Dakota_BINARY_DIR}/packages/dionysus_ext-prefix/src/dionysus_ext/include)
   endif()
 endif()
@@ -607,16 +607,16 @@ if(HAVE_QUESO)
 
   else()
 
-  list(APPEND DAKOTA_INCDIRS 
+  list(APPEND DAKOTA_INCDIRS
     ${Dakota_BINARY_DIR}/packages/queso_ext/include ${GSL_INCLUDE_DIRS})
 
   #list(APPEND DAKOTA_LIBDIRS "$ENV{QUESO_PREFIX}/lib")
   # Would prefer to detect 32 vs. 64-bit, but the location is
   # operating system-specific; should be harmless to add the extra
   # directory, but put 64-bit first
-  list(APPEND DAKOTA_LIBDIRS 
+  list(APPEND DAKOTA_LIBDIRS
     ${Dakota_BINARY_DIR}/packages/queso_ext/lib64)
-  list(APPEND DAKOTA_LIBDIRS 
+  list(APPEND DAKOTA_LIBDIRS
     ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
 
   # Can't put these in DAKOTA_PKG_LIBS; Trilinos will try to export them
@@ -716,7 +716,7 @@ endif(HAVE_NL2SOL)
 
 if(HAVE_NOMAD)
   add_definitions("-DHAVE_NOMAD")
-  list(APPEND DAKOTA_INCDIRS 
+  list(APPEND DAKOTA_INCDIRS
     ${NOMAD_BINARY_DIR}/src ${NOMAD_SOURCE_DIR}/src)
   set(iterator_src ${iterator_src} NomadOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nomad)
@@ -737,7 +737,7 @@ if(HAVE_NPSOL)
 endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
-  list(APPEND DAKOTA_INCDIRS 
+  list(APPEND DAKOTA_INCDIRS
     ${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include)
 
   add_definitions("-DHAVE_OPTPP")
@@ -760,7 +760,7 @@ endif(HAVE_PSUADE)
 
 if(HAVE_X_GRAPHICS)
   add_definitions("-DHAVE_X_GRAPHICS")
-  list(APPEND DAKOTA_INCDIRS ${DakotaMotif_SOURCE_DIR}/include 
+  list(APPEND DAKOTA_INCDIRS ${DakotaMotif_SOURCE_DIR}/include
     ${DAKOTA_X_INCLUDE_DIR})
   list(APPEND DAKOTA_LIBDIRS ${DakotaMotif_BINARY_DIR})
   list(APPEND DAKOTA_PKG_LIBS DGraphics)
@@ -790,7 +790,7 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 #if(DAKOTA_RESULTS_DB)
-#  set(HAVE_YAML-CPP ON CACHE BOOL 
+#  set(HAVE_YAML-CPP ON CACHE BOOL
 #      "Results DB requires yaml-cpp" FORCE)
 #  CheckPackage(YAML-CPP)
 #  list(APPEND EXT_TPL_INCDIRS ${YAML_CPP_SOURCE_DIR}/include)
@@ -804,7 +804,7 @@ if(DAKOTA_HAVE_GSL)
   # GSL_LIBRARIES may or may not include a CBLAS library, depending on
   # top-level option GSL_WITHOUT_CBLAS
   list(APPEND QUESO_TPL_LIBS ${GSL_LIBRARIES})
-  if(DAKOTA_CBLAS_LIBS) 
+  if(DAKOTA_CBLAS_LIBS)
     list(APPEND QUESO_TPL_LIBS ${DAKOTA_CBLAS_LIBS})
   endif()
   list(APPEND EXT_TPL_LIBS ${QUESO_TPL_LIBS})
@@ -860,7 +860,7 @@ endif()
 if(HAVE_QUESO)
   # Enforce QUESO config header creation prior to compiling dakota sources
   if (DAKOTA_QUESO_CMAKE)
-    add_dependencies(dakota_src queso)    
+    add_dependencies(dakota_src queso)
   else()
     add_dependencies(dakota_src queso_ext)
   endif()
@@ -905,7 +905,7 @@ if(DAKOTA_DLL_API)
       "${Dakota_SOURCE_DIR}/examples/linked_interfaces/ModelCenter/lib/i686-cygwin-cygwinNT")
   endif()
   add_executable(dll_tester dll_tester.cpp)
-  
+
   target_link_libraries(dll_tester dakota_dll_api)
   if (DAKOTA_MODELCENTER)
     # likely not needed due to CMake dependency management of dakota_dll_api library
@@ -913,7 +913,7 @@ if(DAKOTA_DLL_API)
   endif()
 endif()
 
-  
+
 if(DAKOTA_SCILAB)
   set_target_properties(dakota PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
   set_target_properties(dakota_restart_util PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
@@ -973,7 +973,7 @@ endif()
 # Install dyanamic deps, omitting standard system libs
 # CMake variables aren't passed to the script, so we have to invoke
 # separate scripts for each platform
-option(DAKOTA_INSTALL_DYNAMIC_DEPS 
+option(DAKOTA_INSTALL_DYNAMIC_DEPS
   "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
 if (DAKOTA_INSTALL_DYNAMIC_DEPS)
   if (CYGWIN)
@@ -989,21 +989,21 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
     include(DakotaInstallRequiredSystemLibraries)
   endif()
 endif()
-  
+
 
 # --- Define variables used for export Makefiles
 # TODO: use these variables/names in the Trilinos block below
 
-get_directory_property(Dakota_DEFS COMPILE_DEFINITIONS) 
-set(Dakota_DEFINES ${Dakota_DEFS} CACHE INTERNAL 
-  "Dakota preprocessor defines") 
+get_directory_property(Dakota_DEFS COMPILE_DEFINITIONS)
+set(Dakota_DEFINES ${Dakota_DEFS} CACHE INTERNAL
+  "Dakota preprocessor defines")
 
 # Includes from the source and build tree (will be installed)
-set(Dakota_INCLUDE_DIRS ${DAKOTA_INCDIRS} CACHE INTERNAL 
-  "Dakota source and build include directories") 
+set(Dakota_INCLUDE_DIRS ${DAKOTA_INCDIRS} CACHE INTERNAL
+  "Dakota source and build include directories")
 # External includes
-set(Dakota_TPL_INCLUDE_DIRS ${EXT_TPL_INCDIRS} CACHE INTERNAL 
-  "Dakota external TPL include directories") 
+set(Dakota_TPL_INCLUDE_DIRS ${EXT_TPL_INCDIRS} CACHE INTERNAL
+  "Dakota external TPL include directories")
 
 # Paths to libraries in the build tree (will be installed)
 # Generate a list of build tree lib dirs; this will duplicate motif,
@@ -1014,52 +1014,61 @@ set(Dakota_TPL_INCLUDE_DIRS ${EXT_TPL_INCDIRS} CACHE INTERNAL
 ##  list(APPEND DAKOTA_LIBDIRS ${dpl_path})
 ##endforeach()
 
-set(Dakota_LIBRARY_DIRS ${DAKOTA_LIBDIRS} CACHE INTERNAL 
-  "Dakota build-time library directories") 
+set(Dakota_LIBRARY_DIRS ${DAKOTA_LIBDIRS} CACHE INTERNAL
+  "Dakota build-time library directories")
 # External libraries
-set(Dakota_TPL_LIBRARY_DIRS ${EXT_TPL_LIBDIRS} CACHE INTERNAL 
-  "Dakota external TPL library directories") 
+set(Dakota_TPL_LIBRARY_DIRS ${EXT_TPL_LIBDIRS} CACHE INTERNAL
+  "Dakota external TPL library directories")
 
 # Any library that will be installed with Dakota, including Queso
-set(Dakota_LIBRARIES ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} 
-#  ${QUESO_EXTPROJ_LIBS} 
-  CACHE INTERNAL "Dakota libraries") 
+set(Dakota_LIBRARIES ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS}
+#  ${QUESO_EXTPROJ_LIBS}
+  CACHE INTERNAL "Dakota libraries")
 
 # Libraries that will be on the system
-set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}  
+set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}
 #  ${QUESO_TPL_LIBS}
-  CACHE INTERNAL "Dakota TPL libraries") 
- 
+  CACHE INTERNAL "Dakota TPL libraries")
+
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
+# Build the XML to NIDR translator, to be used only by Dakota maintainers
+#option(DAKOTA_XML_SPEC "Enable Dakota XML spec and tools" OFF)
 
-if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
-  # Build Java utilities needed for XML (dakota.xml) to NIDR 
-  # (dakota.input.nspec) translation and/or reference manual generation.
-  add_subdirectory(java_utils)
-endif()
-
+# WJB- ToDo:  Consider: Moving logic into xml2nidr/CMakeLists.txt (modularity?)
 if (ENABLE_SPEC_MAINT)
-  get_target_property(xml2nidr_jar xml2nidr JAR_FILE)
+  #add_subdirectory(xml2nidr)
+  find_package(Java 1.6 REQUIRED)
+  include(UseJava)
 
-  # WJB - Perhaps combine custom_command with custom_target?
+  # WJB- ToDo: If Java MATCHES "-NOTFOUND" then issue stop message
+
+  add_jar(xml2nidr
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/XMLToNIDRTranslator.java
+    ${CMAKE_CURRENT_SOURCE_DIR}/xml2nidr/gov/sandia/dart/dakota/Indenter.java
+    )
+
+  get_target_property(xml2nidrJar xml2nidr JAR_FILE)
+
+  # WJB - Perhaps combine custom_comman with custom_target?
   # Use dakota.xml to create dakota.input.nspec
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
-    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml ${xml2nidrJar}
+    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidrJar}
       gov.sandia.dart.dakota.XMLToNIDRTranslator
       ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
       ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     )
 
   # Create target, always generate XML -> NIDR during ALL target
-  add_custom_target(dakota-gen-nspec ALL 
+  add_custom_target(dakota-gen-nspec ALL
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec)
 
 endif()
 
+option(DAKOTA_API_JAVA "Enable Dakota library Java API" OFF)
 if (DAKOTA_API_JAVA)
   add_subdirectory(api/java)
 endif()
@@ -1072,7 +1081,7 @@ if (BUILD_IN_TRILINOS)
   # All include directories needed for Dakota
   # TODO: clients use Dakota_INCLUDE_DIRS and DAKOTA_TPL_INCLUDE_DIRS instead...
   get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
-  set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
+  set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL
     "Dakota include directories")
 
   # Link directories needed for queso, GSL
@@ -1083,14 +1092,14 @@ if (BUILD_IN_TRILINOS)
   set(Dakota_LIBS ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS})
   # Remove the Teuchos libraries
   list(REMOVE_ITEM Dakota_LIBS ${Teuchos_LIBRARIES})
-  set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
+  set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL
     "Dakota libraries")
 
   # Libraries built outside of Dakota CMake
   set(Dakota_EXTRA_LIBRARIES ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS}
-#    ${QUESO_EXTPROJ_LIBS}  ${QUESO_TPL_LIBS} 
+#    ${QUESO_EXTPROJ_LIBS}  ${QUESO_TPL_LIBS}
     CACHE INTERNAL "Dakota extra libraries")
-  message(STATUS 
+  message(STATUS
     "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
     )
 endif()
@@ -1106,11 +1115,11 @@ endif()
 set(Dakota_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
   "Installation directory for Dakota's CMake files")
 
-# Generate export Makefile 
-include(WriteExportMakefile) 
-WriteExportMakefile() 
-install(FILES ${Dakota_BINARY_DIR}/src/Makefile.export.Dakota.install 
-  DESTINATION include RENAME Makefile.export.Dakota) 
+# Generate export Makefile
+include(WriteExportMakefile)
+WriteExportMakefile()
+install(FILES ${Dakota_BINARY_DIR}/src/Makefile.export.Dakota.install
+  DESTINATION include RENAME Makefile.export.Dakota)
 
 # Unconditionally export targets to detect problems before Trilinos does
 export(TARGETS ${EXPORT_TARGETS} FILE
@@ -1118,7 +1127,7 @@ export(TARGETS ${EXPORT_TARGETS} FILE
 
 # Workaround until we fix Dakota's overall use of exports
 if(ExportTarget STREQUAL DakotaTargets)
-  message(STATUS 
+  message(STATUS
     "Installing Dakota exported targets to ${Dakota_INSTALL_CMAKE_DIR}")
   install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
 endif()
@@ -1137,15 +1146,15 @@ set(Dakota_INCLUDE_INSTALL_DIR include)
 set(Dakota_LIB_INSTALL_DIR lib)
 
 configure_package_config_file(
-  ${Dakota_SOURCE_DIR}/cmake/DakotaConfig.cmake.in 
+  ${Dakota_SOURCE_DIR}/cmake/DakotaConfig.cmake.in
   ${Dakota_BINARY_DIR}/DakotaConfig.cmake
   INSTALL_DESTINATION ${Dakota_INSTALL_CMAKE_DIR}
   PATH_VARS Dakota_INCLUDE_INSTALL_DIR Dakota_LIB_INSTALL_DIR
 )
 
 install(
-  FILES 
-  "${Dakota_BINARY_DIR}/DakotaVersion.cmake" 
-  "${Dakota_BINARY_DIR}/DakotaConfig.cmake" 
+  FILES
+  "${Dakota_BINARY_DIR}/DakotaVersion.cmake"
+  "${Dakota_BINARY_DIR}/DakotaConfig.cmake"
   DESTINATION "${Dakota_INSTALL_CMAKE_DIR}"
   )

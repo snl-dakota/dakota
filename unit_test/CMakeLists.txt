@@ -46,16 +46,21 @@ endif(MSVC)
 dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/${ut_helper_script}
   ${script_dest_path}/${ut_helper_script} dakota_unit_test_copied_files)
 
-dakota_add_unit_test(NAME test_workdir_utils 
+dakota_add_unit_test(NAME test_workdir_utils
   SOURCES test_workdir_utils.cpp LINK_DAKOTA_LIBS)
 
 
 # Unit test: try BOOST_AUTO_TEST_CASE
-dakota_add_unit_test(NAME auto_unit_test 
+dakota_add_unit_test(NAME auto_unit_test
   SOURCES auto_unit_test.cpp
-  LINK_DAKOTA_LIBS 
+  LINK_DAKOTA_LIBS
   # need team buy-in for Boost.Test library deps
   #LINK_LIBS boost_unit_test_framework
+  )
+
+dakota_add_unit_test(NAME bootstrap_util_test
+  SOURCES bootstrap_util_test.cpp
+  LINK_DAKOTA_LIBS
   )
 
 
@@ -67,7 +72,7 @@ dakota_add_unit_test(NAME test_field_covariance_utils
 
 
 # Unit test: experiment data and readers
-# Demonstration of Teuchos test framework to driver several tests related to 
+# Demonstration of Teuchos test framework to driver several tests related to
 # ExperimentData and associated file readers
 option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable sample unit tests driver" ON)
 remove_definitions("-DHAVE_CONFIG_H")
@@ -85,17 +90,17 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     data_conversions.cpp
     reduced_basis.cpp
     )
-  dakota_add_unit_test(NAME sample_unit_tests 
+  dakota_add_unit_test(NAME sample_unit_tests
     SOURCES sample_unit_test_driver.cpp ${dakota_sample_unit_tests}
     LINK_DAKOTA_LIBS
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
-    "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files" 
+    "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
     dakota_unit_test_copied_files
     )
-  FILE( COPY 
+  FILE( COPY
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" 
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     )
 endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
 
@@ -105,12 +110,12 @@ if(DAKOTA_HAVE_HDF5)
   include_directories(${HDF5_INCLUDE_DIRS})
   link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
   dakota_add_unit_test(NAME binary_io_test SOURCES binary_io_test.cpp
-    LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY} 
+    LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
               ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES}
     )
 endif()
 
 
 # Add a single target for all copied files
-add_custom_target(dakota_unit_test_files ALL 
+add_custom_target(dakota_unit_test_files ALL
   DEPENDS ${dakota_unit_test_copied_files})
