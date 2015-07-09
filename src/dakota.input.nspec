@@ -501,6 +501,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
        )
       |
+      branch_and_bound {N_mdm(utype,methodName_BRANCH_AND_BOUND)}
+      |
       ( coliny_direct {N_mdm(utype,methodName_COLINY_DIRECT)}
         [ division {0}
           major_dimension {N_mdm(lit,boxDivision_major_dimension)}

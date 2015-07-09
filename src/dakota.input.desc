@@ -600,6 +600,7 @@ TAG "method/coliny_pattern_search/initial_delta"
 TAG "method/coliny_pattern_search/threshold_delta"
 	DESC "{Threshold for offset values} MethodCommands.html#MethodSCOLIBPS"
 
+TAG "method/branch_and_bound"
 TAG "method/coliny_direct" GROUP "Optimization: Global"
 TAG "method/coliny_direct/division"
 	DESC "{Box subdivision approach} MethodCommands.html#MethodSCOLIBDIR"

@@ -430,7 +430,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case COLINY_BETA: case COLINY_COBYLA:         case COLINY_DIRECT:
   case COLINY_EA:   case COLINY_PATTERN_SEARCH: case COLINY_SOLIS_WETS:
     return new COLINOptimizer(problem_db, model); break;
-  case PEBBL:
+  case BRANCH_AND_BOUND:
     return new PebbldOptimizer(problem_db, model); break;
 #endif
 #ifdef HAVE_JEGA
@@ -545,7 +545,7 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 #ifdef DAKOTA_COLINY
   else if (strbegins(method_string, "coliny_"))
     return new COLINOptimizer(method_string, model);
-  else if (strbegins(method_string, "pebbl_"))
+  else if (method_string == "branch_and_bound")
     return new PebbldOptimizer(model);
 #endif
 #ifdef HAVE_JEGA
@@ -762,7 +762,7 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case COLINY_EA:               return String("coliny_ea"); break;
   case COLINY_PATTERN_SEARCH:   return String("coliny_pattern_search"); break;
   case COLINY_SOLIS_WETS:       return String("coliny_solis_wets"); break;
-  case PEBBL:                   return String("pebbl_bandb"); break;
+  case BRANCH_AND_BOUND:        return String("branch_and_bound"); break;
   case MOGA:                    return String("moga"); break;
   case SOGA:                    return String("soga"); break;
   case DL_SOLVER:               return String("dl_solver"); break;
@@ -845,7 +845,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "coliny_ea")        return COLINY_EA;
   else if (method_name == "coliny_pattern_search") return COLINY_PATTERN_SEARCH;
   else if (method_name == "coliny_solis_wets")     return COLINY_SOLIS_WETS;
-  else if (method_name == "pebbl_bandb")      return PEBBL;
+  else if (method_name == "branch_and_bound")      return BRANCH_AND_BOUND;
   else if (method_name == "moga")             return MOGA;
   else if (method_name == "soga")             return SOGA;
   else if (method_name == "dl_solver")        return DL_SOLVER;

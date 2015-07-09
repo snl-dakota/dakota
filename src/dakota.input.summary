@@ -617,6 +617,14 @@ KEYWORD12 method
 	  [ model_pointer STRING ]
 	  )
 	|
+	( branch_and_bound
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER > 0 ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  [ model_pointer STRING ]
+	  )
+	|
 	( coliny_direct
 	  [ division
 	    major_dimension

@@ -844,6 +844,7 @@
                     <param type="REAL" />
                   </keyword>
                 </required>
+		<keyword  id="branch_and_bound" name="branch_and_bound" code="{N_mdm(utype,methodName_BRANCH_AND_BOUND)}" label="branch_and_bound" help="" minOccurs="1" group="Optimization: Global" />
                 <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct" help="" minOccurs="1" group="Optimization: Global" >
                   <keyword  id="division" name="division" code="{0}" label="Box subdivision approach" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="major_dimension" >
                     <oneOf>
