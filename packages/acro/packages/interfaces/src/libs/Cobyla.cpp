@@ -104,7 +104,7 @@ Cobyla::Cobyla()
    //           "Initial step length");
 
    properties.privilegedGet("debug").unset_readonly();
-   properties.privilegedGet("max_neval").unset_readonly();
+   properties.privilegedGet("max-neval").unset_readonly();
    properties.privilegedGet("sufficient_objective_value").unset_readonly();
    //option.enable("debug");
    //option.enable("max_neval");

@@ -891,6 +891,10 @@ void COLINOptimizer::set_solver_parameters()
     if (colinSolver->has_property("max_iterations"))
       colinSolver->property("max_iterations") = maxIterations;
   }
+  else {
+    if (colinSolver->has_property("max-neval"))
+      colinSolver->property("max-neval") = maxFunctionEvals;
+  }
   if (colinSolver->has_property("function_value_tolerance"))
     colinSolver->property("function_value_tolerance") = convergenceTol;
 
