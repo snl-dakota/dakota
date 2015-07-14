@@ -3065,7 +3065,7 @@ static void Vgen_PoissonUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_poisson_params((*Lam)[j], mean, std_dev);
+    Pecos::PoissonRandomVariable::moments_from_params((*Lam)[j], mean, std_dev);
     (*L)[i] = 0;
     (*U)[i] = (int)std::ceil(mean + 3.*std_dev);
     if (num_IP) (*V)[i] = (*IP)[j];
@@ -3103,7 +3103,8 @@ static void Vgen_BinomialUnc(DataVariablesRep *dv, size_t offset)
       else                    (*V)[i] = (*IP)[j];
     }
     else {
-      Pecos::moments_from_binomial_params((*Pr)[j], (*NT)[j], mean, std_dev);
+      Pecos::BinomialRandomVariable::
+	moments_from_params((*Pr)[j], (*NT)[j], mean, std_dev);
       (*V)[i] = (int)mean;
     }
   }
@@ -3133,8 +3134,8 @@ static void Vgen_NegBinomialUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    Pecos::moments_from_negative_binomial_params((*Pr)[j], (*NT)[j],
-						 mean, std_dev);
+    Pecos::NegBinomialRandomVariable::
+      moments_from_params((*Pr)[j], (*NT)[j], mean, std_dev);
     (*L)[i] = (*NT)[j];
     (*U)[i] = (int)std::ceil(mean + 3.*std_dev);
     if (num_IP) {
@@ -3168,7 +3169,8 @@ static void Vgen_GeometricUnc(DataVariablesRep *dv, size_t offset)
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     (*L)[i] = 0;
-    Pecos::moments_from_geometric_params((*Pr)[j], mean, std_dev);
+    Pecos::GeometricRandomVariable::
+      moments_from_params((*Pr)[j], mean, std_dev);
     (*U)[i] = (int)std::ceil(mean + 3.*std_dev);
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = (int)mean;
