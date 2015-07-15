@@ -812,7 +812,16 @@ pecos_to_dakota_variable_type(unsigned short pecos_var_type)
   case Pecos::GUMBEL:                           return GUMBEL_UNCERTAIN;  break;
   case Pecos::FRECHET:                          return FRECHET_UNCERTAIN; break;
   case Pecos::WEIBULL:                          return WEIBULL_UNCERTAIN; break;
-  case Pecos::HISTOGRAM_BIN:       return HISTOGRAM_BIN_UNCERTAIN;        break;
+  case Pecos::HISTOGRAM_BIN:     return HISTOGRAM_BIN_UNCERTAIN;          break;
+  case Pecos::POISSON:           return POISSON_UNCERTAIN;                break;
+  case Pecos::BINOMIAL:          return BINOMIAL_UNCERTAIN;               break;
+  case Pecos::NEGATIVE_BINOMIAL: return NEGATIVE_BINOMIAL_UNCERTAIN;      break;
+  case Pecos::GEOMETRIC:         return GEOMETRIC_UNCERTAIN;              break;
+  case Pecos::HYPERGEOMETRIC:    return HYPERGEOMETRIC_UNCERTAIN;         break;
+  case Pecos::HISTOGRAM_PT_INT:  return HISTOGRAM_POINT_UNCERTAIN_INT;    break;
+  case Pecos::HISTOGRAM_PT_STRING:
+    return HISTOGRAM_POINT_UNCERTAIN_STRING; break;
+  case Pecos::HISTOGRAM_PT_REAL:   return HISTOGRAM_POINT_UNCERTAIN_REAL; break;
   case Pecos::CONTINUOUS_INTERVAL: return CONTINUOUS_INTERVAL_UNCERTAIN;  break;
   case Pecos::CONTINUOUS_STATE:    return CONTINUOUS_STATE;               break;
   default:
@@ -1284,21 +1293,28 @@ void NonD::initialize_random_variable_types(short u_space_type)
     }
   }
 
+  /*
   // discrete int aleatory uncertain
+  for (i=0; i<numPoissonVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::POISSON;
+  for (i=0; i<numBinomialVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::BINOMIAL;
+  for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
+  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
+  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::HYPERGEOMETRIC;
+  for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
 
   // discrete string aleatory uncertain
+  for (i=0; i<numHistogramPtStringVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_STRING;
 
   // discrete real aleatory uncertain
-  /*
-  for (i=0; i<numHistogramPtVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::HISTOGRAM_POINT;
-    switch (u_space_type) {
-    case STD_NORMAL_U: case ASKEY_U: case STD_UNIFORM_U:
-      err_flag = true;                           break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::HISTOGRAM_POINT; break;
-    }
-  }
+  for (i=0; i<numHistogramPtRealVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_REAL;
   */
 
   // continuous epistemic uncertain
@@ -1385,14 +1401,28 @@ void NonD::initialize_random_variable_types()
   for (i=0; i<numHistogramBinVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HISTOGRAM_BIN;
 
+  /*
   // discrete int aleatory uncertain
+  for (i=0; i<numPoissonVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::POISSON;
+  for (i=0; i<numBinomialVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::BINOMIAL;
+  for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
+  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::GEOMETRIC;
+  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
+  for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
 
   // discrete string aleatory uncertain
+  for (i=0; i<numHistogramPtStringVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HISTOGRAM_PT_STRING;
 
   // discrete real aleatory uncertain
-  /*
-  for (i=0; i<numHistogramPtVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HISTOGRAM_POINT;
+  for (i=0; i<numHistogramPtRealVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HISTOGRAM_PT_REAL;
   */
 
   // continuous epistemic uncertain

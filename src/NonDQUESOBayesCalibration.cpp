@@ -518,28 +518,40 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   mcmcModel.compute_response(set);
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
-  RealSymMatrix log_hess;
+  RealSymMatrix log_hess;//(numContinuousVars); // init to 0
   const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
   if (precondRequestValue & 4) {
     // try to use full misfit Hessian; fall back if indefinite
     expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "Hessian of negative log-likelihood (from misfit):\n";
+      write_data(Cout, log_hess, true, true, true);
+    }
+
     augment_hessian_with_log_prior(log_hess);
     bool ev_truncation =
       get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
     if (ev_truncation) { // fallback to Gauss-Newton
-      if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
-	     << "Hessian.\n";
       ShortArray asrv_override(numFunctions, 2); // override asrv in response
       expData.build_hessian_of_sum_square_residuals(emulator_resp,
 						    asrv_override, log_hess);
+      if (outputLevel >= NORMAL_OUTPUT) {
+	Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
+	     << "Hessian.\nHessian of negative log-likelihood (from misfit):\n";
+	write_data(Cout, log_hess, true, true, true);
+      }
+
       augment_hessian_with_log_prior(log_hess);
       get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
     }
   }
   else {
     expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "Hessian of negative log-likelihood (from misfit):\n";
+      write_data(Cout, log_hess, true, true, true);
+    }
     augment_hessian_with_log_prior(log_hess);
     get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
   }
@@ -560,8 +572,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   int i, j, nv = log_hess.numRows();
   if (!proposalCovMatrix) {
     proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
-    if ((paramSpace->dimGlobal() != nv) || 
-        (paramSpace->dimGlobal() !=(nv+numFunctions))) {
+    if (paramSpace->dimGlobal() != nv || 
+	paramSpace->dimGlobal() != nv+numFunctions) {
       Cerr << "Error: Queso vector space is not consistent with proposal "
 	   << "covariance dimension." << std::endl;
       abort_handler(METHOD_ERROR);
