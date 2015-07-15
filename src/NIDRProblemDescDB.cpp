@@ -3213,7 +3213,8 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
       else                    (*V)[i] = (*IP)[j];
     }
     else {
-      Pecos::moments_from_hypergeometric_params((*TP)[j], s, d, mean, std_dev);
+      Pecos::HypergeometricRandomVariable::
+	moments_from_params((*TP)[j], s, d, mean, std_dev);
       (*V)[i] = (int)mean;
     }
   }
@@ -3315,9 +3316,9 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    const IntRealMap& hist_point_pairs = A[j];
-    L[i] = hist_point_pairs.begin()->first;;
-    U[i] = (--hist_point_pairs.end())->first;
+    const IntRealMap& hist_pt_prs = A[j];
+    L[i] = hist_pt_prs.begin()->first;
+    U[i] = (--hist_pt_prs.end())->first;
     if (num_IP) {
       if      (IP[j] < L[i]) V[i] =  L[i];
       else if (IP[j] > U[i]) V[i] =  U[i];
@@ -3325,12 +3326,12 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
-      if (hist_point_pairs.size() == 1)
-	V[i] = hist_point_pairs.begin()->first;
+      Pecos::HistogramPtRandomVariable::
+	moments_from_params(hist_pt_prs, mean, stdev);
+      if (hist_pt_prs.size() == 1)
+	V[i] = hist_pt_prs.begin()->first;
       else {
-	IRMCIter it = hist_point_pairs.begin();
-	IRMCIter it_end = hist_point_pairs.end();
+	IRMCIter it = hist_pt_prs.begin(), it_end = hist_pt_prs.end();
 	// find value immediately right of mean (can't be past the end)
 	for( ; it != it_end, it->first <= mean; ++it);
 	// bracket the mean
@@ -3439,9 +3440,9 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    const StringRealMap& hist_point_pairs = A[j];
-    L[i] = hist_point_pairs.begin()->first;;
-    U[i] = (--hist_point_pairs.end())->first;
+    const StringRealMap& hist_pt_prs = A[j];
+    L[i] = hist_pt_prs.begin()->first;
+    U[i] = (--hist_pt_prs.end())->first;
     if (num_IP) {
       if      (IP[j] < L[i]) V[i] =  L[i];
       else if (IP[j] > U[i]) V[i] =  U[i];
@@ -3451,12 +3452,13 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
       // for string-valued histograms, mean and stddev are of
       // zero-based indices from beginning of the map
       Real mean, stdev;
-      Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
-      if (hist_point_pairs.size() == 1)
-	V[i] = hist_point_pairs.begin()->first;
+      Pecos::HistogramPtRandomVariable::
+	moments_from_params(hist_pt_prs, mean, stdev);
+      if (hist_pt_prs.size() == 1)
+	V[i] = hist_pt_prs.begin()->first;
       else {
 	size_t mean_index = boost::math::iround(mean);
-	SRMCIter it = hist_point_pairs.begin();
+	SRMCIter it = hist_pt_prs.begin();
 	std::advance(it, mean_index);
 	// initialize with value closest to mean
 	V[i] = it->first;
@@ -3559,9 +3561,9 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
   if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
-    const RealRealMap& hist_point_pairs = A[j];
-    L[i] = hist_point_pairs.begin()->first;;
-    U[i] = (--hist_point_pairs.end())->first;
+    const RealRealMap& hist_pt_prs = A[j];
+    L[i] = hist_pt_prs.begin()->first;
+    U[i] = (--hist_pt_prs.end())->first;
     if (num_IP) {
       if      (IP[j] < L[i]) V[i] =  L[i];
       else if (IP[j] > U[i]) V[i] =  U[i];
@@ -3569,12 +3571,12 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::moments_from_histogram_pt_params(hist_point_pairs, mean, stdev);
-      if (hist_point_pairs.size() == 1)
-	V[i] = hist_point_pairs.begin()->first;
+      Pecos::HistogramPtRandomVariable::
+	moments_from_params(hist_pt_prs, mean, stdev);
+      if (hist_pt_prs.size() == 1)
+	V[i] = hist_pt_prs.begin()->first;
       else {
-	RRMCIter it = hist_point_pairs.begin();
-	RRMCIter it_end = hist_point_pairs.end();
+	RRMCIter it = hist_pt_prs.begin(), it_end = hist_pt_prs.end();
 	// find value immediately right of mean (can't be past the end)
 	for( ; it != it_end, it->first <= mean; ++it);
 	// bracket the mean
@@ -3687,7 +3689,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
   IP    = &dv->continuousIntervalUncVars;
   size_t i, j, n = dv->numContinuousIntervalUncVars,
     num_IP = IP->length();
-  if (num_IP) dv->uncertainVarsInitPt = true;;
+  if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     lb = dbl_inf; ub = -dbl_inf;
@@ -3810,7 +3812,7 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
   const IntIntPairRealMapArray& P = dv->discreteIntervalUncBasicProbs;
   IP    = &dv->discreteIntervalUncVars;
   size_t i, j, n = dv->numDiscreteIntervalUncVars, num_IP = IP->length();
-  if (num_IP) dv->uncertainVarsInitPt = true;;
+  if (num_IP) dv->uncertainVarsInitPt = true;
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     ub = INT_MIN; lb = INT_MAX;
