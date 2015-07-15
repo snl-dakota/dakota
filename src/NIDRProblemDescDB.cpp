@@ -3104,7 +3104,7 @@ static void Vgen_BinomialUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Pecos::BinomialRandomVariable::
-	moments_from_params((*Pr)[j], (*NT)[j], mean, std_dev);
+	moments_from_params((*NT)[j], (*Pr)[j], mean, std_dev);
       (*V)[i] = (int)mean;
     }
   }
@@ -3135,7 +3135,7 @@ static void Vgen_NegBinomialUnc(DataVariablesRep *dv, size_t offset)
 
   for(i = offset, j = 0; j < n; ++i, ++j) {
     Pecos::NegBinomialRandomVariable::
-      moments_from_params((*Pr)[j], (*NT)[j], mean, std_dev);
+      moments_from_params((*NT)[j], (*Pr)[j], mean, std_dev);
     (*L)[i] = (*NT)[j];
     (*U)[i] = (int)std::ceil(mean + 3.*std_dev);
     if (num_IP) {
