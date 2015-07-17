@@ -378,15 +378,17 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    const UShortArray& exp_order_seq,
-		    const RealVector& dim_pref, Real colloc_ratio, int seed,
-		    short u_space_type, bool piecewise_basis, bool use_derivs,
-		    bool cv_flag):
+		    const RealVector& dim_pref,
+		    const SizetArray& colloc_pts_seq, Real colloc_ratio,
+		    int seed, short u_space_type, bool piecewise_basis,
+		    bool use_derivs, bool cv_flag):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), l2Penalty(0.),
   numAdvance(3), expOrderSeqSpec(exp_order_seq), dimPrefSpec(dim_pref),
-  sequenceIndex(0), normalizedCoeffOutput(false)
+  collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
+  normalizedCoeffOutput(false)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -406,42 +408,55 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     //= (numContDesVars || numContEpistUncVars || numContStateVars);
   transform_model(iteratedModel, g_u_model, global_bnds);
 
-  // resolve expansionBasisType, exp_terms, numSamplesOnModel
-  expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
-    Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
-  UShortArray exp_order;
-  NonDIntegration::dimension_preference_to_anisotropic_order(
-    expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars, exp_order);
-
-  size_t exp_terms;
-  switch (expansionBasisType) {
-  case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
-  case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
-    exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-    break;
-  case Pecos::TENSOR_PRODUCT_BASIS:
-    exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
-    break;
-  }
-  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-
-  // -------------------------
-  // Construct u_space_sampler
-  // -------------------------
   Iterator u_space_sampler;
-  if (tensorRegression) { // tensor sub-sampling
-    UShortArray dim_quad_order(numContinuousVars);
-    // define nominal quadrature order as exp_order + 1
-    // (m > p avoids most of the 0's in the Psi measurement matrix)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      dim_quad_order[i] = exp_order[i] + 1;
-    construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
-			 dimPrefSpec);
-  }
-  else {
+  UShortArray exp_order;
+  if (exp_coeffs_approach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
+      expOrderSeqSpec.empty()) {
+    // extract number of collocation points
+    numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+    // Construct u_space_sampler
     String rng("mt19937");
-    construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS, numSamplesOnModel,
-		  randomSeed, rng, false, ACTIVE);
+    construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		  numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+  }
+  else { // expansion_order-based
+
+    // resolve expansionBasisType, exp_terms, numSamplesOnModel
+    expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
+      Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
+    unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
+      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+    NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+      dimPrefSpec, numContinuousVars, exp_order);
+
+    size_t exp_terms;
+    switch (expansionBasisType) {
+    case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
+    case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
+      exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+      break;
+    case Pecos::TENSOR_PRODUCT_BASIS:
+      exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+      break;
+    }
+    numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+
+    // Construct u_space_sampler
+    if (tensorRegression) { // tensor sub-sampling
+      UShortArray dim_quad_order(numContinuousVars);
+      // define nominal quadrature order as exp_order + 1
+      // (m > p avoids most of the 0's in the Psi measurement matrix)
+      for (size_t i=0; i<numContinuousVars; ++i)
+	dim_quad_order[i] = exp_order[i] + 1;
+      construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+			   dimPrefSpec);
+    }
+    else {
+      String rng("mt19937");
+      construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+    }
   }
 
   // --------------------------------

@@ -104,16 +104,18 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       se_rep = new NonDStochCollocation(iteratedModel,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	false, derivs);
-    else if (level_seq.empty()) // PCE with regression: LeastSq, CS, OLI
-      se_rep = new NonDPolynomialChaos(iteratedModel, Pecos::DEFAULT_REGRESSION,
-	probDescDB.get_usa("method.nond.expansion_order"), // exp_order sequence
-	dim_pref, probDescDB.get_real("method.nond.collocation_ratio"),
-	randomSeed, EXTENDED_U, false, derivs,	
-	probDescDB.get_bool("method.nond.cross_validation")); // not exposed
-    else // PCE with spectral projection via sparse grid
+    else if (!level_seq.empty()) // PCE with spectral projection via sparse grid
       se_rep = new NonDPolynomialChaos(iteratedModel,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	false, false);
+    else // PCE with regression: LeastSq, CS, (OLI?)
+      se_rep = new NonDPolynomialChaos(iteratedModel, Pecos::DEFAULT_REGRESSION,
+	probDescDB.get_usa("method.nond.expansion_order"), // exp_order sequence
+	dim_pref,
+	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
+	randomSeed, EXTENDED_U, false, derivs,	
+	probDescDB.get_bool("method.nond.cross_validation")); // not exposed
     stochExpIterator.assign_rep(se_rep);
     // no level mappings
     RealVectorArray empty_rv_array; // empty

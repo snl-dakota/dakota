@@ -621,6 +621,28 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 void NonDQUESOBayesCalibration::
 filter_chain(size_t update_cntr, unsigned short batch_size)
 {
+  /*
+  // candidate MCMC points aggregated across all restart cycles
+  // - one option is to pre-filter the full batch and use pivoted cholesky on
+  //   a smaller set of highest post prob's
+  // - to start, throw the whole aggregated set at it, 
+
+  // define a total-order basis of sufficient size P >= current pts + batch_size
+  // (not current + chain size) and build A using basis at each of the total pts
+
+  truncated_pivoted_lu_factorization( A, // Vandermonde w/ current pts as 1st rows (A size = num current + num chain by P)
+				      L_factor, // computed
+				      U_factor, // computed
+				      pivots,   // computed
+				      max_iters, // = current pts + batch_size
+				      num_initial_rows); // = current pts
+
+  // On return, pivots is size max_iters and contains indices of rows of A
+  // want entries i=current pts to i<current pts + batch_size to identify points
+  // to select to refine emulator.
+  */
+  //////////////////////////////////////////////////////////////////////////////
+
   // filter chain -or- extract full chain and sort on likelihood values
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Filtering chain: extracting best " << batch_size
