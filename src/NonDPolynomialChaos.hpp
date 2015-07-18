@@ -174,7 +174,8 @@ append(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   // adapt the expansion in sync with the dataset
   numSamplesOnModel += resp_map.size();
-  increment_order_from_grid();
+  if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION)
+    increment_order_from_grid();
 
   // utilize rebuild following expansion updates
   uSpaceModel.append_approximation(samples, resp_map, true);
