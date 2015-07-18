@@ -108,14 +108,19 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       se_rep = new NonDPolynomialChaos(iteratedModel,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	false, false);
-    else // PCE with regression: LeastSq, CS, (OLI?)
-      se_rep = new NonDPolynomialChaos(iteratedModel, Pecos::DEFAULT_REGRESSION,
-	probDescDB.get_usa("method.nond.expansion_order"), // exp_order sequence
-	dim_pref,
+    else { 
+      // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
+      const UShortArray& exp_order_seq
+	= probDescDB.get_usa("method.nond.expansion_order");
+      short exp_coeffs_approach = (exp_order_seq.empty()) ?
+	Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+      se_rep = new NonDPolynomialChaos(iteratedModel,
+	exp_coeffs_approach, exp_order_seq, dim_pref,
 	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
 	randomSeed, EXTENDED_U, false, derivs,	
 	probDescDB.get_bool("method.nond.cross_validation")); // not exposed
+    }
     stochExpIterator.assign_rep(se_rep);
     // no level mappings
     RealVectorArray empty_rv_array; // empty
