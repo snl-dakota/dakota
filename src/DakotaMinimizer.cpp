@@ -119,6 +119,7 @@ void Minimizer::update_from_model(const Model& model)
   // Check for active design variables and discrete variable support
   if (methodName == MOGA      || methodName == SOGA ||
       methodName == COLINY_EA || methodName == SURROGATE_BASED_GLOBAL ||
+      methodName == COLINY_BETA ||
       methodName == MESH_ADAPTIVE_SEARCH || 
       methodName == ASYNCH_PATTERN_SEARCH ||
       methodName == BRANCH_AND_BOUND) {
