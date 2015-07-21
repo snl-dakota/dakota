@@ -6,6 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+// To avoid min/max issues in Teuchos; consider putting in dakota_global_defs?
+#include "dakota_windows.h"
 #define BOOST_TEST_MODULE dakota_bootstrap_utils
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
