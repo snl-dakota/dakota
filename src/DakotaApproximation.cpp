@@ -111,7 +111,7 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data)
        << std::endl;
 #endif
 
-  bool pw_decomp = problem_db.get_bool("model.surrogate.piecewise_decomp");
+  bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
     return new VPSApproximation(problem_db, shared_data);
   } else {

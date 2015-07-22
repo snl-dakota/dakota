@@ -1911,7 +1911,7 @@ KEYWORD model
 	      | cubic
 	      [ export_model_file STRING ]
 	      )
-	    [ piecewise_decomposition
+	    [ domain_decomposition
 	      [ cell_type STRING ]
 	      [ support_layers INTEGER ]
 	      [ discontinuity_detection

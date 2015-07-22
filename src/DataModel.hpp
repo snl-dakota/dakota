@@ -186,18 +186,18 @@ public:
   /// range for artificial neural network approximation
   Real annRange;
 
-  /// whether piecewise decomposition is enabled
-  bool piecewiseDecomp;
-  /// type of local cell of piecewise decomp
+  /// whether domain decomposition is enabled
+  bool domainDecomp;
+  /// type of local cell of domain decomp
   String decompCellType;
   /// number of support layers for each local basis function
   int decompSupportLayers;
   /// whether discontinuity detection is enabled
   bool decompDiscontDetect;
   /// function value (jump) threshold for discontinuity detection in
-  /// piecewise decomp
+  /// domain decomp
   Real discontJumpThresh;
-  /// gradient threshold for discontinuity detection in piecewise decomp
+  /// gradient threshold for discontinuity detection in domain decomp
   Real discontGradThresh;
 
   /// scalar integer indicating the order of the Gaussian process mean

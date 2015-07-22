@@ -7057,7 +7057,7 @@ static bool
 	MP_(decompDiscontDetect),
 	MP_(hierarchicalTags),
 	MP_(modelUseDerivsFlag),
-        MP_(piecewiseDecomp),
+        MP_(domainDecomp),
         MP_(pointSelection),
         MP_(pressFlag);
 

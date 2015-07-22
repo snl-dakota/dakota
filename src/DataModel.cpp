@@ -27,7 +27,7 @@ DataModelRep::DataModelRep():
   krigingNugget(0.0), krigingFindNugget(0), mlsPolyOrder(0), mlsWeightFunction(0),
   rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
   annRandomWeight(0), annNodes(0), annRange(0.0), 
-  piecewiseDecomp(false), decompCellType("voronoi"), decompSupportLayers(0),
+  domainDecomp(false), decompCellType("voronoi"), decompSupportLayers(0),
   decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
   trendOrder("reduced_quadratic"),
   pointSelection(false), crossValidateFlag(false), numFolds(0), percentFold(0.0),
@@ -52,7 +52,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases 
     << marsInterpolation << annRandomWeight << annNodes << annRange 
-    << piecewiseDecomp << decompCellType << decompSupportLayers
+    << domainDecomp << decompCellType << decompSupportLayers
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder 
     << pointSelection << diagMetrics << crossValidateFlag << numFolds  
@@ -78,7 +78,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> krigingNugget >> krigingFindNugget >> mlsPolyOrder >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases
     >> marsInterpolation >> annRandomWeight >> annNodes >> annRange 
-    >> piecewiseDecomp >> decompCellType >> decompSupportLayers
+    >> domainDecomp >> decompCellType >> decompSupportLayers
     >> decompDiscontDetect >> discontJumpThresh >> discontGradThresh
     >> trendOrder
     >> pointSelection >> diagMetrics >> crossValidateFlag >> numFolds
@@ -104,7 +104,7 @@ void DataModelRep::write(std::ostream& s) const
     << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
     << marsInterpolation << annRandomWeight << annNodes << annRange 
-    << piecewiseDecomp << decompCellType << decompSupportLayers
+    << domainDecomp << decompCellType << decompSupportLayers
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder
     << pointSelection << diagMetrics << crossValidateFlag << numFolds

@@ -2376,7 +2376,7 @@
 
               </oneOf>
 
-              <keyword  id="piecewise_decomposition" name="piecewise_decomposition" code="{N_mom(true,piecewiseDecomp)}" label="Piecewise local decomposition" help="" minOccurs="0" >
+              <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain decomposition" help="" minOccurs="0" >
 		<keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local cell type" help="" minOccurs="0">
 		  <param type="STRING" />
 		</keyword>

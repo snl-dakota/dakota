@@ -2999,8 +2999,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
+    {"surrogate.domain_decomp", P domainDecomp},
 	{"surrogate.import_points_file_active", P approxImportActive},
-	{"surrogate.piecewise_decomp", P piecewiseDecomp},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P

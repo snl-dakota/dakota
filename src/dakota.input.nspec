@@ -1809,7 +1809,7 @@ KEYWORD model {N_mom3(start,0,stop)}
         cubic {N_mom(order,polynomialOrder_3)}
         [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
        )
-      [ piecewise_decomposition {N_mom(true,piecewiseDecomp)}
+      [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]
         [ support_layers INTEGER {N_mom(int,decompSupportLayers)} ]
         [ discontinuity_detection {N_mom(true,decompDiscontDetect)}

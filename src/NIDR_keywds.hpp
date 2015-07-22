@@ -1836,84 +1836,84 @@ static KeyWord
 		{"cross_validation",8,2,1,0,kw_303,0.,0.,0,N_mom(true,crossValidateFlag)},
 		{"press",8,0,2,0,0,0.,0.,0,N_mom(true,pressFlag)}
 		},
-	kw_305[3] = {
+	kw_305[2] = {
+		{"gradient_threshold",10,0,1,1,0,0.,0.,0,N_mom(Real,discontGradThresh)},
+		{"jump_threshold",10,0,1,1,0,0.,0.,0,N_mom(Real,discontJumpThresh)}
+		},
+	kw_306[3] = {
+		{"cell_type",11,0,1,0,0,0.,0.,0,N_mom(str,decompCellType)},
+		{"discontinuity_detection",8,2,3,0,kw_305,0.,0.,0,N_mom(true,decompDiscontDetect)},
+		{"support_layers",9,0,2,0,0,0.,0.,0,N_mom(int,decompSupportLayers)}
+		},
+	kw_307[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mom(augment_utype,approxExportFormat_TABULAR_EVAL_ID)},
 		{"header",8,0,1,0,0,0.,0.,0,N_mom(augment_utype,approxExportFormat_TABULAR_HEADER)},
 		{"interface_id",8,0,3,0,0,0.,0.,0,N_mom(augment_utype,approxExportFormat_TABULAR_IFACE_ID)}
 		},
-	kw_306[3] = {
+	kw_308[3] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(utype,approxExportFormat_TABULAR_ANNOTATED)},
-		{"custom_annotated",8,3,1,0,kw_305,0.,0.,0,N_mom(utype,approxExportFormat_TABULAR_NONE)},
+		{"custom_annotated",8,3,1,0,kw_307,0.,0.,0,N_mom(utype,approxExportFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mom(utype,approxExportFormat_TABULAR_NONE)}
 		},
-	kw_307[3] = {
+	kw_309[3] = {
 		{"constant",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_constant)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_linear)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_308[2] = {
+	kw_310[2] = {
 		{"point_selection",8,0,1,0,0,0.,0.,0,N_mom(true,pointSelection)},
-		{"trend",8,3,2,0,kw_307}
+		{"trend",8,3,2,0,kw_309}
 		},
-	kw_309[4] = {
+	kw_311[4] = {
 		{"constant",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_constant)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_linear)},
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_quadratic)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_310[7] = {
+	kw_312[7] = {
 		{"correlation_lengths",14,0,5,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
 		{"export_model_file",11,0,6,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"find_nugget",9,0,4,0,0,0.,0.,0,N_mom(shint,krigingFindNugget)},
 		{"max_trials",0x19,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
 		{"nugget",0x1a,0,4,0,0,0.,0.,0,N_mom(Real,krigingNugget)},
 		{"optimization_method",11,0,2,0,0,0.,0.,0,N_mom(str,krigingOptMethod)},
-		{"trend",8,4,1,0,kw_309}
+		{"trend",8,4,1,0,kw_311}
 		},
-	kw_311[2] = {
-		{"dakota",8,2,1,1,kw_308,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
-		{"surfpack",8,7,1,1,kw_310,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
+	kw_313[2] = {
+		{"dakota",8,2,1,1,kw_310,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
+		{"surfpack",8,7,1,1,kw_312,0.,0.,0,N_mom(lit,surrogateType_global_kriging)}
 		},
-	kw_312[3] = {
+	kw_314[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mom(augment_utype,approxImportFormat_TABULAR_EVAL_ID)},
 		{"header",8,0,1,0,0,0.,0.,0,N_mom(augment_utype,approxImportFormat_TABULAR_HEADER)},
 		{"interface_id",8,0,3,0,0,0.,0.,0,N_mom(augment_utype,approxImportFormat_TABULAR_IFACE_ID)}
 		},
-	kw_313[4] = {
+	kw_315[4] = {
 		{"active_only",8,0,2,0,0,0.,0.,0,N_mdm(true,approxImportActive)},
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mom(utype,approxImportFormat_TABULAR_ANNOTATED)},
-		{"custom_annotated",8,3,1,0,kw_312,0.,0.,0,N_mom(utype,approxImportFormat_TABULAR_NONE)},
+		{"custom_annotated",8,3,1,0,kw_314,0.,0.,0,N_mom(utype,approxImportFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mom(utype,approxImportFormat_TABULAR_NONE)}
 		},
-	kw_314[2] = {
+	kw_316[2] = {
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(lit,marsInterpolation_cubic)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,marsInterpolation_linear)}
 		},
-	kw_315[3] = {
+	kw_317[3] = {
 		{"export_model_file",11,0,3,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
-		{"interpolation",8,2,2,0,kw_314},
+		{"interpolation",8,2,2,0,kw_316},
 		{"max_bases",9,0,1,0,0,0.,0.,0,N_mom(shint,marsMaxBases)}
 		},
-	kw_316[3] = {
+	kw_318[3] = {
 		{"export_model_file",11,0,3,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"poly_order",9,0,1,0,0,0.,0.,0,N_mom(shint,mlsPolyOrder)},
 		{"weight_function",9,0,2,0,0,0.,0.,0,N_mom(shint,mlsWeightFunction)}
 		},
-	kw_317[5] = {
+	kw_319[5] = {
 		{"export_model_file",11,0,4,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"max_nodes",9,0,1,0,0,0.,0.,0,N_mom(shint,annNodes)},
 		{"nodes",1,0,1,0,0,0.,0.,-1,N_mom(shint,annNodes)},
 		{"random_weight",9,0,3,0,0,0.,0.,0,N_mom(shint,annRandomWeight)},
 		{"range",10,0,2,0,0,0.,0.,0,N_mom(Real,annRange)}
-		},
-	kw_318[2] = {
-		{"gradient_threshold",10,0,1,1,0,0.,0.,0,N_mom(Real,discontGradThresh)},
-		{"jump_threshold",10,0,1,1,0,0.,0.,0,N_mom(Real,discontJumpThresh)}
-		},
-	kw_319[3] = {
-		{"cell_type",11,0,1,0,0,0.,0.,0,N_mom(str,decompCellType)},
-		{"discontinuity_detection",8,2,3,0,kw_318,0.,0.,0,N_mom(true,decompDiscontDetect)},
-		{"support_layers",9,0,2,0,0,0.,0.,0,N_mom(int,decompSupportLayers)}
 		},
 	kw_320[4] = {
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_3)},
@@ -1938,23 +1938,23 @@ static KeyWord
 		{"challenge_points_file",11,4,11,0,kw_301,0.,0.,0,N_mom(str,approxChallengeFile)},
 		{"correction",8,6,9,0,kw_302},
 		{"dace_method_pointer",11,0,4,0,0,0.,0.,0,N_mom(str,subMethodPointer)},
-		{"diagnostics",7,2,10,0,kw_304,0.,0.,6,N_mom(strL,diagMetrics)},
-		{"export_points_file",11,3,7,0,kw_306,0.,0.,0,N_mom(str,approxExportFile)},
-		{"gaussian_process",8,2,1,1,kw_311},
-		{"import_points_file",11,4,6,0,kw_313,0.,0.,0,N_mom(str,approxImportFile)},
-		{"kriging",0,2,1,1,kw_311,0.,0.,-2},
-		{"mars",8,3,1,1,kw_315,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
+		{"diagnostics",7,2,10,0,kw_304,0.,0.,7,N_mom(strL,diagMetrics)},
+		{"domain_decomposition",8,3,2,0,kw_306,0.,0.,0,N_mom(true,domainDecomp)},
+		{"export_points_file",11,3,7,0,kw_308,0.,0.,0,N_mom(str,approxExportFile)},
+		{"gaussian_process",8,2,1,1,kw_313},
+		{"import_points_file",11,4,6,0,kw_315,0.,0.,0,N_mom(str,approxImportFile)},
+		{"kriging",0,2,1,1,kw_313,0.,0.,-2},
+		{"mars",8,3,1,1,kw_317,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
 		{"metrics",15,2,10,0,kw_304,0.,0.,0,N_mom(strL,diagMetrics)},
 		{"minimum_points",8,0,3,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
-		{"moving_least_squares",8,3,1,1,kw_316,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
-		{"neural_network",8,5,1,1,kw_317,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
-		{"piecewise_decomposition",8,3,2,0,kw_319,0.,0.,0,N_mom(true,piecewiseDecomp)},
+		{"moving_least_squares",8,3,1,1,kw_318,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
+		{"neural_network",8,5,1,1,kw_319,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
 		{"polynomial",8,4,1,1,kw_320,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
 		{"radial_basis",8,5,1,1,kw_321,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
 		{"recommended_points",8,0,3,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},
 		{"reuse_points",8,3,5,0,kw_322},
 		{"reuse_samples",0,3,5,0,kw_322,0.,0.,-1},
-		{"samples_file",3,4,6,0,kw_313,0.,0.,-13,N_mom(str,approxImportFile)},
+		{"samples_file",3,4,6,0,kw_315,0.,0.,-12,N_mom(str,approxImportFile)},
 		{"total_points",9,0,3,0,0,0.,0.,0,N_mom(int,pointsTotal)},
 		{"use_derivatives",8,0,8,0,0,0.,0.,0,N_mom(true,modelUseDerivsFlag)}
 		},

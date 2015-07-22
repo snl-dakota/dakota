@@ -1960,84 +1960,84 @@ static GuiKeyWord
 		{"cross_validation",8,2,1,0,2105,kw_287,0.,0.,0.,0,"{Perform cross validation} ModelCommands.html#ModelSurrG"},
 		{"press",8,0,2,0,2111,0,0.,0.,0.,0,"{Perform PRESS cross validation} ModelCommands.html#ModelSurrG"}
 		},
-	kw_289[3] = {
+	kw_289[2] = {
+		{"gradient_threshold",10,0,1,1,2037},
+		{"jump_threshold",10,0,1,1,2035}
+		},
+	kw_290[3] = {
+		{"cell_type",11,0,1,0,2029},
+		{"discontinuity_detection",8,2,3,0,2033,kw_289},
+		{"support_layers",9,0,2,0,2031}
+		},
+	kw_291[3] = {
 		{"eval_id",8,0,2,0,2081},
 		{"header",8,0,1,0,2079},
 		{"interface_id",8,0,3,0,2083}
 		},
-	kw_290[3] = {
+	kw_292[3] = {
 		{"annotated",8,0,1,0,2075},
-		{"custom_annotated",8,3,1,0,2077,kw_289},
+		{"custom_annotated",8,3,1,0,2077,kw_291},
 		{"freeform",8,0,1,0,2085}
 		},
-	kw_291[3] = {
+	kw_293[3] = {
 		{"constant",8,0,1,1,1945},
 		{"linear",8,0,1,1,1947},
 		{"reduced_quadratic",8,0,1,1,1949}
 		},
-	kw_292[2] = {
+	kw_294[2] = {
 		{"point_selection",8,0,1,0,1941,0,0.,0.,0.,0,"{GP point selection} ModelCommands.html#ModelSurrG"},
-		{"trend",8,3,2,0,1943,kw_291,0.,0.,0.,0,"{GP trend function} ModelCommands.html#ModelSurrG"}
+		{"trend",8,3,2,0,1943,kw_293,0.,0.,0.,0,"{GP trend function} ModelCommands.html#ModelSurrG"}
 		},
-	kw_293[4] = {
+	kw_295[4] = {
 		{"constant",8,0,1,1,1955},
 		{"linear",8,0,1,1,1957},
 		{"quadratic",8,0,1,1,1961},
 		{"reduced_quadratic",8,0,1,1,1959}
 		},
-	kw_294[7] = {
+	kw_296[7] = {
 		{"correlation_lengths",14,0,5,0,1971,0,0.,0.,0.,0,"{Surfpack GP correlation lengths} ModelCommands.html#ModelSurrG"},
 		{"export_model_file",11,0,6,0,1973},
 		{"find_nugget",9,0,4,0,1969,0,0.,0.,0.,0,"{Surfpack finds the optimal nugget } ModelCommands.html#ModelSurrG"},
 		{"max_trials",0x19,0,3,0,1965,0,0.,0.,0.,0,"{Surfpack GP maximum trials} ModelCommands.html#ModelSurrG"},
 		{"nugget",0x1a,0,4,0,1967,0,0.,0.,0.,0,"{Surfpack user-specified nugget } ModelCommands.html#ModelSurrG"},
 		{"optimization_method",11,0,2,0,1963,0,0.,0.,0.,0,"{Surfpack GP optimization method} ModelCommands.html#ModelSurrG"},
-		{"trend",8,4,1,0,1953,kw_293,0.,0.,0.,0,"{Surfpack GP trend function} ModelCommands.html#ModelSurrG"}
+		{"trend",8,4,1,0,1953,kw_295,0.,0.,0.,0,"{Surfpack GP trend function} ModelCommands.html#ModelSurrG"}
 		},
-	kw_295[2] = {
-		{"dakota",8,2,1,1,1939,kw_292},
-		{"surfpack",8,7,1,1,1951,kw_294}
+	kw_297[2] = {
+		{"dakota",8,2,1,1,1939,kw_294},
+		{"surfpack",8,7,1,1,1951,kw_296}
 		},
-	kw_296[3] = {
+	kw_298[3] = {
 		{"eval_id",8,0,2,0,2065},
 		{"header",8,0,1,0,2063},
 		{"interface_id",8,0,3,0,2067}
 		},
-	kw_297[4] = {
+	kw_299[4] = {
 		{"active_only",8,0,2,0,2071},
 		{"annotated",8,0,1,0,2059,0,0.,0.,0.,0,"{Challenge file in annotated format} ModelCommands.html#ModelSurrG"},
-		{"custom_annotated",8,3,1,0,2061,kw_296},
+		{"custom_annotated",8,3,1,0,2061,kw_298},
 		{"freeform",8,0,1,0,2069,0,0.,0.,0.,0,"{Challenge file in freeform format} ModelCommands.html#ModelSurrG"}
 		},
-	kw_298[2] = {
+	kw_300[2] = {
 		{"cubic",8,0,1,1,1983},
 		{"linear",8,0,1,1,1981}
 		},
-	kw_299[3] = {
+	kw_301[3] = {
 		{"export_model_file",11,0,3,0,1985},
-		{"interpolation",8,2,2,0,1979,kw_298,0.,0.,0.,0,"{MARS interpolation} ModelCommands.html#ModelSurrG"},
+		{"interpolation",8,2,2,0,1979,kw_300,0.,0.,0.,0,"{MARS interpolation} ModelCommands.html#ModelSurrG"},
 		{"max_bases",9,0,1,0,1977,0,0.,0.,0.,0,"{MARS maximum bases} ModelCommands.html#ModelSurrG"}
 		},
-	kw_300[3] = {
+	kw_302[3] = {
 		{"export_model_file",11,0,3,0,1993},
 		{"poly_order",9,0,1,0,1989,0,0.,0.,0.,0,"{MLS polynomial order} ModelCommands.html#ModelSurrG"},
 		{"weight_function",9,0,2,0,1991,0,0.,0.,0.,0,"{MLS weight function} ModelCommands.html#ModelSurrG"}
 		},
-	kw_301[5] = {
+	kw_303[5] = {
 		{"export_model_file",11,0,4,0,2003},
 		{"max_nodes",9,0,1,0,1997},
 		{"nodes",1,0,1,0,1996},
 		{"random_weight",9,0,3,0,2001,0,0.,0.,0.,0,"{ANN random weight} ModelCommands.html#ModelSurrG"},
 		{"range",10,0,2,0,1999,0,0.,0.,0.,0,"{ANN range} ModelCommands.html#ModelSurrG"}
-		},
-	kw_302[2] = {
-		{"gradient_threshold",10,0,1,1,2037},
-		{"jump_threshold",10,0,1,1,2035}
-		},
-	kw_303[3] = {
-		{"cell_type",11,0,1,0,2029},
-		{"discontinuity_detection",8,2,3,0,2033,kw_302},
-		{"support_layers",9,0,2,0,2031}
 		},
 	kw_304[4] = {
 		{"cubic",8,0,1,1,2023,0,0.,0.,0.,0,"[CHOOSE polynomial order]"},
@@ -2063,22 +2063,22 @@ static GuiKeyWord
 		{"correction",8,6,9,0,2089,kw_286,0.,0.,0.,0,"{Surrogate correction approach} ModelCommands.html#ModelSurrG"},
 		{"dace_method_pointer",11,0,4,0,2045,0,0.,0.,0.,0,"{Design of experiments method pointer} ModelCommands.html#ModelSurrG"},
 		{"diagnostics",7,2,10,0,2102,kw_288},
-		{"export_points_file",11,3,7,0,2073,kw_290,0.,0.,0.,0,"{File export of global approximation-based sample results} ModelCommands.html#ModelSurrG"},
-		{"gaussian_process",8,2,1,1,1937,kw_295,0.,0.,0.,0,"[CHOOSE surrogate type]{Dakota Gaussian process} ModelCommands.html#ModelSurrG"},
-		{"import_points_file",11,4,6,0,2057,kw_297,0.,0.,0.,0,"{File import of samples for global approximation builds} ModelCommands.html#ModelSurrG"},
-		{"kriging",0,2,1,1,1936,kw_295},
-		{"mars",8,3,1,1,1975,kw_299,0.,0.,0.,0,"{Multivariate adaptive regression splines} ModelCommands.html#ModelSurrG"},
+		{"domain_decomposition",8,3,2,0,2027,kw_290},
+		{"export_points_file",11,3,7,0,2073,kw_292,0.,0.,0.,0,"{File export of global approximation-based sample results} ModelCommands.html#ModelSurrG"},
+		{"gaussian_process",8,2,1,1,1937,kw_297,0.,0.,0.,0,"[CHOOSE surrogate type]{Dakota Gaussian process} ModelCommands.html#ModelSurrG"},
+		{"import_points_file",11,4,6,0,2057,kw_299,0.,0.,0.,0,"{File import of samples for global approximation builds} ModelCommands.html#ModelSurrG"},
+		{"kriging",0,2,1,1,1936,kw_297},
+		{"mars",8,3,1,1,1975,kw_301,0.,0.,0.,0,"{Multivariate adaptive regression splines} ModelCommands.html#ModelSurrG"},
 		{"metrics",15,2,10,0,2103,kw_288,0.,0.,0.,0,"{Compute surrogate diagnostics} ModelCommands.html#ModelSurrG"},
 		{"minimum_points",8,0,3,0,2041},
-		{"moving_least_squares",8,3,1,1,1987,kw_300,0.,0.,0.,0,"{Moving least squares} ModelCommands.html#ModelSurrG"},
-		{"neural_network",8,5,1,1,1995,kw_301,0.,0.,0.,0,"{Artificial neural network} ModelCommands.html#ModelSurrG"},
-		{"piecewise_decomposition",8,3,2,0,2027,kw_303},
+		{"moving_least_squares",8,3,1,1,1987,kw_302,0.,0.,0.,0,"{Moving least squares} ModelCommands.html#ModelSurrG"},
+		{"neural_network",8,5,1,1,1995,kw_303,0.,0.,0.,0,"{Artificial neural network} ModelCommands.html#ModelSurrG"},
 		{"polynomial",8,4,1,1,2017,kw_304,0.,0.,0.,0,"{Polynomial} ModelCommands.html#ModelSurrG"},
 		{"radial_basis",8,5,1,1,2005,kw_305},
 		{"recommended_points",8,0,3,0,2043},
 		{"reuse_points",8,3,5,0,2049,kw_306},
 		{"reuse_samples",0,3,5,0,2048,kw_306},
-		{"samples_file",3,4,6,0,2056,kw_297},
+		{"samples_file",3,4,6,0,2056,kw_299},
 		{"total_points",9,0,3,0,2039},
 		{"use_derivatives",8,0,8,0,2087,0,0.,0.,0.,0,"{Surfpack GP gradient enhancement} ModelCommands.html#ModelSurrG"}
 		},
