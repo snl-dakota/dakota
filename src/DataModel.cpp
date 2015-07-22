@@ -24,7 +24,7 @@ DataModelRep::DataModelRep():
   approxImportFormat(TABULAR_ANNOTATED), approxImportActive(false), approxExportFormat(TABULAR_ANNOTATED),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
-  krigingNugget(0.0), krigingFindNugget(0), mlsPolyOrder(0), mlsWeightFunction(0),
+  krigingNugget(0.0), krigingFindNugget(0), mlsWeightFunction(0),
   rbfBases(0), rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
   annRandomWeight(0), annNodes(0), annRange(0.0), 
   domainDecomp(false), decompCellType("voronoi"), decompSupportLayers(0),
@@ -49,7 +49,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
-    << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
+    << krigingNugget << krigingFindNugget << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases 
     << marsInterpolation << annRandomWeight << annNodes << annRange 
     << domainDecomp << decompCellType << decompSupportLayers
@@ -75,7 +75,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
-    >> krigingNugget >> krigingFindNugget >> mlsPolyOrder >> mlsWeightFunction
+    >> krigingNugget >> krigingFindNugget >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases
     >> marsInterpolation >> annRandomWeight >> annNodes >> annRange 
     >> domainDecomp >> decompCellType >> decompSupportLayers
@@ -101,7 +101,7 @@ void DataModelRep::write(std::ostream& s) const
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
-    << krigingNugget << krigingFindNugget << mlsPolyOrder << mlsWeightFunction 
+    << krigingNugget << krigingFindNugget << mlsWeightFunction 
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
     << marsInterpolation << annRandomWeight << annNodes << annRange 
     << domainDecomp << decompCellType << decompSupportLayers

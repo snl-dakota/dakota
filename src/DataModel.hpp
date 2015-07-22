@@ -163,8 +163,6 @@ public:
   Real krigingNugget;
   /// option to have Kriging find the best nugget value to use
   short krigingFindNugget;
-  /// polynomial order for moving least squares approximation
-  short mlsPolyOrder;
   /// weight function for moving least squares approximation
   short mlsWeightFunction;
   /// bases for radial basis function approximation

@@ -2644,7 +2644,6 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"surrogate.find_nugget", P krigingFindNugget},
 	{"surrogate.kriging_max_trials", P krigingMaxTrials},
 	{"surrogate.mars_max_bases", P marsMaxBases},
-	{"surrogate.mls_poly_order", P mlsPolyOrder},
 	{"surrogate.mls_weight_function", P mlsWeightFunction},
 	{"surrogate.neural_network_nodes", P annNodes},
 	{"surrogate.neural_network_random_weight", P annRandomWeight},

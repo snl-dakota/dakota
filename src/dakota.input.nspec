@@ -1781,7 +1781,7 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( moving_least_squares {N_mom(lit,surrogateType_global_moving_least_squares)}
-        [ poly_order INTEGER {N_mom(shint,mlsPolyOrder)} ]
+        [ basis_order ALIAS poly_order INTEGER >= 0 {N_mom(shint,polynomialOrder)} ]
         [ weight_function INTEGER {N_mom(shint,mlsWeightFunction)} ]
         [ export_model_file STRING {N_mom(str, approxExportModelFile)} ]
        )
@@ -1802,6 +1802,8 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( polynomial {N_mom(lit,surrogateType_global_polynomial)}
+        basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)}
+        |
         linear {N_mom(order,polynomialOrder_1)}
         |
         quadratic {N_mom(order,polynomialOrder_2)}

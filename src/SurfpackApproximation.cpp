@@ -212,7 +212,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     if (weight > 0) {
       args["weight"] = toString<short>(weight);
     }
-    short order = problem_db.get_short("model.surrogate.mls_poly_order");
+    short order = problem_db.get_short("model.surrogate.polynomial_order");
     if (order > 0) {
       args["order"] = toString<short>(order);
     }

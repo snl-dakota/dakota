@@ -1678,9 +1678,7 @@ TAG "model/surrogate/global/mars/export_model_file"
 TAG "model/surrogate/global/moving_least_squares"
 	DESC "{Moving least squares} ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/moving_least_squares/poly_order"
-	DESC "{MLS polynomial order} ModelCommands.html#ModelSurrG"
-
+TAG "model/surrogate/global/moving_least_squares/basis_order"
 TAG "model/surrogate/global/moving_least_squares/weight_function"
 	DESC "{MLS weight function} ModelCommands.html#ModelSurrG"
 
@@ -1711,6 +1709,7 @@ TAG "model/surrogate/global/radial_basis/export_model_file"
 TAG "model/surrogate/global/polynomial"
 	DESC "{Polynomial} ModelCommands.html#ModelSurrG"
 
+TAG "model/surrogate/global/polynomial/basis_order"
 TAG "model/surrogate/global/polynomial/linear"
 TAG "model/surrogate/global/polynomial/quadratic"
 TAG "model/surrogate/global/polynomial/cubic"

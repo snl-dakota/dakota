@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1481 distinct keywords (plus 205 aliases) **/
+/** 1482 distinct keywords (plus 206 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1903,9 +1903,10 @@ static KeyWord
 		{"interpolation",8,2,2,0,kw_316},
 		{"max_bases",9,0,1,0,0,0.,0.,0,N_mom(shint,marsMaxBases)}
 		},
-	kw_318[3] = {
+	kw_318[4] = {
+		{"basis_order",0x29,0,1,0,0,0.,0.,0,N_mom(shint,polynomialOrder)},
 		{"export_model_file",11,0,3,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
-		{"poly_order",9,0,1,0,0,0.,0.,0,N_mom(shint,mlsPolyOrder)},
+		{"poly_order",0x21,0,1,0,0,0.,0.,-2,N_mom(shint,polynomialOrder)},
 		{"weight_function",9,0,2,0,0,0.,0.,0,N_mom(shint,mlsWeightFunction)}
 		},
 	kw_319[5] = {
@@ -1915,7 +1916,8 @@ static KeyWord
 		{"random_weight",9,0,3,0,0,0.,0.,0,N_mom(shint,annRandomWeight)},
 		{"range",10,0,2,0,0,0.,0.,0,N_mom(Real,annRange)}
 		},
-	kw_320[4] = {
+	kw_320[5] = {
+		{"basis_order",0x29,0,1,1,0,0.,0.,0,N_mom(shint,polynomialOrder)},
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_3)},
 		{"export_model_file",11,0,2,0,0,0.,0.,0,N_mom(str, approxExportModelFile)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_1)},
@@ -1947,9 +1949,9 @@ static KeyWord
 		{"mars",8,3,1,1,kw_317,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
 		{"metrics",15,2,10,0,kw_304,0.,0.,0,N_mom(strL,diagMetrics)},
 		{"minimum_points",8,0,3,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
-		{"moving_least_squares",8,3,1,1,kw_318,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
+		{"moving_least_squares",8,4,1,1,kw_318,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
 		{"neural_network",8,5,1,1,kw_319,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
-		{"polynomial",8,4,1,1,kw_320,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
+		{"polynomial",8,5,1,1,kw_320,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
 		{"radial_basis",8,5,1,1,kw_321,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
 		{"recommended_points",8,0,3,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},
 		{"reuse_points",8,3,5,0,kw_322},

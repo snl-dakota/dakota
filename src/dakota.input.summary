@@ -1885,7 +1885,7 @@ KEYWORD model
 	      )
 	    |
 	    ( moving_least_squares
-	      [ poly_order INTEGER ]
+	      [ basis_order ALIAS poly_order INTEGER >= 0 ]
 	      [ weight_function INTEGER ]
 	      [ export_model_file STRING ]
 	      )
@@ -1906,7 +1906,8 @@ KEYWORD model
 	      )
 	    |
 	    ( polynomial
-	      linear
+	      basis_order INTEGER >= 0
+	      | linear
 	      | quadratic
 	      | cubic
 	      [ export_model_file STRING ]

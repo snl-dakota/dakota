@@ -2318,8 +2318,9 @@
                   </keyword>
                 </keyword>
                 <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving least squares" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <keyword  id="poly_order" name="poly_order" code="{N_mom(shint,mlsPolyOrder)}" label="MLS polynomial order" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
-                    <param type="INTEGER" />
+                  <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="MLS polynomial order" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+		    <alias name="poly_order"/>
+                    <param type="INTEGER" constraint=">= 0" />
                   </keyword>
                   <keyword  id="weight_function" name="weight_function" code="{N_mom(shint,mlsWeightFunction)}" label="MLS weight function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <param type="INTEGER" />
@@ -2365,6 +2366,9 @@
                 </keyword>
                 <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <oneOf label="polynomial order">
+                    <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="polynomial order" help="" >
+                      <param type="INTEGER" constraint=">= 0" />
+		    </keyword>
                     <keyword  id="linear3" name="linear" code="{N_mom(order,polynomialOrder_1)}" label="linear" help=""  />
                     <keyword  id="quadratic1" name="quadratic" code="{N_mom(order,polynomialOrder_2)}" label="quadratic" help=""  />
                     <keyword  id="cubic1" name="cubic" code="{N_mom(order,polynomialOrder_3)}" label="cubic" help=""  />

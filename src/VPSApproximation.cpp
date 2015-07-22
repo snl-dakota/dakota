@@ -52,9 +52,6 @@ namespace Dakota
             abort_handler(-1);
         }
 
-        std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
-        std::cout << "*** VPS:: Initializing, Surrogate type " << surrogate_type << std::endl;
-        
         // Default subsurrogate is LS_polynomial
         _vps_subsurrogate = LS;
         _vps_subsurrogate_basis = polynomial;
@@ -68,6 +65,9 @@ namespace Dakota
         {
             surrogateOrder = problem_db.get_short("model.surrogate.polynomial_order");
         }
+
+        std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
+        std::cout << "*** VPS:: Initializing, Surrogate type " << surrogate_type << std::endl;
         
         _use_derivatives = problem_db.get_bool("model.surrogate.derivative_usage");
         
