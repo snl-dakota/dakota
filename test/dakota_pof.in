@@ -28,7 +28,7 @@ model,
 #	  polynomial 			     #s2,#s3
 #	    linear	     		     #s2,#s3
 ##	surrogate_order = 4                  #s3
-#	    piecewise_decomp		     #s2,#s3		  
+#	    domain_decomp		     #s2,#s3		  
 #	      cell_type = 'vornonoi'	     #s2,#s3
 #	      discontinuity_detection		 
 #	        jump_threshold 20.0		 

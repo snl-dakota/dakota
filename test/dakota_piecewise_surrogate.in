@@ -22,7 +22,7 @@ method,
 	  polynomial quadratic
 #          gaussian_process surfpack              
 #          radial_basis              
-	    piecewise_decomp			  
+	    domain_decomp			  
 	      cell_type = 'vornonoi'
 	      discontinuity_detection		 
 	        jump_threshold 20.0		 
