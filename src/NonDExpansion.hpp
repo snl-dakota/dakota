@@ -62,6 +62,10 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// evaluate allSamples for inclusion in the (PCE regression) approximation
+  /// and retain the best set (well spaced) of size batch_size
+  virtual void select_refinement_points(unsigned short batch_size);
+
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append(const RealMatrix& samples,
 		      const IntResponseMap& resp_map);

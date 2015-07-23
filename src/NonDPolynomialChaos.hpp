@@ -73,7 +73,7 @@ protected:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
 
-  /// append new data to uSpaceModel and update expansion order
+  void select_refinement_points(unsigned short batch_size);
   void append(const RealMatrix& samples, const IntResponseMap& resp_map);
 
   /// uniformly increment the order of the polynomial chaos expansion and

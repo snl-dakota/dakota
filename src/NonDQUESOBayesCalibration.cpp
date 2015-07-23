@@ -376,7 +376,10 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
-    filter_chain(update_cntr, batch_size);
+    if (false)//(true)
+      filter_chain_by_conditioning(update_cntr, batch_size);
+    else
+      filter_chain_by_probability(update_cntr, batch_size);
 
     // account for redundancy between final and initial
     if (update_cntr == 1)
@@ -619,34 +622,12 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 
 
 void NonDQUESOBayesCalibration::
-filter_chain(size_t update_cntr, unsigned short batch_size)
+filter_chain_by_probability(size_t update_cntr, unsigned short batch_size)
 {
-  /*
-  // candidate MCMC points aggregated across all restart cycles
-  // - one option is to pre-filter the full batch and use pivoted cholesky on
-  //   a smaller set of highest post prob's
-  // - to start, throw the whole aggregated set at it, 
-
-  // define a total-order basis of sufficient size P >= current pts + batch_size
-  // (not current + chain size) and build A using basis at each of the total pts
-
-  truncated_pivoted_lu_factorization( A, // Vandermonde w/ current pts as 1st rows (A size = num current + num chain by P)
-				      L_factor, // computed
-				      U_factor, // computed
-				      pivots,   // computed
-				      max_iters, // = current pts + batch_size
-				      num_initial_rows); // = current pts
-
-  // On return, pivots is size max_iters and contains indices of rows of A
-  // want entries i=current pts to i<current pts + batch_size to identify points
-  // to select to refine emulator.
-  */
-  //////////////////////////////////////////////////////////////////////////////
-
   // filter chain -or- extract full chain and sort on likelihood values
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Filtering chain: extracting best " << batch_size
-	 << " from MCMC chain " << update_cntr << " containing "
+    Cout << "Filtering chain by posterior probability: extracting best "
+	 << batch_size << " from MCMC chain " << update_cntr << " containing "
 	 << inverseProb->chain().subSequenceSize() << " samples.\n";
 
   std::/*multi*/map<Real, size_t> local_best;
@@ -662,6 +643,54 @@ filter_chain(size_t update_cntr, unsigned short batch_size)
   }
   else // track MAP for final results
     local_to_aggregated(batch_size, local_best);
+}
+
+
+void NonDQUESOBayesCalibration::
+filter_chain_by_conditioning(size_t update_cntr, unsigned short batch_size)
+{
+  // filter chain -or- extract full chain and sort on likelihood values
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Filtering chain by matrix conditioning: extracting best "
+	 << batch_size << " from MCMC chain " << update_cntr << " containing "
+	 << inverseProb->chain().subSequenceSize() << " samples.\n";
+
+  if (adaptPosteriorRefine) { // extract best MCMC samples from current batch
+    accumulate_chain(update_cntr);
+    if (update_cntr == chainCycles) {
+      NonDExpansion* nond_exp = (NonDExpansion*)stochExpIterator.iterator_rep();
+      nond_exp->select_refinement_points(batch_size);
+    }
+  }
+
+  // also track MAP for final results summary
+  std::/*multi*/map<Real, size_t> local_best;
+  chain_to_local(1, local_best);      // only tracks sample index and prob val
+  local_to_aggregated(1, local_best); // stores sample pt
+}
+
+
+void NonDQUESOBayesCalibration::accumulate_chain(size_t update_cntr)
+{
+  // TO DO: migrate to set<GslVector> to only store UNIQUE samples
+  //        since QUESO returns full chain, not the acceptance chain
+
+  size_t s, s0, index = numSamples * (update_cntr - 1);
+  if (update_cntr == 1) {
+    allSamples.shapeUninitialized(numContinuousVars, numSamples*chainCycles);
+    s0 = 0;    // store all samples for initial chain
+  }
+  else s0 = 1; // skip first sample for restarted chains
+
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& mcmc_chain
+    = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+  for (s=s0; s<num_mcmc; ++s, ++index) {
+    // extract GSL sample vector from QUESO vector sequence:
+    mcmc_chain.getPositionValues(s, mcmc_sample);
+    copy_gsl(mcmc_sample, allSamples, index);
+  }
 }
 
 
@@ -1217,7 +1246,8 @@ void NonDQUESOBayesCalibration::set_mh_options()
 
   // chain management options:
   if (adaptPosteriorRefine || chainCycles > 1)
-    // In this case, we process the full chain for maximum posterior values
+    // In this case, we process the full chain for maximizing posterior
+    // probability or point spacing / linear system conditioning
     calIpMhOptionsValues->m_filteredChainGenerate         = false;
   else {
     // In this case, we filter the chain for final output

@@ -105,9 +105,20 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
+  /// accumulate unique samples (the acceptance chain)
+  void accumulate_chain(size_t update_cntr);
+
   /// extract batch_size points from the MCMC chain and store final
-  /// aggregated set within allSamples
-  void filter_chain(size_t update_cntr, unsigned short batch_size);
+  /// aggregated set within allSamples; unique points with highest
+  /// posterior probability are selected
+  void filter_chain_by_probability(size_t update_cntr,
+				   unsigned short batch_size);
+  /// extract batch_size points from the MCMC chain and store final
+  /// aggregated set within allSamples; unique points with best
+  /// conditioning are selected, as determined by pivoted LU
+  void filter_chain_by_conditioning(size_t update_cntr,
+				    unsigned short batch_size);
+
   /// store indices of best batch_size samples from the current MCMC
   /// chain within the local_best array
   void chain_to_local(unsigned short batch_size,

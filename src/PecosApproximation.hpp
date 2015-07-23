@@ -165,6 +165,13 @@ public:
   void standardize_moments(const Pecos::RealVector& central_moments,
 			   Pecos::RealVector& std_moments);
 
+  /// construct the Vandermonde matrix "A" for PCE regression for Ax = b
+  void build_linear_system(RealMatrix& A, const UShort2DArray& multi_index);
+  // add chain (allSamples): A size = num current+num chain by P,
+  // with current pts as 1st rows 
+  void augment_linear_system(const RealMatrix& samples, RealMatrix& A,
+			     const UShort2DArray& multi_index);
+
   /// return pecosBasisApprox
   Pecos::BasisApproximation& pecos_basis_approximation();
 
@@ -404,6 +411,23 @@ inline void PecosApproximation::
 standardize_moments(const Pecos::RealVector& central_moments,
 		    Pecos::RealVector& std_moments)
 { polyApproxRep->standardize_moments(central_moments, std_moments); }
+
+
+inline void PecosApproximation::
+build_linear_system(RealMatrix& A, const UShort2DArray& multi_index)
+{
+  ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
+    build_linear_system(A, multi_index);
+}
+
+
+inline void PecosApproximation::
+augment_linear_system(const RealMatrix& samples, RealMatrix& A,
+		      const UShort2DArray& multi_index)
+{
+  //((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
+  //  augment_linear_system(samples, A, multi_index);
+}
 
 
 inline Pecos::BasisApproximation& PecosApproximation::

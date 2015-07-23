@@ -633,6 +633,55 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 
+void NonDPolynomialChaos::select_refinement_points(unsigned short batch_size)
+{
+  // from samples accumulated within allSamples, select the best bastch_size
+  // points in terms of information content, as determined by pivoted matrix
+  // solution procedures.
+
+  // define a total-order basis of sufficient size P >= current pts + batch_size
+  // (not current + chain size) and build A using basis at each of the total pts
+  int new_size = numSamplesOnModel + batch_size;
+  UShortArray exp_order(numContinuousVars, 0); UShort2DArray multi_index;
+  ratio_samples_to_order(1./*collocRatio*/, new_size, exp_order);
+  Pecos::SharedPolyApproxData::total_order_multi_index(exp_order, multi_index);
+
+  // candidate MCMC points aggregated across all restart cycles
+  // > one option is to pre-filter the full batch and use pivoted cholesky on
+  //   a smaller set of highest post prob's
+  // > to start, throw the whole aggregated set at it
+  RealMatrix A, L_factor, U_factor;
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep;
+  //for (size_t i=0; i<numFunctions; ++i) // TO DO: aggregate selections for QoI
+    poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
+
+  // reference A built from surrData and reference multiIndex
+  poly_approx_rep->build_linear_system(A, multi_index);
+  // add chain (allSamples): A size = num current+num chain by P,
+  // with current pts as 1st rows 
+  poly_approx_rep->augment_linear_system(allSamples, A, multi_index);
+
+  IntVector pivots;
+  Pecos::truncated_pivoted_lu_factorization( A, L_factor, U_factor, pivots,
+					     new_size, numSamplesOnModel);
+
+  // On return, pivots is size new_size and contains indices of rows of A.
+  // Entries i=numSamplesOnModel to i<new_size identify points to select to
+  // refine emulator.
+  //pivots_to_all_samples();
+  RealMatrix best_samples(numContinuousVars, batch_size);
+  int b, t, j; Real *b_col, *t_col;
+  for (b=0, t=numSamplesOnModel; b<batch_size; ++b, ++t) {
+    b_col = best_samples[b]; t_col = allSamples[pivots[t]];
+    for (j=0; j<numContinuousVars; ++j)
+      b_col[j] = t_col[j];
+  }
+  allSamples = best_samples;
+}
+
+
 void NonDPolynomialChaos::increment_specification_sequence()
 {
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
