@@ -425,8 +425,8 @@ inline void PecosApproximation::
 augment_linear_system(const RealMatrix& samples, RealMatrix& A,
 		      const UShort2DArray& multi_index)
 {
-  //((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
-  //  augment_linear_system(samples, A, multi_index);
+  ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
+    augment_linear_system(samples, A, multi_index);
 }
 
 
