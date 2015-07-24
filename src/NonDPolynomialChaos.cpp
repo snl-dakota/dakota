@@ -633,17 +633,17 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 
-void NonDPolynomialChaos::select_refinement_points(unsigned short batch_size)
+void NonDPolynomialChaos::
+select_refinement_points(RealMatrix& all_samples, unsigned short batch_size)
 {
-  // from samples accumulated within allSamples, select the best bastch_size
-  // points in terms of information content, as determined by pivoted matrix
-  // solution procedures.
+  // from initial all_samples, select the best batch_size points in terms of
+  // information content, as determined by pivoted matrix solution procedures
 
   // define a total-order basis of sufficient size P >= current pts + batch_size
   // (not current + chain size) and build A using basis at each of the total pts
   int new_size = numSamplesOnModel + batch_size;
   UShortArray exp_order(numContinuousVars, 0); UShort2DArray multi_index;
-  ratio_samples_to_order(1./*collocRatio*/, new_size, exp_order);
+  ratio_samples_to_order(1./*collocRatio*/, new_size, exp_order, false);
   Pecos::SharedPolyApproxData::total_order_multi_index(exp_order, multi_index);
 
   // candidate MCMC points aggregated across all restart cycles
@@ -659,9 +659,9 @@ void NonDPolynomialChaos::select_refinement_points(unsigned short batch_size)
 
   // reference A built from surrData and reference multiIndex
   poly_approx_rep->build_linear_system(A, multi_index);
-  // add chain (allSamples): A size = num current+num chain by P,
+  // add MCMC chain (all_samples): A size = num current+num chain by P,
   // with current pts as 1st rows 
-  poly_approx_rep->augment_linear_system(allSamples, A, multi_index);
+  poly_approx_rep->augment_linear_system(all_samples, A, multi_index);
 
   IntVector pivots;
   Pecos::truncated_pivoted_lu_factorization( A, L_factor, U_factor, pivots,
@@ -674,11 +674,11 @@ void NonDPolynomialChaos::select_refinement_points(unsigned short batch_size)
   RealMatrix best_samples(numContinuousVars, batch_size);
   int b, t, j; Real *b_col, *t_col;
   for (b=0, t=numSamplesOnModel; b<batch_size; ++b, ++t) {
-    b_col = best_samples[b]; t_col = allSamples[pivots[t]];
+    b_col = best_samples[b]; t_col = all_samples[pivots[t]];
     for (j=0; j<numContinuousVars; ++j)
       b_col[j] = t_col[j];
   }
-  allSamples = best_samples;
+  all_samples = best_samples;
 }
 
 
@@ -816,19 +816,23 @@ void NonDPolynomialChaos::increment_order_from_grid()
 
   // update expansion order based on existing collocation ratio and
   // updated number of truth model samples
-  UShortArray exp_order = shared_data_rep->expansion_order();       // copy
-  ratio_samples_to_order(collocRatio, numSamplesOnModel, exp_order);// increment
-  shared_data_rep->expansion_order(exp_order);                      // restore
+
+  // copy
+  UShortArray exp_order = shared_data_rep->expansion_order();
+  // increment
+  ratio_samples_to_order(collocRatio, numSamplesOnModel, exp_order, true);
+  // restore
+  shared_data_rep->expansion_order(exp_order);
 }
 
 
 void NonDPolynomialChaos::
 ratio_samples_to_order(Real colloc_ratio, int num_samples,
-		       UShortArray& exp_order)
+		       UShortArray& exp_order, bool less_than_or_equal)
 {
   // ramp expansion order to synchronize with num_samples and colloc_ratio
 
-  size_t data_size = (useDerivs) ?
+  size_t i, data_size = (useDerivs) ?
     num_samples * (numContinuousVars + 1) : num_samples;
   size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
     Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
@@ -838,7 +842,7 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
 					colloc_ratio + .5);
   while (data_reqd < data_size) {
     // uniform order increment
-    for (size_t i=0; i<numContinuousVars; ++i)
+    for (i=0; i<numContinuousVars; ++i)
       ++exp_order[i];
     // terms in total order expansion
     exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
@@ -847,8 +851,8 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
     data_reqd = (size_t)std::floor(std::pow((Real)exp_terms, termsOrder) *
 				   colloc_ratio + .5);
   }
-  if (data_reqd > data_size) // one too many increments; back up
-    for (size_t i=0; i<numContinuousVars; ++i)
+  if (less_than_or_equal && data_reqd > data_size) // one too many increments
+    for (i=0; i<numContinuousVars; ++i)
       --exp_order[i];
 }
 

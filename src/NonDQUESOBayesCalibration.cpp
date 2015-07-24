@@ -355,8 +355,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
       Cout << "Running chain with " << numSamples << " samples." << std::endl;
   }
 
-  // clear for each (composite) chain (best samples for current emulator)
-  bestSamples.clear();
+  // clear for each (composite) chain
+  uniqueSamples.clear(); bestSamples.clear();
 
   //Real restart_metric = DBL_MAX;
   size_t update_cntr = 0;
@@ -658,8 +658,9 @@ filter_chain_by_conditioning(size_t update_cntr, unsigned short batch_size)
   if (adaptPosteriorRefine) { // extract best MCMC samples from current batch
     accumulate_chain(update_cntr);
     if (update_cntr == chainCycles) {
+      copy_data(uniqueSamples, allSamples);
       NonDExpansion* nond_exp = (NonDExpansion*)stochExpIterator.iterator_rep();
-      nond_exp->select_refinement_points(batch_size);
+      nond_exp->select_refinement_points(allSamples, batch_size);
     }
   }
 
@@ -672,24 +673,20 @@ filter_chain_by_conditioning(size_t update_cntr, unsigned short batch_size)
 
 void NonDQUESOBayesCalibration::accumulate_chain(size_t update_cntr)
 {
-  // TO DO: migrate to set<GslVector> to only store UNIQUE samples
-  //        since QUESO returns full chain, not the acceptance chain
+  size_t s, s0 = (update_cntr == 1) ? 0 : 1; // 1st sample repeated on restart
 
-  size_t s, s0, index = numSamples * (update_cntr - 1);
-  if (update_cntr == 1) {
-    allSamples.shapeUninitialized(numContinuousVars, numSamples*chainCycles);
-    s0 = 0;    // store all samples for initial chain
-  }
-  else s0 = 1; // skip first sample for restarted chains
-
-  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>& mcmc_chain
-    = inverseProb->chain();
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
-  for (s=s0; s<num_mcmc; ++s, ++index) {
+  QUESO::GslVector q_sample(paramSpace->zeroVector());
+  RealArray ra_sample;
+
+  for (s=s0; s<num_mcmc; ++s) {//, ++index) {
     // extract GSL sample vector from QUESO vector sequence:
-    mcmc_chain.getPositionValues(s, mcmc_sample);
-    copy_gsl(mcmc_sample, allSamples, index);
+    mcmc_chain.getPositionValues(s, q_sample); copy_gsl(q_sample, ra_sample);
+    // set<GslVector> only stores UNIQUE samples (QUESO returns raw or filtered
+    // chain based on mh settings, but no option to return acceptance chain)
+    uniqueSamples.insert(ra_sample);
   }
 }
 
@@ -1438,6 +1435,32 @@ copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
   Real* rm_c = rm[col];
   for (i=0; i<size_qv; ++i)
     rm_c[i] = qv[i];
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_gsl(const QUESO::GslVector& qv, RealArray& ra)
+{
+  size_t i, size_qv = qv.sizeLocal();
+  if (size_qv != ra.size())
+    ra.resize(size_qv);
+  for (i=0; i<size_qv; ++i)
+    ra[i] = qv[i];
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_data(const std::set<RealArray>& ss, RealMatrix& rm)
+{
+  std::set<RealArray>::const_iterator cit = ss.begin();
+  size_t i, j, num_array = ss.size(),
+    array_len = (cit == ss.end()) ? 0 : cit->size();
+  rm.shapeUninitialized(array_len, num_array);
+  for (i=0; i<num_array; ++i, ++cit) {
+    const RealArray& ra = *cit; Real* col = rm[i];
+    for (j=0; j<array_len; ++j)
+      col[j] = ra[j];
+  }
 }
 
 

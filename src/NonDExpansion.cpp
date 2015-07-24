@@ -931,7 +931,8 @@ void NonDExpansion::refine_expansion()
 }
 
 
-void NonDExpansion::select_refinement_points(unsigned short batch_size)
+void NonDExpansion::
+select_refinement_points(RealMatrix& all_samples, unsigned short batch_size)
 {
   Cerr << "Error: virtual select_refinement_points() not redefined by derived "
        << "class.  NonDExpansion does not support point selection."<< std::endl;

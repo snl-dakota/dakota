@@ -73,7 +73,8 @@ protected:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
 
-  void select_refinement_points(unsigned short batch_size);
+  void select_refinement_points(RealMatrix& all_samples,
+				unsigned short batch_size);
   void append(const RealMatrix& samples, const IntResponseMap& resp_map);
 
   /// uniformly increment the order of the polynomial chaos expansion and
@@ -103,7 +104,7 @@ private:
   Real terms_samples_to_ratio(size_t num_exp_terms, int samples);
   /// convert collocation ratio and number of samples to expansion order
   void ratio_samples_to_order(Real colloc_ratio, int num_samples,
-			      UShortArray& exp_order);
+			      UShortArray& exp_order, bool less_than_or_equal);
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector
   void order_to_dim_preference(const UShortArray& order, unsigned short& p,
