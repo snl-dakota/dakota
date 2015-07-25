@@ -785,13 +785,13 @@ int TestDriverInterface::rosenbrock()
     abort_handler(INTERFACE_ERROR);
   }
 
-  bool least_sq_flag = (numFns > 1) ? true : false;
+  bool least_sq_flag = (numFns > 1);
   Real x1 = xCM[VAR_x1], x2 = xCM[VAR_x2], f1 = x2-x1*x1, f2 = 1.-x1;
 
   if (least_sq_flag) {
     // **** Residual R1:
     if (directFnASV[0] & 1)
-      fnVals[0] = 10*f1;
+      fnVals[0] = 10.*f1;
     // **** Residual R2:
     if (directFnASV[1] & 1)
       fnVals[1] = f2;
@@ -870,11 +870,17 @@ int TestDriverInterface::generalized_rosenbrock()
 	 << "fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (numFns > 1) {
-    Cerr << "Error: Bad number of functions in generalized_rosenbrock direct "
-	 << "fn." << std::endl;
+  if (numFns != 1 && numFns != 2*(numVars-1)) {
+    Cerr << "Error: Bad number of functions in extended_rosenbrock direct fn."
+	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
+
+  bool least_sq_flag = (numFns > 1);
+
+  // This multidimensional extension results from the overlay of numVars-1
+  // coupled 2D Rosenbrock problems.  When defining as a NLS problem,
+  // residuals are paired and # residuals == 2 * (# vars - 1)
 
   for (size_t i=1; i<numVars; ++i) {
     size_t index_ip1 = i, index_i = i-1; // offset by 1
@@ -882,23 +888,57 @@ int TestDriverInterface::generalized_rosenbrock()
     const Real& x_i   = xC[index_i];
     Real f1 = x_ip1 - x_i*x_i, f2 = 1. - x_i;
 
-    // **** f:
-    if (directFnASV[0] & 1)
-      fnVals[0] += 100.*f1*f1 + f2*f2;
+    if (least_sq_flag) {
+      size_t rindex_2i = 2*i-1, rindex_2im1 = 2*i-2;
 
-    // **** df/dx:
-    if (directFnASV[0] & 2) {
-      fnGrads[0][index_i]   += -400.*f1*x_i - 2.*f2;
-      fnGrads[0][index_ip1] +=  200.*f1;
+      // **** R_2im1:
+      if (directFnASV[rindex_2im1] & 1)
+	fnVals[rindex_2im1] = 10.*f1;
+      // **** R_2i:
+      if (directFnASV[rindex_2i] & 1)
+	fnVals[rindex_2i] = f2;
+
+      // *** dR_2im1/dx:
+      if (directFnASV[rindex_2im1] & 2) { // define non-zeros (set_local_data)
+	Real* grad = fnGrads[rindex_2im1];
+	grad[index_i]   = -20.*x_i;
+	grad[index_ip1] =  10.;
+      }
+      // **** dR_2i/dx:
+      if (directFnASV[rindex_2i] & 2) { // define non-zeros (set_local_data)
+	Real* grad = fnGrads[rindex_2i];
+	grad[index_i]     = -1.;
+	//grad[index_ip1] =  0.;
+      }
+
+      // **** d^2R_2im1/dx^2:
+      if (directFnASV[rindex_2im1] & 4) // define non-zeros (set_local_data)
+	fnHessians[rindex_2im1](index_i,index_i) = -20.;
+      // **** d^2R_2i/dx^2:
+      if (directFnASV[rindex_2i] & 4)
+	fnHessians[rindex_2i] = 0.;
+
     }
+    else {
 
-    // **** d^2f/dx^2:
-    if (directFnASV[0] & 4) {
-      Real fx = x_ip1 - 3.*x_i*x_i;
-      fnHessians[0](index_i,index_i)     += -400.*fx + 2.0;
-      fnHessians[0](index_i,index_ip1)   += -400.*x_i;
-      fnHessians[0](index_ip1,index_i)   += -400.*x_i;
-      fnHessians[0](index_ip1,index_ip1) +=  200.;
+      // **** f:
+      if (directFnASV[0] & 1)
+	fnVals[0] += 100.*f1*f1 + f2*f2;
+
+      // **** df/dx:
+      if (directFnASV[0] & 2) {
+	fnGrads[0][index_i]   += -400.*f1*x_i - 2.*f2;
+	fnGrads[0][index_ip1] +=  200.*f1;
+      }
+
+      // **** d^2f/dx^2:
+      if (directFnASV[0] & 4) {
+	Real fx = x_ip1 - 3.*x_i*x_i;
+	fnHessians[0](index_i,index_i)     += -400.*fx + 2.0;
+	fnHessians[0](index_i,index_ip1)   += -400.*x_i;
+	fnHessians[0](index_ip1,index_i)   += -400.*x_i;
+	fnHessians[0](index_ip1,index_ip1) +=  200.;
+      }
     }
   }
 
@@ -923,36 +963,78 @@ int TestDriverInterface::extended_rosenbrock()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (numFns > 1) {
+  if (numVars % 2) {
+    Cerr << "Error: Bad number of variables in extended_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 1 && numFns != numVars) {
     Cerr << "Error: Bad number of functions in extended_rosenbrock direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 
-  const Real alpha = 100.;
+  // This multidimensional extension results from the sum of numVars/2
+  // uncoupled 2D Rosenbrock problems.  When defining as a NLS problem,
+  // residuals are paired and # residuals == # vars
+
+  bool least_sq_flag = (numFns > 1);
+  Real alpha = 100., sqrt_alpha = 10.;
   for (size_t i=1; i<=numVars/2; ++i) {
     size_t index_2i = 2*i-1, index_2im1 = 2*i-2; // offset by 1
     const Real& x_2i   = xC[index_2i];
     const Real& x_2im1 = xC[index_2im1];
     Real f1 = x_2i - x_2im1*x_2im1, f2 = 1. - x_2im1;
 
-    // **** f:
-    if (directFnASV[0] & 1)
-      fnVals[0] += alpha*f1*f1 + f2*f2;
+    if (least_sq_flag) {
 
-    // **** df/dx:
-    if (directFnASV[0] & 2) {
-      fnGrads[0][index_2im1] += -4.*alpha*f1*x_2im1 - 2.*f2;
-      fnGrads[0][index_2i]   +=  2.*alpha*f1;
+      // **** Residual R_2im1:
+      if (directFnASV[index_2im1] & 1)
+	fnVals[index_2im1] = sqrt_alpha*f1;
+      // **** Residual R_2i:
+      if (directFnASV[index_2i] & 1)
+	fnVals[index_2i] = f2;
+
+      // *** dR_2im1/dx:
+      if (directFnASV[index_2im1] & 2) { // define non-zeros (set_local_data)
+	Real* grad = fnGrads[index_2im1];
+	grad[index_2im1] = -2.*sqrt_alpha*x_2im1;
+	grad[index_2i]   =     sqrt_alpha;
+      }
+      // **** dR_2i/dx:
+      if (directFnASV[index_2i] & 2) { // define non-zeros (set_local_data)
+	Real* grad = fnGrads[index_2i];
+	grad[index_2im1] = -1.;
+	//grad[index_2i] =  0.;
+      }
+
+      // **** d^2R_2im1/dx^2:
+      if (directFnASV[index_2im1] & 4) // define non-zeros (set_local_data)
+	fnHessians[index_2im1](index_2im1,index_2im1) = -2.*sqrt_alpha;
+      // **** d^2R_2i/dx^2:
+      if (directFnASV[index_2i] & 4)
+	fnHessians[index_2i] = 0.;
+
     }
+    else {
+      // **** f:
+      if (directFnASV[0] & 1)
+	fnVals[0] += alpha*f1*f1 + f2*f2;
 
-    // **** d^2f/dx^2:
-    if (directFnASV[0] & 4) {
-      Real fx = x_2i - 3.*x_2im1*x_2im1;
-      fnHessians[0](index_2im1,index_2im1) += -4.*alpha*fx + 2.0;
-      fnHessians[0](index_2im1,index_2i)   += -4.*alpha*x_2im1;
-      fnHessians[0](index_2i,index_2im1)   += -4.*alpha*x_2im1;
-      fnHessians[0](index_2i,index_2i)     +=  2.*alpha;
+      // **** df/dx:
+      if (directFnASV[0] & 2) {
+	fnGrads[0][index_2im1] += -4.*alpha*f1*x_2im1 - 2.*f2;
+	fnGrads[0][index_2i]   +=  2.*alpha*f1;
+      }
+
+      // **** d^2f/dx^2:
+      if (directFnASV[0] & 4) {
+	Real fx = x_2i - 3.*x_2im1*x_2im1;
+	fnHessians[0](index_2im1,index_2im1) += -4.*alpha*fx + 2.0;
+	fnHessians[0](index_2im1,index_2i)   += -4.*alpha*x_2im1;
+	fnHessians[0](index_2i,index_2im1)   += -4.*alpha*x_2im1;
+	fnHessians[0](index_2i,index_2i)     +=  2.*alpha;
+      }
     }
   }
 
