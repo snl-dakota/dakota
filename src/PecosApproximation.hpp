@@ -169,7 +169,7 @@ public:
   void build_linear_system(RealMatrix& A, const UShort2DArray& multi_index);
   // add chain (allSamples): A size = num current+num chain by P,
   // with current pts as 1st rows 
-  void augment_linear_system(const RealMatrix& samples, RealMatrix& A,
+  void augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 			     const UShort2DArray& multi_index);
 
   /// return pecosBasisApprox
@@ -422,7 +422,7 @@ build_linear_system(RealMatrix& A, const UShort2DArray& multi_index)
 
 
 inline void PecosApproximation::
-augment_linear_system(const RealMatrix& samples, RealMatrix& A,
+augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 		      const UShort2DArray& multi_index)
 {
   ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->

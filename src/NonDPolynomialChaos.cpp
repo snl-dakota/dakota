@@ -634,10 +634,11 @@ void NonDPolynomialChaos::compute_expansion()
 
 
 void NonDPolynomialChaos::
-select_refinement_points(RealMatrix& all_samples, unsigned short batch_size)
+select_refinement_points(const RealVectorArray& candidate_samples,
+			 unsigned short batch_size, RealMatrix& best_samples)
 {
-  // from initial all_samples, select the best batch_size points in terms of
-  // information content, as determined by pivoted matrix solution procedures
+  // from initial candidate_samples, select the best batch_size points in terms
+  // of information content, as determined by pivoted LU factorization
 
   // define a total-order basis of sufficient size P >= current pts + batch_size
   // (not current + chain size) and build A using basis at each of the total pts
@@ -661,7 +662,7 @@ select_refinement_points(RealMatrix& all_samples, unsigned short batch_size)
   poly_approx_rep->build_linear_system(A, multi_index);
   // add MCMC chain (all_samples): A size = num current+num chain by P,
   // with current pts as 1st rows 
-  poly_approx_rep->augment_linear_system(all_samples, A, multi_index);
+  poly_approx_rep->augment_linear_system(candidate_samples, A, multi_index);
 
   IntVector pivots;
   Pecos::truncated_pivoted_lu_factorization( A, L_factor, U_factor, pivots,
@@ -671,14 +672,14 @@ select_refinement_points(RealMatrix& all_samples, unsigned short batch_size)
   // Entries i=numSamplesOnModel to i<new_size identify points to select to
   // refine emulator.
   //pivots_to_all_samples();
-  RealMatrix best_samples(numContinuousVars, batch_size);
-  int b, t, j; Real *b_col, *t_col;
+  best_samples.shapeUninitialized(numContinuousVars, batch_size);
+  int b, t, j; Real *b_col;
   for (b=0, t=numSamplesOnModel; b<batch_size; ++b, ++t) {
-    b_col = best_samples[b]; t_col = all_samples[pivots[t]];
+    b_col = best_samples[b];
+    const RealVector& selected_rv = candidate_samples[pivots[t]];
     for (j=0; j<numContinuousVars; ++j)
-      b_col[j] = t_col[j];
+      b_col[j] = selected_rv[j];
   }
-  all_samples = best_samples;
 }
 
 

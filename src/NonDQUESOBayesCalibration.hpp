@@ -177,11 +177,9 @@ protected:
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
   /// local copy_data utility from GslVector to column in RealMatrix
   void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
-  /// local copy_data utility from set of GslVectors to RealMatrix
-  void copy_gsl(const QUESO::GslVector& qv, RealArray& ra);
 
-  /// local copy_data utility from set of RealArrays to RealMatrix
-  void copy_data(const std::set<RealArray>& ss, RealMatrix& rm);
+  /// local copy_data utility from GslVector to column in RealMatrix
+  bool equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2);
 
   //
   //- Heading: Data
@@ -257,7 +255,7 @@ private:
 
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains
-  std::set<RealArray> uniqueSamples;
+  RealVectorArray uniqueSamples;
   /// container for managing best MCMC samples (points and associated
   /// log posterior) collected across multiple (restarted) chains
   std::/*multi*/map<Real, QUESO::GslVector> bestSamples;

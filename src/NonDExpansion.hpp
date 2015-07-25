@@ -64,8 +64,9 @@ public:
 
   /// evaluate allSamples for inclusion in the (PCE regression) approximation
   /// and retain the best set (well spaced) of size batch_size
-  virtual void select_refinement_points(RealMatrix& all_samples,
-					unsigned short batch_size);
+  virtual void select_refinement_points(
+    const RealVectorArray& candidate_samples, unsigned short batch_size,
+    RealMatrix& best_samples);
 
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append(const RealMatrix& samples,

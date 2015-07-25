@@ -356,7 +356,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   }
 
   // clear for each (composite) chain
-  uniqueSamples.clear(); bestSamples.clear();
+  bestSamples.clear();
+  uniqueSamples.reserve(numSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
   size_t update_cntr = 0;
@@ -658,9 +659,8 @@ filter_chain_by_conditioning(size_t update_cntr, unsigned short batch_size)
   if (adaptPosteriorRefine) { // extract best MCMC samples from current batch
     accumulate_chain(update_cntr);
     if (update_cntr == chainCycles) {
-      copy_data(uniqueSamples, allSamples);
       NonDExpansion* nond_exp = (NonDExpansion*)stochExpIterator.iterator_rep();
-      nond_exp->select_refinement_points(allSamples, batch_size);
+      nond_exp->select_refinement_points(uniqueSamples, batch_size, allSamples);
     }
   }
 
@@ -673,21 +673,42 @@ filter_chain_by_conditioning(size_t update_cntr, unsigned short batch_size)
 
 void NonDQUESOBayesCalibration::accumulate_chain(size_t update_cntr)
 {
-  size_t s, s0 = (update_cntr == 1) ? 0 : 1; // 1st sample repeated on restart
-
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  QUESO::GslVector q_sample(paramSpace->zeroVector());
-  RealArray ra_sample;
+  QUESO::GslVector q_sample(paramSpace->zeroVector()),
+              prev_q_sample(paramSpace->zeroVector());
 
+  RealVector empty_rv;
+  mcmc_chain.getPositionValues(0, prev_q_sample);// extract vector from sequence
+  if (update_cntr == 1) {
+    uniqueSamples.push_back(empty_rv);             // copy empty vector
+    copy_gsl(prev_q_sample, uniqueSamples.back()); // update in place
+  }
+  // else first sample is same as last sample from previous chain
+  for (size_t s=1; s<num_mcmc; ++s) {
+    mcmc_chain.getPositionValues(s, q_sample);  // extract vector from sequence
+    if (!equal_gsl(q_sample, prev_q_sample)) {
+      uniqueSamples.push_back(empty_rv);        // copy empty vector
+      copy_gsl(q_sample, uniqueSamples.back()); // update in place
+      prev_q_sample = q_sample;
+    }
+  }
+
+  /*
+  size_t s, s0 = (update_cntr == 1) ? 0 : 1; // 1st sample repeated on restart
+  RealArray ra_sample;
   for (s=s0; s<num_mcmc; ++s) {//, ++index) {
     // extract GSL sample vector from QUESO vector sequence:
-    mcmc_chain.getPositionValues(s, q_sample); copy_gsl(q_sample, ra_sample);
-    // set<GslVector> only stores UNIQUE samples (QUESO returns raw or filtered
+    mcmc_chain.getPositionValues(s, q_sample);
+    // set<RealArray> stores UNIQUE samples (QUESO returns raw or filtered
     // chain based on mh settings, but no option to return acceptance chain)
-    uniqueSamples.insert(ra_sample);
+    copy_gsl(q_sample, ra_sample); uniqueSamples.insert(ra_sample);
+    // Another option is to check for change from previous sample (any accepted
+    // sample should be unique), accumulate within RealVectorArray (push_back)
+    // or RealMatrix (conservative shaping followed by prune back).
   }
+  */
 }
 
 
@@ -1438,29 +1459,16 @@ copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int col)
 }
 
 
-void NonDQUESOBayesCalibration::
-copy_gsl(const QUESO::GslVector& qv, RealArray& ra)
+bool NonDQUESOBayesCalibration::
+equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2)
 {
-  size_t i, size_qv = qv.sizeLocal();
-  if (size_qv != ra.size())
-    ra.resize(size_qv);
-  for (i=0; i<size_qv; ++i)
-    ra[i] = qv[i];
-}
-
-
-void NonDQUESOBayesCalibration::
-copy_data(const std::set<RealArray>& ss, RealMatrix& rm)
-{
-  std::set<RealArray>::const_iterator cit = ss.begin();
-  size_t i, j, num_array = ss.size(),
-    array_len = (cit == ss.end()) ? 0 : cit->size();
-  rm.shapeUninitialized(array_len, num_array);
-  for (i=0; i<num_array; ++i, ++cit) {
-    const RealArray& ra = *cit; Real* col = rm[i];
-    for (j=0; j<array_len; ++j)
-      col[j] = ra[j];
-  }
+  size_t size_qv1 = qv1.sizeLocal();
+  if (size_qv1 != qv2.sizeLocal())
+    return false;
+  for (size_t i=0; i<size_qv1; ++i)
+    if (qv1[i] != qv2[i])
+      return false;
+  return true;
 }
 
 
