@@ -525,35 +525,22 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
   const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
-  if (precondRequestValue & 4) {
-    // try to use full misfit Hessian; fall back if indefinite
-    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
-    if (outputLevel >= NORMAL_OUTPUT) {
-      Cout << "Hessian of negative log-likelihood (from misfit):\n";
-      write_data(Cout, log_hess, true, true, true);
-    }
-
-    augment_hessian_with_log_prior(log_hess);
-    bool ev_truncation =
-      get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
-    if (ev_truncation) { // fallback to Gauss-Newton
-      ShortArray asrv_override(numFunctions, 2); // override asrv in response
-      expData.build_hessian_of_sum_square_residuals(emulator_resp,
-						    asrv_override, log_hess);
-      if (outputLevel >= NORMAL_OUTPUT) {
-	Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
-	     << "Hessian.\nHessian of negative log-likelihood (from misfit):\n";
-	write_data(Cout, log_hess, true, true, true);
-      }
-
-      augment_hessian_with_log_prior(log_hess);
-      get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
-    }
+  expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "Hessian of negative log-likelihood (from misfit):\n";
+    write_data(Cout, log_hess, true, true, true);
   }
-  else {
-    expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+  augment_hessian_with_log_prior(log_hess);
+  bool ev_truncation
+    = get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
+
+  if ( (precondRequestValue & 4) && ev_truncation ) { // fall back if indefinite
+    ShortArray asrv_override(numFunctions, 2); // override asrv in response
+    expData.build_hessian_of_sum_square_residuals(emulator_resp,
+						  asrv_override, log_hess);
     if (outputLevel >= NORMAL_OUTPUT) {
-      Cout << "Hessian of negative log-likelihood (from misfit):\n";
+      Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
+	   << "Hessian.\nHessian of negative log-likelihood (from misfit):\n";
       write_data(Cout, log_hess, true, true, true);
     }
     augment_hessian_with_log_prior(log_hess);
