@@ -1199,7 +1199,7 @@
                                   <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
                                     <alias name="least_interpolation"/>
                                     <alias name="oli"/>
-                                    <keyword  id="collocation_points1" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="collocation_points" help=""  >
+                                    <keyword  id="collocation_points1" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
                                       <param type="INTEGERLIST" />
                                     </keyword>
                                     <!-- #		          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
@@ -1853,6 +1853,10 @@
 				</keyword>
 				<keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
                               </keyword>
+			      <keyword  id="collocation_points3" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+                                <param type="INTEGERLIST" />
+				<keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+			      </keyword>
                             </oneOf>
                           </keyword>
                           <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >

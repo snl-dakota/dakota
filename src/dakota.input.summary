@@ -1574,6 +1574,10 @@ KEYWORD12 method
 		  collocation_ratio REAL
 		  [ posterior_adaptive ]
 		  )
+		|
+		( collocation_points INTEGERLIST
+		  [ posterior_adaptive ]
+		  )
 		)
 	      |
 	      ( sc

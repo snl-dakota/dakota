@@ -1430,6 +1430,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                )
+              |
+              ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+               )
              )
             |
             ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
