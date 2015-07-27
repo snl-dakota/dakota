@@ -357,6 +357,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
   // clear for each (composite) chain
   bestSamples.clear();
+  uniqueSamples.resize(0); // previous capacity preserved w/o any reallocation
   uniqueSamples.reserve(numSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
@@ -377,7 +378,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
-    if (false)//(true)
+    if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
       filter_chain_by_conditioning(update_cntr, batch_size);
     else
       filter_chain_by_probability(update_cntr, batch_size);
@@ -681,6 +682,10 @@ void NonDQUESOBayesCalibration::accumulate_chain(size_t update_cntr)
       prev_q_sample = q_sample;
     }
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Accumulated chain for update " << update_cntr << " has size "
+	 << uniqueSamples.size() << ":\n" << uniqueSamples;
 
   /*
   size_t s, s0 = (update_cntr == 1) ? 0 : 1; // 1st sample repeated on restart
@@ -1250,12 +1255,10 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_amEpsilon                 = 1.e-8;
 
   // chain management options:
-  if (adaptPosteriorRefine || chainCycles > 1)
-    // In this case, we process the full chain for maximizing posterior
-    // probability or point spacing / linear system conditioning
-    calIpMhOptionsValues->m_filteredChainGenerate         = false;
-  else {
-    // In this case, we filter the chain for final output
+  if (false) { // TO DO: add user spec to support chain filtering?
+    // filtering the chain for final output affects the inverseProb->chain()
+    // as well as the outputData directory.  For now, we turn this off to
+    // promote reporting the best MAP estimate.
     calIpMhOptionsValues->m_filteredChainGenerate         = true;
     calIpMhOptionsValues->m_filteredChainDiscardedPortion = 0.;
     calIpMhOptionsValues->m_filteredChainLag              = 20;
@@ -1265,6 +1268,10 @@ void NonDQUESOBayesCalibration::set_mh_options()
     calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
     //calIpMhOptionsValues->m_filteredChainComputeStats   = true;
   }
+  else //if (adaptPosteriorRefine || chainCycles > 1)
+    // In this case, we process the full chain for maximizing posterior
+    // probability or point spacing / linear system conditioning
+    calIpMhOptionsValues->m_filteredChainGenerate         = false;
 
   // logit transform addresses high rejection rates in corners of bounded
   // domains.  It is hardwired on at this time, although potentially redundant

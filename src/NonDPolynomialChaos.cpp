@@ -646,6 +646,9 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   UShortArray exp_order(numContinuousVars, 0); UShort2DArray multi_index;
   ratio_samples_to_order(1./*collocRatio*/, new_size, exp_order, false);
   Pecos::SharedPolyApproxData::total_order_multi_index(exp_order, multi_index);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Select refinement points: new_size = " << new_size
+	 << " exp_order =\n" << exp_order;//<< "multi_index =\n" << multi_index;
 
   // candidate MCMC points aggregated across all restart cycles
   // > one option is to pre-filter the full batch and use pivoted cholesky on
@@ -653,20 +656,31 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   // > to start, throw the whole aggregated set at it
   RealMatrix A, L_factor, U_factor;
 
+  // This computation does not utilize any QoI information, so aggregation
+  // across the QoI vector is not necessary.
+  // TO DO: utilize static fn instead of 0th poly_approx; this would also
+  // facilitate usage from other surrogate types (especially GP).
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
-  //for (size_t i=0; i<numFunctions; ++i) // TO DO: aggregate selections for QoI
-    poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
+  PecosApproximation* poly_approx_rep
+    = (PecosApproximation*)poly_approxs[0].approx_rep();
 
   // reference A built from surrData and reference multiIndex
   poly_approx_rep->build_linear_system(A, multi_index);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Select refinement pts: reference A = " << A.numRows() << " by "
+	 << A.numCols() << ".\n";
   // add MCMC chain (all_samples): A size = num current+num chain by P,
   // with current pts as 1st rows 
   poly_approx_rep->augment_linear_system(candidate_samples, A, multi_index);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Select refinement pts: augmented A = " << A.numRows() << " by "
+	 << A.numCols() << ".\n";
 
   IntVector pivots;
   Pecos::truncated_pivoted_lu_factorization( A, L_factor, U_factor, pivots,
 					     new_size, numSamplesOnModel);
+  if (outputLevel >= DEBUG_OUTPUT)
+    { Cout << "Select refinement pts: pivots =\n"; write_data(Cout, pivots); }
 
   // On return, pivots is size new_size and contains indices of rows of A.
   // Entries i=numSamplesOnModel to i<new_size identify points to select to
@@ -679,6 +693,10 @@ select_refinement_points(const RealVectorArray& candidate_samples,
     const RealVector& selected_rv = candidate_samples[pivots[t]];
     for (j=0; j<numContinuousVars; ++j)
       b_col[j] = selected_rv[j];
+  }
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Select refinement pts: best_samples =\n";
+    write_data(Cout, best_samples);
   }
 }
 
