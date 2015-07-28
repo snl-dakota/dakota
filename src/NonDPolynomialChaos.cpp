@@ -689,8 +689,9 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   best_samples.shapeUninitialized(numContinuousVars, batch_size);
   int b, t, j; Real *b_col;
   for (b=0, t=numSamplesOnModel; b<batch_size; ++b, ++t) {
-    b_col = best_samples[b];
-    const RealVector& selected_rv = candidate_samples[pivots[t]];
+    b_col = best_samples[b]; 
+    const RealVector& selected_rv
+      = candidate_samples[pivots[t] - numSamplesOnModel];
     for (j=0; j<numContinuousVars; ++j)
       b_col[j] = selected_rv[j];
   }
