@@ -395,7 +395,6 @@ set(dakota_test_executables
   barnes
   barnes_lf
   cantilever
-  cantilever3
   container
   cyl_head
   gerstner_string
