@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     cerr << "Error: Wrong number of variables in cantilever test fn." << endl;
     exit(-1);
   }
-  if (num_fns != 3) {
+  if (num_fns < 2 || num_fns > 3) {
     cerr << "Error: wrong number of response functions in cantilever test fn."
          << endl;
     exit(-1);
@@ -104,6 +104,11 @@ int main(int argc, char** argv)
   double e = vars[E]; // Young's modulus
   double x = vars[X]; // horizontal load
   double y = vars[Y]; // vertical load
+
+  // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
+  bool objective; size_t c1i, c2i;
+  if (num_fns == 2) { objective = false; c1i = 0; c2i = 1; }
+  else              { objective = true;  c1i = 1; c2i = 2; }
 
   // optimization inequality constraint: <= 0 and scaled O(1)
   //Real g_stress = stress/R - 1.0;
@@ -128,19 +133,19 @@ int main(int argc, char** argv)
   fout.setf(ios::right);
 
   // **** f:
-  if (ASV[0] & 1)
+  if (objective && (ASV[0] & 1))
     fout << "                     " << area << '\n';
 
   // **** c1:
-  if (ASV[1] & 1)
+  if (ASV[c1i] & 1)
     fout << "                     " << stress/r - 1. << '\n';
 
   // **** c2:
-  if (ASV[2] & 1)
+  if (ASV[c2i] & 1)
     fout << "                     " << D4 - 1. << '\n';
 
   // **** df/dx:
-  if (ASV[0] & 2) {
+  if (objective && (ASV[0] & 2)) {
     fout << "[ ";
     for (i=0; i<num_deriv_vars; i++)
       switch (DVV[i]) {
@@ -152,7 +157,7 @@ int main(int argc, char** argv)
   }
 
   // **** dc1/dx:
-  if (ASV[1] & 2) {
+  if (ASV[c1i] & 2) {
     fout << "[ ";
     for (i=0; i<num_deriv_vars; i++)
       switch (DVV[i]) {
@@ -167,7 +172,7 @@ int main(int argc, char** argv)
   }
 
   // **** dc2/dx:
-  if (ASV[2] & 2) {
+  if (ASV[c2i] & 2) {
     fout << "[ ";
     for (i=0; i<num_deriv_vars; i++)
       switch (DVV[i]) {
@@ -182,7 +187,7 @@ int main(int argc, char** argv)
   }
 
   // **** d^2f/dx^2:
-  if (ASV[0] & 4) {
+  if (objective && (ASV[0] & 4)) {
     fout << "[[ ";
     for (i=0; i<num_deriv_vars; i++)
       for (j=0; j<num_deriv_vars; j++)
@@ -194,7 +199,7 @@ int main(int argc, char** argv)
   }
 
   // **** d^2c1/dx^2:
-  if (ASV[1] & 4) {
+  if (ASV[c1i] & 4) {
     fout << "[[ ";
     for (i=0; i<num_deriv_vars; i++)
       for (j=0; j<num_deriv_vars; j++)
@@ -237,7 +242,7 @@ int main(int argc, char** argv)
   }
 
   // **** d^2c2/dx^2:
-  if (ASV[2] & 4) {
+  if (ASV[c2i] & 4) {
     double D5 = 1./sqrt(D2)/D0, D6 = -D1/2./D0/pow(D2,1.5);
     double D7 = sqrt(D2)/D0,    D8 =  D1/2./D0/sqrt(D2);
     double dD2_dx = 2.*x/w_sq/w_sq, dD3_dx = D6*dD2_dx, dD4_dx = D8*dD2_dx;

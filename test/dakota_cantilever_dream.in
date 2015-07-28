@@ -20,8 +20,8 @@ variables,
           descriptors 't' 'R' 'X' 'Y' 
 
 interface,								
-        system 
-          analysis_driver = 'cantilever3'
+        system
+          analysis_driver = 'mod_cantilever'
 
 responses,								
 	calibration_terms = 2
