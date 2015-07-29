@@ -332,7 +332,7 @@ int TestDriverInterface::cantilever()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-   if (numFns != 3) {
+   if (numFns < 2 || numFns > 3) {
     Cerr << "Error: Bad number of functions in cantilever direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -353,6 +353,11 @@ int TestDriverInterface::cantilever()
        X = xCM[VAR_X], // horizontal load
        Y = xCM[VAR_Y]; // vertical load
 
+  // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
+  bool objective; size_t c1i, c2i;
+  if (numFns == 2) { objective = false; c1i = 0; c2i = 1; }
+  else             { objective = true;  c1i = 1; c2i = 2; }
+
   // optimization inequality constraint: <= 0 and scaled O(1)
   //Real g_stress = stress/R - 1.0;
   //Real g_disp   = disp/D0  - 1.0;
@@ -364,19 +369,19 @@ int TestDriverInterface::cantilever()
        D3 = D1/std::sqrt(D2)/D0, D4 = D1*std::sqrt(D2)/D0;
 
   // **** f:
-  if (directFnASV[0] & 1)
+  if (objective && (directFnASV[0] & 1))
     fnVals[0] = area;
 
   // **** c1:
-  if (directFnASV[1] & 1)
-    fnVals[1] = stress/R - 1.;
+  if (directFnASV[c1i] & 1)
+    fnVals[c1i] = stress/R - 1.;
 
   // **** c2:
-  if (directFnASV[2] & 1)
-    fnVals[2] = D4 - 1.;
+  if (directFnASV[c2i] & 1)
+    fnVals[c2i] = D4 - 1.;
 
   // **** df/dx:
-  if (directFnASV[0] & 2)
+  if (objective && (directFnASV[0] & 2))
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
       case VAR_w:  fnGrads[0][i] = t;  break; // design var derivative
@@ -385,31 +390,31 @@ int TestDriverInterface::cantilever()
       }
 
   // **** dc1/dx:
-  if (directFnASV[1] & 2)
+  if (directFnASV[c1i] & 2)
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
-      case VAR_w: fnGrads[1][i] = -600.*(Y/t + 2.*X/w)/w_sq/t/R; break;//des var
-      case VAR_t: fnGrads[1][i] = -600.*(2.*Y/t + X/w)/w/t_sq/R; break;//des var
-      case VAR_R: fnGrads[1][i] = -stress/R_sq;  break; // uncertain var deriv
-      case VAR_E: fnGrads[1][i] = 0.;            break; // uncertain var deriv
-      case VAR_X: fnGrads[1][i] = 600./w_sq/t/R; break; // uncertain var deriv
-      case VAR_Y: fnGrads[1][i] = 600./w/t_sq/R; break; // uncertain var deriv
+      case VAR_w: fnGrads[c1i][i] = -600.*(Y/t + 2.*X/w)/w_sq/t/R; break;// dv
+      case VAR_t: fnGrads[c1i][i] = -600.*(2.*Y/t + X/w)/w/t_sq/R; break;// dv
+      case VAR_R: fnGrads[c1i][i] = -stress/R_sq;  break; // uncertain var deriv
+      case VAR_E: fnGrads[c1i][i] = 0.;            break; // uncertain var deriv
+      case VAR_X: fnGrads[c1i][i] = 600./w_sq/t/R; break; // uncertain var deriv
+      case VAR_Y: fnGrads[c1i][i] = 600./w/t_sq/R; break; // uncertain var deriv
       }
 
   // **** dc2/dx:
-  if (directFnASV[2] & 2)
+  if (directFnASV[c2i] & 2)
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
-      case VAR_w: fnGrads[2][i] = -D3*2.*X_sq/w_sq/w_sq/w - D4/w; break;//desvar
-      case VAR_t: fnGrads[2][i] = -D3*2.*Y_sq/t_sq/t_sq/t - D4/t; break;//desvar
-      case VAR_R: fnGrads[2][i] = 0.;             break; // unc var deriv
-      case VAR_E: fnGrads[2][i] = -D4/E;          break; // unc var deriv
-      case VAR_X: fnGrads[2][i] = D3*X/w_sq/w_sq; break; // unc var deriv
-      case VAR_Y: fnGrads[2][i] = D3*Y/t_sq/t_sq; break; // unc var deriv
+      case VAR_w: fnGrads[c2i][i] = -D3*2.*X_sq/w_sq/w_sq/w - D4/w; break;// dv
+      case VAR_t: fnGrads[c2i][i] = -D3*2.*Y_sq/t_sq/t_sq/t - D4/t; break;// dv
+      case VAR_R: fnGrads[c2i][i] = 0.;             break; // unc var deriv
+      case VAR_E: fnGrads[c2i][i] = -D4/E;          break; // unc var deriv
+      case VAR_X: fnGrads[c2i][i] = D3*X/w_sq/w_sq; break; // unc var deriv
+      case VAR_Y: fnGrads[c2i][i] = D3*Y/t_sq/t_sq; break; // unc var deriv
       }
 
   // **** d^2f/dx^2:
-  if (directFnASV[0] & 4)
+  if (objective && (directFnASV[0] & 4))
     for (size_t i=0; i<numDerivVars; ++i)
       for (size_t j=0; j<=i; ++j)
 	fnHessians[0](i,j)
@@ -417,48 +422,48 @@ int TestDriverInterface::cantilever()
 	      (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_w) ) ? 1. : 0.;
 
   // **** d^2c1/dx^2:
-  if (directFnASV[1] & 4) {
+  if (directFnASV[c1i] & 4) {
     for (size_t i=0; i<numDerivVars; ++i)
       for (size_t j=0; j<=i; ++j)
 	if (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_w)
-	  fnHessians[1](i,j) = 1200.*(Y/t + 3.*X/w)/w_sq/area/R;
+	  fnHessians[c1i](i,j) = 1200.*(Y/t + 3.*X/w)/w_sq/area/R;
 	else if (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_t)
-	  fnHessians[1](i,j) = 1200.*(3.*Y/t + X/w)/t_sq/area/R;
+	  fnHessians[c1i](i,j) = 1200.*(3.*Y/t + X/w)/t_sq/area/R;
 	else if (varTypeDVV[i] == VAR_R && varTypeDVV[j] == VAR_R)
-	  fnHessians[1](i,j) = 2.*stress/pow(R, 3);
+	  fnHessians[c1i](i,j) = 2.*stress/pow(R, 3);
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_t) ||
 		  (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_w) )
-	  fnHessians[1](i,j) = 1200.*(Y/t + X/w)/w_sq/t_sq/R;
+	  fnHessians[c1i](i,j) = 1200.*(Y/t + X/w)/w_sq/t_sq/R;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_R) ||
 		  (varTypeDVV[i] == VAR_R && varTypeDVV[j] == VAR_w) )
-	  fnHessians[1](i,j) = 600.*(Y/t + 2.*X/w)/w_sq/t/R_sq;
+	  fnHessians[c1i](i,j) = 600.*(Y/t + 2.*X/w)/w_sq/t/R_sq;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_X) ||
 		  (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_w) )
-	  fnHessians[1](i,j) = -1200./w_sq/w/t/R;
+	  fnHessians[c1i](i,j) = -1200./w_sq/w/t/R;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_w) )
-	  fnHessians[1](i,j) = -600./w_sq/t_sq/R;
+	  fnHessians[c1i](i,j) = -600./w_sq/t_sq/R;
 	else if ( (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_R) ||
 		  (varTypeDVV[i] == VAR_R && varTypeDVV[j] == VAR_t) )
-	  fnHessians[1](i,j) = 600.*(2.*Y/t + X/w)/w/t_sq/R_sq;
+	  fnHessians[c1i](i,j) = 600.*(2.*Y/t + X/w)/w/t_sq/R_sq;
 	else if ( (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_X) ||
 		  (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_t) )
-	  fnHessians[1](i,j) = -600./w_sq/t_sq/R;
+	  fnHessians[c1i](i,j) = -600./w_sq/t_sq/R;
 	else if ( (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_t) )
-	  fnHessians[1](i,j) = -1200./w/t_sq/t/R;
+	  fnHessians[c1i](i,j) = -1200./w/t_sq/t/R;
 	else if ( (varTypeDVV[i] == VAR_R && varTypeDVV[j] == VAR_X) ||
 		  (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_R) )
-	  fnHessians[1](i,j) = -600./w_sq/t/R_sq;
+	  fnHessians[c1i](i,j) = -600./w_sq/t/R_sq;
 	else if ( (varTypeDVV[i] == VAR_R && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_R) )
-	  fnHessians[1](i,j) = -600./w/t_sq/R_sq;
+	  fnHessians[c1i](i,j) = -600./w/t_sq/R_sq;
 	else
-	  fnHessians[1](i,j) = 0.;
+	  fnHessians[c1i](i,j) = 0.;
   }
 
   // **** d^2c2/dx^2:
-  if (directFnASV[2] & 4) {
+  if (directFnASV[c2i] & 4) {
     Real D5 = 1./std::sqrt(D2)/D0, D6 = -D1/2./D0/pow(D2,1.5);
     Real D7 = std::sqrt(D2)/D0,    D8 =  D1/2./D0/std::sqrt(D2);
     Real dD2_dX = 2.*X/w_sq/w_sq, dD3_dX = D6*dD2_dX, dD4_dX = D8*dD2_dX;
@@ -470,51 +475,51 @@ int TestDriverInterface::cantilever()
     for (size_t i=0; i<numDerivVars; ++i)
       for (size_t j=0; j<=i; ++j)
 	if (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_w)
-	  fnHessians[2](i,j) = D3*10.*X_sq/pow(w_sq,3)
+	  fnHessians[c2i](i,j) = D3*10.*X_sq/pow(w_sq,3)
 	    - 2.*X_sq/w_sq/w_sq/w*dD3_dw + D4/w_sq - dD4_dw/w;
 	else if (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_t)
-	  fnHessians[2](i,j) = D3*10.*Y_sq/pow(t_sq,3)
+	  fnHessians[c2i](i,j) = D3*10.*Y_sq/pow(t_sq,3)
 	    - 2.*Y_sq/t_sq/t_sq/t*dD3_dt + D4/t_sq - dD4_dt/t;
 	else if (varTypeDVV[i] == VAR_E && varTypeDVV[j] == VAR_E) {
 	  Real dD1_dE = -D1/E, dD4_dE = D7*dD1_dE;
-	  fnHessians[2](i,j) = D4/E/E - dD4_dE/E;
+	  fnHessians[c2i](i,j) = D4/E/E - dD4_dE/E;
 	}
 	else if (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_X)
-	  fnHessians[2](i,j) = D3/w_sq/w_sq + X/w_sq/w_sq*dD3_dX;
+	  fnHessians[c2i](i,j) = D3/w_sq/w_sq + X/w_sq/w_sq*dD3_dX;
 	else if (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_Y)
-	  fnHessians[2](i,j) = D3/t_sq/t_sq + Y/t_sq/t_sq*dD3_dY;
+	  fnHessians[c2i](i,j) = D3/t_sq/t_sq + Y/t_sq/t_sq*dD3_dY;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_t) ||
 		  (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_w) )
-	  fnHessians[2](i,j) = -2.*X_sq/w_sq/w_sq/w*dD3_dt - dD4_dt/w;
+	  fnHessians[c2i](i,j) = -2.*X_sq/w_sq/w_sq/w*dD3_dt - dD4_dt/w;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_E) ||
 		  (varTypeDVV[i] == VAR_E && varTypeDVV[j] == VAR_w) )
-	  fnHessians[2](i,j) = -dD4_dw/E;
+	  fnHessians[c2i](i,j) = -dD4_dw/E;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_X) ||
 		  (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_w) )
-	  fnHessians[2](i,j) = -4.*X*D3/w_sq/w_sq/w + X/w_sq/w_sq*dD3_dw;
+	  fnHessians[c2i](i,j) = -4.*X*D3/w_sq/w_sq/w + X/w_sq/w_sq*dD3_dw;
 	else if ( (varTypeDVV[i] == VAR_w && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_w) )
-	  fnHessians[2](i,j) = Y/t_sq/t_sq*dD3_dw;
+	  fnHessians[c2i](i,j) = Y/t_sq/t_sq*dD3_dw;
 	else if ( (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_E) ||
 		  (varTypeDVV[i] == VAR_E && varTypeDVV[j] == VAR_t) )
-	  fnHessians[2](i,j) = -dD4_dt/E;
+	  fnHessians[c2i](i,j) = -dD4_dt/E;
 	else if ( (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_X) ||
 		  (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_t) )
-	  fnHessians[2](i,j) = X/w_sq/w_sq*dD3_dt;
+	  fnHessians[c2i](i,j) = X/w_sq/w_sq*dD3_dt;
 	else if ( (varTypeDVV[i] == VAR_t && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_t) )
-	  fnHessians[2](i,j) = -4.*Y*D3/t_sq/t_sq/t + Y/t_sq/t_sq*dD3_dt;
+	  fnHessians[c2i](i,j) = -4.*Y*D3/t_sq/t_sq/t + Y/t_sq/t_sq*dD3_dt;
 	else if ( (varTypeDVV[i] == VAR_E && varTypeDVV[j] == VAR_X) ||
 		  (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_E) )
-	  fnHessians[2](i,j) = -dD4_dX/E;
+	  fnHessians[c2i](i,j) = -dD4_dX/E;
 	else if ( (varTypeDVV[i] == VAR_E && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_E) )
-	  fnHessians[2](i,j) = -dD4_dY/E;
+	  fnHessians[c2i](i,j) = -dD4_dY/E;
 	else if ( (varTypeDVV[i] == VAR_X && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_X) )
-	  fnHessians[2](i,j) = X/w_sq/w_sq*dD3_dY;
+	  fnHessians[c2i](i,j) = X/w_sq/w_sq*dD3_dY;
 	else
-	  fnHessians[2](i,j) = 0.;
+	  fnHessians[c2i](i,j) = 0.;
   }
 
   return 0; // no failure
@@ -541,8 +546,8 @@ int TestDriverInterface::mod_cantilever()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-   if (numFns != 3) {
-    Cerr << "Error: Bad number of functions in cantilever direct fn."
+  if (numFns < 2 || numFns > 3) {
+    Cerr << "Error: Bad number of functions in mod_cantilever direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
@@ -562,6 +567,11 @@ int TestDriverInterface::mod_cantilever()
        X = xCM[VAR_X], // horizontal load
        Y = xCM[VAR_Y]; // vertical load
 
+  // allow f,c1,c2 (optimization) or just c1,c2 (calibration)
+  bool objective; size_t c1i, c2i;
+  if (numFns == 2) { objective = false; c1i = 0; c2i = 1; }
+  else             { objective = true;  c1i = 1; c2i = 2; }
+
   // UQ limit state <= 0: don't scale stress by random variable r
   //double g_stress = stress - r;
   //double g_disp   = displ  - D0;
@@ -573,19 +583,19 @@ int TestDriverInterface::mod_cantilever()
        D3 = D1/std::sqrt(D2),   displ = D1*std::sqrt(D2);
 
   // **** f:
-  if (directFnASV[0] & 1)
+  if (objective && (directFnASV[0] & 1))
     fnVals[0] = area;
 
   // **** c1:
-  if (directFnASV[1] & 1)
-    fnVals[1] = stress - R;
+  if (directFnASV[c1i] & 1)
+    fnVals[c1i] = stress - R;
 
   // **** c2:
-  if (directFnASV[2] & 1)
-    fnVals[2] = displ - D0;
+  if (directFnASV[c2i] & 1)
+    fnVals[c2i] = displ - D0;
 
   // **** df/dx:
-  if (directFnASV[0] & 2)
+  if (objective && (directFnASV[0] & 2))
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
       case VAR_w:  fnGrads[0][i] = t;  break; // design var derivative
@@ -594,27 +604,27 @@ int TestDriverInterface::mod_cantilever()
       }
 
   // **** dc1/dx:
-  if (directFnASV[1] & 2)
+  if (directFnASV[c1i] & 2)
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
-      case VAR_w: fnGrads[1][i] = -600.*(Y/t + 2.*X/w)/w_sq/t; break;//des var
-      case VAR_t: fnGrads[1][i] = -600.*(2.*Y/t + X/w)/w/t_sq; break;//des var
-      case VAR_R: fnGrads[1][i] = -1.;          break; // uncertain var deriv
-      case VAR_E: fnGrads[1][i] =  0.;          break; // uncertain var deriv
-      case VAR_X: fnGrads[1][i] =  600./w_sq/t; break; // uncertain var deriv
-      case VAR_Y: fnGrads[1][i] =  600./w/t_sq; break; // uncertain var deriv
+      case VAR_w: fnGrads[c1i][i] = -600.*(Y/t + 2.*X/w)/w_sq/t; break;//des var
+      case VAR_t: fnGrads[c1i][i] = -600.*(2.*Y/t + X/w)/w/t_sq; break;//des var
+      case VAR_R: fnGrads[c1i][i] = -1.;          break; // uncertain var deriv
+      case VAR_E: fnGrads[c1i][i] =  0.;          break; // uncertain var deriv
+      case VAR_X: fnGrads[c1i][i] =  600./w_sq/t; break; // uncertain var deriv
+      case VAR_Y: fnGrads[c1i][i] =  600./w/t_sq; break; // uncertain var deriv
       }
 
   // **** dc2/dx:
-  if (directFnASV[2] & 2)
+  if (directFnASV[c2i] & 2)
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
-      case VAR_w: fnGrads[2][i] = -D3*2.*X_sq/w_sq/w_sq/w - displ/w; break;// dv
-      case VAR_t: fnGrads[2][i] = -D3*2.*Y_sq/t_sq/t_sq/t - displ/t; break;// dv
-      case VAR_R: fnGrads[2][i] =  0.;             break; // unc var deriv
-      case VAR_E: fnGrads[2][i] = -displ/E;        break; // unc var deriv
-      case VAR_X: fnGrads[2][i] =  D3*X/w_sq/w_sq; break; // unc var deriv
-      case VAR_Y: fnGrads[2][i] =  D3*Y/t_sq/t_sq; break; // unc var deriv
+      case VAR_w: fnGrads[c2i][i] = -D3*2.*X_sq/w_sq/w_sq/w - displ/w; break;
+      case VAR_t: fnGrads[c2i][i] = -D3*2.*Y_sq/t_sq/t_sq/t - displ/t; break;
+      case VAR_R: fnGrads[c2i][i] =  0.;             break; // unc var deriv
+      case VAR_E: fnGrads[c2i][i] = -displ/E;        break; // unc var deriv
+      case VAR_X: fnGrads[c2i][i] =  D3*X/w_sq/w_sq; break; // unc var deriv
+      case VAR_Y: fnGrads[c2i][i] =  D3*Y/t_sq/t_sq; break; // unc var deriv
       }
 
   /* Alternative modification: take E out of displ denominator to remove
@@ -628,19 +638,19 @@ int TestDriverInterface::mod_cantilever()
        D3 = D1/std::sqrt(D2), D4 = D1*std::sqrt(D2);
 
   // **** c2:
-  if (directFnASV[2] & 1)
-    fnVals[2] = D4 - D0*E;
+  if (directFnASV[c2i] & 1)
+    fnVals[c2i] = D4 - D0*E;
 
   // **** dc2/dx:
-  if (directFnASV[2] & 2)
+  if (directFnASV[c2i] & 2)
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
-      case VAR_w: fnGrads[2][i] = -D3*2.*X_sq/w_sq/w_sq/w - D4/w; break;//desvar
-      case VAR_t: fnGrads[2][i] = -D3*2.*Y_sq/t_sq/t_sq/t - D4/t; break;//desvar
-      case VAR_R: fnGrads[2][i] =  0.;             break; // unc var deriv
-      case VAR_E: fnGrads[2][i] = -D0;             break; // unc var deriv
-      case VAR_X: fnGrads[2][i] =  D3*X/w_sq/w_sq; break; // unc var deriv
-      case VAR_Y: fnGrads[2][i] =  D3*Y/t_sq/t_sq; break; // unc var deriv
+      case VAR_w: fnGrads[c2i][i] = -D3*2.*X_sq/w_sq/w_sq/w - D4/w; break;// des
+      case VAR_t: fnGrads[c2i][i] = -D3*2.*Y_sq/t_sq/t_sq/t - D4/t; break;// des
+      case VAR_R: fnGrads[c2i][i] =  0.;             break; // unc var deriv
+      case VAR_E: fnGrads[c2i][i] = -D0;             break; // unc var deriv
+      case VAR_X: fnGrads[c2i][i] =  D3*X/w_sq/w_sq; break; // unc var deriv
+      case VAR_Y: fnGrads[c2i][i] =  D3*Y/t_sq/t_sq; break; // unc var deriv
       }
   */
 
@@ -1398,9 +1408,10 @@ int TestDriverInterface::scalable_gerstner()
   return 0; // no failure
 }
 
-void TestDriverInterface::get_genz_coefficients( int num_dims, Real factor, 
-						 int c_type, 
-						 RealVector &c, RealVector &w )
+
+void TestDriverInterface::
+get_genz_coefficients( int num_dims, Real factor, int c_type, 
+		       RealVector &c, RealVector &w )
 {
   c.resize( num_dims );
   w.resize( num_dims );
@@ -1453,8 +1464,9 @@ void TestDriverInterface::get_genz_coefficients( int num_dims, Real factor,
       }
     default:
       throw(std::runtime_error("GetCoefficients() ensure type in [0,1]"));
-    };
-};
+    }
+}
+
 
 int TestDriverInterface::genz()
 {
@@ -1479,60 +1491,63 @@ int TestDriverInterface::genz()
     abort_handler(INTERFACE_ERROR);
   }
 
+  String test;//, resp;
+  if (analysisComponents.empty() ||
+      analysisComponents[analysisDriverIndex].empty())
+    { test = "os1"; /*resp = "generic";*/ }
+  else {
+    StringArray& an_comps = analysisComponents[analysisDriverIndex];
+    test = an_comps[0];
+    //if (an_comps.size() > 1) resp = an_comps[1];
+  }
 
-  String an_comp = (!analysisComponents.empty() && 
-		    !analysisComponents[analysisDriverIndex].empty()) ?
-    analysisComponents[analysisDriverIndex][0] : "os1";
   int coeff_type, fn_type;
   Real factor;
-  if (an_comp == "os1")
+  if (test == "os1")
     { coeff_type = 0; fn_type = 0; factor = 4.5; }
-  else if (an_comp == "os2")
+  else if (test == "os2")
     { coeff_type = 1; fn_type = 0; factor = 4.5; }
-  else if (an_comp == "os3")
+  else if (test == "os3")
     { coeff_type = 2; fn_type = 0; factor = 4.5; }
-  else if (an_comp == "cp1")
+  else if (test == "cp1")
     { coeff_type = 0; fn_type = 1; factor = .25; }
-  else if (an_comp == "cp2")
+  else if (test == "cp2")
     { coeff_type = 1; fn_type = 1; factor = .25; }
-  else if (an_comp == "cp3")
+  else if (test == "cp3")
     { coeff_type = 2; fn_type = 1; factor = .25; }
   else {
-    Cerr << "Error: analysis component specification required in gerstner "
+    Cerr << "Error: analysis component specification required in genz "
 	 << "direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   } 
 
   RealVector c, w;
-  get_genz_coefficients( numVars, factor, 
-			 coeff_type, c, w );
+  get_genz_coefficients( numVars, factor, coeff_type, c, w );
   Real pi = 4.0 * std::atan( 1.0 );
 
   // **** f:
   if (directFnASV[0] & 1) {
     switch (fn_type) {
-    case 0: {
+    case 0:
       fnVals[0] = 2.0 * pi * w[0];
-      for ( int d = 0; d < numVars; d++ ){
+      for ( int d = 0; d < numVars; d++ )
 	fnVals[0] += c[d] * xC[d];
-      }
       fnVals[0] = std::cos( fnVals[0] );
       break;
-    }
-    case 1:{
+    case 1:
       fnVals[0] = 1.0;
       for ( int d = 0; d < numVars; d++ )
-	{
-	  fnVals[0] += c[d]* xC[d];
-	}
-      fnVals[0] = 1.0 / std::pow( fnVals[0], (Real)(numVars+1) );
+	fnVals[0] += c[d]* xC[d];
+      Real expo = -(Real)(numVars+1);
+      //if (resp == "residual") expo /= 2.;// reproduce Genz after sum res^2
+      fnVals[0] = std::pow( fnVals[0], expo );
       break;
-    }
     }
   }
 
   return 0; // no failure
 }
+
 
 int TestDriverInterface::damped_oscillator()
 {
@@ -1541,12 +1556,12 @@ int TestDriverInterface::damped_oscillator()
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if ( numVars < 1 || numVars > 6 || numADIV || numADRV) {
+  if (numVars < 1 || numVars > 6 || numADIV || numADRV) {
     Cerr << "Error: Bad variable types in damped oscillator direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (numFns < 1 ) {
+  if (numFns < 1) {
     Cerr << "Error: Bad number of functions in damped oscillator direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -1557,59 +1572,54 @@ int TestDriverInterface::damped_oscillator()
     abort_handler(INTERFACE_ERROR);
   }
 
-  Real initial_time = 0.;
-  Real dt = 0.3;
+  Real initial_time = 0., dt = 0.3;
   int num_time_steps = numFns;
 
   Real pi = 4.0 * std::atan( 1.0 );
 
-  Real b = 0.1, k = 0.035, F = 0.1, w = 1.0, x0 = 0.5, v0 = 0.;
-  b = xC[0];
-  if ( numVars == 2 )      k  = xC[1];
-  else if ( numVars == 3 ) F  = xC[2];
-  else if ( numVars == 4 ) w  = xC[3];
-  else if ( numVars == 5 ) x0 = xC[4];
-  else v0 = xC[5];
+  Real b = xC[0], k = 0.035, F = 0.1, w = 1.0, x0 = 0.5, v0 = 0.;
+  if ( numVars >= 2 ) k  = xC[1];
+  if ( numVars >= 3 ) F  = xC[2];
+  if ( numVars >= 4 ) w  = xC[3];
+  if ( numVars >= 5 ) x0 = xC[4];
+  if ( numVars >= 6 ) v0 = xC[5];
 
-  // **** f:
-  if (directFnASV[0] & 1) {
-    Real kw = ( k-w*w ), bw = b*w;
+  Real kw = ( k-w*w ), bw = b*w;
+  Real g = b / 2.;
+  Real zeta2 = bw*bw + kw*kw, zeta = std::sqrt(zeta2);
+  Real phi = std::atan( -bw / kw );
+  Real sqrtk = std::sqrt( k );
+  Real wd = sqrtk*std::sqrt( 1.-g*g / k );
+  if ( kw / zeta2 < 0 ) phi += pi;
+  Real B1 = -F*( bw ) / zeta2;
+  Real B2 = F*kw / zeta2;
     
-    Real g = b / 2.;
-    Real zeta = std::sqrt( bw*bw + kw*kw );
-    Real zeta2 = zeta*zeta;
-    Real phi = std::atan( -bw / kw );
-    Real sqrtk = std::sqrt( k );
-    Real wd = sqrtk*std::sqrt( 1.-g*g / k );
-    if ( kw / zeta2 < 0 ) phi += pi;
-    Real B1 = -F*( bw ) / zeta2;
-    Real B2 = F*kw / zeta2;
-    
-    for ( int i=0; i < numFns; i++ ){
-      Real time = initial_time + i*dt;
-      // Steady state solution (y_stead) for rhs = 0
-      Real y_stead = F * std::sin( w*time + phi ) / zeta;
+  for ( int i=0; i < numFns; i++ ) {
+    Real time = initial_time + i*dt;
+    // Steady state solution (y_stead) for rhs = 0
+    Real y_stead = F * std::sin( w*time + phi ) / zeta;
       
-      // Compute transient (y_trans) component of solution
-      Real y_trans = 0.;
-      if ( sqrtk > g ){
-	// Under damped
-	Real A1 = x0-B1;
-	Real A2 = ( v0+g*A1-w*B2 ) / wd;
-	y_trans = std::exp( -g*time )*( A1*std::cos( wd*time ) +
-					  A2*std::sin( wd*time ) );
-      } else {
-	Cerr << "Error: parameters do not result in under-damped solution" 
-	     << std::endl;
-	abort_handler(INTERFACE_ERROR);
-      }
-      fnVals[i] = y_stead + y_trans;
+    // Compute transient (y_trans) component of solution
+    Real y_trans = 0.;
+    if ( sqrtk > g ) {
+      // Under damped
+      Real A1 = x0-B1;
+      Real A2 = ( v0+g*A1-w*B2 ) / wd;
+      y_trans = std::exp( -g*time )*( A1*std::cos( wd*time ) +
+				      A2*std::sin( wd*time ) );
     }
+    else {
+      Cerr << "Error: parameters do not result in under-damped solution" 
+	   << std::endl;
+      abort_handler(INTERFACE_ERROR);
+    }
+
+    //if (directFnASV[i] & 1)
+    fnVals[i] = y_stead + y_trans;
   }
 
   return 0; // no failure
 }
-
 
 
 int TestDriverInterface::log_ratio()
