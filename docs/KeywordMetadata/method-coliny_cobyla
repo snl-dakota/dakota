@@ -22,12 +22,12 @@ regarding all SCOLIB methods </b>
 
 <b> Stopping Critieria </b>
 
-DIRECT can be terminated with:
+COBYLA currently only supports termination based on
  \li \ref method-max_function_evaluations
  \li \c solution_target
 
-COBYLA currently only supports termination based on the \c
-max_function_evaluations and \c solution_target specifications.
+Other method-independent stopping criteria (\c max_iterations and \c
+convergence_tolerance) will be ignored if set.
 
 
 Topics::	package_scolib, package_coliny, local_optimization_methods, constrained
