@@ -1,3 +1,64 @@
+dakota_10d_rosenbrock_queso.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 241 total (241 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.1168394263e+00
+                      1.2256141244e+00
+                      9.4430241290e-01
+                      8.6946817237e-01
+                      1.0448950468e+00
+                      1.1002008690e+00
+                      1.0028071354e+00
+                      1.0082685990e+00
+                      4.1091955602e-01
+                      2.0675251162e-01
+<<<<< Best log posterior       =
+                     -7.5452520541e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 261 total (261 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.4840283223e-01
+                      4.0253714935e-01
+                      8.5732233798e-01
+                      7.3942054864e-01
+                      2.6037508150e-01
+                      5.3636810029e-02
+                      4.0700217569e-01
+                      2.2730181806e-01
+                      6.7889825422e-01
+                      4.4098587110e-01
+<<<<< Best log posterior       =
+                     -1.2212698454e+01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 241 total (241 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.0710682058e-01
+                      1.3219480646e-01
+                     -5.6652163997e-03
+                      9.8182989497e-03
+                      6.3225020100e-02
+                      3.6854419642e-02
+                     -2.3033412354e-03
+                     -2.5895058938e-02
+                     -1.0331659000e-02
+                     -2.9752541710e-02
+<<<<< Best log posterior       =
+                     -1.5762735628e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 261 total (261 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.7913086474e-01
+                      9.6990320524e-01
+                      9.4326554210e-01
+                      9.0256458009e-01
+                      8.2242740639e-01
+                      7.0525744187e-01
+                      5.6261732258e-01
+                      3.3977671318e-01
+                      1.2005028082e-01
+                      8.5113423133e-02
+<<<<< Best log posterior       =
+                     -1.4439501772e+01
 dakota_4level.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
@@ -2894,12 +2955,12 @@ Test Number 3 succeeded
 <<<<< Best log posterior       =
                      -3.0545204301e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 1792 total (1792 new, 0 duplicate)
+<<<<< Function evaluation summary: 1740 total (1740 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8504617351e+07
-                      2.5036481761e+00
+                      2.8622938341e+07
+                      2.5041462548e+00
 <<<<< Best log posterior       =
-                     -2.3458873114e+01
+                     -2.3649305524e+01
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
@@ -4368,6 +4429,20 @@ Test Number 24 succeeded
                       1.7272623860e+00
 <<<<< Best log posterior       =
                      -3.5821631546e+00
+Test Number 25 succeeded
+<<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0083435670e+00
+                      1.0161092301e+00
+<<<<< Best log posterior       =
+                     -1.3864059043e+00
+Test Number 26 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.8907705568e-01
+                      9.7813073635e-01
+<<<<< Best log posterior       =
+                     -1.3864157078e+00
 dakota_sbo_hierarchical.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
