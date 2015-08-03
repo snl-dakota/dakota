@@ -31,7 +31,7 @@ variables,
           descriptors 't' 'R' 'X' 'Y' 
 
 interface,								
-        system
+        direct
           analysis_driver = 'mod_cantilever'
 
 responses,								

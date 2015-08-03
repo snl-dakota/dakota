@@ -2929,38 +2929,38 @@ dakota_cantilever_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8727141660e+07
-                      2.5002397601e+00
+                      2.8691852474e+07
+                      2.4998843409e+00
 <<<<< Best log posterior       =
-                     -3.0473907151e+01
+                     -3.0416893292e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8626895001e+07
-                      2.5014413312e+00
+                      2.8648655053e+07
+                      2.5015668110e+00
 <<<<< Best log posterior       =
-                     -3.0545204301e+01
+                     -3.0504396379e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8727141660e+07
-                      2.5002397601e+00
+                      2.8691852474e+07
+                      2.4998843409e+00
 <<<<< Best log posterior       =
-                     -3.0473907151e+01
+                     -3.0416893292e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8626895001e+07
-                      2.5014413312e+00
+                      2.8648655053e+07
+                      2.5015668110e+00
 <<<<< Best log posterior       =
-                     -3.0545204301e+01
+                     -3.0504396379e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 1740 total (1740 new, 0 duplicate)
+<<<<< Function evaluation summary: 1792 total (1792 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.8622938341e+07
-                      2.5041462548e+00
+                      2.8738985947e+07
+                      2.5002695689e+00
 <<<<< Best log posterior       =
-                     -2.3649305524e+01
+                     -2.3364852215e+01
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)

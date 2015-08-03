@@ -15,7 +15,7 @@ method,
 #	    gaussian_process dakota   emulator_samples = 30	#p4,#p12
 #	    posterior_adaptive					#p5,#p6,#p8,#p14,#p26
 #	      max_iterations = 10				#p5,#p6,#p8,#p14,#p26
-#	      convergence_tolerance = 1.e-13			#p6
+#	      convergence_tolerance = 1.e-14			#p6
 #	    standardized_space					#p11,#p12,#p13,#p14,#p17,#p20,#p23
 	  proposal_covariance
 	    derivatives	
