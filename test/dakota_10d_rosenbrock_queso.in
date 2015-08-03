@@ -29,9 +29,9 @@ interface,
 
 responses,								
 	calibration_terms = 10    #p0,#p1 		# extended: #fn = #var
-        calibration_data_file = 'dakota_ext_rosenbrock_queso.withsigma.dat' #p0,#p1
+        calibration_data_file = 'dakota_10d_rosenbrock_queso.10withsigma.dat' #p0,#p1
 #	calibration_terms = 18    #p2,#p3 		# generalized: #fn = 2(#var-1)
-#       calibration_data_file = 'dakota_gen_rosenbrock_queso.withsigma.dat' #p2,#p3
+#       calibration_data_file = 'dakota_10d_rosenbrock_queso.18withsigma.dat' #p2,#p3
           freeform num_experiments = 1 variance_type = 'scalar'
  	no_gradients
 	no_hessians
