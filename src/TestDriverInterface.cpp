@@ -1572,8 +1572,9 @@ int TestDriverInterface::damped_oscillator()
     abort_handler(INTERFACE_ERROR);
   }
 
-  Real initial_time = 0., dt = 0.3;
-  int num_time_steps = numFns;
+  Real initial_time = 0., final_time = 20., //delta_t = 0.3;
+    delta_t = (final_time - initial_time) / numFns;
+  //int num_time_steps = numFns;
 
   Real pi = 4.0 * std::atan( 1.0 );
 
@@ -1584,38 +1585,34 @@ int TestDriverInterface::damped_oscillator()
   if ( numVars >= 5 ) x0 = xC[4];
   if ( numVars >= 6 ) v0 = xC[5];
 
-  Real kw = ( k-w*w ), bw = b*w;
-  Real g = b / 2.;
+  Real kw = ( k-w*w ), bw = b*w, g = b / 2.;
   Real zeta2 = bw*bw + kw*kw, zeta = std::sqrt(zeta2);
   Real phi = std::atan( -bw / kw );
   Real sqrtk = std::sqrt( k );
   Real wd = sqrtk*std::sqrt( 1.-g*g / k );
   if ( kw / zeta2 < 0 ) phi += pi;
-  Real B1 = -F*( bw ) / zeta2;
-  Real B2 = F*kw / zeta2;
-    
-  for ( int i=0; i < numFns; i++ ) {
-    Real time = initial_time + i*dt;
-    // Steady state solution (y_stead) for rhs = 0
-    Real y_stead = F * std::sin( w*time + phi ) / zeta;
-      
-    // Compute transient (y_trans) component of solution
-    Real y_trans = 0.;
-    if ( sqrtk > g ) {
-      // Under damped
-      Real A1 = x0-B1;
-      Real A2 = ( v0+g*A1-w*B2 ) / wd;
-      y_trans = std::exp( -g*time )*( A1*std::cos( wd*time ) +
-				      A2*std::sin( wd*time ) );
-    }
-    else {
-      Cerr << "Error: parameters do not result in under-damped solution" 
-	   << std::endl;
-      abort_handler(INTERFACE_ERROR);
-    }
+  Real B1 = -F*( bw ) / zeta2, B2 = F*kw / zeta2,
+       A1 = x0-B1,             A2 = ( v0+g*A1-w*B2 ) / wd;
 
-    //if (directFnASV[i] & 1)
-    fnVals[i] = y_stead + y_trans;
+  if ( sqrtk <= g ) {
+    Cerr << "Error: damped_oscillator parameters do not result in under-damped "
+	 << "solution." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // always include response at final_time plus additional time steps;
+  // response at initial time isn't included as it isn't a fn of some params.
+  Real time = initial_time, y_stead, y_trans;
+  for (size_t i=0; i<numFns; ++i) {
+    time += delta_t;
+    if (directFnASV[i] & 1) {
+      // Steady state solution (y_stead) for rhs = 0
+      y_stead = F * std::sin( w*time + phi ) / zeta;
+      // Compute transient (y_trans) component of solution
+      y_trans = std::exp( -g*time )*( A1 * std::cos( wd*time ) +
+				      A2 * std::sin( wd*time ) );
+      fnVals[i] = y_stead + y_trans;
+    }
   }
 
   return 0; // no failure
