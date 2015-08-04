@@ -8,7 +8,7 @@
 
 //- Class:	 VPSApproximation
 //- Description: Class implementation of Voronoi Piecewise Surrogate Approximation
-//- Owner:       Mohamed Ebeida
+//- Owner:       Mohamed Ebeida and Ahmad Rushdi
 //- Checked by:
 //- Version:
 
@@ -205,7 +205,7 @@ private:
     
         enum subsurrogate{LS, GP};
         enum subsurrogate_basis{polynomial, radial};
-        enum testfunction{SmoothHerbie, Herbie, UnitSphere};
+        enum testfunction{SmoothHerbie, Herbie, Cone, Cross, UnitSphere, Linear34};
         
         subsurrogate       _vps_subsurrogate;
         subsurrogate_basis _vps_subsurrogate_basis;

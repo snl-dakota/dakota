@@ -8,7 +8,7 @@
 
 //- Class:	 VPSApproximation
 //- Description: Class implementation for Voronoi Piecewise Surrogate Approximation
-//- Owner:       Mohamed Ebeida
+//- Owner:       Mohamed Ebeida and Ahmad Rushdi
 //- Checked by:
 //- Version:
 //-------------------------------------------------------------------------
@@ -47,7 +47,7 @@ namespace Dakota
         if (surrogate_type != "global_kriging" && surrogate_type != "global_polynomial" &&
 	        surrogate_type != "global_radial_basis")
         {
-            Cerr << "\nError: Piecewise decomp not available for " << surrogate_type
+            Cerr << "\nError: Domain decomposition option is not available for " << surrogate_type
                  << " surrogate; consider polynomial regression, GP, or RBF" << std::endl;
             abort_handler(-1);
         }
@@ -66,13 +66,13 @@ namespace Dakota
             surrogateOrder = problem_db.get_short("model.surrogate.polynomial_order");
         }
 
-        std::cout << "*** VPS:: Initializing, Surrogate order " << surrogateOrder << std::endl;
-        std::cout << "*** VPS:: Initializing, Surrogate type " << surrogate_type << std::endl;
+        std::cout << ".: VPS :.   Initializing, Surrogate order " << surrogateOrder << "." << std::endl;
+        std::cout << ".: VPS :.   Initializing, Surrogate type " << surrogate_type <<  "." << std::endl;
         
         _use_derivatives = problem_db.get_bool("model.surrogate.derivative_usage");
         
-        if (_use_derivatives) std::cout << "*** VPS:: Use derivatives!!" << std::endl;
-        else                  std::cout << "*** VPS:: Do not use derivatives!!" << std::endl;
+        if (_use_derivatives) std::cout << ".: VPS :.   Derivatives' information will be used for approximation." << std::endl;
+        else                  std::cout << ".: VPS :.   Approximation will not use derivatives' information." << std::endl;
 
     }
     
@@ -85,7 +85,7 @@ namespace Dakota
         
         surrogateOrder = dat->approxOrder;
         
-        std::cout << "*** VPS:: Initializing, Surrogate order = " << surrogateOrder << std::endl;
+        //std::cout << ".: VPS :.   Initializing, Surrogate order = " << surrogateOrder << "." << std::endl;
         
         _disc_min_jump = DBL_MAX; _disc_min_grad = DBL_MAX;
         
@@ -105,11 +105,10 @@ namespace Dakota
     bool VPSApproximation::VPS_execute()
     {
         
-        //*** Test function for debugging only
-        _vps_test_function = SmoothHerbie;
-        
         #ifdef DEBUG_TEST_FUNCTION
-        std::cout<< "*** VPS::Debug Mode ***" << std::endl;
+        //*** Test function for debugging only
+        _vps_test_function = Cone;
+        // Functions available for debugging: {SmoothHerbie, Herbie, Cone, Cross, UnitSphere, Linear34}
         #endif
         
         initiate_random_number_generator(1234567890);
@@ -135,13 +134,13 @@ namespace Dakota
         
         if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == radial)
         {
-            std::cout<<"VPS:: Building Radial Basis Functions ... ";
+            std::cout<<".: VPS :.   Constructing Radial Basis Functions.";
             
             for (size_t isample = 0; isample < _num_inserted_points; isample++)
             {
                 build_radial_basis_function(isample);
             }
-            std::cout << " done!" << std::endl;
+            //std::cout << " done!" << std::endl;
         }
         
         // initiate extended neighbors with seed neighbors
@@ -215,11 +214,17 @@ namespace Dakota
             size_t av_num_basis(0);
             for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++) av_num_basis+= _num_cell_basis_functions[ipoint];
             av_num_basis/= _num_inserted_points;
-            std::cout << "VPS::    Av. Number of basis functions = " << std::fixed << av_num_basis << std::endl;
-            std::cout << "VPS::    Number of GMRES solves = " << std::fixed << _num_GMRES << std::endl;
+            
+            //
+            std::cout << std::endl;
+            std::cout << "-- Least Squares results --" << std::endl;
+            std::cout << ".: VPS :.   Average Number of polynomial coefficients = " << std::fixed << av_num_basis << "." << std::endl;
+            std::cout << ".: VPS :.   Number of GMRES solves = " << std::fixed << _num_GMRES << "." << std::endl;
         }
         
-        std::cout << "VPS::    VPS Surrogate built in " << std::fixed << cpu_time << " seconds." << std::endl;
+        std::cout << std::endl;
+        std::cout << "================================================================== " << std::endl;
+        std::cout << ".: VPS :.   Global surrogate constructed in " << std::fixed << cpu_time << " seconds." << std::endl;
         
         #ifdef DEBUG_TEST_FUNCTION
         std::vector<double> contours;
@@ -232,63 +237,84 @@ namespace Dakota
         plot_neighbors();
         #endif
         
-        
-        
         return true;
     }
     
     void VPSApproximation::VPS_create_containers()
     {
+        #ifdef DEBUG_TEST_FUNCTION
+        std::cout << std::endl;
+        std::cout << ".: VPS Debug Mode :." << std::endl;
+        std::cout << "======================" << std::endl;
+        #else
+        std::cout << std::endl;
+        std::cout << ".: VPS Running Mode :." << std::endl;
+        std::cout << "======================" << std::endl;
+        #endif
         
-        if (_vps_subsurrogate == LS)
-        {
-            if( _vps_subsurrogate_basis == polynomial)
-                std::cout << "*** VPS:: LS_polynomials subsurrogates are initiated with order = " << surrogateOrder << std::endl;
-            else
-                std::cout << "*** VPS:: LS_RBF subsurrogates are initiated!" << std::endl;
-        }
-        else if (_vps_subsurrogate == GP)
-        {
-            std::cout << "*** VPS:: GP subsurrogates are initiated" << std::endl;
-        }
+        // =======================
+        // Problem Info
+        //std::cout<< ".: VPS :.   Transfering data to surrogate ... " << std::endl;
         
-        // ---------------------------
-        if (_disc_min_jump < 1E-10)
-        {
-            _disc_min_jump = DBL_MAX;
-            std::cout << "*** VPS: No discontinuity detection information based on function values!" << std::endl;
-        }
-        else
-        {
-            std::cout << "*** VPS: Discontinuity jump threshold = " << _disc_min_jump << std::endl;
-        }
-        // ---------------------------
-        if (_disc_min_grad < 1E-10)
-        {
-            _disc_min_grad = DBL_MAX;
-            std::cout << "*** VPS: No discontinuity detection information based on gradient!" << std::endl;
-        }
-        else
-        {
-            std::cout << "*** VPS: Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
-        }
-        // ---------------------------
-        
-        std::cout<< "VPS::    Transfering data to surrogate ... " << std::endl;
+        std::cout << std::endl;
+        std::cout << "-- Problem Info --" << std::endl;
         
         numObs = approxData.points(); // number of points
         size_t num_v = sharedDataRep->numVars;  // number of variables
         
-        
-        std::cout<< "VPS:     Number of sample points = " << numObs << std::endl;
+        std::cout<< ".: VPS :.   Constructing a surrogate using " <<  numObs << " sample points." << std::endl;
         _num_inserted_points = numObs;
         
-        std::cout<< "VPS::    Number of dimensions = " << num_v << std::endl;
+        std::cout<< ".: VPS :.   Problem dimensions = " << num_v << "." << std::endl;
         _n_dim = num_v;
         
-        std::cout<< "VPS::    Surrogate Order = " << surrogateOrder << std::endl;
+        std::cout<< ".: VPS :.   Surrogate order = " << surrogateOrder << "." << std::endl;
         _vps_order = surrogateOrder;
         
+        // =======================
+        // Surrogate type
+        std::cout << std::endl;
+        std::cout << "-- Surrogate Type --" << std::endl;
+        
+        if (_vps_subsurrogate == LS)
+        {
+            if( _vps_subsurrogate_basis == polynomial)
+                std::cout << ".: VPS :.   Solving Least Squares (LS) for a polynomial regression surrogate." << std::endl;
+            else
+                std::cout << ".: VPS :.   Solving Least Squares (LS) for a Radial Basis Functions (RBF) surrogate." << std::endl;
+        }
+        else if (_vps_subsurrogate == GP)
+        {
+            std::cout << ".: VPS :.   Constructing a Gaussian Process (GP) surrogate." << std::endl;
+        }
+        
+        // =======================
+        // Discontinuity Detection
+        std::cout << std::endl;
+        std::cout << "-- Discontinuity Detection Capability --" << std::endl;
+        
+        if (_disc_min_jump < 1E-10)
+        {
+            _disc_min_jump = DBL_MAX;
+            std::cout << ".: VPS :.   Based on function evaluations: disabled." << std::endl;
+        }
+        else
+        {
+            std::cout << ".: VPS :.   Based on function evaluations: Enabled." << std::endl;
+            std::cout << ".: VPS :.   Discontinuity jump threshold = " << _disc_min_jump << std::endl;
+        }
+
+        if (_disc_min_grad < 1E-10)
+        {
+            _disc_min_grad = DBL_MAX;
+            std::cout << ".: VPS :.   Based on gradients: disabled." << std::endl;
+        }
+        else
+        {
+            std::cout << ".: VPS :.   Based on gradients: Enabled." << std::endl;
+            std::cout << ".: VPS :.   Discontinuity gradient threshold = " << _disc_min_grad << std::endl;
+        }
+        // =======================
         
         // domain bounds
         _xmin = new double[_n_dim];
@@ -328,11 +354,36 @@ namespace Dakota
         _f_max = -_f_min;
         
         #ifdef DEBUG_TEST_FUNCTION
+        
         if (_vps_test_function == SmoothHerbie || _vps_test_function == Herbie)
         {
             for (size_t idim = 0; idim < _n_dim; idim++)
             {
                 _xmin[idim] = -2.0;
+                _xmax[idim] = 2.0;
+            }
+        }
+        else if (_vps_test_function == Cone)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _xmin[idim] = -1.0;
+                _xmax[idim] =  1.0;
+            }
+        }
+        else if (_vps_test_function == Cross)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _xmin[idim] = 0.0;
+                _xmax[idim] = 1.0;
+            }
+        }
+        else if (_vps_test_function == Linear34)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _xmin[idim] = 0.0;
                 _xmax[idim] = 2.0;
             }
         }
@@ -358,9 +409,9 @@ namespace Dakota
         double h_mps = _diag / std::sqrt((double) _n_dim);
         
         double r_mps = 0.8 * h_mps / pow(_num_inserted_points, 1.0 / _n_dim);
-        std::cout << "VPS::DEBUG: h = " << h_mps << " , r_MPS = " << r_mps;
+        //std::cout << ".: VPS :.   DEBUG: h = " << h_mps << " , r_MPS = " << r_mps;
         generate_poisson_disk_sample(r_mps);
-        std::cout << " ... done!" << std::endl;
+        //std::cout << " ... done!" << std::endl;
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
             _fval[ipoint] = f_test(_sample_points[ipoint]);
@@ -368,6 +419,11 @@ namespace Dakota
             if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
             if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
         }
+        
+        // =======================
+        // Gradients and Hessians
+        std::cout << std::endl;
+        std::cout << "-- Gradients & Hessians --" << std::endl;
         
         // Retrieve function gradients: If first point has gradients, I am assuming all points have
         if (_use_derivatives && approxData.response_active_bits(0) & 2)
@@ -380,16 +436,20 @@ namespace Dakota
                 _fgrad[ipoint] = new double[_n_dim];
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
-                    _fgrad[ipoint][idim] = fn_grad[idim];
+                    _fgrad[ipoint][idim] = fn_grad[idim] * (_xmax[idim] - _xmin[idim]);
+                    
+                    //std::cout<< "*** For ipoint = " << ipoint << " and idim = " << idim << ":" << std::endl;
+                    //std::cout<< "*** VPS::  fgrad = " << _fgrad[ipoint][idim] << std::endl;
+
                 }
                 delete[] fn_grad;
             }
-            std::cout<< "*** VPS:: has gradient!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Using gradient information." << std::endl;
         }
         else
         {
             _use_gradient = false;
-            std::cout<< "*** VPS:: has NO gradient!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Not using gradient information." << std::endl;
         }
         
         // Retrieve function hessians: If first point has gradients, I am assuming all points have
@@ -406,19 +466,30 @@ namespace Dakota
                     _fhess[ipoint][idim] = new double[_n_dim];
                     for (size_t jdim = 0; jdim < _n_dim; jdim++)
                     {
-                        _fhess[ipoint][idim][jdim] = fn_hessian[idim][jdim];
+                        _fhess[ipoint][idim][jdim] = fn_hessian[idim][jdim] * (_xmax[idim] - _xmin[idim]) * (_xmax[jdim] - _xmin[jdim]);
                     }
                     delete[] fn_hessian[idim];
                 }
                 delete[] fn_hessian;
             }
-            std::cout<< "*** VPS:: has hessian!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Using hessian information." << std::endl;
         }
         else
         {
             _use_hessian = false;
-            std::cout<< "*** VPS:: has NO hessian!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Not using hessian information." << std::endl;
         }
+        
+        // =====
+        // scale input domain to be a unit box
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _sample_points[ipoint][idim] = (_sample_points[ipoint][idim] - _xmin[idim]) / (_xmax[idim] - _xmin[idim]);
+            }
+        }
+        // =====
 
         #else
         
@@ -457,6 +528,10 @@ namespace Dakota
         }
         _diag = std::sqrt((double)_n_dim);
         
+        // =======================
+        // Gradients and Hessians
+        std::cout << std::endl;
+        std::cout << "-- Gradients & Hessians --" << std::endl;
         
         // Retrieve function gradients: If first point has gradient, I am assuming all points have gradients
         if (_use_derivatives && approxData.response_active_bits(0) & 2)
@@ -472,12 +547,12 @@ namespace Dakota
                     _fgrad[ipoint][idim] = fn_grad[idim] * (_xmax[idim] - _xmin[idim]);
                 }
             }
-            std::cout<< "*** VPS:: has gradient!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Using gradient information." << std::endl;
         }
         else
         {
             _use_gradient = false;
-            std::cout<< "*** VPS:: has NO gradient!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Not using gradient information." << std::endl;
         }
         
         // Retrieve function hessians: If first point has hessian, I am assuming all points have hessians
@@ -498,13 +573,25 @@ namespace Dakota
                     }
                 }
             }
-            std::cout<< "*** VPS:: has hessian!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Using hessian information." << std::endl;
         }
         else
         {
             _use_hessian = false;
-            std::cout<< "*** VPS:: has NO hessian!!!! " << std::endl;
+            std::cout<< ".: VPS :.   Not using hessian information." << std::endl;
         }
+        
+        // =====
+        // scale input domain to be a unit box
+        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
+        {
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                _sample_points[ipoint][idim] = (_sample_points[ipoint][idim] - _xmin[idim]) / (_xmax[idim] - _xmin[idim]);
+            }
+        }
+        // =====
+        
         #endif
         
         
@@ -543,7 +630,7 @@ namespace Dakota
         }
         else
         {
-            std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
+            std::cout<< ".: VPS :.   ERROR! Unknown Surrogate Type! " << std::endl;
         }
     }
     
@@ -784,7 +871,7 @@ namespace Dakota
         }
         else
         {
-            std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
+            std::cout<< ".: VPS :.   ERROR! Unknown Surrogate Type! " << std::endl;
         }
     }
     
@@ -805,6 +892,15 @@ namespace Dakota
                 
                 double yi = evaluate_basis_function(x_vps, iclosest, ibasis);
                 f_VPS += wi * yi;
+                
+                //if ((fabs(x[0] - 1) < 1E-10) && (fabs(x[1] - 1) < 1E-10))
+                //{
+                //    std::cout<< "(x,y)[iclosest] = (" << _sample_points[iclosest][0] << "," << _sample_points[iclosest][1] << ")" << std::endl;
+                //    std::cout<< "f[iclosest] = " << _fval[iclosest] << std::endl;
+                //    std::cout << "Weight = " << wi << std::endl;
+                //    std::cout << "Poly term = " << yi << std::endl;
+                //}
+                    
             }
             return f_VPS;
         }
@@ -820,7 +916,7 @@ namespace Dakota
         }
         else
         {
-            std::cout<< "VPS:: ERROR!! UNKNOWN SUBSURROGATE!! " << std::endl;
+            std::cout<< ".: VPS :.   ERROR! Unknown Surrogate Type! " << std::endl;
         }
         delete[] x_vps;
         return 0.0;
@@ -1083,6 +1179,7 @@ namespace Dakota
         }
         */
         
+        
         delete[] t;
     }
     
@@ -1174,7 +1271,8 @@ namespace Dakota
 
         if (_use_derivatives && _use_gradient && surrogateOrder >= 1 && _vps_subsurrogate_basis == polynomial)
         {
-            _vps_w[cell_index][0] = f_test(_sample_points[cell_index]); num_basis_resolved++;
+            _vps_w[cell_index][0] = _fval[cell_index];
+            num_basis_resolved++;
             
             double* gradf = _fgrad[cell_index];
             for (size_t idim = 1; idim <= _n_dim; idim++)
@@ -1210,6 +1308,8 @@ namespace Dakota
             
         }
         
+        //std::cout << "*** num_basis = " << num_basis << std::endl;
+        //std::cout << "*** num_basis_resolved = " << num_basis_resolved << std::endl;
 
         if (num_basis_resolved == num_basis)
         {
@@ -1346,7 +1446,7 @@ namespace Dakota
         
         if (fabs(H[0][0]) < 1E-10)
         {
-            std::cout << "Contrained Least Square: Dividing by zero" << std::endl;
+            std::cout << ".: VPS :.   Contrained Least Square: Dividing by zero." << std::endl;
             return 1;
         }
         
@@ -1910,7 +2010,29 @@ namespace Dakota
             }
             fval = -fval;
             return fval;
-
+        }
+        else if (_vps_test_function == Cone)
+        {
+            double fval = 0.0;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                double xm = x[idim];
+                fval += xm * xm;
+            }
+            fval = sqrt(fval);
+            return fval;
+        }
+        else if (_vps_test_function == Cross)
+        {
+            double fval = 1.0;
+            const double pi = 3.14159265358979324;
+            double dpow = 1.0 / _n_dim;
+            for (size_t idim = 0; idim < _n_dim; idim++)
+            {
+                fval *= 0.5 * (1.0 + std::cos(2.0 * pi * x[idim]));
+            }
+            fval = std::pow(fval, dpow);
+            return fval;
         }
         else if (_vps_test_function == UnitSphere)
         {
@@ -1925,6 +2047,16 @@ namespace Dakota
             if (h < 0.5) return 1.0;
             return 0.0;
         }
+        else if (_vps_test_function == Linear34)
+        {
+            // linear :: 3* x_1 + 4 * x_2 + \sum x_i
+            double fval = 3.0 * x[0] + 4 * x[1];
+            for (size_t idim = 2; idim < _n_dim; idim++)
+            {
+                fval += x[idim];
+            }
+            return fval;
+        }
         return 0.0;
     }
     
@@ -1934,11 +2066,11 @@ namespace Dakota
         double* grad = new double[_n_dim];
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
-            x[idim]+= eps;
+            x[idim] += eps;
             double fp = f_test(x);
-            x[idim]-= 2 * eps;
+            x[idim] -= 2 * eps;
             double fm = f_test(x);
-            x[idim]+=eps;
+            x[idim] += eps;
             grad[idim] = (fp - fm) / (2 * eps);
         }
         return grad;
@@ -2366,6 +2498,9 @@ namespace Dakota
     
     void VPSApproximation::isocontouring_solid(std::string file_name, bool plot_test_function, bool plot_surrogate, std::vector<double> contours)
     {
+        
+        //std::cout << ".: VPS Debug Mode :. Plotting ps files .... " << std::endl;
+        
         std::fstream file(file_name.c_str(), std::ios::out);
         file << "%!PS-Adobe-3.0" << std::endl;
         file << "72 72 scale     % one unit = one inch" << std::endl;
@@ -2394,7 +2529,6 @@ namespace Dakota
             shift_y = 1.0 - ymin * scale;
         }
         file << shift_x << " " << shift_y << " translate" << std::endl;
-        
         
         file << "/redseg      % stack: x1 y1 x2 y2" << std::endl;
         file << "{newpath" << std::endl;
@@ -2531,8 +2665,13 @@ namespace Dakota
         std::vector<double> poly_x;
         std::vector<double> poly_y;
         
-        size_t num_cells(1000);
+        size_t num_cells(100);
         double* xx = new double[2];
+        
+        //xx[0] = 1.0; xx[1] = 1.0;
+        //double ff = VPS_evaluate_surrogate(xx);
+        //std::cout << " Function value at origin = " << ff << std::endl;
+
         double sx = 1.0 * (_xmax[0] - _xmin[0]) / num_cells;
         double sy = 1.0 * (_xmax[1] - _xmin[1]) / num_cells;
         for (size_t i = 0; i < num_cells; i++)
@@ -2994,19 +3133,20 @@ namespace Dakota
         
         for (size_t isample = 0; isample < _num_inserted_points; isample++)
         {
-            //std::cout << "ipoint = " << isample << " : x = ";
-            //for (size_t idim = 0; idim < _n_dim; idim++) std::cout << _sample_points[isample][idim] << " ";
-            //std::cout << std::endl;
-            
             size_t num_neighbors = 0;
             if (_sample_neighbors[isample] != 0) num_neighbors = _sample_neighbors[isample][0];
             
             for (size_t i = 1; i <= num_neighbors; i++)
             {
                 size_t neighbor = _sample_neighbors[isample][i];
+                double sample_x = _xmin[0] + _sample_points[isample][0] * (_xmax[0] - _xmin[0]);
+                double sample_y = _xmin[1] + _sample_points[isample][1] * (_xmax[1] - _xmin[1]);
+                double neighbor_x = _xmin[0] + _sample_points[neighbor][0] * (_xmax[0] - _xmin[0]);
+                double neighbor_y = _xmin[1] + _sample_points[neighbor][1] * (_xmax[1] - _xmin[1]);
+                
                 // draw a line between isample and neighbor
-                file << _sample_points[isample][0] * scale << "  " << _sample_points[isample][1] * scale << "  ";
-                file << _sample_points[neighbor][0] * scale << "  " << _sample_points[neighbor][1] * scale << "  ";
+                file << sample_x * scale << "  " << sample_y * scale << "  ";
+                file << neighbor_x * scale << "  " << neighbor_y * scale << "  ";
                 file << "blueseg"     << std::endl;
             }
         }
@@ -3015,8 +3155,11 @@ namespace Dakota
         for (size_t index = 0; index < _num_inserted_points; index++)
         {
             // plot vertex
-            file << _sample_points[index][0] * scale << "  " << _sample_points[index][1] * scale << "  " << s * scale << " ";
-            file << "blackfcirc"     << std::endl; // non-failure disk
+            double sample_x = _xmin[0] + _sample_points[index][0] * (_xmax[0] - _xmin[0]);
+            double sample_y = _xmin[1] + _sample_points[index][1] * (_xmax[1] - _xmin[1]);
+
+            file << sample_x * scale << "  " << sample_y * scale << "  " << s * scale << " ";
+            file << "blackfcirc" << std::endl; // non-failure disk
         }
         
         double DX = _xmax[0] - _xmin[0];
@@ -3058,7 +3201,6 @@ namespace Dakota
         file << "showpage" << std::endl;
         
     }
-    
     
     //////////////////////////////////////////////////////////////////////////////////////////
     ////// Inherited method from parent class
