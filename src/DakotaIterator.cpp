@@ -35,6 +35,7 @@
 #include "NonDLocalSingleInterval.hpp"
 #include "NonDLHSSingleInterval.hpp"
 #include "NonDPOFDarts.hpp"
+#include "NonDRKDDarts.hpp"
 #include "SurrBasedLocalMinimizer.hpp"
 #include "SurrBasedGlobalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
@@ -391,6 +392,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     } break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
   case POF_DARTS: return new NonDPOFDarts(problem_db, model);          break;
+  case RKD_DARTS: return new NonDRKDDarts(problem_db, model);          break;
   case IMPORTANCE_SAMPLING:
     return new NonDAdaptImpSampling(problem_db, model);  break;
 #ifdef HAVE_ADAPTIVE_SAMPLING
@@ -739,6 +741,7 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case SPARSE_GRID_INTEGRATION: return String("sparse_grid"); break;
   case GPAIS:                   return String("gpais"); break;
   case POF_DARTS:               return String("pof_darts"); break;
+  case RKD_DARTS:               return String("rkd_darts"); break;
   case IMPORTANCE_SAMPLING:     return String("importance_sampling"); break;
   case ADAPTIVE_SAMPLING:       return String("adaptive_sampling"); break;
   case RANDOM_SAMPLING:         return String("random_sampling"); break;
@@ -821,6 +824,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "sparse_grid") return SPARSE_GRID_INTEGRATION;
   else if (method_name == "gpais")                 return GPAIS;
   else if (method_name == "pof_darts")             return POF_DARTS;
+  else if (method_name == "rkd_darts")             return RKD_DARTS;
   else if (method_name == "importance_sampling")   return IMPORTANCE_SAMPLING;
   else if (method_name == "adaptive_sampling")     return ADAPTIVE_SAMPLING;
   else if (method_name == "random_sampling")       return RANDOM_SAMPLING;
