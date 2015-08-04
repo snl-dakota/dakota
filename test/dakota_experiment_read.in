@@ -4,7 +4,7 @@
 #@ s5: ReqFiles=oscillatorB.1.coords,oscillatorB.1.dat,oscillatorB.1.sigma,oscillatorB.coords
 #@ s6: ReqFiles=oscillatorB.1.coords,oscillatorB.1.dat,oscillatorB.1.sigma,oscillatorB.coords,oscillatorB.2.dat,oscillatorB.2.sigma,oscillatorB.2.coords
 #@ s7: ReqFiles=oscB_scalar1.1.dat,oscB_scalar2.1.dat,oscB_scalar3.1.dat,oscB_scalar4.1.dat,oscB_scalar5.1.dat,oscB_scalar1.1.sigma,oscB_scalar4.1.sigma,oscB_scalar5.1.sigma
-#@ s8: ReqFiles=oscillatorC.1.dat,oscillatorC.1.sigma,oscB_scalar.summary
+#@ s8: ReqFiles=oscillatorC.1.dat,oscB_scalar.summary
 # Test the experiment data read capability (scalars, field data, mixed) 
 # under a variety of conditions (sigma terms) and specification 
 # options. 
