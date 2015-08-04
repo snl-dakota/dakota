@@ -4,10 +4,20 @@
 #@ s5: ReqFiles=oscillatorB.1.coords,oscillatorB.1.dat,oscillatorB.1.sigma,oscillatorB.coords
 #@ s6: ReqFiles=oscillatorB.1.coords,oscillatorB.1.dat,oscillatorB.1.sigma,oscillatorB.coords,oscillatorB.2.dat,oscillatorB.2.sigma,oscillatorB.2.coords
 #@ s7: ReqFiles=oscB_scalar1.1.dat,oscB_scalar2.1.dat,oscB_scalar3.1.dat,oscB_scalar4.1.dat,oscB_scalar5.1.dat,oscB_scalar1.1.sigma,oscB_scalar4.1.sigma,oscB_scalar5.1.sigma
-#@ s8: ReqFiles=oscillatorB.coords,oscillatorB.1.coords,oscillatorB.1.dat,oscillatorB.1.sigma,oscB_scalar.summary
+#@ s8: ReqFiles=oscillatorC.1.dat,oscillatorC.1.sigma,oscB_scalar.summary
 # Test the experiment data read capability (scalars, field data, mixed) 
 # under a variety of conditions (sigma terms) and specification 
 # options. 
+# The test coverage is as follows.  All tests use NL2SOL except test 4. 
+# Test 0:  scalar data calibration, experiment data read from file, no measurement error provided. 
+# Test 1:  scalar data calibration, experiment data read from file, measurement error per scalar response provided. 
+# Test 2:  field data calibration.  Diagonal error terms provided. No interpolation.
+# Test 3:  field data calibration.  Full matrix of error terms provided. No interpolation.
+# Test 4:  field data calibration using Bayesian calibration with DREAM, primarily to test the likelihood formulation.  Full matrix of error terms provided. No interpolation.
+# Test 5:  field data calibration. Diagonal error terms provided. This test requires interpolation:  there are 50 simulation responses but only 5 experimental data responses.  The coordinate files are provided. 
+# Test 6:  field data calibration. Diagonal error terms provided. This test requires interpolation.  This is the same as Test 5 except there are two different experiments, one with 5 points and one with 3 points. 
+# Test 7.  This tests scalar calibration, where the scalar data is not written in one calibration_data_file but instead is written to individual response.num.dat files. 
+# Test 8.  This tests combined scalar and field calibration, with 2 scalar terms and 5 field terms.  
 
 environment
         tabular_data
@@ -47,18 +57,18 @@ responses,
 #        variance_type = 'diagonal'		#s2,#s5,#s6
 #        variance_type = 'matrix'		#s3,#s4
 #          variance_type = 'scalar' 'none' 'none' 'scalar' 'scalar' #s7
-#          variance_type = 'scalar' 'scalar' 'diagonal'  #s8
-#          scalar_data_file = 'oscB_scalar.summary'  #s8
+#          variance_type = 'scalar' 'scalar' 'none'  #s8
+#          scalar_data_file = 'oscB_scalar.summary' freeform #s8
 #        field_calibration_terms = 1		#s2,#s3,#s4,#s5,#s6,#s8
 #        lengths = 5				#s2,#s3,#s4,#s8
 #        lengths = 50				#s5,#s6
 #        num_coordinates_per_field = 1          #s5,#s6,#s8
-#         read_field_coordinates                #s5,#s6,#s8
+#         read_field_coordinates                #s5,#s6
 #	response_descriptors = 'oscillator'     #s2
 #	response_descriptors = 'oscillatorA'    #s3,#s4
 #	response_descriptors = 'oscillatorB'    #s5,#s6
 #       response_descriptors 'oscB_scalar1' 'oscB_scalar2' 'oscB_scalar3' 'oscB_scalar4' 'oscB_scalar5' #s7
-#       response_descriptors 'oscB_scalar1' 'oscB_scalar2' 'oscillatorB' #s8
+#       response_descriptors 'oscB_scalar1' 'oscB_scalar2' 'oscillatorC' #s8
 #	interpolate                             #s5,#s6
         numerical_gradients                     #s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8
 #        no_gradients                           #s4
