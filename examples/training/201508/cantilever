@@ -5,14 +5,13 @@ import sys
 import math
 import datetime
 
-requiredParams = set(("width",
+requiredParams = set(("length",
+        "width",
         "thickness",
         "youngs_modulus",
         "horizontal_load",
         "vertical_load",
         "rho"))
-
-length = 100.0 # length of cantilever beam
 
 outputHeader = """
      _____                 ___          _   __      __  _                   __
@@ -110,7 +109,7 @@ print "OK"
 
 # Confirm that thickness, width, and young's modulus have physical values
 print "Confirming feasability of inputs.............................................",
-for k in ("thickness", "width", "youngs_modulus","rho"):
+for k in ("length", "thickness", "width", "youngs_modulus","rho"):
     if params[k] <= 0.0:
         abort("ERROR: Keyword '%s' must be > 0.0" % k)
 print "OK"
@@ -132,10 +131,10 @@ print """                          ____                  ____
                       /_/ |_|\___/____/\__,_/_/\__/____/ """
 # Compute QoIs
 area = params["thickness"] * params["width"] 
-mass = area * params["rho"] * length / 12**3.0
+mass = area * params["rho"] * params["length"] / 12**3.0
 stress = 600.0/(area*params["thickness"])*params["vertical_load"] + \
         600.0/(area*params["width"])*params["horizontal_load"]
-displacement = 4.0*length**3.0/(area*params["youngs_modulus"]) * \
+displacement = 4.0*params["length"]**3.0/(area*params["youngs_modulus"]) * \
         math.sqrt(
            (params["vertical_load"]/params["thickness"] ** 2.0)**2.0 + 
            (params["horizontal_load"]/params["width"] ** 2.0)**2.0
