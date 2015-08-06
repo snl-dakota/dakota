@@ -11,4 +11,4 @@ youngs_modulus = 29e6  # lb/in^2
 horizontal_load = 500  # lb
 
 vertical_load = 1000   # lb
-rho = 500              # density, lb/ft^3
+density = 500              # density, lb/ft^3

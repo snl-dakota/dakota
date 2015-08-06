@@ -11,7 +11,7 @@ requiredParams = set(("length",
         "youngs_modulus",
         "horizontal_load",
         "vertical_load",
-        "rho"))
+        "density"))
 
 outputHeader = """
      _____                 ___          _   __      __  _                   __
@@ -110,7 +110,7 @@ print "OK"
 
 # Confirm that thickness, width, young's modulus, and length have physical values
 print "Confirming feasability of inputs.............................................",
-for k in ("length", "thickness", "width", "youngs_modulus","rho","length"):
+for k in ("length", "thickness", "width", "youngs_modulus","density","length"):
     if params[k] <= 0.0:
         abort("ERROR: Keyword '%s' must be > 0.0" % k)
 print "OK"
@@ -132,7 +132,7 @@ print """                          ____                  ____
                       /_/ |_|\___/____/\__,_/_/\__/____/ """
 # Compute QoIs
 area = params["thickness"] * params["width"] 
-mass = area * params["rho"] * params["length"] / 12**3.0
+mass = area * params["density"] * params["length"] / 12**3.0
 stress = 600.0/(area*params["thickness"])*params["vertical_load"] + \
         600.0/(area*params["width"])*params["horizontal_load"]
 displacement = 4.0*params["length"]**3.0/(area*params["youngs_modulus"]) * \
