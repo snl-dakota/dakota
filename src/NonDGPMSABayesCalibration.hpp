@@ -104,7 +104,7 @@ private:
   //short emulatorType;
  
   /// Pointer to current class instance for use in static callback functions
-  static NonDGPMSABayesCalibration* NonDGPMSAInstance;
+  static NonDGPMSABayesCalibration* nonDGPMSAInstance;
   /// LHS iterator for generating samples for GP 
   Iterator lhsIter;
 };

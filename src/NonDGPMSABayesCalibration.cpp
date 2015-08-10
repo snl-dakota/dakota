@@ -42,7 +42,7 @@ static const char rcsId[]="@(#) $Id$";
 namespace Dakota {
 
 //initialization of statics
-NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::NonDGPMSAInstance(NULL);
+NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
@@ -116,7 +116,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   if (approxImportFile.empty())
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
-  NonDGPMSAInstance=this;
+  nonDBayesInstance = nonDGPMSAInstance = this;
   Cout << "\nNum Samples " << numSamples << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;

@@ -62,11 +62,6 @@ public:
   //- Heading: public member functions
   //
 
-  /// compute the prior PDF for a particular MCMC sample
-  Real prior_density(const QUESO::GslVector& qv);
-  /// compute the log prior PDF for a particular MCMC sample
-  Real log_prior_density(const QUESO::GslVector& qv);
-
 protected:
 
   //
@@ -93,10 +88,6 @@ protected:
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
   void precondition_proposal();
-  /// compute the (approximate) Hessian of the negative log posterior
-  /// by augmenting the (approximate) Hessian of the negative log
-  /// likelihood with the Hessian of the negative log prior
-  void augment_hessian_with_log_prior(RealSymMatrix& log_hess);
 
   /// perform the MCMC process
   void run_queso_solver();
@@ -165,20 +156,30 @@ protected:
   //The likelihood routine is in the format that QUESO requires, 
   //with a particular argument list that QUESO expects. 
   //We are not using all of these arguments but may in the future.
-  /// Likelihood function for call-back from QUESO to DAKOTA for evaluation
-  static double dakotaLikelihoodRoutine(const QUESO::GslVector& paramValues,
-					const QUESO::GslVector* paramDirection,
-					const void*             functionDataPtr,
-					QUESO::GslVector*       gradVector,
-					QUESO::GslMatrix*       hessianMatrix,
-					QUESO::GslVector*       hessianEffect);
+  /// Log Likelihood function for call-back from QUESO to DAKOTA for evaluation
+  static double dakotaLogLikelihood(const QUESO::GslVector& paramValues,
+				    const QUESO::GslVector* paramDirection,
+				    const void*             functionDataPtr,
+				    QUESO::GslVector*       gradVector,
+				    QUESO::GslMatrix*       hessianMatrix,
+				    QUESO::GslVector*       hessianEffect);
 
   /// local copy_data utility from GslVector to RealVector
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
+  /// local copy_data utility from GslVector to RealVector
+  void copy_gsl(const RealVector& rv, QUESO::GslVector& qv);
+
+  /// local copy_data utility from GslVector to RealVector
+  void copy_gsl_partial(const QUESO::GslVector& qv, RealVector& rv,
+			size_t start, size_t num_items);
+  /// local copy_data utility from GslVector to RealVector
+  void copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv,
+			size_t start, size_t num_items);
+
   /// local copy_data utility from GslVector to column in RealMatrix
   void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
 
-  /// local copy_data utility from GslVector to column in RealMatrix
+  /// equality tester for two GslVectors
   bool equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2);
 
   //
@@ -190,8 +191,6 @@ protected:
   String mcmcType;
   /// scale factor for likelihood; deprecated
   Real likelihoodScale;
-  /// flag to indicated if the sigma terms should be calibrated (default true)
-  bool calibrateSigma;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
   /// local Response in which to store computed residuals
@@ -208,7 +207,7 @@ private:
   // 
   
   /// Pointer to current class instance for use in static callback functions
-  static NonDQUESOBayesCalibration* NonDQUESOInstance;
+  static NonDQUESOBayesCalibration* nonDQUESOInstance;
   
   // the following QUESO objects listed in order of construction;
   // scoped_ptr more appropriate, but don't want to include QUESO

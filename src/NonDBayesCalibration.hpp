@@ -41,6 +41,17 @@ public:
   /// destructor
   ~NonDBayesCalibration();
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// compute the prior PDF for a particular MCMC sample
+  template <typename VectorType>
+  Real prior_density(const VectorType& vec);
+  /// compute the log prior PDF for a particular MCMC sample
+  template <typename VectorType>
+  Real log_prior_density(const VectorType& vec);
+
 protected:
 
   //
@@ -62,6 +73,22 @@ protected:
   /// initialize emulator model and probability space transformations
   void initialize_model();
 
+  /// compute the (approximate) Hessian of the negative log posterior by
+  /// augmenting the (approximate) Hessian of the negative log likelihood
+  /// with the Hessian of the negative log prior
+  template <typename MatrixType, typename VectorType> 
+  void augment_hessian_with_log_prior(MatrixType& log_hess,
+				      const VectorType& vec);
+
+  /// calculate the misfit function from the vector of residuals
+  Real misfit(const Response& resp, const RealVector& calib_vars);
+
+  /// static function passed by pointer to negLogPostModel recast model
+  static void neg_log_post_resp_mapping(const Variables& model_vars,
+					const Variables& nlpost_vars,
+					const Response& model_resp,
+					Response& nlpost_resp);
+
   //
   //- Heading: Data
   //
@@ -73,6 +100,14 @@ protected:
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
   Model mcmcModel;
+
+  /// SQP or NIP optimizer for pre-solving for the MAP point prior to MCMC.
+  /// This is restricted to emulator cases for now, but as for derivative
+  /// preconditioning, could be activated for no-emulator cases with a
+  /// specification option (not active by default).
+  Iterator mapOptimizer;
+  /// RecastModel for solving for MAP using negative log posterior
+  Model negLogPostModel;
 
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
@@ -86,6 +121,8 @@ protected:
   /// random seed for MCMC process
   int randomSeed;
 
+  /// flag indicating whether sigma terms should be calibrated (default false)
+  bool calibrateSigma;
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator
   bool standardizedSpace;
@@ -102,6 +139,9 @@ protected:
   /// approach for defining proposal covariance
   String proposalCovarInputType;
 
+  /// Pointer to current class instance for use in static callback functions
+  static NonDBayesCalibration* nonDBayesInstance;
+
 private:
 
   //
@@ -113,6 +153,78 @@ private:
 
 inline const Model& NonDBayesCalibration::algorithm_space_model() const
 { return mcmcModel; }
+
+
+template <typename VectorType> 
+Real NonDBayesCalibration::prior_density(const VectorType& vec)
+{
+  // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
+  // which may in turn call back to our GenericVectorRV prior plug-in
+
+  if (natafTransform.x_correlation()) {
+    Cerr << "Error: prior_density() uses a product of marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  Real pdf = 1.;
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      pdf *= natafTransform.u_pdf(vec[i], i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      pdf *= natafTransform.x_pdf(vec[i], i);
+
+  // Not necessary for relative pdf comparisons with uniform sigma priors:
+  //if (calibrateSigma)
+  //  for (i=numContinuousVars; i<total; ++i)
+  //    pdf /= range; // uniform sigma priors
+
+  return pdf;
+}
+
+
+template <typename VectorType> 
+Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
+{
+  if (natafTransform.x_correlation()) {
+    Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  Real log_pdf = 0.;
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_pdf += natafTransform.u_log_pdf(vec[i], i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_pdf += natafTransform.x_log_pdf(vec[i], i);
+
+  // Not necessary for relative pdf comparisons with uniform sigma priors:
+  //if (calibrateSigma)
+  //  for (i=numContinuousVars; i<total; ++i)
+  //    log_pdf -= std::log(range); // uniform sigma priors
+
+  return log_pdf;
+}
+
+
+template <typename MatrixType, typename VectorType> 
+void NonDBayesCalibration::
+augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_hess(i, i) -= natafTransform.u_log_pdf_hessian(vec[i], i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_hess(i, i) -= natafTransform.x_log_pdf_hessian(vec[i], i);
+}
 
 } // namespace Dakota
 

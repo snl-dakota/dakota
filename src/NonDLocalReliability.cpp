@@ -79,12 +79,6 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Map MPP search NIP/SQP algorithm specification into an NPSOL/OPT++
     // selection based on configuration availability.
-#if !defined(HAVE_NPSOL) && !defined(HAVE_OPTPP)
-    Cerr << "Error: this executable not configured with NPSOL or OPT++.\n"
-	 << "       NonDLocalReliability cannot perform MPP search."
-         << std::endl;
-    abort_handler(-1);
-#endif
     unsigned short mpp_optimizer = probDescDB.get_ushort("method.sub_method");
     if (mpp_optimizer == SUBMETHOD_SQP) {
 #ifdef HAVE_NPSOL
@@ -111,6 +105,11 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       npsolFlag = true;
 #elif HAVE_OPTPP
       npsolFlag = false;
+#else
+      Cerr << "\nError: this executable not configured with NPSOL or OPT++.\n"
+	   << "       NonDLocalReliability cannot perform MPP search."
+	   << std::endl;
+      abort_handler(-1);
 #endif
     }
 

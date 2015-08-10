@@ -58,20 +58,13 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
     new RecastModel(iteratedModel, recast_vars_comps_total,
 		    all_relax_di, all_relax_dr, 1, 0, 0), false);
 
-#if !defined(HAVE_NPSOL) && !defined(HAVE_OPTPP)
-  Cerr << "Error: this executable not configured with NPSOL or OPT++.\n"
-       << "       NonDLocalInterval requires a gradient-based optimizer."
-       << std::endl;
-  err_flag = true;
-#endif
   unsigned short opt_algorithm = probDescDB.get_ushort("method.sub_method");
   if (opt_algorithm == SUBMETHOD_SQP) {
 #ifdef HAVE_NPSOL
     npsolFlag = true;
 #else
-    Cerr << "\nError: this executable not configured with NPSOL SQP.\n"
-	 << "         Please select OPT++ NIP within local_interval_est."
-	 << std::endl;
+    Cerr << "\nError: this executable not configured with NPSOL SQP.\n         "
+	 << "Please select OPT++ NIP within local_interval_est." << std::endl;
     err_flag = true;
 #endif
   }
@@ -79,9 +72,8 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 #ifdef HAVE_OPTPP
     npsolFlag = false;
 #else
-    Cerr << "\nError: this executable not configured with OPT++ NIP.\n"
-	 << "         please select NPSOL SQP within local_interval_est."
-	 << std::endl;
+    Cerr << "\nError: this executable not configured with OPT++ NIP.\n         "
+	 << "please select NPSOL SQP within local_interval_est." << std::endl;
     err_flag = true;
 #endif
   }
@@ -90,6 +82,11 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
     npsolFlag = true;
 #elif HAVE_OPTPP
     npsolFlag = false;
+#else
+    Cerr << "\nError: this executable not configured with NPSOL or OPT++.\n"
+	 << "       NonDLocalInterval requires a gradient-based optimizer."
+	 << std::endl;
+    err_flag = true;
 #endif
   }
  

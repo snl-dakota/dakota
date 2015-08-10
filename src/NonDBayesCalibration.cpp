@@ -15,13 +15,19 @@
 #include "NonDBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "RecastModel.hpp"
 #include "NonDPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
+#include "NPSOLOptimizer.hpp"
+#include "SNLLOptimizer.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
 namespace Dakota {
+
+// initialization of statics
+NonDBayesCalibration* NonDBayesCalibration::nonDBayesInstance(NULL);
 
 
 /** This constructor is called for a standard letter-envelope iterator 
@@ -32,6 +38,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   randomSeed(probDescDB.get_int("method.random_seed")),
+  calibrateSigma(probDescDB.get_bool("method.nond.calibrate_sigma")),
   adaptPosteriorRefine(
     probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
   proposalCovarType(
@@ -188,6 +195,61 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
+  if (emulatorType) {
+
+    Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
+      secondary_resp_map_indices;
+    primary_resp_map_indices[0].resize(numFunctions);
+    for (size_t i=0; i<numFunctions; ++i)
+      primary_resp_map_indices[0][i] = i;
+    bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
+    nonlinear_resp_map[0] = BoolDeque(numFunctions, true);
+    SizetArray recast_vc_totals;  // empty: no change in size
+    BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
+
+    // RecastModel for bound-constrained argmin(misfit - log prior)
+    negLogPostModel.assign_rep(new RecastModel(mcmcModel, vars_map_indices, 
+      recast_vc_totals, all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+      NULL, primary_resp_map_indices, secondary_resp_map_indices, 0,
+      nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
+
+    bool npsol_flag, presolve_flag = true;
+    unsigned short opt_algorithm = probDescDB.get_ushort("method.sub_method");
+    int npsol_deriv_level = 3;
+    switch (opt_algorithm) {
+    case SUBMETHOD_SQP:
+#ifdef HAVE_NPSOL
+      mapOptimizer.assign_rep(new NPSOLOptimizer(negLogPostModel,
+	npsol_deriv_level, convergenceTol), false);
+#else
+      Cerr << "\nWarning: this executable not configured with NPSOL SQP."
+	   << "\n         MAP pre-solve not available." << std::endl;
+#endif
+      break;
+    case SUBMETHOD_NIP:
+#ifdef HAVE_OPTPP
+      mapOptimizer.assign_rep(new SNLLOptimizer("optpp_newton", // full Newton
+	negLogPostModel), false);
+#else
+      Cerr << "\nWarning: this executable not configured with OPT++ NIP."
+	   << "\n         MAP pre-solve not available." << std::endl;
+#endif
+      break;
+    case SUBMETHOD_DEFAULT: // use full Newton NIP, if available
+#ifdef HAVE_OPTPP
+      mapOptimizer.assign_rep(new SNLLOptimizer("optpp_newton",
+	negLogPostModel), false);
+#elif HAVE_NPSOL
+      mapOptimizer.assign_rep(new NPSOLOptimizer(negLogPostModel,
+	npsol_deriv_level, convergenceTol), false);
+#else
+      Cerr << "\nWarning: this executable not configured with NPSOL or OPT++."
+	   << "\n         MAP pre-solve not available." << std::endl;
+#endif
+      break;
+    }
+  }
+
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
 }
@@ -254,6 +316,98 @@ void NonDBayesCalibration::initialize_model()
     if (standardizedSpace) transform_correlations();
     if (emulatorType)      mcmcModel.build_approximation();
     break;
+  }
+}
+
+
+Real NonDBayesCalibration::
+misfit(const Response& resp, const RealVector& calib_vars)
+{
+  // TODO: Update treatment of standard deviations as inference
+  // vs. fixed parameters; also advanced use cases of calibrated
+  // scalar sigma against user-provided covariance structure.
+
+  // Calculate the likelihood depending on what information is
+  // available for the standard deviations NOTE: If the calibration of
+  // the sigma terms is included, we assume ONE sigma term per
+  // function is calibrated.  Otherwise, we assume that yStdData has
+  // already had the correct values placed depending if there is zero,
+  // one, num_fn, or a full num_exp*num_fn matrix of standard deviations.
+  // Thus, we just have to iterate over this to calculate the likelihood.
+
+  Real result = 0.;
+  const RealVector& fn_values = resp.function_values();
+  size_t i, j, cntr, num_fn = fn_values.length(); 
+  if (!calibrationData) {
+    for (j=0; j<num_fn; ++j)
+      result += std::pow(fn_values[j],2.);
+  }
+  else if (calibrateSigma) {
+    for (i=0; i<numExperiments; ++i) {
+      const RealVector& exp_data = expData.all_data(i);
+      for (j=0, cntr=numContinuousVars; j<num_fn; ++j, ++cntr)
+        result += std::pow((fn_values[j]-exp_data[j])/calib_vars[cntr], 2.);
+    }
+  }
+  else {
+    RealVector total_residuals( expData.num_total_exppoints() );
+    cntr = 0;
+    for (i=0; i<numExperiments; ++i) {
+      RealVector residuals;
+      expData.form_residuals_deprecated(resp, i, residuals);
+      int len = residuals.length();
+      copy_data_partial( residuals, 0, len, total_residuals, (int)cntr );
+      cntr += len;
+    }
+    for (i=0; i<numExperiments; ++i) 
+      result += expData.apply_covariance(total_residuals, i);
+
+    /*ShortArray total_asv;
+    bool interrogate_field_data = 
+      ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
+    total_asv=expData.determine_active_request(curr_resp,
+					  interrogate_field_data);
+    expData.form_residuals(curr_resp, total_asv, 
+					      residual_response);
+    if (applyCovariance) 
+      expData.scale_residuals(residual_response, total_asv);
+    RealVector residuals = residual_resp.function_values_view();
+    result = residuals.dot( residuals );*/
+  }
+
+  return result;
+}
+
+
+/** Response mapping callback used within RecastModel for MAP pre-solve. */
+void NonDBayesCalibration::
+neg_log_post_resp_mapping(const Variables& model_vars,
+			  const Variables& nlpost_vars,
+			  const Response& model_resp,
+			  Response& nlpost_resp)
+{
+  if (nonDBayesInstance->outputLevel > NORMAL_OUTPUT)
+    Cout << "TO DO" << std::endl;
+
+  const RealVector& c_vars = model_vars.continuous_variables();
+  short nlpost_req = nlpost_resp.active_set_request_vector()[0];
+  if (nlpost_req & 1)
+    nlpost_resp.function_value(
+      nonDBayesInstance->misfit(model_resp, c_vars)
+    - nonDBayesInstance->log_prior_density(c_vars), 0);
+
+  if (nlpost_req & 2) {
+    RealVector log_grad = nlpost_resp.function_gradient_view(0);
+    //nonDBayesInstance->
+    //  expData.build_gradient_of_sum_square_residuals(model_resp, log_grad);
+    //nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
+  }
+
+  if (nlpost_req & 4) {
+    RealSymMatrix log_hess = nlpost_resp.function_hessian_view(0);
+    nonDBayesInstance->
+      expData.build_hessian_of_sum_square_residuals(model_resp, log_hess);
+    nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
   }
 }
 

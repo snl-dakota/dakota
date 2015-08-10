@@ -79,7 +79,7 @@ private:
   // using QUESO::BaseScalarFunction<V,M>::m_domainSet;
   // using QUESO::BaseJointPdf<V,M>::m_normalizationStyle;
   // using QUESO::BaseJointPdf<V,M>::m_logOfNormalizationFactor;
-  NonDQUESOBayesCalibration* NonDQUESOInstance;
+  NonDQUESOBayesCalibration* nonDQUESOInstance;
 };
 
 // Constructor -------------------------------------
@@ -88,7 +88,7 @@ QuesoJointPdf<V,M>::QuesoJointPdf(const char* prefix,
 				  const QUESO::VectorSet<V,M>& domainSet,
 				  NonDQUESOBayesCalibration*   nond_queso_ptr)
   : QUESO::BaseJointPdf<V,M>(((std::string)(prefix)+"generic").c_str(),
-			     domainSet), NonDQUESOInstance(nond_queso_ptr)
+			     domainSet), nonDQUESOInstance(nond_queso_ptr)
 {
   if ((m_env.subDisplayFile()) && (m_env.displayVerbosity() >= 54)) {
     *m_env.subDisplayFile() << "Entering QuesoJointPdf<V,M>::constructor()"
@@ -112,13 +112,13 @@ template<class V,class M>
 double QuesoJointPdf<V,M>::
 actualValue(const V& domainVector, const V* domainDirection,
 	    V* gradVector, M* hessianMatrix, V* hessianEffect) const
-{ return NonDQUESOInstance->prior_density(domainVector); }
+{ return nonDQUESOInstance->prior_density(domainVector); }
 
 template<class V,class M>
 double QuesoJointPdf<V,M>::
 lnValue(const V& domainVector, const V* domainDirection, 
 	V* gradVector, M* hessianMatrix, V* hessianEffect) const
-{ return NonDQUESOInstance->log_prior_density(domainVector); }
+{ return nonDQUESOInstance->log_prior_density(domainVector); }
 
 template<class V,class M>
 double QuesoJointPdf<V,M>::
@@ -201,7 +201,7 @@ QuesoVectorRV<V,M>::print(std::ostream& os) const
 
 
 // initialization of statics
-NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
+NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::nonDQUESOInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
@@ -212,7 +212,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
-  calibrateSigma(probDescDB.get_bool("method.nond.calibrate_sigma")),
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
@@ -247,7 +246,7 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 void NonDQUESOBayesCalibration::quantify_uncertainty()
 {
   // instantiate QUESO objects and execute
-  NonDQUESOInstance = this;
+  nonDBayesInstance = nonDQUESOInstance = this;
 
   // construct mcmcModel and initialize transformations, as needed
   initialize_model();
@@ -269,13 +268,14 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   if (calibrateSigma) {
     // sigma terms utilize uniform priors
     Real uniform_variance_factor = 1.99 * 1.99 / 12.; // uniform on [.01,2.]
-    for (int i=0; i<numFunctions; i++) {
+    for (int i=0; i<numFunctions; ++i) {
       Real var_i = uniform_variance_factor * expData.scalar_sigma_est(i);
       if (outputLevel >= DEBUG_OUTPUT )  
         Cout << "Diagonal estimate for sigma_i " << var_i << '\n';
       (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = var_i;
     }
   }
+
   // initialize proposal covariance (must follow parameter domain init)
   // This is the leading sub-matrix in the case of calibrating sigma terms
   if (proposalCovarType == "user") // either filename OR data values defined
@@ -283,8 +283,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 			     proposalCovarFilename);
   else if (proposalCovarType == "prior")
     prior_proposal_covariance(); // prior selection or default for no emulator
-
   if (proposalCovarType == "user" || proposalCovarType == "prior") {
+    if (outputLevel > NORMAL_OUTPUT ) { 
+      Cout << "Proposal Covariance " << '\n';
+      proposalCovMatrix->print(Cout);
+      Cout << std::endl;
+    }
     QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
     test_mat -= *proposalCovMatrix;
     if( test_mat.normMax() > 1.e-14 )
@@ -297,11 +301,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
       throw std::runtime_error("Queso covariance data is not SPD.");
   }
-  if (outputLevel > NORMAL_OUTPUT ) { 
-    Cout << "Proposal Covariance " << '\n';
-    proposalCovMatrix->print(Cout);
-    Cout << std::endl;
-  }
+
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
 
@@ -317,7 +317,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     }
     compactMode = true; // update_model() uses all{Samples,Responses}
     Real adapt_metric = DBL_MAX; unsigned short int num_iter = 0;
-    while (adapt_metric > convergenceTol && num_iter < maxIterations) {
+    while (adapt_metric > convergenceTol && num_iter <= maxIterations) {
 
       // TO DO: treat this like cross-validation as there is likely a sweet
       // spot prior to degradation of conditioning (too much refinement data)
@@ -347,6 +347,19 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
 void NonDQUESOBayesCalibration::run_chain_with_restarting()
 {
+  // Pre-solve for MAP point using optimization, prior to MCMC chain.  For
+  // now, tie the pre-solve to the existence of an emulator model.  Consider
+  // elevating to a spec option...
+  if (false) {//(emulatorType && !mapOptimizer.is_null()) {
+    // TO DO: warm start this solver
+    mapOptimizer.run();
+    // propagate bestVariables to paramInitials.  This propagates further to
+    // mcmcModel::currentVariables either within the derivative preconditioning
+    // or within the likelihood evaluator.
+    copy_gsl_partial(mapOptimizer.variables_results().continuous_variables(),
+		     *paramInitials, 0, numContinuousVars);
+  }
+
   if (outputLevel >= NORMAL_OUTPUT) {
     if (chainCycles > 1)
       Cout << "Running chain in batches of " << numSamples << " with "
@@ -476,7 +489,7 @@ void NonDQUESOBayesCalibration::init_queso_solver()
   // routine computes [ln(function)]
   likelihoodFunctionObj.reset(new
     QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>("like_",
-    *paramDomain, &dakotaLikelihoodRoutine, (void *) NULL, true));
+    *paramDomain, &dakotaLogLikelihood, (void *)NULL, true));
 
   ////////////////////////////////////////////////////////
   // Step 4 of 5: Instantiate the inverse problem
@@ -486,7 +499,7 @@ void NonDQUESOBayesCalibration::init_queso_solver()
   //		  ("prior_", *paramDomain));
   // new approach supports arbitrary priors:
   priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-   		("prior_", *paramDomain, NonDQUESOInstance));
+   		("prior_", *paramDomain, nonDQUESOInstance));
 
   postRv.reset(new QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
 	       ("post_", *paramSpace));
@@ -514,24 +527,26 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
   // update mcmcModel's continuous variables from paramInitials (start of
   // current MCMC chain)
-  for (size_t i=0; i<numContinuousVars; ++i)
-    mcmcModel.continuous_variable((*paramInitials)[i], i);
+  copy_gsl_partial(*paramInitials,
+		   mcmcModel.current_variables().continuous_variables_view(),
+		   0, numContinuousVars);
   // update request vector values
-  ActiveSet set = mcmcModel.current_response().active_set(); // copy
+  const Response& emulator_resp = mcmcModel.current_response();
+  ActiveSet set = emulator_resp.active_set(); // copy
   set.request_values(precondRequestValue);
   // compute response (emulator case echoed to Cout if outputLevel > NORMAL)
   mcmcModel.compute_response(set);
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
-  const Response& emulator_resp = mcmcModel.current_response();
   RealMatrix prop_covar;
   expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "Hessian of negative log-likelihood (from misfit):\n";
     write_data(Cout, log_hess, true, true, true);
   }
-  augment_hessian_with_log_prior(log_hess);
+  const RealVector& c_vars = mcmcModel.continuous_variables();
+  augment_hessian_with_log_prior(log_hess, c_vars);
   bool ev_truncation
     = get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
 
@@ -544,7 +559,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 	   << "Hessian.\nHessian of negative log-likelihood (from misfit):\n";
       write_data(Cout, log_hess, true, true, true);
     }
-    augment_hessian_with_log_prior(log_hess);
+    augment_hessian_with_log_prior(log_hess, c_vars);
     get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
   }
 
@@ -685,7 +700,7 @@ void NonDQUESOBayesCalibration::accumulate_chain(size_t update_cntr)
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Accumulated chain for update " << update_cntr << " has size "
-	 << uniqueSamples.size() << ":\n" << uniqueSamples;
+	 << uniqueSamples.size() << '\n';//<< ":\n" << uniqueSamples;
 
   /*
   size_t s, s0 = (update_cntr == 1) ? 0 : 1; // 1st sample repeated on restart
@@ -839,8 +854,7 @@ void NonDQUESOBayesCalibration::update_center()
 Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 {
   // update QUESO initial vars for starting point of chain
-  for (int i=0; i<numContinuousVars; i++)
-    (*paramInitials)[i] = new_center[i];
+  copy_gsl_partial(new_center, *paramInitials, 0, numContinuousVars);
 
   // evaluate and return L2 norm of change in chain starting point
   RealVector delta_center = new_center;
@@ -991,14 +1005,14 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
                    paramMaxs(paramSpace->zeroVector());
   RealRealPairArray bnds = (standardizedSpace) ?
     natafTransform.u_bounds() : natafTransform.x_bounds();
-  for (size_t i=0; i<numContinuousVars; i++)
+  for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   // if calibrateSigma, the parameter domain is expanded by sigma terms 
   if (calibrateSigma) {
     //RealVector covariance_diagonal;
     // Todo: pass in corrrect experiment number as second argument
     //expData.get_main_diagonal( covariance_diagonal, 0 );
-    for (int j=0; j<numFunctions; j++){
+    for (int j=0; j<numFunctions; ++j) {
       // TODO: Need to be able to get sigma from new covariance class.
       // Also need to sync up this with the logic in the ctor.  Also need
       // a default if there's no experimental data (may not be sensible)
@@ -1018,23 +1032,19 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   if (standardizedSpace) { // param domain in u-space
     switch (emulatorType) {
     case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
-      for (size_t i=0; i<numContinuousVars; i++)
-	(*paramInitials)[i] = init_pt[i];
+      copy_gsl_partial(init_pt, *paramInitials, 0, numContinuousVars);
       break;
     default: { // init_pt not already propagated to u-space: use local nataf
-      RealVector u_pt;
-      natafTransform.trans_X_to_U(init_pt, u_pt);
-      for (size_t i=0; i<numContinuousVars; i++)
-	(*paramInitials)[i] = u_pt[i];
+      RealVector u_pt; natafTransform.trans_X_to_U(init_pt, u_pt);
+      copy_gsl_partial(u_pt, *paramInitials, 0, numContinuousVars);
       break;
     }
     }
   }
   else // init_pt and param domain in x-space
-    for (size_t i=0; i<numContinuousVars; i++)
-      (*paramInitials)[i] = init_pt[i];
+    copy_gsl_partial(init_pt, *paramInitials, 0, numContinuousVars);
   if (calibrateSigma)
-    for (size_t i=numContinuousVars; i<total_num_params; i++)
+    for (size_t i=numContinuousVars; i<total_num_params; ++i)
       (*paramInitials)[i] = (paramMaxs[i] + paramMins[i]) / 2.;
 
   if (outputLevel > NORMAL_OUTPUT)
@@ -1054,7 +1064,7 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
   Real stdev;
   RealRealPairArray dist_moments = (standardizedSpace) ?
     natafTransform.u_moments() : natafTransform.x_moments();
-  for (int i=0; i<numContinuousVars; i++) {
+  for (int i=0; i<numContinuousVars; ++i) {
     stdev = dist_moments[i].second;
     (*proposalCovMatrix)(i,i) = stdev * stdev;
   }
@@ -1067,8 +1077,8 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
     Cout << "QUESO ProposalCovMatrix"; 
     if (standardizedSpace) Cout << " (scaled space)";
     Cout << '\n'; 
-    for (size_t i=0; i<numContinuousVars; i++) {
-      for (size_t j=0; j<numContinuousVars; j++) 
+    for (size_t i=0; i<numContinuousVars; ++i) {
+      for (size_t j=0; j<numContinuousVars; ++j) 
 	Cout <<  (*proposalCovMatrix)(i,j) << "  "; 
       Cout << '\n'; 
     }
@@ -1297,15 +1307,19 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   QUESO::GslVector& qv = it->second; size_t j, wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
   if (standardizedSpace) {
-    RealVector u_rv, x_rv; copy_gsl(qv, u_rv);
+    RealVector u_rv(numContinuousVars, false), x_rv;
+    copy_gsl_partial(qv, u_rv, 0, numContinuousVars);
     natafTransform.trans_U_to_X(u_rv, x_rv);
-    write_data(Cout, x_rv);
+    write_data(Cout, x_rv); // TO DO: MAP for calibrate sigma params
   }
-  else
+  else // TO DO: MAP for calibrate sigma params
     for (j=0; j<numContinuousVars; ++j)
       s << "                     " << std::setw(wpp7) << qv[j] << '\n';
+  Real log_post = it->first,
+       misfit   = log_prior_density(qv) - log_post; // = -log(like)
   s << "<<<<< Best log posterior       =\n                     "
-    << std::setw(wpp7) << it->first << '\n';
+    << std::setw(wpp7) << log_post << "\n<<<<< Best misfit              =\n"
+    << "                     " << std::setw(wpp7) << misfit;
 
   /*
   // --------------------------
@@ -1328,17 +1342,11 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 }
 
 
-double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
+double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,
   const void*         functionDataPtr, QUESO::GslVector*       gradVector,
   QUESO::GslMatrix*     hessianMatrix, QUESO::GslVector*       hessianEffect)
 {
-  double result = 0.;
-  size_t i, j;
-  int num_exp = NonDQUESOInstance->numExperiments,
-      num_fn  = NonDQUESOInstance->numFunctions,
-      num_cv  = NonDQUESOInstance->numContinuousVars; 
-
   // The GP/KRIGING/NO EMULATOR may use an unstandardized space (original)
   // and the PCE or SC cases always use standardized space.
   //
@@ -1348,82 +1356,32 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // searching and will stop if it is too small (e.g. if one input is 
   // of small magnitude, searching in the original space will not be viable).
 
-  //RealVector x; NonDQUESOInstance->copy_gsl(paramValues, x);
-  //NonDQUESOInstance->mcmcModel.continuous_variables(x);
-  for (i=0; i<num_cv; ++i)
-    NonDQUESOInstance->mcmcModel.continuous_variable(paramValues[i], i);
+  RealVector& x = nonDQUESOInstance->
+    mcmcModel.current_variables().continuous_variables_view();
+  size_t num_cv = x.length();
+  nonDQUESOInstance->copy_gsl_partial(paramValues, x, 0, num_cv);
 
-  NonDQUESOInstance->mcmcModel.compute_response();
+  nonDQUESOInstance->mcmcModel.compute_response();
+  const Response& resp = nonDQUESOInstance->mcmcModel.current_response();
 
-  const Response& resp = NonDQUESOInstance->mcmcModel.current_response();
-  const RealVector& fn_vals = resp.function_values();
-  if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
-    Cout << "Likelihood input is " << paramValues
-	 << "\noutput is " << fn_vals << '\n';
-
-  // TODO: Update treatment of standard deviations as inference
-  // vs. fixed parameters; also advanced use cases of calibrated
-  // scalar sigma against user-provided covariance structure.
-
-  // Calculate the likelihood depending on what information is
-  // available for the standard deviations NOTE: If the calibration of
-  // the sigma terms is included, we assume ONE sigma term per
-  // function is calibrated.  Otherwise, we assume that yStdData has
-  // already had the correct values placed depending if there is zero,
-  // one, num_fn, or a full num_exp*num_fn matrix of standard deviations.
-  // Thus, we just have to iterate over this to calculate the likelihood.
-
-  if (!NonDQUESOInstance->calibrationData) {
-    for (j=0; j<num_fn; j++)
-      result += std::pow(fn_vals[j],2.);
-  }
-  else if (NonDQUESOInstance->calibrateSigma) {
-    for (i=0; i<num_exp; i++) {
-      const RealVector& exp_data = NonDQUESOInstance->expData.all_data(i);
-      for (j=0; j<num_fn; j++)
-        result += std::pow((fn_vals[j]-exp_data[j])/paramValues[num_cv+j],2.);
-    }
-  }
-  else {
-    RealVector total_residuals( NonDQUESOInstance->expData.num_total_exppoints() );
-    int cntr = 0;
-    for (i=0; i<num_exp; i++) {
-      RealVector residuals;
-      NonDQUESOInstance->expData.form_residuals_deprecated(resp, i, residuals);
-      copy_data_partial( residuals, 0, residuals.length(), total_residuals,
-			 cntr );
-      cntr += residuals.length();
-    }
-    for (i=0; i<num_exp; i++) 
-      result += NonDQUESOInstance->expData.apply_covariance(total_residuals, i);
-
-    /*ShortArray total_asv;
-    bool interrogate_field_data = 
-      ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
-    total_asv=NonDQUESOInstance->expData.determine_active_request(curr_resp,
-					  interrogate_field_data);
-    NonDQUESOInstance->expData.form_residuals(curr_resp, total_asv, 
-					      residual_response);
-    if (applyCovariance) 
-      NonDQUESOInstance->expData.scale_residuals(residual_response, total_asv);
-    RealVector residuals = residual_resp.function_values_view();
-    result = residuals.dot( residuals );*/
-  }
-
-  result /= -2. * NonDQUESOInstance->likelihoodScale;
-  if (NonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
-    Cout << "Log likelihood is " << result << " Likelihood is " << exp(result)
-	 << '\n';
+  double result = -nonDQUESOInstance->misfit(resp, x)
+                /  nonDQUESOInstance->likelihoodScale;
+  if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
+    Cout << "Log likelihood is " << result << " Likelihood is "
+	 << std::exp(result) << '\n';
   
   // TODO: open file once and append here, or rely on QUESO to output
-  if (NonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
+  if (nonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
+    const RealVector& fn_values = resp.function_values();
+    size_t i, num_fn = fn_values.length();
     std::ofstream QuesoOutput;
     QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cv; i++) QuesoOutput << paramValues[i] << ' ' ;
-    for (j=0; j<num_fn; j++) QuesoOutput << fn_vals[j] << ' ' ;
+    for (i=0; i<num_cv; ++i) QuesoOutput << paramValues[i] << ' ' ;
+    for (i=0; i<num_fn; ++i) QuesoOutput << fn_values[i]   << ' ' ;
     QuesoOutput << result << '\n';
     QuesoOutput.close();
   }
+
   return result;
 }
 
@@ -1436,6 +1394,38 @@ copy_gsl(const QUESO::GslVector& qv, RealVector& rv)
     rv.sizeUninitialized(size_qv);
   for (i=0; i<size_qv; ++i)
     rv[i] = qv[i];
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_gsl(const RealVector& rv, QUESO::GslVector& qv)
+{
+  size_t i, size_rv = rv.length();
+  // this resize is not general, but is adequate for current uses:
+  if (size_rv != qv.sizeLocal())
+    qv = paramSpace->zeroVector();//(size_rv);
+  for (i=0; i<size_rv; ++i)
+    qv[i] = rv[i];
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_gsl_partial(const QUESO::GslVector& qv, RealVector& rv,
+		 size_t start, size_t num_items)
+{
+  size_t i, end = start + num_items;
+  for (i=start; i<end; ++i)
+    rv[i] = qv[i];
+}
+
+
+void NonDQUESOBayesCalibration::
+copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv,
+		 size_t start, size_t num_items)
+{
+  size_t i, end = start + num_items;
+  for (i=start; i<end; ++i)
+    qv[i] = rv[i];
 }
 
 
@@ -1463,75 +1453,6 @@ equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2)
     if (qv1[i] != qv2[i])
       return false;
   return true;
-}
-
-
-Real NonDQUESOBayesCalibration::prior_density(const QUESO::GslVector& qv)
-{
-  // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
-  // which may in turn call back to our GenericVectorRV prior plug-in
-
-  if (natafTransform.x_correlation()) {
-    Cerr << "Error: prior_density() uses a product of marginal densities\n"
-	 << "       and can only be used for independent random variables."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  Real pdf = 1.;
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.u_pdf(qv[i], i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.x_pdf(qv[i], i);
-
-  // Not necessary for relative pdf comparisons with uniform sigma priors:
-  //if (calibrateSigma)
-  //  for (i=numContinuousVars; i<total; ++i)
-  //    pdf /= range; // uniform sigma priors
-
-  return pdf;
-}
-
-
-Real NonDQUESOBayesCalibration::log_prior_density(const QUESO::GslVector& qv)
-{
-  if (natafTransform.x_correlation()) {
-    Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
-	 << "       and can only be used for independent random variables."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  Real log_pdf = 0.;
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.u_log_pdf(qv[i], i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.x_log_pdf(qv[i], i);
-
-  // Not necessary for relative pdf comparisons with uniform sigma priors:
-  //if (calibrateSigma)
-  //  for (i=numContinuousVars; i<total; ++i)
-  //    log_pdf -= std::log(range); // uniform sigma priors
-
-  return log_pdf;
-}
-
-
-void NonDQUESOBayesCalibration::
-augment_hessian_with_log_prior(RealSymMatrix& log_hess)
-{
-  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
-  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -= natafTransform.u_log_pdf_hessian((*paramInitials)[i],i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -= natafTransform.x_log_pdf_hessian((*paramInitials)[i],i);
 }
 
 } // namespace Dakota

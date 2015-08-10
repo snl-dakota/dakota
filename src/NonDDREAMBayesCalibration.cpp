@@ -86,7 +86,7 @@ double sample_likelihood (int par_num, double zp[])
 namespace Dakota {
 
 //initialization of statics
-NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::NonDDREAMInstance(NULL);
+NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
@@ -162,7 +162,7 @@ NonDDREAMBayesCalibration::~NonDDREAMBayesCalibration()
 void NonDDREAMBayesCalibration::quantify_uncertainty()
 {
   // instantiate DREAM objects and execute
-  NonDDREAMInstance = this;
+  nonDBayesInstance = nonDDREAMInstance = this;
 
   // diagnostic information
   Cout << "INFO (DREAM): Standardized space " << standardizedSpace << '\n';
@@ -229,7 +229,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
     }
   }
   else { // case PCE_EMULATOR: case SC_EMULATOR:
-    Iterator* se_iter = NonDDREAMInstance->stochExpIterator.iterator_rep();
+    Iterator* se_iter = nonDDREAMInstance->stochExpIterator.iterator_rep();
     Pecos::ProbabilityTransformation& nataf = 
       ((NonD*)se_iter)->variable_transformation(); 
     RealVector lower_u, upper_u;
@@ -328,79 +328,39 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 
 // BMA TODO: share most of this code with QUESO
 /** Static callback function to evaluate the likelihood */
-double NonDDREAMBayesCalibration::sample_likelihood (int par_num, double zp[])
+double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 {
-  double result = 0.;
-  size_t i,j,k;
-  int num_exp = NonDDREAMInstance->numExperiments,
-    num_funcs = NonDDREAMInstance->numFunctions,
-    num_cont  = NonDDREAMInstance->numContinuousVars; 
+  size_t i, num_fn = nonDDREAMInstance->numFunctions,
+    num_cv = nonDDREAMInstance->numContinuousVars; 
 
   // BMA TODO:
   // Bug: if calibrating sigma, this would be bigger
   //RealVector x(Teuchos::View, zp, par_num);
-  RealVector x(Teuchos::View, zp, num_cont);
+  RealVector x(Teuchos::View, zp, num_cv);
     
-  //Cout << "numExperiments" << num_exp << '\n';
-  //Cout << "numFunctions" << num_funcs << '\n';
-  //Cout << "numExpStdDeviationsRead " << NonDDREAMInstance->numExpStdDeviationsRead << '\n';
+  //Cout << "numExpStdDeviationsRead "
+  //     << nonDDREAMInstance->numExpStdDeviationsRead << '\n';
 
   // DREAM searches in either the original space (default for GPs and no
   // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
-  NonDDREAMInstance->mcmcModel.continuous_variables(x); 
+  nonDDREAMInstance->mcmcModel.continuous_variables(x); 
 
   // Compute simulation response to use in likelihood 
-  NonDDREAMInstance->mcmcModel.compute_response();
-  const Response& curr_resp = NonDDREAMInstance->mcmcModel.current_response();
-  const RealVector& fn_vals = curr_resp.function_values();
- 
-  // Calculate the likelihood depending on what information is available 
-  // for the standard deviations
-  // NOTE:  If the calibration of the sigma terms is included, we assume 
-  // ONE sigma term per function is calibrated. 
-  // Otherwise, we assume that yStdData has already had the correct values 
-  // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
-  // matrix of standard deviations.  Thus, we just have to iterate over this to 
-  // calculate the likelihood. 
-  if (!NonDDREAMInstance->calibrationData) {
-    for (j=0; j<num_funcs; j++)
-      result += std::pow(fn_vals[j],2.);
-  }
-  else if (NonDDREAMInstance->calibrateSigma) {
-    for (i=0; i<num_exp; i++) {
-      const RealVector& exp_data = NonDDREAMInstance->expData.all_data(i);
-      for (j=0; j<num_funcs; j++)
-	result += pow((fn_vals(j)-exp_data[j])/zp[num_cont+j],2.0);
-    }
-  }
-  else {
-    RealVector total_residuals( NonDDREAMInstance->expData.num_total_exppoints() );
-    int cntr = 0;
-    for (i=0; i<num_exp; i++) {
-      RealVector residuals;
-      NonDDREAMInstance->expData.form_residuals_deprecated(curr_resp, i, residuals);
-      copy_data_partial( residuals, 0, residuals.length(), total_residuals,
-			 cntr );
-      cntr += residuals.length();
-    }
-    for (i=0; i<num_exp; i++)
-      result += NonDDREAMInstance->expData.apply_covariance(total_residuals, i);
-    // replace with data_difference core which needs to be raised to expData
-  }
+  nonDDREAMInstance->mcmcModel.compute_response();
+  const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
 
-  result = (result/(NonDDREAMInstance->likelihoodScale));
-  result = -0.5*result;
+  double result = -nonDDREAMInstance->misfit(resp, x)
+                /  nonDDREAMInstance->likelihoodScale;
   Cout << "Log likelihood is " << result << '\n';
-  if (NonDDREAMInstance->outputLevel > NORMAL_OUTPUT) {
+  if (nonDDREAMInstance->outputLevel > NORMAL_OUTPUT) {
     Cout << "Likelihood is " << exp(result) << '\n';
-    std::ofstream QuesoOutput;
-    QuesoOutput.open("DreamOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cont; i++) 
-      QuesoOutput << x(i) << ' ' ;
-    for (j=0; j<num_funcs; j++)
-      QuesoOutput << fn_vals(j) << ' ' ;
-    QuesoOutput << result << '\n';
-    QuesoOutput.close();
+    const RealVector& fn_values = resp.function_values();
+    std::ofstream DreamOutput;
+    DreamOutput.open("DreamOutput.txt", std::ios::out | std::ios::app);
+    for (i=0; i<num_cv; ++i) DreamOutput << x(i)         << ' ' ;
+    for (i=0; i<num_fn; ++i) DreamOutput << fn_values(i) << ' ' ;
+    DreamOutput << result << '\n';
+    DreamOutput.close();
   }
   return result;
 }
@@ -411,13 +371,13 @@ void NonDDREAMBayesCalibration::
 problem_size(int &chain_num, int &cr_num, int &gen_num, int &pair_num,
 	     int &par_num)
 {
-  chain_num = NonDDREAMInstance->numChains;
-  cr_num    = NonDDREAMInstance->numCR;
-  gen_num   = NonDDREAMInstance->numGenerations;
-  pair_num  = NonDDREAMInstance->crossoverChainPairs;
-  par_num   = (NonDDREAMInstance->calibrateSigma) ?
-    NonDDREAMInstance->numFunctions + NonDDREAMInstance->numContinuousVars :
-    NonDDREAMInstance->numContinuousVars;
+  chain_num = nonDDREAMInstance->numChains;
+  cr_num    = nonDDREAMInstance->numCR;
+  gen_num   = nonDDREAMInstance->numGenerations;
+  pair_num  = nonDDREAMInstance->crossoverChainPairs;
+  par_num   = (nonDDREAMInstance->calibrateSigma) ?
+    nonDDREAMInstance->numFunctions + nonDDREAMInstance->numContinuousVars :
+    nonDDREAMInstance->numContinuousVars;
 
   return;
 }
@@ -438,22 +398,22 @@ problem_value(string *chain_filename, string *gr_filename, double &gr_threshold,
   // DREAM will replace the zeros with unique file tags; use one
   // placeholder for 1--10 chains, two for 11--100 chains, etc.
   int chain_tag_len = 1;
-  if (NonDDREAMInstance->numChains > 10)
+  if (nonDDREAMInstance->numChains > 10)
     chain_tag_len = 
-      (int) std::ceil(std::log10((double) NonDDREAMInstance->numChains));
+      (int) std::ceil(std::log10((double) nonDDREAMInstance->numChains));
   std::string chain_tag(chain_tag_len, '0');
   std::string chain_fname("dakota_dream_chain");
   chain_fname += chain_tag + ".txt";
 
   *chain_filename = chain_fname.c_str();
   *gr_filename = "dakota_dream_gr.txt";
-  gr_threshold = NonDDREAMInstance->grThreshold;
-  jumpstep = NonDDREAMInstance->jumpStep;
+  gr_threshold = nonDDREAMInstance->grThreshold;
+  jumpstep = nonDDREAMInstance->jumpStep;
 
   for ( j = 0; j < par_num; j++ )
   {
-    limits[0+j*2] = NonDDREAMInstance->paramMins[j];
-    limits[1+j*2] = NonDDREAMInstance->paramMaxs[j];
+    limits[0+j*2] = nonDDREAMInstance->paramMins[j];
+    limits[1+j*2] = nonDDREAMInstance->paramMaxs[j];
     Cout << "min " << j << " = " << limits[0+j*2] << std::endl; 
     Cout << "max " << j << " = " << limits[1+j*2] << std::endl; 
   }
@@ -476,9 +436,9 @@ double  NonDDREAMBayesCalibration::prior_density ( int par_num, double zp[] )
 
   for ( i = 0; i < par_num; i++ )    
   {
-    //value = value * r8_uniform_pdf (NonDDREAMInstance->paramMins[i],
-    //				    NonDDREAMInstance->paramMaxs[i], zp[i] );
-    value *= boost::math::pdf(NonDDREAMInstance->priorDistributions[i], zp[i]);
+    //value = value * r8_uniform_pdf (nonDDREAMInstance->paramMins[i],
+    //				    nonDDREAMInstance->paramMaxs[i], zp[i] );
+    value *= boost::math::pdf(nonDDREAMInstance->priorDistributions[i], zp[i]);
   }
 
   return value;
@@ -494,10 +454,10 @@ double *  NonDDREAMBayesCalibration::prior_sample ( int par_num )
 
   for ( i = 0; i < par_num; i++ )
   {
-    //    zp[i] = r8_uniform_sample ( NonDDREAMInstance->paramMins[i], 
-    //				NonDDREAMInstance->paramMaxs[i] );
+    //    zp[i] = r8_uniform_sample ( nonDDREAMInstance->paramMins[i], 
+    //				nonDDREAMInstance->paramMaxs[i] );
     zp[i] =
-      NonDDREAMInstance->priorSamplers[i](NonDDREAMInstance->rnumGenerator);
+      nonDDREAMInstance->priorSamplers[i](nonDDREAMInstance->rnumGenerator);
   }
 
   return zp;

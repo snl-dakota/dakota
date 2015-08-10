@@ -132,7 +132,7 @@ private:
   // 
 
   /// Pointer to current class instance for use in static callback functions
-  static NonDDREAMBayesCalibration* NonDDREAMInstance;
+  static NonDDREAMBayesCalibration* nonDDREAMInstance;
   
 };
 
