@@ -22,7 +22,7 @@ interface
 
 responses
   response_functions = 3
-  descriptors = 'area' 
+  descriptors = 'mass' 
                 'stress'
                 'displacement'
   no_gradients no_hessians
