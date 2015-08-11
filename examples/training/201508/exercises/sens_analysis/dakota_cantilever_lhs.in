@@ -1,0 +1,31 @@
+environment
+  tabular_data output_precision 1e-16
+
+method
+  sampling 
+  sample_type lhs 
+  samples = 70
+  seed = 3845
+
+variables
+  active all						
+  continuous_design = 3					
+    upper_bounds = 1.2 1.2 6.0 
+    lower_bounds = 0.8 0.8 4.0
+    descriptors    "w"     "t"     "L"
+  continuous_state = 4
+    upper_bounds = 600. 35.E+6 60. 120.
+    lower_bounds = 400. 23.E+6 40. 80.
+    descriptors    'p'   'E'   'X'  'Y'
+
+interface
+  fork
+    analysis_driver = 'driver.sh'
+
+responses
+  response_functions = 3
+  descriptors = 'mass' 
+                'stress'
+                'displacement'
+  no_gradients no_hessians
+
