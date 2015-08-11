@@ -330,26 +330,28 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 /** Static callback function to evaluate the likelihood */
 double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 {
-  size_t i, num_fn = nonDDREAMInstance->numFunctions,
+  size_t i, num_fns = nonDDREAMInstance->numFunctions,
     num_cv = nonDDREAMInstance->numContinuousVars; 
 
   // BMA TODO:
   // Bug: if calibrating sigma, this would be bigger
   //RealVector x(Teuchos::View, zp, par_num);
-  RealVector x(Teuchos::View, zp, num_cv);
+  RealVector c_vars(Teuchos::View, zp, num_cv), calibrated_sigmas;
+  if (nonDDREAMInstance->calibrateSigma)
+    calibrated_sigmas = RealVector(Teuchos::View, &zp[num_cv], num_fns);
     
   //Cout << "numExpStdDeviationsRead "
   //     << nonDDREAMInstance->numExpStdDeviationsRead << '\n';
 
   // DREAM searches in either the original space (default for GPs and no
   // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
-  nonDDREAMInstance->mcmcModel.continuous_variables(x); 
+  nonDDREAMInstance->mcmcModel.continuous_variables(c_vars); 
 
   // Compute simulation response to use in likelihood 
   nonDDREAMInstance->mcmcModel.compute_response();
   const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
 
-  double result = -nonDDREAMInstance->misfit(resp, x)
+  double result = -nonDDREAMInstance->misfit(resp, calibrated_sigmas)
                 /  nonDDREAMInstance->likelihoodScale;
   Cout << "Log likelihood is " << result << '\n';
   if (nonDDREAMInstance->outputLevel > NORMAL_OUTPUT) {
@@ -357,8 +359,10 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
     const RealVector& fn_values = resp.function_values();
     std::ofstream DreamOutput;
     DreamOutput.open("DreamOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cv; ++i) DreamOutput << x(i)         << ' ' ;
-    for (i=0; i<num_fn; ++i) DreamOutput << fn_values(i) << ' ' ;
+    for (i=0; i<num_cv;  ++i)   DreamOutput << c_vars(i) << ' ' ;
+    if (nonDDREAMInstance->calibrateSigma)
+      for (i=0; i<num_fns; ++i) DreamOutput << calibrated_sigmas(i) << ' ' ;
+    for (i=0; i<num_fns; ++i)   DreamOutput << fn_values(i) << ' ' ;
     DreamOutput << result << '\n';
     DreamOutput.close();
   }

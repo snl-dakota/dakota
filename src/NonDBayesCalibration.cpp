@@ -321,7 +321,7 @@ void NonDBayesCalibration::initialize_model()
 
 
 Real NonDBayesCalibration::
-misfit(const Response& resp, const RealVector& calib_vars)
+misfit(const Response& resp, const RealVector& calibrated_sigmas)
 {
   // TODO: Update treatment of standard deviations as inference
   // vs. fixed parameters; also advanced use cases of calibrated
@@ -337,21 +337,19 @@ misfit(const Response& resp, const RealVector& calib_vars)
 
   Real result = 0.;
   const RealVector& fn_values = resp.function_values();
-  size_t i, j, cntr, num_fn = fn_values.length(); 
-  if (!calibrationData) {
-    for (j=0; j<num_fn; ++j)
+  size_t i, j, num_fns = fn_values.length(); 
+  if (!calibrationData)
+    for (j=0; j<num_fns; ++j)
       result += std::pow(fn_values[j],2.);
-  }
-  else if (calibrateSigma) {
+  else if (calibrateSigma)
     for (i=0; i<numExperiments; ++i) {
       const RealVector& exp_data = expData.all_data(i);
-      for (j=0, cntr=numContinuousVars; j<num_fn; ++j, ++cntr)
-        result += std::pow((fn_values[j]-exp_data[j])/calib_vars[cntr], 2.);
+      for (j=0; j<num_fns; ++j)
+        result += std::pow((fn_values[j]-exp_data[j])/calibrated_sigmas[j], 2.);
     }
-  }
   else {
     RealVector total_residuals( expData.num_total_exppoints() );
-    cntr = 0;
+    size_t cntr = 0;
     for (i=0; i<numExperiments; ++i) {
       RealVector residuals;
       expData.form_residuals_deprecated(resp, i, residuals);

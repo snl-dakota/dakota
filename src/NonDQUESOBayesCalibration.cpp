@@ -357,7 +357,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     // mcmcModel::currentVariables either within the derivative preconditioning
     // or within the likelihood evaluator.
     copy_gsl_partial(mapOptimizer.variables_results().continuous_variables(),
-		     *paramInitials, 0, numContinuousVars);
+		     *paramInitials, 0);
   }
 
   if (outputLevel >= NORMAL_OUTPUT) {
@@ -527,9 +527,8 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
   // update mcmcModel's continuous variables from paramInitials (start of
   // current MCMC chain)
-  copy_gsl_partial(*paramInitials,
-		   mcmcModel.current_variables().continuous_variables_view(),
-		   0, numContinuousVars);
+  copy_gsl_partial(*paramInitials, 0,
+		   mcmcModel.current_variables().continuous_variables_view());
   // update request vector values
   const Response& emulator_resp = mcmcModel.current_response();
   ActiveSet set = emulator_resp.active_set(); // copy
@@ -854,7 +853,7 @@ void NonDQUESOBayesCalibration::update_center()
 Real NonDQUESOBayesCalibration::update_center(const RealVector& new_center)
 {
   // update QUESO initial vars for starting point of chain
-  copy_gsl_partial(new_center, *paramInitials, 0, numContinuousVars);
+  copy_gsl_partial(new_center, *paramInitials, 0);
 
   // evaluate and return L2 norm of change in chain starting point
   RealVector delta_center = new_center;
@@ -1032,17 +1031,17 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   if (standardizedSpace) { // param domain in u-space
     switch (emulatorType) {
     case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
-      copy_gsl_partial(init_pt, *paramInitials, 0, numContinuousVars);
+      copy_gsl_partial(init_pt, *paramInitials, 0);
       break;
     default: { // init_pt not already propagated to u-space: use local nataf
       RealVector u_pt; natafTransform.trans_X_to_U(init_pt, u_pt);
-      copy_gsl_partial(u_pt, *paramInitials, 0, numContinuousVars);
+      copy_gsl_partial(u_pt, *paramInitials, 0);
       break;
     }
     }
   }
   else // init_pt and param domain in x-space
-    copy_gsl_partial(init_pt, *paramInitials, 0, numContinuousVars);
+    copy_gsl_partial(init_pt, *paramInitials, 0);
   if (calibrateSigma)
     for (size_t i=numContinuousVars; i<total_num_params; ++i)
       (*paramInitials)[i] = (paramMaxs[i] + paramMins[i]) / 2.;
@@ -1308,7 +1307,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   s << "<<<<< Best parameters          =\n";
   if (standardizedSpace) {
     RealVector u_rv(numContinuousVars, false), x_rv;
-    copy_gsl_partial(qv, u_rv, 0, numContinuousVars);
+    copy_gsl_partial(qv, 0, u_rv);
     natafTransform.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv); // TO DO: MAP for calibrate sigma params
   }
@@ -1356,15 +1355,20 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   // searching and will stop if it is too small (e.g. if one input is 
   // of small magnitude, searching in the original space will not be viable).
 
-  RealVector& x = nonDQUESOInstance->
+  RealVector& c_vars = nonDQUESOInstance->
     mcmcModel.current_variables().continuous_variables_view();
-  size_t num_cv = x.length();
-  nonDQUESOInstance->copy_gsl_partial(paramValues, x, 0, num_cv);
+  size_t num_cv = c_vars.length(), num_fns = nonDQUESOInstance->numFunctions;
+  nonDQUESOInstance->copy_gsl_partial(paramValues, 0, c_vars);
+  RealVector calibrated_sigmas;
+  if (nonDQUESOInstance->calibrateSigma) {
+    calibrated_sigmas.sizeUninitialized(num_fns);
+    nonDQUESOInstance->copy_gsl_partial(paramValues, num_cv, calibrated_sigmas);
+  }
 
   nonDQUESOInstance->mcmcModel.compute_response();
   const Response& resp = nonDQUESOInstance->mcmcModel.current_response();
 
-  double result = -nonDQUESOInstance->misfit(resp, x)
+  double result = -nonDQUESOInstance->misfit(resp, calibrated_sigmas)
                 /  nonDQUESOInstance->likelihoodScale;
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
     Cout << "Log likelihood is " << result << " Likelihood is "
@@ -1373,11 +1377,12 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   // TODO: open file once and append here, or rely on QUESO to output
   if (nonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
     const RealVector& fn_values = resp.function_values();
-    size_t i, num_fn = fn_values.length();
-    std::ofstream QuesoOutput;
+    size_t i; std::ofstream QuesoOutput;
     QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cv; ++i) QuesoOutput << paramValues[i] << ' ' ;
-    for (i=0; i<num_fn; ++i) QuesoOutput << fn_values[i]   << ' ' ;
+    for (i=0; i<num_cv;  ++i) QuesoOutput << paramValues[i] << ' ' ;
+    if (nonDQUESOInstance->calibrateSigma)
+      for (i=0; i<num_fns; ++i) QuesoOutput << calibrated_sigmas(i) << ' ' ;
+    for (i=0; i<num_fns; ++i) QuesoOutput << fn_values[i]   << ' ' ;
     QuesoOutput << result << '\n';
     QuesoOutput.close();
   }
@@ -1410,22 +1415,22 @@ copy_gsl(const RealVector& rv, QUESO::GslVector& qv)
 
 
 void NonDQUESOBayesCalibration::
-copy_gsl_partial(const QUESO::GslVector& qv, RealVector& rv,
-		 size_t start, size_t num_items)
+copy_gsl_partial(const QUESO::GslVector& qv, size_t start, RealVector& rv)
 {
-  size_t i, end = start + num_items;
-  for (i=start; i<end; ++i)
-    rv[i] = qv[i];
+  // copy part of qv into all of rv
+  size_t ri, qi, size_rv = rv.length();
+  for (ri=0, qi=start; ri<size_rv; ++ri, ++qi)
+    rv[ri] = qv[qi];
 }
 
 
 void NonDQUESOBayesCalibration::
-copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv,
-		 size_t start, size_t num_items)
+copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv, size_t start)
 {
-  size_t i, end = start + num_items;
-  for (i=start; i<end; ++i)
-    qv[i] = rv[i];
+  // copy all of rv into part of qv
+  size_t ri, qi, size_rv = rv.length();
+  for (ri=0, qi=start; ri<size_rv; ++ri, ++qi)
+    qv[qi] = rv[ri];
 }
 
 

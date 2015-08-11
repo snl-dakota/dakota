@@ -81,7 +81,7 @@ protected:
 				      const VectorType& vec);
 
   /// calculate the misfit function from the vector of residuals
-  Real misfit(const Response& resp, const RealVector& calib_vars);
+  Real misfit(const Response& resp, const RealVector& calibrated_sigmas);
 
   /// static function passed by pointer to negLogPostModel recast model
   static void neg_log_post_resp_mapping(const Variables& model_vars,

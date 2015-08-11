@@ -166,15 +166,15 @@ protected:
 
   /// local copy_data utility from GslVector to RealVector
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
-  /// local copy_data utility from GslVector to RealVector
+  /// local copy_data utility from RealVector to GslVector
   void copy_gsl(const RealVector& rv, QUESO::GslVector& qv);
 
-  /// local copy_data utility from GslVector to RealVector
-  void copy_gsl_partial(const QUESO::GslVector& qv, RealVector& rv,
-			size_t start, size_t num_items);
-  /// local copy_data utility from GslVector to RealVector
+  /// local copy_data utility from portion of GslVector to RealVector
+  void copy_gsl_partial(const QUESO::GslVector& qv, size_t start, 
+			RealVector& rv);
+  /// local copy_data utility from RealVector to portion of GslVector
   void copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv,
-			size_t start, size_t num_items);
+			size_t start);
 
   /// local copy_data utility from GslVector to column in RealMatrix
   void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
