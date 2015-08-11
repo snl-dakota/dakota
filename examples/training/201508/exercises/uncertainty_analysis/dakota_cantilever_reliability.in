@@ -1,0 +1,41 @@
+environment
+  tabular_data output_precision 1e-16
+
+method
+  local_reliability 
+  #mpp_search no_approx
+  num_probability_levels = 1 
+  probability_levels = .95 
+  cumulative distribution 
+
+
+variables
+  active uncertain						
+  continuous_design = 3					
+    upper_bounds = 1.2 1.2 6.0 
+    lower_bounds = 0.8 0.8 4.0
+    initial_point = 1.0 1.0 5.0
+    descriptors    "w"     "t"     "L"
+#  uniform_uncertain = 4
+#    upper_bounds = 600. 35.E+6 60. 120.
+#    lower_bounds = 400. 23.E+6 40. 80.
+#    descriptors    'p'   'E'   'X'  'Y'
+   normal_uncertain = 4
+   means = 500. 29.E+6 50. 100. 
+   std_deviations = 30. 2.E+6 3.0 6.0
+    descriptors    'p'   'E'   'X'  'Y'
+
+
+interface
+  fork
+    analysis_driver = 'driver.sh'
+
+responses
+  response_functions = 1
+  descriptors = 'mass'
+  numerical_gradients
+    method_source dakota				
+    interval_type central				
+    fd_gradient_step_size = 0.0001			
+ no_hessians
+

@@ -1,0 +1,43 @@
+environment
+  tabular_data output_precision 1e-16
+
+method
+  polynomial_chaos
+  sparse_grid_level = 2
+  sample_type lhs
+  samples = 10000
+  seed = 8572
+  num_probability_levels = 17 17 17
+  probability_levels =
+   .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+   .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+   .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+  cumulative distribution 
+
+
+variables
+  active uncertain						
+  continuous_design = 3					
+    upper_bounds = 1.2 1.2 6.0 
+    lower_bounds = 0.8 0.8 4.0
+    initial_point = 1.0 1.0 5.0
+    descriptors    "w"     "t"     "L"
+#  uniform_uncertain = 4
+#    upper_bounds = 600. 35.E+6 60. 120.
+#    lower_bounds = 400. 23.E+6 40. 80.
+#    descriptors    'p'   'E'   'X'  'Y'
+   normal_uncertain = 4
+   means = 500. 29.E+6 50. 100. 
+   std_deviations = 30. 2.E+6 3.0 6.0
+    descriptors    'p'   'E'   'X'  'Y'
+
+
+interface
+  fork
+    analysis_driver = 'driver.sh'
+
+responses
+  response_functions = 3 
+  descriptors = 'mass' 'stress' 'displacement'
+  no_gradients no_hessians
+

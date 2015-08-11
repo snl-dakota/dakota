@@ -1,0 +1,2459 @@
+Dakota version 6.2+ (stable) released Aug  7 2015.
+Subversion revision 3550 built Aug  7 2015 16:35:56.
+Running MPI Dakota executable in serial mode.
+Start time: Tue Aug 11 14:41:41 2015
+
+-----------------------
+Begin DAKOTA input file
+dakota_cantilever_uq.in
+-----------------------
+environment
+  tabular_data output_precision 1e-16
+
+method
+  sampling 
+  sample_type lhs 
+  samples = 100
+  seed = 3845
+  num_probability_levels = 17 17 17		   
+  probability_levels =
+   .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+   .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+   .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+  cumulative distribution 
+
+
+variables
+  active uncertain						
+  continuous_design = 3					
+    upper_bounds = 1.2 1.2 6.0 
+    lower_bounds = 0.8 0.8 4.0
+    initial_point = 1.0 1.0 5.0
+    descriptors    "w"     "t"     "L"
+  uniform_uncertain = 4
+    upper_bounds = 600. 35.E+6 60. 120.
+    lower_bounds = 400. 23.E+6 40. 80.
+    descriptors    'p'   'E'   'X'  'Y'
+#   normal_uncertain = 4
+#   means = 500. 29.E+6 50. 100. 
+#   std_deviations = 30. 2.E+6 3.0 6.0
+#    descriptors    'p'   'E'   'X'  'Y'
+
+
+interface
+  fork
+    analysis_driver = 'driver.sh'
+
+responses
+  response_functions = 3
+  descriptors = 'mass' 
+                'stress'
+                'displacement'
+  no_gradients no_hessians
+
+---------------------
+End DAKOTA input file
+---------------------
+
+Using Dakota input file 'dakota_cantilever_uq.in'
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running random_sampling iterator.
+
+NonD lhs Samples = 100 Seed (user-specified) = 3845
+sample ranks Teuchos::SerialDenseMatrix
+
+Values_copied : yes
+Rows : 4
+Columns : 100
+LDA : 4
+1 7 100 19 76 79 89 47 72 12 58 66 62 64 92 16 69 33 59 91 96 9 35 48 37 68 46 39 40 36 75 3 90 18 21 13 82 31 83 38 77 95 44 85 15 52 2 98 43 10 74 99 17 6 71 20 42 41 32 61 94 78 81 22 29 88 86 70 65 84 93 73 51 56 97 4 24 60 49 5 80 45 63 28 11 30 8 34 53 25 27 14 26 67 55 50 57 54 23 87 
+21 56 8 40 4 100 55 9 18 24 82 10 31 77 28 96 72 2 12 36 65 39 42 51 11 98 34 57 93 73 45 26 32 15 76 91 70 33 16 59 89 69 41 61 1 49 44 81 71 35 84 43 50 23 75 29 38 83 99 22 88 20 95 19 80 37 6 14 3 58 78 87 97 53 47 90 7 54 68 62 64 74 60 25 46 92 86 79 52 48 30 67 85 13 63 94 27 5 66 17 
+13 12 24 31 60 4 30 45 96 74 50 93 88 83 82 85 84 10 28 14 17 32 67 47 72 16 29 95 35 36 92 8 22 87 44 61 3 2 86 80 68 15 79 52 69 39 73 56 62 23 33 59 49 89 99 37 76 18 70 42 57 78 43 41 58 71 75 90 26 19 66 5 63 21 81 55 1 40 65 51 34 27 91 97 46 100 7 38 11 53 98 25 54 6 64 94 48 20 77 9 
+71 33 74 1 42 65 79 22 73 7 31 91 2 100 90 72 37 23 26 39 53 46 66 5 63 9 57 62 78 80 27 17 98 84 35 16 36 41 12 54 56 83 38 3 87 77 99 58 28 86 40 81 96 15 82 70 20 88 25 50 18 11 64 8 76 52 69 47 32 59 95 43 89 75 19 94 97 67 44 55 14 34 45 68 93 24 60 6 29 49 4 48 21 13 10 85 30 92 51 61 
+
+---------------------
+Begin Evaluation    1
+---------------------
+Parameters for evaluation 1:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.0013389043e+02 p
+                      2.5426120788e+07 E
+                      4.2538616389e+01 X
+                      1.0815665861e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_785e68aa /tmp/dakota_results_7556c9cd
+
+Active response data for evaluation 1:
+Active set vector = { 1 1 1 }
+                      1.1577948200e+00 mass
+                      9.0417165000e+04 stress
+                      2.2854710600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    2
+---------------------
+Parameters for evaluation 2:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.1383582186e+02 p
+                      2.9616525382e+07 E
+                      4.2217584760e+01 X
+                      9.3021436821e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_7990ea93 /tmp/dakota_results_a0ddac9c
+
+Active response data for evaluation 2:
+Active set vector = { 1 1 1 }
+                      1.1974416100e+00 mass
+                      8.1143412900e+04 stress
+                      1.7246009500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    3
+---------------------
+Parameters for evaluation 3:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.9847395167e+02 p
+                      2.3928015841e+07 E
+                      4.4621691106e+01 X
+                      1.0933106318e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_82e446d6 /tmp/dakota_results_05f64608
+
+Active response data for evaluation 3:
+Active set vector = { 1 1 1 }
+                      1.7316954600e+00 mass
+                      9.2371652600e+04 stress
+                      2.4675324300e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    4
+---------------------
+Parameters for evaluation 4:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.3768775808e+02 p
+                      2.7791192395e+07 E
+                      4.6001043547e+01 X
+                      8.0042538645e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_a1e3cddb /tmp/dakota_results_137487ce
+
+Active response data for evaluation 4:
+Active set vector = { 1 1 1 }
+                      1.2664576300e+00 mass
+                      7.5626149300e+04 stress
+                      1.6609502400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    5
+---------------------
+Parameters for evaluation 5:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.5060558725e+02 p
+                      2.3432572350e+07 E
+                      5.1860055470e+01 X
+                      9.6400337532e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_097383cf /tmp/dakota_results_330204cc
+
+Active response data for evaluation 5:
+Active set vector = { 1 1 1 }
+                      1.5931874600e+00 mass
+                      8.8956235800e+04 stress
+                      2.3357350800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    6
+---------------------
+Parameters for evaluation 6:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.5760326673e+02 p
+                      3.4893859068e+07 E
+                      4.0788587202e+01 X
+                      1.0582871302e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_3ee2dcf2 /tmp/dakota_results_972fc613
+
+Active response data for evaluation 6:
+Active set vector = { 1 1 1 }
+                      1.6134353800e+00 mass
+                      8.7970380100e+04 stress
+                      1.6251719500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    7
+---------------------
+Parameters for evaluation 7:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.7751723349e+02 p
+                      2.9505879569e+07 E
+                      4.5893301984e+01 X
+                      1.1124173665e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_f6202297 /tmp/dakota_results_26b09339
+
+Active response data for evaluation 7:
+Active set vector = { 1 1 1 }
+                      1.6710568100e+00 mass
+                      9.4281023200e+04 stress
+                      2.0391985000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    8
+---------------------
+Parameters for evaluation 8:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.9323688505e+02 p
+                      2.3995054856e+07 E
+                      4.8886867108e+01 X
+                      8.8628468916e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_9e5ed9c6 /tmp/dakota_results_d14e8cae
+
+Active response data for evaluation 8:
+Active set vector = { 1 1 1 }
+                      1.4271900600e+00 mass
+                      8.2509201600e+04 stress
+                      2.1091272500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation    9
+---------------------
+Parameters for evaluation 9:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.4312822891e+02 p
+                      2.5103103409e+07 E
+                      5.9081981502e+01 X
+                      1.0897112724e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_d71a4eb9 /tmp/dakota_results_248d9473
+
+Active response data for evaluation 9:
+Active set vector = { 1 1 1 }
+                      1.5715515900e+00 mass
+                      1.0083186500e+05 stress
+                      2.4689616400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   10
+---------------------
+Parameters for evaluation 10:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.2237896665e+02 p
+                      2.5818315771e+07 E
+                      5.4660953736e+01 X
+                      8.2593809269e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_6d66c041 /tmp/dakota_results_1d8b42cc
+
+Active response data for evaluation 10:
+Active set vector = { 1 1 1 }
+                      1.2221613600e+00 mass
+                      8.2352857800e+04 stress
+                      1.9180803600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   11
+---------------------
+Parameters for evaluation 11:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.1402687345e+02 p
+                      3.2777419863e+07 E
+                      4.9847247077e+01 X
+                      9.2015772685e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_40b942bb /tmp/dakota_results_0917aaee
+
+Active response data for evaluation 11:
+Active set vector = { 1 1 1 }
+                      1.4873462800e+00 mass
+                      8.5117811900e+04 stress
+                      1.5963754000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   12
+---------------------
+Parameters for evaluation 12:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.3115456156e+02 p
+                      2.4178142804e+07 E
+                      5.8539337309e+01 X
+                      1.1605234302e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_48f4dc56 /tmp/dakota_results_be3888d6
+
+Active response data for evaluation 12:
+Active set vector = { 1 1 1 }
+                      1.5369055600e+00 mass
+                      1.0475500800e+05 stress
+                      2.6879808400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   13
+---------------------
+Parameters for evaluation 13:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.2354733758e+02 p
+                      2.6682434490e+07 E
+                      5.7547580171e+01 X
+                      8.0613696275e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_78d5c231 /tmp/dakota_results_d372fa50
+
+Active response data for evaluation 13:
+Active set vector = { 1 1 1 }
+                      1.5148939200e+00 mass
+                      8.2896765900e+04 stress
+                      1.8560322600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   14
+---------------------
+Parameters for evaluation 14:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.2667730665e+02 p
+                      3.2142464799e+07 E
+                      5.6431156736e+01 X
+                      1.1978390024e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_4201416d /tmp/dakota_results_60c33eff
+
+Active response data for evaluation 14:
+Active set vector = { 1 1 1 }
+                      1.5239505400e+00 mass
+                      1.0572903400e+05 stress
+                      2.0597509400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   15
+---------------------
+Parameters for evaluation 15:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.8290879543e+02 p
+                      2.6256638410e+07 E
+                      5.6278647639e+01 X
+                      1.1597882660e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_ff72bee0 /tmp/dakota_results_93d02083
+
+Active response data for evaluation 15:
+Active set vector = { 1 1 1 }
+                      1.6866573900e+00 mass
+                      1.0335448500e+05 stress
+                      2.4548510700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   16
+---------------------
+Parameters for evaluation 16:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.3091274834e+02 p
+                      3.4450348559e+07 E
+                      5.6821513070e+01 X
+                      1.0861244206e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_867ce9b1 /tmp/dakota_results_8373f757
+
+Active response data for evaluation 16:
+Active set vector = { 1 1 1 }
+                      1.2468540200e+00 mass
+                      9.9260373100e+04 stress
+                      1.7790519800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   17
+---------------------
+Parameters for evaluation 17:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.3659761194e+02 p
+                      3.1546726110e+07 E
+                      5.6637573766e+01 X
+                      9.4442688707e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_3c331ddc /tmp/dakota_results_4dbb29c2
+
+Active response data for evaluation 17:
+Active set vector = { 1 1 1 }
+                      1.5526551300e+00 mass
+                      9.0648157500e+04 stress
+                      1.7454066500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   18
+---------------------
+Parameters for evaluation 18:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.6519561761e+02 p
+                      2.3191442219e+07 E
+                      4.1890415593e+01 X
+                      8.8932904587e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_a8364ea2 /tmp/dakota_results_1f5c890a
+
+Active response data for evaluation 18:
+Active set vector = { 1 1 1 }
+                      1.3460521300e+00 mass
+                      7.8493992100e+04 stress
+                      2.1194235300e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   19
+---------------------
+Parameters for evaluation 19:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.1611892920e+02 p
+                      2.4410463552e+07 E
+                      4.5577660012e+01 X
+                      9.0266628119e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_6bb2457d /tmp/dakota_results_85732941
+
+Active response data for evaluation 19:
+Active set vector = { 1 1 1 }
+                      1.4933996800e+00 mass
+                      8.1506572900e+04 stress
+                      2.0712563800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   20
+---------------------
+Parameters for evaluation 20:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.8195353101e+02 p
+                      2.7207431034e+07 E
+                      4.2629674128e+01 X
+                      9.5266241271e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_076e6bdd /tmp/dakota_results_c843d247
+
+Active response data for evaluation 20:
+Active set vector = { 1 1 1 }
+                      1.6838933200e+00 mass
+                      8.2737549200e+04 stress
+                      1.9180288700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   21
+---------------------
+Parameters for evaluation 21:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.9165085655e+02 p
+                      3.0740435941e+07 E
+                      4.3272294213e+01 X
+                      1.0093078087e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_5d81aac7 /tmp/dakota_results_3bfb4f87
+
+Active response data for evaluation 21:
+Active set vector = { 1 1 1 }
+                      1.7119527100e+00 mass
+                      8.6521845100e+04 stress
+                      1.7861786100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   22
+---------------------
+Parameters for evaluation 22:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.1678483859e+02 p
+                      2.7657895960e+07 E
+                      4.6239735219e+01 X
+                      9.8084169497e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_2cd56f65 /tmp/dakota_results_5a9c1167
+
+Active response data for evaluation 22:
+Active set vector = { 1 1 1 }
+                      1.2059746500e+00 mass
+                      8.6594342800e+04 stress
+                      1.9603291400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   23
+---------------------
+Parameters for evaluation 23:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.6931661567e+02 p
+                      2.7941195412e+07 E
+                      5.3268228851e+01 X
+                      1.0623891178e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_615fdac4 /tmp/dakota_results_c804d698
+
+Active response data for evaluation 23:
+Active set vector = { 1 1 1 }
+                      1.3579763200e+00 mass
+                      9.5704284400e+04 stress
+                      2.1267043200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   24
+---------------------
+Parameters for evaluation 24:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.9500669267e+02 p
+                      2.9011660978e+07 E
+                      4.9233706775e+01 X
+                      8.1768840563e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_fc38e756 /tmp/dakota_results_46cc4eb0
+
+Active response data for evaluation 24:
+Active set vector = { 1 1 1 }
+                      1.4323110300e+00 mass
+                      7.8601528400e+04 stress
+                      1.6449739000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   25
+---------------------
+Parameters for evaluation 25:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.7205340066e+02 p
+                      2.4306518552e+07 E
+                      5.4397712526e+01 X
+                      1.0510034864e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_ed0902cb /tmp/dakota_results_d8c31094
+
+Active response data for evaluation 25:
+Active set vector = { 1 1 1 }
+                      1.3658952600e+00 mass
+                      9.5698836700e+04 stress
+                      2.4343993100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   26
+---------------------
+Parameters for evaluation 26:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.3416643108e+02 p
+                      3.4670257834e+07 E
+                      4.3166742173e+01 X
+                      8.3405641930e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_a82a149e /tmp/dakota_results_015543f6
+
+Active response data for evaluation 26:
+Active set vector = { 1 1 1 }
+                      1.5456204600e+00 mass
+                      7.5943430500e+04 stress
+                      1.3543908000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   27
+---------------------
+Parameters for evaluation 27:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.9081293394e+02 p
+                      2.7044859459e+07 E
+                      4.5769808901e+01 X
+                      1.0240033302e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_2ee44b86 /tmp/dakota_results_a00c91cf
+
+Active response data for evaluation 27:
+Active set vector = { 1 1 1 }
+                      1.4201763100e+00 mass
+                      8.8902085200e+04 stress
+                      2.0736609100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   28
+---------------------
+Parameters for evaluation 28:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.7614138910e+02 p
+                      2.9803900507e+07 E
+                      5.8847015701e+01 X
+                      1.0466910909e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_c8ce8171 /tmp/dakota_results_00e20862
+
+Active response data for evaluation 28:
+Active set vector = { 1 1 1 }
+                      1.3777239300e+00 mass
+                      9.8109674900e+04 stress
+                      2.0144586200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   29
+---------------------
+Parameters for evaluation 29:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.7980373967e+02 p
+                      3.4052748499e+07 E
+                      4.6872858983e+01 X
+                      1.1105905464e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_aab84111 /tmp/dakota_results_f7d1c964
+
+Active response data for evaluation 29:
+Active set vector = { 1 1 1 }
+                      1.3883210100e+00 mass
+                      9.4759148200e+04 stress
+                      1.7699795700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   30
+---------------------
+Parameters for evaluation 30:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.7013089901e+02 p
+                      3.1735661621e+07 E
+                      4.7134560833e+01 X
+                      1.1192159235e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_a437aab4 /tmp/dakota_results_3d6b9888
+
+Active response data for evaluation 30:
+Active set vector = { 1 1 1 }
+                      1.3603324600e+00 mass
+                      9.5433691900e+04 stress
+                      1.9133332800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   31
+---------------------
+Parameters for evaluation 31:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.4829786562e+02 p
+                      2.8334827867e+07 E
+                      5.8269109424e+01 X
+                      9.0651445473e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_d84eeec6 /tmp/dakota_results_fe843b0a
+
+Active response data for evaluation 31:
+Active set vector = { 1 1 1 }
+                      1.5865100300e+00 mass
+                      8.9352332900e+04 stress
+                      1.9016086600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   32
+---------------------
+Parameters for evaluation 32:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.0461275446e+02 p
+                      2.6108081003e+07 E
+                      4.1579863436e+01 X
+                      8.6613216547e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_07c1814d /tmp/dakota_results_a78114aa
+
+Active response data for evaluation 32:
+Active set vector = { 1 1 1 }
+                      1.1707545000e+00 mass
+                      7.6915848000e+04 stress
+                      1.8399803200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   33
+---------------------
+Parameters for evaluation 33:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.7805866452e+02 p
+                      2.6817540478e+07 E
+                      4.4392855184e+01 X
+                      1.1899430224e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_45e56b80 /tmp/dakota_results_fd59f821
+
+Active response data for evaluation 33:
+Active set vector = { 1 1 1 }
+                      1.6726234500e+00 mass
+                      9.8032294500e+04 stress
+                      2.3679537600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   34
+---------------------
+Parameters for evaluation 34:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.3562737157e+02 p
+                      2.4796520468e+07 E
+                      5.7313479396e+01 X
+                      1.1332195812e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_7777b80f /tmp/dakota_results_a222e5ea
+
+Active response data for evaluation 34:
+Active set vector = { 1 1 1 }
+                      1.2604958700e+00 mass
+                      1.0238126300e+05 stress
+                      2.5606606600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   35
+---------------------
+Parameters for evaluation 35:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.4109416469e+02 p
+                      3.2113924382e+07 E
+                      4.8771597791e+01 X
+                      9.3779998345e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_b30c22bc /tmp/dakota_results_aaf453c1
+
+Active response data for evaluation 35:
+Active set vector = { 1 1 1 }
+                      1.2763141300e+00 mass
+                      8.5530957700e+04 stress
+                      1.6457674100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   36
+---------------------
+Parameters for evaluation 36:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.2419079489e+02 p
+                      3.3876335848e+07 E
+                      5.2102755153e+01 X
+                      8.6156290824e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_67b4bd27 /tmp/dakota_results_fd74fd84
+
+Active response data for evaluation 36:
+Active set vector = { 1 1 1 }
+                      1.2274039200e+00 mass
+                      8.2955427600e+04 stress
+                      1.4860767000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   37
+---------------------
+Parameters for evaluation 37:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.6230726777e+02 p
+                      3.1323722084e+07 E
+                      4.0583167842e+01 X
+                      9.4087834653e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_70dc3853 /tmp/dakota_results_b97700fc
+
+Active response data for evaluation 37:
+Active set vector = { 1 1 1 }
+                      1.6270464900e+00 mass
+                      8.0802601500e+04 stress
+                      1.6356156000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   38
+---------------------
+Parameters for evaluation 38:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.6098951116e+02 p
+                      2.6942215101e+07 E
+                      4.0373808549e+01 X
+                      9.6324096412e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_83a3d4ac /tmp/dakota_results_eac1ba36
+
+Active response data for evaluation 38:
+Active set vector = { 1 1 1 }
+                      1.3338816900e+00 mass
+                      8.2018743000e+04 stress
+                      1.9382810700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   39
+---------------------
+Parameters for evaluation 39:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.6503515397e+02 p
+                      2.4881687253e+07 E
+                      5.7162781702e+01 X
+                      8.4550251453e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_63bf5065 /tmp/dakota_results_7d4eaa85
+
+Active response data for evaluation 39:
+Active set vector = { 1 1 1 }
+                      1.6349396800e+00 mass
+                      8.5027819900e+04 stress
+                      2.0509143000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   40
+---------------------
+Parameters for evaluation 40:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.7566711332e+02 p
+                      2.9961538170e+07 E
+                      5.5966722363e+01 X
+                      1.0120115028e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_2ecb910a /tmp/dakota_results_be8e6b83
+
+Active response data for evaluation 40:
+Active set vector = { 1 1 1 }
+                      1.3763516000e+00 mass
+                      9.4300723600e+04 stress
+                      1.9299039500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   41
+---------------------
+Parameters for evaluation 41:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.5299061213e+02 p
+                      3.3658065591e+07 E
+                      5.3579307277e+01 X
+                      1.0237938482e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_dbd24319 /tmp/dakota_results_f8f7ad16
+
+Active response data for evaluation 41:
+Active set vector = { 1 1 1 }
+                      1.6000885800e+00 mass
+                      9.3575215300e+04 stress
+                      1.7165583800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   42
+---------------------
+Parameters for evaluation 42:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.8824917048e+02 p
+                      3.1218611443e+07 E
+                      4.2901028049e+01 X
+                      1.1282789700e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_51cfd141 /tmp/dakota_results_39627211
+
+Active response data for evaluation 42:
+Active set vector = { 1 1 1 }
+                      1.7021098700e+00 mass
+                      9.3437355000e+04 stress
+                      1.9332838600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   43
+---------------------
+Parameters for evaluation 43:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.8717597496e+02 p
+                      2.7808340023e+07 E
+                      5.5681556091e+01 X
+                      9.5143425876e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_74a0395c /tmp/dakota_results_608f260f
+
+Active response data for evaluation 43:
+Active set vector = { 1 1 1 }
+                      1.4096527100e+00 mass
+                      9.0494989200e+04 stress
+                      1.9821269000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   44
+---------------------
+Parameters for evaluation 44:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.6994049652e+02 p
+                      3.0224162734e+07 E
+                      5.0279115251e+01 X
+                      8.0927528933e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_a25e9ba5 /tmp/dakota_results_605506d0
+
+Active response data for evaluation 44:
+Active set vector = { 1 1 1 }
+                      1.6491333800e+00 mass
+                      7.8723986500e+04 stress
+                      1.5761334200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   45
+---------------------
+Parameters for evaluation 45:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.2956357518e+02 p
+                      2.3040947640e+07 E
+                      5.3698994852e+01 X
+                      1.1467652827e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_8a89b5b2 /tmp/dakota_results_d50bf8ab
+
+Active response data for evaluation 45:
+Active set vector = { 1 1 1 }
+                      1.2429501600e+00 mass
+                      1.0102531400e+05 stress
+                      2.7478594200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   46
+---------------------
+Parameters for evaluation 46:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.0312689844e+02 p
+                      2.8785778764e+07 E
+                      4.7753611276e+01 X
+                      1.1055135272e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_0b988874 /tmp/dakota_results_ad0c9139
+
+Active response data for evaluation 46:
+Active set vector = { 1 1 1 }
+                      1.4558070000e+00 mass
+                      9.4982978400e+04 stress
+                      2.0917323200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   47
+---------------------
+Parameters for evaluation 47:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.0282858762e+02 p
+                      2.8166482541e+07 E
+                      5.4431592094e+01 X
+                      1.1954206863e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_816c53ea /tmp/dakota_results_c382ead0
+
+Active response data for evaluation 47:
+Active set vector = { 1 1 1 }
+                      1.1655919800e+00 mass
+                      1.0438419600e+05 stress
+                      2.3316911000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   48
+---------------------
+Parameters for evaluation 48:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.9448471877e+02 p
+                      3.2645968086e+07 E
+                      5.1147597417e+01 X
+                      1.0313488202e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_62867661 /tmp/dakota_results_c39b7c2c
+
+Active response data for evaluation 48:
+Active set vector = { 1 1 1 }
+                      1.7201525400e+00 mass
+                      9.2569487700e+04 stress
+                      1.7631757100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   49
+---------------------
+Parameters for evaluation 49:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.8426163457e+02 p
+                      3.1444473728e+07 E
+                      5.2390167586e+01 X
+                      9.1003421967e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_fbd2ac29 /tmp/dakota_results_63b0b14e
+
+Active response data for evaluation 49:
+Active set vector = { 1 1 1 }
+                      1.4012200100e+00 mass
+                      8.6036153700e+04 stress
+                      1.6697121600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   50
+---------------------
+Parameters for evaluation 50:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.1848501341e+02 p
+                      2.7161585554e+07 E
+                      4.4577461898e+01 X
+                      1.1437213688e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_35e580de /tmp/dakota_results_27eb2ad0
+
+Active response data for evaluation 50:
+Active set vector = { 1 1 1 }
+                      1.2108941400e+00 mass
+                      9.5369759300e+04 stress
+                      2.2596680700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   51
+---------------------
+Parameters for evaluation 51:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.4749324830e+02 p
+                      3.3028768538e+07 E
+                      4.6507817029e+01 X
+                      9.5982807046e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_ebec95bf /tmp/dakota_results_c448a3f9
+
+Active response data for evaluation 51:
+Active set vector = { 1 1 1 }
+                      1.5841818500e+00 mass
+                      8.5494374400e+04 stress
+                      1.6146047900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   52
+---------------------
+Parameters for evaluation 52:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.9736786910e+02 p
+                      2.8118675547e+07 E
+                      5.1773414828e+01 X
+                      1.1200585612e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_b10c1358 /tmp/dakota_results_2c7ed1b9
+
+Active response data for evaluation 52:
+Active set vector = { 1 1 1 }
+                      1.7284949900e+00 mass
+                      9.8267562600e+04 stress
+                      2.1941442700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   53
+---------------------
+Parameters for evaluation 53:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.3265230656e+02 p
+                      2.8988148127e+07 E
+                      4.9689724305e+01 X
+                      1.1835733602e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_e828c9a7 /tmp/dakota_results_c29b6604
+
+Active response data for evaluation 53:
+Active set vector = { 1 1 1 }
+                      1.2518874600e+00 mass
+                      1.0082823600e+05 stress
+                      2.2140914600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   54
+---------------------
+Parameters for evaluation 54:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.1150765707e+02 p
+                      2.5696382868e+07 E
+                      5.7683186515e+01 X
+                      8.5763662250e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_4f6d3e07 /tmp/dakota_results_328d997f
+
+Active response data for evaluation 54:
+Active set vector = { 1 1 1 }
+                      1.1907050300e+00 mass
+                      8.6068109300e+04 stress
+                      2.0111277600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   55
+---------------------
+Parameters for evaluation 55:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.4199889968e+02 p
+                      3.1896224776e+07 E
+                      5.9720221351e+01 X
+                      1.1266843138e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_8ee1cbd2 /tmp/dakota_results_ffd66cdd
+
+Active response data for evaluation 55:
+Active set vector = { 1 1 1 }
+                      1.5682838500e+00 mass
+                      1.0343319200e+05 stress
+                      1.9989414600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   56
+---------------------
+Parameters for evaluation 56:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.3981238144e+02 p
+                      2.6384146849e+07 E
+                      4.7334162957e+01 X
+                      1.0760336081e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_50802c00 /tmp/dakota_results_4b467925
+
+Active response data for evaluation 56:
+Active set vector = { 1 1 1 }
+                      1.2726052700e+00 mass
+                      9.2962514300e+04 stress
+                      2.2277443700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   57
+---------------------
+Parameters for evaluation 57:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.8250375528e+02 p
+                      2.7520536669e+07 E
+                      5.5121673502e+01 X
+                      8.7619755388e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_4a3c5b16 /tmp/dakota_results_284352fd
+
+Active response data for evaluation 57:
+Active set vector = { 1 1 1 }
+                      1.3961335500e+00 mass
+                      8.5644857300e+04 stress
+                      1.8807097100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   58
+---------------------
+Parameters for evaluation 58:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.8089970121e+02 p
+                      3.2898193463e+07 E
+                      4.3516847134e+01 X
+                      1.1510655456e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_e1e587ef /tmp/dakota_results_ab393d7a
+
+Active response data for evaluation 58:
+Active set vector = { 1 1 1 }
+                      1.3914921900e+00 mass
+                      9.5174041000e+04 stress
+                      1.8702828200e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   59
+---------------------
+Parameters for evaluation 59:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.6376897331e+02 p
+                      3.4832394905e+07 E
+                      5.3908007864e+01 X
+                      8.9875187331e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_52189cfc /tmp/dakota_results_391119c6
+
+Active response data for evaluation 59:
+Active set vector = { 1 1 1 }
+                      1.3419241100e+00 mass
+                      8.6269917100e+04 stress
+                      1.5043866500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   60
+---------------------
+Parameters for evaluation 60:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.2119659539e+02 p
+                      2.5576185990e+07 E
+                      4.8359863142e+01 X
+                      9.9976210054e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_f4c1c319 /tmp/dakota_results_21e00536
+
+Active response data for evaluation 60:
+Active set vector = { 1 1 1 }
+                      1.5080920000e+00 mass
+                      8.9001643900e+04 stress
+                      2.1711247000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   61
+---------------------
+Parameters for evaluation 61:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.8686762254e+02 p
+                      3.3504239309e+07 E
+                      5.1261363732e+01 X
+                      8.7073235016e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_74ab3684 /tmp/dakota_results_073c0912
+
+Active response data for evaluation 61:
+Active set vector = { 1 1 1 }
+                      1.6981123300e+00 mass
+                      8.3000759200e+04 stress
+                      1.5078979900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   62
+---------------------
+Parameters for evaluation 62:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.5511554822e+02 p
+                      2.5298753934e+07 E
+                      5.5550404160e+01 X
+                      8.4142892407e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_54c195d2 /tmp/dakota_results_08ba570c
+
+Active response data for evaluation 62:
+Active set vector = { 1 1 1 }
+                      1.6062371200e+00 mass
+                      8.3815977900e+04 stress
+                      1.9927060000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   63
+---------------------
+Parameters for evaluation 63:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.6097845364e+02 p
+                      3.4283037562e+07 E
+                      4.8430618414e+01 X
+                      1.0528478492e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_b4d4f7be /tmp/dakota_results_b1462fa9
+
+Active response data for evaluation 63:
+Active set vector = { 1 1 1 }
+                      1.6232015400e+00 mass
+                      9.2229242000e+04 stress
+                      1.6901893400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   64
+---------------------
+Parameters for evaluation 64:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.4383235379e+02 p
+                      2.5246711588e+07 E
+                      4.8010870446e+01 X
+                      8.2871732487e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_e9ee86ff /tmp/dakota_results_7d20b24b
+
+Active response data for evaluation 64:
+Active set vector = { 1 1 1 }
+                      1.2842371300e+00 mass
+                      7.8529561800e+04 stress
+                      1.8967731100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   65
+---------------------
+Parameters for evaluation 65:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.5634779808e+02 p
+                      3.2540508376e+07 E
+                      5.1415411928e+01 X
+                      1.1004740327e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_95325c50 /tmp/dakota_results_ab7d8596
+
+Active response data for evaluation 65:
+Active set vector = { 1 1 1 }
+                      1.3204508000e+00 mass
+                      9.6877689100e+04 stress
+                      1.8663805500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   66
+---------------------
+Parameters for evaluation 66:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.7440162588e+02 p
+                      2.7351564361e+07 E
+                      5.4014336223e+01 X
+                      1.0068258311e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_5c423fe2 /tmp/dakota_results_b3b87bec
+
+Active response data for evaluation 66:
+Active set vector = { 1 1 1 }
+                      1.6620417400e+00 mass
+                      9.2818151600e+04 stress
+                      2.0886634700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   67
+---------------------
+Parameters for evaluation 67:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.7144506926e+02 p
+                      2.3687174942e+07 E
+                      5.4903519334e+01 X
+                      1.0745155605e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_ba551bde /tmp/dakota_results_fa2b01c1
+
+Active response data for evaluation 67:
+Active set vector = { 1 1 1 }
+                      1.6534868900e+00 mass
+                      9.7413045200e+04 stress
+                      2.5470701400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   68
+---------------------
+Parameters for evaluation 68:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.3805238442e+02 p
+                      2.4592560028e+07 E
+                      5.7828374418e+01 X
+                      9.8530723417e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_86ece967 /tmp/dakota_results_38046491
+
+Active response data for evaluation 68:
+Active set vector = { 1 1 1 }
+                      1.5568645400e+00 mass
+                      9.3815458700e+04 stress
+                      2.3228002100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   69
+---------------------
+Parameters for evaluation 69:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.2874069311e+02 p
+                      2.3277967119e+07 E
+                      4.5166339364e+01 X
+                      9.2671012138e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_8160e5b8 /tmp/dakota_results_9d6dda92
+
+Active response data for evaluation 69:
+Active set vector = { 1 1 1 }
+                      1.5299209900e+00 mass
+                      8.2702410900e+04 stress
+                      2.2143638600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   70
+---------------------
+Parameters for evaluation 70:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.6637586037e+02 p
+                      2.9931300811e+07 E
+                      4.3682471975e+01 X
+                      1.0330985142e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_45b9f19a /tmp/dakota_results_d565e2f8
+
+Active response data for evaluation 70:
+Active set vector = { 1 1 1 }
+                      1.6388190400e+00 mass
+                      8.8195394000e+04 stress
+                      1.8737145900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   71
+---------------------
+Parameters for evaluation 71:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.8590535404e+02 p
+                      3.2308531028e+07 E
+                      5.3059624926e+01 X
+                      1.1765297920e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_726441fe /tmp/dakota_results_ec499975
+
+Active response data for evaluation 71:
+Active set vector = { 1 1 1 }
+                      1.6953279900e+00 mass
+                      1.0242756200e+05 stress
+                      1.9973690700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   72
+---------------------
+Parameters for evaluation 72:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.4575527647e+02 p
+                      3.3430091646e+07 E
+                      4.0952106947e+01 X
+                      9.6824819314e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_bb0fde9c /tmp/dakota_results_da814e9e
+
+Active response data for evaluation 72:
+Active set vector = { 1 1 1 }
+                      1.5791530000e+00 mass
+                      8.2666155800e+04 stress
+                      1.5723718000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   73
+---------------------
+Parameters for evaluation 73:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.0171061176e+02 p
+                      3.4614775802e+07 E
+                      5.2536017762e+01 X
+                      1.1533539786e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_59657273 /tmp/dakota_results_9ae80060
+
+Active response data for evaluation 73:
+Active set vector = { 1 1 1 }
+                      1.4517089500e+00 mass
+                      1.0072284900e+05 stress
+                      1.8306788900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   74
+---------------------
+Parameters for evaluation 74:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.1067661751e+02 p
+                      2.9266945039e+07 E
+                      4.4006351666e+01 X
+                      1.0986240070e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_b136b225 /tmp/dakota_results_7b7a932f
+
+Active response data for evaluation 74:
+Active set vector = { 1 1 1 }
+                      1.4776522500e+00 mass
+                      9.2321251400e+04 stress
+                      2.0218755400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   75
+---------------------
+Parameters for evaluation 75:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.9359440279e+02 p
+                      2.8557029703e+07 E
+                      5.6070606989e+01 X
+                      8.7322319050e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_d3db1695 /tmp/dakota_results_1933f13e
+
+Active response data for evaluation 75:
+Active set vector = { 1 1 1 }
+                      1.7175764000e+00 mass
+                      8.6035755600e+04 stress
+                      1.8169655100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   76
+---------------------
+Parameters for evaluation 76:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.0695102694e+02 p
+                      3.3775634052e+07 E
+                      5.0982085524e+01 X
+                      1.1753034079e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_703b8008 /tmp/dakota_results_a44081bd
+
+Active response data for evaluation 76:
+Active set vector = { 1 1 1 }
+                      1.1775203300e+00 mass
+                      1.0110745600e+05 stress
+                      1.8965075600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   77
+---------------------
+Parameters for evaluation 77:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.4761741352e+02 p
+                      2.3822314898e+07 E
+                      4.0160214440e+01 X
+                      1.1868194457e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_83cf092d /tmp/dakota_results_775f5a3b
+
+Active response data for evaluation 77:
+Active set vector = { 1 1 1 }
+                      1.2951892800e+00 mass
+                      9.5305295400e+04 stress
+                      2.6297327800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   78
+---------------------
+Parameters for evaluation 78:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.1895836608e+02 p
+                      2.9422408103e+07 E
+                      4.7802923863e+01 X
+                      1.0657805850e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_428c645d /tmp/dakota_results_47f70000
+
+Active response data for evaluation 78:
+Active set vector = { 1 1 1 }
+                      1.5016156400e+00 mass
+                      9.2628589400e+04 stress
+                      1.9850099000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   79
+---------------------
+Parameters for evaluation 79:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.9742083706e+02 p
+                      3.1044384852e+07 E
+                      5.2916648446e+01 X
+                      9.7433214146e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_98026c38 /tmp/dakota_results_f5c9073e
+
+Active response data for evaluation 79:
+Active set vector = { 1 1 1 }
+                      1.4392964000e+00 mass
+                      9.0209917600e+04 stress
+                      1.7857596400e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   80
+---------------------
+Parameters for evaluation 80:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.0806398457e+02 p
+                      3.0418279243e+07 E
+                      5.0173021872e+01 X
+                      1.0160920748e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_cd2361d2 /tmp/dakota_results_edb4ef30
+
+Active response data for evaluation 80:
+Active set vector = { 1 1 1 }
+                      1.1807407000e+00 mass
+                      9.1069337600e+04 stress
+                      1.8627204800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   81
+---------------------
+Parameters for evaluation 81:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.5820438841e+02 p
+                      3.0644918621e+07 E
+                      4.6676943572e+01 X
+                      8.5507237272e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_3be57d18 /tmp/dakota_results_a63e5cd9
+
+Active response data for evaluation 81:
+Active set vector = { 1 1 1 }
+                      1.6151747300e+00 mass
+                      7.9310508500e+04 stress
+                      1.5894606500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   82
+---------------------
+Parameters for evaluation 82:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.8996283955e+02 p
+                      3.1774998971e+07 E
+                      4.5292372756e+01 X
+                      9.3350788281e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_ac29089a /tmp/dakota_results_1b37ab1b
+
+Active response data for evaluation 82:
+Active set vector = { 1 1 1 }
+                      1.4177165500e+00 mass
+                      8.3185896600e+04 stress
+                      1.6327022100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   83
+---------------------
+Parameters for evaluation 83:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.2498101547e+02 p
+                      3.0113790729e+07 E
+                      5.8064698854e+01 X
+                      9.7652063155e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_6a5133fb /tmp/dakota_results_b7a0bd1b
+
+Active response data for evaluation 83:
+Active set vector = { 1 1 1 }
+                      1.5190422900e+00 mass
+                      9.3430057200e+04 stress
+                      1.8863598500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   84
+---------------------
+Parameters for evaluation 84:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.5498061385e+02 p
+                      2.5925022562e+07 E
+                      5.9279909407e+01 X
+                      1.0684760561e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_e51afedf /tmp/dakota_results_77ee25e6
+
+Active response data for evaluation 84:
+Active set vector = { 1 1 1 }
+                      1.3164948300e+00 mass
+                      9.9676509000e+04 stress
+                      2.3566132000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   85
+---------------------
+Parameters for evaluation 85:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.2031498763e+02 p
+                      2.8405023498e+07 E
+                      4.9031967461e+01 X
+                      1.1712431962e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_fa07aa49 /tmp/dakota_results_3f5b3ce4
+
+Active response data for evaluation 85:
+Active set vector = { 1 1 1 }
+                      1.2161892000e+00 mass
+                      9.9693772300e+04 stress
+                      2.2350515500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   86
+---------------------
+Parameters for evaluation 86:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.5928110382e+02 p
+                      3.3940698666e+07 E
+                      5.9872035293e+01 X
+                      8.9259784542e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_c5789106 /tmp/dakota_results_d25e9004
+
+Active response data for evaluation 86:
+Active set vector = { 1 1 1 }
+                      1.3289383800e+00 mass
+                      8.9479091900e+04 stress
+                      1.5833511700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   87
+---------------------
+Parameters for evaluation 87:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.1513792952e+02 p
+                      3.3269981168e+07 E
+                      4.1384784103e+01 X
+                      1.0384151252e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_18d271c2 /tmp/dakota_results_cf321371
+
+Active response data for evaluation 87:
+Active set vector = { 1 1 1 }
+                      1.2012092900e+00 mass
+                      8.7135778000e+04 stress
+                      1.6799594100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   88
+---------------------
+Parameters for evaluation 88:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.6763384751e+02 p
+                      3.2465635590e+07 E
+                      4.7500178950e+01 X
+                      8.2198419920e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_25932435 /tmp/dakota_results_42307799
+
+Active response data for evaluation 88:
+Active set vector = { 1 1 1 }
+                      1.3531072000e+00 mass
+                      7.7819159300e+04 stress
+                      1.4621000800e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   89
+---------------------
+Parameters for evaluation 89:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.0521954069e+02 p
+                      2.9132952324e+07 E
+                      4.2086752109e+01 X
+                      9.1400922116e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_00692b25 /tmp/dakota_results_8fa01f45
+
+Active response data for evaluation 89:
+Active set vector = { 1 1 1 }
+                      1.4618621000e+00 mass
+                      8.0092604500e+04 stress
+                      1.7269990500e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   90
+---------------------
+Parameters for evaluation 90:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.4855963545e+02 p
+                      2.8642568973e+07 E
+                      5.0515717471e+01 X
+                      9.9452879014e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_948bfcfd /tmp/dakota_results_c9f3e97d
+
+Active response data for evaluation 90:
+Active set vector = { 1 1 1 }
+                      1.2979156100e+00 mass
+                      8.9981157900e+04 stress
+                      1.9472224900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   91
+---------------------
+Parameters for evaluation 91:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.5386327240e+02 p
+                      2.6521420993e+07 E
+                      5.9542853362e+01 X
+                      8.1328246536e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_cd6aba85 /tmp/dakota_results_a6e9115e
+
+Active response data for evaluation 91:
+Active set vector = { 1 1 1 }
+                      1.3132617800e+00 mass
+                      8.4522659900e+04 stress
+                      1.9002566900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   92
+---------------------
+Parameters for evaluation 92:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.2610221008e+02 p
+                      3.0976577568e+07 E
+                      4.4816785325e+01 X
+                      9.8929949081e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_57d41d4c /tmp/dakota_results_3f550acb
+
+Active response data for evaluation 92:
+Active set vector = { 1 1 1 }
+                      1.2329346400e+00 mass
+                      8.6248040600e+04 stress
+                      1.7530651000e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   93
+---------------------
+Parameters for evaluation 93:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.5099502915e+02 p
+                      3.3136796306e+07 E
+                      5.0775272462e+01 X
+                      8.8286663442e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_2827b880 /tmp/dakota_results_89b80ac1
+
+Active response data for evaluation 93:
+Active set vector = { 1 1 1 }
+                      1.3049624700e+00 mass
+                      8.3437161500e+04 stress
+                      1.5367549700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   94
+---------------------
+Parameters for evaluation 94:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.3201845404e+02 p
+                      2.4523743873e+07 E
+                      4.1106829070e+01 X
+                      8.4992816848e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_3b7324c7 /tmp/dakota_results_9be2aedb
+
+Active response data for evaluation 94:
+Active set vector = { 1 1 1 }
+                      1.5394052500e+00 mass
+                      7.5659787600e+04 stress
+                      1.9249018600e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   95
+---------------------
+Parameters for evaluation 95:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.0824540412e+02 p
+                      3.0542209352e+07 E
+                      5.2655368615e+01 X
+                      8.3847476088e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_7cd0f8a0 /tmp/dakota_results_be28b9ca
+
+Active response data for evaluation 95:
+Active set vector = { 1 1 1 }
+                      1.4706174900e+00 mass
+                      8.1901706800e+04 stress
+                      1.6208721900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   96
+---------------------
+Parameters for evaluation 96:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.9879330030e+02 p
+                      3.4267397727e+07 E
+                      5.8612789277e+01 X
+                      1.1370402188e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_64e0b0c3 /tmp/dakota_results_ae4be304
+
+Active response data for evaluation 96:
+Active set vector = { 1 1 1 }
+                      1.4432676500e+00 mass
+                      1.0339008700e+05 stress
+                      1.8665277900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   97
+---------------------
+Parameters for evaluation 97:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.1308509794e+02 p
+                      2.6233522748e+07 E
+                      4.9586124879e+01 X
+                      9.1995996621e+01 Y
+
+blocking fork: driver.sh /tmp/dakota_params_11e691ba /tmp/dakota_results_ee3ab225
+
+Active response data for evaluation 97:
+Active set vector = { 1 1 1 }
+                      1.4846212300e+00 mass
+                      8.4949272900e+04 stress
+                      1.9918902900e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   98
+---------------------
+Parameters for evaluation 98:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.0709167417e+02 p
+                      2.3482914548e+07 E
+                      4.3884938908e+01 X
+                      1.1660801079e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_4f1a021e /tmp/dakota_results_da6ca789
+
+Active response data for evaluation 98:
+Active set vector = { 1 1 1 }
+                      1.4672791500e+00 mass
+                      9.6295769800e+04 stress
+                      2.6528351100e-03 displacement
+
+
+
+---------------------
+Begin Evaluation   99
+---------------------
+Parameters for evaluation 99:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      4.4454128581e+02 p
+                      3.0904227149e+07 E
+                      5.5319222334e+01 X
+                      1.0022405936e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_269ffb8c /tmp/dakota_results_f70d2188
+
+Active response data for evaluation 99:
+Active set vector = { 1 1 1 }
+                      1.2862884400e+00 mass
+                      9.3325969000e+04 stress
+                      1.8521319700e-03 displacement
+
+
+
+---------------------
+Begin Evaluation  100
+---------------------
+Parameters for evaluation 100:
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
+                      5.0000000000e+00 L
+                      5.7317065244e+02 p
+                      2.4991959341e+07 E
+                      4.1631379066e+01 X
+                      1.0404328627e+02 Y
+
+blocking fork: driver.sh /tmp/dakota_params_b2f9252b /tmp/dakota_results_0a22453a
+
+Active response data for evaluation 100:
+Active set vector = { 1 1 1 }
+                      1.6584799000e+00 mass
+                      8.7404799200e+04 stress
+                      2.2419865400e-03 displacement
+
+
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+
+Statistics based on 100 samples:
+
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+          mass  1.4466650756e+00  1.6795949544e-01 -9.4491907277e-04 -1.1938057931e+00
+        stress  8.9991221054e+04  7.7627171073e+03  1.2126294824e-01 -8.8955628675e-01
+  displacement  1.9595785020e-03  3.0370219782e-04  5.4582192661e-01 -1.3023188396e-01
+
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+          mass  1.4133382678e+00  1.4799918834e+00  1.4746958675e-01  1.9511438975e-01
+        stress  8.8450929567e+04  9.1531512541e+04  6.8157187592e+03  9.0177563774e+03
+  displacement  1.8993173971e-03  2.0198396069e-03  2.6665260865e-04  3.5280332819e-04
+
+Level mappings for each response function:
+Cumulative Distribution Function (CDF) for mass:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.1577948200e+00   1.0000000000e-03
+   1.1577948200e+00   1.0000000000e-02
+   1.1807407000e+00   5.0000000000e-02
+   1.2108941400e+00   1.0000000000e-01
+   1.2429501600e+00   1.5000000000e-01
+   1.2726052700e+00   2.0000000000e-01
+   1.3289383800e+00   3.0000000000e-01
+   1.3883210100e+00   4.0000000000e-01
+   1.4432676500e+00   5.0000000000e-01
+   1.5016156400e+00   6.0000000000e-01
+   1.5568645400e+00   7.0000000000e-01
+   1.6151747300e+00   8.0000000000e-01
+   1.6491333800e+00   8.5000000000e-01
+   1.6726234500e+00   9.0000000000e-01
+   1.7021098700e+00   9.5000000000e-01
+   1.7284949900e+00   9.9000000000e-01
+   1.7316954600e+00   9.9900000000e-01
+Cumulative Distribution Function (CDF) for stress:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   7.5626149300e+04   1.0000000000e-03
+   7.5626149300e+04   1.0000000000e-02
+   7.7819159300e+04   5.0000000000e-02
+   7.9310508500e+04   1.0000000000e-01
+   8.1901706800e+04   1.5000000000e-01
+   8.2702410900e+04   2.0000000000e-01
+   8.5027819900e+04   3.0000000000e-01
+   8.6521845100e+04   4.0000000000e-01
+   8.9479091900e+04   5.0000000000e-01
+   9.2569487700e+04   6.0000000000e-01
+   9.4300723600e+04   7.0000000000e-01
+   9.6877689100e+04   8.0000000000e-01
+   9.9260373100e+04   8.5000000000e-01
+   1.0083186500e+05   9.0000000000e-01
+   1.0335448500e+05   9.5000000000e-01
+   1.0475500800e+05   9.9000000000e-01
+   1.0572903400e+05   9.9900000000e-01
+Cumulative Distribution Function (CDF) for displacement:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.3543908000e-03   1.0000000000e-03
+   1.3543908000e-03   1.0000000000e-02
+   1.5078979900e-03   5.0000000000e-02
+   1.5894606500e-03   1.0000000000e-01
+   1.6327022100e-03   1.5000000000e-01
+   1.6697121600e-03   2.0000000000e-01
+   1.7790519800e-03   3.0000000000e-01
+   1.8665277900e-03   4.0000000000e-01
+   1.9180288700e-03   5.0000000000e-01
+   1.9918902900e-03   6.0000000000e-01
+   2.0712563800e-03   7.0000000000e-01
+   2.2143638600e-03   8.0000000000e-01
+   2.2854710600e-03   8.5000000000e-01
+   2.3679537600e-03   9.0000000000e-01
+   2.5470701400e-03   9.5000000000e-01
+   2.6879808400e-03   9.9000000000e-01
+   2.7478594200e-03   9.9900000000e-01
+
+Probability Density Function (PDF) histograms for each response function:
+PDF for mass:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.1577948200e+00   1.1807407000e+00   1.7432323363e+00
+   1.1807407000e+00   1.2108941400e+00   1.6581856001e+00
+   1.2108941400e+00   1.2429501600e+00   1.5597694286e+00
+   1.2429501600e+00   1.2726052700e+00   1.6860500602e+00
+   1.2726052700e+00   1.3289383800e+00   1.7751549666e+00
+   1.3289383800e+00   1.3883210100e+00   1.6839941242e+00
+   1.3883210100e+00   1.4432676500e+00   1.8199474982e+00
+   1.4432676500e+00   1.5016156400e+00   1.7138550960e+00
+   1.5016156400e+00   1.5568645400e+00   1.8099907871e+00
+   1.5568645400e+00   1.6151747300e+00   1.7149661148e+00
+   1.6151747300e+00   1.6491333800e+00   1.4723789079e+00
+   1.6491333800e+00   1.6726234500e+00   2.1285590039e+00
+   1.6726234500e+00   1.7021098700e+00   1.6956958491e+00
+   1.7021098700e+00   1.7284949900e+00   1.5160059913e+00
+   1.7284949900e+00   1.7316954600e+00   6.2490821661e+00
+PDF for stress:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   7.5626149300e+04   7.7819159300e+04   1.8239770908e-05
+   7.7819159300e+04   7.9310508500e+04   3.3526688451e-05
+   7.9310508500e+04   8.1901706800e+04   1.9296091696e-05
+   8.1901706800e+04   8.2702410900e+04   6.2445040559e-05
+   8.2702410900e+04   8.5027819900e+04   4.3003187826e-05
+   8.5027819900e+04   8.6521845100e+04   6.6933275289e-05
+   8.6521845100e+04   8.9479091900e+04   3.3815236523e-05
+   8.9479091900e+04   9.2569487700e+04   3.2358314750e-05
+   9.2569487700e+04   9.4300723600e+04   5.7762203291e-05
+   9.4300723600e+04   9.6877689100e+04   3.8805331309e-05
+   9.6877689100e+04   9.9260373100e+04   2.0984738220e-05
+   9.9260373100e+04   1.0083186500e+05   3.1816899597e-05
+   1.0083186500e+05   1.0335448500e+05   1.9820662644e-05
+   1.0335448500e+05   1.0475500800e+05   2.8560759088e-05
+   1.0475500800e+05   1.0572903400e+05   2.0533332786e-05
+PDF for displacement:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.3543908000e-03   1.5078979900e-03   2.6057411382e+02
+   1.5078979900e-03   1.5894606500e-03   6.1302561736e+02
+   1.5894606500e-03   1.6327022100e-03   1.1562950088e+03
+   1.6327022100e-03   1.6697121600e-03   1.3509880451e+03
+   1.6697121600e-03   1.7790519800e-03   9.1457988499e+02
+   1.7790519800e-03   1.8665277900e-03   1.1431731812e+03
+   1.8665277900e-03   1.9180288700e-03   1.9417068535e+03
+   1.9180288700e-03   1.9918902900e-03   1.3538867788e+03
+   1.9918902900e-03   2.0712563800e-03   1.2599839554e+03
+   2.0712563800e-03   2.2143638600e-03   6.9877549378e+02
+   2.2143638600e-03   2.2854710600e-03   7.0316367400e+02
+   2.2854710600e-03   2.3679537600e-03   6.0618772179e+02
+   2.3679537600e-03   2.5470701400e-03   2.7914811588e+02
+   2.5470701400e-03   2.6879808400e-03   2.8386772616e+02
+   2.6879808400e-03   2.7478594200e-03   3.3400925673e+02
+
+Simple Correlation Matrix among all inputs and outputs:
+                        p            E            X            Y         mass       stress displacement 
+           p  1.00000e+00 
+           E  1.17266e-02  1.00000e+00 
+           X -6.83330e-03 -5.18086e-03  1.00000e+00 
+           Y  1.29183e-03  3.02040e-02 -8.31659e-03  1.00000e+00 
+        mass  1.00000e+00  1.17266e-02 -6.83330e-03  1.29183e-03  1.00000e+00 
+      stress -1.89986e-03  2.47997e-02  4.40305e-01  8.94156e-01 -1.89986e-03  1.00000e+00 
+displacement -3.70361e-03 -7.72363e-01  1.45996e-01  5.83162e-01 -3.70361e-03  5.88982e-01  1.00000e+00 
+
+Partial Correlation Matrix between input and output:
+                     mass       stress displacement 
+           p  1.00000e+00 -1.84507e-02  4.93858e-02 
+           E -1.00000e+00 -4.71467e-02 -9.89222e-01 
+           X -1.00000e+00  1.00000e+00  7.82725e-01 
+           Y  1.00000e+00  1.00000e+00  9.82017e-01 
+
+There may be some numerical issues associated with the calculation of the 
+partial correlation coefficients above.  This can be due to very small 
+numbers of input samples, or to ill-conditioned matrices, 
+in situations where the partials are very close to zero, -1, or +1.
+
+Simple Rank Correlation Matrix among all inputs and outputs:
+                        p            E            X            Y         mass       stress displacement 
+           p  1.00000e+00 
+           E  1.25173e-02  1.00000e+00 
+           X -6.84068e-03 -4.12841e-03  1.00000e+00 
+           Y  2.80828e-03  3.03030e-02 -7.96880e-03  1.00000e+00 
+        mass  1.00000e+00  1.25173e-02 -6.84068e-03  2.80828e-03  1.00000e+00 
+      stress -8.66487e-03  2.83948e-02  4.21890e-01  8.97510e-01 -8.66487e-03  1.00000e+00 
+displacement  7.45275e-03 -7.80486e-01  1.35638e-01  5.58104e-01  7.45275e-03  5.60408e-01  1.00000e+00 
+
+Partial Rank Correlation Matrix between input and output:
+                     mass       stress displacement 
+           p  1.00000e+00 -8.14333e-02  9.16830e-02 
+           E -7.76483e-03  2.92316e-02 -9.74984e-01 
+           X  3.89881e-03  9.73114e-01  6.02132e-01 
+           Y -9.46452e-04  9.93702e-01  9.54673e-01 
+
+There may be some numerical issues associated with the calculation of the 
+partial rank correlation coefficients above.  This can be due to very small 
+numbers of input samples, or to ill-conditioned matrices, 
+in situations where the partials are very close to zero, -1, or +1.
+
+
+<<<<< Iterator random_sampling completed.
+<<<<< Environment execution completed.
+DAKOTA execution time in seconds:
+  Total CPU        =        0.1 [parent =   0.103984, child =  -0.003984]
+  Total wall clock =    6.19506
