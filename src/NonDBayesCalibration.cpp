@@ -373,7 +373,7 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
     result = residuals.dot( residuals );*/
   }
 
-  return result;
+  return result / 2.;
 }
 
 
