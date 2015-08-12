@@ -123,6 +123,26 @@ protected:
 private:
 
   //
+  //- Heading: Helper functions
+  //
+
+  /// instantiate an OPTPP_Q_NEWTON solver using standard settings
+  void default_instantiate_q_newton(
+    void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
+		      RealVector& grad_f, int& result_mode),
+    void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+		      RealMatrix& grad_g, int& result_mode) );
+  /// instantiate an OPTPP_NEWTON solver using standard settings
+  void default_instantiate_newton(
+    void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
+		      RealVector& grad_f, RealSymMatrix& hess_f,
+		      int& result_mode),
+    void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+		      RealMatrix& grad_g, 
+		      OPTPP::OptppArray<RealSymMatrix >& hess_g,
+		      int& result_mode) );
+
+  //
   //- Heading: Static member functions required by opt++
   //
 

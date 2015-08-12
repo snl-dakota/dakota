@@ -214,7 +214,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
 
     bool npsol_flag, presolve_flag = true;
-    unsigned short opt_algorithm = probDescDB.get_ushort("method.sub_method");
+    unsigned short opt_algorithm = SUBMETHOD_DEFAULT;//probDescDB.get_ushort("method.bayes_calibration.map_optimizer"); // method.sub_method already used
     int npsol_deriv_level = 3;
     switch (opt_algorithm) {
     case SUBMETHOD_SQP:

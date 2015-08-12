@@ -120,7 +120,12 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
       if (numConstraints) { // nonlinear interior-point
         if (outputLevel == DEBUG_OUTPUT)
           Cout << "Instantiating OptQNIPS optimizer with FDNLF1 evaluator.\n";
-        optqnips  = new OPTPP::OptQNIPS(fdnlf1);
+	theOptimizer = optqnips = new OPTPP::OptQNIPS(fdnlf1);
+	//optqnips->setSearchStrategy(searchStrat); // not supported
+	optqnips->setMeritFcn(meritFn);
+	optqnips->setStepLengthToBdry(stepLenToBndry);
+	optqnips->setCenteringParameter(centeringParam);
+
         fdnlf1Con
 	  = new OPTPP::FDNLF1(numContinuousVars, numNonlinearConstraints,
 			      constraint0_evaluator, init_fn);
@@ -131,76 +136,29 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
         if (outputLevel == DEBUG_OUTPUT)
           Cout << "Instantiating OptBCQNewton optimizer with FDNLF1 evaluator."
                << '\n';
-        optbcqnewton = new OPTPP::OptBCQNewton(fdnlf1);
+        theOptimizer = optbcqnewton = new OPTPP::OptBCQNewton(fdnlf1);
+	optbcqnewton->setSearchStrategy(searchStrat);
+	if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(maxStep);
       }
       else { // unconstrained
-        if(numContinuousVars < LARGE_SCALE){
+        if (numContinuousVars < LARGE_SCALE) {
           if (outputLevel == DEBUG_OUTPUT)
             Cout << "Instantiating OptQNewton optimizer with FDNLF1 evaluator."
                << '\n';
-          optqnewton = new OPTPP::OptQNewton(fdnlf1);
+          theOptimizer = optqnewton = new OPTPP::OptQNewton(fdnlf1);
+	  optqnewton->setSearchStrategy(searchStrat);
+	  if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(maxStep);
         }
-        else{
+        else {
           if (outputLevel == DEBUG_OUTPUT)
             Cout << "Instantiating OptLBFGS optimizer with FDNLF1 evaluator.\n";
-          optlbfgs = new OPTPP::OptLBFGS(fdnlf1);
+          theOptimizer = optlbfgs = new OPTPP::OptLBFGS(fdnlf1);
+	  //optlbfgs->setSearchStrategy(searchStrat); // not supported
         }
       }
     }
-    else {
-      nlf1 = new OPTPP::NLF1(numContinuousVars, nlf1_evaluator, init_fn);
-      nlfObjective = nlf1;
-      if (numConstraints) { // nonlinear interior-point
-        if (outputLevel == DEBUG_OUTPUT)
-          Cout << "Instantiating OptQNIPS optimizer with NLF1 evaluator.\n";
-        optqnips = new OPTPP::OptQNIPS(nlf1);
-        nlf1Con  = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
-				   constraint1_evaluator, init_fn);
-        nlfConstraint = nlf1Con;
-        nlpConstraint = new OPTPP::NLP(nlf1Con);
-      }
-      else if (boundConstraintFlag) { // bound-constrained
-        if (outputLevel == DEBUG_OUTPUT)
-          Cout << "Instantiating OptBCQNewton optimizer with NLF1 evaluator.\n";
-        optbcqnewton = new OPTPP::OptBCQNewton(nlf1);
-      }
-      else { // unconstrained
-        if(numContinuousVars < LARGE_SCALE){
-          if (outputLevel == DEBUG_OUTPUT)
-            Cout << "Instantiating OptQNewton optimizer with NLF1 evaluator.\n";
-          optqnewton = new OPTPP::OptQNewton(nlf1);
-        }
-        else{
-          if (outputLevel == DEBUG_OUTPUT)
-            Cout << "Instantiating OptLBFGS optimizer with NLF1 evaluator.\n";
-          optlbfgs = new OPTPP::OptLBFGS(nlf1);
-        }
-      }
-    }
-
-    if (numConstraints) { // nonlinear interior-point
-      theOptimizer = optqnips;
-      //optqnips->setSearchStrategy(searchStrat);//search strategy not supported
-      optqnips->setMeritFcn(meritFn);
-      optqnips->setStepLengthToBdry(stepLenToBndry);
-      optqnips->setCenteringParameter(centeringParam);
-    }
-    else if (boundConstraintFlag) { // bound-constrained
-      theOptimizer = optbcqnewton;
-      optbcqnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(maxStep);
-    }
-    else { // unconstrained
-      if(numContinuousVars < LARGE_SCALE){
-        theOptimizer = optqnewton;
-        optqnewton->setSearchStrategy(searchStrat);
-        if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(maxStep);
-      }
-      else{
-        theOptimizer = optlbfgs;
-        //optlbfgs->setSearchStrategy(searchStrat);//search strat not supported
-      }
-    }
+    else
+      default_instantiate_q_newton(nlf1_evaluator, constraint1_evaluator);
     break;
 
   // finite-difference Newton: unconstrained, bound-constrained, & nonlinear
@@ -278,46 +236,13 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
 
   // full Newton: unconstrained, bound-constrained, & nonlinear interior-point
   case OPTPP_NEWTON:
-    nlf2 = new OPTPP::NLF2(numContinuousVars, nlf2_evaluator, init_fn);
-    nlfObjective = nlf2;
-    if (numConstraints) { // nonlinear interior-point
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptNIPS optimizer with NLF2 evaluator.\n";
-      optnips = new OPTPP::OptNIPS(nlf2);
-      //optnips->setSearchStrategy(searchStrat);// search strategy not supported
-      optnips->setMeritFcn(meritFn);
-      optnips->setStepLengthToBdry(stepLenToBndry);
-      optnips->setCenteringParameter(centeringParam);
-      theOptimizer = optnips;
-
-      nlf2Con = new OPTPP::NLF2(numContinuousVars, numNonlinearConstraints,
-				constraint2_evaluator, init_fn);
-      nlfConstraint = nlf2Con;
-      nlpConstraint = new OPTPP::NLP(nlf2Con);
-    }
-    else if (boundConstraintFlag) { // bound-constrained
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptBCNewton optimizer with NLF2 evaluator.\n";
-      optbcnewton = new OPTPP::OptBCNewton(nlf2);
-      optbcnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == OPTPP::TrustRegion) optbcnewton->setTRSize(maxStep);
-      theOptimizer = optbcnewton;
-    }
-    else { // unconstrained
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptNewton optimizer with NLF2 evaluator.\n";
-      optnewton = new OPTPP::OptNewton(nlf2);
-      optnewton->setSearchStrategy(searchStrat); 
-      if (searchStrat == OPTPP::TrustRegion) optnewton->setTRSize(maxStep);
-      theOptimizer = optnewton;
-    }
-    break;
+    default_instantiate_newton(nlf2_evaluator, constraint2_evaluator);    break;
 
   default:
     Cerr << "Method name " << method_enum_to_string(methodName)
 	 << " currently unavailable within\nDAKOTA's SNLLOptimizer "
 	 << "implementation of OPT++." << std::endl;
-    abort_handler(-1);
+    abort_handler(-1); break;
   }
 
   // convenience function from SNLLBase
@@ -340,56 +265,19 @@ SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL), setUpType("model")
 {
-  if (methodName != OPTPP_Q_NEWTON) { // TO DO
-    Cerr << "Warning: only quasi-Newton currently supported in lightweight "
-	 << "construction by name.\n  Updating to OPTPP_Q_NEWTON.\n";
-    methodName = OPTPP_Q_NEWTON;
-  }
-
   // convenience function from SNLLBase: use defaults since no specification
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
-  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
-  nlf1 = new OPTPP::NLF1(numContinuousVars, nlf1_evaluator, init_fn);
-  nlfObjective = nlf1;
-  if (numConstraints) { // nonlinear interior-point
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "Instantiating OptQNIPS optimizer with NLF1 evaluator.\n";
-    optqnips = new OPTPP::OptQNIPS(nlf1);
-    nlf1Con  = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
-			       constraint1_evaluator, init_fn);
-    nlfConstraint = nlf1Con;
-    nlpConstraint = new OPTPP::NLP(nlf1Con);
-    theOptimizer = optqnips;
-    //optqnips->setSearchStrategy(searchStrat); // search strategy not supported
-    optqnips->setMeritFcn(meritFn); // ArgaezTapia
-    optqnips->setStepLengthToBdry(0.99995);
-    optqnips->setCenteringParameter(0.2);
-  }
-  else if (boundConstraintFlag) { // bound-constrained
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "Instantiating OptBCQNewton optimizer with NLF1 evaluator.\n";
-    optbcqnewton = new OPTPP::OptBCQNewton(nlf1);
-    theOptimizer = optbcqnewton;
-    optbcqnewton->setSearchStrategy(searchStrat);
-    if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(1000.);
-  }
-  else { // unconstrained
-    if(numContinuousVars < LARGE_SCALE){
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptQNewton optimizer with NLF1 evaluator.\n";
-      optqnewton = new OPTPP::OptQNewton(nlf1);
-      theOptimizer = optqnewton;
-      optqnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(1000.);
-    }
-    else{
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptLBFGS optimizer with NLF1 evaluator.\n";
-      optlbfgs = new OPTPP::OptLBFGS(nlf1);
-      theOptimizer = optlbfgs;
-      //optlbfgs->setSearchStrategy(searchStrat);//search strategy not supported
-    }
+  switch (methodName) {
+  case OPTPP_Q_NEWTON:
+    default_instantiate_q_newton(nlf1_evaluator, constraint1_evaluator);  break;
+  case OPTPP_NEWTON:
+    default_instantiate_newton(nlf2_evaluator, constraint2_evaluator);    break;
+  default:
+    Cerr << "Method name " << method_enum_to_string(methodName)
+	 << " currently unavailable within SNLLOptimizer\nlightweight "
+	 << "construction by name." << std::endl;
+    abort_handler(-1); break;
   }
 
   // convenience function from SNLLBase: use defaults since no specification
@@ -425,57 +313,14 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   lowerBounds(var_l_bnds), upperBounds(var_u_bnds)
 {
   for (size_t i=0; i<numContinuousVars; i++)
-    if (lowerBounds[i] > -bigRealBoundSize ||
-        upperBounds[i] <  bigRealBoundSize) {
-      boundConstraintFlag = true;
-      break;
-    }
+    if (lowerBounds[i] > -bigRealBoundSize || upperBounds[i] < bigRealBoundSize)
+      { boundConstraintFlag = true; break; }
 
   // convenience function from SNLLBase: use defaults since no specification
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
   // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
-  nlf1 = new OPTPP::NLF1(numContinuousVars, user_obj_eval, init_fn);
-  nlfObjective = nlf1;
-  if (numConstraints) { // nonlinear interior-point
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "Instantiating OptQNIPS optimizer with NLF1 evaluator.\n";
-    optqnips = new OPTPP::OptQNIPS(nlf1);
-    nlf1Con  = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
-			       user_con_eval, init_fn);
-    nlfConstraint = nlf1Con;
-    nlpConstraint = new OPTPP::NLP(nlf1Con);
-    theOptimizer = optqnips;
-    //optqnips->setSearchStrategy(searchStrat); // search strategy not supported
-    optqnips->setMeritFcn(meritFn); // ArgaezTapia
-    optqnips->setStepLengthToBdry(0.99995);
-    optqnips->setCenteringParameter(0.2);
-  }
-  else if (boundConstraintFlag) { // bound-constrained
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "Instantiating OptBCQNewton optimizer with NLF1 evaluator.\n";
-    optbcqnewton = new OPTPP::OptBCQNewton(nlf1);
-    theOptimizer = optbcqnewton;
-    optbcqnewton->setSearchStrategy(searchStrat);
-    if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(1000.);
-  }
-  else { // unconstrained
-    if(numContinuousVars < LARGE_SCALE){
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptQNewton optimizer with NLF1 evaluator.\n";
-      optqnewton = new OPTPP::OptQNewton(nlf1);
-      theOptimizer = optqnewton;
-      optqnewton->setSearchStrategy(searchStrat);
-      if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(1000.);
-    }
-    else{
-      if (outputLevel == DEBUG_OUTPUT)
-        Cout << "Instantiating OptLBFGS optimizer with NLF1 evaluator.\n";
-      optlbfgs = new OPTPP::OptLBFGS(nlf1);
-      theOptimizer = optlbfgs;
-      //optlbfgs->setSearchStrategy(searchStrat);//search strategy not supported
-    }
-  }
+  default_instantiate_q_newton(user_obj_eval, user_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
   snll_post_instantiate(numContinuousVars, false, "", 0., 100, 1000, 1.e-4,
@@ -506,6 +351,96 @@ SNLLOptimizer::~SNLLOptimizer()
   //if (nlpConstraint)
   //  delete nlpConstraint;
   delete theOptimizer;
+}
+
+
+void SNLLOptimizer::default_instantiate_q_newton(
+  void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
+		    RealVector& grad_f, int& result_mode),
+  void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+		    RealMatrix& grad_g, int& result_mode) )
+{
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  nlfObjective = nlf1
+    = new OPTPP::NLF1(numContinuousVars, obj_eval, init_fn);
+  if (numConstraints) { // nonlinear interior-point
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptQNIPS optimizer with NLF1 evaluator.\n";
+    theOptimizer = optqnips = new OPTPP::OptQNIPS(nlf1);
+    //optqnips->setSearchStrategy(searchStrat);      // not supported
+    optqnips->setMeritFcn(meritFn);
+    optqnips->setStepLengthToBdry(stepLenToBndry);
+    optqnips->setCenteringParameter(centeringParam);
+
+    nlfConstraint = nlf1Con
+      = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
+			con_eval, init_fn);
+    nlpConstraint = new OPTPP::NLP(nlf1Con);
+  }
+  else if (boundConstraintFlag) { // bound-constrained
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptBCQNewton optimizer with NLF1 evaluator.\n";
+    theOptimizer = optbcqnewton = new OPTPP::OptBCQNewton(nlf1);
+    optbcqnewton->setSearchStrategy(searchStrat); // see snll_pre_instantiate
+    if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(maxStep);
+  }
+  else { // unconstrained
+    if (numContinuousVars < LARGE_SCALE) {
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Instantiating OptQNewton optimizer with NLF1 evaluator.\n";
+      theOptimizer = optqnewton = new OPTPP::OptQNewton(nlf1);
+      optqnewton->setSearchStrategy(searchStrat); // see snll_pre_instantiate
+      if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(maxStep);
+    }
+    else {
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Instantiating OptLBFGS optimizer with NLF1 evaluator.\n";
+      theOptimizer = optlbfgs = new OPTPP::OptLBFGS(nlf1);
+      //optlbfgs->setSearchStrategy(searchStrat); // not supported
+    }
+  }
+}
+
+
+void SNLLOptimizer::default_instantiate_newton(
+  void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
+		    RealVector& grad_f, RealSymMatrix& hess_f,
+		    int& result_mode),
+  void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
+		    RealMatrix& grad_g,
+		    OPTPP::OptppArray<RealSymMatrix >& hess_g,
+		    int& result_mode) )
+{
+  nlfObjective = nlf2
+    = new OPTPP::NLF2(numContinuousVars, obj_eval, init_fn);
+  if (numConstraints) { // nonlinear interior-point
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptNIPS optimizer with NLF2 evaluator.\n";
+    theOptimizer = optnips = new OPTPP::OptNIPS(nlf2);
+    //optnips->setSearchStrategy(searchStrat);      // not supported
+    optnips->setMeritFcn(meritFn);
+    optnips->setStepLengthToBdry(stepLenToBndry);
+    optnips->setCenteringParameter(centeringParam);
+
+    nlfConstraint = nlf2Con
+      = new OPTPP::NLF2(numContinuousVars, numNonlinearConstraints,
+			con_eval, init_fn);
+    nlpConstraint = new OPTPP::NLP(nlf2Con);
+  }
+  else if (boundConstraintFlag) { // bound-constrained
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptBCNewton optimizer with NLF2 evaluator.\n";
+    theOptimizer = optbcnewton = new OPTPP::OptBCNewton(nlf2);
+    optbcnewton->setSearchStrategy(searchStrat);
+    if (searchStrat == OPTPP::TrustRegion) optbcnewton->setTRSize(maxStep);
+  }
+  else { // unconstrained
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptNewton optimizer with NLF2 evaluator.\n";
+    theOptimizer = optnewton = new OPTPP::OptNewton(nlf2);
+    optnewton->setSearchStrategy(searchStrat); 
+    if (searchStrat == OPTPP::TrustRegion) optnewton->setTRSize(maxStep);
+  }
 }
 
 

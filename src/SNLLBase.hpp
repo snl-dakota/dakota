@@ -167,7 +167,8 @@ protected:
 };
 
 
-inline SNLLBase::SNLLBase(): meritFn(OPTPP::ArgaezTapia)
+inline SNLLBase::SNLLBase(): meritFn(OPTPP::ArgaezTapia), maxStep(1000.),
+  stepLenToBndry(0.99995), centeringParam(0.2) // leave searchMethod empty
 { }
 
 
