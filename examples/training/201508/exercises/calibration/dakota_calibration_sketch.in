@@ -1,0 +1,36 @@
+# Sketch of Dakota input for cantilever parameter calibration.  Uses
+# old direct mod_cantilever and a single data point, with varying
+# levels of noise.  Try other solvers and various initial guesses...
+
+environment
+    tabular_data
+
+method
+  nl2sol
+    convergence_tolerance 1.0e-6
+  # To see the data difference transformation
+  output verbose
+
+model
+  single
+
+variables
+  # Be sure to give them the exact descriptors specified here
+
+  # Add design variables for E in [2.7e7, 3.1e7], w in [1, 4], t in [1, 4]
+
+  # Fix parameters R = 40000, X = 500, Y = 1000 using state variables
+
+interface
+  direct
+    analysis_driver = 'mod_cantilever'
+
+responses
+  calibration_terms 3
+  descriptors = 'area' 'stress' 'displacement'
+
+  # Specify the calibration data file and its format
+
+  # Add a finite difference derivative specification for NL2SOL
+
+  no_hessians
