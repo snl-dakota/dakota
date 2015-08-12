@@ -316,8 +316,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       abort_handler(METHOD_ERROR);
     }
     compactMode = true; // update_model() uses all{Samples,Responses}
-    Real adapt_metric = DBL_MAX; unsigned short int num_iter = 0;
-    while (adapt_metric > convergenceTol && num_iter <= maxIterations) {
+    Real adapt_metric = DBL_MAX; unsigned short int num_mcmc = 0;
+    while (adapt_metric > convergenceTol && num_mcmc <= maxIterations) {
 
       // TO DO: treat this like cross-validation as there is likely a sweet
       // spot prior to degradation of conditioning (too much refinement data)
@@ -325,7 +325,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       // place update block here so that chain is always run for initial or
       // updated emulator; placing block at loop end could result in emulator
       // convergence w/o final chain.
-      if (num_iter) {
+      if (num_mcmc) {
 	// update the emulator surrogate data with new truth evals and
 	// reconstruct surrogate (e.g., via PCE sparse recovery)
 	update_model();
@@ -335,7 +335,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
       // execute MCMC chain, optionally in batches
       run_chain_with_restarting();
-      ++num_iter;
+      ++num_mcmc;
 
       // assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();

@@ -211,6 +211,37 @@ public:
   /// Apply the experiment data covariance to the residual data
   void scale_residuals( Response& residual_response, ShortArray &total_asv );
 
+  /// Build the gradient of the ssr from residuals and function gradients
+  /// based on the response's active set request vector
+  void build_gradient_of_sum_square_residuals(const Response& resp,
+					      RealVector &ssr_gradient);
+  /// Build the gradient of the ssr from residuals and function gradients
+  /// using the passed active set request vector (overrides the response's
+  /// request vector)
+  void build_gradient_of_sum_square_residuals(const Response& resp,
+					      const ShortArray& asrv,
+					      RealVector &ssr_gradient);
+
+  /// Update the gradient of ssr with the values from the gradient associated
+  /// with a single experiment
+  void build_gradient_of_sum_square_residuals_from_response( 
+						    const Response& resp, 
+						    const ShortArray& asrv,
+						    int exp_ind,
+						    RealVector &ssr_gradient);
+
+  /** \brief Construct the gradient of the sum of squares of residuals
+   *  
+   * \param func_gradients A matrix containing the gradients of the
+   * residual vector
+   * \param residuals A vector of residuals (mismatch between experimental data
+   * and the corresponding function values
+   * \param asrv The active set request vector
+   */  
+  void build_gradient_of_sum_square_residuals_from_function_data(
+    const RealMatrix &func_gradients, const RealVector &residuals,
+    RealVector &ssr_gradient, const ShortArray& asrv);
+
   /// Build the hessian of the ssr from residuals, function gradients and
   /// function hessians based on the response's active set request vector
   void build_hessian_of_sum_square_residuals(const Response& resp,
@@ -354,6 +385,26 @@ private:
   /// function index offsets for individual experiment data sets
   IntVector expOffsets;
 };
+
+
+inline void ExperimentData::
+build_gradient_of_sum_square_residuals( const Response& resp, 
+					RealVector &ssr_gradient )
+{
+  // default to asrv in resp (no override)
+  build_gradient_of_sum_square_residuals( resp,
+					  resp.active_set_request_vector(),
+					  ssr_gradient);
+}
+
+inline void ExperimentData::
+build_hessian_of_sum_square_residuals( const Response& resp, 
+				       RealSymMatrix &ssr_hessian )
+{
+  // default to asrv in resp (no override)
+  build_hessian_of_sum_square_residuals( resp, resp.active_set_request_vector(),
+					 ssr_hessian);
+}
 
 } // namespace Dakota
 

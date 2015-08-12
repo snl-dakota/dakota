@@ -73,6 +73,12 @@ protected:
   /// initialize emulator model and probability space transformations
   void initialize_model();
 
+  /// compute the (approximate) gradient of the negative log posterior by
+  /// augmenting the (approximate) gradient of the negative log likelihood
+  /// with the gradient of the negative log prior
+  template <typename VectorType1, typename VectorType2> 
+  void augment_gradient_with_log_prior(VectorType1& log_grad,
+				       const VectorType2& vec);
   /// compute the (approximate) Hessian of the negative log posterior by
   /// augmenting the (approximate) Hessian of the negative log likelihood
   /// with the Hessian of the negative log prior
@@ -209,6 +215,21 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
   //    log_pdf -= std::log(range); // uniform sigma priors
 
   return log_pdf;
+}
+
+
+template <typename VectorType1, typename VectorType2> 
+void NonDBayesCalibration::
+augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> gradient of neg log posterior = misfit gradient - log prior gradient
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_grad[i] -= 0.;//natafTransform.u_log_pdf_gradient(vec[i], i);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      log_grad[i] -= 0.;//natafTransform.x_log_pdf_gradient(vec[i], i);
 }
 
 

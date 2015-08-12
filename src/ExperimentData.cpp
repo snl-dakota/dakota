@@ -1147,11 +1147,70 @@ recover_model(size_t num_pri_fns, RealVector& best_fns) const
 }
 
 void ExperimentData::
-build_hessian_of_sum_square_residuals( const Response& resp, 
-				       RealSymMatrix &ssr_hessian )
+build_gradient_of_sum_square_residuals( const Response& resp, 
+					const ShortArray& asrv,
+					RealVector &ssr_gradient )
 {
-  build_hessian_of_sum_square_residuals( resp, resp.active_set_request_vector(),
-					 ssr_hessian);
+  // initialize ssr_gradient to zero, prior to summing over set of experiments
+  ssr_gradient.size(resp.active_set().derivative_vector().size());
+  //size_t residual_resp_offset = 0;
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
+    // adds to ssr_gradient for each experiment
+    build_gradient_of_sum_square_residuals_from_response( resp, asrv, exp_ind, 
+							  ssr_gradient );
+}
+
+void ExperimentData::
+build_gradient_of_sum_square_residuals_from_response( const Response& resp, 
+						      const ShortArray& asrv,
+						      int exp_ind,
+						      RealVector &ssr_gradient)
+{
+  bool apply_covariance = ( ( variance_type_active(MATRIX_SIGMA) ) ||
+			    ( variance_type_active(SCALAR_SIGMA) ) || 
+			    ( variance_type_active(DIAGONAL_SIGMA) ) );
+
+  RealVector scaled_residuals;
+  RealMatrix scaled_gradients;
+  if ( apply_covariance ){
+    apply_covariance_inv_sqrt(resp.function_values(), exp_ind,
+			      scaled_residuals);
+    apply_covariance_inv_sqrt(resp.function_gradients(), exp_ind,
+			      scaled_gradients);
+  }else{
+    scaled_residuals = residuals_view( resp.function_values(), exp_ind );
+    scaled_gradients = gradients_view( resp.function_gradients(), exp_ind );
+  }
+
+  /*scaled_residuals.print(std::cout);
+  scaled_gradients.print(std::cout);*/
+
+  build_gradient_of_sum_square_residuals_from_function_data( scaled_gradients, 
+							     scaled_residuals,
+							     ssr_gradient,
+							     asrv);
+}
+
+void ExperimentData::
+build_gradient_of_sum_square_residuals_from_function_data(
+		 const RealMatrix &func_gradients,
+                 const RealVector &residuals,
+		 RealVector &ssr_gradient, const ShortArray& asrv )
+{
+  // This function assumes that residuals are r = ( approx - data )
+  // NOT r = ( data - approx )
+
+  // func_gradients is the transpose of the Jacobian of the functions
+  int v, r, num_deriv_vars = func_gradients.numRows(),
+    num_residuals  = residuals.length();
+  for ( r=0; r<num_residuals; ++r )
+    if ( (asrv[r] & 3) == 3 ) {
+      Real res = residuals[r]; const Real* func_grad = func_gradients[r];
+      for ( v=0; v<num_deriv_vars; ++v )
+	ssr_gradient[v] += res * func_grad[v];
+      // we compute gradient of sum square residuals divided by 2 (i.e. r'r/2),
+      // where r has been scaled by sqrt(inv Gamma_d)
+    }
 }
 
 void ExperimentData::
@@ -1161,7 +1220,7 @@ build_hessian_of_sum_square_residuals( const Response& resp,
 {
   // initialize ssr_hessian to zero, prior to summing over set of experiments
   ssr_hessian.shape(resp.active_set().derivative_vector().size());
-  size_t residual_resp_offset = 0;
+  //size_t residual_resp_offset = 0;
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
     // adds to ssr_hessian for each experiment
     build_hessian_of_sum_square_residuals_from_response( resp, asrv, exp_ind, 

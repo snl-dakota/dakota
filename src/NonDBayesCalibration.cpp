@@ -340,7 +340,7 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
   size_t i, j, num_fns = fn_values.length(); 
   if (!calibrationData)
     for (j=0; j<num_fns; ++j)
-      result += std::pow(fn_values[j],2.);
+      result += std::pow(fn_values[j], 2.);
   else if (calibrateSigma)
     for (i=0; i<numExperiments; ++i) {
       const RealVector& exp_data = expData.all_data(i);
@@ -373,7 +373,7 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
     result = residuals.dot( residuals );*/
   }
 
-  return result / 2.;
+  return result / 2.; // misfit defined as 1/2 r^T Gamma_d^{-1} r
 }
 
 
@@ -384,21 +384,36 @@ neg_log_post_resp_mapping(const Variables& model_vars,
 			  const Response& model_resp,
 			  Response& nlpost_resp)
 {
-  if (nonDBayesInstance->outputLevel > NORMAL_OUTPUT)
-    Cout << "TO DO" << std::endl;
-
+  if (nonDBayesInstance->calibrateSigma) {
+    Cerr << "Error: sigma calibration currently unsupported in MAP pre-solve."
+	 << std::endl;
+    abort_handler(-1);
+  }
   const RealVector& c_vars = model_vars.continuous_variables();
   short nlpost_req = nlpost_resp.active_set_request_vector()[0];
-  if (nlpost_req & 1)
+  if (nlpost_req & 1) {
+    // TO DO:
+    // > cleanest approach may be to roll this into a variable recasting within
+    //   negLogPostModel
+    // > however, QUESO/DREAM do not roll this into a model recast, but instead
+    //   augment the solver domains and then map the additional variables that
+    //   flow into the likelihood into the calibrated_sigmas.
+    RealVector calibrated_sigmas;
+    //if (nonDBayesInstance->calibrateSigma) {
+    //  RealVector x(Teuchos::View, c_vars.data(), numContinuousVars);
+    //  RealVector calibrated_sigmas(Teuchos::View, &c_vars[numContinuousVars],
+    //    numFunctions);
+    //}
     nlpost_resp.function_value(
-      nonDBayesInstance->misfit(model_resp, c_vars)
+      nonDBayesInstance->misfit(model_resp, calibrated_sigmas)
     - nonDBayesInstance->log_prior_density(c_vars), 0);
+  }
 
   if (nlpost_req & 2) {
     RealVector log_grad = nlpost_resp.function_gradient_view(0);
-    //nonDBayesInstance->
-    //  expData.build_gradient_of_sum_square_residuals(model_resp, log_grad);
-    //nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
+    nonDBayesInstance->
+      expData.build_gradient_of_sum_square_residuals(model_resp, log_grad);
+    nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
   }
 
   if (nlpost_req & 4) {
@@ -407,6 +422,9 @@ neg_log_post_resp_mapping(const Variables& model_vars,
       expData.build_hessian_of_sum_square_residuals(model_resp, log_hess);
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
   }
+
+  if (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT)
+    Cout << "TO DO" << std::endl;
 }
 
 
