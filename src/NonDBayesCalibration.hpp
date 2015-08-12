@@ -226,10 +226,10 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -= 0.;//natafTransform.u_log_pdf_gradient(vec[i], i);
+      log_grad[i] -= natafTransform.u_log_pdf_gradient(vec[i], i);
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -= 0.;//natafTransform.x_log_pdf_gradient(vec[i], i);
+      log_grad[i] -= natafTransform.x_log_pdf_gradient(vec[i], i);
 }
 
 
