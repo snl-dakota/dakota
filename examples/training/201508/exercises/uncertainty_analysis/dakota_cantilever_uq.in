@@ -4,7 +4,7 @@ environment
 method
   sampling 
   sample_type lhs 
-  samples = 400
+  samples = 100
   seed = 3845
   num_probability_levels = 17 17 17		   
   probability_levels =

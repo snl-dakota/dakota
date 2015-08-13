@@ -1,0 +1,83 @@
+environment
+  tabular_data output_precision 1e-16
+
+method
+  id_method = 'EPISTEMIC'
+  model_pointer = 'EPIST_M'
+  sampling sample_type lhs  
+  samples = 5 seed = 12347
+
+model,
+  id_model = 'EPIST_M'
+  nested 
+  variables_pointer  = 'EPIST_V'
+  sub_method_pointer = 'ALEATORY'
+  responses_pointer  = 'EPIST_R'
+  primary_variable_mapping   = 'X'    'Y'
+  secondary_variable_mapping = 'mean' 'mean'
+  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0. 0.
+ 	                       0. 0. 0. 0. 1. 0. 0. 0. 0.
+                               0. 0. 0. 0. 0. 0. 0. 0. 1.
+
+variables,
+  id_variables = 'EPIST_V'
+  interval_uncertain = 2 
+  num_intervals = 1 1 
+  interval_probabilities = 1.0 1.0 
+  upper_bounds = 600.  1200.
+  lower_bounds = 400.  800.
+
+responses, 
+  id_responses = 'EPIST_R'
+  response_functions = 3
+  descriptors = 'mean_mass' 
+                '95th_perc_stress'
+                '95th_perc_displacement'
+  no_gradients no_hessians
+
+method
+  id_method = 'ALEATORY'
+  sampling 
+  sample_type lhs 
+  samples = 10
+  seed = 3845
+  num_probability_levels = 1 1 1 		   
+  probability_levels =
+   .95 .95 .95
+  cumulative distribution 
+  model_pointer = 'CANTILEVER_MODEL'
+
+model
+  id_model = 'CANTILEVER_MODEL'
+  responses_pointer = 'CANT_R'
+  variables_pointer = 'CANT_V'
+  interface_pointer = 'CANT_IF'
+  single
+
+variables
+  id_variables = 'CANT_V'
+  active uncertain						
+  continuous_design = 3					
+    upper_bounds = 1.2 1.2 6.0 
+    lower_bounds = 0.8 0.8 4.0
+    initial_point = 1.0 1.0 5.0
+    descriptors    "w"     "t"     "L"
+   normal_uncertain = 4
+   means = 500. 29.E+6 50. 100. 
+   std_deviations = 30. 2.E+6 3.0 6.0
+    descriptors    'p'   'E'   'X'  'Y'
+
+
+interface
+  id_interface = 'CANT_IF'
+  fork
+    analysis_driver = 'driver.sh'
+
+responses
+  id_responses = 'CANT_R'
+  response_functions = 3
+  descriptors = 'mass' 
+                'stress'
+                'displacement'
+  no_gradients no_hessians
+
