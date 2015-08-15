@@ -2,63 +2,71 @@ dakota_10d_rosenbrock_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 241 total (241 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.1168394263e+00
-                      1.2256141244e+00
-                      9.4430241290e-01
-                      8.6946817237e-01
-                      1.0448950468e+00
-                      1.1002008690e+00
-                      1.0028071354e+00
-                      1.0082685990e+00
-                      4.1091955602e-01
-                      2.0675251162e-01
+                      1.0625236538e+00
+                      1.1341408678e+00
+                      8.9568383676e-01
+                      8.0557009427e-01
+                      1.0550762915e+00
+                      1.1111279577e+00
+                      9.8838535380e-01
+                      9.7804381399e-01
+                      8.6195200207e-01
+                      7.3995664202e-01
 <<<<< Best log posterior       =
-                     -7.5452520541e+00
+                     -6.9737346516e+00
+<<<<< Best misfit              =
+                      4.2262845974e-02
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 261 total (261 new, 0 duplicate)
 <<<<< Best parameters          =
-                      6.4840283223e-01
-                      4.0253714935e-01
-                      8.5732233798e-01
-                      7.3942054864e-01
-                      2.6037508150e-01
-                      5.3636810029e-02
-                      4.0700217569e-01
-                      2.2730181806e-01
-                      6.7889825422e-01
-                      4.4098587110e-01
+                      5.5385540878e-01
+                      3.0521017043e-01
+                      5.5391277239e-01
+                      3.0539348734e-01
+                      5.5431656893e-01
+                      3.0573289780e-01
+                      5.5376309601e-01
+                      3.0505536587e-01
+                      5.5363775230e-01
+                      3.0491031787e-01
 <<<<< Best log posterior       =
-                     -1.2212698454e+01
+                     -1.1185580095e+01
+<<<<< Best misfit              =
+                      9.9622952657e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 241 total (241 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0710682058e-01
-                      1.3219480646e-01
-                     -5.6652163997e-03
-                      9.8182989497e-03
-                      6.3225020100e-02
-                      3.6854419642e-02
-                     -2.3033412354e-03
-                     -2.5895058938e-02
-                     -1.0331659000e-02
-                     -2.9752541710e-02
+                      1.0000099576e+00
+                      9.9982981551e-01
+                      9.9994522616e-01
+                      9.9942052234e-01
+                      9.9917380652e-01
+                      9.9858792771e-01
+                      9.9645521396e-01
+                      9.9215011845e-01
+                      9.8319062857e-01
+                      9.6413264362e-01
 <<<<< Best log posterior       =
-                     -1.5762735628e+01
+                     -6.9327720494e+00
+<<<<< Best misfit              =
+                      1.3002437586e-03
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 261 total (261 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.7913086474e-01
-                      9.6990320524e-01
-                      9.4326554210e-01
-                      9.0256458009e-01
-                      8.2242740639e-01
-                      7.0525744187e-01
-                      5.6261732258e-01
-                      3.3977671318e-01
-                      1.2005028082e-01
-                      8.5113423133e-02
+                      1.0008932608e+00
+                      9.7530543007e-01
+                      9.7031409228e-01
+                      9.7180527575e-01
+                      9.1853806642e-01
+                      8.5355331168e-01
+                      7.2601307662e-01
+                      5.7332631279e-01
+                      3.1594108473e-01
+                      1.5209101117e-01
 <<<<< Best log posterior       =
-                     -1.4439501772e+01
+                     -1.3918649284e+01
+<<<<< Best misfit              =
+                      1.5342955212e+00
 dakota_4level.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
@@ -4257,84 +4265,84 @@ dakota_rosenbrock_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083424479e+00
-                      1.0161070118e+00
+                      9.9920187803e-01
+                      9.9839886243e-01
 <<<<< Best log posterior       =
-                     -1.3864058806e+00
+                     -1.3862950012e+00
 <<<<< Best misfit              =
-                      1.1151952753e-04
+                      6.4005745837e-07
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083422100e+00
-                      1.0161065402e+00
+                      9.9920187782e-01
+                      9.9839886203e-01
 <<<<< Best log posterior       =
-                     -1.3864058756e+00
+                     -1.3862950012e+00
 <<<<< Best misfit              =
-                      1.1151449774e-04
+                      6.4005778211e-07
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0067356454e+00
-                      1.0143041147e+00
+                      9.9920187787e-01
+                      9.9839886212e-01
 <<<<< Best log posterior       =
-                     -1.3864017386e+00
+                     -1.3862950012e+00
 <<<<< Best misfit              =
-                      1.0737744171e-04
+                      6.4005770617e-07
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083423669e+00
-                      1.0161068513e+00
+                      9.9725032668e-01
+                      9.9457746213e-01
 <<<<< Best log posterior       =
-                     -2.7727002401e+00
+                     -2.7725967625e+00
 <<<<< Best misfit              =
-                      1.1151781565e-04
+                      8.0402329967e-06
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0067356454e+00
-                      1.0143041147e+00
+                      9.9725032668e-01
+                      9.9457746213e-01
 <<<<< Best log posterior       =
-                     -2.7726960997e+00
+                     -2.7725967625e+00
 <<<<< Best misfit              =
-                      1.0737744171e-04
+                      8.0402329972e-06
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0021564406e+00
-                      1.0055015896e+00
+                      9.9802497179e-01
+                      9.9604565326e-01
 <<<<< Best log posterior       =
-                     -2.7727335719e+00
+                     -2.7725926297e+00
 <<<<< Best misfit              =
-                      1.4484962563e-04
+                      3.9074457647e-06
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 63 total (63 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0012566411e+00
-                      1.0024040595e+00
+                      1.0000000003e+00
+                      1.0000000006e+00
 <<<<< Best log posterior       =
-                     -1.3862971680e+00
+                     -1.3862943611e+00
 <<<<< Best misfit              =
-                      2.8068545117e-06
+                      0.0000000000e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.4486796080e-01
-                      2.9467695058e-01
+                      5.5380710970e-01
+                      3.0515978301e-01
 <<<<< Best log posterior       =
-                     -2.2373658646e+00
+                     -2.2371155061e+00
 <<<<< Best misfit              =
-                      2.0763099824e-01
+                      1.9932603577e-01
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.4876460880e-01
-                      3.0133493343e-01
+                      5.5133798299e-01
+                      3.0244262422e-01
 <<<<< Best log posterior       =
-                     -2.2374668130e+00
+                     -2.2371316081e+00
 <<<<< Best misfit              =
-                      2.0361707764e-01
+                      2.0153198546e-01
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 3279 total (3229 new, 50 duplicate)
 <<<<< Best parameters          =
@@ -4356,21 +4364,21 @@ Test Number 10 succeeded
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083423163e+00
-                      1.0161067509e+00
+                      9.9920187789e-01
+                      9.9839886215e-01
 <<<<< Best log posterior       =
-                     -1.3864058779e+00
+                     -1.3862950012e+00
 <<<<< Best misfit              =
-                      1.1151674469e-04
+                      6.4005768130e-07
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0067356454e+00
-                      1.0143041147e+00
+                      9.9920187814e-01
+                      9.9839886265e-01
 <<<<< Best log posterior       =
-                     -1.3864017386e+00
+                     -1.3862950012e+00
 <<<<< Best misfit              =
-                      1.0737744169e-04
+                      6.4005728606e-07
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 3279 total (3229 new, 50 duplicate)
 <<<<< Best parameters          =
@@ -4383,12 +4391,12 @@ Test Number 13 succeeded
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 75 total (75 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.7455555331e-01
-                      9.4673701588e-01
+                      9.9999996441e-01
+                      9.9999992869e-01
 <<<<< Best log posterior       =
-                     -1.3870745474e+00
+                     -1.3862943611e+00
 <<<<< Best misfit              =
-                      7.8018625208e-04
+                      6.6613381478e-16
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 3598 total (3549 new, 49 duplicate)
 <<<<< Best parameters          =
@@ -4482,21 +4490,21 @@ Test Number 24 succeeded
 Test Number 25 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0083435670e+00
-                      1.0161092301e+00
+                      9.9920187823e-01
+                      9.9839886284e-01
 <<<<< Best log posterior       =
-                     -1.3864059043e+00
+                     -1.3862950012e+00
 <<<<< Best misfit              =
-                      1.1154318964e-04
+                      6.4005713685e-07
 Test Number 26 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8907705568e-01
-                      9.7813073635e-01
+                      9.9920244401e-01
+                      9.9840342432e-01
 <<<<< Best log posterior       =
-                     -1.3864157078e+00
+                     -1.3862949977e+00
 <<<<< Best misfit              =
-                      1.2134663425e-04
+                      6.3653646887e-07
 dakota_sbo_hierarchical.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
