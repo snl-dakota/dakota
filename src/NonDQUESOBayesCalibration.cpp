@@ -307,8 +307,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
   switch (adaptPosteriorRefine) {
   case false:
-    run_chain_with_restarting();
-    break;
+    run_chain_with_restarting(); break;
   case true:
     if (!emulatorType) { // current spec prevents this
       Cerr << "Error: adaptive posterior refinement requires emulator model."
@@ -350,14 +349,33 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   // Pre-solve for MAP point using optimization, prior to MCMC chain.  For
   // now, tie the pre-solve to the existence of an emulator model.  Consider
   // elevating to a spec option...
-  if (false) {//(emulatorType && !mapOptimizer.is_null()) {
-    // TO DO: warm start this solver
+  if (emulatorType && !mapOptimizer.is_null()) {
+    Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
+	 << std::endl;
+    // set initial point (update gets pulled at run time by optimizer)
+    if (mapSoln.empty()) // no previous map solution
+      copy_gsl_partial(*paramInitials, 0,
+        negLogPostModel.current_variables().continuous_variables_view());
+    else // warm start using map soln from previous emulator
+      negLogPostModel.current_variables().continuous_variables(mapSoln);
+
+    // Perform optimization
     mapOptimizer.run();
-    // propagate bestVariables to paramInitials.  This propagates further to
-    // mcmcModel::currentVariables either within the derivative preconditioning
-    // or within the likelihood evaluator.
-    copy_gsl_partial(mapOptimizer.variables_results().continuous_variables(),
-		     *paramInitials, 0);
+    Cout << "MAP pre-solve completed.  Solution used as start of MCMC chain."
+	 << "\n\n";
+    // Could print here, but would require transform logic that is redundant
+    // with print_results().  Since starting point of MCMC chain is included
+    // in bestSamples and we would want to include any possible enhancements
+    // (not likely, but possible), rely on existing bestSamples tracking.
+    //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
+
+    // propagate map solution to paramInitials for starting point of MCMC chain.
+    // This propagates further to mcmcModel::currentVariables either within the
+    // derivative preconditioning or within the likelihood evaluator.
+    const RealVector& map_c_vars
+      = mapOptimizer.variables_results().continuous_variables();
+    copy_gsl_partial(map_c_vars, *paramInitials, 0);
+    if (adaptPosteriorRefine) copy_data(map_c_vars, mapSoln);//deep copy of view
   }
 
   if (outputLevel >= NORMAL_OUTPUT) {

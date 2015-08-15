@@ -214,7 +214,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
 
     bool npsol_flag, presolve_flag = true;
-    unsigned short opt_algorithm = SUBMETHOD_DEFAULT;//probDescDB.get_ushort("method.bayes_calibration.map_optimizer"); // method.sub_method already used
+    unsigned short opt_algorithm = SUBMETHOD_SQP;//probDescDB.get_ushort("method.bayes_calibration.map_optimizer"); // method.sub_method already used
     int npsol_deriv_level = 3;
     switch (opt_algorithm) {
     case SUBMETHOD_SQP:
@@ -389,42 +389,57 @@ neg_log_post_resp_mapping(const Variables& model_vars,
 	 << std::endl;
     abort_handler(-1);
   }
-  const RealVector& c_vars = model_vars.continuous_variables();
+  const RealVector& c_vars = nlpost_vars.continuous_variables();
   short nlpost_req = nlpost_resp.active_set_request_vector()[0];
+  bool output_flag = (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT);
   if (nlpost_req & 1) {
-    // TO DO:
+    RealVector calibrated_sigmas; // TO DO:
     // > cleanest approach may be to roll this into a variable recasting within
     //   negLogPostModel
     // > however, QUESO/DREAM do not roll this into a model recast, but instead
     //   augment the solver domains and then map the additional variables that
     //   flow into the likelihood into the calibrated_sigmas.
-    RealVector calibrated_sigmas;
     //if (nonDBayesInstance->calibrateSigma) {
     //  RealVector x(Teuchos::View, c_vars.data(), numContinuousVars);
     //  RealVector calibrated_sigmas(Teuchos::View, &c_vars[numContinuousVars],
     //    numFunctions);
     //}
-    nlpost_resp.function_value(
-      nonDBayesInstance->misfit(model_resp, calibrated_sigmas)
-    - nonDBayesInstance->log_prior_density(c_vars), 0);
+    Real nlp = nonDBayesInstance->misfit(model_resp, calibrated_sigmas)
+             - nonDBayesInstance->log_prior_density(c_vars);
+    nlpost_resp.function_value(nlp, 0);
+    if (output_flag)
+      Cout << "MAP pre-solve: negative log posterior = " << nlp << std::endl;
   }
 
   if (nlpost_req & 2) {
-    RealVector log_grad = nlpost_resp.function_gradient_view(0);
+    // TO DO: why isn't this working?
+    RealVector log_grad;// = nlpost_resp.function_gradient_view(0);
     nonDBayesInstance->
       expData.build_gradient_of_sum_square_residuals(model_resp, log_grad);
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
+    if (output_flag) {
+      Cout << "MAP pre-solve: negative log posterior gradient:\n";
+      write_data(Cout, log_grad);
+    }
+    // TO DO: remove
+    nlpost_resp.function_gradient(log_grad, 0);
   }
 
   if (nlpost_req & 4) {
-    RealSymMatrix log_hess = nlpost_resp.function_hessian_view(0);
+    // TO DO: why isn't this working?
+    RealSymMatrix log_hess;// = nlpost_resp.function_hessian_view(0);
     nonDBayesInstance->
       expData.build_hessian_of_sum_square_residuals(model_resp, log_hess);
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
+    if (output_flag) {
+      Cout << "MAP pre-solve: negative log posterior Hessian:\n";
+      write_data(Cout, log_hess);
+    }
+    // TO DO: remove
+    nlpost_resp.function_hessian(log_hess, 0);
   }
 
-  if (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT)
-    Cout << "TO DO" << std::endl;
+  //Cout << "nlpost_resp:\n" << nlpost_resp;
 }
 
 

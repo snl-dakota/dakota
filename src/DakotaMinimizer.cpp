@@ -117,12 +117,10 @@ void Minimizer::update_from_model(const Model& model)
     err_flag = true;
   }
   // Check for active design variables and discrete variable support
-  if (methodName == MOGA      || methodName == SOGA ||
-      methodName == COLINY_EA || methodName == SURROGATE_BASED_GLOBAL ||
-      methodName == COLINY_BETA ||
-      methodName == MESH_ADAPTIVE_SEARCH || 
-      methodName == ASYNCH_PATTERN_SEARCH ||
-      methodName == BRANCH_AND_BOUND) {
+  if (methodName == MOGA        || methodName == SOGA ||
+      methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
+      methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
+      methodName == ASYNCH_PATTERN_SEARCH || methodName == BRANCH_AND_BOUND) {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
 	!numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)
@@ -174,15 +172,14 @@ void Minimizer::update_from_model(const Model& model)
     = (grad_type == "numerical" && model.method_source() == "vendor");
 
   numNonlinearIneqConstraints = model.num_nonlinear_ineq_constraints();
-  numNonlinearEqConstraints = model.num_nonlinear_eq_constraints();
-  numLinearIneqConstraints = model.num_linear_ineq_constraints(); 
-  numLinearEqConstraints = model.num_linear_eq_constraints();
-  numNonlinearConstraints = numNonlinearIneqConstraints +
-                            numNonlinearEqConstraints;
+  numNonlinearEqConstraints   = model.num_nonlinear_eq_constraints();
+  numLinearIneqConstraints    = model.num_linear_ineq_constraints(); 
+  numLinearEqConstraints      = model.num_linear_eq_constraints();
+  numNonlinearConstraints     = numNonlinearIneqConstraints
+                              + numNonlinearEqConstraints;
   numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
-  numConstraints = numNonlinearConstraints + numLinearConstraints;
-  numUserPrimaryFns = model.num_primary_fns();
-  numIterPrimaryFns = numUserPrimaryFns;
+  numConstraints       = numNonlinearConstraints + numLinearConstraints;
+  numIterPrimaryFns    = numUserPrimaryFns = model.num_primary_fns();
   if (model.primary_fn_type() == CALIB_TERMS)
     numTotalCalibTerms = numUserPrimaryFns;  // default value
   // Check for linear constraint support in method selection
@@ -218,11 +215,11 @@ void Minimizer::update_from_model(const Model& model)
   size_t i;
   const RealVector& c_l_bnds = model.continuous_lower_bounds();
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  //Cout << "Continuous lower bounds:\n"; write_data(Cout, c_l_bnds);
+  //Cout << "Continuous upper bounds:\n"; write_data(Cout, c_u_bnds);
   for (i=0; i<numContinuousVars; ++i)
-    if (c_l_bnds[i] > -bigRealBoundSize || c_u_bnds[i] < bigRealBoundSize) {
-      boundConstraintFlag = true;
-      break;
-    }
+    if (c_l_bnds[i] > -bigRealBoundSize || c_u_bnds[i] < bigRealBoundSize)
+      { boundConstraintFlag = true; break; }
   bool discrete_bounds = (methodName == MOGA || methodName == SOGA ||
 			  methodName == COLINY_EA);
   if (discrete_bounds) {
@@ -231,15 +228,11 @@ void Minimizer::update_from_model(const Model& model)
     const RealVector& dr_l_bnds = model.discrete_real_lower_bounds();
     const RealVector& dr_u_bnds = model.discrete_real_upper_bounds();
     for (i=0; i<numDiscreteIntVars; ++i)
-      if (di_l_bnds[i] > -bigIntBoundSize || di_u_bnds[i] < bigIntBoundSize) {
-	boundConstraintFlag = true;  
-	break;
-      }
+      if (di_l_bnds[i] > -bigIntBoundSize || di_u_bnds[i] < bigIntBoundSize)
+	{ boundConstraintFlag = true; break; }
     for (i=0; i<numDiscreteRealVars; ++i)
-      if (dr_l_bnds[i] > -bigRealBoundSize || dr_u_bnds[i] < bigRealBoundSize) {
-	boundConstraintFlag = true;  
-	break;
-      }
+      if (dr_l_bnds[i] > -bigRealBoundSize || dr_u_bnds[i] < bigRealBoundSize)
+	{ boundConstraintFlag = true; break; }
   }
 }
 
