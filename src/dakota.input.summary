@@ -1530,6 +1530,64 @@ KEYWORD12 method
 	      ]
 	    )
 	  |
+	  ( wasabi
+	    [ emulator
+	      ( gaussian_process ALIAS kriging
+		surfpack
+		| dakota
+		[ emulator_samples INTEGER ]
+		[ posterior_adaptive ]
+		[ import_points_file STRING
+		  [ annotated
+		  |
+		  ( custom_annotated
+		    [ header ]
+		    [ eval_id ]
+		    [ interface_id ]
+		    ]
+		  |
+		  ( freeform
+		  [ active_only ]
+		  ]
+		[ export_points_file STRING
+		  [ annotated
+		  |
+		  ( custom_annotated
+		    [ header ]
+		    [ eval_id ]
+		    [ interface_id ]
+		    ]
+		  |
+		  ( freeform
+		  ]
+		)
+	      |
+	      ( pce
+		sparse_grid_level INTEGERLIST
+		|
+		( expansion_order INTEGERLIST
+		  collocation_ratio REAL
+		  [ posterior_adaptive ]
+		  )
+		)
+	      |
+	      ( sc
+		sparse_grid_level INTEGERLIST
+		)
+	      [ use_derivatives ]
+	      ]
+	    ( data_distribution
+	      ( gaussian
+		means REALLIST
+		( covariance REALLIST
+		  diagonal
+		  | matrix
+		  )
+		)
+	      | obs_data_filename STRING
+	      )
+	    )
+	  |
 	  ( dream
 	    [ chains INTEGER >= 3 ]
 	    [ num_cr INTEGER >= 1 ]

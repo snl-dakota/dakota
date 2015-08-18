@@ -111,6 +111,7 @@
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
+#include "NonDWASABIBayesCalibration.hpp"
 
 //#define REFCOUNT_DEBUG
 
@@ -386,6 +387,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_DREAM:
       return new NonDDREAMBayesCalibration(problem_db, model); break;
 #endif
+    case SUBMETHOD_WASABI:
+      return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
       Cerr << "Bayesian calibration selection not available." << std::endl;
       return NULL;                                            break;
@@ -898,6 +901,7 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_name) const
   case SUBMETHOD_OA_LHS: return String("oa_lhs"); break;
   case SUBMETHOD_OAS: return String("oas"); break;
   case SUBMETHOD_DREAM: return String("dream"); break;
+  case SUBMETHOD_WASABI: return String("wasabi"); break;
   case SUBMETHOD_GPMSA: return String("gpmsa"); break;
   case SUBMETHOD_QUESO: return String("queso"); break;
   case SUBMETHOD_NIP: return String("nip"); break;

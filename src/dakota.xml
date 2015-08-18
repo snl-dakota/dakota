@@ -1803,6 +1803,77 @@
 			</oneOf>
                       </keyword>
                     </required>
+                    <keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
+                      <keyword  id="emulator2" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
+                        <oneOf label="emulator type" >
+                          <keyword  id="gaussian_process4" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
+                            <alias name="kriging"/>
+                            <oneOf>
+                              <keyword  id="surfpack4" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+                              <keyword  id="dakota4" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+                            </oneOf>
+                            <keyword  id="emulator_samples5" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
+                              <param type="INTEGER" />
+                            </keyword>
+			    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                            <keyword  id="import_points_file8" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
+                              <param type="INPUT_FILE" />
+			      &method_approx_import_format;
+			      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                            </keyword>
+                            <keyword  id="export_points_file9" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" default="no point export to a file" >
+                              <param type="OUTPUT_FILE" />
+			      &method_approx_export_format;
+                            </keyword>
+                          </keyword>
+                          <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+                            <oneOf>
+                              <keyword  id="sparse_grid_level4" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                                <param type="INTEGERLIST" />
+                              </keyword>
+			      <keyword  id="expansion_order3" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				<param type="INTEGERLIST" />
+				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				  <param type="REAL" />
+				</keyword>
+				<keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                              </keyword>
+                            </oneOf>
+                          </keyword>
+                          <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
+                            <keyword  id="sparse_grid_level5" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                              <param type="INTEGERLIST" />
+                            </keyword>
+                          </keyword>
+                        </oneOf>
+			<keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
+                      </keyword>
+		      <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
+			<required>
+			  <oneOf>
+                            <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian" help="" minOccurs="1" >
+			      <required>
+				<keyword  id="means" name="means" code="{N_mdm(RealDL,dataDistMeans)}" label="User-provided proposal means of gaussian dist on data" help="" minOccurs="1" >
+				  <param type="REALLIST"/>
+				</keyword>
+			      </required>
+			      <keyword  id="covariance" name="covariance" code="{N_mdm(RealDL,dataDistCovariance)}" label="User-provided proposal covariance of gaussian dist on data" help="" minOccurs="1" >
+				<param type="REALLIST"/>
+				<required>
+				  <oneOf>
+				    <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,dataDistCovInputType_diagonal)}" label="Diagonal data distribution covariance input" help="" />
+				    <keyword  id="matrix" name="matrix" code="{N_mdm(lit,dataDistCovInputType_matrix)}" label="Matrix data distribution covariance input" help="" />
+				  </oneOf>
+				</required>
+			      </keyword>
+			    </keyword>
+			    <keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data" help="" minOccurs="1" >
+			      <param type="INPUT_FILE"/>  
+			    </keyword>
+			  </oneOf>
+			</required>
+		      </keyword>
+		    </keyword>
                     <keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream" help="" minOccurs="1" >
                       <keyword  id="chains" name="chains" code="{N_mdm(int,numChains)}" label="Number of chains" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="3" >
                         <param type="INTEGER" constraint=">= 3" />

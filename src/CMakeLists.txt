@@ -513,6 +513,7 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
     NonDCalibration.cpp NonDBayesCalibration.cpp NonDSampling.cpp
+    NonDWASABIBayesCalibration.cpp
     NonDLHSSampling.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDIncremLHSSampling.cpp
     NonDPOFDarts.cpp NonDRKDDarts.cpp

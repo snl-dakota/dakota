@@ -87,7 +87,7 @@ enum { SUBMETHOD_DEFAULT=0,
        SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // Bayesian inference algorithms:
-       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_QUESO,
+       SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
        // verification approaches:
@@ -960,6 +960,21 @@ public:
   Real grThreshold;
   /// how often to perform a long jump in generations
   int jumpStep; 
+
+  // WASABI sub-specification
+
+  /// the type of data distribution: kde, or gaussian
+  String dataDistType;
+  /// the format of data distribution gaussian covariance input: 
+  /// diagonal or matrix
+  String dataDistCovInputType;
+  /// raw list of real data for the data distribution gaussian means
+  RealVector dataDistMeans;
+  /// raw list of real data for the data distribution gaussian covariance
+  RealVector dataDistCovariance;
+  /// file from which to read data distribution data (covariance or samples )
+  String dataDistFile;
+  /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
 
   // Parameter Study
 

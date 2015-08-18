@@ -261,7 +261,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovData << proposalCovFile << likelihoodScale
     << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep << lipschitzType;
+    << grThreshold << jumpStep << lipschitzType << dataDistType 
+    << dataDistCovInputType << dataDistMeans << dataDistCovariance << dataDistFile;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
