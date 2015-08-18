@@ -1,0 +1,314 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:	 NonDWASABIBayesCalibration
+//- Description: Derived class for Bayesian inference using WASABI
+//- Owner:       Tim Wildey
+//- Checked by:
+//- Version:
+
+#include "NonDWASABIBayesCalibration.hpp"
+#include "ProblemDescDB.hpp"
+#include "DakotaModel.hpp"
+#include "ProbabilityTransformation.hpp"
+
+// BMA TODO: remove this header
+// for uniform PDF and samples
+//#include "pdflib.hpp"
+
+// included to set seed in RNGLIB:
+#include "rnglib.hpp"
+//#include <random>
+
+using std::string;
+
+namespace Dakota {
+
+//initialization of statics
+NonDWASABIBayesCalibration* NonDWASABIBayesCalibration::NonDWASABIInstance(NULL);
+
+/** This constructor is called for a standard letter-envelope iterator 
+    instantiation.  In this case, set_db_list_nodes has been called and 
+    probDescDB can be queried for settings from the method specification. */
+NonDWASABIBayesCalibration::
+NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model):
+  NonDBayesCalibration(problem_db, model),
+  dataDistMeans(probDescDB.get_rv("method.nond.data_dist_means")),
+  dataDistCovariance(probDescDB.get_rv("method.nond.data_dist_covariance")),
+  dataDistFilename(probDescDB.get_string("method.nond.data_dist_filename")),
+  dataDistCovType(probDescDB.get_string("method.nond.data_dist_cov_type"))
+{ 
+  // don't use max_function_evaluations, since we have num_samples
+  // consider max_iterations = generations, and adjust as needed?
+
+}
+
+
+NonDWASABIBayesCalibration::~NonDWASABIBayesCalibration()
+{ }
+
+
+/** Perform the uncertainty quantification */
+void NonDWASABIBayesCalibration::quantify_uncertainty()
+{
+  // instantiate WASABI objects
+  NonDWASABIInstance = this;
+
+  ////////////////////////////////////////////////////////
+  // Step 1 of 10: Build the response surface approximation (RSA)
+  ////////////////////////////////////////////////////////
+  
+  initialize_model();
+  if (emulatorType == NO_EMULATOR) {
+    Cerr << "\nError: WASABI requires an emulator!"<<std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  
+
+
+  // set the seed for the rng 
+  if (randomSeed) {
+    rnumGenerator.seed(randomSeed);
+    Cout << " WASABI Seed (user-specified) = " << randomSeed << std::endl;
+  }
+  else {
+    // Use NonD convenience function for system seed
+    int clock_seed = generate_system_seed();
+    rnumGenerator.seed(clock_seed);
+    Cout << " WASABI Seed (system-generated) = " << clock_seed << std::endl;
+  }
+  
+  // we assume that the distribution on the data will either be given as a Gaussian 
+  // or estimated using a KDE
+  bool calc_sigma_from_data = false; // calculate sigma if not provided
+  if (calibrationData)
+    expData.load_data("WASABI Bayes Calibration", calc_sigma_from_data);
+  else
+    Cout << "No experiment data from files\n"
+	 << "WASABI is assuming the distribution is Gaussian\n";
+
+  // initialize the prior PDF and sampler
+  // the prior is currently assumed uniform, but this will be generalized
+
+  // set the bounds on the parameters (TMW: can this be moved?  Does it require initialize_model() to be called first? 
+  // resize, initializing to zero
+  paramMins.size(numContinuousVars);
+  paramMaxs.size(numContinuousVars);
+
+  const RealVector& lower_bounds = mcmcModel.continuous_lower_bounds();
+  const RealVector& upper_bounds = mcmcModel.continuous_upper_bounds();
+
+  // TMW: evaluation of prior should be elevated to NonDBayes (even for MCMC-based methods)
+  // Concerned about application of nataf for dependent priors
+  // May want to use KDE to generate prior samples if given samples from prior
+  // Nataf should be encapsulated in new pecos model class
+
+  if (emulatorType == GP_EMULATOR || emulatorType == KRIGING_EMULATOR || 
+      emulatorType == NO_EMULATOR) {
+    for (size_t i=0;i<numContinuousVars;i++) {
+      paramMins[i] = lower_bounds[i];
+      paramMaxs[i] = upper_bounds[i];
+    }
+  }
+  else { // case PCE_EMULATOR: case SC_EMULATOR:
+    Iterator* se_iter = NonDWASABIInstance->stochExpIterator.iterator_rep();
+    Pecos::ProbabilityTransformation& nataf = 
+      ((NonD*)se_iter)->variable_transformation(); 
+    RealVector lower_u, upper_u;
+    nataf.trans_X_to_U(lower_bounds,lower_u);
+    nataf.trans_X_to_U(upper_bounds,upper_u);
+    for (size_t i=0;i<numContinuousVars;i++) {
+      paramMins[i]=lower_u[i];
+      paramMaxs[i]=upper_u[i];
+    }
+  }
+ 
+  Cout << "INFO (WASABI): paramMins  " << paramMins << '\n';
+  Cout << "INFO (WASABI): paramMaxs  " << paramMaxs << '\n';
+
+
+  // clear since this is a run-time operation
+  priorDistributions.clear();
+  priorSamplers.clear();
+  int total_num_params = numContinuousVars; 
+  for (int i=0; i<total_num_params; ++i) {
+    priorDistributions.
+      push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
+    priorSamplers.
+      push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
+  }
+
+
+  ////////////////////////////////////////////////////////
+  // Step 2 of 10: Generate a large set of samples (s_prior) from the prior
+  ////////////////////////////////////////////////////////
+
+  // diagnostic information
+  Cout << "INFO (WASABI): Num Samples " << numSamples << '\n';
+ 
+  RealMatrix samples_from_prior((int)numContinuousVars, numSamples, false);
+  
+  for (int j=0; j<numSamples; j++) {
+    RealVector newsample(Teuchos::View, samples_from_prior[j], numContinuousVars); 
+    prior_sample(newsample);
+  }
+    
+  ////////////////////////////////////////////////////////
+  // Step 3 of 10: Evaluate the response surface at these samples
+  ////////////////////////////////////////////////////////
+
+  RealMatrix responses_for_samples_from_prior;
+  
+  compute_responses(samples_from_prior, responses_for_samples_from_prior);
+
+
+  ////////////////////////////////////////////////////////
+  // Step 4 of 10: Build a density estimate using the samples of the RSA
+  ////////////////////////////////////////////////////////
+
+  Pecos::DensityEstimator response_kde("gaussian_kde");
+  response_kde.initialize(responses_for_samples_from_prior);
+
+  ////////////////////////////////////////////////////////
+  // Step 5 of 10: Pick a set of points (s_eval) to evaluate the posterior (default: s_eval = s_prior)
+  ////////////////////////////////////////////////////////
+
+  // right now we are using the samples from the prior
+ 
+  RealMatrix samples_for_posterior_eval(samples_from_prior);
+
+  ////////////////////////////////////////////////////////
+  // Step 6 of 10: Evaluate the prior density at samples_for_posterior_eval
+  ////////////////////////////////////////////////////////
+
+  RealVector prior_density_vals(samples_for_posterior_eval.numCols(), false);
+
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    double priorval = prior_density(numContinuousVars, samples_for_posterior_eval[j]);
+    prior_density_vals[j] = priorval;
+  }
+  
+  ////////////////////////////////////////////////////////
+  // Step 7 of 10: Evaluate the RSA at s_eval -> q_eval = RSA(s_eval)
+  ////////////////////////////////////////////////////////
+
+  RealMatrix responses_for_posterior_eval;
+  compute_responses(samples_for_posterior_eval, responses_for_posterior_eval);
+
+  ////////////////////////////////////////////////////////
+  // Step 8 of 10: Evaluate the density at q_eval
+  ////////////////////////////////////////////////////////
+
+  RealVector response_density_vals_for_posterior_eval(samples_for_posterior_eval.numCols(), false);
+  response_kde.pdf(responses_for_posterior_eval, response_density_vals_for_posterior_eval);
+
+  ////////////////////////////////////////////////////////
+  // Step 9 of 10: Evaluate the given data distribution at q_eval
+  ////////////////////////////////////////////////////////
+
+  double mean_data = 0.3;
+  double stdev_data = 0.01;
+  boost::math::normal datadist(mean_data, stdev_data);
+ 
+  RealVector data_density_vals(samples_for_posterior_eval.numCols(), false);
+
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    double currval = responses_for_posterior_eval(j,0);
+    double dataval = boost::math::pdf(datadist, currval);
+    data_density_vals[j] = dataval;
+  }
+
+  ////////////////////////////////////////////////////////
+  // Step 10 of 10: Compute the posterior distribution at s_eval
+  ////////////////////////////////////////////////////////
+
+  RealVector posterior(samples_for_posterior_eval.numCols(), false);
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    posterior[j] = prior_density_vals[j] * (data_density_vals[j] / response_density_vals_for_posterior_eval[j]);
+  }
+
+  ////////////////////////////////////////////////////////
+  // Step 11 (optional): Use an acceptance-rejection algorithm to select a subset of the samples consistent with the posteror 
+  ////////////////////////////////////////////////////////
+
+  std::vector<int> points_to_keep;
+  boost::random::mt19937 rng;
+  boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
+ 
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    double ratio = posterior[j] / prior_density_vals[j];
+    double rnum = distribution(rng);
+    if (ratio > rnum)
+      points_to_keep.push_back(j);
+  }
+
+  return;
+}
+
+
+void NonDWASABIBayesCalibration::print_results(std::ostream& s)
+{
+  NonDBayesCalibration::print_results(s);
+
+//  additional WASABI output
+}
+
+
+double  NonDWASABIBayesCalibration::prior_density ( int par_num, double zp[] )
+{
+  int i;
+  double value;
+
+  value = 1.0;
+
+  for ( i = 0; i < par_num; i++ )    
+  {
+    //value = value * r8_uniform_pdf (NonDDREAMInstance->paramMins[i],
+    //				    NonDDREAMInstance->paramMaxs[i], zp[i] );
+    value *= boost::math::pdf(NonDWASABIInstance->priorDistributions[i], zp[i]);
+  }
+
+  return value;
+}
+
+void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)
+{
+  // check that sample size matches number of priorsamples
+
+  if (sample.length() != NonDWASABIInstance->priorSamplers.size()) {
+    throw (std::runtime_error("NonDWASABIBayesCalibration::prior_sample: Sample had incorrect size"));
+  }
+
+  for (int i = 0; i < sample.length(); i++ )
+  {
+    sample[i] =
+      NonDWASABIInstance->priorSamplers[i](NonDWASABIInstance->rnumGenerator);
+  }
+
+}
+
+void NonDWASABIBayesCalibration::compute_responses(RealMatrix & samples, RealMatrix & responses) {
+
+    int num_samples = samples.numCols();
+    responses.shapeUninitialized(numFunctions, num_samples);
+
+    for (int j=0; j<num_samples; j++) {
+      RealVector sample(Teuchos::View, samples[j], numContinuousVars);
+    
+      NonDWASABIInstance->mcmcModel.continuous_variables(sample); 
+
+      NonDWASABIInstance->mcmcModel.compute_response();
+      const Response& curr_resp = NonDWASABIInstance->mcmcModel.current_response();
+      const RealVector& fn_vals = curr_resp.function_values();
+
+      RealVector response_col(Teuchos::View, responses[j], numFunctions); 
+      response_col.assign(fn_vals);
+    }
+  }
+
+} // namespace Dakota
