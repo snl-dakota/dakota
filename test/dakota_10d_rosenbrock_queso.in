@@ -7,8 +7,6 @@ method,
 	  delayed_rejection
 	  emulator
 	    pce sparse_grid_level = 2
-	    pre_solve nip				#p0,#p1
-#	    pre_solve sqp				#p2,#p3
 	  proposal_covariance
 	    derivatives	
 	    proposal_updates = 50 # default update is every 100 samples
