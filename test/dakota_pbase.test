@@ -4497,14 +4497,14 @@ Test Number 25 succeeded
 <<<<< Best misfit              =
                       6.4005713685e-07
 Test Number 26 succeeded
-<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9920244401e-01
-                      9.9840342432e-01
+                      9.9920334456e-01
+                      9.9840180292e-01
 <<<<< Best log posterior       =
-                     -1.3862949977e+00
+                     -1.3862949988e+00
 <<<<< Best misfit              =
-                      6.3653646887e-07
+                      6.3770787295e-07
 dakota_sbo_hierarchical.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)
