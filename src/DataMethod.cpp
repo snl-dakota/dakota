@@ -262,7 +262,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
-    << dataDistCovInputType << dataDistMeans << dataDistCovariance << dataDistFile;
+    << dataDistCovInputType << dataDistMeans << dataDistCovariance
+    << dataDistFile;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -393,7 +394,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovData >> proposalCovFile >> likelihoodScale
     >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
-    >> grThreshold >> jumpStep >> lipschitzType;
+    >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
+    >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
+    >> dataDistFile;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -524,7 +527,9 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovData << proposalCovFile << likelihoodScale
     << fitnessMetricType << batchSelectionType << batchSize
     << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep << lipschitzType;
+    << grThreshold << jumpStep << lipschitzType  << dataDistType 
+    << dataDistCovInputType << dataDistMeans << dataDistCovariance
+    << dataDistFile;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
