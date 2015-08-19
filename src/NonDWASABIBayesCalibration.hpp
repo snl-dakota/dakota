@@ -95,6 +95,18 @@ protected:
   std::string dataDistFilename;
   /// The type of covariance data provided ("diagonal","matrix")
   std::string dataDistCovType;
+  /// The filename of the import file containing samples at which the 
+  /// posterior will be evaluated
+  std::string posteriorSamplesImportFile;
+  /// Format of imported posterior samples file
+  unsigned short posteriorSamplesImportFormat;
+  /// The filename of the export file containing posterior samples and 
+  /// their corresponding density values
+  std::string exportPosteriorDensityFile;
+  /// Format of imported posterior samples and values file
+  unsigned short exportFileFormat;
+  /// Flag specifying whether to generate random samples from the posterior
+  bool generateRandomPosteriorSamples;
 
   /// lower bounds on calibrated parameters
   RealVector paramMins;
