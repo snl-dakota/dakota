@@ -131,12 +131,6 @@ protected:
   /// and/or response scaling
   void scale_model();
 
-  /// conversion of request vector values for the Gauss-Newton Hessian
-  /// approximation
-  static void gnewton_set_recast(const Variables& recast_vars,
-				 const ActiveSet& recast_set,
-				 ActiveSet& sub_model_set);
-
   /// conversion of request vector values for Least Squares
   static void replicate_set_recast(const Variables& recast_vars,
 				  const ActiveSet& recast_set,

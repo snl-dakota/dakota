@@ -274,13 +274,11 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
     Cout << "Initializing reduction transformation" << std::endl;
 
   // numObjectiveFns is as seen by this Iterator after reduction
-  numObjectiveFns = 1;
   // update Minimizer sizes as well
-  numIterPrimaryFns = numObjectiveFns; 
+  numIterPrimaryFns = numObjectiveFns = 1;
   numFunctions = numObjectiveFns + numNonlinearConstraints;
 
-  size_t i;
-  size_t num_recast_fns = numFunctions;
+  size_t i, num_recast_fns = numFunctions;
   Sizet2DArray var_map_indices(numContinuousVars), 
     primary_resp_map_indices(numObjectiveFns), 
     secondary_resp_map_indices(numNonlinearConstraints);
@@ -297,11 +295,8 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   if (local_nls_recast) {
     // TODO: when reduce_model is called, model.primary_functions() should
     // have the right size... Add model.secondary_functions() as well?
-    size_t total_calib_terms; 
-    if (!calibrationDataFlag)
-      total_calib_terms = numUserPrimaryFns;
-    else 
-      total_calib_terms = numTotalCalibTerms;
+    size_t total_calib_terms = (calibrationDataFlag) ?
+      numTotalCalibTerms : numUserPrimaryFns;
     primary_resp_map_indices[0].resize(total_calib_terms);
     nonlinear_resp_map[0].resize(total_calib_terms);
     for (i=0; i<total_calib_terms; i++) {
@@ -352,13 +347,18 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total; // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  const Response& orig_resp = iteratedModel.current_response();
+  short recast_resp_order = 1; // may differ from orig response
+  if (!orig_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (require_hessians)                        recast_resp_order |= 4;
 
   iteratedModel.assign_rep(new
     RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
 		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
 		set_recast, primary_resp_map_indices,
 		secondary_resp_map_indices, recast_secondary_offset,
-		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
+		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
+		sec_resp_recast), false);
   ++minimizerRecasts;
 
 
@@ -384,7 +384,6 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // (reflects the minimize default), but might as well be explicit.
   BoolDeque max_sense(1, false);
   iteratedModel.primary_response_fn_sense(max_sense);
-
 }
 
 

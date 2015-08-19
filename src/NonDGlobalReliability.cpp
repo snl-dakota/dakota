@@ -268,13 +268,14 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   // the recast fn pointers are reset for each level within the run fn.
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  short recast_resp_order = 1; // nongradient-based optimizers
   mppModel.assign_rep(
-    new RecastModel(uSpaceModel, recast_vars_comps_total,
-		    all_relax_di, all_relax_dr, 1, 0, 0), false);
+    new RecastModel(uSpaceModel, recast_vars_comps_total, all_relax_di,
+		    all_relax_dr, 1, 0, 0, recast_resp_order), false);
 
   // For formulations with one objective and one equality constraint,
   // use the following instead:
-  //mppModel.assign_rep(new RecastModel(uSpaceModel, 1, 1, 0), false);
+  //mppModel.assign_rep(new RecastModel(uSpaceModel, ..., 1, 1, 0, ...), false);
   //RealVector nln_eq_targets(1, 0.);
   //mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 

@@ -98,6 +98,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // Construct mcmcModel (no emulation, GP, PCE, or SC) for use in
   // likelihood evaluations
+  short mcmc_deriv_order = 1;
   switch (emulatorType) {
 
   case PCE_EMULATOR: case SC_EMULATOR: {
@@ -107,26 +108,31 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       = probDescDB.get_rv("method.nond.dimension_preference");    // not exposed
     bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
     NonDExpansion* se_rep;
-    if (emulatorType == SC_EMULATOR) // SC sparse grid interpolation
+    if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
       se_rep = new NonDStochCollocation(iteratedModel,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	false, derivs);
-    else if (!level_seq.empty()) // PCE with spectral projection via sparse grid
-      se_rep = new NonDPolynomialChaos(iteratedModel,
-	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
-	false, false);
-    else { 
-      // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
-      const UShortArray& exp_order_seq
-	= probDescDB.get_usa("method.nond.expansion_order");
-      short exp_coeffs_approach = (exp_order_seq.empty()) ?
-	Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
-      se_rep = new NonDPolynomialChaos(iteratedModel,
-	exp_coeffs_approach, exp_order_seq, dim_pref,
-	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
-	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	randomSeed, EXTENDED_U, false, derivs,	
-	probDescDB.get_bool("method.nond.cross_validation")); // not exposed
+      mcmc_deriv_order = 3; // Hessian computations not yet implemented for SC
+    }
+    else {
+      if (!level_seq.empty()) // PCE with spectral projection via sparse grid
+	se_rep = new NonDPolynomialChaos(iteratedModel,
+	  Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
+	  false, false);
+      else { 
+        // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
+	const UShortArray& exp_order_seq
+	  = probDescDB.get_usa("method.nond.expansion_order");
+	short exp_coeffs_approach = (exp_order_seq.empty()) ?
+	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+	se_rep = new NonDPolynomialChaos(iteratedModel,
+	  exp_coeffs_approach, exp_order_seq, dim_pref,
+	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
+	  randomSeed, EXTENDED_U, false, derivs,	
+	  probDescDB.get_bool("method.nond.cross_validation")); // not exposed
+      }
+      mcmc_deriv_order = 7; // Hessian computations implemented for PCE
     }
     stochExpIterator.assign_rep(se_rep);
     // no level mappings
@@ -141,11 +147,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   case GP_EMULATOR: case KRIGING_EMULATOR: {
-    String sample_reuse; String approx_type; short deriv_order;
+    String sample_reuse; String approx_type;
     if (emulatorType == GP_EMULATOR)
-      { approx_type = "global_gaussian"; deriv_order = 3; } // grad support
+      { approx_type = "global_gaussian"; mcmc_deriv_order = 3; } // grad support
     else
-      { approx_type = "global_kriging";  deriv_order = 7; } // grad,Hess support
+      { approx_type = "global_kriging";  mcmc_deriv_order = 7; } // grad,Hess
     UShortArray approx_order; // not used by GP/kriging
     short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
@@ -177,7 +183,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
-    gp_set.request_values(deriv_order); // for misfit Hessian
+    gp_set.request_values(mcmc_deriv_order); // for misfit Hessian
     mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, lhs_model,
       gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
       outputLevel, sample_reuse,
@@ -192,6 +198,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) transform_model(iteratedModel, mcmcModel);// !global
     else                   mcmcModel = iteratedModel; // shared rep
+    //if () mcmc_deriv_order |= 2;
+    //if () mcmc_deriv_order |= 4;
     break;
   }
 
@@ -207,46 +215,68 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     SizetArray recast_vc_totals;  // empty: no change in size
     BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
 
-    // RecastModel for bound-constrained argmin(misfit - log prior)
-    negLogPostModel.assign_rep(new RecastModel(mcmcModel, vars_map_indices, 
-      recast_vc_totals, all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-      NULL, primary_resp_map_indices, secondary_resp_map_indices, 0,
-      nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
-
-    bool npsol_flag, presolve_flag = true;
-    unsigned short opt_algorithm = SUBMETHOD_SQP;//probDescDB.get_ushort("method.bayes_calibration.map_optimizer"); // method.sub_method already used
-    int npsol_deriv_level = 3;
+    unsigned short opt_algorithm = SUBMETHOD_DEFAULT;//probDescDB.get_ushort("method.bayes_calibration.map_optimizer"); // method.sub_method already used
+    bool pre_solve = true;
     switch (opt_algorithm) {
     case SUBMETHOD_SQP:
-#ifdef HAVE_NPSOL
-      mapOptimizer.assign_rep(new NPSOLOptimizer(negLogPostModel,
-	npsol_deriv_level, convergenceTol), false);
-#else
+#ifndef HAVE_NPSOL
       Cerr << "\nWarning: this executable not configured with NPSOL SQP."
 	   << "\n         MAP pre-solve not available." << std::endl;
+      pre_solve = false;
 #endif
       break;
     case SUBMETHOD_NIP:
-#ifdef HAVE_OPTPP
-      mapOptimizer.assign_rep(new SNLLOptimizer("optpp_newton", // full Newton
-	negLogPostModel), false);
-#else
+#ifndef HAVE_OPTPP
       Cerr << "\nWarning: this executable not configured with OPT++ NIP."
 	   << "\n         MAP pre-solve not available." << std::endl;
+      pre_solve = false;
 #endif
       break;
-    case SUBMETHOD_DEFAULT: // use full Newton NIP, if available
-#ifdef HAVE_OPTPP
-      mapOptimizer.assign_rep(new SNLLOptimizer("optpp_newton",
-	negLogPostModel), false);
-#elif HAVE_NPSOL
-      mapOptimizer.assign_rep(new NPSOLOptimizer(negLogPostModel,
-	npsol_deriv_level, convergenceTol), false);
+    case SUBMETHOD_DEFAULT: // use NPSOL, if available
+#ifdef HAVE_NPSOL
+      opt_algorithm = SUBMETHOD_SQP;
+#elif HAVE_OPTPP
+      opt_algorithm = SUBMETHOD_NIP;
 #else
       Cerr << "\nWarning: this executable not configured with NPSOL or OPT++."
 	   << "\n         MAP pre-solve not available." << std::endl;
+      pre_solve = false;
 #endif
       break;
+    }
+
+    // recast ActiveSet requests if full-Newton NIP with gauss-Newton misfit
+    // (avoids error in unsupported Hessian requests in Model::manage_asv())
+    short nlp_resp_order = 3; // quasi-Newton optimization
+    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+    if (opt_algorithm == SUBMETHOD_NIP) {
+      nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
+      if (mcmc_deriv_order == 3) // map asrv for Gauss-Newton approx
+	set_recast = gnewton_set_recast;
+    }
+
+    // RecastModel for bound-constrained argmin(misfit - log prior)
+    negLogPostModel.assign_rep(new RecastModel(mcmcModel, vars_map_indices, 
+      recast_vc_totals, all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+      set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
+      nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, NULL),
+      false);
+
+    switch (opt_algorithm) {
+#ifdef HAVE_NPSOL
+    case SUBMETHOD_SQP: {
+      int npsol_deriv_level = 3;
+      mapOptimizer.assign_rep(new NPSOLOptimizer(negLogPostModel,
+	npsol_deriv_level, convergenceTol), false); // SQP with BFGS Hessians
+      break;
+    }
+#endif
+#ifdef HAVE_OPTPP
+    case SUBMETHOD_NIP:
+      mapOptimizer.assign_rep(new SNLLOptimizer("optpp_newton",
+	negLogPostModel), false); // full Newton (OPTPP::OptBCNewton)
+      break;
+#endif
     }
   }
 
@@ -349,12 +379,12 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
     }
   else {
     RealVector total_residuals( expData.num_total_exppoints() );
-    size_t cntr = 0;
+    int cntr = 0;
     for (i=0; i<numExperiments; ++i) {
       RealVector residuals;
       expData.form_residuals_deprecated(resp, i, residuals);
       int len = residuals.length();
-      copy_data_partial( residuals, 0, len, total_residuals, (int)cntr );
+      copy_data_partial( residuals, 0, len, total_residuals, cntr );
       cntr += len;
     }
     for (i=0; i<numExperiments; ++i) 

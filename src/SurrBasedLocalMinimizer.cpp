@@ -146,14 +146,18 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     // iteratedModel becomes the sub-model of a RecastModel:
     size_t recast_offset
       = (approxSubProbCon == NO_CONSTRAINTS) ? 0 : numNonlinearIneqConstraints;
-    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&)
-      = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
-	 iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
+    // no Hessians in approx_subprob evaluators
+    short recast_resp_order = 3;
+    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+    // = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
+    //    iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
+
     approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
       recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
       false, NULL, set_recast, recast_primary_resp_map,
-      recast_secondary_resp_map, recast_offset, nonlinear_resp_map,
-      approx_subprob_objective_eval, approx_subprob_constraint_eval), false);
+      recast_secondary_resp_map, recast_offset, recast_resp_order,
+      nonlinear_resp_map, approx_subprob_objective_eval,
+      approx_subprob_constraint_eval), false);
 
     // these formulations have converted multiple objectives or
     // calibration terms to a single objective

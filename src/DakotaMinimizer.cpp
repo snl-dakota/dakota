@@ -381,7 +381,8 @@ void Minimizer::data_transform_model()
     var_map_indices[i][0] = i;
   }
 
-  const SharedResponseData& srd = iteratedModel.current_response().shared_data();
+  const Response& curr_resp = iteratedModel.current_response();
+  const SharedResponseData& srd = curr_resp.shared_data();
   gen_primary_resp_map(srd, primary_resp_map_indices, nonlinear_resp_map);
   Cout << "prminds = \n" << primary_resp_map_indices << "\n";
 
@@ -407,12 +408,17 @@ void Minimizer::data_transform_model()
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
+
   iteratedModel.assign_rep(new
     RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total,
 		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
 		set_recast, primary_resp_map_indices,
 		secondary_resp_map_indices, recast_secondary_offset,
-		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
+		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
+		sec_resp_recast), false);
   ++minimizerRecasts;
 
 
@@ -535,10 +541,15 @@ void Minimizer::scale_model()
   // iteratedModel becomes the sub-model of a RecastModel:
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  const Response& curr_resp = iteratedModel.current_response();
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
+
   iteratedModel.assign_rep(new
       RecastModel(iteratedModel, recast_vars_comps_total, all_relax_di,
 		  all_relax_dr, numUserPrimaryFns, numNonlinearConstraints,
-		  numNonlinearIneqConstraints), false);
+		  numNonlinearIneqConstraints, recast_resp_order), false);
   ++minimizerRecasts;
 
   // initialize_scaling function needs to modify the iteratedModel
@@ -1085,21 +1096,6 @@ variables_scaler(const Variables& scaled_vars, Variables& native_vars)
     minimizerInstance->cvScaleMultipliers, minimizerInstance->cvScaleOffsets));
 }
 
-
-/** For Gauss-Newton Hessian requests, activate the 2 bit and mask the 4 bit. */
-void Minimizer::
-gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
-		   ActiveSet& sub_model_set)
-{
-  // AUGMENT standard mappings in RecastModel::set_mapping()
-  const ShortArray& sub_model_asv = sub_model_set.request_vector();
-  size_t i, num_sm_fns = sub_model_asv.size();
-  for (i=0; i<num_sm_fns; ++i)
-    if (sub_model_asv[i] & 4) { // add 2 bit and remove 4 bit
-      short sm_asv_val = ( (sub_model_asv[i] | 2) & 3);
-      sub_model_set.request_value(sm_asv_val, i);
-    }
-}
 
 void Minimizer::
 replicate_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,

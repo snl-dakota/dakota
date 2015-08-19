@@ -236,20 +236,20 @@ void SharedResponseData::reshape(size_t num_fns)
 {
   if (num_functions() != num_fns) {
     // separate sharing if needed
-    //    if (srdRep->referenceCount > 1) { // shared rep: separate
-
+    //if (srdRep->referenceCount > 1) { // shared rep: separate
 #ifdef REFCOUNT_DEBUG
-    Cout << "SharedResponseData::reshape() called.\n";
-    Cout << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
+    Cout << "SharedResponseData::reshape() called.\n"
+	 << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
 #endif
-      boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
-      srdRep.reset(new SharedResponseDataRep()); // create new srdRep
-      srdRep->copy_rep(old_rep.get());            // copy old data to new
+    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    srdRep.reset(new SharedResponseDataRep()); // create new srdRep
+    srdRep->copy_rep(old_rep.get());           // copy old data to new
 #ifdef REFCOUNT_DEBUG
     Cout << "  srdRep use_count after  = " << srdRep.use_count() << '\n'
 	 << "  old_rep use_count after = " << old_rep.use_count() << std::endl;
 #endif
-      //    }
+    //}
+
     // reshape function labels
     srdRep->functionLabels.resize(num_fns);
     build_labels(srdRep->functionLabels, "f");

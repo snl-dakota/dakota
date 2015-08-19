@@ -109,7 +109,7 @@ LeastSq::LeastSq(unsigned short method_name, Model& model):
 }
 
 
-/** Setup Recast for weighting model the weighting transformation
+/** Setup Recast for weighting model.  The weighting transformation
     doesn't resize, so use numUserPrimaryFns.  No vars, active set or
     secondary mapping.  All indices are one-to-one mapped (no change
     in counts). */
@@ -155,13 +155,18 @@ void LeastSq::weight_model()
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  const Response& curr_resp = iteratedModel.current_response();
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   iteratedModel.assign_rep(new
     RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
 		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
 		set_recast, primary_resp_map_indices,
 		secondary_resp_map_indices, recast_secondary_offset,
-		nonlinear_resp_map, pri_resp_recast, sec_resp_recast), false);
+		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
+		sec_resp_recast), false);
   ++minimizerRecasts;
 
   // This transformation consumes weights, so the resulting wrapped

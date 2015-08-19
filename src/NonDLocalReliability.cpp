@@ -167,6 +167,35 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       mppSearchType >= AMV_PLUS_X && mppSearchType < NO_APPROX) // approx-based
     maxIterations = 25;
 
+  // Map integration specification into integrationOrder.  Second-order
+  // integration requires an MPP search in u-space, and is not warranted for
+  // unconverged MPP's (AMV variants).  In addition, AMV variants only compute
+  // verification function values at u* (no Hessians).  For an AMV-like
+  // approach with 2nd-order integration, use AMV+ with max_iterations = 1.
+  const String& integration_method
+    = probDescDB.get_string("method.nond.reliability_integration");
+  if (integration_method.empty() || integration_method == "first_order")
+    integrationOrder = 1;
+  else if (integration_method == "second_order") {
+    if (hess_type == "none") {
+      Cerr << "\nError: second-order integration requires Hessian "
+	   << "specification." << std::endl;
+      abort_handler(-1);
+    }
+    else if (mppSearchType <= AMV_U) {
+      Cerr << "\nError: second-order integration only supported for fully "
+	   << "converged MPP methods." << std::endl;
+      abort_handler(-1);
+    }
+    else
+      integrationOrder = 2;
+  }
+  else {
+    Cerr << "Error: bad integration selection in NonDLocalReliability."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
   // The model of the limit state in u-space (uSpaceModel) is constructed here
   // one time.  The RecastModel for the RIA/PMA formulations varies with the
   // level requests and is constructed for each level within mpp_search().
@@ -178,6 +207,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   // prior to the u'u = beta^2 constraint enforcement bringing it back.  A
   // large excursion can cause overflow; a medium excursion can cause poor 
   // performance since far-field info is introduced into the BFGS Hessian.
+  short recast_resp_order = 3; // grad-based quasi-Newton opt on mppModel
   if (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
       mppSearchType == TANA_X) { // Recast( DataFit( iteratedModel ) )
 
@@ -224,9 +254,19 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
       outputLevel, sample_reuse), false);
   }
-  else if (mppSearchType == NO_APPROX) // Recast( iteratedModel )
+  else if (mppSearchType == NO_APPROX) { // Recast( iteratedModel )
     // Recast g(x) to G(u)
     transform_model(iteratedModel, uSpaceModel, true); // globally bounded
+    // detect PMA2 condition and augment mppModel data requirements
+    bool pma2_flag = false;
+    if (integrationOrder == 2)
+      for (size_t i=0; i<numFunctions; ++i)
+	if (!requestedProbLevels[i].empty() ||
+	    !requestedGenRelLevels[i].empty())
+	  { pma2_flag = true; break; }
+    if (pma2_flag) // mirrors PMA2_set_mapping()
+      recast_resp_order |= 4;
+  }
 
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
@@ -234,8 +274,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     SizetArray recast_vars_comps_total;  // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     mppModel.assign_rep(
-      new RecastModel(uSpaceModel, recast_vars_comps_total,
-		      all_relax_di, all_relax_dr, 1, 1, 0), false);
+      new RecastModel(uSpaceModel, recast_vars_comps_total, all_relax_di,
+		      all_relax_dr, 1, 1, 0, recast_resp_order), false);
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 
@@ -279,37 +319,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 #endif
   }
 
-  // Map integration specification into integrationOrder.  Second-order
-  // integration requires an MPP search in u-space, and is not warranted for
-  // unconverged MPP's (AMV variants).  In addition, AMV variants only compute
-  // verification function values at u* (no Hessians).  For an AMV-like
-  // approach with 2nd-order integration, use AMV+ with max_iterations = 1.
-  const String& integration_method
-    = probDescDB.get_string("method.nond.reliability_integration");
-  if (integration_method.empty() || integration_method == "first_order")
-    integrationOrder = 1;
-  else if (integration_method == "second_order") {
-    if (hess_type == "none") {
-      Cerr << "\nError: second-order integration requires Hessian "
-	   << "specification." << std::endl;
-      abort_handler(-1);
-    }
-    else if (mppSearchType <= AMV_U) {
-      Cerr << "\nError: second-order integration only supported for fully "
-	   << "converged MPP methods." << std::endl;
-      abort_handler(-1);
-    }
-    else
-      integrationOrder = 2;
-  }
-  else {
-    Cerr << "Error: bad integration selection in NonDLocalReliability."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
   if (integrationRefinement) {
-    for (size_t i=0; i<numFunctions; i++)
+    for (size_t i=0; i<numFunctions; i++) // TO DO: too restrictive (mixed levs)
       if (!requestedProbLevels[i].empty() || !requestedRelLevels[i].empty() ||
 	  !requestedGenRelLevels[i].empty()) {
 	Cerr << "\nError: importance sampling methods only supported for RIA."

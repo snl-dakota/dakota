@@ -367,6 +367,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     // with print_results().  Since starting point of MCMC chain is included
     // in bestSamples and we would want to include any possible enhancements
     // (not likely, but possible), rely on existing bestSamples tracking.
+    //negLogPostModel.print_evaluation_summary(Cout);
     //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
 
     // propagate map solution to paramInitials for starting point of MCMC chain.
@@ -958,18 +959,25 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
   case PCE_EMULATOR: {
     // normalized coeffs:
     const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(true);
-    size_t i, j, num_qoi = coeffs.size(), num_coeffs_i;
+    size_t i, j, num_qoi = coeffs.size(),
+      num_curr_coeffs, num_prev_coeffs, num_coeffs;
 
-    // This approach requires an unchanged multiIndex, which is acceptable 
-    // for regression PCE using a fixed (candidate) expansion definition.
-    // Sparsity is not a concern as returned coeffs are inflated to be
-    // dense with respect to SharedOrthogPolyApproxData::multiIndex.
+    // This approach assumes a well-ordered progression in multiIndex, which is
+    // acceptable for regression PCE using consistently incremented (candidate)
+    // expansion definitions.  Sparsity is not a concern as returned coeffs are
+    // inflated to be dense w.r.t. SharedOrthogPolyApproxData::multiIndex.
+    // Could implement as resize (inflat smaller w/ 0's) + vector difference +
+    // Frobenious norm, but current approach should have lower overhead.
     for (i=0; i<num_qoi; ++i) {
       const RealVector&      coeffs_i =     coeffs[i];
       const RealVector& prev_coeffs_i = prevCoeffs[i];
-      num_coeffs_i = coeffs_i.length();
-      for (j=0; j<num_coeffs_i; ++j) {
-	delta_coeff_ij = coeffs_i[j] - prev_coeffs_i[j];
+      num_curr_coeffs = coeffs_i.length();
+      num_prev_coeffs = prev_coeffs_i.length();
+      num_coeffs = std::max(num_curr_coeffs, num_prev_coeffs);
+      for (j=0; j<num_coeffs; ++j) {
+	delta_coeff_ij = 0.;
+	if (j<num_curr_coeffs) delta_coeff_ij += coeffs_i[j];
+	if (j<num_prev_coeffs) delta_coeff_ij -= prev_coeffs_i[j];
 	l2_norm_delta_coeffs += delta_coeff_ij * delta_coeff_ij;
       }
     }

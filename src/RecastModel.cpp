@@ -42,7 +42,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 					ActiveSet& sub_model_set),
 	    const Sizet2DArray& primary_resp_map_indices,
 	    const Sizet2DArray& secondary_resp_map_indices,
-	    size_t recast_secondary_offset,
+	    size_t recast_secondary_offset, short recast_resp_order,
 	    const BoolDequeArray& nonlinear_resp_mapping,
 	    void (*primary_resp_map)   (const Variables& sub_model_vars,
 					const Variables& recast_vars,
@@ -102,7 +102,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();
 
-  respMapping = (primaryRespMapping || secondaryRespMapping) ? true : false;
+  respMapping = (primaryRespMapping || secondaryRespMapping);
   size_t num_recast_primary_fns = primaryRespMapIndices.size(),
     num_recast_secondary_fns = secondaryRespMapIndices.size(),
     num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
@@ -116,10 +116,14 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   currentResponse = sub_model_resp.copy();
   if (respMapping) {
     numFns = num_recast_fns;
-    if (subModel.num_functions() != numFns)
-      currentResponse.reshape(numFns, numDerivVars,
-			      !sub_model_resp.function_gradients().empty(),
-			      !sub_model_resp.function_hessians().empty());
+    bool grad_flag = (recast_resp_order & 2),
+         hess_flag = (recast_resp_order & 4),
+         sm_grad_flag = !sub_model_resp.function_gradients().empty(),
+         sm_hess_flag = !sub_model_resp.function_hessians().empty();
+    if ( sub_model_vars.cv()            != numDerivVars ||
+	 sub_model_resp.num_functions() != numFns       ||
+	 grad_flag != sm_grad_flag || hess_flag != sm_hess_flag )
+      currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
   }
   else
     numFns = currentResponse.num_functions();
@@ -156,7 +160,8 @@ RecastModel::
 RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	    const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	    size_t num_recast_secondary_fns, size_t recast_secondary_offset):
+	    size_t num_recast_secondary_fns, size_t recast_secondary_offset,
+	    short recast_resp_order):
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
   subModel(sub_model), nonlinearVarsMapping(false), respMapping(false),
@@ -207,10 +212,13 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   const Response& sub_model_resp = subModel.current_response();
   currentResponse = sub_model_resp.copy();
   numFns = num_recast_primary_fns + num_recast_secondary_fns;
-  if (subModel.num_functions() != numFns)
-    currentResponse.reshape(numFns, numDerivVars,
-			    !sub_model_resp.function_gradients().empty(),
-			    !sub_model_resp.function_hessians().empty());
+  bool grad_flag = (recast_resp_order & 2), hess_flag = (recast_resp_order & 4),
+       sm_grad_flag = !sub_model_resp.function_gradients().empty(),
+       sm_hess_flag = !sub_model_resp.function_hessians().empty();
+  if ( sub_model_vars.cv()            != numDerivVars ||
+       sub_model_resp.num_functions() != numFns       ||
+       sm_grad_flag != grad_flag || sm_hess_flag != hess_flag )
+    currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
 
   // recasting of constraints
   const Constraints& sub_model_cons = subModel.user_defined_constraints();
@@ -261,7 +269,7 @@ initialize(const Sizet2DArray& vars_map_indices,
   primaryRespMapping      = primary_resp_map;
   secondaryRespMapping    = secondary_resp_map;
 
-  respMapping = (primaryRespMapping || secondaryRespMapping) ? true : false;
+  respMapping = (primaryRespMapping || secondaryRespMapping);
 
   if (nonlinearRespMapping.size() != primaryRespMapIndices.size() +
       secondaryRespMapIndices.size()) {

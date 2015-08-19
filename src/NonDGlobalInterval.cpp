@@ -156,9 +156,10 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
   // each level within the run fn.
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  short recast_resp_order = 1; // nongradient-based optimizers
   intervalOptModel.assign_rep(
-    new RecastModel(fHatModel, recast_vars_comps_total,
-		    all_relax_di, all_relax_dr, 1, 0, 0), false);
+    new RecastModel(fHatModel, recast_vars_comps_total, all_relax_di,
+		    all_relax_dr, 1, 0, 0, recast_resp_order), false);
 
   // Instantiate the optimizer used on the GP.
   // TO DO: add support for discrete EGO

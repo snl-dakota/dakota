@@ -708,13 +708,17 @@ void EfficientSubspaceMethod::reduced_space_uq()
   SizetArray recast_vars_comps_total(16, 0);
   recast_vars_comps_total[TOTAL_CAUV] = reducedRank;
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  const Response& curr_resp = iteratedModel.current_response();
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   vars_transform_model.assign_rep(
     new RecastModel(iteratedModel, vars_map_indices, recast_vars_comps_total,
 		    all_relax_di, all_relax_dr, nonlinear_vars_map, map_xi_to_x,
 		    NULL, primary_resp_map_indices,  secondary_resp_map_indices,
-		    recast_secondary_offset, nonlinear_resp_map, NULL, NULL), 
-    false);
+		    recast_secondary_offset, recast_resp_order,
+		    nonlinear_resp_map, NULL, NULL), false);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   vars_transform_model.init_communicators(pl_iter, subspaceSamples);

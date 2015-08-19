@@ -52,7 +52,7 @@ public:
 					  ActiveSet& sub_model_set),
 	      const Sizet2DArray& primary_resp_map_indices,
 	      const Sizet2DArray& secondary_resp_map_indices,
-	      size_t recast_secondary_offset,
+	      size_t recast_secondary_offset, short recast_resp_order,
 	      const BoolDequeArray& nonlinear_resp_mapping,
 	      void (*primary_resp_map)   (const Variables& sub_model_vars,
 					  const Variables& recast_vars,
@@ -66,7 +66,8 @@ public:
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	      size_t num_recast_secondary_fns, size_t recast_secondary_offset);
+	      size_t num_recast_secondary_fns, size_t recast_secondary_offset,
+	      short recast_resp_order);
 
   /// destructor
   ~RecastModel();

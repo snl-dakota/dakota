@@ -1347,6 +1347,22 @@ const VariablesArray& Iterator::initial_points() const
 }
 
 
+/** For Gauss-Newton Hessian requests, activate the 2 bit and mask the 4 bit. */
+void Iterator::
+gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
+		   ActiveSet& sub_model_set)
+{
+  // AUGMENT standard mappings in RecastModel::set_mapping()
+  const ShortArray& sub_model_asv = sub_model_set.request_vector();
+  size_t i, num_sm_fns = sub_model_asv.size();
+  for (i=0; i<num_sm_fns; ++i)
+    if (sub_model_asv[i] & 4) { // add 2 bit and remove 4 bit
+      short sm_asv_val = ( (sub_model_asv[i] | 2) & 3);
+      sub_model_set.request_value(sm_asv_val, i);
+    }
+}
+
+
 /** This is a convenience function for encapsulating graphics
     initialization operations. It is overridden by derived classes
     that specialize the graphics display. */
