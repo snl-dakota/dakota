@@ -232,11 +232,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       pre_solve = false;
 #endif
       break;
-    case SUBMETHOD_DEFAULT: // use NPSOL, if available
-#ifdef HAVE_NPSOL
-      opt_algorithm = SUBMETHOD_SQP;
-#elif HAVE_OPTPP
+    case SUBMETHOD_DEFAULT: // use full Newton, if available
+#ifdef HAVE_OPTPP
       opt_algorithm = SUBMETHOD_NIP;
+#elif HAVE_NPSOL
+      opt_algorithm = SUBMETHOD_SQP;
 #else
       Cerr << "\nWarning: this executable not configured with NPSOL or OPT++."
 	   << "\n         MAP pre-solve not available." << std::endl;
