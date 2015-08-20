@@ -1778,6 +1778,12 @@
                           <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
                         </oneOf>
                       </keyword>
+                      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve" help="" minOccurs="0" default="nip pre-solve for emulators" >
+                        <oneOf>
+                          <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
+                          <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+                        </oneOf>
+                      </keyword>
                       <keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
 			<oneOf>
 			  <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
@@ -2015,8 +2021,8 @@
               <alias name="nond_local_evidence"/>
               <optional>
                 <oneOf>
-                  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
-                  <keyword  id="nip" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+                  <keyword  id="sqp2" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
+                  <keyword  id="nip1" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
                 </oneOf>
               </optional>
               <keyword  id="response_levels6" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
@@ -2060,8 +2066,8 @@
               <alias name="nond_local_interval_est"/>
               <optional>
                 <oneOf>
-                  <keyword  id="sqp2" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
-                  <keyword  id="nip1" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+                  <keyword  id="sqp3" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
+                  <keyword  id="nip2" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
                 </oneOf>
               </optional>
             </keyword>
@@ -2081,8 +2087,8 @@
                     </oneOf>
                     <optional>
                       <oneOf>
-                        <keyword  id="sqp3" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help="" default="sqp" />
-                        <keyword  id="nip2" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help="" default="sqp" />
+                        <keyword  id="sqp4" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help="" default="sqp" />
+                        <keyword  id="nip3" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help="" default="sqp" />
                       </oneOf>
                     </optional>
                     <keyword  id="integration" name="integration" code="{0}" label="Integration method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="First-order integration" >

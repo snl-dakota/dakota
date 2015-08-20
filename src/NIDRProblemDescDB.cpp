@@ -6469,8 +6469,8 @@ static Method_mp_lit
 	MP2(crossoverType,uniform),
         MP2(dataDistCovInputType,diagonal),
         MP2(dataDistCovInputType,matrix),
-//      MP2(dataDistType,gaussian),
-//MP2(dataDistType,user),
+      //MP2(dataDistType,gaussian),
+      //MP2(dataDistType,user),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
 	MP2(expansionSampleType,incremental_lhs),
@@ -6632,7 +6632,7 @@ static RealVectorArray
 
 static unsigned short
 	MP_(adaptedBasisAdvancements),
-//	MP_(adaptedBasisInitLevel),
+      //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
 	MP_(softConvLimit),
 	MP_(vbdOrder);
@@ -6903,7 +6903,9 @@ static Method_mp_utype
 	MP2s(methodName,LIST_PARAMETER_STUDY),
 	MP2s(methodName,CENTERED_PARAMETER_STUDY),
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
-        MP2s(pstudyFileFormat,TABULAR_NONE),
+	MP2s(preSolveMethod,SUBMETHOD_NIP),
+	MP2s(preSolveMethod,SUBMETHOD_SQP),
+	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),
         MP2s(pstudyFileFormat,TABULAR_EVAL_ID),
         MP2s(pstudyFileFormat,TABULAR_IFACE_ID),

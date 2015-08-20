@@ -198,12 +198,15 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) transform_model(iteratedModel, mcmcModel);// !global
     else                   mcmcModel = iteratedModel; // shared rep
-    //if () mcmc_deriv_order |= 2;
-    //if () mcmc_deriv_order |= 4;
+
+    if (mcmcModel.gradient_type() != "none") mcmc_deriv_order |= 2;
+    if (mcmcModel.hessian_type()  != "none") mcmc_deriv_order |= 4;
     break;
   }
 
-  if (emulatorType) {
+  unsigned short opt_alg_override
+    = probDescDB.get_ushort("method.nond.pre_solve_method");
+  if (emulatorType || opt_alg_override) {
 
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
       secondary_resp_map_indices;
@@ -215,32 +218,29 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     SizetArray recast_vc_totals;  // empty: no change in size
     BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
 
-    unsigned short opt_algorithm = SUBMETHOD_DEFAULT;//probDescDB.get_ushort("method.bayes_calibration.map_optimizer"); // method.sub_method already used
-    bool pre_solve = true;
-    switch (opt_algorithm) {
+    switch (opt_alg_override) {
     case SUBMETHOD_SQP:
 #ifndef HAVE_NPSOL
       Cerr << "\nWarning: this executable not configured with NPSOL SQP."
 	   << "\n         MAP pre-solve not available." << std::endl;
-      pre_solve = false;
+      opt_alg_override = SUBMETHOD_DEFAULT; // model,optimizer not constructed
 #endif
       break;
     case SUBMETHOD_NIP:
 #ifndef HAVE_OPTPP
       Cerr << "\nWarning: this executable not configured with OPT++ NIP."
 	   << "\n         MAP pre-solve not available." << std::endl;
-      pre_solve = false;
+      opt_alg_override = SUBMETHOD_DEFAULT; // model,optimizer not constructed
 #endif
       break;
     case SUBMETHOD_DEFAULT: // use full Newton, if available
 #ifdef HAVE_OPTPP
-      opt_algorithm = SUBMETHOD_NIP;
+      opt_alg_override = SUBMETHOD_NIP;
 #elif HAVE_NPSOL
-      opt_algorithm = SUBMETHOD_SQP;
+      opt_alg_override = SUBMETHOD_SQP;
 #else
       Cerr << "\nWarning: this executable not configured with NPSOL or OPT++."
 	   << "\n         MAP pre-solve not available." << std::endl;
-      pre_solve = false;
 #endif
       break;
     }
@@ -249,20 +249,21 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // (avoids error in unsupported Hessian requests in Model::manage_asv())
     short nlp_resp_order = 3; // quasi-Newton optimization
     void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
-    if (opt_algorithm == SUBMETHOD_NIP) {
+    if (opt_alg_override == SUBMETHOD_NIP) {
       nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
       if (mcmc_deriv_order == 3) // map asrv for Gauss-Newton approx
 	set_recast = gnewton_set_recast;
     }
 
     // RecastModel for bound-constrained argmin(misfit - log prior)
-    negLogPostModel.assign_rep(new RecastModel(mcmcModel, vars_map_indices, 
-      recast_vc_totals, all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-      set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
-      nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, NULL),
-      false);
+    if (opt_alg_override)
+      negLogPostModel.assign_rep(new RecastModel(mcmcModel, vars_map_indices, 
+        recast_vc_totals, all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+        set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
+        nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, NULL),
+        false);
 
-    switch (opt_algorithm) {
+    switch (opt_alg_override) {
 #ifdef HAVE_NPSOL
     case SUBMETHOD_SQP: {
       int npsol_deriv_level = 3;

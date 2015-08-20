@@ -134,7 +134,8 @@ enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
 // NonDBayesCalibration
 // --------------------
 // define special values for emulatorType
-enum { NO_EMULATOR, PCE_EMULATOR, SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR, VPS_EMULATOR };
+enum { NO_EMULATOR, PCE_EMULATOR, SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR,
+       VPS_EMULATOR };
 
 // ------------
 // NonDSampling
@@ -919,6 +920,8 @@ public:
   bool adaptPosteriorRefine;
   /// flag indicating user activation of logit transform option within QUESO
   bool logitTransform;
+  /// the method used for performing a pre-solve for the MAP point
+  unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
   /// number of updates of the proposal covariance from computing the

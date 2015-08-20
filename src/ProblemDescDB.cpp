@@ -2731,6 +2731,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.cubature_integrand", P cubIntOrder},
 	{"nond.integration_refinement", P integrationRefine},
+	{"nond.pre_solve_method", P preSolveMethod},
 	{"nond.reliability_search_type", P reliabilitySearchType},
 	{"nond.vbd_interaction_order", P vbdOrder},
 	{"pstudy.file_format", P pstudyFileFormat},

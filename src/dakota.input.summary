@@ -1460,6 +1460,10 @@ KEYWORD12 method
 	      mt19937
 	      | rnum2
 	      ]
+	    [ pre_solve
+	      sqp
+	      | nip
+	      ]
 	    [ proposal_covariance
 	      ( derivatives
 		[ proposal_updates INTEGER ]
@@ -1511,6 +1515,10 @@ KEYWORD12 method
 	    [ rng
 	      mt19937
 	      | rnum2
+	      ]
+	    [ pre_solve
+	      sqp
+	      | nip
 	      ]
 	    [ proposal_covariance
 	      ( derivatives
