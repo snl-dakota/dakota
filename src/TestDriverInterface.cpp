@@ -17,6 +17,13 @@
 #ifdef DAKOTA_MODELCENTER
 #include "PHXCppApi.h"
 #endif
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/assign.hpp>
+#include <vector>
+#include "Teuchos_SerialDenseHelpers.hpp"
 
 namespace Dakota {
 
@@ -79,6 +86,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["modelcenter"]            = MODELCENTER;
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
+  driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
 
   // convert strings to enums for analysisDriverTypes, iFilterType, oFilterType
   analysisDriverTypes.resize(numAnalysisDrivers);
@@ -118,7 +126,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   else
     oFilterType = sd_iter->second;
 
-  // define localDataView from analysisDriverTypes, 
+  // define localDataView from analysisDriverTypes,
   // overriding any base class constructor setting
   localDataView = 0;
   for (size_t i=0; i<numAnalysisDrivers; ++i)
@@ -142,6 +150,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
+    case ANISOTROPIC_QUADRATIC_FORM:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -291,6 +300,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = genz(); break;
   case DAMPED_OSCILLATOR:
     fail_code = damped_oscillator(); break;
+  case ANISOTROPIC_QUADRATIC_FORM:
+    fail_code = aniso_quad_form(); break;
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
@@ -681,7 +692,7 @@ int TestDriverInterface::cyl_head()
   Real exhaust_offset = 1.34;
   Real exhaust_dia    = 1.556;
   Real intake_offset  = 3.25;
-  // Use nondimensional xC[1]: 
+  // Use nondimensional xC[1]:
   // (0. <= nondimensional <= 4.), (0. in <= dimensional <= 0.004 in)
   Real warranty       = 100000. + 15000. * (4. - xC[1]);
   Real cycle_time     = 45. + 4.5*std::pow(4. - xC[1], 1.5);
@@ -1122,7 +1133,7 @@ int TestDriverInterface::mf_rosenbrock()
   switch (xDIM[VAR_MForm]) {
   case 1:    rosenbrock(); break;
   case 2: lf_rosenbrock(); break;
-  default:       return 1; break; 
+  default:       return 1; break;
   }
 
   return 0; // no failure
@@ -1163,14 +1174,14 @@ int TestDriverInterface::lf_poly_prod()
     fnGrads[0][1] = -0.5;
   }
 
-  if (directFnASV[0] & 4) 
+  if (directFnASV[0] & 4)
     fnHessians[0](0,0) = 2.0;
-  
+
   return 0;
 }
 
 /// modified lo-fi Rosenbrock to test SBO with hierarchical approximations
-int TestDriverInterface::poly_prod() 
+int TestDriverInterface::poly_prod()
 {
   if (multiProcAnalysisFlag) {
     Cerr << "Error: poly_prod direct fn does not yet support multiprocessor "
@@ -1200,7 +1211,7 @@ int TestDriverInterface::poly_prod()
   double x0_sq = xC[0]*xC[0], x1_sq = xC[1]*xC[1];
   double t2 = x0_sq - 0.5*xC[1];
   double t1 = xC[0] + x1_sq/2.;
-  
+
   if (directFnASV[0] & 1)
     fnVals[0] = t1*t2;
 
@@ -1239,7 +1250,7 @@ int TestDriverInterface::gerstner()
   }
 
   const Real& x = xC[0]; const Real& y = xC[1];
-  String an_comp = (!analysisComponents.empty() && 
+  String an_comp = (!analysisComponents.empty() &&
 		    !analysisComponents[analysisDriverIndex].empty()) ?
     analysisComponents[analysisDriverIndex][0] : "iso1";
   short test_fn; Real x_coeff, y_coeff, xy_coeff;
@@ -1318,7 +1329,7 @@ int TestDriverInterface::scalable_gerstner()
     abort_handler(INTERFACE_ERROR);
   }
 
-  String an_comp = (!analysisComponents.empty() && 
+  String an_comp = (!analysisComponents.empty() &&
 		    !analysisComponents[analysisDriverIndex].empty()) ?
     analysisComponents[analysisDriverIndex][0] : "iso1";
   short test_fn; Real even_coeff, odd_coeff, inter_coeff;
@@ -1378,10 +1389,10 @@ int TestDriverInterface::scalable_gerstner()
     case 2:
       for (size_t i=0; i<numVars; ++i)
 	{
-	  if (i%2) 
+	  if (i%2)
 	    fnGrads[0][i] = odd_coeff*std::exp(xC[i])
 	      + inter_coeff*xC[i-1]*std::exp(xC[i]*xC[i-1]);
-	  else 
+	  else
 	    {
 	      fnGrads[0][i] = even_coeff*std::exp(xC[i]);
 	      if ( i+1 < numVars )
@@ -1410,7 +1421,7 @@ int TestDriverInterface::scalable_gerstner()
 
 
 void TestDriverInterface::
-get_genz_coefficients( int num_dims, Real factor, int c_type, 
+get_genz_coefficients( int num_dims, Real factor, int c_type,
 		       RealVector &c, RealVector &w )
 {
   c.resize( num_dims );
@@ -1424,7 +1435,7 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
 	  {
 	    w[d] = 0.0;
 	    c[d] = ( (Real)d + 0.5 ) / (Real)num_dims;
-	    csum += c[d]; 
+	    csum += c[d];
 	  }
 	for ( int d = 0; d < num_dims; d++ )
 	  {
@@ -1439,7 +1450,7 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
 	  {
 	    w[d] = 0.0;
 	    c[d] = 1.0 / (Real)( ( d + 1 ) * ( d + 1 ) );
-	    csum += c[d]; 
+	    csum += c[d];
 	  }
 	for ( int d = 0; d < num_dims; d++ )
 	  {
@@ -1519,7 +1530,7 @@ int TestDriverInterface::genz()
     Cerr << "Error: analysis component specification required in genz "
 	 << "direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
-  } 
+  }
 
   RealVector c, w;
   get_genz_coefficients( numVars, factor, coeff_type, c, w );
@@ -1790,7 +1801,7 @@ int TestDriverInterface::lf_short_column()
   }
 
   short form = 2; // high fidelity case is form 1
-  if (!analysisComponents.empty() && 
+  if (!analysisComponents.empty() &&
       !analysisComponents[analysisDriverIndex].empty()) {
     const String& an_comp = analysisComponents[analysisDriverIndex][0];
     if (an_comp      == "lf1") form = 2;
@@ -2036,7 +2047,7 @@ int TestDriverInterface::steel_column_perf()
   // is rather defined as a fn(b, d, h).  Since dCost/dX|_{X=mean} is not the
   // same as dCost/dmean for non-normal X (jacobian_dX_dS is not 1), dCost/dX
   // may not be used and an optional interface must be defined for Cost.
-  
+
   // set effective length s based on assumed boundary conditions
   // actual length of the column is 7500 mm
   Real s = 7500;
@@ -2198,12 +2209,12 @@ int TestDriverInterface::sobol_rational()
     abort_handler(INTERFACE_ERROR);
   }
 
-  // f = (x2 + 0.5)^4 / (x1 + 0.5)^2 
+  // f = (x2 + 0.5)^4 / (x1 + 0.5)^2
   // See Storlie et al. SAND2008-6570
 
   const Real& x1 = xC[0]; const Real& x2 = xC[1];
 
-  // **** f: 
+  // **** f:
   if (directFnASV[0] & 1)
     fnVals[0] = std::pow((x2 + 0.5), 4.) / std::pow((x1 + 0.5), 2.);
 
@@ -2239,13 +2250,13 @@ int TestDriverInterface::sobol_g_function()
   // Sobol g-Function: see Storlie et al. SAND2008-6570
   int a[] = {0,1,2,4,8,99,99,99,99,99};
 
-  // **** f: 
+  // **** f:
   if (directFnASV[0] & 1) {
     fnVals[0] = 2.;
     for (int i=0; i<numVars; ++i)
-      fnVals[0] *= ( std::abs(4.*xC[i] - 2.) + a[i] ) / ( 1. + a[i] );	
+      fnVals[0] *= ( std::abs(4.*xC[i] - 2.) + a[i] ) / ( 1. + a[i] );
   }
-	
+
   // **** df/dx:
   if (directFnASV[0] & 2) {
     for (size_t i=0; i<numDerivVars; ++i) {
@@ -2288,7 +2299,7 @@ int TestDriverInterface::sobol_ishigami()
   const Real pi = 3.14159265358979324;
   Real x1 = xCM[VAR_x1], x2 = xCM[VAR_x2], x3 = xCM[VAR_x3];
 
-  // **** f: 
+  // **** f:
   if (directFnASV[0] & 1)
     fnVals[0] = ( 1. + 0.1 * pow(2.*pi*x3 - pi, 4.0) ) *
       sin(2.*pi*x1 - pi) + 7. * pow(sin(2*pi*x2 - pi), 2.0);
@@ -2358,7 +2369,7 @@ int TestDriverInterface::text_book1()
   if (directFnASV[0] & 1) {
     Real local_val = 0.0;
     for (i=analysisCommRank; i<numVars; i+=analysisCommSize) {
-      // orders all continuous vars followed by all discrete vars.  This is 
+      // orders all continuous vars followed by all discrete vars.  This is
       // fine in the direct case so long as everything is self-consistent.
       Real x_i;
       if (i<numACV)
@@ -2383,8 +2394,8 @@ int TestDriverInterface::text_book1()
       Real global_val = 0.0;
       parallelLib.reduce_sum_a(&local_val, &global_val, 1);
       // only analysisCommRank 0 has the correct sum.  This is OK (MPI_Allreduce
-      // not needed) since only analysisCommRank 0 updates response for 
-      // evalCommRank 0 in overlay_response.  evalCommRank 0 then returns the 
+      // not needed) since only analysisCommRank 0 updates response for
+      // evalCommRank 0 in overlay_response.  evalCommRank 0 then returns the
       // results to the iterator in ApplicationInterface::serve_evaluations().
       if (analysisCommRank == 0)
 	fnVals[0] = global_val;
@@ -2413,7 +2424,7 @@ int TestDriverInterface::text_book1()
 
     if (multiProcAnalysisFlag) {
       Real* sum_fns = (analysisCommRank) ? NULL : new Real [numDerivVars];
-      parallelLib.reduce_sum_a((Real*)fnGrads[0], sum_fns, 
+      parallelLib.reduce_sum_a((Real*)fnGrads[0], sum_fns,
 			       numDerivVars);
       if (analysisCommRank == 0) {
 	RealVector fn_grad_col_vec = Teuchos::getCol(Teuchos::View, fnGrads, 0);
@@ -2473,7 +2484,7 @@ int TestDriverInterface::text_book2()
     // Definitely not the most efficient way to do this, but the point is to
     // demonstrate Comm communication.
     for (i=analysisCommRank; i<numVars; i+=analysisCommSize) {
-      // orders all continuous vars followed by all discrete vars.  This is 
+      // orders all continuous vars followed by all discrete vars.  This is
       // fine in the direct case so long as everything is self-consistent.
       Real x_i;
       if (i<numACV)
@@ -2497,8 +2508,8 @@ int TestDriverInterface::text_book2()
       Real global_val = 0.0;
       parallelLib.reduce_sum_a(&local_val, &global_val, 1);
       // only analysisCommRank 0 has the correct sum.  This is OK (MPI_Allreduce
-      // not needed) since only analysisCommRank 0 updates response for 
-      // evalCommRank 0 in overlay_response.  evalCommRank 0 then returns the 
+      // not needed) since only analysisCommRank 0 updates response for
+      // evalCommRank 0 in overlay_response.  evalCommRank 0 then returns the
       // results to the iterator in ApplicationInterface::serve_evaluations().
       if (analysisCommRank == 0)
 	fnVals[1] = global_val;
@@ -2531,7 +2542,7 @@ int TestDriverInterface::text_book2()
 
     if (multiProcAnalysisFlag) {
       Real* sum_fns = (analysisCommRank) ? NULL : new Real [numDerivVars];
-      parallelLib.reduce_sum_a((Real*)fnGrads[1], sum_fns, 
+      parallelLib.reduce_sum_a((Real*)fnGrads[1], sum_fns,
 			       numDerivVars);
       if (analysisCommRank == 0) {
 	RealVector fn_grad_col_vec = Teuchos::getCol(Teuchos::View, fnGrads, 1);
@@ -2591,7 +2602,7 @@ int TestDriverInterface::text_book3()
     // Definitely not the most efficient way to do this, but the point is to
     // demonstrate Comm communication.
     for (i=analysisCommRank; i<numVars; i+=analysisCommSize) {
-      // orders all continuous vars followed by all discrete vars.  This is 
+      // orders all continuous vars followed by all discrete vars.  This is
       // fine in the direct case so long as everything is self-consistent.
       Real x_i;
       if (i<numACV)
@@ -2615,8 +2626,8 @@ int TestDriverInterface::text_book3()
       Real global_val = 0.0;
       parallelLib.reduce_sum_a(&local_val, &global_val, 1);
       // only analysisCommRank 0 has the correct sum.  This is OK (MPI_Allreduce
-      // not needed) since only analysisCommRank 0 updates response for 
-      // evalCommRank 0 in overlay_response.  evalCommRank 0 then returns the 
+      // not needed) since only analysisCommRank 0 updates response for
+      // evalCommRank 0 in overlay_response.  evalCommRank 0 then returns the
       // results to the iterator in ApplicationInterface::serve_evaluations().
       if (analysisCommRank == 0)
 	fnVals[2] = global_val;
@@ -2649,7 +2660,7 @@ int TestDriverInterface::text_book3()
 
     if (multiProcAnalysisFlag) {
       Real* sum_fns = (analysisCommRank) ? NULL : new Real [numDerivVars];
-      parallelLib.reduce_sum_a((Real*)fnGrads[2], sum_fns, 
+      parallelLib.reduce_sum_a((Real*)fnGrads[2], sum_fns,
 			       numDerivVars);
       if (analysisCommRank == 0) {
 	RealVector fn_grad_col_vec = Teuchos::getCol(Teuchos::View, fnGrads, 2);
@@ -2850,7 +2861,7 @@ int TestDriverInterface::scalable_text_book()
   // *********************
   // "symmetric" constraint pairs are defined from pairs of variables
   // (although odd constraint or variable counts are also allowable):
-  // for i=1:num_fns-1, c[i] = x[i-1]^2 - x[i]/2    for  odd i 
+  // for i=1:num_fns-1, c[i] = x[i-1]^2 - x[i]/2    for  odd i
   //                    c[i] = x[i-1]^2 - x[i-2]/2  for even i
   for (i=1; i<numFns; ++i) {
     // ************
@@ -2910,7 +2921,7 @@ int TestDriverInterface::scalable_monomials()
 
   // get power of monomial from analysis components, if available (default to 1)
   int power = 1;
-  if (!analysisComponents.empty() && 
+  if (!analysisComponents.empty() &&
       !analysisComponents[analysisDriverIndex].empty())
     power = std::atoi(analysisComponents[analysisDriverIndex][0].c_str());
 
@@ -2983,7 +2994,7 @@ int TestDriverInterface::mogatest1()
   double f0 = 0.0;
   double f1 = 0.0;
   for (size_t i=0; i<numVars; i++) {
-    // orders all continuous vars followed by all discrete vars.  This is 
+    // orders all continuous vars followed by all discrete vars.  This is
     // fine in the direct case so long as everything is self-consistent.
     Real x_i;
     if (i<numACV)
@@ -2995,7 +3006,7 @@ int TestDriverInterface::mogatest1()
 
     f0 = pow(x_i-(1/sqrt(3.0)),2) + f0;
     f1 = pow(x_i+(1/sqrt(3.0)),2) + f1;
-  }  
+  }
   f0 = 1-exp(-1*f0);
   f1 = 1-exp(-1*f1);
 
@@ -3102,13 +3113,13 @@ int TestDriverInterface::mogatest3()
     fnVals[2] = g0;
   if (directFnASV[3] & 1)
     fnVals[3] = g1;
-  if (directFnASV[0] & 2 || directFnASV[1] & 2 || 
+  if (directFnASV[0] & 2 || directFnASV[1] & 2 ||
       directFnASV[2] & 2 || directFnASV[3] & 2) {
     Cerr << "Error: Analytic gradients not supported in mogatest3."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (directFnASV[0] & 4 || directFnASV[1] & 4|| 
+  if (directFnASV[0] & 4 || directFnASV[1] & 4||
       directFnASV[2] & 4 || directFnASV[3] & 4) {
     Cerr << "Error: Analytic Hessians not supported in mogatest3."
 	 << std::endl;
@@ -3147,7 +3158,7 @@ int TestDriverInterface::illumination()
   }
 
   // compute function and gradient values
-  double A[11][7] ={ 
+  double A[11][7] ={
   { 0.347392, 0.205329, 0.191987, 0.077192, 0.004561, 0.024003, 0.000000},
   { 0.486058, 0.289069, 0.379202, 0.117711, 0.006667, 0.032256, 0.000000},
   { 0.752511, 0.611283, 2.417907, 0.701700, 0.473047, 0.285597, 0.319187},
@@ -3161,7 +3172,7 @@ int TestDriverInterface::illumination()
   { 0.000000, 0.050361, 0.000000, 0.212042, 0.434397, 0.286455, 0.462731} };
 
   // KRD found bugs in previous computation; this Hessian no longer used:
-  double harray[7][7] ={ 
+  double harray[7][7] ={
   { 1.929437, 1.572662, 6.294004, 1.852205, 1.222324, 0.692036, 0.768564},
   { 1.572662, 1.354287, 5.511537, 1.787932, 1.320048, 0.724301, 0.870382},
   { 6.294004, 5.511537, 25.064512, 7.358494, 5.133563, 2.791970, 3.257364},
@@ -3178,8 +3189,8 @@ int TestDriverInterface::illumination()
   // d^2U/(dx_I dx_J) = sum_{i=0:10){ 2.0 * A[i][I] * A[i][J] }
   //
   // f = sqrt(U)
-  // df/dx_I = 0.5*(dU/dx_I)/sqrt(U) 
-  //         = 0.5*(dU/dx_I)/f  
+  // df/dx_I = 0.5*(dU/dx_I)/sqrt(U)
+  //         = 0.5*(dU/dx_I)/f
   // d^2f/(dx_I dx_J)
   //   = -0.25 * U^(-1.5) * dU/dx_I * dU/dx_J + 0.5/sqrt(U) * d2U/(dx_I dx_J)
   //   = ( -df/dx_I * df/dx_J  + 0.5 * d2U/(dx_I dx_J) ) / f
@@ -3189,9 +3200,9 @@ int TestDriverInterface::illumination()
 
   size_t Ider, Jder;
   double grad[7];
-  for(Ider=0; Ider<num_vars; ++Ider) 
+  for(Ider=0; Ider<num_vars; ++Ider)
     grad[Ider] = 0.0;
-  
+
   // **** f: (f is required to calculate any derivative of f; perform always)
   double U = 0.0;
   for (size_t i=0; i<11; i++) {
@@ -3202,24 +3213,24 @@ int TestDriverInterface::illumination()
     U += dtmp*dtmp;
 
     // precompute grad(U) unconditionally as it might be needed (cheap)
-    for(Ider=0; Ider<num_vars; ++Ider) 
+    for(Ider=0; Ider<num_vars; ++Ider)
       grad[Ider] -= dtmp*2.0*A[i][Ider]; //this is grad(U)
   }
   double fx = sqrt(U);
   if (directFnASV[0] & 1)
     fnVals[0] = fx;
 
-  // **** df/dx: 
+  // **** df/dx:
   if (directFnASV[0] & 6) { // gradient required for itself and to calcuate the Hessian
-    for(Ider=0; Ider<num_vars; ++Ider) 
-      grad[Ider] *= (0.5/fx); // this is now updated to be grad(f) 
-    
+    for(Ider=0; Ider<num_vars; ++Ider)
+      grad[Ider] *= (0.5/fx); // this is now updated to be grad(f)
+
     if (directFnASV[0] & 2) { // if ASV demands gradient, print it
-      for (int Ider=0; Ider<num_vars; ++Ider) 
+      for (int Ider=0; Ider<num_vars; ++Ider)
 	fnGrads[0][Ider] = grad[Ider];
     }
   }
-  
+
   // **** the hessian ddf/dxIdxJ
   if (directFnASV[0] & 4) {
     for(Ider=0; Ider<num_vars; ++Ider) {
@@ -3244,7 +3255,7 @@ int TestDriverInterface::barnes()
       << "analyses." << std::endl;
     abort_handler(-1);
   }
-  
+
   if ( hessFlag ) {
     Cerr << "Error: barnes direct fn does not yet support analytic Hessians."
       << std::endl;
@@ -3381,7 +3392,7 @@ int TestDriverInterface::barnes_lf()
       << "analyses." << std::endl;
     abort_handler(-1);
   }
-  
+
   if ( hessFlag ) {
     Cerr << "Error: barnes_lf direct fn does not yet support analytic Hessians."
       << std::endl;
@@ -3405,7 +3416,7 @@ int TestDriverInterface::barnes_lf()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  
+
   // Verification test for SBO performance.
   // Taken from Rodriguez, Perez, Renaud, et al.
   // Constraints g >= 0.
@@ -3418,20 +3429,20 @@ int TestDriverInterface::barnes_lf()
   // Taylor series of Barnes function about the point (p1,p2)
   double p1  = 30.0;
   double p2  = 40.0;
-  double x1  = xC[0]-p1; 
+  double x1  = xC[0]-p1;
   double x12 = x1*x1;
   double x13 = x12*x1;
-  double x2  = xC[1]-p2; 
+  double x2  = xC[1]-p2;
   double x22 = x2*x2;
   double x23 = x22*x2;
-  
+
   // **** f
   if (directFnASV[0] & 1) {
-    fnVals[0] = 
+    fnVals[0] =
       - 2.74465943148169
       + 0.01213957527281*x1
-      + 0.00995748775273*x12 
-      - 5.557060816484793e-04*x13 
+      + 0.00995748775273*x12
+      - 5.557060816484793e-04*x13
       + (1.15084419109172+0.00947331101091*x1+2.994070392732408e-05*x12)*x2
       + (-0.02997939337414-1.676054720545071e-04*x1)*x22
       - 0.00132216646850*x23;
@@ -3465,13 +3476,13 @@ int TestDriverInterface::barnes_lf()
       int var_index = directFnDVV[i] - 1;
       switch (var_index) {
       case 0:
-	fnGrads[0][i] =    
-	  - 0.58530968989099+0.01991497550546*xC[0]-0.00166711824495*x12 
-	  + (0.00767686877527+ 5.988140785464816e-05*xC[0])*x2 
-	  - 1.676054720545071e-04*x22; 
+	fnGrads[0][i] =
+	  - 0.58530968989099+0.01991497550546*xC[0]-0.00166711824495*x12
+	  + (0.00767686877527+ 5.988140785464816e-05*xC[0])*x2
+	  - 1.676054720545071e-04*x22;
 	break;
       case 1:
-	fnGrads[0][i] =  
+	fnGrads[0][i] =
 	    0.86664486076442+0.00947331101091*xC[0]+2.994070392732408e-05*x12
 	  + 2*(-0.02495122921250-1.676054720545071e-04*xC[0])*x2
 	  - 0.00396649940550*x22;
@@ -3536,13 +3547,13 @@ void TestDriverInterface::
 herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
 {
   w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
-  
-  Real rtemp1=xc_loc-1.0; 
+
+  Real rtemp1=xc_loc-1.0;
   Real rtemp1_sq=rtemp1*rtemp1;
   Real rtemp2=xc_loc+1.0;
   Real rtemp2_sq=rtemp2*rtemp2;
   Real rtemp3=8.0*(xc_loc+0.1);
-  
+
   if(der_mode & 1) //1=2^0: the 0th derivative of the response (the response itself)
     w_and_ders[0]=
       std::exp(-rtemp1_sq)
@@ -3570,12 +3581,12 @@ void TestDriverInterface::
 smooth_herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
 {
   w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
-  
-  Real rtemp1=xc_loc-1.0; 
+
+  Real rtemp1=xc_loc-1.0;
   Real rtemp1_sq=rtemp1*rtemp1;
   Real rtemp2=xc_loc+1.0;
   Real rtemp2_sq=rtemp2*rtemp2;
-  
+
   if(der_mode & 1) //1=2^0: the 0th derivative of the response (the response itself)
     w_and_ders[0]=
       std::exp(-rtemp1_sq)
@@ -3600,14 +3611,14 @@ void TestDriverInterface::
 shubert1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
 {
   w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
-  
+
   size_t k;
   Real k_real;
-  
+
   if(der_mode & 1) {
     for (k=1; k<=5; ++k) {
       k_real=static_cast<Real>(k);
-      w_and_ders[0]+=k_real*std::cos(xc_loc*(k_real+1.0)+k_real);	
+      w_and_ders[0]+=k_real*std::cos(xc_loc*(k_real+1.0)+k_real);
     }
   }
   if(der_mode & 2) {
@@ -3633,7 +3644,7 @@ shubert1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
 int TestDriverInterface::herbie()
 {
   size_t i;
-  std::vector<size_t> der_mode(numVars); 
+  std::vector<size_t> der_mode(numVars);
   for (i=0; i<numVars; ++i)
     der_mode[i]=1;
   if(directFnASV[0] >= 2)
@@ -3646,14 +3657,14 @@ int TestDriverInterface::herbie()
   std::vector<Real> d1w(numVars);
   std::vector<Real> d2w(numVars);
   std::vector<Real> w_and_ders(3);
-  
+
   for(i=0; i<numVars; ++i) {
     herbie1D(der_mode[i],xC[i],w_and_ders);
-    w[i]  =w_and_ders[0];      
-    d1w[i]=w_and_ders[1];      
+    w[i]  =w_and_ders[0];
+    d1w[i]=w_and_ders[1];
     d2w[i]=w_and_ders[2];
-  }      
-  
+  }
+
   separable_combine(-1.0,w,d1w,d2w);
   return 0;
 }
@@ -3662,7 +3673,7 @@ int TestDriverInterface::herbie()
 int TestDriverInterface::smooth_herbie()
 {
   size_t i;
-  std::vector<size_t> der_mode(numVars); 
+  std::vector<size_t> der_mode(numVars);
   for (i=0; i<numVars; ++i)
     der_mode[i]=1;
   if(directFnASV[0] >= 2)
@@ -3675,14 +3686,14 @@ int TestDriverInterface::smooth_herbie()
   std::vector<Real> d1w(numVars);
   std::vector<Real> d2w(numVars);
   std::vector<Real> w_and_ders(3);
-  
+
   for(i=0; i<numVars; ++i) {
     smooth_herbie1D(der_mode[i], xC[i], w_and_ders);
-    w[i]  =w_and_ders[0];      
-    d1w[i]=w_and_ders[1];      
+    w[i]  =w_and_ders[0];
+    d1w[i]=w_and_ders[1];
     d2w[i]=w_and_ders[2];
-  }      
-  
+  }
+
   separable_combine(-1.0,w,d1w,d2w);
   return 0;
 }
@@ -3690,7 +3701,7 @@ int TestDriverInterface::smooth_herbie()
 int TestDriverInterface::shubert()
 {
   size_t i;
-  std::vector<size_t> der_mode(numVars); 
+  std::vector<size_t> der_mode(numVars);
   for (i=0; i<numVars; ++i)
     der_mode[i]=1;
   if(directFnASV[0] >= 2)
@@ -3703,14 +3714,14 @@ int TestDriverInterface::shubert()
   std::vector<Real> d1w(numVars);
   std::vector<Real> d2w(numVars);
   std::vector<Real> w_and_ders(3);
-  
+
   for(i=0; i<numVars; ++i) {
     shubert1D(der_mode[i],xC[i],w_and_ders);
-    w[i]  =w_and_ders[0];      
-    d1w[i]=w_and_ders[1];      
+    w[i]  =w_and_ders[0];
+    d1w[i]=w_and_ders[1];
     d2w[i]=w_and_ders[2];
-  }      
-  
+  }
+
   separable_combine(1.0,w,d1w,d2w);
   return 0;
 }
@@ -3724,10 +3735,10 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
   // **** of the response, and Hessian of the response in an  ****
   // **** identical fashion                                   ****
   // *************************************************************
-  
+
   Real local_val;
   size_t i, j, k, i_var_index, j_var_index;
-  
+
   // ****************************************
   // **** response                       ****
   // **** f=\prod_{i=1}^{numVars} w(x_i) ****
@@ -3738,7 +3749,7 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
       local_val*=w[i];
     fnVals[0]=local_val;
   }
-  
+
   // **************************************************
   // **** gradient of response                     ****
   // **** df/dx_i=(\prod_{j=1}^{i-1} w(x_j)) ...   ****
@@ -3748,7 +3759,7 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
   if (directFnASV[0] & 2) {
     std::fill_n(fnGrads[0], fnGrads.numRows(), 0.);
     for (i=0; i<numDerivVars; ++i) {
-      i_var_index = directFnDVV[i] - 1; 
+      i_var_index = directFnDVV[i] - 1;
       local_val=mult_scale_factor*d1w[i_var_index];
       for (j=0; j<i_var_index; ++j)
 	local_val*=w[j];
@@ -3757,7 +3768,7 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
       fnGrads[0][i]=local_val;
     }
   }
-  
+
   // ***********************************************************
   // **** Hessian of response                               ****
   // **** if(i==j)                                          ****
@@ -3778,7 +3789,7 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
       i_var_index = directFnDVV[i] - 1;
       for (j=0; j<numDerivVars; ++j) {
 	j_var_index = directFnDVV[j] - 1;
-	if (i_var_index==j_var_index ) 
+	if (i_var_index==j_var_index )
 	  local_val = mult_scale_factor*d2w[i_var_index];
 	else
 	  local_val = mult_scale_factor*d1w[i_var_index]*d1w[j_var_index];
@@ -3793,7 +3804,7 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
 
 
 #ifdef DAKOTA_SALINAS
-int TestDriverInterface::salinas() 
+int TestDriverInterface::salinas()
 {
   if (numFns < 1 || numFns > 3) {
     Cerr << "Error: Bad number of functions in salinas direct fn." << std::endl;
@@ -3825,8 +3836,8 @@ int TestDriverInterface::salinas()
   argv[2] = NULL; // standard requires this, see Kern.&Ritchie, p. 115
 
   // Insert vars into Salinas input file (Exodus model file avoided for now).
-  // Set up loop to process input file and match tokens to variable tags.  The 
-  // Salinas parser is not dependent on new lines, so don't worry about 
+  // Set up loop to process input file and match tokens to variable tags.  The
+  // Salinas parser is not dependent on new lines, so don't worry about
   // formatting.
   std::ifstream fin("salinas.inp.template");
   std::ofstream fout(argv[1]);
@@ -3836,16 +3847,16 @@ int TestDriverInterface::salinas()
     if (token=="//")
       fin.ignore(256, '\n'); // comments will not be replicated in fout
     else if (token=="'./tagged.exo'") {
-      // **** Issues with the Exodus input file.  Exodus input files must be 
-      //   tagged because the Exodus output uses the same name and must be 
-      //   protected from conflict with other concurrent simulations.  This 
-      //   requires the creation of these tagged files by DAKOTA or their 
+      // **** Issues with the Exodus input file.  Exodus input files must be
+      //   tagged because the Exodus output uses the same name and must be
+      //   protected from conflict with other concurrent simulations.  This
+      //   requires the creation of these tagged files by DAKOTA or their
       //   existence a priori (which is a problem when tagging with open ended
       //   indices like evaluation id). A few approaches to handling this:
       // 1.) could use system("cp root.exo root#.exo"), but no good on TFLOP
       // 2.) could tag w/ evalServerId & put sal[0-9].exo out before launching,
       //   but Salinas must overwrite properly (it does) & data loss must be OK
-      // 3.) could modify salinas to use (tagged) root.inp i/o root.exo in 
+      // 3.) could modify salinas to use (tagged) root.inp i/o root.exo in
       //   creating root-out.exo, thereby removing the need to tag Exodus input
       char se[32];
       std::sprintf(se,"'./salinas%d.exo' ", evalServerId); // tag root in root.exo
@@ -3896,7 +3907,7 @@ int TestDriverInterface::salinas()
   // Salinas execution
   // -----------------
 
-  // salinas_main is a bare bones wrapper for salinas.  It is provided to 
+  // salinas_main is a bare bones wrapper for salinas.  It is provided to
   // permit calling salinas as a subroutine.
 
   // analysis_comm may be invalid if multiProcAnalysisFlag is not true!
@@ -3911,13 +3922,13 @@ int TestDriverInterface::salinas()
   // Salinas response processing
   // ---------------------------
 
-  // Compute margins and return lowest margin as objective function to be 
-  // _maximized_ (minimize opposite sign).  Constrain mass to be: 
+  // Compute margins and return lowest margin as objective function to be
+  // _maximized_ (minimize opposite sign).  Constrain mass to be:
   // mass_low_bnd <= mass <= mass_upp_bnd
   //Real min_margin = 0.;
   Real lambda1, mass, mass_low_bnd=3., mass_upp_bnd=6.; // 4.608 nominal mass
 
-  // Call EXODUS utilities to retrieve stress & g data 
+  // Call EXODUS utilities to retrieve stress & g data
 
   // Retrieve data from salinas#.rslt
   char so[32];
@@ -3933,7 +3944,7 @@ int TestDriverInterface::salinas()
     else if (token=="1:") {
       f2in >> lambda1;
     }
-    else 
+    else
       f2in.ignore(256, '\n');
   }
 
@@ -4023,18 +4034,18 @@ int TestDriverInterface::mc_api_run()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
- 
+
   for (i=0; i<out_var_act_len; ++i) {
     // **** f:
     if (directFnASV[i] & 1) {
       const char* outStr = fnLabels[i].c_str();
-      mc_get_value(ireturn,iprint,mc_ptr_int,fnVals[i],outStr);  
+      mc_get_value(ireturn,iprint,mc_ptr_int,fnVals[i],outStr);
       if(ireturn == -1) {
 	// Assume this is a failed function evaluation
 	// TODO: check correctness / other possible return codes
 	return(-1);
       }
-      
+
     }
     // **** df/dx:
     if (directFnASV[i] & 2) {
@@ -4048,7 +4059,7 @@ int TestDriverInterface::mc_api_run()
 	   << std::endl;
       abort_handler(INTERFACE_ERROR);
     }
-    
+
   }
 
   if(dc_ptr_int) {
@@ -4060,5 +4071,157 @@ int TestDriverInterface::mc_api_run()
 }
 #endif // DAKOTA_MODELCENTER
 
+int TestDriverInterface::aniso_quad_form()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: aniso_quad_form direct fn does not yet support "
+   << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numADIV || numADRV || (gradFlag && numDerivVars != numVars)) {
+    Cerr << "Error: Bad number of variables in aniso_quad_form direct fn."
+         << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: Bad number of functions in aniso_quad_form direct fn."
+         << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag) {
+    Cerr << "Error: Hessians not supported in aniso_quad_form direct fn."
+         << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  static bool initialized = false;
+
+  static RealMatrix q_mat(numVars, numVars);
+
+  if(!initialized)
+  {
+    size_t seed = std::time(NULL);
+    std::vector<RealMatrix::scalarType> eigenvals =
+      boost::assign::list_of(7.0)(4.0)(1.0);
+
+    if (!analysisComponents.empty() &&
+        !analysisComponents[analysisDriverIndex].empty())
+    {
+      typedef boost::char_separator<char> sepT;
+      typedef boost::tokenizer<sepT> tokenT;
+      sepT sep(" :");
+
+      const StringArray& anal_comps = analysisComponents[analysisDriverIndex];
+      for(StringArray::const_iterator comp = anal_comps.begin();
+          comp != anal_comps.end(); ++comp)
+      {
+        tokenT tokens(*comp, sep);
+        tokenT::iterator tok = tokens.begin();
+        if(*tok == "seed")
+        {
+          if(++tok == tokens.end())
+          {
+            Cerr << "Seed not specified for aniso_quad_form." << std::endl;
+            abort_handler(INTERFACE_ERROR);
+          }
+
+          seed = boost::lexical_cast<size_t>(*tok);
+
+          if(++tok != tokens.end())
+          {
+            Cerr << "Multiple fields given as a seed in analysis_components "
+                    "for aniso_quad_form." << std::endl;
+            abort_handler(INTERFACE_ERROR);
+          }
+        }
+        else if(*tok == "eigenvals")
+        {
+          eigenvals.clear();
+
+          ++tok;
+          for(; tok != tokens.end(); ++tok)
+          {
+            eigenvals.push_back(boost::lexical_cast<RealMatrix::scalarType>(
+              *tok));
+          }
+
+          if(eigenvals.size() == 0)
+          {
+            Cerr << "No eigenvalues specified in analysis_components "
+                    "for aniso_quad_form." << std::endl;
+            abort_handler(INTERFACE_ERROR);
+          }
+          else if(eigenvals.size() > numVars)
+          {
+            Cerr << "Too many eigenvalues specified in analysis_components "
+                    "for aniso_quad_form." << std::endl;
+            abort_handler(INTERFACE_ERROR);
+          }
+        }
+        else
+        {
+          Cerr << "Aniso_quad_form received invalid analysis_components."
+               << std::endl;
+          abort_handler(INTERFACE_ERROR);
+        }
+      }
+    }
+
+    boost::random::mt19937 vec_RNG(seed);
+    boost::random::normal_distribution<> sampler;
+
+    size_t num_prin_direc = eigenvals.size();
+
+    RealMatrix prin_vecs(numVars, num_prin_direc);
+    size_t numElem = numVars * num_prin_direc;
+
+    RealMatrix::scalarType* vals = prin_vecs.values();
+    for(size_t i = 0; i < numElem; ++i)
+    {
+      vals[i] = sampler(vec_RNG);
+    }
+
+    for(int i = 0; i < num_prin_direc; ++i)
+    {
+      RealVector prev_ortho_vec = getCol(Teuchos::View, prin_vecs, i);
+      prev_ortho_vec *= 1.0/prev_ortho_vec.normFrobenius();
+
+      for(int j = i + 1; j < num_prin_direc; ++j)
+      {
+        RealVector::scalarType proj_val = getCol(Teuchos::View, prin_vecs,
+          j).dot(prev_ortho_vec);
+
+        RealVector prev_ortho_vec_copy(Teuchos::Copy,
+                                       prev_ortho_vec.values(),
+                                       prev_ortho_vec.length());
+        prev_ortho_vec_copy *= proj_val;
+
+        getCol(Teuchos::View, prin_vecs, j) -= prev_ortho_vec_copy;
+      }
+
+      q_mat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, eigenvals[i],
+        prev_ortho_vec, prev_ortho_vec, 1.0);
+    }
+
+    initialized = true;
+  }
+
+  RealMatrix quad_prod1(numVars, 1);
+  quad_prod1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, q_mat, xC,
+    0.0);
+
+  if (directFnASV[0] & 1) // **** f:
+  {
+    fnVals[0] =  getCol(Teuchos::View, quad_prod1, 0).dot(xC);
+  }
+
+  if (directFnASV[0] & 2) // **** gradf
+  {
+    quad_prod1 *= 2.0;
+    fnGrads = quad_prod1;
+  }
+
+  return 0; // no failure
+}
 
 }  // namespace Dakota

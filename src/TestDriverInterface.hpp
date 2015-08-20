@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 //- Class:        TestDriverInterface
-//- Description:  Direct interfaces to test drivers and "simple" linked 
+//- Description:  Direct interfaces to test drivers and "simple" linked
 //-               applications that don't require separate setup and tear-down
 //- Owner:        Mike Eldred, Brian Adams
 //- Version: $Id$
@@ -19,7 +19,7 @@
 
 namespace Dakota {
 
-/** Specialization of DirectApplicInterface to embed algebraic test function 
+/** Specialization of DirectApplicInterface to embed algebraic test function
     drivers directly in Dakota */
 class TestDriverInterface: public DirectApplicInterface
 {
@@ -69,17 +69,17 @@ private:
   int mf_rosenbrock(); ///< alternate Rosenbrock formulations for
                        ///< multifidelity or model form studies
 
-  int lf_poly_prod(); ///< modified low fidelity Rosenbrock to test SBO with 
+  int lf_poly_prod(); ///< modified low fidelity Rosenbrock to test SBO with
                       ///< hierarchical approximations
-  int poly_prod();    ///< modified low fidelity Rosenbrock to test SBO with 
+  int poly_prod();    ///< modified low fidelity Rosenbrock to test SBO with
                       ///< hierarchical approximations
 
   int gerstner(); ///< the isotropic/anisotropic Gerstner test function family
   int scalable_gerstner(); ///< scalable versions of the Gerstner test family
 
   /// define coefficients needs for genz model
-  void get_genz_coefficients( int num_dims, Real factor, 
-			      int c_type, 
+  void get_genz_coefficients( int num_dims, Real factor,
+			      int c_type,
 			      RealVector &c, RealVector &w );
   int genz(); ///< scalable test functions from the Genz test suite
   int damped_oscillator(); ///< 1d-6d that returns field values (ode solution)
@@ -104,11 +104,11 @@ private:
   int mogatest2();  ///< MOP2? from Van Veldhuizen, pp. 5-13
   int mogatest3();  ///< Srinivas' from Van Veldhuizen, pp. B-5
 
-  int illumination(); ///< illumination example in Boyd as a general 
+  int illumination(); ///< illumination example in Boyd as a general
                       ///< minimization problem
-  int barnes();     ///< barnes test for SBO perforamnce from Rodriguez, 
+  int barnes();     ///< barnes test for SBO perforamnce from Rodriguez,
                     ///< Perez, Renaud, et al.
-  int barnes_lf();  ///< lo-fi barnes test for SBO perforamnce 
+  int barnes_lf();  ///< lo-fi barnes test for SBO perforamnce
 
   // suite of separable test functions TODO add docs
 
@@ -135,6 +135,11 @@ private:
 #ifdef DAKOTA_MODELCENTER
   int mc_api_run(); ///< direct interface to ModelCenter via API, HKIM 4/3/03
 #endif
+
+  // test functions for high dimensional models with active subspace structure
+
+  int aniso_quad_form();     ///< 1-D function using a anisotropic quadratic
+                             ///< form
 
 };
 

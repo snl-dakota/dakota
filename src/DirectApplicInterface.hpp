@@ -8,7 +8,7 @@
 
 //- Class:        DirectApplicInterface
 //- Description:  Derived interface class managing cases where analysis code
-//-               simulators are linked into the code and may be invoked 
+//-               simulators are linked into the code and may be invoked
 //-               directly. This manages parts common to all direct simulators.
 //- Owner:        Mike Eldred, Brian Adams
 //- Version: $Id: DirectApplicInterface.hpp 7024 2010-10-16 01:24:42Z mseldre $
@@ -57,7 +57,8 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		MOGATEST1, MOGATEST2, MOGATEST3,
 		ILLUMINATION, BARNES, BARNES_LF,
 		HERBIE, SMOOTH_HERBIE, SHUBERT,
-		SALINAS, MODELCENTER, GENZ, DAMPED_OSCILLATOR };
+		SALINAS, MODELCENTER, GENZ, DAMPED_OSCILLATOR,
+    ANISOTROPIC_QUADRATIC_FORM };
 
 /// enumeration for how local variables are stored (values must employ
 /// a bit representation)
@@ -118,7 +119,7 @@ protected:
   //
 
   /// convenience function for local test simulators which sets per-evaluation
-  /// variable and active set attributes; derived classes 
+  /// variable and active set attributes; derived classes
   /// reimplementing this likely need to invoke the base class API
   virtual void set_local_data(const Variables& vars, const ActiveSet& set);
   /// convenience function for local test simulators which sets per-evaluation
@@ -213,10 +214,10 @@ protected:
 };
 
 
-/** This code provides the derived function used by 
+/** This code provides the derived function used by
     ApplicationInterface::serve_analyses_synch(). */
 inline int DirectApplicInterface::synchronous_local_analysis(int analysis_id)
-{ 
+{
   analysisDriverIndex = analysis_id-1;
   return derived_map_ac(analysisDrivers[analysisDriverIndex]);
 }
