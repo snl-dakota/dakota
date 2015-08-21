@@ -354,7 +354,7 @@ sub format_value {
   if (defined $local_format) {
     return(sprintf($local_format, $local_value));
   } elsif (defined $global_output_format) {
-    return(sprintf($output_format, $local_value));
+    return(sprintf($global_output_format, $local_value));
   }
   else {
     return($local_value);
