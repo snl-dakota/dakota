@@ -1,8 +1,8 @@
-admin     -r7645 https://software.sandia.gov/svn/acro/common/trunk/admin
-bin       -r7645 https://software.sandia.gov/svn/acro/common/trunk/bin
-bootstrap -r7645 https://software.sandia.gov/svn/acro/common/trunk/bootstrap
-config    -r7645 https://software.sandia.gov/svn/acro/common/trunk/config
-doc       -r7645 https://software.sandia.gov/svn/acro/common/trunk/doc
-include   -r7645 https://software.sandia.gov/svn/acro/common/trunk/include
-mvs       -r7645 https://software.sandia.gov/svn/acro/common/trunk/mvs
-test      -r7645 https://software.sandia.gov/svn/acro/common/trunk/test
+admin     -r7648 https://software.sandia.gov/svn/acro/common/trunk/admin
+bin       -r7648 https://software.sandia.gov/svn/acro/common/trunk/bin
+bootstrap -r7648 https://software.sandia.gov/svn/acro/common/trunk/bootstrap
+config    -r7648 https://software.sandia.gov/svn/acro/common/trunk/config
+doc       -r7648 https://software.sandia.gov/svn/acro/common/trunk/doc
+include   -r7648 https://software.sandia.gov/svn/acro/common/trunk/include
+mvs       -r7648 https://software.sandia.gov/svn/acro/common/trunk/mvs
+test      -r7648 https://software.sandia.gov/svn/acro/common/trunk/test

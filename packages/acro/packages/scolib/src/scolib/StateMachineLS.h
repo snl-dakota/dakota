@@ -44,6 +44,9 @@ public:
    /// Maximum number of function evaluations
    utilib::Property max_fcn_evaluations;
 
+   /// Maximum solver run time
+   utilib::Property max_time;
+
    /// Verbosity level
    utilib::Property verbosity;
 

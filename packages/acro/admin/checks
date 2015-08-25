@@ -67,6 +67,11 @@ if [ "$1" == "copyright-aux" ]; then
       bin/checkCopyright packages/coopr/coopr
       echo ""
    fi
+   if [ -d packages/pyomo ]; then
+      echo "Pyomo"
+      bin/checkCopyright packages/pyomo/pyomo
+      echo ""
+   fi
    if [ -d packages/tmf ]; then
       echo "TMF"
       bin/checkCopyright packages/tmf

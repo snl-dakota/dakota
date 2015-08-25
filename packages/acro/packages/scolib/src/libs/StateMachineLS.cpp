@@ -15,6 +15,8 @@
 #include <colin/EvaluationID.h>
 #include <colin/cache/View_Pareto.h>
 
+#include <ctime>
+
 using utilib::Any;
 using utilib::Property;
 
@@ -209,6 +211,7 @@ StateMachineLS::StateMachineLS()
    : state_definition_file(Property::Bind<string>("StateMachineLS.states")),
      max_iterations(Property::Bind<size_t>(0)),
      max_fcn_evaluations(Property::Bind<size_t>(0)),
+     max_time(Property::Bind<double>(0)),
      verbosity(Property::Bind<int>(1)),
      data(new Data)
 {
@@ -231,6 +234,12 @@ StateMachineLS::StateMachineLS()
        max_fcn_evaluations);
 
    properties.declare
+      ("max_time",
+       "Maximum solver wall clock run time (0 == unlimited)"
+       "[default: 0]",
+       max_time);
+
+   properties.declare
       ("verbosity",
        "Set the algorithm verbosity level"
        "[default: 1]",
@@ -245,6 +254,8 @@ void StateMachineLS::reset()
 
 void StateMachineLS::optimize()
 {
+   std::time_t start_time = std::time(NULL);
+
    if ( ! data->states_loaded )
       load_states();
 
@@ -297,6 +308,7 @@ void StateMachineLS::optimize()
 
    size_t maxIter = max_iterations;
    size_t maxNumEval = max_fcn_evaluations;
+   double max_run_time = max_time;
 
    pair<colin::EvaluationID, colin::AppResponse> eval;
    double newObj;
@@ -307,7 +319,9 @@ void StateMachineLS::optimize()
    vector<int> tmpDomain;
    Data::states_t::iterator it;
    while ( ( iter++ < maxIter || ! maxIter ) && 
-           ( this->neval() < maxNumEval || ! maxNumEval ) )
+           ( this->neval() < maxNumEval || ! maxNumEval ) &&
+           ( ( max_run_time == 0 ) || 
+             ( max_run_time > std::difftime(std::time(NULL), start_time) ) ) )
    {
       if ( algorithm_verbosity )
          cout << "StateMachineLS: " << endl
