@@ -1217,20 +1217,21 @@ runs.  If, say, \texttt{my/special/directory} is such a directory
        work_directory named 'my/special/directory'
 \end{verbatim}
 \end{small}
-would cause Dakota to start the simulator and any filters in that directory.
-If the directory did not already exist, Dakota would create it
-and would remove it after the simulator (or output filter, if specifed)
-finished, unless instructed not to do so
-by the appearance of \texttt{directory\_save} or its synonym \texttt{dir\_save}
-in the interface specification.  If \texttt{named '$...$'} does not
-appear, then \texttt{directory\_save} cannot appear either, and
-Dakota creates a temporary directory (using the \texttt{tmpnam}
-function to determine its name) for use by the simulator and any filters.
-If you specify \texttt{directory\_tag} (or \texttt{dir\_tag}),
-Dakota causes each invocation of the simulator and any filters to start in a
-a subdirectory of the work directory with a name composed
-of the work directory's name followed by a period and the
-invocation number (1, 2, $...$); this might be useful in debugging.
+would cause Dakota to start the simulator and any filters in that
+directory.  If the directory did not already exist, Dakota would
+create it and would remove it after the simulator (or output filter,
+if specifed) finished, unless instructed not to do so by the
+appearance of \texttt{directory\_save} (or its deprecated synonym
+\texttt{dir\_save}) in the interface specification.  If \texttt{named
+  '$...$'} does not appear, then \texttt{directory\_save} cannot
+appear either, and Dakota creates a temporary directory (using the
+\texttt{tmpnam} function to determine its name) for use by the
+simulator and any filters.  If you specify \texttt{directory\_tag} (or
+the deprecated \texttt{dir\_tag}), Dakota causes each invocation of
+the simulator and any filters to start in a a subdirectory of the work
+directory with a name composed of the work directory's name followed
+by a period and the invocation number (1, 2, $...$); this might be
+useful in debugging.
 
 Sometimes it can be helpful for the simulator and filters to start in a
 new directory populated with some files.  Adding
@@ -1246,19 +1247,19 @@ but when practical, it is far more reliable to have
 copies of the files; adding \texttt{copy\_files} to the specification
 would cause the contents of the template directory to be copied
 to the work directory.  The linking or copying does
-not overwrite existing files unless \texttt{overwrite} also appears
+not overwrite existing files unless \texttt{replace} also appears
 in the specification.
 
 Here is a summary of possibilities for a work directory specification,
 with {\tt\verb=[=$...$\verb=]=} denoting that $...$ is optional:
 \begin{small}
 \begin{verbatim}
-        work_directory [ named '...' ]
-          [ directory_tag ]     # or dir_tag
-          [ directory_save ]    # or dir_save
-          [ link_files '...' # or copy_files '...' '...' ...
-             [ overwrite ]
-             ]
+  work_directory [ named '...' ]
+    [ directory_tag ]     # (or dir_tag)
+    [ directory_save ]    # (or dir_save)
+    [ link_files '...' '...' ]
+    [ copy_files '...' '...' ]
+    [ replace ]
 \end{verbatim}
 \end{small}
 
