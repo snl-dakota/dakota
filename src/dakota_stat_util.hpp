@@ -175,7 +175,7 @@ public:
     for(typename Data::iterator sample = bootstrapped_sample.begin();
         sample != bootstrapped_sample.end(); sample += blockSize)
     {
-      typename Data::iterator beg_block = beg_data + sampler(this->bootstrapRNG)
+      typename Data::iterator beg_block = beg_data + this->sampler(this->bootstrapRNG)
                                           * blockSize;
       for(size_t i = 0; i < blockSize; ++i)
       {
@@ -287,7 +287,7 @@ public:
     for(int i = 0; i < num_samp * blockSize; i += blockSize)
     {
       std::memcpy(bootstrapped_sample[i],
-        this->origData[sampler(this->bootstrapRNG) * blockSize],
+        this->origData[this->sampler(this->bootstrapRNG) * blockSize],
         blockSize * stride * sizeof(ScalarType));
     }
   }
