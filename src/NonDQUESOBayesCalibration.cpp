@@ -305,6 +305,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
 
+  // generate the sample chain that defines the joint posterior distribution
   switch (adaptPosteriorRefine) {
   case false:
     run_chain_with_restarting(); break;
@@ -341,6 +342,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     }
     break;
   }
+
+  // Generate useful stats from the posterior samples
+  //compute_statistics();
 }
 
 

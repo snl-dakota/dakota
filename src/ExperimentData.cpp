@@ -1152,9 +1152,11 @@ build_gradient_of_sum_square_residuals( const Response& resp,
 					RealVector &ssr_gradient )
 {
   // initialize ssr_gradient to zero, prior to summing over set of experiments
-  ssr_gradient.size(resp.active_set().derivative_vector().size());
+  size_t exp_ind, num_v = resp.active_set().derivative_vector().size();
+  if (ssr_gradient.length() != num_v) ssr_gradient.size(num_v); // init to 0.
+  else                                ssr_gradient = 0.;
   //size_t residual_resp_offset = 0;
-  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
+  for (exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
     // adds to ssr_gradient for each experiment
     build_gradient_of_sum_square_residuals_from_response( resp, asrv, exp_ind, 
 							  ssr_gradient );
@@ -1201,12 +1203,12 @@ build_gradient_of_sum_square_residuals_from_function_data(
   // NOT r = ( data - approx )
 
   // func_gradients is the transpose of the Jacobian of the functions
-  int v, r, num_deriv_vars = func_gradients.numRows(),
-    num_residuals  = residuals.length();
+  int v, r, num_v = func_gradients.numRows(),
+    num_residuals = residuals.length();
   for ( r=0; r<num_residuals; ++r )
     if ( (asrv[r] & 3) == 3 ) {
       Real res = residuals[r]; const Real* func_grad = func_gradients[r];
-      for ( v=0; v<num_deriv_vars; ++v )
+      for ( v=0; v<num_v; ++v )
 	ssr_gradient[v] += res * func_grad[v];
       // we compute gradient of sum square residuals divided by 2 (i.e. r'r/2),
       // where r has been scaled by sqrt(inv Gamma_d)
@@ -1219,9 +1221,11 @@ build_hessian_of_sum_square_residuals( const Response& resp,
 				       RealSymMatrix &ssr_hessian )
 {
   // initialize ssr_hessian to zero, prior to summing over set of experiments
-  ssr_hessian.shape(resp.active_set().derivative_vector().size());
+  size_t exp_ind, num_v = resp.active_set().derivative_vector().size();
+  if (ssr_hessian.numRows() != num_v) ssr_hessian.shape(num_v); // init to 0.
+  else                                ssr_hessian = 0.;
   //size_t residual_resp_offset = 0;
-  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
+  for (exp_ind = 0; exp_ind < numExperiments; ++exp_ind)
     // adds to ssr_hessian for each experiment
     build_hessian_of_sum_square_residuals_from_response( resp, asrv, exp_ind, 
 							 ssr_hessian );
@@ -1278,8 +1282,8 @@ build_hessian_of_sum_square_residuals_from_function_data(
   // NOT r = ( data - approx )
 
   // func_gradients is the transpose of the Jacobian of the functions
-  int num_rows = ssr_hessian.numRows(), num_residuals = residuals.length();
-  for ( int k=0; k<num_rows; k++ ) {
+  int num_v = ssr_hessian.numRows(), num_residuals = residuals.length();
+  for ( int k=0; k<num_v; k++ ) {
     for ( int j=0; j<=k; j++ ) {
       Real &hess_jk = ssr_hessian(j,k);
       for ( int i=0; i<num_residuals; i++ ) {
