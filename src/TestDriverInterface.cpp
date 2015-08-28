@@ -4206,19 +4206,19 @@ int TestDriverInterface::aniso_quad_form()
     initialized = true;
   }
 
-  RealMatrix quad_prod1(numVars, 1);
-  quad_prod1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, q_mat, xC,
+  RealMatrix quad_prod(numVars, 1);
+  quad_prod.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, q_mat, xC,
     0.0);
 
   if (directFnASV[0] & 1) // **** f:
   {
-    fnVals[0] =  getCol(Teuchos::View, quad_prod1, 0).dot(xC);
+    fnVals[0] =  getCol(Teuchos::View, quad_prod, 0).dot(xC);
   }
 
   if (directFnASV[0] & 2) // **** gradf
   {
-    quad_prod1 *= 2.0;
-    fnGrads = quad_prod1;
+    quad_prod *= 2.0;
+    fnGrads = quad_prod;
   }
 
   return 0; // no failure

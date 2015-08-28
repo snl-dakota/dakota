@@ -16,9 +16,13 @@
 #include "ProblemDescDB.hpp"
 #include "EfficientSubspaceMethod.hpp"
 #include "NonDLHSSampling.hpp"
-#include "Teuchos_LAPACK.hpp"
 #include "RecastModel.hpp"
 #include "dakota_linear_algebra.hpp"
+#include "Teuchos_LAPACK.hpp"
+#include "Teuchos_SerialDenseSolver.hpp"
+#include "dakota_stat_util.hpp"
+#include <vector>
+#include <cmath>
 
 // TODO: Ultimately (like NonDAdaptiveSampling) want this method to
 // result in a approximation (reduced model) that can be used in other
@@ -28,10 +32,10 @@
 
 // TODO: Limit reduced rank to size of original space (done?)
 
-// TODO: consider using a single tolerance and using the derivative to 
+// TODO: consider using a single tolerance and using the derivative to
 // estimate the relationship between the ytol and svdtol
 
-// TODO: probably for now should set the nullspaceTol based on 
+// TODO: probably for now should set the nullspaceTol based on
 // convergenceTol and make the user singular value more generous
 
 // TODO: error if convergenceTol < macheps
@@ -40,7 +44,7 @@
 // TODO: Add a convergence manager class
 
 // TODO: subtract UQ samples from the original function budget
-	
+
 namespace Dakota {
 
 EfficientSubspaceMethod* EfficientSubspaceMethod::esmInstance(NULL);
@@ -60,7 +64,7 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   //   convergenceTol   (default 1.0e-4); tolerance before checking recon error
   //   maxFunctionEvals (default 1000)
   validate_inputs();
-  
+
   // initialize the fullspace Monte Carlo derivative sampler; this
   // will configure it to perform initialSamples
   init_fullspace_sampler();
@@ -89,7 +93,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
 {
   esmInstance = this;
 
-  Cout << "ESM: Performing sampling to build reduced space" << std::endl; 
+  Cout << "ESM: Performing sampling to build reduced space" << std::endl;
 
   // whether user singular value tolerance met
   bool user_svtol_met = false;
@@ -122,7 +126,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
 
       if (user_svtol_met || mach_svtol_met) {
 	Cout << "\nESM: SVD converged to tolerance.\n     Proceeding to "
-	     << "reconstruction with reduced rank = " << reducedRank << "." 
+	     << "reconstruction with reduced rank = " << reducedRank << "."
 	     << std::endl;
       }
       else {
@@ -147,7 +151,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
     // the reduced basis is dimension N x r and stored in the first r
     // cols of derivativeMatrix; extract it instead of using BLAS directly
     // TODO: could probably do a View and avoid the Copy
-    RealMatrix reduced_basis_U(Teuchos::Copy, derivativeMatrix, 
+    RealMatrix reduced_basis_U(Teuchos::Copy, derivativeMatrix,
 			       numContinuousVars, reducedRank);
     reducedBasis = reduced_basis_U;
     if (outputLevel >= DEBUG_OUTPUT) {
@@ -155,10 +159,10 @@ void EfficientSubspaceMethod::quantify_uncertainty()
       reducedBasis.print(Cout);
     }
 
-    // evaluate the fidelity of the reconstruction via orthogonal subspace 
+    // evaluate the fidelity of the reconstruction via orthogonal subspace
     // evaluations (constrained to stay in bounds)
     assess_reconstruction(recon_tol_met);
-    
+
     if (!recon_tol_met)
       Cout << "\nESM: Reconstruction tolerance not met." << std::endl;
 
@@ -181,7 +185,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
        << std::endl;
 
   // perform the reduced space UQ
-  Cout << "\nESM: Performing reduced-space UQ" << std::endl; 
+  Cout << "\nESM: Performing reduced-space UQ" << std::endl;
   reduced_space_uq();
 
 }
@@ -196,7 +200,7 @@ void EfficientSubspaceMethod::validate_inputs()
   // set default initialSamples, with lower bound of 2
   // TODO: allow other user control of initial sample rule?
   if (initialSamples <= 0) {
-    initialSamples = 
+    initialSamples =
       (unsigned int) std::ceil( (double) numContinuousVars / 100.0 );
     initialSamples = std::max(2, initialSamples);
     Cout << "\nInfo: Efficient subspace method setting (initial) samples = "
@@ -241,7 +245,7 @@ void EfficientSubspaceMethod::validate_inputs()
 
 
   // validate variables specification
-  if (numContinuousVars != numNormalVars 
+  if (numContinuousVars != numNormalVars
       || numDiscreteIntVars > 0 || numDiscreteRealVars > 0) {
     error_flag = true;
     Cerr << "\nError: Efficient subspace method only supports normal uncertain "
@@ -268,18 +272,18 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
   // Instantiate the DACE iterator, using default RNG and samples
   // ----
   int mc_seed = (seedSpec) ? seedSpec : generate_system_seed();
-  if (seedSpec) 
+  if (seedSpec)
     Cout << "ESM: build seed (user-specified) = " << mc_seed << std::endl;
-  else          
+  else
     Cout << "ESM: build seed (system-generated) = " << mc_seed << std::endl;
 
   // use Monte Carlo due to iterative growth process
   unsigned short sample_type = SUBMETHOD_RANDOM;
   std::string rng; // use default random number generator
- 
+
   // configure this sampler initially to work with initialSamples
-  Analyzer* ndlhss = 
-    new NonDLHSSampling(iteratedModel, sample_type, initialSamples, mc_seed, 
+  Analyzer* ndlhss =
+    new NonDLHSSampling(iteratedModel, sample_type, initialSamples, mc_seed,
 			rng, ACTIVE_UNIFORM);
   // allow random number sequence to span multiple calls to run()
   ndlhss->vary_pattern(true);
@@ -337,15 +341,15 @@ expand_basis(bool& mach_svtol_met, bool& user_svtol_met)
   totalEvals += diff_samples;
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "ESM: Adding " << diff_samples << " full-space samples." 
+    Cout << "ESM: Adding " << diff_samples << " full-space samples."
 	 << std::endl;
 
   // evaluate samples with fullSpaceSampler
-  generate_fullspace_samples(diff_samples); 
-  
+  generate_fullspace_samples(diff_samples);
+
   // add the generated points to the matrices
   append_sample_matrices(diff_samples);
-  
+
   // factor the derivative matrix and estimate the information content
   compute_svd(mach_svtol_met, user_svtol_met);
 }
@@ -362,14 +366,14 @@ unsigned int EfficientSubspaceMethod::calculate_fullspace_samples()
   // for now only supporting growth by fixed batch size
   diff_samples = batchSize;
 
-  // TODO: allow options for fullspace sample growth based on 
+  // TODO: allow options for fullspace sample growth based on
   // fixed user-supplied factor, logarithmic growth
 
   // factor by which to increase number samples at each minor iteration
   // therefore also each major iteration (> 1.0) (not used for now)
   //double sample_growth_factor = 2.0;
   //double desired_total_samples = sample_growth_factor*totalSamples;
-  //diff_samples = 
+  //diff_samples =
   //  (unsigned int) std::ceil(desired_total_samples) - totalSamples;
 
   // limit the increment by maximum evaluations control
@@ -418,13 +422,13 @@ append_sample_matrices(unsigned int diff_samples)
 
   // TODO: could easily filter NaN/Inf responses and omit
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter << ". DACE iterator returned " 
-	     << all_responses.size() << " samples. (Expected diff_samples = " 
+    Cout << "\nESM: Iteration " << currIter << ". DACE iterator returned "
+	     << all_responses.size() << " samples. (Expected diff_samples = "
 	     << diff_samples << ".)" << std::endl;
   }
 
   int sample_insert_point = varsMatrix.numCols();
-  derivativeMatrix.reshape(numContinuousVars, 
+  derivativeMatrix.reshape(numContinuousVars,
 			   totalSamples*numFunctions);
   varsMatrix.reshape(numContinuousVars, totalSamples);
 
@@ -449,7 +453,7 @@ append_sample_matrices(unsigned int diff_samples)
   }
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter 
+    Cout << "\nESM: Iteration " << currIter
 	 << ". Compiled derivative matrix is:\n";
     derivativeMatrix.print(Cout);
     Cout << std::endl;
@@ -469,10 +473,126 @@ compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
     // vectors, probably not what we want...
     svd(derivativeMatrix, singular_values, V_transpose);
 
-    // TODO: bootstrap to assess error in eigenvalues and subspace
-    RealVector eigen_values(singular_values.length());
-    for (int i=0; i<singular_values.length(); ++i)
-      eigen_values[i] = singular_values[i]*singular_values[i];
+////////////////////////////////////////////////////////////////////////////////
+    // BEGIN: Computational kernel to compute Bing Li's criterion for the
+    // eigenvalue gap
+
+    // TODO: Analyze whether we need to worry about this
+    if(singular_values.length() == 0)
+    {
+      Cerr << "No computed singular values available!" << std::endl;
+      abort_handler(-1);
+    }
+
+    int num_vars = derivativeMatrix.numRows();
+    // TODO: Analyze whether we need this check and can have differing numbers
+    // of singular values returned
+    if(num_vars != singular_values.length())
+    {
+      Cerr << "Number of computed singular_values does not match the dimension "
+              "of the space of gradient samples! Logic not currently supported!"
+           << std::endl;
+      abort_handler(-1);
+    }
+
+    // Stores Bing Li's criterion
+    std::vector<RealMatrix::scalarType> bing_li_criterion(num_vars, 0);
+
+    // Compute part 1 of criterion: relative energy in next eigenvalue in the
+    // spectrum
+
+    RealMatrix::scalarType eigen_sum = singular_values[0] * singular_values[0];
+
+    for(size_t i = 0; i < num_vars - 1; ++i)
+    {
+      RealMatrix::scalarType eigen_val = singular_values[i+1] *
+                                         singular_values[i+1];
+      bing_li_criterion[i] = eigen_val;
+      eigen_sum += eigen_val;
+    }
+
+    for(size_t i = 0; i < num_vars; ++i)
+      bing_li_criterion[i] /= eigen_sum;
+
+    // Compute part 2 of criterion: bootstrapped determinant metric
+
+    RealMatrix bootstrapped_sample(num_vars, derivativeMatrix.numCols());
+    RealVector sample_sing_vals;
+    RealMatrix sample_sing_vectors;
+
+    Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
+
+    std::vector<RealMatrix::scalarType> bootstrapped_determinants(num_vars);
+
+    BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
+                                                   numFunctions);
+
+    // TODO: Get number of bootstrap samples from problem desc database
+    size_t num_replicates = 100;
+    for (size_t i = 0; i < num_replicates; ++i)
+    {
+      bootstrap_sampler(bootstrapped_sample);
+
+      svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
+
+      // Overwrite bootstrap replicate with singular matrix product
+      bootstrapped_sample.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0,
+                                   V_transpose, sample_sing_vectors, 0.0);
+
+      for(size_t j = 0; j < num_vars; ++j)
+      {
+        size_t num_sing_vec = j + 1;
+
+        RealMatrix submatrix(Teuchos::Copy, bootstrapped_sample, num_sing_vec,
+                             num_sing_vec);
+
+        // Get determinant from LU decomposition
+
+        Teuchos::SerialDenseVector<RealMatrix::ordinalType,
+                                   RealMatrix::ordinalType> pivot(num_sing_vec);
+        RealMatrix::ordinalType info;
+
+        lapack.GETRF(num_sing_vec, num_sing_vec, submatrix.values(),
+                     num_sing_vec, pivot.values(), &info);
+
+        RealMatrix::scalarType det = 1.0;
+        for (size_t i = 0; i < j; ++i)
+        {
+          det *= submatrix(i,i);
+        }
+
+        bootstrapped_determinants[j] += std::abs(det);
+      }
+    }
+
+    RealMatrix::scalarType det_sum = 0.0;
+    for (size_t i = 0; i < num_vars; ++i)
+    {
+      bootstrapped_determinants[i] = 1 - bootstrapped_determinants[i] /
+        static_cast<RealMatrix::scalarType>(num_replicates);
+      det_sum += bootstrapped_determinants[i];
+    }
+
+    for (size_t i = 0; i < num_vars; ++i)
+    {
+      bing_li_criterion[i] += bootstrapped_determinants[i] / det_sum;
+    }
+
+    // Cutoff is minimum of the criterion
+    reducedRank = 0;
+    RealMatrix::scalarType criterion_min =
+      bing_li_criterion[reducedRank];
+    for (size_t i = 1; i < num_vars; ++i)
+    {
+      if(criterion_min > bing_li_criterion[i])
+      {
+        criterion_min = bing_li_criterion[i];
+        reducedRank = i;
+      }
+    }
+
+    // END: Computational kernel to compute Bing Li's criterion
+////////////////////////////////////////////////////////////////////////////////
 
     // TODO: if a reducedRank met the tolerance, but we added more
     // samples to meet construction error, need to allow this bigger
@@ -481,7 +601,7 @@ compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
 
     // See Golub and VanLoan discussion of numerical rank; use
     // tolerance applied to the sup norm...
-      
+
     // if first time, iterate until we meet user tolerance
     // otherwise continue until we're numerically rank deficient
     double user_svtol = inf_norm * userSVTol;
@@ -491,13 +611,13 @@ compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
     reducedRank = num_singular_values;
     double sv_small = 1., sv_large = DBL_MAX;
     for (unsigned int i=0; i<num_singular_values; ++i) {
-	
+
       // we assume the user tolerance is looser than machine; could improve
       // this logic
       sv_small = singular_values[i];
       sv_large = singular_values[0];
       svRatio = singular_values[i] / singular_values[0];
-	
+
       if (svRatio < mach_svtol) {
 	mach_svtol_met = true;
 	reducedRank = i;
@@ -554,7 +674,7 @@ assess_reconstruction(bool& recon_tol_met)
   // orthogonal to reducedBasis U
 
   // TODO: Relies on normal distribution for now
-  const RealVector& nominal_vars = 
+  const RealVector& nominal_vars =
     iteratedModel.aleatory_distribution_parameters().normal_means();
 
   // Find vectors orthogonal to each initial perturbation
@@ -565,10 +685,10 @@ assess_reconstruction(bool& recon_tol_met)
   for (int i=0; i<numContinuousVars; ++i)
     for (int j=0; j<verif_samples; ++j)
       perturbations(i,j) = varsMatrix(i,j) - nominal_vars(i);
-  
 
-  // want to compute perturbations delta_x_perp in the nullspace of 
-  // U^T, i.e., 
+
+  // want to compute perturbations delta_x_perp in the nullspace of
+  // U^T, i.e.,
   //   delta_x_perp = (I - U*U^T)*delta_x = delta_x - U*U^T*delta_x
 
   // compute U^T * delta_x via
@@ -577,7 +697,7 @@ assess_reconstruction(bool& recon_tol_met)
 
   Real alpha = 1.0;
   Real beta = 0.0;
-  u_trans_delta_x.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, 
+  u_trans_delta_x.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha,
 			   reducedBasis, perturbations, beta);
 
   // compute -1.0 * ( U * u_trans_delta_x ) + 1.0 * delta_x
@@ -607,13 +727,13 @@ assess_reconstruction(bool& recon_tol_met)
 //   recon_set.request_values(request_value);
   activeSet.request_values(1);
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nESM: Evaluating at nominal, and at " << verif_samples 
+    Cout << "\nESM: Evaluating at nominal, and at " << verif_samples
 	 << " points orthogonal to the subspace" << std::endl;
 
   // evaluate model at nominal values
   iteratedModel.continuous_variables(nominal_vars);
   iteratedModel.compute_response(activeSet);
-  const RealVector& ynominal = 
+  const RealVector& ynominal =
     iteratedModel.current_response().function_values();
 
   // TODO: use array of RealVectors here
@@ -624,7 +744,7 @@ assess_reconstruction(bool& recon_tol_met)
   for (int j=0; j<verif_samples; ++j) {
     iteratedModel.continuous_variables(getCol(Teuchos::View, perp_points, j));
     iteratedModel.compute_response(activeSet);
-    // compute y(perp) - y(nominal) 
+    // compute y(perp) - y(nominal)
     RealVector deviation(iteratedModel.current_response().function_values());
     deviation -= ynominal;
     Teuchos::setCol(deviation, j, Kmat);
@@ -633,14 +753,14 @@ assess_reconstruction(bool& recon_tol_met)
   recon_tol_met = true;
   RealVector recon_error(numFunctions);
   for (int i=0; i<numFunctions; ++i) {
-    
+
     RealVector Kvec = Teuchos::getCol(Teuchos::View, Kmat, i);
 
     // two-norm of recon error for now
     double recon_error = std::sqrt(Kvec.dot(Kvec)/verif_samples);
-    
+
     // standard deviation of Kvec
-    double K_mu = std::accumulate(&Kvec[0], &Kvec[0]+verif_samples, 0.0) / 
+    double K_mu = std::accumulate(&Kvec[0], &Kvec[0]+verif_samples, 0.0) /
       (Real) verif_samples;
     double K_sigma = 0.0;
     // Could decimate Kvec with (K-mu)^2; opt for simplicity
@@ -649,9 +769,9 @@ assess_reconstruction(bool& recon_tol_met)
     }
     K_sigma = std::sqrt(K_sigma / (Real) (verif_samples-1));
 
-    Cout << "\nESM: Reconstruction statistics over " << verif_samples 
+    Cout << "\nESM: Reconstruction statistics over " << verif_samples
 	 << " samples for function " << i << ":\n  K_sigma = " << K_sigma
-	 << "\n  K_mu = " << K_mu 
+	 << "\n  K_mu = " << K_mu
 	 << "\n  L2 (recon) error = " << recon_error << std::endl;
 
     // if any function violates, continue process
@@ -675,8 +795,8 @@ void EfficientSubspaceMethod::reduced_space_uq()
   // doesn't appear to be used; for now, indicate that each submodel
   // variable depends on all of the recast (reduced) variables, since
   // in general, they will
-  Sizet2DArray vars_map_indices(numContinuousVars, 
-				SizetArray(num_recast_vars));   
+  Sizet2DArray vars_map_indices(numContinuousVars,
+				SizetArray(num_recast_vars));
   for (size_t i=0; i<numContinuousVars; ++i)
     for (size_t recasti=0; recasti<num_recast_vars; ++recasti)
       vars_map_indices[i][recasti] = recasti;
@@ -684,9 +804,9 @@ void EfficientSubspaceMethod::reduced_space_uq()
   bool nonlinear_vars_map = false; // vars map is linear
 
   // TODO: set map needed;
-  
+
   // must be initialized! TODO: handle constraints?
-  Sizet2DArray primary_resp_map_indices(numFunctions, 
+  Sizet2DArray primary_resp_map_indices(numFunctions,
 					SizetArray(numFunctions, 0));
   for (size_t i=0; i<numFunctions; ++i)
     primary_resp_map_indices[i][i] = i;
@@ -696,7 +816,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   size_t recast_secondary_offset = 0;
 
-  BoolDequeArray nonlinear_resp_map(numFunctions, 
+  BoolDequeArray nonlinear_resp_map(numFunctions,
 				    BoolDeque(numFunctions, false));
 
   // primary and secondary resp_maps are NULL
@@ -723,7 +843,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   vars_transform_model.init_communicators(pl_iter, subspaceSamples);
 
-  // convert the normal distributionsto the reduced space and set in the 
+  // convert the normal distributionsto the reduced space and set in the
   // reduced model
   uncertain_vars_to_subspace(iteratedModel, vars_transform_model);
 
@@ -735,9 +855,9 @@ void EfficientSubspaceMethod::reduced_space_uq()
   unsigned short sample_type = SUBMETHOD_RANDOM;
 
   int mc_seed = (seedSpec) ? seedSpec : generate_system_seed();
-  if (seedSpec) 
+  if (seedSpec)
     Cout << "ESM: subspace seed (user-specified) = " << mc_seed << std::endl;
-  else          
+  else
     Cout << "ESM: subspace seed (system-generated) = " << mc_seed << std::endl;
 
   // might want true for multiple calls...
@@ -769,10 +889,10 @@ void EfficientSubspaceMethod::reduced_space_uq()
 */
 /// transform and set the distribution parameters in the reduced model
 void EfficientSubspaceMethod::
-uncertain_vars_to_subspace(Model& native_model, 
+uncertain_vars_to_subspace(Model& native_model,
 			   Model& vars_transform_model)
 {
-  const Pecos::AleatoryDistParams& native_params = 
+  const Pecos::AleatoryDistParams& native_params =
     native_model.aleatory_distribution_parameters();
 
   // native space characterization
@@ -791,7 +911,7 @@ uncertain_vars_to_subspace(Model& native_model,
 
   // reduced space characterization: mean mu, std dev sd
   RealVector mu_xi(reducedRank), sd_xi(reducedRank);
-  
+
 
   // xi_mu = reducedBasis^T * x_mu
   int m = reducedBasis.numRows();
@@ -805,11 +925,11 @@ uncertain_vars_to_subspace(Model& native_model,
   // y <-- alpha*A*x + beta*y
   // mu_xi <-- 1.0 * reducedBasis^T * mu_x + 0.0 * mu_xi
   Teuchos::BLAS<int, Real> teuchos_blas;
-  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m, 
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m,
 		    mu_x.values(), incx, beta, mu_xi.values(), incy);
 
   // convert the correlations C_x to variance V_x
-  // V_x <-- diag(sd_x) * C_x * diag(sd_x) 
+  // V_x <-- diag(sd_x) * C_x * diag(sd_x)
   // not using symmetric so we can multiply() below
   RealMatrix V_x(reducedBasis.numRows(), reducedBasis.numRows(), false);
   if (native_correl) {
@@ -836,7 +956,7 @@ uncertain_vars_to_subspace(Model& native_model,
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, reducedBasis, V_x, beta);
   RealMatrix V_xi(reducedRank, reducedRank, false);
   V_xi.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, UTVx, reducedBasis, beta);
-  
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nV_xi = \n" << V_xi;
 
@@ -845,11 +965,11 @@ uncertain_vars_to_subspace(Model& native_model,
     sd_xi = std::sqrt(V_xi(i,i));
 
   // update the reduced space model
-  Pecos::AleatoryDistParams& reduced_dist_params = 
+  Pecos::AleatoryDistParams& reduced_dist_params =
     vars_transform_model.aleatory_distribution_parameters();
-  
-  reduced_dist_params.normal_means(mu_xi); 
-  reduced_dist_params.normal_std_deviations(sd_xi); 
+
+  reduced_dist_params.normal_means(mu_xi);
+  reduced_dist_params.normal_std_deviations(sd_xi);
 
 
   // compute the correlations in reduced space
@@ -862,11 +982,11 @@ uncertain_vars_to_subspace(Model& native_model,
   for (int row=0; row<reducedRank; ++row)
     for (int col=0; col<reducedRank; ++col)
       correl_xi(row, col) = V_xi(row,col)/sd_xi(row)/sd_xi(col);
-  
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\ncorrel_xi = \n" << correl_xi;
-  
-  reduced_dist_params.uncertain_correlations(correl_xi); 
+
+  reduced_dist_params.uncertain_correlations(correl_xi);
     //  }
 
 //   RealVector x_reduced(reducedRank);
@@ -891,7 +1011,7 @@ void EfficientSubspaceMethod::
 map_xi_to_x(const Variables& recast_xi_vars, Variables& sub_model_x_vars)
 {
   Teuchos::BLAS<int, Real> teuchos_blas;
-  
+
   const RealVector& xi = recast_xi_vars.continuous_variables();
   // TODO: does this yield a view or a copy?
   //RealVector x = sub_model_x_vars.continuous_variables();
@@ -900,7 +1020,7 @@ map_xi_to_x(const Variables& recast_xi_vars, Variables& sub_model_x_vars)
 
   //  Calculate x = reducedBasis*xi via matvec directly into x cv in submodel
   //void 	GEMV (ETransp trans, const OrdinalType m, const OrdinalType n, const alpha_type alpha, const A_type *A, const OrdinalType lda, const x_type *x, const OrdinalType incx, const beta_type beta, ScalarType *y, const OrdinalType incy) const
-  // 	Performs the matrix-std::vector operation: y <- alpha*A*x+beta*y or y <- alpha*A'*x+beta*y where A is a general m by n matrix. 
+  // 	Performs the matrix-std::vector operation: y <- alpha*A*x+beta*y or y <- alpha*A'*x+beta*y where A is a general m by n matrix.
   const RealMatrix& reduced_basis = esmInstance->reducedBasis;
   int m = reduced_basis.numRows();
   int n = reduced_basis.numCols();
@@ -911,15 +1031,15 @@ map_xi_to_x(const Variables& recast_xi_vars, Variables& sub_model_x_vars)
   int incx = 1;
   int incy = 1;
 
-  teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, reduced_basis.values(), m, 
+  teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, reduced_basis.values(), m,
 		    xi.values(), incx, beta, x.values(), incy);
-  
+
   if (esmInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Recast vars are\n"; 
+    Cout << "Recast vars are\n";
     Cout << recast_xi_vars << std::endl;
     //    xi.print(Cout);
 
-    Cout << "Submodel vars are\n"; 
+    Cout << "Submodel vars are\n";
     Cout << sub_model_x_vars << std::endl;
     //x.print(Cout);
   }

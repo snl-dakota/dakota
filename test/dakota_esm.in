@@ -8,14 +8,15 @@ method,
   efficient_subspace
   seed = 24620
   # initial build samples
-    samples = 10
+    samples = 100
   # additional samples per iteration
   batch_size = 2
   # evals in the subspace
   emulator_samples = 100
   convergence_tolerance = 1.0e-3
-    output verbose
+    output debug
   max_iterations = 10
+  max_function_evaluations = 2000
 
 variables,
   normal_uncertain = 100
