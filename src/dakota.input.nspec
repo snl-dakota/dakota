@@ -609,7 +609,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
        ]
       [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-      [ import_points_file STRING {N_mdm(str,approxImportFile)}
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
         [ 
           annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
           |
@@ -748,7 +748,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                   [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
                   [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
                  )
-                [ import_points_file STRING {N_mdm(str,approxImportFile)}
+                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
                   [ 
                     annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                     |
@@ -966,7 +966,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         |
         ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(utype,methodName_GPAIS)}
           [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
-          [ import_points_file STRING {N_mdm(str,approxImportFile)}
+          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
             [ 
               annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
               |
@@ -1031,7 +1031,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             constant_liar {N_mdm(lit,batchSelectionType_constant_liar)}
            ]
           [ batch_size INTEGER {N_mdm(int,batchSize)} ]
-          [ import_points_file STRING {N_mdm(str,approxImportFile)}
+          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
             [ 
               annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
               |
@@ -1117,7 +1117,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
                ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ import_points_file STRING {N_mdm(str,approxImportFile)}
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
                 [ 
                   annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                   |
@@ -1198,7 +1198,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
              ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-            [ import_points_file STRING {N_mdm(str,approxImportFile)}
+            [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
               [ 
                 annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                 |
@@ -1252,7 +1252,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
                 [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-                [ import_points_file STRING {N_mdm(str,approxImportFile)}
+                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
                   [ 
                     annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                     |
@@ -1268,21 +1268,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                    ]
                   [ active_only {N_mdm(true,approxImportActive)} ]
                  ]
-                [ export_points_file STRING {N_mdm(str,approxExportFile)}
-                  [ 
-                    annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
-                    |
-                    ( 
-                      ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                        [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
-                        [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
-                        [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
-                       )
-                     )
-                    |
-                    freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                   ]
-                 ]
                )
               |
               ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
@@ -1291,10 +1276,42 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                   collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                   [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+                  [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
+                    [ 
+                      annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
+                      |
+                      ( 
+                        ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                          [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                          [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                          [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                         )
+                       )
+                      |
+                      freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                     ]
+                    [ active_only {N_mdm(true,approxImportActive)} ]
+                   ]
                  )
                 |
                 ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
                   [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+                  [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
+                    [ 
+                      annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
+                      |
+                      ( 
+                        ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                          [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                          [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                          [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                         )
+                       )
+                      |
+                      freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                     ]
+                    [ active_only {N_mdm(true,approxImportActive)} ]
+                   ]
                  )
                )
               |
@@ -1308,7 +1325,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
             emulator_samples INTEGER {N_mdm(int,emulatorSamples)}
-            [ import_points_file STRING {N_mdm(str,approxImportFile)}
+            [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
               [ 
                 annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                 |
@@ -1323,21 +1340,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
                ]
               [ active_only {N_mdm(true,approxImportActive)} ]
-             ]
-            [ export_points_file STRING {N_mdm(str,approxExportFile)}
-              [ 
-                annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
-                |
-                ( 
-                  ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                    [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
-                    [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
-                    [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
-                   )
-                 )
-                |
-                freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-               ]
              ]
            )
           [ 
@@ -1390,7 +1392,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
               [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-              [ import_points_file STRING {N_mdm(str,approxImportFile)}
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
                 [ 
                   annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                   |
@@ -1406,21 +1408,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  ]
                 [ active_only {N_mdm(true,approxImportActive)} ]
                ]
-              [ export_points_file STRING {N_mdm(str,approxExportFile)}
-                [ 
-                  annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
-                  |
-                  ( 
-                    ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                      [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
-                      [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
-                      [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
-                     )
-                   )
-                  |
-                  freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                 ]
-               ]
              )
             |
             ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
@@ -1429,6 +1416,42 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
+                  [ 
+                    annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
+                    |
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                   ]
+                  [ active_only {N_mdm(true,approxImportActive)} ]
+                 ]
+               )
+              |
+              ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
+                  [ 
+                    annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
+                    |
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                   ]
+                  [ active_only {N_mdm(true,approxImportActive)} ]
+                 ]
                )
              )
             |
@@ -1470,7 +1493,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
               [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-              [ import_points_file STRING {N_mdm(str,approxImportFile)}
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
                 [ 
                   annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
                   |
@@ -1486,21 +1509,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  ]
                 [ active_only {N_mdm(true,approxImportActive)} ]
                ]
-              [ export_points_file STRING {N_mdm(str,approxExportFile)}
-                [ 
-                  annotated {N_mdm(utype,approxExportFormat_TABULAR_ANNOTATED)}
-                  |
-                  ( 
-                    ( custom_annotated {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                      [ header {N_mdm(augment_utype,approxExportFormat_TABULAR_HEADER)} ]
-                      [ eval_id {N_mdm(augment_utype,approxExportFormat_TABULAR_EVAL_ID)} ]
-                      [ interface_id {N_mdm(augment_utype,approxExportFormat_TABULAR_IFACE_ID)} ]
-                     )
-                   )
-                  |
-                  freeform {N_mdm(utype,approxExportFormat_TABULAR_NONE)}
-                 ]
-               ]
              )
             |
             ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
@@ -1509,10 +1517,42 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
+                  [ 
+                    annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
+                    |
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                   ]
+                  [ active_only {N_mdm(true,approxImportActive)} ]
+                 ]
                )
               |
               ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
+                  [ 
+                    annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
+                    |
+                    ( 
+                      ( custom_annotated {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                        [ header {N_mdm(augment_utype,approxImportFormat_TABULAR_HEADER)} ]
+                        [ eval_id {N_mdm(augment_utype,approxImportFormat_TABULAR_EVAL_ID)} ]
+                        [ interface_id {N_mdm(augment_utype,approxImportFormat_TABULAR_IFACE_ID)} ]
+                       )
+                     )
+                    |
+                    freeform {N_mdm(utype,approxImportFormat_TABULAR_NONE)}
+                   ]
+                  [ active_only {N_mdm(true,approxImportActive)} ]
+                 ]
                )
              )
             |
@@ -1679,7 +1719,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
          ]
-        [ import_points_file STRING {N_mdm(str,approxImportFile)}
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,approxImportFile)}
           [ 
             annotated {N_mdm(utype,approxImportFormat_TABULAR_ANNOTATED)}
             |
@@ -1923,7 +1963,7 @@ KEYWORD model {N_mom3(start,0,stop)}
         |
         none {N_mom(lit,approxPointReuse_none)}
        ]
-      [ import_points_file ALIAS samples_file STRING {N_mom(str,approxImportFile)}
+      [ import_build_points_file ALIAS import_points_file ALIAS samples_file STRING {N_mom(str,approxImportFile)}
         [ 
           annotated {N_mom(utype,approxImportFormat_TABULAR_ANNOTATED)}
           |
@@ -1977,7 +2017,7 @@ KEYWORD model {N_mom3(start,0,stop)}
          ]
         [ press {N_mom(true,pressFlag)} ]
        ]
-      [ challenge_points_file STRING {N_mom(str,approxChallengeFile)}
+      [ import_challenge_points_file ALIAS challenge_points_file STRING {N_mom(str,approxChallengeFile)}
         [ 
           annotated {N_mom(utype,approxChallengeFormat_TABULAR_ANNOTATED)}
           |

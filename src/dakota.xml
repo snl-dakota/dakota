@@ -1020,7 +1020,8 @@
                 </oneOf>
               </keyword>
               <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodEG" minOccurs="0" default="use function values only"/>
-              <keyword  id="import_points_file" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodEG" minOccurs="0" default="no point import from a file" >
+              <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodEG" minOccurs="0" default="no point import from a file" >
+		<alias name="import_points_file"/>
                 <param type="INPUT_FILE" />
 		&method_approx_import_format;
 	        <keyword  id="active_only" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
@@ -1212,8 +1213,9 @@
                                     </keyword>
                                   </keyword>
                                 </oneOf>
-                                <keyword  id="import_points_file1" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                                  <param type="INPUT_FILE" />
+                                <keyword  id="import_build_points_file1" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                  <alias name="import_points_file"/>
+				  <param type="INPUT_FILE" />
 				  &method_approx_import_format;
 				  <keyword  id="active_only1" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                                 </keyword>
@@ -1457,8 +1459,9 @@
                       <keyword  id="emulator_samples" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" default="10000">
                         <param type="INTEGER" />
                       </keyword>
-                      <keyword  id="import_points_file2" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial emulator" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="no point import from a file" >
-                        <param type="INPUT_FILE" />
+                      <keyword  id="import_build_points_file2" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial emulator" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="no point import from a file" >
+                        <alias name="import_points_file"/>
+			<param type="INPUT_FILE" />
 			&method_approx_import_format;
 			<keyword  id="active_only2" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                       </keyword>
@@ -1508,8 +1511,9 @@
                       <keyword  id="batch_size" name="batch_size" code="{N_mdm(int,batchSize)}" label="Batch size (number of points added each iteration)" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="1" >
                         <param type="INTEGER" />
                       </keyword>
-                      <keyword  id="import_points_file3" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="no point import from a file" >
-                        <param type="INPUT_FILE" />
+                      <keyword  id="import_build_points_file3" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="no point import from a file" >
+                        <alias name="import_points_file"/>
+			<param type="INPUT_FILE" />
 			&method_approx_import_format;
 			<keyword  id="active_only3" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                       </keyword>
@@ -1595,8 +1599,9 @@
                               </oneOf>
                             </keyword>
                             <keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
-                            <keyword  id="import_points_file4" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                              <param type="INPUT_FILE" />
+                            <keyword  id="import_build_points_file4" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                              <alias name="import_points_file"/>
+			      <param type="INPUT_FILE" />
 			      &method_approx_import_format;
 			      <keyword  id="active_only4" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                             </keyword>
@@ -1671,8 +1676,9 @@
                           </oneOf>
                         </keyword>
                         <keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
-                        <keyword  id="import_points_file5" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                          <param type="INPUT_FILE" />
+                        <keyword  id="import_build_points_file5" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                          <alias name="import_points_file"/>
+			  <param type="INPUT_FILE" />
 			  &method_approx_import_format;
 			  <keyword  id="active_only5" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                         </keyword>
@@ -1710,14 +1716,11 @@
                                   <param type="INTEGER" />
                                 </keyword>
 				<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
-                                <keyword  id="import_points_file6" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                                  <param type="INPUT_FILE" />
+                                <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                  <alias name="import_points_file"/>
+				  <param type="INPUT_FILE" />
 				  &method_approx_import_format;
 				  <keyword  id="active_only6" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
-                                </keyword>
-                                <keyword  id="export_points_file7" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" default="no point export to a file" >
-                                  <param type="OUTPUT_FILE" />
-				  &method_approx_export_format;
                                 </keyword>
                               </keyword>
                               <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
@@ -1725,16 +1728,28 @@
 				  <keyword  id="sparse_grid_level2" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
                                     <param type="INTEGERLIST" />
 				  </keyword>
-				  <keyword  id="expansion_order2" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				  <keyword  id="expansion_order1" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				    <param type="INTEGERLIST" />
-				    <keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				    <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				      <param type="REAL" />
 				    </keyword>
-				    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+				    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                    <keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                      <alias name="import_points_file"/>
+				      <param type="INPUT_FILE" />
+				      &method_approx_import_format;
+				      <keyword  id="active_only7" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                                    </keyword>
 				  </keyword>
 				  <keyword  id="collocation_points2" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                     <param type="INTEGERLIST" />
-				    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+				    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                    <keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                      <alias name="import_points_file"/>
+				      <param type="INPUT_FILE" />
+				      &method_approx_import_format;
+				      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                                    </keyword>
 				  </keyword>
 				</oneOf>
                               </keyword>
@@ -1752,14 +1767,11 @@
                           <keyword  id="emulator_samples4" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help=""  >
                             <param type="INTEGER" />
                           </keyword>
-                          <keyword  id="import_points_file7" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                            <param type="INPUT_FILE" />
+                          <keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                            <alias name="import_points_file"/>
+			    <param type="INPUT_FILE" />
 			    &method_approx_import_format;
-			    <keyword  id="active_only7" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
-                          </keyword>
-                          <keyword  id="export_points_file8" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" default="no point export to a file" >
-                            <param type="OUTPUT_FILE" />
-			    &method_approx_export_format;
+			    <keyword  id="active_only9" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                           </keyword>
                         </keyword>
                       </oneOf>
@@ -1822,14 +1834,11 @@
                               <param type="INTEGER" />
                             </keyword>
 			    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
-                            <keyword  id="import_points_file8" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                              <param type="INPUT_FILE" />
+                            <keyword  id="import_build_points_file10" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                              <alias name="import_points_file"/>
+			      <param type="INPUT_FILE" />
 			      &method_approx_import_format;
-			      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
-                            </keyword>
-                            <keyword  id="export_points_file9" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" default="no point export to a file" >
-                              <param type="OUTPUT_FILE" />
-			      &method_approx_export_format;
+			      <keyword  id="active_only10" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                             </keyword>
                           </keyword>
                           <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
@@ -1837,13 +1846,29 @@
                               <keyword  id="sparse_grid_level4" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
                                 <param type="INTEGERLIST" />
                               </keyword>
-			      <keyword  id="expansion_order3" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <keyword  id="expansion_order2" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				<param type="INTEGERLIST" />
-				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				<keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
 				</keyword>
 				<keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
-                              </keyword>
+                                <keyword  id="import_build_points_file11" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                  <alias name="import_points_file"/>
+				  <param type="INPUT_FILE" />
+				  &method_approx_import_format;
+				  <keyword  id="active_only11" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                                </keyword>
+			      </keyword>
+			      <keyword  id="collocation_points3" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+                                <param type="INTEGERLIST" />
+				<keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="import_build_points_file12" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                  <alias name="import_points_file"/>
+				  <param type="INPUT_FILE" />
+				  &method_approx_import_format;
+				  <keyword  id="active_only12" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                                </keyword>
+			      </keyword>
                             </oneOf>
                           </keyword>
                           <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
@@ -1907,20 +1932,17 @@
                             <keyword  id="emulator_samples5" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                               <param type="INTEGER" />
                             </keyword>
-			    <keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
-                            <keyword  id="import_points_file8" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="import_points_file" help="" minOccurs="0" default="no point import from a file" >
-                              <param type="INPUT_FILE" />
+			    <keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                            <keyword  id="import_build_points_file13" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                              <alias name="import_points_file"/>
+			      <param type="INPUT_FILE" />
 			      &method_approx_import_format;
-			      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
-                            </keyword>
-                            <keyword  id="export_points_file9" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="export_points_file" help="" minOccurs="0" default="no point export to a file" >
-                              <param type="OUTPUT_FILE" />
-			      &method_approx_export_format;
+			      <keyword  id="active_only13" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                             </keyword>
                           </keyword>
-                          <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+                          <keyword  id="pce3" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
                             <oneOf>
-                              <keyword  id="sparse_grid_level4" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                              <keyword  id="sparse_grid_level6" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
                                 <param type="INTEGERLIST" />
                               </keyword>
 			      <keyword  id="expansion_order3" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
@@ -1928,16 +1950,28 @@
 				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
 				</keyword>
-				<keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
-                              </keyword>
-			      <keyword  id="collocation_points3" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="import_build_points_file14" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                  <alias name="import_points_file"/>
+				  <param type="INPUT_FILE" />
+				  &method_approx_import_format;
+				  <keyword  id="active_only14" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                                </keyword>
+			      </keyword>
+			      <keyword  id="collocation_points4" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                 <param type="INTEGERLIST" />
-				<keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+				<keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="import_build_points_file15" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+                                  <alias name="import_points_file"/>
+				  <param type="INPUT_FILE" />
+				  &method_approx_import_format;
+				  <keyword  id="active_only15" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+                                </keyword>
 			      </keyword>
                             </oneOf>
                           </keyword>
                           <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-                            <keyword  id="sparse_grid_level5" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                            <keyword  id="sparse_grid_level7" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
                               <param type="INTEGERLIST" />
                             </keyword>
                           </keyword>
@@ -2154,12 +2188,13 @@
                       <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
                     </oneOf>
                   </optional>
-                  <keyword  id="import_points_file9" name="import_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point import from a file" >
-                    <param type="INPUT_FILE" />
+                  <keyword  id="import_build_points_file16" name="import_build_points_file" code="{N_mdm(str,approxImportFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point import from a file" >
+                    <alias name="import_points_file"/>
+		    <param type="INPUT_FILE" />
 		    &method_approx_import_format;
-		    <keyword  id="active_only9" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+		    <keyword  id="active_only16" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
                   </keyword>
-                  <keyword  id="export_points_file10" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point export to a file" >
+                  <keyword  id="export_points_file7" name="export_points_file" code="{N_mdm(str,approxExportFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point export to a file" >
                     <param type="OUTPUT_FILE" />
 		    &method_approx_export_format;
                   </keyword>
@@ -2272,7 +2307,7 @@
 		      <keyword  id="freeform" name="freeform" code="{N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}" label="freeform" help=""  />
 		    </oneOf>
 		  </optional>
-		  <keyword  id="active_only10" name="active_only" code="{N_mdm(true,pstudyFileActive)}" label="Active variables only" help="" minOccurs="0" />
+		  <keyword  id="active_only17" name="active_only" code="{N_mdm(true,pstudyFileActive)}" label="Active variables only" help="" minOccurs="0" />
                 </keyword>
               </oneOf>
             </keyword>
@@ -2508,8 +2543,9 @@
                   <keyword  id="none" name="none" code="{N_mom(lit,approxPointReuse_none)}" label="none" help=""  />
                 </oneOf>
               </keyword>
-              <keyword  id="import_points_file11" name="import_points_file" code="{N_mom(str,approxImportFile)}" label="File import of samples for global approximation builds" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
-                <alias name="samples_file"/>
+              <keyword  id="import_build_points_file17" name="import_build_points_file" code="{N_mom(str,approxImportFile)}" label="File import of samples for global approximation builds" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
+                <alias name="import_points_file"/>
+		<alias name="samples_file"/>
                 <param type="INPUT_FILE" />
 		<optional>
 		  <oneOf label="tabular format" >
@@ -2525,9 +2561,9 @@
 		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,approxImportFormat_TABULAR_NONE)}" label="freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
-		<keyword  id="active_only11" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
+		<keyword  id="active_only18" name="active_only" code="{N_mdm(true,approxImportActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
-              <keyword  id="export_points_file11" name="export_points_file" code="{N_mom(str,approxExportFile)}" label="File export of global approximation-based sample results" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point export to a file" >
+              <keyword  id="export_points_file8" name="export_points_file" code="{N_mom(str,approxExportFile)}" label="File export of global approximation-based sample results" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point export to a file" >
                 <param type="OUTPUT_FILE" />
 		<optional>
 		  <oneOf label="tabular format" >
@@ -2574,7 +2610,8 @@
                 </keyword>
                 <keyword  id="press" name="press" code="{N_mom(true,pressFlag)}" label="Perform PRESS cross validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No PRESS cross validation" />
               </keyword>
-              <keyword  id="challenge_points_file" name="challenge_points_file" code="{N_mom(str,approxChallengeFile)}" label="Challenge file for surrogate metrics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no user challenge data" >
+              <keyword  id="import_challenge_points_file" name="import_challenge_points_file" code="{N_mom(str,approxChallengeFile)}" label="Challenge file for surrogate metrics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no user challenge data" >
+                <alias name="challenge_points_file"/>
                 <param type="STRING" />
 		<optional>
 		  <oneOf label="tabular format" >
@@ -2590,7 +2627,7 @@
 		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,approxChallengeFormat_TABULAR_NONE)}" label="freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
-		<keyword  id="active_only15" name="active_only" code="{N_mom(true,approxChallengeActive)}" label="Active variables only" help="" minOccurs="0" />
+		<keyword  id="active_only19" name="active_only" code="{N_mom(true,approxChallengeActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
             </keyword>
             <required>

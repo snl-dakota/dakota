@@ -731,7 +731,7 @@ KEYWORD12 method
 	    | dakota
 	    ]
 	  [ use_derivatives ]
-	  [ import_points_file STRING
+	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -831,7 +831,7 @@ KEYWORD12 method
 	      [ reuse_points ALIAS reuse_samples ]
 	      [ incremental_lhs ]
 	      )
-	    [ import_points_file STRING
+	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -850,7 +850,7 @@ KEYWORD12 method
 	    [ cross_validation ]
 	    [ tensor_grid INTEGERLIST ]
 	    [ reuse_points ALIAS reuse_samples ]
-	    [ import_points_file STRING
+	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -1113,7 +1113,7 @@ KEYWORD12 method
 	|
 	( gpais ALIAS gaussian_process_adaptive_importance_sampling
 	  [ emulator_samples INTEGER ]
-	  [ import_points_file STRING
+	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -1180,7 +1180,7 @@ KEYWORD12 method
 	    | constant_liar
 	    ]
 	  [ batch_size INTEGER ]
-	  [ import_points_file STRING
+	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -1300,7 +1300,7 @@ KEYWORD12 method
 	      | dakota
 	      ]
 	    [ use_derivatives ]
-	    [ import_points_file STRING
+	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -1364,7 +1364,7 @@ KEYWORD12 method
 	      | dakota
 	      ]
 	    [ use_derivatives ]
-	    [ import_points_file STRING
+	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -1407,7 +1407,7 @@ KEYWORD12 method
 		| dakota
 		[ emulator_samples INTEGER ]
 		[ posterior_adaptive ]
-		[ import_points_file STRING
+		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
 		  ( custom_annotated
@@ -1419,17 +1419,6 @@ KEYWORD12 method
 		  ( freeform
 		  [ active_only ]
 		  ]
-		[ export_points_file STRING
-		  [ annotated
-		  |
-		  ( custom_annotated
-		    [ header ]
-		    [ eval_id ]
-		    [ interface_id ]
-		    ]
-		  |
-		  ( freeform
-		  ]
 		)
 	      |
 	      ( pce
@@ -1438,10 +1427,34 @@ KEYWORD12 method
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
 		  [ posterior_adaptive ]
+		  [ import_build_points_file ALIAS import_points_file STRING
+		    [ annotated
+		    |
+		    ( custom_annotated
+		      [ header ]
+		      [ eval_id ]
+		      [ interface_id ]
+		      ]
+		    |
+		    ( freeform
+		    [ active_only ]
+		    ]
 		  )
 		|
 		( collocation_points INTEGERLIST
 		  [ posterior_adaptive ]
+		  [ import_build_points_file ALIAS import_points_file STRING
+		    [ annotated
+		    |
+		    ( custom_annotated
+		      [ header ]
+		      [ eval_id ]
+		      [ interface_id ]
+		      ]
+		    |
+		    ( freeform
+		    [ active_only ]
+		    ]
 		  )
 		)
 	      |
@@ -1484,7 +1497,7 @@ KEYWORD12 method
 	  |
 	  ( gpmsa
 	    emulator_samples INTEGER
-	    [ import_points_file STRING
+	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -1495,17 +1508,6 @@ KEYWORD12 method
 	      |
 	      ( freeform
 	      [ active_only ]
-	      ]
-	    [ export_points_file STRING
-	      [ annotated
-	      |
-	      ( custom_annotated
-		[ header ]
-		[ eval_id ]
-		[ interface_id ]
-		]
-	      |
-	      ( freeform
 	      ]
 	    [ dram
 	    | delayed_rejection
@@ -1545,7 +1547,7 @@ KEYWORD12 method
 		| dakota
 		[ emulator_samples INTEGER ]
 		[ posterior_adaptive ]
-		[ import_points_file STRING
+		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
 		  ( custom_annotated
@@ -1557,17 +1559,6 @@ KEYWORD12 method
 		  ( freeform
 		  [ active_only ]
 		  ]
-		[ export_points_file STRING
-		  [ annotated
-		  |
-		  ( custom_annotated
-		    [ header ]
-		    [ eval_id ]
-		    [ interface_id ]
-		    ]
-		  |
-		  ( freeform
-		  ]
 		)
 	      |
 	      ( pce
@@ -1576,6 +1567,34 @@ KEYWORD12 method
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
 		  [ posterior_adaptive ]
+		  [ import_build_points_file ALIAS import_points_file STRING
+		    [ annotated
+		    |
+		    ( custom_annotated
+		      [ header ]
+		      [ eval_id ]
+		      [ interface_id ]
+		      ]
+		    |
+		    ( freeform
+		    [ active_only ]
+		    ]
+		  )
+		|
+		( collocation_points INTEGERLIST
+		  [ posterior_adaptive ]
+		  [ import_build_points_file ALIAS import_points_file STRING
+		    [ annotated
+		    |
+		    ( custom_annotated
+		      [ header ]
+		      [ eval_id ]
+		      [ interface_id ]
+		      ]
+		    |
+		    ( freeform
+		    [ active_only ]
+		    ]
 		  )
 		)
 	      |
@@ -1608,7 +1627,7 @@ KEYWORD12 method
 		| dakota
 		[ emulator_samples INTEGER ]
 		[ posterior_adaptive ]
-		[ import_points_file STRING
+		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
 		  ( custom_annotated
@@ -1620,17 +1639,6 @@ KEYWORD12 method
 		  ( freeform
 		  [ active_only ]
 		  ]
-		[ export_points_file STRING
-		  [ annotated
-		  |
-		  ( custom_annotated
-		    [ header ]
-		    [ eval_id ]
-		    [ interface_id ]
-		    ]
-		  |
-		  ( freeform
-		  ]
 		)
 	      |
 	      ( pce
@@ -1639,10 +1647,34 @@ KEYWORD12 method
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
 		  [ posterior_adaptive ]
+		  [ import_build_points_file ALIAS import_points_file STRING
+		    [ annotated
+		    |
+		    ( custom_annotated
+		      [ header ]
+		      [ eval_id ]
+		      [ interface_id ]
+		      ]
+		    |
+		    ( freeform
+		    [ active_only ]
+		    ]
 		  )
 		|
 		( collocation_points INTEGERLIST
 		  [ posterior_adaptive ]
+		  [ import_build_points_file ALIAS import_points_file STRING
+		    [ annotated
+		    |
+		    ( custom_annotated
+		      [ header ]
+		      [ eval_id ]
+		      [ interface_id ]
+		      ]
+		    |
+		    ( freeform
+		    [ active_only ]
+		    ]
 		  )
 		)
 	      |
@@ -1794,7 +1826,7 @@ KEYWORD12 method
 	  | u_gaussian_process ALIAS u_kriging
 	  [ surfpack
 	  | dakota ]
-	  [ import_points_file STRING
+	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -2000,7 +2032,7 @@ KEYWORD model
 	      | region
 	      | none
 	      ]
-	    [ import_points_file ALIAS samples_file STRING
+	    [ import_build_points_file ALIAS import_points_file ALIAS samples_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -2039,7 +2071,7 @@ KEYWORD model
 		]
 	      [ press ]
 	      ]
-	    [ challenge_points_file STRING
+	    [ import_challenge_points_file ALIAS challenge_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
