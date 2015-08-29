@@ -380,12 +380,12 @@ void ProblemDescDB::check_input()
 	if ( strbegins(dm_iter->dataModelRep->surrogateType, "global_") && 
 	     ( ( !dm_iter->dataModelRep->approxPointReuse.empty() &&
 		  dm_iter->dataModelRep->approxPointReuse != "none" ) ||
-	       !dm_iter->dataModelRep->approxImportFile.empty() ) )
+	       !dm_iter->dataModelRep->importBuildPtsFile.empty() ) )
 	  interface_reqd = false;
       if (interface_reqd)
 	for (std::list<DataMethod>::iterator dm_iter = dataMethodList.begin();
 	     dm_iter != dataMethodList.end(); ++dm_iter)
-	  if (!dm_iter->dataMethodRep->approxImportFile.empty())
+	  if (!dm_iter->dataMethodRep->importBuildPtsFile.empty())
 	    interface_reqd = false;
       if (interface_reqd) {
 	Cerr << "No interface specification found in input file.\n";
@@ -2266,7 +2266,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"coliny.pattern_basis", P patternBasis},
 	{"crossover_type", P crossoverType},
 	{"dl_solver.dlDetails", P dlDetails},
-	{"export_points_file", P approxExportFile},
+	{"export_points_file", P exportApproxPtsFile},
 	{"fitness_metric", P fitnessMetricType},
 	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
@@ -2277,7 +2277,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"hybrid.local_method_pointer", P hybridLocalMethodPointer},
 	{"hybrid.local_model_pointer", P hybridLocalModelPointer},
 	{"id", P idMethod},
-	{"import_points_file", P approxImportFile},
+	{"import_points_file", P importBuildPtsFile},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -2292,8 +2292,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
         {"nond.data_dist_filename", P dataDistFile},
 	{"nond.data_dist_type", P dataDistType},
 	{"nond.expansion_sample_type", P expansionSampleType},
-	{"nond.export_expansion_file", P expansionExportFile},
-	{"nond.import_expansion_file", P expansionImportFile},
+	{"nond.export_expansion_file", P exportExpansionFile},
+	{"nond.import_expansion_file", P importExpansionFile},
 	{"nond.mcmc_type", P mcmcType},
 	{"nond.point_reuse", P pointReuse},
 	{"nond.proposal_covariance_filename", P proposalCovFile},
@@ -2326,13 +2326,13 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
 	{"surrogate.actual_model_pointer", P truthModelPointer},
-	{"surrogate.challenge_points_file", P approxChallengeFile},
+	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.decomp_cell_type", P decompCellType},
-	{"surrogate.export_model_file", P approxExportModelFile},
-	{"surrogate.export_points_file", P approxExportFile},
+	{"surrogate.export_model_file", P exportApproxModelFile},
+	{"surrogate.export_points_file", P exportApproxPtsFile},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
-	{"surrogate.import_points_file", P approxImportFile},
+	{"surrogate.import_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.low_fidelity_model_pointer", P lowFidelityModelPointer},
 	{"surrogate.mars_interpolation", P marsInterpolation},
@@ -2725,8 +2725,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     static KW<unsigned short, DataMethodRep> UShdme[] = { 
       // must be sorted by string (key)
 	{"algorithm", P methodName},
-	{"export_points_file_format", P approxExportFormat},
-	{"import_points_file_format", P approxImportFormat},
+	{"export_points_file_format", P exportApproxFormat},
+	{"import_points_file_format", P importBuildFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.cubature_integrand", P cubIntOrder},
@@ -2750,9 +2750,9 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataModelRep::
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
       // must be sorted by string (key)
-	{"surrogate.challenge_points_file_format", P approxChallengeFormat},
-	{"surrogate.export_points_file_format", P approxExportFormat},
-	{"surrogate.import_points_file_format", P approxImportFormat}};
+	{"surrogate.challenge_points_file_format", P importChallengeFormat},
+	{"surrogate.export_points_file_format", P exportApproxFormat},
+	{"surrogate.import_points_file_format", P importBuildFormat}};
     #undef P
 
     KW<unsigned short, DataModelRep> *kw;
@@ -2964,7 +2964,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"derivative_usage", P methodUseDerivsFlag},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
-	{"import_points_file_active", P approxImportActive},
+	{"import_points_file_active", P importBuildActive},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
@@ -3000,12 +3000,12 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataModelRep> Bdmo[] = {	
       // must be sorted by string (key)
 	{"hierarchical_tags", P hierarchicalTags},
-	{"surrogate.challenge_points_file_active", P approxChallengeActive},
+	{"surrogate.challenge_points_file_active", P importChallengeActive},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
     {"surrogate.domain_decomp", P domainDecomp},
-	{"surrogate.import_points_file_active", P approxImportActive},
+	{"surrogate.import_points_file_active", P importBuildActive},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P

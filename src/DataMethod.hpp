@@ -867,9 +867,9 @@ public:
   /// specification in \ref MethodNonDPCE
   UShortArray tensorGridOrder;
   /// the \c import_expansion_file specification in \ref MethodNonDPCE
-  String expansionImportFile;
+  String importExpansionFile;
   /// the \c export_expansion_file specification in \ref MethodNonDPCE
-  String expansionExportFile;
+  String exportExpansionFile;
   /// the \c sample_type specification in \ref MethodNonDMC, \ref
   /// MethodNonDPCE, and \ref MethodNonDSC
   unsigned short sampleType;
@@ -1007,16 +1007,24 @@ public:
  
   // File read for surrogates
 
-  /// the file name for point import in surrogate-based methods
-  String approxImportFile;
-  /// tabular format for approximation import
-  unsigned short approxImportFormat;
+  /// the file name from the \c import_build_points_file specification
+  String importBuildPtsFile;
+  /// tabular format for the build point import file
+  unsigned short importBuildFormat;
   /// whether to import active variables only
-  bool approxImportActive;
-  /// the file name for point export in surrogate-based methods
-  String approxExportFile;
-  /// tabular format for approximation export
-  unsigned short approxExportFormat;
+  bool importBuildActive;
+
+  /// the file name from the \c import_approx_points_file specification
+  String importApproxPtsFile;
+  /// tabular format for the approx point import file
+  unsigned short importApproxFormat;
+  /// whether to import active variables only
+  bool importApproxActive;
+
+  /// the file name from the \c export_approx_points_file specification
+  String exportApproxPtsFile;
+  /// tabular format for the approx point export file
+  unsigned short exportApproxFormat;
 
 private:
 

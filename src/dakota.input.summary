@@ -743,7 +743,7 @@ KEYWORD12 method
 	    ( freeform
 	    [ active_only ]
 	    ]
-	  [ export_points_file STRING
+	  [ export_approx_points_file ALIAS export_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -881,7 +881,19 @@ KEYWORD12 method
 	    | mm_adapt_import
 	    [ refinement_samples INTEGER ]
 	    ]
-	  [ export_points_file STRING
+	  [ import_approx_points_file STRING
+	    [ annotated
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
+	    [ active_only ]
+	    ]
+	  [ export_approx_points_file ALIAS export_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -978,7 +990,19 @@ KEYWORD12 method
 	    | mm_adapt_import
 	    [ refinement_samples INTEGER ]
 	    ]
-	  [ export_points_file STRING
+	  [ import_approx_points_file STRING
+	    [ annotated
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
+	    [ active_only ]
+	    ]
+	  [ export_approx_points_file ALIAS export_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -1125,7 +1149,7 @@ KEYWORD12 method
 	    ( freeform
 	    [ active_only ]
 	    ]
-	  [ export_points_file STRING
+	  [ export_approx_points_file ALIAS export_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -1192,7 +1216,7 @@ KEYWORD12 method
 	    ( freeform
 	    [ active_only ]
 	    ]
-	  [ export_points_file STRING
+	  [ export_approx_points_file ALIAS export_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -1312,7 +1336,7 @@ KEYWORD12 method
 	      ( freeform
 	      [ active_only ]
 	      ]
-	    [ export_points_file STRING
+	    [ export_approx_points_file ALIAS export_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -1376,7 +1400,7 @@ KEYWORD12 method
 	      ( freeform
 	      [ active_only ]
 	      ]
-	    [ export_points_file STRING
+	    [ export_approx_points_file ALIAS export_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated
@@ -1838,7 +1862,7 @@ KEYWORD12 method
 	    ( freeform
 	    [ active_only ]
 	    ]
-	  [ export_points_file STRING
+	  [ export_approx_points_file ALIAS export_points_file STRING
 	    [ annotated
 	    |
 	    ( custom_annotated
@@ -2044,7 +2068,19 @@ KEYWORD model
 	      ( freeform
 	      [ active_only ]
 	      ]
-	    [ export_points_file STRING
+	    [ import_approx_points_file STRING
+	      [ annotated
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
+	      [ active_only ]
+	      ]
+	    [ export_approx_points_file ALIAS export_points_file STRING
 	      [ annotated
 	      |
 	      ( custom_annotated

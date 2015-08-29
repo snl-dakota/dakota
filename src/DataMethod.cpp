@@ -142,8 +142,9 @@ DataMethodRep::DataMethodRep():
   // Verification
   refinementRate(2.),
   // Point import/export files
-  approxImportFormat(TABULAR_ANNOTATED), approxImportActive(false),
-  approxExportFormat(TABULAR_ANNOTATED), referenceCount(1)
+  importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
+  importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
+  exportApproxFormat(TABULAR_ANNOTATED), referenceCount(1)
 { }
 
 
@@ -250,8 +251,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
     << crossValidation //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << expansionImportFile
-    << expansionExportFile << sampleType << reliabilitySearchType
+    << tensorGridFlag << tensorGridOrder << importExpansionFile
+    << exportExpansionFile << sampleType << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
@@ -274,8 +275,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << refinementRate;
  
   // Point import/export files
-  s << approxImportFile << approxImportFormat << approxImportActive
-    << approxExportFile << approxExportFormat;
+  s << importBuildPtsFile  << importBuildFormat  << importBuildActive
+    << importApproxPtsFile << importApproxFormat << importApproxActive
+    << exportApproxPtsFile << exportApproxFormat;
 }
 
 
@@ -383,8 +385,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
     >> crossValidation //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
-    >> tensorGridFlag >> tensorGridOrder >> expansionImportFile
-    >> expansionExportFile >> sampleType >> reliabilitySearchType
+    >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
+    >> exportExpansionFile >> sampleType >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
@@ -407,8 +409,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> refinementRate;
 
   // Point import/export files
-  s >> approxImportFile >> approxImportFormat >> approxImportActive
-    >> approxExportFile >> approxExportFormat;
+  s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
+    >> importApproxPtsFile >> importApproxFormat >> importApproxActive
+    >> exportApproxPtsFile >> exportApproxFormat;
 }
 
 
@@ -516,8 +519,8 @@ void DataMethodRep::write(std::ostream& s) const
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
     << crossValidation //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << expansionImportFile
-    << expansionExportFile << sampleType << reliabilitySearchType
+    << tensorGridFlag << tensorGridOrder << importExpansionFile
+    << exportExpansionFile << sampleType << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
@@ -540,8 +543,9 @@ void DataMethodRep::write(std::ostream& s) const
   s << refinementRate;
 
   // Point import/export files
-  s << approxImportFile << approxImportFormat << approxImportActive
-    << approxExportFile << approxExportFormat;
+  s << importBuildPtsFile  << importBuildFormat  << importBuildActive
+    << importApproxPtsFile << importApproxFormat << importApproxActive
+    << exportApproxPtsFile << exportApproxFormat;
 }
 
 

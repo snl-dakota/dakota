@@ -114,22 +114,32 @@ public:
   /// region, or file (from the \c reuse_samples specification in
   /// \ref ModelSurrG)
   String approxPointReuse;
-  /// the file name from the \c import_points_file specification in
+
+  /// the file name from the \c import_build_points_file specification in
   /// \ref ModelSurrG
-  String approxImportFile;
-  /// tabular format for the point import file
-  unsigned short approxImportFormat;
+  String importBuildPtsFile;
+  /// tabular format for the build point import file
+  unsigned short importBuildFormat;
   /// whether to import active variables only
-  bool approxImportActive;
-  /// the file name from the \c export_points_file specification in
+  bool importBuildActive;
+
+  /// the file name from the \c import_approx_points_file specification in
   /// \ref ModelSurrG
-  String approxExportFile;
-  /// tabular format for the point export file
-  unsigned short approxExportFormat;
+  String importApproxPtsFile;
+  /// tabular format for the approx point import file
+  unsigned short importApproxFormat;
+  /// whether to import active variables only
+  bool importApproxActive;
+
+  /// the file name from the \c export_approx_points_file specification in
+  /// \ref ModelSurrG
+  String exportApproxPtsFile;
+  /// tabular format for the approx point export file
+  unsigned short exportApproxFormat;
 
   /// the file name from the \c export_model_file specification in
   /// \ref ModelSurrG
-  String approxExportModelFile;
+  String exportApproxModelFile;
 
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
@@ -215,13 +225,14 @@ public:
   Real percentFold;
   /// flag indicating the use of PRESS on the metrics specified
   bool pressFlag;
+
   /// the file name from the \c challenge_points_file specification in
   /// \ref ModelSurrG
-  String approxChallengeFile;
+  String importChallengePtsFile;
   /// tabular format of the challenge data file
-  unsigned short approxChallengeFormat;
+  unsigned short importChallengeFormat;
   /// whether to import active variables only
-  bool approxChallengeActive;
+  bool importChallengeActive;
 
   // nested models
 
