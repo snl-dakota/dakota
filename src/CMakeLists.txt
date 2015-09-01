@@ -594,6 +594,7 @@ if(HAVE_QUESO)
 
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
   add_definitions("-DHAVE_QUESO")
+  add_definitions("-DQUESO_HAVE_BOOST_SCOPED_PTR_HPP")
   if(HAVE_QUESO_GPMSA)
     add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
