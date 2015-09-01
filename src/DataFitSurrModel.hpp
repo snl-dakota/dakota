@@ -57,11 +57,11 @@ public:
 		   const UShortArray& approx_order, short corr_type,
 		   short corr_order, short data_order, short output_level,
 		   const String& point_reuse,
-		   const String& export_points_file = String(),
-		   unsigned short export_format = TABULAR_ANNOTATED,
-		   const String& import_points_file = String(),
-		   unsigned short import_format = TABULAR_ANNOTATED,
-		   bool import_active_only = false);
+		   const String& import_build_points_file = String(),
+		   unsigned short import_build_format = TABULAR_ANNOTATED,
+		   bool import_build_active_only = false,
+		   const String& export_approx_points_file = String(),
+		   unsigned short export_approx_format = TABULAR_ANNOTATED);
   /// destructor
   ~DataFitSurrModel();
 
@@ -302,17 +302,17 @@ private:
   bool manageRecasting;
   /// a key indicating which models within a model recursion involve recasting
   BoolDeque recastFlags;
-  /// file name from \c import_points_file specification
+  /// file name from \c import_build_points_file specification
   String importPointsFile;
-  /// file name from \c export_points_file specification
+  /// file name from \c export_approx_points_file specification
   String exportPointsFile;
   /// file export format for variables and approximate responses
   unsigned short exportFormat;
-  /// file name for \c export_points_file specification
+  /// file name for \c export_approx_points_file specification
   std::ofstream exportFileStream;
-  /// array of variables sets read from the \c import_points_file
+  /// array of variables sets read from the \c import_build_points_file
   VariablesList reuseFileVars;
-  /// array of response sets read from the \c import_points_file
+  /// array of response sets read from the \c import_build_points_file
   ResponseList reuseFileResponses;
 
   /// manages the building and subsequent evaluation of the approximations

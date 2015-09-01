@@ -123,13 +123,13 @@ public:
   /// whether to import active variables only
   bool importBuildActive;
 
-  /// the file name from the \c import_approx_points_file specification in
-  /// \ref ModelSurrG
-  String importApproxPtsFile;
-  /// tabular format for the approx point import file
-  unsigned short importApproxFormat;
-  /// whether to import active variables only
-  bool importApproxActive;
+  // the file name from the \c import_approx_points_file specification in
+  // \ref ModelSurrG
+  //String importApproxPtsFile;
+  // tabular format for the approx point import file
+  //unsigned short importApproxFormat;
+  // whether to import active variables only
+  //bool importApproxActive;
 
   /// the file name from the \c export_approx_points_file specification in
   /// \ref ModelSurrG

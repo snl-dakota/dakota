@@ -103,7 +103,7 @@ namespace Dakota
 		}
 
 		bool vary_pattern = false;
-		const String& import_pts_file = probDescDB.get_string("method.import_points_file");
+		const String& import_pts_file = probDescDB.get_string("method.import_build_points_file");
 		int samples = numSamples;
 		if (!import_pts_file.empty())
 		{
@@ -127,10 +127,11 @@ namespace Dakota
 		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
 		gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel,
 						  gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-						  outputLevel, sample_reuse, probDescDB.get_string("method.export_points_file"),
-						  probDescDB.get_ushort("method.export_points_file_format"), import_pts_file,
-							probDescDB.get_ushort("method.import_points_file_format"),
-							probDescDB.get_bool("method.import_points_file_active")), false);
+						  outputLevel, sample_reuse, import_pts_file,
+						  probDescDB.get_ushort("method.import_build_format"),
+						  probDescDB.get_bool("method.import_build_active_only"),
+						  probDescDB.get_string("method.export_approx_points_file"),
+						  probDescDB.get_ushort("method.export_approx_format")), false);
 
 		vary_pattern = true; // allow seed to run among multiple approx sample sets
 							 // need to add to input spec

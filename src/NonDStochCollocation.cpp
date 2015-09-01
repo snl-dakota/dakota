@@ -120,11 +120,12 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   //const Variables& g_u_vars = g_u_model.current_variables();
   ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
   sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
-    probDescDB.get_ushort("method.export_points_file_format")), false);
-    // point import not supported for structured grids
+    outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
+    probDescDB.get_string("method.export_approx_points_file"),
+    probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
 
   // -------------------------------

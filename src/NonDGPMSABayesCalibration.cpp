@@ -51,11 +51,10 @@ NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
-  approxImportFile(probDescDB.get_string("method.import_points_file")),
-  approxImportFormat(
-    probDescDB.get_ushort("method.import_points_file_format")),
+  approxImportFile(probDescDB.get_string("method.import_build_points_file")),
+  approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
-    probDescDB.get_bool("method.import_points_file_active")),
+    probDescDB.get_bool("method.import_build_active_only")),
   emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
 {   
   const String& rng = probDescDB.get_string("method.random_number_generator");

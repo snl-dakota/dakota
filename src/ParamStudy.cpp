@@ -39,9 +39,12 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     const RealVector& pt_list
       = probDescDB.get_rv("method.parameter_study.list_of_points");
     if (pt_list.empty()) {
-      const String& pt_fname = probDescDB.get_string("method.pstudy.filename");
-      unsigned short tabular_format = probDescDB.get_ushort("method.pstudy.file_format");
-      bool active_only = probDescDB.get_bool("method.pstudy.file_active");
+      const String& pt_fname
+	= probDescDB.get_string("method.pstudy.import_file");
+      unsigned short tabular_format
+	= probDescDB.get_ushort("method.pstudy.import_format");
+      bool active_only
+	= probDescDB.get_bool("method.pstudy.import_active_only");
       if (load_distribute_points(pt_fname, tabular_format, active_only))
 	err_flag = true;
     }

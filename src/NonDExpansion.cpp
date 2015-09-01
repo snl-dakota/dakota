@@ -518,7 +518,7 @@ void NonDExpansion::construct_expansion_sampler()
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
 	cdfFlag);
-      // needed if export_points_file:
+      // needed if export_approx_points_file:
       imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
     }
   }

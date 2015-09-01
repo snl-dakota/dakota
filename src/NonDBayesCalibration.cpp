@@ -130,7 +130,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
 	  randomSeed, EXTENDED_U, false, derivs,	
-	  probDescDB.get_bool("method.nond.cross_validation")); // not exposed
+	  probDescDB.get_bool("method.nond.cross_validation"), // not exposed
+	  probDescDB.get_string("method.import_build_points_file"),
+	  probDescDB.get_ushort("method.import_build_format"),
+	  probDescDB.get_bool("method.import_build_active_only"));
       }
       mcmc_deriv_order = 7; // Hessian computations implemented for PCE
     }
@@ -163,7 +166,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     int samples = probDescDB.get_int("method.nond.emulator_samples");
     // get point samples file
     const String& import_pts_file
-      = probDescDB.get_string("method.import_points_file");
+      = probDescDB.get_string("method.import_build_points_file");
     if (!import_pts_file.empty())
       { samples = 0; sample_reuse = "all"; }
      
@@ -186,11 +189,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     gp_set.request_values(mcmc_deriv_order); // for misfit Hessian
     mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, lhs_model,
       gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-      outputLevel, sample_reuse,
-      probDescDB.get_string("method.export_points_file"),
-      probDescDB.get_ushort("method.export_points_file_format"),import_pts_file,
-      probDescDB.get_ushort("method.import_points_file_format"),
-      probDescDB.get_bool("method.import_points_file_active")), false);
+      outputLevel, sample_reuse, import_pts_file,
+      probDescDB.get_ushort("method.import_build_format"),
+      probDescDB.get_bool("method.import_build_active_only")), false);
     break;
   }
 

@@ -2266,7 +2266,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"coliny.pattern_basis", P patternBasis},
 	{"crossover_type", P crossoverType},
 	{"dl_solver.dlDetails", P dlDetails},
-	{"export_points_file", P exportApproxPtsFile},
+	{"export_approx_points_file", P exportApproxPtsFile},
 	{"fitness_metric", P fitnessMetricType},
 	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
@@ -2277,7 +2277,8 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"hybrid.local_method_pointer", P hybridLocalMethodPointer},
 	{"hybrid.local_model_pointer", P hybridLocalModelPointer},
 	{"id", P idMethod},
-	{"import_points_file", P importBuildPtsFile},
+	{"import_approx_points_file", P importApproxPtsFile},
+	{"import_build_points_file", P importBuildPtsFile},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -2302,7 +2303,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nond.reliability_integration", P reliabilityIntegration},
 	{"optpp.search_method", P searchMethod},
 	{"pattern_search.synchronization", P evalSynchronize},
-	{"pstudy.filename", P pstudyFilename},
+	{"pstudy.import_file", P pstudyFilename},
 	{"random_number_generator", P rngName},
 	{"replacement_type", P replacementType},
 	{"sub_method_name", P subMethodName},
@@ -2330,9 +2331,9 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_model_file", P exportApproxModelFile},
-	{"surrogate.export_points_file", P exportApproxPtsFile},
+	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
-	{"surrogate.import_points_file", P importBuildPtsFile},
+	{"surrogate.import_build_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.low_fidelity_model_pointer", P lowFidelityModelPointer},
 	{"surrogate.mars_interpolation", P marsInterpolation},
@@ -2725,8 +2726,9 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     static KW<unsigned short, DataMethodRep> UShdme[] = { 
       // must be sorted by string (key)
 	{"algorithm", P methodName},
-	{"export_points_file_format", P exportApproxFormat},
-	{"import_points_file_format", P importBuildFormat},
+	{"export_approx_format", P exportApproxFormat},
+	{"import_approx_format", P importApproxFormat},
+	{"import_build_format", P importBuildFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.cubature_integrand", P cubIntOrder},
@@ -2734,7 +2736,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"nond.pre_solve_method", P preSolveMethod},
 	{"nond.reliability_search_type", P reliabilitySearchType},
 	{"nond.vbd_interaction_order", P vbdOrder},
-	{"pstudy.file_format", P pstudyFileFormat},
+	{"pstudy.import_format", P pstudyFileFormat},
 	{"sample_type", P sampleType},
 	{"soft_convergence_limit", P softConvLimit},
 	{"sub_method", P subMethod}};
@@ -2751,8 +2753,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
       // must be sorted by string (key)
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
-	{"surrogate.export_points_file_format", P exportApproxFormat},
-	{"surrogate.import_points_file_format", P importBuildFormat}};
+	{"surrogate.export_approx_format", P exportApproxFormat},
+	{"surrogate.import_build_format", P importBuildFormat}};
     #undef P
 
     KW<unsigned short, DataModelRep> *kw;
@@ -2964,7 +2966,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"derivative_usage", P methodUseDerivsFlag},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
-	{"import_points_file_active", P importBuildActive},
+	{"import_approx_active_only", P importApproxActive},
+	{"import_build_active_only", P importBuildActive},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
@@ -2980,7 +2983,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.tensor_grid", P tensorGridFlag},
 	{"principal_components", P pcaFlag},
 	{"print_each_pop", P printPopFlag},
-	{"pstudy.file_active", P pstudyFileActive},
+	{"pstudy.import_active_only", P pstudyFileActive},
 	{"quality_metrics", P volQualityFlag},
 	{"sbg.replace_points", P surrBasedGlobalReplacePts},
 	{"sbl.truth_surrogate_bypass", P surrBasedLocalLayerBypass},
@@ -3004,8 +3007,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
-    {"surrogate.domain_decomp", P domainDecomp},
-	{"surrogate.import_points_file_active", P importBuildActive},
+	{"surrogate.domain_decomp", P domainDecomp},
+	{"surrogate.import_build_active_only", P importBuildActive},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P

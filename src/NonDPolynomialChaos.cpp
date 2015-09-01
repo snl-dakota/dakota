@@ -65,7 +65,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Data import settings
   // --------------------
   String pt_reuse = probDescDB.get_string("method.nond.point_reuse"),
-    import_pts_file = probDescDB.get_string("method.import_points_file");
+    import_pts_file = probDescDB.get_string("method.import_build_points_file");
   if (!import_pts_file.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
@@ -289,10 +289,11 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, probDescDB.get_string("method.export_points_file"),
-    probDescDB.get_ushort("method.export_points_file_format"), import_pts_file,
-    probDescDB.get_ushort("method.import_points_file_format"),
-    probDescDB.get_bool("method.import_points_file_active")), false);
+    outputLevel, pt_reuse, import_pts_file,
+    probDescDB.get_ushort("method.import_build_format"),
+    probDescDB.get_bool("method.import_build_active_only"),
+    probDescDB.get_string("method.export_approx_points_file"),
+    probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
 
   // -------------------------------------
@@ -381,7 +382,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    const RealVector& dim_pref,
 		    const SizetArray& colloc_pts_seq, Real colloc_ratio,
 		    int seed, short u_space_type, bool piecewise_basis,
-		    bool use_derivs, bool cv_flag):
+		    bool use_derivs, bool cv_flag,
+		    const String& import_build_points_file,
+		    unsigned short import_build_format,
+		    bool import_build_active_only):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
@@ -471,11 +475,13 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     //(piecewiseBasis) ? "piecewise_regression_orthogonal_polynomial" :
     "global_regression_orthogonal_polynomial";
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  if (!import_build_points_file.empty()) pt_reuse = "all";
   pce_set.request_values(7); // helper mode: support surrogate Hessian evals
                              // TO DO: consider passing in data_mode
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
+    outputLevel, pt_reuse, import_build_points_file, import_build_format,
+    import_build_active_only), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

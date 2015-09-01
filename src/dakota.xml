@@ -2597,12 +2597,12 @@
 		</optional>
 		<keyword  id="active_only20" name="active_only" code="{N_mom(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
+	      <!-- MSE: this option seems undesirable from a design perspective; outer loop evaluations should be handled by Iterators.
               <keyword  id="import_approx_points_file2" name="import_approx_points_file" code="{N_mom(str,importApproxPtsFile)}" label="File import of samples for evaluation on global surrogate" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
 		<param type="INPUT_FILE" />
 		<optional>
 		  <oneOf label="tabular format" >
 		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importApproxFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
 		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
 			<keyword  id="header" name="header" code="{N_mom(augment_utype,importApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
@@ -2615,6 +2615,7 @@
 		</optional>
 		<keyword  id="active_only21" name="active_only" code="{N_mom(true,importApproxActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
+	      -->
               <keyword  id="export_approx_points_file8" name="export_approx_points_file" code="{N_mom(str,exportApproxPtsFile)}" label="File export of global approximation-based sample results" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point export to a file" >
                 <alias name="export_points_file"/>
 		<param type="OUTPUT_FILE" />

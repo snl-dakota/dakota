@@ -37,10 +37,11 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
   manageRecasting(false),
-  importPointsFile(problem_db.get_string("model.surrogate.import_points_file")),
-  exportPointsFile(problem_db.get_string("model.surrogate.export_points_file")),
-  exportFormat(
-    problem_db.get_ushort("model.surrogate.export_points_file_format"))
+  importPointsFile(
+    problem_db.get_string("model.surrogate.import_build_points_file")),
+  exportPointsFile(
+    problem_db.get_string("model.surrogate.export_approx_points_file")),
+  exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -130,8 +131,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
-    problem_db.get_ushort("model.surrogate.import_points_file_format"),
-    problem_db.get_bool("model.surrogate.import_points_file_active"));
+    problem_db.get_ushort("model.surrogate.import_build_format"),
+    problem_db.get_bool("model.surrogate.import_build_active_only"));
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();
@@ -144,9 +145,12 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 const ActiveSet& set, const String& approx_type,
 		 const UShortArray& approx_order, short corr_type,
 		 short corr_order, short data_order, short output_level,
-		 const String& point_reuse, const String& export_points_file,
-		 unsigned short export_format, const String& import_points_file,
-		 unsigned short import_format, bool import_active_only):
+		 const String& point_reuse,
+		 const String& import_build_points_file,
+		 unsigned short import_build_format,
+		 bool import_build_active_only,
+		 const String& export_approx_points_file,
+		 unsigned short export_approx_format):
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
 		 actual_model.current_variables().shared_data(),
@@ -154,8 +158,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
-  manageRecasting(false), exportPointsFile(export_points_file),
-  exportFormat(export_format), importPointsFile(import_points_file)
+  manageRecasting(false), exportPointsFile(export_approx_points_file),
+  exportFormat(export_approx_format), importPointsFile(import_build_points_file)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -251,7 +255,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
-  import_points(import_format, import_active_only);
+  import_points(import_build_format, import_build_active_only);
   initialize_export();
   if (!importPointsFile.empty() || !exportPointsFile.empty())
     manage_data_recastings();

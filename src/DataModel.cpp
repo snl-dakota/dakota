@@ -21,8 +21,8 @@ DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), 
-  importBuildFormat(TABULAR_ANNOTATED), importBuildActive(false),
-  importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
+  importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
+//importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
@@ -46,19 +46,20 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateFnIndices << surrogateType << truthModelPointer
     << lowFidelityModelPointer << pointsTotal << pointsManagement
     << approxPointReuse << importBuildPtsFile << importBuildFormat
-    << importBuildActive << importApproxPtsFile << importApproxFormat
-    << importApproxActive << exportApproxPtsFile << exportApproxFormat
-    << exportApproxModelFile << approxCorrectionType << approxCorrectionOrder
-    << modelUseDerivsFlag << polynomialOrder << krigingCorrelations
-    << krigingOptMethod << krigingMaxTrials << krigingMaxCorrelations
-    << krigingMinCorrelations << krigingNugget << krigingFindNugget
-    << mlsWeightFunction << rbfBases << rbfMaxPts << rbfMaxSubsets
-    << rbfMinPartition << marsMaxBases << marsInterpolation << annRandomWeight
-    << annNodes << annRange << domainDecomp << decompCellType
-    << decompSupportLayers << decompDiscontDetect << discontJumpThresh
-    << discontGradThresh << trendOrder << pointSelection << diagMetrics
-    << crossValidateFlag << numFolds << percentFold << pressFlag
-    << importChallengePtsFile << importChallengeFormat << importChallengeActive
+    << importBuildActive
+  //<< importApproxPtsFile << importApproxFormat << importApproxActive
+    << exportApproxPtsFile << exportApproxFormat << exportApproxModelFile
+    << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
+    << polynomialOrder << krigingCorrelations << krigingOptMethod
+    << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
+    << krigingNugget << krigingFindNugget << mlsWeightFunction
+    << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
+    << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
+    << annRange << domainDecomp << decompCellType << decompSupportLayers
+    << decompDiscontDetect << discontJumpThresh << discontGradThresh
+    << trendOrder << pointSelection << diagMetrics << crossValidateFlag
+    << numFolds << percentFold << pressFlag << importChallengePtsFile
+    << importChallengeFormat << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
     << subMethodProcs << subMethodScheduling;
@@ -72,19 +73,20 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateFnIndices >> surrogateType >> truthModelPointer
     >> lowFidelityModelPointer >> pointsTotal >> pointsManagement
     >> approxPointReuse >> importBuildPtsFile >> importBuildFormat
-    >> importBuildActive >> importApproxPtsFile >> importApproxFormat
-    >> importApproxActive >> exportApproxPtsFile >> exportApproxFormat
-    >> exportApproxModelFile >> approxCorrectionType >> approxCorrectionOrder
-    >> modelUseDerivsFlag >> polynomialOrder >> krigingCorrelations
-    >> krigingOptMethod >> krigingMaxTrials >> krigingMaxCorrelations
-    >> krigingMinCorrelations >> krigingNugget >> krigingFindNugget
-    >> mlsWeightFunction >> rbfBases >> rbfMaxPts >> rbfMaxSubsets
-    >> rbfMinPartition >> marsMaxBases >> marsInterpolation >> annRandomWeight
-    >> annNodes >> annRange >> domainDecomp >> decompCellType
-    >> decompSupportLayers >> decompDiscontDetect >> discontJumpThresh
-    >> discontGradThresh >> trendOrder >> pointSelection >> diagMetrics
-    >> crossValidateFlag >> numFolds >> percentFold >> pressFlag
-    >> importChallengePtsFile >> importChallengeFormat >> importChallengeActive
+    >> importBuildActive
+  //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
+    >> exportApproxPtsFile >> exportApproxFormat >> exportApproxModelFile
+    >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
+    >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
+    >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
+    >> krigingNugget >> krigingFindNugget >> mlsWeightFunction
+    >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition
+    >> marsMaxBases >> marsInterpolation >> annRandomWeight >> annNodes
+    >> annRange >> domainDecomp >> decompCellType >> decompSupportLayers
+    >> decompDiscontDetect >> discontJumpThresh >> discontGradThresh
+    >> trendOrder >> pointSelection >> diagMetrics >> crossValidateFlag
+    >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
+    >> importChallengeFormat >> importChallengeActive
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
     >> primaryRespCoeffs >> secondaryRespCoeffs >> subMethodServers
     >> subMethodProcs >> subMethodScheduling;
@@ -98,19 +100,20 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateFnIndices << surrogateType << truthModelPointer
     << lowFidelityModelPointer << pointsTotal << pointsManagement
     << approxPointReuse << importBuildPtsFile << importBuildFormat
-    << importBuildActive << importApproxPtsFile << importApproxFormat
-    << importApproxActive << exportApproxPtsFile << exportApproxFormat
-    << exportApproxModelFile << approxCorrectionType << approxCorrectionOrder
-    << modelUseDerivsFlag << polynomialOrder << krigingCorrelations
-    << krigingOptMethod << krigingMaxTrials << krigingMaxCorrelations
-    << krigingMinCorrelations << krigingNugget << krigingFindNugget
-    << mlsWeightFunction << rbfBases << rbfMaxPts << rbfMaxSubsets
-    << rbfMinPartition << marsMaxBases << marsInterpolation << annRandomWeight
-    << annNodes << annRange << domainDecomp << decompCellType
-    << decompSupportLayers << decompDiscontDetect << discontJumpThresh
-    << discontGradThresh << trendOrder << pointSelection << diagMetrics
-    << crossValidateFlag << numFolds << percentFold << pressFlag
-    << importChallengePtsFile << importChallengeFormat << importChallengeActive
+    << importBuildActive
+  //<< importApproxPtsFile << importApproxFormat << importApproxActive
+    << exportApproxPtsFile << exportApproxFormat << exportApproxModelFile
+    << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
+    << polynomialOrder << krigingCorrelations << krigingOptMethod
+    << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
+    << krigingNugget << krigingFindNugget << mlsWeightFunction
+    << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
+    << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
+    << annRange << domainDecomp << decompCellType << decompSupportLayers
+    << decompDiscontDetect << discontJumpThresh << discontGradThresh
+    << trendOrder << pointSelection << diagMetrics << crossValidateFlag
+    << numFolds << percentFold << pressFlag << importChallengePtsFile
+    << importChallengeFormat << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
     << subMethodProcs << subMethodScheduling;

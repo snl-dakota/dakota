@@ -50,7 +50,10 @@ public:
 		      const RealVector& dim_pref,
 		      const SizetArray& colloc_pts_seq, Real colloc_ratio,
 		      int seed, short u_space_type, bool piecewise_basis,
-		      bool use_derivs, bool cv_flag);
+		      bool use_derivs, bool cv_flag,
+		      const String& import_build_points_file,
+		      unsigned short import_build_format,
+		      bool import_build_active_only);
   /// destructor
   ~NonDPolynomialChaos();
 

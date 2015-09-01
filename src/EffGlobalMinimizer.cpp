@@ -85,7 +85,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   bool vary_pattern = false;// for consistency across any outer loop invocations
   // get point samples file
   const String& import_pts_file
-    = probDescDB.get_string("method.import_points_file");
+    = probDescDB.get_string("method.import_build_points_file");
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
@@ -106,11 +106,11 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
   fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
     gp_set, approx_type, approx_order, corr_type, corr_order, dataOrder,
-    outputLevel, sample_reuse,
-    probDescDB.get_string("method.export_points_file"),
-    probDescDB.get_ushort("method.export_points_file_format"), import_pts_file,
-    probDescDB.get_ushort("method.import_points_file_format"),
-    probDescDB.get_bool("method.import_points_file_active")), false);
+    outputLevel, sample_reuse, import_pts_file,
+    probDescDB.get_ushort("method.import_build_format"),
+    probDescDB.get_bool("method.import_build_active_only"),
+    probDescDB.get_string("method.export_approx_points_file"),
+    probDescDB.get_ushort("method.export_approx_format")), false);
 
   // Following this ctor, IteratorScheduler::init_iterator() initializes the
   // parallel configuration for EffGlobalMinimizer + iteratedModel using

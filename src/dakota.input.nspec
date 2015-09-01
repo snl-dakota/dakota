@@ -2011,22 +2011,6 @@ KEYWORD model {N_mom3(start,0,stop)}
          ]
         [ active_only {N_mom(true,importBuildActive)} ]
        ]
-      [ import_approx_points_file STRING {N_mom(str,importApproxPtsFile)}
-        [ 
-          annotated {N_mom(utype,importApproxFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mom(utype,importApproxFormat_TABULAR_NONE)}
-              [ header {N_mom(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mom(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mom(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mom(utype,importApproxFormat_TABULAR_NONE)}
-         ]
-        [ active_only {N_mom(true,importApproxActive)} ]
-       ]
       [ export_approx_points_file ALIAS export_points_file STRING {N_mom(str,exportApproxPtsFile)}
         [ 
           annotated {N_mom(utype,exportApproxFormat_TABULAR_ANNOTATED)}

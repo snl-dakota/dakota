@@ -2068,18 +2068,6 @@ KEYWORD model
 	      ( freeform
 	      [ active_only ]
 	      ]
-	    [ import_approx_points_file STRING
-	      [ annotated
-	      |
-	      ( custom_annotated
-		[ header ]
-		[ eval_id ]
-		[ interface_id ]
-		]
-	      |
-	      ( freeform
-	      [ active_only ]
-	      ]
 	    [ export_approx_points_file ALIAS export_points_file STRING
 	      [ annotated
 	      |
