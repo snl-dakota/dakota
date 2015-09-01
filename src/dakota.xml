@@ -1604,6 +1604,36 @@
                         </keyword>
                       </keyword>
                     </keyword>
+                    <keyword  id="rkd_darts" name="rkd_darts" code="{N_mdm(utype,methodName_RKD_DARTS)}" label="rkd_darts" help="" minOccurs="1" >
+                        <alias name="nond_rkd_darts"/>
+                        <keyword  id="lipschitz" name="lipschitz" code="{0}" label="Lipschitz" help="" minOccurs="0" >
+                            <oneOf>
+                                <keyword  id="local_est" name="local" code="{N_mdm(lit,lipschitzType_local)}" label="local_est" help=""  />
+                                <keyword  id="global_est" name="global" code="{N_mdm(lit,lipschitzType_global)}" label="global_est" help=""  />
+                            </oneOf>
+                        </keyword>
+                        <keyword  id="emulator_samples6" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
+                            <param type="INTEGER" />
+                        </keyword>
+                        <keyword  id="response_levels4" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
+                            <param type="REALLIST" />
+                            <keyword  id="num_response_levels4" name="num_response_levels" code="{N_mdm(num_resplevs,responseLevels)}" label="num_response_levels" help="" minOccurs="0" default="response_levels evenly distributed among response functions" >
+                                <param type="INTEGERLIST" />
+                            </keyword>
+                            <keyword  id="compute4" name="compute" code="{0}" label="compute" help="" minOccurs="0" default="probabilities" >
+                                <oneOf>
+                                    <keyword  id="probabilities4" name="probabilities" code="{N_mdm(type,responseLevelTarget_PROBABILITIES)}" label="probabilities" help=""  />
+                                    <keyword  id="gen_reliabilities4" name="gen_reliabilities" code="{N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}" label="gen_reliabilities" help=""  />
+                                </oneOf>
+                                <keyword  id="system4" name="system" code="{0}" label="system" help="" minOccurs="0" >
+                                    <oneOf>
+                                        <keyword  id="series4" name="series" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}" label="series" help=""  />
+                                        <keyword  id="parallel4" name="parallel" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}" label="parallel" help=""  />
+                                    </oneOf>
+                                </keyword>
+                            </keyword>
+                        </keyword>
+                    </keyword>
                     <keyword  id="efficient_subspace" name="efficient_subspace" code="{N_mdm(utype,methodName_EFFICIENT_SUBSPACE)}" label="efficient_subspace" help="" minOccurs="1" group="Uncertainty Quantification" >
                       <alias name="nond_efficient_subspace"/>
                       <keyword  id="emulator_samples2" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >

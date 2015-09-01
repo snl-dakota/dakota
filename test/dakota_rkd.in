@@ -1,0 +1,47 @@
+# DAKOTA INPUT FILE : dakota_rkd.in
+# This input file tests the Recursive k-d Darts (RKD) capability. 
+
+environment
+#  tabular_data
+
+method
+   rkd_darts
+     model_pointer = 'SURR' 
+      samples = 100
+      seed = 8493
+      emulator_samples = 1.E3              
+
+model,                                         
+        id_model = 'SURR'    			 
+        surrogate global,			 
+	  actual_model_pointer = 'TRUTH'
+          reuse_samples all
+#	  gaussian_process		     
+#	    surfpack		     	     
+	  polynomial basis_order = 3		  	     		    
+#	    domain_decomp		     		  
+#	      cell_type = 'vornonoi'	    
+#	      discontinuity_detection		 
+#	        jump_threshold 0.5		 
+
+model
+  single
+    id_model = 'TRUTH'
+
+variables
+   active all
+   uniform_uncertain = 2
+   lower_bounds = -2.0 -2.0 
+   upper_bounds = 2.0 2.0
+
+interface
+   direct 
+   analysis_driver = 'smooth_herbie'         
+#   analysis_driver = 'text_book'           
+
+responses,
+   objective_functions = 1              
+   no_gradients
+   no_hessians
+  
+

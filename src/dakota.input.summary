@@ -1294,6 +1294,42 @@ KEYWORD12 method
 	  [ model_pointer STRING ]
 	  )
 	|
+	( rkd_darts ALIAS nond_rkd_darts
+	  [ lipschitz
+	    local
+	    | global
+	    ]
+	  [ emulator_samples INTEGER ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ model_pointer STRING ]
+	  )
+	|
 	( efficient_subspace ALIAS nond_efficient_subspace
 	  [ emulator_samples INTEGER ]
 	  [ batch_size INTEGER ]

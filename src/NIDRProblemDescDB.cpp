@@ -6889,6 +6889,7 @@ static Method_mp_utype
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
         MP2s(methodName,POF_DARTS),
+    MP2s(methodName,RKD_DARTS),
 	MP2s(methodName,POLYNOMIAL_CHAOS),
 	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,STOCH_COLLOCATION),

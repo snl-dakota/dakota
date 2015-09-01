@@ -1132,6 +1132,28 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
          )
         |
+        ( rkd_darts ALIAS nond_rkd_darts {N_mdm(utype,methodName_RKD_DARTS)}
+          [ lipschitz {0}
+            local {N_mdm(lit,lipschitzType_local)}
+            |
+            global {N_mdm(lit,lipschitzType_global)}
+           ]
+          [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
+          [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+            [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+            [ compute {0}
+              probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+              |
+              gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+              [ system {0}
+                series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+                |
+                parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+               ]
+             ]
+           ]
+         )
+        |
         ( efficient_subspace ALIAS nond_efficient_subspace {N_mdm(utype,methodName_EFFICIENT_SUBSPACE)}
           [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
           [ batch_size INTEGER {N_mdm(int,batchSize)} ]
