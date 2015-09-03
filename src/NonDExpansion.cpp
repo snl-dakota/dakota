@@ -451,51 +451,76 @@ void NonDExpansion::initialize_u_space_model()
 }
 
 
-void NonDExpansion::construct_expansion_sampler()
+void NonDExpansion::
+construct_expansion_sampler(const String& import_approx_file,
+			    unsigned short import_build_format,
+			    bool import_build_active_only)
 {
   //expSampling = impSampling = false; // initialized in ctor
-  if (totalLevelRequests)
+
+  bool import_pts = false;
+  if (!import_approx_file.empty())
+    import_pts = expSampling = true;
+  else if (totalLevelRequests)
     for (size_t i=0; i<numFunctions; ++i)
       if ( requestedProbLevels[i].length() || requestedGenRelLevels[i].length()
 	   || ( requestedRespLevels[i].length() &&
 		respLevelTarget != RELIABILITIES ) )
 	{ expSampling = true; break; }
 
-  if (expSampling) {
-    // sanity check for samples spec
-    if (!numSamplesOnExpansion) {
-      Cerr << "\nError: number of samples must be specified for numerically "
-	   << "evaluating statistics on a stochastic expansion." << std::endl;
-      abort_handler(-1);
-    }
+  if (!expSampling)
+    return;
 
+  // sanity check for samples spec
+  if (!import_pts && !numSamplesOnExpansion) {
+    Cerr << "\nError: number of samples must be specified for numerically "
+	 << "evaluating statistics on a stochastic expansion." << std::endl;
+    abort_handler(-1);
+  }
+
+  NonD* exp_sampler_rep;
+  if (import_pts) {
+    Cerr << "Error: import_approx_points_file not yet supported in PCE."
+	 << std::endl;
+    abort_handler(-1);
+
+    //exp_sampler_rep
+    //  = new NonDSampling(import_approx_file, import_build_format,
+    //                     import_build_active_only); // *** TO DO ***
+    //
+    //or
+    //
+    //TabularIO::read_data_tabular(import_approx_file, 
+    //  "imported samples file", sample_matrix, ..., import_build_format,
+    //                     import_build_active_only);
+    //exp_sampler_rep = new NonDSampling(sample_matrix); // *** TO DO ***
+
+    exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
+      requestedRelLevels, requestedGenRelLevels, respLevelTarget,
+      respLevelTargetReduce, cdfFlag);
+  }
+  else {
     // could use construct_lhs() except for non-default ALEATORY_UNCERTAIN
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
     unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
     int orig_seed = probDescDB.get_int("method.random_seed");
-    const String& rng = probDescDB.get_string("method.random_number_generator");
-    NonD* exp_sampler_rep
-      = new NonDLHSSampling(uSpaceModel, sample_type, numSamplesOnExpansion,
-			    orig_seed, rng, false, ALEATORY_UNCERTAIN);
-    expansionSampler.assign_rep(exp_sampler_rep, false);
+    const String& rng
+      = probDescDB.get_string("method.random_number_generator");
+    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, sample_type,
+					  numSamplesOnExpansion, orig_seed,
+					  rng, false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
-    // publish output verbosity
-    exp_sampler_rep->output_level(outputLevel);
     // publish level mappings to expansion sampler, but suppress reliability
-    // moment mappings, which are performed locally within compute_statistics()
+    // moment mappings (performed locally within compute_statistics())
     RealVectorArray empty_rv_array; // empty
     RealVectorArray& req_resp_levs = (respLevelTarget == RELIABILITIES) ?
       empty_rv_array : requestedRespLevels;
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag);
-    // publish natafTransform instance (shared rep: distribution parameter
-    // updates do not need to be explicitly propagated) so that u-space
-    // sampler has access to x-space data to perform inverse transforms
-    exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
 
     unsigned short int_refine
       = probDescDB.get_ushort("method.nond.integration_refinement");
@@ -509,7 +534,7 @@ void NonDExpansion::construct_expansion_sampler()
       if (!refine_samples) refine_samples = 1000; // context-specific default
       bool vary_pattern = true;
       NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel,	sample_type, refine_samples,
+	= new NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
 				   orig_seed, rng, vary_pattern, int_refine,
 				   cdfFlag, false, false);
       importanceSampler.assign_rep(imp_sampler_rep, false);
@@ -522,6 +547,14 @@ void NonDExpansion::construct_expansion_sampler()
       imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
     }
   }
+  // publish output verbosity
+  exp_sampler_rep->output_level(outputLevel);
+  // publish natafTransform instance (shared rep: distribution parameter
+  // updates do not need to be explicitly propagated) so that u-space
+  // sampler has access to x-space data to perform inverse transforms
+  exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
+  // store rep inside envelope
+  expansionSampler.assign_rep(exp_sampler_rep, false);
 }
 
 

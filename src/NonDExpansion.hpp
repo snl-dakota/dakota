@@ -151,8 +151,10 @@ protected:
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
-  /// construct the expansionSampler operating on uSpaceModel
-  void construct_expansion_sampler();
+  /// construct the expansionSampler for evaluating samples on uSpaceModel
+  void construct_expansion_sampler(const String& import_approx_file,
+    unsigned short import_build_format = TABULAR_ANNOTATED,
+    bool import_build_active_only = false);
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();

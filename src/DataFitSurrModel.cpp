@@ -1587,7 +1587,7 @@ import_points(unsigned short tabular_format, bool active_only)
   // Temporary objects to use to read correct size vars/resp
   const Variables& vars = actualModel.is_null() ? currentVariables : 
     actualModel.current_variables(); 
-  const Response& resp =actualModel.is_null() ? currentResponse : 
+  const Response& resp  = actualModel.is_null() ? currentResponse : 
     actualModel.current_response();
   size_t num_vars = active_only ? 
     (vars.cv() + vars.div() + vars.dsv() + vars.drv()) : vars.tv();
@@ -1601,8 +1601,8 @@ import_points(unsigned short tabular_format, bool active_only)
   // Deep copy of variables/response so data in model isn't changed during read
   TabularIO::read_data_tabular(importPointsFile, 
 			       "DataFitSurrModel samples file", vars, resp,
-			       reuseFileVars, reuseFileResponses, tabular_format,
-			       verbose, active_only);
+			       reuseFileVars, reuseFileResponses,
+			       tabular_format, verbose, active_only);
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << reuseFileVars.size()
