@@ -53,6 +53,11 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   sequenceIndex(0),
   normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized"))
 {
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
@@ -322,6 +327,11 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
   normalizedCoeffOutput(false)
 {
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
@@ -397,6 +407,11 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
   normalizedCoeffOutput(false)
 {
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------

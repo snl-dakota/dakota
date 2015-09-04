@@ -121,6 +121,9 @@ protected:
   /// common constructor code for initialization of natafTransform
   void initialize(short u_space_type);
 
+  /// check length and content of dimension preference vector
+  void check_dimension_preference(const RealVector& dim_pref) const;
+
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
   void refine_expansion();
@@ -315,6 +318,28 @@ inline void NonDExpansion::print_coefficients(std::ostream& s)
 
 inline void NonDExpansion::archive_coefficients()
 { /* default is no-op */ }
+
+
+inline void NonDExpansion::
+check_dimension_preference(const RealVector& dim_pref) const
+{
+  size_t len = dim_pref.length();
+  if (len) {
+    if (len != numContinuousVars) {
+      Cerr << "Error: length of dimension preference specification (" << len
+	   << ") is inconsistent with continuous expansion variables ("
+	   << numContinuousVars << ")." << std::endl;
+      abort_handler(-1);
+    }
+    else
+      for (size_t i=0; i<len; ++i)
+	if (dim_pref[i] < 0.) { // allow zero preference
+	  Cerr << "Error: bad dimension preference value (" << dim_pref[i]
+	       << ")." << std::endl;
+	  abort_handler(-1);
+	}
+  }
+}
 
 } // namespace Dakota
 

@@ -60,6 +60,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_usa("method.nond.sparse_grid_level");
   const RealVector& dim_pref
     = probDescDB.get_rv("method.nond.dimension_preference");
+  check_dimension_preference(dim_pref);
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
@@ -151,6 +152,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs)
 {
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dim_pref);
+
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
