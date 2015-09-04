@@ -48,7 +48,6 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
-  expSampling(false), impSampling(false),
   covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
   vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
@@ -75,9 +74,8 @@ NonDExpansion(unsigned short method_name, Model& model,
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   softConvLimit(3), ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
-  ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
-  impSampling(false), vbdFlag(false), vbdOrderLimit(0), vbdDropTol(-1.),
-  covarianceControl(DEFAULT_COVARIANCE)
+  ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
+  vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
@@ -99,12 +97,12 @@ void NonDExpansion::derived_init_communicators(ParLevLIter pl_iter)
 
   // uSpaceModel, expansionSampler, and importanceSampler use
   // NoDBBaseConstructor, so no need to manage DB list nodes at this level
-  if (numSamplesOnExpansion)
+  if (!expansionSampler.is_null())
     expansionSampler.init_communicators(pl_iter);
   else
     uSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);
 
-  if (impSampling)
+  if (!importanceSampler.is_null())
     importanceSampler.init_communicators(pl_iter);
 }
 
@@ -115,22 +113,22 @@ void NonDExpansion::derived_set_communicators(ParLevLIter pl_iter)
 
   // uSpaceModel, expansionSampler, and importanceSampler use
   // NoDBBaseConstructor, so no need to manage DB list nodes at this level
-  if (numSamplesOnExpansion)
+  if (!expansionSampler.is_null())
     expansionSampler.set_communicators(pl_iter);
   else
     uSpaceModel.set_communicators(pl_iter, maxEvalConcurrency);
 
-  if (impSampling)
+  if (!importanceSampler.is_null())
     importanceSampler.set_communicators(pl_iter);
 }
 
 
 void NonDExpansion::derived_free_communicators(ParLevLIter pl_iter)
 {
-  if (impSampling)
+  if (!importanceSampler.is_null())
     importanceSampler.free_communicators(pl_iter);
 
-  if (numSamplesOnExpansion)
+  if (!expansionSampler.is_null())
     expansionSampler.free_communicators(pl_iter);
   else
     uSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);
@@ -456,38 +454,26 @@ construct_expansion_sampler(const String& import_approx_file,
 			    unsigned short import_build_format,
 			    bool import_build_active_only)
 {
-  //expSampling = impSampling = false; // initialized in ctor
-
-  bool import_pts = false;
+  bool import_pts = false, exp_sampling = false;
   if (!import_approx_file.empty())
-    import_pts = expSampling = true;
-  else if (totalLevelRequests)
+    import_pts = exp_sampling = true;
+  else if (totalLevelRequests)//&& numSamplesOnExpansion) // catch as err below
     for (size_t i=0; i<numFunctions; ++i)
       if ( requestedProbLevels[i].length() || requestedGenRelLevels[i].length()
 	   || ( requestedRespLevels[i].length() &&
 		respLevelTarget != RELIABILITIES ) )
-	{ expSampling = true; break; }
+	{ exp_sampling = true; break; }
 
-  if (!expSampling)
+  if (!exp_sampling)
     return;
-
-  // sanity check for samples spec
-  if (!import_pts && !numSamplesOnExpansion) {
-    Cerr << "\nError: number of samples must be specified for numerically "
-	 << "evaluating statistics on a stochastic expansion." << std::endl;
-    abort_handler(-1);
-  }
 
   NonD* exp_sampler_rep;
   if (import_pts) {
-    Cerr << "Error: import_approx_points_file not yet supported in PCE."
-	 << std::endl;
-    abort_handler(-1);
-
     RealMatrix sample_matrix;
     //TabularIO::read_data_tabular(import_approx_file, 
     //  "imported samples file", sample_matrix, ..., import_build_format,
     //  import_build_active_only);
+    numSamplesOnExpansion = sample_matrix.numCols();
     exp_sampler_rep = new NonDSampling(uSpaceModel, sample_matrix);
 
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
@@ -495,6 +481,12 @@ construct_expansion_sampler(const String& import_approx_file,
       respLevelTargetReduce, cdfFlag);
   }
   else {
+    if (!numSamplesOnExpansion) { // sanity check for samples spec
+      Cerr << "\nError: number of samples must be specified for numerically "
+	   << "evaluating statistics on a stochastic expansion." << std::endl;
+      abort_handler(-1);
+    }
+
     // could use construct_lhs() except for non-default ALEATORY_UNCERTAIN
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
@@ -519,12 +511,13 @@ construct_expansion_sampler(const String& import_approx_file,
 
     unsigned short int_refine
       = probDescDB.get_ushort("method.nond.integration_refinement");
+    bool imp_sampling = false;
     if (int_refine && respLevelTarget != RELIABILITIES)
       for (size_t i=0; i<numFunctions; ++i)
 	if (requestedRespLevels[i].length())
-	  { impSampling = true; break; }
+	  { imp_sampling = true; break; }
 
-    if (impSampling) {
+    if (imp_sampling) {
       int refine_samples = probDescDB.get_int("method.nond.refinement_samples");
       if (!refine_samples) refine_samples = 1000; // context-specific default
       bool vary_pattern = true;
@@ -1710,7 +1703,7 @@ void NonDExpansion::compute_statistics()
   // ------------------------------
 
   // Estimate CDF/CCDF statistics by sampling on the expansion
-  if (expSampling) {
+  if (!expansionSampler.is_null()) {
 
     // response fn is active for z->p, z->beta*, p->z, or beta*->z
     ShortArray sampler_asv(numFunctions, 0);
@@ -1750,7 +1743,8 @@ void NonDExpansion::compute_statistics()
  
     // Update probability estimates with importance sampling, if requested.
     RealVectorArray imp_sampler_stats;
-    if (impSampling) {
+    bool imp_sampling = !importanceSampler.is_null();
+    if (imp_sampling) {
 
       // response fn is active for z->p, z->beta*, p->z, or beta*->z
       //ActiveSet sampler_set = importanceSampler.active_set(); // copy
@@ -1815,8 +1809,8 @@ void NonDExpansion::compute_statistics()
 	size_t rl_len = requestedRespLevels[i].length();
 	for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
 	  if (final_asv[cntr] & 1) {
-	    const Real& p = (impSampling) ? imp_sampler_stats[i][j]
-	                                  : exp_sampler_stats[sampler_cntr];
+	    const Real& p = (imp_sampling) ? imp_sampler_stats[i][j]
+	                                   : exp_sampler_stats[sampler_cntr];
 	    if (respLevelTarget == PROBABILITIES) {
 	      computedProbLevels[i][j] = p;
 	      finalStatistics.function_value(p, cntr);
@@ -2263,16 +2257,17 @@ void NonDExpansion::print_results(std::ostream& s)
   if (vbdFlag)
     print_sobol_indices(s);
 
+  bool exp_sampling = !expansionSampler.is_null();
   if (totalLevelRequests) {
     s << "\nStatistics based on ";
-    if (expSampling)
+    if (exp_sampling)
       s << numSamplesOnExpansion << " samples performed on polynomial "
 	<< "expansion:\n";
     else
       s << "projection of analytic moments:\n";
 
     // Note: PDF output ignores any importance sampling refinements
-    if (expSampling) {
+    if (exp_sampling) {
       NonDSampling* exp_sampler_rep
 	= (NonDSampling*)expansionSampler.iterator_rep();
       if (exp_sampler_rep->pdf_output())
