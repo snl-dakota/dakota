@@ -484,16 +484,11 @@ construct_expansion_sampler(const String& import_approx_file,
 	 << std::endl;
     abort_handler(-1);
 
-    //exp_sampler_rep
-    //  = new NonDSampling(import_approx_file, import_build_format,
-    //                     import_build_active_only); // *** TO DO ***
-    //
-    //or
-    //
+    RealMatrix sample_matrix;
     //TabularIO::read_data_tabular(import_approx_file, 
     //  "imported samples file", sample_matrix, ..., import_build_format,
-    //                     import_build_active_only);
-    //exp_sampler_rep = new NonDSampling(sample_matrix); // *** TO DO ***
+    //  import_build_active_only);
+    exp_sampler_rep = new NonDSampling(uSpaceModel, sample_matrix);
 
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
       requestedRelLevels, requestedGenRelLevels, respLevelTarget,

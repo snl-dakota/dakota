@@ -76,6 +76,9 @@ protected:
   /// generate statistics for LHS runs in non-VBD cases
   void post_run(std::ostream& s);
 
+  /// compute a principal components analysis on the sample set
+  void compute_pca(std::ostream& s);
+
   /// print the final statistics
   void print_results(std::ostream& s);
 

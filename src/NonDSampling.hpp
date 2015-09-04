@@ -39,6 +39,14 @@ class NonDSampling: public NonD
 public:
 
   //
+  //- Heading: Constructors and destructor
+  //
+
+  /// alternate constructor for evaluating and computing statistics
+  /// for the provided set of samples
+  NonDSampling(Model& model, const RealMatrix& sample_matrix);
+
+  //
   //- Heading: Public member functions
   //
 
@@ -75,6 +83,8 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  void quantify_uncertainty();
 
   int num_samples() const;
 

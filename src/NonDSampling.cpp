@@ -121,6 +121,27 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 }
 
 
+/** This alternate constructor defines allSamples from an incoming
+    sample matrix. */
+NonDSampling::
+NonDSampling(Model& model, const RealMatrix& sample_matrix):
+  NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
+  samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
+  statsFlag(true), allDataFlag(true), samplingVarsMode(ACTIVE),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), backfillFlag(false),
+  numLHSRuns(0)
+{
+  allSamples = sample_matrix; compactMode = true;
+  samplesRef = numSamples = samplesSpec;
+
+  subIteratorFlag = true; // suppress some output
+
+  // not used but included for completeness
+  if (numSamples) // samples is optional (default = 0)
+    maxEvalConcurrency *= numSamples;
+}
+
+
 NonDSampling::~NonDSampling()
 { }
 
@@ -387,8 +408,8 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
 {
   size_t i, cntr = 0, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-	      drv_start, num_drv);
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div, dsv_start,
+	      num_dsv, drv_start, num_drv);
 
   // BMA TODO: make sure inactive get updated too as needed?
 
@@ -445,13 +466,12 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
   // is care needed to manage active vs. all string variables?
 
   StringMultiArrayConstView ds_vars = vars.discrete_string_variables();
-  for (size_t j=0; j<numDiscreteStringVars; ++j, ++cntr)
-    sample_vars[cntr] = 
-      (Real) set_value_to_index(ds_vars[j], all_dss_values[j]); // jth row of samples_matrix
+  for (size_t j=0; j<numDiscreteStringVars; ++j, ++cntr) // jth row
+    sample_vars[cntr] = (Real)set_value_to_index(ds_vars[j], all_dss_values[j]);
 
   const RealVector& dr_vars = vars.discrete_real_variables();
   for (size_t j=0; j<numDiscreteRealVars; ++j, ++cntr)
-    sample_vars[cntr] = (Real) dr_vars[j]; // jth row of samples_matrix
+    sample_vars[cntr] = (Real)dr_vars[j]; // jth row
 }
 
 
@@ -720,6 +740,15 @@ void NonDSampling::initialize_lhs(bool write_message)
   }
 
   lhsDriver.initialize(sample_string, sampleRanksMode, !subIteratorFlag);
+}
+
+
+/** Default implementation generates allResponses from either allSamples
+    or allVariables. */
+void NonDSampling::quantify_uncertainty()
+{
+  bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
+  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
 

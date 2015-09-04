@@ -245,7 +245,8 @@ sample_to_variables(const Real* sample_c_vars, Variables& vars)
   for (j=0; j<numContinuousVars; ++j)
     vars.continuous_variable(sample_c_vars[j], j); // jth row
   // BMA: this may be needed if vars wasn't initialized off the model
-  vars.inactive_continuous_variables(model_vars.inactive_continuous_variables());
+  vars.inactive_continuous_variables(
+    model_vars.inactive_continuous_variables());
   // preserve any active discrete vars (unsupported by sample_matrix)
   if (num_adiv)
     vars.all_discrete_int_variables(model_vars.all_discrete_int_variables());
