@@ -252,6 +252,33 @@ void copy_data(
 }
 
 
+/// copy Array<Teuchos::SerialDenseVector<OT,ST> > to
+/// Teuchos::SerialDenseMatrix<OT,ST>
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(
+  const std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType i, j, num_vec = sdva.size(), max_vec_len = 0;
+  for (i=0; i<num_vec; ++i) { // loop over vectors in array
+    OrdinalType vec_len = sdva[i].length();
+    if (vec_len > max_vec_len)
+      max_vec_len = vec_len;
+  }
+
+  // each vector in array becomes a column in the matrix, with shorter
+  // columns padded with trailing zeros
+  sdm.shape(max_vec_len, num_vec);
+  for (i=0; i<num_vec; ++i) {
+    const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+    OrdinalType vec_len = vec_i.length(); // allowed to vary
+    ScalarType* sdm_i = sdm[i]; // ith column
+    for (j=0; j<vec_len; ++j)
+      sdm_i[j] = vec_i[j];
+  }
+}
+
+
 /// copy Teuchos::SerialDenseVector<OT,ST> to Teuchos::SerialDenseMatrix<OT,ST>
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,

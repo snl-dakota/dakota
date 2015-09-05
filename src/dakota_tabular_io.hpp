@@ -188,23 +188,30 @@ void read_data_tabular(const std::string& input_filename,
 		       Variables vars, Response resp,
 		       VariablesList& input_vars, ResponseList& input_resp,
 		       unsigned short tabular_format,
-		       bool verbose=false,
-		       bool active_only=false);
+		       bool verbose=false, bool active_only=false);
 
+
+//
+// Uses: import_approx_points_file
+//
+/// read whitespace-separated data with optional row and column headers
+/// into a single matrix, with number of columns determined by file content
+void read_data_tabular(const std::string& input_filename, 
+		       const std::string& context_message,
+		       RealMatrix& input_matrix, size_t num_rows,
+		       unsigned short tabular_format, bool verbose=false);
 
 //
 // Uses: Bayesian calibration
 //       Eventually regular least squares where we'll have one experiment/row
 //
-/// read whitespace-separated data with optional row and column
-/// headers into a single matrix
+/// read whitespace-separated data with optional row and column headers
+/// into a single matrix, with size as specified
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealMatrix& input_matrix, 
-		       size_t num_rows,
-		       size_t num_cols,
-		       unsigned short tabular_format,
-		       bool verbose=false);
+		       size_t num_rows, size_t num_cols,
+		       unsigned short tabular_format, bool verbose=false);
 
 /// read specified input data file into arrays with sizes specified
 /// by the passed vc_totals array; used in ParamStudy

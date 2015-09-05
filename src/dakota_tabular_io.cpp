@@ -488,10 +488,8 @@ void read_data_tabular(const std::string& input_filename,
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealMatrix& input_matrix, 
-		       size_t num_rows,
-		       size_t num_cols,
-		       unsigned short tabular_format,
-		       bool verbose)
+		       size_t num_rows, size_t num_cols,
+		       unsigned short tabular_format, bool verbose)
 {
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
@@ -526,6 +524,55 @@ void read_data_tabular(const std::string& input_filename,
 
   if (exists_extra_data(input_stream))
     print_unexpected_data(Cout, input_filename, context_message, tabular_format);
+}
+
+
+void read_data_tabular(const std::string& input_filename, 
+		       const std::string& context_message,
+		       RealMatrix& input_matrix, size_t num_rows,
+		       unsigned short tabular_format, bool verbose)
+{
+  std::ifstream input_stream;
+  open_file(input_stream, input_filename, context_message);
+
+  RealVectorArray rva;
+  try {
+
+    read_header_tabular(input_stream, tabular_format);
+
+    input_stream >> std::ws;
+    while (input_stream.good() && !input_stream.eof()) {
+
+      // discard any leading columns; annotated is unlikely in this case
+      read_leading_columns(input_stream, tabular_format);
+
+      // read the (required) coefficients of length num_fns
+      RealVector read_rv(num_rows);
+      read_rv = std::numeric_limits<double>::quiet_NaN();
+      if (!(input_stream >> read_rv)) {
+	Cout << "read: " << read_rv << std::endl;
+	Cerr << "\nError (" << context_message << "): unexpected coeff read "
+	     << "error in file " << input_filename << "." << std::endl;
+	abort_handler(-1);
+      }
+      if (verbose)
+	Cout << "read: " << read_rv << std::endl;
+      rva.push_back(read_rv);
+    }
+  }
+  catch (const std::ios_base::failure& failorbad_except) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << ".";
+    print_expected_format(Cerr, tabular_format, 0, num_rows);
+    abort_handler(-1);
+  }
+  catch(...) {
+    Cerr << "\nError (" << context_message << "): could not read file " 
+	 << input_filename << " (unknown error).";
+    abort_handler(-1);
+  }
+
+  copy_data(rva, input_matrix);
 }
 
 

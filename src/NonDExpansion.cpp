@@ -26,6 +26,7 @@
 #include "pecos_stat_util.hpp"
 #include "SensAnalysisGlobal.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "dakota_tabular_io.hpp"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
@@ -470,9 +471,12 @@ construct_expansion_sampler(const String& import_approx_file,
   NonD* exp_sampler_rep;
   if (import_pts) {
     RealMatrix sample_matrix;
-    //TabularIO::read_data_tabular(import_approx_file, 
-    //  "imported samples file", sample_matrix, ..., import_build_format,
-    //  import_build_active_only);
+    // Analyzer::update_model_from_sample() currently updates only the active 
+    // continuous vars from an allSamples column --> pass numContinuousVars as
+    // number of rows; import_build_active_only not currently used
+    TabularIO::read_data_tabular(import_approx_file, 
+      "imported approx samples file", sample_matrix, numContinuousVars,
+      import_build_format); //, import_build_active_only);
     numSamplesOnExpansion = sample_matrix.numCols();
     exp_sampler_rep = new NonDSampling(uSpaceModel, sample_matrix);
 
