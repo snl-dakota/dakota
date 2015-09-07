@@ -123,6 +123,10 @@ private:
   int herbie();        ///< returns the N-D herbie function
   int smooth_herbie(); ///< returns the N-D smooth herbie function
   int shubert();       ///< returns the N-D shubert function
+ 
+  /// Scalable test function for Bayesian methods, to estimate parameters 
+  //  and error terms
+  int bayes_linear();
 
   /// utility to combine components of separable fns
   void separable_combine(Real mult_scale_factor, std::vector<Real> & w,

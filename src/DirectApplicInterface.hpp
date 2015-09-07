@@ -58,7 +58,7 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		ILLUMINATION, BARNES, BARNES_LF,
 		HERBIE, SMOOTH_HERBIE, SHUBERT,
 		SALINAS, MODELCENTER, GENZ, DAMPED_OSCILLATOR,
-    ANISOTROPIC_QUADRATIC_FORM };
+    ANISOTROPIC_QUADRATIC_FORM , BAYES_LINEAR};
 
 /// enumeration for how local variables are stored (values must employ
 /// a bit representation)

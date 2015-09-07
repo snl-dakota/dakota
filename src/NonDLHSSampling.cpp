@@ -81,6 +81,24 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
   get_parameter_sets(lower_bnds, upper_bnds);
 }
 
+/** This alternate constructor is used to generate correlated normal 
+    sample sets.  It is _not_ a letter-envelope instantiation and a 
+    set_db_list_nodes has not been performed.  
+    It is called with all needed data passed through the
+    constructor.  In this case, a Model is not used and 
+    the object must only be used for sample generation (no evaluation). */
+NonDLHSSampling::
+NonDLHSSampling(unsigned short sample_type, int samples, int seed,
+		const String& rng, const RealVector& means, 
+                const RealVector& std_devs, const RealVector& lower_bnds,
+		const RealVector& upper_bnds, RealSymMatrix& correl): 
+  NonDSampling(sample_type, samples, seed, rng, means, std_devs, lower_bnds, upper_bnds, correl),
+  numResponseFunctions(0), pcaFlag(false), varBasedDecompFlag(false)
+{
+  // since there will be no late data updates to capture in this case
+  // (no sampling_reset()), go ahead and get the parameter sets.
+  get_parameter_sets(means, std_devs, lower_bnds, upper_bnds, correl);
+}
 
 NonDLHSSampling::~NonDLHSSampling()
 { }

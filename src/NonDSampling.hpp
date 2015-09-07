@@ -77,6 +77,12 @@ protected:
   NonDSampling(unsigned short sample_type, int samples, int seed,
 	       const String& rng, const RealVector& lower_bnds,
 	       const RealVector& upper_bnds);
+  /// alternate constructor for sample generation of correlated normals "on the fly"
+  NonDSampling(unsigned short sample_type, int samples, int seed,
+               const String& rng, const RealVector& means,
+               const RealVector& std_devs, const RealVector& lower_bnds,
+               const RealVector& upper_bnds, RealSymMatrix& correl);
+  
   /// destructor
   ~NonDSampling();
 
@@ -108,6 +114,13 @@ protected:
   /// lower_bnds/upper_bnds.
   void get_parameter_sets(const RealVector& lower_bnds,
 			  const RealVector& upper_bnds);
+
+  /// Uses lhsDriver to generate a set of normal samples 
+  void get_parameter_sets(const RealVector& means,
+                          const RealVector& std_devs,
+                          const RealVector& lower_bnds,
+			  const RealVector& upper_bnds, 
+                          RealSymMatrix& correl);
 
   /// Override default update of continuous vars only
   void update_model_from_sample(Model& model, const Real* sample_vars);

@@ -24,6 +24,7 @@
 #include <boost/assign.hpp>
 #include <vector>
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include "NonDLHSSampling.hpp"
 
 namespace Dakota {
 
@@ -87,6 +88,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
+  driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
 
   // convert strings to enums for analysisDriverTypes, iFilterType, oFilterType
   analysisDriverTypes.resize(numAnalysisDrivers);
@@ -150,7 +152,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
-    case ANISOTROPIC_QUADRATIC_FORM:
+    case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -302,6 +304,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = damped_oscillator(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
     fail_code = aniso_quad_form(); break;
+  case BAYES_LINEAR: 
+    fail_code = bayes_linear(); break;
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
@@ -3725,6 +3729,87 @@ int TestDriverInterface::shubert()
   separable_combine(1.0,w,d1w,d2w);
   return 0;
 }
+
+int TestDriverInterface::bayes_linear()
+{
+  // This test driver implements the linear verification example in the 
+  // document "User Guidelines and Best Practices for CASL VUQ Analysis 
+  // using Dakota", CASL-U-2014-0038-000.  The example is in Appendix A 
+  // and Section 6.2.6.  It is of the form: 
+  // y = g(x)*Beta + epsilon, where epsilon ~ N(0,1/lamda * R)
+  // Beta is a set of unknown regression coefficients we are trying to infer, 
+  // epsilon is the vector of observational errors having variance 
+  // 1/lambda = sigma^2 
+  // and R is a fixed correlation function.
+
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: bayes_linear direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numVars < 1 || numVars > 500 || numADIV || numADRV) {
+    Cerr << "Error: Bad variable types in Bayes linear fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns < 1) {
+    Cerr << "Error: Bad number of functions in Bayes linear direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: Gradients and Hessians not supported in Bayes linear "
+	 << "direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  const Real pi = 3.14159265358979324;
+ 
+  Real mean_pred = 0; int i;
+  for (i=0; i<numVars; i++) {
+     mean_pred += 0.4 + 0.5*std::sin(2*pi*i/numVars);
+  }
+ 
+  RealVector n_means, n_std_devs, n_l_bnds, n_u_bnds;
+  n_means.resize(numFns); n_std_devs.resize(numFns); 
+  n_l_bnds.resize(numFns); n_u_bnds.resize(numFns);
+  for (i=0; i<numFns; i++) {
+    n_means(i)=mean_pred;
+    n_std_devs(i)=0.0316; // initial lambda = 1000.
+    n_l_bnds(i)=-DBL_MAX;
+    n_u_bnds(i)=DBL_MAX;
+  }
+
+  NonDLHSSampling* normal_sampler;
+  String rng("mt19937");
+  unsigned short sample_type = SUBMETHOD_LHS;
+  int seed = 1; 
+  seed += (int)clock();     
+  Cout << "seed " << seed; 
+  RealSymMatrix correl_matrix(numFns);
+  correl_matrix = 0.8;
+  for (i=0; i<numFns; i++) 
+    correl_matrix(i,i)=1.0;
+ 
+  Cout << "correl matrix " << correl_matrix << '\n';
+
+  normal_sampler = new NonDLHSSampling(sample_type, 1, seed,
+                                       rng, n_means, n_std_devs, 
+                                       n_l_bnds, n_u_bnds, correl_matrix);  
+  
+  Cout << "normal samples " << normal_sampler->all_samples() << '\n'; 
+  const RealMatrix& lhs_samples = normal_sampler->all_samples();
+  RealVector temp_cvars = Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(lhs_samples), 0);
+
+  for (i=0; i<numFns; i++) {
+    fnVals[i]=temp_cvars[i];
+  } 
+
+  Cout << "fnVals " << fnVals << '\n';
+  //fnVals[0]=mean_pred;
+   
+  return 0;
+}  
+
 
 /// this function combines N 1D functions and their derivatives to compute a N-D separable function and its derivatives, logic is general enough to support different 1D functions in different dimensions (can mix and match)
 void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<Real>& w, std::vector<Real>& d1w, std::vector<Real>& d2w)

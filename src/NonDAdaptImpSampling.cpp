@@ -604,8 +604,9 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // center std normals around i-th rep point
     if (num_rep_samples) {
       initialize_lhs(false);
+      RealSymMatrix correl;
       lhsDriver.generate_normal_samples(repPointsU[i], n_std_devs,
-	n_l_bnds, n_u_bnds, num_rep_samples, lhs_samples_array);
+	n_l_bnds, n_u_bnds, num_rep_samples, correl, lhs_samples_array);
 
       // copy sample set from lhs_samples_array into var_samples_u
       for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr)

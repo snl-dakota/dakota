@@ -51,6 +51,11 @@ public:
   NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		  const String& rng, const RealVector& lower_bnds,
 		  const RealVector& upper_bnds);
+  /// alternate constructor for sample generation of correlated normals "on the fly"
+  NonDLHSSampling(unsigned short sample_type, int samples, int seed,
+		  const String& rng, const RealVector& means, 
+                  const RealVector& std_devs, const RealVector& lower_bnds,
+		  const RealVector& upper_bnds, RealSymMatrix& correl);
   /// destructor
   ~NonDLHSSampling();
 

@@ -120,6 +120,30 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
     maxEvalConcurrency *= numSamples;
 }
 
+/** This alternate constructor is used by ConcurrentStrategy for
+    generation of normal, correlated sample sets. */
+NonDSampling::
+NonDSampling(unsigned short sample_type, int samples, int seed,
+	     const String& rng, const RealVector& means, 
+             const RealVector& std_devs, const RealVector& lower_bnds,
+	     const RealVector& upper_bnds, RealSymMatrix& correl):
+  NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
+  randomSeed(seed), samplesSpec(samples), samplesRef(samples),
+  numSamples(samples), rngName(rng), sampleType(sample_type), statsFlag(false),
+  allDataFlag(true), samplingVarsMode(ACTIVE),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
+  numLHSRuns(0)
+{
+  subIteratorFlag = true; // suppress some output
+
+  // enforce LHS as default sample type
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
+  // not used but included for completeness
+  if (numSamples) // samples is optional (default = 0)
+    maxEvalConcurrency *= numSamples;
+}
 
 /** This alternate constructor defines allSamples from an incoming
     sample matrix. */
@@ -365,6 +389,19 @@ get_parameter_sets(const RealVector& lower_bnds,
   initialize_lhs(true);
   lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds,
 				     numSamples, allSamples);
+}
+
+/** This version of get_parameter_sets() does not extract data from the
+    user-defined model, but instead relies on the incoming 
+    definition.  It only support the sampling of normal variables. */
+void NonDSampling::
+get_parameter_sets(const RealVector& means, const RealVector& std_devs, 
+                   const RealVector& lower_bnds, const RealVector& upper_bnds,
+                   RealSymMatrix& correl)
+{
+  initialize_lhs(true);
+  lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
+				    numSamples, correl, allSamples);
 }
 
 
