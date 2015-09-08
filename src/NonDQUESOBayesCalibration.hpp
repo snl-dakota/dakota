@@ -79,9 +79,6 @@ protected:
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
   
-  /// initialize a residual response for use in data transformations
-  void init_residual_response();
-
   /// define variables, options, likelihood callback, and inverse problem
   void init_queso_solver();
 
@@ -193,8 +190,6 @@ protected:
   Real likelihoodScale;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
-  /// local Response in which to store computed residuals
-  Response residualResponse;
   /// flag indicating user activation of logit transform option
   /** this option is useful for preventing rejection or resampling for
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */

@@ -205,6 +205,9 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
     abort_handler(METHOD_ERROR);
   }
 
+  // DREAM likelihood needs fn_vals only
+  short request_value_needed = 1;
+  init_residual_response(request_value_needed);
 
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain

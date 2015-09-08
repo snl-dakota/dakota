@@ -73,6 +73,9 @@ protected:
   /// initialize emulator model and probability space transformations
   void initialize_model();
 
+  /// initialize a residual response for use in data transformations
+  void init_residual_response(short request_value_needed);
+
   /// compute the (approximate) gradient of the negative log posterior by
   /// augmenting the (approximate) gradient of the negative log likelihood
   /// with the gradient of the negative log prior
@@ -144,6 +147,9 @@ protected:
   String proposalCovarFilename;
   /// approach for defining proposal covariance
   String proposalCovarInputType;
+
+  /// local Response in which to store computed residuals (accounting for data)
+  Response residualResponse;
 
   /// Pointer to current class instance for use in static callback functions
   static NonDBayesCalibration* nonDBayesInstance;

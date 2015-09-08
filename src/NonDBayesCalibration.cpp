@@ -352,6 +352,34 @@ void NonDBayesCalibration::initialize_model()
 }
 
 
+void NonDBayesCalibration::
+init_residual_response(short request_value_needed)
+{
+  // The residual response is sized based on total experiment data size.
+  // It has to allocate space for derivatives in the case of preconditioned
+  // proposal covariance.
+  //
+  // BMA: not sure this is true... the mcmcModel potentially needs to provide
+  // derivatives, but not sure the residual does; asv = 1 may suffice...
+  const Response& resp = mcmcModel.current_response();
+  residualResponse = resp.copy(false);  // false: SRD can be shared until resize
+  size_t total_residuals = 
+    calibrationData ? expData.num_total_exppoints() : resp.num_functions();
+
+  // reshape needed if change in size or derivative request; Response
+  // only resizes contained data if needed
+  residualResponse.reshape(total_residuals,
+			   resp.active_set_derivative_vector().size(),
+			   request_value_needed & 2, request_value_needed & 4);
+
+  // TODO: fully map the active set vector as in Minimizer, or replace
+  // with a RecastModel for data.  For now use the maximal request.
+  ShortArray asv = residualResponse.active_set_request_vector();
+  asv.assign(asv.size(), request_value_needed);
+  residualResponse.active_set_request_vector(asv);
+}
+
+
 Real NonDBayesCalibration::
 misfit(const Response& resp, const RealVector& calibrated_sigmas)
 {
@@ -380,29 +408,19 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
         result += std::pow((fn_values[j]-exp_data[j])/calibrated_sigmas[j], 2.);
     }
   else {
-    RealVector total_residuals( expData.num_total_exppoints() );
-    int cntr = 0;
-    for (i=0; i<numExperiments; ++i) {
-      RealVector residuals;
-      expData.form_residuals_deprecated(resp, i, residuals);
-      int len = residuals.length();
-      copy_data_partial( residuals, 0, len, total_residuals, cntr );
-      cntr += len;
-    }
-    for (i=0; i<numExperiments; ++i) 
-      result += expData.apply_covariance(total_residuals, i);
+    // there exists data, but no sigma (combo not currently supported)
+    // BMA: perhaps a better name would be per_exp_asv?
+    ShortArray total_asv;  
+    bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
+				    || expData.interpolate_flag() );
+    total_asv = expData.determine_active_request(residualResponse,
+						 interrogate_field_data);
 
-    /*ShortArray total_asv;
-    bool interrogate_field_data = 
-      ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
-    total_asv=expData.determine_active_request(curr_resp,
-					  interrogate_field_data);
-    expData.form_residuals(curr_resp, total_asv, 
-					      residual_response);
-    if (applyCovariance) 
-      expData.scale_residuals(residual_response, total_asv);
-    RealVector residuals = residual_resp.function_values_view();
-    result = residuals.dot( residuals );*/
+    expData.form_residuals(resp, total_asv, residualResponse);
+    if (expData.variance_active())  // r <- Gamma_d^{-1/2} r
+      expData.scale_residuals(residualResponse, total_asv);
+    RealVector residuals = residualResponse.function_values_view();
+    result = residuals.dot( residuals );
   }
 
   return result / 2.; // misfit defined as 1/2 r^T Gamma_d^{-1} r

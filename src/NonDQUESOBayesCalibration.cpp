@@ -255,7 +255,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // construct a Response for use in residual computation
   if (proposalCovarType == "derivatives")
     init_precond_request_value();
-  init_residual_response();
+
+  // likelihood needs fn_vals; preconditioning may need derivs
+  short request_value_needed = 1 | precondRequestValue;
+  init_residual_response(request_value_needed);
 
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
@@ -451,7 +454,7 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity = 2;
   envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
- 
+
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
   else // dram, dr, am, or mh
@@ -479,28 +482,6 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
       precondRequestValue |= 5; // values & Hessians
     break;
   }
-}
-
-
-void NonDQUESOBayesCalibration::init_residual_response()
-{
-  // The residual response is sized based on total experiment data size.
-  // It has to allocate space for derivatives in the case of preconditioned
-  // proposal covariance.
-  const Response& resp = mcmcModel.current_response();
-  residualResponse = resp.copy(false);  // false: SRD can be shared until resize
-  size_t total_residuals = 
-    calibrationData ? expData.num_total_exppoints() : resp.num_functions();
-  // likelihood needs fn_vals; preconditioning may need derivs
-  short request_value_needed = 1 | precondRequestValue;
-
-  // reshape needed if change in size or derivative request; Response
-  // only resizes contained data if needed
-  residualResponse.reshape(total_residuals,
-			   resp.active_set_derivative_vector().size(),
-			   request_value_needed & 2, request_value_needed & 4);
-  // TODO: fully map the active set vector as in Minimizer, or replace
-  // with a RecastModel for data.
 }
 
 
