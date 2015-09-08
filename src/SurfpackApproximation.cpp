@@ -268,22 +268,6 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   //  abort_handler(-1);
   //}
 
-  if (!shared_surf_data_rep->exportModelName.empty()) {
-    if (SurfpackInterface::HasFeature("model_save")) {
-      if (!strends(shared_surf_data_rep->exportModelName, ".sps") && 
-	  !strends(shared_surf_data_rep->exportModelName, ".bsps")) {
-	Cerr << "\nError: export_model_file name must end in .sps or .bsps."
-	     << std::endl;
-	abort_handler(-1);
-      }
-    }
-    else {
-      Cerr << "\nError: export_model_file requires compilation with option\n"
-	   <<"       HAVE_BOOST_SERIALIZATION." << std::endl;
-      abort_handler(-1);
-    }
-  }
-
   // validate diagnostic settings (preliminary); TODO: do more at
   // run time and move to both ctors
   bool err_found = false;
@@ -479,21 +463,6 @@ void SurfpackApproximation::build()
     }
 
     model = factory->Build(*surfData); 
-    if (sharedDataRep->outputLevel > NORMAL_OUTPUT) { 
-
-      Cout << model->asString();
-
-      //      ModelFitness* SS_fitness = ModelFitness::Create("sum_squared");
-      //Cout << "Sum-squared goodness of fit =  " 
-      //   << (*SS_fitness)(*model,*surfData) << "\n" ;
-      //delete SS_fitness;
-
-      //ModelFitness* R2_fitness = ModelFitness::Create("rsquared");
-      //Cout << "R-squared goodness of fit =  " 
-      //   << (*R2_fitness)(*model,*surfData) << "\n" ;
-      //delete R2_fitness;
-
-    }
     // TO DO: extract coefficients array
   }
   catch (std::runtime_error& e) {
@@ -511,15 +480,53 @@ void SurfpackApproximation::build()
     abort_handler(-1);
   }
 
-  if (!shared_surf_data_rep->exportModelName.empty() &&
+/*  if (!shared_surf_data_rep->exportModelName.empty() &&
       SurfpackInterface::HasFeature("model_save")) {
     if (sharedDataRep->outputLevel >= VERBOSE_OUTPUT)
       Cout << "\nSaving surrogate model to file "
 	   << shared_surf_data_rep->exportModelName << std::endl;
     SurfpackInterface::Save(model, shared_surf_data_rep->exportModelName);
-  }
+  }*/
 }
 
+
+void SurfpackApproximation::export_model(const String& fn_label)
+{
+  String without_extension = sharedDataRep->modelExportPrefix + "." + fn_label;
+  const unsigned short &formats = sharedDataRep->modelExportFormat;
+  const bool &can_save = SurfpackInterface::HasFeature("model_save");
+  // Saving to text archive
+  if(formats & TEXT_ARCHIVE) {
+    if(can_save) {
+      String filename = without_extension + ".sps";
+      SurfpackInterface::Save(model,filename);
+    } else
+        Cerr << "\nRequested surrogate export to text archive failed: "
+		<< "Surfpack lacks support for model saving.\n";
+  }
+  // Saving to binary archive
+  if(formats & BINARY_ARCHIVE) {
+    if(can_save) {
+      String filename = without_extension + ".bsps";
+      SurfpackInterface::Save(model,filename);
+    } else
+        Cerr << "\nRequested surrogate export to binary archive failed: "
+	        << "Surfpack lacks support for model saving.\n";
+  }
+  // Saving to algebraic file
+  if(formats & ALGEBRAIC_FILE) {
+    String filename = without_extension + ".alg";
+    std::ofstream af(filename.c_str(),std::ofstream::out);
+    af << "Model for response " << fn_label << ":\n" << model->asString();
+    af.close();
+    Cout << "Model saved in algebraic format to file '" << filename << "'.\n";
+  }
+  // Writing in algebraic format to screen
+  if(formats & ALGEBRAIC_CONSOLE) {
+    Cout << "\nModel for response " << fn_label << ":\n";
+    Cout << model->asString();
+  }    
+}
 
 Real SurfpackApproximation::value(const Variables& vars)
 { 

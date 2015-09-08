@@ -649,6 +649,14 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   */
 }
 
+/** This function calls export on each approximation */
+void ApproximationInterface::
+export_approximation(const StringArray& fn_labels)
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].export_model(fn_labels[*it]);
+}
+   
 
 /** This function updates the coefficients for each Approximation based
     on data increments provided by {update,append}_approximation(). */

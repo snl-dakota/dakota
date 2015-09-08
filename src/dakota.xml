@@ -65,6 +65,36 @@
           </oneOf>
         </optional>"
     >
+    <!ENTITY model_full_surfpack_export_format
+        "<optional>
+	    <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export surrogate model' help='' />
+            <optional>
+		<keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported surrogate filename prefix' help='' default='exported_surrogate' >
+                    <param type='STRING' />
+                </keyword>
+            </optional>
+		<keyword id='formats' name='formats' code='{0}' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats'>
+		    <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text Archive' maxOccurs='1' minOccurs='0' />
+		    <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary Archive' maxOccurs='1' minOccurs='0'  />
+		    <keyword id='algebraic_file' name='algebraic_file' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)}' label='Algebraic File' maxOccurs='1' minOccurs='0'  />
+		    <keyword id='algebraic_console' name='algebraic_console' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)}' label='Algebraic Console' maxOccurs='1' minOccurs='0'  />
+		</keyword>
+        </optional>"
+    >
+    <!ENTITY model_partial_surfpack_export_format
+        "<optional>
+	    <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export surrogate model' help='' />
+            <optional>
+		<keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported surrogate filename prefix' help='' default='exported_surrogate' >
+                    <param type='STRING' />
+                </keyword>
+            </optional>
+		<keyword id='formats' name='formats' code='{0}' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats'>
+		    <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text SPS' maxOccurs='1' minOccurs='0' />
+		    <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary SPS' maxOccurs='1' minOccurs='0'  />
+		</keyword>
+        </optional>"
+    >
 ]>
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
@@ -2477,10 +2507,8 @@
                       <!-- #	        [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
                            #	        [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
                        -->
-                      <keyword  id="export_model_file" name="export_model_file" code="{N_mom(str, exportApproxModelFile)}" label="export_model_file" help="" minOccurs="0" >
-                        <param type="OUTPUT_FILE" />
-                      </keyword>
-                    </keyword>
+                    &model_full_surfpack_export_format;
+		    </keyword>
                   </oneOf>
                 </keyword>
                 <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate adaptive regression splines" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
@@ -2493,10 +2521,10 @@
                       <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="cubic" help=""  />
                     </oneOf>
                   </keyword>
-                  <keyword  id="export_model_file1" name="export_model_file" code="{N_mom(str, exportApproxModelFile)}" label="export_model_file" help="" minOccurs="0" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
-                </keyword>
+                  
+		  &model_partial_surfpack_export_format;
+
+	        </keyword>
                 <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving least squares" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="MLS polynomial order" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
 		    <alias name="poly_order"/>
@@ -2505,10 +2533,8 @@
                   <keyword  id="weight_function" name="weight_function" code="{N_mom(shint,mlsWeightFunction)}" label="MLS weight function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="export_model_file2" name="export_model_file" code="{N_mom(str, exportApproxModelFile)}" label="export_model_file" help="" minOccurs="0" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
-                </keyword>
+                  &model_partial_surfpack_export_format;
+               </keyword>
                 <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial neural network" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="ANN maximum nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="numTrainingData - 1">
 		    <alias name="nodes"/>
@@ -2520,10 +2546,8 @@
                   <keyword  id="random_weight" name="random_weight" code="{N_mom(shint,annRandomWeight)}" label="ANN random weight" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="export_model_file3" name="export_model_file" code="{N_mom(str, exportApproxModelFile)}" label="export_model_file" help="" minOccurs="0" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
-                </keyword>
+                  &model_full_surfpack_export_format;
+               </keyword>
                 <!-- #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
                      #	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
                  -->
@@ -2540,9 +2564,7 @@
                   <keyword  id="max_subsets" name="max_subsets" code="{N_mom(shint,rbfMaxSubsets)}" label="max_subsets" help="" minOccurs="0" >
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="export_model_file4" name="export_model_file" code="{N_mom(str, exportApproxModelFile)}" label="export_model_file" help="" minOccurs="0" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
+                  &model_full_surfpack_export_format;
                 </keyword>
                 <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <oneOf label="polynomial order">
@@ -2553,9 +2575,7 @@
                     <keyword  id="quadratic1" name="quadratic" code="{N_mom(order,polynomialOrder_2)}" label="quadratic" help=""  />
                     <keyword  id="cubic1" name="cubic" code="{N_mom(order,polynomialOrder_3)}" label="cubic" help=""  />
                   </oneOf>
-                  <keyword  id="export_model_file5" name="export_model_file" code="{N_mom(str, exportApproxModelFile)}" label="export_model_file" help="" minOccurs="0" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
+                  &model_full_surfpack_export_format;
                 </keyword>
 
               </oneOf>

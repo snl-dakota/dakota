@@ -2033,7 +2033,15 @@ KEYWORD model
 		[ nugget REAL > 0
 		| find_nugget INTEGER ]
 		[ correlation_lengths REALLIST ]
-		[ export_model_file STRING ]
+		[ export_model
+		  [ filename_prefix STRING ]
+		  ( formats
+		    [ text_archive ]
+		    [ binary_archive ]
+		    [ algebraic_file ]
+		    [ algebraic_console ]
+		    )
+		  ]
 		)
 	      )
 	    |
@@ -2043,20 +2051,40 @@ KEYWORD model
 		linear
 		| cubic
 		]
-	      [ export_model_file STRING ]
+	      [ export_model
+		[ filename_prefix STRING ]
+		( formats
+		  [ text_archive ]
+		  [ binary_archive ]
+		  )
+		]
 	      )
 	    |
 	    ( moving_least_squares
 	      [ basis_order ALIAS poly_order INTEGER >= 0 ]
 	      [ weight_function INTEGER ]
-	      [ export_model_file STRING ]
+	      [ export_model
+		[ filename_prefix STRING ]
+		( formats
+		  [ text_archive ]
+		  [ binary_archive ]
+		  )
+		]
 	      )
 	    |
 	    ( neural_network
 	      [ max_nodes ALIAS nodes INTEGER ]
 	      [ range REAL ]
 	      [ random_weight INTEGER ]
-	      [ export_model_file STRING ]
+	      [ export_model
+		[ filename_prefix STRING ]
+		( formats
+		  [ text_archive ]
+		  [ binary_archive ]
+		  [ algebraic_file ]
+		  [ algebraic_console ]
+		  )
+		]
 	      )
 	    |
 	    ( radial_basis
@@ -2064,7 +2092,15 @@ KEYWORD model
 	      [ max_pts INTEGER ]
 	      [ min_partition INTEGER ]
 	      [ max_subsets INTEGER ]
-	      [ export_model_file STRING ]
+	      [ export_model
+		[ filename_prefix STRING ]
+		( formats
+		  [ text_archive ]
+		  [ binary_archive ]
+		  [ algebraic_file ]
+		  [ algebraic_console ]
+		  )
+		]
 	      )
 	    |
 	    ( polynomial
@@ -2072,7 +2108,15 @@ KEYWORD model
 	      | linear
 	      | quadratic
 	      | cubic
-	      [ export_model_file STRING ]
+	      [ export_model
+		[ filename_prefix STRING ]
+		( formats
+		  [ text_archive ]
+		  [ binary_archive ]
+		  [ algebraic_file ]
+		  [ algebraic_console ]
+		  )
+		]
 	      )
 	    [ domain_decomposition
 	      [ cell_type STRING ]

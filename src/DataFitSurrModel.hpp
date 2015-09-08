@@ -242,6 +242,11 @@ protected:
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
 
+  //
+  //- Heading: Data members
+  //
+  const bool exportSurrogate;
+
 private:
 
   //

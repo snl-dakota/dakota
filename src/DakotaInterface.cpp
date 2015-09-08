@@ -1119,6 +1119,18 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
+void Interface::
+export_approximation(const StringArray& fn_labels)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->export_approximation(fn_labels);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual export_approximation"
+         << "() function.\n       This interface does not support exporting "
+	 << "approximations." << std::endl;
+    abort_handler(-1);
+  }
+}
 
 void Interface::
 rebuild_approximation(const BoolDeque& rebuild_deque)

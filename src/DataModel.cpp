@@ -20,7 +20,8 @@ namespace Dakota {
 DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
   hierarchicalTags(false),
-  pointsTotal(0), pointsManagement(DEFAULT_POINTS), 
+  pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),
+  modelExportPrefix("exported_surrogated"), modelExportFormat(NO_MODEL_FORMAT),
   importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
@@ -46,9 +47,10 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateFnIndices << surrogateType << truthModelPointer
     << lowFidelityModelPointer << pointsTotal << pointsManagement
     << approxPointReuse << importBuildPtsFile << importBuildFormat
+    << exportSurrogate << modelExportPrefix << modelExportFormat
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat << exportApproxModelFile
+    << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations
@@ -66,6 +68,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
 }
 
 
+
 void DataModelRep::read(MPIUnpackBuffer& s)
 {
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
@@ -73,9 +76,10 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateFnIndices >> surrogateType >> truthModelPointer
     >> lowFidelityModelPointer >> pointsTotal >> pointsManagement
     >> approxPointReuse >> importBuildPtsFile >> importBuildFormat
+    >> exportSurrogate >> modelExportPrefix >> modelExportFormat
     >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
-    >> exportApproxPtsFile >> exportApproxFormat >> exportApproxModelFile
+    >> exportApproxPtsFile >> exportApproxFormat 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
     >> polynomialOrder >> krigingCorrelations >> krigingOptMethod
     >> krigingMaxTrials >> krigingMaxCorrelations >> krigingMinCorrelations
@@ -100,9 +104,10 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateFnIndices << surrogateType << truthModelPointer
     << lowFidelityModelPointer << pointsTotal << pointsManagement
     << approxPointReuse << importBuildPtsFile << importBuildFormat
+    << exportSurrogate << modelExportPrefix << modelExportFormat
     << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat << exportApproxModelFile
+    << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
     << polynomialOrder << krigingCorrelations << krigingOptMethod
     << krigingMaxTrials << krigingMaxCorrelations << krigingMinCorrelations

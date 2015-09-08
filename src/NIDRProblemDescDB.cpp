@@ -7015,6 +7015,7 @@ static Model_mp_type
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),
+        
 
 static Model_mp_utype
         MP2s(exportApproxFormat,TABULAR_NONE),
@@ -7036,7 +7037,11 @@ static Model_mp_utype
         MP2s(importChallengeFormat,TABULAR_HEADER),
         MP2s(importChallengeFormat,TABULAR_EVAL_ID),
         MP2s(importChallengeFormat,TABULAR_IFACE_ID),
-        MP2s(importChallengeFormat,TABULAR_ANNOTATED);
+        MP2s(importChallengeFormat,TABULAR_ANNOTATED),
+        MP2s(modelExportFormat,TEXT_ARCHIVE),
+        MP2s(modelExportFormat,BINARY_ARCHIVE),
+        MP2s(modelExportFormat,ALGEBRAIC_FILE),
+        MP2s(modelExportFormat,ALGEBRAIC_CONSOLE);
 
 static Real
 	MP_(annRange),
@@ -7055,7 +7060,6 @@ static RealVector
 static String
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
-	MP_(exportApproxModelFile),
 	MP_(idModel),
       //MP_(importApproxPtsFile),
 	MP_(importBuildPtsFile),
@@ -7063,6 +7067,7 @@ static String
 	MP_(interfacePointer),
 	MP_(krigingOptMethod),
 	MP_(lowFidelityModelPointer),
+	MP_(modelExportPrefix),
 	MP_(optionalInterfRespPointer),
 	MP_(responsesPointer),
 	MP_(subMethodPointer),
@@ -7077,6 +7082,7 @@ static StringArray
 static bool
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
+	MP_(exportSurrogate),
 	MP_(hierarchicalTags),
       //MP_(importApproxActive),
 	MP_(importBuildActive),

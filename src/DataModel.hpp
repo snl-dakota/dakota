@@ -33,6 +33,10 @@ enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
 enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
        COMBINED_CORRECTION };
 
+/// define special values for surrogateExportFormats
+enum { NO_MODEL_FORMAT=0, TEXT_ARCHIVE=1, BINARY_ARCHIVE=2, ALGEBRAIC_FILE=4,
+       ALGEBRAIC_CONSOLE=8 };
+
 
 /// Body class for model specification data.
 
@@ -137,9 +141,14 @@ public:
   /// tabular format for the approx point export file
   unsigned short exportApproxFormat;
 
-  /// the file name from the \c export_model_file specification in
-  /// \ref ModelSurrG
-  String exportApproxModelFile;
+  /// Option to turn on surrogate model export (export_model)
+  bool exportSurrogate;
+
+  /// the filename prefix for export_model
+  String modelExportPrefix;
+
+  /// Format selection for export_model
+  unsigned short modelExportFormat;
 
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,

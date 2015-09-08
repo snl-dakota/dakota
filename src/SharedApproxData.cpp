@@ -36,7 +36,10 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), dataRep(NULL), referenceCount(1)
+  buildDataOrder(1), 
+  modelExportPrefix(problem_db.get_string("model.surrogate.model_export_prefix")),
+  modelExportFormat(problem_db.get_ushort("model.surrogate.model_export_format")),
+  dataRep(NULL), referenceCount(1)
 {
   // increment the buildDataOrder based on derivative usage and response
   // gradient/Hessian specifications and approximation type support.  The
@@ -98,6 +101,7 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
+  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
   dataRep(NULL), referenceCount(1)
 {
   bool global_approx = strbegins(approxType, "global_");
@@ -137,6 +141,7 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
     operator, and destructor. */
 SharedApproxData::SharedApproxData():
   buildDataOrder(1), outputLevel(NORMAL_OUTPUT), dataRep(NULL),
+  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
   referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG

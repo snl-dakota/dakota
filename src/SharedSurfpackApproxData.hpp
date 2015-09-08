@@ -96,9 +96,6 @@ private:
   /// order of polynomial approximation
   unsigned short approxOrder;
 
-  /// A Surfpack model name for saving the surrogate model
-  String exportModelName;
-
   /// set of diagnostic metrics
   StringArray diagnosticSet;
 

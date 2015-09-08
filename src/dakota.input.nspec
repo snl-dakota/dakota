@@ -1944,7 +1944,18 @@ KEYWORD model {N_mom3(start,0,stop)}
             find_nugget INTEGER {N_mom(shint,krigingFindNugget)}
            ]
           [ correlation_lengths REALLIST {N_mom(RealDL,krigingCorrelations)} ]
-          [ export_model_file STRING {N_mom(str, exportApproxModelFile)} ]
+          [ 
+            export_model {N_mom(true,exportSurrogate)}
+            [ 
+              filename_prefix STRING {N_mom(str,modelExportPrefix)}
+             ]
+            ( formats {0}
+              [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+              [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+              [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
+              [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
+             )
+           ]
          )
        )
       |
@@ -1955,20 +1966,49 @@ KEYWORD model {N_mom3(start,0,stop)}
           |
           cubic {N_mom(lit,marsInterpolation_cubic)}
          ]
-        [ export_model_file STRING {N_mom(str, exportApproxModelFile)} ]
+        [ 
+          export_model {N_mom(true,exportSurrogate)}
+          [ 
+            filename_prefix STRING {N_mom(str,modelExportPrefix)}
+           ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
        )
       |
       ( moving_least_squares {N_mom(lit,surrogateType_global_moving_least_squares)}
         [ basis_order ALIAS poly_order INTEGER >= 0 {N_mom(shint,polynomialOrder)} ]
         [ weight_function INTEGER {N_mom(shint,mlsWeightFunction)} ]
-        [ export_model_file STRING {N_mom(str, exportApproxModelFile)} ]
+        [ 
+          export_model {N_mom(true,exportSurrogate)}
+          [ 
+            filename_prefix STRING {N_mom(str,modelExportPrefix)}
+           ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
         [ max_nodes ALIAS nodes INTEGER {N_mom(shint,annNodes)} ]
         [ range REAL {N_mom(Real,annRange)} ]
         [ random_weight INTEGER {N_mom(shint,annRandomWeight)} ]
-        [ export_model_file STRING {N_mom(str, exportApproxModelFile)} ]
+        [ 
+          export_model {N_mom(true,exportSurrogate)}
+          [ 
+            filename_prefix STRING {N_mom(str,modelExportPrefix)}
+           ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+            [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
+            [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
+           )
+         ]
        )
       |
       ( radial_basis {N_mom(lit,surrogateType_global_radial_basis)}
@@ -1976,7 +2016,18 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ max_pts INTEGER {N_mom(shint,rbfMaxPts)} ]
         [ min_partition INTEGER {N_mom(shint,rbfMinPartition)} ]
         [ max_subsets INTEGER {N_mom(shint,rbfMaxSubsets)} ]
-        [ export_model_file STRING {N_mom(str, exportApproxModelFile)} ]
+        [ 
+          export_model {N_mom(true,exportSurrogate)}
+          [ 
+            filename_prefix STRING {N_mom(str,modelExportPrefix)}
+           ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+            [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
+            [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
+           )
+         ]
        )
       |
       ( polynomial {N_mom(lit,surrogateType_global_polynomial)}
@@ -1987,7 +2038,18 @@ KEYWORD model {N_mom3(start,0,stop)}
         quadratic {N_mom(order,polynomialOrder_2)}
         |
         cubic {N_mom(order,polynomialOrder_3)}
-        [ export_model_file STRING {N_mom(str, exportApproxModelFile)} ]
+        [ 
+          export_model {N_mom(true,exportSurrogate)}
+          [ 
+            filename_prefix STRING {N_mom(str,modelExportPrefix)}
+           ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+            [ algebraic_file {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)} ]
+            [ algebraic_console {N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)} ]
+           )
+         ]
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]

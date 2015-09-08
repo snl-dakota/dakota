@@ -96,6 +96,8 @@ protected:
 			   const RealVector& dr_l_bnds,
 			   const RealVector& dr_u_bnds);
 
+  void export_approximation(const StringArray& fn_labels);
+
   void rebuild_approximation(const BoolDeque& rebuild_deque);
   void pop_approximation(bool save_surr_data);
   void restore_approximation();

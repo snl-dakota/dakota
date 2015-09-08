@@ -67,6 +67,8 @@ public:
 
   /// builds the approximation from scratch
   virtual void build();
+  /// exports the approximation
+  virtual void export_model(const String& fn_label);
   /// rebuilds the approximation incrementally
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data

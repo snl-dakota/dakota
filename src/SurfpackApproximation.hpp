@@ -72,6 +72,9 @@ protected:
   /// and the appropriate Surfpack build method will be invoked
   void build();
 
+  /// export the Surpack model to disk or console
+  void export_model(const String& fn_label);
+
   // return #coefficients
   //RealVector approximation_coefficients(bool normalized) const;
   // set #coefficients

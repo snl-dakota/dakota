@@ -2331,12 +2331,12 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
-	{"surrogate.export_model_file", P exportApproxModelFile},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
 	{"surrogate.import_build_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.low_fidelity_model_pointer", P lowFidelityModelPointer},
 	{"surrogate.mars_interpolation", P marsInterpolation},
+	{"surrogate.model_export_prefix", P modelExportPrefix},
 	{"surrogate.point_reuse", P approxPointReuse},
         {"surrogate.trend_order", P trendOrder},
 	{"surrogate.type", P surrogateType},
@@ -2754,7 +2754,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       // must be sorted by string (key)
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
-	{"surrogate.import_build_format", P importBuildFormat}};
+	{"surrogate.import_build_format", P importBuildFormat},
+	{"surrogate.model_export_format", P modelExportFormat}};
     #undef P
 
     KW<unsigned short, DataModelRep> *kw;
@@ -3008,6 +3009,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
 	{"surrogate.domain_decomp", P domainDecomp},
+	{"surrogate.export_surrogate", P exportSurrogate},
 	{"surrogate.import_build_active_only", P importBuildActive},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};

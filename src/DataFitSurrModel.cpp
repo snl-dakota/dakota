@@ -37,6 +37,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
   manageRecasting(false),
+  exportSurrogate(problem_db.get_bool("model.surrogate.export_surrogate")),
   importPointsFile(
     problem_db.get_string("model.surrogate.import_build_points_file")),
   exportPointsFile(
@@ -158,6 +159,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
+  exportSurrogate(false),
   manageRecasting(false), exportPointsFile(export_approx_points_file),
   exportFormat(export_approx_format), importPointsFile(import_build_points_file)
 {
@@ -299,13 +301,18 @@ void DataFitSurrModel::build_approximation()
       userDefinedConstraints.discrete_int_upper_bounds(),
       userDefinedConstraints.discrete_real_lower_bounds(),
       userDefinedConstraints.discrete_real_upper_bounds());
-  else // employ sub-model vars view, if available
+  else { // employ sub-model vars view, if available
     approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
       actualModel.continuous_upper_bounds(),
       actualModel.discrete_int_lower_bounds(),
       actualModel.discrete_int_upper_bounds(),
       actualModel.discrete_real_lower_bounds(),
       actualModel.discrete_real_upper_bounds());
+    if(exportSurrogate) {
+      const StringArray fn_labels(actualModel.response_labels());
+      approxInterface.export_approximation(fn_labels);
+    }
+  }
   approxBuilds++;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
