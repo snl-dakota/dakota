@@ -3,4 +3,4 @@ Load[name = textbook_build, file = 'build_points.dat',
 
 CreateSurface[name = textbook_gp, data = textbook_build, type = kriging]
 
-Save[surface = textbook_gp, file = 'sp_gp_model.sps']
+Save[surface = textbook_gp, file = 'sp_gp_model.textbook.sps']

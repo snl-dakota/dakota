@@ -2,12 +2,11 @@
 # Build and evaluate a surrogate at a user-specified set of points
 
 # Top-level controls
-# strategy
-#  single_method
-#    method_pointer = 'EvalSurrogate'
-#  tabular_data
-#    tabular_data_file = 'dak_surrogate_evals.dat'
-
+ environment
+  method_pointer = 'EvalSurrogate'
+  tabular_data
+    tabular_data_file = 'dak_surrogate_evals.dat'
+    custom_annotated header eval_id
 
 # Method to perform evaluations of the surrogate model
 method
@@ -52,18 +51,17 @@ model
   # -----
 
   # Save the model to a Surfpack model file for later evaluation in Surfpack
-  # Model Save option S1 (must end in .sps or .bsps)
-  export_model_file = 'dak_gp_model.sps'
-
+  # Model Save option S1
+  export_model
+   filename_prefix = 'dak_gp_model'
+   formats
+     text_archive
 
 variables,
-  lognormal_uncertain =  2
-    means             =  1.0  1.0
-    error_factors     =  1.1  1.1
-    descriptors       =  'x1' 'x2'
-  uncertain_correlation_matrix =  1. 0.
-    				  0. 1.
-
+  uniform_uncertain =  2
+    lower_bounds    =  0.9  0.9
+    upper_bounds    =  1.1  1.1
+    descriptors     =  'x1' 'x2'
 
 responses
   response_functions = 1
