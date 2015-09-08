@@ -9,16 +9,15 @@ method
      model_pointer = 'SURR' 
       samples = 100
       seed = 8493
-      emulator_samples = 1.E3              
+      emulator_samples = 1.E5              
 
 model,                                         
         id_model = 'SURR'    			 
         surrogate global,			 
 	  actual_model_pointer = 'TRUTH'
           reuse_samples all
-#	  gaussian_process		     
-#	    surfpack		     	     
-	  polynomial basis_order = 3		  	     		    
+#	  gaussian_process surfpack		     	     
+	  polynomial basis_order = 2		  	     		    
 #	    domain_decomp		     		  
 #	      cell_type = 'vornonoi'	    
 #	      discontinuity_detection		 
@@ -36,12 +35,10 @@ variables
 
 interface
    direct 
-   analysis_driver = 'smooth_herbie'         
-#   analysis_driver = 'text_book'           
+#   analysis_driver = 'smooth_herbie'         
+   analysis_driver = 'text_book'           
 
 responses,
-   objective_functions = 1              
+   objective_functions = 3              
    no_gradients
    no_hessians
-  
-
