@@ -1,0 +1,27 @@
+Blurb::
+Export surrogate model in algebraic format to the console
+Description::
+After the surrogate model has been built, %Dakota will export it to the
+console (screen, or output file if %Dakota was run using the -o option)
+in a human-readable "algebraic" format. The output contains sufficient 
+information for the user to (re)construct and evaluate the model outside of 
+%Dakota. 
+
+<b> Expected Output </b>
+
+<p>The format depends on the type of surrogate model, but in general will 
+include a LaTeX-like representation of the analytic form of the model to aid 
+tool development, all needed model hyperparameters, and headers describing
+the shape or dimension of the provided data.
+
+The output written to the screen for the exported model matches exactly the 
+output written to file when \c algebraic_file is specified. Use of \c algebraic_file
+is preferred over \c algebraic_console, which exists largely to
+provide a measure of backward compatibility.
+
+Topics::
+surrogate_models
+Examples::
+Theory::
+Faq::
+See_Also::

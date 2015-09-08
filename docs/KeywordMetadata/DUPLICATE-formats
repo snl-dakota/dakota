@@ -1,0 +1,16 @@
+Blurb::
+Formats for surrogate model export
+Description::
+Select from among the 2-4 available export formats available for this 
+surrogate. Multiple selections are permitted.
+
+See \c export_model and the entries for the format selection 
+keywords for further information.
+
+Topics::
+surrogate_models
+Examples::
+
+Theory::
+Faq::
+See_Also::

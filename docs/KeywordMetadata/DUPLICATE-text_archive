@@ -1,0 +1,18 @@
+Blurb::
+Export surrogate model to a plain-text archive file
+Description::
+After the surrogate model has been built, %Dakota will export it to a plain-text 
+archival file suitable only for use with the surfpack executable (\c bin/surfpack).
+The file is named using the pattern \c <prefix>.<response_descriptor>.sps, in which
+'sps' stands for Surfpack Surrogate. See \c filename_prefix for further information 
+about exported surrogate file naming. 
+
+The %Dakota examples folder includes a demonstration of using the surfpack
+executable with an exported model file.
+
+Topics::
+surrogate_models
+Examples::
+Theory::
+Faq::
+See_Also::
