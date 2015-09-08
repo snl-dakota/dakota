@@ -42,7 +42,7 @@ with external tools.
 <b> Expected Output </b>
 <p>Output depends on selected format; see the \c formats specification.
 
-<b>(Additional Discussion)</b>
+<b> Additional Discussion </b>
 <p>The %Dakota examples folder includes a demonstration of using the surfpack
 executable with an exported model file.
 
