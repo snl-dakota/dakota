@@ -527,15 +527,16 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
-void read_data_tabular(const std::string& input_filename, 
+void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
-		       RealMatrix& input_matrix, size_t num_rows,
+		       RealMatrix& input_matrix, size_t record_len,
 		       unsigned short tabular_format, bool verbose)
 {
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
 
   RealVectorArray rva;
+  RealVector read_rv(record_len);
   try {
 
     read_header_tabular(input_stream, tabular_format);
@@ -547,8 +548,7 @@ void read_data_tabular(const std::string& input_filename,
       read_leading_columns(input_stream, tabular_format);
 
       // read the (required) coefficients of length num_fns
-      RealVector read_rv(num_rows);
-      read_rv = std::numeric_limits<double>::quiet_NaN();
+      read_rv = std::numeric_limits<Real>::quiet_NaN();
       if (!(input_stream >> read_rv)) {
 	Cout << "read: " << read_rv << std::endl;
 	Cerr << "\nError (" << context_message << "): unexpected coeff read "
@@ -563,7 +563,7 @@ void read_data_tabular(const std::string& input_filename,
   catch (const std::ios_base::failure& failorbad_except) {
     Cerr << "\nError (" << context_message << "): could not read file " 
 	 << input_filename << ".";
-    print_expected_format(Cerr, tabular_format, 0, num_rows);
+    print_expected_format(Cerr, tabular_format, 0, record_len);
     abort_handler(-1);
   }
   catch(...) {
@@ -572,6 +572,9 @@ void read_data_tabular(const std::string& input_filename,
     abort_handler(-1);
   }
 
+  // this transposes the rva tabular layout (num_records X record_len) into the
+  // rm layout (record_len X num_records), since the natural place to store the
+  // ith vector rva[i] is as rm[i], a Teuchos column vector.
   copy_data(rva, input_matrix);
 }
 

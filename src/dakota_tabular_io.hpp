@@ -195,10 +195,12 @@ void read_data_tabular(const std::string& input_filename,
 // Uses: import_approx_points_file
 //
 /// read whitespace-separated data with optional row and column headers
-/// into a single matrix, with number of columns determined by file content
+/// into a single matrix, with length of record as specified and number of
+/// records to be determined by file content.  The matrix is stored as
+/// record_len rows by num_records columns.
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       RealMatrix& input_matrix, size_t num_rows,
+		       RealMatrix& input_matrix, size_t record_len,
 		       unsigned short tabular_format, bool verbose=false);
 
 //
