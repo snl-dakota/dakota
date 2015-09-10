@@ -20,7 +20,7 @@
 #include "dakota_linear_algebra.hpp"
 #include "Teuchos_LAPACK.hpp"
 #include "Teuchos_SerialDenseSolver.hpp"
-#include "dakota_stat_util.hpp"
+#include "BootstrapSampler.hpp"
 #include <vector>
 #include <cmath>
 
