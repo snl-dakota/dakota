@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDSampling
+//- Class:	 NonDLHSSampling
 //- Description: Wrapper class for Fortran 90 LHS library
 //- Owner:       Mike Eldred
 //- Checked by:
@@ -72,14 +72,12 @@ protected:
 
   /// generate LHS samples in non-VBD cases
   void pre_run();
-
-  void post_input();
-
   /// perform the evaluate parameter sets portion of run
   void quantify_uncertainty();
-
   /// generate statistics for LHS runs in non-VBD cases
   void post_run(std::ostream& s);
+
+  void post_input();
 
   /// compute a principal components analysis on the sample set
   void compute_pca(std::ostream& s);
@@ -98,14 +96,13 @@ private:
 
   /// flags computation of variance-based decomposition indices
   bool varBasedDecompFlag;
+
   /// flag to specify the calculation of principal components
   bool pcaFlag;
   /// Threshold to keep number of principal components that explain 
   /// this much variance
   Real percentVarianceExplained;
 };
-
-
 
 } // namespace Dakota
 

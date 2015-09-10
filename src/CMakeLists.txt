@@ -512,10 +512,9 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDGlobalInterval.cpp NonDGlobalEvidence.cpp NonDGlobalSingleInterval.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
-    NonDCalibration.cpp NonDBayesCalibration.cpp NonDSampling.cpp
-    NonDWASABIBayesCalibration.cpp
-    NonDLHSSampling.cpp
-    NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDIncremLHSSampling.cpp
+    NonDCalibration.cpp NonDBayesCalibration.cpp NonDWASABIBayesCalibration.cpp
+    NonDSampling.cpp NonDLHSSampling.cpp NonDIncremLHSSampling.cpp
+    NonDMultilevelSampling.cpp NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
     NonDPOFDarts.cpp NonDRKDDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp
     NonlinearCGOptimizer.cpp 

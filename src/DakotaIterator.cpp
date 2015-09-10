@@ -28,6 +28,7 @@
 #include "NonDIncremLHSSampling.hpp"
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
+#include "NonDMultilevelSampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -408,6 +409,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
       return new  NonDIncremLHSSampling(problem_db, model); break;
     default: return new NonDLHSSampling(problem_db, model); break;
     } break;
+  case MULTILEVEL_SAMPLING:
+    return new NonDMultilevelSampling(problem_db, model); break;
 #ifdef HAVE_ESM 
   case EFFICIENT_SUBSPACE:
     return new EfficientSubspaceMethod(problem_db, model);  break;

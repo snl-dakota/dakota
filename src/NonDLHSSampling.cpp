@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDSampling
-//- Description: Implementation code for NonDSampling class
+//- Class:	 NonDLHSSampling
+//- Description: Implementation code for NonDLHSSampling class
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
