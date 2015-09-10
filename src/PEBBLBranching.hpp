@@ -39,6 +39,7 @@ class PebbldBranching : virtual public pebbl::branching
 	  int n_cont;
 	  int m_constrs;
 	  Model parentModel;
+          Iterator NLPsolver;
 	  int random_seed;
 	  int max_iter;
 	  int max_eval;
@@ -48,8 +49,8 @@ class PebbldBranching : virtual public pebbl::branching
 	  /** PebbldOptimizer Constructor
 	  @param model DAKOTA Model object
 	  */
-	  PebbldBranching(Model& _model);
-	  PebbldBranching(Model& _model, int _random_seed, int _max_iter, int _max_eval);
+  PebbldBranching(Model& _model, Iterator& sub_prob_solver);
+  PebbldBranching(Model& _model, Iterator& sub_prob_solver, int _random_seed, int _max_iter, int _max_eval);
 	  /// Destructor
 	  ~PebbldBranching();
 	  /// Method that returns an empty Sub-Branch
@@ -82,6 +83,7 @@ class PebbldBranching : virtual public pebbl::branching
 	  int max_eval;
 	  
 	  Model subModel;
+          Iterator NLPsolver;
 	  
 	  // Computation parameters?.
 	  double eps;

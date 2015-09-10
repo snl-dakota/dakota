@@ -141,6 +141,14 @@ KEYWORD12 method
 	  [ processors_per_iterator INTEGER > 0 ]
 	  )
 	|
+	( branch_and_bound
+	  method_pointer STRING
+	  |
+	  ( method_name STRING
+	    [ model_pointer STRING ]
+	    )
+	  )
+	|
 	( surrogate_based_local
 	  method_pointer ALIAS approx_method_pointer STRING
 	  | method_name ALIAS approx_method_name STRING
@@ -610,14 +618,6 @@ KEYWORD12 method
 	( coliny_cobyla
 	  [ initial_delta REAL ]
 	  [ threshold_delta REAL ]
-	  [ solution_target ALIAS solution_accuracy REAL ]
-	  [ seed INTEGER > 0 ]
-	  [ show_misc_options ]
-	  [ misc_options STRINGLIST ]
-	  [ model_pointer STRING ]
-	  )
-	|
-	( branch_and_bound
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]

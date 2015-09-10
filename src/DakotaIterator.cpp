@@ -439,7 +439,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case COLINY_EA:   case COLINY_PATTERN_SEARCH: case COLINY_SOLIS_WETS:
     return new COLINOptimizer(problem_db, model); break;
   case BRANCH_AND_BOUND:
-    return new PebbldOptimizer(problem_db, model); break;
+    return new PebbldMinimizer(problem_db, model); break;
 #endif
 #ifdef HAVE_JEGA
   case MOGA: case SOGA: return new JEGAOptimizer(problem_db, model); break;
@@ -554,7 +554,7 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   else if (strbegins(method_string, "coliny_"))
     return new COLINOptimizer(method_string, model);
   else if (method_string == "branch_and_bound")
-    return new PebbldOptimizer(model);
+    return new PebbldMinimizer(model);
 #endif
 #ifdef HAVE_JEGA
   //else if (method_string == "moga" || method_string == "soga")

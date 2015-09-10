@@ -70,13 +70,15 @@ enum { DEFAULT_METHOD=0,
        COLINY_BETA, COLINY_COBYLA,         COLINY_DIRECT, COLINY_MULTI_START,
        COLINY_EA,   COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS,
        MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, GENIE_OPT_DARTS,
-       GENIE_DIRECT, BRANCH_AND_BOUND,
+       GENIE_DIRECT,
        // Gradient-based Optimizers / Minimizers:
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
        // Generic Optimizers / Minimizers:
-       DL_SOLVER };
+       DL_SOLVER,
+       // Minimizers that are both opt & least sq
+       BRANCH_AND_BOUND=(MINIMIZER_BIT | OPTIMIZER_BIT | LEASTSQ_BIT) };
 
 /// Sub-methods, including sampling, inference algorithm, opt algorithm types
 enum { SUBMETHOD_DEFAULT=0,

@@ -192,15 +192,25 @@ TAG "method/hybrid/iterator_scheduling/peer"
 TAG "method/hybrid/processors_per_iterator"
 	DESC "{Number of processors per iterator server} MethodCommands.html#MethodMeta"
 
-TAG "method/surrogate_based_local" GROUP "Surrogate-based Methods"
-TAG "method/surrogate_based_local/method_pointer"
+TAG "method/branch_and_bound"
+TAG "method/branch_and_bound/method_pointer"
 	DESC "{Identification of minimizer by pointer} MethodCommands.html#MethodMetaParetoSet"
 
-TAG "method/surrogate_based_local/method_name"
+TAG "method/branch_and_bound/method_name"
 	DESC "{Identification of minimizer by name} MethodCommands.html#MethodMetaParetoSet"
 
-TAG "method/surrogate_based_local/model_pointer"
+TAG "method/branch_and_bound/method_name/model_pointer"
 	DESC "{Identification of model by pointer} MethodCommands.html#MethodMetaParetoSet"
+
+TAG "method/surrogate_based_local" GROUP "Surrogate-based Methods"
+TAG "method/surrogate_based_local/method_pointer"
+	DESC "{Approximate sub-problem minimization method pointer} MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/method_name"
+	DESC "{Approximate sub-problem minimization method name} MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/model_pointer"
+	DESC "{Surrogate model pointer} MethodCommands.html#MethodSBL"
 
 TAG "method/surrogate_based_local/soft_convergence_limit"
 	DESC "{Soft convergence limit for SBL iterations} MethodCommands.html#MethodSBL"
@@ -600,7 +610,6 @@ TAG "method/coliny_pattern_search/initial_delta"
 TAG "method/coliny_pattern_search/threshold_delta"
 	DESC "{Threshold for offset values} MethodCommands.html#MethodSCOLIBPS"
 
-TAG "method/branch_and_bound"
 TAG "method/coliny_direct" GROUP "Optimization: Global"
 TAG "method/coliny_direct/division"
 	DESC "{Box subdivision approach} MethodCommands.html#MethodSCOLIBDIR"

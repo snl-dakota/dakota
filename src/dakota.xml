@@ -373,13 +373,21 @@
         </required>
         <!-- # Note: branch_and_bound and surrogate_based_{local,global} are not meta-iterators and use a Model-based
 			 # ctor chain. Therefore, they differ in their model_pointer spec from hybrid & concurrent meta-iterators
-			 # (they require their own Model, not just a sub-model for the sub-method).
-			 #	|
-             #	( branch_and_bound
-             #	  method_pointer ALIAS branch_method_pointer STRING {N_mdm(str,subMethodPointer)}
-             #	  | method_name ALIAS branch_method_name STRING {N_mdm(str,subMethodName)}
-             #	  [ model_pointer ALIAS branch_model_pointer STRING {N_mdm(str,modelPointer)} ]
-             #	  [ num_samples_at_node INTEGER {N_mdm(int,branchBndNumSamplesNode)} ]
+			 # (they require their own Model, not just a sub-model for the sub-method). -->
+	<keyword  id="branch_and_bound" name="branch_and_bound" code="{N_mdm(utype,methodName_BRANCH_AND_BOUND)}" label="branch_and_bound" help="" minOccurs="1" group="Optimization: Other" >
+          <oneOf>
+            <keyword  id="method_pointer" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer" help="" >
+	      <param type="STRING" in_taglist="method" />
+            </keyword>
+            <keyword  id="method_name" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of minimizer by name" help="" >
+              <param type="STRING" />
+              <keyword  id="model_pointer" name="model_pointer" code="{N_mdm(str,modelPointer)}" label="Identification of model by pointer" help=""  default="method use of last model parsed (or use of default model if none parsed)" minOccurs="0" >
+		<param type="STRING" in_taglist="model" />
+              </keyword>
+            </keyword>
+          </oneOf>
+        </keyword>
+<!--             #	  [ num_samples_at_node INTEGER {N_mdm(int,branchBndNumSamplesNode)} ]
              #	  [ num_samples_at_root INTEGER {N_mdm(int,branchBndNumSamplesRoot)} ]
              #	)
          -->
@@ -890,7 +898,6 @@
                     <param type="REAL" />
                   </keyword>
                 </required>
-		<keyword  id="branch_and_bound" name="branch_and_bound" code="{N_mdm(utype,methodName_BRANCH_AND_BOUND)}" label="branch_and_bound" help="" minOccurs="1" group="Optimization: Global" />
                 <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct" help="" minOccurs="1" group="Optimization: Global" >
                   <keyword  id="division" name="division" code="{0}" label="Box subdivision approach" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="major_dimension" >
                     <oneOf>

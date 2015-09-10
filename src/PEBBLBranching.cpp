@@ -11,7 +11,7 @@ PebbldBranching::PebbldBranching()
 }
 
 // Default initialization
-PebbldBranching::PebbldBranching(Model& _model) : parentModel(_model)
+  PebbldBranching::PebbldBranching(Model& _model, Iterator& sub_prob_solver) : parentModel(_model), NLPsolver(sub_prob_solver)
 {
      branchingInit(minimization);
      random_seed = 12345;
@@ -27,6 +27,14 @@ PebbldBranching::PebbldBranching(Model& _model) : parentModel(_model)
      const IntVector& init_pt_int = parentModel.discrete_int_variables();
      const IntVector& lower_bnds_int = parentModel.discrete_int_lower_bounds();
      const IntVector& upper_bnds_int = parentModel.discrete_int_upper_bounds();
+
+     //     const Variables& current_vars = parentModel.current_variables();
+     const RealVector& current_vars = parentModel.all_continuous_variables();
+
+     short model_view = parentModel.current_variables().view().second;
+     const SharedVariablesData& svd = parentModel.current_variables().shared_data();
+     const BitArray int_relaxed=svd.all_relaxed_discrete_int();
+     const BitArray real_relaxed=svd.all_relaxed_discrete_real();
 
      //     varNames.resize(n_int+n_cont);
      x.resize(n_int+n_cont);
@@ -46,10 +54,11 @@ PebbldBranching::PebbldBranching(Model& _model) : parentModel(_model)
 	  xl[i] = lower_bounds[i+n_int];
 	  xu[i] = upper_bounds[i+n_int];
      }
+
      reset();
 }
 
-PebbldBranching::PebbldBranching(Model& _model, int _random_seed, int _max_iter, int _max_eval) : parentModel(_model)
+PebbldBranching::PebbldBranching(Model& _model, Iterator& sub_prob_solver, int _random_seed, int _max_iter, int _max_eval) : parentModel(_model)
 {
      branchingInit(minimization);
      // Initialization for inner optimization algorithm
@@ -111,6 +120,8 @@ void PebbldBranchSub::setRootComputation()
      xl = vector<double>(globalPtr->xl);
      xu = vector<double>(globalPtr->xu);
      //     varNames = vector<string>(globalPtr->varNames);
+
+     NLPsolver = globalPtr->NLPsolver;
      
      n = n_int + n_cont + n_binary;
 }
@@ -120,16 +131,19 @@ void PebbldBranchSub::boundComputation(double* controlParam)
      // Calculate the bound -- Solve Problem Relaxation.
      // The Discrete Domain is relaxed into a Continuous Domain.
      
-     string method_name = "coliny_ea";
-     COLINOptimizer optimizer(method_name, subModel, random_seed, max_iter, max_eval);
+  //     string method_name = "coliny_ea";
+  //     COLINOptimizer optimizer(method_name, subModel, random_seed, max_iter, max_eval);
      
      // Call Optimizer
-     optimizer.find_optimum();
+  //     optimizer.find_optimum();
+     NLPsolver.run();
      
-     Variables _variables = optimizer.variables_results();
+     //     Variables _variables = optimizer.variables_results();
+     Variables _variables = NLPsolver.variables_results();
      
      //We care about te variables ue
-     Response _response = optimizer.response_results();
+     //     Response _response = optimizer.response_results();
+     Response _response = NLPsolver.response_results();
      
      // Considering that the problem is relaxed, all variables should be continuous.
      RealVector _finalVars = _variables.continuous_variables();
@@ -219,6 +233,8 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
      random_seed = parent->random_seed;
      max_iter = parent->max_iter;
      max_eval = parent->max_eval;
+
+     NLPsolver = globalPtr->NLPsolver;
      
      if(whichChild==0)
      {

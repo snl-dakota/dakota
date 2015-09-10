@@ -81,6 +81,8 @@ class ProblemDescDB
   friend class SurrBasedLocalMinimizer;
   /// SurrBasedGlobalMinimizer requires access to get_iterator()
   friend class SurrBasedGlobalMinimizer;
+  /// PEBBLMinimizer requires access to get_iterator()
+  friend class PebbldMinimizer;
 
 public:
 
