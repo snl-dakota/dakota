@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "dakota_data_types.hpp"
-#include "dakota_stat_util.hpp"
+#include "BootstrapSampler.hpp"
 
 //____________________________________________________________________________//
 
