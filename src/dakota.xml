@@ -3603,7 +3603,7 @@
               <param type="STRING" />
             </keyword>
             <keyword  id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="results_file" help="" minOccurs="0" default="Unix temp files" >
-              <param type="OUTPUT_FILE" />
+              <param type="STRING" />
             </keyword>
             <keyword  id="allow_existing_results" name="allow_existing_results" code="{N_ifm(true,allowExistingResultsFlag)}" label="allow_existing_results" help="" minOccurs="0" default="results files removed before each evaluation" />
             <keyword  id="verbatim" name="verbatim" code="{N_ifm(true,verbatimFlag)}" label="verbatim" help="" minOccurs="0" default="driver/filter invocation syntax augmented with file names" />
