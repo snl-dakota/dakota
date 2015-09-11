@@ -353,6 +353,7 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
   // Compute simulation response to use in likelihood 
   nonDDREAMInstance->mcmcModel.compute_response();
   const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
+  nonDDREAMInstance->update_residual_response(resp);
 
   double result = -nonDDREAMInstance->misfit(resp, calibrated_sigmas)
                 /  nonDDREAMInstance->likelihoodScale;

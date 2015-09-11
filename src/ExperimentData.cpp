@@ -1004,6 +1004,34 @@ determine_active_request( const Response& resid_resp,
 }
 
 void ExperimentData::
+scale_residuals(const Response& residual_response, ShortArray &total_asv,
+                RealVector& weighted_resid) {
+
+  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
+
+    // apply noise covariance to the residuals for this experiment 
+    // and store in correct place in weighted_residual
+    if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
+      Cout << "\nCalibration: weighting residuals with inverse of specified "
+           << "error covariance." << std::endl;
+       
+    // apply cov_inv_sqrt to the residual vector
+    if (total_asv[exp_ind] & 1) {
+      // BMA: not sure why View didn't work (was disconnected):
+      //RealVector exp_weighted_resid(residuals_view(weighted_resid, exp_ind));
+      RealVector exp_weighted_resid;
+      // takes full list of source residuals, but per-experiment output vector
+      apply_covariance_inv_sqrt(residual_response.function_values(),
+                                exp_ind, exp_weighted_resid);
+      size_t calib_term_ind = expOffsets[exp_ind];
+      copy_data_partial(exp_weighted_resid, weighted_resid, calib_term_ind);
+    }
+
+  }
+}
+
+
+void ExperimentData::
 scale_residuals( Response& residual_response, ShortArray &total_asv ){
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
@@ -1016,9 +1044,14 @@ scale_residuals( Response& residual_response, ShortArray &total_asv ){
     // apply noise covariance to the residuals for this experiment 
     // and store in correct place in residual_response
     if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
-      Cout << "\nLeast squares: weighting least squares terms with inverse of "
-	   << "specified error\n               covariance." << std::endl;
+      Cout << "\nCalibration: weighting residuals with inverse of specified "
+           << "error covariance." << std::endl;
        
+    // BMA @JDJ: The copies in the else clauses lmay have a size
+    // mismatch, with residual_response having total calibration terms
+    // being assigned to a left side that should be sized for one
+    // experiment
+
     // apply cov_inv_sqrt to the residual vector
     RealVector weighted_resid;
     if (total_asv[exp_ind] & 1)
@@ -1054,78 +1087,6 @@ scale_residuals( Response& residual_response, ShortArray &total_asv ){
   } // for each experiment
 }
 
-void ExperimentData::
-form_residuals_deprecated(const Response& sim_resp, size_t experiment, 
-			  RealVector& residuals)
-{
-  size_t res_size = allExperiments[experiment].function_values().length();
-  residuals.resize(res_size);
-
-  RealVector resid_fns = sim_resp.function_values();
-  size_t i,j;
-  size_t cntr=0;
-  const IntVector simLengths = sim_resp.field_lengths();
-  int numfields = num_fields();
-
-  /*if ((num_fields() == 0) && (resid_fns.length() == res_size))
-    interpolate = false;
-  else { 
-    for (j=0; j<num_fields(); j++) {
-      if (field_data_view(j,experiment).length() == simLengths(j))
-         interpolate = false;
-    }
-  }*/
-
-  if (outputLevel >= DEBUG_OUTPUT) 
-    Cout << "interpolate " << interpolateFlag << '\n';
-  if (!interpolateFlag) {
-     resid_fns -= allExperiments[experiment].function_values();
-     residuals = resid_fns;
-  }
-  else {
-    cntr=num_scalars();
-    if (outputLevel >= DEBUG_OUTPUT) 
-      Cout << "cntr " << cntr << '\n';
-    
-    if (num_scalars() > 0) {
-      for (i=0; i<num_scalars(); i++) 
-        residuals(i)=resid_fns(i)-allExperiments[experiment].function_value(i);
-    }
-
-    for (i=0; i<num_fields(); i++){ 
-      // check for field length or not?
-      RealVector field_pred;
-      RealVector sim_values;
-      sim_values = sim_resp.field_values_view(i);
-      if (outputLevel >= DEBUG_OUTPUT) 
-        Cout << "sim_values " << sim_values << '\n';
-      const RealMatrix& sim_coords = sim_resp.field_coords_view(i);
-      //Cout << "sim_coords " << sim_coords << '\n';
-      RealMatrix exp_coords = field_coords_view(i,experiment);
-      //Cout << "exp_coords " << exp_coords << '\n';
-
-      if (outputLevel >= DEBUG_OUTPUT) {
-        Cout << "first_sim_coords " << sim_coords << '\n';
-        Cout << "first_exp_coords " << exp_coords << '\n';
-      }
-      RealVector interp_vals;
-      RealMatrix sim_grads, interp_grads;
-      RealSymMatrixArray sim_hessians, interp_hessians;
-      linear_interpolate_1d(sim_coords, sim_values, sim_grads, sim_hessians,
-			    exp_coords, interp_vals, interp_grads, 
-			    interp_hessians);
-      if (outputLevel >= DEBUG_OUTPUT) 
-        Cout << "field pred " << field_pred << '\n';
-
-      for (j=0; j<field_data_view(i,experiment).length(); j++,cntr++)
-          residuals(cntr)=field_pred(j)-field_data_view(i,experiment)[j];
-        
-      if (outputLevel >= DEBUG_OUTPUT) 
-        Cout << "residuals in exp space" << residuals << '\n';
-    }
-  }
-
-}
 
 /** Add the data back to the residual to recover the model, for use in
     surrogated-based LSQ where DB lookup will fail (need approx eval

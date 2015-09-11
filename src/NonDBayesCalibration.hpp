@@ -75,6 +75,9 @@ protected:
 
   /// initialize a residual response for use in data transformations
   void init_residual_response(short request_value_needed);
+  
+  /// update member residualResponse from passed simulation or emulator Response
+  void update_residual_response(const Response& resp);
 
   /// compute the (approximate) gradient of the negative log posterior by
   /// augmenting the (approximate) gradient of the negative log likelihood
@@ -94,9 +97,9 @@ protected:
 
   /// static function passed by pointer to negLogPostModel recast model
   static void neg_log_post_resp_mapping(const Variables& model_vars,
-					const Variables& nlpost_vars,
-					const Response& model_resp,
-					Response& nlpost_resp);
+                                        const Variables& nlpost_vars,
+                                        const Response& model_resp,
+                                        Response& nlpost_resp);
 
   //
   //- Heading: Data
@@ -148,7 +151,8 @@ protected:
   /// approach for defining proposal covariance
   String proposalCovarInputType;
 
-  /// local Response in which to store computed residuals (accounting for data)
+  /// local Response in which to store computed residuals (accounting
+  /// for data); must be kept updated after any compute_response
   Response residualResponse;
 
   /// Pointer to current class instance for use in static callback functions

@@ -455,11 +455,30 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_displayVerbosity = 2;
   envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
 
+// #ifdef DAKOTA_HAVE_MPI
+//   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
+//   if (parallelLib.mpirun_flag()) {
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
   else // dram, dr, am, or mh
     quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
-					      envOptionsValues.get()));
+                                              envOptionsValues.get()));
+//   }
+//   else {
+//     if (mcmcType == "multilevel")
+//       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
+//     else // dram, dr, am, or mh
+//       quesoEnv.reset(new QUESO::FullEnvironment("","",
+//                                                 envOptionsValues.get()));
+//   }
+// #else
+//   if (mcmcType == "multilevel")
+//     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
+//   else // dram, dr, am, or mh
+//     quesoEnv.reset(new QUESO::FullEnvironment("","",
+//                                               envOptionsValues.get()));
+// #endif
+
 }
 
 
@@ -539,11 +558,13 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   set.request_values(precondRequestValue);
   // compute response (emulator case echoed to Cout if outputLevel > NORMAL)
   mcmcModel.compute_response(set);
+  update_residual_response(emulator_resp);
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
   RealMatrix prop_covar;
-  expData.build_hessian_of_sum_square_residuals(emulator_resp, log_hess);
+
+  expData.build_hessian_of_sum_square_residuals(residualResponse, log_hess);
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "Hessian of negative log-likelihood (from misfit):\n";
     write_data(Cout, log_hess, true, true, true);
@@ -554,8 +575,11 @@ void NonDQUESOBayesCalibration::precondition_proposal()
     = get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
 
   if ( (precondRequestValue & 4) && ev_truncation ) { // fall back if indefinite
+    // BMA @JDJ, @MSE: I think this asv needs to be length of the
+    // total number of residuals (residualResponse.num_functions or
+    // expData.num_total_exppoints())
     ShortArray asrv_override(numFunctions, 2); // override asrv in response
-    expData.build_hessian_of_sum_square_residuals(emulator_resp,
+    expData.build_hessian_of_sum_square_residuals(residualResponse,
 						  asrv_override, log_hess);
     if (outputLevel >= NORMAL_OUTPUT) {
       Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
@@ -1378,9 +1402,12 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
 
   nonDQUESOInstance->mcmcModel.compute_response();
   const Response& resp = nonDQUESOInstance->mcmcModel.current_response();
+  nonDQUESOInstance->update_residual_response(resp);
 
-  double result = -nonDQUESOInstance->misfit(resp, calibrated_sigmas)
-                /  nonDQUESOInstance->likelihoodScale;
+  double result = 
+    -nonDQUESOInstance->misfit(nonDQUESOInstance->residualResponse, 
+                               calibrated_sigmas) / 
+    nonDQUESOInstance->likelihoodScale;
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
     Cout << "Log likelihood is " << result << " Likelihood is "
 	 << std::exp(result) << '\n';

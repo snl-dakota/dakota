@@ -358,9 +358,6 @@ init_residual_response(short request_value_needed)
   // The residual response is sized based on total experiment data size.
   // It has to allocate space for derivatives in the case of preconditioned
   // proposal covariance.
-  //
-  // BMA: not sure this is true... the mcmcModel potentially needs to provide
-  // derivatives, but not sure the residual does; asv = 1 may suffice...
   const Response& resp = mcmcModel.current_response();
   residualResponse = resp.copy(false);  // false: SRD can be shared until resize
   size_t total_residuals = 
@@ -380,8 +377,31 @@ init_residual_response(short request_value_needed)
 }
 
 
+/** Converts a passed simulation or emulator response to a full set of
+    residuals based on multiple experiments and/or interpolation.
+    Called after any compute_response instead of in misfit and
+    neg_log_post to avoid complex conditionals on ASV and data flags;
+    may later be replaced with RecastModel. */
+void NonDBayesCalibration::
+update_residual_response(const Response& resp)
+{
+  if (calibrationData) {
+    // BMA: perhaps a better name would be per_exp_asv?
+    bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
+                                    || expData.interpolate_flag() );
+    ShortArray total_asv =  
+      expData.determine_active_request(residualResponse, interrogate_field_data);
+    expData.form_residuals(resp, total_asv, residualResponse); 
+  }
+  else
+    residualResponse.update(resp);
+}
+
+
+/** The passed residual_resp must already be differenced with any
+    data, if present. */
 Real NonDBayesCalibration::
-misfit(const Response& resp, const RealVector& calibrated_sigmas)
+misfit(const Response& residual_resp, const RealVector& calibrated_sigmas)
 {
   // TODO: Update treatment of standard deviations as inference
   // vs. fixed parameters; also advanced use cases of calibrated
@@ -396,30 +416,39 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
   // Thus, we just have to iterate over this to calculate the likelihood.
 
   Real result = 0.;
-  const RealVector& fn_values = resp.function_values();
-  size_t i, j, num_fns = fn_values.length(); 
-  if (!calibrationData)
-    for (j=0; j<num_fns; ++j)
-      result += std::pow(fn_values[j], 2.);
-  else if (calibrateSigma)
-    for (i=0; i<numExperiments; ++i) {
-      const RealVector& exp_data = expData.all_data(i);
-      for (j=0; j<num_fns; ++j)
-        result += std::pow((fn_values[j]-exp_data[j])/calibrated_sigmas[j], 2.);
-    }
-  else {
-    // there exists data, but no sigma (combo not currently supported)
-    // BMA: perhaps a better name would be per_exp_asv?
-    ShortArray total_asv;  
-    bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
-				    || expData.interpolate_flag() );
-    total_asv = expData.determine_active_request(residualResponse,
-						 interrogate_field_data);
-
-    expData.form_residuals(resp, total_asv, residualResponse);
-    if (expData.variance_active())  // r <- Gamma_d^{-1/2} r
-      expData.scale_residuals(residualResponse, total_asv);
+  const RealVector& resid_values = residual_resp.function_values();
+  if (!calibrationData) {
+    // preserving this case for now, since can't call determine_
+    // active_request when no data (numExperiments defaults to 1)
     RealVector residuals = residualResponse.function_values_view();
+    result = residuals.dot( residuals );
+  }
+  else if (calibrateSigma) {
+    // This case has to use the original number of functions.  It
+    // also doesn't allow for the fully general case of variable
+    // num_functions per experiment.
+    for (size_t i=0; i<numExperiments; ++i)
+      for (size_t j=0; j<numFunctions; ++j)
+        result += 
+          std::pow(resid_values[i*numFunctions+j] / calibrated_sigmas[j], 2.);
+  }
+  else {
+    // data already differenced if needed, but no sigma to calibrate
+    // this assumes that update_residual_response already called
+    RealVector residuals;
+    if (expData.variance_active()) {  // r <- Gamma_d^{-1/2} r
+      // BMA: perhaps a better name would be per_exp_asv?
+      bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
+                                      || expData.interpolate_flag() );
+      ShortArray total_asv =  
+        expData.determine_active_request(residualResponse, 
+                                         interrogate_field_data);
+      // scale the residuals without changing member residualResponse
+      residuals.size(residualResponse.num_functions());
+      expData.scale_residuals(residualResponse, total_asv, residuals);
+    }
+    else 
+      residuals = residualResponse.function_values_view();
     result = residuals.dot( residuals );
   }
 
@@ -430,15 +459,21 @@ misfit(const Response& resp, const RealVector& calibrated_sigmas)
 /** Response mapping callback used within RecastModel for MAP pre-solve. */
 void NonDBayesCalibration::
 neg_log_post_resp_mapping(const Variables& model_vars,
-			  const Variables& nlpost_vars,
-			  const Response& model_resp,
-			  Response& nlpost_resp)
+                          const Variables& nlpost_vars,
+                          const Response& model_resp,
+                          Response& nlpost_resp)
 {
   if (nonDBayesInstance->calibrateSigma) {
     Cerr << "Error: sigma calibration currently unsupported in MAP pre-solve."
-	 << std::endl;
+         << std::endl;
     abort_handler(-1);
   }
+
+  // BMA: This is called in the context of the post compute-response
+  // transformation in the RecastModel. Perhaps redesign to avoid
+  // modifying class data (residualResponse) in this context.
+  nonDBayesInstance->update_residual_response(model_resp);
+
   const RealVector& c_vars = nlpost_vars.continuous_variables();
   short nlpost_req = nlpost_resp.active_set_request_vector()[0];
   bool output_flag = (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT);
@@ -454,8 +489,10 @@ neg_log_post_resp_mapping(const Variables& model_vars,
     //  RealVector calibrated_sigmas(Teuchos::View, &c_vars[numContinuousVars],
     //    numFunctions);
     //}
-    Real nlp = nonDBayesInstance->misfit(model_resp, calibrated_sigmas)
-             - nonDBayesInstance->log_prior_density(c_vars);
+    Real nlp = 
+      nonDBayesInstance->misfit(nonDBayesInstance->residualResponse, 
+                                calibrated_sigmas) - 
+      nonDBayesInstance->log_prior_density(c_vars);
     nlpost_resp.function_value(nlp, 0);
     if (output_flag)
       Cout << "MAP pre-solve: negative log posterior = " << nlp << std::endl;
@@ -464,8 +501,7 @@ neg_log_post_resp_mapping(const Variables& model_vars,
   if (nlpost_req & 2) {
     // avoid copy by updating gradient vector in place
     RealVector log_grad = nlpost_resp.function_gradient_view(0);
-    nonDBayesInstance->
-      expData.build_gradient_of_sum_square_residuals(model_resp, log_grad);
+    nonDBayesInstance->expData.build_gradient_of_sum_square_residuals(nonDBayesInstance->residualResponse, log_grad);
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior gradient:\n";
@@ -477,7 +513,7 @@ neg_log_post_resp_mapping(const Variables& model_vars,
     // avoid copy by updating Hessian matrix in place
     RealSymMatrix log_hess = nlpost_resp.function_hessian_view(0);
     nonDBayesInstance->
-      expData.build_hessian_of_sum_square_residuals(model_resp, log_hess);
+      expData.build_hessian_of_sum_square_residuals(nonDBayesInstance->residualResponse, log_hess);
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior Hessian:\n";

@@ -181,11 +181,6 @@ public:
 		      const ShortArray &total_asv, size_t residual_resp_offset,
 		      Response &residual_resp); 
 
-  /// Remove once BAYES classes are cleaned up to use new 
-  /// Minimizer::data_difference_core functions
-  void form_residuals_deprecated(const Response& sim_resp, size_t experiment, 
-				 RealVector& residuals); 
-  
   /// recover original model from the first experiment block in a full
   /// set of residuals; works in no interpolation case only (sizes same)
   void recover_model(size_t num_pri_fns, RealVector& model_fns) const;
@@ -208,7 +203,13 @@ public:
   ShortArray determine_active_request( const Response& resid_resp,
 				       bool interogate_field_data );
 
-  /// Apply the experiment data covariance to the residual data
+  /// Apply the experiment data covariance to the residual data (scale
+  /// functions by Gamma_d^{-1/2}), returning in scaled_residuals
+  void scale_residuals(const Response& residual_response, ShortArray &total_asv,
+                       RealVector& scaled_residuals);
+
+  /// Apply the experiment data covariance to the residual data in-place 
+  /// (scale functions, gradients, and Hessians by Gamma_d^{-1/2})
   void scale_residuals( Response& residual_response, ShortArray &total_asv );
 
   /// Build the gradient of the ssr from residuals and function gradients

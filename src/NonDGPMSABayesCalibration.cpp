@@ -140,8 +140,17 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   //else
   //  envOptionsValues->m_seed                 = 1 + (int)clock(); 
       
+  QUESO::FullEnvironment* env = NULL;
   //QUESO::FullEnvironment* env = new QUESO::FullEnvironment(MPI_COMM_SELF,"/home/lpswile/dakota/src/gpmsa.inp","",envOptionsValues);
-  QUESO::FullEnvironment* env = new QUESO::FullEnvironment(MPI_COMM_SELF,"mlhydra.inp","",NULL);
+// #ifdef DAKOTA_HAVE_MPI
+//   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
+//   if (parallelLib.mpirun_flag())
+  env = new QUESO::FullEnvironment(MPI_COMM_SELF,"mlhydra.inp","",NULL);
+//   else
+//     env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
+// #else
+//   env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
+//#endif
   //QUESO::FullEnvironment* env = new QUESO::FullEnvironment(MPI_COMM_SELF,"","",envOptionsValues);
  
   // Read in all of the experimental data:  any x configuration 
