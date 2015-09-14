@@ -64,33 +64,59 @@ void print_unexpected_data(std::ostream& s, const String& filename,
 //- Utilities for opening tabular files
 //
 
-void open_file(std::ifstream& data_file, const std::string& input_filename, 
+void open_file(std::ifstream& data_stream, const std::string& input_filename, 
 	       const std::string& context_message) 
 {
   // TODO: try/catch
-  data_file.open(input_filename.c_str());
-  if (!data_file.good()) {
+  data_stream.open(input_filename.c_str());
+  if (!data_stream.good()) {
     Cerr << "\nError (" << context_message << "): Could not open file " 
 	 << input_filename << " for reading tabular data." << std::endl;
     abort_handler(-1);
   }
   // TODO (fix): can't except on failbit when trying to read to EOF
-  //  data_file.exceptions(std::fstream::failbit | std::fstream::badbit);
-  data_file.exceptions(std::fstream::badbit);
+  //  data_stream.exceptions(std::fstream::failbit | std::fstream::badbit);
+  data_stream.exceptions(std::fstream::badbit);
 }
 
 
-void open_file(std::ofstream& data_file, const std::string& output_filename, 
+void open_file(std::ofstream& data_stream, const std::string& output_filename, 
 	       const std::string& context_message) 
 {
   // TODO: try/catch
-  data_file.open(output_filename.c_str());
-  if (!data_file.good()) {
+  data_stream.open(output_filename.c_str());
+  if (!data_stream.good()) {
     Cerr << "\nError (" << context_message << "): Could not open file " 
 	 << output_filename << " for writing tabular data." << std::endl;
     abort_handler(-1);
   }
-  data_file.exceptions(std::fstream::failbit | std::fstream::badbit);
+  data_stream.exceptions(std::fstream::failbit | std::fstream::badbit);
+}
+
+
+void close_file(std::ifstream& data_stream, const std::string& input_filename, 
+		const std::string& context_message) 
+{
+  // TODO: try/catch
+  if (!data_stream.good()) {
+    Cerr << "\nError (" << context_message << "): Could not close file " 
+	 << input_filename << " used for reading tabular data." << std::endl;
+    abort_handler(-1);
+  }
+  data_stream.close();
+}
+
+
+void close_file(std::ofstream& data_stream, const std::string& output_filename, 
+		const std::string& context_message) 
+{
+  // TODO: try/catch
+  if (!data_stream.good()) {
+    Cerr << "\nError (" << context_message << "): Could not close file " 
+	 << output_filename << " used for writing tabular data." << std::endl;
+    abort_handler(-1);
+  }
+  data_stream.close();
 }
 
 
@@ -447,19 +473,19 @@ void read_data_tabular(const std::string& input_filename,
 		       unsigned short tabular_format,
 		       bool verbose, bool active_only)
 {
-  std::ifstream data_file;
-  open_file(data_file, input_filename, context_message);
+  std::ifstream data_stream;
+  open_file(data_stream, input_filename, context_message);
 
-  read_header_tabular(data_file, tabular_format);
+  read_header_tabular(data_stream, tabular_format);
 
   // shouldn't need both good and eof checks
-  data_file >> std::ws;
-  while (data_file.good() && !data_file.eof()) {
+  data_stream >> std::ws;
+  while (data_stream.good() && !data_stream.eof()) {
     try {
       // discard the leading columns 
-      read_leading_columns(data_file, tabular_format);
-      vars.read_tabular(data_file, active_only);
-      resp.read_tabular(data_file);
+      read_leading_columns(data_stream, tabular_format);
+      vars.read_tabular(data_stream, active_only);
+      resp.read_tabular(data_stream);
     }
     catch (const TabularDataTruncated& tdtrunc) {
       // this will be thrown if either Variables or Response was truncated
@@ -479,7 +505,7 @@ void read_data_tabular(const std::string& input_filename,
     input_resp.push_back(resp.copy());  // deep copy
 
     // advance so EOF can detect properly
-    data_file >> std::ws;
+    data_stream >> std::ws;
   }
 
 }

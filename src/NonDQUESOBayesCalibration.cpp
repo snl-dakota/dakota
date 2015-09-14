@@ -417,12 +417,17 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
+    // export chain
+    if (outputLevel >= NORMAL_OUTPUT)
+      export_chain(update_cntr);
+
+    // retain best or accumulate unique samples from current MCMC chain
     if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
       filter_chain_by_conditioning(update_cntr, batch_size);
     else
       filter_chain_by_probability(update_cntr, batch_size);
 
-    // account for redundancy between final and initial
+    // account for redundancy between final and initial chain points
     if (update_cntr == 1)
       update_chain_size(numSamples+1);
 
@@ -649,6 +654,58 @@ void NonDQUESOBayesCalibration::run_queso_solver()
   //   << "The rejection rate is in the tgaCalOutput file.\n"
   //   << "We hope to improve the postprocessing of the chains by the " 
   //   << "next Dakota release.\n";
+}
+
+
+void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
+{
+  // Approach 1: open and close each time and not persist the stream
+  //             (clobber if update_cntr == 1, else append)
+  // Approach 2: persist the stream and clobber on open at 1st chain cycle.
+
+  static String mcmc_filename = "dakota_mcmc_tabular.dat";
+  size_t start;
+  if (update_cntr == 1) { // overwrite as new file
+    TabularIO::open_file(mcmcFileStream, mcmc_filename,
+			 "NonDQUESOBayesCalibration chain export");
+    //TabularIO::write_header_tabular(mcmcFileStream,
+    //  mcmcModel.current_variables(), mcmcModel.current_response(),
+    //  "chain_id", exportFormat);
+    start = 0;
+  }
+  else
+    start = 1;
+
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  size_t i, j, wpp4 = write_precision+4, total_num_params
+    = (calibrateSigma) ? numContinuousVars + numFunctions : numContinuousVars;
+  QUESO::GslVector qv(paramSpace->zeroVector());
+  mcmcFileStream << std::setprecision(write_precision) 
+		 << std::resetiosflags(std::ios::floatfield);
+  for (i=start; i<num_mcmc; ++i) {
+    //TabularIO::write_leading_columns(mcmcFileStream, i+1, iface_id,
+    //				       exportFormat);
+    mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
+    if (standardizedSpace) {
+      RealVector u_rv(numContinuousVars, false), x_rv;
+      copy_gsl_partial(qv, 0, u_rv);
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      write_data_tabular(mcmcFileStream, x_rv);
+    }
+    else
+      for (j=0; j<numContinuousVars; ++j)
+	mcmcFileStream << std::setw(wpp4) << qv[j] << ' ';
+    // trailing sigma calibration params are not transformed
+    for (j=numContinuousVars; j<total_num_params; ++j)
+      mcmcFileStream << std::setw(wpp4) << qv[j] << ' ';
+    mcmcFileStream << '\n';
+  }
+
+  if (update_cntr == chainCycles)
+    TabularIO::close_file(mcmcFileStream, mcmc_filename,
+			  "NonDQUESOBayesCalibration chain export");
 }
 
 
@@ -1031,7 +1088,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 {
   int total_num_params = (calibrateSigma) ?
     numContinuousVars + numFunctions : numContinuousVars; 
-  
+
   paramSpace.reset(new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
 		   (*quesoEnv, "param_", total_num_params, NULL));
 

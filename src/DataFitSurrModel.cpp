@@ -1620,13 +1620,21 @@ import_points(unsigned short tabular_format, bool active_only)
 /** Constructor helper to export approximation-based evaluations to a file. */
 void DataFitSurrModel::initialize_export()
 {
-  if (exportPointsFile.empty())
-    return;
+  if (!exportPointsFile.empty()) {
+    TabularIO::open_file(exportFileStream, exportPointsFile,
+			 "DataFitSurrModel export");
+    TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				    currentResponse, "eval_id", exportFormat);
+  }
+}
 
-  TabularIO::open_file(exportFileStream, exportPointsFile,
-		       "DataFitSurrModel export");
-  TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				  currentResponse, "eval_id", exportFormat);
+
+/** Constructor helper to export approximation-based evaluations to a file. */
+void DataFitSurrModel::finalize_export()
+{
+  if (!exportPointsFile.empty())
+    TabularIO::close_file(exportFileStream, exportPointsFile,
+			  "DataFitSurrModel export");
 }
 
 

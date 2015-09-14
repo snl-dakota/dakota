@@ -75,7 +75,7 @@ void print_unexpected_data(std::ostream& s, const String& filename,
 			   unsigned short tabular_format);
 
 //
-//- Utilities for opening tabular files
+//- Utilities for opening and closing tabular files
 //
 
 /// open the file specified by name for reading, using passed input
@@ -88,6 +88,15 @@ void open_file(std::ifstream& data_file, const std::string& input_filename,
 void open_file(std::ofstream& data_file, const std::string& output_filename, 
 	       const std::string& context_message);
 
+/// close the file specified by name after reading, using passed input
+/// stream, presenting context-specific error on failure
+void close_file(std::ifstream& data_file, const std::string& input_filename, 
+		const std::string& context_message);
+
+/// close the file specified by name after writing, using passed output
+/// stream, presenting context-specific error on failure
+void close_file(std::ofstream& data_file, const std::string& output_filename, 
+		const std::string& context_message);
 
 //
 //- Utilities for tabular write

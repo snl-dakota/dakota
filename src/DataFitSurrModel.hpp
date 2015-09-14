@@ -257,6 +257,8 @@ private:
   void import_points(unsigned short tabular_format, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
+  /// finalize file stream for exporting surrogate evaluations
+  void finalize_export();
   /// initialize manageRecasting and recastFlags for data import/export
   void manage_data_recastings();
   /// initialize file stream for exporting surrogate evaluations
@@ -313,7 +315,7 @@ private:
   String exportPointsFile;
   /// file export format for variables and approximate responses
   unsigned short exportFormat;
-  /// file name for \c export_approx_points_file specification
+  /// output file stream for \c export_approx_points_file specification
   std::ofstream exportFileStream;
   /// array of variables sets read from the \c import_build_points_file
   VariablesList reuseFileVars;
@@ -339,12 +341,9 @@ private:
 };
 
 
-/** Virtual destructor handles referenceCount at Strategy level. */
+/** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
-{
-  if (!exportPointsFile.empty())
-    exportFileStream.close();
-}
+{ finalize_export(); }
 
 
 inline void DataFitSurrModel::total_points(int points)

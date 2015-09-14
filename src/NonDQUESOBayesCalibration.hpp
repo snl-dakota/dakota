@@ -93,6 +93,9 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
+  /// export the acceptance chain in user space
+  void export_chain(size_t update_cntr);
+
   /// accumulate unique samples (the acceptance chain)
   void accumulate_chain(size_t update_cntr);
 
@@ -194,6 +197,8 @@ protected:
   /** this option is useful for preventing rejection or resampling for
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
+  /// output file stream for the MCMC chain (active based on output verbosity)
+  std::ofstream mcmcFileStream;
 
 private:
 

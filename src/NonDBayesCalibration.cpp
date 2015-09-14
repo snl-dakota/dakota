@@ -390,7 +390,7 @@ update_residual_response(const Response& resp)
     bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
                                     || expData.interpolate_flag() );
     ShortArray total_asv =  
-      expData.determine_active_request(residualResponse, interrogate_field_data);
+      expData.determine_active_request(residualResponse,interrogate_field_data);
     expData.form_residuals(resp, total_asv, residualResponse); 
   }
   else
@@ -501,7 +501,8 @@ neg_log_post_resp_mapping(const Variables& model_vars,
   if (nlpost_req & 2) {
     // avoid copy by updating gradient vector in place
     RealVector log_grad = nlpost_resp.function_gradient_view(0);
-    nonDBayesInstance->expData.build_gradient_of_sum_square_residuals(nonDBayesInstance->residualResponse, log_grad);
+    nonDBayesInstance->expData.build_gradient_of_sum_square_residuals(
+      nonDBayesInstance->residualResponse, log_grad);
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior gradient:\n";
@@ -512,8 +513,8 @@ neg_log_post_resp_mapping(const Variables& model_vars,
   if (nlpost_req & 4) {
     // avoid copy by updating Hessian matrix in place
     RealSymMatrix log_hess = nlpost_resp.function_hessian_view(0);
-    nonDBayesInstance->
-      expData.build_hessian_of_sum_square_residuals(nonDBayesInstance->residualResponse, log_hess);
+    nonDBayesInstance->expData.build_hessian_of_sum_square_residuals(
+      nonDBayesInstance->residualResponse, log_hess);
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior Hessian:\n";
