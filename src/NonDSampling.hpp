@@ -50,12 +50,26 @@ public:
   //- Heading: Public member functions
   //
 
+  /// For the input sample set, computes mean, standard deviation, and
+  /// probability/reliability/response levels (aleatory uncertainties)
+  /// or intervals (epsitemic or mixed uncertainties)
+  void compute_statistics(const RealMatrix&     vars_samples,
+			  const IntResponseMap& resp_samples);
+  /// called by compute_statistics() to calculate min/max intervals
+  void compute_intervals(const IntResponseMap& samples);
   /// called by compute_statistics() to calculate means, std
   /// deviations, and confidence intervals
   void compute_moments(const IntResponseMap& samples);
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z
   void compute_distribution_mappings(const IntResponseMap& samples);
+
+  /// prints the statistics computed in compute_statistics()
+  void print_statistics(std::ostream& s) const;
+  /// prints the intervals computed in compute_intervals()
+  void print_intervals(std::ostream& s) const;
+  /// prints the moments computed in compute_moments()
+  void print_moments(std::ostream& s) const;
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
@@ -141,21 +155,6 @@ protected:
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
   void initialize_lhs(bool write_message);
-
-  /// For the input sample set, computes mean, standard deviation, and
-  /// probability/reliability/response levels (aleatory uncertainties)
-  /// or intervals (epsitemic or mixed uncertainties)
-  void compute_statistics(const RealMatrix&     vars_samples,
-			  const IntResponseMap& resp_samples);
-  /// called by compute_statistics() to calculate min/max intervals
-  void compute_intervals(const IntResponseMap& samples);
-
-  /// prints the statistics computed in compute_statistics()
-  void print_statistics(std::ostream& s) const;
-  /// prints the intervals computed in compute_intervals()
-  void print_intervals(std::ostream& s) const;
-  /// prints the moments computed in compute_moments()
-  void print_moments(std::ostream& s) const;
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model

@@ -1744,19 +1744,14 @@ void NonDExpansion::compute_statistics()
     expansionSampler.run(pl_iter);
     NonDSampling* exp_sampler_rep
       = (NonDSampling*)expansionSampler.iterator_rep();
-    if (list_sampling) {
-      //exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
-      //                                    expansionSampler.all_responses());
-      exp_sampler_rep->
-	compute_moments(expansionSampler.all_responses());
-      if (totalLevelRequests)
-	exp_sampler_rep->
-	  compute_distribution_mappings(expansionSampler.all_responses());
-    }
-    else
+    if (list_sampling) // full set of numerical statistics
+      exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
+                                          expansionSampler.all_responses());
+    else { // only want numerical probability-based mappings
       exp_sampler_rep->
 	compute_distribution_mappings(expansionSampler.all_responses());
-    exp_sampler_rep->update_final_statistics();
+      exp_sampler_rep->update_final_statistics();
+    }
     const RealVector& exp_sampler_stats
       = expansionSampler.response_results().function_values();
  
@@ -2273,8 +2268,17 @@ void NonDExpansion::print_results(std::ostream& s)
   if (vbdFlag)
     print_sobol_indices(s);
 
-  bool exp_sampling = !expansionSampler.is_null();
-  if (totalLevelRequests) {
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+  bool exp_sampling = (exp_sampler_rep != NULL),
+      list_sampling = (exp_sampling &&
+		       exp_sampler_rep->method_name() == LIST_SAMPLING);
+  if (list_sampling) {
+    s << "\nStatistics based on " << numSamplesOnExpansion << " imported "
+      << "samples performed on polynomial expansion:\n";
+    exp_sampler_rep->print_statistics(s);
+  }
+  else if (totalLevelRequests) {
     s << "\nStatistics based on ";
     if (exp_sampling)
       s << numSamplesOnExpansion << " samples performed on polynomial "
@@ -2283,14 +2287,10 @@ void NonDExpansion::print_results(std::ostream& s)
       s << "projection of analytic moments:\n";
 
     // Note: PDF output ignores any importance sampling refinements
-    if (exp_sampling) {
-      NonDSampling* exp_sampler_rep
-	= (NonDSampling*)expansionSampler.iterator_rep();
-      if (exp_sampler_rep->pdf_output())
-	exp_sampler_rep->print_pdf_mappings(s);
-    }
+    if (exp_sampling)
+      exp_sampler_rep->print_pdf_mappings(s); // numerical only: delegate
 
-    print_distribution_mappings(s);
+    print_distribution_mappings(s); // local mix of analytic and numerical
     print_system_mappings(s);
   }
   s << "-----------------------------------------------------------------------"

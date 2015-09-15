@@ -1311,8 +1311,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
     print_moments(s);
     if (totalLevelRequests) {
       print_distribution_mappings(s);
-      if (pdfOutput)
-	print_pdf_mappings(s);
+      print_pdf_mappings(s);
       print_system_mappings(s);
     }
   }
@@ -1390,25 +1389,27 @@ void NonDSampling::print_moments(std::ostream& s) const
 
 void NonDSampling::print_pdf_mappings(std::ostream& s) const
 {
-  const StringArray& resp_labels = iteratedModel.response_labels();
+  if (pdfOutput) {
+    const StringArray& resp_labels = iteratedModel.response_labels();
 
-  // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
-  // reliabilities resulting from number of std devs separating mean & target
-  s << std::scientific << std::setprecision(write_precision)
-    << "\nProbability Density Function (PDF) histograms for each response "
-    << "function:\n";
-  size_t i, j, width = write_precision+7;
-  for (i=0; i<numFunctions; ++i) {
-    if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
-      s << "PDF for " << resp_labels[i] << ":\n"
-	<< "          Bin Lower          Bin Upper      Density Value\n"
-	<< "          ---------          ---------      -------------\n";
+    // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
+    // reliabilities resulting from number of std devs separating mean & target
+    s << std::scientific << std::setprecision(write_precision)
+      << "\nProbability Density Function (PDF) histograms for each response "
+      << "function:\n";
+    size_t i, j, width = write_precision+7;
+    for (i=0; i<numFunctions; ++i) {
+      if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
+	s << "PDF for " << resp_labels[i] << ":\n"
+	  << "          Bin Lower          Bin Upper      Density Value\n"
+	  << "          ---------          ---------      -------------\n";
 
-      size_t pdf_len = computedPDFOrdinates[i].length();
-      for (j=0; j<pdf_len; ++j)
-	s << "  " << std::setw(width) << computedPDFAbscissas[i][j] << "  "
-	  << std::setw(width) << computedPDFAbscissas[i][j+1] << "  "
-	  << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
+	size_t pdf_len = computedPDFOrdinates[i].length();
+	for (j=0; j<pdf_len; ++j)
+	  s << "  " << std::setw(width) << computedPDFAbscissas[i][j] << "  "
+	    << std::setw(width) << computedPDFAbscissas[i][j+1] << "  "
+	    << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
+      }
     }
   }
 }
