@@ -457,7 +457,7 @@ void NonDQUESOBayesCalibration::init_queso_environment()
 
   // TODO: see if this can be a local, or if the env retains a pointer
   envOptionsValues.reset(new QUESO::EnvOptionsValues());
-  envOptionsValues->m_subDisplayFileName = "outputData/display";
+  envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity = 2;
@@ -644,11 +644,16 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 						  *paramInitials, 
 						  proposalCovMatrix.get());
 
-  Cout << "QUESO MCMC chain completed.  QUESO results are in the outputData "
-       << "directory:\n  display_sub0.txt contains MCMC diagnostics.\n"
-       << "  Matlab files contain the chain values.\n"; //  The files to " 
-  //   << "load in Matlab are\nfile_cal_ip_raw.m (the actual chain) " 
-  //   << "or file_cal_ip_filt.m (the filtered chain,\nwhich contains " 
+  Cout << "QUESO MCMC chain completed.  MCMC details are concatenated within\n"
+       << "the QuesoDiagnostics directory:\n"
+       << "  display_sub0.txt contains MCMC diagnostics.\n";
+  if (standardizedSpace)
+    Cout << "  Caution: Matlab files contain the chain values in "
+	 << "standardized probability space.\n";
+  else
+    Cout << "  Matlab files contain the chain values.\n"
+  //   << "The files to load in Matlab are\nfile_cal_ip_raw.m (the actual " 
+  //   << "chain) or file_cal_ip_filt.m (the filtered chain,\nwhich contains " 
   //   << "every 20th step in the chain.\n"
   //   << "NOTE:  the chain values in these Matlab files are currently " 
   //   << "in scaled space. \n  You will have to transform them back to "
@@ -1324,7 +1329,7 @@ void NonDQUESOBayesCalibration::set_ip_options()
   calIpOptionsValues.reset(new QUESO::SipOptionsValues());
   //definitely want to retain computeSolution
   calIpOptionsValues->m_computeSolution    = true;
-  calIpOptionsValues->m_dataOutputFileName = "outputData/invpb_output";
+  calIpOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/invpb_output";
   calIpOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpOptionsValues->m_dataOutputAllowedSet.insert(1);
 }
@@ -1334,7 +1339,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
 {
   calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
 
-  calIpMhOptionsValues->m_dataOutputFileName = "outputData/mh_output";
+  calIpMhOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/mh_output";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
@@ -1343,7 +1348,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   //calIpMhOptionsValues->m_rawChainGenerateExtra     = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod     = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes   = true;
-  calIpMhOptionsValues->m_rawChainDataOutputFileName  = "outputData/raw_chain";
+  calIpMhOptionsValues->m_rawChainDataOutputFileName  = "QuesoDiagnostics/raw_chain";
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_rawChainDataOutputAllowedSet.insert(1);
   // NO LONGER SUPPORTED.  calIpMhOptionsValues->m_rawChainComputeStats = true;
@@ -1371,13 +1376,13 @@ void NonDQUESOBayesCalibration::set_mh_options()
   // chain management options:
   if (false) { // TO DO: add user spec to support chain filtering?
     // filtering the chain for final output affects the inverseProb->chain()
-    // as well as the outputData directory.  For now, we turn this off to
-    // promote reporting the best MAP estimate.
+    // as well as the QuesoDiagnostics directory.  For now, we turn this off
+    // to promote reporting the best MAP estimate.
     calIpMhOptionsValues->m_filteredChainGenerate         = true;
     calIpMhOptionsValues->m_filteredChainDiscardedPortion = 0.;
     calIpMhOptionsValues->m_filteredChainLag              = 20;
     calIpMhOptionsValues->
-      m_filteredChainDataOutputFileName = "outputData/filtered_chain";
+      m_filteredChainDataOutputFileName = "QuesoDiagnostics/filtered_chain";
     calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(0);
     calIpMhOptionsValues->m_filteredChainDataOutputAllowedSet.insert(1);
     //calIpMhOptionsValues->m_filteredChainComputeStats   = true;
@@ -1462,9 +1467,9 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
 
   RealVector& c_vars = nonDQUESOInstance->
     mcmcModel.current_variables().continuous_variables_view();
-  size_t num_cv = c_vars.length(), num_fns = nonDQUESOInstance->numFunctions;
   nonDQUESOInstance->copy_gsl_partial(paramValues, 0, c_vars);
   RealVector calibrated_sigmas;
+  size_t num_cv = c_vars.length(), num_fns = nonDQUESOInstance->numFunctions;
   if (nonDQUESOInstance->calibrateSigma) {
     calibrated_sigmas.sizeUninitialized(num_fns);
     nonDQUESOInstance->copy_gsl_partial(paramValues, num_cv, calibrated_sigmas);
@@ -1478,21 +1483,21 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
     -nonDQUESOInstance->misfit(nonDQUESOInstance->residualResponse, 
                                calibrated_sigmas) / 
     nonDQUESOInstance->likelihoodScale;
-  if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
+
+  if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << result << " Likelihood is "
 	 << std::exp(result) << '\n';
-  
-  // TODO: open file once and append here, or rely on QUESO to output
-  if (nonDQUESOInstance->outputLevel > NORMAL_OUTPUT) {
-    const RealVector& fn_values = resp.function_values();
-    size_t i; std::ofstream QuesoOutput;
-    QuesoOutput.open("QuesoOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cv;  ++i) QuesoOutput << paramValues[i] << ' ' ;
+
+    size_t i; std::ofstream LogLikeOutput;
+    LogLikeOutput.open("NonDQUESOLogLike.txt", std::ios::out | std::ios::app);
+    // Note: parameter values are in scaled space, if scaling is active
+    for (i=0; i<num_cv;  ++i)   LogLikeOutput << paramValues[i]       << ' ' ;
     if (nonDQUESOInstance->calibrateSigma)
-      for (i=0; i<num_fns; ++i) QuesoOutput << calibrated_sigmas(i) << ' ' ;
-    for (i=0; i<num_fns; ++i) QuesoOutput << fn_values[i]   << ' ' ;
-    QuesoOutput << result << '\n';
-    QuesoOutput.close();
+      for (i=0; i<num_fns; ++i) LogLikeOutput << calibrated_sigmas(i) << ' ' ;
+    const RealVector& fn_values = resp.function_values();
+    for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values[i]         << ' ' ;
+    LogLikeOutput << result << '\n';
+    LogLikeOutput.close();
   }
 
   return result;

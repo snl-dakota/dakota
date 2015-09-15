@@ -357,18 +357,21 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 
   double result = -nonDDREAMInstance->misfit(resp, calibrated_sigmas)
                 /  nonDDREAMInstance->likelihoodScale;
-  Cout << "Log likelihood is " << result << '\n';
-  if (nonDDREAMInstance->outputLevel > NORMAL_OUTPUT) {
-    Cout << "Likelihood is " << exp(result) << '\n';
-    const RealVector& fn_values = resp.function_values();
-    std::ofstream DreamOutput;
-    DreamOutput.open("DreamOutput.txt", std::ios::out | std::ios::app);
-    for (i=0; i<num_cv;  ++i)   DreamOutput << c_vars(i) << ' ' ;
+
+  if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Log likelihood is " << result << " Likelihood is "
+	 << std::exp(result) << '\n';
+
+    std::ofstream LogLikeOutput;
+    LogLikeOutput.open("NonDDREAMLogLike.txt", std::ios::out | std::ios::app);
+    // Note: parameter values are in scaled space, if scaling is active
+    for (i=0; i<num_cv;  ++i)   LogLikeOutput << c_vars(i) << ' ' ;
     if (nonDDREAMInstance->calibrateSigma)
-      for (i=0; i<num_fns; ++i) DreamOutput << calibrated_sigmas(i) << ' ' ;
-    for (i=0; i<num_fns; ++i)   DreamOutput << fn_values(i) << ' ' ;
-    DreamOutput << result << '\n';
-    DreamOutput.close();
+      for (i=0; i<num_fns; ++i) LogLikeOutput << calibrated_sigmas(i) << ' ' ;
+    const RealVector& fn_values = resp.function_values();
+    for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values(i) << ' ' ;
+    LogLikeOutput << result << '\n';
+    LogLikeOutput.close();
   }
   return result;
 }
