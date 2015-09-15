@@ -1,4 +1,5 @@
 
+#include "dakota_data_util.hpp"
 #include "dakota_data_io.hpp"
 
 #include <string>

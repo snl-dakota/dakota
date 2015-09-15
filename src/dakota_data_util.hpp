@@ -315,7 +315,7 @@ void copy_data(
   OrdinalType i, j, num_vec = sdm.numRows(), vec_len = sdm.numCols();
   sdva.resize(num_vec);
   for (i=0; i<num_vec; ++i) {
-    const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+    Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
     vec_i.sizeUninitialized(vec_len);
     for (j=0; j<vec_len; ++j)
       vec_i[j] = sdm(i,j);
@@ -333,8 +333,8 @@ void copy_data_transpose(
   OrdinalType i, j, num_vec = sdm.numCols(), vec_len = sdm.numRows();
   sdva.resize(num_vec);
   for (i=0; i<num_vec; ++i) {
-    const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
-    ScalarType* sdm_i = sdm[i]; // ith column
+    Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+    const ScalarType* sdm_i = sdm[i]; // ith column
     vec_i.sizeUninitialized(vec_len);
     for (j=0; j<vec_len; ++j)
       vec_i[j] = sdm_i[j];

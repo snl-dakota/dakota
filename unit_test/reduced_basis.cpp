@@ -2,6 +2,7 @@
 #include "ExperimentDataUtils.hpp"
 #include "ReducedBasis.hpp"
 #include "dakota_tabular_io.hpp"
+#include "dakota_data_util.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_linear_algebra.hpp"
 
