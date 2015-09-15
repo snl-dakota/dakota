@@ -596,15 +596,17 @@ void read_data_tabular(const std::string& input_filename,
 
       // read the (required) coefficients of length num_fns
       read_rv = std::numeric_limits<Real>::quiet_NaN();
-      if (!(input_stream >> read_rv)) {
-	Cout << "read: " << read_rv << std::endl;
+      if (input_stream >> read_rv) {
+	if (verbose) Cout << "read: " << read_rv << std::endl;
+	rva.push_back(read_rv);
+      }
+      else {
 	Cerr << "\nError (" << context_message << "): unexpected coeff read "
-	     << "error in file " << input_filename << "." << std::endl;
+	     << "error in file " << input_filename << ".\nread:\n" << read_rv
+	     << std::endl;
 	abort_handler(-1);
       }
-      if (verbose)
-	Cout << "read: " << read_rv << std::endl;
-      rva.push_back(read_rv);
+      input_stream >> std::ws; // advance to next input for EOF detection
     }
   }
   catch (const std::ios_base::failure& failorbad_except) {

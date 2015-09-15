@@ -751,6 +751,8 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case IMPORTANCE_SAMPLING:     return String("importance_sampling"); break;
   case ADAPTIVE_SAMPLING:       return String("adaptive_sampling"); break;
   case RANDOM_SAMPLING:         return String("random_sampling"); break;
+  case MULTILEVEL_SAMPLING:     return String("multilevel_sampling"); break;
+  case LIST_SAMPLING:           return String("list_sampling"); break;
   case EFFICIENT_SUBSPACE:      return String("efficient_subspace"); break;
   case SURROGATE_BASED_LOCAL:   return String("surrogate_based_local"); break;
   case SURROGATE_BASED_GLOBAL:  return String("surrogate_based_global"); break;
@@ -834,6 +836,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "importance_sampling")   return IMPORTANCE_SAMPLING;
   else if (method_name == "adaptive_sampling")     return ADAPTIVE_SAMPLING;
   else if (method_name == "random_sampling")       return RANDOM_SAMPLING;
+  else if (method_name == "multilevel_sampling")   return MULTILEVEL_SAMPLING;
+  else if (method_name == "list_sampling")         return LIST_SAMPLING;
   else if (method_name == "efficient_subspace")    return EFFICIENT_SUBSPACE;
   else if (method_name == "surrogate_based_local") return SURROGATE_BASED_LOCAL;
   else if (method_name == "surrogate_based_global")
