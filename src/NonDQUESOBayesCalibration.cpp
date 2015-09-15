@@ -651,7 +651,7 @@ void NonDQUESOBayesCalibration::run_queso_solver()
     Cout << "  Caution: Matlab files contain the chain values in "
 	 << "standardized probability space.\n";
   else
-    Cout << "  Matlab files contain the chain values.\n"
+    Cout << "  Matlab files contain the chain values.\n";
   //   << "The files to load in Matlab are\nfile_cal_ip_raw.m (the actual " 
   //   << "chain) or file_cal_ip_filt.m (the filtered chain,\nwhich contains " 
   //   << "every 20th step in the chain.\n"

@@ -1709,27 +1709,32 @@ void NonDExpansion::compute_statistics()
   // Estimate CDF/CCDF statistics by sampling on the expansion
   if (!expansionSampler.is_null()) {
 
-    // response fn is active for z->p, z->beta*, p->z, or beta*->z
-    ShortArray sampler_asv(numFunctions, 0);
-    cntr = 0;
-    for (i=0; i<numFunctions; ++i) {
-      cntr += 2;
-      size_t rl_len = requestedRespLevels[i].length();
-      if (respLevelTarget != RELIABILITIES)
-	for (j=0; j<rl_len; ++j)
+    bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING);
+    ShortArray sampler_asv;
+    if (list_sampling)
+      sampler_asv.assign(numFunctions, 1);
+    else {
+      sampler_asv.assign(numFunctions, 0); cntr = 0;
+      // response fn is active for z->p, z->beta*, p->z, or beta*->z
+      for (i=0; i<numFunctions; ++i) {
+	cntr += 2;
+	size_t rl_len = requestedRespLevels[i].length();
+	if (respLevelTarget != RELIABILITIES)
+	  for (j=0; j<rl_len; ++j)
+	    if (final_asv[cntr+j] & 1)
+	      { sampler_asv[i] |= 1; break; }
+	cntr += rl_len;
+	size_t pl_len = requestedProbLevels[i].length();
+	for (j=0; j<pl_len; ++j)
 	  if (final_asv[cntr+j] & 1)
 	    { sampler_asv[i] |= 1; break; }
-      cntr += rl_len;
-      size_t pl_len = requestedProbLevels[i].length();
-      for (j=0; j<pl_len; ++j)
-	if (final_asv[cntr+j] & 1)
-	  { sampler_asv[i] |= 1; break; }
-      cntr += pl_len + requestedRelLevels[i].length();
-      size_t gl_len = requestedGenRelLevels[i].length();
-      for (j=0; j<gl_len; ++j)
-	if (final_asv[cntr+j] & 1)
-	  { sampler_asv[i] |= 1; break; }
-      cntr += gl_len;
+	cntr += pl_len + requestedRelLevels[i].length();
+	size_t gl_len = requestedGenRelLevels[i].length();
+	for (j=0; j<gl_len; ++j)
+	  if (final_asv[cntr+j] & 1)
+	    { sampler_asv[i] |= 1; break; }
+	cntr += gl_len;
+      }
     }
     ActiveSet sampler_set = expansionSampler.active_set(); // copy
     sampler_set.request_vector(sampler_asv);
@@ -1739,8 +1744,18 @@ void NonDExpansion::compute_statistics()
     expansionSampler.run(pl_iter);
     NonDSampling* exp_sampler_rep
       = (NonDSampling*)expansionSampler.iterator_rep();
-    exp_sampler_rep->
-      compute_distribution_mappings(expansionSampler.all_responses());
+    if (list_sampling) {
+      //exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
+      //                                    expansionSampler.all_responses());
+      exp_sampler_rep->
+	compute_moments(expansionSampler.all_responses());
+      if (totalLevelRequests)
+	exp_sampler_rep->
+	  compute_distribution_mappings(expansionSampler.all_responses());
+    }
+    else
+      exp_sampler_rep->
+	compute_distribution_mappings(expansionSampler.all_responses());
     exp_sampler_rep->update_final_statistics();
     const RealVector& exp_sampler_stats
       = expansionSampler.response_results().function_values();
@@ -1868,11 +1883,8 @@ void NonDExpansion::compute_statistics()
 	}
       }
       
-      // archive the mappings from response levels
-      archive_from_resp(i); 
-      // archive the mappings to response levels
-      archive_to_resp(i); 
- 
+      // archive the mappings from/to response levels
+      archive_from_resp(i); archive_to_resp(i); 
     }
   }
 

@@ -50,6 +50,9 @@ public:
   //- Heading: Public member functions
   //
 
+  /// called by compute_statistics() to calculate means, std
+  /// deviations, and confidence intervals
+  void compute_moments(const IntResponseMap& samples);
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z
   void compute_distribution_mappings(const IntResponseMap& samples);
@@ -146,9 +149,6 @@ protected:
 			  const IntResponseMap& resp_samples);
   /// called by compute_statistics() to calculate min/max intervals
   void compute_intervals(const IntResponseMap& samples);
-  /// called by compute_statistics() to calculate means, std
-  /// deviations, and confidence intervals
-  void compute_moments(const IntResponseMap& samples);
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;
