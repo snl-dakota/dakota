@@ -1029,6 +1029,11 @@ public:
   /// tabular format for the approx point export file
   unsigned short exportApproxFormat;
 
+  /// the file name from the \c export_mcmc_points_file specification
+  String exportMCMCPtsFile;
+  /// tabular format for the MCMC chain export file
+  unsigned short exportMCMCFormat;
+
 private:
 
   //

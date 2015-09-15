@@ -213,7 +213,10 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // these two deprecated:
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   precondRequestValue(0),
-  logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
+  logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
+  exportMCMCFilename(
+    probDescDB.get_string("method.nond.export_mcmc_points_file")),
+  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_mcmc_format"))
 {
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
@@ -418,7 +421,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     run_queso_solver(); // solve inverse problem with MCMC 
 
     // export chain
-    if (outputLevel >= NORMAL_OUTPUT)
+    if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
       export_chain(update_cntr);
 
     // retain best or accumulate unique samples from current MCMC chain
@@ -663,48 +666,58 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
   //             (clobber if update_cntr == 1, else append)
   // Approach 2: persist the stream and clobber on open at 1st chain cycle.
 
-  static String mcmc_filename = "dakota_mcmc_tabular.dat";
-  size_t start;
+  String empty_id, mcmc_filename = (exportMCMCFilename.empty()) ?
+    "dakota_mcmc_tabular.dat" : exportMCMCFilename;
+  size_t i, start;
   if (update_cntr == 1) { // overwrite as new file
-    TabularIO::open_file(mcmcFileStream, mcmc_filename,
+    TabularIO::open_file(exportMCMCStream, mcmc_filename,
 			 "NonDQUESOBayesCalibration chain export");
-    //TabularIO::write_header_tabular(mcmcFileStream,
-    //  mcmcModel.current_variables(), mcmcModel.current_response(),
-    //  "chain_id", exportFormat);
+    StringArray resp_fn_sigmas;
+    if (calibrateSigma) {
+      resp_fn_sigmas.resize(numFunctions);
+      const StringArray& resp_labels = iteratedModel.response_labels();
+      for (i=0; i<numFunctions; ++i)
+	resp_fn_sigmas[i] = resp_labels[i] + "_sigma";
+    }
+    TabularIO::write_header_tabular(exportMCMCStream,
+      iteratedModel.current_variables(), resp_fn_sigmas, "mcmc_id",
+      exportMCMCFormat);
     start = 0;
   }
   else
-    start = 1;
+    start = 1; // first chain point is redundant
 
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  size_t i, j, wpp4 = write_precision+4, total_num_params
+  size_t j, wpp4 = write_precision+4, total_num_params
     = (calibrateSigma) ? numContinuousVars + numFunctions : numContinuousVars;
   QUESO::GslVector qv(paramSpace->zeroVector());
-  mcmcFileStream << std::setprecision(write_precision) 
-		 << std::resetiosflags(std::ios::floatfield);
-  for (i=start; i<num_mcmc; ++i) {
-    //TabularIO::write_leading_columns(mcmcFileStream, i+1, iface_id,
-    //				       exportFormat);
+  exportMCMCStream << std::setprecision(write_precision) 
+		   << std::resetiosflags(std::ios::floatfield);
+  size_t sample_cntr = (update_cntr - 1) * numSamples + 1;
+  for (i=start; i<num_mcmc; ++i, ++sample_cntr) {
+    TabularIO::write_leading_columns(exportMCMCStream, sample_cntr,
+				     empty_id,//mcmcModel.interface_id(),
+				     exportMCMCFormat);
     mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
     if (standardizedSpace) {
       RealVector u_rv(numContinuousVars, false), x_rv;
       copy_gsl_partial(qv, 0, u_rv);
       natafTransform.trans_U_to_X(u_rv, x_rv);
-      write_data_tabular(mcmcFileStream, x_rv);
+      write_data_tabular(exportMCMCStream, x_rv);
     }
     else
       for (j=0; j<numContinuousVars; ++j)
-	mcmcFileStream << std::setw(wpp4) << qv[j] << ' ';
+	exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
     // trailing sigma calibration params are not transformed
     for (j=numContinuousVars; j<total_num_params; ++j)
-      mcmcFileStream << std::setw(wpp4) << qv[j] << ' ';
-    mcmcFileStream << '\n';
+      exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
+    exportMCMCStream << '\n';
   }
 
   if (update_cntr == chainCycles)
-    TabularIO::close_file(mcmcFileStream, mcmc_filename,
+    TabularIO::close_file(exportMCMCStream, mcmc_filename,
 			  "NonDQUESOBayesCalibration chain export");
 }
 

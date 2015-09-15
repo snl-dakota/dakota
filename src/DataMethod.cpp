@@ -144,7 +144,8 @@ DataMethodRep::DataMethodRep():
   // Point import/export files
   importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
   importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
-  exportApproxFormat(TABULAR_ANNOTATED), referenceCount(1)
+  exportApproxFormat(TABULAR_ANNOTATED), exportMCMCFormat(TABULAR_ANNOTATED),
+  referenceCount(1)
 { }
 
 
@@ -277,7 +278,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat;
+    << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
+    << exportMCMCFormat;
 }
 
 
@@ -411,7 +413,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // Point import/export files
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
-    >> exportApproxPtsFile >> exportApproxFormat;
+    >> exportApproxPtsFile >> exportApproxFormat >> exportMCMCPtsFile
+    >> exportMCMCFormat;
 }
 
 
@@ -545,7 +548,8 @@ void DataMethodRep::write(std::ostream& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
-    << exportApproxPtsFile << exportApproxFormat;
+    << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
+    << exportMCMCFormat;
 }
 
 

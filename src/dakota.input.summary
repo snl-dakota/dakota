@@ -1524,6 +1524,17 @@ KEYWORD12 method
 	      [ use_derivatives ]
 	      ]
 	    [ logit_transform ]
+	    [ export_chain_points_file STRING
+	      [ annotated
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
+	      ]
 	    [ dram
 	    | delayed_rejection
 	    | adaptive_metropolis

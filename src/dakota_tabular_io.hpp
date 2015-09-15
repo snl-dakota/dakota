@@ -102,12 +102,20 @@ void close_file(std::ofstream& data_file, const std::string& output_filename,
 //- Utilities for tabular write
 //
 
-/// Output the header row (labels) for a tabular data file, with
-/// variables in input spec order.  Conditionally include interface
-/// ID.  Primary uses: environment tabular data, pre-run output,
-/// surrogate approx evals
-void write_header_tabular(std::ostream& tabular_ostream, 
-			  const Variables& vars, const Response& response,
+/// Output the header row (labels) for a tabular data file for
+/// variables and responses, with variables in input spec order.
+/// Conditionally include interface ID.  Primary uses: environment
+/// tabular data, pre-run output, surrogate approx evals
+void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
+			  const Response& response,
+			  const std::string& counter_label,
+			  unsigned short tabular_format);
+/// Output the header row (labels) for a tabular data file for
+/// variables and additional labels not tied to a response.  Variables
+/// are in input spec order.  Conditionally include interface ID.
+/// Primary uses: MCMC chain export, including calibration sigmas.
+void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
+			  const StringArray& addtnl_labels,
 			  const std::string& counter_label,
 			  unsigned short tabular_format);
 

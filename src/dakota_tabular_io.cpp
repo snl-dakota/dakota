@@ -144,13 +144,34 @@ void write_header_tabular(std::ostream& tabular_ostream,
 }
 
 
+void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars, 
+			  const StringArray& addtnl_labels,
+			  const std::string& counter_label,
+			  unsigned short tabular_format)
+{
+  if ( !(tabular_format & TABULAR_HEADER) )
+    return;
+
+  // headers use Matlab comment syntax
+  tabular_ostream << "%";
+
+  if (tabular_format & TABULAR_EVAL_ID)
+    tabular_ostream << counter_label << ' ';
+  if (tabular_format & TABULAR_IFACE_ID)
+    tabular_ostream << "interface ";
+  vars.write_tabular_labels(tabular_ostream);
+  Dakota::write_data_tabular(tabular_ostream, addtnl_labels);
+  tabular_ostream << std::endl; // table row completed
+}
+
+
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
 			   const String& iface_id,
 			   unsigned short tabular_format)
 {
   // conditionally write evaluation ID and/or interface ID
   if (tabular_format & TABULAR_EVAL_ID) {
-    // align left to make eval_id consistent with whitespace-delimited header row
+    // align left to make eval_id consistent w/ whitespace-delimited header row
     std::ios_base::fmtflags before_left_align = tabular_ostream.flags();
     tabular_ostream << std::setw(8) << std::left << eval_id << ' ';
     tabular_ostream.flags(before_left_align);

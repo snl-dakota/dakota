@@ -197,8 +197,13 @@ protected:
   /** this option is useful for preventing rejection or resampling for
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
+
   /// output file stream for the MCMC chain (active based on output verbosity)
-  std::ofstream mcmcFileStream;
+  std::ofstream exportMCMCStream;
+  /// output filename for the MCMC chain
+  String exportMCMCFilename;
+  /// output formatting options for MCMC export
+  short exportMCMCFormat;
 
 private:
 
