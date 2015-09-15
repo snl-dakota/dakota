@@ -670,15 +670,6 @@ void read_covariance(const std::string& basename,
                      Dakota::CovarianceMatrix::FORMAT,
                      int num_vals,
                      RealMatrix& cov_vals);
-//
-// -----------------------------
-// Copy functions for data types
-// -----------------------------
-
-/// Copy function for RealMatrix to RealVectorArray
-void copy_data(const RealMatrix& rmat, RealVectorArray& rvarray);
-/// Copy function for RealVectorArray to RealMatrix 
-void copy_data(const RealVectorArray& rvarray, RealMatrix& rmat);
 
 
 /// annotated istream extraction operator for StringMultiArray with labels

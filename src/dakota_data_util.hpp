@@ -266,6 +266,32 @@ void copy_data(
       max_vec_len = vec_len;
   }
 
+  // each vector in array becomes a row in the matrix, with shorter
+  // rows padded with trailing zeros
+  sdm.shape(num_vec, max_vec_len);
+  for (i=0; i<num_vec; ++i) {
+    const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+    OrdinalType vec_len = vec_i.length(); // allowed to vary
+    for (j=0; j<vec_len; ++j)
+      sdm(i,j) = vec_i[j];
+  }
+}
+
+
+/// copy Array<Teuchos::SerialDenseVector<OT,ST> > to transposed
+/// Teuchos::SerialDenseMatrix<OT,ST>
+template <typename OrdinalType, typename ScalarType> 
+void copy_data_transpose(
+  const std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType i, j, num_vec = sdva.size(), max_vec_len = 0;
+  for (i=0; i<num_vec; ++i) { // loop over vectors in array
+    OrdinalType vec_len = sdva[i].length();
+    if (vec_len > max_vec_len)
+      max_vec_len = vec_len;
+  }
+
   // each vector in array becomes a column in the matrix, with shorter
   // columns padded with trailing zeros
   sdm.shape(max_vec_len, num_vec);
@@ -275,6 +301,41 @@ void copy_data(
     ScalarType* sdm_i = sdm[i]; // ith column
     for (j=0; j<vec_len; ++j)
       sdm_i[j] = vec_i[j];
+  }
+}
+
+
+/// copy Teuchos::SerialDenseMatrix<OT,ST> to
+/// Array<Teuchos::SerialDenseVector<OT,ST> >
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva)
+{
+  OrdinalType i, j, num_vec = sdm.numRows(), vec_len = sdm.numCols();
+  sdva.resize(num_vec);
+  for (i=0; i<num_vec; ++i) {
+    const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+    for (j=0; j<vec_len; ++j)
+      vec_i[j] = sdm(i,j);
+  }
+}
+
+
+/// copy Teuchos::SerialDenseMatrix<OT,ST> to transposed
+/// Array<Teuchos::SerialDenseVector<OT,ST> >
+template <typename OrdinalType, typename ScalarType> 
+void copy_data_transpose(
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva)
+{
+  OrdinalType i, j, num_vec = sdm.numCols(), vec_len = sdm.numRows();
+  sdva.resize(num_vec);
+  for (i=0; i<num_vec; ++i) {
+    const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+    ScalarType* sdm_i = sdm[i]; // ith column
+    for (j=0; j<vec_len; ++j)
+      vec_i[j] = sdm_i[j];
   }
 }
 

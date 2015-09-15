@@ -624,7 +624,7 @@ void read_data_tabular(const std::string& input_filename,
   // this transposes the rva tabular layout (num_records X record_len) into the
   // rm layout (record_len X num_records), since the natural place to store the
   // ith vector rva[i] is as rm[i], a Teuchos column vector.
-  copy_data(rva, input_matrix);
+  copy_data_transpose(rva, input_matrix);
 }
 
 
