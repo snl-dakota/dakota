@@ -1676,7 +1676,7 @@ void NonD::update_aleatory_final_statistics()
     }
     else
       cntr += 2;
-    // final stats from compute_distribution_mappings()
+    // final stats from compute_level_mappings()
     rl_len = requestedRespLevels[i].length();
     switch (respLevelTarget) { // individual component p/beta/beta*
     case PROBABILITIES:
@@ -1813,12 +1813,12 @@ void NonD::update_system_final_statistics_gradients()
 }
 
 
-void NonD::initialize_distribution_mappings()
+void NonD::initialize_level_mappings()
 {
-  // Default sizing assumes no distinction between requested and achieved levels
-  // for the same measure (the request is always achieved) and assumes
-  // probability (e.g., computed by binning) and reliability (e.g., computed by
-  // moment projection) are not collapsible.
+  // Default sizing assumes no distinction between requested and achieved
+  // levels for the same measure (the request is always achieved) and assumes
+  // probability (e.g., computed by binning) and reliability (e.g., computed
+  // by moment projection) are not collapsible.
   if (computedRespLevels.empty() || computedProbLevels.empty() ||
       computedRelLevels.empty()  || computedGenRelLevels.empty()) {
     computedRespLevels.resize(numFunctions);
@@ -1841,8 +1841,84 @@ void NonD::initialize_distribution_mappings()
   }
 }
 
-/// Print distribution mappings, including to file per response
-void NonD::print_distribution_mappings(std::ostream& s) const
+
+/** This function infers PDFs from the CDF/CCDF level mappings, in
+    order to enable PDF computation after CDF/CCDF probability level
+    refinement (e.g., from importance sampling).  If not accommodating
+    refinements, it is more efficient to compute CDF/CCDF and PDF bins
+    together, as in NonDSampling::compute_level_mappings(). */
+void NonD::compute_densities()
+{
+  if (!pdfOutput)
+    return;
+
+  computedPDFAbscissas.resize(numFunctions);
+  computedPDFOrdinates.resize(numFunctions);
+  archive_allocate_pdf();
+
+  size_t i, j, offset; std::map<Real, Real> cdf_map;
+  for (i=0; i<numFunctions; ++i) {
+
+    // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
+    const RealVector&  req_rlev_i = requestedRespLevels[i];
+    const RealVector&  req_plev_i = requestedProbLevels[i];
+    const RealVector&  req_glev_i = requestedGenRelLevels[i];
+    const RealVector& comp_rlev_i = computedRespLevels[i];
+    const RealVector& comp_plev_i = computedProbLevels[i];
+    const RealVector& comp_glev_i = computedGenRelLevels[i];
+    size_t rl_len = req_rlev_i.length(), pl_len = req_plev_i.length(),
+           bl_len = requestedRelLevels[i].length(),
+           gl_len = req_glev_i.length();
+
+    cdf_map.clear();
+    // refer to NonD::initialize_level_mappings() for indexing
+    if (respLevelTarget != RELIABILITIES)
+      for (j=0; j<rl_len; ++j) // TO DO: manage cdfFlag here or downstream?
+	cdf_map[req_rlev_i[j]] = (respLevelTarget == PROBABILITIES)
+	  ? comp_plev_i[j]
+	  : Pecos::NormalRandomVariable::std_cdf(-comp_glev_i[j]);// TO DO
+    for (j=0; j<pl_len; ++j)
+      cdf_map[comp_rlev_i[j]] = req_plev_i[j]; // TO DO: cdfFlag
+    offset = pl_len+bl_len;
+    for (j=0; j<gl_len; ++j)
+      cdf_map[comp_rlev_i[j+offset]]
+	= Pecos::NormalRandomVariable::std_cdf(-req_glev_i[j]);// TO DO
+
+    /*
+    size_t last_rl_index = req_comp_rl_len-1;
+    Real lev_0 = cdf_map.front().first, lev_last = cdf_map.back().first;
+    // compute computedPDF{Abscissas,Ordinates} from bin counts and widths
+    size_t pdf_size = last_rl_index;
+    if (min < lev_0)    ++pdf_size;
+    if (max > lev_last) ++pdf_size;
+    RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
+    RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
+    size_t offset = 0;
+    if (min < lev_0) {
+      abs_i[0] = min; // TO DO
+      ord_i[0] = first_cdf/(lev_0 - min);
+      offset = 1;
+    }
+    for (j=0; j<last_rl_index; ++j) {
+      abs_i[j+offset] = pdf_rlevs[j];
+      ord_i[j+offset] = delta_cdf/delta_r;
+    }
+    if (max > lev_last) {
+      abs_i[pdf_size-1] = pdf_rlevs[last_rl_index];
+      abs_i[pdf_size]   = max; // TO DO
+      ord_i[pdf_size-1] = last_cdf/(max - lev_last);
+    }
+    else
+      abs_i[pdf_size] = pdf_rlevs[last_rl_index];
+    */
+
+    archive_pdf(i);
+  }
+}
+
+
+/** Print distribution mappings, including to file per response. */
+void NonD::print_level_mappings(std::ostream& s) const
 {
   // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
   // reliabilities resulting from number of std devs separating mean & target
@@ -1852,15 +1928,42 @@ void NonD::print_distribution_mappings(std::ostream& s) const
   for (i=0; i<numFunctions; ++i)
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
-      print_distribution_map(i, s);
+      print_level_map(i, s);
       // optionally write the distribution mapping to a .dist file
       if (outputLevel >= VERBOSE_OUTPUT)
-	distribution_mappings_file(i);
+	level_mappings_file(i);
     }
+
+  if (pdfOutput)
+    print_densities(s);
 }
 
+
+void NonD::print_densities(std::ostream& s) const
+{
+  s << std::scientific << std::setprecision(write_precision)
+    << "\nProbability Density Function (PDF) histograms for each response "
+    << "function:\n";
+  size_t i, j, width = write_precision+7;
+  const StringArray& resp_labels = iteratedModel.response_labels();
+  for (i=0; i<numFunctions; ++i) {
+    if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
+      s << "PDF for " << resp_labels[i] << ":\n"
+	<< "          Bin Lower          Bin Upper      Density Value\n"
+	<< "          ---------          ---------      -------------\n";
+
+      size_t pdf_len = computedPDFOrdinates[i].length();
+      for (j=0; j<pdf_len; ++j)
+	s << "  " << std::setw(width) << computedPDFAbscissas[i][j] << "  "
+	  << std::setw(width) << computedPDFAbscissas[i][j+1] << "  "
+	  << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
+    }
+  }
+}
+
+
 /// Write distribution mappings to a file for a single response
-void NonD::distribution_mappings_file(size_t fn_index) const
+void NonD::level_mappings_file(size_t fn_index) const
 {
   const StringArray& resp_labels = iteratedModel.response_labels();
   std::string dist_filename(resp_labels[fn_index]);
@@ -1868,13 +1971,13 @@ void NonD::distribution_mappings_file(size_t fn_index) const
   std::ofstream dist_file;
   TabularIO::open_file(dist_file, dist_filename, "Distribution Map Output"); 
   dist_file << std::scientific << std::setprecision(write_precision);
-  print_distribution_map(fn_index, dist_file);
+  print_level_map(fn_index, dist_file);
 }
 
 
 /** Print the distribution mapping for a single response function to
     the passed output stream */
-void NonD::print_distribution_map(size_t fn_index, std::ostream& s) const
+void NonD::print_level_map(size_t fn_index, std::ostream& s) const
 {
   const StringArray& resp_labels = iteratedModel.response_labels();
 
@@ -1949,6 +2052,7 @@ void NonD::print_system_mappings(std::ostream& s) const
   }
 }
 
+
 void NonD::archive_allocate_mappings()
 {
   if (!resultsDB.active())  return;
@@ -2014,6 +2118,7 @@ void NonD::archive_allocate_mappings()
       (run_identifier(), resultsNames.map_genrel_resp, numFunctions, md);
   }
 }
+
 
 // archive the mappings from response levels
 void NonD::archive_from_resp(size_t i)
@@ -2099,5 +2204,35 @@ void NonD::archive_to_resp(size_t i)
   } 
 }
 
+
+void NonD::archive_allocate_pdf() // const
+{
+  if (!resultsDB.active())  return;
+
+  // pdf per function, possibly empty
+  MetaDataType md;
+  md["Array Spans"] = make_metadatavalue("Response Functions");
+  md["Row Labels"] = 
+    make_metadatavalue("Bin Lower", "Bin Upper", "Density Value");
+  resultsDB.array_allocate<RealMatrix>
+    (run_identifier(), resultsNames.pdf_histograms, numFunctions, md);
+}
+
+
+void NonD::archive_pdf(size_t i) // const
+{
+  if (!resultsDB.active()) return;
+
+  size_t pdf_len = computedPDFOrdinates[i].length();
+  RealMatrix pdf(3, pdf_len);
+  for (size_t j=0; j<pdf_len; ++j) {
+    pdf(0, j) = computedPDFAbscissas[i][j];
+    pdf(1, j) = computedPDFAbscissas[i][j+1];
+    pdf(2, j) = computedPDFOrdinates[i][j];
+  }
+  
+  resultsDB.array_insert<RealMatrix>
+    (run_identifier(), resultsNames.pdf_histograms, i, pdf);
+}
 
 } // namespace Dakota

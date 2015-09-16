@@ -833,7 +833,7 @@ compute_statistics(const RealMatrix&     vars_samples,
     compute_moments(resp_samples);
     // compute CDF/CCDF mappings of z to p/beta and p/beta to z
     if (totalLevelRequests)
-      compute_distribution_mappings(resp_samples);
+      compute_level_mappings(resp_samples);
   }
 
   if (!subIteratorFlag) {
@@ -1025,11 +1025,15 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 }
 
 
-void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
+/** In this implementation, computation of PDF and CDF/CCDF are
+    integrated for efficiency, since sample sorting and binning can be
+    shared to some degree.  Within NonD, a PDF is inferred from a
+    CDF/CCDF within compute_densities() after compute_level_mappings(). */
+void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 {
   // Size the output arrays here instead of in the ctor in order to support
   // alternate sampling ctors.
-  initialize_distribution_mappings();
+  initialize_level_mappings();
   archive_allocate_mappings();
   if (pdfOutput) {
     computedPDFAbscissas.resize(numFunctions);
@@ -1059,8 +1063,8 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 	   << "mappings().  Call compute_moments() first." << std::endl;
       abort_handler(-1);
       // Issue with the following approach is that subsequent invocations of
-      // compute_distribution_mappings() without compute_moments() would not
-      // be detected and old moments would be used.  Performing more rigorous
+      // compute_level_mappings() without compute_moments() would not be
+      // detected and old moments would be used.  Performing more rigorous
       // bookkeeping of moment updates is overkill for current use cases.
       //Cerr << "Warning: moments not available in compute_distribution_"
       //     << "mappings(); computing them now." << std::endl;
@@ -1166,9 +1170,8 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
       }
     }
     for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
-      Real p = (j<pl_len) ? requestedProbLevels[i][j] :
-	Pecos::NormalRandomVariable::
-	std_cdf(-requestedGenRelLevels[i][j-pl_len]);
+      Real p = (j<pl_len) ? requestedProbLevels[i][j] :	Pecos::
+	NormalRandomVariable::std_cdf(-requestedGenRelLevels[i][j-pl_len]);
       // since each sample has 1/N probability, a probability level can be
       // directly converted to an index within a sorted array (index =~ p * N)
       Real cdf_p_x_obs = (cdfFlag) ? p*(Real)num_samp : (1.-p)*(Real)num_samp;
@@ -1310,8 +1313,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
   else {
     print_moments(s);
     if (totalLevelRequests) {
-      print_distribution_mappings(s);
-      print_pdf_mappings(s);
+      print_level_mappings(s);
       print_system_mappings(s);
     }
   }
@@ -1384,65 +1386,6 @@ void NonDSampling::print_moments(std::ostream& s) const
 	<< ' ' << std::setw(width) << momentCIs(2, i)
 	<< ' ' << std::setw(width) << momentCIs(3, i) << '\n';
   }
-}
-
-
-void NonDSampling::print_pdf_mappings(std::ostream& s) const
-{
-  if (pdfOutput) {
-    const StringArray& resp_labels = iteratedModel.response_labels();
-
-    // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
-    // reliabilities resulting from number of std devs separating mean & target
-    s << std::scientific << std::setprecision(write_precision)
-      << "\nProbability Density Function (PDF) histograms for each response "
-      << "function:\n";
-    size_t i, j, width = write_precision+7;
-    for (i=0; i<numFunctions; ++i) {
-      if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
-	s << "PDF for " << resp_labels[i] << ":\n"
-	  << "          Bin Lower          Bin Upper      Density Value\n"
-	  << "          ---------          ---------      -------------\n";
-
-	size_t pdf_len = computedPDFOrdinates[i].length();
-	for (j=0; j<pdf_len; ++j)
-	  s << "  " << std::setw(width) << computedPDFAbscissas[i][j] << "  "
-	    << std::setw(width) << computedPDFAbscissas[i][j+1] << "  "
-	    << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
-      }
-    }
-  }
-}
-
-
-void NonDSampling::archive_allocate_pdf() // const
-{
-  if (!resultsDB.active())  return;
-
-  // pdf per function, possibly empty
-  MetaDataType md;
-  md["Array Spans"] = make_metadatavalue("Response Functions");
-  md["Row Labels"] = 
-    make_metadatavalue("Bin Lower", "Bin Upper", "Density Value");
-  resultsDB.array_allocate<RealMatrix>
-    (run_identifier(), resultsNames.pdf_histograms, numFunctions, md);
-}
-
-
-void NonDSampling::archive_pdf(size_t i) // const
-{
-  if (!resultsDB.active()) return;
-
-  size_t pdf_len = computedPDFOrdinates[i].length();
-  RealMatrix pdf(3, pdf_len);
-  for (size_t j=0; j<pdf_len; ++j) {
-    pdf(0, j) = computedPDFAbscissas[i][j];
-    pdf(1, j) = computedPDFAbscissas[i][j+1];
-    pdf(2, j) = computedPDFOrdinates[i][j];
-  }
-  
-  resultsDB.array_insert<RealMatrix>
-    (run_identifier(), resultsNames.pdf_histograms, i, pdf);
 }
 
 } // namespace Dakota

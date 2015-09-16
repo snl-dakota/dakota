@@ -217,7 +217,7 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
         _max_num_neighbors = 4;
         _discont_jump_threshold = 0.8;
         
-        initialize_distribution_mappings();
+        initialize_level_mappings();
         
         _xmin = new double[_num_dim];
         _xmax = new double[_num_dim];

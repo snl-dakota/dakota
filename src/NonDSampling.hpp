@@ -61,8 +61,8 @@ public:
   /// deviations, and confidence intervals
   void compute_moments(const IntResponseMap& samples);
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
-  /// z to p/beta and of p/beta to z
-  void compute_distribution_mappings(const IntResponseMap& samples);
+  /// z to p/beta and of p/beta to z as well as PDFs
+  void compute_level_mappings(const IntResponseMap& samples);
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;
@@ -74,9 +74,6 @@ public:
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
-
-  /// prints the PDFs computed in compute_statistics()
-  void print_pdf_mappings(std::ostream& s) const;
 
 protected:
 
@@ -230,11 +227,6 @@ protected:
 
 private:
 
-  /// allocate results array storage for pdf histograms
-  void archive_allocate_pdf();
-  /// archive a single pdf histogram for specified function
-  void archive_pdf(size_t fn_index);
-
   //
   //- Heading: Data
   //
@@ -250,13 +242,6 @@ private:
   /// Minimum (row 0) and maximum (row 1) values of response functions
   /// for epistemic calculations (calculated in compute_intervals()),
   RealMatrix extremeValues;
-
-  /// sorted response PDF intervals bounds extracted from min/max sample
-  /// and requested/computedRespLevels (vector lengths = num bins + 1)
-  RealVectorArray computedPDFAbscissas;
-  /// response PDF densities computed from bin counts divided by
-  /// (unequal) bin widths (vector lengths = num bins)
-  RealVectorArray computedPDFOrdinates;
 };
 
 

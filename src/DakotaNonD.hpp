@@ -152,10 +152,15 @@ protected:
   void update_system_final_statistics_gradients();
 
   /// size computed{Resp,Prob,Rel,GenRel}Levels
-  void initialize_distribution_mappings();
+  void initialize_level_mappings();
   /// prints the z/p/beta/beta* mappings reflected in
   /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
-  void print_distribution_mappings(std::ostream& s) const;
+  void print_level_mappings(std::ostream& s) const;
+  /// compute the PDF bins from the CDF/CCDF values and store in
+  /// computedPDF{Abscissas,Ordinates}
+  void compute_densities();
+  /// output the PDFs reflected in computedPDF{Abscissas,Ordinates}
+  void print_densities(std::ostream& s) const;
   /// print system series/parallel mappings for response levels
   void print_system_mappings(std::ostream& s) const;
 
@@ -193,6 +198,10 @@ protected:
   void archive_from_resp(size_t fn_index);
   /// archive the mappings to computed response levels for specified fn
   void archive_to_resp(size_t fn_index);
+  /// allocate results array storage for pdf histograms
+  void archive_allocate_pdf();
+  /// archive a single pdf histogram for specified function
+  void archive_pdf(size_t fn_index);
 
   //
   //- Heading: Data members
@@ -371,6 +380,12 @@ protected:
 
   /// flag for managing output of response probability density functions (PDFs)
   bool pdfOutput;
+  /// sorted response PDF intervals bounds extracted from min/max sample
+  /// and requested/computedRespLevels (vector lengths = num bins + 1)
+  RealVectorArray computedPDFAbscissas;
+  /// response PDF densities computed from bin counts divided by
+  /// (unequal) bin widths (vector lengths = num bins)
+  RealVectorArray computedPDFOrdinates;
 
   /// final statistics from the uncertainty propagation used in strategies:
   /// response means, standard deviations, and probabilities of failure
@@ -385,11 +400,11 @@ private:
   /// response functions if a short-hand specification is employed.
   void distribute_levels(RealVectorArray& levels, bool ascending = true);
 
-  /// Write distribution mappings to a file for a single response
-  void distribution_mappings_file(size_t fn_index) const;
+  /// Write level mappings to a file for a single response
+  void level_mappings_file(size_t fn_index) const;
 
-  /// Print distribution mapping for a single response function to ostream
-  void print_distribution_map(size_t fn_index, std::ostream& s) const;
+  /// Print level mapping for a single response function to ostream
+  void print_level_map(size_t fn_index, std::ostream& s) const;
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations

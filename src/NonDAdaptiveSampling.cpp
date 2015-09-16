@@ -252,7 +252,7 @@ namespace Dakota
 		fout << "Round\tTrue_Min\tTrue_Max\tTrue_Saddle\tModel_Min\tModel_Max"
 			 << "\tModel_Saddle\tBottleneck\tRMSPE" << std::endl;
 
-		initialize_distribution_mappings();
+		initialize_level_mappings();
 
 
 		for (int k = 0; k < numRounds; k++) 
@@ -1749,7 +1749,7 @@ void NonDAdaptiveSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
     s << "\nStatistics based on the adaptive sampling calculations:\n";
-    print_distribution_mappings(s);
+    print_level_mappings(s);
   }
 }
 

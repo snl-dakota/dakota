@@ -791,7 +791,7 @@ void NonDAdaptImpSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
     s << "\nStatistics based on the importance sampling calculations:\n";
-    print_distribution_mappings(s);
+    print_level_mappings(s);
   }
 }
 

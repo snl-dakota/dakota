@@ -167,7 +167,7 @@ void NonDGPImpSampling::quantify_uncertainty()
    
   size_t resp_fn_count, level_count, iter;
   RealVector new_X;
-  initialize_distribution_mappings();
+  initialize_level_mappings();
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
 
   for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
@@ -562,7 +562,7 @@ void NonDGPImpSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
     s << "\nStatistics based on the importance sampling calculations:\n";
-    print_distribution_mappings(s);
+    print_level_mappings(s);
   }
 }
 

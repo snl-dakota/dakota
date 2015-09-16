@@ -239,7 +239,7 @@ void NonDPOFDarts::quantify_uncertainty()
         
         _total_budget = 0;
         
-        initialize_distribution_mappings();
+        initialize_level_mappings();
         for (size_t resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++)
         {
             size_t num_levels = requestedRespLevels[resp_fn_count].length();
@@ -2237,7 +2237,7 @@ void NonDPOFDarts::quantify_uncertainty()
     {
         //s << "\nStatistics based on the importance sampling calculations:\n";
         s << "\nStatistics based on MC sampling calculations:\n";
-        print_distribution_mappings(s);
+        print_level_mappings(s);
     }
 
 } // namespace Dakota

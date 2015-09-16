@@ -1506,7 +1506,7 @@ void NonDExpansion::compute_statistics()
 
   // initialize computed*Levels and expGradsMeanX
   if (totalLevelRequests)
-    initialize_distribution_mappings();
+    initialize_level_mappings();
   if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
 
@@ -1749,7 +1749,7 @@ void NonDExpansion::compute_statistics()
                                           expansionSampler.all_responses());
     else { // only want numerical probability-based mappings
       exp_sampler_rep->
-	compute_distribution_mappings(expansionSampler.all_responses());
+	compute_level_mappings(expansionSampler.all_responses());
       exp_sampler_rep->update_final_statistics();
     }
     const RealVector& exp_sampler_stats
@@ -1823,8 +1823,8 @@ void NonDExpansion::compute_statistics()
 	size_t rl_len = requestedRespLevels[i].length();
 	for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
 	  if (final_asv[cntr] & 1) {
-	    const Real& p = (imp_sampling) ? imp_sampler_stats[i][j]
-	                                   : exp_sampler_stats[sampler_cntr];
+	    Real p = (imp_sampling) ? imp_sampler_stats[i][j]
+	                            : exp_sampler_stats[sampler_cntr];
 	    if (respLevelTarget == PROBABILITIES) {
 	      computedProbLevels[i][j] = p;
 	      finalStatistics.function_value(p, cntr);
@@ -1877,10 +1877,14 @@ void NonDExpansion::compute_statistics()
 	  abort_handler(-1);
 	}
       }
-      
+
       // archive the mappings from/to response levels
       archive_from_resp(i); archive_to_resp(i); 
     }
+    // **************** TO DO **************
+    if (imp_sampling)
+      compute_densities();
+    // **************** TO DO **************
   }
 
   // archive the active variables with the results
@@ -2287,10 +2291,11 @@ void NonDExpansion::print_results(std::ostream& s)
       s << "projection of analytic moments:\n";
 
     // Note: PDF output ignores any importance sampling refinements
-    if (exp_sampling)
-      exp_sampler_rep->print_pdf_mappings(s); // numerical only: delegate
+    //if (exp_sampling)
+    //  exp_sampler_rep->print_densities(s); // numerical only: delegate
+    pdfOutput = false; // temp hack
 
-    print_distribution_mappings(s); // local mix of analytic and numerical
+    print_level_mappings(s); // local mix of analytic and numerical
     print_system_mappings(s);
   }
   s << "-----------------------------------------------------------------------"
