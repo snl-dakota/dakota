@@ -1882,8 +1882,8 @@ void NonDExpansion::compute_statistics()
       archive_from_resp(i); archive_to_resp(i); 
     }
     // **************** TO DO **************
-    if (imp_sampling)
-      compute_densities();
+    //if (imp_sampling)
+    //  compute_densities(is_min_fns, is_max_fns);
     // **************** TO DO **************
   }
 

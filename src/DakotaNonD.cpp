@@ -1847,7 +1847,8 @@ void NonD::initialize_level_mappings()
     refinement (e.g., from importance sampling).  If not accommodating
     refinements, it is more efficient to compute CDF/CCDF and PDF bins
     together, as in NonDSampling::compute_level_mappings(). */
-void NonD::compute_densities()
+void NonD::
+compute_densities(const RealVector& min_fn_vals, const RealVector& max_fn_vals)
 {
   if (!pdfOutput)
     return;
@@ -1856,7 +1857,10 @@ void NonD::compute_densities()
   computedPDFOrdinates.resize(numFunctions);
   archive_allocate_pdf();
 
-  size_t i, j, offset; std::map<Real, Real> cdf_map;
+  size_t i, j, cntr, core_pdf_bins, pdf_size, offset;
+  Real min, max, lev_0, lev_last, prev_r, prev_p, new_r, new_p;
+  std::map<Real, Real> cdf_map;
+  std::map<Real, Real>::iterator it, it0, it_last;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -1871,46 +1875,55 @@ void NonD::compute_densities()
            gl_len = req_glev_i.length();
 
     cdf_map.clear();
+    // Define a unique sorted map of response levels -> cdf probabilities.
     // refer to NonD::initialize_level_mappings() for indexing
-    if (respLevelTarget != RELIABILITIES)
-      for (j=0; j<rl_len; ++j) // TO DO: manage cdfFlag here or downstream?
-	cdf_map[req_rlev_i[j]] = (respLevelTarget == PROBABILITIES)
-	  ? comp_plev_i[j]
-	  : Pecos::NormalRandomVariable::std_cdf(-comp_glev_i[j]);// TO DO
+    switch (respLevelTarget) {
+    case PROBABILITIES:
+      for (j=0; j<rl_len; ++j)
+	cdf_map[req_rlev_i[j]] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+      break;
+    case GEN_RELIABILITIES:
+      for (j=0; j<rl_len; ++j) {
+	Real g_cdf = (cdfFlag) ? comp_glev_i[j] : -comp_glev_i[j];
+	cdf_map[req_rlev_i[j]] = Pecos::NormalRandomVariable::std_cdf(g_cdf);
+      }
+      break;
+    }
     for (j=0; j<pl_len; ++j)
-      cdf_map[comp_rlev_i[j]] = req_plev_i[j]; // TO DO: cdfFlag
-    offset = pl_len+bl_len;
-    for (j=0; j<gl_len; ++j)
-      cdf_map[comp_rlev_i[j+offset]]
-	= Pecos::NormalRandomVariable::std_cdf(-req_glev_i[j]);// TO DO
+      cdf_map[comp_rlev_i[j]] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
+    for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
+      Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
+      cdf_map[comp_rlev_i[cntr]] = Pecos::NormalRandomVariable::std_cdf(g_cdf);
+    }
 
-    /*
-    size_t last_rl_index = req_comp_rl_len-1;
-    Real lev_0 = cdf_map.front().first, lev_last = cdf_map.back().first;
+    min = min_fn_vals[i]; max = max_fn_vals[i];
+    it = it0 = cdf_map.begin(); it_last = --cdf_map.end();
+    lev_0 = it0->first; lev_last = it_last->first;
     // compute computedPDF{Abscissas,Ordinates} from bin counts and widths
-    size_t pdf_size = last_rl_index;
+    core_pdf_bins = cdf_map.size()-1; pdf_size = core_pdf_bins;
     if (min < lev_0)    ++pdf_size;
     if (max > lev_last) ++pdf_size;
     RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
     RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
-    size_t offset = 0;
     if (min < lev_0) {
-      abs_i[0] = min; // TO DO
-      ord_i[0] = first_cdf/(lev_0 - min);
+      abs_i[0] = min;
+      ord_i[0] = it->second/(lev_0 - min);
       offset = 1;
     }
-    for (j=0; j<last_rl_index; ++j) {
-      abs_i[j+offset] = pdf_rlevs[j];
-      ord_i[j+offset] = delta_cdf/delta_r;
+    else offset = 0;
+    for (j=0; j<core_pdf_bins; ++j) {
+      prev_r = it->first; prev_p = it->second; ++it;
+      new_r  = it->first; new_p  = it->second;
+      abs_i[j+offset] = prev_r;
+      ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
     }
     if (max > lev_last) {
-      abs_i[pdf_size-1] = pdf_rlevs[last_rl_index];
-      abs_i[pdf_size]   = max; // TO DO
-      ord_i[pdf_size-1] = last_cdf/(max - lev_last);
+      abs_i[pdf_size-1] = lev_last;
+      ord_i[pdf_size-1] = (1. - it_last->second)/(max - lev_last);
+      abs_i[pdf_size]   = max;    // no ordinate
     }
     else
-      abs_i[pdf_size] = pdf_rlevs[last_rl_index];
-    */
+      abs_i[pdf_size] = lev_last; // no ordinate
 
     archive_pdf(i);
   }
@@ -1944,7 +1957,7 @@ void NonD::print_densities(std::ostream& s) const
   s << std::scientific << std::setprecision(write_precision)
     << "\nProbability Density Function (PDF) histograms for each response "
     << "function:\n";
-  size_t i, j, width = write_precision+7;
+  size_t i, j, wpp7 = write_precision+7;
   const StringArray& resp_labels = iteratedModel.response_labels();
   for (i=0; i<numFunctions; ++i) {
     if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
@@ -1952,11 +1965,13 @@ void NonD::print_densities(std::ostream& s) const
 	<< "          Bin Lower          Bin Upper      Density Value\n"
 	<< "          ---------          ---------      -------------\n";
 
-      size_t pdf_len = computedPDFOrdinates[i].length();
+      const RealVector& ord_i = computedPDFOrdinates[i];
+      const RealVector& abs_i = computedPDFAbscissas[i];
+      size_t pdf_len = ord_i.length();
       for (j=0; j<pdf_len; ++j)
-	s << "  " << std::setw(width) << computedPDFAbscissas[i][j] << "  "
-	  << std::setw(width) << computedPDFAbscissas[i][j+1] << "  "
-	  << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
+	s << "  " << std::setw(wpp7) << abs_i[j]
+	  << "  " << std::setw(wpp7) << abs_i[j+1]
+	  << "  " << std::setw(wpp7) << ord_i[j] << '\n';
     }
   }
 }

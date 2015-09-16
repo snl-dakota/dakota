@@ -1035,11 +1035,6 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   // alternate sampling ctors.
   initialize_level_mappings();
   archive_allocate_mappings();
-  if (pdfOutput) {
-    computedPDFAbscissas.resize(numFunctions);
-    computedPDFOrdinates.resize(numFunctions);
-    archive_allocate_pdf();
-  }
 
   // For the samples array, calculate the following statistics:
   // > CDF/CCDF mappings of response levels to probability/reliability levels
@@ -1072,6 +1067,11 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     }
   }
 
+  RealVector min_fn_vals, max_fn_vals;
+  if (pdfOutput) {
+    min_fn_vals.sizeUninitialized(numFunctions);
+    max_fn_vals.sizeUninitialized(numFunctions);
+  }
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
 
@@ -1080,7 +1080,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
            pl_len = requestedProbLevels[i].length(),
            bl_len = requestedRelLevels[i].length(),
            gl_len = requestedGenRelLevels[i].length();
-
+    Real &min = min_fn_vals[i], &max = max_fn_vals[i];
     // ----------------------------------------------------------------------
     // Preliminaries: define finite subset, sort (if needed), and bin samples
     // ----------------------------------------------------------------------
@@ -1203,89 +1203,10 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     archive_from_resp(i);
     // archive the mappings to response levels
     archive_to_resp(i);
-
-    // ---------------------------------------------------------------------
-    // Post-process for PDF incorporating all requested/computed resp levels
-    // ---------------------------------------------------------------------
-    if (pdfOutput) {
-      size_t req_comp_rl_len = pl_len + gl_len;
-      if (respLevelTarget != RELIABILITIES) req_comp_rl_len += rl_len;
-      if (req_comp_rl_len) {
-	RealVector pdf_all_rlevs;
-	if (pl_len || gl_len) {
-	  // merge all requested & computed rlevs into pdf rlevs and sort
-	  pdf_all_rlevs.sizeUninitialized(req_comp_rl_len);
-	  // merge requested/computed --> pdf_all_rlevs
-	  int offset = 0;
-	  if (rl_len && respLevelTarget != RELIABILITIES) {
-	    copy_data_partial(requestedRespLevels[i], pdf_all_rlevs, 0);
-	    offset += rl_len;
-	  }
-	  if (pl_len) {
-	    copy_data_partial(computedRespLevels[i], 0, (int)pl_len,
-			      pdf_all_rlevs, offset);
-	    offset += pl_len;
-	  }
-	  if (gl_len)
-	    copy_data_partial(computedRespLevels[i], (int)(pl_len+bl_len),
-			      (int)gl_len, pdf_all_rlevs, offset);
-	  // sort combined array; retain unique entries; update req_comp_rl_len
-	  Real* start = pdf_all_rlevs.values();
-	  std::sort(start, start+req_comp_rl_len);
-	  req_comp_rl_len = std::distance(start,
-	    std::unique(start, start+req_comp_rl_len));
-	  // (re)compute bins from sorted_samples.  Note that these bins are
-	  // open on right end due to use of strictly less than.
-	  bins.assign(req_comp_rl_len+1, 0); size_t samp_cntr = 0;
-	  for (j=0; j<req_comp_rl_len; ++j)
-	    while (samp_cntr < num_samp &&
-		   sorted_samples[samp_cntr] < pdf_all_rlevs[j])
-	      { ++bins[j]; ++samp_cntr; }
-	  if (num_samp > samp_cntr)
-	    bins[req_comp_rl_len] += num_samp - samp_cntr;
-	}
-	RealVector& pdf_rlevs = (pl_len || gl_len) ?
-	  pdf_all_rlevs : requestedRespLevels[i];
-	size_t last_rl_index = req_comp_rl_len-1;
-	const Real& lev_0    = pdf_rlevs[0];
-	const Real& lev_last = pdf_rlevs[last_rl_index];
-	// to properly sum to 1, final PDF bin must be closed on right end.
-	// --> where the max sample value defines the last response level,
-	//     move any max samples on right boundary inside last PDF bin.
-	if (max <= lev_last && bins[req_comp_rl_len]) {
-	  bins[req_comp_rl_len-1] += bins[req_comp_rl_len];
-	  bins[req_comp_rl_len]    = 0;
-	}
-
-	// compute computedPDF{Abscissas,Ordinates} from bin counts and widths
-	size_t pdf_size = last_rl_index;
-	if (min < lev_0)    ++pdf_size;
-	if (max > lev_last) ++pdf_size;
-	RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
-	RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
-	size_t offset = 0;
-	if (min < lev_0) {
-	  abs_i[0] = min;
-	  ord_i[0] = (Real)bins[0]/(Real)num_samp/(lev_0 - min);
-	  offset = 1;
-	}
-	for (j=0; j<last_rl_index; ++j) {
-	  abs_i[j+offset] = pdf_rlevs[j];
-	  ord_i[j+offset]
-	    = (Real)bins[j+1]/(Real)num_samp/(pdf_rlevs[j+1] - pdf_rlevs[j]);
-	}
-	if (max > lev_last) {
-	  abs_i[pdf_size-1] = pdf_rlevs[last_rl_index];
-	  abs_i[pdf_size]   = max;
-	  ord_i[pdf_size-1]
-	    = (Real)bins[req_comp_rl_len]/(Real)num_samp/(max - lev_last);
-	}
-	else
-	  abs_i[pdf_size] = pdf_rlevs[last_rl_index];
-      }
-      archive_pdf(i);
-    }
   }
+
+  // post-process computed z/p/beta* levels to form PDFs
+  compute_densities(min_fn_vals, max_fn_vals);
 }
 
 

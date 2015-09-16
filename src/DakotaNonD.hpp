@@ -158,7 +158,8 @@ protected:
   void print_level_mappings(std::ostream& s) const;
   /// compute the PDF bins from the CDF/CCDF values and store in
   /// computedPDF{Abscissas,Ordinates}
-  void compute_densities();
+  void compute_densities(const RealVector& min_fn_vals,
+			 const RealVector& max_fn_vals);
   /// output the PDFs reflected in computedPDF{Abscissas,Ordinates}
   void print_densities(std::ostream& s) const;
   /// print system series/parallel mappings for response levels
