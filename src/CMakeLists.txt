@@ -423,7 +423,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
-    ReducedBasis.cpp
+    ReducedBasis.cpp spectral_diffusion.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)

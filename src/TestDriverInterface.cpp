@@ -25,6 +25,7 @@
 #include <vector>
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "NonDLHSSampling.hpp"
+#include "spectral_diffusion.hpp"
 
 namespace Dakota {
 
@@ -87,6 +88,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["modelcenter"]            = MODELCENTER;
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
+  driverTypeMap["diffusion_1d"]           = DIFFUSION_1D;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
 
@@ -151,7 +153,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case BARNES:        case BARNES_LF:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
-    case GENZ: case DAMPED_OSCILLATOR:
+    case GENZ: case DAMPED_OSCILLATOR: case DIFFUSION_1D:
     case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
@@ -302,6 +304,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = genz(); break;
   case DAMPED_OSCILLATOR:
     fail_code = damped_oscillator(); break;
+  case DIFFUSION_1D:
+    fail_code = diffusion_1d(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
     fail_code = aniso_quad_form(); break;
   case BAYES_LINEAR: 
@@ -1482,9 +1486,60 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
     }
 }
 
+/** \brief Solve the 1D diffusion equation with an uncertain variable 
+ * coefficient using the spectral Chebyshev collocation method.
+ *
+ * del(k del(u) ) = f on [0,1] subject to u(0) = 0 u(1) = 0
+ * 
+ * Here we set f = -1 and 
+ * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
+ * where z_d are random variables, typically i.i.d uniform[-1,1]
+ */
+int TestDriverInterface::diffusion_1d(){
+  // ------------------------------------------------------------- //
+  // Pre-processing 
+  // ------------------------------------------------------------- //
 
-int TestDriverInterface::genz()
-{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: diffusion_1d direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if ( ( numVars < 1 )  || ( numADIV > 1 ) || numADRV ) {
+    Cerr << "Error: Bad variable types in diffusion_1d direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns < 1) {
+    Cerr << "Error: Bad number of functions in diffusion_1d direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag||gradFlag) {
+    Cerr << "Error: Gradients and Hessians are not supported in " 
+	 << " diffusion_1d direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // Get the mesh resolution from the first discrete integer variable
+  int order = ( numADIV ) ? xDI[0] : 20;
+
+  // ------------------------------------------------------------- //
+  // Initialize and evaluate model 
+  // ------------------------------------------------------------- //
+  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
+  domain_limits[1] = 1.;
+
+  SpectralDiffusionModel model;
+  model.initialize( order, bndry_conds, domain_limits );
+  model.set_num_qoi( numFns );
+  
+  model.evaluate( xC, fnVals ); 
+  return  0;
+}
+
+
+int TestDriverInterface::genz(){
   if (multiProcAnalysisFlag) {
     Cerr << "Error: genz direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
@@ -1564,8 +1619,8 @@ int TestDriverInterface::genz()
 }
 
 
-int TestDriverInterface::damped_oscillator()
-{
+int TestDriverInterface::damped_oscillator(){
+
   if (multiProcAnalysisFlag) {
     Cerr << "Error: damped oscillator direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
