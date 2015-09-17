@@ -1080,7 +1080,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
            pl_len = requestedProbLevels[i].length(),
            bl_len = requestedRelLevels[i].length(),
            gl_len = requestedGenRelLevels[i].length();
-    Real &min = min_fn_vals[i], &max = max_fn_vals[i];
+
     // ----------------------------------------------------------------------
     // Preliminaries: define finite subset, sort (if needed), and bin samples
     // ----------------------------------------------------------------------
@@ -1131,6 +1131,8 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
       }
     }
+    if (pdfOutput)
+      { min_fn_vals[i] = min; max_fn_vals[i] = max; }
 
     // ----------------
     // Process mappings
