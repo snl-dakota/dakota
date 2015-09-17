@@ -1920,10 +1920,10 @@ compute_densities(const RealVector& min_fn_vals, const RealVector& max_fn_vals)
     if (max > lev_last) {
       abs_i[pdf_size-1] = lev_last;
       ord_i[pdf_size-1] = (1. - it_last->second)/(max - lev_last);
-      abs_i[pdf_size]   = max;    // no ordinate
+      abs_i[pdf_size]   = max;    // no ordinate for final abscissa
     }
     else
-      abs_i[pdf_size] = lev_last; // no ordinate
+      abs_i[pdf_size] = lev_last; // no ordinate for final abscissa
 
     archive_pdf(i);
   }

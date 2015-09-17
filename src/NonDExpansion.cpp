@@ -1498,12 +1498,6 @@ void NonDExpansion::compute_off_diagonal_covariance()
     log results within final_stats for use in OUU. */
 void NonDExpansion::compute_statistics()
 {
-  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
-    num_final_grad_vars = final_dvv.size();
-
   // initialize computed*Levels and expGradsMeanX
   if (totalLevelRequests)
     initialize_level_mappings();
@@ -1519,10 +1513,37 @@ void NonDExpansion::compute_statistics()
   // -----------------------------
   // Calculate analytic statistics
   // -----------------------------
+  compute_analytic_statistics(); // statistics derived from expansion coeffs
+
+  // ------------------------------
+  // Calculate numerical statistics
+  // ------------------------------
+  if (!expansionSampler.is_null()) // statistics from sampling on the expansion
+    compute_numerical_statistics();
+
+  // archive the active variables with the results
+  if (resultsDB.active()) {
+    resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
+		     iteratedModel.continuous_variable_labels());
+    resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
+		     iteratedModel.response_labels());
+  }
+  archive_moments();
+  archive_coefficients();
+}
+
+
+void NonDExpansion::compute_analytic_statistics()
+{
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0,
+    num_final_grad_vars = final_dvv.size();
 
   // loop over response fns and compute/store analytic stats/stat grads
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real mu, sigma, beta, gen_beta, z;
+  Real mu, sigma, beta, z;
   RealVector mu_grad, sigma_grad, final_stat_grad;
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
@@ -1701,201 +1722,198 @@ void NonDExpansion::compute_statistics()
   }
   if (numFunctions > 1 && covarianceControl == FULL_COVARIANCE)
     compute_off_diagonal_covariance(); // diagonal entries were filled in above
+}
 
-  // ------------------------------
-  // Calculate numerical statistics
-  // ------------------------------
 
-  // Estimate CDF/CCDF statistics by sampling on the expansion
-  if (!expansionSampler.is_null()) {
+void NonDExpansion::compute_numerical_statistics()
+{
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t i, j, cntr, sampler_cntr;
+  Real p, gen_beta, z;
 
-    bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING);
-    ShortArray sampler_asv;
-    if (list_sampling)
-      sampler_asv.assign(numFunctions, 1);
-    else {
-      sampler_asv.assign(numFunctions, 0); cntr = 0;
-      // response fn is active for z->p, z->beta*, p->z, or beta*->z
-      for (i=0; i<numFunctions; ++i) {
-	cntr += 2;
-	size_t rl_len = requestedRespLevels[i].length();
-	if (respLevelTarget != RELIABILITIES)
-	  for (j=0; j<rl_len; ++j)
-	    if (final_asv[cntr+j] & 1)
-	      { sampler_asv[i] |= 1; break; }
-	cntr += rl_len;
-	size_t pl_len = requestedProbLevels[i].length();
-	for (j=0; j<pl_len; ++j)
-	  if (final_asv[cntr+j] & 1)
-	    { sampler_asv[i] |= 1; break; }
-	cntr += pl_len + requestedRelLevels[i].length();
-	size_t gl_len = requestedGenRelLevels[i].length();
-	for (j=0; j<gl_len; ++j)
-	  if (final_asv[cntr+j] & 1)
-	    { sampler_asv[i] |= 1; break; }
-	cntr += gl_len;
-      }
-    }
-    ActiveSet sampler_set = expansionSampler.active_set(); // copy
-    sampler_set.request_vector(sampler_asv);
-    expansionSampler.active_set(sampler_set);
-
-    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    expansionSampler.run(pl_iter);
-    NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
-    if (list_sampling) // full set of numerical statistics
-      exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
-                                          expansionSampler.all_responses());
-    else { // only want numerical probability-based mappings
-      exp_sampler_rep->
-	compute_level_mappings(expansionSampler.all_responses());
-      exp_sampler_rep->update_final_statistics();
-    }
-    const RealVector& exp_sampler_stats
-      = expansionSampler.response_results().function_values();
- 
-    // Update probability estimates with importance sampling, if requested.
-    RealVectorArray imp_sampler_stats;
-    bool imp_sampling = !importanceSampler.is_null();
-    if (imp_sampling) {
-
-      // response fn is active for z->p, z->beta*, p->z, or beta*->z
-      //ActiveSet sampler_set = importanceSampler.active_set(); // copy
-      //ShortArray sampler_asv(numFunctions, 0);
-
-      const RealMatrix& exp_vars = expansionSampler.all_samples();
-      //const IntResponseMap& exp_responses = expansionSampler.all_responses();
-      int exp_cv = exp_vars.numRows();
-
-      sampler_cntr = 0;
-      imp_sampler_stats.resize(numFunctions);
-      NonDAdaptImpSampling* imp_sampler_rep
-	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-      bool x_data_flag = false;
-      for (i=0; i<numFunctions; ++i) {
-	sampler_cntr += 2;
-	size_t rl_len = requestedRespLevels[i].length();
-	if (rl_len && respLevelTarget != RELIABILITIES) {
-	  imp_sampler_stats[i].resize(rl_len);
-	  // Currently initializing importance sampling with both 
-	  // original build points and LHS expansion sampler points
-	  const Pecos::SurrogateData& exp_data
-	    = uSpaceModel.approximation_data(i);
-	  size_t m, num_data_pts = exp_data.points(),
-	    num_to_is = numSamplesOnExpansion + num_data_pts;
-	  RealVectorArray initial_points(num_to_is);
-	  for (m=0; m<num_data_pts; ++m)
-	    initial_points[m] = exp_data.continuous_variables(m); // view OK
-	  for (m=0; m<numSamplesOnExpansion; ++m)
-	    copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
-	  for (j=0; j<rl_len; ++j, ++sampler_cntr) {
-            //Cout << "Initial estimate of p to seed "
-	    //     << exp_sampler_stats[sampler_cntr] << '\n';
-	    imp_sampler_rep->initialize(initial_points, x_data_flag, i, 
-	      exp_sampler_stats[sampler_cntr], requestedRespLevels[i][j]);
-          
-            importanceSampler.run(pl_iter);
-
-            //Real p = imp_sampler_rep->final_probability();
-            //Cout << "importance sampling estimate for function " << i 
-            //     << " level " << j << " = " << p << "\n";
-	    imp_sampler_stats[i][j] = imp_sampler_rep->final_probability();
-	  }
-	}
-	// sampler_cntr offset by moments, rl_len for p, pl_len, and gl_len
-	sampler_cntr += requestedProbLevels[i].length()
-	             +  requestedGenRelLevels[i].length();
-      }
-    }
- 
-    // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
-    // are not recomputed since empty level arrays are passed in construct_
-    // expansion_sampler() and these levels are omitting from sampler_cntr.
-    archive_allocate_mappings();
-    cntr = sampler_cntr = 0;
+  bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING);
+  ShortArray sampler_asv;
+  if (list_sampling)
+    sampler_asv.assign(numFunctions, 1);
+  else {
+    sampler_asv.assign(numFunctions, 0); cntr = 0;
+    // response fn is active for z->p, z->beta*, p->z, or beta*->z
     for (i=0; i<numFunctions; ++i) {
-      cntr += 2; sampler_cntr += 2;
-
-      if (respLevelTarget == RELIABILITIES)
-	cntr += requestedRespLevels[i].length();
-      else {
-	size_t rl_len = requestedRespLevels[i].length();
-	for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
-	  if (final_asv[cntr] & 1) {
-	    Real p = (imp_sampling) ? imp_sampler_stats[i][j]
-	                            : exp_sampler_stats[sampler_cntr];
-	    if (respLevelTarget == PROBABILITIES) {
-	      computedProbLevels[i][j] = p;
-	      finalStatistics.function_value(p, cntr);
-	    }
-	    else if (respLevelTarget == GEN_RELIABILITIES) {
-	      computedGenRelLevels[i][j] = gen_beta
-		= -Pecos::NormalRandomVariable::inverse_std_cdf(p);
-	      finalStatistics.function_value(gen_beta, cntr);
-	    }
-	  }
-	  if (final_asv[cntr] & 2) { // TO DO: sampling sensitivity analysis
-	    Cerr << "\nError: analytic sensitivity of response ";
-	    if (respLevelTarget == PROBABILITIES)
-	      Cerr << "probability";
-	    else if (respLevelTarget == GEN_RELIABILITIES)
-	      Cerr << "generalized reliability";
-	    Cerr << " not yet supported." << std::endl;
-	    abort_handler(-1);
-	  }
-	}
-      }
-
+      cntr += 2;
+      size_t rl_len = requestedRespLevels[i].length();
+      if (respLevelTarget != RELIABILITIES)
+	for (j=0; j<rl_len; ++j)
+	  if (final_asv[cntr+j] & 1)
+	    { sampler_asv[i] |= 1; break; }
+      cntr += rl_len;
       size_t pl_len = requestedProbLevels[i].length();
-      for (j=0; j<pl_len; ++j, ++cntr, ++sampler_cntr) {
-	if (final_asv[cntr] & 1) {
-	  computedRespLevels[i][j] = z = exp_sampler_stats[sampler_cntr];
-	  finalStatistics.function_value(z, cntr);
-	}
-	if (final_asv[cntr] & 2) { // TO DO: p->z sampling sensitivity analysis
-	  Cerr << "\nError: analytic sensitivity of response level not yet "
-	       << "supported for mapping from probability." << std::endl;
-	  abort_handler(-1);
-	}
-      }
-
-      size_t bl_len = requestedRelLevels[i].length();
-      cntr += bl_len;
-
+      for (j=0; j<pl_len; ++j)
+	if (final_asv[cntr+j] & 1)
+	  { sampler_asv[i] |= 1; break; }
+      cntr += pl_len + requestedRelLevels[i].length();
       size_t gl_len = requestedGenRelLevels[i].length();
-      for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr) {
+      for (j=0; j<gl_len; ++j)
+	if (final_asv[cntr+j] & 1)
+	  { sampler_asv[i] |= 1; break; }
+      cntr += gl_len;
+    }
+  }
+  ActiveSet sampler_set = expansionSampler.active_set(); // copy
+  sampler_set.request_vector(sampler_asv);
+  expansionSampler.active_set(sampler_set);
+
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  expansionSampler.run(pl_iter);
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+  if (list_sampling) // full set of numerical statistics
+    exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
+					expansionSampler.all_responses());
+  else { // only want numerical probability-based mappings
+    exp_sampler_rep->compute_level_mappings(expansionSampler.all_responses());
+    exp_sampler_rep->update_final_statistics();
+  }
+  const RealVector& exp_sampler_stats
+    = expansionSampler.response_results().function_values();
+ 
+  // Update probability estimates with importance sampling, if requested.
+  RealVectorArray imp_sampler_stats;
+  bool imp_sampling = !importanceSampler.is_null();
+  if (imp_sampling)
+    compute_numerical_statistics_refinements(imp_sampler_stats);
+ 
+  // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
+  // are not recomputed since empty level arrays are passed in construct_
+  // expansion_sampler() and these levels are omitting from sampler_cntr.
+  archive_allocate_mappings();
+  cntr = sampler_cntr = 0;
+  for (i=0; i<numFunctions; ++i) {
+    cntr += 2; sampler_cntr += 2;
+
+    if (respLevelTarget == RELIABILITIES)
+      cntr += requestedRespLevels[i].length();
+    else {
+      size_t rl_len = requestedRespLevels[i].length();
+      for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
 	if (final_asv[cntr] & 1) {
-	  computedRespLevels[i][j+pl_len+bl_len] = z
-	    = exp_sampler_stats[sampler_cntr];
-	  finalStatistics.function_value(z, cntr);
+	  p = (imp_sampling) ? imp_sampler_stats[i][j]
+	                     : exp_sampler_stats[sampler_cntr];
+	  if (respLevelTarget == PROBABILITIES) {
+	    computedProbLevels[i][j] = p;
+	    finalStatistics.function_value(p, cntr);
+	  }
+	  else if (respLevelTarget == GEN_RELIABILITIES) {
+	    computedGenRelLevels[i][j] = gen_beta
+	      = -Pecos::NormalRandomVariable::inverse_std_cdf(p);
+	    finalStatistics.function_value(gen_beta, cntr);
+	  }
 	}
-	if (final_asv[cntr] & 2) { // TO DO: beta*->p->z sampling SA
-	  Cerr << "\nError: analytic sensitivity of response level not yet "
-	       << "supported for mapping from generalized reliability."
-	       << std::endl;
+	if (final_asv[cntr] & 2) { // TO DO: sampling sensitivity analysis
+	  Cerr << "\nError: analytic sensitivity of response ";
+	  if (respLevelTarget == PROBABILITIES)
+	    Cerr << "probability";
+	  else if (respLevelTarget == GEN_RELIABILITIES)
+	    Cerr << "generalized reliability";
+	  Cerr << " not yet supported." << std::endl;
 	  abort_handler(-1);
 	}
       }
-
-      // archive the mappings from/to response levels
-      archive_from_resp(i); archive_to_resp(i); 
     }
-    // **************** TO DO **************
-    //if (imp_sampling)
-    //  compute_densities(is_min_fns, is_max_fns);
-    // **************** TO DO **************
-  }
 
-  // archive the active variables with the results
-  if (resultsDB.active()) {
-    resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
-		     iteratedModel.continuous_variable_labels());
-    resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		     iteratedModel.response_labels());
+    size_t pl_len = requestedProbLevels[i].length();
+    for (j=0; j<pl_len; ++j, ++cntr, ++sampler_cntr) {
+      if (final_asv[cntr] & 1) {
+	computedRespLevels[i][j] = z = exp_sampler_stats[sampler_cntr];
+	finalStatistics.function_value(z, cntr);
+      }
+      if (final_asv[cntr] & 2) { // TO DO: p->z sampling sensitivity analysis
+	Cerr << "\nError: analytic sensitivity of response level not yet "
+	     << "supported for mapping from probability." << std::endl;
+	abort_handler(-1);
+      }
+    }
+
+    size_t bl_len = requestedRelLevels[i].length();
+    cntr += bl_len;
+
+    size_t gl_len = requestedGenRelLevels[i].length();
+    for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr) {
+      if (final_asv[cntr] & 1) {
+	computedRespLevels[i][j+pl_len+bl_len] = z
+	  = exp_sampler_stats[sampler_cntr];
+	finalStatistics.function_value(z, cntr);
+      }
+      if (final_asv[cntr] & 2) { // TO DO: beta*->p->z sampling SA
+	Cerr << "\nError: analytic sensitivity of response level not yet "
+	     << "supported for mapping from generalized reliability."
+	     << std::endl;
+	abort_handler(-1);
+      }
+    }
+
+    // archive the mappings from/to response levels
+    archive_from_resp(i); archive_to_resp(i); 
   }
-  archive_moments();
-  archive_coefficients();
+  // **************** TO DO **************
+  //if (imp_sampling)
+  //  compute_densities(is_min_fns, is_max_fns);
+  // **************** TO DO **************
+}
+
+
+void NonDExpansion::
+compute_numerical_statistics_refinements(RealVectorArray& imp_sampler_stats)
+{
+  // response fn is active for z->p, z->beta*, p->z, or beta*->z
+  //ActiveSet sampler_set = importanceSampler.active_set(); // copy
+  //ShortArray sampler_asv(numFunctions, 0);
+
+  const RealMatrix& exp_vars = expansionSampler.all_samples();
+  //const IntResponseMap& exp_responses = expansionSampler.all_responses();
+  const RealVector& exp_sampler_stats
+    = expansionSampler.response_results().function_values();
+  int exp_cv = exp_vars.numRows();
+
+  size_t i, j, sampler_cntr = 0;
+  imp_sampler_stats.resize(numFunctions);
+  NonDAdaptImpSampling* imp_sampler_rep
+    = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+  bool x_data_flag = false;
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  for (i=0; i<numFunctions; ++i) {
+    sampler_cntr += 2;
+    size_t rl_len = requestedRespLevels[i].length();
+    if (rl_len && respLevelTarget != RELIABILITIES) {
+      imp_sampler_stats[i].resize(rl_len);
+      // Currently initializing importance sampling with both 
+      // original build points and LHS expansion sampler points
+      const Pecos::SurrogateData& exp_data
+	= uSpaceModel.approximation_data(i);
+      size_t m, num_data_pts = exp_data.points(),
+	num_to_is = numSamplesOnExpansion + num_data_pts;
+      RealVectorArray initial_points(num_to_is);
+      for (m=0; m<num_data_pts; ++m)
+	initial_points[m] = exp_data.continuous_variables(m); // view OK
+      for (m=0; m<numSamplesOnExpansion; ++m)
+	copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
+      for (j=0; j<rl_len; ++j, ++sampler_cntr) {
+	//Cout << "Initial estimate of p to seed "
+	//     << exp_sampler_stats[sampler_cntr] << '\n';
+	imp_sampler_rep->initialize(initial_points, x_data_flag, i, 
+	  exp_sampler_stats[sampler_cntr], requestedRespLevels[i][j]);
+          
+	importanceSampler.run(pl_iter);
+
+	//Real p = imp_sampler_rep->final_probability();
+	//Cout << "importance sampling estimate for function " << i 
+	//     << " level " << j << " = " << p << "\n";
+	imp_sampler_stats[i][j] = imp_sampler_rep->final_probability();
+      }
+    }
+    // sampler_cntr offset by moments, rl_len for p, pl_len, and gl_len
+    sampler_cntr += requestedProbLevels[i].length()
+                 +  requestedGenRelLevels[i].length();
+  }
 }
 
 

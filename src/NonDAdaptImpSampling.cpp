@@ -312,7 +312,8 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // pick out failures from input samples
   // calculate beta for failures only
   //TMW: Modified this to exclude the previous repPointsU
-  size_t i, j, cntr, fail_count = 0, safe_count = 0, num_samples = var_samples_u.size();
+  size_t i, j, cntr, fail_count = 0, safe_count = 0,
+    num_samples = var_samples_u.size();
   RealArray  fail_betas;   fail_betas.reserve(num_samples);
   SizetArray fail_indices; fail_indices.reserve(num_samples);
   RealArray  safe_dist;   safe_dist.reserve(num_samples);
@@ -745,8 +746,8 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   if (prob > 1.0) {
     prob = 1.0; 
     Cerr << "\nWarning: the probability calculated by importance sampling is " 
-         << "greater than 1.0 due to numerical issues.  We set the probability to 1.0" 
-         << " in this case.\n";
+         << "greater than 1.0 due to numerical issues.  We set the probability "
+         << "to 1.0 in this case.\n";
   }
   // compute the coeff of variation if requested
   if (compute_cov) {

@@ -249,6 +249,15 @@ private:
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
+  /// analytic portion of compute_statistics() from post-processing of
+  /// expansion coefficients
+  void compute_analytic_statistics();
+  /// numerical portion of compute_statistics() from sampling on the expansion
+  void compute_numerical_statistics();
+  /// refinements to numerical probability statistics from importanceSampler
+  void compute_numerical_statistics_refinements(
+    RealVectorArray& imp_sampler_stats);
+
   /// calculate the response covariance (diagonal or full matrix)
   void compute_covariance();
   /// calculate respVariance or diagonal terms respCovariance(i,i)
