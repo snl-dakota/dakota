@@ -1266,7 +1266,7 @@ void NonDSampling::print_intervals(std::ostream& s) const
   const StringArray& resp_labels = iteratedModel.response_labels();
 
   s << std::scientific << std::setprecision(write_precision)
-    << "\nMin and Max values for each response function:\n";
+    << "\nMin and Max samples for each response function:\n";
   for (size_t i=0; i<numFunctions; ++i)
     s << resp_labels[i] << ":  Min = " << extremeValues[i].first
       << "  Max = " << extremeValues[i].second << '\n';
@@ -1281,7 +1281,7 @@ void NonDSampling::print_moments(std::ostream& s) const
 
   size_t i, j, width = write_precision+7;
  
-  s << "\nMoment-based statistics for each response function:\n"
+  s << "\nSample moment statistics for each response function:\n"
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";

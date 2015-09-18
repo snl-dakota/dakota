@@ -2058,7 +2058,7 @@ void NonDExpansion::print_moments(std::ostream& s)
   const StringArray& fn_labels = iteratedModel.response_labels();
   size_t i, j, width = write_precision+7;
 
-  s << "\nMoment-based statistics for each response function:\n";
+  s << "\nExpansion moment statistics for each response function:\n";
 
   // Handle cases of both expansion/numerical moments or only one or the other:
   //   both exp/num: SC and PCE with numerical integration

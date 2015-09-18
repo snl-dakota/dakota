@@ -1261,7 +1261,7 @@ sub parse_test_output {
     #  print TEST_OUT;
     #}
     
-    if (/Moment-based statistics for each response function:/) {
+    if (/ moment statistics for each response function:/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (Mean/StdDev/Skew/Kurt header)
