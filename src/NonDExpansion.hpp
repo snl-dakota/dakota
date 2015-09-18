@@ -255,8 +255,8 @@ private:
   /// numerical portion of compute_statistics() from sampling on the expansion
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler
-  void compute_numerical_statistics_refinements(
-    RealVectorArray& imp_sampler_stats);
+  void compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
+					  RealRealPairArray& min_max_fns);
 
   /// calculate the response covariance (diagonal or full matrix)
   void compute_covariance();

@@ -848,7 +848,8 @@ compute_statistics(const RealMatrix&     vars_samples,
 }
 
 
-void NonDSampling::compute_intervals(const IntResponseMap& samples)
+void NonDSampling::
+compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
 {
   // For the samples array, calculate min/max response intervals
 
@@ -856,7 +857,7 @@ void NonDSampling::compute_intervals(const IntResponseMap& samples)
   size_t i, j, num_obs = samples.size(), num_samp;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (extremeValues.empty()) extremeValues.shapeUninitialized(2, numFunctions);
+  if (extreme_fns.empty()) extreme_fns.resize(numFunctions);
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
     num_samp = 0;
@@ -869,8 +870,8 @@ void NonDSampling::compute_intervals(const IntResponseMap& samples)
 	++num_samp;
       }
     }
-    extremeValues(0, i) = min;
-    extremeValues(1, i) = max;
+    extreme_fns[i].first  = min;
+    extreme_fns[i].second = max;
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for " << resp_labels[i] << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
@@ -882,7 +883,7 @@ void NonDSampling::compute_intervals(const IntResponseMap& samples)
     md["Row Labels"] = make_metadatavalue("Min", "Max");
     md["Column Labels"] = make_metadatavalue(resp_labels);
     resultsDB.insert(run_identifier(), resultsNames.extreme_values, 
-		     extremeValues, md);
+		     extreme_fns, md);
   }
 }
 
@@ -1025,10 +1026,8 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 }
 
 
-/** In this implementation, computation of PDF and CDF/CCDF are
-    integrated for efficiency, since sample sorting and binning can be
-    shared to some degree.  Within NonD, a PDF is inferred from a
-    CDF/CCDF within compute_densities() after compute_level_mappings(). */
+/** Computes CDF/CCDF based on sample binning.  A PDF is inferred from a
+    CDF/CCDF within compute_densities() after level computation. */
 void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 {
   // Size the output arrays here instead of in the ctor in order to support
@@ -1067,11 +1066,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     }
   }
 
-  RealVector min_fn_vals, max_fn_vals;
-  if (pdfOutput) {
-    min_fn_vals.sizeUninitialized(numFunctions);
-    max_fn_vals.sizeUninitialized(numFunctions);
-  }
+  if (pdfOutput) extremeValues.resize(numFunctions);
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
 
@@ -1132,7 +1127,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       }
     }
     if (pdfOutput)
-      { min_fn_vals[i] = min; max_fn_vals[i] = max; }
+      { extremeValues[i].first = min; extremeValues[i].second = max; }
 
     // ----------------
     // Process mappings
@@ -1207,8 +1202,9 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     archive_to_resp(i);
   }
 
-  // post-process computed z/p/beta* levels to form PDFs
-  compute_densities(min_fn_vals, max_fn_vals);
+  // post-process computed z/p/beta* levels to form PDFs.  embedding this
+  // call within compute_level_mappings() simplifies management of min/max.
+  compute_densities(extremeValues);
 }
 
 
@@ -1220,8 +1216,8 @@ void NonDSampling::update_final_statistics()
   if (epistemicStats) {
     size_t i, cntr = 0;
     for (i=0; i<numFunctions; ++i) {
-      finalStatistics.function_value(extremeValues(0, i), cntr++);
-      finalStatistics.function_value(extremeValues(1, i), cntr++);
+      finalStatistics.function_value(extremeValues[i].first,  cntr++);
+      finalStatistics.function_value(extremeValues[i].second, cntr++);
     }
   }
   else // moments + level mappings
@@ -1272,8 +1268,8 @@ void NonDSampling::print_intervals(std::ostream& s) const
   s << std::scientific << std::setprecision(write_precision)
     << "\nMin and Max values for each response function:\n";
   for (size_t i=0; i<numFunctions; ++i)
-    s << resp_labels[i] << ":  Min = " << extremeValues(0, i)
-      << "  Max = " << extremeValues(1, i) << '\n';
+    s << resp_labels[i] << ":  Min = " << extremeValues[i].first
+      << "  Max = " << extremeValues[i].second << '\n';
 }
 
 

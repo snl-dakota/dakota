@@ -482,7 +482,7 @@ construct_expansion_sampler(const String& import_approx_file,
 
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
       requestedRelLevels, requestedGenRelLevels, respLevelTarget,
-      respLevelTargetReduce, cdfFlag);
+      respLevelTargetReduce, cdfFlag, true); // compute/print PDFs
   }
   else {
     if (!numSamplesOnExpansion) { // sanity check for samples spec
@@ -511,7 +511,7 @@ construct_expansion_sampler(const String& import_approx_file,
       empty_rv_array : requestedRespLevels;
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
-      respLevelTargetReduce, cdfFlag);
+      respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
 
     unsigned short int_refine
       = probDescDB.get_ushort("method.nond.integration_refinement");
@@ -534,7 +534,7 @@ construct_expansion_sampler(const String& import_approx_file,
       imp_sampler_rep->output_level(outputLevel);
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
-	cdfFlag);
+	cdfFlag, false); // suppress PDFs (managed locally)
       // needed if export_approx_points_file:
       imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
     }
@@ -1766,10 +1766,10 @@ void NonDExpansion::compute_numerical_statistics()
   expansionSampler.run(pl_iter);
   NonDSampling* exp_sampler_rep
     = (NonDSampling*)expansionSampler.iterator_rep();
-  if (list_sampling) // full set of numerical statistics
+  if (list_sampling) // full set of numerical statistics, including PDFs
     exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
 					expansionSampler.all_responses());
-  else { // only want numerical probability-based mappings
+  else { // augment moment-based with sampling-based mappings (PDFs suppressed)
     exp_sampler_rep->compute_level_mappings(expansionSampler.all_responses());
     exp_sampler_rep->update_final_statistics();
   }
@@ -1777,11 +1777,13 @@ void NonDExpansion::compute_numerical_statistics()
     = expansionSampler.response_results().function_values();
  
   // Update probability estimates with importance sampling, if requested.
-  RealVectorArray imp_sampler_stats;
+  RealVectorArray imp_sampler_stats; RealRealPairArray min_max_fns;
   bool imp_sampling = !importanceSampler.is_null();
   if (imp_sampling)
-    compute_numerical_statistics_refinements(imp_sampler_stats);
- 
+    compute_numerical_stat_refinements(imp_sampler_stats, min_max_fns);
+  else if (pdfOutput) // extremeValues not available since pdfOutput suppressed
+    exp_sampler_rep->compute_intervals(min_max_fns);
+
   // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
   // are not recomputed since empty level arrays are passed in construct_
   // expansion_sampler() and these levels are omitting from sampler_cntr.
@@ -1854,15 +1856,15 @@ void NonDExpansion::compute_numerical_statistics()
     // archive the mappings from/to response levels
     archive_from_resp(i); archive_to_resp(i); 
   }
-  // **************** TO DO **************
-  //if (imp_sampling)
-  //  compute_densities(is_min_fns, is_max_fns);
-  // **************** TO DO **************
+
+  // now that level arrays are updated, infer the PDFs
+  compute_densities(min_max_fns);
 }
 
 
 void NonDExpansion::
-compute_numerical_statistics_refinements(RealVectorArray& imp_sampler_stats)
+compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
+				   RealRealPairArray& min_max_fns)
 {
   // response fn is active for z->p, z->beta*, p->z, or beta*->z
   //ActiveSet sampler_set = importanceSampler.active_set(); // copy
@@ -2278,6 +2280,9 @@ void NonDExpansion::print_results(std::ostream& s)
 {
   s << std::scientific << std::setprecision(write_precision);
 
+  // Print analytic moments and local and global sensitivities, defined from
+  // expansion coefficients
+
   if (outputLevel >= NORMAL_OUTPUT)
     print_coefficients(s);
   s << "-----------------------------------------------------------------------"
@@ -2290,12 +2295,15 @@ void NonDExpansion::print_results(std::ostream& s)
   if (vbdFlag)
     print_sobol_indices(s);
 
+  // Print level mapping statistics (typically from sampling on expansion)
+
   NonDSampling* exp_sampler_rep
     = (NonDSampling*)expansionSampler.iterator_rep();
   bool exp_sampling = (exp_sampler_rep != NULL),
       list_sampling = (exp_sampling &&
 		       exp_sampler_rep->method_name() == LIST_SAMPLING);
   if (list_sampling) {
+    // all stats are delegated since local moments are not relevant in this case
     s << "\nStatistics based on " << numSamplesOnExpansion << " imported "
       << "samples performed on polynomial expansion:\n";
     exp_sampler_rep->print_statistics(s);
@@ -2307,15 +2315,13 @@ void NonDExpansion::print_results(std::ostream& s)
 	<< "expansion:\n";
     else
       s << "projection of analytic moments:\n";
-
-    // Note: PDF output ignores any importance sampling refinements
-    //if (exp_sampling)
-    //  exp_sampler_rep->print_densities(s); // numerical only: delegate
-    pdfOutput = false; // temp hack
-
-    print_level_mappings(s); // local mix of analytic and numerical
-    print_system_mappings(s);
+    // no stats are delegated since we mix numerical stats with local analytic
+    // moment-based projections (more accurate than sample moment-based
+    // projections).  In addition, we may have local probability refinements.
+    print_level_mappings(s);
+    print_system_mappings(s); // works off of finalStatistics -> no delegation
   }
+
   s << "-----------------------------------------------------------------------"
     << "------" << std::endl;
 }

@@ -56,7 +56,14 @@ public:
   void compute_statistics(const RealMatrix&     vars_samples,
 			  const IntResponseMap& resp_samples);
   /// called by compute_statistics() to calculate min/max intervals
+  /// using allResponses
+  void compute_intervals(RealRealPairArray& extreme_fns);
+  /// called by compute_statistics() to calculate extremeValues from samples
   void compute_intervals(const IntResponseMap& samples);
+  /// called by compute_statistics() to calculate min/max intervals
+  /// using samples
+  void compute_intervals(RealRealPairArray& extreme_fns,
+			 const IntResponseMap& samples);
   /// called by compute_statistics() to calculate means, std
   /// deviations, and confidence intervals
   void compute_moments(const IntResponseMap& samples);
@@ -222,7 +229,8 @@ protected:
    /// initialize statistical post processing
   SensAnalysisGlobal nonDSampCorr;
 
-  /// flags whether to use backfill to enforce uniqueness of discrete LHS samples
+  /// flags whether to use backfill to enforce uniqueness of discrete
+  /// LHS samples
   bool backfillFlag;
 
 private:
@@ -239,10 +247,18 @@ private:
   /// compute_moments())
   RealMatrix momentCIs;
 
-  /// Minimum (row 0) and maximum (row 1) values of response functions
-  /// for epistemic calculations (calculated in compute_intervals()),
-  RealMatrix extremeValues;
+  /// Minimum and maximum values of response functions for epistemic
+  /// calculations (calculated in compute_intervals()),
+  RealRealPairArray extremeValues;
 };
+
+
+inline void NonDSampling::compute_intervals(RealRealPairArray& extreme_fns)
+{ compute_intervals(extreme_fns, allResponses); }
+
+
+inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
+{ compute_intervals(extremeValues, samples); }
 
 
 inline void NonDSampling::sampling_reference(int samples_ref)

@@ -407,7 +407,8 @@ requested_levels(const RealVectorArray& req_resp_levels,
 		 const RealVectorArray& req_prob_levels,
 		 const RealVectorArray& req_rel_levels,
 		 const RealVectorArray& req_gen_rel_levels,
-		 short resp_lev_tgt, short resp_lev_tgt_reduce, bool cdf_flag)
+		 short resp_lev_tgt, short resp_lev_tgt_reduce,
+		 bool cdf_flag, bool pdf_output)
 {
   respLevelTarget = resp_lev_tgt;
   respLevelTargetReduce = resp_lev_tgt_reduce;
@@ -452,7 +453,7 @@ requested_levels(const RealVectorArray& req_resp_levels,
       totalLevelRequests += requestedGenRelLevels[i].length();
   }
 
-  if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
+  if (totalLevelRequests && pdf_output)
     pdfOutput = true;
 
   initialize_final_statistics();
@@ -1848,7 +1849,7 @@ void NonD::initialize_level_mappings()
     refinements, it is more efficient to compute CDF/CCDF and PDF bins
     together, as in NonDSampling::compute_level_mappings(). */
 void NonD::
-compute_densities(const RealVector& min_fn_vals, const RealVector& max_fn_vals)
+compute_densities(const RealRealPairArray& min_max_fns)
 {
   if (!pdfOutput)
     return;
@@ -1896,7 +1897,7 @@ compute_densities(const RealVector& min_fn_vals, const RealVector& max_fn_vals)
       cdf_map[comp_rlev_i[cntr]] = Pecos::NormalRandomVariable::std_cdf(g_cdf);
     }
 
-    min = min_fn_vals[i]; max = max_fn_vals[i];
+    min = min_max_fns[i].first; max = min_max_fns[i].second;
     it = it0 = cdf_map.begin(); it_last = --cdf_map.end();
     lev_0 = it0->first; lev_last = it_last->first;
     // compute computedPDF{Abscissas,Ordinates} from bin counts and widths
@@ -1933,6 +1934,8 @@ compute_densities(const RealVector& min_fn_vals, const RealVector& max_fn_vals)
 /** Print distribution mappings, including to file per response. */
 void NonD::print_level_mappings(std::ostream& s) const
 {
+  print_densities(s);
+
   // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
   // reliabilities resulting from number of std devs separating mean & target
   s << std::scientific << std::setprecision(write_precision)
@@ -1946,14 +1949,14 @@ void NonD::print_level_mappings(std::ostream& s) const
       if (outputLevel >= VERBOSE_OUTPUT)
 	level_mappings_file(i);
     }
-
-  if (pdfOutput)
-    print_densities(s);
 }
 
 
 void NonD::print_densities(std::ostream& s) const
 {
+  if (!pdfOutput || computedPDFOrdinates.empty())
+    return;
+
   s << std::scientific << std::setprecision(write_precision)
     << "\nProbability Density Function (PDF) histograms for each response "
     << "function:\n";

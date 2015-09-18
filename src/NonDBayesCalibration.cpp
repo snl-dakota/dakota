@@ -138,11 +138,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       mcmc_deriv_order = 7; // Hessian computations implemented for PCE
     }
     stochExpIterator.assign_rep(se_rep);
-    // no level mappings
+    // no CDF or PDF level mappings
     RealVectorArray empty_rv_array; // empty
     se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
-			     empty_rv_array, respLevelTarget,
-			     respLevelTargetReduce, cdfFlag);
+      empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
     natafTransform = se_rep->variable_transformation();   // shared rep

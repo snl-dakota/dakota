@@ -36,7 +36,7 @@ class NonD: public Analyzer
 public:
 
   //
-  //- Heading: Utility routines
+  //- Heading: Member functions
   //
 
   /// initialize natafTransform based on distribution data from iteratedModel
@@ -63,17 +63,21 @@ public:
   void transform_correlations();
 
   /// set requestedRespLevels, requestedProbLevels, requestedRelLevels,
-  /// requestedGenRelLevels, respLevelTarget, and cdfFlag (used in
-  /// combination with alternate ctors)
+  /// requestedGenRelLevels, respLevelTarget, cdfFlag, and pdfOutput
+  /// (used in combination with alternate ctors)
   void requested_levels(const RealVectorArray& req_resp_levels,
 			const RealVectorArray& req_prob_levels,
 			const RealVectorArray& req_rel_levels,
 			const RealVectorArray& req_gen_rel_levels,
 			short resp_lev_tgt, short resp_lev_tgt_reduce,
-			bool cdf_flag);
+			bool cdf_flag, bool pdf_output);
 
   /// set distParamDerivs
   void distribution_parameter_derivatives(bool dist_param_derivs);
+
+  /// prints the z/p/beta/beta* mappings reflected in
+  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
+  void print_level_mappings(std::ostream& s) const;
 
   //
   //- Heading: Set/get routines
@@ -153,13 +157,9 @@ protected:
 
   /// size computed{Resp,Prob,Rel,GenRel}Levels
   void initialize_level_mappings();
-  /// prints the z/p/beta/beta* mappings reflected in
-  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
-  void print_level_mappings(std::ostream& s) const;
   /// compute the PDF bins from the CDF/CCDF values and store in
   /// computedPDF{Abscissas,Ordinates}
-  void compute_densities(const RealVector& min_fn_vals,
-			 const RealVector& max_fn_vals);
+  void compute_densities(const RealRealPairArray& min_max_fns);
   /// output the PDFs reflected in computedPDF{Abscissas,Ordinates}
   void print_densities(std::ostream& s) const;
   /// print system series/parallel mappings for response levels
