@@ -344,8 +344,10 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Note: global bounds definition in transform_model() can be true
     // (to bound an optimizer search) with AIS use_model_bounds = false
-    // (AIS will ignore these global bounds).
-    bool x_model_flag = false, use_model_bounds = false, vary_pattern = true;
+    // (AIS will ignore these global bounds); extreme values are needed
+    // to define bounds for outer PDF bins.
+    bool x_model_flag = false, use_model_bounds = false, vary_pattern = true,
+      track_extreme = pdfOutput;
 
     // AIS is performed in u-space WITHOUT a surrogate: pass a truth u-space
     // model when available, construct one when not.
@@ -356,18 +358,19 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       transform_model(iteratedModel, g_u_model); // global bounds not needed
       import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
 	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	cdfFlag, x_model_flag, use_model_bounds);
+	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
     case AMV_U: case AMV_PLUS_U: case TANA_U:
       import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel.truth_model(),
 	sample_type, refine_samples, refine_seed, rng, vary_pattern,
-	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds);
+	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+	track_extreme);
       break;
     case NO_APPROX:
       import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel, sample_type,
 	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
-	cdfFlag, x_model_flag, use_model_bounds);
+	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
     importanceSampler.assign_rep(import_sampler_rep, false);
@@ -468,6 +471,13 @@ void NonDLocalReliability::quantify_uncertainty()
 {
   if (mppSearchType) mpp_search();
   else               mean_value();
+
+  // post-process level mappings to define PDFs
+  if (pdfOutput && integrationRefinement) {
+    NonDAdaptImpSampling* import_sampler_rep
+      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+    compute_densities(import_sampler_rep->extreme_values());
+  } // else no extreme values to define outer PDF bins
 
   numRelAnalyses++;
 }
@@ -2639,10 +2649,9 @@ void NonDLocalReliability::print_results(std::ostream& s)
     s << "-----------------------------------------------------------------\n";
   }
 
-  for (i=0; i<numFunctions; i++) {
-
-    // output MV-specific statistics
-    if (!mppSearchType) {
+  // output MV-specific statistics
+  if (!mppSearchType)
+    for (i=0; i<numFunctions; i++) {
       s << "MV Statistics for " << fn_labels[i] << ":\n";
       // approximate response means and std deviations and importance factors
       Real& std_dev = momentStats(1,i);
@@ -2660,7 +2669,12 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	    << std::setw(width) << impFactor(j,i) << '\n';
     }
 
-    // output CDF/CCDF response/probability pairs
+  // output PDFs (defined if pdfOutput and integrationRefinement)
+  print_densities(s);
+
+  // output CDF/CCDF level mappings (replaces NonD::print_level_mappings())
+  for (i=0; i<numFunctions; i++) {
+
     size_t num_levels = computedRespLevels[i].length();
     if (num_levels) {
       if (!mppSearchType && momentStats(1,i) < Pecos::SMALL_NUMBER)
@@ -2681,8 +2695,6 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	  << "  " << std::setw(width) << computedGenRelLevels[i][j] << '\n';
     }
   }
-
-  //s << "Final statistics:\n" << finalStatistics;
 
   s << "-----------------------------------------------------------------"
     << std::endl;

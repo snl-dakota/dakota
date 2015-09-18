@@ -233,6 +233,10 @@ protected:
   /// LHS samples
   bool backfillFlag;
 
+  /// Minimum and maximum values of response functions for epistemic
+  /// calculations (calculated in compute_intervals()),
+  RealRealPairArray extremeValues;
+
 private:
 
   //
@@ -246,10 +250,6 @@ private:
   /// mean_lower, mean_upper, sd_lower, sd_upper (calculated in
   /// compute_moments())
   RealMatrix momentCIs;
-
-  /// Minimum and maximum values of response functions for epistemic
-  /// calculations (calculated in compute_intervals()),
-  RealRealPairArray extremeValues;
 };
 
 

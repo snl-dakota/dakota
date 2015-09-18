@@ -524,11 +524,12 @@ construct_expansion_sampler(const String& import_approx_file,
     if (imp_sampling) {
       int refine_samples = probDescDB.get_int("method.nond.refinement_samples");
       if (!refine_samples) refine_samples = 1000; // context-specific default
-      bool vary_pattern = true;
+      // extreme values needed for defining bounds of PDF bins
+      bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
 	= new NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
 				   orig_seed, rng, vary_pattern, int_refine,
-				   cdfFlag, false, false);
+				   cdfFlag, false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
  
       imp_sampler_rep->output_level(outputLevel);
@@ -1781,7 +1782,7 @@ void NonDExpansion::compute_numerical_statistics()
   bool imp_sampling = !importanceSampler.is_null();
   if (imp_sampling)
     compute_numerical_stat_refinements(imp_sampler_stats, min_max_fns);
-  else if (pdfOutput) // extremeValues not available since pdfOutput suppressed
+  else if (pdfOutput) // NonDSampling::extremeValues not avail (pdfOutput off)
     exp_sampler_rep->compute_intervals(min_max_fns);
 
   // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
@@ -1887,8 +1888,8 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
     size_t rl_len = requestedRespLevels[i].length();
     if (rl_len && respLevelTarget != RELIABILITIES) {
       imp_sampler_stats[i].resize(rl_len);
-      // Currently initializing importance sampling with both 
-      // original build points and LHS expansion sampler points
+      // initializing importance sampling with both original build
+      // points and LHS expansion sampler points (var only, no resp)
       const Pecos::SurrogateData& exp_data
 	= uSpaceModel.approximation_data(i);
       size_t m, num_data_pts = exp_data.points(),
@@ -1916,6 +1917,9 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
     sampler_cntr += requestedProbLevels[i].length()
                  +  requestedGenRelLevels[i].length();
   }
+  // update min_max_fns for use in defining bounds for outer PDF bins
+  if (pdfOutput)
+    min_max_fns = imp_sampler_rep->extreme_values();
 }
 
 
@@ -1971,6 +1975,7 @@ void NonDExpansion::archive_moments()
 		     num_matrix, md_moments); 
   }
 }
+
 
 void NonDExpansion::update_final_statistics_gradients()
 {

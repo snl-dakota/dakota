@@ -38,11 +38,8 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   importanceSamplingType(
     probDescDB.get_ushort("method.nond.integration_refinement")),
-  initLHS(true),
-  // should the model bounds be respected?
-  useModelBounds(false),
-  // invert the sense of the refinement
-  invertProb(false),
+  initLHS(true), useModelBounds(false), invertProb(false),
+  trackExtremeValues(false), // used in helper mode for defining PDF bounds
   // size of refinement batches is separate from initial LHS size (numSamples)
   refineSamples(probDescDB.get_int("method.nond.refinement_samples"))
 {
@@ -65,12 +62,13 @@ NonDAdaptImpSampling::
 NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 		     int refine_samples, int refine_seed, const String& rng,
 		     bool vary_pattern, unsigned short is_type, bool cdf_flag,
-		     bool x_space_model, bool use_model_bounds):
+		     bool x_space_model, bool use_model_bounds,
+		     bool track_extreme):
   NonDSampling(IMPORTANCE_SAMPLING, model, sample_type, 0, refine_seed, rng,
 	       vary_pattern, ALEATORY_UNCERTAIN), // only sample aleatory vars
   importanceSamplingType(is_type), initLHS(false), 
   useModelBounds(use_model_bounds), invertProb(false),
-  refineSamples(refine_samples)
+  trackExtremeValues(track_extreme), refineSamples(refine_samples)
 {
   if (x_space_model) {
     // This option is currently unused.  If used in the future, care must be
@@ -82,6 +80,13 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
     uSpaceModel = model;
 
   cdfFlag = cdf_flag;
+
+  if (trackExtremeValues) {
+    extremeValues.resize(numFunctions);
+    for (size_t i=0; i<numFunctions; ++i)
+      { extremeValues[i].first = DBL_MAX; extremeValues[i].second = -DBL_MAX; }
+  }
+
   if (refineSamples)
     maxEvalConcurrency *= refineSamples;
 }
@@ -351,11 +356,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // pick most probable point from remaining failure points
   // remove all points within the cutoff distance of this point
   // repeat until all failure points exhausted
-  int maxRepPts;
-  if (importanceSamplingType == MMAIS)
-     maxRepPts = num_samples;
-  else
-     maxRepPts = 1;
+  int maxRepPts = (importanceSamplingType == MMAIS) ? num_samples : 1;
 
   Real cutoff_distance = 1.5;
   IntArray min_indx(maxRepPts);
@@ -653,6 +654,19 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
     IntRespMCIter r_cit;
     for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
       fn_samples[i] = r_cit->second.function_value(respFnIndex);
+  }
+
+  // optionally track min and max response values
+  if (trackExtremeValues) {
+    Real min = extremeValues[respFnIndex].first,
+         max = extremeValues[respFnIndex].second, val;
+    for (i=0; i<num_samples; i++) {
+      val = fn_samples[i];
+      if (val < min) min = val;
+      if (val > max) max = val;
+    }
+    extremeValues[respFnIndex].first  = min;
+    extremeValues[respFnIndex].second = max; 
   }
 }
 

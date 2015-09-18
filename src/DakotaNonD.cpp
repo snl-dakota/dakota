@@ -1994,7 +1994,10 @@ void NonD::level_mappings_file(size_t fn_index) const
 
 
 /** Print the distribution mapping for a single response function to
-    the passed output stream */
+    the passed output stream.  This base class version maps from one
+    requested level type to one computed level type; some derived
+    class implementations (e.g., local and global reliability) output
+    multiple computed level types. */
 void NonD::print_level_map(size_t fn_index, std::ostream& s) const
 {
   const StringArray& resp_labels = iteratedModel.response_labels();
@@ -2010,7 +2013,7 @@ void NonD::print_level_map(size_t fn_index, std::ostream& s) const
     << "Reliability Index  General Rel Index\n     --------------  "
     << "-----------------  -----------------  -----------------\n";
   size_t num_resp_levels = requestedRespLevels[i].length();
-  for (j=0; j<num_resp_levels; j++) {
+  for (j=0; j<num_resp_levels; j++) { // map from 1 requested to 1 computed
     s << "  " << std::setw(width) << requestedRespLevels[i][j] << "  ";
     switch (respLevelTarget) {
     case PROBABILITIES:
@@ -2022,17 +2025,17 @@ void NonD::print_level_map(size_t fn_index, std::ostream& s) const
     }
   }
   size_t num_prob_levels = requestedProbLevels[i].length();
-  for (j=0; j<num_prob_levels; j++)
+  for (j=0; j<num_prob_levels; j++) // map from 1 requested to 1 computed
     s << "  " << std::setw(width) << computedRespLevels[i][j]
       << "  " << std::setw(width) << requestedProbLevels[i][j] << '\n';
   size_t num_rel_levels = requestedRelLevels[i].length(),
     offset = num_prob_levels;
-  for (j=0; j<num_rel_levels; j++)
+  for (j=0; j<num_rel_levels; j++) // map from 1 requested to 1 computed
     s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
       << "  " << std::setw(w2p2)  << requestedRelLevels[i][j] << '\n';
   size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
   offset += num_rel_levels;
-  for (j=0; j<num_gen_rel_levels; j++)
+  for (j=0; j<num_gen_rel_levels; j++) // map from 1 requested to 1 computed
     s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
       << "  " << std::setw(w3p4)  << requestedGenRelLevels[i][j] << '\n';
 }

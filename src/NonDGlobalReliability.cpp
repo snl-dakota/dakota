@@ -302,14 +302,15 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   // refinement to the G-hat(u) surrogate.  Behavior needs to be repeatable
   // and AIS is not part of the EGRA spec: either reuse lhs_seed or hardwire.
   int refine_samples = 1000, refine_seed = 123457;
-  // we pass a u-space model and enforce the EGRA GP bounds on the samples
-  bool x_model_flag = false, use_model_bounds = true;
+  // we pass a u-space model and enforce the EGRA GP bounds on the samples;
+  // extreme values are needed to define bounds for outer PDF bins.
+  bool x_model_flag = false, use_model_bounds = true, track_extreme = pdfOutput;
   integrationRefinement = MMAIS; vary_pattern = true;
 
   NonDAdaptImpSampling* importance_sampler_rep = new
     NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples, refine_seed,
 			 rng, vary_pattern, integrationRefinement, cdfFlag,
-			 x_model_flag, use_model_bounds);
+			 x_model_flag, use_model_bounds, track_extreme);
   importanceSampler.assign_rep(importance_sampler_rep, false);
 
   // if approximation is built in x-space, then importanceSampler must perform
@@ -843,6 +844,9 @@ void NonDGlobalReliability::importance_sampling()
       }
     }
   }
+  // all probability levels computed, now infer PDFs
+  if (pdfOutput)
+    compute_densities(importance_sampler_rep->extreme_values());
 }
 
 
@@ -1073,9 +1077,11 @@ void NonDGlobalReliability::print_results(std::ostream& s)
   const StringArray& fn_labels = iteratedModel.response_labels();
   s << "-----------------------------------------------------------------\n";
 
+  print_densities(s);
+
+  // output CDF/CCDF level mappings (replaces NonD::print_level_mappings())
   for (i=0; i<numFunctions; i++) {
 
-    // output CDF/CCDF response/probability pairs
     size_t num_levels = computedRespLevels[i].length();
     if (num_levels) {
       if (cdfFlag)
@@ -1091,8 +1097,6 @@ void NonDGlobalReliability::print_results(std::ostream& s)
 	  << setw(2*write_precision+18) << computedGenRelLevels[i][j]  << '\n';
     }
   }
-
-  //s << "Final statistics:\n" << finalStatistics;
 
   s << "-----------------------------------------------------------------"
     << std::endl;

@@ -43,7 +43,8 @@ public:
   NonDAdaptImpSampling(Model& model, unsigned short sample_type, int samples,
 		       int seed, const String& rng, bool vary_pattern,
 		       unsigned short is_type, bool cdf_flag,
-		       bool x_space_model, bool use_model_bounds);
+		       bool x_space_model, bool use_model_bounds,
+		       bool track_extreme);
   /// destructor
   ~NonDAdaptImpSampling();
 
@@ -83,6 +84,8 @@ public:
 
   /// returns the final probability calculated by the importance sampling
   Real final_probability();
+  /// return extremeValues
+  const RealRealPairArray& extreme_values() const;
 
 private:
 
@@ -145,6 +148,8 @@ private:
   bool useModelBounds;
   /// flag for inversion of probability values using 1.-p
   bool invertProb;
+  /// flag for tracking min/max values encountered when evaluating samples
+  bool trackExtremeValues;
 
   /// size of sample batch within each refinement iteration
   int refineSamples;
@@ -174,6 +179,10 @@ inline NonDAdaptImpSampling::~NonDAdaptImpSampling()
 
 inline Real NonDAdaptImpSampling::final_probability()
 { return probEstimate; }
+
+
+inline const RealRealPairArray& NonDAdaptImpSampling::extreme_values() const
+{ return extremeValues; }
 
 
 inline Real NonDAdaptImpSampling::
