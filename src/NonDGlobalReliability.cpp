@@ -1075,11 +1075,14 @@ void NonDGlobalReliability::print_results(std::ostream& s)
 {
   size_t i, j;
   const StringArray& fn_labels = iteratedModel.response_labels();
-  s << "-----------------------------------------------------------------\n";
+  s << "-----------------------------------------------------------------------"
+    << "------";
 
   print_densities(s);
 
   // output CDF/CCDF level mappings (replaces NonD::print_level_mappings())
+  s << std::scientific << std::setprecision(write_precision)
+    << "\nLevel mappings for each response function:\n";
   for (i=0; i<numFunctions; i++) {
 
     size_t num_levels = computedRespLevels[i].length();
@@ -1098,8 +1101,8 @@ void NonDGlobalReliability::print_results(std::ostream& s)
     }
   }
 
-  s << "-----------------------------------------------------------------"
-    << std::endl;
+  s << "-----------------------------------------------------------------------"
+    << "------" << std::endl;
 }
 
 } // namespace Dakota

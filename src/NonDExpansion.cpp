@@ -2309,12 +2309,14 @@ void NonDExpansion::print_results(std::ostream& s)
 		       exp_sampler_rep->method_name() == LIST_SAMPLING);
   if (list_sampling) {
     // all stats are delegated since local moments are not relevant in this case
-    s << "\nStatistics based on " << numSamplesOnExpansion << " imported "
-      << "samples performed on polynomial expansion:\n";
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics based on " << numSamplesOnExpansion
+      << " imported samples performed on polynomial expansion:\n";
     exp_sampler_rep->print_statistics(s);
   }
   else if (totalLevelRequests) {
-    s << "\nStatistics based on ";
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics based on ";
     if (exp_sampling)
       s << numSamplesOnExpansion << " samples performed on polynomial "
 	<< "expansion:\n";

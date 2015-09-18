@@ -246,8 +246,11 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 void NonDIncremLHSSampling::print_results(std::ostream& s)
 {
   if (statsFlag && !varBasedDecompFlag) {
-    s << "\nStatistics based on " << numSamples << " samples:\n";
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics based on " << numSamples << " samples:\n";
     print_statistics(s);
+    s << "---------------------------------------------------------------------"
+      << "--------" << std::endl;
   }
 }
 

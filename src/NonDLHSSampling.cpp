@@ -307,8 +307,11 @@ void NonDLHSSampling::print_results(std::ostream& s)
   if (varBasedDecompFlag)
     print_sobol_indices(s);
   else if (statsFlag) {
-    s << "\nStatistics based on " << numSamples << " samples:\n";
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics based on " << numSamples << " samples:\n";
     print_statistics(s);
+    s << "---------------------------------------------------------------------"
+      << "--------" << std::endl;
   }
 }
 
