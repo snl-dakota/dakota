@@ -85,7 +85,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
   [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
   [ speculative {N_mdm(true,speculativeFlag)} ]
-  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
   [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
   [ scaling {N_mdm(true,methodScaling)} ]
   [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
@@ -464,6 +463,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
       [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
       [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
     ( 
@@ -520,6 +520,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
         [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
         [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
       |
       ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
@@ -589,6 +590,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ initial_trust_radius REAL {N_mdm(Real,initTRRadius)} ]
       [ covariance INTEGER {N_mdm(int,covarianceType)} ]
       [ regression_diagnostics {N_mdm(true,regressDiag)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
     ( nonlinear_cg {N_mdm(utype,methodName_NONLINEAR_CG)}
@@ -599,6 +601,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
       [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
       [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
     ( 
@@ -664,6 +667,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                   |
                   generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
                  )
+                [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                ]
               [ 
                 askey {N_mdm(type,expansionType_ASKEY_U)}
@@ -840,6 +844,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     |
                     generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
                    )
+                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                  )
                 |
                 ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
@@ -852,6 +857,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                    )
                   |
                   local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                  )
                ]
               [ 
@@ -1736,13 +1742,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           u_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_U)}
           |
-          x_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}
+          ( x_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}
+            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+           )
           |
-          u_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}
+          ( u_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}
+            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+           )
           |
-          x_two_point {N_mdm(utype,reliabilitySearchType_TANA_X)}
+          ( x_two_point {N_mdm(utype,reliabilitySearchType_TANA_X)}
+            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+           )
           |
-          u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
+          ( u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
+            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+           )
           |
           no_approx {N_mdm(utype,reliabilitySearchType_NO_APPROX)}
           [ 
@@ -1919,6 +1933,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       converge_qoi {N_mdm(utype,subMethod_SUBMETHOD_CONVERGE_QOI)}
       [ refinement_rate REAL {N_mdm(Real,refinementRate)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )

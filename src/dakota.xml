@@ -226,9 +226,6 @@
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
       <keyword  id="speculative" name="speculative" code="{N_mdm(true,speculativeFlag)}" label="Speculative gradients and Hessians" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no speculation" />
-      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
-        <param type="REAL" />
-      </keyword>
       <keyword  id="constraint_tolerance" name="constraint_tolerance" code="{N_mdm(Real,constraintTolerance)}" label="Constraint tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="Library default" >
         <param type="REAL" />
       </keyword>
@@ -833,6 +830,9 @@
               <keyword  id="linear_equality_scales" name="linear_equality_scales" code="{N_mdm(RealDL,linearEqScales)}" label="linear_equality_scales" help="" minOccurs="0" default="vector values = 1 . (no scaling)" >
                 <param type="REALLIST" />
               </keyword>
+              <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                <param type="REAL" />
+              </keyword>
             </required>
             <required>
               <oneOf>
@@ -918,6 +918,9 @@
                     <param type="REAL" />
                   </keyword>
                   <keyword  id="constraint_penalty3" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="Constraint penalty" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1000.0" >
+                    <param type="REAL" />
+                  </keyword>
+                  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
                     <param type="REAL" />
                   </keyword>
                 </keyword>
@@ -1037,6 +1040,9 @@
                 <param type="INTEGER" />
               </keyword>
               <keyword  id="regression_diagnostics" name="regression_diagnostics" code="{N_mdm(true,regressDiag)}" label="Regression diagnostics post-processing" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="no regression diagnostics" />
+              <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                <param type="REAL" />
+              </keyword>
             </keyword>
             <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
               <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
@@ -1052,6 +1058,9 @@
                 <param type="REAL" />
               </keyword>
               <keyword  id="volume_boxsize_limit" name="volume_boxsize_limit" code="{N_mdm(Real,volBoxSize)}" label="Volume boxsize limit" help="MethodCommands.html#MethodNCSUDC" minOccurs="0" default="1.0e-6" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
                 <param type="REAL" />
               </keyword>
             </keyword>
@@ -1109,6 +1118,9 @@
                                   </oneOf>
                                 </keyword>
                               </oneOf>
+                              <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                                <param type="REAL" />
+                              </keyword>
                             </keyword>
                             <optional>
                               <oneOf label="Basis polynomial family">
@@ -1338,6 +1350,9 @@
                                       </oneOf>
                                     </keyword>
                                   </oneOf>
+                                  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                                    <param type="REAL" />
+                                  </keyword>
                                 </keyword>
                                 <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1"  default="no refinement" >
                                   <oneOf label="h-refinement type">
@@ -1350,6 +1365,9 @@
                                     </keyword>
                                     <keyword  id="local_adaptive" name="local_adaptive" code="{N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}" label="local_adaptive" help=""  />
                                   </oneOf>
+                                  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                                    <param type="REAL" />
+                                  </keyword>
                                 </keyword>
                               </oneOf>
                             </optional>
@@ -2230,10 +2248,26 @@
                     <oneOf>
                       <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_X)}" label="x_taylor_mean" help=""  />
                       <keyword  id="u_taylor_mean" name="u_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_U)}" label="u_taylor_mean" help=""  />
-                      <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp" help=""  />
-                      <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp" help=""  />
-                      <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point" help=""  />
-                      <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point" help=""  />
+                      <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp" help=""  >
+                        <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                          <param type="REAL" />
+                        </keyword>
+                      </keyword>
+                      <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp" help=""  >
+                        <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                          <param type="REAL" />
+                        </keyword>
+                      </keyword>
+                      <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point" help=""  >
+                        <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                          <param type="REAL" />
+                        </keyword>
+                      </keyword>
+                      <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point" help=""  >
+                        <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
+                          <param type="REAL" />
+                        </keyword>
+                      </keyword>
                       <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx" help=""  />
                     </oneOf>
                     <optional>
@@ -2450,6 +2484,9 @@
                 <keyword  id="converge_qoi" name="converge_qoi" code="{N_mdm(utype,subMethod_SUBMETHOD_CONVERGE_QOI)}" label="converge_qoi" help=""  />
               </oneOf>
               <keyword  id="refinement_rate" name="refinement_rate" code="{N_mdm(Real,refinementRate)}" label="Refinement rate" help="MethodCommands.html#MethodSolnRichardson" minOccurs="0" default="2." >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
                 <param type="REAL" />
               </keyword>
             </keyword>
