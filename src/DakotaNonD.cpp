@@ -1897,36 +1897,38 @@ compute_densities(const RealRealPairArray& min_max_fns)
       cdf_map[comp_rlev_i[cntr]] = Pecos::NormalRandomVariable::std_cdf(g_cdf);
     }
 
-    min = min_max_fns[i].first; max = min_max_fns[i].second;
-    it = it0 = cdf_map.begin(); it_last = --cdf_map.end();
-    lev_0 = it0->first; lev_last = it_last->first;
-    // compute computedPDF{Abscissas,Ordinates} from bin counts and widths
-    core_pdf_bins = cdf_map.size()-1; pdf_size = core_pdf_bins;
-    if (min < lev_0)    ++pdf_size;
-    if (max > lev_last) ++pdf_size;
-    RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
-    RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
-    if (min < lev_0) {
-      abs_i[0] = min;
-      ord_i[0] = it->second/(lev_0 - min);
-      offset = 1;
-    }
-    else offset = 0;
-    for (j=0; j<core_pdf_bins; ++j) {
-      prev_r = it->first; prev_p = it->second; ++it;
-      new_r  = it->first; new_p  = it->second;
-      abs_i[j+offset] = prev_r;
-      ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
-    }
-    if (max > lev_last) {
-      abs_i[pdf_size-1] = lev_last;
-      ord_i[pdf_size-1] = (1. - it_last->second)/(max - lev_last);
-      abs_i[pdf_size]   = max;    // no ordinate for final abscissa
-    }
-    else
-      abs_i[pdf_size] = lev_last; // no ordinate for final abscissa
+    if (!cdf_map.empty()) {
+      min = min_max_fns[i].first; max = min_max_fns[i].second;
+      it = it0 = cdf_map.begin(); it_last = --cdf_map.end();
+      lev_0 = it0->first; lev_last = it_last->first;
+      // compute computedPDF{Abscissas,Ordinates} from bin counts and widths
+      core_pdf_bins = cdf_map.size()-1; pdf_size = core_pdf_bins;
+      if (min < lev_0)    ++pdf_size;
+      if (max > lev_last) ++pdf_size;
+      RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
+      RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
+      if (min < lev_0) {
+	abs_i[0] = min;
+	ord_i[0] = it->second/(lev_0 - min);
+	offset = 1;
+      }
+      else offset = 0;
+      for (j=0; j<core_pdf_bins; ++j) {
+	prev_r = it->first; prev_p = it->second; ++it;
+	new_r  = it->first; new_p  = it->second;
+	abs_i[j+offset] = prev_r;
+	ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
+      }
+      if (max > lev_last) {
+	abs_i[pdf_size-1] = lev_last;
+	ord_i[pdf_size-1] = (1. - it_last->second)/(max - lev_last);
+	abs_i[pdf_size]   = max;    // no ordinate for final abscissa
+      }
+      else
+	abs_i[pdf_size] = lev_last; // no ordinate for final abscissa
 
-    archive_pdf(i);
+      archive_pdf(i);
+    }
   }
 }
 
