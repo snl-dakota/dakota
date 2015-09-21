@@ -464,7 +464,7 @@ set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
     DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
     GaussProcApproximation.cpp VPSApproximation.cpp 
     PecosApproximation.cpp SharedApproxData.cpp
-    SharedPecosApproxData.cpp SharedSurfpackApproxData.cpp
+    SharedPecosApproxData.cpp
     ApplicationInterface.cpp ProcessApplicInterface.cpp
     ProcessHandleApplicInterface.cpp SysCallApplicInterface.cpp
     CommandShell.cpp DirectApplicInterface.cpp TestDriverInterface.cpp)
@@ -479,7 +479,7 @@ set(interface_src ${interface_src} PluginSerialDirectApplicInterface.cpp
 
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
-  list(APPEND interface_src SurfpackApproximation.cpp)
+  list(APPEND interface_src SurfpackApproximation.cpp SharedSurfpackApproxData.cpp)
   list(APPEND DAKOTA_INCDIRS ${Surfpack_BINARY_DIR} 
     ${Surfpack_SOURCE_DIR}/src)
   list(APPEND DAKOTA_PKG_LIBS surfpack surfpack_fortran)
