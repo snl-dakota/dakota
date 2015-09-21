@@ -129,7 +129,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 
   QUESO::EnvOptionsValues* envOptionsValues = NULL;
   envOptionsValues = new QUESO::EnvOptionsValues();
-  envOptionsValues->m_subDisplayFileName   = "outputData/display";
+  envOptionsValues->m_subDisplayFileName   = "GpmsaDiagnostics/display";
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity     = 3;
@@ -1037,7 +1037,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   gcmVarOptions->m_dataOutputAllowedSet.insert(0);
   gcmVarOptions->m_dataOutputAllowedSet.insert(1);
   gcmVarOptions->m_priorSeqNumSamples = 0;
-  gcmVarOptions->m_priorSeqDataOutputFileName = "outputData/priorSeq";
+  gcmVarOptions->m_priorSeqDataOutputFileName = "GpmsaDiagnostics/priorSeq";
   gcmVarOptions->m_priorSeqDataOutputFileType = "m";
   gcmVarOptions->m_priorSeqDataOutputAllowAll = 0;
   gcmVarOptions->m_priorSeqDataOutputAllowedSet.insert(0);
@@ -1210,7 +1210,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   mhVarOptions->m_rawChainDisplayPeriod = 1000;
   mhVarOptions->m_rawChainMeasureRunTimes = 1;
   mhVarOptions->m_rawChainDataOutputPeriod = 1000;
-  mhVarOptions->m_rawChainDataOutputFileName = "outputData/rawChain_mh";
+  mhVarOptions->m_rawChainDataOutputFileName = "GpmsaDiagnostics/rawChain_mh";
    // IMPORTANT
   mhVarOptions->m_rawChainDataOutputFileType = "m";                     
    // IMPORTANT
@@ -1224,7 +1224,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
    // IMPORTANT
   mhVarOptions->m_filteredChainLag = 6;                                 \
    // IMPORTANT
-   mhVarOptions->m_filteredChainDataOutputFileName = "outputData/filtChain_mh";
+   mhVarOptions->m_filteredChainDataOutputFileName = "GpmsaDiagnostics/filtChain_mh";
    mhVarOptions->m_filteredChainDataOutputFileType = "m";                
   mhVarOptions->m_filteredChainDataOutputAllowAll = 0;                  
   mhVarOptions->m_filteredChainDataOutputAllowedSet.insert(0);          

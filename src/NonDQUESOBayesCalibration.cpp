@@ -15,6 +15,7 @@
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDQUESOBayesCalibration.hpp"
 #include "NonDExpansion.hpp"
+#include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
@@ -350,7 +351,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   }
 
   // Generate useful stats from the posterior samples
-  //compute_statistics();
+  compute_statistics();
 }
 
 
@@ -446,6 +447,26 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << std::endl;
   }
+}
+
+
+void NonDQUESOBayesCalibration::compute_statistics()
+{
+  // Step 1: Access the aggregated acceptance chain.
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  // Note: this will be much simpler when QUESO no longer requires restarting.
+  // --> defer for now?
+  // --> top UT contract priority, post MPI? (get telecons going)
+
+  // Step 2: pass sample matrix into NonDSampling as allSamples
+  RealMatrix acceptance_chain;
+  NonDSampling* nond_rep = new NonDSampling(mcmcModel, acceptance_chain);
+  chainStatsSampler.assign_rep(nond_rep, false);
+
+  // Step 3: generate stats on allSamples (without allResponses evaluation)
+  //nond_rep->compute_sample_statistics(); //not compute_response_statistics()
 }
 
 
@@ -1448,6 +1469,9 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
     s << "=\n                     " << std::setw(wpp7) << it->first << '\n';
   }
   */
+
+  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
+  //nond_rep->print_sample_statistics();
 }
 
 

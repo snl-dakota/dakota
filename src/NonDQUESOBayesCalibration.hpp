@@ -93,6 +93,9 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
+  /// compute chain statistics for final MCMC chain
+  void compute_statistics();
+
   /// export the acceptance chain in user space
   void export_chain(size_t update_cntr);
 
@@ -272,6 +275,9 @@ private:
   RealVectorArray prevCoeffs;
   /// store MAP estimate for warm-starting pre-solves
   RealVector mapSoln;
+
+  /// NonDSampling method for computing sample statistics on final MCMC chain
+  Iterator chainStatsSampler;
 };
 
 } // namespace Dakota
