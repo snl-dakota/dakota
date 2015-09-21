@@ -39,7 +39,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   importanceSamplingType(
     probDescDB.get_ushort("method.nond.integration_refinement")),
   initLHS(true), useModelBounds(false), invertProb(false),
-  trackExtremeValues(false), // used in helper mode for defining PDF bounds
+  trackExtremeValues(pdfOutput), // used for defining PDF bounds
   // size of refinement batches is separate from initial LHS size (numSamples)
   refineSamples(probDescDB.get_int("method.nond.refinement_samples"))
 {
@@ -293,6 +293,8 @@ void NonDAdaptImpSampling::quantify_uncertainty()
         computedProbLevels[resp_fn_count][level_count] = probEstimate;
       }
     }
+    // infer PDFs from computedProbLevels
+    compute_densities(extremeValues);
     // propagate computedProbLevels to finalStatistics
     update_final_statistics();
   }

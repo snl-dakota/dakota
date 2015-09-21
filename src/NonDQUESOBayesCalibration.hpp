@@ -38,12 +38,12 @@ namespace Dakota {
 
 /// Bayesian inference using the QUESO library from UT Austin
 
-/** This class provides a wrapper to the QUESO library developed 
- * as part of the Predictive Science Academic Alliance Program (PSAAP), 
- * specifically the PECOS (Predictive Engineering and 
- * Computational Sciences) Center at UT Austin. The name QUESO stands for 
- * Quantification of Uncertainty for Estimation, Simulation, and 
- * Optimization.    */
+/** This class provides a wrapper to the QUESO library developed as
+    part of the Predictive Science Academic Alliance Program (PSAAP),
+    specifically the PECOS (Predictive Engineering and Computational
+    Sciences) Center at UT Austin.  The name QUESO stands for
+    Quantification of Uncertainty for Estimation, Simulation, and
+    Optimization. */
 
 class NonDQUESOBayesCalibration: public NonDBayesCalibration
 {
