@@ -1965,16 +1965,15 @@ print_densities(std::ostream& s, String qoi_type,
 
   s << std::scientific << std::setprecision(write_precision) << "\nProbability "
     << "Density Function (PDF) histograms for each " << qoi_type << ":\n";
-  size_t i, j, wpp7 = write_precision+7;
-  for (i=0; i<numFunctions; ++i) {
-    if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
+  size_t i, j, wpp7 = write_precision+7, num_qoi = computedPDFOrdinates.size();
+  for (i=0; i<num_qoi; ++i) {
+    const RealVector& ord_i = computedPDFOrdinates[i];
+    const RealVector& abs_i = computedPDFAbscissas[i];
+    size_t pdf_len = ord_i.length();
+    if (pdf_len) {
       s << "PDF for " << pdf_labels[i] << ":\n"
 	<< "          Bin Lower          Bin Upper      Density Value\n"
 	<< "          ---------          ---------      -------------\n";
-
-      const RealVector& ord_i = computedPDFOrdinates[i];
-      const RealVector& abs_i = computedPDFAbscissas[i];
-      size_t pdf_len = ord_i.length();
       for (j=0; j<pdf_len; ++j)
 	s << "  " << std::setw(wpp7) << abs_i[j]
 	  << "  " << std::setw(wpp7) << abs_i[j+1]

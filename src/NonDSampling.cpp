@@ -1036,7 +1036,7 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
     num_samp;
   Real sum, var, skew, kurt;
 
-  if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
+  if (momentStats.empty()) momentStats.shapeUninitialized(4, num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
 
@@ -1344,7 +1344,8 @@ print_intervals(std::ostream& s, String qoi_type,
 {
   s << std::scientific << std::setprecision(write_precision)
     << "\nMin and Max samples for each " << qoi_type << ":\n";
-  for (size_t i=0; i<numFunctions; ++i)
+  size_t i, num_qoi = extremeValues.size();
+  for (size_t i=0; i<num_qoi; ++i)
     s << interval_labels[i] << ":  Min = " << extremeValues[i].first
       << "  Max = " << extremeValues[i].second << '\n';
 }
@@ -1354,14 +1355,14 @@ void NonDSampling::
 print_moments(std::ostream& s, String qoi_type,
 	      const StringArray& moment_labels) const
 {
-  size_t i, j, width = write_precision+7;
+  size_t i, j, width = write_precision+7, num_qoi = momentStats.numCols();
 
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
-  for (i=0; i<numFunctions; ++i) {
+  for (i=0; i<num_qoi; ++i) {
     const Real* moments_i = momentStats[i];
     s << std::setw(14) << moment_labels[i];
     for (j=0; j<4; ++j)
@@ -1374,7 +1375,7 @@ print_moments(std::ostream& s, String qoi_type,
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
       << "UpperCI_Mean" << std::setw(width+1)  << "LowerCI_StdDev" 
       << std::setw(width+2) << "UpperCI_StdDev\n";
-    for (i=0; i<numFunctions; ++i)
+    for (i=0; i<num_qoi; ++i)
       s << std::setw(14) << moment_labels[i]
 	<< ' ' << std::setw(width) << momentCIs(0, i)
 	<< ' ' << std::setw(width) << momentCIs(1, i)
