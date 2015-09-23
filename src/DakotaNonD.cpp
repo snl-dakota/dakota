@@ -1960,12 +1960,14 @@ void NonD::
 print_densities(std::ostream& s, String qoi_type,
 		const StringArray& pdf_labels) const
 {
-  if (!pdfOutput || computedPDFOrdinates.empty())
+  if (!pdfOutput)
     return;
 
-  s << std::scientific << std::setprecision(write_precision) << "\nProbability "
-    << "Density Function (PDF) histograms for each " << qoi_type << ":\n";
   size_t i, j, wpp7 = write_precision+7, num_qoi = computedPDFOrdinates.size();
+  if (num_qoi)
+    s << std::scientific << std::setprecision(write_precision)
+      << "\nProbability Density Function (PDF) histograms for each "
+      << qoi_type << ":\n";
   for (i=0; i<num_qoi; ++i) {
     const RealVector& ord_i = computedPDFOrdinates[i];
     const RealVector& abs_i = computedPDFAbscissas[i];
