@@ -44,7 +44,7 @@ MPIManager::MPIManager(int& argc, char**& argv):
   mpirunFlag(false), ownMPIFlag(false)
 {
   // detect parallel launch of DAKOTA using mpirun/mpiexec/poe/etc.
-  mpirunFlag = true;//detect_parallel_launch(argc, argv);
+  mpirunFlag = detect_parallel_launch(argc, argv);
   
 #ifdef DAKOTA_HAVE_MPI
   // Initialize MPI if and only if DAKOTA launched in parallel from
