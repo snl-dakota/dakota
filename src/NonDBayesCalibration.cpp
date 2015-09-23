@@ -96,8 +96,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  // Construct mcmcModel (no emulation, GP, PCE, or SC) for use in
-  // likelihood evaluations
+  // --------------------------------------------------
+  // Construct mcmcModel (no emulation, GP, PCE, or SC)
+  // for use in likelihood evaluations
+  // --------------------------------------------------
   short mcmc_deriv_order = 1;
   switch (emulatorType) {
 
@@ -204,6 +206,16 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
+  // -------------------------------------
+  // Construct sampler for posterior stats (only in NonDQUESOBayes for now)
+  // -------------------------------------
+  //RealMatrix acceptance_chain; // empty (allSamples not currently needed)
+  //chainStatsSampler.assign_rep(new NonDSampling(mcmcModel, acceptance_chain),
+  //			         false);
+
+  // -------------------------------------
+  // Construct optimizer for MAP pre-solve
+  // -------------------------------------
   unsigned short opt_alg_override
     = probDescDB.get_ushort("method.nond.pre_solve_method");
   if (emulatorType || opt_alg_override) {

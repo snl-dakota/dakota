@@ -1934,39 +1934,41 @@ compute_densities(const RealRealPairArray& min_max_fns)
 
 
 /** Print distribution mappings, including to file per response. */
-void NonD::print_level_mappings(std::ostream& s) const
+void NonD::
+print_level_mappings(std::ostream& s, String qoi_type,
+		     const StringArray& qoi_labels) const
 {
-  print_densities(s);
+  print_densities(s, qoi_type, qoi_labels);
 
   // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
   // reliabilities resulting from number of std devs separating mean & target
   s << std::scientific << std::setprecision(write_precision)
-    << "\nLevel mappings for each response function:\n";
+    << "\nLevel mappings for each " << qoi_type << ":\n";
   size_t i;
   for (i=0; i<numFunctions; ++i)
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
-      print_level_map(i, s);
+      print_level_map(s, i, qoi_labels[i]);
       // optionally write the distribution mapping to a .dist file
       if (outputLevel >= VERBOSE_OUTPUT)
-	level_mappings_file(i);
+	level_mappings_file(i, qoi_labels[i]);
     }
 }
 
 
-void NonD::print_densities(std::ostream& s) const
+void NonD::
+print_densities(std::ostream& s, String qoi_type,
+		const StringArray& pdf_labels) const
 {
   if (!pdfOutput || computedPDFOrdinates.empty())
     return;
 
-  s << std::scientific << std::setprecision(write_precision)
-    << "\nProbability Density Function (PDF) histograms for each response "
-    << "function:\n";
+  s << std::scientific << std::setprecision(write_precision) << "\nProbability "
+    << "Density Function (PDF) histograms for each " << qoi_type << ":\n";
   size_t i, j, wpp7 = write_precision+7;
-  const StringArray& resp_labels = iteratedModel.response_labels();
   for (i=0; i<numFunctions; ++i) {
     if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
-      s << "PDF for " << resp_labels[i] << ":\n"
+      s << "PDF for " << pdf_labels[i] << ":\n"
 	<< "          Bin Lower          Bin Upper      Density Value\n"
 	<< "          ---------          ---------      -------------\n";
 
@@ -1983,15 +1985,13 @@ void NonD::print_densities(std::ostream& s) const
 
 
 /// Write distribution mappings to a file for a single response
-void NonD::level_mappings_file(size_t fn_index) const
+void NonD::level_mappings_file(size_t fn_index, const String& qoi_label) const
 {
-  const StringArray& resp_labels = iteratedModel.response_labels();
-  std::string dist_filename(resp_labels[fn_index]);
-  dist_filename += ".dist";
+  std::string dist_filename = qoi_label + ".dist";
   std::ofstream dist_file;
   TabularIO::open_file(dist_file, dist_filename, "Distribution Map Output"); 
   dist_file << std::scientific << std::setprecision(write_precision);
-  print_level_map(fn_index, dist_file);
+  print_level_map(dist_file, fn_index, qoi_label);
 }
 
 
@@ -2000,46 +2000,44 @@ void NonD::level_mappings_file(size_t fn_index) const
     requested level type to one computed level type; some derived
     class implementations (e.g., local and global reliability) output
     multiple computed level types. */
-void NonD::print_level_map(size_t fn_index, std::ostream& s) const
+void NonD::
+print_level_map(std::ostream& s, size_t fn_index, const String& qoi_label) const
 {
-  const StringArray& resp_labels = iteratedModel.response_labels();
-
-  size_t i = fn_index, j;
-  size_t width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
+  size_t j, width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
 
   if (cdfFlag)
     s << "Cumulative Distribution Function (CDF) for ";
   else
     s << "Complementary Cumulative Distribution Function (CCDF) for ";
-  s << resp_labels[i] << ":\n     Response Level  Probability Level  "
+  s << qoi_label << ":\n     Response Level  Probability Level  "
     << "Reliability Index  General Rel Index\n     --------------  "
     << "-----------------  -----------------  -----------------\n";
-  size_t num_resp_levels = requestedRespLevels[i].length();
+  size_t num_resp_levels = requestedRespLevels[fn_index].length();
   for (j=0; j<num_resp_levels; j++) { // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << requestedRespLevels[i][j] << "  ";
+    s << "  " << std::setw(width) << requestedRespLevels[fn_index][j] << "  ";
     switch (respLevelTarget) {
     case PROBABILITIES:
-      s << std::setw(width) << computedProbLevels[i][j]   << '\n'; break;
+      s << std::setw(width) << computedProbLevels[fn_index][j]   << '\n'; break;
     case RELIABILITIES:
-      s << std::setw(w2p2)  << computedRelLevels[i][j]    << '\n'; break;
+      s << std::setw(w2p2)  << computedRelLevels[fn_index][j]    << '\n'; break;
     case GEN_RELIABILITIES:
-      s << std::setw(w3p4)  << computedGenRelLevels[i][j] << '\n'; break;
+      s << std::setw(w3p4)  << computedGenRelLevels[fn_index][j] << '\n'; break;
     }
   }
-  size_t num_prob_levels = requestedProbLevels[i].length();
+  size_t num_prob_levels = requestedProbLevels[fn_index].length();
   for (j=0; j<num_prob_levels; j++) // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << computedRespLevels[i][j]
-      << "  " << std::setw(width) << requestedProbLevels[i][j] << '\n';
-  size_t num_rel_levels = requestedRelLevels[i].length(),
+    s << "  " << std::setw(width) << computedRespLevels[fn_index][j]
+      << "  " << std::setw(width) << requestedProbLevels[fn_index][j] << '\n';
+  size_t num_rel_levels = requestedRelLevels[fn_index].length(),
     offset = num_prob_levels;
   for (j=0; j<num_rel_levels; j++) // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
-      << "  " << std::setw(w2p2)  << requestedRelLevels[i][j] << '\n';
-  size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
+    s << "  " << std::setw(width) << computedRespLevels[fn_index][j+offset]
+      << "  " << std::setw(w2p2)  << requestedRelLevels[fn_index][j] << '\n';
+  size_t num_gen_rel_levels = requestedGenRelLevels[fn_index].length();
   offset += num_rel_levels;
   for (j=0; j<num_gen_rel_levels; j++) // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
-      << "  " << std::setw(w3p4)  << requestedGenRelLevels[i][j] << '\n';
+    s << "  " << std::setw(width) << computedRespLevels[fn_index][j+offset]
+      << "  " << std::setw(w3p4)  << requestedGenRelLevels[fn_index][j] << '\n';
 }
 
 

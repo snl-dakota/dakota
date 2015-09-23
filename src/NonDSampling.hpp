@@ -64,8 +64,8 @@ public:
   /// using samples
   void compute_intervals(RealRealPairArray& extreme_fns,
 			 const IntResponseMap& samples);
-  /// called by compute_statistics() to calculate means, std
-  /// deviations, and confidence intervals
+  /// called by compute_statistics() to calculate sample moments and
+  /// confidence intervals
   void compute_moments(const IntResponseMap& samples);
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z as well as PDFs
@@ -73,14 +73,25 @@ public:
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;
-  /// prints the intervals computed in compute_intervals()
+  /// prints the intervals computed in compute_intervals() with default
+  /// qoi_type and moment_labels
   void print_intervals(std::ostream& s) const;
-  /// prints the moments computed in compute_moments()
+  /// prints the intervals computed in compute_intervals()
+  void print_intervals(std::ostream& s, String qoi_type,
+		       const StringArray& interval_labels) const;
+  /// prints the moments computed in compute_moments() with default
+  /// qoi_type and moment_labels
   void print_moments(std::ostream& s) const;
+  /// prints the moments computed in compute_moments()
+  void print_moments(std::ostream& s, String qoi_type,
+		     const StringArray& moment_labels) const;
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
+
+  /// calculates sample moments for an array of observations for a set of QoI
+  void compute_moments(const RealMatrix& samples);
 
 protected:
 
@@ -98,7 +109,8 @@ protected:
   NonDSampling(unsigned short sample_type, int samples, int seed,
 	       const String& rng, const RealVector& lower_bnds,
 	       const RealVector& upper_bnds);
-  /// alternate constructor for sample generation of correlated normals "on the fly"
+  /// alternate constructor for sample generation of correlated normals
+  /// "on the fly"
   NonDSampling(unsigned short sample_type, int samples, int seed,
                const String& rng, const RealVector& means,
                const RealVector& std_devs, const RealVector& lower_bnds,
@@ -259,6 +271,14 @@ inline void NonDSampling::compute_intervals(RealRealPairArray& extreme_fns)
 
 inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 { compute_intervals(extremeValues, samples); }
+
+
+inline void NonDSampling::print_intervals(std::ostream& s) const
+{ print_intervals(s, "response function", iteratedModel.response_labels()); }
+
+
+inline void NonDSampling::print_moments(std::ostream& s) const
+{ print_moments(s, "response function", iteratedModel.response_labels()); }
 
 
 inline void NonDSampling::sampling_reference(int samples_ref)

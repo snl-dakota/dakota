@@ -239,6 +239,11 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
      //calibration of sigma temporarily unsupported."<<std::endl;
     abort_handler(METHOD_ERROR);
   }
+
+  // Construct sampler for posterior stats (elevate to NonDBayes in time)
+  RealMatrix acceptance_chain; // empty (allSamples not currently needed)
+  chainStatsSampler.assign_rep(new NonDSampling(mcmcModel, acceptance_chain),
+			       false);
 }
 
 
@@ -252,7 +257,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // instantiate QUESO objects and execute
   nonDBayesInstance = nonDQUESOInstance = this;
 
-  // construct mcmcModel and initialize transformations, as needed
+  // build the emulator and initialize transformations, as needed
   initialize_model();
 
   // initialize the ASV request value for preconditioning and
@@ -290,24 +295,6 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 			     proposalCovarFilename);
   else if (proposalCovarType == "prior")
     prior_proposal_covariance(); // prior selection or default for no emulator
-  if (proposalCovarType == "user" || proposalCovarType == "prior") {
-    if (outputLevel > NORMAL_OUTPUT ) { 
-      Cout << "Proposal Covariance " << '\n';
-      proposalCovMatrix->print(Cout);
-      Cout << std::endl;
-    }
-    QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
-    test_mat -= *proposalCovMatrix;
-    if( test_mat.normMax() > 1.e-14 )
-      throw std::runtime_error("Queso covariance matrix is not symmetric.");
-
-    // validate that provided data is a valid covariance matrix -
-    // test PD part of SPD
-    test_mat = *proposalCovMatrix;
-    int ierr = test_mat.chol();
-    if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
-      throw std::runtime_error("Queso covariance data is not SPD.");
-  }
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
@@ -452,21 +439,39 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
 void NonDQUESOBayesCalibration::compute_statistics()
 {
-  // Step 1: Access the aggregated acceptance chain.
+  // Step 1: Access the (aggregated) acceptance chain.
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
-  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  size_t i, num_mcmc = mcmc_chain.subSequenceSize(), total_num_params
+    = (calibrateSigma) ? numContinuousVars + numFunctions : numContinuousVars;
   // Note: this will be much simpler when QUESO no longer requires restarting.
   // --> defer for now?
   // --> top UT contract priority, post MPI? (get telecons going)
 
   // Step 2: pass sample matrix into NonDSampling as allSamples
-  RealMatrix acceptance_chain;
-  NonDSampling* nond_rep = new NonDSampling(mcmcModel, acceptance_chain);
-  chainStatsSampler.assign_rep(nond_rep, false);
-
-  // Step 3: generate stats on allSamples (without allResponses evaluation)
-  //nond_rep->compute_sample_statistics(); //not compute_response_statistics()
+  QUESO::GslVector qv(paramSpace->zeroVector());
+  RealMatrix acceptance_chain(total_num_params, num_mcmc);
+  for (i=0; i<num_mcmc; ++i) {
+    mcmc_chain.getPositionValues(i, qv); // extract vector from sequence
+    if (standardizedSpace) {
+      RealVector u_rv(numContinuousVars, false);
+      copy_gsl_partial(qv, 0, u_rv);
+      Real* samp_i = acceptance_chain[i];
+      RealVector x_rv(Teuchos::View, samp_i, numContinuousVars);
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      if (calibrateSigma) {
+	RealVector sig_rv(Teuchos::View, &samp_i[numContinuousVars],
+			  numFunctions);
+	copy_gsl_partial(qv, numContinuousVars, sig_rv);
+      }
+    }
+    else
+      copy_gsl(qv, acceptance_chain, i);
+  }
+  
+  // Step 3: generate stats on acceptance_chain (bypass all{Samples,Responses})
+  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
+  nond_rep->compute_moments(acceptance_chain);
 }
 
 
@@ -1213,6 +1218,8 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
       Cout << '\n'; 
     }
   }
+
+  validate_proposal();
 }
 
 
@@ -1322,25 +1329,32 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
     }
   }
 
-  // validate that provided data is a valid covariance - test symmetry
-  //    Note: I had hoped to have this check occur in the call to chol() below, 
-  //    but chol doesn't seem to mind that matrices are not symmetric... RWH
-  //proposalCovMatrix->print(std::cout);
-  //std::cout << std::endl;
-  /*QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
+  // validate that provided data is a valid covariance matrix
+  validate_proposal();
+}
+
+
+void NonDQUESOBayesCalibration::validate_proposal()
+{
+  // validate that provided data is a valid covariance matrix
+  
+  if (outputLevel > NORMAL_OUTPUT ) { 
+    Cout << "Proposal Covariance " << '\n';
+    proposalCovMatrix->print(Cout);
+    Cout << std::endl;
+  }
+
+  // test symmetry
+  QUESO::GslMatrix test_mat = proposalCovMatrix->transpose();
   test_mat -= *proposalCovMatrix;
   if( test_mat.normMax() > 1.e-14 )
     throw std::runtime_error("Queso covariance matrix is not symmetric.");
 
-  // validate that provided data is a valid covariance matrix - test PD part of SPD
+  // test PD part of SPD
   test_mat = *proposalCovMatrix;
   int ierr = test_mat.chol();
   if( ierr == QUESO::UQ_MATRIX_IS_NOT_POS_DEFINITE_RC)
     throw std::runtime_error("Queso covariance data is not SPD.");
- */
-  //proposalCovMatrix->print(std::cout);
-  //std::cout << std::endl;
-  //cov_data.print(std::cout);
 }
 
 
@@ -1449,7 +1463,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
        misfit   = log_prior_density(qv) - log_post; // = -log(like)
   s << "<<<<< Best log posterior       =\n                     "
     << std::setw(wpp7) << log_post << "\n<<<<< Best misfit              =\n"
-    << "                     " << std::setw(wpp7) << misfit;
+    << "                     " << std::setw(wpp7) << misfit << '\n';
 
   /*
   // --------------------------
@@ -1469,9 +1483,17 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
     s << "=\n                     " << std::setw(wpp7) << it->first << '\n';
   }
   */
-
+  
+  StringArray moment_labels;
+  copy_data(iteratedModel.continuous_variable_labels(), moment_labels);
+  if (calibrateSigma) {
+    moment_labels.resize(numContinuousVars + numFunctions);
+    const StringArray& resp_labels = iteratedModel.response_labels();
+    for (j=0; j<numFunctions; ++j)
+      moment_labels[j+numContinuousVars] = resp_labels[j] + "_sigma";
+  }
   NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  //nond_rep->print_sample_statistics();
+  nond_rep->print_moments(s, "posterior variable", moment_labels);
 }
 
 

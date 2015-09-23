@@ -76,8 +76,13 @@ public:
   void distribution_parameter_derivatives(bool dist_param_derivs);
 
   /// prints the z/p/beta/beta* mappings reflected in
-  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
+  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels for default
+  /// qoi_type and qoi_labels
   void print_level_mappings(std::ostream& s) const;
+  /// prints the z/p/beta/beta* mappings reflected in
+  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
+  void print_level_mappings(std::ostream& s, String qoi_type,
+			    const StringArray& qoi_labels) const;
 
   //
   //- Heading: Set/get routines
@@ -160,8 +165,12 @@ protected:
   /// compute the PDF bins from the CDF/CCDF values and store in
   /// computedPDF{Abscissas,Ordinates}
   void compute_densities(const RealRealPairArray& min_max_fns);
-  /// output the PDFs reflected in computedPDF{Abscissas,Ordinates}
+  /// output the PDFs reflected in computedPDF{Abscissas,Ordinates} using
+  /// default qoi_type and pdf_labels
   void print_densities(std::ostream& s) const;
+  /// output the PDFs reflected in computedPDF{Abscissas,Ordinates}
+  void print_densities(std::ostream& s, String qoi_type,
+		       const StringArray& pdf_labels) const;
   /// print system series/parallel mappings for response levels
   void print_system_mappings(std::ostream& s) const;
 
@@ -402,10 +411,11 @@ private:
   void distribute_levels(RealVectorArray& levels, bool ascending = true);
 
   /// Write level mappings to a file for a single response
-  void level_mappings_file(size_t fn_index) const;
+  void level_mappings_file(size_t fn_index, const String& qoi_label) const;
 
   /// Print level mapping for a single response function to ostream
-  void print_level_map(size_t fn_index, std::ostream& s) const;
+  void print_level_map(std::ostream& s, size_t fn_index,
+		       const String& qoi_label) const;
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations
@@ -474,6 +484,16 @@ inline const Response& NonD::response_results() const
 
 inline void NonD::response_results_active_set(const ActiveSet& set)
 { finalStatistics.active_set(set); }
+
+
+inline void NonD::print_level_mappings(std::ostream& s) const
+{
+  print_level_mappings(s, "response function", iteratedModel.response_labels());
+}
+
+
+inline void NonD::print_densities(std::ostream& s) const
+{ print_densities(s, "response function", iteratedModel.response_labels()); }
 
 
 /** Map the variables from iterator space (u) to simulation space (x). */

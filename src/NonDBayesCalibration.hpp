@@ -121,6 +121,9 @@ protected:
   /// RecastModel for solving for MAP using negative log posterior
   Model negLogPostModel;
 
+  /// NonDSampling method for computing sample statistics on final MCMC chain
+  Iterator chainStatsSampler;
+
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
   Iterator stochExpIterator;

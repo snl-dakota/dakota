@@ -161,7 +161,7 @@ NonDSampling(Model& model, const RealMatrix& sample_matrix):
   subIteratorFlag = true; // suppress some output
 
   // not used but included for completeness
-  if (numSamples) // samples is optional (default = 0)
+  if (numSamples)
     maxEvalConcurrency *= numSamples;
 }
 
@@ -1026,6 +1026,83 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 }
 
 
+void NonDSampling::compute_moments(const RealMatrix& samples)
+{
+  // For a samples matrix, calculate mean, standard deviation,
+  // skewness, and kurtosis
+
+  using boost::math::isfinite;
+  size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols(),
+    num_samp;
+  Real sum, var, skew, kurt;
+
+  if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
+
+  for (i=0; i<num_qoi; ++i) {
+
+    num_samp  = 0;
+    sum = var = skew = kurt = 0.;
+    // means
+    for (j=0; j<num_obs; ++j) {
+      Real sample = samples(i,j);
+      if (isfinite(sample)) { // neither NaN nor +/-Inf
+	sum += sample;
+	++num_samp;
+      }
+    }
+
+    if (num_samp != num_obs)
+      Cerr << "Warning: sampling statistics for qoi " << i+1 << " omit "
+	   << num_obs-num_samp << " failed evaluations out of " << num_obs
+	   << " samples.\n";
+    if (!num_samp) {
+      Cerr << "Error: Number of samples for qoi " << i+1 << " must be nonzero "
+	   << "for moment calculation in NonDSampling::compute_statistics()."
+	   << std::endl;
+      abort_handler(-1);
+    }
+
+    Real* moments_i = momentStats[i];
+    Real& mean = moments_i[0];
+    mean = sum/((Real)num_samp);
+
+    // accumulate variance, skewness, and kurtosis
+    Real centered_fn, pow_fn;
+    for (j=0; j<num_obs; ++j) {
+      Real sample = samples(i,j);
+      if (isfinite(sample)) { // neither NaN nor +/-Inf
+	pow_fn  = centered_fn = sample - mean;
+	pow_fn *= centered_fn; var  += pow_fn;
+	pow_fn *= centered_fn; skew += pow_fn;
+	pow_fn *= centered_fn; kurt += pow_fn;
+      }
+    }
+
+    // sample std deviation
+    moments_i[1] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
+
+    // skewness
+    moments_i[2] = (num_samp > 2 && var > 0.) ? 
+      // sample skewness
+      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
+      // population skewness 
+      std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2) :
+      // for no variation, central moment is zero
+      0.;
+
+    // kurtosis
+    moments_i[3] = (num_samp > 3 && var > 0.) ?
+      // sample kurtosis
+      (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
+      (Real)((num_samp-2)*(num_samp-3)*var*var) -
+      // population kurtosis
+      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3)) :
+      // for no variation, central moment is zero minus excess kurtosis
+      -3.;
+  }
+}
+
+
 /** Computes CDF/CCDF based on sample binning.  A PDF is inferred from a
     CDF/CCDF within compute_densities() after level computation. */
 void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
@@ -1261,43 +1338,44 @@ void NonDSampling::print_statistics(std::ostream& s) const
 }
 
 
-void NonDSampling::print_intervals(std::ostream& s) const
+void NonDSampling::
+print_intervals(std::ostream& s, String qoi_type,
+		const StringArray& interval_labels) const
 {
-  const StringArray& resp_labels = iteratedModel.response_labels();
-
   s << std::scientific << std::setprecision(write_precision)
-    << "\nMin and Max samples for each response function:\n";
+    << "\nMin and Max samples for each " << qoi_type << ":\n";
   for (size_t i=0; i<numFunctions; ++i)
-    s << resp_labels[i] << ":  Min = " << extremeValues[i].first
+    s << interval_labels[i] << ":  Min = " << extremeValues[i].first
       << "  Max = " << extremeValues[i].second << '\n';
 }
 
 
-void NonDSampling::print_moments(std::ostream& s) const
+void NonDSampling::
+print_moments(std::ostream& s, String qoi_type,
+	      const StringArray& moment_labels) const
 {
-  const StringArray& resp_labels = iteratedModel.response_labels();
   size_t i, j, width = write_precision+7;
 
-  s << "\nSample moment statistics for each response function:\n"
+  s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
   for (i=0; i<numFunctions; ++i) {
     const Real* moments_i = momentStats[i];
-    s << std::setw(14) << resp_labels[i];
+    s << std::setw(14) << moment_labels[i];
     for (j=0; j<4; ++j)
       s << ' ' << std::setw(width) << moments_i[j];
     s << '\n';
   }
-  if (numSamples > 1) {
+  if (numSamples > 1 && !momentCIs.empty()) {
     // output 95% confidence intervals as (,) interval
-    s << "\n95% confidence intervals for each response function:\n"
+    s << "\n95% confidence intervals for each " << qoi_type << ":\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
       << "UpperCI_Mean" << std::setw(width+1)  << "LowerCI_StdDev" 
       << std::setw(width+2) << "UpperCI_StdDev\n";
     for (i=0; i<numFunctions; ++i)
-      s << std::setw(14) << resp_labels[i]
+      s << std::setw(14) << moment_labels[i]
 	<< ' ' << std::setw(width) << momentCIs(0, i)
 	<< ' ' << std::setw(width) << momentCIs(1, i)
 	<< ' ' << std::setw(width) << momentCIs(2, i)

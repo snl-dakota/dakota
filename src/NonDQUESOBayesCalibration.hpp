@@ -149,6 +149,9 @@ protected:
 				const RealVector& cov_data, 
 				const String& cov_filename);
 
+  // perform sanity checks on proposalCovMatrix
+  void validate_proposal();
+
   /// set inverse problem options calIpOptionsValues common to all solvers
   void set_ip_options(); 
   /// set MH-specific inverse problem options calIpMhOptionsValues
@@ -275,9 +278,6 @@ private:
   RealVectorArray prevCoeffs;
   /// store MAP estimate for warm-starting pre-solves
   RealVector mapSoln;
-
-  /// NonDSampling method for computing sample statistics on final MCMC chain
-  Iterator chainStatsSampler;
 };
 
 } // namespace Dakota
