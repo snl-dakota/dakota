@@ -1261,14 +1261,14 @@ sub parse_test_output {
     #  print TEST_OUT;
     #}
     
-    if (/ moment statistics for each response function:/) {
+    if (/(Expansion|Sample) moment statistics for each (response function|posterior variable):/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (Mean/StdDev/Skew/Kurt header)
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (secondary tag header or table data)
-      if (/^\s*\w+$/) { # PCE w/ expansion _and_ numerical moments
+      if (/^\s*\w+$/) { # 2 sets of moments (e.g. PCE/SC w/ exp _and_ numerical)
         while (/^\s*\w+$/) {
           $_ = <OUTPUT>; # grab next line (table data)
           while (/\s+$e/) {
@@ -1278,7 +1278,7 @@ sub parse_test_output {
           }
         }
       }
-      else { # PCE/SC w/ expansion _or_ numerical moments
+      else { # 1 set of moments (e.g. PCE/SC w/ expansion _or_ numerical)
         while (/\s+$e/) {
     	print;
           print TEST_OUT;

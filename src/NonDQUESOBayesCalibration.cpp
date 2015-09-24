@@ -1443,22 +1443,46 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   //NonDBayesCalibration::print_results(s);
 
   if (bestSamples.empty()) return;
+
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  size_t j, total_num_params; StringArray combined_labels;
+  if (calibrateSigma) {
+    total_num_params = numContinuousVars + numFunctions;
+    combined_labels.resize(total_num_params);
+    for (j=0; j<numContinuousVars; ++j)
+      combined_labels[j] = cv_labels[j];
+    const StringArray& resp_labels = iteratedModel.response_labels();
+    for (j=0; j<numFunctions; ++j)
+      combined_labels[j+numContinuousVars] = resp_labels[j] + "_ErrCov";
+  }
+  else
+    copy_data(cv_labels, combined_labels);
+
   // ----------------------------------------
   // Output best sample which appoximates MAP
   // ----------------------------------------
   std::/*multi*/map<Real, QUESO::GslVector>::iterator it = --bestSamples.end();
   //std::pair<Real, QUESO::GslVector>& best = bestSamples.back();
-  QUESO::GslVector& qv = it->second; size_t j, wpp7 = write_precision+7;
+  QUESO::GslVector& qv = it->second; size_t wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
+  // print MAP for continuous random variables
   if (standardizedSpace) {
     RealVector u_rv(numContinuousVars, false), x_rv;
     copy_gsl_partial(qv, 0, u_rv);
     natafTransform.trans_U_to_X(u_rv, x_rv);
-    write_data(Cout, x_rv); // TO DO: MAP for calibrate sigma params
+    write_data(Cout, x_rv, cv_labels);
   }
-  else // TO DO: MAP for calibrate sigma params
+  else
     for (j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j] << '\n';
+      s << "                     " << std::setw(wpp7) << qv[j] << ' '
+	<< cv_labels[j] << '\n';
+  // print MAP for hyper-parameters (e.g., calibrate sigma params)
+  if (calibrateSigma)
+    for (j=numContinuousVars; j<total_num_params; ++j)
+      s << "                     " << std::setw(wpp7) << qv[j] << ' '
+	<< combined_labels[j] << '\n';
+  // print corresponding response data
   Real log_post = it->first,
        misfit   = log_prior_density(qv) - log_post; // = -log(like)
   s << "<<<<< Best log posterior       =\n                     "
@@ -1484,16 +1508,8 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   }
   */
   
-  StringArray moment_labels;
-  copy_data(iteratedModel.continuous_variable_labels(), moment_labels);
-  if (calibrateSigma) {
-    moment_labels.resize(numContinuousVars + numFunctions);
-    const StringArray& resp_labels = iteratedModel.response_labels();
-    for (j=0; j<numFunctions; ++j)
-      moment_labels[j+numContinuousVars] = resp_labels[j] + "_sigma";
-  }
   NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  nond_rep->print_moments(s, "posterior variable", moment_labels);
+  nond_rep->print_moments(s, "posterior variable", combined_labels);
 }
 
 
