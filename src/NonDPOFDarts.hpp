@@ -155,7 +155,9 @@ protected:
     // type of estimation for Lipschitz constants
     String lipschitzType;
  
- 
+    // structure for storing extreme values of functions for PDF generation 
+    RealRealPairArray extremeValues;
+
     // variables for Random number generator
     double Q[1220];
     int indx;

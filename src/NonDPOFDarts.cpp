@@ -1183,6 +1183,14 @@ void NonDPOFDarts::quantify_uncertainty()
         double isample = 0.0;
         double num_MC_samples(emulatorSamples);
         double* tmp_pnt = new double[_n_dim];
+        double* minpts = new double[numFunctions];
+        double* maxpts = new double[numFunctions];
+        if (pdfOutput) {
+          extremeValues.resize(numFunctions);
+          for (size_t i=0; i<numFunctions; ++i)
+            { minpts[i] = DBL_MAX; maxpts[i] = -DBL_MAX; }
+        }
+
         while (isample < num_MC_samples)
         {
             // sample a random point from the domain
@@ -1198,6 +1206,10 @@ void NonDPOFDarts::quantify_uncertainty()
             {
                 // evaluate sample point using surrogate
                 double surrogate_value = eval_surrogate(resp_fn_count, tmp_pnt);
+                if (pdfOutput) {
+                  if (surrogate_value < minpts[resp_fn_count]) minpts[resp_fn_count] = surrogate_value;
+                  if (surrogate_value > maxpts[resp_fn_count]) maxpts[resp_fn_count] = surrogate_value;
+                }
                 
                 size_t num_levels = requestedRespLevels[resp_fn_count].length();
                 for (size_t level_count = 0; level_count < num_levels; level_count++)
@@ -1214,6 +1226,14 @@ void NonDPOFDarts::quantify_uncertainty()
             }
             isample+=1.0;
         }
+
+        if (pdfOutput) {
+          for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) {
+            extremeValues[resp_fn_count].first  =  minpts[resp_fn_count];
+            extremeValues[resp_fn_count].second = maxpts[resp_fn_count];
+          }
+        }
+
         end_time = clock();
         cpu_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC; total_time += cpu_time;
         
@@ -1238,6 +1258,11 @@ void NonDPOFDarts::quantify_uncertainty()
             }
         }
         
+        if (pdfOutput) {
+        // infer PDFs from computedProbLevels
+          compute_densities(extremeValues);
+        }
+    
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) delete[] num_fMC_samples[resp_fn_count];
         delete[] num_fMC_samples;
         delete[] tmp_pnt;
