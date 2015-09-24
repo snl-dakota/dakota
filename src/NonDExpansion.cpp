@@ -1121,9 +1121,8 @@ void NonDExpansion::finalize_sets(bool converged_within_tol)
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   // apply all remaining increments not previously selected
-  if (outputLevel >= VERBOSE_OUTPUT)
-    nond_sparse->print_final_sets(converged_within_tol);
-  nond_sparse->finalize_sets();
+  bool output_sets = (outputLevel >= VERBOSE_OUTPUT);
+  nond_sparse->finalize_sets(output_sets, converged_within_tol);
   uSpaceModel.finalize_approximation();
 }
 

@@ -92,7 +92,8 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const String& rng, const RealVector& means, 
                 const RealVector& std_devs, const RealVector& lower_bnds,
 		const RealVector& upper_bnds, RealSymMatrix& correl): 
-  NonDSampling(sample_type, samples, seed, rng, means, std_devs, lower_bnds, upper_bnds, correl),
+  NonDSampling(sample_type, samples, seed, rng, means, std_devs,
+	       lower_bnds, upper_bnds, correl),
   numResponseFunctions(0), pcaFlag(false), varBasedDecompFlag(false)
 {
   // since there will be no late data updates to capture in this case
