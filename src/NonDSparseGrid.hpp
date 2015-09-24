@@ -64,8 +64,6 @@ public:
 
   /// returns SparseGridDriver::active_multi_index()
   const std::set<UShortArray>& active_multi_index() const;
-  /// returns SparseGridDriver::old_multi_index()
-  const std::set<UShortArray>& old_multi_index() const;
 
   /// invokes SparseGridDriver::print_smolyak_multi_index()
   void print_smolyak_multi_index() const;
@@ -156,10 +154,6 @@ inline void NonDSparseGrid::increment_specification_sequence()
 
 inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const
 { return ssgDriver->active_multi_index(); }
-
-
-inline const std::set<UShortArray>& NonDSparseGrid::old_multi_index() const
-{ return ssgDriver->old_multi_index(); }
 
 
 inline void NonDSparseGrid::print_smolyak_multi_index() const
