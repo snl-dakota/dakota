@@ -1183,12 +1183,10 @@ void NonDPOFDarts::quantify_uncertainty()
         double isample = 0.0;
         double num_MC_samples(emulatorSamples);
         double* tmp_pnt = new double[_n_dim];
-        double* minpts = new double[numFunctions];
-        double* maxpts = new double[numFunctions];
         if (pdfOutput) {
           extremeValues.resize(numFunctions);
           for (size_t i=0; i<numFunctions; ++i)
-            { minpts[i] = DBL_MAX; maxpts[i] = -DBL_MAX; }
+            { extremeValues[i].first = DBL_MAX; extremeValues[i].second = -DBL_MAX; }
         }
 
         while (isample < num_MC_samples)
@@ -1207,8 +1205,10 @@ void NonDPOFDarts::quantify_uncertainty()
                 // evaluate sample point using surrogate
                 double surrogate_value = eval_surrogate(resp_fn_count, tmp_pnt);
                 if (pdfOutput) {
-                  if (surrogate_value < minpts[resp_fn_count]) minpts[resp_fn_count] = surrogate_value;
-                  if (surrogate_value > maxpts[resp_fn_count]) maxpts[resp_fn_count] = surrogate_value;
+                  if (surrogate_value < extremeValues[resp_fn_count].first)
+                    extremeValues[resp_fn_count].first = surrogate_value;
+                  if (surrogate_value > extremeValues[resp_fn_count].second) 
+                    extremeValues[resp_fn_count].second = surrogate_value;
                 }
                 
                 size_t num_levels = requestedRespLevels[resp_fn_count].length();
@@ -1225,13 +1225,6 @@ void NonDPOFDarts::quantify_uncertainty()
                 }
             }
             isample+=1.0;
-        }
-
-        if (pdfOutput) {
-          for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++) {
-            extremeValues[resp_fn_count].first  =  minpts[resp_fn_count];
-            extremeValues[resp_fn_count].second = maxpts[resp_fn_count];
-          }
         }
 
         end_time = clock();
