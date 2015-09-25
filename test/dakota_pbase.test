@@ -5636,7 +5636,7 @@ cdf_beta:  Min = -2.1873364230e+00  Max = 1.1590040921e+01
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-Moment-based statistics for each response function:
+Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.8168454875e+11  6.6923021702e+10  3.2538688799e-01 -8.8632865437e-01
  response_fn_2  6.1791347600e+04  6.1426765735e+03  1.2619015132e-01 -9.7944997689e-02
@@ -5646,6 +5646,23 @@ Moment-based statistics for each response function:
  response_fn_1  3.6840556934e+11  3.9496352816e+11  5.8758871169e+10  7.7742818321e+10
  response_fn_2  6.0572507301e+04  6.3010187898e+04  5.3933120806e+03  7.1357953767e+03
  response_fn_3  3.4530266299e+05  3.5957224285e+05  3.1571116237e+04  4.1771182886e+04
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   2.7604749078e+11   3.6000000000e+11   5.3601733194e-12
+   3.6000000000e+11   4.0000000000e+11   4.2500000000e-12
+   4.0000000000e+11   4.4000000000e+11   3.7500000000e-12
+   4.4000000000e+11   5.4196114379e+11   2.2557612778e-12
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   4.6431154744e+04   6.0000000000e+04   2.8742313192e-05
+   6.0000000000e+04   6.5000000000e+04   6.4000000000e-05
+   6.5000000000e+04   7.0000000000e+04   4.0000000000e-05
+   7.0000000000e+04   7.8702465755e+04   1.0341896485e-05
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   2.3796737090e+05   3.5000000000e+05   4.2844660868e-06
+   3.5000000000e+05   4.0000000000e+05   8.6000000000e-06
+   4.0000000000e+05   4.5000000000e+05   1.8000000000e-06
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.6000000000e+11   5.5000000000e-01
