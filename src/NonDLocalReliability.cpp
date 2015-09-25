@@ -378,12 +378,13 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     import_sampler_rep->initialize_random_variables(natafTransform);
   }
 
-  // Size the output arrays.  Relative to sampling methods, the output storage
-  // for reliability methods is more substantial since there may be differences
-  // between requested and computed levels for the same measure (the request is
-  // not always achieved) and since probability and reliability are carried
-  // along in parallel (due to their direct correspondence).
-  computedRelLevels.resize(numFunctions);
+  // Size the output arrays, augmenting sizing in NonDReliability.  Relative to
+  // other NonD methods, the output storage for reliability methods is greater
+  // since there may be differences between requested and computed levels for
+  // the same level type (the request is not always achieved) and since
+  // probability and reliability are carried along in parallel (due to their
+  // direct correspondence).
+  computedRelLevels.resize(numFunctions); // others sized in NonDReliability
   for (size_t i=0; i<numFunctions; i++) {
     size_t num_levels = requestedRespLevels[i].length() + 
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
@@ -472,11 +473,11 @@ void NonDLocalReliability::quantify_uncertainty()
   if (mppSearchType) mpp_search();
   else               mean_value();
 
-  // post-process level mappings to define PDFs
+  // post-process level mappings to define PDFs (using all_levels_computed mode)
   if (pdfOutput && integrationRefinement) {
     NonDAdaptImpSampling* import_sampler_rep
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-    compute_densities(import_sampler_rep->extreme_values());
+    compute_densities(import_sampler_rep->extreme_values(), true);
   } // else no extreme values to define outer PDF bins
 
   numRelAnalyses++;

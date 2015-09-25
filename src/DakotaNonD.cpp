@@ -1849,7 +1849,8 @@ void NonD::initialize_level_mappings()
     refinements, it is more efficient to compute CDF/CCDF and PDF bins
     together, as in NonDSampling::compute_level_mappings(). */
 void NonD::
-compute_densities(const RealRealPairArray& min_max_fns)
+compute_densities(const RealRealPairArray& min_max_fns,
+		  bool all_levels_computed)
 {
   if (!pdfOutput)
     return;
@@ -1872,29 +1873,42 @@ compute_densities(const RealRealPairArray& min_max_fns)
     const RealVector& comp_plev_i = computedProbLevels[i];
     const RealVector& comp_glev_i = computedGenRelLevels[i];
     size_t rl_len = req_rlev_i.length(), pl_len = req_plev_i.length(),
-           bl_len = requestedRelLevels[i].length(),
-           gl_len = req_glev_i.length();
+      bl_len = requestedRelLevels[i].length(), gl_len = req_glev_i.length();
 
-    cdf_map.clear();
     // Define a unique sorted map of response levels -> cdf probabilities.
-    // refer to NonD::initialize_level_mappings() for indexing
-    switch (respLevelTarget) {
-    case PROBABILITIES:
-      for (j=0; j<rl_len; ++j)
-	cdf_map[req_rlev_i[j]] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
-      break;
-    case GEN_RELIABILITIES:
-      for (j=0; j<rl_len; ++j) {
-	Real g_cdf = (cdfFlag) ? comp_glev_i[j] : -comp_glev_i[j];
-	cdf_map[req_rlev_i[j]] = Pecos::NormalRandomVariable::std_cdf(g_cdf);
-      }
-      break;
+    // (refer to NonD::initialize_level_mappings() for default indexing;
+    // all_levels_computed is an option used by reliability methods where
+    // computed*Levels are defined across the union of all requested levels)
+    cdf_map.clear();
+    if (all_levels_computed) {
+      size_t total_len = rl_len + pl_len + bl_len + gl_len;
+      for (j=0; j<total_len; ++j)
+	cdf_map[comp_rlev_i[j]]
+	  = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
     }
-    for (j=0; j<pl_len; ++j)
-      cdf_map[comp_rlev_i[j]] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
-    for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
-      Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
-      cdf_map[comp_rlev_i[cntr]] = Pecos::NormalRandomVariable::std_cdf(g_cdf);
+    else {
+      switch (respLevelTarget) {
+      case PROBABILITIES:
+	for (j=0; j<rl_len; ++j)
+	  cdf_map[req_rlev_i[j]]
+	    = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+	break;
+    //case RELIABILITIES: // exclude reliability level mappings from cdf_map
+      case GEN_RELIABILITIES:
+	for (j=0; j<rl_len; ++j) {
+	  Real g_cdf = (cdfFlag) ? comp_glev_i[j] : -comp_glev_i[j];
+	  cdf_map[req_rlev_i[j]] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
+	}
+	break;
+      }
+      for (j=0; j<pl_len; ++j)
+	cdf_map[comp_rlev_i[j]] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
+      // exclude reliability level mappings from cdf_map
+      for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
+	Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
+	cdf_map[comp_rlev_i[cntr]]
+	  = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
+      }
     }
 
     if (!cdf_map.empty()) {

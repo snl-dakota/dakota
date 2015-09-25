@@ -80,8 +80,9 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1); 
   }
 
-  // standard reliability indices are not defined and should be precluded via
-  // the input spec.  requestedRelLevels cannot be used for empty() tests.
+  // standard reliability indices are not defined and should be precluded
+  // via the input spec.  requestedRelLevels is default sized in NonD and
+  // cannot be used for empty() tests.
   if (!probDescDB.get_rva("method.nond.reliability_levels").empty() ||
       respLevelTarget == RELIABILITIES) {
     Cerr << "Error: reliability indices are not defined for global reliability "
@@ -91,7 +92,8 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
   // requestedProbLevels & requestedGenRelLevels are not yet supported
   // since PMA EGRA is currently a research issue.  requestedProbLevels
-  // and requestedGenRelLevels cannot be used for empty() tests.
+  // and requestedGenRelLevels are default sized in NonD and cannot be
+  // used for empty() tests.
   if (!probDescDB.get_rva("method.nond.probability_levels").empty() ||
       !probDescDB.get_rva("method.nond.gen_reliability_levels").empty()) {
     Cerr << "Error: Inverse reliability mappings not currently supported in "
@@ -107,12 +109,14 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   }
 #endif // DAKOTA_F90
 
-  // Size the output arrays.  Relative to sampling methods, the output storage
-  // for reliability methods is more substantial since there may be differences
-  // between requested and computed levels for the same measure (the request is
-  // not always achieved) and since probability and reliability are carried
-  // along in parallel (due to their direct correspondence).
-  size_t i, j;
+  // Size the output arrays, augmenting sizing in NonDReliability.  Relative to
+  // other NonD methods, the output storage for reliability methods is greater
+  // since there may be differences between requested and computed levels for
+  // the same level type (the request is not always achieved) and since
+  // probability and reliability are carried along in parallel (due to their
+  // direct correspondence).  Relative to NonDLocalReliability, RelLevels are
+  // ignored since probabilities are estimated directly from MMAIS.
+  size_t i;
   for (i=0; i<numFunctions; i++) {
     size_t num_levels = requestedRespLevels[i].length() + 
       requestedProbLevels[i].length() + requestedGenRelLevels[i].length();
@@ -844,9 +848,9 @@ void NonDGlobalReliability::importance_sampling()
       }
     }
   }
-  // all probability levels computed, now infer PDFs
+  // post-process level mappings to define PDFs (using all_levels_computed mode)
   if (pdfOutput)
-    compute_densities(importance_sampler_rep->extreme_values());
+    compute_densities(importance_sampler_rep->extreme_values(), true);
 }
 
 
