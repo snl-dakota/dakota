@@ -261,7 +261,7 @@ sub compare_output {
     # single quotes must be escaped here:
     my $best_re = '^<<<<< Best [ \w\(\)]+=$';
     my $pce_re = 'of Polynomial Chaos Expansion for';
-    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Expansion moment statistics|Sample moment statistics|95% confidence intervals) for each response function:)$';
+    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each response function:)$';
 
     while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
 	    ($base =~ /${pce_re}/)  && ($test =~ /${pce_re}/)  ||
