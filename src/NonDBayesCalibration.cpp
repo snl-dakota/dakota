@@ -38,7 +38,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  calibrateSigma(probDescDB.get_bool("method.nond.calibrate_sigma")),
+  obsErrorMultiplierMode(
+    probDescDB.get_ushort("method.nond.calibrate_error_mode")),
+  numHyperparams(0),
   adaptPosteriorRefine(
     probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
   proposalCovarType(
@@ -206,6 +208,19 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
+  // Initialize sizing for hyperparameters (observation error), not
+  // currently part of a RecastModel
+  size_t num_resp_groups = 
+    mcmcModel.current_response().shared_data().num_response_groups(); 
+  if (obsErrorMultiplierMode == CALIBRATE_ONE)
+    numHyperparams = 1;
+  else if (obsErrorMultiplierMode == CALIBRATE_PER_EXPER)
+    numHyperparams = numExperiments;
+  else if (obsErrorMultiplierMode == CALIBRATE_PER_RESP)
+    numHyperparams = num_resp_groups;
+  else if (obsErrorMultiplierMode == CALIBRATE_BOTH)
+    numHyperparams = numExperiments * num_resp_groups;
+
   // -------------------------------------
   // Construct sampler for posterior stats (only in NonDQUESOBayes for now)
   // -------------------------------------
@@ -222,6 +237,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
       secondary_resp_map_indices;
+    // BMA @ MSE: I believe this needs to be sized correctly based on total
+    // residual size, not numFunctions
     primary_resp_map_indices[0].resize(numFunctions);
     for (size_t i=0; i<numFunctions; ++i)
       primary_resp_map_indices[0][i] = i;
@@ -409,61 +426,46 @@ update_residual_response(const Response& resp)
 }
 
 
-/** The passed residual_resp must already be differenced with any
-    data, if present. */
+/** Calculate the likelihood, accounting for optional user-provided
+    observation error covariance and/or calibrated multipliers on the
+    errors. The passed residual_resp must already be differenced with
+    any data, if present. */
 Real NonDBayesCalibration::
 misfit(const Response& residual_resp, const RealVector& calibrated_sigmas)
 {
-  // TODO: Update treatment of standard deviations as inference
-  // vs. fixed parameters; also advanced use cases of calibrated
-  // scalar sigma against user-provided covariance structure.
+  // For now, mirror the flow we'd move to if posing this via nested
+  // RecastModels (even though it makes extra copies).  Previously variance 
+  // data OR calibrated errors were applied; now they are independent
+  
+  // On entry to this function, residual_resp contains the expanded,
+  // potentially interpolated, set of residuals (from
+  // update_residual_response)
+  RealVector residuals = residual_resp.function_values();
 
-  // Calculate the likelihood depending on what information is
-  // available for the standard deviations NOTE: If the calibration of
-  // the sigma terms is included, we assume ONE sigma term per
-  // function is calibrated.  Otherwise, we assume that yStdData has
-  // already had the correct values placed depending if there is zero,
-  // one, num_fn, or a full num_exp*num_fn matrix of standard deviations.
-  // Thus, we just have to iterate over this to calculate the likelihood.
-
-  Real result = 0.;
-  const RealVector& resid_values = residual_resp.function_values();
-  if (!calibrationData) {
-    // preserving this case for now, since can't call determine_
-    // active_request when no data (numExperiments defaults to 1)
-    RealVector residuals = residualResponse.function_values_view();
-    result = residuals.dot( residuals );
-  }
-  else if (calibrateSigma) {
-    // This case has to use the original number of functions.  It
-    // also doesn't allow for the fully general case of variable
-    // num_functions per experiment.
-    for (size_t i=0; i<numExperiments; ++i)
-      for (size_t j=0; j<numFunctions; ++j)
-        result += 
-          std::pow(resid_values[i*numFunctions+j] / calibrated_sigmas[j], 2.);
-  }
-  else {
-    // data already differenced if needed, but no sigma to calibrate
-    // this assumes that update_residual_response already called
-    RealVector residuals;
-    if (expData.variance_active()) {  // r <- Gamma_d^{-1/2} r
-      // BMA: perhaps a better name would be per_exp_asv?
-      bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
-                                      || expData.interpolate_flag() );
-      ShortArray total_asv =  
-        expData.determine_active_request(residualResponse, 
-                                         interrogate_field_data);
-      // scale the residuals without changing member residualResponse
-      residuals.size(residualResponse.num_functions());
-      expData.scale_residuals(residualResponse, total_asv, residuals);
-    }
-    else 
-      residuals = residualResponse.function_values_view();
-    result = residuals.dot( residuals );
+  // scale by inverse of user-provided observation error
+  if (expData.variance_active()) {  // r <- Gamma_d^{-1/2} r
+    // BMA: perhaps a better name would be per_exp_asv?
+    bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
+				    || expData.interpolate_flag() );
+    // TODO: Make this call robust to zero and single experiment cases
+    ShortArray total_asv =  
+      expData.determine_active_request(residual_resp, 
+				       interrogate_field_data);
+    // scale the residuals without changing member residualResponse
+    expData.scale_residuals(residual_resp, total_asv, residuals);
   }
 
-  return result / 2.; // misfit defined as 1/2 r^T Gamma_d^{-1} r
+  if (obsErrorMultiplierMode > 0) {  
+    // r <- r ./ mult, where mult might be per-block
+    // scale by mult, whether 1, per-experiment, per-response, or both
+    // for now, the multiplier calibration mode is a method-related
+    // parameter; could instead have a by-index interface here...
+    expData.scale_residuals(calibrated_sigmas, obsErrorMultiplierMode, 
+                            residuals);
+  }
+
+  // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
+  return residuals.dot( residuals ) / 2.0;
 }
 
 
@@ -474,8 +476,8 @@ neg_log_post_resp_mapping(const Variables& model_vars,
                           const Response& model_resp,
                           Response& nlpost_resp)
 {
-  if (nonDBayesInstance->calibrateSigma) {
-    Cerr << "Error: sigma calibration currently unsupported in MAP pre-solve."
+  if (nonDBayesInstance->obsErrorMultiplierMode > 0) {
+    Cerr << "Error: observation error calibration unsupported in MAP pre-solve."
          << std::endl;
     abort_handler(-1);
   }

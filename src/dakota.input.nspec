@@ -1702,7 +1702,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
-        [ calibrate_sigma {N_mdm(true,calibrateSigmaFlag)} ]
+        [ calibrate_error_multipliers {0}
+          one {N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}
+          |
+          per_experiment {N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_EXPER)}
+          |
+          per_response {N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}
+          |
+          both {N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}
+         ]
        )
       |
       ( dace {N_mdm(utype,methodName_DACE)}

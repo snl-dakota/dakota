@@ -184,8 +184,7 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 }
 
 
-void ExperimentData:: 
-load_data(const std::string& context_message, bool calc_sigma_from_data)
+void ExperimentData::load_data(const std::string& context_message)
 {
   // TODO: complete scalar and field cases
 
@@ -319,35 +318,6 @@ load_data(const std::string& context_message, bool calc_sigma_from_data)
     abort_handler(-1);
 
 
-  // historically we calculated sigma from data by default if not
-  // provided; might want a user option for this However, is counter
-  // to loading one experiment at a time; would have to be done
-  // afterwards.  Also, not clear about what to do in interpolating
-  // field data case...
-  if (calc_sigma_from_data && (scalarSigmaPerRow == 0)) {
-    estimated_sigmas.resize(num_scalars);
-    Real mean_est, var_est;
-    for (size_t j=0; j<num_scalars; j++){
-      mean_est = 0.0;
-      for (size_t i=0; i<numExperiments; i++) 
-        mean_est += allExperiments[i].function_value(j);
-      mean_est = mean_est / ((Real)(numExperiments));
-      var_est = 0;
-      for (size_t i=0; i<numExperiments; i++) 
-        var_est += (allExperiments[i].function_value(j)-mean_est)*
-                   (allExperiments[i].function_value(j)-mean_est); 
-      estimated_sigmas(j) = (numExperiments > 1) ? 
-	  (var_est/(Real)(numExperiments-1)) : 1.0;
-      }
-      if (outputLevel >= DEBUG_OUTPUT) 
-        Cout << "estimated sigmas " << estimated_sigmas << "\n";
-  }
-  if (calc_sigma_from_data && (scalarSigmaPerRow > 0)) {
-     estimated_sigmas.resize(num_scalars);
-     allExperiments[0].get_covariance_diagonal(estimated_sigmas);
-     if (outputLevel >= DEBUG_OUTPUT) 
-       Cout << "estimated sigmas " << estimated_sigmas << "\n";
-  } 
   // verify that the two experiments have different data
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Experiment data summary:";
@@ -682,12 +652,6 @@ scalar_data(size_t response, size_t experiment)
   //}
   return(allExperiments[experiment].function_value(response));
 }
-
-Real ExperimentData::
-scalar_sigma_est(size_t response)
-{
-  return estimated_sigmas(response);
-} 
 
 RealVector ExperimentData::
 field_data_view(size_t response, size_t experiment)
@@ -1257,6 +1221,120 @@ build_hessian_of_sum_square_residuals_from_function_data(
       // multiplication
       //hess_jk *= 2.;
     }
+  }
+}
+
+
+/** In-place scaling of residuals by observation error multipliers
+ */
+void ExperimentData::
+scale_residuals(const RealVector& multipliers, short multiplier_mode,
+                RealVector& residuals) 
+{
+  // TODO: consistent handling of ASV across non-experiment cases
+  // NOTE: In most general case the index into multipliers is exp_ind
+  // * num_response_groups + resp_ind (never per function ind, e.g.,
+  // in a field)
+  
+  switch (multiplier_mode) {
+
+  case CALIBRATE_NONE:
+    // no-op
+    break;
+
+  case CALIBRATE_ONE:
+    assert(multipliers.length() == 1);
+    residuals *= (1.0/sqrt(multipliers[0]));
+    break;
+
+  case CALIBRATE_PER_EXPER: {
+    assert(multipliers.length() == numExperiments);
+    size_t residual_offset = 0;
+    for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
+      // BMA TODO: try using view; hasn't worked as expected!
+      //      RealVector exp_resid(residuals_view(residuals, exp_ind));
+      //      exp_resid *= (1.0/sqrt(multipliers[exp_ind]));
+      for (size_t fn_ind = 0; fn_ind < experimentLengths[exp_ind]; ++fn_ind)
+	residuals[residual_offset + fn_ind] /= sqrt(multipliers[exp_ind]);
+      residual_offset += experimentLengths[exp_ind];
+    }
+    break;
+  }
+
+  case CALIBRATE_PER_RESP: {
+    assert(multipliers.length() == simulationSRD.num_response_groups());
+
+    size_t residual_offset = 0;
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+
+    for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
+
+      // each response has a different multiplier, but they don't
+      // differ across experiments
+      size_t multiplier_offset = 0;
+
+      // iterate scalar responses, then fields
+      // BMA TODO: encapsulate in ExperimentResponse?
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
+        residuals[residual_offset] /= sqrt(multipliers[multiplier_offset]);
+	++residual_offset;
+	++multiplier_offset;
+      } 
+
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+        Real sqrt_mult = sqrt(multipliers[multiplier_offset]);
+	for (size_t fc_ind = 0; fc_ind < field_lens[f_ind]; ++fc_ind) {
+	  residuals[residual_offset] /= sqrt_mult;
+	  ++residual_offset;
+	}
+	++multiplier_offset;
+      }
+    }
+    break;
+  }
+
+  case CALIBRATE_BOTH: {
+
+    assert(multipliers.length() == 
+	   numExperiments*simulationSRD.num_response_groups());
+
+    size_t residual_offset = 0, multiplier_offset = 0;
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+      
+    for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
+
+      // iterate scalar responses, then fields
+      // TODO: encapsulate in ExperimentResponse?
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
+	residuals[residual_offset] /= sqrt(multipliers[multiplier_offset]);
+	++residual_offset;
+	++multiplier_offset;
+      } 
+
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+	Real mult = sqrt(multipliers[multiplier_offset]);
+	for (size_t fc_ind = 0; fc_ind < field_lens[f_ind]; ++fc_ind) {
+	  residuals[residual_offset] /= mult;
+	  ++residual_offset;
+	}
+	++multiplier_offset;
+      }
+
+    }	       
+    break;
+  }
+
+  default:
+    // unknown mode
+    Cerr << "\nError: scale_residuals() called with unknown multiplier mode.\n";
+    abort_handler(-1);
+    break;
   }
 }
 

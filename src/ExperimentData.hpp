@@ -98,8 +98,7 @@ public:
   //
  
   /// Load experiments from data files (simple scalar or field)
-  void load_data(const std::string& context_message,
-		 bool calc_sigma_from_data);
+  void load_data(const std::string& context_message);
 
   /// retrieve the number of experiments
   size_t num_experiments() const
@@ -133,10 +132,6 @@ public:
   /// retrieve the data value for the given response, for the given
   /// experiment 
   Real scalar_data(size_t response, size_t experiment);
-
-  /// retrieve the standard deviation value for the given response, 
-  /// estimated over all responses
-  Real scalar_sigma_est(size_t response);
 
   /// retrieve a view of the field data for the given response, for the given
   /// experiment 
@@ -277,6 +272,11 @@ public:
     const RealMatrix &func_gradients, const RealVector &residuals,
     RealSymMatrix &ssr_hessian, const ShortArray& asrv);
 
+  /// scale the residuals by multipliers, according to blocks
+  /// indicated by multiplier mode
+  void scale_residuals(const RealVector& multipliers, short multiplier_mode,
+                       RealVector& residuals);
+
 private:
 
   // initialization helpers
@@ -367,8 +367,6 @@ private:
   bool interpolateFlag;
   /// output verbosity level
   short outputLevel;
-  /// vector of estimated sigma values to be used in Bayesian calibration
-  RealVector estimated_sigmas;
 
   // core data storage
 

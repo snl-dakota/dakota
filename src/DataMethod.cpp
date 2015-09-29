@@ -135,7 +135,7 @@ DataMethodRep::DataMethodRep():
   adaptPosteriorRefine(false), logitTransform(false),
   preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0), likelihoodScale(1.),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  batchSize(0), calibrateSigmaFlag(false), numChains(3), numCR(3),
+  batchSize(0), calibrateErrorMode(CALIBRATE_NONE), numChains(3), numCR(3),
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
@@ -262,7 +262,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << preSolveMethod << proposalCovType << proposalCovUpdates
     << proposalCovInputType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
+    << calibrateErrorMode << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile;
@@ -397,7 +397,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> preSolveMethod >> proposalCovType >> proposalCovUpdates
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
     >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
-    >> calibrateSigmaFlag >> numChains >> numCR >> crossoverChainPairs
+    >> calibrateErrorMode >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
     >> dataDistFile;
@@ -532,7 +532,7 @@ void DataMethodRep::write(std::ostream& s) const
     << preSolveMethod << proposalCovType << proposalCovUpdates
     << proposalCovInputType << proposalCovData << proposalCovFile
     << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateSigmaFlag << numChains << numCR << crossoverChainPairs
+    << calibrateErrorMode << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile;

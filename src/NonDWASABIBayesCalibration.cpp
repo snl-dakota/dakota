@@ -91,9 +91,8 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   
   // we assume that the distribution on the data will either be given as a Gaussian 
   // or estimated using a KDE
-  bool calc_sigma_from_data = false; // calculate sigma if not provided
   if (calibrationData)
-    expData.load_data("WASABI Bayes Calibration", calc_sigma_from_data);
+    expData.load_data("WASABI Bayes Calibration");
   else
     Cout << "No experiment data from files\n"
 	 << "WASABI is assuming the distribution is Gaussian\n";

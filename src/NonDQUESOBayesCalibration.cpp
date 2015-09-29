@@ -229,14 +229,14 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
-    expData.load_data("QUESO Bayes Calibration", calibrateSigma);
+    expData.load_data("QUESO Bayes Calibration");
   else
     Cout << "No experiment data from files\n"
-	 << "QUESO is assuming the simulation is returning the residuals\n";
-  if (calibrateSigma && !calibrationData) {
+         << "QUESO is assuming the simulation is returning the residuals\n";
+  // BMA TODO: Want to support these options independently
+  if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
-         << "but have not provided experimental data information."<<std::endl;
-     //calibration of sigma temporarily unsupported."<<std::endl;
+         << "but have not provided experimental data information." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
@@ -275,17 +275,15 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   init_parameter_domain();
 
   // Size our Queso covariance matrix and initialize trailing diagonal if
-  // calibrating sigma terms
+  // calibrating error hyperparams
   proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
-  if (calibrateSigma) {
-    // sigma terms utilize uniform priors
+  if (numHyperparams > 0) {
+    // all hyperparams utilize uniform priors
+    // BMA TODO: inverse gamma
     Real uniform_variance_factor = 1.99 * 1.99 / 12.; // uniform on [.01,2.]
-    for (int i=0; i<numFunctions; ++i) {
-      Real var_i = uniform_variance_factor * expData.scalar_sigma_est(i);
-      if (outputLevel >= DEBUG_OUTPUT )  
-        Cout << "Diagonal estimate for sigma_i " << var_i << '\n';
-      (*proposalCovMatrix)(i+numContinuousVars,i+numContinuousVars) = var_i;
-    }
+    for (int i=0; i<numHyperparams; ++i)
+      (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
+        uniform_variance_factor;
   }
 
   // initialize proposal covariance (must follow parameter domain init)
@@ -443,7 +441,7 @@ void NonDQUESOBayesCalibration::compute_statistics()
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   size_t i, num_mcmc = mcmc_chain.subSequenceSize(), total_num_params
-    = (calibrateSigma) ? numContinuousVars + numFunctions : numContinuousVars;
+    = numContinuousVars + numHyperparams;
   // Note: this will be much simpler when QUESO no longer requires restarting.
   // --> defer for now?
   // --> top UT contract priority, post MPI? (get telecons going)
@@ -459,10 +457,10 @@ void NonDQUESOBayesCalibration::compute_statistics()
       Real* samp_i = acceptance_chain[i];
       RealVector x_rv(Teuchos::View, samp_i, numContinuousVars);
       natafTransform.trans_U_to_X(u_rv, x_rv);
-      if (calibrateSigma) {
-	RealVector sig_rv(Teuchos::View, &samp_i[numContinuousVars],
-			  numFunctions);
-	copy_gsl_partial(qv, numContinuousVars, sig_rv);
+      if (numHyperparams > 0) {
+        RealVector sig_rv(Teuchos::View, &samp_i[numContinuousVars],
+                          numHyperparams);
+        copy_gsl_partial(qv, numContinuousVars, sig_rv);
       }
     }
     else
@@ -657,8 +655,9 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 {
   Cout << "Running Bayesian Calibration with QUESO " << mcmcType << " using "
        << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
-  //if (outputLevel > NORMAL_OUTPUT)
-  //  Cout << "\n  Calibrate Sigma " << calibrateSigma << std::endl;
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "\n  Calibrating " << numHyperparams << " error hyperparameters." 
+	 << std::endl;
 
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
@@ -704,11 +703,12 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
     TabularIO::open_file(exportMCMCStream, mcmc_filename,
 			 "NonDQUESOBayesCalibration chain export");
     StringArray resp_fn_sigmas;
-    if (calibrateSigma) {
-      resp_fn_sigmas.resize(numFunctions);
+    if (numHyperparams > 0) {
+      resp_fn_sigmas.resize(numHyperparams);
+      // BMA TODO: populate based on exp * resp and name same as other places
       const StringArray& resp_labels = iteratedModel.response_labels();
-      for (i=0; i<numFunctions; ++i)
-	resp_fn_sigmas[i] = resp_labels[i] + "_sigma";
+      for (i=0; i<numHyperparams; ++i)
+        resp_fn_sigmas[i] = resp_labels[i] + "_sigma";
     }
     TabularIO::write_header_tabular(exportMCMCStream,
       iteratedModel.current_variables(), resp_fn_sigmas, "mcmc_id",
@@ -722,7 +722,7 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
   size_t j, wpp4 = write_precision+4, total_num_params
-    = (calibrateSigma) ? numContinuousVars + numFunctions : numContinuousVars;
+    = numContinuousVars + numHyperparams;
   QUESO::GslVector qv(paramSpace->zeroVector());
   exportMCMCStream << std::setprecision(write_precision) 
 		   << std::resetiosflags(std::ios::floatfield);
@@ -741,7 +741,7 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
     else
       for (j=0; j<numContinuousVars; ++j)
 	exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
-    // trailing sigma calibration params are not transformed
+    // trailing calibrated hyperparams are not transformed
     for (j=numContinuousVars; j<total_num_params; ++j)
       exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
     exportMCMCStream << '\n';
@@ -1130,8 +1130,11 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 
 void NonDQUESOBayesCalibration::init_parameter_domain()
 {
-  int total_num_params = (calibrateSigma) ?
-    numContinuousVars + numFunctions : numContinuousVars; 
+  // If calibrating error multipliers, the parameter domain is expanded to
+  // estimate hyperparameters sigma^2 that multiply any user-provided covariance
+  // BMA TODO: change from uniform to inverse gamma prior and allow control for 
+  // cases where user didn't give covariance information
+  int total_num_params = numContinuousVars + numHyperparams;
 
   paramSpace.reset(new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
 		   (*quesoEnv, "param_", total_num_params, NULL));
@@ -1142,22 +1145,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     natafTransform.u_bounds() : natafTransform.x_bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
-  // if calibrateSigma, the parameter domain is expanded by sigma terms 
-  if (calibrateSigma) {
-    //RealVector covariance_diagonal;
-    // Todo: pass in corrrect experiment number as second argument
-    //expData.get_main_diagonal( covariance_diagonal, 0 );
-    for (int j=0; j<numFunctions; ++j) {
-      // TODO: Need to be able to get sigma from new covariance class.
-      // Also need to sync up this with the logic in the ctor.  Also need
-      // a default if there's no experimental data (may not be sensible)
-      //paramMins[numContinuousVars+j] = paramMaxs[numContinuousVars+j] = 1.;
-      //Real std_j = std::sqrt( covariance_diagonal[j] );
-      Real std_j = std::sqrt(expData.scalar_sigma_est(j));
-      Cout << " scalar_sigma_est " << std_j;
-      paramMins[numContinuousVars+j] = .01 * std_j;
-      paramMaxs[numContinuousVars+j] =  2. * std_j;
-    }
+  for (size_t i=0; i<numHyperparams; ++i) {
+    paramMins[numContinuousVars + i] = .01;
+    paramMaxs[numContinuousVars + i] =  2.;
   }
   paramDomain.reset(new QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
 		    ("param_", *paramSpace, paramMins, paramMaxs));
@@ -1178,9 +1168,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   }
   else // init_pt and param domain in x-space
     copy_gsl_partial(init_pt, *paramInitials, 0);
-  if (calibrateSigma)
-    for (size_t i=numContinuousVars; i<total_num_params; ++i)
-      (*paramInitials)[i] = (paramMaxs[i] + paramMins[i]) / 2.;
+  // observation error multipliers always start at 1.0
+  for (size_t i=0; i<numHyperparams; ++i)
+    (*paramInitials)[numContinuousVars + i] = 1.0;
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
@@ -1447,11 +1437,12 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
   size_t j, total_num_params; StringArray combined_labels;
-  if (calibrateSigma) {
-    total_num_params = numContinuousVars + numFunctions;
+  if (obsErrorMultiplierMode > 0) {
+    total_num_params = numContinuousVars + numHyperparams;
     combined_labels.resize(total_num_params);
     for (j=0; j<numContinuousVars; ++j)
       combined_labels[j] = cv_labels[j];
+    // BMA TODO: generate labels based on various cases, also in NonDBayes
     const StringArray& resp_labels = iteratedModel.response_labels();
     for (j=0; j<numFunctions; ++j)
       combined_labels[j+numContinuousVars] = resp_labels[j] + "_ErrCov";
@@ -1477,8 +1468,8 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
     for (j=0; j<numContinuousVars; ++j)
       s << "                     " << std::setw(wpp7) << qv[j] << ' '
 	<< cv_labels[j] << '\n';
-  // print MAP for hyper-parameters (e.g., calibrate sigma params)
-  if (calibrateSigma)
+  // print MAP for hyper-parameters (e.g., observation error params)
+  if (numHyperparams > 0)
     for (j=numContinuousVars; j<total_num_params; ++j)
       s << "                     " << std::setw(wpp7) << qv[j] << ' '
 	<< combined_labels[j] << '\n';
@@ -1530,11 +1521,12 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   RealVector& c_vars = nonDQUESOInstance->
     mcmcModel.current_variables().continuous_variables_view();
   nonDQUESOInstance->copy_gsl_partial(paramValues, 0, c_vars);
-  RealVector calibrated_sigmas;
+  RealVector hyper_params;
   size_t num_cv = c_vars.length(), num_fns = nonDQUESOInstance->numFunctions;
-  if (nonDQUESOInstance->calibrateSigma) {
-    calibrated_sigmas.sizeUninitialized(num_fns);
-    nonDQUESOInstance->copy_gsl_partial(paramValues, num_cv, calibrated_sigmas);
+  if (nonDQUESOInstance->numHyperparams > 0) {
+    hyper_params.sizeUninitialized(nonDQUESOInstance->numHyperparams);
+    nonDQUESOInstance->copy_gsl_partial(paramValues, num_cv, 
+                                        hyper_params);
   }
 
   nonDQUESOInstance->mcmcModel.compute_response();
@@ -1543,19 +1535,19 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
 
   double result = 
     -nonDQUESOInstance->misfit(nonDQUESOInstance->residualResponse, 
-                               calibrated_sigmas) / 
+                               hyper_params) / 
     nonDQUESOInstance->likelihoodScale;
 
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << result << " Likelihood is "
-	 << std::exp(result) << '\n';
+         << std::exp(result) << '\n';
 
     size_t i; std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDQUESOLogLike.txt", std::ios::out | std::ios::app);
     // Note: parameter values are in scaled space, if scaling is active
     for (i=0; i<num_cv;  ++i)   LogLikeOutput << paramValues[i]       << ' ' ;
-    if (nonDQUESOInstance->calibrateSigma)
-      for (i=0; i<num_fns; ++i) LogLikeOutput << calibrated_sigmas(i) << ' ' ;
+    for (i=0; i<nonDQUESOInstance->numHyperparams; ++i) 
+      LogLikeOutput << hyper_params(i) << ' ' ;
     const RealVector& fn_values = resp.function_values();
     for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values[i]         << ' ' ;
     LogLikeOutput << result << '\n';

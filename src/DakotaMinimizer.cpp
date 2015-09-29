@@ -330,10 +330,8 @@ void Minimizer::data_transform_model()
       abort_handler(-1);
   }
 
-  // this option is currently ignored by ExperimentData; note that we
-  // don't want to weight by missing sigma all = 1.0
-  bool calc_sigma_from_data = true; // calculate sigma if not provided 
-  expData.load_data("Least Squares", calc_sigma_from_data);
+  // note that we don't want to weight by missing sigma: all = 1.0
+  expData.load_data("Least Squares");
 
   // update sizes in Iterator view
   numTotalCalibTerms = expData.num_total_exppoints();

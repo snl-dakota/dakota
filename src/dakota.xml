@@ -2170,7 +2170,16 @@
                   <keyword  id="likelihood_scale" name="likelihood_scale" code="{N_mdm(Real,likelihoodScale)}" label="Likelihood scale factor" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
                     <param type="REAL" />
                   </keyword>
-                  <keyword  id="calibrate_sigma" name="calibrate_sigma" code="{N_mdm(true,calibrateSigmaFlag)}" label="Calibrate sigma flag" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="The sigma terms are not calibrated" />
+                  <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
+                    <oneOf>
+                      <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier" help=""  />
+                      <keyword  id="per_experiment" name="per_experiment" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_EXPER)}" label="multiplier per experiment" help=""  />
+                      <keyword  id="per_response" name="per_response" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}" label="multiplier per response" help=""  />
+                      <keyword  id="both" name="both" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" label="multiplier for each experiment, response" help=""  />
+                    </oneOf>
+                  </keyword>
+
+
                 </keyword>
                 <keyword  id="dace" name="dace" code="{N_mdm(utype,methodName_DACE)}" label="dace" help="" minOccurs="1" group="[CHOOSE method category]DACE" >
                   <oneOf label="DACE type">

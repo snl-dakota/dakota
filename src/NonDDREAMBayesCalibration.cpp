@@ -95,7 +95,6 @@ NonDDREAMBayesCalibration::
 NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
-  calibrateSigma(probDescDB.get_bool("method.nond.calibrate_sigma")),
   numChains(probDescDB.get_int("method.dream.num_chains")),
   numCR(probDescDB.get_int("method.dream.num_cr")),
   crossoverChainPairs(probDescDB.get_int("method.dream.crossover_chain_pairs")),
@@ -167,7 +166,8 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // diagnostic information
   Cout << "INFO (DREAM): Standardized space " << standardizedSpace << '\n';
   Cout << "INFO (DREAM): Num Samples " << numSamples << '\n';
-  Cout << "INFO (DREAM): Calibrate Sigma " << calibrateSigma  << '\n';
+  Cout << "INFO (DREAM): Calibrating " << numHyperparams 
+       << " error hyperparameters.\n";
  
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
@@ -191,15 +191,15 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 
   // Read in all of the experimental data:  any x configuration 
   // variables, y observations, and y_std if available 
-  bool calc_sigma_from_data = true; // calculate sigma if not provided
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
-    expData.load_data("DREAM Bayes Calibration", calc_sigma_from_data);
+    expData.load_data("DREAM Bayes Calibration");
   else
     Cout << "No experiment data from files\n"
-	 << "DREAM is assuming the simulation is returning the residuals\n";
-  if (calibrateSigma && !calibrationData) {
+         << "DREAM is assuming the simulation is returning the residuals\n";
+  // BMA TODO: support indepdent options
+  if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error "
          << "but have not provided experimental data information."<<std::endl;
     abort_handler(METHOD_ERROR);
@@ -212,8 +212,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
   ////////////////////////////////////////////////////////
-  int total_num_params = (calibrateSigma) ?
-    numContinuousVars + numFunctions : numContinuousVars; 
+  int total_num_params = numContinuousVars + numHyperparams;
   
   // resize, initializing to zero
   paramMins.size(total_num_params);
@@ -245,22 +244,16 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
       paramMaxs[i]=upper_u[i];
     }
   }
-  // the parameter domain will now be expanded by sigma terms if 
-  // calibrateSigma is true
-  if (calibrateSigma) {
-    RealVector covariance_diagonal;
-    // Todo: pass in corrrect experiment number as second argument
-    expData.get_main_diagonal( covariance_diagonal, 0 );
-    for (int j=0; j<numFunctions; j++){
-      Real std_j = std::sqrt( covariance_diagonal[j] );
-      paramMins[numContinuousVars+j] = 0.01*std_j;
-      paramMaxs[numContinuousVars+j] = 2.0*std_j;
-      //paramMins[numContinuousVars+j] = 1.0; //0.01*std_0_j;
-      //paramMaxs[numContinuousVars+j] = 1.0; //2.0*std_0_j;
-    }
+  // If calibrating error multipliers, the parameter domain is expanded to
+  // estimate hyperparameters sigma^2 that multiply any user-provided covariance
+  // BMA TODO: change from uniform to inverse gamma prior and allow control for 
+  // cases where user didn't give covariance information
+  for (size_t i=0; i<numHyperparams; ++i) {
+    paramMins[numContinuousVars + i] = .01;
+    paramMaxs[numContinuousVars + i] =  2.;
   }
  
-  Cout << "INFO (DREAM): calibrateSigma  " << calibrateSigma << '\n';
+  Cout << "INFO (DREAM): number hyperparams = " << numHyperparams << '\n';
   Cout << "INFO (DREAM): paramMins  " << paramMins << '\n';
   Cout << "INFO (DREAM): paramMaxs  " << paramMaxs << '\n';
   
@@ -339,9 +332,10 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
   // BMA TODO:
   // Bug: if calibrating sigma, this would be bigger
   //RealVector x(Teuchos::View, zp, par_num);
-  RealVector c_vars(Teuchos::View, zp, num_cv), calibrated_sigmas;
-  if (nonDDREAMInstance->calibrateSigma)
-    calibrated_sigmas = RealVector(Teuchos::View, &zp[num_cv], num_fns);
+  RealVector c_vars(Teuchos::View, zp, num_cv), hyper_params;
+  if (nonDDREAMInstance->numHyperparams > 0)
+    hyper_params = RealVector(Teuchos::View, &zp[num_cv], 
+                              nonDDREAMInstance->numHyperparams);
     
   //Cout << "numExpStdDeviationsRead "
   //     << nonDDREAMInstance->numExpStdDeviationsRead << '\n';
@@ -355,20 +349,23 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
   const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
   nonDDREAMInstance->update_residual_response(resp);
 
-  double result = -nonDDREAMInstance->misfit(resp, calibrated_sigmas)
+  double result = -nonDDREAMInstance->misfit(nonDDREAMInstance->residualResponse,
+					     hyper_params)
                 /  nonDDREAMInstance->likelihoodScale;
 
   if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << result << " Likelihood is "
-	 << std::exp(result) << '\n';
+         << std::exp(result) << '\n';
 
     std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDDREAMLogLike.txt", std::ios::out | std::ios::app);
     // Note: parameter values are in scaled space, if scaling is active
     for (i=0; i<num_cv;  ++i)   LogLikeOutput << c_vars(i) << ' ' ;
-    if (nonDDREAMInstance->calibrateSigma)
-      for (i=0; i<num_fns; ++i) LogLikeOutput << calibrated_sigmas(i) << ' ' ;
-    const RealVector& fn_values = resp.function_values();
+    for (i=0; i<nonDDREAMInstance->numHyperparams; ++i)
+      LogLikeOutput << hyper_params(i) << ' ' ;
+    // BMA TODO: needs to be num calibration terms...
+    const RealVector& fn_values = 
+      nonDDREAMInstance->residualResponse.function_values();
     for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values(i) << ' ' ;
     LogLikeOutput << result << '\n';
     LogLikeOutput.close();
@@ -386,9 +383,8 @@ problem_size(int &chain_num, int &cr_num, int &gen_num, int &pair_num,
   cr_num    = nonDDREAMInstance->numCR;
   gen_num   = nonDDREAMInstance->numGenerations;
   pair_num  = nonDDREAMInstance->crossoverChainPairs;
-  par_num   = (nonDDREAMInstance->calibrateSigma) ?
-    nonDDREAMInstance->numFunctions + nonDDREAMInstance->numContinuousVars :
-    nonDDREAMInstance->numContinuousVars;
+  par_num   = nonDDREAMInstance->numContinuousVars + 
+    nonDDREAMInstance->numHyperparams;
 
   return;
 }
@@ -437,7 +433,8 @@ problem_value(string *chain_filename, string *gr_filename, double &gr_threshold,
   return;
 }
 
-/** See documentation in DREAM examples) */			     
+/** See documentation in DREAM examples) 
+    BMA TODO: Change this to support all Dakota distribution types */			     
 double  NonDDREAMBayesCalibration::prior_density ( int par_num, double zp[] )
 {
   int i;

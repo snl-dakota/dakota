@@ -136,8 +136,13 @@ protected:
   /// random seed for MCMC process
   int randomSeed;
 
-  /// flag indicating whether sigma terms should be calibrated (default false)
-  bool calibrateSigma;
+  /// mode for number of observation error multipliers to calibrate
+  /// (default none)
+  unsigned short obsErrorMultiplierMode;
+  /// number of hyperparameters augmenting the calibration parameter
+  /// set, e.g., due to calibrate observation error multipliers
+  int numHyperparams;
+
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator
   bool standardizedSpace;

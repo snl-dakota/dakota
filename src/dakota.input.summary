@@ -1832,7 +1832,12 @@ KEYWORD12 method
 	    )
 	  [ standardized_space ]
 	  [ likelihood_scale REAL ]
-	  [ calibrate_sigma ]
+	  [ calibrate_error_multipliers
+	    one
+	    | per_experiment
+	    | per_response
+	    | both
+	    ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]

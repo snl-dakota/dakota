@@ -6685,7 +6685,6 @@ static StringArray
 static bool
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
-	MP_(calibrateSigmaFlag),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(expansionFlag),
@@ -6830,6 +6829,10 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE);
 
 static Method_mp_utype
+  MP2s(calibrateErrorMode,CALIBRATE_ONE),
+  MP2s(calibrateErrorMode,CALIBRATE_PER_EXPER),
+  MP2s(calibrateErrorMode,CALIBRATE_PER_RESP),
+  MP2s(calibrateErrorMode,CALIBRATE_BOTH),
         MP2s(exportApproxFormat,TABULAR_NONE),
         MP2s(exportApproxFormat,TABULAR_HEADER),
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
@@ -6850,7 +6853,7 @@ static Method_mp_utype
         MP2s(importBuildFormat,TABULAR_EVAL_ID),
         MP2s(importBuildFormat,TABULAR_IFACE_ID),
         MP2s(importBuildFormat,TABULAR_ANNOTATED),
-	MP2s(integrationRefine,AIS),
+  MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),

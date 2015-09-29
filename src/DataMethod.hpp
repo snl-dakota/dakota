@@ -139,6 +139,9 @@ enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
 // define special values for emulatorType
 enum { NO_EMULATOR, PCE_EMULATOR, SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR,
        VPS_EMULATOR };
+// modes for calibrating multipliers on observational error
+enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER, 
+       CALIBRATE_PER_RESP, CALIBRATE_BOTH};
 
 // ------------
 // NonDSampling
@@ -950,9 +953,8 @@ public:
   /// the \c Lipschitz type specification in \ref
   /// MethodNonDPOFDarts (e.g. either local or global estimation)
   String lipschitzType;
-  /// flag to indicate if the sigma terms should be calibrated in 
-  /// \ref MethodNonDBayesCalib
-  bool calibrateSigmaFlag;
+  /// calibration mode for observation error multipliers (CALIBRATE_*)
+  unsigned short calibrateErrorMode;
 
   // DREAM sub-specification
 

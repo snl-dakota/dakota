@@ -46,8 +46,7 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
 
   //  const std::string config_vars_basename = base_name;
-  expt_data.load_data("expt_data unit test call", 
-                      true /* calc_sigma_from_data is N/A with new readers for now */);
+  expt_data.load_data("expt_data unit test call");
 
   // Test general correctness
   TEST_EQUALITY( expt_data.num_experiments(), NUM_EXPTS );
@@ -113,8 +112,7 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
 
   //  const std::string config_vars_basename = first_base_name;
-  expt_data.load_data("expt_data unit test call", 
-                      true /* calc_sigma_from_data is N/A with new readers for now */);
+  expt_data.load_data("expt_data unit test call");
 
   // Test general correctness
   TEST_EQUALITY( expt_data.num_experiments(), NUM_EXPTS );
@@ -178,7 +176,6 @@ TEUCHOS_UNIT_TEST(expt_data, allowNoConfigFile)
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
   TEST_THROW( 
-      expt_data.load_data("expt_data unit test call", 
-        true /* calc_sigma_from_data is N/A with new readers for now */),
+      expt_data.load_data("expt_data unit test call"),
       std::runtime_error );
 }
