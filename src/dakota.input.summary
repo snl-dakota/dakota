@@ -66,10 +66,8 @@ KEYWORD12 method
 	  | quiet
 	  | silent
 	  ]
-	[ max_iterations INTEGER >= 0 ]
 	[ max_function_evaluations INTEGER >= 0 ]
 	[ speculative ]
-	[ convergence_tolerance REAL ]
 	[ constraint_tolerance REAL ]
 	[ scaling ]
 	[ final_solutions INTEGER >= 0 ]
@@ -185,6 +183,8 @@ KEYWORD12 method
 	  [ constraint_relax
 	    homotopy
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  )
 	|
 	( surrogate_based_global
@@ -192,9 +192,12 @@ KEYWORD12 method
 	  | method_name ALIAS approx_method_name STRING
 	  model_pointer ALIAS approx_model_pointer STRING
 	  [ replace_points ]
+	  [ max_iterations INTEGER >= 0 ]
 	  )
 	|
 	( dot_frcg
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -217,6 +220,8 @@ KEYWORD12 method
 	  | bfgs
 	  | slp
 	  | sqp
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -230,6 +235,8 @@ KEYWORD12 method
 	  )
 	|
 	( conmin_frcg
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -246,6 +253,8 @@ KEYWORD12 method
 	( conmin
 	  frcg
 	  | mfd
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -275,6 +284,8 @@ KEYWORD12 method
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
+	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -294,6 +305,8 @@ KEYWORD12 method
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
+	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -307,6 +320,7 @@ KEYWORD12 method
 	  )
 	|
 	( nlpql_sqp
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -322,6 +336,8 @@ KEYWORD12 method
 	( optpp_cg
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -353,6 +369,8 @@ KEYWORD12 method
 	  [ centering_parameter REAL ]
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -367,6 +385,8 @@ KEYWORD12 method
 	|
 	( optpp_pds
 	  [ search_scheme_size INTEGER ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -419,6 +439,7 @@ KEYWORD12 method
 	  [ variable_neighborhood_search REAL ]
 	  [ neighbor_order INTEGER > 0 ]
 	  [ display_all_evaluations ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -461,6 +482,7 @@ KEYWORD12 method
 	  [ postprocessor_type
 	    orthogonal_distance REALLIST
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ population_size INTEGER >= 0 ]
 	  [ log_file STRING ]
 	  [ print_each_pop ]
@@ -526,6 +548,7 @@ KEYWORD12 method
 	      [ num_generations INTEGER >= 0 ]
 	      )
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ population_size INTEGER >= 0 ]
 	  [ log_file STRING ]
 	  [ print_each_pop ]
@@ -596,6 +619,7 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -612,6 +636,7 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -622,6 +647,7 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -635,10 +661,12 @@ KEYWORD12 method
 	  [ max_boxsize_limit REAL ]
 	  [ min_boxsize_limit REAL ]
 	  [ constraint_penalty REAL ]
+	  [ convergence_tolerance REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -678,10 +706,12 @@ KEYWORD12 method
 	    [ non_adaptive ]
 	    ]
 	  [ constraint_penalty REAL ]
+	  [ convergence_tolerance REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -691,6 +721,7 @@ KEYWORD12 method
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -704,11 +735,15 @@ KEYWORD12 method
 	  [ initial_trust_radius REAL ]
 	  [ covariance INTEGER ]
 	  [ regression_diagnostics ]
+	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( nonlinear_cg
 	  [ misc_options STRINGLIST ]
+	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -716,6 +751,8 @@ KEYWORD12 method
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ min_boxsize_limit REAL ]
 	  [ volume_boxsize_limit REAL ]
+	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -767,6 +804,8 @@ KEYWORD12 method
 	      | decay
 	      | generalized
 	      )
+	    [ convergence_tolerance REAL ]
+	    [ max_iterations INTEGER >= 0 ]
 	    ]
 	  [ askey
 	  | wiener ]
@@ -948,6 +987,8 @@ KEYWORD12 method
 		sobol
 		| generalized
 		)
+	      [ convergence_tolerance REAL ]
+	      [ max_iterations INTEGER >= 0 ]
 	      )
 	  |
 	  ( h_refinement
@@ -958,6 +999,8 @@ KEYWORD12 method
 	      | generalized
 	      )
 	    | local_adaptive
+	    [ convergence_tolerance REAL ]
+	    [ max_iterations INTEGER >= 0 ]
 	    ]
 	  [ piecewise
 	  | askey
@@ -1171,6 +1214,7 @@ KEYWORD12 method
 		]
 	      ]
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ distribution
 	    cumulative
 	    | complementary
@@ -1239,6 +1283,7 @@ KEYWORD12 method
 	      ]
 	    ]
 	  [ misc_options STRINGLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ distribution
 	    cumulative
 	    | complementary
@@ -1333,6 +1378,8 @@ KEYWORD12 method
 	( efficient_subspace ALIAS nond_efficient_subspace
 	  [ emulator_samples INTEGER ]
 	  [ batch_size INTEGER ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ distribution
 	    cumulative
 	    | complementary
@@ -1454,6 +1501,7 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
@@ -1466,7 +1514,10 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ posterior_adaptive ]
+		[ posterior_adaptive
+		  [ convergence_tolerance REAL ]
+		  [ max_iterations INTEGER >= 0 ]
+		  ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
@@ -1486,7 +1537,10 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  [ posterior_adaptive ]
+		  [ posterior_adaptive
+		    [ convergence_tolerance REAL ]
+		    [ max_iterations INTEGER >= 0 ]
+		    ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1502,7 +1556,10 @@ KEYWORD12 method
 		  )
 		|
 		( collocation_points INTEGERLIST
-		  [ posterior_adaptive ]
+		  [ posterior_adaptive
+		    [ convergence_tolerance REAL ]
+		    [ max_iterations INTEGER >= 0 ]
+		    ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1617,7 +1674,10 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ posterior_adaptive ]
+		[ posterior_adaptive
+		  [ convergence_tolerance REAL ]
+		  [ max_iterations INTEGER >= 0 ]
+		  ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
@@ -1637,7 +1697,10 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  [ posterior_adaptive ]
+		  [ posterior_adaptive
+		    [ convergence_tolerance REAL ]
+		    [ max_iterations INTEGER >= 0 ]
+		    ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1653,7 +1716,10 @@ KEYWORD12 method
 		  )
 		|
 		( collocation_points INTEGERLIST
-		  [ posterior_adaptive ]
+		  [ posterior_adaptive
+		    [ convergence_tolerance REAL ]
+		    [ max_iterations INTEGER >= 0 ]
+		    ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1697,7 +1763,10 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ posterior_adaptive ]
+		[ posterior_adaptive
+		  [ convergence_tolerance REAL ]
+		  [ max_iterations INTEGER >= 0 ]
+		  ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
@@ -1717,7 +1786,10 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  [ posterior_adaptive ]
+		  [ posterior_adaptive
+		    [ convergence_tolerance REAL ]
+		    [ max_iterations INTEGER >= 0 ]
+		    ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1733,7 +1805,10 @@ KEYWORD12 method
 		  )
 		|
 		( collocation_points INTEGERLIST
-		  [ posterior_adaptive ]
+		  [ posterior_adaptive
+		    [ convergence_tolerance REAL ]
+		    [ max_iterations INTEGER >= 0 ]
+		    ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1796,6 +1871,7 @@ KEYWORD12 method
 	    | random
 	    ]
 	  [ num_trials INTEGER ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
@@ -1845,10 +1921,26 @@ KEYWORD12 method
 	  [ mpp_search
 	    x_taylor_mean
 	    | u_taylor_mean
-	    | x_taylor_mpp
-	    | u_taylor_mpp
-	    | x_two_point
-	    | u_two_point
+	    |
+	    ( x_taylor_mpp
+	      [ convergence_tolerance REAL ]
+	      [ max_iterations INTEGER >= 0 ]
+	      )
+	    |
+	    ( u_taylor_mpp
+	      [ convergence_tolerance REAL ]
+	      [ max_iterations INTEGER >= 0 ]
+	      )
+	    |
+	    ( x_two_point
+	      [ convergence_tolerance REAL ]
+	      [ max_iterations INTEGER >= 0 ]
+	      )
+	    |
+	    ( u_two_point
+	      [ convergence_tolerance REAL ]
+	      [ max_iterations INTEGER >= 0 ]
+	      )
 	    | no_approx
 	    [ sqp
 	    | nip ]
@@ -2007,6 +2099,8 @@ KEYWORD12 method
 	  | converge_order
 	  | converge_qoi
 	  [ refinement_rate REAL ]
+	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 

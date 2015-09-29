@@ -95,6 +95,16 @@
 		</keyword>
         </optional>"
     >
+    <!ENTITY default_convergence_tolerance
+        "<keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mdm(Real,convergenceTolerance)}' label='Convergence tolerance' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='1.e-4' >
+          <param type='REAL' />
+        </keyword>"
+    >
+    <!ENTITY default_max_iterations
+      "<keyword  id='max_iterations' name='max_iterations' code='{N_mdm(nnint,maxIterations)}' label='Maximum iterations' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)' >
+        <param type='INTEGER' constraint='>= 0' />
+      </keyword>"
+    >
 ]>
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
@@ -219,16 +229,10 @@
           <keyword  id="silent" name="silent" code="{N_mdm(type,methodOutput_SILENT_OUTPUT)}" label="silent" help=""  />
         </oneOf>
       </keyword>
-      <keyword  id="max_iterations" name="max_iterations" code="{N_mdm(nnint,maxIterations)}" label="Maximum iterations" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
-        <param type="INTEGER" constraint=">= 0" />
-      </keyword>
       <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(nnint,maxFunctionEvaluations)}" label="Maximum function evaluations" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1000" >
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
       <keyword  id="speculative" name="speculative" code="{N_mdm(true,speculativeFlag)}" label="Speculative gradients and Hessians" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no speculation" />
-      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
-        <param type="REAL" />
-      </keyword>
       <keyword  id="constraint_tolerance" name="constraint_tolerance" code="{N_mdm(Real,constraintTolerance)}" label="Constraint tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="Library default" >
         <param type="REAL" />
       </keyword>
@@ -461,6 +465,8 @@
           <keyword  id="constraint_relax" name="constraint_relax" code="{0}" label="SBL constraint relaxation method for infeasible iterates" help="MethodCommands.html#MethodSBL" minOccurs="0" default="no relaxation" >
             <keyword  id="homotopy" name="homotopy" code="{N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}" label="homotopy" help=""  />
           </keyword>
+          &default_max_iterations;
+          &default_convergence_tolerance;
         </keyword>
         <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global" help="" minOccurs="1" group="Surrogate-based Methods" >
           <oneOf>
@@ -478,6 +484,7 @@
             <param type="STRING" in_taglist="model" />
           </keyword>
           <keyword  id="replace_points" name="replace_points" code="{N_mdm(true,surrBasedGlobalReplacePts)}" label="Replace points used in surrogate construction with best points from previous iteration" help="MethodCommands.html#MethodSBG" minOccurs="0" default="Points appended, not replaced" />
+          &default_max_iterations;
         </keyword>
         <!-- Begin group for model_pointer spec? -->
         <required>
@@ -502,6 +509,8 @@
                       </oneOf>
                     </keyword>
                   </oneOf>
+                  &default_max_iterations;
+                  &default_convergence_tolerance;
                 </required>
                 <required>
                   <oneOf label="OPT method">
@@ -514,6 +523,8 @@
                       </oneOf>
                     </keyword>
                   </oneOf>
+                  &default_max_iterations;
+                  &default_convergence_tolerance;
                 </required>
                 <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
 		  <!-- store method name AND incoming STRING -->
@@ -539,8 +550,12 @@
                   <keyword  id="linesearch_tolerance" name="linesearch_tolerance" code="{N_mdm(Real,lineSearchTolerance)}" label="linesearch_tolerance" help="" minOccurs="0" default="0.9 (inaccurate line search)" >
                     <param type="REAL" />
                   </keyword>
+                  &default_convergence_tolerance;
+                  &default_max_iterations;
                 </required>
-                <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
+                  &default_convergence_tolerance;
+                </keyword>
                 <!-- #	    reduced_sqp
                      #	    |
                  -->
@@ -583,11 +598,15 @@
                   <keyword  id="gradient_tolerance" name="gradient_tolerance" code="{N_mdm(Real,gradientTolerance)}" label="gradient_tolerance" help="" minOccurs="0" default="1.e-4" >
                     <param type="REAL" />
                   </keyword>
+                  &default_max_iterations;
+                  &default_convergence_tolerance;
                 </required>
                 <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
                   <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size" help="" minOccurs="0" default="32" >
                     <param type="INTEGER" />
                   </keyword>
+                  &default_max_iterations;
+                  &default_convergence_tolerance;
                 </keyword>
                 <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
                   <alias name="coliny_apps"/>
@@ -648,6 +667,7 @@
                     <param type="INTEGER" constraint="> 0" />
                   </keyword>
                   <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="false" />
+                  &default_max_iterations;
                 </keyword>
                 <required>
                   <oneOf>
@@ -702,6 +722,7 @@
                           <param type="REALLIST" />
                         </keyword>
                       </keyword>
+                      &default_max_iterations;
                     </keyword>
                     <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga" help="" minOccurs="1" group="Optimization: Global" >
                       <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="merit_function">
@@ -738,6 +759,7 @@
                           </keyword>
                         </oneOf>
                       </keyword>
+                      &default_max_iterations;
                     </keyword>
                   </oneOf>
                   <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >
@@ -920,6 +942,7 @@
                   <keyword  id="constraint_penalty3" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="Constraint penalty" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1000.0" >
                     <param type="REAL" />
                   </keyword>
+                  &default_convergence_tolerance;
                 </keyword>
                 <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea" help="" minOccurs="1" group="Optimization: Global" >
                   <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="50" >
@@ -992,6 +1015,7 @@
                   <keyword  id="constraint_penalty4" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" >
                     <param type="REAL" />
                   </keyword>
+                  &default_convergence_tolerance;
                 </keyword>
                 <keyword  id="coliny_beta" name="coliny_beta" code="{N_mdm(utype,methodName_COLINY_BETA)}" label="coliny_beta" help="" minOccurs="1" group="Optimization: Other" >
                   <keyword  id="beta_solver_name" name="beta_solver_name" code="{N_mdm(str,betaSolverName)}" label="beta_solver_name" help=""  >
@@ -1010,6 +1034,7 @@
               <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
                 <param type="STRINGLIST" />
               </keyword>
+              &default_max_iterations;
             </required>
             <keyword  id="nl2sol" name="nl2sol" code="{N_mdm(utype,methodName_NL2SOL)}" label="nl2sol" help="" minOccurs="1" group="Calibration" >
               <keyword  id="function_precision2" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Relative precision in least squares terms" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="1.0e-10" >
@@ -1037,11 +1062,15 @@
                 <param type="INTEGER" />
               </keyword>
               <keyword  id="regression_diagnostics" name="regression_diagnostics" code="{N_mdm(true,regressDiag)}" label="Regression diagnostics post-processing" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="no regression diagnostics" />
+              &default_convergence_tolerance;
+              &default_max_iterations;
             </keyword>
             <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
               <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
                 <param type="STRINGLIST" />
               </keyword>
+              &default_convergence_tolerance;
+              &default_max_iterations;
             </keyword>
             <keyword  id="ncsu_direct" name="ncsu_direct" code="{N_mdm(utype,methodName_NCSU_DIRECT)}" label="ncsu_direct" help="" minOccurs="1" group="Optimization: Global" >
               <keyword  id="solution_target2" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution Target " help="MethodCommands.html#MethodNCSUDC" minOccurs="0" default="0" >
@@ -1054,6 +1083,8 @@
               <keyword  id="volume_boxsize_limit" name="volume_boxsize_limit" code="{N_mdm(Real,volBoxSize)}" label="Volume boxsize limit" help="MethodCommands.html#MethodNCSUDC" minOccurs="0" default="1.0e-6" >
                 <param type="REAL" />
               </keyword>
+              &default_convergence_tolerance;
+              &default_max_iterations;
             </keyword>
             <required>
               <oneOf>
@@ -1109,6 +1140,8 @@
                                   </oneOf>
                                 </keyword>
                               </oneOf>
+                              &default_convergence_tolerance;
+                              &default_max_iterations;
                             </keyword>
                             <optional>
                               <oneOf label="Basis polynomial family">
@@ -1338,6 +1371,8 @@
                                       </oneOf>
                                     </keyword>
                                   </oneOf>
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
                                 </keyword>
                                 <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1"  default="no refinement" >
                                   <oneOf label="h-refinement type">
@@ -1350,6 +1385,8 @@
                                     </keyword>
                                     <keyword  id="local_adaptive" name="local_adaptive" code="{N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}" label="local_adaptive" help=""  />
                                   </oneOf>
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
                                 </keyword>
                               </oneOf>
                             </optional>
@@ -1554,6 +1591,7 @@
                           </keyword>
                         </keyword>
                       </keyword>
+                      &default_max_iterations;
                     </keyword>
                     <keyword  id="adaptive_sampling" name="adaptive_sampling" code="{N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}" label="adaptive_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
                       <alias name="nond_adaptive_sampling"/>
@@ -1610,6 +1648,7 @@
                       <keyword  id="misc_options2" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
                         <param type="STRINGLIST" />
                       </keyword>
+                      &default_max_iterations;
                     </keyword>
                     <keyword  id="pof_darts" name="pof_darts" code="{N_mdm(utype,methodName_POF_DARTS)}" label="pof_darts" help="" minOccurs="1" >
                       <alias name="nond_pof_darts"/>
@@ -1679,6 +1718,8 @@
                       <keyword  id="batch_size1" name="batch_size" code="{N_mdm(int,batchSize)}" label="batch_size" help="" minOccurs="0" default="1" >
                         <param type="INTEGER" />
                       </keyword>
+                      &default_max_iterations;
+                      &default_convergence_tolerance;
                     </keyword>
                     <keyword  id="global_evidence" name="global_evidence" code="{N_mdm(utype,methodName_GLOBAL_EVIDENCE)}" label="global_evidence" help="" minOccurs="1" group="Uncertainty Quantification" >
                       <alias name="nond_global_evidence"/>
@@ -1797,6 +1838,7 @@
                       <keyword  id="rnum21" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
                     </oneOf>
                   </keyword>
+                  &default_max_iterations;
                 </keyword>
                 <keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="1" >
                   <alias name="nond_bayes_calibration"/>
@@ -1815,7 +1857,10 @@
                                 <keyword  id="emulator_samples3" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                                   <param type="INTEGER" />
                                 </keyword>
-				<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+				<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
+                                </keyword>
                                 <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                   <alias name="import_points_file"/>
 				  <param type="INPUT_FILE" />
@@ -1833,7 +1878,10 @@
 				    <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				      <param type="REAL" />
 				    </keyword>
-				    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                      &default_convergence_tolerance;
+                                      &default_max_iterations;
+                                    </keyword>
                                     <keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                       <alias name="import_points_file"/>
 				      <param type="INPUT_FILE" />
@@ -1843,7 +1891,10 @@
 				  </keyword>
 				  <keyword  id="collocation_points2" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                     <param type="INTEGERLIST" />
-				    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                      &default_convergence_tolerance;
+                                      &default_max_iterations;
+                                    </keyword>
                                     <keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                       <alias name="import_points_file"/>
 				      <param type="INPUT_FILE" />
@@ -1950,7 +2001,10 @@
                             <keyword  id="emulator_samples5" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                               <param type="INTEGER" />
                             </keyword>
-			    <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                            <keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                              &default_convergence_tolerance;
+                              &default_max_iterations;
+                            </keyword>
                             <keyword  id="import_build_points_file10" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                               <alias name="import_points_file"/>
 			      <param type="INPUT_FILE" />
@@ -1968,7 +2022,10 @@
 				<keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
 				</keyword>
-				<keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
+                                </keyword>
                                 <keyword  id="import_build_points_file11" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                   <alias name="import_points_file"/>
 				  <param type="INPUT_FILE" />
@@ -1978,7 +2035,10 @@
 			      </keyword>
 			      <keyword  id="collocation_points3" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                 <param type="INTEGERLIST" />
-				<keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
+                                </keyword>
                                 <keyword  id="import_build_points_file12" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                   <alias name="import_points_file"/>
 				  <param type="INPUT_FILE" />
@@ -2049,7 +2109,10 @@
                             <keyword  id="emulator_samples5" name="emulator_samples" code="{N_mdm(int,emulatorSamples)}" label="emulator_samples" help="" minOccurs="0" >
                               <param type="INTEGER" />
                             </keyword>
-			    <keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                            <keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                              &default_convergence_tolerance;
+                              &default_max_iterations;
+                            </keyword>
                             <keyword  id="import_build_points_file13" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                               <alias name="import_points_file"/>
 			      <param type="INPUT_FILE" />
@@ -2067,7 +2130,10 @@
 				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
 				</keyword>
-				<keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
+                                </keyword>
                                 <keyword  id="import_build_points_file14" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                   <alias name="import_points_file"/>
 				  <param type="INPUT_FILE" />
@@ -2077,7 +2143,10 @@
 			      </keyword>
 			      <keyword  id="collocation_points4" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                 <param type="INTEGERLIST" />
-				<keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" />
+                                <keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
+                                  &default_convergence_tolerance;
+                                  &default_max_iterations;
+                                </keyword>
                                 <keyword  id="import_build_points_file15" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
                                   <alias name="import_points_file"/>
 				  <param type="INPUT_FILE" />
@@ -2144,6 +2213,7 @@
                   <keyword  id="num_trials" name="num_trials" code="{N_mdm(int,numTrials)}" label="Number of trials  " help="MethodCommands.html#MethodFSUDACE" minOccurs="0" default="10000" >
                     <param type="INTEGER" />
                   </keyword>
+                  &default_max_iterations;
                 </keyword>
                 <keyword  id="psuade_moat" name="psuade_moat" code="{N_mdm(utype,methodName_PSUADE_MOAT)}" label="PSUADE MOAT method" help="MethodCommands.html#MethodPSUADE" minOccurs="1" group="DACE" >
                   <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions" help="MethodCommands.html#MethodPSUADE" minOccurs="0" default="3" >
@@ -2230,10 +2300,22 @@
                     <oneOf>
                       <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_X)}" label="x_taylor_mean" help=""  />
                       <keyword  id="u_taylor_mean" name="u_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_U)}" label="u_taylor_mean" help=""  />
-                      <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp" help=""  />
-                      <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp" help=""  />
-                      <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point" help=""  />
-                      <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point" help=""  />
+                      <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp" help=""  >
+                        &default_convergence_tolerance;
+                        &default_max_iterations;
+                      </keyword>
+                      <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp" help=""  >
+                        &default_convergence_tolerance;
+                        &default_max_iterations;
+                      </keyword>
+                      <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point" help=""  >
+                        &default_convergence_tolerance;
+                        &default_max_iterations;
+                      </keyword>
+                      <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point" help=""  >
+                        &default_convergence_tolerance;
+                        &default_max_iterations;
+                      </keyword>
                       <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx" help=""  />
                     </oneOf>
                     <optional>
@@ -2452,6 +2534,8 @@
               <keyword  id="refinement_rate" name="refinement_rate" code="{N_mdm(Real,refinementRate)}" label="Refinement rate" help="MethodCommands.html#MethodSolnRichardson" minOccurs="0" default="2." >
                 <param type="REAL" />
               </keyword>
+              &default_convergence_tolerance;
+              &default_max_iterations;
             </keyword>
           </oneOf>
           <keyword  id="model_pointer4" name="model_pointer" code="{N_mdm(str,modelPointer)}" label="model_pointer" help="" minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
