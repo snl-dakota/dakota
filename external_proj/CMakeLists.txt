@@ -8,6 +8,8 @@ include(ExternalProject)
 set( ExtSourceRoot
     ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 
+# consider a BuildSetup.cmake.in and Kitware-style configure_file() to
+# substitute varValues for passing into Trilinos and Dakota settings
 set( EXT_COMMON_CONFIG_ARGS
     -D CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -D CMAKE_C_COMPILER=${CMAKE_C_COMPILER} 
@@ -21,6 +23,8 @@ set( ProjNameForExtTrilinos TrilinosExt )
 set( TrilinosVersionNum "12.2.1" CACHE STRING
   "Override default Trilinos version number used to build Teuchos from distro" )
 
+# bz2 might be something to consider for the "final product" (but verify 1st)
+# Eventually, allow cmake option to override the means of obtaining Trilinos distro
 set( TrilinosPkgFormat "zip" CACHE STRING
   "Override default Trilinos source package file format" )
 
@@ -29,6 +33,8 @@ set( TrilinosPkgName trilinos-${TrilinosVersionNum}-Source.${TrilinosPkgFormat} 
 set( TRILINOS_TPL_INSTALL_DIR
     ${CMAKE_CURRENT_BINARY_DIR}/${ProjNameForExtTrilinos}-prefix/install )
 
+# WJB:  might prefer to allow the warning for the package verification step
+# (the URL_MD5 specified will only work with trilinos-12.2.1-Source.zip)
 externalproject_add(
   ${ProjNameForExtTrilinos}
   URL ${ExtSourceRoot}/packages/${TrilinosPkgName}
@@ -45,28 +51,23 @@ externalproject_add(
 
 
 set( ProjNameForExtDak DakotaExt )
-option( TPL_HAVE_MPI   "HAVE MPI?"   OFF )
-option( TPL_HAVE_GSL   "HAVE GSL?"   OFF )
-option( TPL_HAVE_QUESO "HAVE QUESO?" OFF )
 
 set( DAKOTA_TPL_INSTALL_DIR
     ${CMAKE_CURRENT_BINARY_DIR}/${ProjNameForExtDak}-prefix/install )
 
-#    -D MPI_CXX_COMPILER=$MPIBIN
+#configure_file( "${ExtSourceRoot}/cmake/BuildDakotaTemplate.cmake"
+configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/BuildDakotaTemplate.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/BuildDakota.cmake" @ONLY
+  )
+
 externalproject_add(
   ${ProjNameForExtDak}
   SOURCE_DIR ${ExtSourceRoot}
   DEPENDS ${ProjNameForExtTrilinos}
   CMAKE_ARGS ${EXT_COMMON_CONFIG_ARGS}
-    -D DAKOTA_HAVE_MPI=${TPL_HAVE_MPI}
-    -D BOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-    -D BOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-    -D Boost_NO_SYSTEM_PATHS=ON
     -D BUILD_IN_TRILINOS=OFF
     -D CMAKE_PREFIX_PATH=${TRILINOS_TPL_INSTALL_DIR}
     -D Trilinos_DIR=${TRILINOS_TPL_INSTALL_DIR}
-    -D DAKOTA_HAVE_GSL=${TPL_HAVE_GSL}
-    -D HAVE_QUESO=${TPL_HAVE_QUESO}
-    -D CMAKE_INSTALL_PREFIX=${DAKOTA_TPL_INSTALL_DIR}
+    -C ${CMAKE_CURRENT_BINARY_DIR}/BuildDakota.cmake
   )
 
