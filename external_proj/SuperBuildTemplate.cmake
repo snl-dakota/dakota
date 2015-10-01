@@ -3,8 +3,8 @@
 # Template CMake Configuration File.
 #
 ##############################################################################
-# The following CMake variables represent the minimum set of variables
-# that are required to allow Dakota to build as an external_project and
+# The following CMake variables represent the minimum set of variables that
+# are required to allow Dakota and Trilinos to build as external_projects and
 #   * find all prerequisite third party libraries (TPLs)
 #   * configure compiler and MPI options
 #   * set Dakota install path
@@ -26,7 +26,7 @@
 #
 #    Save file and exit.
 #
-# 3. Run CMake (NOTE the out-of-the-ordinary "top" source dir)
+# 3. Run CMake (NOTE the atypical "top" source dir)
 #      $ cmake $DAK_SRC/external_proj
 #
 ##############################################################################
@@ -71,6 +71,14 @@
 #    CACHE PATH "Use non-standard Boost install" FORCE)
 #set( Boost_NO_SYSTEM_PATHS TRUE
 #     CACHE BOOL "Suppress search paths other than BOOST_ROOT" FORCE)
+
+##############################################################################
+# Customize Trilinos
+# e.g. ensure BLAS is consistently "mapped" to vars near the top of this file
+##############################################################################
+#set( BLAS_LIBRARY_NAMES
+#     ""
+#     CACHE PATH "See trilinos build docs for BLAS_LIBRARY_NAMES usage" )
 
 ##############################################################################
 # Customize DAKOTA
