@@ -34,6 +34,7 @@ namespace Dakota
 	  private:
 	       PebbldBranching* branchAndBound;
        void core_run();
+       void print_results(std::ostream& s);
        /// the minimizer used to solve the subproblem on each branch.
        Iterator subProbMinimizer;
      };

@@ -1,9 +1,13 @@
 #include "PEBBLOptimizer.hpp"
+#include "PRPMultiIndex.hpp"
+#include "dakota_data_io.hpp"
 
 using namespace std;
 
 namespace Dakota 
 {
+  extern PRPCache data_pairs; // global container
+
      PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minimizer(problem_db, model)
 {
   // While this copy will be replaced in best update, initialize here
@@ -55,14 +59,85 @@ void PebbldMinimizer::bound_subproblem()
      {
 	  InitializeTiming();
 	  branchAndBound->search();
+
+	  pebbl::arraySolution<double>* newSolution = dynamic_cast<pebbl::arraySolution<double>*>(branchAndBound->getSolution());
 	  
-	  pebbl::solution* newSolution = branchAndBound->getSolution();
-	  
-	  // newSolution->array[0] is the size of the data
-	  // Retrieve the results...
-	  std::cout << "Final Optimization Results:" << std::endl;
-	  // .. and Print Them.
-	  newSolution->printContents(std::cout);
-	  
+	  RealVector variables(numContinuousVars);
+	  RealVector best_fns(1);
+	  for (size_t i=0; i<numContinuousVars; i++)
+	    variables[i] = newSolution->array[i];
+	  bestVariablesArray.front().continuous_variables(variables);
+	  best_fns[0] = newSolution->value;
+	  bestResponseArray.front().function_values(best_fns);
      }
+
+/** Redefines default iterator results printing to include
+    optimization results (objective functions and constraints). */
+void PebbldMinimizer::print_results(std::ostream& s)
+{
+  size_t i, num_best = bestVariablesArray.size();
+  if (num_best != bestResponseArray.size()) {
+    Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
+         << std::endl;
+    abort_handler(-1); 
+  } 
+
+  // initialize the results archive for this dataset
+  archive_allocate_best(num_best);
+
+  const String& interface_id = iteratedModel.interface_id();
+  int eval_id;
+  activeSet.request_values(1);
+
+  // -------------------------------------
+  // Single and Multipoint results summary
+  // -------------------------------------
+  for (i=0; i<num_best; ++i) {
+    // output best variables
+    s << "<<<<< Best parameters          ";
+    if (num_best > 1) s << "(set " << i+1 << ") ";
+    s << "=\n" << bestVariablesArray[i];
+    // output best response
+    const RealVector& best_fns = bestResponseArray[i].function_values();
+    std::cout << "primary fns = " << numUserPrimaryFns << std::endl;
+    std::cout << "best fns = " << best_fns << std::endl;
+    if (optimizationFlag) {
+      if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions ";
+      else                       s << "<<<<< Best objective function  ";
+    }
+    else
+      s << "<<<<< Best residual terms      ";
+    if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
+    write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
+    size_t num_cons = numFunctions - numUserPrimaryFns;
+    //    if (num_cons) {
+    //      s << "<<<<< Best constraint values   ";
+    //      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
+    //      write_data_partial(s, numUserPrimaryFns, num_cons, best_fns);
+    //    }
+    // lookup evaluation id where best occurred.  This cannot be catalogued 
+    // directly because the optimizers track the best iterate internally and 
+    // return the best results after iteration completion.  Therfore, perform a
+    // search in data_pairs to extract the evalId for the best fn eval.
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
+					   bestVariablesArray[i], activeSet);
+    if (cache_it == data_pairs.get<hashed>().end())
+      s << "<<<<< Best data not found in evaluation cache\n\n";
+    else {
+      eval_id = cache_it->eval_id();
+      if (eval_id > 0)
+	s << "<<<<< Best data captured at function evaluation " << eval_id
+	  << "\n\n";
+      else // should not occur
+	s << "<<<<< Best data not found in evaluations from current execution,"
+	  << "\n      but retrieved from restart archive with evaluation id "
+	  << -eval_id << "\n\n";
+    }
+
+    // pass data to the results archive
+    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
+
+  }
 }
+
+} // namespace Dakota

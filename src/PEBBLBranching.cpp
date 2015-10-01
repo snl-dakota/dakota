@@ -17,8 +17,6 @@ PebbldBranching::PebbldBranching()
      random_seed = 12345;
      max_iter = 100;
      max_eval = 100;
-     n_int = parentModel.div();
-     n_cont = parentModel.cv();
 
      StringMultiArrayConstView varLabels = parentModel.all_continuous_variable_labels();
      RealVector cont_vars = parentModel.continuous_variables();
@@ -33,26 +31,26 @@ PebbldBranching::PebbldBranching()
 
      short model_view = parentModel.current_variables().view().second;
      const SharedVariablesData& svd = parentModel.current_variables().shared_data();
-     const BitArray int_relaxed=svd.all_relaxed_discrete_int();
-     const BitArray real_relaxed=svd.all_relaxed_discrete_real();
+     const BitArray int_relaxed = svd.all_relaxed_discrete_int();
+     const BitArray real_relaxed = svd.all_relaxed_discrete_real();
 
-     //     varNames.resize(n_int+n_cont);
+     n_int = int_relaxed.size();
+     n_cont = parentModel.cv() - n_int;
+
      x.resize(n_int+n_cont);
      xl.resize(n_int+n_cont);
      xu.resize(n_int+n_cont);
-     for(int i=0;i<n_int;i++)
+     //     for(int i=0;i<n_int;i++)
+     //     {
+     //	  x[i] = init_pt_int[i];
+     //	  xl[i] = lower_bnds_int[i];
+     //	  xu[i] = upper_bnds_int[i];
+     //     }
+     for(int i=0;i<n_cont+n_int;i++)
      {
-       //	  varNames[i] = varLabels[i];
-	  x[i] = init_pt_int[i];
-	  xl[i] = lower_bnds_int[i];
-	  xu[i] = upper_bnds_int[i];
-     }
-     for(int i=0;i<n_cont;i++)
-     {
-       //	  varNames[i] = varLabels[i];
-	  x[i] = cont_vars[i+n_int];
-	  xl[i] = lower_bounds[i+n_int];
-	  xu[i] = upper_bounds[i+n_int];
+	  x[i] = cont_vars[i];
+	  xl[i] = lower_bounds[i];
+	  xu[i] = upper_bounds[i];
      }
 
      reset();
@@ -119,7 +117,6 @@ void PebbldBranchSub::setRootComputation()
      x = vector<double>(globalPtr->x);
      xl = vector<double>(globalPtr->xl);
      xu = vector<double>(globalPtr->xu);
-     //     varNames = vector<string>(globalPtr->varNames);
 
      NLPsolver = globalPtr->NLPsolver;
      
@@ -130,19 +127,11 @@ void PebbldBranchSub::boundComputation(double* controlParam)
 {
      // Calculate the bound -- Solve Problem Relaxation.
      // The Discrete Domain is relaxed into a Continuous Domain.
-     
-  //     string method_name = "coliny_ea";
-  //     COLINOptimizer optimizer(method_name, subModel, random_seed, max_iter, max_eval);
-     
-     // Call Optimizer
-  //     optimizer.find_optimum();
+
      NLPsolver.run();
      
-     //     Variables _variables = optimizer.variables_results();
      Variables _variables = NLPsolver.variables_results();
      
-     //We care about te variables ue
-     //     Response _response = optimizer.response_results();
      Response _response = NLPsolver.response_results();
      
      // Considering that the problem is relaxed, all variables should be continuous.
@@ -169,7 +158,7 @@ void PebbldBranchSub::boundComputation(double* controlParam)
 // variables are actually Discrete after Relaxation
 bool PebbldBranchSub::candidateSolution()
 {
-     for(int i=0;i<n_binary+n_int;i++)
+     for(int i=n_cont;i<n_cont+n_binary+n_int;i++)
      {
 	  if(fmod(new_x[i],1)!=0.0)
 	  {
@@ -186,7 +175,8 @@ int PebbldBranchSub::splitComputation()
 
      // Assuming that in the relaxed problem, the Binary/Integer
      // elements of the domain are first.
-     for(i=0;i<n_binary+n_int;i++) 
+  //     for(i=0;i<n_binary+n_int;i++) 
+     for(i=n_cont;i<n_cont+n_binary+n_int;i++) 
      {
 	  if(fmod(new_x[i],1)!=0.0)
 	  {
@@ -196,7 +186,7 @@ int PebbldBranchSub::splitComputation()
      }
 
      setState(separated);
-     if (i<n_binary+n_int)
+     if (splitVar>=n_cont)
        return 2;
      else
        return 0;
@@ -223,7 +213,6 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
      x = vector<double>(parent->new_x);
      xl = vector<double>(parent->xl);
      xu = vector<double>(parent->xu);
-     //     varNames = parent->varNames;
      n_binary = parent->n_binary;
      n_int = parent->n_int;
      n_cont = parent->n_cont;
@@ -269,26 +258,18 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
      
      lower_bounds[_splitVar] = xl[_splitVar];
      upper_bounds[_splitVar] = xu[_splitVar];
-     cont_vars = x[_splitVar];
+     cont_vars[_splitVar] = x[_splitVar];
      
      subModel.continuous_lower_bounds(lower_bounds);
      subModel.continuous_upper_bounds(upper_bounds);
      subModel.continuous_variables(cont_vars);
 }
 
-// arraySolution<double>(double objFnVal, std::vector<double> varValues, branching* branch-deriv-obj)
 pebbl::solution* PebbldBranchSub::extractSolution()
 {
      // To Consider: Creating a Custom Solution Object.
      string varDesc = "Domain";
      pebbl::BasicArray<pebbl::CharString> variableNames;
-     //     variableNames.resize(varNames.size());
-     
-     //     for(int i = 0;i<varNames.size();i++)
-     //     {
-     //          pebbl::CharString tempChar(varNames[i].c_str());
-     //	  variableNames[i] = tempChar;
-     //     }
      
      return new pebbl::arraySolution<double> (objFn, new_x, globalPtr);
 };
