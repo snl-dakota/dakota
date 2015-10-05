@@ -86,6 +86,12 @@ private:
   /// (relax variables that are not declared as categorical)
   void relax_noncategorical(const ProblemDescDB& problem_db);
 
+  /// Set the ard_cntr entry in the all-relaxed-discrete integer or
+  /// real container ard_container, based on user-specification of
+  /// categorical, accounting for empty
+  void set_relax(const BitArray& user_cat_spec, size_t ucs_index,
+		 size_t ard_cntr, BitArray& ard_container);
+ 
   /// compute all variables sums from variablesCompsTotals
   void all_counts(size_t& num_acv, size_t& num_adiv, size_t& num_adsv,
 		  size_t& num_adrv) const;
@@ -242,9 +248,11 @@ private:
 
   /// array of booleans to indicate relaxation (promotion from
   /// DiscreteInt to Continuous) for all specified discrete int variables
+  /// Note: container will be empty when not relaxing variables
   BitArray allRelaxedDiscreteInt;
   /// array of booleans to indicate relaxation (promotion from
   /// DiscreteReal to Continuous) for all specified discrete real variables
+  /// Note: container will be empty when not relaxing variables
   BitArray allRelaxedDiscreteReal;
 
 };

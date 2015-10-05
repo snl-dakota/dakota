@@ -345,7 +345,7 @@ relax_noncategorical(const ProblemDescDB& problem_db)
     return;
   }
 
-  // Note: NIDR handles empty and unit length specs
+  // Note: NIDR ensures BitArray is empty or sized by number of variables
 
   const BitArray& ddrv_cat = problem_db.get_ba(
     "variables.discrete_design_range.categorical");
@@ -356,11 +356,11 @@ relax_noncategorical(const ProblemDescDB& problem_db)
 
   const BitArray& puv_cat = problem_db.get_ba(
     "variables.poisson_uncertain.categorical");
-  const BitArray& buv_cat = problem_db.get_ba(
+  const BitArray& biuv_cat = problem_db.get_ba(
     "variables.binomial_uncertain.categorical");
   const BitArray& nbuv_cat = problem_db.get_ba(
     "variables.negative_binomial_uncertain.categorical");
-  const BitArray& guv_cat = problem_db.get_ba(
+  const BitArray& geuv_cat = problem_db.get_ba(
     "variables.geometric_uncertain.categorical");
   const BitArray& hguv_cat = problem_db.get_ba(
     "variables.hypergeometric_uncertain.categorical");
@@ -369,7 +369,7 @@ relax_noncategorical(const ProblemDescDB& problem_db)
   const BitArray& huprv_cat = problem_db.get_ba(
     "variables.histogram_uncertain.point_real.categorical");
 
-  const BitArray& durv_cat = problem_db.get_ba(
+  const BitArray& diuv_cat = problem_db.get_ba(
     "variables.discrete_interval_uncertain.categorical");
   const BitArray& dusiv_cat = problem_db.get_ba(
     "variables.discrete_uncertain_set_int.categorical");
@@ -393,51 +393,87 @@ relax_noncategorical(const ProblemDescDB& problem_db)
   offset_dr += ddsrv_cat.size();
   */
 
-  size_t i, ardi_cntr = 0, ardr_cntr = 0, num_ddrv = ddrv_cat.size(),
-    num_ddsiv = ddsiv_cat.size(), num_ddsrv = ddsrv_cat.size(),
-    num_puv   = puv_cat.size(),   num_buv   = buv_cat.size(),
-    num_nbuv  = nbuv_cat.size(),  num_guv   = guv_cat.size(),
-    num_hguv  = hguv_cat.size(),  num_hupiv = hupiv_cat.size(),
-    num_huprv = huprv_cat.size(), num_durv  = durv_cat.size(),
-    num_dusiv = dusiv_cat.size(), num_dusrv = dusrv_cat.size(),
-    num_dsrv  = dsrv_cat.size(),  num_dssiv = dssiv_cat.size(),
-    num_dssrv = dssrv_cat.size();
+  size_t i, ardi_cntr = 0, ardr_cntr = 0, 
+    num_ddrv  = vc_lookup(DISCRETE_DESIGN_RANGE),
+    num_ddsiv = vc_lookup(DISCRETE_DESIGN_SET_INT),
+    num_ddsrv = vc_lookup(DISCRETE_DESIGN_SET_REAL),
+    num_puv   = vc_lookup(POISSON_UNCERTAIN),
+    num_biuv   = vc_lookup(BINOMIAL_UNCERTAIN),
+    num_nbuv  = vc_lookup(NEGATIVE_BINOMIAL_UNCERTAIN),
+    num_geuv   = vc_lookup(GEOMETRIC_UNCERTAIN),
+    num_hguv  = vc_lookup(HYPERGEOMETRIC_UNCERTAIN),
+    num_hpuiv = vc_lookup(HISTOGRAM_POINT_UNCERTAIN_INT),
+    num_hpurv = vc_lookup(HISTOGRAM_POINT_UNCERTAIN_REAL),
+    num_diuv  = vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_dusrv = vc_lookup(DISCRETE_UNCERTAIN_SET_REAL),
+    num_dsrv  = vc_lookup(DISCRETE_STATE_RANGE),
+    num_dssiv = vc_lookup(DISCRETE_STATE_SET_INT),
+    num_dssrv = vc_lookup(DISCRETE_STATE_SET_REAL);
+
   // discrete design
   for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
-    if (!ddrv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    // Note: input spec doesn't allow user to override interval relaxation
+    set_relax(ddrv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-    if (!ddsiv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    set_relax(ddsiv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
-    if (!ddsrv_cat[i]) allRelaxedDiscreteReal.set(ardr_cntr);
+    set_relax(ddsrv_cat, i, ardr_cntr, allRelaxedDiscreteReal);
+
   // discrete aleatory uncertain
   for (i=0; i<num_puv; ++i, ++ardi_cntr)
-    if (!puv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
-  for (i=0; i<num_buv; ++i, ++ardi_cntr)
-    if (!buv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    set_relax(puv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
+  for (i=0; i<num_biuv; ++i, ++ardi_cntr)
+    set_relax(biuv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_nbuv; ++i, ++ardi_cntr)
-    if (!nbuv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
-  for (i=0; i<num_guv; ++i, ++ardi_cntr)
-    if (!guv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    set_relax(nbuv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
+  for (i=0; i<num_geuv; ++i, ++ardi_cntr)
+    set_relax(geuv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_hguv; ++i, ++ardi_cntr)
-    if (!hguv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
-  for (i=0; i<num_hupiv; ++i, ++ardi_cntr)
-    if (!hupiv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
-  for (i=0; i<num_huprv; ++i, ++ardr_cntr)
-    if (!huprv_cat[i]) allRelaxedDiscreteReal.set(ardr_cntr);
+    set_relax(hguv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
+  for (i=0; i<num_hpuiv; ++i, ++ardi_cntr)
+    set_relax(hupiv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
+  for (i=0; i<num_hpurv; ++i, ++ardr_cntr)
+    set_relax(huprv_cat, i, ardr_cntr, allRelaxedDiscreteReal);
+
   // discrete epistemic uncertain
-  for (i=0; i<num_durv; ++i, ++ardi_cntr)
-    if (!durv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+  for (i=0; i<num_diuv; ++i, ++ardi_cntr)
+    // Note: input spec doesn't allow user to override interval relaxation
+    set_relax(diuv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_dusiv; ++i, ++ardi_cntr)
-    if (!dusiv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    set_relax(dusiv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_dusrv; ++i, ++ardr_cntr)
-    if (!dusrv_cat[i]) allRelaxedDiscreteReal.set(ardr_cntr);
+    set_relax(dusrv_cat, i, ardr_cntr, allRelaxedDiscreteReal);
+
   // discrete state
   for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
-    if (!dsrv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    // Note: input spec doesn't allow user to override interval relaxation
+    set_relax(dsrv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-    if (!dssiv_cat[i]) allRelaxedDiscreteInt.set(ardi_cntr);
+    set_relax(dssiv_cat, i, ardi_cntr, allRelaxedDiscreteInt);
+
   for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
-    if (!dssrv_cat[i]) allRelaxedDiscreteReal.set(ardr_cntr);
+    set_relax(dssrv_cat, i, ardr_cntr, allRelaxedDiscreteReal);
+}
+
+
+void SharedVariablesDataRep::
+set_relax(const BitArray& user_cat_spec, size_t ucs_index,
+	  size_t ard_cntr, BitArray& ard_container)
+{
+  if (user_cat_spec.empty() || !user_cat_spec[ucs_index])
+    ard_container.set(ard_cntr);
 }
 
 
