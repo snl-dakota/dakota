@@ -11,7 +11,7 @@ rem  Use the following line if SNL's APREPRO utility is used instead of DPrePro.
 rem  ../aprepro -c '*' -q --nowarning ros.template ros.in
 
 rem  As shipped, example uses workdir, so dprepro is up one directory level
-perl ../dprepro %1% ros.template ros.in
+perl ..\dprepro %1% ros.template ros.in
 
 
 rem  --------
@@ -34,7 +34,7 @@ rem  Example with grep/sed installed via MSYS
 rem grep 'Function value' ros.out | c:\msys\1.0\bin\sed s/^.................// >results.tmp
 rem grep -i "Function g" ros.out | c:\msys\1.0\bin\sed s/^....................//  >> results.tmp
 
-perl -n -e "if (/Function value = (.*)/) { print $1 }" ros.out > results.tmp
+perl -n -e "if (/Function value = (.*)/) { print \"$1\n\" }" ros.out > results.tmp
 perl -n -e "if (/Function gradient = (.*)/) { print $1 }" ros.out >> results.tmp
 
 ren results.tmp %2%

@@ -17,7 +17,7 @@ variables,
 	  cdv_descriptor       'x1'     'x2'
 
 interface,
-	fork
+        system	
 #	  asynchronous
 	  analysis_driver = 'simulator_script.bat'
 	  parameters_file = 'params.in'
