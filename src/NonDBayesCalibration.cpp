@@ -27,8 +27,15 @@ static const char rcsId[]="@(#) $Id$";
 namespace Dakota {
 
 // initialization of statics
-NonDBayesCalibration* NonDBayesCalibration::nonDBayesInstance(NULL);
 
+// BMA, LPS: experimentation with hyperparameter prior; if works will
+// integrate into Pecos
+Real invgamma_alpha = 1.0;
+Real invgamma_beta = 1.0;
+boost::math::inverse_gamma_distribution<> NonDBayesCalibration::
+invgammaDist(invgamma_alpha, invgamma_beta);
+
+NonDBayesCalibration* NonDBayesCalibration::nonDBayesInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
@@ -40,7 +47,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   randomSeed(probDescDB.get_int("method.random_seed")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
-  numHyperparams(0),
+  numHyperparams(0), unifHyperparams(true),
   adaptPosteriorRefine(
     probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
   proposalCovarType(

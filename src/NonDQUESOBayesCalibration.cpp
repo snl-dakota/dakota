@@ -279,7 +279,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
   if (numHyperparams > 0) {
     // all hyperparams utilize uniform priors
-    // BMA TODO: inverse gamma
+    // BMA TODO: inverse gamma (may not have finite variance)
     Real uniform_variance_factor = 1.99 * 1.99 / 12.; // uniform on [.01,2.]
     for (int i=0; i<numHyperparams; ++i)
       (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
