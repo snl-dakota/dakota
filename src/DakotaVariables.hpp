@@ -26,6 +26,74 @@ class ProblemDescDB;
 class MPIPackBuffer;
 class MPIUnpackBuffer;
 
+/// Utility used in derived read_core to read in generic format
+class GeneralReader {
+public: 
+  template<typename ArrayType> 
+  void operator()(std::istream& s, size_t start_index, size_t num_items, 
+                  ArrayType& array_data, StringMultiArrayView label_array) {
+    read_data_partial(s, start_index, num_items, array_data, label_array);
+  }
+};
+
+/// Utility used in derived read_core to read values in tabular format
+class TabularReader {
+public: 
+  template<typename ArrayType> 
+  void operator()(std::istream& s, size_t start_index, size_t num_items, 
+                  ArrayType& array_data, StringMultiArrayView label_array) {
+    /// The tabular reader doesn't forward the label arrays
+    read_data_partial_tabular(s, start_index, num_items, array_data);
+  }
+};
+
+/// Utility used in derived write_core to write in generic format
+class GeneralWriter {
+public: 
+  template<typename ArrayType> 
+  void operator()(std::ostream& s, size_t start_index, size_t num_items, 
+                  const ArrayType& array_data, 
+                  StringMultiArrayConstView label_array) {
+    write_data_partial(s, start_index, num_items, array_data, label_array);
+  }
+};
+
+/// Utility used in derived write_core to write in aprepro format
+class ApreproWriter {
+public: 
+  template<typename ArrayType> 
+  void operator()(std::ostream& s, size_t start_index, size_t num_items, 
+                  const ArrayType& array_data, 
+                  StringMultiArrayConstView label_array) {
+    write_data_partial_aprepro(s, start_index, num_items, array_data, 
+                               label_array);
+  }
+};
+
+/// Utility used in derived write_core to write values in tabular format
+class TabularWriter {
+public: 
+  template<typename ArrayType> 
+  void operator()(std::ostream& s, size_t start_index, size_t num_items, 
+                  const ArrayType& array_data, 
+                  StringMultiArrayConstView label_array) {
+    /// The tabular writer doesn't forward the label arrays
+    write_data_partial_tabular(s, start_index, num_items, array_data);
+  }
+};
+
+/// Utility used in derived write_core to write labels in tabular format
+class LabelsWriter {
+public: 
+  template<typename ArrayType> 
+  void operator()(std::ostream& s, size_t start_index, size_t num_items, 
+                  const ArrayType& array_data, 
+                  StringMultiArrayConstView label_array) {
+    /// The tabular labels writer only forwards the label arrays
+    write_data_partial_tabular(s, start_index, num_items, label_array);
+  }
+};
+
 
 /// Base class for the variables class hierarchy.
 
@@ -92,12 +160,13 @@ public:
 
   /// read a variables object from an std::istream
   virtual void read(std::istream& s);
-  /// write a variables object to an std::ostream
+  /// write a variables object to an std::ostream, e.g., the console
   virtual void write(std::ostream& s) const;
-  /// write a variables object to an std::ostream in aprepro format
+  /// write a variables object to an std::ostream in aprepro format,
+  /// e.g., a parameters file
   virtual void write_aprepro(std::ostream& s) const;
 
-  // For neutral file I/O:
+  // For neutral file I/O (restart translation to/from neutral):
   /// read a variables object in annotated format from an istream
   virtual void read_annotated(std::istream& s);
   /// write a variables object in annotated format to an std::ostream
@@ -109,7 +178,8 @@ public:
   virtual void write_tabular(std::ostream& s, bool active_only = false) const;
 
   /// write the labels in input spec order to a std::ostream
-  void write_tabular_labels(std::ostream& s, bool active_only = false) const;
+  virtual void write_tabular_labels(std::ostream& s, 
+                                    bool active_only = false) const;
 
   /// read a variables object from a packed MPI buffer
   virtual void read(MPIUnpackBuffer& s);

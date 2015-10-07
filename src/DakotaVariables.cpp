@@ -608,7 +608,7 @@ void Variables::write(std::ostream& s) const
     variablesRep->write(s); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write function.\n"
-         << "No default defined at base class." << std::endl;
+	 << "No default defined at base class." << std::endl;
     abort_handler(-1);
   }
 }
@@ -620,7 +620,7 @@ void Variables::write_aprepro(std::ostream& s) const
     variablesRep->write_aprepro(s); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write_aprepro "
-         << "function.\nNo default defined at base class." << std::endl;
+	 << "function.\nNo default defined at base class." << std::endl;
     abort_handler(-1);
   }
 }
@@ -741,7 +741,7 @@ void Variables::write_tabular(std::ostream& s, bool active_only) const
     variablesRep->write_tabular(s, active_only); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write_tabular "
-         << "function.\nNo default defined at base class." << std::endl;
+          << "function.\nNo default defined at base class." << std::endl;
     abort_handler(-1);
   }
 }
@@ -752,62 +752,11 @@ void Variables::write_tabular(std::ostream& s, bool active_only) const
 void Variables::write_tabular_labels(std::ostream& s, bool active_only) const
 {
   if (variablesRep)
-    variablesRep->write_tabular_labels(s); // envelope fwd to letter
-  else {
-
-    // ASCII version for tabular file I/O
-    const SizetArray& vc_totals = active_only ? 
-      sharedVarsData.active_components_totals() : 
-      sharedVarsData.components_totals(); 
-
-    size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-      num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-      num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-      num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-      num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-      num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-      num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-      num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-      acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
- 
-    StringMultiArrayConstView 
-      acv_labels  = all_continuous_variable_labels(),
-      adiv_labels = all_discrete_int_variable_labels(),
-      adsv_labels = all_discrete_string_variable_labels(),
-      adrv_labels = all_discrete_real_variable_labels();
- 
-    // write design
-    write_data_partial_tabular(s, acv_offset,  num_cdv,  acv_labels);
-    write_data_partial_tabular(s, adiv_offset, num_ddiv, adiv_labels);
-    write_data_partial_tabular(s, adsv_offset, num_ddsv, adsv_labels);
-    write_data_partial_tabular(s, adrv_offset, num_ddrv, adrv_labels);
-    acv_offset  += num_cdv;  adiv_offset += num_ddiv;
-    adsv_offset += num_ddsv; adrv_offset += num_ddrv;
-
-    // write aleatory uncertain
-    write_data_partial_tabular(s, acv_offset,  num_cauv,  acv_labels); 
-    write_data_partial_tabular(s, adiv_offset, num_dauiv, adiv_labels);
-    write_data_partial_tabular(s, adsv_offset, num_dausv, adsv_labels);
-    write_data_partial_tabular(s, adrv_offset, num_daurv, adrv_labels);
-    acv_offset  += num_cauv;  adiv_offset += num_dauiv;
-    adsv_offset += num_dausv; adrv_offset += num_daurv;
-
-    // write epistemic uncertain
-    write_data_partial_tabular(s, acv_offset,  num_ceuv,  acv_labels); 
-    write_data_partial_tabular(s, adiv_offset, num_deuiv, adiv_labels);
-    write_data_partial_tabular(s, adsv_offset, num_deusv, adsv_labels);
-    write_data_partial_tabular(s, adrv_offset, num_deurv, adrv_labels);
-    acv_offset  += num_ceuv;  adiv_offset += num_deuiv;
-    adsv_offset += num_deusv; adrv_offset += num_deurv;
-
-    // write state
-    write_data_partial_tabular(s, acv_offset,  num_csv,  acv_labels); 
-    write_data_partial_tabular(s, adiv_offset, num_dsiv, adiv_labels);
-    write_data_partial_tabular(s, adsv_offset, num_dssv, adsv_labels);
-    write_data_partial_tabular(s, adrv_offset, num_dsrv, adrv_labels);
-    //acv_offset  += num_csv;  adiv_offset += num_dsiv;
-    //adsv_offset += num_dssv; adrv_offset += num_dsrv;
-
+    variablesRep->write_tabular_labels(s, active_only); // envelope fwd to letter
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: Letter lacking redefinition of virtual write_tabular_labels "
+          << "function.\nNo default defined at base class." << std::endl;
+    abort_handler(-1);
   }
 }
 

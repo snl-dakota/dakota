@@ -152,314 +152,16 @@ RelaxedVariables(const ProblemDescDB& problem_db,
 }
 
 
-// Reordering is required in all read/write cases that will be visible to the
-// user since all derived vars classes should use the same ordering for clarity.
-// Neutral file I/O, binary streams, and packed buffers do not need to reorder
-// (so long as read/write are consistent) since this data is not intended for
-// public consumption.
 void RelaxedVariables::read(std::istream& s)
-{
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    i, len = 1, ardi_cntr = 0, ardr_cntr = 0, acv_offset = 0, adiv_offset = 0,
-    adsv_offset = 0, adrv_offset = 0;
-  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
-
-  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
-  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
-  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
-  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
-
-  // design
-  read_data_partial(s, acv_offset, num_cdv, allContinuousVars, acv_labels);
-  acv_offset += num_cdv;
-  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial(s,  acv_offset++, len,  allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
-  read_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringVars,
-		    adsv_labels);
-  adsv_offset += num_ddsv;
-  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial(s,  acv_offset++, len,   allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			adrv_labels);
-
-  // aleatory uncertain
-  read_data_partial(s, acv_offset, num_cauv, allContinuousVars, acv_labels);
-  acv_offset += num_cauv;
-  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial(s,  acv_offset++, len,  allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
-  read_data_partial(s, adsv_offset, num_dausv, allDiscreteStringVars,
-		    adsv_labels);
-  adsv_offset += num_dausv;
-  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial(s,  acv_offset++, len,   allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			adrv_labels);
-
-  // epistemic uncertain
-  read_data_partial(s, acv_offset, num_ceuv, allContinuousVars, acv_labels);
-  acv_offset += num_ceuv;
-  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial(s,  acv_offset++, len,  allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
-  read_data_partial(s, adsv_offset, num_deusv, allDiscreteStringVars,
-		    adsv_labels);
-  adsv_offset += num_deusv;
-  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial(s,  acv_offset++, len,   allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			adrv_labels);
-
-  // state
-  read_data_partial(s, acv_offset, num_csv, allContinuousVars, acv_labels);
-  acv_offset += num_csv;
-  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial(s,  acv_offset++, len,  allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
-  read_data_partial(s, adsv_offset, num_dssv, allDiscreteStringVars,
-		    adsv_labels);
-  //adsv_offset += num_dssv;
-  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial(s,  acv_offset++, len,   allContinuousVars, acv_labels);
-    else
-      read_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			adrv_labels);
-}
+{ read_core(s, GeneralReader(), sharedVarsData.components_totals()); }
 
 
 void RelaxedVariables::write(std::ostream& s) const
-{
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    i, len = 1, ardi_cntr = 0, ardr_cntr = 0, acv_offset = 0, adiv_offset = 0,
-    adsv_offset = 0, adrv_offset = 0;
-  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
-
-  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
-  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
-  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
-  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
-
-  // design
-  write_data_partial(s, acv_offset, num_cdv, allContinuousVars, acv_labels);
-  acv_offset += num_cdv;
-  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adiv_offset++, len, allDiscreteIntVars,
-			 adiv_labels);
-  write_data_partial(s, adsv_offset, num_ddsv, allDiscreteStringVars,
-		     adsv_labels);
-  adsv_offset += num_ddsv;
-  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			 adrv_labels);
-
-  // aleatory uncertain
-  write_data_partial(s, acv_offset, num_cauv, allContinuousVars, acv_labels);
-  acv_offset += num_cauv;
-  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adiv_offset++, len, allDiscreteIntVars,
-			 adiv_labels);
-  write_data_partial(s, adsv_offset, num_dausv, allDiscreteStringVars,
-		     adsv_labels);
-  adsv_offset += num_dausv;
-  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			 adrv_labels);
-
-  // epistemic uncertain
-  write_data_partial(s, acv_offset, num_ceuv, allContinuousVars, acv_labels);
-  acv_offset += num_ceuv;
-  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adiv_offset++, len, allDiscreteIntVars,
-			 adiv_labels);
-  write_data_partial(s, adsv_offset, num_deusv, allDiscreteStringVars,
-		     adsv_labels);
-  adsv_offset += num_deusv;
-  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			 adrv_labels);
-
-  // state
-  write_data_partial(s, acv_offset, num_csv, allContinuousVars, acv_labels);
-  acv_offset += num_csv;
-  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adiv_offset++, len, allDiscreteIntVars,
-			 adiv_labels);
-  write_data_partial(s, adsv_offset, num_dssv, allDiscreteStringVars,
-		     adsv_labels);
-  //adsv_offset += num_dssv;
-  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial(s,  acv_offset++, len, allContinuousVars, acv_labels);
-    else
-      write_data_partial(s, adrv_offset++, len, allDiscreteRealVars,
-			 adrv_labels);
-}
+{ write_core(s, GeneralWriter(), sharedVarsData.components_totals()); }
 
 
 void RelaxedVariables::write_aprepro(std::ostream& s) const
-{
-  const SizetArray& vc_totals = sharedVarsData.components_totals();
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    i, len = 1, ardi_cntr = 0, ardr_cntr = 0, acv_offset = 0, adiv_offset = 0,
-    adsv_offset = 0, adrv_offset = 0;
-  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
-
-  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
-  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
-  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
-  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
-
-  // design
-  write_data_partial_aprepro(s, acv_offset, num_cdv, allContinuousVars,
-			     acv_labels);
-  acv_offset += num_cdv;
-  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,  allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adiv_offset++, len, allDiscreteIntVars,
-				 adiv_labels);
-  write_data_partial_aprepro(s, adsv_offset, num_ddsv, allDiscreteStringVars,
-			     adsv_labels);
-  adsv_offset += num_ddsv;
-  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,   allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adrv_offset++, len, allDiscreteRealVars,
-				 adrv_labels);
-
-  // aleatory uncertain
-  write_data_partial_aprepro(s, acv_offset, num_cauv, allContinuousVars,
-			     acv_labels);
-  acv_offset += num_cauv;
-  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,  allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adiv_offset++, len, allDiscreteIntVars,
-				 adiv_labels);
-  write_data_partial_aprepro(s, adsv_offset, num_dausv, allDiscreteStringVars,
-			     adsv_labels);
-  adsv_offset += num_dausv;
-  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,   allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adrv_offset++, len, allDiscreteRealVars,
-				 adrv_labels);
-
-  // epistemic uncertain
-  write_data_partial_aprepro(s, acv_offset, num_ceuv, allContinuousVars,
-			     acv_labels);
-  acv_offset += num_ceuv;
-  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,  allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adiv_offset++, len, allDiscreteIntVars,
-				 adiv_labels);
-  write_data_partial_aprepro(s, adsv_offset, num_deusv, allDiscreteStringVars,
-			     adsv_labels);
-  adsv_offset += num_deusv;
-  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,   allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adrv_offset++, len, allDiscreteRealVars,
-				 adrv_labels);
-
-  // state
-  write_data_partial_aprepro(s, acv_offset, num_csv, allContinuousVars,
-			     acv_labels);
-  acv_offset += num_csv;
-  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,  allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adiv_offset++, len, allDiscreteIntVars,
-				 adiv_labels);
-  write_data_partial_aprepro(s, adsv_offset, num_dssv, allDiscreteStringVars,
-			     adsv_labels);
-  //adsv_offset += num_dssv;
-  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      write_data_partial_aprepro(s,  acv_offset++, len,   allContinuousVars,
-				 acv_labels);
-    else
-      write_data_partial_aprepro(s, adrv_offset++, len, allDiscreteRealVars,
-				 adrv_labels);
-}
+{ write_core(s, ApreproWriter(), sharedVarsData.components_totals()); }
 
 
 /** Presumes variables object is appropriately sized to receive data */
@@ -468,83 +170,7 @@ void RelaxedVariables::read_tabular(std::istream& s, bool active_only)
   const SizetArray& vc_totals = active_only ? 
     sharedVarsData.active_components_totals() : 
     sharedVarsData.components_totals(); 
-
-  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
-    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
-    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
-    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
-    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
-    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
-    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    i, len = 1, ardi_cntr = 0, ardr_cntr = 0, acv_offset = 0, adiv_offset = 0,
-    adsv_offset = 0, adrv_offset = 0;
-  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
-
-  // design
-  read_data_partial_tabular(s, acv_offset, num_cdv, allContinuousVars);
-  acv_offset += num_cdv;
-  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
-    else
-      read_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  read_data_partial_tabular(s, adsv_offset, num_ddsv, allDiscreteStringVars);
-  adsv_offset += num_ddsv;
-  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
-    else
-      read_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
-
-  // aleatory uncertain
-  read_data_partial_tabular(s, acv_offset, num_cauv, allContinuousVars);
-  acv_offset += num_cauv;
-  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
-    else
-      read_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  read_data_partial_tabular(s, adsv_offset, num_dausv, allDiscreteStringVars);
-  adsv_offset += num_dausv;
-  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
-    else
-      read_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
-
-  // epistemic uncertain
-  read_data_partial_tabular(s, acv_offset, num_ceuv, allContinuousVars);
-  acv_offset += num_ceuv;
-  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
-    else
-      read_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  read_data_partial_tabular(s, adsv_offset, num_deusv, allDiscreteStringVars);
-  adsv_offset += num_deusv;
-  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
-    else
-      read_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
-
-  // state
-  read_data_partial_tabular(s, acv_offset, num_csv, allContinuousVars);
-  acv_offset += num_csv;
-  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
-    else
-      read_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  read_data_partial_tabular(s, adsv_offset, num_dssv, allDiscreteStringVars);
-  //adsv_offset += num_dssv;
-  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr])
-      read_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
-    else
-      read_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
+  read_core(s, TabularReader(), vc_totals);
 }
 
 
@@ -553,7 +179,30 @@ void RelaxedVariables::write_tabular(std::ostream& s, bool active_only) const
   const SizetArray& vc_totals = active_only ? 
     sharedVarsData.active_components_totals() : 
     sharedVarsData.components_totals(); 
+  write_core(s, TabularWriter(), vc_totals);
+}
 
+
+void RelaxedVariables::
+write_tabular_labels(std::ostream& s, bool active_only) const
+{
+  const SizetArray& vc_totals = active_only ? 
+    sharedVarsData.active_components_totals() : 
+    sharedVarsData.components_totals(); 
+  write_core(s, LabelsWriter(), vc_totals);
+}
+
+
+/** Reordering is required in all read/write cases that will be
+    visible to the user since all derived vars classes should use the
+    same ordering for clarity.  Neutral file I/O, binary streams, and
+    packed buffers do not need to reorder (so long as read/write are
+    consistent) since this data is not intended for public
+    consumption. */
+template<typename Reader>
+void RelaxedVariables::read_core(std::istream& s, Reader read_handler,
+				 const SizetArray& vc_totals)
+{
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
     num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
@@ -567,69 +216,161 @@ void RelaxedVariables::write_tabular(std::ostream& s, bool active_only) const
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
 
+  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+
   // design
-  write_data_partial_tabular(s, acv_offset, num_cdv, allContinuousVars);
+  read_handler(s, acv_offset, num_cdv, allContinuousVars, acv_labels);
   acv_offset += num_cdv;
   for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
+      read_handler(s,  acv_offset++, len,  allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  write_data_partial_tabular(s, adsv_offset, num_ddsv, allDiscreteStringVars);
+      read_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  read_handler(s, adsv_offset, num_ddsv, allDiscreteStringVars, adsv_labels);
   adsv_offset += num_ddsv;
   for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
     if (all_relax_dr[ardr_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
+      read_handler(s,  acv_offset++, len,   allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
+      read_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
 
   // aleatory uncertain
-  write_data_partial_tabular(s, acv_offset, num_cauv, allContinuousVars);
+  read_handler(s, acv_offset, num_cauv, allContinuousVars, acv_labels);
   acv_offset += num_cauv;
   for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
+      read_handler(s,  acv_offset++, len,  allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  write_data_partial_tabular(s, adsv_offset, num_dausv, allDiscreteStringVars);
+      read_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  read_handler(s, adsv_offset, num_dausv, allDiscreteStringVars, adsv_labels);
   adsv_offset += num_dausv;
   for (i=0; i<num_daurv; ++i, ++ardr_cntr)
     if (all_relax_dr[ardr_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
+      read_handler(s,  acv_offset++, len,   allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
+      read_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
 
   // epistemic uncertain
-  write_data_partial_tabular(s, acv_offset, num_ceuv, allContinuousVars);
+  read_handler(s, acv_offset, num_ceuv, allContinuousVars, acv_labels);
   acv_offset += num_ceuv;
   for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
+      read_handler(s,  acv_offset++, len,  allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  write_data_partial_tabular(s, adsv_offset, num_deusv, allDiscreteStringVars);
+      read_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  read_handler(s, adsv_offset, num_deusv, allDiscreteStringVars, adsv_labels);
   adsv_offset += num_deusv;
   for (i=0; i<num_deurv; ++i, ++ardr_cntr)
     if (all_relax_dr[ardr_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
+      read_handler(s,  acv_offset++, len,   allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
+      read_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
 
   // state
-  write_data_partial_tabular(s, acv_offset, num_csv, allContinuousVars);
+  read_handler(s, acv_offset, num_csv, allContinuousVars, acv_labels);
   acv_offset += num_csv;
   for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
     if (all_relax_di[ardi_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,  allContinuousVars);
+      read_handler(s,  acv_offset++, len,  allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adiv_offset++, len, allDiscreteIntVars);
-  write_data_partial_tabular(s, adsv_offset, num_dssv, allDiscreteStringVars);
+      read_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  read_handler(s, adsv_offset, num_dssv, allDiscreteStringVars, adsv_labels);
   //adsv_offset += num_dssv;
   for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
     if (all_relax_dr[ardr_cntr])
-      write_data_partial_tabular(s,  acv_offset++, len,   allContinuousVars);
+      read_handler(s,  acv_offset++, len,   allContinuousVars, acv_labels);
     else
-      write_data_partial_tabular(s, adrv_offset++, len, allDiscreteRealVars);
+      read_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
+}
+
+template<typename Writer>
+void RelaxedVariables::write_core(std::ostream& s, Writer write_handler, 
+				  const SizetArray& vc_totals) const
+{
+  size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
+    num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
+    num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
+    num_dausv = vc_totals[TOTAL_DAUSV], num_daurv = vc_totals[TOTAL_DAURV],
+    num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
+    num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
+    num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
+    i, len = 1, ardi_cntr = 0, ardr_cntr = 0, acv_offset = 0, adiv_offset = 0,
+    adsv_offset = 0, adrv_offset = 0;
+  const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
+  const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
+
+  StringMultiArrayView  acv_labels = all_continuous_variable_labels();
+  StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
+  StringMultiArrayView adsv_labels = all_discrete_string_variable_labels();
+  StringMultiArrayView adrv_labels = all_discrete_real_variable_labels();
+
+  // design
+  write_handler(s, acv_offset, num_cdv, allContinuousVars, acv_labels);
+  acv_offset += num_cdv;
+  for (i=0; i<num_ddiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  write_handler(s, adsv_offset, num_ddsv, allDiscreteStringVars, adsv_labels);
+  adsv_offset += num_ddsv;
+  for (i=0; i<num_ddrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
+
+  // aleatory uncertain
+  write_handler(s, acv_offset, num_cauv, allContinuousVars, acv_labels);
+  acv_offset += num_cauv;
+  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  write_handler(s, adsv_offset, num_dausv, allDiscreteStringVars, adsv_labels);
+  adsv_offset += num_dausv;
+  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
+
+  // epistemic uncertain
+  write_handler(s, acv_offset, num_ceuv, allContinuousVars, acv_labels);
+  acv_offset += num_ceuv;
+  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  write_handler(s, adsv_offset, num_deusv, allDiscreteStringVars, adsv_labels);
+  adsv_offset += num_deusv;
+  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
+
+  // state
+  write_handler(s, acv_offset, num_csv, allContinuousVars, acv_labels);
+  acv_offset += num_csv;
+  for (i=0; i<num_dsiv; ++i, ++ardi_cntr)
+    if (all_relax_di[ardi_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adiv_offset++, len, allDiscreteIntVars, adiv_labels);
+  write_handler(s, adsv_offset, num_dssv, allDiscreteStringVars, adsv_labels);
+  //adsv_offset += num_dssv;
+  for (i=0; i<num_dsrv; ++i, ++ardr_cntr)
+    if (all_relax_dr[ardr_cntr])
+      write_handler(s,  acv_offset++, len, allContinuousVars, acv_labels);
+    else
+      write_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
 }
 
 } // namespace Dakota

@@ -59,6 +59,19 @@ protected:
   void write_aprepro(std::ostream& s) const;
   void read_tabular(std::istream& s, bool active_only = false);
   void write_tabular(std::ostream& s, bool active_only = false) const;
+  void write_tabular_labels(std::ostream& s, bool active_only = false) const;
+
+
+  /// Implementation of reading various formats using the specified
+  /// read handler, accounting for reordering due to relaxation
+  template<typename Reader>
+  void read_core(std::istream& s, Reader read_handler, 
+		 const SizetArray& vc_totals);
+  /// Implementation of writing various formats using the specified
+  /// write handler, accounting for reordering due to relaxation
+  template<typename Writer>
+  void write_core(std::ostream& s, Writer write_handler, 
+		  const SizetArray& vc_totals) const;
 
 private:
 
