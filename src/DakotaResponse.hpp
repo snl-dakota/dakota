@@ -301,6 +301,9 @@ public:
 
   virtual void get_covariance_diagonal( RealVector &diagonal ) const;
 
+  /// covariance determinant for one experiment (default 1.0)
+  virtual Real covariance_determinant() const;
+
 protected:
 
   //

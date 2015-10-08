@@ -160,6 +160,9 @@ public:
   /// Return a (copy) vector containing the entries of the main diagonal of the
   /// covariance matrix
   void get_main_diagonal( RealVector &diagonal ) const;
+
+  /// The determinant of the covariance matrix
+  Real determinant() const;
 };
 
 
@@ -223,6 +226,9 @@ public:
   /// Return a (copy) vector containing the main diagonal entries of the 
   /// experimental covariance matrix
   void get_main_diagonal( RealVector &diagonal ) const;
+
+  /// Determinant of the total ExperimentCovariance structure
+  Real determinant() const;
 
   /// Return the number of diagonal blocks in the entire matrix
   int num_blocks() const{

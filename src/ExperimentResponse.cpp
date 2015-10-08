@@ -142,6 +142,10 @@ get_covariance_diagonal( RealVector &diagonal ) const
 }
 
 
+Real ExperimentResponse::covariance_determinant() const
+{ return expDataCovariance.determinant(); }
+
+
 void ExperimentResponse::copy_rep(Response* source_resp_rep)
 {
   // copy base class data

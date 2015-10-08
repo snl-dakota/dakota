@@ -83,6 +83,9 @@ public:
 				 RealSymMatrixArray& weighted_hessians);
   void get_covariance_diagonal( RealVector &diagonal ) const;
 
+  /// covariance determinant for this experiment (default 1.0)
+  Real covariance_determinant() const;
+
 protected:
 
   //

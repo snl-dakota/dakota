@@ -1574,6 +1574,19 @@ void Response::get_covariance_diagonal( RealVector &diagonal) const
   }
 }
 
+
+Real Response::covariance_determinant() const
+{
+  if (responseRep)
+    return responseRep->covariance_determinant();
+  else {
+    Cerr << "\nError: covariance_determinant not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 /** Implementation of serialization load for the Response handle */
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)

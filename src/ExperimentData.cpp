@@ -1338,4 +1338,99 @@ scale_residuals(const RealVector& multipliers, short multiplier_mode,
   }
 }
 
+
+/** Determinant of the total covariance used in inference, which has
+    blocks mult_i * I * Cov_i. */
+Real ExperimentData::scaled_cov_determinant(const RealVector& multipliers, 
+					    short multiplier_mode)
+{
+  Real det = 1.0;
+  if (!variance_active())  // short-circuit if no data covariance
+    return det;
+
+  size_t multiplier_offset = 0;
+  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+
+    // for each experiment, accumulate det(mult*I*Cov)
+    det *= allExperiments[exp_ind].covariance_determinant();
+
+    switch (multiplier_mode) {
+
+    case CALIBRATE_NONE:
+      // no-op
+      break;
+
+    case CALIBRATE_ONE:
+      assert(multipliers.length() == 1);
+      det *= std::pow(multipliers[0], allExperiments[exp_ind].num_functions());
+      break;
+
+    case CALIBRATE_PER_EXPER:
+      assert(multipliers.length() == numExperiments);
+      det *= std::pow(multipliers[exp_ind], 
+		      allExperiments[exp_ind].num_functions());
+      break;
+
+    case CALIBRATE_PER_RESP: {
+      assert(multipliers.length() == simulationSRD.num_response_groups());
+      size_t num_scalar = simulationSRD.num_scalar_responses();
+      size_t num_fields = simulationSRD.num_field_response_groups();
+      
+      // each response has a different multiplier, but they don't
+      // differ across experiments
+      multiplier_offset = 0;
+      
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
+	det *= multipliers[multiplier_offset];
+	++multiplier_offset;
+      } 
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+	det *= std::pow(multipliers[multiplier_offset], field_lens[f_ind]);
+	++multiplier_offset;
+      }
+      break;
+    }
+
+    case CALIBRATE_BOTH: {
+
+      assert(multipliers.length() == 
+	     numExperiments*simulationSRD.num_response_groups());
+      
+      size_t num_scalar = simulationSRD.num_scalar_responses();
+      size_t num_fields = simulationSRD.num_field_response_groups();
+      
+      // don't reset the multiplier_offset; each exp, each resp has its own
+
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
+	det *= multipliers[multiplier_offset];
+	++multiplier_offset;
+      } 
+
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+	det *= std::pow(multipliers[multiplier_offset], field_lens[f_ind]);
+	++multiplier_offset;
+      }
+      break;
+    }	       
+      
+    default:
+      // unknown mode
+      Cerr << "\nError: scale_residuals() called with unknown multiplier mode.\n";
+      abort_handler(-1);
+      break;
+
+    } // switch
+
+  }  // for each experiment
+
+  return det;
+}
+
+
 }  // namespace Dakota

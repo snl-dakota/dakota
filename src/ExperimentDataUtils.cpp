@@ -453,6 +453,20 @@ void CovarianceMatrix::get_main_diagonal( RealVector &diagonal ) const {
   }
 }
 
+Real CovarianceMatrix::determinant() const
+{
+  Real det = 1.0;
+  if (covIsDiagonal_) {
+    for (int i=0; i<num_dof(); i++)
+      det *= covDiagonal_[i];
+  }
+  else {
+    for (int i=0; i<num_dof(); i++)
+      det *= covCholFactor_(i,i)*covCholFactor_(i,i);
+  }
+  return det;
+}
+
 ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
 {
   numBlocks_ = source.numBlocks_;
@@ -619,6 +633,16 @@ void ExperimentCovariance::get_main_diagonal( RealVector &diagonal ) const {
     global_row_num += covMatrices_[i].num_dof();
   }
 }
+
+
+Real ExperimentCovariance::determinant() const
+{
+  Real det = 1.0;
+  for (int i=0; i<numBlocks_; ++i)
+    det *= covMatrices_[i].determinant();
+  return det;
+}
+
 
 void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
 					 RealVector &eigenvalues, 

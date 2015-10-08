@@ -277,6 +277,11 @@ public:
   void scale_residuals(const RealVector& multipliers, short multiplier_mode,
                        RealVector& residuals);
 
+  /// returns the determinant of (covariance block-scaled by the
+  /// passed multipliers)
+  Real scaled_cov_determinant(const RealVector& multipliers, 
+			      short multiplier_mode);
+
 private:
 
   // initialization helpers
