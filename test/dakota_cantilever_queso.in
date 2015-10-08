@@ -1,4 +1,4 @@
-#@ *: DakotaConfig=HAVE_QUESO,DAKOTA_HAVE_MPI
+#@ *: DakotaConfig=HAVE_QUESO
 #@ p*: MPIProcs=1
 
 method,									
@@ -11,7 +11,7 @@ method,
 #         calibrate_error_multipliers per_response                         #p4
 	  proposal_covariance
 # diagonal and matrix formats with values
-	    diagonal values 1.0e6 1.0e-1				#p0,#p4
+	    diagonal values 1.0e6 1.0e-1				#s0,#p0,#p4
 #	    matrix   values 1.0 0.1					#p1
 #                  	    0.1 2.0					#p1
 # diagonal and matrix formats from file

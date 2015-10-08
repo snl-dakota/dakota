@@ -483,29 +483,29 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_displayVerbosity = 2;
   envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
 
-// #ifdef DAKOTA_HAVE_MPI
-//   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
-//   if (parallelLib.mpirun_flag()) {
+#ifdef DAKOTA_HAVE_MPI
+  // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
+  if (parallelLib.mpirun_flag()) {
+    if (mcmcType == "multilevel")
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
+    else // dram, dr, am, or mh
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
+						envOptionsValues.get()));
+  }
+  else {
+    if (mcmcType == "multilevel")
+      quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
+    else // dram, dr, am, or mh
+      quesoEnv.reset(new QUESO::FullEnvironment("","",
+						envOptionsValues.get()));
+  }
+#else
   if (mcmcType == "multilevel")
-    quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
+    quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
-                                              envOptionsValues.get()));
-//   }
-//   else {
-//     if (mcmcType == "multilevel")
-//       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
-//     else // dram, dr, am, or mh
-//       quesoEnv.reset(new QUESO::FullEnvironment("","",
-//                                                 envOptionsValues.get()));
-//   }
-// #else
-//   if (mcmcType == "multilevel")
-//     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
-//   else // dram, dr, am, or mh
-//     quesoEnv.reset(new QUESO::FullEnvironment("","",
-//                                               envOptionsValues.get()));
-// #endif
+    quesoEnv.reset(new QUESO::FullEnvironment("","",
+					      envOptionsValues.get()));
+#endif
 
 }
 
