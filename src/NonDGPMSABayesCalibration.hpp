@@ -61,8 +61,6 @@ public:
 
   /// number of samples of the simulation to construct the GP 
   int emulatorSamples;
-  /// scale factor for likelihood
-  Real likelihoodScale;
   /// flag to indicated if the sigma terms should be calibrated (default true)
   bool calibrateSigmaFlag;
   /// name of file from which to import build points to build GP

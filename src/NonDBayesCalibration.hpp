@@ -92,8 +92,12 @@ protected:
   void augment_hessian_with_log_prior(MatrixType& log_hess,
 				      const VectorType& vec);
 
+  /// calculate log-likelihood from the passed residual response
+  Real log_likelihood(const Response& residual_resp, 
+		      const RealVector& hyper_params);
+
   /// calculate the misfit function from the vector of residuals
-  Real misfit(const Response& resp, const RealVector& calibrated_sigmas);
+  Real misfit(const Response& residual_resp, const RealVector& hyper_params);
 
   /// static function passed by pointer to negLogPostModel recast model
   static void neg_log_post_resp_mapping(const Variables& model_vars,

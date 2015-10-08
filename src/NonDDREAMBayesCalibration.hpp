@@ -89,12 +89,6 @@ protected:
   //
   //- Heading: Data
 
-  /// scale factor for proposal covariance
-  //  RealVector proposalCovScale;
-
-  /// scale factor for likelihood
-  Real likelihoodScale;
-
   /// lower bounds on calibrated parameters
   RealVector paramMins;
   /// upper bounds on calibrated parameters

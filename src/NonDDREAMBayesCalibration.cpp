@@ -94,7 +94,6 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
 NonDDREAMBayesCalibration::
 NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   numChains(probDescDB.get_int("method.dream.num_chains")),
   numCR(probDescDB.get_int("method.dream.num_cr")),
   crossoverChainPairs(probDescDB.get_int("method.dream.crossover_chain_pairs")),
@@ -349,9 +348,9 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
   const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
   nonDDREAMInstance->update_residual_response(resp);
 
-  double result = -nonDDREAMInstance->misfit(nonDDREAMInstance->residualResponse,
-					     hyper_params)
-                /  nonDDREAMInstance->likelihoodScale;
+  double result = 
+    nonDDREAMInstance->log_likelihood(nonDDREAMInstance->residualResponse,
+				      hyper_params);
 
   if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << result << " Likelihood is "

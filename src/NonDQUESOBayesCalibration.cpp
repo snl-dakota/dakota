@@ -211,8 +211,6 @@ NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
-  // these two deprecated:
-  likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
   exportMCMCFilename(
@@ -298,10 +296,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   init_queso_solver();
 
   // generate the sample chain that defines the joint posterior distribution
-  switch (adaptPosteriorRefine) {
-  case false:
-    run_chain_with_restarting(); break;
-  case true:
+  if (adaptPosteriorRefine) {
     if (!emulatorType) { // current spec prevents this
       Cerr << "Error: adaptive posterior refinement requires emulator model."
 	   << std::endl;
@@ -332,8 +327,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       // assess convergence of the posterior via sample-based K-L divergence:
       //adapt_metric = assess_posterior_convergence();
     }
-    break;
   }
+  else
+    run_chain_with_restarting();
 
   // Generate useful stats from the posterior samples
   compute_statistics();
@@ -1532,12 +1528,14 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   nonDQUESOInstance->mcmcModel.compute_response();
   const Response& resp = nonDQUESOInstance->mcmcModel.current_response();
   nonDQUESOInstance->update_residual_response(resp);
+  
+  // if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
+  //   Cout << "Hyperparams to misfit:\n" << hyper_params << std::endl;
 
   double result = 
-    -nonDQUESOInstance->misfit(nonDQUESOInstance->residualResponse, 
-                               hyper_params) / 
-    nonDQUESOInstance->likelihoodScale;
-
+    nonDQUESOInstance->log_likelihood(nonDQUESOInstance->residualResponse,
+				      hyper_params);
+  
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << result << " Likelihood is "
          << std::exp(result) << '\n';

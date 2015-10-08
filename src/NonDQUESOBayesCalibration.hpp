@@ -195,8 +195,6 @@ protected:
   /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
   /// or "metropolis_hastings" or "multilevel",  within QUESO) 
   String mcmcType;
-  /// scale factor for likelihood; deprecated
-  Real likelihoodScale;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
   /// flag indicating user activation of logit transform option

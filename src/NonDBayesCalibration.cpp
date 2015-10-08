@@ -21,6 +21,7 @@
 #include "NonDLHSSampling.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "SNLLOptimizer.hpp"
+#include <boost/math/constants/constants.hpp>
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -427,18 +428,49 @@ update_residual_response(const Response& resp)
     ShortArray total_asv =  
       expData.determine_active_request(residualResponse,interrogate_field_data);
     expData.form_residuals(resp, total_asv, residualResponse); 
+
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Original response:\n" << resp << std::endl;
+      Cout << "Residual response:\n" << residualResponse << std::endl;
+    }
   }
   else
     residualResponse.update(resp);
 }
 
 
-/** Calculate the likelihood, accounting for optional user-provided
-    observation error covariance and/or calibrated multipliers on the
-    errors. The passed residual_resp must already be differenced with
-    any data, if present. */
+/** Calculate the log-likelihood, accounting for contributions from
+    covariance and hyperparameters, as well as constant term:
+
+      log(L) = -1/2*Nr*log(2*pi) - 1/2*log(det(Cov)) -1/2*r'(Cov^{-1})*r
+
+    The passed residual_resp must already be differenced with any
+    data, if present. */
 Real NonDBayesCalibration::
-misfit(const Response& residual_resp, const RealVector& calibrated_sigmas)
+log_likelihood(const Response& residual_resp, const RealVector& hyper_params)
+{
+  // BMA TODO: this could be pre-computed always
+  // Cast the size_t for floating point operations
+  double cons_factor = -static_cast<Real>(residual_resp.num_functions()) / 2.0 *
+    std::log(2 * boost::math::constants::pi<Real>());
+  // BMA TODO: this could be pre-computed when no hyperparams 
+  // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
+  double cov_det = 
+    expData.scaled_cov_determinant(hyper_params, obsErrorMultiplierMode);
+  
+  double result = cons_factor - std::log(cov_det) / 2.0 - 
+    misfit(residual_resp, hyper_params);
+
+  return result;
+}
+
+
+/** Calculate the misfit portion of the likelihood, accounting for
+    optional user-provided observation error covariance and/or
+    calibrated multipliers on the errors. The passed residual_resp
+    must already be differenced with any data, if present.*/
+Real NonDBayesCalibration::
+misfit(const Response& residual_resp, const RealVector& hyper_params)
 {
   // For now, mirror the flow we'd move to if posing this via nested
   // RecastModels (even though it makes extra copies).  Previously variance 
@@ -448,6 +480,9 @@ misfit(const Response& residual_resp, const RealVector& calibrated_sigmas)
   // potentially interpolated, set of residuals (from
   // update_residual_response)
   RealVector residuals = residual_resp.function_values();
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Residuals in misfit:\n" << residuals << std::endl;
 
   // scale by inverse of user-provided observation error
   if (expData.variance_active()) {  // r <- Gamma_d^{-1/2} r
@@ -460,6 +495,9 @@ misfit(const Response& residual_resp, const RealVector& calibrated_sigmas)
 				       interrogate_field_data);
     // scale the residuals without changing member residualResponse
     expData.scale_residuals(residual_resp, total_asv, residuals);
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Variance-weighted residuals:\n" << residuals << std::endl;
   }
 
   if (obsErrorMultiplierMode > 0) {  
@@ -467,8 +505,10 @@ misfit(const Response& residual_resp, const RealVector& calibrated_sigmas)
     // scale by mult, whether 1, per-experiment, per-response, or both
     // for now, the multiplier calibration mode is a method-related
     // parameter; could instead have a by-index interface here...
-    expData.scale_residuals(calibrated_sigmas, obsErrorMultiplierMode, 
-                            residuals);
+    expData.scale_residuals(hyper_params, obsErrorMultiplierMode, residuals);
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Multiplier-weighted residuals:\n" << residuals << std::endl;
   }
 
   // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
@@ -498,20 +538,23 @@ neg_log_post_resp_mapping(const Variables& model_vars,
   short nlpost_req = nlpost_resp.active_set_request_vector()[0];
   bool output_flag = (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT);
   if (nlpost_req & 1) {
-    RealVector calibrated_sigmas; // TO DO:
+    RealVector hyper_params; // TO DO:
     // > cleanest approach may be to roll this into a variable recasting within
     //   negLogPostModel
     // > however, QUESO/DREAM do not roll this into a model recast, but instead
     //   augment the solver domains and then map the additional variables that
-    //   flow into the likelihood into the calibrated_sigmas.
+    //   flow into the likelihood into the hyper_params.
     //if (nonDBayesInstance->calibrateSigma) {
     //  RealVector x(Teuchos::View, c_vars.data(), numContinuousVars);
-    //  RealVector calibrated_sigmas(Teuchos::View, &c_vars[numContinuousVars],
+    //  RealVector hyper_params(Teuchos::View, &c_vars[numContinuousVars],
     //    numFunctions);
     //}
+
+    // BMA TODO: update to include all likelihood terms (derivatives
+    // w.r.t. hyperparams will be a problem due to det(Cov))
     Real nlp = 
       nonDBayesInstance->misfit(nonDBayesInstance->residualResponse, 
-                                calibrated_sigmas) - 
+                                hyper_params) - 
       nonDBayesInstance->log_prior_density(c_vars);
     nlpost_resp.function_value(nlp, 0);
     if (output_flag)

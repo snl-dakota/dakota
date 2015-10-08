@@ -50,7 +50,6 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
-  likelihoodScale(probDescDB.get_real("method.likelihood_scale")),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
