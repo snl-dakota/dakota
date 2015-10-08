@@ -6576,7 +6576,6 @@ static Real
 	MP_(initDelta),
 	MP_(initStepLength),
 	MP_(initTRRadius),
-	MP_(likelihoodScale),
 	MP_(lineSearchTolerance),
 	MP_(localBalanceParam),
 	MP_(maxBoxSize),

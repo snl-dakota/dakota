@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1685 distinct keywords (plus 236 aliases) **/
+/** 1684 distinct keywords (plus 236 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -619,13 +619,12 @@ static KeyWord
 		{"data_distribution",8,2,2,1,kw_95},
 		{"emulator",8,5,1,0,kw_110}
 		},
-	kw_112[9] = {
+	kw_112[8] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,2,0,0,kw_28},
-		{"calibrate_error_multipliers",8,4,4,0,kw_48},
+		{"calibrate_error_multipliers",8,4,3,0,kw_48},
 		{"dream",8,6,1,1,kw_64,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_DREAM)},
 		{"gpmsa",8,3,1,1,kw_74,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_GPMSA)},
-		{"likelihood_scale",10,0,3,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
 		{"queso",8,3,1,1,kw_92,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_QUESO)},
 		{"standardized_space",8,0,2,0,0,0.,0.,0,N_mdm(true,standardizedSpace)},
 		{"wasabi",8,2,1,1,kw_111,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
@@ -2008,7 +2007,7 @@ static KeyWord
 	kw_345[91] = {
 		{"adaptive_sampling",8,11,8,1,kw_43,0.,0.,0,N_mdm(utype,methodName_ADAPTIVE_SAMPLING)},
 		{"asynch_pattern_search",8,9,8,1,kw_47,0.,0.,0,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
-		{"bayes_calibration",8,7,8,1,kw_112,0.,0.,0,N_mdm(utype,methodName_BAYES_CALIBRATION)},
+		{"bayes_calibration",8,6,8,1,kw_112,0.,0.,0,N_mdm(utype,methodName_BAYES_CALIBRATION)},
 		{"branch_and_bound",8,2,8,1,kw_114,0.,0.,0,N_mdm(utype,methodName_BRANCH_AND_BOUND)},
 		{"centered_parameter_study",8,3,8,1,kw_115,0.,0.,0,N_mdm(utype,methodName_CENTERED_PARAMETER_STUDY)},
 		{"coliny_apps",0,9,8,1,kw_47,0.,0.,-4,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
@@ -2059,7 +2058,7 @@ static KeyWord
 		{"nlpql_sqp",8,1,8,1,kw_254,0.,0.,0,N_mdm(utype,methodName_NLPQL_SQP)},
 		{"nlssol_sqp",8,0,8,1,kw_317,0.,0.,0,N_mdm(utype,methodName_NLSSOL_SQP)},
 		{"nond_adaptive_sampling",0,11,8,1,kw_43,0.,0.,-52,N_mdm(utype,methodName_ADAPTIVE_SAMPLING)},
-		{"nond_bayes_calibration",0,7,8,1,kw_112,0.,0.,-51,N_mdm(utype,methodName_BAYES_CALIBRATION)},
+		{"nond_bayes_calibration",0,6,8,1,kw_112,0.,0.,-51,N_mdm(utype,methodName_BAYES_CALIBRATION)},
 		{"nond_efficient_subspace",0,4,8,1,kw_150,0.,0.,-29,N_mdm(utype,methodName_EFFICIENT_SUBSPACE)},
 		{"nond_global_evidence",0,5,8,1,kw_174,0.,0.,-23,N_mdm(utype,methodName_GLOBAL_EVIDENCE)},
 		{"nond_global_interval_est",0,6,8,1,kw_182,0.,0.,-23,N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)},

@@ -939,8 +939,6 @@ public:
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
-  /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
-  Real likelihoodScale;
   /// the \c fitness metric type specification in \ref
   /// MethodNonDAdaptive
   String fitnessMetricType;
@@ -982,7 +980,6 @@ public:
   RealVector dataDistCovariance;
   /// file from which to read data distribution data (covariance or samples )
   String dataDistFile;
-  /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
 
   // Parameter Study
 

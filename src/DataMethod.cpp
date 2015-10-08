@@ -133,7 +133,7 @@ DataMethodRep::DataMethodRep():
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), logitTransform(false),
-  preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0), likelihoodScale(1.),
+  preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   batchSize(0), calibrateErrorMode(CALIBRATE_NONE), numChains(3), numCR(3),
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
@@ -261,7 +261,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
     << preSolveMethod << proposalCovType << proposalCovUpdates
     << proposalCovInputType << proposalCovData << proposalCovFile
-    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
+    << fitnessMetricType << batchSelectionType << batchSize
     << calibrateErrorMode << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
@@ -396,7 +396,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> mcmcType >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
     >> preSolveMethod >> proposalCovType >> proposalCovUpdates
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
-    >> likelihoodScale >> fitnessMetricType >> batchSelectionType >> batchSize
+    >> fitnessMetricType >> batchSelectionType >> batchSize
     >> calibrateErrorMode >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
@@ -531,7 +531,7 @@ void DataMethodRep::write(std::ostream& s) const
     << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
     << preSolveMethod << proposalCovType << proposalCovUpdates
     << proposalCovInputType << proposalCovData << proposalCovFile
-    << likelihoodScale << fitnessMetricType << batchSelectionType << batchSize
+    << fitnessMetricType << batchSelectionType << batchSize
     << calibrateErrorMode << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance

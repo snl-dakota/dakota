@@ -2167,9 +2167,6 @@
                     </keyword>
                   </oneOf>
                   <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
-                  <keyword  id="likelihood_scale" name="likelihood_scale" code="{N_mdm(Real,likelihoodScale)}" label="Likelihood scale factor" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
-                    <param type="REAL" />
-                  </keyword>
                   <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
                     <oneOf>
                       <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier" help=""  />

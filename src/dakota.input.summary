@@ -1831,7 +1831,6 @@ KEYWORD12 method
 	      ]
 	    )
 	  [ standardized_space ]
-	  [ likelihood_scale REAL ]
 	  [ calibrate_error_multipliers
 	    one
 	    | per_experiment
