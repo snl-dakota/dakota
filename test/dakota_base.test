@@ -12,10 +12,12 @@ Test Number 0 succeeded
                       9.9973343023e-01 uuv_8
                       9.9991512536e-01 uuv_9
                       9.9973343023e-01 uuv_10
-<<<<< Best log posterior       =
-                     -6.9314765294e+00
 <<<<< Best misfit              =
-                      4.7238190763e-06
+                      4.7238190768e-06
+<<<<< Best log prior           =
+                     -6.9314718056e+00
+<<<<< Best log posterior       =
+                     -1.2655125959e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1 -1.5844135725e-01  7.6830917714e-02 -5.1148011189e-02 -1.0263110922e+00
@@ -3999,10 +4001,12 @@ Test Number 0 succeeded
 <<<<< Best parameters          =
                       2.8691852474e+07 E
                       2.4998843409e+00 w
-<<<<< Best log posterior       =
-                     -3.0416893292e+01
 <<<<< Best misfit              =
                       9.7137281272e+00
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -6.9874315821e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
              E  2.8609959149e+07  1.4417714265e+05  8.0289072767e-01  7.8655956161e-02
@@ -14416,10 +14420,12 @@ Test Number 0 succeeded
 <<<<< Best parameters          =
                       9.9991512536e-01 x1
                       9.9973343023e-01 x2
-<<<<< Best log posterior       =
-                     -1.3862953059e+00
 <<<<< Best misfit              =
-                      9.4476381518e-07
+                      9.4476381485e-07
+<<<<< Best log prior           =
+                     -1.3862943611e+00
+<<<<< Best log posterior       =
+                     -2.5310251917e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
             x1  7.6085971113e-01  3.3440754067e-01 -1.3173781351e-01 -1.3753647260e+00

@@ -1451,7 +1451,8 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // ----------------------------------------
   std::/*multi*/map<Real, QUESO::GslVector>::iterator it = --bestSamples.end();
   //std::pair<Real, QUESO::GslVector>& best = bestSamples.back();
-  QUESO::GslVector& qv = it->second; size_t wpp7 = write_precision+7;
+  QUESO::GslVector& qv = it->second; 
+  size_t wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
   // print MAP for continuous random variables
   if (standardizedSpace) {
@@ -1462,19 +1463,32 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   }
   else
     for (j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j] << ' '
-	<< cv_labels[j] << '\n';
+      s << "                     " << std::setw(wpp7) << qv[j]
+	<< ' ' << cv_labels[j] << '\n';
   // print MAP for hyper-parameters (e.g., observation error params)
-  if (numHyperparams > 0)
-    for (j=numContinuousVars; j<total_num_params; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j] << ' '
-	<< combined_labels[j] << '\n';
-  // print corresponding response data
-  Real log_post = it->first,
-       misfit   = log_prior_density(qv) - log_post; // = -log(like)
-  s << "<<<<< Best log posterior       =\n                     "
-    << std::setw(wpp7) << log_post << "\n<<<<< Best misfit              =\n"
-    << "                     " << std::setw(wpp7) << misfit << '\n';
+  for (j=0; j<numHyperparams; ++j)
+    s << "                     " << std::setw(wpp7) << qv[numContinuousVars+j] 
+      << ' ' << combined_labels[j] << '\n';
+
+  // print corresponding response data; here we recover the misfit
+  // instead of re-computing it
+  Real log_prior = log_prior_density(qv), log_post = it->first;
+  Real half_nr_log2pi = residualResponse.num_functions() * HALF_LOG_2PI;
+  // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
+  RealVector hyper_params(numHyperparams);
+  copy_gsl_partial(qv, numContinuousVars, hyper_params);
+  Real half_log_det = 
+    std::log( expData.scaled_cov_determinant(hyper_params, 
+					     obsErrorMultiplierMode) ) / 2.0;
+  // misfit = -log(L) - 1/2*Nr*log(2*pi) - 1/2*log(det(Cov))
+  Real misfit = (log_prior - log_post) - half_nr_log2pi - half_log_det;
+
+  s << "\n<<<<< Best misfit              ="
+    << "\n                     " << std::setw(wpp7) << misfit
+    << "\n<<<<< Best log prior           =" 
+    << "\n                     " << std::setw(wpp7)  << log_prior 
+    << "\n<<<<< Best log posterior       ="
+    << "\n                     " << std::setw(wpp7) << log_post << std::endl;
 
   /*
   // --------------------------
@@ -1532,13 +1546,13 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   // if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
   //   Cout << "Hyperparams to misfit:\n" << hyper_params << std::endl;
 
-  double result = 
+  double log_like = 
     nonDQUESOInstance->log_likelihood(nonDQUESOInstance->residualResponse,
 				      hyper_params);
   
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Log likelihood is " << result << " Likelihood is "
-         << std::exp(result) << '\n';
+    Cout << "Log likelihood is " << log_like << " Likelihood is "
+         << std::exp(log_like) << '\n';
 
     size_t i; std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDQUESOLogLike.txt", std::ios::out | std::ios::app);
@@ -1548,11 +1562,11 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
       LogLikeOutput << hyper_params(i) << ' ' ;
     const RealVector& fn_values = resp.function_values();
     for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values[i]         << ' ' ;
-    LogLikeOutput << result << '\n';
+    LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();
   }
 
-  return result;
+  return log_like;
 }
 
 

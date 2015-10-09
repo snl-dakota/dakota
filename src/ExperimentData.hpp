@@ -274,13 +274,13 @@ public:
 
   /// scale the residuals by multipliers, according to blocks
   /// indicated by multiplier mode
-  void scale_residuals(const RealVector& multipliers, short multiplier_mode,
-                       RealVector& residuals);
+  void scale_residuals(const RealVector& multipliers, 
+		       unsigned short multiplier_mode, RealVector& residuals);
 
   /// returns the determinant of (covariance block-scaled by the
   /// passed multipliers)
   Real scaled_cov_determinant(const RealVector& multipliers, 
-			      short multiplier_mode);
+			      unsigned short multiplier_mode);
 
 private:
 
@@ -343,6 +343,9 @@ private:
   /// type of variance specified for each variable, one per response
   /// group; empty varianceType indicates none specified by user
   UShortArray varianceTypes;
+
+  /// cached product of each experiment covariance's determinant 
+  Real covarianceDeterminant;
 
   /// path to prepend to any data file names
   boost::filesystem::path dataPathPrefix;

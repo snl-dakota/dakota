@@ -21,7 +21,6 @@
 #include "NonDLHSSampling.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "SNLLOptimizer.hpp"
-#include <boost/math/constants/constants.hpp>
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -442,26 +441,22 @@ update_residual_response(const Response& resp)
 /** Calculate the log-likelihood, accounting for contributions from
     covariance and hyperparameters, as well as constant term:
 
-      log(L) = -1/2*Nr*log(2*pi) - 1/2*log(det(Cov)) -1/2*r'(Cov^{-1})*r
+      log(L) = -1/2*Nr*log(2*pi) - 1/2*log(det(Cov)) - 1/2*r'(Cov^{-1})*r
 
     The passed residual_resp must already be differenced with any
     data, if present. */
 Real NonDBayesCalibration::
 log_likelihood(const Response& residual_resp, const RealVector& hyper_params)
 {
-  // BMA TODO: this could be pre-computed always
-  // Cast the size_t for floating point operations
-  double cons_factor = -static_cast<Real>(residual_resp.num_functions()) / 2.0 *
-    std::log(2 * boost::math::constants::pi<Real>());
-  // BMA TODO: this could be pre-computed when no hyperparams 
+  Real half_nr_log2pi = residual_resp.num_functions() * HALF_LOG_2PI;
   // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
-  double cov_det = 
-    expData.scaled_cov_determinant(hyper_params, obsErrorMultiplierMode);
-  
-  double result = cons_factor - std::log(cov_det) / 2.0 - 
-    misfit(residual_resp, hyper_params);
+  Real half_log_det = 
+    std::log( expData.scaled_cov_determinant(hyper_params, 
+					     obsErrorMultiplierMode) ) / 2.0;
+  Real log_like = 
+    -half_nr_log2pi - half_log_det - misfit(residual_resp, hyper_params);
 
-  return result;
+  return log_like;
 }
 
 

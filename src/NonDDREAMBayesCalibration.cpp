@@ -348,13 +348,13 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
   const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
   nonDDREAMInstance->update_residual_response(resp);
 
-  double result = 
+  double log_like = 
     nonDDREAMInstance->log_likelihood(nonDDREAMInstance->residualResponse,
 				      hyper_params);
 
   if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Log likelihood is " << result << " Likelihood is "
-         << std::exp(result) << '\n';
+    Cout << "Log likelihood is " << log_like << " Likelihood is "
+         << std::exp(log_like) << '\n';
 
     std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDDREAMLogLike.txt", std::ios::out | std::ios::app);
@@ -366,10 +366,10 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
     const RealVector& fn_values = 
       nonDDREAMInstance->residualResponse.function_values();
     for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values(i) << ' ' ;
-    LogLikeOutput << result << '\n';
+    LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();
   }
-  return result;
+  return log_like;
 }
 
 

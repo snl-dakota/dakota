@@ -12,6 +12,7 @@
 //- Owner:        Mike Eldred
 
 #include <boost/system/system_error.hpp>
+#include <boost/math/constants/constants.hpp>
 #include "dakota_global_defs.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -40,6 +41,9 @@ namespace Dakota {
 // --------------------------
 // Instantiate global objects
 // --------------------------
+
+double PI = boost::math::constants::pi<double>();
+double HALF_LOG_2PI = std::log(2.0*PI)/2.0;
 
 /// by default Dakota exits or calls MPI_Abort on errors
 short abort_mode = ABORT_EXITS; 

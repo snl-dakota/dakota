@@ -25,6 +25,10 @@ namespace Dakota {
 // --------------
 /// special value returned by index() when entry not found
 const size_t _NPOS = ~(size_t)0; // one's complement
+/// constant pi
+extern double PI;
+/// constant log(2*pi)/2.0
+extern double HALF_LOG_2PI;
 
 // --------------
 // Global objects
