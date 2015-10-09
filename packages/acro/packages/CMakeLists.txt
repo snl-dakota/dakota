@@ -89,7 +89,7 @@ option(ACRO_HAVE_MPI "Should Acro use MPI?" OFF)
 option(VALIDATING "Turn on code validation tests?" OFF)
 
 configure_file(
-  ${Acro_SOURCE_DIR}/config/acro_config.h.cmake.in
+  ${Acro_SOURCE_DIR}/cmake/acro_config.h.cmake.in
   ${Acro-Packages_BINARY_DIR}/acro_config.h
 )
 include_directories(${Acro-Packages_BINARY_DIR})

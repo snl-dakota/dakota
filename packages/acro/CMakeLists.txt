@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(Acro CXX C)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
   "Name for the export target for ${CMAKE_PROJECT_NAME}")
