@@ -135,11 +135,11 @@ public:
 
   /// retrieve a view of the field data for the given response, for the given
   /// experiment 
-  RealVector field_data_view(size_t response, size_t experiment);
+  RealVector field_data_view(size_t response, size_t experiment) const;
 
   /// retrieve a view of the field data coordinates for the given response, for the given
   /// experiment 
-  RealMatrix field_coords_view(size_t response, size_t experiment);
+  RealMatrix field_coords_view(size_t response, size_t experiment) const;
 
   /// whether the specified variance type (enum value) is present and active
   bool variance_type_active(short variance_type) const;
@@ -149,19 +149,19 @@ public:
 
   /// apply the covariance responses to compute the triple product
   /// v'*inv(C)*v for the given experiment
-  Real apply_covariance(const RealVector& residuals, size_t experiment);
+  Real apply_covariance(const RealVector& residuals, size_t experiment) const;
   /// apply inverse sqrt of the covariance to compute weighted residuals
   void apply_covariance_inv_sqrt(const RealVector& residuals, 
 				 size_t experiment, 
-				 RealVector& weighted_residuals);
+				 RealVector& weighted_residuals) const;
   /// apply inverse sqrt of the covariance to compute weighted gradients
   void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
 				 size_t experiment, 
-				 RealMatrix& weighted_gradients);
+				 RealMatrix& weighted_gradients) const;
   /// apply inverse sqrt of the covariance to compute weighted Hessians
   void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, 
 				 size_t experiment, 
-				 RealSymMatrixArray& weighted_hessians);
+				 RealSymMatrixArray& weighted_hessians) const;
 
   /// return a (copy) vector containing the main diagonal entries of a specified
   /// experimental covariance matrix
@@ -169,12 +169,12 @@ public:
 
   /// form residuals for all experiments, interpolating if necessary 
   void form_residuals(const Response& sim_resp, const ShortArray &total_asv, 
-		      Response &residual_resp );
+		      Response &residual_resp ) const;
     
   /// form residuals for an individual experiment, interpolating if necessary 
   void form_residuals(const Response& sim_resp, size_t exp_num, 
 		      const ShortArray &total_asv, size_t residual_resp_offset,
-		      Response &residual_resp); 
+		      Response &residual_resp) const; 
 
   /// recover original model from the first experiment block in a full
   /// set of residuals; works in no interpolation case only (sizes same)
@@ -182,7 +182,7 @@ public:
 
   /// flag for interpolation.  If 0, no interpolation. 
   /// If 1, interpolate. 
-  bool interpolate_flag();
+  bool interpolate_flag() const;
 
   /// Interpolate simulation data (values, gradients and hessians) onto
   /// the coordinates of the experimental data
@@ -190,13 +190,13 @@ public:
 				    size_t exp_num,
 				    const ShortArray &total_asv, 
 				    size_t exp_offset,
-				    Response &interp_resp );
+				    Response &interp_resp ) const; 
 
   /// Perform check on the active request vector to make sure
   /// it is amenable to interpolation of simulation data and application
   /// of apply covariance
-  ShortArray determine_active_request( const Response& resid_resp,
-				       bool interogate_field_data );
+  ShortArray determine_active_request(const Response& resid_resp,
+				      bool interogate_field_data) const;
 
   /// Apply the experiment data covariance to the residual data (scale
   /// functions by Gamma_d^{-1/2}), returning in scaled_residuals
@@ -205,7 +205,7 @@ public:
 
   /// Apply the experiment data covariance to the residual data in-place 
   /// (scale functions, gradients, and Hessians by Gamma_d^{-1/2})
-  void scale_residuals( Response& residual_response, ShortArray &total_asv );
+  void scale_residuals( Response& residual_response, ShortArray &total_asv ) const;
 
   /// Build the gradient of the ssr from residuals and function gradients
   /// based on the response's active set request vector
@@ -311,18 +311,18 @@ private:
   /// Return a view (to allowing updaing in place) of the residuals associated
   /// with a given experiment, from a vector contaning residuals from
   /// all experiments
-  RealVector residuals_view( const RealVector& residuals, size_t experiment );
+  RealVector residuals_view(const RealVector& residuals, size_t experiment) const;
   
   /// Return a view (to allowing updaing in place) of the gradients associated
   /// with a given experiment, from a matrix contaning gradients from
   /// all experiments
-  RealMatrix gradients_view( const RealMatrix &gradients, size_t experiment);
+  RealMatrix gradients_view( const RealMatrix &gradients, size_t experiment) const;
   
   /// Return a view (to allowing updaing in place) of the hessians associated
   /// with a given experiment, from an array contaning the hessians from 
   /// all experiments
-  RealSymMatrixArray hessians_view( const RealSymMatrixArray &hessians, 
-				    size_t experiment );
+  RealSymMatrixArray hessians_view(const RealSymMatrixArray &hessians, 
+				   size_t experiment) const;
 
   //
   //- Heading: Data

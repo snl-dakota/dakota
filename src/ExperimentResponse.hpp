@@ -74,13 +74,13 @@ public:
                            IntVector diagonal_map_indices,
                            IntVector scalar_map_indices );
   
-  Real apply_covariance(const RealVector &residual);
+  Real apply_covariance(const RealVector &residual) const;
   void apply_covariance_inv_sqrt(const RealVector& residuals, 
-				 RealVector& weighted_residuals);
+				 RealVector& weighted_residuals) const;
   void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
-				 RealMatrix& weighted_gradients);
+				 RealMatrix& weighted_gradients) const;
   void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-				 RealSymMatrixArray& weighted_hessians);
+				 RealSymMatrixArray& weighted_hessians) const;
   void get_covariance_diagonal( RealVector &diagonal ) const;
 
   /// covariance determinant for this experiment (default 1.0)

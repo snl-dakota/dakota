@@ -663,13 +663,13 @@ scalar_data(size_t response, size_t experiment)
 }
 
 RealVector ExperimentData::
-field_data_view(size_t response, size_t experiment)
+field_data_view(size_t response, size_t experiment) const
 {
   return(allExperiments[experiment].field_values_view(response));
 }
 
 RealMatrix ExperimentData::
-field_coords_view(size_t response, size_t experiment)
+field_coords_view(size_t response, size_t experiment) const
 {
   return(allExperiments[experiment].field_coords_view(response));
 }
@@ -688,13 +688,14 @@ bool ExperimentData::variance_active() const
 	  variance_type_active(MATRIX_SIGMA));
 }
 
-bool ExperimentData::interpolate_flag()
+bool ExperimentData::interpolate_flag() const
 {
   return interpolateFlag;
 }
 
 RealVector ExperimentData::
-residuals_view( const RealVector& residuals, size_t experiment ){
+residuals_view(const RealVector& residuals, size_t experiment) const 
+{
   int exp_offset = expOffsets[experiment];
   RealVector exp_resid(Teuchos::View, residuals.values()+exp_offset,
 		       experimentLengths[experiment]);
@@ -705,7 +706,8 @@ residuals_view( const RealVector& residuals, size_t experiment ){
 /// with a given experiment, from a matrix contaning gradients from
 /// all experiments
 RealMatrix ExperimentData::
-gradients_view( const RealMatrix &gradients, size_t experiment){
+gradients_view(const RealMatrix &gradients, size_t experiment) const 
+{
   int exp_offset = expOffsets[experiment];
   RealMatrix exp_grads(Teuchos::View, gradients, gradients.numRows(),
 		       experimentLengths[experiment], 0, exp_offset );
@@ -716,8 +718,7 @@ gradients_view( const RealMatrix &gradients, size_t experiment){
 /// with a given experiment, from an array contaning the hessians from 
 /// all experiments
 RealSymMatrixArray ExperimentData::
-hessians_view( const RealSymMatrixArray &hessians, 
-	       size_t experiment ){
+hessians_view(const RealSymMatrixArray &hessians, size_t experiment) const {
   int num_hess = experimentLengths[experiment],
     exp_offset = expOffsets[experiment];
   RealSymMatrixArray exp_hessians( num_hess );
@@ -731,7 +732,7 @@ hessians_view( const RealSymMatrixArray &hessians,
 }
 
 Real ExperimentData::
-apply_covariance(const RealVector& residuals, size_t experiment)
+apply_covariance(const RealVector& residuals, size_t experiment) const
 {
   RealVector exp_resid = residuals_view( residuals, experiment );
   if ( variance_active() )
@@ -742,7 +743,7 @@ apply_covariance(const RealVector& residuals, size_t experiment)
 
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment, 
-			  RealVector& weighted_residuals)
+			  RealVector& weighted_residuals) const
 {
   RealVector exp_resid = residuals_view( residuals, experiment );
   if ( variance_active() ) 
@@ -757,7 +758,7 @@ apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment,
 
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment, 
-			  RealMatrix& weighted_gradients)
+			  RealMatrix& weighted_gradients) const
 {
   RealMatrix exp_grads = gradients_view( gradients, experiment );
   if ( variance_active() ) 
@@ -773,7 +774,7 @@ apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment,
 
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
-			  RealSymMatrixArray& weighted_hessians)
+			  RealSymMatrixArray& weighted_hessians) const
 {
   RealSymMatrixArray exp_hessians = hessians_view( hessians, experiment );
   if ( variance_active() ) 
@@ -803,7 +804,7 @@ void ExperimentData::get_main_diagonal( RealVector &diagonal,
 
 void ExperimentData::
 form_residuals(const Response& sim_resp, const ShortArray &total_asv, 
-	       Response &residual_resp )
+	       Response &residual_resp ) const
 {
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
@@ -819,7 +820,7 @@ form_residuals(const Response& sim_resp, const ShortArray &total_asv,
 void ExperimentData::
 form_residuals(const Response& sim_resp, size_t exp_ind, 
 	       const ShortArray &total_asv, size_t exp_offset, 
-	       Response &residual_resp )
+	       Response &residual_resp ) const
 {
   size_t res_size = allExperiments[exp_ind].function_values().length();
 
@@ -891,9 +892,10 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 }
 
 void ExperimentData::
-interpolate_simulation_data( const Response &sim_resp, size_t exp_ind,
-			     const ShortArray &total_asv, size_t exp_offset,
-			     Response &interp_resp ){
+interpolate_simulation_data(const Response &sim_resp, size_t exp_ind,
+			    const ShortArray &total_asv, size_t exp_offset,
+			    Response &interp_resp ) const
+{
   size_t offset = exp_offset + num_scalars();
   IntVector field_lens = field_lengths(exp_ind);
   for (size_t field_num=0; field_num<num_fields(); field_num++){ 
@@ -907,7 +909,8 @@ interpolate_simulation_data( const Response &sim_resp, size_t exp_ind,
 
 ShortArray ExperimentData::
 determine_active_request( const Response& resid_resp,
-			  bool interogate_field_data ){
+			  bool interogate_field_data ) const 
+{
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
   ShortArray total_asv( numExperiments );
@@ -1005,7 +1008,7 @@ scale_residuals(const Response& residual_response, ShortArray &total_asv,
 
 
 void ExperimentData::
-scale_residuals( Response& residual_response, ShortArray &total_asv ){
+scale_residuals( Response& residual_response, ShortArray &total_asv ) const {
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
 

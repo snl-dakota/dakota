@@ -290,14 +290,14 @@ public:
                            IntVector diagonal_map_indices, 
                            IntVector scalar_map_indices ); 
   /// method to compute the triple product v'*inv(C)*v.
-  virtual Real apply_covariance(const RealVector &residuals);
+  virtual Real apply_covariance(const RealVector &residuals) const;
   /// method to compute (v'*inv(C)^1/2), to compute weighted residual
   virtual void apply_covariance_inv_sqrt(const RealVector &residuals, 
-					 RealVector& weighted_residuals);
+					 RealVector& weighted_residuals) const;
   virtual void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
-					 RealMatrix& weighted_gradients);
+					 RealMatrix& weighted_gradients) const;
   virtual void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-					 RealSymMatrixArray& weighted_hessians);
+					 RealSymMatrixArray& weighted_hessians) const;
 
   virtual void get_covariance_diagonal( RealVector &diagonal ) const;
 
