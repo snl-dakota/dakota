@@ -495,7 +495,10 @@ void NonDLocalReliability::mean_value()
   initial_taylor_series();
 
   // initialize arrays
-  impFactor.shapeUninitialized(numUncertainVars, numFunctions);
+  bool correlation_flag = natafTransform.x_correlation();
+  size_t num_imp_fact = (correlation_flag) ?
+    (numUncertainVars * (numUncertainVars+1)) / 2 : numUncertainVars;
+  impFactor.shapeUninitialized(num_imp_fact, numFunctions);
   statCount = 0;
   initialize_final_statistics_gradients();
 
@@ -504,7 +507,7 @@ void NonDLocalReliability::mean_value()
   Graphics& dakota_graphics = parallelLib.output_manager().graphics();
 
   // loop over response functions
-  size_t i;
+  size_t i, j, cntr;
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
     Real& mean    = momentStats(0,respFnCount);
@@ -544,10 +547,25 @@ void NonDLocalReliability::mean_value()
     // is < 1 if inputs are correlated due to the excluded off-diagonal
     // contributions to the output variance.
     // TO DO: consider computing/reporting these interaction terms as well.
-    if (std_dev > Pecos::SMALL_NUMBER)
-      for (i=0; i<numUncertainVars; i++)
-        impFactor(i,respFnCount) = std::pow(ranVarStdDevsX[i] / std_dev *
-					    fnGradsMeanX(i,respFnCount), 2);
+    if (std_dev > Pecos::SMALL_NUMBER) {
+      Real* imp_fact = impFactor[respFnCount];
+      Real* fn_grad  = fnGradsMeanX[respFnCount];
+      if (correlation_flag) {
+	const Pecos::RealSymMatrix& x_corr_mat
+	  = natafTransform.x_correlation_matrix();
+	Real resp_var = std_dev * std_dev, terms_i;
+	for (i=0, cntr=numUncertainVars; i<numUncertainVars; ++i) {
+	  imp_fact[i] = std::pow(ranVarStdDevsX[i] / std_dev * fn_grad[i], 2);
+	  terms_i = 2. * ranVarStdDevsX[i] * fn_grad[i] / resp_var;
+	  for (j=0; j<i; ++j, ++cntr) // collect both off diagonal terms
+	    imp_fact[cntr]
+	      = terms_i * ranVarStdDevsX[j] * x_corr_mat(i,j) * fn_grad[j];
+	}
+      }
+      else
+	for (i=0; i<numUncertainVars; ++i)
+	  imp_fact[i] = std::pow(ranVarStdDevsX[i] / std_dev * fn_grad[i], 2);
+    }
 
     // compute probability/reliability levels for requested response levels and
     // compute response levels for requested probability/reliability levels.
@@ -959,6 +977,7 @@ void NonDLocalReliability::initial_taylor_series()
     if (mode & 4)
       fnHessiansMeanX = curr_resp.function_hessians();
 
+    /*
     // compute the covariance matrix from the correlation matrix
     RealSymMatrix covariance;
     if (correlation_flag) {
@@ -978,6 +997,7 @@ void NonDLocalReliability::initial_taylor_series()
       for (i=0; i<numUncertainVars; i++)
 	covariance(i,i) = std::pow(ranVarStdDevsX[i], 2);
     }
+    */
 
     // MVFOSM computes a first-order mean, which is just the response evaluated
     // at the input variable means.  If Hessian data is available, compute a
@@ -987,6 +1007,8 @@ void NonDLocalReliability::initial_taylor_series()
     // of the inputs and is not practical.  NOTE: if fnGradsMeanX is zero, then
     // std_dev will be zero --> bad for MV CDF estimates.
     bool t2nq = (taylorOrder == 2 && hess_type != "quasi"); // 2nd-order mean
+    const Pecos::RealSymMatrix& x_corr_mat
+      = natafTransform.x_correlation_matrix();
     for (i=0; i<numFunctions; ++i) {
       if (asrv[i]) {
 	Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
@@ -996,12 +1018,13 @@ void NonDLocalReliability::initial_taylor_series()
 	  Real fn_grad_ji = fnGradsMeanX(j,i);
 	  if (correlation_flag)
 	    for (k=0; k<numUncertainVars; ++k) {
-	      Real cov_jk = covariance(j,k);
+	      Real cov_jk = ranVarStdDevsX[j] * ranVarStdDevsX[k] 
+		          * x_corr_mat(j,k);//covariance(j,k);
 	      if (t2nq) v1 += cov_jk * fnHessiansMeanX[i](j,k);
 	      v2 += cov_jk * fn_grad_ji * fnGradsMeanX(k,i);
 	    }
 	  else {
-	    Real cov_jj = covariance(j,j);
+	    Real cov_jj = ranVarStdDevsX[j]*ranVarStdDevsX[j];//covariance(j,j);
 	    if (t2nq) v1 += cov_jj * fnHessiansMeanX[i](j,j);
 	    v2 += cov_jj * std::pow(fn_grad_ji, 2);
 	  }
@@ -2633,7 +2656,7 @@ principal_curvatures(const RealVector& mpp_u, const RealVector& fn_grad_u,
 
 void NonDLocalReliability::print_results(std::ostream& s)
 {
-  size_t i, j, width = write_precision+7;
+  size_t i, j, cntr, width = write_precision+7;
   StringMultiArrayConstView uv_labels
     = iteratedModel.continuous_variable_labels();
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -2667,13 +2690,22 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	<< " = " << std::setw(width)<< std_dev << '\n';
       if (std_dev < Pecos::SMALL_NUMBER)
 	s << "  Importance Factors not available.\n";
-      else
+      else {
+	Real* imp_fact_i = impFactor[i];
 	for (j=0; j<numUncertainVars; j++)
-	  s << "  Importance Factor for variable "
-	    << std::setiosflags(std::ios::left) << std::setw(11)
-	    << uv_labels[j].data() << " = "
+	  s << "  Importance Factor for " << std::setiosflags(std::ios::left)
+	    << std::setw(20) << uv_labels[j].data() << " = "
 	    << std::resetiosflags(std::ios::adjustfield)
-	    << std::setw(width) << impFactor(j,i) << '\n';
+	    << std::setw(width) << imp_fact_i[j] << '\n';
+	if (natafTransform.x_correlation())
+	  for (i=0, cntr=numUncertainVars; i<numUncertainVars; ++i)
+	    for (j=0; j<i; ++j, ++cntr)
+	      s << "  Importance Factor for "
+		<< std::setiosflags(std::ios::left) << std::setw(10)
+		<< uv_labels[j].data() << std::setw(10) << uv_labels[i].data()
+		<< " = " << std::resetiosflags(std::ios::adjustfield)
+		<< std::setw(width) << imp_fact_i[cntr] << '\n';
+      }
     }
 
   // output PDFs (defined if pdfOutput and integrationRefinement)

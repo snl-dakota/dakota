@@ -68,12 +68,12 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
     problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
     std::max(problem_db.get_sizet("responses.num_objective_functions"),
-	     problem_db.get_sizet("responses.num_least_squares_terms"));
+	     problem_db.get_sizet("responses.num_calibration_terms"));
 
   // update primary response type based on specification
   if (problem_db.get_sizet("responses.num_objective_functions") > 0) 
     primaryFnType = OBJECTIVE_FNS;
-  else if (problem_db.get_sizet("responses.num_least_squares_terms") > 0)
+  else if (problem_db.get_sizet("responses.num_calibration_terms") > 0)
     primaryFnType = CALIB_TERMS;
 
   if (num_field_responses) {

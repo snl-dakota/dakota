@@ -64,7 +64,7 @@ public:
   /// num_objective_functions specification in \ref RespFnOpt)
   size_t numObjectiveFunctions;
   /// number of least squares terms (from the \c
-  /// num_least_squares_terms specification in \ref RespFnLS)
+  /// num_calibration_terms specification in \ref RespFnLS)
   size_t numLeastSqTerms;
   /// number of nonlinear inequality constraints (from the \c
   /// num_nonlinear_inequality_constraints specification in \ref RespFnOpt)

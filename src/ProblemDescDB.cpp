@@ -2901,6 +2901,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<size_t, DataResponsesRep> Szdr[] = {	
       // must be sorted by string (key)
+	{"calibration_terms", P numLeastSqTerms},
 	{"config_vars", P numExpConfigVars},
 	{"experiments", P numExperiments},
 	{"field_calibration_terms", P numFieldLeastSqTerms},
@@ -2910,7 +2911,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	 P numFieldNonlinearIneqConstraints},
 	{"field_objectives", P numFieldObjectiveFunctions},
 	{"field_responses", P numFieldResponseFunctions},
-	{"least_squares_terms", P numLeastSqTerms},
 	{"nonlinear_equality_constraints", P numNonlinearEqConstraints},
 	{"nonlinear_inequality_constraints", P numNonlinearIneqConstraints},
 	{"objective_functions", P numObjectiveFunctions},

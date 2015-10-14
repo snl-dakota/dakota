@@ -391,8 +391,8 @@ short Variables::response_view(const ProblemDescDB& problem_db) const
   // avoided for now.  Another alternative would be to make RANDOM_SAMPLING
   // the special case (potentally only for submethods LHS and RANDOM).
   return ( problem_db.get_sizet("responses.num_objective_functions") ||
-	   ( problem_db.get_sizet("responses.num_least_squares_terms") && 
-	//   ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?
+	   ( problem_db.get_sizet("responses.num_calibration_terms") && 
+	// ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?
 	     problem_db.get_ushort("method.algorithm") != BAYES_CALIBRATION ) )
     ? DESIGN_VIEW : DEFAULT_VIEW;
 }
