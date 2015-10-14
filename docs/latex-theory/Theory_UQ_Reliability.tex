@@ -96,8 +96,8 @@ The importance factors are determined as follows for each of $n$ random
 variables:
 %, where we require uncorrelated input variables: 
 \begin{equation}
-  {\rm ImportFactor}_i = ( \frac{\sigma_{x_i}}{\sigma_g}
-  \frac{dg}{dx_i}(\mu_{\bf x}) )^2, ~~~~ i = 1, \dots, n
+  {\rm ImportFactor}_i = \left[ \frac{\sigma_{x_i}}{\sigma_g}
+  \frac{dg}{dx_i}(\mu_{\bf x}) \right]^2, ~~~~ i = 1, \dots, n
 \end{equation}
 where it is evident that these importance factors correspond to the
 diagonal terms in Eq.~\ref{eq:mv_std_dev} normalized by the total
@@ -115,7 +115,9 @@ These two-way factors differ from the Sobol' interaction terms that
 are computed in variance-based decomposition (refer to
 Section~\ref{uq:expansion:vbd}) due to the non-orthogonality of the
 Taylor series basis.  Due to this non-orthogonality, two-way
-importance factors may be negative.
+importance factors may be negative, and due to normalization by the
+total response variance, the set of importance factors will always sum
+to one.
 
 
 \subsection{MPP Search Methods}\label{uq:reliability:local:mpp}
