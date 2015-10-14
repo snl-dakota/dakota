@@ -559,9 +559,9 @@ sub compare_output {
 
     # MV
     elsif ( ( ($t_val) = $test =~
-	      /^\s+(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for variable \w+)\s+=\s+($e)$/ ) &&
+	      /^\s+(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+)\s+=\s+($e)$/ ) &&
 	    ( ($b_val) = $base =~
-	      /^\s+(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for variable \w+)\s+=\s+($e)$/ ) ) {
+	      /^\s+(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+)\s+=\s+($e)$/ ) ) {
       if ( diff($t_val, $b_val) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;

@@ -1246,7 +1246,7 @@ sub parse_test_output {
     # ***********************************************
     # *** UQ sampling/reliability results summary ***
     # ***********************************************
-    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for variable|Si =)/) {
+    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =)/) {
       print;
       print TEST_OUT;
     }

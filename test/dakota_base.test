@@ -8681,54 +8681,56 @@ Test Number 0 succeeded
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  9.4117647059e-01
-  Importance Factor for variable TF2ln       =  5.8823529412e-02
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  5.8823529412e-02
-  Importance Factor for variable TF2ln       =  9.4117647059e-01
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
   Approximate Mean Response                  =  0.0000000000e+00
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  9.5524865873e-01
-  Approximate Mean Response                  =  5.0000000000e-01
-  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  1.0958904110e+00
+  Importance Factor for TF2ln                =  6.8493150685e-02
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
   Approximate Mean Response                  =  0.0000000000e+00
   Approximate Standard Deviation of Response =  1.1112210255e-22
-  Importance Factor for variable TF1ln       =  0.0000000000e+00
-  Importance Factor for variable TF2ln       =  1.0000000000e+00
+  Importance Factor for TF1ln                =  0.0000000000e+00
+  Importance Factor for TF2ln                =  1.0000000000e+00
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  9.4117647059e-01
-  Importance Factor for variable TF2ln       =  5.8823529412e-02
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  5.8823529412e-02
-  Importance Factor for variable TF2ln       =  9.4117647059e-01
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   Approximate Mean Response                  =  8.0000000000e-06
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  7.5000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  9.4117647059e-01
-  Importance Factor for variable TF2ln       =  5.8823529412e-02
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
   Approximate Mean Response                  =  7.5000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  5.8823529412e-02
-  Importance Factor for variable TF2ln       =  9.4117647059e-01
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
   Approximate Mean Response                  =  8.0000000000e-06
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  7.5000000000e-01
   Approximate Standard Deviation of Response =  9.5524865873e-01
-  Approximate Mean Response                  =  7.5000000000e-01
-  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  1.0958904110e+00
+  Importance Factor for TF2ln                =  6.8493150685e-02
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
 dakota_ncsu_textbook.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 157 total (157 new, 0 duplicate)
@@ -23235,16 +23237,16 @@ Test Number 0 succeeded
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  4.4000000000e-01
   Approximate Standard Deviation of Response =  1.5367498170e-01
-  Importance Factor for variable R           =  2.1951219512e-01
-  Importance Factor for variable E           =  0.0000000000e+00
-  Importance Factor for variable X           =  3.9024390244e-01
-  Importance Factor for variable Y           =  3.9024390244e-01
+  Importance Factor for R                    =  2.1951219512e-01
+  Importance Factor for E                    =  0.0000000000e+00
+  Importance Factor for X                    =  3.9024390244e-01
+  Importance Factor for Y                    =  3.9024390244e-01
   Approximate Mean Response                  =  7.5186002537e-01
   Approximate Standard Deviation of Response =  1.7951223429e-01
-  Importance Factor for variable R           =  0.0000000000e+00
-  Importance Factor for variable E           =  2.3809523810e-01
-  Importance Factor for variable X           =  1.5238095238e-01
-  Importance Factor for variable Y           =  6.0952380952e-01
+  Importance Factor for R                    =  0.0000000000e+00
+  Importance Factor for E                    =  2.3809523810e-01
+  Importance Factor for X                    =  1.5238095238e-01
+  Importance Factor for Y                    =  6.0952380952e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   2.0970238280e-03   2.8631856346e+00   2.8631856346e+00
@@ -23417,16 +23419,16 @@ Test Number 6 succeeded
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  4.4000000000e-01
   Approximate Standard Deviation of Response =  1.5367498170e-01
-  Importance Factor for variable R           =  2.1951219512e-01
-  Importance Factor for variable E           =  0.0000000000e+00
-  Importance Factor for variable X           =  3.9024390244e-01
-  Importance Factor for variable Y           =  3.9024390244e-01
+  Importance Factor for R                    =  2.1951219512e-01
+  Importance Factor for E                    =  0.0000000000e+00
+  Importance Factor for X                    =  3.9024390244e-01
+  Importance Factor for Y                    =  3.9024390244e-01
   Approximate Mean Response                  =  7.5186002537e-01
   Approximate Standard Deviation of Response =  1.7951223429e-01
-  Importance Factor for variable R           =  0.0000000000e+00
-  Importance Factor for variable E           =  2.3809523810e-01
-  Importance Factor for variable X           =  1.5238095238e-01
-  Importance Factor for variable Y           =  6.0952380952e-01
+  Importance Factor for R                    =  0.0000000000e+00
+  Importance Factor for E                    =  2.3809523810e-01
+  Importance Factor for X                    =  1.5238095238e-01
+  Importance Factor for Y                    =  6.0952380952e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -2.7358863488e-02   1.1781223736e-03   3.0412163276e+00   3.0412163276e+00
@@ -40596,10 +40598,16 @@ Test Number 0 succeeded
   Approximate Standard Deviation of Response =  0.0000000000e+00
   Approximate Mean Response                  =  4.4360000000e-01
   Approximate Standard Deviation of Response =  1.5367498170e-01
-  Importance Factor for variable R           =  2.1951219512e-01
-  Importance Factor for variable E           =  0.0000000000e+00
-  Importance Factor for variable X           =  3.9024390244e-01
-  Importance Factor for variable Y           =  3.9024390244e-01
+  Importance Factor for R                    =  2.1951219512e-01
+  Importance Factor for E                    =  0.0000000000e+00
+  Importance Factor for X                    =  3.9024390244e-01
+  Importance Factor for Y                    =  3.9024390244e-01
+  Approximate Mean Response                  =  7.6324711554e-01
+  Approximate Standard Deviation of Response =  1.7951223429e-01
+  Importance Factor for R                    =  0.0000000000e+00
+  Importance Factor for E                    =  2.3809523810e-01
+  Importance Factor for X                    =  1.5238095238e-01
+  Importance Factor for Y                    =  6.0952380952e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -2.3758863488e-02   1.1781223736e-03   3.0412163276e+00   3.0412163276e+00
@@ -40613,12 +40621,6 @@ Test Number 0 succeeded
    7.8324144234e-01   9.8645187403e-01  -2.2101284060e+00  -2.2101284060e+00
    8.7021336796e-01   9.9724902938e-01  -2.7760756061e+00  -2.7760756061e+00
    9.5397276621e-01   9.9955171208e-01  -3.3211181193e+00  -3.3211181193e+00
-  Approximate Mean Response                  =  7.6324711554e-01
-  Approximate Standard Deviation of Response =  1.7951223429e-01
-  Importance Factor for variable R           =  0.0000000000e+00
-  Importance Factor for variable E           =  2.3809523810e-01
-  Importance Factor for variable X           =  1.5238095238e-01
-  Importance Factor for variable Y           =  6.0952380952e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -6.6900611005e-02   1.8778485062e-06   4.6244632285e+00   4.6244632285e+00
