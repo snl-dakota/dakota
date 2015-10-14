@@ -92,19 +92,30 @@ gradient information with input uncertainty information, \emph{i.e.}
 input variable standard deviations. The accuracy of the importance
 factors is contingent of the validity of the linear Taylor series
 approximation used to approximate the response quantities of interest.
-The importance factors are determined as follows:
+The importance factors are determined as follows for each of $n$ random
+variables:
 %, where we require uncorrelated input variables: 
 \begin{equation}
-  {\rm ImportFactor}_i
-  = ({\frac{\sigma_{x_{i}}}{\sigma_g}}{\frac{dg}{dx_i}(\mu_{\bf x})})^2
+  {\rm ImportFactor}_i = ( \frac{\sigma_{x_i}}{\sigma_g}
+  \frac{dg}{dx_i}(\mu_{\bf x}) )^2, ~~~~ i = 1, \dots, n
 \end{equation}
 where it is evident that these importance factors correspond to the
 diagonal terms in Eq.~\ref{eq:mv_std_dev} normalized by the total
-response variance.  Thus, they sum to one if the inputs are uncorrelated.
-%involve an attribution of the total response
+response variance.  %involve an attribution of the total response
 %variance among the set of input variables.
-
-% TO DO: main effects + all 2-way interactions? (Note: grad terms, not x terms)
+In the case where the input variables are correlated
+resulting in off-diagonal terms for the input covariance, we can also
+compute a two-way importance factor as
+\begin{equation}
+  {\rm ImportFactor}_{ij} = 2 \frac{\sigma^2_{x_{ij}}}{\sigma^2_g} 
+  \frac{dg}{dx_i}(\mu_{\bf x}) \frac{dg}{dx_j}(\mu_{\bf x}),
+  ~~~~ i = 1, \dots, n; ~~~~ j = 1, \dots, i-1
+\end{equation}
+These two-way factors differ from the Sobol' interaction terms that
+are computed in variance-based decomposition (refer to
+Section~\ref{uq:expansion:vbd}) due to the non-orthogonality of the
+Taylor series basis.  Due to this non-orthogonality, two-way
+importance factors may be negative.
 
 
 \subsection{MPP Search Methods}\label{uq:reliability:local:mpp}
