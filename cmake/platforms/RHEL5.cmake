@@ -17,5 +17,5 @@
 ############################################################################
 # All Unix platforms build DAKOTA with MPI
 set( DAKOTA_HAVE_MPI ON
-     CACHE BOOL "Always build with MPI enabled" FORCE)
+     CACHE BOOL "Always build with MPI enabled")
 

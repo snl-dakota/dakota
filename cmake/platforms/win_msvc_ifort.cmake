@@ -6,7 +6,7 @@
 
 # BMA: Not sure this is the right place to make these settings...
 set( DAKOTA_HAVE_MPI OFF
-     CACHE BOOL "MSVC is a serial build" FORCE )
+     CACHE BOOL "MSVC is a serial build" )
 
 
 ############################################################################

@@ -17,7 +17,7 @@
 
 # BMA: Not sure this is the right place to make these settings...
 set( DAKOTA_HAVE_MPI OFF
-     CACHE BOOL "Cygwin is serial build" FORCE)
+     CACHE BOOL "Cygwin is serial build")
 
 # Use shared libraries and don't use static
 set(BUILD_STATIC_LIBS TRUE  CACHE BOOL "Build static libs?")

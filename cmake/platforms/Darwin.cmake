@@ -8,7 +8,7 @@
 # All Unix platforms build DAKOTA with MPI enabled
 
 set( DAKOTA_HAVE_MPI ON
-     CACHE BOOL "Always build with MPI enabled" FORCE)
+     CACHE BOOL "Always build with MPI enabled")
 
 ############################################################################
 # Ensure DEFAULT values for static (OFF) and shared-dylibs (ON)
