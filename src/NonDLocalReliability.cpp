@@ -537,8 +537,14 @@ void NonDLocalReliability::mean_value()
     }
     statCount++;
 
-    // if inputs are uncorrelated, compute importance factors
-    if (!natafTransform.x_correlation() && std_dev > Pecos::SMALL_NUMBER)
+    // if response std_dev is non-zero, compute importance factors.  If inputs
+    // are correlated, then impFactors correspond to the diagonal terms in the
+    // computation of the response variance, normalized by the total response
+    // variance.  Thus, the impFactors sum to 1 if uncorrelated, but this sum
+    // is < 1 if inputs are correlated due to the excluded off-diagonal
+    // contributions to the output variance.
+    // TO DO: consider computing/reporting these interaction terms as well.
+    if (std_dev > Pecos::SMALL_NUMBER)
       for (i=0; i<numUncertainVars; i++)
         impFactor(i,respFnCount) = std::pow(ranVarStdDevsX[i] / std_dev *
 					    fnGradsMeanX(i,respFnCount), 2);
@@ -2659,7 +2665,7 @@ void NonDLocalReliability::print_results(std::ostream& s)
       s << "  Approximate Mean Response                  = " << std::setw(width)
 	<< momentStats(0,i) << "\n  Approximate Standard Deviation of Response"
 	<< " = " << std::setw(width)<< std_dev << '\n';
-      if (natafTransform.x_correlation() || std_dev < Pecos::SMALL_NUMBER)
+      if (std_dev < Pecos::SMALL_NUMBER)
 	s << "  Importance Factors not available.\n";
       else
 	for (j=0; j<numUncertainVars; j++)

@@ -23,15 +23,25 @@ response functions and their gradients at the uncertain variable
 means.  This approximation can have acceptable accuracy when the
 response functions are nearly linear and their distributions are
 approximately Gaussian, but can have poor accuracy in other
-situations.  The expressions for approximate response mean $\mu_g$,
-approximate response variance $\sigma^2_g$, response target to
-approximate probability/reliability level mapping ($\bar{z} \to p,\beta$),
-and probability/reliability target to approximate response level mapping
-($\bar{p},\bar{\beta} \to z$) are
+situations.
+
+The expressions for approximate response mean $\mu_g$ and approximate
+response variance $\sigma^2_g$ are
 \begin{eqnarray}
 \mu_g      & = & g(\mu_{\bf x})  \label{eq:mv_mean1} \\
 \sigma^2_g & = & \sum_i \sum_j Cov(i,j) \frac{dg}{dx_i}(\mu_{\bf x})
-                 \frac{dg}{dx_j}(\mu_{\bf x}) \label{eq:mv_std_dev} \\
+                 \frac{dg}{dx_j}(\mu_{\bf x}) \label{eq:mv_std_dev}
+\end{eqnarray}
+where ${\bf x}$ are the uncertain values in the 
+space of the original uncertain variables (``x-space''), $g({\bf x})$
+is the limit state function (the response function for which
+probability-response level pairs are needed), and the use of a linear
+Taylor series approximation is evident.
+These two moments are then used for mappings from response target to
+approximate reliability level ($\bar{z} \to \beta$) and from
+reliability target to approximate response level
+($\bar{\beta} \to z$) using
+\begin{eqnarray}
 \bar{z} \rightarrow \beta: & ~ & 
 \beta_{\rm CDF} = \frac{\mu_g - \bar{z}}{\sigma_g}, ~~~~~
 \beta_{\rm CCDF} = \frac{\bar{z} - \mu_g}{\sigma_g} \label{eq:mv_ria} \\
@@ -39,11 +49,9 @@ and probability/reliability target to approximate response level mapping
 z = \mu_g - \sigma_g \bar{\beta}_{\rm CDF}, ~~~~~
 z = \mu_g + \sigma_g \bar{\beta}_{\rm CCDF} \label{eq:mv_pma}
 \end{eqnarray}
-respectively, where ${\bf x}$ are the uncertain values in the 
-space of the original uncertain variables (``x-space''), $g({\bf x})$
-is the limit state function (the response function for which
-probability-response level pairs are needed), and $\beta_{\rm CDF}$ and
-$\beta_{\rm CCDF}$ are the CDF and CCDF reliability indices, respectively.
+respectively, where $\beta_{\rm CDF}$ and $\beta_{\rm CCDF}$ are the
+reliability indices corresponding to the cumulative and complementary
+cumulative distribution functions (CDF and CCDF), respectively.
 
 With the introduction of second-order limit state information, MVSOSM
 calculates a second-order mean as
@@ -51,7 +59,6 @@ calculates a second-order mean as
 \mu_g = g(\mu_{\bf x}) + \frac{1}{2} \sum_i \sum_j Cov(i,j) 
 \frac{d^2g}{dx_i dx_j}(\mu_{\bf x}) \label{eq:mv_mean2}
 \end{equation}
-
 This is commonly combined with a first-order variance
 (Equation~\ref{eq:mv_std_dev}), since second-order variance involves
 higher order distribution moments (skewness, kurtosis)~\cite{Hal00}
@@ -69,26 +76,35 @@ p(g > z)    & = & \Phi(-\beta_{\rm CCDF})    \label{eq:p_ccdf} \\
 p(g \le z)  & = & 1 - p(g > z)             \label{eq:p_cdf_ccdf}
 \end{eqnarray}
 where $\Phi()$ is the standard normal cumulative distribution
-function.  A common convention in the literature is to define $g$ in
-such a way that the CDF probability for a response level $z$ of zero
-(i.e., $p(g \le 0)$) is the response metric of interest.  Dakota is
-not restricted to this convention and is designed to support CDF or
-CCDF mappings for general response, probability, and reliability level
-sequences.
+function, indicating the introduction of a Gaussian assumption on the
+output distributions.  A common convention in the literature is to
+define $g$ in such a way that the CDF probability for a response level
+$z$ of zero (i.e., $p(g \le 0)$) is the response metric of interest.
+Dakota is not restricted to this convention and is designed to support
+CDF or CCDF mappings for general response, probability, and
+reliability level sequences.
 
-With the Mean Value method, it is possible to obtain 
-importance factors indicating the relative importance of 
-input variables.  The importance factors can be viewed
-as an extension of linear sensitivity analysis combining deterministic
-gradient information with input uncertainty information,
-\emph{i.e}. input variable standard deviations. The accuracy of the
-importance factors is contingent of the validity of the linear
-approximation used to approximate the true response functions.
-The importance factors are determined as: 
-
+With the Mean Value method, it is possible to obtain importance
+factors indicating the relative contribution of the input variables to
+the output variance.  The importance factors can be viewed as an
+extension of linear sensitivity analysis combining deterministic
+gradient information with input uncertainty information, \emph{i.e.}
+input variable standard deviations. The accuracy of the importance
+factors is contingent of the validity of the linear Taylor series
+approximation used to approximate the response quantities of interest.
+The importance factors are determined as follows:
+%, where we require uncorrelated input variables: 
 \begin{equation}
-ImpFactor_i  = ({\frac{\sigma_{x_{i}}}{\sigma_g}}{\frac{dg}{dx_i}(\mu_{\bf x})})^2
+  {\rm ImportFactor}_i
+  = ({\frac{\sigma_{x_{i}}}{\sigma_g}}{\frac{dg}{dx_i}(\mu_{\bf x})})^2
 \end{equation}
+where it is evident that these importance factors correspond to the
+diagonal terms in Eq.~\ref{eq:mv_std_dev} normalized by the total
+response variance.  Thus, they sum to one if the inputs are uncorrelated.
+%involve an attribution of the total response
+%variance among the set of input variables.
+
+% TO DO: main effects + all 2-way interactions? (Note: grad terms, not x terms)
 
 
 \subsection{MPP Search Methods}\label{uq:reliability:local:mpp}
