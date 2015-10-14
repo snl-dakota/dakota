@@ -1371,13 +1371,14 @@ Real ExperimentData::scaled_cov_determinant(const RealVector& multipliers,
 
     case CALIBRATE_ONE:
       assert(multipliers.length() == 1);
-      det *= std::pow(multipliers[0], allExperiments[exp_ind].num_functions());
+      det *= std::pow(multipliers[0], 
+		      (double)allExperiments[exp_ind].num_functions());
       break;
 
     case CALIBRATE_PER_EXPER:
       assert(multipliers.length() == numExperiments);
       det *= std::pow(multipliers[exp_ind], 
-		      allExperiments[exp_ind].num_functions());
+		      (double)allExperiments[exp_ind].num_functions());
       break;
 
     case CALIBRATE_PER_RESP: {
