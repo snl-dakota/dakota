@@ -2656,7 +2656,7 @@ principal_curvatures(const RealVector& mpp_u, const RealVector& fn_grad_u,
 
 void NonDLocalReliability::print_results(std::ostream& s)
 {
-  size_t i, j, cntr, width = write_precision+7;
+  size_t i, j, k, cntr, width = write_precision+7;
   StringMultiArrayConstView uv_labels
     = iteratedModel.continuous_variable_labels();
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -2698,11 +2698,11 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	    << std::resetiosflags(std::ios::adjustfield)
 	    << std::setw(width) << imp_fact_i[j] << '\n';
 	if (natafTransform.x_correlation())
-	  for (i=0, cntr=numUncertainVars; i<numUncertainVars; ++i)
-	    for (j=0; j<i; ++j, ++cntr)
+	  for (j=0, cntr=numUncertainVars; j<numUncertainVars; ++j)
+	    for (k=0; k<j; ++k, ++cntr)
 	      s << "  Importance Factor for "
 		<< std::setiosflags(std::ios::left) << std::setw(10)
-		<< uv_labels[j].data() << std::setw(10) << uv_labels[i].data()
+		<< uv_labels[k].data() << std::setw(10) << uv_labels[j].data()
 		<< " = " << std::resetiosflags(std::ios::adjustfield)
 		<< std::setw(width) << imp_fact_i[cntr] << '\n';
       }

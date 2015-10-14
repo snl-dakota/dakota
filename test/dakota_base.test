@@ -8696,6 +8696,11 @@ Test Number 1 succeeded
   Importance Factor for TF1ln                =  1.0958904110e+00
   Importance Factor for TF2ln                =  6.8493150685e-02
   Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  6.8493150685e-02
+  Importance Factor for TF2ln                =  1.0958904110e+00
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
   Approximate Mean Response                  =  0.0000000000e+00
@@ -8730,6 +8735,11 @@ Test Number 4 succeeded
   Approximate Standard Deviation of Response =  9.5524865873e-01
   Importance Factor for TF1ln                =  1.0958904110e+00
   Importance Factor for TF2ln                =  6.8493150685e-02
+  Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
+  Approximate Mean Response                  =  7.5000000000e-01
+  Approximate Standard Deviation of Response =  9.5524865873e-01
+  Importance Factor for TF1ln                =  6.8493150685e-02
+  Importance Factor for TF2ln                =  1.0958904110e+00
   Importance Factor for TF1ln     TF2ln      = -1.6438356164e-01
 dakota_ncsu_textbook.in
 Test Number 0 succeeded
