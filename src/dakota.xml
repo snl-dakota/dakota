@@ -521,348 +521,344 @@
             <!-- Begin group for linear ineq/eq constraints? -->
             <required>
               <oneOf>
+                <keyword  id="dot_frcg" name="dot_frcg" code="{N_mdm(utype,methodName_DOT_FRCG)}" label="dot_frcg" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="dot_mmfd" name="dot_mmfd" code="{N_mdm(utype,methodName_DOT_MMFD)}" label="dot_mmfd" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="dot_bfgs" name="dot_bfgs" code="{N_mdm(utype,methodName_DOT_BFGS)}" label="dot_bfgs" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="dot_slp" name="dot_slp" code="{N_mdm(utype,methodName_DOT_SLP)}" label="dot_slp" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="dot_sqp" name="dot_sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="dot_sqp" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="dot" name="dot" code="{0}" label="dot" help="" minOccurs="1" >
+                  <oneOf>
+                    <keyword  id="frcg" name="frcg" code="{N_mdm(utype,methodName_DOT_FRCG)}" label="frcg" help=""  />
+                    <keyword  id="mmfd" name="mmfd" code="{N_mdm(utype,methodName_DOT_MMFD)}" label="mmfd" help=""  />
+                    <keyword  id="bfgs" name="bfgs" code="{N_mdm(utype,methodName_DOT_BFGS)}" label="bfgs" help=""  />
+                    <keyword  id="slp" name="slp" code="{N_mdm(utype,methodName_DOT_SLP)}" label="slp" help=""  />
+                    <keyword  id="sqp" name="sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="sqp" help=""  />
+                  </oneOf>
+                </keyword>
+              </oneOf>
+              &default_max_iterations;
+              &default_convergence_tolerance;
+              &default_linear_constraints;
+            </required>
+            <required>
+              <oneOf label="OPT method">
+                <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="conmin_mfd" name="conmin_mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="conmin_mfd" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="conmin" name="conmin" code="{0}" label="conmin" help="" minOccurs="1" >
+                  <oneOf>
+                    <keyword  id="frcg1" name="frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="frcg" help=""  />
+                    <keyword  id="mfd" name="mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="mfd" help=""  />
+                  </oneOf>
+                </keyword>
+              </oneOf>
+              &default_max_iterations;
+              &default_convergence_tolerance;
+              &default_linear_constraints;
+            </required>
+            <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
+              <!-- store method name AND incoming STRING -->
+              <param type="STRING" />
+              &default_linear_constraints;
+            </keyword>
+            <required>
+              <oneOf>
+                <keyword  id="npsol_sqp" name="npsol_sqp" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol_sqp" help=""  group="Optimization: Local, Derivative-based" />
+                <keyword  id="nlssol_sqp" name="nlssol_sqp" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol_sqp" help=""  group="Calibration" />
+                <keyword  id="stanford" name="stanford" code="{0}" label="stanford" help="" minOccurs="1" >
+                  <oneOf>
+                    <keyword  id="npsol" name="npsol" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol" help=""  />
+                    <keyword  id="nlssol" name="nlssol" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol" help=""  />
+                  </oneOf>
+                </keyword>
+              </oneOf>
+              <keyword  id="verify_level" name="verify_level" code="{N_mdm(int,verifyLevel)}" label="verify_level" help="" minOccurs="0" default="-1 (no gradient verification)" >
+                <param type="INTEGER" />
+              </keyword>
+              <keyword  id="function_precision" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="function_precision" help="" minOccurs="0" default="1.0e-10" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="linesearch_tolerance" name="linesearch_tolerance" code="{N_mdm(Real,lineSearchTolerance)}" label="linesearch_tolerance" help="" minOccurs="0" default="0.9 (inaccurate line search)" >
+                <param type="REAL" />
+              </keyword>
+              &default_convergence_tolerance;
+              &default_max_iterations;
+            </required>
+            <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
+              &default_convergence_tolerance;
+              &default_linear_constraints;
+            </keyword>
+            <!-- #	    reduced_sqp
+                 #	    |
+             -->
+            <required>
+              <oneOf>
+                <keyword  id="optpp_cg" name="optpp_cg" code="{N_mdm(utype,methodName_OPTPP_CG)}" label="optpp_cg" help=""  group="Optimization: Local, Derivative-based" />
                 <required>
                   <oneOf>
-                    <keyword  id="dot_frcg" name="dot_frcg" code="{N_mdm(utype,methodName_DOT_FRCG)}" label="dot_frcg" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="dot_mmfd" name="dot_mmfd" code="{N_mdm(utype,methodName_DOT_MMFD)}" label="dot_mmfd" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="dot_bfgs" name="dot_bfgs" code="{N_mdm(utype,methodName_DOT_BFGS)}" label="dot_bfgs" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="dot_slp" name="dot_slp" code="{N_mdm(utype,methodName_DOT_SLP)}" label="dot_slp" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="dot_sqp" name="dot_sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="dot_sqp" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="dot" name="dot" code="{0}" label="dot" help="" minOccurs="1" >
-                      <oneOf>
-                        <keyword  id="frcg" name="frcg" code="{N_mdm(utype,methodName_DOT_FRCG)}" label="frcg" help=""  />
-                        <keyword  id="mmfd" name="mmfd" code="{N_mdm(utype,methodName_DOT_MMFD)}" label="mmfd" help=""  />
-                        <keyword  id="bfgs" name="bfgs" code="{N_mdm(utype,methodName_DOT_BFGS)}" label="bfgs" help=""  />
-                        <keyword  id="slp" name="slp" code="{N_mdm(utype,methodName_DOT_SLP)}" label="slp" help=""  />
-                        <keyword  id="sqp" name="sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="sqp" help=""  />
-                      </oneOf>
-                    </keyword>
+                    <keyword  id="optpp_q_newton" name="optpp_q_newton" code="{N_mdm(utype,methodName_OPTPP_Q_NEWTON)}" label="optpp_q_newton" help=""  group="Optimization: Local, Derivative-based" />
+                    <keyword  id="optpp_fd_newton" name="optpp_fd_newton" code="{N_mdm(utype,methodName_OPTPP_FD_NEWTON)}" label="optpp_fd_newton" help=""  group="Optimization: Local, Derivative-based" />
+                    <keyword  id="optpp_g_newton" name="optpp_g_newton" code="{N_mdm(utype,methodName_OPTPP_G_NEWTON)}" label="optpp_g_newton" help=""  group="Calibration" />
+                    <keyword  id="optpp_newton" name="optpp_newton" code="{N_mdm(utype,methodName_OPTPP_NEWTON)}" label="optpp_newton" help=""  group="Optimization: Local, Derivative-based" />
                   </oneOf>
-                  &default_max_iterations;
-                  &default_convergence_tolerance;
-                  &default_linear_constraints;
-                </required>
-                <required>
-                  <oneOf label="OPT method">
-                    <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="conmin_mfd" name="conmin_mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="conmin_mfd" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="conmin" name="conmin" code="{0}" label="conmin" help="" minOccurs="1" >
-                      <oneOf>
-                        <keyword  id="frcg1" name="frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="frcg" help=""  />
-                        <keyword  id="mfd" name="mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="mfd" help=""  />
-                      </oneOf>
-                    </keyword>
-                  </oneOf>
-                  &default_max_iterations;
-                  &default_convergence_tolerance;
-                  &default_linear_constraints;
-                </required>
-                <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
-		  <!-- store method name AND incoming STRING -->
-                  <param type="STRING" />
-                  &default_linear_constraints;
-                </keyword>
-                <required>
-                  <oneOf>
-                    <keyword  id="npsol_sqp" name="npsol_sqp" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol_sqp" help=""  group="Optimization: Local, Derivative-based" />
-                    <keyword  id="nlssol_sqp" name="nlssol_sqp" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol_sqp" help=""  group="Calibration" />
-                    <keyword  id="stanford" name="stanford" code="{0}" label="stanford" help="" minOccurs="1" >
-                      <oneOf>
-                        <keyword  id="npsol" name="npsol" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol" help=""  />
-                        <keyword  id="nlssol" name="nlssol" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol" help=""  />
-                      </oneOf>
-                    </keyword>
-                  </oneOf>
-                  <keyword  id="verify_level" name="verify_level" code="{N_mdm(int,verifyLevel)}" label="verify_level" help="" minOccurs="0" default="-1 (no gradient verification)" >
-                    <param type="INTEGER" />
-                  </keyword>
-                  <keyword  id="function_precision" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="function_precision" help="" minOccurs="0" default="1.0e-10" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="linesearch_tolerance" name="linesearch_tolerance" code="{N_mdm(Real,lineSearchTolerance)}" label="linesearch_tolerance" help="" minOccurs="0" default="0.9 (inaccurate line search)" >
-                    <param type="REAL" />
-                  </keyword>
-                  &default_convergence_tolerance;
-                  &default_max_iterations;
-                </required>
-                <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
-                  &default_convergence_tolerance;
-                  &default_linear_constraints;
-                </keyword>
-                <!-- #	    reduced_sqp
-                     #	    |
-                 -->
-                <required>
-                  <oneOf>
-                    <keyword  id="optpp_cg" name="optpp_cg" code="{N_mdm(utype,methodName_OPTPP_CG)}" label="optpp_cg" help=""  group="Optimization: Local, Derivative-based" />
-                    <required>
-                      <oneOf>
-                        <keyword  id="optpp_q_newton" name="optpp_q_newton" code="{N_mdm(utype,methodName_OPTPP_Q_NEWTON)}" label="optpp_q_newton" help=""  group="Optimization: Local, Derivative-based" />
-                        <keyword  id="optpp_fd_newton" name="optpp_fd_newton" code="{N_mdm(utype,methodName_OPTPP_FD_NEWTON)}" label="optpp_fd_newton" help=""  group="Optimization: Local, Derivative-based" />
-                        <keyword  id="optpp_g_newton" name="optpp_g_newton" code="{N_mdm(utype,methodName_OPTPP_G_NEWTON)}" label="optpp_g_newton" help=""  group="Calibration" />
-                        <keyword  id="optpp_newton" name="optpp_newton" code="{N_mdm(utype,methodName_OPTPP_NEWTON)}" label="optpp_newton" help=""  group="Optimization: Local, Derivative-based" />
-                      </oneOf>
-                      <keyword  id="search_method" name="search_method" code="{0}" label="search_method" help="" minOccurs="0" >
-                        <oneOf>
-                          <keyword  id="value_based_line_search" name="value_based_line_search" code="{N_mdm(lit,searchMethod_value_based_line_search)}" label="value_based_line_search" help=""  default="trust_region (unconstrained), value_based_line_search (bound/general constraints)" />
-                          <keyword  id="gradient_based_line_search" name="gradient_based_line_search" code="{N_mdm(lit,searchMethod_gradient_based_line_search)}" label="gradient_based_line_search" help=""  />
-                          <keyword  id="trust_region1" name="trust_region" code="{N_mdm(lit,searchMethod_trust_region)}" label="trust_region" help=""  />
-                          <keyword  id="tr_pds" name="tr_pds" code="{N_mdm(lit,searchMethod_tr_pds)}" label="tr_pds" help=""  />
-                        </oneOf>
-                      </keyword>
-                      <keyword  id="merit_function1" name="merit_function" code="{0}" label="merit_function" help="" minOccurs="0" default="argaez_tapia" >
-                        <oneOf>
-                          <keyword  id="el_bakry" name="el_bakry" code="{N_mdm(type,meritFn_NormFmu)}" label="el_bakry" help=""  />
-                          <keyword  id="argaez_tapia" name="argaez_tapia" code="{N_mdm(type,meritFn_ArgaezTapia)}" label="argaez_tapia" help=""  />
-                          <keyword  id="van_shanno" name="van_shanno" code="{N_mdm(type,meritFn_VanShanno)}" label="van_shanno" help=""  />
-                        </oneOf>
-                      </keyword>
-                      <keyword  id="steplength_to_boundary" name="steplength_to_boundary" code="{N_mdm(Real,stepLenToBoundary)}" label="steplength_to_boundary" help="" minOccurs="0" default="Merit function dependent: 0.8 (el_bakry), 0.99995 (argaez_tapia), 0.95 (van_shanno)" >
-                        <param type="REAL" />
-                      </keyword>
-                      <keyword  id="centering_parameter" name="centering_parameter" code="{N_mdm(Real,centeringParam)}" label="centering_parameter" help="" minOccurs="0" default="Merit function dependent: 0.2 (el_bakry), 0.2 (argaez_tapia), 0.1 (van_shanno)" >
-                        <param type="REAL" />
-                      </keyword>
-                    </required>
-                  </oneOf>
-                  <keyword  id="max_step" name="max_step" code="{N_mdm(Real,maxStep)}" label="max_step" help="" minOccurs="0" default="1000." >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="gradient_tolerance" name="gradient_tolerance" code="{N_mdm(Real,gradientTolerance)}" label="gradient_tolerance" help="" minOccurs="0" default="1.e-4" >
-                    <param type="REAL" />
-                  </keyword>
-                  &default_max_iterations;
-                  &default_convergence_tolerance;
-                  &default_linear_constraints;
-                </required>
-                <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
-                  <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size" help="" minOccurs="0" default="32" >
-                    <param type="INTEGER" />
-                  </keyword>
-                  &default_max_iterations;
-                  &default_convergence_tolerance;
-                </keyword>
-                <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
-                  <alias name="coliny_apps"/>
-                  <keyword  id="initial_delta" name="initial_delta" code="{N_mdm(Real,initStepLength)}" label="Initial offset value" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="1.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="contraction_factor1" name="contraction_factor" code="{N_mdm(Real,contractStepLength)}" label="Pattern contraction factor" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.5" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="threshold_delta" name="threshold_delta" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.01" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="solution_target" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution target" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="no target" >
-                    <alias name="solution_accuracy"/>
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="synchronization" name="synchronization" code="{0}" label="Evaluation synchronization" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="nonblocking" >
-                    <oneOf label="synchronization">
-                      <keyword  id="blocking" name="blocking" code="{N_mdm(lit,evalSynchronize_blocking)}" label="blocking" help=""  />
-                      <keyword  id="nonblocking" name="nonblocking" code="{N_mdm(lit,evalSynchronize_nonblocking)}" label="nonblocking" help=""  />
-                    </oneOf>
-                  </keyword>
-                  <keyword  id="merit_function2" name="merit_function" code="{0}" label="Merit function" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="merit2_squared" >
-                    <oneOf label="merit function">
-                      <keyword  id="merit_max" name="merit_max" code="{N_mdm(lit,meritFunction_merit_max)}" label="merit_max" help=""  />
-                      <keyword  id="merit_max_smooth" name="merit_max_smooth" code="{N_mdm(lit,meritFunction_merit_max_smooth)}" label="merit_max_smooth" help=""  />
-                      <keyword  id="merit1" name="merit1" code="{N_mdm(lit,meritFunction_merit1)}" label="merit1" help=""  />
-                      <keyword  id="merit1_smooth" name="merit1_smooth" code="{N_mdm(lit,meritFunction_merit1_smooth)}" label="merit1_smooth" help=""  />
-                      <keyword  id="merit2" name="merit2" code="{N_mdm(lit,meritFunction_merit2)}" label="merit2" help=""  />
-                      <keyword  id="merit2_smooth" name="merit2_smooth" code="{N_mdm(lit,meritFunction_merit2_smooth)}" label="merit2_smooth" help=""  />
-                      <keyword  id="merit2_squared" name="merit2_squared" code="{N_mdm(lit,meritFunction_merit2_squared)}" label="merit2_squared" help=""  />
-                    </oneOf>
-                  </keyword>
-                  <keyword  id="constraint_penalty" name="constraint_penalty" code="{N_mdm(Real,constrPenalty)}" label="Constraint penalty" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="1.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="smoothing_factor" name="smoothing_factor" code="{N_mdm(Real,smoothFactor)}" label="Smoothing factor" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  &default_linear_constraints;
-                </keyword>
-                <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search" help="" minOccurs="1" >
-                  <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-10" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="seed2" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random Seed" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="system-generated (non-repeatable)" >
-                    <param type="INTEGER" constraint="> 0" />
-                  </keyword>
-                  <keyword  id="history_file" name="history_file" code="{N_mdm(str,historyFile)}" label="NOMAD History File" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="mads_history" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
-                  <keyword  id="display_format" name="display_format" code="{N_mdm(str,displayFormat)}" label="display_format" help="" minOccurs="0" >
-                    <param type="STRING" />
-                  </keyword>
-                  <keyword  id="variable_neighborhood_search" name="variable_neighborhood_search" code="{N_mdm(Real,vns)}" label="variable_neighborhood_search" help="" minOccurs="0" default="0.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="neighbor_order" name="neighbor_order" code="{N_mdm(pint,neighborOrder)}" label="Neighbor Order" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" >
-                    <param type="INTEGER" constraint="> 0" />
-                  </keyword>
-                  <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="false" />
-                  &default_max_iterations;
-                </keyword>
-                <required>
-                  <oneOf>
-                    <keyword  id="moga" name="moga" code="{N_mdm(utype,methodName_MOGA)}" label="moga" help="" minOccurs="1" group="Optimization: Global" >
-                      <keyword  id="fitness_type" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="domination_count" >
-                        <oneOf>
-                          <keyword  id="layer_rank" name="layer_rank" code="{N_mdm(lit,fitnessType_layer_rank)}" label="layer_rank" help=""  />
-                          <keyword  id="domination_count" name="domination_count" code="{N_mdm(lit,fitnessType_domination_count)}" label="domination_count" help=""  />
-                        </oneOf>
-                      </keyword>
-                      <keyword  id="replacement_type" name="replacement_type" code="{0}" label="Replacement type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="below_limit" >
-                        <oneOf>
-                          <keyword  id="elitist" name="elitist" code="{N_mdm(lit,replacementType_elitist)}" label="elitist" help=""  />
-                          <keyword  id="roulette_wheel" name="roulette_wheel" code="{N_mdm(lit,replacementType_roulette_wheel)}" label="roulette_wheel" help=""  />
-                          <keyword  id="unique_roulette_wheel" name="unique_roulette_wheel" code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" label="unique_roulette_wheel" help=""  />
-                          <keyword  id="below_limit" name="below_limit" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" label="Below limit selection" help="MethodCommands.html#MethodJEGADC" minOccurs="1" default="6" >
-                            <param type="REAL" />
-                            <keyword  id="shrinkage_fraction" name="shrinkage_fraction" code="{N_mdm(Real01,shrinkagePercent)}" label="shrinkage_fraction" help="" minOccurs="0" default="0.9" >
-                              <alias name="shrinkage_percentage"/>
-                              <param type="REAL" />
-                            </keyword>
-                          </keyword>
-                        </oneOf>
-                      </keyword>
-                      <keyword  id="niching_type" name="niching_type" code="{0}" label="Niche pressure type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="No niche pressure" >
-                        <oneOf>
-                          <keyword  id="radial" name="radial" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_radial)}" label="radial" help=""  default="0.01 for all objectives" >
-                            <param type="REALLIST" />
-                          </keyword>
-                          <keyword  id="distance" name="distance" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}" label="distance" help=""  >
-                            <param type="REALLIST" />
-                          </keyword>
-                          <keyword  id="max_designs" name="max_designs" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" label="max_designs" help="" minOccurs="1" >
-                            <param type="REALLIST" />
-                            <keyword  id="num_designs" name="num_designs" code="{N_mdm(pintz,numDesigns)}" label="Number designs to keep for max_designs nicher" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="100" >
-                              <param type="INTEGER" constraint=">= 2" />
-                            </keyword>
-                          </keyword>
-                        </oneOf>
-                      </keyword>
-                      <keyword  id="convergence_type" name="convergence_type" code="{0}" label="convergence_type" help="" minOccurs="0" default="average_fitness_tracker" >
-                        <keyword  id="metric_tracker" name="metric_tracker" code="{N_mdm(lit,convergenceType_metric_tracker)}" label="Convergence type" help="MethodCommands.html#MethodJEGAMOGA"  default="metric_tracker" />
-                        <keyword  id="percent_change" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="Percent change limit for metric_tracker converger" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="0.1" >
-                          <param type="REAL" />
-                        </keyword>
-                        <keyword  id="num_generations" name="num_generations" code="{N_mdm(sizet,numGenerations)}" label="Number generations for metric_tracker converger" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="10" >
-                          <param type="INTEGER" constraint=">= 0" />
-                        </keyword>
-                      </keyword>
-                      <keyword  id="postprocessor_type" name="postprocessor_type" code="{0}" label="Post_processor type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="No post-processing of solutions" >
-                        <keyword  id="orthogonal_distance" name="orthogonal_distance" code="{N_mdm(RealLlit,TYPE_DATA_postProcessorType_distance_postprocessor)}" label="Post_processor distance" help="MethodCommands.html#MethodJEGAMOGA"  default="0.01 for all objectives" >
-                          <param type="REALLIST" />
-                        </keyword>
-                      </keyword>
-                      &default_max_iterations;
-                    </keyword>
-                    <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga" help="" minOccurs="1" group="Optimization: Global" >
-                      <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="merit_function">
-                        <keyword  id="merit_function3" name="merit_function" code="{N_mdm(lit,fitnessType_merit_function)}" label="merit_function" help=""  />
-                        <keyword  id="constraint_penalty1" name="constraint_penalty" code="{N_mdm(Realp,constraintTolerance)}" label="Constraint penalty in merit function" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="1.0" >
-                          <param type="REAL" />
-                        </keyword>
-                      </keyword>
-                      <keyword  id="replacement_type1" name="replacement_type" code="{0}" label="Replacement type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="elitist" >
-                        <oneOf>
-                          <keyword  id="elitist1" name="elitist" code="{N_mdm(lit,replacementType_elitist)}" label="elitist" help=""  />
-                          <keyword  id="favor_feasible" name="favor_feasible" code="{N_mdm(lit,replacementType_favor_feasible)}" label="favor_feasible" help=""  />
-                          <keyword  id="roulette_wheel1" name="roulette_wheel" code="{N_mdm(lit,replacementType_roulette_wheel)}" label="roulette_wheel" help=""  />
-                          <keyword  id="unique_roulette_wheel1" name="unique_roulette_wheel" code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" label="unique_roulette_wheel" help=""  />
-                        </oneOf>
-                      </keyword>
-                      <keyword  id="convergence_type1" name="convergence_type" code="{0}" label="Convergence type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="average_fitness_tracker" >
-                        <oneOf>
-                          <keyword  id="best_fitness_tracker" name="best_fitness_tracker" code="{N_mdm(lit,convergenceType_best_fitness_tracker)}" label="best_fitness_tracker" help="" minOccurs="1" >
-                            <keyword  id="percent_change1" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="Percent change in fitness" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="0.1" >
-                              <param type="REAL" />
-                            </keyword>
-                            <keyword  id="num_generations1" name="num_generations" code="{N_mdm(sizet,numGenerations)}" label="Number of generations (for convergence test) " help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="10" >
-                              <param type="INTEGER" constraint=">= 0" />
-                            </keyword>
-                          </keyword>
-                          <keyword  id="average_fitness_tracker" name="average_fitness_tracker" code="{N_mdm(lit,convergenceType_average_fitness_tracker)}" label="average_fitness_tracker" help="" minOccurs="1" >
-                            <keyword  id="percent_change2" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="percent_change" help="" minOccurs="0" default="0.1" >
-                              <param type="REAL" />
-                            </keyword>
-                            <keyword  id="num_generations2" name="num_generations" code="{N_mdm(sizet,numGenerations)}" label="num_generations" help="" minOccurs="0" default="10" >
-                              <param type="INTEGER" constraint=">= 0" />
-                            </keyword>
-                          </keyword>
-                        </oneOf>
-                      </keyword>
-                      &default_max_iterations;
-                    </keyword>
-                  </oneOf>
-                  <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >
-                    <param type="INTEGER" constraint=">= 0" />
-                  </keyword>
-                  <keyword  id="log_file" name="log_file" code="{N_mdm(str,logFile)}" label="log_file" help="" minOccurs="0" default="JEGAGlobal.log" >
-                    <param type="OUTPUT_FILE" />
-                  </keyword>
-                  <keyword  id="print_each_pop" name="print_each_pop" code="{N_mdm(true,printPopFlag)}" label="print_each_pop" help="" minOccurs="0" default="No printing" />
-                  <keyword  id="initialization_type" name="initialization_type" code="{0}" label="initialization_type" help="" minOccurs="0" default="unique_random" >
+                  <keyword  id="search_method" name="search_method" code="{0}" label="search_method" help="" minOccurs="0" >
                     <oneOf>
-                      <keyword  id="simple_random" name="simple_random" code="{N_mdm(lit,initializationType_random)}" label="simple_random" help=""  />
-                      <keyword  id="unique_random" name="unique_random" code="{N_mdm(lit,initializationType_unique_random)}" label="unique_random" help=""  />
-                      <keyword  id="flat_file" name="flat_file" code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" label="flat_file" help=""  >
-                        <!-- store init type AND incoming STRING -->
-                        <param type="STRING" />
-                      </keyword>
+                      <keyword  id="value_based_line_search" name="value_based_line_search" code="{N_mdm(lit,searchMethod_value_based_line_search)}" label="value_based_line_search" help=""  default="trust_region (unconstrained), value_based_line_search (bound/general constraints)" />
+                      <keyword  id="gradient_based_line_search" name="gradient_based_line_search" code="{N_mdm(lit,searchMethod_gradient_based_line_search)}" label="gradient_based_line_search" help=""  />
+                      <keyword  id="trust_region1" name="trust_region" code="{N_mdm(lit,searchMethod_trust_region)}" label="trust_region" help=""  />
+                      <keyword  id="tr_pds" name="tr_pds" code="{N_mdm(lit,searchMethod_tr_pds)}" label="tr_pds" help=""  />
                     </oneOf>
                   </keyword>
-                  <keyword  id="crossover_type" name="crossover_type" code="{0}" label="crossover_type" help="" minOccurs="0" default="shuffle_random">
+                  <keyword  id="merit_function1" name="merit_function" code="{0}" label="merit_function" help="" minOccurs="0" default="argaez_tapia" >
                     <oneOf>
-                      <keyword  id="multi_point_binary" name="multi_point_binary" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_binary)}" label="multi_point_binary" help=""  >
-                        <param type="INTEGER" />
-                      </keyword>
-                      <keyword  id="multi_point_parameterized_binary" name="multi_point_parameterized_binary" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_parameterized_binary)}" label="multi_point_parameterized_binary" help=""  >
-                        <param type="INTEGER" />
-                      </keyword>
-                      <keyword  id="multi_point_real" name="multi_point_real" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}" label="multi_point_real" help=""  >
-                        <param type="INTEGER" />
-                      </keyword>
-                      <keyword  id="shuffle_random" name="shuffle_random" code="{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}" label="shuffle_random" help="" minOccurs="1" >
-                        <keyword  id="num_parents" name="num_parents" code="{N_mdm(pintz,numParents)}" label="num_parents" help="" minOccurs="0" default="2" >
-                          <!-- should the min be 2? -->
-                          <param type="INTEGER" constraint="> 0" />
-                        </keyword>
-                        <keyword  id="num_offspring" name="num_offspring" code="{N_mdm(pintz,numOffspring)}" label="num_offspring" help="" minOccurs="0" default="2" >
-                          <param type="INTEGER" constraint="> 0" />
-                        </keyword>
-                      </keyword>
+                      <keyword  id="el_bakry" name="el_bakry" code="{N_mdm(type,meritFn_NormFmu)}" label="el_bakry" help=""  />
+                      <keyword  id="argaez_tapia" name="argaez_tapia" code="{N_mdm(type,meritFn_ArgaezTapia)}" label="argaez_tapia" help=""  />
+                      <keyword  id="van_shanno" name="van_shanno" code="{N_mdm(type,meritFn_VanShanno)}" label="van_shanno" help=""  />
                     </oneOf>
-                    <keyword  id="crossover_rate" name="crossover_rate" code="{N_mdm(litz,TYPE_DATA_crossoverType_null_crossover)}" label="crossover_rate" help="" minOccurs="0" default="0.8" >
-                      <param type="REAL" />
-                    </keyword>
                   </keyword>
-                  <keyword  id="mutation_type" name="mutation_type" code="{0}" label="mutation_type" help="" minOccurs="0" default="replace_uniform" >
-                    <oneOf>
-                      <keyword  id="bit_random" name="bit_random" code="{N_mdm(lit,mutationType_bit_random)}" label="bit_random" help=""  />
-                      <keyword  id="replace_uniform" name="replace_uniform" code="{N_mdm(lit,mutationType_replace_uniform)}" label="replace_uniform" help=""  />
-                      <required>
-                        <oneOf>
-                          <keyword  id="offset_normal" name="offset_normal" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}" label="offset_normal" help=""  />
-                          <keyword  id="offset_cauchy" name="offset_cauchy" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}" label="offset_cauchy" help=""  />
-                          <keyword  id="offset_uniform" name="offset_uniform" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}" label="offset_uniform" help=""  />
-                        </oneOf>
-                        <keyword  id="mutation_scale" name="mutation_scale" code="{N_mdm(Real01,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.15" >
-                          <param type="REAL" />
-                        </keyword>
-                      </required>
-                    </oneOf>
-                    <keyword  id="mutation_rate" name="mutation_rate" code="{N_mdm(litz,TYPE_DATA_mutationType_null_mutation)}" label="mutation_rate" help="" minOccurs="0" default="0.08" >
-                      <param type="REAL" />
-                    </keyword>
+                  <keyword  id="steplength_to_boundary" name="steplength_to_boundary" code="{N_mdm(Real,stepLenToBoundary)}" label="steplength_to_boundary" help="" minOccurs="0" default="Merit function dependent: 0.8 (el_bakry), 0.99995 (argaez_tapia), 0.95 (van_shanno)" >
+                    <param type="REAL" />
                   </keyword>
-                  <keyword  id="seed3" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-                    <param type="INTEGER" constraint="> 0" />
+                  <keyword  id="centering_parameter" name="centering_parameter" code="{N_mdm(Real,centeringParam)}" label="centering_parameter" help="" minOccurs="0" default="Merit function dependent: 0.2 (el_bakry), 0.2 (argaez_tapia), 0.1 (van_shanno)" >
+                    <param type="REAL" />
                   </keyword>
                 </required>
               </oneOf>
+              <keyword  id="max_step" name="max_step" code="{N_mdm(Real,maxStep)}" label="max_step" help="" minOccurs="0" default="1000." >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="gradient_tolerance" name="gradient_tolerance" code="{N_mdm(Real,gradientTolerance)}" label="gradient_tolerance" help="" minOccurs="0" default="1.e-4" >
+                <param type="REAL" />
+              </keyword>
+              &default_max_iterations;
+              &default_convergence_tolerance;
+              &default_linear_constraints;
+            </required>
+            <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
+              <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size" help="" minOccurs="0" default="32" >
+                <param type="INTEGER" />
+              </keyword>
+              &default_max_iterations;
+              &default_convergence_tolerance;
+            </keyword>
+            <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
+              <alias name="coliny_apps"/>
+              <keyword  id="initial_delta" name="initial_delta" code="{N_mdm(Real,initStepLength)}" label="Initial offset value" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="1.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="contraction_factor1" name="contraction_factor" code="{N_mdm(Real,contractStepLength)}" label="Pattern contraction factor" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.5" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="threshold_delta" name="threshold_delta" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.01" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="solution_target" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution target" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="no target" >
+                <alias name="solution_accuracy"/>
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="synchronization" name="synchronization" code="{0}" label="Evaluation synchronization" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="nonblocking" >
+                <oneOf label="synchronization">
+                  <keyword  id="blocking" name="blocking" code="{N_mdm(lit,evalSynchronize_blocking)}" label="blocking" help=""  />
+                  <keyword  id="nonblocking" name="nonblocking" code="{N_mdm(lit,evalSynchronize_nonblocking)}" label="nonblocking" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="merit_function2" name="merit_function" code="{0}" label="Merit function" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="merit2_squared" >
+                <oneOf label="merit function">
+                  <keyword  id="merit_max" name="merit_max" code="{N_mdm(lit,meritFunction_merit_max)}" label="merit_max" help=""  />
+                  <keyword  id="merit_max_smooth" name="merit_max_smooth" code="{N_mdm(lit,meritFunction_merit_max_smooth)}" label="merit_max_smooth" help=""  />
+                  <keyword  id="merit1" name="merit1" code="{N_mdm(lit,meritFunction_merit1)}" label="merit1" help=""  />
+                  <keyword  id="merit1_smooth" name="merit1_smooth" code="{N_mdm(lit,meritFunction_merit1_smooth)}" label="merit1_smooth" help=""  />
+                  <keyword  id="merit2" name="merit2" code="{N_mdm(lit,meritFunction_merit2)}" label="merit2" help=""  />
+                  <keyword  id="merit2_smooth" name="merit2_smooth" code="{N_mdm(lit,meritFunction_merit2_smooth)}" label="merit2_smooth" help=""  />
+                  <keyword  id="merit2_squared" name="merit2_squared" code="{N_mdm(lit,meritFunction_merit2_squared)}" label="merit2_squared" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="constraint_penalty" name="constraint_penalty" code="{N_mdm(Real,constrPenalty)}" label="Constraint penalty" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="1.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="smoothing_factor" name="smoothing_factor" code="{N_mdm(Real,smoothFactor)}" label="Smoothing factor" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.0" >
+                <param type="REAL" />
+              </keyword>
+              &default_linear_constraints;
+            </keyword>
+            <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search" help="" minOccurs="1" >
+              <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-10" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="seed2" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random Seed" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="system-generated (non-repeatable)" >
+                <param type="INTEGER" constraint="> 0" />
+              </keyword>
+              <keyword  id="history_file" name="history_file" code="{N_mdm(str,historyFile)}" label="NOMAD History File" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="mads_history" >
+                <param type="OUTPUT_FILE" />
+              </keyword>
+              <keyword  id="display_format" name="display_format" code="{N_mdm(str,displayFormat)}" label="display_format" help="" minOccurs="0" >
+                <param type="STRING" />
+              </keyword>
+              <keyword  id="variable_neighborhood_search" name="variable_neighborhood_search" code="{N_mdm(Real,vns)}" label="variable_neighborhood_search" help="" minOccurs="0" default="0.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="neighbor_order" name="neighbor_order" code="{N_mdm(pint,neighborOrder)}" label="Neighbor Order" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" >
+                <param type="INTEGER" constraint="> 0" />
+              </keyword>
+              <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="false" />
+              &default_max_iterations;
+            </keyword>
+            <required>
+              <oneOf>
+                <keyword  id="moga" name="moga" code="{N_mdm(utype,methodName_MOGA)}" label="moga" help="" minOccurs="1" group="Optimization: Global" >
+                  <keyword  id="fitness_type" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="domination_count" >
+                    <oneOf>
+                      <keyword  id="layer_rank" name="layer_rank" code="{N_mdm(lit,fitnessType_layer_rank)}" label="layer_rank" help=""  />
+                      <keyword  id="domination_count" name="domination_count" code="{N_mdm(lit,fitnessType_domination_count)}" label="domination_count" help=""  />
+                    </oneOf>
+                  </keyword>
+                  <keyword  id="replacement_type" name="replacement_type" code="{0}" label="Replacement type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="below_limit" >
+                    <oneOf>
+                      <keyword  id="elitist" name="elitist" code="{N_mdm(lit,replacementType_elitist)}" label="elitist" help=""  />
+                      <keyword  id="roulette_wheel" name="roulette_wheel" code="{N_mdm(lit,replacementType_roulette_wheel)}" label="roulette_wheel" help=""  />
+                      <keyword  id="unique_roulette_wheel" name="unique_roulette_wheel" code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" label="unique_roulette_wheel" help=""  />
+                      <keyword  id="below_limit" name="below_limit" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" label="Below limit selection" help="MethodCommands.html#MethodJEGADC" minOccurs="1" default="6" >
+                        <param type="REAL" />
+                        <keyword  id="shrinkage_fraction" name="shrinkage_fraction" code="{N_mdm(Real01,shrinkagePercent)}" label="shrinkage_fraction" help="" minOccurs="0" default="0.9" >
+                          <alias name="shrinkage_percentage"/>
+                          <param type="REAL" />
+                        </keyword>
+                      </keyword>
+                    </oneOf>
+                  </keyword>
+                  <keyword  id="niching_type" name="niching_type" code="{0}" label="Niche pressure type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="No niche pressure" >
+                    <oneOf>
+                      <keyword  id="radial" name="radial" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_radial)}" label="radial" help=""  default="0.01 for all objectives" >
+                        <param type="REALLIST" />
+                      </keyword>
+                      <keyword  id="distance" name="distance" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}" label="distance" help=""  >
+                        <param type="REALLIST" />
+                      </keyword>
+                      <keyword  id="max_designs" name="max_designs" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" label="max_designs" help="" minOccurs="1" >
+                        <param type="REALLIST" />
+                        <keyword  id="num_designs" name="num_designs" code="{N_mdm(pintz,numDesigns)}" label="Number designs to keep for max_designs nicher" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="100" >
+                          <param type="INTEGER" constraint=">= 2" />
+                        </keyword>
+                      </keyword>
+                    </oneOf>
+                  </keyword>
+                  <keyword  id="convergence_type" name="convergence_type" code="{0}" label="convergence_type" help="" minOccurs="0" default="average_fitness_tracker" >
+                    <keyword  id="metric_tracker" name="metric_tracker" code="{N_mdm(lit,convergenceType_metric_tracker)}" label="Convergence type" help="MethodCommands.html#MethodJEGAMOGA"  default="metric_tracker" />
+                    <keyword  id="percent_change" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="Percent change limit for metric_tracker converger" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="0.1" >
+                      <param type="REAL" />
+                    </keyword>
+                    <keyword  id="num_generations" name="num_generations" code="{N_mdm(sizet,numGenerations)}" label="Number generations for metric_tracker converger" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="10" >
+                      <param type="INTEGER" constraint=">= 0" />
+                    </keyword>
+                  </keyword>
+                  <keyword  id="postprocessor_type" name="postprocessor_type" code="{0}" label="Post_processor type" help="MethodCommands.html#MethodJEGAMOGA" minOccurs="0" default="No post-processing of solutions" >
+                    <keyword  id="orthogonal_distance" name="orthogonal_distance" code="{N_mdm(RealLlit,TYPE_DATA_postProcessorType_distance_postprocessor)}" label="Post_processor distance" help="MethodCommands.html#MethodJEGAMOGA"  default="0.01 for all objectives" >
+                      <param type="REALLIST" />
+                    </keyword>
+                  </keyword>
+                  &default_max_iterations;
+                </keyword>
+                <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga" help="" minOccurs="1" group="Optimization: Global" >
+                  <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="merit_function">
+                    <keyword  id="merit_function3" name="merit_function" code="{N_mdm(lit,fitnessType_merit_function)}" label="merit_function" help=""  />
+                    <keyword  id="constraint_penalty1" name="constraint_penalty" code="{N_mdm(Realp,constraintTolerance)}" label="Constraint penalty in merit function" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="1.0" >
+                      <param type="REAL" />
+                    </keyword>
+                  </keyword>
+                  <keyword  id="replacement_type1" name="replacement_type" code="{0}" label="Replacement type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="elitist" >
+                    <oneOf>
+                      <keyword  id="elitist1" name="elitist" code="{N_mdm(lit,replacementType_elitist)}" label="elitist" help=""  />
+                      <keyword  id="favor_feasible" name="favor_feasible" code="{N_mdm(lit,replacementType_favor_feasible)}" label="favor_feasible" help=""  />
+                      <keyword  id="roulette_wheel1" name="roulette_wheel" code="{N_mdm(lit,replacementType_roulette_wheel)}" label="roulette_wheel" help=""  />
+                      <keyword  id="unique_roulette_wheel1" name="unique_roulette_wheel" code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" label="unique_roulette_wheel" help=""  />
+                    </oneOf>
+                  </keyword>
+                  <keyword  id="convergence_type1" name="convergence_type" code="{0}" label="Convergence type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="average_fitness_tracker" >
+                    <oneOf>
+                      <keyword  id="best_fitness_tracker" name="best_fitness_tracker" code="{N_mdm(lit,convergenceType_best_fitness_tracker)}" label="best_fitness_tracker" help="" minOccurs="1" >
+                        <keyword  id="percent_change1" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="Percent change in fitness" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="0.1" >
+                          <param type="REAL" />
+                        </keyword>
+                        <keyword  id="num_generations1" name="num_generations" code="{N_mdm(sizet,numGenerations)}" label="Number of generations (for convergence test) " help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="10" >
+                          <param type="INTEGER" constraint=">= 0" />
+                        </keyword>
+                      </keyword>
+                      <keyword  id="average_fitness_tracker" name="average_fitness_tracker" code="{N_mdm(lit,convergenceType_average_fitness_tracker)}" label="average_fitness_tracker" help="" minOccurs="1" >
+                        <keyword  id="percent_change2" name="percent_change" code="{N_mdm(Realz,convergenceTolerance)}" label="percent_change" help="" minOccurs="0" default="0.1" >
+                          <param type="REAL" />
+                        </keyword>
+                        <keyword  id="num_generations2" name="num_generations" code="{N_mdm(sizet,numGenerations)}" label="num_generations" help="" minOccurs="0" default="10" >
+                          <param type="INTEGER" constraint=">= 0" />
+                        </keyword>
+                      </keyword>
+                    </oneOf>
+                  </keyword>
+                  &default_max_iterations;
+                </keyword>
+              </oneOf>
+              <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >
+                <param type="INTEGER" constraint=">= 0" />
+              </keyword>
+              <keyword  id="log_file" name="log_file" code="{N_mdm(str,logFile)}" label="log_file" help="" minOccurs="0" default="JEGAGlobal.log" >
+                <param type="OUTPUT_FILE" />
+              </keyword>
+              <keyword  id="print_each_pop" name="print_each_pop" code="{N_mdm(true,printPopFlag)}" label="print_each_pop" help="" minOccurs="0" default="No printing" />
+              <keyword  id="initialization_type" name="initialization_type" code="{0}" label="initialization_type" help="" minOccurs="0" default="unique_random" >
+                <oneOf>
+                  <keyword  id="simple_random" name="simple_random" code="{N_mdm(lit,initializationType_random)}" label="simple_random" help=""  />
+                  <keyword  id="unique_random" name="unique_random" code="{N_mdm(lit,initializationType_unique_random)}" label="unique_random" help=""  />
+                  <keyword  id="flat_file" name="flat_file" code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" label="flat_file" help=""  >
+                    <!-- store init type AND incoming STRING -->
+                    <param type="STRING" />
+                  </keyword>
+                </oneOf>
+              </keyword>
+              <keyword  id="crossover_type" name="crossover_type" code="{0}" label="crossover_type" help="" minOccurs="0" default="shuffle_random">
+                <oneOf>
+                  <keyword  id="multi_point_binary" name="multi_point_binary" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_binary)}" label="multi_point_binary" help=""  >
+                    <param type="INTEGER" />
+                  </keyword>
+                  <keyword  id="multi_point_parameterized_binary" name="multi_point_parameterized_binary" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_parameterized_binary)}" label="multi_point_parameterized_binary" help=""  >
+                    <param type="INTEGER" />
+                  </keyword>
+                  <keyword  id="multi_point_real" name="multi_point_real" code="{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}" label="multi_point_real" help=""  >
+                    <param type="INTEGER" />
+                  </keyword>
+                  <keyword  id="shuffle_random" name="shuffle_random" code="{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}" label="shuffle_random" help="" minOccurs="1" >
+                    <keyword  id="num_parents" name="num_parents" code="{N_mdm(pintz,numParents)}" label="num_parents" help="" minOccurs="0" default="2" >
+                      <!-- should the min be 2? -->
+                      <param type="INTEGER" constraint="> 0" />
+                    </keyword>
+                    <keyword  id="num_offspring" name="num_offspring" code="{N_mdm(pintz,numOffspring)}" label="num_offspring" help="" minOccurs="0" default="2" >
+                      <param type="INTEGER" constraint="> 0" />
+                    </keyword>
+                  </keyword>
+                </oneOf>
+                <keyword  id="crossover_rate" name="crossover_rate" code="{N_mdm(litz,TYPE_DATA_crossoverType_null_crossover)}" label="crossover_rate" help="" minOccurs="0" default="0.8" >
+                  <param type="REAL" />
+                </keyword>
+              </keyword>
+              <keyword  id="mutation_type" name="mutation_type" code="{0}" label="mutation_type" help="" minOccurs="0" default="replace_uniform" >
+                <oneOf>
+                  <keyword  id="bit_random" name="bit_random" code="{N_mdm(lit,mutationType_bit_random)}" label="bit_random" help=""  />
+                  <keyword  id="replace_uniform" name="replace_uniform" code="{N_mdm(lit,mutationType_replace_uniform)}" label="replace_uniform" help=""  />
+                  <required>
+                    <oneOf>
+                      <keyword  id="offset_normal" name="offset_normal" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}" label="offset_normal" help=""  />
+                      <keyword  id="offset_cauchy" name="offset_cauchy" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}" label="offset_cauchy" help=""  />
+                      <keyword  id="offset_uniform" name="offset_uniform" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}" label="offset_uniform" help=""  />
+                    </oneOf>
+                    <keyword  id="mutation_scale" name="mutation_scale" code="{N_mdm(Real01,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.15" >
+                      <param type="REAL" />
+                    </keyword>
+                  </required>
+                </oneOf>
+                <keyword  id="mutation_rate" name="mutation_rate" code="{N_mdm(litz,TYPE_DATA_mutationType_null_mutation)}" label="mutation_rate" help="" minOccurs="0" default="0.08" >
+                  <param type="REAL" />
+                </keyword>
+              </keyword>
+              <keyword  id="seed3" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+                <param type="INTEGER" constraint="> 0" />
+              </keyword>
             </required>
             <!-- End group for linear ineq/eq constraints? -->
             <required>
