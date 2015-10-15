@@ -105,6 +105,35 @@
         <param type='INTEGER' constraint='>= 0' />
       </keyword>"
     >
+    <!ENTITY default_linear_constraints
+      "<keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_mdm(RealDL,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_lower_bounds' name='linear_inequality_lower_bounds' code='{N_mdm(RealDL,linearIneqLowerBnds)}' label='linear_inequality_lower_bounds' help='' minOccurs='0' default='vector values = -infinity' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_upper_bounds' name='linear_inequality_upper_bounds' code='{N_mdm(RealDL,linearIneqUpperBnds)}' label='linear_inequality_upper_bounds' help='' minOccurs='0' default='vector values = 0 .' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_scale_types' name='linear_inequality_scale_types' code='{N_mdm(strL,linearIneqScaleTypes)}' label='linear_inequality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
+        <param type='STRINGLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_scales' name='linear_inequality_scales' code='{N_mdm(RealDL,linearIneqScales)}' label='linear_inequality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_equality_constraint_matrix' name='linear_equality_constraint_matrix' code='{N_mdm(RealDL,linearEqConstraintCoeffs)}' label='linear_equality_constraint_matrix' help='' minOccurs='0' default='no linear equality constraints' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_equality_targets' name='linear_equality_targets' code='{N_mdm(RealDL,linearEqTargets)}' label='linear_equality_targets' help='' minOccurs='0' default='vector values = 0 .' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_equality_scale_types' name='linear_equality_scale_types' code='{N_mdm(strL,linearEqScaleTypes)}' label='linear_equality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
+        <param type='STRINGLIST' />
+      </keyword>
+      <keyword  id='linear_equality_scales' name='linear_equality_scales' code='{N_mdm(RealDL,linearEqScales)}' label='linear_equality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
+        <param type='REALLIST' />
+      </keyword>"
+    >
 ]>
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
@@ -828,33 +857,7 @@
                   </keyword>
                 </required>
               </oneOf>
-              <keyword  id="linear_inequality_constraint_matrix" name="linear_inequality_constraint_matrix" code="{N_mdm(RealDL,linearIneqConstraintCoeffs)}" label="linear_inequality_constraint_matrix" help="" minOccurs="0" default="no linear inequality constraints" >
-                <param type="REALLIST" />
-              </keyword>
-              <keyword  id="linear_inequality_lower_bounds" name="linear_inequality_lower_bounds" code="{N_mdm(RealDL,linearIneqLowerBnds)}" label="linear_inequality_lower_bounds" help="" minOccurs="0" default="vector values = -infinity" >
-                <param type="REALLIST" />
-              </keyword>
-              <keyword  id="linear_inequality_upper_bounds" name="linear_inequality_upper_bounds" code="{N_mdm(RealDL,linearIneqUpperBnds)}" label="linear_inequality_upper_bounds" help="" minOccurs="0" default="vector values = 0 ." >
-                <param type="REALLIST" />
-              </keyword>
-              <keyword  id="linear_inequality_scale_types" name="linear_inequality_scale_types" code="{N_mdm(strL,linearIneqScaleTypes)}" label="linear_inequality_scale_types" help="" minOccurs="0" default="vector values = 'none'" >
-                <param type="STRINGLIST" />
-              </keyword>
-              <keyword  id="linear_inequality_scales" name="linear_inequality_scales" code="{N_mdm(RealDL,linearIneqScales)}" label="linear_inequality_scales" help="" minOccurs="0" default="vector values = 1 . (no scaling)" >
-                <param type="REALLIST" />
-              </keyword>
-              <keyword  id="linear_equality_constraint_matrix" name="linear_equality_constraint_matrix" code="{N_mdm(RealDL,linearEqConstraintCoeffs)}" label="linear_equality_constraint_matrix" help="" minOccurs="0" default="no linear equality constraints" >
-                <param type="REALLIST" />
-              </keyword>
-              <keyword  id="linear_equality_targets" name="linear_equality_targets" code="{N_mdm(RealDL,linearEqTargets)}" label="linear_equality_targets" help="" minOccurs="0" default="vector values = 0 ." >
-                <param type="REALLIST" />
-              </keyword>
-              <keyword  id="linear_equality_scale_types" name="linear_equality_scale_types" code="{N_mdm(strL,linearEqScaleTypes)}" label="linear_equality_scale_types" help="" minOccurs="0" default="vector values = 'none'" >
-                <param type="STRINGLIST" />
-              </keyword>
-              <keyword  id="linear_equality_scales" name="linear_equality_scales" code="{N_mdm(RealDL,linearEqScales)}" label="linear_equality_scales" help="" minOccurs="0" default="vector values = 1 . (no scaling)" >
-                <param type="REALLIST" />
-              </keyword>
+              &default_linear_constraints;
             </required>
             <required>
               <oneOf>
