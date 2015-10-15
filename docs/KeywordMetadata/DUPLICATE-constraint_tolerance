@@ -1,0 +1,30 @@
+Blurb::
+The maximum allowable value of constraint violation still considered to be feasible
+Description::
+The \c constraint_tolerance specification determines the maximum
+allowable value of infeasibility that any constraint in an
+optimization problem may possess and still be considered to be
+satisfied.
+
+If a constraint
+function is greater than this value then it is considered to be
+violated by the optimization algorithm. This specification gives some
+control over how tightly the constraints will be satisfied at
+convergence of the algorithm. However, if the value is set too small
+the algorithm may terminate with one or more constraints being
+violated. 
+
+This specification is currently meaningful for the NPSOL,
+NLSSOL, DOT and CONMIN constrained optimizers.
+
+<b> Defaults </b>
+
+Defaults can vary depending on the method.
+\li DOT constrained optimizers: 0.003
+\li NPSOL: dependent upon the machine precision, typically on the order of \c 1.e-8 for double precision computations
+
+Topics::	method_independent_controls
+Examples::
+Theory::
+Faq::
+See_Also::	

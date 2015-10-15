@@ -105,6 +105,11 @@
         <param type='INTEGER' constraint='>= 0' />
       </keyword>"
     >
+    <!ENTITY default_constraint_tolerance
+      "<keyword  id='constraint_tolerance' name='constraint_tolerance' code='{N_mdm(Real,constraintTolerance)}' label='Constraint tolerance' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='Library default' >
+        <param type='REAL' />
+      </keyword>"
+    >
     <!ENTITY default_linear_constraints
       "<keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_mdm(RealDL,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
         <param type='REALLIST' />
@@ -262,9 +267,6 @@
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
       <keyword  id="speculative" name="speculative" code="{N_mdm(true,speculativeFlag)}" label="Speculative gradients and Hessians" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no speculation" />
-      <keyword  id="constraint_tolerance" name="constraint_tolerance" code="{N_mdm(Real,constraintTolerance)}" label="Constraint tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="Library default" >
-        <param type="REAL" />
-      </keyword>
       <keyword  id="scaling" name="scaling" code="{N_mdm(true,methodScaling)}" label="Scaling flag" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no scaling" />
       <keyword  id="final_solutions" name="final_solutions" code="{N_mdm(sizet,numFinalSolutions)}" label="Final solutions" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1" >
         <param type="INTEGER" constraint=">= 0" />
@@ -496,6 +498,7 @@
           </keyword>
           &default_max_iterations;
           &default_convergence_tolerance;
+          &default_constraint_tolerance;
         </keyword>
         <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global" help="" minOccurs="1" group="Surrogate-based Methods" >
           <oneOf>
@@ -538,6 +541,7 @@
               </oneOf>
               &default_max_iterations;
               &default_convergence_tolerance;
+              &default_constraint_tolerance;
               &default_linear_constraints;
             </required>
             <required>
@@ -553,6 +557,7 @@
               </oneOf>
               &default_max_iterations;
               &default_convergence_tolerance;
+              &default_constraint_tolerance;
               &default_linear_constraints;
             </required>
             <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
@@ -582,6 +587,7 @@
               </keyword>
               &default_convergence_tolerance;
               &default_max_iterations;
+              &default_constraint_tolerance;
               &default_linear_constraints;
             </required>
             <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
@@ -680,6 +686,7 @@
                 <param type="REAL" />
               </keyword>
               &default_linear_constraints;
+              &default_constraint_tolerance;
             </keyword>
             <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search" help="" minOccurs="1" >
               <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-10" >

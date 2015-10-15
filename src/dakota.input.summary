@@ -68,7 +68,6 @@ KEYWORD12 method
 	  ]
 	[ max_function_evaluations INTEGER >= 0 ]
 	[ speculative ]
-	[ constraint_tolerance REAL ]
 	[ scaling ]
 	[ final_solutions INTEGER >= 0 ]
 	( hybrid
@@ -185,6 +184,7 @@ KEYWORD12 method
 	    ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ constraint_tolerance REAL ]
 	  )
 	|
 	( surrogate_based_global
@@ -198,6 +198,7 @@ KEYWORD12 method
 	( dot_frcg
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ constraint_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -222,6 +223,7 @@ KEYWORD12 method
 	  | sqp
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ constraint_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -237,6 +239,7 @@ KEYWORD12 method
 	( conmin_frcg
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ constraint_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -255,6 +258,7 @@ KEYWORD12 method
 	  | mfd
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ constraint_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -286,6 +290,7 @@ KEYWORD12 method
 	  [ linesearch_tolerance REAL ]
 	  [ convergence_tolerance REAL ]
 	  [ max_iterations INTEGER >= 0 ]
+	  [ constraint_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -307,6 +312,7 @@ KEYWORD12 method
 	  [ linesearch_tolerance REAL ]
 	  [ convergence_tolerance REAL ]
 	  [ max_iterations INTEGER >= 0 ]
+	  [ constraint_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -419,6 +425,7 @@ KEYWORD12 method
 	  [ linear_equality_targets REALLIST ]
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
+	  [ constraint_tolerance REAL ]
 	  [ model_pointer STRING ]
 	  )
 	|
