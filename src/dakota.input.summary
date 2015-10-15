@@ -66,7 +66,6 @@ KEYWORD12 method
 	  | quiet
 	  | silent
 	  ]
-	[ max_function_evaluations INTEGER >= 0 ]
 	[ scaling ]
 	[ final_solutions INTEGER >= 0 ]
 	( hybrid
@@ -199,6 +198,7 @@ KEYWORD12 method
 	  [ convergence_tolerance REAL ]
 	  [ constraint_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -225,6 +225,7 @@ KEYWORD12 method
 	  [ convergence_tolerance REAL ]
 	  [ constraint_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -242,6 +243,7 @@ KEYWORD12 method
 	  [ convergence_tolerance REAL ]
 	  [ constraint_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -262,6 +264,7 @@ KEYWORD12 method
 	  [ convergence_tolerance REAL ]
 	  [ constraint_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -284,6 +287,7 @@ KEYWORD12 method
 	  [ linear_equality_targets REALLIST ]
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -295,6 +299,7 @@ KEYWORD12 method
 	  [ max_iterations INTEGER >= 0 ]
 	  [ constraint_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -318,6 +323,7 @@ KEYWORD12 method
 	  [ max_iterations INTEGER >= 0 ]
 	  [ constraint_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -341,6 +347,7 @@ KEYWORD12 method
 	  [ linear_equality_targets REALLIST ]
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -350,6 +357,7 @@ KEYWORD12 method
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -384,6 +392,7 @@ KEYWORD12 method
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -400,6 +409,7 @@ KEYWORD12 method
 	  [ search_scheme_size INTEGER ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -433,6 +443,7 @@ KEYWORD12 method
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
 	  [ constraint_tolerance REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -445,6 +456,7 @@ KEYWORD12 method
 	  [ neighbor_order INTEGER > 0 ]
 	  [ display_all_evaluations ]
 	  [ max_iterations INTEGER >= 0 ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -488,6 +500,7 @@ KEYWORD12 method
 	  [ linear_equality_targets REALLIST ]
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ population_size INTEGER >= 0 ]
 	  [ log_file STRING ]
 	  [ print_each_pop ]
@@ -554,6 +567,7 @@ KEYWORD12 method
 	  [ linear_equality_targets REALLIST ]
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ population_size INTEGER >= 0 ]
 	  [ log_file STRING ]
 	  [ print_each_pop ]
@@ -611,6 +625,7 @@ KEYWORD12 method
 	  [ constraint_penalty REAL ]
 	  [ initial_delta REAL ]
 	  [ threshold_delta REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -628,6 +643,7 @@ KEYWORD12 method
 	  [ constraint_penalty REAL ]
 	  [ initial_delta REAL ]
 	  [ threshold_delta REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -639,6 +655,7 @@ KEYWORD12 method
 	( coliny_cobyla
 	  [ initial_delta REAL ]
 	  [ threshold_delta REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -658,6 +675,7 @@ KEYWORD12 method
 	  [ min_boxsize_limit REAL ]
 	  [ constraint_penalty REAL ]
 	  [ convergence_tolerance REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -703,6 +721,7 @@ KEYWORD12 method
 	    ]
 	  [ constraint_penalty REAL ]
 	  [ convergence_tolerance REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -713,6 +732,7 @@ KEYWORD12 method
 	|
 	( coliny_beta
 	  beta_solver_name STRING
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
@@ -734,6 +754,7 @@ KEYWORD12 method
 	  [ convergence_tolerance REAL ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ speculative ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -750,12 +771,14 @@ KEYWORD12 method
 	  [ volume_boxsize_limit REAL ]
 	  [ convergence_tolerance REAL ]
 	  [ max_iterations INTEGER >= 0 ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( genie_opt_darts
 	  | genie_direct
 	  [ seed INTEGER > 0 ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -1377,6 +1400,7 @@ KEYWORD12 method
 	  [ batch_size INTEGER ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ distribution
 	    cumulative
 	    | complementary
@@ -1499,6 +1523,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ max_iterations INTEGER >= 0 ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]

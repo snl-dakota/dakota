@@ -1,0 +1,58 @@
+Blurb::
+Compute speculative gradients
+Description::
+When performing gradient-based optimization in parallel, \c
+speculative gradients can be selected to address the load imbalance
+that can occur between gradient evaluation and line search phases. In
+a typical gradient-based optimization, the line search phase consists
+primarily of evaluating the objective function and any constraints at
+a trial point, and then testing the trial point for a sufficient
+decrease in the objective function value and/or constraint
+violation. If a sufficient decrease is not observed, then one or more
+additional trial points may be attempted sequentially. However, if the
+trial point is accepted then the line search phase is complete and the
+gradient evaluation phase begins. By speculating that the gradient
+information associated with a given line search trial point will be
+used later, additional coarse grained parallelism can be introduced by
+computing the gradient information (either by finite difference or
+analytically) in parallel, at the same time as the line search phase
+trial-point function values. This balances the total amount of
+computation to be performed at each design point and allows for
+efficient utilization of multiple processors. While the total amount
+of work performed will generally increase (since some speculative
+gradients will not be used when a trial point is rejected in the line
+search phase), the run time will usually decrease (since gradient
+evaluations needed at the start of each new optimization cycle were
+already performed in parallel during the line search phase). Refer to
+\cite Byr88 for additional details. The
+speculative specification is implemented for the gradient-based
+optimizers in the DOT, CONMIN, and OPT++ libraries, and it can be used
+with dakota numerical or analytic gradient selections in the responses
+specification (refer to \ref responses gradient section for information on these
+specifications). It should not be selected with vendor numerical
+gradients since vendor internal finite difference algorithms have not
+been modified for this purpose. In full-Newton approaches, the Hessian
+is also computed speculatively. NPSOL and NLSSOL do not support
+speculative gradients, as their gradient-based line search in
+user-supplied gradient mode (dakota numerical or analytic gradients)
+is a superior approach for load-balanced parallel execution.
+
+
+The \c speculative specification enables speculative computation of
+gradient and/or Hessian information, where applicable, for parallel
+optimization studies. By speculating that the derivative information
+at the current point will be used later, the complete data set (all
+available gradient/Hessian information) can be computed on every
+function evaluation. While some of these computations will be wasted,
+the positive effects are a consistent parallel load balance and
+usually shorter wall clock time. The \c speculative specification is
+applicable only when parallelism in the gradient calculations can be
+exploited by %Dakota (it will be ignored for \c vendor \c numerical
+gradients).
+
+
+Topics::	method_independent_controls
+Examples::
+Theory::
+Faq::
+See_Also::	

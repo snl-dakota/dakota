@@ -82,7 +82,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     |
     silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
    ]
-  [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
   [ scaling {N_mdm(true,methodScaling)} ]
   [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
   ( 
@@ -245,6 +244,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
       [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -270,6 +270,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
       [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -291,6 +292,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
       [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
       [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( 
@@ -310,6 +312,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
       [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -332,6 +335,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
       [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
       [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( 
@@ -369,6 +373,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -384,6 +389,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ search_scheme_size INTEGER {N_mdm(int,searchSchemeSize)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( asynch_pattern_search ALIAS coliny_apps {N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}
@@ -423,6 +429,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
       [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( mesh_adaptive_search {N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}
@@ -434,6 +441,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ neighbor_order INTEGER > 0 {N_mdm(pint,neighborOrder)} ]
       [ display_all_evaluations {N_mdm(true,showAllEval)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( 
@@ -481,6 +489,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
         [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
         [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+        [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
        )
       |
       ( soga {N_mdm(utype,methodName_SOGA)}
@@ -518,6 +527,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
         [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
         [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+        [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
        )
       [ population_size INTEGER >= 0 {N_mdm(nnint,populationSize)} ]
       [ log_file STRING {N_mdm(str,logFile)} ]
@@ -669,6 +679,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
         beta_solver_name STRING {N_mdm(str,betaSolverName)}
        )
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
       [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ show_misc_options {N_mdm(true,showMiscOptions)} ]
@@ -689,6 +700,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( nonlinear_cg {N_mdm(utype,methodName_NONLINEAR_CG)}
@@ -703,6 +715,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( 
@@ -710,6 +723,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       genie_direct {N_mdm(utype,methodName_GENIE_DIRECT)}
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
      )
     |
     ( efficient_global {N_mdm(utype,methodName_EFFICIENT_GLOBAL)}
@@ -1277,6 +1291,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ batch_size INTEGER {N_mdm(int,batchSize)} ]
           [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+          [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
          )
         |
         ( global_evidence ALIAS nond_global_evidence {N_mdm(utype,methodName_GLOBAL_EVIDENCE)}
@@ -1415,6 +1430,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           rnum2 {N_mdm(lit,rngName_rnum2)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+        [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
        )
       |
       ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(utype,methodName_BAYES_CALIBRATION)}
