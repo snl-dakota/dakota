@@ -83,7 +83,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
    ]
   [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-  [ speculative {N_mdm(true,speculativeFlag)} ]
   [ scaling {N_mdm(true,methodScaling)} ]
   [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
   ( 
@@ -245,6 +244,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -269,6 +269,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -308,6 +309,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -366,6 +368,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
       [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
       [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
       [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
@@ -685,6 +688,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ regression_diagnostics {N_mdm(true,regressDiag)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
      )
     |
     ( nonlinear_cg {N_mdm(utype,methodName_NONLINEAR_CG)}

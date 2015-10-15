@@ -110,6 +110,9 @@
         <param type='REAL' />
       </keyword>"
     >
+    <!ENTITY default_speculative
+      "<keyword  id='speculative' name='speculative' code='{N_mdm(true,speculativeFlag)}' label='Speculative gradients and Hessians' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='no speculation' />"
+    >
     <!ENTITY default_linear_constraints
       "<keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_mdm(RealDL,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
         <param type='REALLIST' />
@@ -266,7 +269,6 @@
       <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(nnint,maxFunctionEvaluations)}" label="Maximum function evaluations" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1000" >
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
-      <keyword  id="speculative" name="speculative" code="{N_mdm(true,speculativeFlag)}" label="Speculative gradients and Hessians" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no speculation" />
       <keyword  id="scaling" name="scaling" code="{N_mdm(true,methodScaling)}" label="Scaling flag" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no scaling" />
       <keyword  id="final_solutions" name="final_solutions" code="{N_mdm(sizet,numFinalSolutions)}" label="Final solutions" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1" >
         <param type="INTEGER" constraint=">= 0" />
@@ -542,6 +544,7 @@
               &default_max_iterations;
               &default_convergence_tolerance;
               &default_constraint_tolerance;
+              &default_speculative;
               &default_linear_constraints;
             </required>
             <required>
@@ -558,6 +561,7 @@
               &default_max_iterations;
               &default_convergence_tolerance;
               &default_constraint_tolerance;
+              &default_speculative;
               &default_linear_constraints;
             </required>
             <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
@@ -588,6 +592,7 @@
               &default_convergence_tolerance;
               &default_max_iterations;
               &default_constraint_tolerance;
+              &default_speculative;
               &default_linear_constraints;
             </required>
             <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
@@ -638,6 +643,7 @@
               </keyword>
               &default_max_iterations;
               &default_convergence_tolerance;
+              &default_speculative;
               &default_linear_constraints;
             </required>
             <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
@@ -1079,6 +1085,7 @@
               <keyword  id="regression_diagnostics" name="regression_diagnostics" code="{N_mdm(true,regressDiag)}" label="Regression diagnostics post-processing" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="no regression diagnostics" />
               &default_convergence_tolerance;
               &default_max_iterations;
+              &default_speculative;
             </keyword>
             <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
               <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
