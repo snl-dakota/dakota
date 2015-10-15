@@ -2174,9 +2174,15 @@
                       <keyword  id="per_response" name="per_response" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}" label="multiplier per response" help=""  />
                       <keyword  id="both" name="both" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" label="multiplier for each experiment, response" help=""  />
                     </oneOf>
+		    <optional>
+		      <keyword  id="hyperprior_alphas" name="hyperprior_alphas" code="{N_mdm(RealDL,hyperPriorAlphas)}" label="Inverse-gamma hyper-prior alphas" help="" minOccurs="1" >
+			<param type="REALLIST"/>
+		      </keyword>
+		      <keyword  id="hyperprior_betas" name="hyperprior_betas" code="{N_mdm(RealDL,hyperPriorBetas)}" label="Inverse-gamma hyper-prior betas" help="" minOccurs="1" >
+			<param type="REALLIST"/>
+		      </keyword>
+		    </optional>
                   </keyword>
-
-
                 </keyword>
                 <keyword  id="dace" name="dace" code="{N_mdm(utype,methodName_DACE)}" label="dace" help="" minOccurs="1" group="[CHOOSE method category]DACE" >
                   <oneOf label="DACE type">

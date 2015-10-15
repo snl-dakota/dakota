@@ -27,14 +27,6 @@ static const char rcsId[]="@(#) $Id$";
 namespace Dakota {
 
 // initialization of statics
-
-// BMA, LPS: experimentation with hyperparameter prior; if works will
-// integrate into Pecos
-Real invgamma_alpha = 1.0;
-Real invgamma_beta = 1.0;
-boost::math::inverse_gamma_distribution<> NonDBayesCalibration::
-invgammaDist(invgamma_alpha, invgamma_beta);
-
 NonDBayesCalibration* NonDBayesCalibration::nonDBayesInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
@@ -47,7 +39,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   randomSeed(probDescDB.get_int("method.random_seed")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
-  numHyperparams(0), unifHyperparams(true),
+  numHyperparams(0),
+  invGammaAlphas(probDescDB.get_rv("method.nond.hyperprior_alphas")),
+  invGammaBetas(probDescDB.get_rv("method.nond.hyperprior_betas")),
   adaptPosteriorRefine(
     probDescDB.get_bool("method.nond.adaptive_posterior_refinement")),
   proposalCovarType(
@@ -227,6 +221,36 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     numHyperparams = num_resp_groups;
   else if (obsErrorMultiplierMode == CALIBRATE_BOTH)
     numHyperparams = numExperiments * num_resp_groups;
+
+  // Setup priors distributions on hyper-parameters
+  if ( (invGammaAlphas.length() > 1 && invGammaAlphas.length() != numHyperparams)
+       ||
+       (invGammaAlphas.length() !=  invGammaBetas.length()) ) {
+    Cerr << "\nError: hyperprior_alphas and hyperprior_betas must both have "
+         << "length 1 or number of calibrated\n       error multipliers.\n";
+    abort_handler(PARSE_ERROR);
+  }
+  for (size_t i=0; i<numHyperparams; ++i) {
+    // alpha = (mean/std_dev)^2 + 2
+    // beta = mean*(alpha-1)
+    // default:
+    Real alpha = 102.0; 
+    Real beta = 103.0;  
+    // however chosen to have mode = beta/(alpha+1) = 1.0 (initial point)
+    //   mean = beta/(alpha-1) ~ 1.0
+    //   s.d. ~ 0.1
+    if (invGammaAlphas.length() == 1) {
+      alpha = invGammaAlphas[0];
+      beta = invGammaBetas[0];
+    }
+    else if (invGammaAlphas.length() == numHyperparams) {
+      alpha = invGammaAlphas[i];
+      beta = invGammaBetas[i];
+    }
+    // BMA TODO: could store only one inverse gamma if all parameters the same
+    invGammaDists.
+      push_back(boost::math::inverse_gamma_distribution<>(alpha, beta));
+  }
 
   // -------------------------------------
   // Construct sampler for posterior stats (only in NonDQUESOBayes for now)

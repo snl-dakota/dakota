@@ -262,7 +262,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << preSolveMethod << proposalCovType << proposalCovUpdates
     << proposalCovInputType << proposalCovData << proposalCovFile
     << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateErrorMode << numChains << numCR << crossoverChainPairs
+    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
+    << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile;
@@ -397,7 +398,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> preSolveMethod >> proposalCovType >> proposalCovUpdates
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
     >> fitnessMetricType >> batchSelectionType >> batchSize
-    >> calibrateErrorMode >> numChains >> numCR >> crossoverChainPairs
+    >> calibrateErrorMode  >> hyperPriorAlphas >> hyperPriorBetas
+    >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
     >> dataDistFile;
@@ -532,7 +534,8 @@ void DataMethodRep::write(std::ostream& s) const
     << preSolveMethod << proposalCovType << proposalCovUpdates
     << proposalCovInputType << proposalCovData << proposalCovFile
     << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateErrorMode << numChains << numCR << crossoverChainPairs
+    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
+    << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile;

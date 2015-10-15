@@ -143,13 +143,15 @@ protected:
   /// mode for number of observation error multipliers to calibrate
   /// (default none)
   unsigned short obsErrorMultiplierMode;
-  /// number of hyperparameters augmenting the calibration parameter
-  /// set, e.g., due to calibrate observation error multipliers
+  /// calculated number of hyperparameters augmenting the calibration
+  /// parameter set, e.g., due to calibrate observation error multipliers
   int numHyperparams;
-  /// true for uniform hyper-parameters
-  bool unifHyperparams;
-  /// temporary static distributio for hyper-params
-  static boost::math::inverse_gamma_distribution<> invgammaDist;
+  /// alphas for inverse gamma distribution on hyper-params
+  RealVector invGammaAlphas;
+  /// alphas for inverse gamma distribution on hyper-params
+  RealVector invGammaBetas;
+  /// distributions for hyper-params: BMA TODO: migrate to Pecos RV
+  std::vector<boost::math::inverse_gamma_distribution<> > invGammaDists;
 
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator
@@ -208,17 +210,9 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
     for (size_t i=0; i<numContinuousVars; ++i)
       pdf *= natafTransform.x_pdf(vec[i], i);
 
-  // BMA TODO: include pdf contributions for hyperparams for correctness
-  if (unifHyperparams) {
-    // could omit in uniform case as only results in a scaling...
-    for (size_t i=0; i<numHyperparams; ++i)
-      pdf *= 1/(2.0 - 0.01);
-  }
-  else {
-    // the estimated param is mult^2 ~ invgamma(alpha,beta)
-    for (size_t i=0; i<numHyperparams; ++i)
-      pdf *= boost::math::pdf(invgammaDist, vec[numContinuousVars + i]);
-  }
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    pdf *= boost::math::pdf(invGammaDists[i], vec[numContinuousVars + i]);
 
   return pdf;
 }
@@ -243,18 +237,10 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
       log_pdf += natafTransform.x_log_pdf(vec[i], i);
 
 
-  // BMA TODO: include pdf contributions for hyperparams for correctness
-  if (unifHyperparams) {
-    // could omit in uniform case as only results in a scaling...
-    for (size_t i=0; i<numHyperparams; ++i)
-      log_pdf += std::log(1/(2.0 - 0.01));
-  }
-  else {
-    // the estimated param is mult^2 ~ invgamma(alpha,beta)
-    for (size_t i=0; i<numHyperparams; ++i)
-      log_pdf += std::log(boost::math::pdf(invgammaDist, 
-					   vec[numContinuousVars + i]));
-  }
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    log_pdf += std::log(boost::math::pdf(invGammaDists[i], 
+					 vec[numContinuousVars + i]));
 
   return log_pdf;
 }

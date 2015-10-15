@@ -1432,6 +1432,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nond.data_dist_covariance", P dataDistCovariance},
 	{"nond.data_dist_means", P dataDistMeans},
 	{"nond.dimension_preference", P anisoDimPref},
+	{"nond.hyperprior_alphas", P hyperPriorAlphas},
+	{"nond.hyperprior_betas", P hyperPriorBetas},
 	{"nond.proposal_covariance_data", P proposalCovData},
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},

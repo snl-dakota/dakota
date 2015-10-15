@@ -953,6 +953,10 @@ public:
   String lipschitzType;
   /// calibration mode for observation error multipliers (CALIBRATE_*)
   unsigned short calibrateErrorMode;
+  /// hyperparameters inverse gamma prior alphas
+  RealVector hyperPriorAlphas;
+  /// hyperparameters inverse gamma prior alphas
+  RealVector hyperPriorBetas;
 
   // DREAM sub-specification
 

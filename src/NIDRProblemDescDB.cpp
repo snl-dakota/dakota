@@ -6611,6 +6611,8 @@ static RealVector
 	MP_(dataDistCovariance),
 	MP_(dataDistMeans),
 	MP_(finalPoint),
+	MP_(hyperPriorAlphas),
+	MP_(hyperPriorBetas),
 	MP_(linearEqConstraintCoeffs),
 	MP_(linearEqScales),
 	MP_(linearEqTargets),

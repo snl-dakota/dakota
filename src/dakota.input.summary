@@ -1836,6 +1836,9 @@ KEYWORD12 method
 	    | per_experiment
 	    | per_response
 	    | both
+	    [ hyperprior_alphas REALLIST
+	      hyperprior_betas REALLIST
+	      ]
 	    ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]

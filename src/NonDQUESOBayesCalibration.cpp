@@ -276,12 +276,16 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // calibrating error hyperparams
   proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
   if (numHyperparams > 0) {
-    // all hyperparams utilize uniform priors
-    // BMA TODO: inverse gamma (may not have finite variance)
-    Real uniform_variance_factor = 1.99 * 1.99 / 12.; // uniform on [.01,2.]
-    for (int i=0; i<numHyperparams; ++i)
-      (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
-        uniform_variance_factor;
+    // all hyperparams utilize inverse gamma priors, which may not
+    // have finite variance; use std_dev = 0.05 * mode
+    for (int i=0; i<numHyperparams; ++i) {
+      if (invGammaDists[i].shape() > 2.0)
+        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
+          boost::math::variance(invGammaDists[i]);
+      else
+        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
+          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
+    }
   }
 
   // initialize proposal covariance (must follow parameter domain init)
@@ -1141,9 +1145,11 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     natafTransform.u_bounds() : natafTransform.x_bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  // BMA TODO: fix bounds on inv gamma prior?  DBL_MAX?  Other? Could
+  // use percentiles.
   for (size_t i=0; i<numHyperparams; ++i) {
-    paramMins[numContinuousVars + i] = .01;
-    paramMaxs[numContinuousVars + i] =  2.;
+    paramMins[numContinuousVars + i] = 0.0;
+    paramMaxs[numContinuousVars + i] = std::numeric_limits<Real>::infinity();
   }
   paramDomain.reset(new QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
 		    ("param_", *paramSpace, paramMins, paramMaxs));
@@ -1164,9 +1170,13 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   }
   else // init_pt and param domain in x-space
     copy_gsl_partial(init_pt, *paramInitials, 0);
-  // observation error multipliers always start at 1.0
+
+  // Hyper-parameters: inverse gamma mode is defined for all alpha,
+  // beta. Would prefer to use the mean (or 1.0), but would require
+  // conditional logic (or user control).
   for (size_t i=0; i<numHyperparams; ++i)
-    (*paramInitials)[numContinuousVars + i] = 1.0;
+    (*paramInitials)[numContinuousVars + i] = 
+      boost::math::mode(invGammaDists[i]);
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
@@ -1468,7 +1478,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // print MAP for hyper-parameters (e.g., observation error params)
   for (j=0; j<numHyperparams; ++j)
     s << "                     " << std::setw(wpp7) << qv[numContinuousVars+j] 
-      << ' ' << combined_labels[j] << '\n';
+      << ' ' << combined_labels[numContinuousVars + j] << '\n';
 
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
