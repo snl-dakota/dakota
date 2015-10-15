@@ -115,6 +115,9 @@ enum { TABULAR_NONE = 0, TABULAR_HEADER = 1,
        // default for tabular files is fully annotated as of Dakota 6.1
        TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
 
+/// options for results file format
+enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
+
 #ifdef DAKOTA_MODELCENTER
 extern int mc_ptr_int;
 extern int dc_ptr_int;

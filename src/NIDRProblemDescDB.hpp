@@ -93,6 +93,8 @@ public:
   /// DataVariables members back to flat NIDR arrays if needed.
   static void check_variables(std::list<DataVariables>*);
   static void check_responses(std::list<DataResponses>*);
+  /// Validate user-supplied descriptors
+  static void check_descriptors(const StringArray &labels);
   /// Bounds and initial point check and inferred bounds generation
   static void make_variable_defaults(std::list<DataVariables>*);
   static void make_response_defaults(std::list<DataResponses>*);

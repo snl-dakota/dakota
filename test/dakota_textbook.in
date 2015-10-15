@@ -40,11 +40,13 @@ interface
     analysis_driver =       'text_book'
 #    parameters_file=        'tb.in'    #s1,#s3,#s5,#s7
 #    results_file=           'tb.out'	  #s1,#s3,#s5,#s7
+     labeled                               #s0,#s1,#s2,#s3
 #    file_tag				                    #s3,#s7
 
 responses
   objective_functions = 1
   nonlinear_inequality_constraints = 2
+  descriptors 'f' 'c1' 'c2'
   numerical_gradients
     method_source dakota
     interval_type central

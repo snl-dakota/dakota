@@ -2772,6 +2772,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataInterfaceRep::
     static KW<unsigned short, DataInterfaceRep> UShdi[] = { 
       // must be sorted by string (key)
+	{"application.results_file_format", P resultsFileFormat},
         {"type", P interfaceType}};
     #undef P
 

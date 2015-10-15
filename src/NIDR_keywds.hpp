@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1686 distinct keywords (plus 236 aliases) **/
+/** 1687 distinct keywords (plus 236 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -102,30 +102,31 @@ static KeyWord
 		{"named",11,0,1,0,0,0.,0.,0,N_ifm(str,workDir)},
 		{"replace",8,0,6,0,0,0.,0.,0,N_ifm(true,templateReplace)}
 		},
-	kw_19[9] = {
+	kw_19[10] = {
 		{"allow_existing_results",8,0,3,0,0,0.,0.,0,N_ifm(true,allowExistingResultsFlag)},
 		{"aprepro",8,0,5,0,0,0.,0.,0,N_ifm(true,apreproFlag)},
 		{"dprepro",0,0,5,0,0,0.,0.,-1,N_ifm(true,apreproFlag)},
-		{"file_save",8,0,7,0,0,0.,0.,0,N_ifm(true,fileSaveFlag)},
-		{"file_tag",8,0,6,0,0,0.,0.,0,N_ifm(true,fileTagFlag)},
+		{"file_save",8,0,8,0,0,0.,0.,0,N_ifm(true,fileSaveFlag)},
+		{"file_tag",8,0,7,0,0,0.,0.,0,N_ifm(true,fileTagFlag)},
+		{"labeled",8,0,6,0,0,0.,0.,0,N_ifm(type,resultsFileFormat_LABELED_RESULTS)},
 		{"parameters_file",11,0,1,0,0,0.,0.,0,N_ifm(str,parametersFile)},
 		{"results_file",11,0,2,0,0,0.,0.,0,N_ifm(str,resultsFile)},
 		{"verbatim",8,0,4,0,0,0.,0.,0,N_ifm(true,verbatimFlag)},
-		{"work_directory",8,8,8,0,kw_18,0.,0.,0,N_ifm(true,useWorkdir)}
+		{"work_directory",8,8,9,0,kw_18,0.,0.,0,N_ifm(true,useWorkdir)}
 		},
 	kw_20[12] = {
 		{"analysis_components",15,0,1,0,0,0.,0.,0,N_ifm(str2D,analysisComponents)},
 		{"deactivate",8,4,6,0,kw_14},
 		{"direct",8,1,4,1,kw_15,0.,0.,0,N_ifm(type,interfaceType_TEST_INTERFACE)},
 		{"failure_capture",8,4,5,0,kw_16},
-		{"fork",8,9,4,1,kw_19,0.,0.,0,N_ifm(type,interfaceType_FORK_INTERFACE)},
+		{"fork",8,10,4,1,kw_19,0.,0.,0,N_ifm(type,interfaceType_FORK_INTERFACE)},
 		{"grid",8,0,4,1,0,0.,0.,0,N_ifm(type,interfaceType_GRID_INTERFACE)},
 		{"input_filter",11,0,2,0,0,0.,0.,0,N_ifm(str,inputFilter)},
 		{"matlab",8,0,4,1,0,0.,0.,0,N_ifm(type,interfaceType_MATLAB_INTERFACE)},
 		{"output_filter",11,0,3,0,0,0.,0.,0,N_ifm(str,outputFilter)},
 		{"python",8,1,4,1,kw_17,0.,0.,0,N_ifm(type,interfaceType_PYTHON_INTERFACE)},
 		{"scilab",8,0,4,1,0,0.,0.,0,N_ifm(type,interfaceType_SCILAB_INTERFACE)},
-		{"system",8,9,4,1,kw_19,0.,0.,0,N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
+		{"system",8,10,4,1,kw_19,0.,0.,0,N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
 		},
 	kw_21[2] = {
 		{"master",8,0,1,1,0,0.,0.,0,N_ifm(type,analysisScheduling_MASTER_SCHEDULING)},

@@ -2625,6 +2625,7 @@ KEYWORD12 interface
 	    [ allow_existing_results ]
 	    [ verbatim ]
 	    [ aprepro ALIAS dprepro ]
+	    [ labeled ]
 	    [ file_tag ]
 	    [ file_save ]
 	    [ work_directory

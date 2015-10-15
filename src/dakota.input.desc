@@ -2557,6 +2557,7 @@ TAG "interface/analysis_drivers/system/verbatim"
 TAG "interface/analysis_drivers/system/aprepro"
 	DESC "{Aprepro parameters file format} InterfCommands.html#InterfApplicF"
 
+TAG "interface/analysis_drivers/system/labeled"
 TAG "interface/analysis_drivers/system/file_tag"
 	DESC "{Parameters and results file tagging} InterfCommands.html#InterfApplicF"
 

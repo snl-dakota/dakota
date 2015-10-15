@@ -140,6 +140,8 @@ protected:
   /// flag indicating use of the APREPRO (the Sandia "A PRE PROcessor" utility)
   /// format for parameter files
   bool apreproFlag;
+  /// results file format
+  unsigned short resultsFileFormat;
   /// flag indicating the need for separate parameters files for multiple
   /// analysis drivers
   bool multipleParamsFiles;

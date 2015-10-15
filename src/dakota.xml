@@ -3730,7 +3730,14 @@
             <keyword  id="aprepro" name="aprepro" code="{N_ifm(true,apreproFlag)}" label="aprepro" help="" minOccurs="0" default="standard parameters file format" >
               <alias name="dprepro"/>
             </keyword>
-            <keyword  id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="file_tag" help="" minOccurs="0" default="no tagging" />
+	    
+	    <!-- <keyword id="results_format" name="results_format" code="{0}" label="results_format" help="Expected foramt of results files" minOccurs="0" maxOccurs="1" default="Flexible format">
+		<oneOf>
+                  <keyword id="flexible" name="flexible" code="{N_ifm(type,resultsFileFormat_FLEXIBLE_RESULTS)}" label="flexible" help="Flexible results file format" />-->
+                  <keyword id="labeled" name="labeled" code="{N_ifm(type,resultsFileFormat_LABELED_RESULTS)}" label="labeled" help="Labeled results file format" minOccurs="0" default="Function value labels optional" />
+		  <!-- </oneOf>
+	    </keyword>-->
+	    <keyword  id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="file_tag" help="" minOccurs="0" default="no tagging" />
             <keyword  id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="file_save" help="" minOccurs="0" default="file cleanup" />
             <keyword  id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="work_directory" help="" minOccurs="0" default="no work directory" >
               <keyword  id="named" name="named" code="{N_ifm(str,workDir)}" label="named" help="" minOccurs="0" default="workdir" >

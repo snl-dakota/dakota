@@ -134,6 +134,8 @@ public:
   /// system call and fork interfaces (from the \c aprepro
   /// specification in \ref InterfApplicSC and \ref InterfApplicF)
   bool apreproFlag;
+  /// Expected format of results file
+  unsigned short resultsFileFormat;
   /// flag for file tagging of parameters and results files for
   /// system call and fork interfaces (from the \c file_tag
   /// specification in \ref InterfApplicSC and \ref InterfApplicF)

@@ -18,6 +18,7 @@
 #include <boost/functional/hash/hash.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <algorithm>
 
 
@@ -1083,5 +1084,12 @@ inline bool contains(const DakContainerType& v,
 
 
 } // namespace Dakota
+
+/// return true if the string contains a floating point value
+inline bool isfloat(const Dakota::String token) {
+  static boost::regex float_regex("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff](?:[Ii][Nn][Ii][Tt][Yy])?");
+  return boost::regex_match(token, float_regex);
+}
+
 
 #endif // DATA_UTIL_H

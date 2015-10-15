@@ -1691,6 +1691,14 @@ void NIDRProblemDescDB::
 check_responses(std::list<DataResponses>* drl)
 {
   // TO DO: move Schk from below?
+
+  // validate descriptors. The string arrays are empty unless the user
+  // explicitly set descriptors.
+  std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
+  for(; It != Ite; ++It) {
+    const DataResponsesRep* drr = It->data_rep();
+    check_descriptors(drr->responseLabels);
+  }
 }
 
 
@@ -6035,6 +6043,27 @@ static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma,
 
 
 void NIDRProblemDescDB::
+check_descriptors(const StringArray& labels) {
+  StringArray::const_iterator li = labels.begin();
+  String::const_iterator si;
+  for(; li != labels.end(); ++li) {
+    // error if descriptor contains whitespace
+    for(si = li->begin(); si != li->end(); ++si) {
+      if(isspace(*si)) {
+        Squawk("Descriptor \"%s\" is invalid: whitespace not permitted", 
+              li->c_str());
+        break;
+      }
+    }
+    if(isfloat(*li)) {
+      Squawk("Descriptor \"%s\" is invalid: floating point numbers not permitted",
+          li->c_str());
+    }
+  }
+}
+
+
+void NIDRProblemDescDB::
 check_variables(std::list<DataVariables>* dvl)
 {
   // BMA: If parse was called, then the Var_Info objects have already
@@ -6043,6 +6072,32 @@ check_variables(std::list<DataVariables>* dvl)
   // back to the flat Var_Info structures.  Not sure if this correctly
   // captures the case where a parse is followed by a DB update of an
   // input keyword not accounted for below
+
+
+  // validate descriptors. The string arrays are empty unless the user
+  // explicitly set descriptors.
+  std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
+  for(; It != Ite; ++It) {
+    const DataVariablesRep* dvr = It->data_rep();
+    check_descriptors(dvr->continuousDesignLabels);
+    check_descriptors(dvr->discreteDesignRangeLabels);
+    check_descriptors(dvr->discreteDesignSetIntLabels);
+    check_descriptors(dvr->discreteDesignSetStrLabels);
+    check_descriptors(dvr->discreteDesignSetRealLabels);
+    check_descriptors(dvr->continuousStateLabels);
+    check_descriptors(dvr->discreteStateRangeLabels);
+    check_descriptors(dvr->discreteStateSetIntLabels);
+    check_descriptors(dvr->discreteStateSetStrLabels);
+    check_descriptors(dvr->discreteStateSetRealLabels);
+    check_descriptors(dvr->continuousAleatoryUncLabels);
+    check_descriptors(dvr->discreteIntAleatoryUncLabels);
+    check_descriptors(dvr->discreteStrAleatoryUncLabels);
+    check_descriptors(dvr->discreteRealAleatoryUncLabels);
+    check_descriptors(dvr->continuousEpistemicUncLabels);
+    check_descriptors(dvr->discreteIntEpistemicUncLabels);
+    check_descriptors(dvr->discreteStrEpistemicUncLabels);
+    check_descriptors(dvr->discreteRealEpistemicUncLabels);
+  }
 
   if (pDDBInstance) {
     std::list<void*>::iterator It, Ite = pDDBInstance->VIL.end();
@@ -6372,7 +6427,9 @@ static Iface_mp_utype
 	MP2s(interfaceType,MATLAB_INTERFACE),
 	MP2s(interfaceType,PYTHON_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
-	MP2s(interfaceType,SYSTEM_INTERFACE);
+	MP2s(interfaceType,SYSTEM_INTERFACE),
+	//MP2s(resultsFileFormat,FLEXIBLE_RESULTS), // re-enable when more formats added?
+	MP2s(resultsFileFormat,LABELED_RESULTS);
 
 static String
 	MP_(algebraicMappings),

@@ -97,6 +97,7 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   fileSaveFlag(problem_db.get_bool("interface.application.file_save")),
   commandLineArgs(!problem_db.get_bool("interface.application.verbatim")),
   apreproFlag(problem_db.get_bool("interface.application.aprepro")),
+  resultsFileFormat(problem_db.get_ushort("interface.application.results_file_format")),
   multipleParamsFiles(false),
   iFilterName(problem_db.get_string("interface.application.input_filter")),
   oFilterName(problem_db.get_string("interface.application.output_filter")),
@@ -222,7 +223,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     // a FileReadException means detection of an incomplete file/data
     // set.  In the synchronous case, there is no potential for an incomplete 
     // file resulting from a race condition -> echo the error and abort.
-    Cerr << "\nError reading results file:\n  " << fr_except.what() << std::endl;
+    Cerr << fr_except.what() << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -608,7 +609,6 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
   // filter is used, then it has the responsibility to perform the overlay and
   // map results.out.[eval#].[1->num_programs] to results.out.[eval#].  If no
   // output filter is used, then perform the overlay here.
-
   size_t num_programs = programNames.size();
   if (num_programs > 1 && oFilterName.empty()) {
     response.reset();
@@ -623,7 +623,15 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
 	     << std::endl;
 	abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
       }
-      recovery_stream >> partial_response;
+      try {
+        partial_response.read(recovery_stream,resultsFileFormat);
+        //recovery_stream >> partial_response;
+      }
+      catch(const FileReadException& fr_except) {
+        throw FileReadException("Error(s) in results file " + 
+            prog_tagged_results.string() + " for evaluation " + 
+            boost::lexical_cast<std::string>(id) + ":\n" + fr_except.what());
+      }
       response.overlay(partial_response);
     }
   }
@@ -634,7 +642,15 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
 	   << std::endl;
       abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
     }
-    recovery_stream >> response;
+    try {
+      response.read(recovery_stream,resultsFileFormat);
+      //recovery_stream >> response;
+    }
+    catch(const FileReadException& fr_except) {
+        throw FileReadException("Error(s) encountered reading results file " +
+           results_path.string() + " for Evaluation " + 
+           boost::lexical_cast<std::string>(id) + ":\n" + fr_except.what()); 
+    }
   }
 
   // remove the workdir if in the map and we're not saving

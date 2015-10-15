@@ -20,7 +20,7 @@ namespace Dakota {
 DataInterfaceRep::DataInterfaceRep():
   interfaceType(DEFAULT_INTERFACE),
   allowExistingResultsFlag(false), verbatimFlag(false), apreproFlag(false),
-  fileTagFlag(false), fileSaveFlag(false),
+  resultsFileFormat(FLEXIBLE_RESULTS), fileTagFlag(false), fileSaveFlag(false),
   interfaceSynchronization(SYNCHRONOUS_INTERFACE),
   asynchLocalEvalConcurrency(0), asynchLocalEvalScheduling(DEFAULT_SCHEDULING),
   asynchLocalAnalysisConcurrency(0), evalServers(0),
@@ -42,7 +42,7 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
     << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
+    << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
     << interfaceSynchronization << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers
@@ -59,7 +59,7 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
   s >> idInterface >> interfaceType >> algebraicMappings >> analysisDrivers
     >> analysisComponents >> inputFilter >> outputFilter >> parametersFile
     >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag >> apreproFlag 
-    >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
+    >> resultsFileFormat >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
     >> interfaceSynchronization >> asynchLocalEvalConcurrency
     >> asynchLocalEvalScheduling >> asynchLocalAnalysisConcurrency
     >> evalServers >> evalScheduling >> procsPerEval >> analysisServers
@@ -76,7 +76,7 @@ void DataInterfaceRep::write(std::ostream& s) const
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
     << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
+    << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
     << interfaceSynchronization << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers

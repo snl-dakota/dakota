@@ -62,7 +62,7 @@ process_local_evaluation(PRPQueue& prp_queue, const pid_t pid)
     // For forks, there is no potential for an file write race
     // condition since the process has completed -> an exception
     // involving an incomplete file/data set is a true error.
-    Cerr << "\nError reading results file:\n  " << fr_except.what() << std::endl;
+    Cerr << fr_except.what() << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 

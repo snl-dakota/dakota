@@ -19,7 +19,6 @@
 #include "DakotaActiveSet.hpp"
 #include "SharedResponseData.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include <boost/regex.hpp>
 
 namespace Dakota {
 
@@ -206,8 +205,9 @@ public:
   /// unrolled labels available through function_labels()
   const StringArray& field_group_labels();
 
-  /// read a response object from an std::istream
-  void read(std::istream& s);
+  /// read a response object of specified format from an std::istream 
+  void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
+ 
   /// write a response object to an std::ostream
   void write(std::ostream& s) const;
 
@@ -424,6 +424,35 @@ private:
   /// resizes the representation's containers
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
 		   bool hess_flag);
+
+  /// Read gradients from a freeform stream. Insert error messages
+  // into errors stream.
+  void read_gradients(std::istream& s, const ShortArray &asv, 
+      std::ostringstream &error);
+
+  /// Read Hessians from a freeform stream. Insert error messages
+  // into errors stream.
+  void read_hessians(std::istream& s, const ShortArray &asv,
+       std::ostringstream &error);
+
+  /// Read function values from an annotated stream. Insert error messages
+  // into errors stream. 
+  void read_labeled_fn_vals(std::istream &s, const ShortArray &asv,
+      std::ostringstream &errors);
+
+  /// Read function values from a stream in a "flexible" way -- ignoring 
+  /// any labels. Insert error messages into errors stream.
+  void read_flexible_fn_vals(std::istream &s, const ShortArray &asv,
+      std::ostringstream &errors);
+
+/*  /// Read function values from a freeform stream. Insert error messages
+  // into errors stream.
+  void read_freeform_fn_vals(std::istream& s, const ShortArray &asv, 
+      std::ostringstream &error);
+*/
+
+  /// Check for FAIL in stream
+  bool failure_reported(std::istream &s);
 
   //
   //- Heading: Private data members
@@ -894,17 +923,6 @@ inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Response& response)
 /// inequality operator for Response
 inline bool operator!=(const Response& resp1, const Response& resp2)
 { return !(resp1 == resp2); }
-
-
-/// Global utility function to ease migration from CtelRegExp to Boost.Regex
-inline std::string re_match(const std::string& token, const boost::regex& re)
-{
-  std::string str_match;
-  boost::smatch found_substr;
-  if( boost::regex_search(token, found_substr, re) )
-    str_match = std::string(found_substr[0].first, found_substr[0].second);
-  return str_match;
-}
 
 } // namespace Dakota
 

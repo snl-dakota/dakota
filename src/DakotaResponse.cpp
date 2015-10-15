@@ -19,7 +19,7 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
 #include <algorithm>
-#include <boost/regex.hpp>
+#include <sstream>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -475,13 +475,6 @@ void Response::copy_rep(Response* source_resp_rep)
 // is present in asv[i] (the "== value" can be omitted so long as only the
 // presence of a single bit is of interest).
 
-// Matrix sizing: since fn gradients and hessians are of size 0 if their type is
-// "none", all grad loops are run from 0 to num rows and all Hessian loops are
-// run from 0 to num hessians, rather than from 0 to num_fns.  For the number
-// of derivative variables, the length of responseActiveSet.derivative_vector()
-// is used rather than the array sizes since the matrices are originally sized
-// according to the maximal case and all entries may not be used.
-
 // When creating functionGradients/functionHessians on the fly in read() input
 // functions, grad_flag/hess_flag are used rather than inferring sizes from
 // responseActiveSet since it is safer to match the sizing of the response
@@ -494,149 +487,382 @@ void Response::copy_rep(Response* source_resp_rep)
 /** ASCII version of read needs capabilities for capturing data omissions or
     formatting errors (resulting from user error or asynch race condition) and
     analysis failures (resulting from nonconvergence, instability, etc.). */
-void Response::read(std::istream& s)
+void Response::read(std::istream& s, const unsigned short format)
 {
   // if envelope, forward to letter
   if (responseRep)
-    { responseRep->read(s); return; }
+    { responseRep->read(s,format); return; }
 
-  // Failure capturing:
-  // The read operator detects analysis failure through reading a failure 
-  // string returned by the user's output_filter/analysis_driver.  This string
-  // must occur at the beginning of the file, even if some portion of the 
-  // results were successfully computed prior to failure.  Other mechanisms for
-  // denoting analysis failure that were considered included (1) use of an 
-  // empty file (disadvantage: ambiguity with asynch race condition) and (2) 
-  // use of a success/fail string (disadvantage: would require addition of 
-  // "success" field to non-failure output).  The current approach avoids these
-  // problems by doing a read of 4 characters.  If these characters are not 
-  // "fail" or "FAIL" then it resets the stream pointer to the beginning.  This
-  // works for ifstreams, but may be problematic for other istreams.  Once 
-  // failure is detected, a FunctionEvalFailure is thrown (to distinguish 
-  // from FileReadExceptions) that will be caught after try{ execute() }.
-  // NOTE: s.peek() triggering on 'f' or 'F' would be another possibility.
-  // NOTE: reading the first token using "s >> fail_string;" should work for a
-  //       file having less than four characters.
-  size_t i, j, k;
-  bool failure_detected = true;
-  char fail_chars[4] = {0,0,0,0};
-  std::string fail_string("fail");
-  // Old version failed for fewer than 4 characters in results file:
-  //s >> fail_chars[0] >> fail_chars[1] >> fail_chars[2] >> fail_chars[3];
-  for (i=0; i<4; i++) {
-    s >> fail_chars[i];
-    //Cout << "fail_char[" << i << "] = " << fail_chars[i] << std::endl;
-    if (tolower(fail_chars[i]) != fail_string[i]) { // FAIL, Fail, fail, etc.
-      failure_detected = false; // No failure communicated from results file 
-      s.seekg(0); // Reset stream to beginning
-      break; // exit for loop
-    }
-  }
-  if (failure_detected) {
-    std::string failure_message = "Failure captured with string = ";
-    failure_message += fail_chars;
-    //Cerr << failure_message << std::endl;
-    throw FunctionEvalFailure(failure_message);
-  }
-
+  // If a failure is detected, throw an error
+  if (failure_reported(s)) 
+    throw FunctionEvalFailure(String("Failure captured"));
+  
   // Destroy old values and set to zero (so that else assignments are not needed
   // below). The arrays have been properly sized by the Response constructor.
   reset();
-
-  // Get fn. values as governed by ASV requests
-  std::string token;
-  boost::regex reg_exp("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|-?[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff]([Ii][Nn][Ii][Tt][Yy])?");
+  
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t nf = asv.size();
-  for (i=0; i<nf; i++) {
-    if (asv[i] & 1) { // & 1 masks off 2nd and 3rd bit
-      if (s) { // get value
-	s >> token;
-	// On RHEL 4, strtod preserves Inf/NaN, but atof doesn't
-	//Cout << "Debug read: token = " << token << '\n';
-	//Cout << "Debug read: atof of token = " << atof(token) << '\n';
-	//Cout << "Debug read: strtod of token = " << strtod(token, NULL)<<'\n';
-	// On error, atof returns 0.0. Must verify token is a number.
-	if(token == re_match(token, reg_exp))
-	  functionValues[i] = std::atof(token.c_str());// handles NaN and +/-Inf
-	else
-	  throw ResultsFileError( "Response format error with functionValue "
-				  + boost::lexical_cast<std::string>(i+1) );
-      }
-      else
-        throw ResultsFileError( "At EOF: insufficient data for functionValue "
-				+ boost::lexical_cast<std::string>(i+1) );
+  std::ostringstream errors; // all helper funcs can append messages to errors
+  switch(format) { // future formats go here
+    case FLEXIBLE_RESULTS:
+      read_flexible_fn_vals(s, asv, errors);
+      break;
+    case LABELED_RESULTS:
+      read_labeled_fn_vals(s, asv, errors);
+      break;
+  }
+  read_gradients(s, asv, errors);
+  read_hessians(s, asv, errors);
 
-      if (s) { // get optional tag
-	//s.ignore(256, '\n'); // simple soln., but requires consistent '\n'
-        int pos = s.tellg(); // save stream pos prior to token extraction
-        s >> token; // get next field (may be a tag or a number)
-        // Check to see if token matches the pattern (see CtelRegExp class docs)
-	// of a numerical value (including +/-Inf and NaN) or of the beginning
-	// of a gradient/Hessian block.  If it does, then rewind the stream.
-        if ( !token.empty() &&
-	     ( token[(size_t)0]=='[' || token == re_match(token, reg_exp) ) )
-          s.seekg(pos); // token is not a tag, rewind
-        // else field was properly extracted as a tag
-      }
+  if(!errors.str().empty())
+    throw ResultsFileError(errors.str());
+}
+
+
+void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv, 
+          std::ostringstream &errors) {
+  const StringArray fn_labels = sharedRespData.function_labels();
+  const size_t nf = asv.size();
+  // "metadata" for each expected response. First item is the index
+  // in asv; second item is whether response has been encountered in s
+  typedef std::pair<size_t, bool> Rmeta;
+  // Initialize map of expected_responses and their metadata 
+  std::map<String,Rmeta> expected_responses;
+  for(size_t i=0; i<nf; ++i) {
+    if(asv[i] & 1)
+      expected_responses[fn_labels[i]] = Rmeta(i, false);
+  }
+  // Use std::map.find() to learn whether a token extracted from s is an
+  // expected label. find() returns an iterator to the first matching item.
+  // If no match was found, the iterator refers to the end.
+  std::map<String,Rmeta>::const_iterator ere = expected_responses.end();
+  // lists of responses for which there were errors
+  StringArray missing_values, repeated_labels, missing_responses;
+  // max asv index encountered so far. bookkeeping to detect out-of-order
+  // responses
+  size_t max_index = 0;
+  bool out_of_order = false; // error flag for out of order responses
+  size_t num_found = 0; //number of resps found, used only for error reporting
+  size_t pos1, pos2;
+  String token1, token2;
+  pos1 = s.tellg();
+  s >> token1;
+  pos2 = s.tellg();
+  s >> token2;
+  // Extract pairs of tokens. 
+  // o If the first token is a floating point value and the second is an
+  //   expected label then record the value
+  // o If the first token matches the label of an expected response, then
+  //   record a "missing value" error.
+  // o Otherwise, there is some unhandled formatting issue. Throw an
+  //   exception.
+  while(!token1.empty() && token1[0] != '[') { //loop until EOF or gradient found
+    if(isfloat(token1) &&  
+                expected_responses.find(token2) != ere) { //valid format
+      if(expected_responses[token2].second)
+        repeated_labels.push_back("\"" + token2 + "\"");
+      if(expected_responses[token2].first < max_index) 
+        out_of_order = true;
+      else
+        max_index = expected_responses[token2].first;
+      expected_responses[token2].second = true;
+      num_found++;
+      functionValues[expected_responses[token2].first] =
+        std::atof(token1.c_str());
+      token1.clear(); token2.clear();
+      pos1 = s.tellg();
+      s >> token1;
+      pos2 = s.tellg();
+      s >> token2;
+    } else if(expected_responses.find(token1) != ere) { // missing value
+      missing_values.push_back("\"" + token1 + "\"");
+      if(expected_responses[token1].second) // may also be repeated label
+        repeated_labels.push_back("\"" + token1 + "\"");
+      if(expected_responses[token1].first < max_index) // also check for order
+        out_of_order = true;
+      else
+        max_index = expected_responses[token1].first;
+      expected_responses[token1].second = true;
+      num_found++;
+      // read the next token
+      pos1 = pos2;
+      token1 = token2;
+      pos2 = s.tellg();
+      token2.clear();
+      s >> token2;
+    } else { // unrecognized format problem
+      throw ResultsFileError("Unexpected data found after reading " 
+          + boost::lexical_cast<String>(num_found) + " function value(s).");
     }
   }
+  s.seekg(pos1); //rewind to (potentially) before [
+  // Any responses missing?
+  for(std::map<String,Rmeta>::iterator mi = expected_responses.begin();
+      mi != expected_responses.end(); ++mi) {
+    if(!mi->second.second)
+      missing_responses.push_back("\"" + mi->first + "\"");
+  }
+  // Add error messages to errors as needed
+  if(out_of_order) {
+    errors << "-- Function values were not in the expected order.";
+  }
+  if(!missing_responses.empty()) {
+    errors << "-- Missing function value(s): ";
+    std::copy(missing_responses.begin(), missing_responses.end()-1,
+              std::ostream_iterator<String>(errors,", "));
+    errors << missing_responses.back() << ".";
+  }
+  if(!missing_values.empty()) {
+    if(!errors.str().empty()) errors << "\n";
+    errors << "-- Function value label(s) with missing result(s): ";
+    std::copy(missing_values.begin(), missing_values.end()-1,
+              std::ostream_iterator<String>(errors,", "));
+    errors << missing_values.back() << ".";
+  }
+  if(!repeated_labels.empty()) {
+    if(!errors.str().empty()) errors << "\n";
+    errors << "-- Function values appearing more than once: ";
+    std::copy(repeated_labels.begin(), repeated_labels.end()-1,
+              std::ostream_iterator<String>(errors,", "));
+    errors << repeated_labels.back() << ".";
+  }
+}
+
+
+void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv, 
+          std::ostringstream &errors) {
+  String token1, token2;
+  size_t pos1, pos2;
+  size_t nf = asv.size();
+  size_t num_expected = 0, num_found = 0;
+  for(size_t i=0; i<nf; ++i) // count the requested responses for error checking
+    if(asv[i] & 1) ++num_expected;
+
+  size_t asv_idx = 0; //functionValues/asv index; advanced as fn vals are stored
+  pos1 = s.tellg();
+  s >> token1;
+  pos2 = s.tellg();
+  s >> token2;
+  // Keep reading until we run out of function values, indicated by empty token
+  // or '['. Two tokens must be read to get the value and (potentially) the label.
+  while(!token1.empty() && token1[0] != '[') {
+    // Advance asv_idx to index of the next requested fn val.
+    while(asv_idx < nf && !(asv[asv_idx] & 1)) asv_idx++;
+
+    if(isfloat(token1)) {
+      ++num_found;
+      if(num_found <= num_expected)
+        functionValues[asv_idx] = std::atof(token1.c_str());
+    } else {
+      throw ResultsFileError("Item \"" + token1 + "\" found while reading "
+          "function values is not a valid floating point number.");
+    }
+    if(!token2.empty() && (isfloat(token2) || token2[0] == '[')) {
+        token1=token2;
+        pos1 = pos2;
+        pos2 = s.tellg();
+        token2.clear();
+        s >> token2;
+    } else { // token2 contains a label
+      token1.clear(); token2.clear();
+      pos1 = s.tellg();
+      s >> token1;
+      pos2 = s.tellg();
+      s >> token2;
+    }
+    asv_idx++; // not necessary once asv_idx >= nf, but harmless
+  }
+  s.seekg(pos1); // rewind to just before the [. If EOF was set,
+                 // future reads will still "fail".
+  // Report an error if needed
+  if(num_found != num_expected) {
+    if(!errors.str().empty())
+        errors << "\n";
+    errors << "-- Expected " << num_expected << " function values but found " 
+      << num_found << ".";
+  }
+}
+
+/*void Response::read_freeform_fn_vals(std::istream& s, const ShortArray &asv, 
+          std::ostringstream &errors) {
+  String token;
+  size_t pos;
+  size_t nf = asv.size();
+  size_t num_expected = 0, num_found = 0;
+  for(size_t i=0; i<nf; ++i) // count the requested responses for error checking
+    if(asv[i] & 1) ++num_expected;
+
+  size_t asv_idx = 0;
+  pos = s.tellg();
+  s >> token;
+  // Keep reading until we run out of file or encounter [. Determine the
+  // actual number of response values in the file; if this is more or less
+  // than what was expected, report as an error.
+  while(!token.empty() && token[0] != '[') {
+    // Advance asv_idx to index of the next requested fn val.
+    while(asv_idx < nf && !(asv[asv_idx] & 1)) asv_idx++;
+
+    if(isfloat(token)) {
+      ++num_found;
+      if(num_found <= num_expected)
+        functionValues[asv_idx] = std::atof(token.c_str());
+    } else {
+      throw ResultsFileError("Item \"" + token + "\" found while reading "
+          "function values does not appear to be a valid floating point "
+          "number.");
+    }
+    asv_idx++; // no longer necessary once asv_idx >= nf
+    pos = s.tellg();
+    token.clear();
+    s >> token;
+  }
+  s.seekg(pos); // rewind to just before the [
+  // Report an error if needed
+  if(num_found != num_expected) {
+    if(!errors.str().empty())
+        errors << "\n";
+    errors << "-- Expected " << num_expected << " function values but found " 
+      << num_found << ".";
+  }
+}
+*/
+void Response::read_gradients(std::istream& s, const ShortArray &asv, 
+          std::ostringstream &errors) {
+  size_t nf = asv.size();
+  size_t num_expected = 0, num_found = 0;
+  for(size_t i=0; i<nf; ++i)
+    if(asv[i] & 2) ++num_expected;
 
   // Get function gradients as governed by ASV requests
   // For brackets, chars are used rather than token strings to allow optional
   // white space between brackets and values.
-  char l_bracket, r_bracket; // eat white space and grab 1 character
-  size_t ng = functionGradients.numCols(), nv = functionGradients.numRows();
-  for (i=0; i<ng; ++i) { // prevent loop if functionGradients not sized
-    if (asv[i] & 2) { // & 2 masks off 1st and 3rd bit
-      if (s)
-        s >> l_bracket;
-      else
-        throw ResultsFileError( "At EOF: insufficient data for functionGradient "
-				+ boost::lexical_cast<std::string>(i+1) );
 
-      read_col_vector_trans(s, (int)i, functionGradients); // fault tolerant
-
-      if (s)
-        s >> r_bracket;
-      else {
-        throw ResultsFileError( "At EOF: insufficient data for functionGradient "
-				+ boost::lexical_cast<std::string>(i+1) );
-      }
-      if (l_bracket != '[' || r_bracket != ']') {
-        throw ResultsFileError( "Response format error with functionGradient "
-				+ boost::lexical_cast<std::string>(i+1) );
-      }
+  // s is expected to be either at eof or pointing at [.
+  char l_bracket1 = '\0', l_bracket2 = '\0', r_bracket = '\0';
+  size_t pos1, pos2;
+  size_t asv_idx = 0;
+  pos1 = s.tellg();
+  s >> l_bracket1;
+  pos2 = s.tellg();
+  s >> l_bracket2;
+  // Keep reading until we run out of file or encounter a hessian. Determine 
+  // the actual number of gradients in the file; if this is more or less
+  // than what was expected, report as an error.
+ 
+  while(l_bracket1 == '[' && l_bracket2 != '[') {
+    s.seekg(pos2);
+    while(asv_idx < nf && !(asv[asv_idx] & 2)) asv_idx++;
+    num_found++;
+    if(num_found <= num_expected) {
+      read_col_vector_trans(s, (int)asv_idx, functionGradients); // fault tolerant
+    } else { // get and discard 
+      s.ignore(std::numeric_limits<int>::max(),']');
+      s.putback(']'); // doesn't clear EOF
     }
+    r_bracket = '\0';
+    s >> r_bracket;
+    if(r_bracket != ']') {
+      throw ResultsFileError("Closing bracket ']' not found in " 
+          "expected position for function gradient "
+          + boost::lexical_cast<std::string>(num_found) + ".");
+    }
+    asv_idx++;
+    l_bracket1 = '\0'; l_bracket2 = '\0';
+    pos1 = s.tellg();
+    s >> l_bracket1;
+    pos2 = s.tellg();
+    s >> l_bracket2;
+  }
+  s.seekg(pos1);
+  // l_bracket1 and 2 are expected to both contain [ (start of hessian) or  \0 
+  // (eof). If they don't, there was unexpected junk following the last 
+  // gradient. The case of no gradients + unexpected junk following the last 
+  // fn val is handled by the fn val reading functions.
+  if( ! ((l_bracket1 == '[' && l_bracket2 == '[') ||
+         (l_bracket1 == '\0' && l_bracket2 == '\0') ) ) { 
+    throw ResultsFileError("Unexpected data found after reading "
+       + boost::lexical_cast<std::string>(num_found) + " function gradient(s).");
   }
 
-  // Get function Hessians as governed by ASV requests
-  char l_brackets[2], r_brackets[2]; // eat white space and grab 2 characters
-  size_t nh = functionHessians.size();
-  for (i=0; i<nh; i++) { // prevent loop if functionHessians not sized
-    if (asv[i] & 4) { // & 4 masks off 1st and 2nd bit
-      if (s)
-        s >> l_brackets[0] >> l_brackets[1];
-      else
-        throw ResultsFileError( "At EOF: insufficient data for functionHessian "
-				+ boost::lexical_cast<std::string>(i+1) );
-
-      Dakota::read_data(s, functionHessians[i]); // fault tolerant
-
-      if (s)
-        s >> r_brackets[0] >> r_brackets[1];
-      else {
-        throw ResultsFileError( "At EOF: insufficient data for functionHessian "
-				+ boost::lexical_cast<std::string>(i+1) );
-      }
-      if ((l_brackets[0] != '[' || l_brackets[1] != '[')  ||
-	  (r_brackets[0] != ']' || r_brackets[1] != ']')) {
-        throw ResultsFileError( "Response format error with functionHessian "
-				+ boost::lexical_cast<std::string>(i+1) );
-      }
-    }
+  // Report an error if needed
+  if(num_found != num_expected) {
+    if(!errors.str().empty())
+        errors << "\n";
+    errors << "Expected " << num_expected << " gradients but found " 
+      << num_found << ".";
   }
 }
+
+void Response::read_hessians(std::istream& s, const ShortArray &asv, 
+          std::ostringstream &errors) {
+  size_t nf = asv.size();
+  size_t num_expected = 0, num_found = 0;
+  for(size_t i=0; i<nf; ++i)
+    if(asv[i] & 4) ++num_expected;
+
+  // Get function gradients as governed by ASV requests
+  // For brackets, chars are used rather than token strings to allow optional
+  // white space between brackets and values.
+
+  // s is expected to be either at eof or pointing at [.
+  
+  char l_bracket[2] = {'\0','\0'};
+  char r_bracket[2] = {'\0','\0'};
+  size_t asv_idx = 0;
+  s >> l_bracket[0] >> l_bracket[1];
+  // Keep reading until we run out of Hessians 
+  while(l_bracket[0]  == '[' && l_bracket[1] == '[') {
+    // advance asv_idx to the next response for which Hessian is required
+    while(asv_idx < nf && !(asv[asv_idx] & 4)) asv_idx++;
+    num_found++;
+    if(num_found <= num_expected) {
+      Dakota::read_data(s, functionHessians[asv_idx]); // fault tolerant
+    } else { // get and discard 
+      s.ignore(std::numeric_limits<int>::max(),']');
+      s.putback(']');
+    }
+    r_bracket[0] = '\0'; r_bracket[1] = '\0';
+    s >> r_bracket[0] >> r_bracket[1];
+    if( !(r_bracket[0] == ']' && r_bracket[1] == ']') ) {
+      throw ResultsFileError("Closing brackets ']]' not found in expected "
+          "position for function Hessian "
+          + boost::lexical_cast<std::string>(num_found) + "." );
+    }
+    asv_idx++;
+    l_bracket[0] = '\0'; l_bracket[1] = '\0';
+    s >> l_bracket[0] >> l_bracket[1];
+  }
+  if(l_bracket[0] != '\0')
+    throw ResultsFileError("Unexpected data found after reading " 
+       + boost::lexical_cast<std::string>(num_found) + " function Hessian(s).");
+
+  // Report an error if needed
+  if(num_found != num_expected) {
+    if(!errors.str().empty())
+        errors << "\n";
+    errors << "Expected " << num_expected << " Hessians but found " 
+      << num_found << ".";
+  }
+}
+
+
+bool Response::failure_reported(std::istream& s) {
+  char fail_char;
+  std::string fail_string("fail");
+  s >> fail_char; // advance to first char
+  if(s)
+    s.putback(fail_char);
+  for (size_t i=0; i<4; i++) {
+    fail_char = '\0';
+    s.get(fail_char);
+    if (tolower(fail_char) != fail_string[i]) { // FAIL, Fail, fail, etc.
+      s.seekg(0); // Reset stream to beginning
+      return false; // exit for loop
+    }
+  }
+  return true;
+}
+ 
 
 
 /** ASCII version of write. */

@@ -13,6 +13,7 @@
 #ifndef DAKOTA_GRAPHICS_H
 #define DAKOTA_GRAPHICS_H
 
+#include <boost/regex.hpp>
 #include "dakota_system_defs.hpp"
 
 #ifdef HAVE_X_GRAPHICS
@@ -77,6 +78,16 @@ private:
   //bool win3dOn; // flag to indicate if 3D graphics window is active
 
 };
+
+/// Global utility function to ease migration from CtelRegExp to Boost.Regex
+inline std::string re_match(const std::string& token, const boost::regex& re)
+{
+  std::string str_match;
+  boost::smatch found_substr;
+  if( boost::regex_search(token, found_substr, re) )
+    str_match = std::string(found_substr[0].first, found_substr[0].second);
+  return str_match;
+}
 
 
 } // namespace Dakota
