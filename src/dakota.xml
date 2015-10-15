@@ -582,6 +582,7 @@
               </keyword>
               &default_convergence_tolerance;
               &default_max_iterations;
+              &default_linear_constraints;
             </required>
             <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
               &default_convergence_tolerance;
@@ -756,6 +757,7 @@
                     </keyword>
                   </keyword>
                   &default_max_iterations;
+                  &default_linear_constraints;
                 </keyword>
                 <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga" help="" minOccurs="1" group="Optimization: Global" >
                   <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="merit_function">
@@ -793,6 +795,7 @@
                     </oneOf>
                   </keyword>
                   &default_max_iterations;
+                  &default_linear_constraints;
                 </keyword>
               </oneOf>
               <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >

@@ -305,6 +305,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+      [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+      [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+      [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+      [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+      [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+      [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+      [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+      [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
      )
     |
     ( nlpql_sqp {N_mdm(utype,methodName_NLPQL_SQP)}
@@ -456,6 +465,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           orthogonal_distance REALLIST {N_mdm(RealLlit,TYPE_DATA_postProcessorType_distance_postprocessor)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       |
       ( soga {N_mdm(utype,methodName_SOGA)}
@@ -484,6 +502,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            )
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       [ population_size INTEGER >= 0 {N_mdm(nnint,populationSize)} ]
       [ log_file STRING {N_mdm(str,logFile)} ]
