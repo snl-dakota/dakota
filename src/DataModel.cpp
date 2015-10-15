@@ -21,7 +21,7 @@ DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),
-  modelExportPrefix("exported_surrogated"), modelExportFormat(NO_MODEL_FORMAT),
+  modelExportPrefix("exported_surrogate"), modelExportFormat(NO_MODEL_FORMAT),
   importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
