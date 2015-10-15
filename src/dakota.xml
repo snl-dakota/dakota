@@ -540,6 +540,7 @@
                   </oneOf>
                   &default_max_iterations;
                   &default_convergence_tolerance;
+                  &default_linear_constraints;
                 </required>
                 <required>
                   <oneOf label="OPT method">
@@ -554,10 +555,12 @@
                   </oneOf>
                   &default_max_iterations;
                   &default_convergence_tolerance;
+                  &default_linear_constraints;
                 </required>
                 <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
 		  <!-- store method name AND incoming STRING -->
                   <param type="STRING" />
+                  &default_linear_constraints;
                 </keyword>
                 <required>
                   <oneOf>
@@ -584,6 +587,7 @@
                 </required>
                 <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
                   &default_convergence_tolerance;
+                  &default_linear_constraints;
                 </keyword>
                 <!-- #	    reduced_sqp
                      #	    |
@@ -629,6 +633,7 @@
                   </keyword>
                   &default_max_iterations;
                   &default_convergence_tolerance;
+                  &default_linear_constraints;
                 </required>
                 <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
                   <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size" help="" minOccurs="0" default="32" >
@@ -675,6 +680,7 @@
                   <keyword  id="smoothing_factor" name="smoothing_factor" code="{N_mdm(Real,smoothFactor)}" label="Smoothing factor" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.0" >
                     <param type="REAL" />
                   </keyword>
+                  &default_linear_constraints;
                 </keyword>
                 <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search" help="" minOccurs="1" >
                   <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-10" >
@@ -857,8 +863,8 @@
                   </keyword>
                 </required>
               </oneOf>
-              &default_linear_constraints;
             </required>
+            <!-- End group for linear ineq/eq constraints? -->
             <required>
               <oneOf>
                 <required>

@@ -245,6 +245,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       |
       ( 
@@ -259,9 +268,28 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       |
-      dl_solver STRING {N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}
+      ( dl_solver STRING {N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+       )
       |
       ( 
         npsol_sqp {N_mdm(utype,methodName_NPSOL_SQP)}
@@ -282,6 +310,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       ( nlpql_sqp {N_mdm(utype,methodName_NLPQL_SQP)}
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       |
       ( 
@@ -318,6 +355,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       |
       ( optpp_pds {N_mdm(utype,methodName_OPTPP_PDS)}
@@ -353,6 +399,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ constraint_penalty REAL {N_mdm(Real,constrPenalty)} ]
         [ smoothing_factor REAL {N_mdm(Real,smoothFactor)} ]
+        [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+        [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+        [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+        [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+        [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+        [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+        [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+        [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+        [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
        )
       |
       ( mesh_adaptive_search {N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}
@@ -471,15 +526,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
        )
-      [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
-      [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
-      [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
-      [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
-      [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
-      [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
-      [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
-      [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
-      [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
      )
     |
     ( 
