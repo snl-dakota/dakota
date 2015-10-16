@@ -1,0 +1,124 @@
+Blurb::
+Turn on scaling for variables, responses, and constraints
+Description::
+Some of the optimization and calibration methods support
+scaling of 
+continuous design variables, objective functions, calibration terms,
+and constraints.
+This is activated by by providing the
+\c scaling keyword.
+Discrete variable scaling is not supported.
+
+When
+scaling is enabled, variables, functions, gradients, Hessians, etc.,
+are transformed such that the method iterates in scaled variable
+space, whereas evaluations of the computational model as specified in
+the interface are performed on the original problem scale.
+Therefore
+using scaling does not require rewriting the interface to the
+simulation code.
+
+Scaling also requires the specification of additional keywords
+which are found in the \ref method, \ref variables, and \ref responses
+blocks.
+When the \c scaling keyword is omitted, all \c
+*_scale_types and \c *_scales specifications are ignored in the
+method, variables, and responses sections.
+
+This page describes the usage of all scaling related keywords.
+The additional keywords come in pairs, one pair for each set
+of quantities to be scaled.
+These quantities can be
+constraint equations, variables, or responses.
+\li a \c *scales keyword, which gives characteristic values
+\li a \c *scale_type keyword, which determines how to use the 
+  characteristic values
+
+The pair of keywords both take argument(s), and
+the length of the arguments can either be zero, one, or equal
+to the number of quantities to be scaled.
+If one argument is given, it will apply to all quantities in
+the set. See the examples below.
+
+<b> Scale Types </b>
+
+There are four scale types:
+<ol>
+  <li> \c none (default) - no scaling, value of \c *scales keyword is ignored
+  </li>
+  <li> \c value - multiplicative scaling
+  </li>
+  <li> \c auto - automatic scaling
+
+     First the quantity is scaled by the characteristic value, then
+     automatic scaling will be attempted according to the following scheme:
+
+    <ul> 
+      <li> two-sided bounds scaled into the interval [0,1]; 
+      <li> one-sided bound or targets are scaled by the characteristic
+         value, moving the bound or target to 1 and changing the sense of
+         inequalities where necessary;
+      <li> no bounds or targets: no automatic scaling possible, therefore no 
+           scaling for this component 
+    </ul> 
+
+     Automatic scaling is not available for objective functions nor calibration 
+     terms since they lack bound constraints. Futher, when automatically
+     scaled, linear constraints are scaled by characteristic values only, not
+     affinely scaled into [0,1]. 
+  <li> \c log - logarithmic scaling
+
+     First, any characteristic values from the
+     optional \c *_scales specification are applied. Then logarithm base
+     10 scaling is applied.
+
+     Logarithmic scaling is not available for
+     linear constraints.
+
+     When continuous design variables are log
+     scaled, linear constraints are not allowed.
+  </li>
+</ol>
+
+
+<b> Scales </b>
+
+The \c *scales keywords are used to specify the characteristic values.
+These must be non-zero real numbers. The numbers are used according
+to the corresponding \c *scale_type, as described above.
+
+Depending on the scale type, the characteristic values may be required or
+optional.
+\li \c none, \c auto, \c log - optional
+\li \c value - required.
+
+
+
+A warning is issued if scaling would result in
+division by a value smaller in magnitude than <tt>1.0e10*DBL_MIN</tt>.
+User-provided values violating this lower bound are accepted
+unaltered, whereas for automatically calculated scaling, the lower
+bound is enforced.
+
+Topics::	method_independent_controls
+Examples::
+The two examples below are equivalent:
+\verbatim
+  responses
+    objective_functions 3
+    sense "maximize"
+    primary_scale_types = "value"
+    primary_scales = 1 1 100
+\endverbatim
+
+\verbatim
+  responses
+    objective_functions 3
+    sense "maximize"
+    primary_scale_types = "value" "value" "value"
+    primary_scales = 1 1 100
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

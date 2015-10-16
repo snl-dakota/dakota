@@ -118,6 +118,9 @@
     <!ENTITY default_speculative
       "<keyword  id='speculative' name='speculative' code='{N_mdm(true,speculativeFlag)}' label='Speculative gradients and Hessians' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='no speculation' />"
     >
+    <!ENTITY default_scaling
+      "<keyword  id='scaling' name='scaling' code='{N_mdm(true,methodScaling)}' label='Scaling flag' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='no scaling' />"
+    >
     <!ENTITY default_linear_constraints
       "<keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_mdm(RealDL,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
         <param type='REALLIST' />
@@ -271,7 +274,6 @@
           <keyword  id="silent" name="silent" code="{N_mdm(type,methodOutput_SILENT_OUTPUT)}" label="silent" help=""  />
         </oneOf>
       </keyword>
-      <keyword  id="scaling" name="scaling" code="{N_mdm(true,methodScaling)}" label="Scaling flag" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="no scaling" />
       <keyword  id="final_solutions" name="final_solutions" code="{N_mdm(sizet,numFinalSolutions)}" label="Final solutions" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1" >
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
@@ -425,6 +427,7 @@
               </keyword>
             </keyword>
           </oneOf>
+          &default_scaling;
         </keyword>
 <!--             #	  [ num_samples_at_node INTEGER {N_mdm(int,branchBndNumSamplesNode)} ]
              #	  [ num_samples_at_root INTEGER {N_mdm(int,branchBndNumSamplesRoot)} ]
@@ -548,6 +551,7 @@
               &default_constraint_tolerance;
               &default_speculative;
               &default_max_function_evaluations;
+              &default_scaling;
               &default_linear_constraints;
             </required>
             <required>
@@ -566,6 +570,7 @@
               &default_constraint_tolerance;
               &default_speculative;
               &default_max_function_evaluations;
+              &default_scaling;
               &default_linear_constraints;
             </required>
             <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
@@ -573,6 +578,7 @@
               <param type="STRING" />
               &default_linear_constraints;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <required>
               <oneOf>
@@ -599,12 +605,14 @@
               &default_constraint_tolerance;
               &default_speculative;
               &default_max_function_evaluations;
+              &default_scaling;
               &default_linear_constraints;
             </required>
             <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
               &default_convergence_tolerance;
               &default_linear_constraints;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <!-- #	    reduced_sqp
                  #	    |
@@ -652,6 +660,7 @@
               &default_convergence_tolerance;
               &default_speculative;
               &default_max_function_evaluations;
+              &default_scaling;
               &default_linear_constraints;
             </required>
             <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
@@ -661,6 +670,7 @@
               &default_max_iterations;
               &default_convergence_tolerance;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
               <alias name="coliny_apps"/>
@@ -703,6 +713,7 @@
               &default_linear_constraints;
               &default_constraint_tolerance;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search" help="" minOccurs="1" >
               <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-10" >
@@ -726,6 +737,7 @@
               <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="false" />
               &default_max_iterations;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <required>
               <oneOf>
@@ -783,6 +795,7 @@
                   &default_max_iterations;
                   &default_linear_constraints;
                   &default_max_function_evaluations;
+                  &default_scaling;
                 </keyword>
                 <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga" help="" minOccurs="1" group="Optimization: Global" >
                   <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodJEGASOGA" minOccurs="0" default="merit_function">
@@ -822,6 +835,7 @@
                   &default_max_iterations;
                   &default_linear_constraints;
                   &default_max_function_evaluations;
+                  &default_scaling;
                 </keyword>
               </oneOf>
               <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >
@@ -1057,7 +1071,6 @@
                   </keyword>
                 </keyword>
               </oneOf>
-              &default_max_function_evaluations;
               <keyword  id="solution_target1" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="solution_target" help="" minOccurs="0" default="-DBL_MAX">
                 <alias name="solution_accuracy"/>
                 <param type="REAL" />
@@ -1070,6 +1083,8 @@
                 <param type="STRINGLIST" />
               </keyword>
               &default_max_iterations;
+              &default_max_function_evaluations;
+              &default_scaling;
             </required>
             <keyword  id="nl2sol" name="nl2sol" code="{N_mdm(utype,methodName_NL2SOL)}" label="nl2sol" help="" minOccurs="1" group="Calibration" >
               <keyword  id="function_precision2" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Relative precision in least squares terms" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="1.0e-10" >
@@ -1101,6 +1116,7 @@
               &default_max_iterations;
               &default_speculative;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
               <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
@@ -1108,6 +1124,7 @@
               </keyword>
               &default_convergence_tolerance;
               &default_max_iterations;
+              &default_scaling;
             </keyword>
             <keyword  id="ncsu_direct" name="ncsu_direct" code="{N_mdm(utype,methodName_NCSU_DIRECT)}" label="ncsu_direct" help="" minOccurs="1" group="Optimization: Global" >
               <keyword  id="solution_target2" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution Target " help="MethodCommands.html#MethodNCSUDC" minOccurs="0" default="0" >
@@ -1123,6 +1140,7 @@
               &default_convergence_tolerance;
               &default_max_iterations;
               &default_max_function_evaluations;
+              &default_scaling;
             </keyword>
             <required>
               <oneOf>
@@ -1133,6 +1151,7 @@
                 <param type="INTEGER" constraint="> 0" />
               </keyword>
               &default_max_function_evaluations;
+              &default_scaling;
             </required>
             <keyword  id="efficient_global" name="efficient_global" code="{N_mdm(utype,methodName_EFFICIENT_GLOBAL)}" label="efficient_global" help="" minOccurs="1" group="Surrogate-based Methods" >
               <keyword  id="gaussian_process" name="gaussian_process" code="{0}" label="GP selection" help="MethodCommands.html#MethodEG" minOccurs="0" default="Surfpack Gaussian process" >
