@@ -1,6 +1,8 @@
 #@ *: Label=SmokeTest
 #@ s0: Restart=write
 #@ s1: Restart=read DependsOn=s0
+#@ s2: Restart=write
+#@ s3: Restart=read DependsOn=s2
 
 # DAKOTA INPUT FILE - dakota_textbook_lhs.in
 
@@ -9,10 +11,10 @@ environment,
 
 method,
         sampling,
-	  samples = 10 seed = 1833 			       	#s0
-#	  samples = 20 seed = 1833 			 	#s1
-          sample_type lhs                                       #s0
-#	  sample_type incremental_lhs previous_samples = 10	#s1
+	  samples = 10 seed = 1833 			       	#s0,#s2
+#	  samples = 20 seed = 1833 			 	#s1,#s3
+          sample_type lhs                                       #s0,#s2
+#	  sample_type incremental_lhs previous_samples = 10	#s1,#s3
 
 variables,
 	normal_uncertain = 2
@@ -26,6 +28,20 @@ variables,
         exponential_uncertain = 1
           betas = 0.5
           descriptors       = 'TF1e'
+#        binomial_uncertain = 1					#s2,#s3
+#          probability_per_trial = 0.2				#s2,#s3
+#          num_trials = 10					#s2,#s3
+#        histogram_point_uncertain				#s2,#s3
+#          integer 2						#s2,#s3
+#          pairs_per_variable = 3 7				#s2,#s3
+#          abscissas = -1 0 1 2 5 8 11 14 17 20			#s2,#s3
+#          counts = 1 1 1 1 1 1 1 1 1 1 			#s2,#s3
+#        discrete_uncertain_set					#s2,#s3
+#          integer 1						#s2,#s3
+#          elements 5:50					#s2,#s3
+#          real 2						#s2,#s3
+#          elements_per_variable 3 2				#s2,#s3
+#          elements 11.7 13.1 15.9 22.1 23.2			#s2,#s3
 
 interface,
 	system asynch evaluation_concurrency = 5
