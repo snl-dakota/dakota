@@ -579,6 +579,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]
        ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
     ( 
@@ -635,7 +636,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
         [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
         [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
       |
       ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
@@ -684,7 +684,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ non_adaptive {N_mdm(false,mutationAdaptive)} ]
          ]
         [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
       |
       ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
@@ -695,6 +694,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ show_misc_options {N_mdm(true,showMiscOptions)} ]
       [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
       [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
       [ scaling {N_mdm(true,methodScaling)} ]
      )
@@ -798,7 +798,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                   |
                   generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
                  )
-                [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                 [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                ]
               [ 
@@ -976,7 +975,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     |
                     generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
                    )
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  )
                 |
@@ -990,7 +988,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                    )
                   |
                   local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  )
                ]
@@ -1099,6 +1096,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
            )
           [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
             [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
@@ -1140,6 +1138,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              ]
            ]
+          [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
          )
         |
         ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(utype,methodName_GPAIS)}
@@ -1446,6 +1445,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           rnum2 {N_mdm(lit,rngName_rnum2)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
         [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
        )
       |
@@ -1459,7 +1459,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
                 [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1486,7 +1485,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                   collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                   [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                    ]
                   [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1509,7 +1507,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 |
                 ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
                   [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                    ]
                   [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1623,7 +1620,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
               [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                 [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1650,7 +1646,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1673,7 +1668,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               |
               ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1733,7 +1727,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
               [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                 [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1760,7 +1753,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1783,7 +1775,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               |
               ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)}
-                  [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
                   [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
                  ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1825,6 +1816,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             hyperprior_betas REALLIST {N_mdm(RealDL,hyperPriorBetas)}
            ]
          ]
+        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
       |
       ( dace {N_mdm(utype,methodName_DACE)}
@@ -1913,6 +1905,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         |
         nip {N_mdm(utype,subMethod_SUBMETHOD_NIP)}
        ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
     ( 
@@ -1923,22 +1916,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           u_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_U)}
           |
           ( x_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}
-            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
             [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
            )
           |
           ( u_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}
-            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
             [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
            )
           |
           ( x_two_point {N_mdm(utype,reliabilitySearchType_TANA_X)}
-            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
             [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
            )
           |
           ( u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
-            [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
             [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
            )
           |
@@ -1981,6 +1970,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
           [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
          ]
+        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
       |
       ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
@@ -2043,6 +2033,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              ]
            ]
          ]
+        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
       [ distribution {0}
         cumulative {N_mdm(type,distributionType_CUMULATIVE)}
