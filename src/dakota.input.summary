@@ -344,6 +344,7 @@ KEYWORD12 method
 	  )
 	|
 	( nlpql_sqp
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
@@ -843,6 +844,7 @@ KEYWORD12 method
 	    ( freeform
 	    ]
 	  [ seed INTEGER > 0 ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -855,7 +857,6 @@ KEYWORD12 method
 	      | decay
 	      | generalized
 	      )
-	    [ max_iterations INTEGER >= 0 ]
 	    ]
 	  [ askey
 	  | wiener ]
@@ -995,6 +996,7 @@ KEYWORD12 method
 	    ]
 	  [ export_expansion_file STRING ]
 	  [ fixed_seed ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
@@ -1038,7 +1040,6 @@ KEYWORD12 method
 		sobol
 		| generalized
 		)
-	      [ max_iterations INTEGER >= 0 ]
 	      )
 	  |
 	  ( h_refinement
@@ -1049,7 +1050,6 @@ KEYWORD12 method
 	      | generalized
 	      )
 	    | local_adaptive
-	    [ max_iterations INTEGER >= 0 ]
 	    ]
 	  [ piecewise
 	  | askey
@@ -1106,6 +1106,7 @@ KEYWORD12 method
 	    ( freeform
 	    ]
 	  [ fixed_seed ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
@@ -1159,6 +1160,7 @@ KEYWORD12 method
 	    [ percent_variance_explained REAL ]
 	    ]
 	  [ fixed_seed ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
@@ -1210,6 +1212,7 @@ KEYWORD12 method
 		]
 	      ]
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ distribution
 	    cumulative
@@ -1569,9 +1572,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ posterior_adaptive
-		  [ max_iterations INTEGER >= 0 ]
-		  ]
+		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
@@ -1591,9 +1592,7 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  [ posterior_adaptive
-		    [ max_iterations INTEGER >= 0 ]
-		    ]
+		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1609,9 +1608,7 @@ KEYWORD12 method
 		  )
 		|
 		( collocation_points INTEGERLIST
-		  [ posterior_adaptive
-		    [ max_iterations INTEGER >= 0 ]
-		    ]
+		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1726,9 +1723,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ posterior_adaptive
-		  [ max_iterations INTEGER >= 0 ]
-		  ]
+		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
@@ -1748,9 +1743,7 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  [ posterior_adaptive
-		    [ max_iterations INTEGER >= 0 ]
-		    ]
+		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1766,9 +1759,7 @@ KEYWORD12 method
 		  )
 		|
 		( collocation_points INTEGERLIST
-		  [ posterior_adaptive
-		    [ max_iterations INTEGER >= 0 ]
-		    ]
+		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1812,9 +1803,7 @@ KEYWORD12 method
 		surfpack
 		| dakota
 		[ emulator_samples INTEGER ]
-		[ posterior_adaptive
-		  [ max_iterations INTEGER >= 0 ]
-		  ]
+		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
 		  |
@@ -1834,9 +1823,7 @@ KEYWORD12 method
 		|
 		( expansion_order INTEGERLIST
 		  collocation_ratio REAL
-		  [ posterior_adaptive
-		    [ max_iterations INTEGER >= 0 ]
-		    ]
+		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1852,9 +1839,7 @@ KEYWORD12 method
 		  )
 		|
 		( collocation_points INTEGERLIST
-		  [ posterior_adaptive
-		    [ max_iterations INTEGER >= 0 ]
-		    ]
+		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
 		    |
@@ -1887,6 +1872,7 @@ KEYWORD12 method
 	      ]
 	    ]
 	  [ convergence_tolerance REAL ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
@@ -1976,22 +1962,10 @@ KEYWORD12 method
 	  [ mpp_search
 	    x_taylor_mean
 	    | u_taylor_mean
-	    |
-	    ( x_taylor_mpp
-	      [ max_iterations INTEGER >= 0 ]
-	      )
-	    |
-	    ( u_taylor_mpp
-	      [ max_iterations INTEGER >= 0 ]
-	      )
-	    |
-	    ( x_two_point
-	      [ max_iterations INTEGER >= 0 ]
-	      )
-	    |
-	    ( u_two_point
-	      [ max_iterations INTEGER >= 0 ]
-	      )
+	    | x_taylor_mpp
+	    | u_taylor_mpp
+	    | x_two_point
+	    | u_two_point
 	    | no_approx
 	    [ sqp
 	    | nip ]
@@ -2022,6 +1996,7 @@ KEYWORD12 method
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ distribution
 	    cumulative
@@ -2081,6 +2056,7 @@ KEYWORD12 method
 		]
 	      ]
 	    ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ distribution
 	    cumulative
@@ -2108,6 +2084,7 @@ KEYWORD12 method
 	  [ sequence_start INTEGERLIST ]
 	  [ sequence_leap INTEGERLIST ]
 	  [ prime_base INTEGERLIST ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
