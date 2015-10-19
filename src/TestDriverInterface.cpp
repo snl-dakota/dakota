@@ -3817,13 +3817,13 @@ int TestDriverInterface::bayes_linear()
 	 << "direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  const Real pi = 3.14159265358979324;
+  
+  /*const Real pi = 3.14159265358979324;
  
-  Real mean_pred = 0; int i;
-  for (i=0; i<numVars; i++) {
+  Real mean_pred = 0.4; int i;
+  for (i=1; i<numVars; i++) {
      mean_pred += 0.4 + 0.5*std::sin(2*pi*i/numVars);
   }
- 
   RealVector n_means, n_std_devs, n_l_bnds, n_u_bnds;
   n_means.resize(numFns); n_std_devs.resize(numFns); 
   n_l_bnds.resize(numFns); n_u_bnds.resize(numFns);
@@ -3858,9 +3858,12 @@ int TestDriverInterface::bayes_linear()
   for (i=0; i<numFns; i++) {
     fnVals[i]=temp_cvars[i];
   } 
-
-  Cout << "fnVals " << fnVals << '\n';
-  //fnVals[0]=mean_pred;
+  */
+  
+  Real pred=0.0;
+  for (int i=0; i<numVars; i++) 
+    pred += xC[i];
+  fnVals[0]= pred;
    
   return 0;
 }  

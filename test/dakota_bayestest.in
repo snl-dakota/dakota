@@ -1,0 +1,42 @@
+#@ *: DakotaConfig=HAVE_QUESO
+#@ p*: MPIProcs=1
+
+environment
+        tabular_graphics_data
+
+method,
+       bayes_calibration queso
+          dram
+	  seed = 34785				
+          samples = 1000 
+          calibrate_error_multipliers one
+          #hyperprior_alphas = 1000.0                   	#p2,#p3        
+          #hyperprior_betas = 1.0                              #p2,#p3 
+          #output debug 
+
+variables,
+	uniform_uncertain = 1                                   #p0,#p2
+#	uniform_uncertain = 5                                   #p3
+	  upper_bounds   0.6                                    #p0,#p2
+	  lower_bounds   0.1                                    #p0,#p2
+#	  upper_bounds   0.6 0.6 0.6 0.6 0.6 	                #p3 
+#	  lower_bounds   0.1 0.1 0.1 0.1 0.1                    #p3
+#       normal_uncertain = 1                                    #p1
+#         means = 0.6                                           #p1
+#         std_deviation = 0.1                                   #p1
+
+interface,
+        direct 
+	  analysis_driver = 'bayes_linear' # This is a test function based on B. William's linear verification tests.
+
+responses,
+ 	calibration_terms = 1
+        calibration_data_file = 'dakota_bayestest.1.dat'                #p0,#p1                  
+#        calibration_data_file = 'dakota_bayestest.2.dat'                #p2               
+#        calibration_data_file = 'dakota_bayestest.5.dat'                #p3               
+          freeform
+          num_experiments = 100
+          variance_type = 'scalar'
+	no_gradients	
+	no_hessians
+
