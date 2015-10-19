@@ -406,9 +406,8 @@ void read_data_tabular(const std::string& input_filename,
   }
 }
 
-/** Read possibly annotated data with unknown num_rows data into
-    input_coeffs (num_fns x num_rows) and input_indices (num_rows x
-    num_vars) */
+/** Read possibly annotated data with unknown num_rows data into input_coeffs
+    (num_fns x num_rows) and input_indices (num_rows x num_vars) */
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealVectorArray& input_coeffs, 
@@ -437,26 +436,31 @@ void read_data_tabular(const std::string& input_filename,
 
       // read the (required) coefficients of length num_fns
       RealArray read_coeffs(num_fns, std::numeric_limits<double>::quiet_NaN());
-      if (!(input_stream >> read_coeffs)) {
+      if (input_stream >> read_coeffs) {
 	Cout << "read: " << read_coeffs << std::endl;
+	coeffs_tmp.push_back(read_coeffs);
+      }
+      else {
 	Cerr << "\nError (" << context_message << "): unexpected coeff read "
-	     << "error in file " << input_filename << "." << std::endl;
+	     << "error in file " << input_filename << " for read: "
+	     << read_coeffs << std::endl;
 	abort_handler(-1);
       }
-      Cout << "read: " << read_coeffs << std::endl;
-      coeffs_tmp.push_back(read_coeffs);
 
       // read the (required) indices of length num_vars
       UShortArray index_set(num_vars, 0);
       // don't break as these are required data
       // use templated stream extraction from data_io
-      if (!(input_stream >> index_set)) {
+      if (input_stream >> index_set) {
+	Cout << "index set: " << index_set << std::endl;
+	input_indices.push_back(index_set);
+      }
+      else {
 	Cerr << "\nError (" << context_message << "): unexpected indices read "
-	     << "error in file " << input_filename << "." << std::endl;
+	     << "error in file " << input_filename << " for read: "
+	     << index_set << std::endl;
 	abort_handler(-1);
       }
-      input_indices.push_back(index_set);
-      Cout << "index set: " << index_set << std::endl;
       input_stream >> std::ws;
     }
   }
@@ -597,13 +601,13 @@ void read_data_tabular(const std::string& input_filename,
       // read the (required) coefficients of length num_fns
       read_rv = std::numeric_limits<Real>::quiet_NaN();
       if (input_stream >> read_rv) {
-	if (verbose) Cout << "read: " << read_rv << std::endl;
+	if (verbose) { Cout << "read:\n"; write_data(Cout, read_rv); }
 	rva.push_back(read_rv);
       }
       else {
-	Cerr << "\nError (" << context_message << "): unexpected coeff read "
-	     << "error in file " << input_filename << ".\nread:\n" << read_rv
-	     << std::endl;
+	Cerr << "\nError (" << context_message << "): unexpected row read "
+	     << "error in file " << input_filename << ".\nread:\n";
+	write_data(Cerr, read_rv);
 	abort_handler(-1);
       }
       input_stream >> std::ws; // advance to next input for EOF detection
