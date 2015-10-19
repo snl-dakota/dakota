@@ -1,6 +1,0 @@
-3po     -r2757 https://software.sandia.gov/svn/public/tpl/3po/tags/1.0
-ampl    -r2757 https://software.sandia.gov/svn/public/tpl/ampl/trunk
-cxxtest -r358 https://software.sandia.gov/svn/public/cxxtest/trunk
-momhlib -r2757 https://software.sandia.gov/svn/public/tpl/momhlib/tags/1.10b
-tinyxml -r2757 https://software.sandia.gov/svn/public/tpl/tinyxml/tags/2.5.2
-vpykit  -r2943 https://software.sandia.gov/svn/public/fast/vpykit/trunk

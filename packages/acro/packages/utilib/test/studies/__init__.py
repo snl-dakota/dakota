@@ -1,1 +1,0 @@
-# UTILIB testing directory

@@ -1,2 +1,0 @@
-Parsing file MyTestSuite3.hdone.
-Running 1 test.OK!

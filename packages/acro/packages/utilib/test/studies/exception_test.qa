@@ -1,2 +1,0 @@
-exception <num>
-    Options:  1 - Throw exception,  2 - Abort,  3 - Exit
