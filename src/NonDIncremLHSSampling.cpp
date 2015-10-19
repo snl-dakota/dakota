@@ -116,7 +116,9 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   RealVectorArray sample1_values(numSamples); // views OK
   IntVectorArray sample1int_values(numSamples);
   RealVectorArray sample1real_values(numSamples);
-  //std::vector<StringMultiArrayConstView> sample1string_values(numSamples);
+  // BMA: vector of multi-array const views should be possible.  For now, copy.
+  //std::vector<StringMultiArrayConstView> sample1string_values;
+  String2DArray sample1string_values(numSamples);
 
   // Restart records have negative eval IDs in the cache, so walk them
   // in reverse eval ID order (-1 to -numSamples).  May not work in
@@ -126,7 +128,10 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     sample1_values[s] = prp_rev_iter->variables().continuous_variables();
     sample1int_values[s] = prp_rev_iter->variables().discrete_int_variables();
     sample1real_values[s] = prp_rev_iter->variables().discrete_real_variables();
-    //sample1string_values[s] = prp_rev_iter->variables().discrete_string_variables();
+    // sample1string_values.push_back(prp_rev_iter->
+    //				      variables().discrete_string_variables());
+    copy_data(prp_rev_iter->variables().discrete_string_variables(),
+	      sample1string_values[s]);
   }
 #ifdef DEBUG
   Cout << "\nsample1\n" << sample1_values << '\n';
