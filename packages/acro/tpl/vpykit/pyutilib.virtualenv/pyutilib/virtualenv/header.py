@@ -222,7 +222,7 @@ def unzip_file(filename, dir=None, verbose=False):
 class Repository(object):
 
     svn_get='checkout'
-    useEasyInstall = True
+    useEasyInstall = False
     easy_install_path = None #["easy_install"]
     easy_install_flags = ['-q']
     pip_path = None #["pip"]
@@ -625,11 +625,14 @@ class Repository(object):
                               dir=os.path.dirname(dir), extra_env=extra_env)
             elif preinstall:
                 if not os.path.exists(dir):
-                    self.run( self.pip_path + ['install'] 
-                              + Repository.pip_flags 
-                              + [ '--no-install', '--ignore-installed',
-                                  '--build', '.', self.pypi ],
-                              dir=os.path.dirname(dir), extra_env=extra_env)
+                    self.run( 
+                        self.pip_path + ['install'] 
+                        + Repository.pip_flags 
+                        + [ #'--no-install', '--ignore-installed',
+                            #'--build', '.', 
+                            '--no-binary', '--download', '.', 
+                            self.pypi ],
+                        dir=os.path.dirname(dir), extra_env=extra_env)
         except OSError:
             err,tb = sys.exc_info()[1:3] # BUG?
             print("")

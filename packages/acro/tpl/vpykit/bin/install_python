@@ -105,7 +105,9 @@ cmd = [ sys.executable,
         '--debug','--trunk',
         '--config', os.path.join(vpykit_dir,'default.ini') ]
 if options.site:
-    cmd.append('--site-packages')
+    cmd.append('--system-site-packages')
+else:
+    cmd.append('--no-site-packages')
 if options.config:
     cmd.extend(['--config', options.config])
 if options.zip:

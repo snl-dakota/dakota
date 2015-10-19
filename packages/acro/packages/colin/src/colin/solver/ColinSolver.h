@@ -330,8 +330,7 @@ public:
 
    bool check_convergence()
    {
-      time_curr = CPUSeconds();
-
+      time_curr = WallClockSeconds();
       if ((max_time > 0.0) && ((time_curr - time_start) >= max_time))
       {
          this->solver_status.termination_info = "Time-Limit";
@@ -423,6 +422,12 @@ protected:
    virtual double CPUSeconds()
    {return ::CPUSeconds();}
  
+   /** Return the number of Wall clock seconds since a given point in time.
+     * By default, this relies on the UTILIB timing routines.
+     */
+   virtual double WallClockSeconds()
+   {return ::WallClockSeconds();}
+ 
    /// The current time
    double time_curr;
  
@@ -496,7 +501,7 @@ protected:
      */
    int max_neval_curr;
 
-   /// The maximum number of CPU seconds allowed before termination.
+   /// The maximum number of Wall CLock seconds allowed before termination.
    double max_time;
 
    /// The minimum function value allowed before termination.
@@ -631,7 +636,7 @@ private:
 
       // ...from former opt_init()
 
-      time_start = CPUSeconds();
+      time_start = WallClockSeconds();
       neval_start = this->neval();
 
       if (output_headerstr == "verbose")
@@ -998,7 +1003,7 @@ void ColinSolver<DomainT, ProblemT>::debug_io( std::ostream& os,
       return;
    }
 
-   this->time_curr = CPUSeconds();
+   this->time_curr = WallClockSeconds();
    double total_time = this->time_curr - this->time_start;
 
    if (this->output_dynamic)
@@ -1061,7 +1066,7 @@ void ColinSolver<DomainT, ProblemT>::debug_io( std::ostream& os,
             << SolverMngr().get_solver_name(this) << std::endl;
          os << "\tIteration Number:\t\t\t" << this->curr_iter << std::endl;
          os << "\tTotal # Func Evals:\t\t\t" << this->neval() << std::endl;
-         os << "\tTotal Time (CPU+System):\t\t" << total_time << std::endl;
+         os << "\tTotal Time (wall clock):\t\t" << total_time << std::endl;
          this->print_objectives(os);
          this->virt_debug_io(os, finishing, this->output_level);
          os << "]\n";
