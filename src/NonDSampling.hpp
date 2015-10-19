@@ -93,6 +93,11 @@ public:
   /// calculates sample moments for an array of observations for a set of QoI
   void compute_moments(const RealMatrix& samples);
 
+  /// transform allSamples imported by alternate constructor.  This is needed
+  /// since random variable distribution parameters are not updated until
+  /// run time and an imported sample_matrix is typically in x-space.
+  void transform_samples(bool x_to_u = true);
+
 protected:
 
   //

@@ -455,11 +455,11 @@ construct_expansion_sampler(const String& import_approx_file,
 			    unsigned short import_build_format,
 			    bool import_build_active_only)
 {
-  bool import_pts = false, exp_sampling = false;
+  bool import_pts = false, exp_sampling = false; size_t i;
   if (!import_approx_file.empty())
     import_pts = exp_sampling = true;
   else if (totalLevelRequests)//&& numSamplesOnExpansion) // catch as err below
-    for (size_t i=0; i<numFunctions; ++i)
+    for (i=0; i<numFunctions; ++i)
       if ( requestedProbLevels[i].length() || requestedGenRelLevels[i].length()
 	   || ( requestedRespLevels[i].length() &&
 		respLevelTarget != RELIABILITIES ) )
@@ -470,16 +470,17 @@ construct_expansion_sampler(const String& import_approx_file,
 
   NonD* exp_sampler_rep;
   if (import_pts) {
-    RealMatrix sample_matrix;
+    RealMatrix x_samples; // imports are always from user space
     // Analyzer::update_model_from_sample() currently updates only the active 
     // continuous vars from an allSamples column --> pass numContinuousVars as
     // number of rows; import_build_active_only not currently used
     TabularIO::read_data_tabular(import_approx_file, 
-      "imported approx samples file", sample_matrix, numContinuousVars,
+      "imported approx samples file", x_samples, numContinuousVars,
       import_build_format); //, import_build_active_only);
-    numSamplesOnExpansion = sample_matrix.numCols();
-    exp_sampler_rep = new NonDSampling(uSpaceModel, sample_matrix);
-
+    numSamplesOnExpansion = x_samples.numCols();
+    // transform to u space must follow initialize_random_variable_parameters(),
+    // so pass x_samples for now and transform at runtime
+    exp_sampler_rep = new NonDSampling(uSpaceModel, x_samples);//u_samples);
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
       requestedRelLevels, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, true); // compute/print PDFs
@@ -517,7 +518,7 @@ construct_expansion_sampler(const String& import_approx_file,
       = probDescDB.get_ushort("method.nond.integration_refinement");
     bool imp_sampling = false;
     if (int_refine && respLevelTarget != RELIABILITIES)
-      for (size_t i=0; i<numFunctions; ++i)
+      for (i=0; i<numFunctions; ++i)
 	if (requestedRespLevels[i].length())
 	  { imp_sampling = true; break; }
 
@@ -661,6 +662,15 @@ void NonDExpansion::initialize_expansion()
       initialPtU[i] = pt_u[i]; // design
     for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
       initialPtU[i] = pt_u[i]; // epistemic/state
+  }
+
+  // transform any points imported into expansionSampler from user space into
+  // standardized space (must follow initialize_random_variable_parameters())
+  if (expansionSampler.method_name() == LIST_SAMPLING &&
+      numUncertainQuant == 0) {
+    NonDSampling* exp_sampler_rep
+      = (NonDSampling*)expansionSampler.iterator_rep();
+    exp_sampler_rep->transform_samples();
   }
 }
 

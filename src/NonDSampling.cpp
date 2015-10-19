@@ -170,6 +170,28 @@ NonDSampling::~NonDSampling()
 { }
 
 
+void NonDSampling::transform_samples(bool x_to_u)
+{
+  // transform x_samples to u_samples for use by expansionSampler
+  if (x_to_u) {
+    RealMatrix x_samples(allSamples); // deep copy
+    for (size_t i=0; i<numSamples; ++i) {
+      RealVector x_samp(Teuchos::View,  x_samples[i], numContinuousVars),
+                 u_samp(Teuchos::View, allSamples[i], numContinuousVars);
+      natafTransform.trans_X_to_U(x_samp, u_samp);
+    }
+  }
+  else {
+    RealMatrix u_samples(allSamples); // deep copy
+    for (size_t i=0; i<numSamples; ++i) {
+      RealVector u_samp(Teuchos::View,  u_samples[i], numContinuousVars),
+	         x_samp(Teuchos::View, allSamples[i], numContinuousVars);
+      natafTransform.trans_U_to_X(u_samp, x_samp);
+    }
+  }
+}
+
+
 /** This version of get_parameter_sets() extracts data from the
     user-defined model in any of the four sampling modes. */
 void NonDSampling::get_parameter_sets(Model& model)
