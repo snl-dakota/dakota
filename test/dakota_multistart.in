@@ -42,12 +42,20 @@ method
 method
   id_method = 'NLP'
   dot_bfgs
+#   scaling                         #s1,#s2
 
 variables
   continuous_design = 2
     lower_bounds    -1.0     -1.0
     upper_bounds     1.0      1.0
     descriptors      'x1'     'x2'
+# Test scaling with multi-start
+#   scale_types   'value'   'auto'  #s1
+#   scales          10.0      1.0   #s1
+# Test scaling with multi-start: verify non-scaling works as expected
+#   scale_types   'value'   'value'  #s2
+#   scales           1.0       1.0   #s2
+
 
 interface
   fork #asynchronous

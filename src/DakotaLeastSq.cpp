@@ -381,9 +381,11 @@ void LeastSq::initialize_run()
 {
   Minimizer::initialize_run();
 
-  // pull any late updates into the RecastModel
+  // pull any late updates into the RecastModel; may need to update from 
+  // the underlying user model in case of hybrid methods, so should recurse
+  // BMA TODO: setting true breaks pareto on surrogate model...
   if (scaleFlag || calibrationDataFlag)
-    iteratedModel.update_from_subordinate_model(false); // recursion not reqd
+    iteratedModel.update_from_subordinate_model(false);
 
   // Track any previous object instance in case of recursion.  Note that
   // leastSqInstance and minimizerInstance must be tracked separately since

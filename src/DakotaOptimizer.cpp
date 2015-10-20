@@ -478,9 +478,11 @@ void Optimizer::initialize_run()
   // needed in the multi-recast case.  Can we make this update
   // sufficiently flexible to catch the subIterator and inactive case?
 
-  // pull any late updates into the RecastModel
+  // pull any late updates into the RecastModel; may need to update from 
+  // the underlying user model in case of hybrid methods, so should recurse
+  // BMA TODO: setting true breaks pareto on surrogate model...
   if (minimizerRecasts)
-    iteratedModel.update_from_subordinate_model(false); // recursion not reqd
+    iteratedModel.update_from_subordinate_model(false);
 
   // Track any previous object instance in case of recursion.  Note that
   // optimizerInstance and minimizerInstance must be tracked separately since

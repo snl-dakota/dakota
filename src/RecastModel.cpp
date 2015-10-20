@@ -693,7 +693,14 @@ void RecastModel::update_from_sub_model()
   currentVariables.inactive_discrete_real_variable_labels(
     subModel.inactive_discrete_real_variable_labels());
 
-  if (variablesMapping) {
+  if (invVarsMapping) {
+    invVarsMapping(subModel.current_variables(), currentVariables);
+    // BMA TODO: there may be cases where we also want to update the
+    // constraints and values, but there's currently no mechanism to
+    // do so.  The client of a RecastModel must manage this.
+  } else if (variablesMapping) {
+    // no reasonable default
+
     // can't just apply variables mapping to values/bounds, since need inverse
     // of variablesMapping to go from subModel vars to currentVariables
 

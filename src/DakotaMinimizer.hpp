@@ -374,6 +374,12 @@ private:
   static void variables_scaler(const Variables& scaled_vars, 
 			       Variables& native_vars);
 
+  /// RecastModel callback for inverse variables scaling: transform variables
+  /// from native (user) to scaled space
+  static void variables_unscaler(const Variables& native_vars,
+				 Variables& scaled_vars);
+
+
   /// RecastModel callback for primary response scaling: transform
   /// responses (grads, Hessians) from native (user) to scaled space
   static void primary_resp_scaler(const Variables& native_vars, 

@@ -608,6 +608,9 @@ void Minimizer::scale_model()
 			       secondary_resp_map_indices, nonlinear_resp_map,
 			       pri_resp_recast, sec_resp_recast);
 
+  // need inverse mapping for use with late updates from sub-model
+  recast_model_rep->inverse_mappings(variables_unscaler, NULL, NULL, NULL);
+
   // Preserve weights through scaling transformation
   bool recurse_flag = false;
   const RealVector& submodel_weights = 
@@ -1091,6 +1094,14 @@ variables_scaler(const Variables& scaled_vars, Variables& native_vars)
   }
   native_vars.continuous_variables(minimizerInstance->modify_s2n(
     scaled_vars.continuous_variables(),    minimizerInstance->cvScaleTypes,
+    minimizerInstance->cvScaleMultipliers, minimizerInstance->cvScaleOffsets));
+}
+
+void Minimizer::
+variables_unscaler(const Variables& native_vars, Variables& scaled_vars)
+{
+  scaled_vars.continuous_variables(minimizerInstance->modify_n2s(
+    native_vars.continuous_variables(), minimizerInstance->cvScaleTypes,
     minimizerInstance->cvScaleMultipliers, minimizerInstance->cvScaleOffsets));
 }
 
