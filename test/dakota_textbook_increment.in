@@ -3,31 +3,34 @@
 #@ s1: Restart=read DependsOn=s0
 #@ s2: Restart=write
 #@ s3: Restart=read DependsOn=s2
+#@ s4: Restart=write
+#@ s5: Restart=read DependsOn=s4
 
-# DAKOTA INPUT FILE - dakota_textbook_lhs.in
+# DAKOTA INPUT FILE - dakota_textbook_increment.in
 
 environment,
         tabular_data
 
 method,
         sampling,
-	  samples = 10 seed = 1833 			       	#s0,#s2
-#	  samples = 20 seed = 1833 			 	#s1,#s3
-          sample_type lhs                                       #s0,#s2
-#	  sample_type incremental_lhs previous_samples = 10	#s1,#s3
+	  samples = 10 seed = 1833 			       	#s0,#s2,#s4
+#	  samples = 20 seed = 1833 			 	#s1,#s3,#s5
+          sample_type lhs                                       #s0,#s2,#s4
+#	  sample_type incremental_lhs previous_samples = 10	#s1,#s3,#s5
 
 variables,
-	normal_uncertain = 2
-	  means             =  5, 10
-	  std_deviations    =   1,   2
-	  descriptors       =  'TF1n'  'TF2n'
+#       active all                                              #s4,#s5
+	normal_uncertain = 2					#s0,#s1,#s2,#s3
+	  means             =  5, 10				#s0,#s1,#s2,#s3
+	  std_deviations    =   1,   2				#s0,#s1,#s2,#s3
+	  descriptors       =  'TF1n'  'TF2n'			#s0,#s1,#s2,#s3
         uniform_uncertain = 2
           lower_bounds = 0 0
           upper_bounds = 10 10
           descriptors       =  'TF1u' 'TF2u'
-        exponential_uncertain = 1
-          betas = 0.5
-          descriptors       = 'TF1e'
+        exponential_uncertain = 1				#s0,#s1,#s2,#s3
+          betas = 0.5						#s0,#s1,#s2,#s3
+          descriptors       = 'TF1e'				#s0,#s1,#s2,#s3
 #        binomial_uncertain = 1					#s2,#s3
 #          probability_per_trial = 0.2				#s2,#s3
 #          num_trials = 10					#s2,#s3
@@ -42,10 +45,14 @@ variables,
 #          real 2						#s2,#s3
 #          elements_per_variable 3 2				#s2,#s3
 #          elements 11.7 13.1 15.9 22.1 23.2			#s2,#s3
+#        discrete_uncertain_set					#s4,#s5
+#          string 1                                             #s4,#s5
+#          elements 'aniso1' 'aniso2' 'aniso3' 'iso1' 'iso2' 'iso3' #s4,#s5
 
 interface,
-	system asynch evaluation_concurrency = 5
-	  analysis_driver = 'text_book'
+	system asynch evaluation_concurrency = 5               
+	  analysis_driver = 'text_book'                        #s0,#s1,#s2,#s3
+#	  analysis_driver = 'gerstner_string'                  #s4,#s5
 
 responses,
 	response_functions = 1

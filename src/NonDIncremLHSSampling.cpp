@@ -86,12 +86,6 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     abort_handler(-1);
   }
 
-  if ( numDiscreteStringVars ) {
-    Cout << "Error: Discrete distribution string types are not "
- 	 << "supported in incremental LHS sampling.  " << std::endl;
-    abort_handler(-1);
-  }
-  
   numSamples = previousSamples;
   sampleRanksMode = GET_RANKS;
 
@@ -137,7 +131,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   Cout << "\nsample1\n" << sample1_values << '\n';
   Cout << "\nsample1int\n" << sample1int_values << '\n';
   Cout << "\nsample1real\n" << sample1real_values << '\n';
-  //Cout << "\nsample1string\n" << sample1string_values << '\n';
+  Cout << "\nsample1string\n" << sample1string_values << '\n';
 #endif
 
   if (sampleType == SUBMETHOD_INCREMENTAL_RANDOM) {
@@ -151,7 +145,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     // sample, and ranks of combined sample
     IntArray rank_col(numSamples), final_rank(numSamples);
     rawData.resize(numSamples);
-    IntMatrix sample1_ranks(numContinuousVars + numDiscreteIntVars + numDiscreteRealVars, numSamples, false);
+    IntMatrix sample1_ranks(numContinuousVars + numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars, numSamples, false);
 
     // store sample values and ranks returned by 1st get_parameter_sets() call
     for (v=0; v<numContinuousVars; ++v) {
@@ -187,6 +181,22 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       for (s=0; s<numSamples; ++s) // can't be combined with loop above
         sample1_ranks(v+numContinuousVars+numDiscreteIntVars, s) = final_rank[s] + 1;
     }
+    for (v=0; v<numDiscreteStringVars; ++v) {
+      const StringSetArray& all_dss_values
+        = iteratedModel.discrete_set_string_values();
+ 
+      for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
+        rank_col[rank_count] = rank_count;
+        //StringMultiArrayConstView ds_vars = sample1string_values[rank_count];
+        Real this_string = (Real)set_value_to_index(sample1string_values[rank_count][v], all_dss_values[v]);
+        rawData[rank_count] = this_string;
+      }
+      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
+      for (s=0; s<numSamples; ++s)
+        final_rank[rank_col[s]] = s;
+      for (s=0; s<numSamples; ++s) // can't be combined with loop above
+        sample1_ranks(v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, s) = final_rank[s] + 1;
+    }
 
 #ifdef DEBUG
     Cout << "rank1\n" << sample1_ranks << '\n';
@@ -221,7 +231,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     // store sample ranks returned by 2nd get_parameter_sets() call
     int num_samp2 = samplesRef - numSamples;
 
-    IntMatrix sample2_ranks(numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, num_samp2, false);
+    IntMatrix sample2_ranks(numContinuousVars+numDiscreteIntVars+numDiscreteRealVars+numDiscreteStringVars, num_samp2, false);
     for (s=0; s<num_samp2; ++s) {
       int* s2r_s = sample2_ranks[s]; Real* sR_s = sampleRanks[s];
       for (v=0; v<numContinuousVars; ++v)
@@ -249,6 +259,17 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       for (s=0; s<num_samp2; ++s) // can't be combined with loop above
         sample2_ranks(v+numContinuousVars+numDiscreteIntVars, s) = final_rank[s] + 1;
     }
+    for (v=0; v<numDiscreteStringVars; ++v) {
+      for (size_t rank_count = 0; rank_count < num_samp2; rank_count++){
+        rank_col[rank_count] = rank_count;
+        rawData[rank_count] = allSamples[rank_count][v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars];
+      }
+      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
+      for (s=0; s<num_samp2; ++s)
+        final_rank[rank_col[s]] = s;
+      for (s=0; s<num_samp2; ++s) // can't be combined with loop above
+        sample2_ranks(v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, s) = final_rank[s] + 1;
+    }
 
 #ifdef DEBUG
     Cout << "lhs2 test\nsample2\n"; write_data(Cout, allSamples, false);
@@ -256,7 +277,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 #endif // DEBUG
 
     // calculate the combined ranks  
-    sampleRanks.shapeUninitialized(numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, samplesRef);
+    sampleRanks.shapeUninitialized(numContinuousVars+numDiscreteIntVars+numDiscreteRealVars+numDiscreteStringVars, samplesRef);
     for (s=0; s<numSamples; ++s)
       for (v=0; v<numContinuousVars; ++v) {
 	int rank1 = sample1_ranks(v,s), index = rank1 - 1,
@@ -313,6 +334,29 @@ void NonDIncremLHSSampling::quantify_uncertainty()
           sampleRanks(v+numContinuousVars+numDiscreteIntVars, s) = final_rank[s];
       }
     }
+    if (numDiscreteStringVars > 0) {
+      for (v=0; v<numDiscreteStringVars; ++v) {
+        const StringSetArray& all_dss_values
+          = iteratedModel.discrete_set_string_values();
+        for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
+          rank_col[rank_count] = rank_count;
+          Real this_string = (Real)set_value_to_index(sample1string_values[rank_count][v], all_dss_values[v]);
+          rawData[rank_count] = this_string;
+        }
+        for (size_t rank_count = numSamples ; rank_count < samplesRef; rank_count++){
+          rank_col[rank_count] = rank_count;
+          rawData[rank_count] = allSamples[rank_count-numSamples][v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars];
+        }
+        std::sort(rank_col.begin(), rank_col.end(), rank_sort);
+        for (s=0; s<samplesRef; ++s)
+          final_rank[rank_col[s]] = s+1;
+        Cout << "final ranks " << final_rank << '\n';
+        Cout << "rawData " << rawData << '\n'; 
+        //combine_ranks_discrete(ave_ranks, sample1int_values);
+        for (s=0; s<samplesRef; ++s) // can't be combined with loop above
+          sampleRanks(v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, s) = final_rank[s];
+      }
+    }
             
             
 #ifdef DEBUG
@@ -345,6 +389,12 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       allSamples[s][numContinuousVars+k]=sample1int_values[s][k];
     for (size_t k=0; k<numDiscreteRealVars; ++k)
       allSamples[s][numContinuousVars+numDiscreteIntVars+k]=sample1real_values[s][k];
+    for (size_t k=0; k<numDiscreteStringVars; ++k){
+      const StringSetArray& all_dss_values
+        = iteratedModel.discrete_set_string_values();
+      allSamples[s][numContinuousVars+numDiscreteIntVars+numDiscreteRealVars+k]=
+        (Real)set_value_to_index(sample1string_values[s][k], all_dss_values[k]);
+    }
   }
 
 #ifdef DEBUG
