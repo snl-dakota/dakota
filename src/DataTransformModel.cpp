@@ -88,7 +88,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data):
     nonlinear_resp_mapping[num_recast_primary + i][0] = false;
   }
 
-  // callbacks for RecastModel transformations
+  // callbacks for RecastModel transformations: default maps for all but primary
   void (*variables_map) (const Variables&, Variables&) = NULL;
   void (*set_map)  (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
   void (*primary_resp_map) (const Variables&, const Variables&, const Response&, 
@@ -99,6 +99,27 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data):
     initialize(vars_map_indices, nonlinear_vars_mapping, variables_map, set_map,
 	       primary_resp_map_indices, secondary_resp_map_indices, 
 	       nonlinear_resp_mapping, primary_resp_map, secondary_resp_map);
+
+
+  // ---
+  // Expand any submodel Response data to the expanded residual size
+  // ---
+
+  // The following expansions are conservative.  Could be skipped when
+  // only scalar data present and no replicates.
+
+  // Preserve weights through data transformations
+  const RealVector& submodel_weights = sub_model.primary_response_fn_weights();
+  if (!submodel_weights.empty())
+    expand_array(srd, submodel_weights, num_recast_primary, primaryRespFnWts);
+
+  // Preserve sense through data transformations
+  const BoolDeque& submodel_sense = sub_model.primary_response_fn_sense();
+  if (!submodel_sense.empty())
+    expand_array(srd, submodel_sense, num_recast_primary, primaryRespFnSense);
+
+  // BMA TODO: adjust each scaling type to right size
+
 }
 
 
@@ -226,6 +247,26 @@ data_difference_core(const Response& raw_response, Response& residual_response)
   expData.form_residuals(raw_response, total_asv, residual_response);
   if (apply_cov) 
     expData.scale_residuals(residual_response, total_asv);
+}
+
+
+template<typename T>
+void DataTransformModel::
+expand_array(const SharedResponseData& srd, const T& submodel_array, 
+	     size_t recast_size, T& recast_array) const 
+{
+  recast_array.resize(recast_size);
+
+  size_t num_scalar = srd.num_scalar_responses();
+  size_t num_field_groups = srd.num_field_response_groups();
+  size_t calib_term_ind = 0;
+  for (size_t exp_ind=0; exp_ind<expData.num_experiments(); ++exp_ind) {
+    const IntVector& exp_field_lens = expData.field_lengths(exp_ind);
+    for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
+      recast_array[calib_term_ind++] = submodel_array[sc_ind];
+    for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind)
+      recast_array[calib_term_ind++] = submodel_array[num_scalar + fg_ind];
+  }
 }
 
 

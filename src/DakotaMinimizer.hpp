@@ -117,31 +117,16 @@ protected:
   /// secondary responses are unchanged)
   void data_transform_model();
 
-  /// compute the primary response map for a data transform RecastModel
-  void gen_primary_resp_map(const SharedResponseData& srd,
-			    Sizet2DArray& primary_resp_map_indices,
-			    BoolDequeArray& nonlinear_resp_map) const;
-
-  /// expand submodel_array by replicates to populate a pre-sized recast_array
-  template<typename T>
-  void expand_array(const SharedResponseData& srd, const T& submodel_array, 
-		    T& recast_array) const;
-
   /// Wrap iteratedModel in a RecastModel that performs variable
   /// and/or response scaling
   void scale_model();
 
-  /// conversion of request vector values for Least Squares
-  static void replicate_set_recast(const Variables& recast_vars,
-				  const ActiveSet& recast_set,
-				  ActiveSet& sub_model_set);
-
   /// copy the partial response for secondary functions when needed
   /// (data and reduction transforms)
   static void secondary_resp_copier(const Variables& input_vars,
-				    const Variables& output_vars,
-				    const Response& input_response,
-				    Response& output_response);
+   				    const Variables& output_vars,
+   				    const Response& input_response,
+   				    Response& output_response);
 
   /// determine if response transformation is needed due to variable
   /// transformations
@@ -295,11 +280,6 @@ protected:
   /// number of total calibration terms (sum over experiments of 
   /// number of experimental data per experiment, including field data)
   size_t numTotalCalibTerms;
-  /// whether to scale residuals by covariance
-  bool applyCovariance;
-  /// whether matrix-valued covariance is present
-  bool matrixCovarianceActive;
-
 
   // scaling data follow 
   bool       scaleFlag;              ///< flag for overall scaling status
@@ -342,12 +322,6 @@ private:
   //
   //- Heading: Convenience/Helper functions
   //
-
-  /// Recast callback function to difference residuals with observed data
-  static void primary_resp_differencer(const Variables& raw_vars, 
-				       const Variables& residual_vars,
-				       const Response& raw_response, 
-				       Response& residual_response);
 
   //  scaling initialization helper functions:
 

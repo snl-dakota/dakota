@@ -21,6 +21,7 @@
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "RecastModel.hpp"
+#include "DataTransformModel.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #ifdef __SUNPRO_CC
 #include <math.h>  // for std::log
@@ -50,7 +51,6 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
 		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
@@ -73,7 +73,6 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0),
   optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(false), varsScaleFlag(false),
   primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 {
@@ -95,7 +94,6 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   speculativeFlag(false), minimizerRecasts(0), optimizationFlag(true),
   calibrationDataFlag(false),
   numExperiments(0), numTotalCalibTerms(0),
-  applyCovariance(false), matrixCovarianceActive(false),
   scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false), 
   secondaryRespScaleFlag(false)
 { }
@@ -320,105 +318,38 @@ Model Minimizer::original_model(unsigned short recasts_left)
 void Minimizer::data_transform_model()
 {
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Initializing data transformation" << std::endl;
+    Cout << "Initializing calibration data transformation" << std::endl;
   
-  // These may be promoted to members once we use state vars / sigma
   // TODO: need better validation of these sizes and data with error msgs
   numExperiments = probDescDB.get_sizet("responses.num_experiments");
   if (numExperiments < 1) {
       Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);
   }
-
-  // note that we don't want to weight by missing sigma: all = 1.0
+  // TODO: verify: we don't want to weight by missing sigma: all = 1.0
   expData.load_data("Least Squares");
 
-  // update sizes in Iterator view
-  numTotalCalibTerms = expData.num_total_exppoints();
-  numFunctions = numTotalCalibTerms + numNonlinearConstraints;
-  numIterPrimaryFns = numTotalCalibTerms;
-
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
-	 << std::endl;
-
+  // These may be promoted to members once we use state vars / sigma
   size_t num_config_vars_read = 
     probDescDB.get_sizet("responses.num_config_vars");
   if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
     Cout << "\nWarning (least squares): experimental_config_variables " 
 	 << "will be read from file, but ignored." << std::endl;
 
-  applyCovariance = false;
-  matrixCovarianceActive = false;
-  if (expData.variance_type_active(MATRIX_SIGMA)) {
-    // can't apply matrix-valued errors due to possibly incomplete
-    // dataset when active set vector is in use (missing residuals)
-    applyCovariance = true;
-    matrixCovarianceActive = true;
-  }
-  else if (expData.variance_type_active(SCALAR_SIGMA) || 
-	   expData.variance_type_active(DIAGONAL_SIGMA))
-    applyCovariance = true;
-
-  // BMA TODO:
-  // !!! The size of the variables map should be all active variables,
-  // !!! not continuous!!!
-  
-  Sizet2DArray var_map_indices(numContinuousVars), 
-    primary_resp_map_indices(numTotalCalibTerms), 
-    secondary_resp_map_indices(numNonlinearConstraints);
-  bool nonlinear_vars_map = false;
-  size_t num_recast_fns = numTotalCalibTerms + numNonlinearConstraints;
-  BoolDequeArray nonlinear_resp_map(num_recast_fns);
-  // adjust active set vector to 1 + numNonlinearConstraints
-  ShortArray asv(numTotalCalibTerms + numNonlinearConstraints, 1);
-  activeSet.request_vector(asv);
-  
-  for (size_t i=0; i<numContinuousVars; i++) {
-    var_map_indices[i].resize(1);
-    var_map_indices[i][0] = i;
-  }
-
-  const Response& curr_resp = iteratedModel.current_response();
-  const SharedResponseData& srd = curr_resp.shared_data();
-  gen_primary_resp_map(srd, primary_resp_map_indices, nonlinear_resp_map);
-  Cout << "prminds = \n" << primary_resp_map_indices << "\n";
-
-  for (size_t i=0; i<numNonlinearConstraints; i++) {
-    secondary_resp_map_indices[i].resize(1);
-    // the recast constraints just depend on the simulation
-    // constraints, which start at numUserPrimaryFns
-    secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
-    nonlinear_resp_map[numUserPrimaryFns+i].resize(1);
-    nonlinear_resp_map[numUserPrimaryFns+i][0] = false;
-  }
-
-  void (*vars_recast) (const Variables&, Variables&) = NULL;
-  // The default active set recasting should work for current use cases
-  void (*set_recast)  (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
-  void (*pri_resp_recast) (const Variables&, const Variables&,
-			   const Response&, Response&)
-    = primary_resp_differencer;
-  void (*sec_resp_recast) (const Variables&, const Variables&,
-			   const Response&, Response&)
-    = secondary_resp_copier;
-
-  size_t recast_secondary_offset = numNonlinearIneqConstraints;
-  SizetArray recast_vars_comps_total;  // default: empty; no change in size
-  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  short recast_resp_order = 1; // recast resp order to be same as original resp
-  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
-
-  iteratedModel.assign_rep(new
-    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total,
-		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
-		set_recast, primary_resp_map_indices,
-		secondary_resp_map_indices, recast_secondary_offset,
-		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
-		sec_resp_recast), false);
+  iteratedModel.
+    assign_rep(new DataTransformModel(iteratedModel, expData), false);
   ++minimizerRecasts;
 
+  // update sizes in Iterator view from the RecastModel
+  numIterPrimaryFns = numTotalCalibTerms = iteratedModel.num_primary_fns();
+  numFunctions = iteratedModel.num_functions();
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
+	 << std::endl;
+
+  // adjust active set vector to reflect new residual size
+  ShortArray asv(numFunctions, 1);
+  activeSet.request_vector(asv);
 
   // TODO: review where should derivatives happen in data transform
   // case: where derivatives are computed should be tied to whether
@@ -435,89 +366,8 @@ void Minimizer::data_transform_model()
   //  iteratedModel.supports_derivative_estimation(true);
   //  RecastModel* recast_model_rep = (RecastModel*) iteratedModel.model_rep();
   //  recast_model_rep->submodel_supports_derivative_estimation(false);
-
-  // The following expansions are conservative.  Could be skipped when
-  // only scalar data present and no replicates.
-
-  // Preserve weights through data transformations
-  const RealVector& submodel_weights = 
-    iteratedModel.subordinate_model().primary_response_fn_weights();
-  if (!submodel_weights.empty()) { 
-    RealVector recast_weights(numTotalCalibTerms);
-    expand_array(srd, submodel_weights, recast_weights);
-    iteratedModel.primary_response_fn_weights(recast_weights);
-  }
-  // Preserve sense through data transformations
-  const BoolDeque& submodel_sense = 
-    iteratedModel.subordinate_model().primary_response_fn_sense();
-  if (!submodel_sense.empty()) {
-    BoolDeque recast_sense(numTotalCalibTerms);
-    expand_array(srd, submodel_sense, recast_sense);
-    iteratedModel.primary_response_fn_sense(recast_sense);
-  }
 }
 
-
-void Minimizer::
-gen_primary_resp_map(const SharedResponseData& srd,
-		     Sizet2DArray& primary_resp_map_indices,
-		     BoolDequeArray& nonlinear_resp_map) const
-{
-  size_t num_scalar = srd.num_scalar_responses();
-  size_t num_field_groups = srd.num_field_response_groups();
-  const IntVector& sim_field_lens = srd.field_lengths();
-  size_t calib_term_ind = 0;
-  for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
-    // field lengths can be different per experiment
-    const IntVector& exp_field_lens = expData.field_lengths(exp_ind);
-    for (size_t scalar_ind = 0; scalar_ind < num_scalar; ++scalar_ind) {
-      // simulation scalars inform calibration terms 1 to 1 
-      // (no correlation or interpolation allowed)
-      primary_resp_map_indices[calib_term_ind].resize(1);
-      primary_resp_map_indices[calib_term_ind][0] = scalar_ind; //=calib_term_ind
-      nonlinear_resp_map[calib_term_ind].resize(1);
-      nonlinear_resp_map[calib_term_ind][0] = false;
-      ++calib_term_ind;
-    }
-    // base index for simulation in current field group
-    size_t sim_ind_offset = num_scalar; 
-    for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind) {
-      // each field calibration term depends on all simulation field
-      // entries for this field, due to correlation or interpolation
-      // if no matrix correlation, no interpolation, could skip
-      for (size_t z=0; z<exp_field_lens[fg_ind]; ++z) {
-	primary_resp_map_indices[calib_term_ind].resize(sim_field_lens[fg_ind]);
-	nonlinear_resp_map[calib_term_ind].resize(sim_field_lens[fg_ind]);
-	// this residual depends on all other simulation data for this field
-	for (size_t sim_ind = 0; sim_ind<sim_field_lens[fg_ind]; ++sim_ind) {
-	  primary_resp_map_indices[calib_term_ind][sim_ind] = 
-	    sim_ind_offset + sim_ind;
-	  nonlinear_resp_map[calib_term_ind][sim_ind] = false;
-	}
-	++calib_term_ind;
-      }
-      sim_ind_offset += sim_field_lens[fg_ind];
-    }
-  }
-}
-
-
-template<typename T>
-void Minimizer::
-expand_array(const SharedResponseData& srd, const T& submodel_array, 
-	     T& recast_array) const 
-{
-  size_t num_scalar = srd.num_scalar_responses();
-  size_t num_field_groups = srd.num_field_response_groups();
-  size_t calib_term_ind = 0;
-  for (size_t exp_ind=0; exp_ind<numExperiments; ++exp_ind) {
-    const IntVector& exp_field_lens = expData.field_lengths(exp_ind);
-    for (size_t sc_ind = 0; sc_ind < num_scalar; ++sc_ind)
-      recast_array[calib_term_ind++] = submodel_array[sc_ind];
-    for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind)
-      recast_array[calib_term_ind++] = submodel_array[num_scalar + fg_ind];
-  }
-}
 
 
 /** Wrap the iteratedModel in a scaling transformation, such that
@@ -1020,63 +870,24 @@ compute_scaling(int object_type, // type of object being scaled
 }
 
 
-/** Difference the primary responses with observed data */
-void Minimizer::
-primary_resp_differencer(const Variables& raw_vars, 
-			 const Variables& residual_vars,
-			 const Response& raw_response, 
-			 Response& residual_response)
-{
-  // data differencing doesn't affect gradients and Hessians, as long
-  // as they use the updated residual in their computation.  They probably don't!
-
-  if (minimizerInstance->outputLevel > NORMAL_OUTPUT) {
-    Cout << "\n-----------------------------------------------------------";
-    Cout << "\nPost-processing Function Evaluation: Data Transformation";
-    Cout << "\n-----------------------------------------------------------" 
-	 << std::endl;
-  }
-
-  minimizerInstance->data_difference_core(raw_response, residual_response);
-
-  if (minimizerInstance->outputLevel > NORMAL_OUTPUT && 
-      minimizerInstance->numUserPrimaryFns > 0) {
-    Cout << "Least squares data transformation:\n";
-    write_data(Cout, residual_response.function_values(),
-	       residual_response.function_labels());
-    Cout << std::endl;
-  }
-  if (minimizerInstance->outputLevel == DEBUG_OUTPUT && 
-      minimizerInstance->numUserPrimaryFns > 0) {
-    size_t numTotalCalibTerms = 
-      minimizerInstance-> expData.num_total_exppoints();
-    const ShortArray& asv = residual_response.active_set_request_vector();
-    for (size_t i=0; i < numTotalCalibTerms; i++) {
-      if (asv[i] & 1) 
-        Cout << " residual_response function " << i << ' ' 
-	     << residual_response.function_value(i) << '\n';
-      if (asv[i] & 2) 
-        Cout << " residual_response gradient " << i << ' ' 
-	     << residual_response.function_gradient_view(i) << '\n';
-      if (asv[i] & 4) 
-        Cout << " residual_response hessian " << i << ' ' 
-	     << residual_response.function_hessian(i) << '\n';
-    }
-  }
-}
-
 void Minimizer::
 data_difference_core(const Response& raw_response, Response& residual_response) 
 {
   ShortArray total_asv;
+  bool apply_cov = expData.variance_active();
+  // can't apply matrix-valued errors due to possibly incomplete
+  // dataset when active set vector is in use (missing residuals)
+  bool matrix_cov_active = expData.variance_type_active(MATRIX_SIGMA);
+
   bool interrogate_field_data = 
-    ( ( matrixCovarianceActive ) || ( expData.interpolate_flag() ) );
+    ( matrix_cov_active || expData.interpolate_flag() );
   total_asv = expData.determine_active_request(residual_response, 
-					       interrogate_field_data);
+                                              interrogate_field_data);
   expData.form_residuals(raw_response, total_asv, residual_response);
-  if (applyCovariance) 
+  if (apply_cov) 
     expData.scale_residuals(residual_response, total_asv);
 }
+
 
 /** Variables map from iterator/scaled space to user/native space
     using a RecastModel. */
@@ -1105,24 +916,6 @@ variables_unscaler(const Variables& native_vars, Variables& scaled_vars)
     minimizerInstance->cvScaleMultipliers, minimizerInstance->cvScaleOffsets));
 }
 
-
-void Minimizer::
-replicate_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
-		   ActiveSet& sub_model_set)
-{
-  // BMA: IS this actually needed as an override?!?
-  // AUGMENT standard mappings in RecastModel::set_mapping()
-  const ShortArray& sub_model_asv = sub_model_set.request_vector();
-  size_t i,j, num_sm_fns = sub_model_asv.size();
-  size_t inner_size = recast_set.request_vector().size()/num_sm_fns;
-  ShortArray new_asv(num_sm_fns,0);
-  for (i=0; i<num_sm_fns; ++i) {
-    for (j=0; j<inner_size; ++j)  
-      new_asv[i] |= recast_set.request_vector()[i*inner_size+j];
-    sub_model_set.request_value(new_asv[i],i);
-  }
-  sub_model_set.derivative_vector(recast_set.derivative_vector());
-}
 
 void Minimizer::
 primary_resp_scaler(const Variables& native_vars, const Variables& scaled_vars,
@@ -1191,13 +984,13 @@ response_scaler_core(const Variables& native_vars,
     space using a RecastModel. */
 void Minimizer::
 secondary_resp_copier(const Variables& input_vars,
-		      const Variables& output_vars,
-		      const Response& input_response,
-		      Response& output_response)
+ 		      const Variables& output_vars,
+ 		      const Response& input_response,
+ 		      Response& output_response)
 {
   // in cases where we reduce or data transform, only need to topu
   // TODO: fix use of numIter here!!!
-
+  
   output_response.update_partial(minimizerInstance->numIterPrimaryFns,
     minimizerInstance->numNonlinearConstraints, input_response,
     minimizerInstance->numUserPrimaryFns);
