@@ -1720,7 +1720,7 @@ iterator_response_overlay(const Response& sub_iterator_response,
     num_mapped_deriv_vars = mapped_dvv.size();
   bool deriv_flag = false;
   for (i=0; i<num_mapped_fns; ++i)
-    { if (mapped_asv[i] & 6) deriv_flag = true; break; }
+    if (mapped_asv[i] & 6) { deriv_flag = true; break; }
   // Sanity checks: the derivatives in the sub-iterator response must be with
   // respect to the same variables; but since the numbering may be different
   // following insertion/augmentation, only the DVV length is verified.
@@ -1773,9 +1773,9 @@ iterator_response_overlay(const Response& sub_iterator_response,
   size_t num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
     num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
   for (i=0; i<num_sub_iter_mapped_2; ++i) {
-    m_index = i + num_mapped_1 + numOptInterfIneqCon;// {a_l} <= [A]{S} <= {a_u}
+    m_index = num_mapped_1 + numOptInterfIneqCon + i;// {a_l} <= [A]{S} <= {a_u}
     if (i>=numSubIterMappedIneqCon)
-      m_index += numOptInterfEqCon + numSubIterMappedIneqCon; // [A]{S} == {a_t}
+      m_index += numOptInterfEqCon;                           // [A]{S} == {a_t}
     if (mapped_asv[m_index] & 1) { // mapped_vals
       Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
       for (j=0; j<numSubIterFns; ++j)
