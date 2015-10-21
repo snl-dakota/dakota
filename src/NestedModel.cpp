@@ -1692,10 +1692,10 @@ interface_response_overlay(const Response& opt_interface_response,
     num_mapped_1
       = std::max(numOptInterfPrimary, (size_t)primaryRespCoeffs.numRows());
   for (i=0; i<num_opt_interf_con; ++i) {
-    oi_index = i + numOptInterfPrimary;
-    m_index  = i + num_mapped_1; // {g_l} <= {g} <= {g_u}
+    oi_index = numOptInterfPrimary + i;
+    m_index  = num_mapped_1 + i; // {g_l} <= {g} <= {g_u}
     if (i>=numOptInterfIneqCon)  //          {g} == {g_t}
-      m_index += numOptInterfIneqCon + numSubIterMappedIneqCon;
+      m_index += numSubIterMappedIneqCon;
     if (mapped_asv[m_index] & 1) // mapped_vals
       mapped_response.function_value(
 	opt_interface_response.function_value(oi_index), m_index);
