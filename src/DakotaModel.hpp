@@ -34,6 +34,44 @@ class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
 
+/// Simple container for user-provided scaling data, possibly expanded by replicates through the models
+class ScalingOptions {
+public:
+  /// default ctor: no scaling specified
+  ScalingOptions() { /* empty ctor */ };
+  /// standard ctor: scaling from problem DB
+  ScalingOptions(const StringArray& cv_st, RealVector cv_s,
+                 const StringArray& pri_st, RealVector pri_s,
+                 const StringArray& nln_ineq_st, RealVector nln_ineq_s,
+                 const StringArray& nln_eq_st, RealVector nln_eq_s,
+                 const StringArray& lin_ineq_st, RealVector lin_ineq_s,
+                 const StringArray& lin_eq_st, RealVector lin_eq_s):
+    cvScaleTypes(cv_st), cvScales(cv_s), 
+    priScaleTypes(pri_st), priScales(pri_s),
+    nlnIneqScaleTypes(nln_ineq_st), nlnIneqScales(nln_ineq_s),
+    nlnEqScaleTypes(nln_eq_st), nlnEqScales(nln_eq_s),
+    linIneqScaleTypes(lin_ineq_st), linIneqScales(lin_ineq_s),
+    linEqScaleTypes(lin_eq_st), linEqScales(lin_eq_s) 
+  { /* empty ctor */ }
+  
+  // continuous variables scales
+  StringArray cvScaleTypes;
+  RealVector  cvScales;
+  // primary response scales
+  StringArray priScaleTypes;
+  RealVector  priScales;
+  // nonlinear constraint scales
+  StringArray nlnIneqScaleTypes;
+  RealVector  nlnIneqScales;
+  StringArray nlnEqScaleTypes;
+  RealVector  nlnEqScales;
+  // linear constraint scales
+  StringArray linIneqScaleTypes;
+  RealVector  linIneqScales;
+  StringArray linEqScaleTypes;
+  RealVector  linEqScales;               
+};
+
 
 /// Base class for the model class hierarchy.
 
@@ -859,6 +897,8 @@ public:
   /// get the relative weightings for multiple objective functions or least
   /// squares terms
   const RealVector& primary_response_fn_weights() const;
+  /// user-provided scaling options
+  const ScalingOptions& scaling_options() const;
 
   /// get the primary response function type (generic, objective, calibration)
   short primary_fn_type() const;
@@ -1142,6 +1182,10 @@ protected:
 
   /// whether to perform hierarchical evalID tagging of params/results
   bool hierarchicalTagging;
+
+  /// user-provided scaling data from the problem DB, possibly
+  /// modified by Recasting
+  ScalingOptions scalingOpts;
 
 private:
  
@@ -3017,6 +3061,10 @@ inline const BoolDeque& Model::primary_response_fn_sense() const
 
 inline const RealVector& Model::primary_response_fn_weights() const
 { return (modelRep) ? modelRep->primaryRespFnWts : primaryRespFnWts; }
+
+
+inline const ScalingOptions& Model::scaling_options() const
+{ return (modelRep) ? modelRep->scalingOpts : scalingOpts; }
 
 
 inline short Model::primary_fn_type() const

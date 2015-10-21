@@ -214,6 +214,12 @@ protected:
   /// infers MOO/NLS solution from the solution of a single-objective optimizer
   void local_recast_retrieve(const Variables& vars, Response& response) const;
 
+  /// convenience function to map a final user-space response to a residual
+  /// response for results output (using the dataTransformModel)
+  void data_transform_response(const Variables& sub_model_vars, 
+                               const Response& raw_response, 
+                               Response& residual_response);
+
   //
   //- Heading: Data
   //
@@ -280,6 +286,9 @@ protected:
   /// number of total calibration terms (sum over experiments of 
   /// number of experimental data per experiment, including field data)
   size_t numTotalCalibTerms;
+  /// Shallow copy of the data transformation model, when present
+  /// (cached in case further wrapped by other transformations)
+  Model dataTransformModel; 
 
   // scaling data follow 
   bool       scaleFlag;              ///< flag for overall scaling status
@@ -311,11 +320,6 @@ protected:
 
   /// convenience flag for gradient_type == numerical && method_source == vendor
   bool vendorNumericalGradFlag;
-
-  /// Core of data difference, which doesn't perform any output
-  void data_difference_core(const Response& raw_response, 
-			    Response& residual_response);
-
 
 private:
 

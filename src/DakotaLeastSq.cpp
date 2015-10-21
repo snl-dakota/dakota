@@ -209,17 +209,18 @@ void LeastSq::print_results(std::ostream& s)
     // TODO: approximate models with interpolation of field data may
     // not have recovered the correct best residuals
 
+    // BMA TODO: Why copying the response, why not just update
+    // dataTransformModel?
+
     // first use the data difference model to print data differenced
     // residuals, perhaps most useful to the user
-    unsigned short recasts_left = 1;  // leave one recast for the data
-    Model data_diff_model = original_model(recasts_left);
-    Response residual_resp(data_diff_model.current_response().copy());
-    data_difference_core(bestResponseArray.front(), residual_resp);
+    Response residual_resp(dataTransformModel.current_response().copy());
+    data_transform_response(best_vars, bestResponseArray.front(), residual_resp);
     const RealVector& resid_fns = residual_resp.function_values(); 
 
     // must use the expanded weight set from the data difference model
     const RealVector& lsq_weights 
-      = data_diff_model.primary_response_fn_weights();
+      = dataTransformModel.primary_response_fn_weights();
     print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
 		    num_best, best_ind, s);
 
@@ -521,10 +522,9 @@ void LeastSq::get_confidence_intervals()
 
     // NOTE: This doesn't assume current_response() contains best;
     // just uses it as a temporary object for computing the residuals
-    unsigned short recasts_left = 1;  // leave one recast for the data
-    Model data_diff_model = original_model(recasts_left);
-    Response residual_resp(data_diff_model.current_response().copy());
-    data_difference_core(bestResponseArray.front(), residual_resp);
+    Response residual_resp(dataTransformModel.current_response().copy());
+    data_transform_response(bestVariablesArray.front(),
+                            bestResponseArray.front(), residual_resp);
     fn_vals_star = residual_resp.function_values(); 
   }
   else 

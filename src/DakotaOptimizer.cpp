@@ -207,29 +207,28 @@ void Optimizer::print_results(std::ostream& s)
     }
     else {
       if (calibrationDataFlag) {
-	// first use the data difference model to print data differenced
-	// residuals, perhaps most useful to the user
-	unsigned short recasts_left = 1;  // leave one recast
-	Model data_diff_model = original_model(recasts_left);
-	Response residual_resp = data_diff_model.current_response();
-	data_difference_core(bestResponseArray[i], residual_resp);
-	const RealVector& resid_fns = residual_resp.function_values(); 
+        // first use the data difference model to print data differenced
+        // residuals, perhaps most useful to the user
+        Response residual_resp = dataTransformModel.current_response();
+        data_transform_response(bestVariablesArray[i], bestResponseArray[i], 
+                                residual_resp);
+        const RealVector& resid_fns = residual_resp.function_values(); 
+        
+        // must use the expanded weight set from the data difference model
+        const RealVector& lsq_weights = 
+          dataTransformModel.primary_response_fn_weights();
+        print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
+                        num_best, i, s);
 
-	// must use the expanded weight set from the data difference model
-	const RealVector& lsq_weights 
-	  = data_diff_model.primary_response_fn_weights();
-	print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
-			num_best, i, s);
-
-	// then print the original userModel Responses
-	print_model_resp(numUserPrimaryFns, best_fns, num_best, i, s);
+        // then print the original userModel Responses
+        print_model_resp(numUserPrimaryFns, best_fns, num_best, i, s);
       }
       else {
-	// the original model had least squares terms
-	const RealVector& lsq_weights 
-	  = orig_model.primary_response_fn_weights();
-	print_residuals(numUserPrimaryFns, best_fns, lsq_weights, 
-			num_best, i, s);
+        // the original model had least squares terms
+        const RealVector& lsq_weights 
+          = orig_model.primary_response_fn_weights();
+        print_residuals(numUserPrimaryFns, best_fns, lsq_weights, 
+                        num_best, i, s);
       }
     }
 
@@ -237,14 +236,14 @@ void Optimizer::print_results(std::ostream& s)
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
       write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, 
-			 best_fns);
+                         best_fns);
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
     // return the best results after iteration completion.  Therfore, perform a
     // search in data_pairs to extract the evalId for the best fn eval.
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
-					   bestVariablesArray[i], search_set);
+                                           bestVariablesArray[i], search_set);
     if (cache_it == data_pairs.get<hashed>().end())
       s << "<<<<< Best data not found in evaluation cache\n\n";
     else {

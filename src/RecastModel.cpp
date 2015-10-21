@@ -643,7 +643,7 @@ void RecastModel::initialize_data_from_submodel()
   gradientType          = subModel.gradient_type();
   methodSource          = subModel.method_source();
   ignoreBounds          = subModel.ignore_bounds();
-  centralHess	        = subModel.central_hess();
+  centralHess	          = subModel.central_hess();
   intervalType          = subModel.interval_type();
   fdGradStepSize        = subModel.fd_gradient_step_size();
   fdGradStepType        = subModel.fd_gradient_step_type();
@@ -658,6 +658,8 @@ void RecastModel::initialize_data_from_submodel()
   hessIdAnalytic        = subModel.hessian_id_analytic();
   hessIdNumerical       = subModel.hessian_id_numerical();
   hessIdQuasi           = subModel.hessian_id_quasi();
+
+  scalingOpts           = subModel.scaling_options();
 }
 
 

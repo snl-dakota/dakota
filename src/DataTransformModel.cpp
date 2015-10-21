@@ -27,6 +27,8 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
 // * Verify that the default variables, active set, and secondary
 //   response mapping suffice Need test with data and constraints
 
+// Don't want to output message during recast retrieve... (or do we?)
+
 
 /** This constructor computes various indices and mappings, then
     updates the properties of the RecastModel */
@@ -109,17 +111,45 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data):
   // only scalar data present and no replicates.
 
   // Preserve weights through data transformations
-  const RealVector& submodel_weights = sub_model.primary_response_fn_weights();
-  if (!submodel_weights.empty())
-    expand_array(srd, submodel_weights, num_recast_primary, primaryRespFnWts);
-
+  expand_array(srd, sub_model.primary_response_fn_weights(), num_recast_primary,
+               primaryRespFnWts);
   // Preserve sense through data transformations
-  const BoolDeque& submodel_sense = sub_model.primary_response_fn_sense();
-  if (!submodel_sense.empty())
-    expand_array(srd, submodel_sense, num_recast_primary, primaryRespFnSense);
+  expand_array(srd, sub_model.primary_response_fn_sense(), num_recast_primary,
+               primaryRespFnSense);
 
-  // BMA TODO: adjust each scaling type to right size
+  // CV scales don't change in this recasting; base RecastModel captures them
 
+  // Adjust each scaling type to right size, leaving as length 1 if needed
+  expand_scales_array(srd, sub_model.scaling_options().priScaleTypes, 
+                      sub_model.scaling_options().priScaleTypes.size(),
+                      num_recast_primary, scalingOpts.priScaleTypes);
+  expand_scales_array(srd, sub_model.scaling_options().priScales, 
+                      sub_model.scaling_options().priScales.length(),
+                      num_recast_primary, scalingOpts.priScales);
+  expand_scales_array(srd, sub_model.scaling_options().nlnIneqScaleTypes, 
+                      sub_model.scaling_options().nlnIneqScaleTypes.size(),
+                      num_recast_primary, scalingOpts.nlnIneqScaleTypes);
+  expand_scales_array(srd, sub_model.scaling_options().nlnIneqScales, 
+                      sub_model.scaling_options().nlnIneqScales.length(),
+                      num_recast_primary, scalingOpts.nlnIneqScales);
+  expand_scales_array(srd, sub_model.scaling_options().nlnEqScaleTypes, 
+                      sub_model.scaling_options().nlnEqScaleTypes.size(),
+                      num_recast_primary, scalingOpts.nlnEqScaleTypes);
+  expand_scales_array(srd, sub_model.scaling_options().nlnEqScales, 
+                      sub_model.scaling_options().nlnEqScales.length(),
+                      num_recast_primary, scalingOpts.nlnEqScales);
+  expand_scales_array(srd, sub_model.scaling_options().linIneqScaleTypes, 
+                      sub_model.scaling_options().linIneqScaleTypes.size(),
+                      num_recast_primary, scalingOpts.linIneqScaleTypes);
+  expand_scales_array(srd, sub_model.scaling_options().linIneqScales, 
+                      sub_model.scaling_options().linIneqScales.length(),
+                      num_recast_primary, scalingOpts.linIneqScales);
+  expand_scales_array(srd, sub_model.scaling_options().linEqScaleTypes, 
+                      sub_model.scaling_options().linEqScaleTypes.size(),
+                      num_recast_primary, scalingOpts.linEqScaleTypes);
+  expand_scales_array(srd, sub_model.scaling_options().linEqScales, 
+                      sub_model.scaling_options().linEqScales.length(),
+                      num_recast_primary, scalingOpts.linEqScales);
 }
 
 
@@ -250,11 +280,32 @@ data_difference_core(const Response& raw_response, Response& residual_response)
 }
 
 
+/** Passing the inbound array size so we can use one function for
+    Teuchos and std containers (size vs. length) */
+template<typename T>
+void DataTransformModel::
+expand_scales_array(const SharedResponseData& srd, const T& submodel_array,
+                    size_t submodel_size, size_t recast_size, 
+                    T& recast_array) const 
+{
+  if (submodel_size == 1)
+    // this copy may not be needed, depends on ctor behavior
+    recast_array = submodel_array;
+  else if (submodel_size > 1) {
+    expand_array(srd, submodel_array, recast_size, recast_array);
+  }
+  // else leave recast_array empty
+}
+
+
 template<typename T>
 void DataTransformModel::
 expand_array(const SharedResponseData& srd, const T& submodel_array, 
-	     size_t recast_size, T& recast_array) const 
+             size_t recast_size, T& recast_array) const 
 {
+  if (submodel_array.empty())
+    return;  // leave recast_array empty
+
   recast_array.resize(recast_size);
 
   size_t num_scalar = srd.num_scalar_responses();

@@ -339,6 +339,7 @@ void Minimizer::data_transform_model()
   iteratedModel.
     assign_rep(new DataTransformModel(iteratedModel, expData), false);
   ++minimizerRecasts;
+  dataTransformModel = iteratedModel;
 
   // update sizes in Iterator view from the RecastModel
   numIterPrimaryFns = numTotalCalibTerms = iteratedModel.num_primary_fns();
@@ -871,21 +872,18 @@ compute_scaling(int object_type, // type of object being scaled
 
 
 void Minimizer::
-data_difference_core(const Response& raw_response, Response& residual_response) 
+data_transform_response(const Variables& sub_model_vars, 
+                        const Response& sub_model_resp,
+                        Response& residual_resp) 
 {
-  ShortArray total_asv;
-  bool apply_cov = expData.variance_active();
-  // can't apply matrix-valued errors due to possibly incomplete
-  // dataset when active set vector is in use (missing residuals)
-  bool matrix_cov_active = expData.variance_type_active(MATRIX_SIGMA);
-
-  bool interrogate_field_data = 
-    ( matrix_cov_active || expData.interpolate_flag() );
-  total_asv = expData.determine_active_request(residual_response, 
-                                              interrogate_field_data);
-  expData.form_residuals(raw_response, total_asv, residual_response);
-  if (apply_cov) 
-    expData.scale_residuals(residual_response, total_asv);
+  // A DataTransform doesn't map variables, but we map them here to
+  // avoid introducing a latent bug
+  Variables recast_vars(dataTransformModel.current_variables().copy());
+  DataTransformModel* dt_model_rep = 
+    static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+  dt_model_rep->inverse_transform_variables(sub_model_vars, recast_vars);
+  dt_model_rep->transform_response(recast_vars, sub_model_vars, 
+                                   sub_model_resp, residual_resp);
 }
 
 
