@@ -79,6 +79,11 @@ protected:
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
 				RealMatrix& best_samples);
+
+  void select_refinement_points_jdjakem(const RealVectorArray& candidate_samples,
+					unsigned short batch_size,
+					RealMatrix& best_samples);
+
   void append(const RealMatrix& samples, const IntResponseMap& resp_map);
 
   /// uniformly increment the order of the polynomial chaos expansion and

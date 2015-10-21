@@ -8,7 +8,8 @@ set(dakota_unit_test_copied_files)
 # It is desirable to split-up dakota into packages of re-useable components
 # but that is a significant re-factoring effort in its own right, so
 # link with the whole dakota library (for now)
-include_directories(${Dakota_SOURCE_DIR}/src)
+#include_directories(${Dakota_SOURCE_DIR}/src)
+include_directories(${Dakota_INCLUDE_DIRS}/src) # include tpl directories 
 # TODO: make sure preprocessor defines agree with src/ and test/
 # (manage via variable at top-level)
 
@@ -67,6 +68,12 @@ dakota_add_unit_test(NAME bootstrap_util_test
 # Unit test: experiment data covariance utilities
 dakota_add_unit_test(NAME test_field_covariance_utils
   SOURCES test_field_covariance_utils.cpp
+  LINK_DAKOTA_LIBS
+  )
+
+# Unit test: Leja sampling
+dakota_add_unit_test(NAME leja_sampling
+  SOURCES leja_sampling.cpp
   LINK_DAKOTA_LIBS
   )
 

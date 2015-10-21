@@ -25,6 +25,7 @@
 #include "CubatureDriver.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include "nested_sampling.hpp"
 
 
 namespace Dakota {
@@ -656,6 +657,51 @@ void NonDPolynomialChaos::compute_expansion()
   }
 }
 
+void NonDPolynomialChaos::
+select_refinement_points_jdjakem(const RealVectorArray& candidate_samples,
+				 unsigned short batch_size, 
+				 RealMatrix& best_samples){
+  // from initial candidate_samples, select the best batch_size points in terms
+  // of information content, as determined by pivoted LU factorization
+  int new_size = numSamplesOnModel + batch_size;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Select refinement points: new_size = " << new_size << "\n";
+
+  // This computation does not utilize any QoI information, so aggregation
+  // across the QoI vector is not necessary.
+  // TO DO: utilize static fn instead of 0th poly_approx; this would also
+  // facilitate usage from other surrogate types (especially GP).
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep
+    = (PecosApproximation*)poly_approxs[0].approx_rep();
+
+  Pecos::SurrogateData surr_data;
+  poly_approx_rep->surrogate_data( surr_data );
+  int num_surr_data_pts = surr_data.points();
+  RealMatrix current_samples( numContinuousVars, num_surr_data_pts, false );
+  for (int j=0; j<num_surr_data_pts; ++j) 
+    for (int i=0; i<numContinuousVars; ++i) 
+      current_samples(i,j)=surr_data.continuous_variables(j)[i];
+
+  LejaSampler sampler;
+  sampler.set_seed(1);
+  sampler.set_precondition(true);
+  std::vector<Pecos::BasisPolynomial> polynomial_basis;
+  poly_approx_rep->polynomial_basis( polynomial_basis );
+  sampler.set_polynomial_basis( polynomial_basis );
+  sampler.set_total_degree_basis_from_num_samples( numContinuousVars, new_size );
+  RealMatrix candidate_samples_matrix;
+  Pecos::convert( candidate_samples, candidate_samples_matrix );
+  sampler.Sampler::enrich_samples((int)numContinuousVars, current_samples, 
+				  (int)batch_size, candidate_samples_matrix, 
+				  best_samples);
+  
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Select refinement pts: best_samples =\n";
+    write_data(Cout, best_samples);
+  }
+  
+}
 
 void NonDPolynomialChaos::
 select_refinement_points(const RealVectorArray& candidate_samples,

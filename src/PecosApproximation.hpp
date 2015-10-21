@@ -171,6 +171,9 @@ public:
   // with current pts as 1st rows 
   void augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 			     const UShort2DArray& multi_index);
+  // get_basis_polynomial
+  void polynomial_basis( std::vector<Pecos::BasisPolynomial>& polynomial_basis);
+  void surrogate_data( Pecos::SurrogateData& surr_data );
 
   /// return pecosBasisApprox
   Pecos::BasisApproximation& pecos_basis_approximation();
@@ -427,6 +430,20 @@ augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 {
   ((Pecos::RegressOrthogPolyApproximation*)polyApproxRep)->
     augment_linear_system(samples, A, multi_index);
+}
+
+inline void PecosApproximation::
+polynomial_basis( std::vector<Pecos::BasisPolynomial>& basis_polynomial )
+{
+  basis_polynomial  = ((Pecos::SharedOrthogPolyApproxData*)polyApproxRep)->
+    polynomial_basis();
+}
+
+inline void PecosApproximation::
+surrogate_data( Pecos::SurrogateData& surr_data )
+{
+  surr_data = ((Pecos::PolynomialApproximation*)polyApproxRep)->
+    surrogate_data();
 }
 
 
