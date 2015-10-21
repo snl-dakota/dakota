@@ -94,7 +94,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data):
   void (*primary_resp_map) (const Variables&, const Variables&, const Response&, 
 			    Response&) = primary_resp_differencer;
   void (*secondary_resp_map) (const Variables&, const Variables&,
-			      const Response&, Response&);
+			      const Response&, Response&) = NULL;
   RecastModel::
     initialize(vars_map_indices, nonlinear_vars_mapping, variables_map, set_map,
 	       primary_resp_map_indices, secondary_resp_map_indices, 
