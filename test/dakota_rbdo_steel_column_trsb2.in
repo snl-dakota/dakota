@@ -13,7 +13,7 @@ method,
 	model_pointer = 'OPTIM_M'
 	  approx_method_pointer = 'OPTIM'
 	  max_iterations = 50
-	  soft_convergence_limit = 2
+	  soft_convergence_limit = 4
 	  trust_region
 	    initial_size = 0.2
 	    contraction_factor = 0.5
