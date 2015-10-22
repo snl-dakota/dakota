@@ -73,6 +73,20 @@ private:
   int previousSamples;      ///< number of samples in previous LHS run
   bool varBasedDecompFlag;  ///< flags computation of VBD
   static RealArray rawData; ///< static data used by static rank_sort() fn
+  static IntArray rankCol; ///< workspace for store_ranks and combine_discrete_ranks
+  static IntArray finalRank; ///< workspace for store_ranks and combine_discrete_ranks
+  template<typename T>
+  void store_ranks(IntMatrix &sample_ranks,
+                 const size_t num_vars,
+                 const size_t num_samples,
+                 const size_t offset_values,
+                 const size_t offset_ranks,
+                 const T& values);
+
+  template <typename T>
+  void combine_discrete_ranks(const T& values, const size_t num_vars,
+      const size_t offset);
+
 };
 
 } // namespace Dakota

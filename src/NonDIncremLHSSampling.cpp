@@ -39,6 +39,8 @@ namespace Dakota {
   extern PRPCache data_pairs;
 
 RealArray NonDIncremLHSSampling::rawData;
+IntArray NonDIncremLHSSampling::finalRank;
+IntArray NonDIncremLHSSampling::rankCol;
 
 
 /** This constructor is called for a standard letter-envelope iterator 
@@ -134,6 +136,22 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   Cout << "\nsample1string\n" << sample1string_values << '\n';
 #endif
 
+  // Create an index matrix for sample1string_values to simplify several 
+  // operations below
+  IntVectorArray sample1string_index(numSamples);
+  for (size_t rank_count = 0; rank_count < numSamples; rank_count++)
+    sample1string_index[rank_count].resize(numDiscreteStringVars);
+  const StringSetArray& all_dss_values 
+    = iteratedModel.discrete_set_string_values();
+  for (v=0; v<numDiscreteStringVars; ++v) {
+    for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
+      //StringMultiArrayConstView ds_vars = sample1string_values[rank_count];
+      sample1string_index[rank_count][v] = set_value_to_index(
+          sample1string_values[rank_count][v], all_dss_values[v]);
+    }
+  }
+
+
   if (sampleType == SUBMETHOD_INCREMENTAL_RANDOM) {
     // for random sampling, obtain a new set of samples of the full size
     numSamples = samplesRef;
@@ -143,60 +161,17 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   else if (sampleType == SUBMETHOD_INCREMENTAL_LHS) {
     // for LHS, determine rank of current sample, rank of second "fill in" 
     // sample, and ranks of combined sample
-    IntArray rank_col(numSamples), final_rank(numSamples);
-    rawData.resize(numSamples);
-    IntMatrix sample1_ranks(numContinuousVars + numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars, numSamples, false);
+    IntMatrix sample1_ranks(numContinuousVars + numDiscreteIntVars 
+        + numDiscreteRealVars + numDiscreteStringVars, numSamples, false);
 
-    // store sample values and ranks returned by 1st get_parameter_sets() call
-    for (v=0; v<numContinuousVars; ++v) {
-      for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-        rank_col[rank_count] = rank_count;
-        rawData[rank_count] = sample1_values[rank_count][v];
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<numSamples; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<numSamples; ++s) // can't be combined with loop above
-        sample1_ranks(v, s) = final_rank[s] + 1;
-    }
-    for (v=0; v<numDiscreteIntVars; ++v) {
-      for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-        rank_col[rank_count] = rank_count;
-        rawData[rank_count] = sample1int_values[rank_count][v];
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<numSamples; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<numSamples; ++s) // can't be combined with loop above
-        sample1_ranks(v+numContinuousVars, s) = final_rank[s] + 1;
-    }
-    for (v=0; v<numDiscreteRealVars; ++v) {
-      for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-        rank_col[rank_count] = rank_count;
-        rawData[rank_count] = sample1real_values[rank_count][v];
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<numSamples; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<numSamples; ++s) // can't be combined with loop above
-        sample1_ranks(v+numContinuousVars+numDiscreteIntVars, s) = final_rank[s] + 1;
-    }
-    for (v=0; v<numDiscreteStringVars; ++v) {
-      const StringSetArray& all_dss_values
-        = iteratedModel.discrete_set_string_values();
- 
-      for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-        rank_col[rank_count] = rank_count;
-        //StringMultiArrayConstView ds_vars = sample1string_values[rank_count];
-        Real this_string = (Real)set_value_to_index(sample1string_values[rank_count][v], all_dss_values[v]);
-        rawData[rank_count] = this_string;
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<numSamples; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<numSamples; ++s) // can't be combined with loop above
-        sample1_ranks(v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, s) = final_rank[s] + 1;
-    }
+    size_t offset = 0;
+    store_ranks(sample1_ranks,numContinuousVars,numSamples,0,offset,sample1_values);
+    offset += numContinuousVars;
+    store_ranks(sample1_ranks,numDiscreteIntVars,numSamples,0,offset,sample1int_values);
+    offset += numDiscreteIntVars;
+    store_ranks(sample1_ranks,numDiscreteRealVars,numSamples,0,offset,sample1real_values);
+    offset += numDiscreteRealVars;
+    store_ranks(sample1_ranks,numDiscreteStringVars,numSamples,0,offset,sample1string_index);
 
 #ifdef DEBUG
     Cout << "rank1\n" << sample1_ranks << '\n';
@@ -231,45 +206,19 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     // store sample ranks returned by 2nd get_parameter_sets() call
     int num_samp2 = samplesRef - numSamples;
 
-    IntMatrix sample2_ranks(numContinuousVars+numDiscreteIntVars+numDiscreteRealVars+numDiscreteStringVars, num_samp2, false);
+    IntMatrix sample2_ranks(numContinuousVars+numDiscreteIntVars
+        +numDiscreteRealVars+numDiscreteStringVars, num_samp2, false);
     for (s=0; s<num_samp2; ++s) {
       int* s2r_s = sample2_ranks[s]; Real* sR_s = sampleRanks[s];
       for (v=0; v<numContinuousVars; ++v)
 	s2r_s[v] = (int)std::floor(sR_s[v]+.5); // round to nearest integer
     }
-    for (v=0; v<numDiscreteIntVars; ++v) {
-      for (size_t rank_count = 0; rank_count < num_samp2; rank_count++){
-        rank_col[rank_count] = rank_count;
-        rawData[rank_count] = allSamples[rank_count][v+numContinuousVars];
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<num_samp2; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<num_samp2; ++s) // can't be combined with loop above
-        sample2_ranks(v+numContinuousVars, s) = final_rank[s] + 1;
-    }
-    for (v=0; v<numDiscreteRealVars; ++v) {
-      for (size_t rank_count = 0; rank_count < num_samp2; rank_count++){
-        rank_col[rank_count] = rank_count;
-        rawData[rank_count] = allSamples[rank_count][v+numContinuousVars+numDiscreteIntVars];
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<num_samp2; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<num_samp2; ++s) // can't be combined with loop above
-        sample2_ranks(v+numContinuousVars+numDiscreteIntVars, s) = final_rank[s] + 1;
-    }
-    for (v=0; v<numDiscreteStringVars; ++v) {
-      for (size_t rank_count = 0; rank_count < num_samp2; rank_count++){
-        rank_col[rank_count] = rank_count;
-        rawData[rank_count] = allSamples[rank_count][v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars];
-      }
-      std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-      for (s=0; s<num_samp2; ++s)
-        final_rank[rank_col[s]] = s;
-      for (s=0; s<num_samp2; ++s) // can't be combined with loop above
-        sample2_ranks(v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, s) = final_rank[s] + 1;
-    }
+    offset = numContinuousVars;
+    store_ranks(sample2_ranks,numDiscreteIntVars,num_samp2,offset,offset,allSamples);
+    offset += numDiscreteIntVars;
+    store_ranks(sample2_ranks,numDiscreteRealVars,num_samp2,offset,offset,allSamples);
+    offset += numDiscreteRealVars;
+    store_ranks(sample2_ranks,numDiscreteStringVars,num_samp2,offset,offset,allSamples);
 
 #ifdef DEBUG
     Cout << "lhs2 test\nsample2\n"; write_data(Cout, allSamples, false);
@@ -277,7 +226,8 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 #endif // DEBUG
 
     // calculate the combined ranks  
-    sampleRanks.shapeUninitialized(numContinuousVars+numDiscreteIntVars+numDiscreteRealVars+numDiscreteStringVars, samplesRef);
+    sampleRanks.shapeUninitialized(numContinuousVars+numDiscreteIntVars
+        +numDiscreteRealVars+numDiscreteStringVars, samplesRef);
     for (s=0; s<numSamples; ++s)
       for (v=0; v<numContinuousVars; ++v) {
 	int rank1 = sample1_ranks(v,s), index = rank1 - 1,
@@ -292,72 +242,14 @@ void NonDIncremLHSSampling::quantify_uncertainty()
       }
     // Ranks for discrete variables.  In the discrete case, we don't switch, we just 
     // calculate the overall ranking of the combined set 
-    rank_col.resize(samplesRef), final_rank.resize(samplesRef);
-    rawData.resize(samplesRef); 
-    if (numDiscreteIntVars > 0) {
-      for (v=0; v<numDiscreteIntVars; ++v) {
-        for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-          rank_col[rank_count] = rank_count;
-          rawData[rank_count] = sample1int_values[rank_count][v];
-        }
-        for (size_t rank_count = numSamples ; rank_count < samplesRef; rank_count++){
-          rank_col[rank_count] = rank_count;
-          rawData[rank_count] = allSamples[rank_count-numSamples][v+numContinuousVars];
-        }
-        std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-        for (s=0; s<samplesRef; ++s)
-          final_rank[rank_col[s]] = s+1;
-        Cout << "final ranks " << final_rank << '\n';
-        Cout << "rawData " << rawData << '\n'; 
-        //combine_ranks_discrete(ave_ranks, sample1int_values);
-        for (s=0; s<samplesRef; ++s) // can't be combined with loop above
-          sampleRanks(v+numContinuousVars, s) = final_rank[s];
-      }
-    }
-    if (numDiscreteRealVars > 0) {
-      for (v=0; v<numDiscreteRealVars; ++v) {
-        for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-          rank_col[rank_count] = rank_count;
-          rawData[rank_count] = sample1real_values[rank_count][v];
-        }
-        for (size_t rank_count = numSamples ; rank_count < samplesRef; rank_count++){
-          rank_col[rank_count] = rank_count;
-          rawData[rank_count] = allSamples[rank_count-numSamples][v+numContinuousVars+numDiscreteIntVars];
-        }
-        std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-        for (s=0; s<samplesRef; ++s)
-          final_rank[rank_col[s]] = s+1;
-        Cout << "final ranks " << final_rank << '\n';
-        Cout << "rawData " << rawData << '\n'; 
-        //combine_ranks_discrete(ave_ranks, sample1int_values);
-        for (s=0; s<samplesRef; ++s) // can't be combined with loop above
-          sampleRanks(v+numContinuousVars+numDiscreteIntVars, s) = final_rank[s];
-      }
-    }
-    if (numDiscreteStringVars > 0) {
-      for (v=0; v<numDiscreteStringVars; ++v) {
-        const StringSetArray& all_dss_values
-          = iteratedModel.discrete_set_string_values();
-        for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
-          rank_col[rank_count] = rank_count;
-          Real this_string = (Real)set_value_to_index(sample1string_values[rank_count][v], all_dss_values[v]);
-          rawData[rank_count] = this_string;
-        }
-        for (size_t rank_count = numSamples ; rank_count < samplesRef; rank_count++){
-          rank_col[rank_count] = rank_count;
-          rawData[rank_count] = allSamples[rank_count-numSamples][v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars];
-        }
-        std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-        for (s=0; s<samplesRef; ++s)
-          final_rank[rank_col[s]] = s+1;
-        Cout << "final ranks " << final_rank << '\n';
-        Cout << "rawData " << rawData << '\n'; 
-        //combine_ranks_discrete(ave_ranks, sample1int_values);
-        for (s=0; s<samplesRef; ++s) // can't be combined with loop above
-          sampleRanks(v+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars, s) = final_rank[s];
-      }
-    }
-            
+    if (numDiscreteIntVars > 0) 
+      combine_discrete_ranks(sample1int_values, numDiscreteIntVars, numContinuousVars); 
+    if (numDiscreteRealVars > 0)
+      combine_discrete_ranks(sample1real_values, numDiscreteRealVars, 
+        numContinuousVars+numDiscreteIntVars);
+    if (numDiscreteStringVars > 0)
+      combine_discrete_ranks(sample1string_index, numDiscreteStringVars, 
+        numContinuousVars+numDiscreteIntVars+numDiscreteRealVars);            
             
 #ifdef DEBUG
     Cout << "\ncombined ranks\n" << sampleRanks;
@@ -390,10 +282,8 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     for (size_t k=0; k<numDiscreteRealVars; ++k)
       allSamples[s][numContinuousVars+numDiscreteIntVars+k]=sample1real_values[s][k];
     for (size_t k=0; k<numDiscreteStringVars; ++k){
-      const StringSetArray& all_dss_values
-        = iteratedModel.discrete_set_string_values();
       allSamples[s][numContinuousVars+numDiscreteIntVars+numDiscreteRealVars+k]=
-        (Real)set_value_to_index(sample1string_values[s][k], all_dss_values[k]);
+        sample1string_index[s][k];
     }
   }
 
@@ -406,6 +296,58 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   // should be intercepted via restart file duplication detection
   evaluate_parameter_sets(iteratedModel, true, false);
   compute_statistics(allSamples, allResponses);
+}
+
+
+template<typename T>
+void NonDIncremLHSSampling::store_ranks(IntMatrix &sample_ranks,
+                 const size_t num_vars,
+                 const size_t num_samples,
+                 const size_t offset_values,
+                 const size_t offset_ranks,
+                 const T &values
+                 ) {
+    rankCol.resize(num_samples); finalRank.resize(num_samples);
+    rawData.resize(num_samples);
+    for (size_t v=0; v<num_vars; ++v) {
+      for (size_t rank_count = 0; rank_count < num_samples; rank_count++){
+        rankCol[rank_count] = rank_count;
+        rawData[rank_count] = values[rank_count][v+offset_values];
+      }
+      std::sort(rankCol.begin(), rankCol.end(), rank_sort);
+      for (size_t s=0; s<num_samples; ++s)
+          finalRank[rankCol[s]] = s;
+      for (size_t s=0; s<num_samples; ++s) // can't be combined with loop above
+          sample_ranks(v+offset_ranks, s) = finalRank[s] + 1;
+    }
+}
+
+template<typename T>
+void NonDIncremLHSSampling::combine_discrete_ranks(const T& values, 
+    const size_t num_vars, 
+    const size_t offset) {
+
+    rankCol.resize(samplesRef); finalRank.resize(samplesRef);
+    rawData.resize(samplesRef);
+    for (size_t v=0; v<num_vars; ++v) {
+      for (size_t rank_count = 0; rank_count < numSamples; rank_count++){
+        rankCol[rank_count] = rank_count;
+        rawData[rank_count] = values[rank_count][v];
+      }
+      for (size_t rank_count = numSamples ; rank_count < samplesRef; rank_count++){
+        rankCol[rank_count] = rank_count;
+        rawData[rank_count] = allSamples[rank_count-numSamples][v+offset];
+      }
+      std::sort(rankCol.begin(), rankCol.end(), rank_sort);
+      for (size_t s=0; s<samplesRef; ++s)
+        finalRank[rankCol[s]] = s+1;
+#ifdef DEBUG
+      Cout << "final ranks " << finalRank << '\n';
+      Cout << "rawData " << rawData << '\n'; 
+#endif
+      for (size_t s=0; s<samplesRef; ++s) // can't be combined with loop above
+        sampleRanks(v+offset, s) = finalRank[s];
+    }
 }
 
 void NonDIncremLHSSampling::print_results(std::ostream& s)
