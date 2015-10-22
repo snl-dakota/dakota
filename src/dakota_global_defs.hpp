@@ -25,6 +25,8 @@ namespace Dakota {
 // --------------
 /// special value returned by index() when entry not found
 const size_t _NPOS = ~(size_t)0; // one's complement
+/// bound beyond which constraints are considered inactive
+const double BIG_REAL_BOUND = 1.0e+30;
 /// constant pi
 extern double PI;
 /// constant log(2*pi)/2.0

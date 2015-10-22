@@ -44,6 +44,12 @@ public:
   /// destructor
   ~DataTransformModel();
 
+  /// Convenience function to help recover a residual response from the submodel
+  void data_transform_response(const Variables& sub_model_vars, 
+                               const Response& sub_model_resp,
+                               Response& residual_resp);
+
+
 protected:
 
   /// helper to compute the recast response order during member initialization

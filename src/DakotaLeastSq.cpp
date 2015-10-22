@@ -14,6 +14,8 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 #include "DakotaModel.hpp"
+#include "DataTransformModel.hpp"
+#include "ScalingModel.hpp"
 #include "DakotaLeastSq.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -146,11 +148,10 @@ void LeastSq::weight_model()
   void (*vars_recast) (const Variables&, Variables&) = NULL;
   void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
-			   const Response&, Response&)
+                           const Response&, Response&)
     = primary_resp_weighter;
   void (*sec_resp_recast) (const Variables&, const Variables&,
-			   const Response&, Response&)
-    = secondary_resp_copier;
+                           const Response&, Response&) = NULL;
 
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
@@ -215,7 +216,10 @@ void LeastSq::print_results(std::ostream& s)
     // first use the data difference model to print data differenced
     // residuals, perhaps most useful to the user
     Response residual_resp(dataTransformModel.current_response().copy());
-    data_transform_response(best_vars, bestResponseArray.front(), residual_resp);
+    DataTransformModel* dt_model_rep = 
+      static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    dt_model_rep->data_transform_response(best_vars, bestResponseArray.front(), 
+                                          residual_resp);
     const RealVector& resid_fns = residual_resp.function_values(); 
 
     // must use the expanded weight set from the data difference model
@@ -386,7 +390,7 @@ void LeastSq::initialize_run()
   // the underlying user model in case of hybrid methods, so should recurse
   // BMA TODO: setting true breaks pareto on surrogate model...
   if (scaleFlag || calibrationDataFlag)
-    iteratedModel.update_from_subordinate_model(false);
+    iteratedModel.update_from_subordinate_model(true);
 
   // Track any previous object instance in case of recursion.  Note that
   // leastSqInstance and minimizerInstance must be tracked separately since
@@ -419,10 +423,12 @@ void LeastSq::post_run(std::ostream& s)
     Response&  best_resp = bestResponseArray[point_index];
 
     /// transform variables back to inbound model, before any potential lookup
-    if (varsScaleFlag)
-      best_vars.continuous_variables(
-        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		   cvScaleMultipliers, cvScaleOffsets));
+    if (scaleFlag) {
+      ScalingModel* scale_model_rep = 
+        static_cast<ScalingModel*>(scalingModel.model_rep());
+      best_vars.continuous_variables
+        (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
+    }
 
     if (calibrationDataFlag && expData.interpolate_flag()) {
       // When interpolation is active, best we can do is a lookup.
@@ -436,40 +442,29 @@ void LeastSq::post_run(std::ostream& s)
       // unweight, unscale, restore data
 
       if (weightFlag) {
-	const RealVector& lsq_weights
-	  = iteratedModel.subordinate_model().primary_response_fn_weights();
-	const RealVector& fn_vals = best_resp.function_values();
-	for (size_t i=0; i<numLeastSqTerms; i++)
-	  best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
+        // the weighting transformation consumes weights; get some sub-model
+        const RealVector& lsq_weights
+          = iteratedModel.subordinate_model().primary_response_fn_weights();
+        const RealVector& fn_vals = best_resp.function_values();
+        for (size_t i=0; i<numLeastSqTerms; i++)
+          best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
       }
   
       // unscaling should be based on correct size in data difference case
       // scaling does not work in conjunction with data diff...
-
-      if (primaryRespScaleFlag || secondaryRespScaleFlag) {
-	Response tmp_response = best_resp.copy();
-	if (primaryRespScaleFlag || 
-	    need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
-				   numLeastSqTerms)) {
-	  response_modify_s2n(best_vars, best_resp, tmp_response, 0,
-			      numLeastSqTerms);
-	  best_resp.update_partial(0, numLeastSqTerms, tmp_response, 0);
-	}
-	if (secondaryRespScaleFlag || 
-	    need_resp_trans_byvars(tmp_response.active_set_request_vector(),
-				   numLeastSqTerms, numNonlinearConstraints)) {
-	  response_modify_s2n(best_vars, best_resp, tmp_response, numLeastSqTerms,
-			      numNonlinearConstraints);
-	  best_resp.update_partial(numLeastSqTerms, numNonlinearConstraints,
-				   tmp_response, numLeastSqTerms);
-	}
+      if (scaleFlag) {
+        // ScalingModel manages which transformations are needed
+        ScalingModel* scale_model_rep = 
+          static_cast<ScalingModel*>(scalingModel.model_rep());
+        scale_model_rep->resp_scaled2native(best_vars, best_resp);
       }
 
       if (calibrationDataFlag) {
-	// restore residuals to original model's primary responses
-	// (leaving any constraints)
-	RealVector resid_fns = best_resp.function_values_view();
-	expData.recover_model(numUserPrimaryFns, resid_fns);
+        // restore residuals to original model's primary responses
+        // (leaving any constraints)
+        // BMA TODO: verify that numUserPrimaryFns is correct
+        RealVector resid_fns = best_resp.function_values_view();
+        expData.recover_model(numUserPrimaryFns, resid_fns);
       }
     }
     
@@ -523,8 +518,11 @@ void LeastSq::get_confidence_intervals()
     // NOTE: This doesn't assume current_response() contains best;
     // just uses it as a temporary object for computing the residuals
     Response residual_resp(dataTransformModel.current_response().copy());
-    data_transform_response(bestVariablesArray.front(),
-                            bestResponseArray.front(), residual_resp);
+    DataTransformModel* dt_model_rep = 
+      static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    dt_model_rep->data_transform_response(bestVariablesArray.front(),
+                                          bestResponseArray.front(), 
+                                          residual_resp);
     fn_vals_star = residual_resp.function_values(); 
   }
   else 

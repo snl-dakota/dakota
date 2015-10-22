@@ -14,6 +14,7 @@
 
 #include "SNLLLeastSq.hpp"
 #include "DakotaModel.hpp"
+#include "ScalingModel.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -540,11 +541,13 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // transform variables back to user/native for lookup
   // Default unscaling does not apply in this case, so can't use
   // implementation in LeastSq::post_run
-  if (varsScaleFlag)
-    bestVariablesArray.front().continuous_variables(
-      modify_s2n(bestVariablesArray.front().continuous_variables(), 
-		 cvScaleTypes, cvScaleMultipliers, cvScaleOffsets));
-
+  if (scaleFlag) {
+    ScalingModel* scale_model_rep = 
+      static_cast<ScalingModel*>(scalingModel.model_rep());
+    bestVariablesArray.front().continuous_variables
+      (scale_model_rep->
+       cv_scaled2native(bestVariablesArray.front().continuous_variables()));
+  }
   // update best response to contain the final lsq terms.  Since OPT++ has no
   // knowledge of these terms, the OPT++ final design variables must be matched
   // to final lsq terms using data_pairs.find().
@@ -584,19 +587,20 @@ void SNLLLeastSq::post_run(std::ostream& s)
     scaled_cons = 1.;
     copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), scaled_cons,
 			       numUserPrimaryFns);
-    // primary functions unscaled/unweighted from lookup; unscale secondary
-    if (secondaryRespScaleFlag || 
-	need_resp_trans_byvars(activeSet.request_vector(), numUserPrimaryFns, 
-			       numNonlinearConstraints)) {
-      // scale all functions, but only copy constraints
-      copy_data_partial(
-        modify_s2n(scaled_cons, responseScaleTypes, responseScaleMultipliers,
-		   responseScaleOffsets),
-	numUserPrimaryFns, numNonlinearConstraints, best_fns, numUserPrimaryFns);
+    // primary functions unscaled/unweighted from lookup; unscale
+    // secondary from the OPT++ solver
+    if (scaleFlag) {
+      // ScalingModel manages which transformations are needed
+      ScalingModel* scale_model_rep = 
+        static_cast<ScalingModel*>(scalingModel.model_rep());
+      // This function will update the nonlinear constraints in best_fns
+      scale_model_rep->
+        secondary_resp_scaled2native(scaled_cons, activeSet.request_vector(), 
+                                     best_fns);
     }
     else
       copy_data_partial(scaled_cons, numUserPrimaryFns, numNonlinearConstraints,
-			best_fns, numUserPrimaryFns);
+                        best_fns, numUserPrimaryFns);
   }
 
   bestResponseArray.front().function_values(best_fns);

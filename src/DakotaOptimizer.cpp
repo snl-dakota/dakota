@@ -14,6 +14,8 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 #include "DakotaModel.hpp"
+#include "DataTransformModel.hpp"
+#include "ScalingModel.hpp"
 #include "DakotaOptimizer.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -210,8 +212,11 @@ void Optimizer::print_results(std::ostream& s)
         // first use the data difference model to print data differenced
         // residuals, perhaps most useful to the user
         Response residual_resp = dataTransformModel.current_response();
-        data_transform_response(bestVariablesArray[i], bestResponseArray[i], 
-                                residual_resp);
+        DataTransformModel* dt_model_rep = 
+          static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+        dt_model_rep->data_transform_response(bestVariablesArray[i], 
+                                              bestResponseArray[i], 
+                                              residual_resp);
         const RealVector& resid_fns = residual_resp.function_values(); 
         
         // must use the expanded weight set from the data difference model
@@ -339,9 +344,9 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
     = (local_nls_recast && require_hessians &&
        iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
-			   const Response&, Response&) = primary_resp_reducer;
+                           const Response&, Response&) = primary_resp_reducer;
   void (*sec_resp_recast) (const Variables&, const Variables&,
-			   const Response&, Response&) = secondary_resp_copier;
+                           const Response&, Response&) = NULL;
 
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total; // default: empty; no change in size
@@ -481,7 +486,7 @@ void Optimizer::initialize_run()
   // the underlying user model in case of hybrid methods, so should recurse
   // BMA TODO: setting true breaks pareto on surrogate model...
   if (minimizerRecasts)
-    iteratedModel.update_from_subordinate_model(false);
+    iteratedModel.update_from_subordinate_model(true);
 
   // Track any previous object instance in case of recursion.  Note that
   // optimizerInstance and minimizerInstance must be tracked separately since
@@ -523,10 +528,12 @@ void Optimizer::post_run(std::ostream& s)
 
     // transform variables back to user space (for local obj recast or scaling)
     // must do before lookup in retrieve, which is in user space
-    if (varsScaleFlag)
-      best_vars.continuous_variables(
-        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		   cvScaleMultipliers, cvScaleOffsets));
+    if (scaleFlag) {
+      ScalingModel* scale_model_rep = 
+        static_cast<ScalingModel*>(scalingModel.model_rep());
+      best_vars.continuous_variables
+        (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
+    }
 
     // transform primary responses back to user space via lookup for
     // local obj recast or simply via scaling transform
@@ -552,28 +559,14 @@ void Optimizer::post_run(std::ostream& s)
       //    }
     }
     // just unscale if needed
-    else if (primaryRespScaleFlag || secondaryRespScaleFlag ||
-	     need_resp_trans_byvars(best_resp.active_set_request_vector(), 0,
-				    numUserPrimaryFns+numNonlinearConstraints)){
-      Response tmp_response = best_resp.copy();
-      if (primaryRespScaleFlag || 
-	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
-				 numUserPrimaryFns)) {
-	response_modify_s2n(best_vars, best_resp, tmp_response, 0, 
-			    numUserPrimaryFns);
-	best_resp.update_partial(0, numUserPrimaryFns, tmp_response, 0 );
-      }
-      if (secondaryRespScaleFlag || 
-	  need_resp_trans_byvars(tmp_response.active_set_request_vector(),
-				 numUserPrimaryFns, numNonlinearConstraints)) {
-	response_modify_s2n(best_vars, best_resp, tmp_response,
-			    numUserPrimaryFns, numNonlinearConstraints);
-	best_resp.update_partial(numUserPrimaryFns, numNonlinearConstraints,
-				 tmp_response, numUserPrimaryFns);
-      }
+    else if (scaleFlag) {
+      // ScalingModel manages which transformations are needed
+      ScalingModel* scale_model_rep = 
+        static_cast<ScalingModel*>(scalingModel.model_rep());
+      scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }
-
+  
   Minimizer::post_run(s);
 }
 

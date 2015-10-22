@@ -121,31 +121,7 @@ protected:
   /// and/or response scaling
   void scale_model();
 
-  /// copy the partial response for secondary functions when needed
-  /// (data and reduction transforms)
-  static void secondary_resp_copier(const Variables& input_vars,
-   				    const Variables& output_vars,
-   				    const Response& input_response,
-   				    Response& output_response);
-
-  /// determine if response transformation is needed due to variable
-  /// transformations
-  bool need_resp_trans_byvars(const ShortArray& asv, int start_index, 
-			      int num_resp);
-
-  /// general RealVector mapping from scaled to native variables (and values) 
-  RealVector modify_s2n(const RealVector& scaled_vars,
-			     const IntArray& scale_types,
-			     const RealVector& multipliers,
-			     const RealVector& offsets) const;
-
-  /// map responses from scaled to native space
-  void response_modify_s2n(const Variables& native_vars,
-			   const Response& scaled_response,
-			   Response& native_response,
-			   int start_offset, int num_responses) const;
-
-  /// compute a composite objective value from one or more primary functions
+   /// compute a composite objective value from one or more primary functions
   Real objective(const RealVector& fn_vals, const BoolDeque& max_sense,
 		 const RealVector& primary_wts) const;
 
@@ -213,12 +189,6 @@ protected:
 
   /// infers MOO/NLS solution from the solution of a single-objective optimizer
   void local_recast_retrieve(const Variables& vars, Response& response) const;
-
-  /// convenience function to map a final user-space response to a residual
-  /// response for results output (using the dataTransformModel)
-  void data_transform_response(const Variables& sub_model_vars, 
-                               const Response& raw_response, 
-                               Response& residual_response);
 
   //
   //- Heading: Data
@@ -290,28 +260,11 @@ protected:
   /// (cached in case further wrapped by other transformations)
   Model dataTransformModel; 
 
-  // scaling data follow 
-  bool       scaleFlag;              ///< flag for overall scaling status
-  bool       varsScaleFlag;          ///< flag for variables scaling
-  bool       primaryRespScaleFlag;   ///< flag for primary response scaling
-  bool       secondaryRespScaleFlag; ///< flag for secondary response scaling
-
-  IntArray   cvScaleTypes;           ///< scale flags for continuous vars.
-  RealVector cvScaleMultipliers;     ///< scales for continuous variables
-  RealVector cvScaleOffsets;         ///< offsets for continuous variables
-
-  IntArray   responseScaleTypes;         ///< scale flags for all responses
-  RealVector responseScaleMultipliers;   ///< scales for all responses
-  RealVector responseScaleOffsets;       ///< offsets for all responses (zero
-                                         ///< for functions, not for nonlin con)
-
-  IntArray   linearIneqScaleTypes;       ///< scale flags for linear ineq
-  RealVector linearIneqScaleMultipliers; ///< scales for linear ineq constrs.
-  RealVector linearIneqScaleOffsets;     ///< offsets for linear ineq constrs.
-
-  IntArray   linearEqScaleTypes;         ///< scale flags for linear eq.
-  RealVector linearEqScaleMultipliers;   ///< scales for linear constraints
-  RealVector linearEqScaleOffsets;       ///< offsets for linear constraints
+  /// whether Iterator-level scaling is active
+  bool scaleFlag;
+  /// Shallow copy of the scaling transformation model, when present
+  /// (cached in case further wrapped by other transformations)
+  Model scalingModel;
 
   /// pointer to Minimizer used in static member functions
   static Minimizer* minimizerInstance;
@@ -326,78 +279,6 @@ private:
   //
   //- Heading: Convenience/Helper functions
   //
-
-  //  scaling initialization helper functions:
-
-  /// initialize scaling types, multipliers, and offsets; perform error
-  /// checking
-  void initialize_scaling();
-  /// general helper function for initializing scaling types and factors on a 
-  /// vector of variables, functions, constraints, etc.
-  void compute_scaling(int object_type, int auto_type, int num_vars,
-		       RealVector& lbs, RealVector& ubs,
-		       RealVector& targets,
-		       const StringArray& scale_strings, 
-		       const RealVector& scales,
-		       IntArray& scale_types, RealVector& scale_mults,
-		       RealVector& scale_offsets);
-  /// automatically compute a single scaling factor -- bounds case
-  bool compute_scale_factor(const Real lower_bound, const Real upper_bound,
-			    Real *multiplier, Real *offset);
-  /// automatically compute a single scaling factor -- target case
-  bool compute_scale_factor(const Real target, Real *multiplier);
- 
-  /// RecastModel callback for variables scaling: transform variables
-  /// from scaled to native (user) space
-  static void variables_scaler(const Variables& scaled_vars, 
-			       Variables& native_vars);
-
-  /// RecastModel callback for inverse variables scaling: transform variables
-  /// from native (user) to scaled space
-  static void variables_unscaler(const Variables& native_vars,
-				 Variables& scaled_vars);
-
-
-  /// RecastModel callback for primary response scaling: transform
-  /// responses (grads, Hessians) from native (user) to scaled space
-  static void primary_resp_scaler(const Variables& native_vars, 
-				  const Variables& scaled_vars,
-				  const Response& native_response, 
-				  Response& iterator_response);
-
-  /// RecastModel callback for secondary response scaling: transform
-  /// constraints (grads, Hessians) from native (user) to scaled space
-  static void secondary_resp_scaler(const Variables& native_vars,
-				    const Variables& scaled_vars,
-				    const Response& native_response,
-				    Response& scaled_response);
-
-  /// Core of response scaling, which doesn't perform any output
-  void response_scaler_core(const Variables& native_vars,
-			    const Variables& scaled_vars,
-			    const Response& native_response,
-			    Response& iterator_response,
-			    size_t start_offset, size_t num_responses);
-
-  /// general RealVector mapping from native to scaled variables vectors: 
-  RealVector modify_n2s(const RealVector& native_vars,
-			     const IntArray& scale_types,
-			     const RealVector& multipliers,
-			     const RealVector& offsets) const;
-  /// map reponses from native to scaled variable space
-  void response_modify_n2s(const Variables& scaled_vars,
-			   const Response& native_response,
-			   Response& scaled_response,
-			   int start_offset, int num_responses) const;
-  /// general linear coefficients mapping from native to scaled space 
-  RealMatrix lin_coeffs_modify_n2s(const RealMatrix& native_coeffs, 
-    const RealVector& cv_multipliers, const RealVector& lin_multipliers) const;
-
-  /// print scaling information for a particular response type in tabular form
-  void print_scaling(const String& info, const IntArray& scale_types,
-		     const RealVector& scale_mults,
-		     const RealVector& scale_offsets, 
-		     const StringArray& labels);
 
   //
   //- Heading: Data

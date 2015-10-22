@@ -157,6 +157,19 @@ DataTransformModel::~DataTransformModel()
 { /* empty dtor */}
 
 
+void DataTransformModel::
+data_transform_response(const Variables& sub_model_vars, 
+                        const Response& sub_model_resp,
+                        Response& residual_resp) 
+{
+  // A DataTransform doesn't map variables, but we map them here to
+  // avoid introducing a latent bug
+  Variables recast_vars(current_variables().copy());
+  inverse_transform_variables(sub_model_vars, recast_vars);
+  transform_response(recast_vars, sub_model_vars, sub_model_resp, residual_resp);
+}
+
+
 short DataTransformModel::response_order(const Model& sub_model)
 {
   const Response& curr_resp = sub_model.current_response();
