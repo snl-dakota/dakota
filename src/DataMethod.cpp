@@ -266,7 +266,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
-    << dataDistFile;
+    << dataDistFile << posteriorDensityExportFilename
+    << posteriorSamplesExportFilename << posteriorSamplesImportFilename
+    << generatePosteriorSamples << evaluatePosteriorDensity;
+    ;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -402,7 +405,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
-    >> dataDistFile;
+    >> dataDistFile >> posteriorDensityExportFilename
+    >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
+    >> generatePosteriorSamples >> evaluatePosteriorDensity;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -538,7 +543,9 @@ void DataMethodRep::write(std::ostream& s) const
     << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
-    << dataDistFile;
+    << dataDistFile << posteriorDensityExportFilename
+    << posteriorSamplesExportFilename << posteriorSamplesImportFilename
+    << generatePosteriorSamples << evaluatePosteriorDensity;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

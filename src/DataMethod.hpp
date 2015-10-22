@@ -984,6 +984,20 @@ public:
   RealVector dataDistCovariance;
   /// file from which to read data distribution data (covariance or samples )
   String dataDistFile;
+  /// The filename of the export file containing an arbitrary set of samples and 
+  /// their corresponding density values
+  String posteriorDensityExportFilename;
+  /// The filename of the export file containing samples from the posterior and 
+  /// their corresponding density values
+  String posteriorSamplesExportFilename;
+  /// The filename of the import file containing samples at which the 
+  /// posterior will be evaluated
+  String posteriorSamplesImportFilename;
+  /// Flag specifying whether to generate random samples from the posterior
+  bool generatePosteriorSamples;
+  /// Flag specifying whether to evaluate the posterior density at a 
+  /// set of samples
+  bool evaluatePosteriorDensity;
 
   // Parameter Study
 

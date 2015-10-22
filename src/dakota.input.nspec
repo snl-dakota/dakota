@@ -1701,6 +1701,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               obs_data_filename STRING {N_mdm(str,dataDistFile)}
              )
            )
+          [ posterior_density_export_filename STRING {N_mdm(str,posteriorDensityExportFilename)} ]
+          [ posterior_samples_export_filename STRING {N_mdm(str,posteriorSamplesExportFilename)} ]
+          [ posterior_samples_import_filename STRING {N_mdm(str,posteriorSamplesImportFilename)} ]
+          [ 
+            generate_posterior_samples {N_mdm(true,generatePosteriorSamples)}
+            evaluate_posterior_density {N_mdm(true,evaluatePosteriorDensity)}
+           ]
          )
         |
         ( dream {N_mdm(utype,subMethod_SUBMETHOD_DREAM)}

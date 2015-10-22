@@ -1790,6 +1790,12 @@ KEYWORD12 method
 		)
 	      | obs_data_filename STRING
 	      )
+	    [ posterior_density_export_filename STRING ]
+	    [ posterior_samples_export_filename STRING ]
+	    [ posterior_samples_import_filename STRING ]
+	    [ generate_posterior_samples
+	      evaluate_posterior_density
+	      ]
 	    )
 	  |
 	  ( dream

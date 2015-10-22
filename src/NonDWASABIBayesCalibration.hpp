@@ -83,6 +83,18 @@ protected:
   // redefined from DakotaNonD
   void print_results(std::ostream& s);
 
+  /// Extract a subset of samples for posterior eval according to the
+  /// indices in points_to_keep
+  void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
+				   const RealMatrix &samples_for_posterior_eval,
+				   const RealVector &posterior_density,
+				   RealMatrix &posterior_data ) const;
+
+  /// Export posterior_data to file
+  void export_posterior_samples_to_file( const std::string filename, 
+					 const RealMatrix &posterior_data) const;
+  
+
   //
   //- Heading: Data
 
@@ -100,13 +112,19 @@ protected:
   std::string posteriorSamplesImportFile;
   /// Format of imported posterior samples file
   unsigned short posteriorSamplesImportFormat;
-  /// The filename of the export file containing posterior samples and 
+  /// The filename of the export file containing an arbitrary set of samples and 
   /// their corresponding density values
   std::string exportPosteriorDensityFile;
+  /// The filename of the export file containing samples from the posterior and 
+  /// their corresponding density values
+  std::string exportPosteriorSamplesFile;
   /// Format of imported posterior samples and values file
   unsigned short exportFileFormat;
   /// Flag specifying whether to generate random samples from the posterior
   bool generateRandomPosteriorSamples;
+  /// Flag specifying whether to evaluate the posterior density at a 
+  /// set of samples
+  bool evaluatePosteriorDensity;
 
   /// lower bounds on calibrated parameters
   RealVector paramMins;

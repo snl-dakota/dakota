@@ -42,11 +42,13 @@ NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model):
   dataDistCovariance(probDescDB.get_rv("method.nond.data_dist_covariance")),
   dataDistFilename(probDescDB.get_string("method.nond.data_dist_filename")),
   dataDistCovType(probDescDB.get_string("method.nond.data_dist_cov_type")),
-  posteriorSamplesImportFile("posterior-samples.dat"),
-  posteriorSamplesImportFormat(0),
-  exportPosteriorDensityFile("posterior-data.dat"),
-  exportFileFormat(0),
-  generateRandomPosteriorSamples(false)
+  posteriorSamplesImportFile(probDescDB.get_string("method.nond.posterior_samples_import_file")),
+  posteriorSamplesImportFormat(0), // not used
+  exportPosteriorDensityFile(probDescDB.get_string("method.nond.posterior_density_export_file")),
+  exportPosteriorSamplesFile(probDescDB.get_string("method.nond.posterior_samples_export_file")),
+  exportFileFormat(0), // not used
+  generateRandomPosteriorSamples(probDescDB.get_bool("method.nond.generate_posterior_samples")),
+  evaluatePosteriorDensity(probDescDB.get_bool("method.nond.evaluate_posterior_density"))
 { 
   // don't use max_function_evaluations, since we have num_samples
   // consider max_iterations = generations, and adjust as needed?
@@ -259,9 +261,9 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   // Step 10 of 10: Compute the posterior distribution at s_eval
   ////////////////////////////////////////////////////////
 
-  RealVector posterior(samples_for_posterior_eval.numCols(), false);
+  RealVector posterior_density(samples_for_posterior_eval.numCols(), false);
   for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-    posterior[j] = prior_density_vals[j] * (data_density_vals[j] / 
+    posterior_density[j] = prior_density_vals[j] * (data_density_vals[j] / 
 			  response_density_vals_for_posterior_eval[j]);
   }
 
@@ -274,47 +276,78 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   boost::random::mt19937 rng;
   boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
 
+  if ( !generateRandomPosteriorSamples && !evaluatePosteriorDensity ){
+    std::string msg = "must specify at least one of evaluatePosteriorDensity ";
+    msg += "generateRandomPosteriorSamples";
+    throw(std::runtime_error("msg") );
+  }
+
   if ( generateRandomPosteriorSamples )
     for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-      double ratio = posterior[j] / prior_density_vals[j];
+      double ratio = posterior_density[j] / prior_density_vals[j];
       double rnum = distribution(rng);
       if (ratio > rnum)
 	points_to_keep.push_back(j);
     }
-  else{
-    points_to_keep.resize( samples_for_posterior_eval.numCols()) ;
-    for (int j=0; j<samples_for_posterior_eval.numCols(); j++)
-      points_to_keep[j] = j;
-  } 
-
-  // Write posterior samples to file
   if ( !exportPosteriorDensityFile.empty() ){
-    int num_points_to_keep = points_to_keep.size();
-    RealMatrix posterior_data( num_points_to_keep, numContinuousVars + 1 );
-    RealMatrix posterior_samples( Teuchos::View, posterior_data, 
-				  num_points_to_keep, numContinuousVars );
-    for (size_t i=0;i<num_points_to_keep;i++)
-      for (size_t j=0;j<numContinuousVars;j++)
-	posterior_samples(i,j) = samples_for_posterior_eval(j,points_to_keep[i]);
-    
-    RealVector posterior_values( Teuchos::View, 
-				 posterior_data[numContinuousVars],
-				 num_points_to_keep );
-    for (size_t i=0;i<num_points_to_keep;i++)
-      posterior_values[i] = posterior[points_to_keep[i]];
-
-    std::ofstream export_file_stream;
-    TabularIO::open_file(export_file_stream, exportPosteriorDensityFile,
-			 "posterior samples and values file export");
-    bool brackets = false, row_rtn = true, final_rtn = true;
-    Dakota::write_data(export_file_stream, posterior_data,
-		       brackets, row_rtn, final_rtn);
-    export_file_stream.close();
+    RealMatrix posterior_data;
+    extract_selected_posterior_samples(points_to_keep,
+				       samples_for_posterior_eval,
+				       posterior_density,
+				       posterior_data );
+    export_posterior_samples_to_file( exportPosteriorSamplesFile, 
+				      posterior_data );
   }
 
+  if ( evaluatePosteriorDensity ){
+    points_to_keep.resize( samples_for_posterior_eval.numCols() ) ;
+    for (int j=0; j<samples_for_posterior_eval.numCols(); j++)
+      points_to_keep[j] = j;
+    if ( !exportPosteriorDensityFile.empty() ){
+      RealMatrix posterior_data;
+      extract_selected_posterior_samples(points_to_keep,
+					 samples_for_posterior_eval,
+					 posterior_density,
+					 posterior_data );
+      export_posterior_samples_to_file( exportPosteriorDensityFile, 
+					posterior_data );
+    } 
+  }
   return;
 }
 
+void NonDWASABIBayesCalibration::
+extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
+				   const RealMatrix &samples_for_posterior_eval,
+				   const RealVector &posterior_density,
+				   RealMatrix &posterior_data ) const {
+  int num_points_to_keep = points_to_keep.size();
+  posterior_data.shapeUninitialized( num_points_to_keep, 
+				     numContinuousVars + 1 );
+  RealMatrix posterior_samples( Teuchos::View, posterior_data, 
+				num_points_to_keep, numContinuousVars );
+  for (size_t i=0;i<num_points_to_keep;i++)
+    for (size_t j=0;j<numContinuousVars;j++)
+      posterior_samples(i,j) = samples_for_posterior_eval(j,points_to_keep[i]);
+  
+  RealVector posterior_values( Teuchos::View, 
+			       posterior_data[numContinuousVars],
+			       num_points_to_keep );
+  for (size_t i=0;i<num_points_to_keep;i++)
+    posterior_values[i] = posterior_density[points_to_keep[i]];
+}
+
+void NonDWASABIBayesCalibration::
+export_posterior_samples_to_file( const std::string filename, 
+				  const RealMatrix &posterior_data ) const{
+  std::ofstream export_file_stream;
+  TabularIO::open_file(export_file_stream, filename,
+		       "posterior samples and values file export");
+  bool brackets = false, row_rtn = true, final_rtn = true;
+  Dakota::write_data(export_file_stream, posterior_data,
+		     brackets, row_rtn, final_rtn);
+  export_file_stream.close();
+}
 
 void NonDWASABIBayesCalibration::print_results(std::ostream& s)
 {
@@ -349,8 +382,7 @@ void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)
     throw (std::runtime_error("NonDWASABIBayesCalibration::prior_sample: Sample had incorrect size"));
   }
 
-  for (int i = 0; i < sample.length(); i++ )
-  {
+  for (int i = 0; i < sample.length(); i++ ){
     sample[i] =
       NonDWASABIInstance->priorSamplers[i](NonDWASABIInstance->rnumGenerator);
   }
@@ -359,21 +391,21 @@ void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)
 
 void NonDWASABIBayesCalibration::compute_responses(RealMatrix & samples, RealMatrix & responses) {
 
-    int num_samples = samples.numCols();
-    responses.shapeUninitialized(numFunctions, num_samples);
+  int num_samples = samples.numCols();
+  responses.shapeUninitialized(numFunctions, num_samples);
 
-    for (int j=0; j<num_samples; j++) {
-      RealVector sample(Teuchos::View, samples[j], numContinuousVars);
+  for (int j=0; j<num_samples; j++) {
+    RealVector sample(Teuchos::View, samples[j], numContinuousVars);
     
-      NonDWASABIInstance->mcmcModel.continuous_variables(sample); 
+    NonDWASABIInstance->mcmcModel.continuous_variables(sample); 
 
-      NonDWASABIInstance->mcmcModel.compute_response();
-      const Response& curr_resp = NonDWASABIInstance->mcmcModel.current_response();
-      const RealVector& fn_vals = curr_resp.function_values();
+    NonDWASABIInstance->mcmcModel.compute_response();
+    const Response& curr_resp = NonDWASABIInstance->mcmcModel.current_response();
+    const RealVector& fn_vals = curr_resp.function_values();
 
-      RealVector response_col(Teuchos::View, responses[j], numFunctions); 
-      response_col.assign(fn_vals);
-    }
+    RealVector response_col(Teuchos::View, responses[j], numFunctions); 
+    response_col.assign(fn_vals);
   }
+}
 
 } // namespace Dakota
