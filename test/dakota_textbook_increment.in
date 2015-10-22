@@ -13,10 +13,10 @@ environment,
 
 method,
         sampling,
-	  samples = 10 seed = 1833 			       	#s0,#s2,#s4
-#	  samples = 20 seed = 1833 			 	#s1,#s3,#s5
+	  samples = 30 seed = 1833 			       	#s0,#s2,#s4
+#	  samples = 60 seed = 1833 			 	#s1,#s3,#s5
           sample_type lhs                                       #s0,#s2,#s4
-#	  sample_type incremental_lhs previous_samples = 10	#s1,#s3,#s5
+#	  sample_type incremental_lhs previous_samples = 30	#s1,#s3,#s5
 
 variables,
 #       active all                                              #s4,#s5
@@ -50,9 +50,9 @@ variables,
 #          elements 'aniso1' 'aniso2' 'aniso3' 'iso1' 'iso2' 'iso3' #s4,#s5
 
 interface,
-	system asynch evaluation_concurrency = 5               
+        direct
 	  analysis_driver = 'text_book'                        #s0,#s1,#s2,#s3
-#	  analysis_driver = 'gerstner_string'                  #s4,#s5
+#	  analysis_driver = 'gerstner'                         #s4,#s5
 
 responses,
 	response_functions = 1
