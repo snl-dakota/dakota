@@ -3139,6 +3139,47 @@ Test Number 22 succeeded
                       5.5795351044e-01
                       4.3850810751e-01
 <<<<< Best data captured at function evaluation 60
+dakota_bandb.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 198 total (181 new, 17 duplicate)
+         obj_fn: 198 val (181 n, 17 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 174 val (157 n, 17 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 170 val (153 n, 17 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0038033911e-01 x1
+                      5.0038042558e-01 x2
+                      1.0132063243e+00 x3
+                      2.0000000000e+00 z1
+<<<<< Best objective function  =
+                      1.1246200819e+00
+<<<<< Best data captured at function evaluation 181
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 100 total (95 new, 5 duplicate)
+         obj_fn: 100 val (95 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 100 val (95 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 100 val (95 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-01 x2
+                      1.0582250380e+00 x3
+                      2.0000000000e+00 z1
+<<<<< Best objective function  =
+                      1.1250114932e+00
+<<<<< Best data captured at function evaluation 96
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 6956 total (6918 new, 38 duplicate)
+         obj_fn: 6956 val (6918 n, 38 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 6956 val (6918 n, 38 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 6956 val (6918 n, 38 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.5103990466e-01 x1
+                     -7.7232239338e-01 x2
+                     -4.2246557326e-01 x3
+                      2.0000000000e+00 y1
+                      2.0000000000e+00 y2
+<<<<< Best objective function  =
+                      1.6275512967e+01
+<<<<< Best data captured at function evaluation 6881
 dakota_big_dataset.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 300 total (300 new, 0 duplicate)

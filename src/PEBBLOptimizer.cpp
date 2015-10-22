@@ -2,13 +2,11 @@
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
 
-using namespace std;
-
 namespace Dakota 
 {
-  extern PRPCache data_pairs; // global container
+extern PRPCache data_pairs; // global container
 
-     PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minimizer(problem_db, model)
+PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minimizer(problem_db, model)
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
@@ -47,29 +45,33 @@ namespace Dakota
   branchAndBound = new PebbldBranching(model, subProbMinimizer);
 }
 
-  PebbldMinimizer::PebbldMinimizer(Model &model) : Minimizer(BRANCH_AND_BOUND, model) 
+PebbldMinimizer::PebbldMinimizer(Model &model)
+	: Minimizer(BRANCH_AND_BOUND, model) 
 {//branchAndBound(model)
 };
-     PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, int max_iter, int max_eval) 
+
+PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, int max_iter, int max_eval) 
        : Minimizer(BRANCH_AND_BOUND, model)
 {//branchAndBound(model,random_seed, max_iter, max_eval)
 };
 
+/** redefines default iterator logic to execute branch and bound and
+    extract optimization results. **/
 void PebbldMinimizer::bound_subproblem()
-     {
-	  InitializeTiming();
-	  branchAndBound->search();
+{
+	InitializeTiming();
+	branchAndBound->search();
 
-	  pebbl::arraySolution<double>* newSolution = dynamic_cast<pebbl::arraySolution<double>*>(branchAndBound->getSolution());
+	pebbl::arraySolution<double>* newSolution = dynamic_cast<pebbl::arraySolution<double>*>(branchAndBound->getSolution());
 	  
-	  RealVector variables(numContinuousVars);
-	  RealVector best_fns(1);
-	  for (size_t i=0; i<numContinuousVars; i++)
-	    variables[i] = newSolution->array[i];
-	  bestVariablesArray.front().continuous_variables(variables);
-	  best_fns[0] = newSolution->value;
-	  bestResponseArray.front().function_values(best_fns);
-     }
+	RealVector variables(numContinuousVars);
+	RealVector best_fns(1);
+	for (size_t i=0; i<numContinuousVars; i++)
+	  variables[i] = newSolution->array[i];
+	bestVariablesArray.front().continuous_variables(variables);
+	best_fns[0] = newSolution->value;
+	bestResponseArray.front().function_values(best_fns);
+}
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
@@ -99,8 +101,6 @@ void PebbldMinimizer::print_results(std::ostream& s)
     s << "=\n" << bestVariablesArray[i];
     // output best response
     const RealVector& best_fns = bestResponseArray[i].function_values();
-    std::cout << "primary fns = " << numUserPrimaryFns << std::endl;
-    std::cout << "best fns = " << best_fns << std::endl;
     if (optimizationFlag) {
       if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions ";
       else                       s << "<<<<< Best objective function  ";

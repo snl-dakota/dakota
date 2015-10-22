@@ -1,8 +1,6 @@
 #include "PEBBLBranching.hpp"
 #include "COLINOptimizer.hpp"
 
-using namespace std;
-
 namespace Dakota {
 // MAIN PROBLEM CLASS
 PebbldBranching::PebbldBranching()
@@ -11,14 +9,11 @@ PebbldBranching::PebbldBranching()
 }
 
 // Default initialization
-  PebbldBranching::PebbldBranching(Model& _model, Iterator& sub_prob_solver) : parentModel(_model), NLPsolver(sub_prob_solver)
+PebbldBranching::PebbldBranching(Model& _model, Iterator& sub_prob_solver) : parentModel(_model), NLPsolver(sub_prob_solver)
 {
      branchingInit(minimization);
-     random_seed = 12345;
-     max_iter = 100;
-     max_eval = 100;
 
-     StringMultiArrayConstView varLabels = parentModel.all_continuous_variable_labels();
+     /// Get all the data from the model
      RealVector cont_vars = parentModel.continuous_variables();
      RealVector lower_bounds = parentModel.continuous_lower_bounds();
      RealVector upper_bounds = parentModel.continuous_upper_bounds();
@@ -26,7 +21,6 @@ PebbldBranching::PebbldBranching()
      const IntVector& lower_bnds_int = parentModel.discrete_int_lower_bounds();
      const IntVector& upper_bnds_int = parentModel.discrete_int_upper_bounds();
 
-     //     const Variables& current_vars = parentModel.current_variables();
      const RealVector& current_vars = parentModel.all_continuous_variables();
 
      short model_view = parentModel.current_variables().view().second;
@@ -34,18 +28,13 @@ PebbldBranching::PebbldBranching()
      const BitArray int_relaxed = svd.all_relaxed_discrete_int();
      const BitArray real_relaxed = svd.all_relaxed_discrete_real();
 
+     /// Use the data obtained from the model to set the B-and-B data
      n_int = int_relaxed.size();
      n_cont = parentModel.cv() - n_int;
 
      x.resize(n_int+n_cont);
      xl.resize(n_int+n_cont);
      xu.resize(n_int+n_cont);
-     //     for(int i=0;i<n_int;i++)
-     //     {
-     //	  x[i] = init_pt_int[i];
-     //	  xl[i] = lower_bnds_int[i];
-     //	  xu[i] = upper_bnds_int[i];
-     //     }
      for(int i=0;i<n_cont+n_int;i++)
      {
 	  x[i] = cont_vars[i];
@@ -54,15 +43,6 @@ PebbldBranching::PebbldBranching()
      }
 
      reset();
-}
-
-PebbldBranching::PebbldBranching(Model& _model, Iterator& sub_prob_solver, int _random_seed, int _max_iter, int _max_eval) : parentModel(_model)
-{
-     branchingInit(minimization);
-     // Initialization for inner optimization algorithm
-     random_seed = _random_seed;
-     max_iter = _max_iter/10;
-     max_eval = _max_eval/10;
 }
 
 PebbldBranching::~PebbldBranching() {};
@@ -80,7 +60,7 @@ pebbl::branchSub* PebbldBranching::blankSub()
 
 void PebbldBranching::setModel(Model& _model) 
 {
-  parentModel = _model; // Not sure if this is gonna work yet.
+  parentModel = _model;
 }
 
 // BRANCH CLASS
@@ -109,14 +89,11 @@ void PebbldBranchSub::setRootComputation()
      n_int = globalPtr->n_int;
      n_cont = globalPtr->n_cont;
      m_constrs = globalPtr->m_constrs;
-     random_seed = globalPtr->random_seed;
-     max_iter = globalPtr->max_iter;
-     max_eval = globalPtr->max_eval;
 
-     constrVals = vector<double>(globalPtr->constrVals);
-     x = vector<double>(globalPtr->x);
-     xl = vector<double>(globalPtr->xl);
-     xu = vector<double>(globalPtr->xu);
+     constrVals = std::vector<double>(globalPtr->constrVals);
+     x = std::vector<double>(globalPtr->x);
+     xl = std::vector<double>(globalPtr->xl);
+     xu = std::vector<double>(globalPtr->xu);
 
      NLPsolver = globalPtr->NLPsolver;
      
@@ -175,7 +152,6 @@ int PebbldBranchSub::splitComputation()
 
      // Assuming that in the relaxed problem, the Binary/Integer
      // elements of the domain are first.
-  //     for(i=0;i<n_binary+n_int;i++) 
      for(i=n_cont;i<n_cont+n_binary+n_int;i++) 
      {
 	  if(fmod(new_x[i],1)!=0.0)
@@ -204,24 +180,22 @@ pebbl::branchSub* PebbldBranchSub::makeChild(int whichChild)
 void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar, int whichChild)
 {
      globalPtr = parent->global();
-     
+
+     // Set up all the data for the subproblem.     
      double newValue = 0.0;
      
      newValue = parent->x[_splitVar];
      
-     constrVals = vector<double>(parent->constrVals);
-     x = vector<double>(parent->new_x);
-     xl = vector<double>(parent->xl);
-     xu = vector<double>(parent->xu);
+     constrVals = std::vector<double>(parent->constrVals);
+     x = std::vector<double>(parent->new_x);
+     xl = std::vector<double>(parent->xl);
+     xu = std::vector<double>(parent->xu);
      n_binary = parent->n_binary;
      n_int = parent->n_int;
      n_cont = parent->n_cont;
      n = parent->n;
      m_constrs = parent->m_constrs;
      bound = parent->bound;
-     random_seed = parent->random_seed;
-     max_iter = parent->max_iter;
-     max_eval = parent->max_eval;
 
      NLPsolver = globalPtr->NLPsolver;
      
@@ -268,7 +242,7 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
 pebbl::solution* PebbldBranchSub::extractSolution()
 {
      // To Consider: Creating a Custom Solution Object.
-     string varDesc = "Domain";
+     std::string varDesc = "Domain";
      pebbl::BasicArray<pebbl::CharString> variableNames;
      
      return new pebbl::arraySolution<double> (objFn, new_x, globalPtr);
