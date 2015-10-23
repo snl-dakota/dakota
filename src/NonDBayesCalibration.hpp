@@ -81,12 +81,6 @@ protected:
   /// initialize emulator model and probability space transformations
   void initialize_model();
 
-  /// initialize a residual response for use in data transformations
-  void init_residual_response(short request_value_needed);
-  
-  /// update member residualResponse from passed simulation or emulator Response
-  void update_residual_response(const Response& resp);
-
   /// compute the (approximate) gradient of the negative log posterior by
   /// augmenting the (approximate) gradient of the negative log likelihood
   /// with the gradient of the negative log prior
@@ -100,19 +94,10 @@ protected:
   void augment_hessian_with_log_prior(MatrixType& log_hess,
 				      const VectorType& vec);
 
-  /// calculate log-likelihood from the passed residual response
-  Real log_likelihood(const Response& residual_resp, 
-		      const RealVector& hyper_params);
-
   /// calculate log-likelihood from the passed residuals (assuming
-  /// they have already been sized and scaled by covariance /
-  /// hyperparams...
+  /// they are already sized and scaled by covariance / hyperparams...
   Real
   log_likelihood(const RealVector& residuals, const RealVector& hyper_params);
-
-
-  /// calculate the misfit function from the vector of residuals
-  Real misfit(const Response& residual_resp, const RealVector& hyper_params);
 
   /// compute priorCovCholFactor based on prior distributions for random
   /// variables and any hyperparameters
@@ -197,10 +182,6 @@ protected:
   String proposalCovarFilename;
   /// approach for defining proposal covariance
   String proposalCovarInputType;
-
-  /// local Response in which to store computed residuals (accounting
-  /// for data); must be kept updated after any compute_response
-  Response residualResponse;
 
   /// Pointer to current class instance for use in static callback functions
   static NonDBayesCalibration* nonDBayesInstance;

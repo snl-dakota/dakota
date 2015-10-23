@@ -196,8 +196,10 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   }
 
   // DREAM likelihood needs fn_vals only
-  short request_value_needed = 1;
-  init_residual_response(request_value_needed);
+  // short request_value_needed = 1;
+  // init_residual_response(request_value_needed);
+  // BMA TODO: Make sure residualModel has necessary ASV/sizing
+
 
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
@@ -334,10 +336,9 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 
     std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDDREAMLogLike.txt", std::ios::out | std::ios::app);
-    // Note: parameter values are in scaled space, if scaling is active
+    // Note: parameter values are in scaled space, if scaling is
+    // active; residuals may be scaled by covariance
     for (size_t i=0; i<par_num;  ++i) LogLikeOutput << zp[i] << ' ' ;
-    // BMA TODO: needs to be num calibration terms... 
-    // and consistent with QUESO (functions vs. residuals...
     for (size_t i=0; i<nonDDREAMInstance->numTotalCalibTerms; ++i)   
       LogLikeOutput << residuals(i) << ' ' ;
     LogLikeOutput << log_like << '\n';

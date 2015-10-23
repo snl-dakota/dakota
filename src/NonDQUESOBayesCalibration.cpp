@@ -256,8 +256,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
   // likelihood needs fn_vals; preconditioning may need derivs
   short request_value_needed = 1 | precondRequestValue;
-  // BMA TODO: make sure Recast is setup properly
-  init_residual_response(request_value_needed);
+  // BMA TODO: make sure Recast is setup properly to have the right request val
+  //  init_residual_response(request_value_needed);
 
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the parameter domain
@@ -569,27 +569,28 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 {
   if (!precondRequestValue) {
     Cerr << "Error: response derivative specification required for proposal "
-	 << "preconditioning." << std::endl;
+         << "preconditioning." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // update mcmcModel's continuous variables from paramInitials (start of
   // current MCMC chain)
-  copy_gsl_partial(*paramInitials, 0,
-		   mcmcModel.current_variables().continuous_variables_view());
+  copy_gsl_partial
+    (*paramInitials, 0,
+     residualModel.current_variables().continuous_variables_view());
   // update request vector values
-  const Response& emulator_resp = mcmcModel.current_response();
-  ActiveSet set = emulator_resp.active_set(); // copy
+  const Response& residual_resp = residualModel.current_response();
+  ActiveSet set = residual_resp.active_set(); // copy
   set.request_values(precondRequestValue);
   // compute response (emulator case echoed to Cout if outputLevel > NORMAL)
-  mcmcModel.compute_response(set);
-  update_residual_response(emulator_resp);
+  residualModel.compute_response(set);
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
   RealSymMatrix prop_covar;
 
-  expData.build_hessian_of_sum_square_residuals(residualResponse, log_hess);
+  expData.build_hessian_of_sum_square_residuals
+    (residualModel.current_response(), log_hess);
   //bool fallback =
     get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
 
@@ -1517,16 +1518,7 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   nonDQUESOInstance->copy_gsl(paramValues, all_params);
 
   nonDQUESOInstance->residualModel.compute_response();
-  const Response& raw_resp = nonDQUESOInstance->mcmcModel.current_response();
-  // BMA TODO: temporarily update from the truth model to update this
-  // to not include the covariance contributions...
-  nonDQUESOInstance->update_residual_response(raw_resp);
   
-  // if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
-  //   Cout << "Hyperparams to misfit:\n" << hyper_params << std::endl;
-
-  // residualModel already includes any scaling for variance.... so we
-  // use an alternate log_likelihood temporarily
   // TODO: omit constraints
   const RealVector& residuals = 
     nonDQUESOInstance->residualModel.current_response().function_values();
@@ -1536,15 +1528,16 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
     Cout << "Log likelihood is " << log_like << " Likelihood is "
          << std::exp(log_like) << '\n';
 
-    size_t i, num_total_params = 
-      nonDQUESOInstance->numContinuousVars + nonDQUESOInstance->numHyperparams; 
     std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDQUESOLogLike.txt", std::ios::out | std::ios::app);
-    // Note: parameter values are in scaled space, if scaling is active
-    for (i=0; i<num_total_params; ++i)  LogLikeOutput << paramValues[i] << ' ' ;
-    const RealVector& fn_values = raw_resp.function_values();
-    size_t num_fns = nonDQUESOInstance->numFunctions;
-    for (i=0; i<num_fns; ++i)  LogLikeOutput << fn_values[i]         << ' ' ;
+    // Note: parameter values are in scaled space, if scaling is
+    // active; residuals may be scaled by covariance
+    size_t num_total_params = 
+      nonDQUESOInstance->numContinuousVars + nonDQUESOInstance->numHyperparams; 
+    for (size_t i=0; i<num_total_params; ++i) 
+      LogLikeOutput << paramValues[i] << ' ' ;
+    for (size_t i=0; i<nonDQUESOInstance->numTotalCalibTerms; ++i)
+      LogLikeOutput << residuals[i] << ' ' ;
     LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();
   }

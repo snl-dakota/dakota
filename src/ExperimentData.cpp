@@ -1105,21 +1105,9 @@ build_gradient_of_sum_square_residuals_from_response( const Response& resp,
 						      int exp_ind,
 						      RealVector &ssr_gradient)
 {
-  bool apply_covariance = ( ( variance_type_active(MATRIX_SIGMA) ) ||
-			    ( variance_type_active(SCALAR_SIGMA) ) || 
-			    ( variance_type_active(DIAGONAL_SIGMA) ) );
-
-  RealVector scaled_residuals;
-  RealMatrix scaled_gradients;
-  if ( apply_covariance ){
-    apply_covariance_inv_sqrt(resp.function_values(), exp_ind,
-			      scaled_residuals);
-    apply_covariance_inv_sqrt(resp.function_gradients(), exp_ind,
-			      scaled_gradients);
-  }else{
-    scaled_residuals = residuals_view( resp.function_values(), exp_ind );
-    scaled_gradients = gradients_view( resp.function_gradients(), exp_ind );
-  }
+  RealVector scaled_residuals = residuals_view(resp.function_values(), exp_ind);
+  RealMatrix scaled_gradients = 
+    gradients_view(resp.function_gradients(), exp_ind);
 
   /*scaled_residuals.print(std::cout);
   scaled_gradients.print(std::cout);*/
@@ -1174,26 +1162,11 @@ build_hessian_of_sum_square_residuals_from_response( const Response& resp,
 						     int exp_ind,
 						     RealSymMatrix &ssr_hessian)
 {
-  const RealSymMatrixArray &func_hessians = resp.function_hessians();
-  const RealMatrix &func_gradients = resp.function_gradients();
-  const RealVector &residuals = resp.function_values();
-  
-  bool apply_covariance = ( ( variance_type_active(MATRIX_SIGMA) ) ||
-			    ( variance_type_active(SCALAR_SIGMA) ) || 
-			    ( variance_type_active(DIAGONAL_SIGMA) ) );
-
-  RealVector scaled_residuals;
-  RealMatrix scaled_gradients;
-  RealSymMatrixArray scaled_hessians;
-  if ( apply_covariance ){
-    apply_covariance_inv_sqrt(residuals, exp_ind, scaled_residuals);
-    apply_covariance_inv_sqrt(func_gradients, exp_ind, scaled_gradients);
-    apply_covariance_inv_sqrt(func_hessians, exp_ind, scaled_hessians);
-  }else{
-    scaled_residuals = residuals_view( residuals, exp_ind );
-    scaled_gradients = gradients_view( func_gradients, exp_ind );
-    scaled_hessians = hessians_view( func_hessians, exp_ind );
-  }
+  RealVector scaled_residuals = residuals_view(resp.function_values(), exp_ind );
+  RealMatrix scaled_gradients = 
+    gradients_view(resp.function_gradients(), exp_ind );
+  RealSymMatrixArray scaled_hessians = 
+    hessians_view(resp.function_hessians(), exp_ind );
 
   /*scaled_residuals.print(std::cout);
   scaled_gradients.print(std::cout);

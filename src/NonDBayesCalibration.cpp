@@ -255,11 +255,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
-  // in a data transformation
+  // in a data transformation, making sure to allocate gradient/Hessian space
   if (calibrationData)
     residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, 
-			      numHyperparams, obsErrorMultiplierMode), false);
+      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
+                              obsErrorMultiplierMode, mcmc_deriv_order), false);
   else
     residualModel = mcmcModel;  // shallow copy
 
@@ -279,13 +279,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
       secondary_resp_map_indices;
-    // BMA @ MSE: I believe this needs to be sized correctly based on total
-    // residual size, not numFunctions
-    primary_resp_map_indices[0].resize(numFunctions);
-    for (size_t i=0; i<numFunctions; ++i)
+    primary_resp_map_indices[0].resize(numTotalCalibTerms);
+    for (size_t i=0; i<numTotalCalibTerms; ++i)
       primary_resp_map_indices[0][i] = i;
     bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
-    nonlinear_resp_map[0] = BoolDeque(numFunctions, true);
+    nonlinear_resp_map[0] = BoolDeque(numTotalCalibTerms, true);
     SizetArray recast_vc_totals;  // empty: no change in size
     BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
 
@@ -323,30 +321,35 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     if (opt_alg_override == SUBMETHOD_NIP) {
       nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
       if (mcmc_deriv_order == 3) // map asrv for Gauss-Newton approx
-	set_recast = gnewton_set_recast;
+        set_recast = gnewton_set_recast;
     }
 
     // RecastModel for bound-constrained argmin(misfit - log prior)
     if (opt_alg_override)
-      negLogPostModel.assign_rep(new RecastModel(mcmcModel, vars_map_indices, 
-        recast_vc_totals, all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-        set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
-        nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, NULL),
-        false);
+      negLogPostModel.assign_rep
+        (new RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
+                         all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+                         set_recast, primary_resp_map_indices, 
+                         secondary_resp_map_indices, 0, nlp_resp_order, 
+                         nonlinear_resp_map, neg_log_post_resp_mapping, NULL),
+         false);
 
     switch (opt_alg_override) {
 #ifdef HAVE_NPSOL
     case SUBMETHOD_SQP: {
+      // SQP with BFGS Hessians
       int npsol_deriv_level = 3;
-      mapOptimizer.assign_rep(new NPSOLOptimizer(negLogPostModel,
-	npsol_deriv_level, convergenceTol), false); // SQP with BFGS Hessians
+      mapOptimizer.assign_rep
+        (new NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),
+         false);
       break;
     }
 #endif
 #ifdef HAVE_OPTPP
     case SUBMETHOD_NIP:
-      mapOptimizer.assign_rep(new SNLLOptimizer("optpp_newton",
-	negLogPostModel), false); // full Newton (OPTPP::OptBCNewton)
+      // full Newton (OPTPP::OptBCNewton)
+      mapOptimizer.assign_rep
+        (new SNLLOptimizer("optpp_newton", negLogPostModel), false);
       break;
 #endif
     }
@@ -422,83 +425,14 @@ void NonDBayesCalibration::initialize_model()
 }
 
 
-void NonDBayesCalibration::
-init_residual_response(short request_value_needed)
-{
-  // The residual response is sized based on total experiment data size.
-  // It has to allocate space for derivatives in the case of preconditioned
-  // proposal covariance.
-  const Response& resp = mcmcModel.current_response();
-  residualResponse = resp.copy(false);  // false: SRD can be shared until resize
-  size_t total_residuals = 
-    calibrationData ? expData.num_total_exppoints() : resp.num_functions();
-
-  // reshape needed if change in size or derivative request; Response
-  // only resizes contained data if needed
-  residualResponse.reshape(total_residuals,
-			   resp.active_set_derivative_vector().size(),
-			   request_value_needed & 2, request_value_needed & 4);
-
-  // TODO: fully map the active set vector as in Minimizer, or replace
-  // with a RecastModel for data.  For now use the maximal request.
-  ShortArray asv = residualResponse.active_set_request_vector();
-  asv.assign(asv.size(), request_value_needed);
-  residualResponse.active_set_request_vector(asv);
-}
-
-
-/** Converts a passed simulation or emulator response to a full set of
-    residuals based on multiple experiments and/or interpolation.
-    Called after any compute_response instead of in misfit and
-    neg_log_post to avoid complex conditionals on ASV and data flags;
-    may later be replaced with RecastModel. */
-void NonDBayesCalibration::
-update_residual_response(const Response& resp)
-{
-  if (calibrationData) {
-    // BMA: perhaps a better name would be per_exp_asv?
-    bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
-                                    || expData.interpolate_flag() );
-    ShortArray total_asv =  
-      expData.determine_active_request(residualResponse,interrogate_field_data);
-    expData.form_residuals(resp, total_asv, residualResponse); 
-
-    if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "Original response:\n" << resp << std::endl;
-      Cout << "Residual response:\n" << residualResponse << std::endl;
-    }
-  }
-  else
-    residualResponse.update(resp);
-}
-
-
+// BMA TODO: Account for constraint presence.
 /** Calculate the log-likelihood, accounting for contributions from
     covariance and hyperparameters, as well as constant term:
 
       log(L) = -1/2*Nr*log(2*pi) - 1/2*log(det(Cov)) - 1/2*r'(Cov^{-1})*r
 
-    The passed residual_resp must already be differenced with any
-    data, if present. */
-Real NonDBayesCalibration::
-log_likelihood(const Response& residual_resp, const RealVector& hyper_params)
-{
-  Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
-  // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
-  Real half_log_det = 
-    std::log( expData.scaled_cov_determinant(hyper_params, 
-					     obsErrorMultiplierMode) ) / 2.0;
-  Real log_like = 
-    -half_nr_log2pi - half_log_det - misfit(residual_resp, hyper_params);
-
-  return log_like;
-}
-
-// BMA TODO: The above and below will be consolidated once
-// residualResponse is removed.  Account for constraint presence.
-
-/** This implementation assumes the residuals have been size-adjusted
-    and scaled by covariance as needed. */
+    The passed residual_resp must already be size-adjusted, differenced with any
+    data, if present, and scaled by covariance^{-1/2}. */
 Real NonDBayesCalibration::
 log_likelihood(const RealVector& residuals, const RealVector& all_params)
 {
@@ -521,57 +455,6 @@ log_likelihood(const RealVector& residuals, const RealVector& all_params)
   Real log_like = -half_nr_log2pi - half_log_det - misfit;
 
   return log_like;
-}
-
-
-/** Calculate the misfit portion of the likelihood, accounting for
-    optional user-provided observation error covariance and/or
-    calibrated multipliers on the errors. The passed residual_resp
-    must already be differenced with any data, if present.*/
-Real NonDBayesCalibration::
-misfit(const Response& residual_resp, const RealVector& hyper_params)
-{
-  // For now, mirror the flow we'd move to if posing this via nested
-  // RecastModels (even though it makes extra copies).  Previously variance 
-  // data OR calibrated errors were applied; now they are independent
-  
-  // On entry to this function, residual_resp contains the expanded,
-  // potentially interpolated, set of residuals (from
-  // update_residual_response)
-  RealVector residuals = residual_resp.function_values();
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Residuals in misfit:\n" << residuals << std::endl;
-
-  // scale by inverse of user-provided observation error
-  if (expData.variance_active()) {  // r <- Gamma_d^{-1/2} r
-    // BMA: perhaps a better name would be per_exp_asv?
-    bool interrogate_field_data = ( expData.variance_type_active(MATRIX_SIGMA)
-				    || expData.interpolate_flag() );
-    // TODO: Make this call robust to zero and single experiment cases
-    ShortArray total_asv =  
-      expData.determine_active_request(residual_resp, 
-				       interrogate_field_data);
-    // scale the residuals without changing member residualResponse
-    expData.scale_residuals(residual_resp, total_asv, residuals);
-
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Variance-weighted residuals:\n" << residuals << std::endl;
-  }
-
-  if (obsErrorMultiplierMode > 0) {  
-    // r <- r ./ mult, where mult might be per-block
-    // scale by mult, whether 1, per-experiment, per-response, or both
-    // for now, the multiplier calibration mode is a method-related
-    // parameter; could instead have a by-index interface here...
-    expData.scale_residuals(hyper_params, obsErrorMultiplierMode, residuals);
-
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Multiplier-weighted residuals:\n" << residuals << std::endl;
-  }
-
-  // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
-  return residuals.dot( residuals ) / 2.0;
 }
 
 
@@ -736,46 +619,38 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 }
 
 
-/** Response mapping callback used within RecastModel for MAP pre-solve. */
+/** Response mapping callback used within RecastModel for MAP
+    pre-solve. The passed residual_resp has been differenced,
+    interpolated, and covariance-scaled */
 void NonDBayesCalibration::
-neg_log_post_resp_mapping(const Variables& model_vars,
+neg_log_post_resp_mapping(const Variables& residual_vars,
                           const Variables& nlpost_vars,
-                          const Response& model_resp,
+                          const Response& residual_resp,
                           Response& nlpost_resp)
 {
   if (nonDBayesInstance->obsErrorMultiplierMode > 0) {
+    // the hyper-parameters are now included in
+    // residual_vars/nlpost_vars, but we need to take derivatives
+    // w.r.t. them to enable this
+
+    // BMA TODO: update to include all likelihood terms (derivatives
+    // w.r.t. hyperparams will be a problem due to det(Cov))
+
+    // For now, MAP is self-consistent (doesn't call likelihood)
+
     Cerr << "Error: observation error calibration unsupported in MAP pre-solve."
          << std::endl;
     abort_handler(-1);
   }
 
-  // BMA: This is called in the context of the post compute-response
-  // transformation in the RecastModel. Perhaps redesign to avoid
-  // modifying class data (residualResponse) in this context.
-  nonDBayesInstance->update_residual_response(model_resp);
-
   const RealVector& c_vars = nlpost_vars.continuous_variables();
   short nlpost_req = nlpost_resp.active_set_request_vector()[0];
   bool output_flag = (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT);
   if (nlpost_req & 1) {
-    RealVector hyper_params; // TO DO:
-    // > cleanest approach may be to roll this into a variable recasting within
-    //   negLogPostModel
-    // > however, QUESO/DREAM do not roll this into a model recast, but instead
-    //   augment the solver domains and then map the additional variables that
-    //   flow into the likelihood into the hyper_params.
-    //if (nonDBayesInstance->calibrateSigma) {
-    //  RealVector x(Teuchos::View, c_vars.data(), numContinuousVars);
-    //  RealVector hyper_params(Teuchos::View, &c_vars[numContinuousVars],
-    //    numFunctions);
-    //}
-
-    // BMA TODO: update to include all likelihood terms (derivatives
-    // w.r.t. hyperparams will be a problem due to det(Cov))
-    Real nlp = 
-      nonDBayesInstance->misfit(nonDBayesInstance->residualResponse, 
-                                hyper_params) - 
-      nonDBayesInstance->log_prior_density(c_vars);
+    // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
+    const RealVector& residuals = residual_resp.function_values();
+    Real misfit = residuals.dot( residuals ) / 2.0;
+    Real nlp = misfit - nonDBayesInstance->log_prior_density(c_vars);
     nlpost_resp.function_value(nlp, 0);
     if (output_flag)
       Cout << "MAP pre-solve: negative log posterior = " << nlp << std::endl;
@@ -784,8 +659,8 @@ neg_log_post_resp_mapping(const Variables& model_vars,
   if (nlpost_req & 2) {
     // avoid copy by updating gradient vector in place
     RealVector log_grad = nlpost_resp.function_gradient_view(0);
-    nonDBayesInstance->expData.build_gradient_of_sum_square_residuals(
-      nonDBayesInstance->residualResponse, log_grad);
+    nonDBayesInstance->
+      expData.build_gradient_of_sum_square_residuals(residual_resp, log_grad);
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior gradient:\n";
@@ -796,8 +671,8 @@ neg_log_post_resp_mapping(const Variables& model_vars,
   if (nlpost_req & 4) {
     // avoid copy by updating Hessian matrix in place
     RealSymMatrix log_hess = nlpost_resp.function_hessian_view(0);
-    nonDBayesInstance->expData.build_hessian_of_sum_square_residuals(
-      nonDBayesInstance->residualResponse, log_hess);
+    nonDBayesInstance->
+      expData.build_hessian_of_sum_square_residuals(residual_resp, log_hess);
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior Hessian:\n";

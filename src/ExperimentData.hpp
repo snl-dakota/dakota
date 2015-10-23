@@ -207,6 +207,8 @@ public:
   /// (scale functions, gradients, and Hessians by Gamma_d^{-1/2})
   void scale_residuals(Response& residual_response, ShortArray &total_asv) const;
 
+  // All the following now assume any covariance scaling is already applied
+
   /// Build the gradient of the ssr from residuals and function gradients
   /// based on the response's active set request vector
   void build_gradient_of_sum_square_residuals(const Response& resp,

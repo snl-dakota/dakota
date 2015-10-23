@@ -36,7 +36,8 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
     updates the properties of the RecastModel */
 DataTransformModel::
 DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
-		   size_t num_hyper, unsigned short mult_mode):
+                   size_t num_hyper, unsigned short mult_mode, 
+                   short recast_resp_deriv_order):
   // BMA TODO: should the BitArrays be empty or same as submodel?
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
@@ -45,7 +46,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 	      exp_data.num_total_exppoints(), 
 	      sub_model.num_functions() - sub_model.num_primary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
-	      response_order(sub_model)), 
+              response_order(sub_model, recast_resp_deriv_order)), 
   expData(exp_data), numHyperparams(num_hyper), obsErrorMultiplierMode(mult_mode)
 {
   dtModelInstance = this;
@@ -203,11 +204,12 @@ variables_expand(const Model& sub_model, size_t num_hyper)
 }
 
 
-short DataTransformModel::response_order(const Model& sub_model)
+short DataTransformModel::
+response_order(const Model& sub_model, short recast_resp_order)
 {
   const Response& curr_resp = sub_model.current_response();
 
-  short recast_resp_order = 1; // recast resp order to be same as original resp
+  // recast resp order at least as much as original response
   if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
@@ -354,7 +356,7 @@ data_difference_core(const Variables& submodel_vars,
 {
   // BMA TODO: encapsulate this in ExperimentData?
 
-  ShortArray total_asv;
+  
 
   bool apply_cov = expData.variance_active();
   // can't apply matrix-valued errors due to possibly incomplete
@@ -365,13 +367,13 @@ data_difference_core(const Variables& submodel_vars,
   bool interrogate_field_data = 
     ( matrix_cov_active || expData.interpolate_flag() );
   // BMA TODO: Make this call robust to zero and single experiment cases
-  total_asv = expData.determine_active_request(recast_response, 
-					       interrogate_field_data);
-  // form residuals from the simulation response
+  ShortArray total_asv = 
+    expData.determine_active_request(recast_response, interrogate_field_data);
+  // form residuals (and gradients/Hessians) from the simulation response
   expData.form_residuals(submodel_response, total_asv, recast_response);
   if (apply_cov) {
+    // also scales gradients, Hessians
     expData.scale_residuals(recast_response, total_asv);
-    // BMA TODO: scale gradients, Hessians
   }
 
   // TODO: may need to scale by hyperparameters in Covariance as well
@@ -391,8 +393,10 @@ data_difference_core(const Variables& submodel_vars,
     copy_data_partial(recast_vars.continuous_variables(), num_calib_params, 
 		      numHyperparams, hyper_params);
     RealVector residuals = recast_response.function_values_view();
+
+    // BMA TODO: scale gradients, Hessians by mults
+
     expData.scale_residuals(hyper_params, obsErrorMultiplierMode, residuals);
-    // BMA TODO: scale gradients, Hessians
   }
 }
 

@@ -45,8 +45,9 @@ public:
 
   /// standard constructor
   DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
-		     size_t num_hyper = 0,
-		     unsigned short mult_mode = CALIBRATE_NONE);
+                     size_t num_hyper = 0,
+                     unsigned short mult_mode = CALIBRATE_NONE, 
+                     short recast_resp_deriv_order = 1);
 
   /// destructor
   ~DataTransformModel();
@@ -66,8 +67,11 @@ protected:
   /// expand the variable counts to account for hyper-parameters
   static SizetArray variables_expand(const Model& sub_model, size_t num_hyper);
 
-  /// helper to compute the recast response order during member initialization
-  static short response_order(const Model& sub_model);
+  /// helper to compute the recast response order during member
+  /// initialization; recast_resp_order passed is the minimum request
+  /// client needs
+  static short response_order(const Model& sub_model, 
+                              short recast_resp_order = 1);
 
   /// compute the primary response map for a data transform RecastModel
   void gen_primary_resp_map(const SharedResponseData& srd,
