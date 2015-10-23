@@ -52,6 +52,14 @@ public:
   template <typename VectorType>
   Real log_prior_density(const VectorType& vec);
 
+  /**
+   * \brief Compute the proposal covariance C based on low-rank approximation
+   * to the prior-preconditioned misfit Hessian.
+   */
+  static void get_positive_definite_covariance_from_hessian(
+    const RealSymMatrix &hessian, const RealMatrix& prior_chol_fact,
+    RealSymMatrix &covariance, short output_lev);
+
 protected:
 
   //
@@ -99,6 +107,14 @@ protected:
   /// calculate the misfit function from the vector of residuals
   Real misfit(const Response& residual_resp, const RealVector& hyper_params);
 
+  /// compute priorCovCholFactor based on prior distributions for random
+  /// variables and any hyperparameters
+  void prior_cholesky_factorization();
+
+  /// member version forwards member data to static function
+  void get_positive_definite_covariance_from_hessian(
+    const RealSymMatrix &hessian, RealSymMatrix &covariance);
+
   /// static function passed by pointer to negLogPostModel recast model
   static void neg_log_post_resp_mapping(const Variables& model_vars,
                                         const Variables& nlpost_vars,
@@ -139,6 +155,9 @@ protected:
   int chainCycles;
   /// random seed for MCMC process
   int randomSeed;
+
+  /// the Cholesky factor of the prior covariance
+  RealMatrix priorCovCholFactor;
 
   /// mode for number of observation error multipliers to calibrate
   /// (default none)
@@ -273,6 +292,15 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
   else
     for (size_t i=0; i<numContinuousVars; ++i)
       log_hess(i, i) -= natafTransform.x_log_pdf_hessian(vec[i], i);
+}
+
+
+inline void NonDBayesCalibration::
+get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
+					       RealSymMatrix &covariance )
+{
+  get_positive_definite_covariance_from_hessian(hessian, priorCovCholFactor,
+						covariance, outputLevel);
 }
 
 } // namespace Dakota

@@ -658,7 +658,6 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
       eigenvectors(i,j) = matrix( i,j );
 
   char jobz = 'V'; // compute eigenvectors
-
   char uplo = 'U'; // assume only upper triangular part of matrix is stored
 
   eigenvalues.sizeUninitialized( N );
@@ -694,64 +693,7 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
     }
 };
 
-bool get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
-						   RealMatrix &covariance )
-{
-  // I am returning covariance as a RealMatrix and not a RealSymMatrix 
-  // because I cannot perform matrix multiplication with RealSymMatrix
-  // and only use cases I know about donot require RealSymMatrix anyway.
-  // Specifically covariance must be transformed into a QUESO::GSL matrix
-  // Returning RealMatrix here avoids a copy
-
-  int num_rows = hessian.numRows();
-
-  // Compute eigenvalue decomposition of matrix A=QDQ'
-  // In general, the eigenvalue decomposition of a matrix is A=QDinv(Q).
-  // For real symmetric matrices A = QDQ', i.e. inv(Q) = Q'
-
-  RealVector eigenvalues;
-  RealMatrix eigenvectors;
-  symmetric_eigenvalue_decomposition( hessian, eigenvalues, eigenvectors );
-
-  // Find smallest positive eigenvalue
-  //Real min_eigval = std::numeric_limits<double>::max();
-  //for ( int i=0; i<num_rows; i++)
-  //  if ( eigenvalues[i] > 0. )
-  //    min_eigval = std::min( eigenvalues[i], min_eigval );
-
-  // Ensure hessian is positive definite by setting all negative eigenvalues 
-  // to be positive.
-  int num_negative_eigenvalues = 0;
-  for ( int i=0; i<num_rows; i++){
-    //if ( eigenvalues[i] < 0 ) eigenvalues[i] = min_eigval;
-    if ( eigenvalues[i] < 0. ){
-      eigenvalues[i] = 0.;
-      num_negative_eigenvalues++;
-    }
-    else break;
-  }
-
-  // The covariance matrix is the inverse of the hessian so scale eigenvectors
-  // by Q*inv(D)
-  RealMatrix scaled_eigenvectors( eigenvectors );
-  for ( int j=0; j<num_negative_eigenvalues; j++)
-    // Assume negative eigenvalues were set to zero
-    for ( int i=0; i<num_rows; i++) 
-      scaled_eigenvectors(i,j)= 0.;
-  for ( int j=num_negative_eigenvalues; j<num_rows; j++)
-    for ( int i=0; i<num_rows; i++)
-      scaled_eigenvectors(i,j) /= eigenvalues[j];
-  
-  // Compute inv(A) = Q*inv(D)*Q'
-  covariance.shapeUninitialized( num_rows, num_rows );
-  covariance.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 
-		       1.0, scaled_eigenvectors, eigenvectors, 0.0 );
-
-  return (num_negative_eigenvalues > 0);
-}
-
-void
-compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
+void compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
 {
   int num_cols = matrix.numCols();
   int num_rows = matrix.numRows();
@@ -766,6 +708,5 @@ compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
     avg_vals(i) = col_vec.dot(ones_vec)/(Real) num_rows;
   }
 }
-
 
 } //namespace Dakota

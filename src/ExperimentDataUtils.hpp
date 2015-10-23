@@ -250,13 +250,6 @@ public:
 void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
 					 RealVector &eigenvalues, 
 					 RealMatrix &eigenvectors );
-/**
- * \brief Compute the covariance C of a hessian matrix H, i.e, C=inv(H) 
- * The hessian is enforced to be positive definite by setting any negative
- * eigenvalues to zero.  The state of eigenvalue truncation is returned.
- */
-bool get_positive_definite_covariance_from_hessian( const RealSymMatrix &hessian,
-						    RealMatrix &covariance );
 
 /**
  * \brief Compute the means of each column of an arbitrary matrix

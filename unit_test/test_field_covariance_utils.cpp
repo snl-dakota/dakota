@@ -1,6 +1,8 @@
 #include "ExperimentDataUtils.hpp"
 #include "dakota_global_defs.hpp"
+#include "DataMethod.hpp"
 #include "DakotaResponse.hpp"
+#include "NonDBayesCalibration.hpp"
 // Boost.Test
 #include <boost/test/minimal.hpp>
 
@@ -828,16 +830,21 @@ void test_symmetric_eigenvalue_decomposition()
 
 void test_get_positive_definite_covariance_from_hessian()
 {
+  Real prior_chol_fact[] = { 0.02, 0., 0., 0.02 };
+  RealMatrix prior_L( Teuchos::View, prior_chol_fact, 2, 2, 2 );
+
   // non positive definite matrix
   Real hessian_array1[] = { 0.92, 1.44, 1.44, 0.08 };
   RealSymMatrix hessian1( Teuchos::View, false, hessian_array1, 2, 2 );
 
-  RealMatrix covariance1;
-  get_positive_definite_covariance_from_hessian( hessian1, covariance1 );
+  RealSymMatrix covariance1;
+  NonDBayesCalibration::
+    get_positive_definite_covariance_from_hessian( hessian1, prior_L,
+						   covariance1, NORMAL_OUTPUT );
 
 
   Real truth_covariance1_array[] ={ 0.32, 0.24, 0.24, 0.18 };
-  RealMatrix truth_covariance1( Teuchos::View, truth_covariance1_array, 2, 2, 2);
+  RealSymMatrix truth_covariance1( Teuchos::View, false, truth_covariance1_array, 2, 2);
 
   truth_covariance1 -= covariance1;
   BOOST_CHECK( truth_covariance1.normInf() < 
@@ -847,12 +854,14 @@ void test_get_positive_definite_covariance_from_hessian()
   Real hessian_array2[] = { 1.64, 0.48, 0.48, 1.36 };
   RealSymMatrix hessian2( Teuchos::View, false, hessian_array2, 2, 2 );
 
-  RealMatrix covariance2;
-  get_positive_definite_covariance_from_hessian( hessian2, covariance2 );
+  RealSymMatrix covariance2;
+  NonDBayesCalibration::
+    get_positive_definite_covariance_from_hessian( hessian2, prior_L,
+						   covariance2, NORMAL_OUTPUT );
 
 
   Real truth_covariance2_array[] = { 0.68, -0.24, -0.24, 0.82 };
-  RealMatrix truth_covariance2( Teuchos::View, truth_covariance2_array, 2, 2, 2);
+  RealSymMatrix truth_covariance2( Teuchos::View, false, truth_covariance2_array, 2, 2);
 
   truth_covariance2 -= covariance2;
   BOOST_CHECK( truth_covariance2.normInf() < 

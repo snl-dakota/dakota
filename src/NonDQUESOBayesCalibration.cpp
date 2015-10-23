@@ -295,6 +295,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 			     proposalCovarFilename);
   else if (proposalCovarType == "prior")
     prior_proposal_covariance(); // prior selection or default for no emulator
+  else // misfit Hessian-based proposal with prior preconditioning
+    prior_cholesky_factorization();
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
@@ -440,15 +442,14 @@ void NonDQUESOBayesCalibration::compute_statistics()
   // Step 1: Access the (aggregated) acceptance chain.
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
-  size_t i, num_mcmc = mcmc_chain.subSequenceSize(), total_num_params
-    = numContinuousVars + numHyperparams;
+  size_t i, num_mcmc = mcmc_chain.subSequenceSize();
   // Note: this will be much simpler when QUESO no longer requires restarting.
   // --> defer for now?
   // --> top UT contract priority, post MPI? (get telecons going)
 
   // Step 2: pass sample matrix into NonDSampling as allSamples
   QUESO::GslVector qv(paramSpace->zeroVector());
-  RealMatrix acceptance_chain(total_num_params, num_mcmc);
+  RealMatrix acceptance_chain(numContinuousVars + numHyperparams, num_mcmc);
   for (i=0; i<num_mcmc; ++i) {
     mcmc_chain.getPositionValues(i, qv); // extract vector from sequence
     if (standardizedSpace) {
@@ -594,45 +595,26 @@ void NonDQUESOBayesCalibration::precondition_proposal()
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
-  RealMatrix prop_covar;
+  RealSymMatrix prop_covar;
 
   expData.build_hessian_of_sum_square_residuals(residualResponse, log_hess);
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "Hessian of negative log-likelihood (from misfit):\n";
-    write_data(Cout, log_hess, true, true, true);
-  }
-  const RealVector& c_vars = mcmcModel.continuous_variables();
-  augment_hessian_with_log_prior(log_hess, c_vars);
-  bool ev_truncation
-    = get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
+  //bool fallback =
+    get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
 
-  if ( (precondRequestValue & 4) && ev_truncation ) { // fall back if indefinite
+  /*
+  if ( fallback && (precondRequestValue & 4) ) { // fall back if indefinite
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
+	   << "Hessian.\n";
     // BMA @JDJ, @MSE: I think this asv needs to be length of the
     // total number of residuals (residualResponse.num_functions or
     // expData.num_total_exppoints())
     ShortArray asrv_override(numFunctions, 2); // override asrv in response
     expData.build_hessian_of_sum_square_residuals(residualResponse,
 						  asrv_override, log_hess);
-    if (outputLevel >= NORMAL_OUTPUT) {
-      Cout << "Falling back from full misfit Hessian to Gauss-Newton misfit "
-	   << "Hessian.\nHessian of negative log-likelihood (from misfit):\n";
-      write_data(Cout, log_hess, true, true, true);
-    }
-    augment_hessian_with_log_prior(log_hess, c_vars);
     get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
   }
-
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "Hessian of negative log-posterior (from misfit and log-prior):\n";
-    write_data(Cout, log_hess);
-    //Cout << "2x2 determinant = " << log_hess(0,0) * log_hess(1,1) -
-    //  log_hess(0,1) * log_hess(1,0) << '\n';
-
-    Cout << "Positive definite covariance from inverse of Hessian:\n";
-    write_data(Cout, prop_covar);
-    //Cout << "2x2 determinant = " << prop_covar(0,0) * prop_covar(1,1) -
-    //  prop_covar(0,1) * prop_covar(1,0) << '\n';
-  }
+  */
 
   // pack GSL proposalCovMatrix
   int i, j, nv = log_hess.numRows();
@@ -721,8 +703,8 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  size_t j, wpp4 = write_precision+4, total_num_params
-    = numContinuousVars + numHyperparams;
+  size_t j, wpp4 = write_precision+4,
+    num_params = numContinuousVars + numHyperparams;
   QUESO::GslVector qv(paramSpace->zeroVector());
   exportMCMCStream << std::setprecision(write_precision) 
 		   << std::resetiosflags(std::ios::floatfield);
@@ -742,7 +724,7 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
       for (j=0; j<numContinuousVars; ++j)
 	exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
     // trailing calibrated hyperparams are not transformed
-    for (j=numContinuousVars; j<total_num_params; ++j)
+    for (j=numContinuousVars; j<num_params; ++j)
       exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
     exportMCMCStream << '\n';
   }
@@ -1134,10 +1116,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
   // BMA TODO: change from uniform to inverse gamma prior and allow control for 
   // cases where user didn't give covariance information
-  int total_num_params = numContinuousVars + numHyperparams;
-
-  paramSpace.reset(new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
-		   (*quesoEnv, "param_", total_num_params, NULL));
+  paramSpace.reset(new 
+    QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*quesoEnv,
+    "param_", numContinuousVars + numHyperparams, NULL));
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
@@ -1188,7 +1169,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 /** Must be called after paramMins/paramMaxs set above */
 void NonDQUESOBayesCalibration::prior_proposal_covariance()
 {
-  //int total_num_params = paramSpace->dimGlobal();
+  //int num_params = paramSpace->dimGlobal();
   //QUESO::GslVector covDiag(paramSpace->zeroVector());
 
   // diagonal covariance from variance of prior marginals
@@ -1246,10 +1227,9 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   //proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
 
   // Sanity check
-  int total_num_params = numContinuousVars; //paramSpace->dimGlobal();
-  /*if( (proposalCovMatrix->numRowsLocal()  != total_num_params) || 
-      (proposalCovMatrix->numRowsGlobal() != total_num_params) || 
-      (proposalCovMatrix->numCols()       != total_num_params)   )
+  /*if( (proposalCovMatrix->numRowsLocal()  != numContinuousVars) || 
+      (proposalCovMatrix->numRowsGlobal() != numContinuousVars) || 
+      (proposalCovMatrix->numCols()       != numContinuousVars)   )
     throw std::runtime_error("Queso vector space is not consistent with parameter dimension.");
   */      
   // Read in a general way and then check that the data is consistent
@@ -1269,31 +1249,31 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
       bool row_data = false;
       // Sanity checks
       if( values_from_file.size() != 1 ) {
-        if( values_from_file.size() == total_num_params ) 
+        if( values_from_file.size() == numContinuousVars ) 
           row_data = true;
         else
           throw std::runtime_error("\"diagonal\" Queso covariance file data should have either 1 column (or row) and "
-              +convert_to_string(total_num_params)+" rows (or columns).");
+              +convert_to_string(numContinuousVars)+" rows (or columns).");
       }
       if( row_data ) {
-        for( int i=0; i<total_num_params; ++i )
+        for( int i=0; i<numContinuousVars; ++i )
           (*proposalCovMatrix)(i,i) = values_from_file[i](0);
       }
       else {
-        if( values_from_file[0].length() != total_num_params )
+        if( values_from_file[0].length() != numContinuousVars )
           throw std::runtime_error("\"diagonal\" Queso covariance file data should have "
-              +convert_to_string(total_num_params)+" rows.  Found "
+              +convert_to_string(numContinuousVars)+" rows.  Found "
               +convert_to_string(values_from_file[0].length())+" rows.");
-        for( int i=0; i<total_num_params; ++i )
+        for( int i=0; i<numContinuousVars; ++i )
           (*proposalCovMatrix)(i,i) = values_from_file[0](i);
       }
     }
     else {
       // Sanity check
-      if( total_num_params != cov_data.length() )
-        throw std::runtime_error("Expected num covariance values is "+convert_to_string(total_num_params)
+      if( numContinuousVars != cov_data.length() )
+        throw std::runtime_error("Expected num covariance values is "+convert_to_string(numContinuousVars)
                                  +" but incoming vector provides "+convert_to_string(cov_data.length())+".");
-      for( int i=0; i<total_num_params; ++i )
+      for( int i=0; i<numContinuousVars; ++i )
         (*proposalCovMatrix)(i,i) = cov_data(i);
     }
   }
@@ -1301,26 +1281,26 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   {
     if( use_file ) {
       // Sanity checks
-      if( values_from_file.size() != total_num_params ) 
+      if( values_from_file.size() != numContinuousVars ) 
         throw std::runtime_error("\"matrix\" Queso covariance file data should have "
-                                 +convert_to_string(total_num_params)+" columns.  Found "
+                                 +convert_to_string(numContinuousVars)+" columns.  Found "
                                  +convert_to_string(values_from_file.size())+" columns.");
-      if( values_from_file[0].length() != total_num_params )
+      if( values_from_file[0].length() != numContinuousVars )
         throw std::runtime_error("\"matrix\" Queso covariance file data should have "
-                                 +convert_to_string(total_num_params)+" rows.  Found "
+                                 +convert_to_string(numContinuousVars)+" rows.  Found "
                                  +convert_to_string(values_from_file[0].length())+" rows.");
-      for( int i=0; i<total_num_params; ++i )
-        for( int j=0; j<total_num_params; ++j )
+      for( int i=0; i<numContinuousVars; ++i )
+        for( int j=0; j<numContinuousVars; ++j )
           (*proposalCovMatrix)(i,j) = values_from_file[i](j);
     }
     else {
       // Sanity check
-      if( total_num_params*total_num_params != cov_data.length() )
-        throw std::runtime_error("Expected num covariance values is "+convert_to_string(total_num_params*total_num_params)
+      if( numContinuousVars*numContinuousVars != cov_data.length() )
+        throw std::runtime_error("Expected num covariance values is "+convert_to_string(numContinuousVars*numContinuousVars)
             +" but incoming vector provides "+convert_to_string(cov_data.length())+".");
       int count = 0;
-      for( int i=0; i<total_num_params; ++i )
-        for( int j=0; j<total_num_params; ++j )
+      for( int i=0; i<numContinuousVars; ++i )
+        for( int j=0; j<numContinuousVars; ++j )
           (*proposalCovMatrix)(i,j) = cov_data[count++];
     }
   }
@@ -1442,10 +1422,9 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
-  size_t j, total_num_params; StringArray combined_labels;
+  size_t j; StringArray combined_labels;
   if (obsErrorMultiplierMode > 0) {
-    total_num_params = numContinuousVars + numHyperparams;
-    combined_labels.resize(total_num_params);
+    combined_labels.resize(numContinuousVars + numHyperparams);
     for (j=0; j<numContinuousVars; ++j)
       combined_labels[j] = cv_labels[j];
     // BMA TODO: generate labels based on various cases, also in NonDBayes

@@ -21,6 +21,7 @@
 #include "NonDLHSSampling.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "SNLLOptimizer.hpp"
+#include "Teuchos_SerialDenseHelpers.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -532,6 +533,167 @@ misfit(const Response& residual_resp, const RealVector& hyper_params)
 
   // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
   return residuals.dot( residuals ) / 2.0;
+}
+
+
+void NonDBayesCalibration::prior_cholesky_factorization()
+{
+  // factorization to be performed offline (init time) and used online
+  int i, j, num_params = numContinuousVars + numHyperparams;
+  priorCovCholFactor.shape(num_params, num_params); // init to 0
+
+  if (!standardizedSpace && natafTransform.x_correlation()) {
+    Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
+    RealSymMatrix prior_cov_matrix;//= ();
+
+    Cerr << "prior_cholesky_factorization() not yet implmented for this case."
+	 << std::endl;
+    abort_handler(-1);
+
+    corr_solver.setMatrix( Teuchos::rcp(&prior_cov_matrix, false) );
+    corr_solver.factor(); // Cholesky factorization (LL^T) in place
+    // assign lower triangle
+    for (i=0; i<num_params; ++i)
+      for (j=0; j<=i; ++j)
+	priorCovCholFactor(i, j) = prior_cov_matrix(i, j);
+  }
+  else {
+    RealRealPairArray dist_moments = (standardizedSpace) ?
+      natafTransform.u_moments() : natafTransform.x_moments();
+    for (i=0; i<numContinuousVars; ++i)
+      priorCovCholFactor(i,i) = dist_moments[i].second;
+    //for (i=numContinuousVars; i<num_params; ++i)
+    //  priorCovCholFactor(i,i) = invGammaDists.(); // TO DO
+    if (numHyperparams) {
+      Cerr << "prior_cholesky_factorization() not yet implmented for this case."
+	   << std::endl;
+      abort_handler(-1);
+    }
+  }
+}
+
+
+void NonDBayesCalibration::
+get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
+					      const RealMatrix& prior_chol_fact,
+					      RealSymMatrix &covariance,
+					      short output_lev)
+{
+  // precondition H_misfit by computing L^T H_misfit L where L is the Cholesky
+  // factor of the prior covariance.  Important notes:
+  // > in other contexts, we compute the Hessian of the negative log posterior
+  //   from the Hessian of the misfit minus the Hessian of log prior density.
+  // > In the context of defining a MVN covariance, we use the fact that the
+  //   Hessian of the negative log of a normal density is 1 / variance, such
+  //   that the inverse Hessian is simply the prior covariance.
+  //   >> Thus, we justify use of the prior covariance, even for cases (e.g.,
+  //      uniform, exp) where the Hessian of the log prior density is zero.
+  // > For uncorrelated priors, L is simply diag[sigma_i].
+
+  // Option 1: if augmenting with Hessian of negative log prior
+  //           Hess of neg log posterior = Hess of misfit - Hess of log prior
+  //const RealVector& c_vars = mcmcModel.continuous_variables();
+  //augment_hessian_with_log_prior(log_hess, c_vars);
+
+  // Option 2: if preconditioning with prior covariance using L^T H L
+  // can use incoming Hessian as both input and output since an internal
+  // temporary is created for H L prior to creating symmetric L^T H L
+  int num_rows = hessian.numRows();
+  RealSymMatrix LT_H_L(num_rows, false); // copy
+  Teuchos::symMatTripleProduct(Teuchos::TRANS, 1., hessian,
+			       prior_chol_fact, LT_H_L);
+
+  // Compute eigenvalue decomposition of matrix A=QDQ'
+  // In general, the eigenvalue decomposition of a matrix is A=QDinv(Q).
+  // For real symmetric matrices A = QDQ', i.e. inv(Q) = Q'
+  RealVector eigenvalues; RealMatrix eigenvectors;
+  symmetric_eigenvalue_decomposition( LT_H_L, eigenvalues, eigenvectors );
+
+  // Find smallest positive eigenvalue
+  //Real min_eigval = std::numeric_limits<double>::max();
+  //for ( int i=0; i<num_rows; i++)
+  //  if ( eigenvalues[i] > 0. )
+  //    min_eigval = std::min( eigenvalues[i], min_eigval );
+
+//#ifdef DEBUG
+  Cout << "eigenvalues from symmetric_eigenvalue_decomposition:\n";
+  write_data(Cout, eigenvalues);
+//#endif
+
+  /*
+  // Ensure hessian is positive definite by setting all negative eigenvalues 
+  // to be positive.
+  Real eigenval_tol = 1.e-4; // TO DO: tie to prior bounds?
+  int i, j, num_neglect = 0;
+  for (i=0; i<num_rows; ++i)
+    if ( eigenvalues[i] < eigenval_tol )
+      { eigenvalues[i] = eigenval_tol; ++num_neglect; }
+    else
+      break;
+
+  // The covariance matrix is the inverse of the hessian so scale eigenvectors
+  // by Q*inv(D)
+  RealMatrix scaled_eigenvectors(num_rows, num_rows, false); // don't init to 0
+  for ( i=0; i<num_rows; ++i ) {
+    for ( j=0; j<num_neglect; ++j )
+      scaled_eigenvectors(i,j) = 0.;
+    for ( j=num_neglect; j<num_rows; ++j )
+      scaled_eigenvectors(i,j) = eigenvectors(i,j) / eigenvalues[j];
+  }
+  covariance.shapeUninitialized( num_rows );
+  covariance.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 
+		       1., scaled_eigenvectors, eigenvectors, 0. );
+  */
+
+  // Form V and D
+  Real eigenval_tol = 0.; //1.e-4; // Petra2014 suggests tol=1 in Fig 5.2
+  int n, r, num_neglect = 0;
+  for (n=0; n<num_rows; ++n)
+    if ( eigenvalues[n] <= eigenval_tol ) ++num_neglect;
+    else                                  break;
+  int num_low_rank = num_rows - num_neglect, offset_r;
+  RealSymMatrix D(num_low_rank); // init to 0;    r x r diagonal matrix
+  RealMatrix V(num_rows, num_low_rank, false); // n x r matrix for r retained
+  for (r=0; r<num_low_rank; ++r) {
+    offset_r = r + num_neglect;
+    Real lambda = eigenvalues[offset_r];
+    D(r,r) = lambda / (lambda + 1.); // Sherman-Morrison-Woodbury
+    for (n=0; n<num_rows; ++n)
+      V(n,r) = eigenvectors(n,offset_r); // copy column
+  }
+
+  // Form I - V D V^T
+  covariance.shapeUninitialized(num_rows);
+  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., D, V, covariance);
+  for (n=0; n<num_rows; ++n)
+    covariance(n,n) += 1.;
+
+  // form inv(hessian) = L (I - V D V^T) L^T
+  // can use covariance as both input and output (see above)
+  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1., covariance,
+			       prior_chol_fact, covariance);
+
+  if (output_lev >= NORMAL_OUTPUT) {
+    Cout << "Hessian of negative log-likelihood (from misfit):\n";
+    write_data(Cout, hessian, true, true, true);
+    //Cout << "2x2 determinant = " << hessian(0,0) * hessian(1,1) -
+    //  hessian(0,1) * hessian(1,0) << '\n';
+
+    Cout << "Prior-preconditioned misfit Hessian:\n";
+    write_data(Cout, LT_H_L, true, true, true);
+    //Cout << "2x2 determinant = " << LT_H_L(0,0) * LT_H_L(1,1) -
+    //  LT_H_L(0,1) * LT_H_L(1,0) << '\n';
+    if (num_neglect)
+      Cout << "Hessian decomposition neglects " << num_neglect
+           << " eigenvalues based on " << eigenval_tol << " tolerance.\n";
+
+    Cout << "Positive definite covariance from inverse of Hessian:\n";
+    write_data(Cout, covariance, true, true, true);
+    //Cout << "2x2 determinant = " << covariance(0,0) * covariance(1,1) -
+    //  covariance(0,1) * covariance(1,0) << '\n';
+  }
+
+  //return num_neglect;
 }
 
 
