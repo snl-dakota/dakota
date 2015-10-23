@@ -80,7 +80,7 @@ protected:
 				unsigned short batch_size,
 				RealMatrix& best_samples);
 
-  void select_refinement_points_jdjakem(const RealVectorArray& candidate_samples,
+  void select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
 					unsigned short batch_size,
 					RealMatrix& best_samples);
 

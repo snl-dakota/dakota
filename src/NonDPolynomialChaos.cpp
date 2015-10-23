@@ -658,9 +658,10 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 void NonDPolynomialChaos::
-select_refinement_points_jdjakem(const RealVectorArray& candidate_samples,
-				 unsigned short batch_size, 
-				 RealMatrix& best_samples){
+select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
+			 unsigned short batch_size, 
+			 RealMatrix& best_samples)
+{
   // from initial candidate_samples, select the best batch_size points in terms
   // of information content, as determined by pivoted LU factorization
   int new_size = numSamplesOnModel + batch_size;
@@ -684,7 +685,7 @@ select_refinement_points_jdjakem(const RealVectorArray& candidate_samples,
       current_samples(i,j)=surr_data.continuous_variables(j)[i];
 
   LejaSampler sampler;
-  sampler.set_seed(1);
+  sampler.set_seed(randomSeed);
   sampler.set_precondition(true);
   std::vector<Pecos::BasisPolynomial> polynomial_basis;
   poly_approx_rep->polynomial_basis( polynomial_basis );
@@ -702,6 +703,7 @@ select_refinement_points_jdjakem(const RealVectorArray& candidate_samples,
   }
   
 }
+
 
 void NonDPolynomialChaos::
 select_refinement_points(const RealVectorArray& candidate_samples,

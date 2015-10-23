@@ -644,7 +644,7 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 						  *paramInitials, 
 						  proposalCovMatrix.get());
 
-  Cout << "QUESO MCMC chain completed.  MCMC details are concatenated within\n"
+  Cout << "QUESO MCMC chain completed.  MCMC details are concatenated within "
        << "the QuesoDiagnostics directory:\n"
        << "  display_sub0.txt contains MCMC diagnostics.\n";
   if (standardizedSpace)
@@ -1465,10 +1465,10 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // misfit = -log(L) - 1/2*Nr*log(2*pi) - 1/2*log(det(Cov))
   Real misfit = (log_prior - log_post) - half_nr_log2pi - half_log_det;
 
-  s << "\n<<<<< Best misfit              ="
+  s <<   "<<<<< Best misfit              ="
     << "\n                     " << std::setw(wpp7) << misfit
     << "\n<<<<< Best log prior           =" 
-    << "\n                     " << std::setw(wpp7)  << log_prior 
+    << "\n                     " << std::setw(wpp7) << log_prior
     << "\n<<<<< Best log posterior       ="
     << "\n                     " << std::setw(wpp7) << log_post << std::endl;
 

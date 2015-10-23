@@ -537,10 +537,10 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
   //  if ( eigenvalues[i] > 0. )
   //    min_eigval = std::min( eigenvalues[i], min_eigval );
 
-//#ifdef DEBUG
+#ifdef DEBUG
   Cout << "eigenvalues from symmetric_eigenvalue_decomposition:\n";
   write_data(Cout, eigenvalues);
-//#endif
+#endif
 
   /*
   // Ensure hessian is positive definite by setting all negative eigenvalues 
