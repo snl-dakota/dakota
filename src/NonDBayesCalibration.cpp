@@ -16,6 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
 #include "RecastModel.hpp"
+#include "DataTransformModel.hpp"
 #include "NonDPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
@@ -253,6 +254,15 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       push_back(boost::math::inverse_gamma_distribution<>(alpha, beta));
   }
 
+  // Now the underlying simulation model mcmcModel is setup; wrap it
+  // in a data transformation
+  if (calibrationData)
+    residualModel.assign_rep
+      (new DataTransformModel(mcmcModel, expData, 
+			      numHyperparams, obsErrorMultiplierMode), false);
+  else
+    residualModel = mcmcModel;  // shallow copy
+
   // -------------------------------------
   // Construct sampler for posterior stats (only in NonDQUESOBayes for now)
   // -------------------------------------
@@ -473,13 +483,42 @@ update_residual_response(const Response& resp)
 Real NonDBayesCalibration::
 log_likelihood(const Response& residual_resp, const RealVector& hyper_params)
 {
-  Real half_nr_log2pi = residual_resp.num_functions() * HALF_LOG_2PI;
+  Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
   // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
   Real half_log_det = 
     std::log( expData.scaled_cov_determinant(hyper_params, 
 					     obsErrorMultiplierMode) ) / 2.0;
   Real log_like = 
     -half_nr_log2pi - half_log_det - misfit(residual_resp, hyper_params);
+
+  return log_like;
+}
+
+// BMA TODO: The above and below will be consolidated once
+// residualResponse is removed.  Account for constraint presence.
+
+/** This implementation assumes the residuals have been size-adjusted
+    and scaled by covariance as needed. */
+Real NonDBayesCalibration::
+log_likelihood(const RealVector& residuals, const RealVector& all_params)
+{
+  // if needed, extract the trailing hyper-parameters
+  RealVector hyper_params;
+  if (numHyperparams > 0)
+    hyper_params = RealVector(Teuchos::View, 
+                              all_params.values() + numContinuousVars, 
+                              numHyperparams);
+
+  Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
+  // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
+  Real half_log_det = 
+    std::log(expData.scaled_cov_determinant(hyper_params, 
+					    obsErrorMultiplierMode)) / 2.0;
+
+  // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
+  Real misfit = residuals.dot( residuals ) / 2.0;
+
+  Real log_like = -half_nr_log2pi - half_log_det - misfit;
 
   return log_like;
 }

@@ -201,11 +201,11 @@ public:
   /// Apply the experiment data covariance to the residual data (scale
   /// functions by Gamma_d^{-1/2}), returning in scaled_residuals
   void scale_residuals(const Response& residual_response, ShortArray &total_asv,
-                       RealVector& scaled_residuals);
+                       RealVector& scaled_residuals) const;
 
   /// Apply the experiment data covariance to the residual data in-place 
   /// (scale functions, gradients, and Hessians by Gamma_d^{-1/2})
-  void scale_residuals( Response& residual_response, ShortArray &total_asv ) const;
+  void scale_residuals(Response& residual_response, ShortArray &total_asv) const;
 
   /// Build the gradient of the ssr from residuals and function gradients
   /// based on the response's active set request vector
@@ -275,12 +275,13 @@ public:
   /// scale the residuals by multipliers, according to blocks
   /// indicated by multiplier mode
   void scale_residuals(const RealVector& multipliers, 
-		       unsigned short multiplier_mode, RealVector& residuals);
+		       unsigned short multiplier_mode,
+		       RealVector& residuals) const;
 
   /// returns the determinant of (covariance block-scaled by the
   /// passed multipliers)
   Real scaled_cov_determinant(const RealVector& multipliers, 
-			      unsigned short multiplier_mode);
+			      unsigned short multiplier_mode) const;
 
 private:
 

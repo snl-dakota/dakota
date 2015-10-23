@@ -104,6 +104,13 @@ protected:
   Real log_likelihood(const Response& residual_resp, 
 		      const RealVector& hyper_params);
 
+  /// calculate log-likelihood from the passed residuals (assuming
+  /// they have already been sized and scaled by covariance /
+  /// hyperparams...
+  Real
+  log_likelihood(const RealVector& residuals, const RealVector& hyper_params);
+
+
   /// calculate the misfit function from the vector of residuals
   Real misfit(const Response& residual_resp, const RealVector& hyper_params);
 
@@ -132,6 +139,9 @@ protected:
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
   Model mcmcModel;
+
+  /// DataTransformModel wrapping the mcmcModel
+  Model residualModel;
 
   /// SQP or NIP optimizer for pre-solving for the MAP point prior to MCMC.
   /// This is restricted to emulator cases for now, but as for derivative

@@ -73,6 +73,9 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   const Variables& sub_model_vars = subModel.current_variables();
   bool reshape_vars; // only reshape if change in variable type counts
   SharedVariablesData recast_svd;
+
+  // BMA TODO: it's possible vars_comp_totals is resized, but no mapping...
+
   // variables are not mapped: deep copy of vars to allow independence, but 
   // shallow copy of svd since types/labels/ids can be kept consistent
   if (variablesMapping == NULL) {
@@ -177,33 +180,28 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
-  bool reshape_vars; // only reshape if change in variable type counts
+  bool reshape_vars = false; // only reshape if change in variable type counts
   SharedVariablesData recast_svd;
-  // variables are not mapped: deep copy of vars to allow independence, but 
-  // shallow copy of svd since types/labels/ids can be kept consistent
-  if (variablesMapping == NULL) {
-    currentVariables = sub_model_vars.copy(); // shared svd
-    reshape_vars = false;
-  }
+  // variables may be mapped, but the mapping hasn't been provided
+  // yet; may need to resize based on vars_comps_totals
+
   // variables are mapped but not resized: deep copy of vars and svd, since
   // types may change in transformed space
-  else {
-    const SharedVariablesData& svd = sub_model_vars.shared_data();
-    if ( ( vars_comps_totals.empty() || 
-	   svd.components_totals()         == vars_comps_totals ) &&
-	 ( all_relax_di.empty() || 
-	   svd.all_relaxed_discrete_int()  == all_relax_di )      &&
-	 ( all_relax_dr.empty() || 
-	   svd.all_relaxed_discrete_real() == all_relax_dr ) ) {
-      currentVariables = sub_model_vars.copy(true); // independent svd
-      reshape_vars = false;
-    }
-    else { // variables are resized
-      recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals,
-				       all_relax_di, all_relax_dr);
-      currentVariables = Variables(recast_svd);
-      reshape_vars = true;
-    }
+  const SharedVariablesData& svd = sub_model_vars.shared_data();
+  if ( ( vars_comps_totals.empty() || 
+         svd.components_totals()         == vars_comps_totals ) &&
+       ( all_relax_di.empty() || 
+         svd.all_relaxed_discrete_int()  == all_relax_di )      &&
+       ( all_relax_dr.empty() || 
+         svd.all_relaxed_discrete_real() == all_relax_dr ) ) {
+    currentVariables = sub_model_vars.copy(true); // independent svd
+    reshape_vars = false;
+  }
+  else { // variables are resized
+    recast_svd = SharedVariablesData(sub_model_vars.view(), vars_comps_totals,
+                                     all_relax_di, all_relax_dr);
+    currentVariables = Variables(recast_svd);
+    reshape_vars = true;
   }
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();

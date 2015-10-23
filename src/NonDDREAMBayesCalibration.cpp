@@ -188,15 +188,6 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 
   // BMA TODO: share most of this code with QUESO class
 
-  // Read in all of the experimental data:  any x configuration 
-  // variables, y observations, and y_std if available 
-  //if (outputLevel > NORMAL_OUTPUT)
-  //  Cout << "Read data from file " << calibrationData << '\n';
-  if (calibrationData)
-    expData.load_data("DREAM Bayes Calibration");
-  else
-    Cout << "No experiment data from files\n"
-         << "DREAM is assuming the simulation is returning the residuals\n";
   // BMA TODO: support indepdent options
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error "
@@ -321,36 +312,21 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 //  additional DREAM output
 //}
 
-// BMA TODO: share most of this code with QUESO
+// BMA TODO: share most of this code with QUESO, general hyperpriors, other distros
 /** Static callback function to evaluate the likelihood */
 double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 {
-  size_t i, num_fns = nonDDREAMInstance->numFunctions,
-    num_cv = nonDDREAMInstance->numContinuousVars; 
-
-  // BMA TODO:
-  // Bug: if calibrating sigma, this would be bigger
-  //RealVector x(Teuchos::View, zp, par_num);
-  RealVector c_vars(Teuchos::View, zp, num_cv), hyper_params;
-  if (nonDDREAMInstance->numHyperparams > 0)
-    hyper_params = RealVector(Teuchos::View, &zp[num_cv], 
-                              nonDDREAMInstance->numHyperparams);
-    
-  //Cout << "numExpStdDeviationsRead "
-  //     << nonDDREAMInstance->numExpStdDeviationsRead << '\n';
+  RealVector all_params(Teuchos::View, zp, par_num);
 
   // DREAM searches in either the original space (default for GPs and no
   // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
-  nonDDREAMInstance->mcmcModel.continuous_variables(c_vars); 
+  nonDDREAMInstance->residualModel.continuous_variables(all_params); 
 
   // Compute simulation response to use in likelihood 
-  nonDDREAMInstance->mcmcModel.compute_response();
-  const Response& resp = nonDDREAMInstance->mcmcModel.current_response();
-  nonDDREAMInstance->update_residual_response(resp);
-
-  double log_like = 
-    nonDDREAMInstance->log_likelihood(nonDDREAMInstance->residualResponse,
-				      hyper_params);
+  nonDDREAMInstance->residualModel.compute_response();
+  const RealVector& residuals = 
+    nonDDREAMInstance->residualModel.current_response().function_values();
+  double log_like = nonDDREAMInstance->log_likelihood(residuals, all_params);
 
   if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << log_like << " Likelihood is "
@@ -359,13 +335,11 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
     std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDDREAMLogLike.txt", std::ios::out | std::ios::app);
     // Note: parameter values are in scaled space, if scaling is active
-    for (i=0; i<num_cv;  ++i)   LogLikeOutput << c_vars(i) << ' ' ;
-    for (i=0; i<nonDDREAMInstance->numHyperparams; ++i)
-      LogLikeOutput << hyper_params(i) << ' ' ;
-    // BMA TODO: needs to be num calibration terms...
-    const RealVector& fn_values = 
-      nonDDREAMInstance->residualResponse.function_values();
-    for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values(i) << ' ' ;
+    for (size_t i=0; i<par_num;  ++i) LogLikeOutput << zp[i] << ' ' ;
+    // BMA TODO: needs to be num calibration terms... 
+    // and consistent with QUESO (functions vs. residuals...
+    for (size_t i=0; i<nonDDREAMInstance->numTotalCalibTerms; ++i)   
+      LogLikeOutput << residuals(i) << ' ' ;
     LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();
   }

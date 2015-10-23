@@ -34,6 +34,7 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   varianceTypesRead(probDescDB.get_sa("responses.variance_type")),
   expData(problem_db, iteratedModel.current_response().shared_data(), 
 	  outputLevel),
+  numTotalCalibTerms(model.num_primary_fns()),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
   continuousConfigStart(0), discreteIntConfigStart(0),
   discreteRealConfigStart(0)
@@ -97,6 +98,18 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
 
   if (found_error)
     abort_handler(-1);
+
+  // Read in all of the experimental data, including any x configuration 
+  // variables, y observations, and covariance information if available 
+  //if (outputLevel > NORMAL_OUTPUT)
+  //  Cout << "Read data from file " << calibrationData << '\n';
+  if (calibrationData) {
+    expData.load_data("NonDCalibration");
+    numTotalCalibTerms = expData.num_total_exppoints();
+  } else {
+    Cout << "No experiment data from files.\nCalibration is assuming the "
+	 << "simulation is returning the residuals" << std::endl;
+  }
 }
 
 

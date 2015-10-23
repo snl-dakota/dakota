@@ -150,10 +150,6 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
 #endif
  
-  // Read in all of the experimental data:  any x configuration 
-  // variables, y observations, and y_std if available 
-  expData.load_data("QUESO/GPMSA Bayes Calibration");
-
   //***********************************************************************
   //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv
   // *********************************************************************

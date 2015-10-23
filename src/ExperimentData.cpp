@@ -981,7 +981,7 @@ determine_active_request( const Response& resid_resp,
 
 void ExperimentData::
 scale_residuals(const Response& residual_response, ShortArray &total_asv,
-                RealVector& weighted_resid) {
+                RealVector& weighted_resid) const {
 
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
 
@@ -1241,7 +1241,7 @@ build_hessian_of_sum_square_residuals_from_function_data(
  */
 void ExperimentData::
 scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
-                RealVector& residuals) 
+                RealVector& residuals) const
 {
   // TODO: consistent handling of ASV across non-experiment cases
   // NOTE: In most general case the index into multipliers is exp_ind
@@ -1353,8 +1353,9 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
 
 /** Determinant of the total covariance used in inference, which has
     blocks mult_i * I * Cov_i. */
-Real ExperimentData::scaled_cov_determinant(const RealVector& multipliers, 
-					    unsigned short multiplier_mode)
+Real ExperimentData::
+scaled_cov_determinant(const RealVector& multipliers, 
+		       unsigned short multiplier_mode) const
 {
   // initialize with product of experiment covariance determinants
   Real det = covarianceDeterminant; 

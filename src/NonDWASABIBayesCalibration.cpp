@@ -91,13 +91,9 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
     Cout << " WASABI Seed (system-generated) = " << clock_seed << std::endl;
   }
   
-  // we assume that the distribution on the data will either be given as a Gaussian 
-  // or estimated using a KDE
-  if (calibrationData)
-    expData.load_data("WASABI Bayes Calibration");
-  else
-    Cout << "No experiment data from files\n"
-	 << "WASABI is assuming the distribution is Gaussian\n";
+  // The experimental data is loaded in a base class.  We assume that
+  // the distribution on the data will either be given as a Gaussian
+  // or estimated using a KDE.
 
   // initialize the prior PDF and sampler
   // the prior is currently assumed uniform, but this will be generalized

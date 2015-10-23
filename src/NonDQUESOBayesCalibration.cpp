@@ -222,15 +222,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   ////////////////////////////////////////////////////////
   init_queso_environment();
  
-  // Read in all of the experimental data:  any x configuration 
-  // variables, y observations, and y_std if available 
-  //if (outputLevel > NORMAL_OUTPUT)
-  //  Cout << "Read data from file " << calibrationData << '\n';
-  if (calibrationData)
-    expData.load_data("QUESO Bayes Calibration");
-  else
-    Cout << "No experiment data from files\n"
-         << "QUESO is assuming the simulation is returning the residuals\n";
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
@@ -265,6 +256,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
   // likelihood needs fn_vals; preconditioning may need derivs
   short request_value_needed = 1 | precondRequestValue;
+  // BMA TODO: make sure Recast is setup properly
   init_residual_response(request_value_needed);
 
   ////////////////////////////////////////////////////////
@@ -1462,7 +1454,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
   Real log_prior = log_prior_density(qv), log_post = it->first;
-  Real half_nr_log2pi = residualResponse.num_functions() * HALF_LOG_2PI;
+  Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
   // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
   RealVector hyper_params(numHyperparams);
   copy_gsl_partial(qv, numContinuousVars, hyper_params);
@@ -1517,40 +1509,42 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   // searching and will stop if it is too small (e.g. if one input is 
   // of small magnitude, searching in the original space will not be viable).
 
-  RealVector& c_vars = nonDQUESOInstance->
-    mcmcModel.current_variables().continuous_variables_view();
-  nonDQUESOInstance->copy_gsl_partial(paramValues, 0, c_vars);
-  RealVector hyper_params;
-  size_t num_cv = c_vars.length(), num_fns = nonDQUESOInstance->numFunctions;
-  if (nonDQUESOInstance->numHyperparams > 0) {
-    hyper_params.sizeUninitialized(nonDQUESOInstance->numHyperparams);
-    nonDQUESOInstance->copy_gsl_partial(paramValues, num_cv, 
-                                        hyper_params);
-  }
+  // Set the calibration variables and hyperparams in the outer
+  // residualModel: note that this won't update the Variables object
+  // in any inner models.
+  RealVector& all_params = nonDQUESOInstance->
+    residualModel.current_variables().continuous_variables_view();
+  nonDQUESOInstance->copy_gsl(paramValues, all_params);
 
-  nonDQUESOInstance->mcmcModel.compute_response();
-  const Response& resp = nonDQUESOInstance->mcmcModel.current_response();
-  nonDQUESOInstance->update_residual_response(resp);
+  nonDQUESOInstance->residualModel.compute_response();
+  const Response& raw_resp = nonDQUESOInstance->mcmcModel.current_response();
+  // BMA TODO: temporarily update from the truth model to update this
+  // to not include the covariance contributions...
+  nonDQUESOInstance->update_residual_response(raw_resp);
   
   // if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT)
   //   Cout << "Hyperparams to misfit:\n" << hyper_params << std::endl;
 
-  double log_like = 
-    nonDQUESOInstance->log_likelihood(nonDQUESOInstance->residualResponse,
-				      hyper_params);
+  // residualModel already includes any scaling for variance.... so we
+  // use an alternate log_likelihood temporarily
+  // TODO: omit constraints
+  const RealVector& residuals = 
+    nonDQUESOInstance->residualModel.current_response().function_values();
+  double log_like = nonDQUESOInstance->log_likelihood(residuals, all_params);
   
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << log_like << " Likelihood is "
          << std::exp(log_like) << '\n';
 
-    size_t i; std::ofstream LogLikeOutput;
+    size_t i, num_total_params = 
+      nonDQUESOInstance->numContinuousVars + nonDQUESOInstance->numHyperparams; 
+    std::ofstream LogLikeOutput;
     LogLikeOutput.open("NonDQUESOLogLike.txt", std::ios::out | std::ios::app);
     // Note: parameter values are in scaled space, if scaling is active
-    for (i=0; i<num_cv;  ++i)   LogLikeOutput << paramValues[i]       << ' ' ;
-    for (i=0; i<nonDQUESOInstance->numHyperparams; ++i) 
-      LogLikeOutput << hyper_params(i) << ' ' ;
-    const RealVector& fn_values = resp.function_values();
-    for (i=0; i<num_fns; ++i)   LogLikeOutput << fn_values[i]         << ' ' ;
+    for (i=0; i<num_total_params; ++i)  LogLikeOutput << paramValues[i] << ' ' ;
+    const RealVector& fn_values = raw_resp.function_values();
+    size_t num_fns = nonDQUESOInstance->numFunctions;
+    for (i=0; i<num_fns; ++i)  LogLikeOutput << fn_values[i]         << ' ' ;
     LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();
   }
