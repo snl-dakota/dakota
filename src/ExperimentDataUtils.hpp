@@ -163,6 +163,10 @@ public:
 
   /// The determinant of the covariance matrix
   Real determinant() const;
+
+  /// The log(determinant) of the covariance matrix
+  Real log_determinant() const;
+
 };
 
 
@@ -229,6 +233,9 @@ public:
 
   /// Determinant of the total ExperimentCovariance structure
   Real determinant() const;
+
+  /// Log of determinant of the total ExperimentCovariance structure
+  Real log_determinant() const;
 
   /// Return the number of diagonal blocks in the entire matrix
   int num_blocks() const{

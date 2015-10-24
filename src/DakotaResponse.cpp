@@ -1813,6 +1813,18 @@ Real Response::covariance_determinant() const
 }
 
 
+Real Response::log_covariance_determinant() const
+{
+  if (responseRep)
+    return responseRep->log_covariance_determinant();
+  else {
+    Cerr << "\nError: log_covariance_determinant not defined for this response "
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 /** Implementation of serialization load for the Response handle */
 template<class Archive>
 void Response::load(Archive& ar, const unsigned int version)

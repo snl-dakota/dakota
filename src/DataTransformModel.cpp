@@ -370,6 +370,8 @@ data_difference_core(const Variables& submodel_vars,
   ShortArray total_asv = 
     expData.determine_active_request(recast_response, interrogate_field_data);
   // form residuals (and gradients/Hessians) from the simulation response
+  // BMA TODO: this will leave gradients and Hessians
+  // w.r.t. hyper-parameters empty or truncated
   expData.form_residuals(submodel_response, total_asv, recast_response);
   if (apply_cov) {
     // also scales gradients, Hessians
@@ -395,7 +397,7 @@ data_difference_core(const Variables& submodel_vars,
     RealVector residuals = recast_response.function_values_view();
 
     // BMA TODO: scale gradients, Hessians by mults
-
+    // Model after the above scale_residuals
     expData.scale_residuals(hyper_params, obsErrorMultiplierMode, residuals);
   }
 }

@@ -15,7 +15,7 @@ namespace Dakota {
 
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
-  covarianceDeterminant(1.0),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   scalarDataFormat(TABULAR_EXPER_ANNOT), interpolateFlag(false), 
   outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }                                
@@ -27,7 +27,7 @@ ExperimentData(const ProblemDescDB& pddb,
   calibrationDataFlag(pddb.get_bool("responses.calibration_data")),
   numExperiments(pddb.get_sizet("responses.num_experiments")), 
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
-  covarianceDeterminant(1.0),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
   scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
   scalarSigmaPerRow(0), 
@@ -48,7 +48,7 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
                std::string scalar_data_filename):
   calibrationDataFlag(true), 
   numExperiments(num_experiments), numConfigVars(num_config_vars),
-  covarianceDeterminant(1.0),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   dataPathPrefix(data_prefix), scalarDataFilename(scalar_data_filename),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
   readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
@@ -341,11 +341,14 @@ void ExperimentData::load_data(const std::string& context_message)
   for (i=1; i<num_exp; i++) 
     expOffsets(i) = experimentLengths(i-1) + expOffsets(i-1);
 
-  // Precompute and cache the product of experiment determinants
-  // BMA TODO: change to log(det(C)) to avoid overflow
+  // Precompute and cache experiment determinants
   covarianceDeterminant = 1.0;
-  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind)
+  logCovarianceDeterminant = 0.0;
+  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
     covarianceDeterminant *= allExperiments[exp_ind].covariance_determinant();
+    logCovarianceDeterminant += 
+      allExperiments[exp_ind].log_covariance_determinant();
+  }
 
   // TODO: exists extra data in scalar_data_stream
 
@@ -1327,8 +1330,8 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
 /** Determinant of the total covariance used in inference, which has
     blocks mult_i * I * Cov_i. */
 Real ExperimentData::
-scaled_cov_determinant(const RealVector& multipliers, 
-		       unsigned short multiplier_mode) const
+cov_determinant(const RealVector& multipliers, 
+		unsigned short multiplier_mode) const
 {
   // initialize with product of experiment covariance determinants
   Real det = covarianceDeterminant; 
@@ -1405,7 +1408,7 @@ scaled_cov_determinant(const RealVector& multipliers,
       
     default:
       // unknown mode
-      Cerr << "\nError: scale_residuals() called with unknown multiplier mode.\n";
+      Cerr << "\nError: cov_determinant() called with unknown multiplier mode.\n";
       abort_handler(-1);
       break;
 
@@ -1414,6 +1417,98 @@ scaled_cov_determinant(const RealVector& multipliers,
   }  // for each experiment
 
   return det;
+}
+
+/** Determinant of the total covariance used in inference, which has
+    blocks mult_i * I * Cov_i. */
+Real ExperimentData::
+log_cov_determinant(const RealVector& multipliers, 
+		    unsigned short multiplier_mode) const
+{
+  // initialize with product of experiment covariance determinants
+  Real log_det = logCovarianceDeterminant; 
+
+  // for each experiment, add contribution from mult: det(mult_i*I*Cov_i)
+  size_t multiplier_offset = 0;
+  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+
+    switch (multiplier_mode) {
+
+    case CALIBRATE_NONE:
+      // no-op
+      break;
+
+    case CALIBRATE_ONE:
+      assert(multipliers.length() == 1);
+      log_det += (double)allExperiments[exp_ind].num_functions() * 
+	std::log(multipliers[0]);
+      break;
+
+    case CALIBRATE_PER_EXPER:
+      assert(multipliers.length() == numExperiments);
+      log_det += (double)allExperiments[exp_ind].num_functions() * 
+	std::log(multipliers[exp_ind]);
+      break;
+
+    case CALIBRATE_PER_RESP: {
+      assert(multipliers.length() == simulationSRD.num_response_groups());
+      size_t num_scalar = simulationSRD.num_scalar_responses();
+      size_t num_fields = simulationSRD.num_field_response_groups();
+      
+      // each response has a different multiplier, but they don't
+      // differ across experiments
+      multiplier_offset = 0;
+      
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
+	log_det += std::log(multipliers[multiplier_offset]);
+	++multiplier_offset;
+      } 
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+	log_det += field_lens[f_ind] * std::log(multipliers[multiplier_offset]);
+	++multiplier_offset;
+      }
+      break;
+    }
+
+    case CALIBRATE_BOTH: {
+
+      assert(multipliers.length() == 
+	     numExperiments*simulationSRD.num_response_groups());
+      
+      size_t num_scalar = simulationSRD.num_scalar_responses();
+      size_t num_fields = simulationSRD.num_field_response_groups();
+      
+      // don't reset the multiplier_offset; each exp, each resp has its own
+
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
+	log_det += std::log(multipliers[multiplier_offset]);
+	++multiplier_offset;
+      } 
+
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+	log_det += field_lens[f_ind] * std::log(multipliers[multiplier_offset]);
+	++multiplier_offset;
+      }
+      break;
+    }	       
+      
+    default:
+      // unknown mode
+      Cerr << "\nError: scale_residuals() called with unknown multiplier mode.\n";
+      abort_handler(-1);
+      break;
+
+    } // switch
+
+  }  // for each experiment
+
+  return log_det;
 }
 
 

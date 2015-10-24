@@ -304,6 +304,9 @@ public:
   /// covariance determinant for one experiment (default 1.0)
   virtual Real covariance_determinant() const;
 
+  /// log of covariance determinant for one experiment (default 0.0)
+  virtual Real log_covariance_determinant() const;
+
 protected:
 
   //

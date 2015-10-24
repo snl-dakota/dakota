@@ -282,8 +282,14 @@ public:
 
   /// returns the determinant of (covariance block-scaled by the
   /// passed multipliers)
-  Real scaled_cov_determinant(const RealVector& multipliers, 
-			      unsigned short multiplier_mode) const;
+  Real cov_determinant(const RealVector& multipliers, 
+		       unsigned short multiplier_mode) const;
+
+  /// returns the log of the determinant of (covariance block-scaled
+  /// by the passed multipliers)
+  Real log_cov_determinant(const RealVector& multipliers, 
+			   unsigned short multiplier_mode) const;
+
 
 private:
 
@@ -349,6 +355,9 @@ private:
 
   /// cached product of each experiment covariance's determinant 
   Real covarianceDeterminant;
+
+  /// cached sum of each experiment covariance's log determinant 
+  Real logCovarianceDeterminant;
 
   /// path to prepend to any data file names
   boost::filesystem::path dataPathPrefix;

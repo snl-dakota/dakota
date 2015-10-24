@@ -467,6 +467,22 @@ Real CovarianceMatrix::determinant() const
   return det;
 }
 
+
+Real CovarianceMatrix::log_determinant() const
+{
+  Real log_det = 0.0;
+  if (covIsDiagonal_) {
+    for (int i=0; i<num_dof(); i++)
+      log_det += std::log(covDiagonal_[i]);
+  }
+  else {
+    for (int i=0; i<num_dof(); i++)
+      log_det += std::log(covCholFactor_(i,i))+std::log(covCholFactor_(i,i));
+  }
+  return log_det;
+}
+
+
 ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
 {
   numBlocks_ = source.numBlocks_;
@@ -641,6 +657,15 @@ Real ExperimentCovariance::determinant() const
   for (int i=0; i<numBlocks_; ++i)
     det *= covMatrices_[i].determinant();
   return det;
+}
+
+
+Real ExperimentCovariance::log_determinant() const
+{
+  Real log_det = 0.0;
+  for (int i=0; i<numBlocks_; ++i)
+    log_det += covMatrices_[i].log_determinant();
+  return log_det;
 }
 
 

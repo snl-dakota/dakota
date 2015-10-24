@@ -86,6 +86,9 @@ public:
   /// covariance determinant for this experiment (default 1.0)
   Real covariance_determinant() const;
 
+  /// log covariance determinant for this experiment (default 0.0)
+  Real log_covariance_determinant() const;
+
 protected:
 
   //

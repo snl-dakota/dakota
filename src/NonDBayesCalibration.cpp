@@ -444,10 +444,8 @@ log_likelihood(const RealVector& residuals, const RealVector& all_params)
                               numHyperparams);
 
   Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
-  // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
   Real half_log_det = 
-    std::log(expData.scaled_cov_determinant(hyper_params, 
-					    obsErrorMultiplierMode)) / 2.0;
+    expData.log_cov_determinant(hyper_params, obsErrorMultiplierMode) / 2.0;
 
   // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
   Real misfit = residuals.dot( residuals ) / 2.0;
