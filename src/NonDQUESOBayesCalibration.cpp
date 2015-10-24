@@ -381,6 +381,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   bestSamples.clear();
   uniqueSamples.resize(0); // previous capacity preserved w/o any reallocation
   uniqueSamples.reserve(numSamples * chainCycles);
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+				     numSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
   size_t update_cntr = 0;
@@ -404,6 +406,9 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
       export_chain(update_cntr);
 
+    // TO DO: retire once restarts are retired
+    aggregate_acceptance_chain(update_cntr, acceptanceChain);
+    
     // retain best or accumulate unique samples from current MCMC chain
     if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
       filter_chain_by_conditioning(update_cntr, batch_size);
@@ -431,38 +436,16 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
 void NonDQUESOBayesCalibration::compute_statistics()
 {
-  // Step 1: Access the (aggregated) acceptance chain.
-  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
-    mcmc_chain = inverseProb->chain();
-  size_t i, num_mcmc = mcmc_chain.subSequenceSize();
-  // Note: this will be much simpler when QUESO no longer requires restarting.
-  // --> defer for now?
-  // --> top UT contract priority, post MPI? (get telecons going)
-
-  // Step 2: pass sample matrix into NonDSampling as allSamples
-  QUESO::GslVector qv(paramSpace->zeroVector());
-  RealMatrix acceptance_chain(numContinuousVars + numHyperparams, num_mcmc);
-  for (i=0; i<num_mcmc; ++i) {
-    mcmc_chain.getPositionValues(i, qv); // extract vector from sequence
-    if (standardizedSpace) {
-      RealVector u_rv(numContinuousVars, false);
-      copy_gsl_partial(qv, 0, u_rv);
-      Real* samp_i = acceptance_chain[i];
-      RealVector x_rv(Teuchos::View, samp_i, numContinuousVars);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
-      if (numHyperparams > 0) {
-        RealVector sig_rv(Teuchos::View, &samp_i[numContinuousVars],
-                          numHyperparams);
-        copy_gsl_partial(qv, numContinuousVars, sig_rv);
-      }
-    }
-    else
-      copy_gsl(qv, acceptance_chain, i);
-  }
-  
-  // Step 3: generate stats on acceptance_chain (bypass all{Samples,Responses})
+  /* Once restarts are retired:
+  RealMatrix acceptance_chain(numContinuousVars + numHyperparams, numSamples);
+  aggregate_acceptance_chain(1, acceptance_chain);
   NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
   nond_rep->compute_moments(acceptance_chain);
+  */
+
+  // Prior to retirement of restarts and aggregation of acceptanceChain
+  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
+  nond_rep->compute_moments(acceptanceChain);
 }
 
 
@@ -725,6 +708,34 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
   if (update_cntr == chainCycles)
     TabularIO::close_file(exportMCMCStream, mcmc_filename,
 			  "NonDQUESOBayesCalibration chain export");
+}
+
+
+void NonDQUESOBayesCalibration::
+aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain)
+{
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+  QUESO::GslVector qv(paramSpace->zeroVector());
+  
+  size_t i, j, num_params = numContinuousVars + numHyperparams,
+    sample_index = (update_cntr - 1) * numSamples,
+    start = (update_cntr == 1) ? 0 : 1; // 1st chain pt is redundant
+  for (i=start; i<num_mcmc; ++i, ++sample_index) {
+    mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
+    if (standardizedSpace) {
+      RealVector u_rv(numContinuousVars, false);
+      copy_gsl_partial(qv, 0, u_rv);
+      Real* acc_chain_i = accept_chain[sample_index];
+      RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      for (j=numContinuousVars; j<num_params; ++j)
+	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
+    }
+    else
+      copy_gsl(qv, accept_chain, sample_index);
+  }
 }
 
 

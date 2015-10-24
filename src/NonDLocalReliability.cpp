@@ -540,13 +540,14 @@ void NonDLocalReliability::mean_value()
     }
     statCount++;
 
-    // if response std_dev is non-zero, compute importance factors.  If inputs
-    // are correlated, then impFactors correspond to the diagonal terms in the
-    // computation of the response variance, normalized by the total response
-    // variance.  Thus, the impFactors sum to 1 if uncorrelated, but this sum
-    // is < 1 if inputs are correlated due to the excluded off-diagonal
-    // contributions to the output variance.
-    // TO DO: consider computing/reporting these interaction terms as well.
+    // If response std_dev is non-zero, compute importance factors.  Traditional
+    // impFactors correspond to the diagonal terms in the computation of the
+    // response variance, normalized by the total response variance.  If inputs
+    // are correlated, then off-diagonal contributions to the output variance
+    // are present and "two-way importance factors" are appended to the end of
+    // the impFactors matrix.  These two-way factors are not the same as Sobol'
+    // interaction indices since the Taylor series basis is not orthogonal; as
+    // a result, two-way factors (unlike univariate factors) can be negative.
     if (std_dev > Pecos::SMALL_NUMBER) {
       Real* imp_fact = impFactor[respFnCount];
       Real* fn_grad  = fnGradsMeanX[respFnCount];

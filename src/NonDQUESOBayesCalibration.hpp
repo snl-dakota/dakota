@@ -99,8 +99,10 @@ protected:
   /// export the acceptance chain in user space
   void export_chain(size_t update_cntr);
 
-  /// accumulate unique samples (the acceptance chain)
+  /// accumulate unique samples drawn from the acceptance chain
   void accumulate_chain(size_t update_cntr);
+  /// accumulate the acceptance chain across multiple restart cycles
+  void aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain);
 
   /// extract batch_size points from the MCMC chain and store final
   /// aggregated set within allSamples; unique points with highest
@@ -261,6 +263,9 @@ private:
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
 
+  /// accumulation of acceptance chain across restarts
+  /// TO DO: retire once restarts are retired
+  RealMatrix acceptanceChain;
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains
   RealVectorArray uniqueSamples;
