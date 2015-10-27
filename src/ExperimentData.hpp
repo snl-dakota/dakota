@@ -274,8 +274,8 @@ public:
     const RealMatrix &func_gradients, const RealVector &residuals,
     RealSymMatrix &ssr_hessian, const ShortArray& asrv);
 
-  /// scale the residuals by multipliers, according to blocks
-  /// indicated by multiplier mode
+  /// in-place scale the residuals by sqrt(multipliers), according to
+  /// blocks indicated by multiplier mode
   void scale_residuals(const RealVector& multipliers, 
 		       unsigned short multiplier_mode,
 		       RealVector& residuals) const;
@@ -283,12 +283,37 @@ public:
   /// returns the determinant of (covariance block-scaled by the
   /// passed multipliers)
   Real cov_determinant(const RealVector& multipliers, 
-		       unsigned short multiplier_mode) const;
+                       unsigned short multiplier_mode) const;
 
   /// returns the log of the determinant of (covariance block-scaled
   /// by the passed multipliers)
   Real log_cov_determinant(const RealVector& multipliers, 
-			   unsigned short multiplier_mode) const;
+                           unsigned short multiplier_mode) const;
+  
+  /// populated the passed gradient with derivatives w.r.t. the
+  /// hyper-parameter multipliers, starting at hyper_offset (must be
+  /// sized)
+  void log_cov_det_gradient(const RealVector& multipliers, 
+			    unsigned short multiplier_mode, size_t hyper_offset,
+			    RealVector& gradient) const;
+
+  /// populated the passed Hessian with derivatives w.r.t. the
+  /// hyper-parameter multipliers, starting at hyper_offset (must be
+  /// sized)
+  void log_cov_det_hessian(const RealVector& multipliers, 
+			   unsigned short multiplier_mode, size_t hyper_offset,
+			   RealMatrix& hessian) const;
+
+  /// count the number of residuals influenced by each multiplier
+  SizetArray residuals_per_multiplier(unsigned short multiplier_mode) const;
+
+  /// Generate a set of multipliers commensurate with the residual
+  /// size for the total experiment data set.  Instead of repeating
+  /// the loops all over the place, generate an expanded set of
+  /// multipliers; the conditionals get too complicated otherwise
+  void generate_multipliers(const RealVector& multipliers,
+                            unsigned short multiplier_mode,
+                            RealVector& expanded_multipliers) const;
 
 
 private:

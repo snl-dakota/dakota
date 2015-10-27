@@ -1213,13 +1213,11 @@ build_hessian_of_sum_square_residuals_from_function_data(
 }
 
 
-/** In-place scaling of residuals by observation error multipliers
- */
 void ExperimentData::
 scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
                 RealVector& residuals) const
 {
-  // TODO: consistent handling of ASV across non-experiment cases
+  // BMA TODO: consistent handling of ASV across non-experiment cases
   // NOTE: In most general case the index into multipliers is exp_ind
   // * num_response_groups + resp_ind (never per function ind, e.g.,
   // in a field)
@@ -1235,92 +1233,18 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
     residuals *= (1.0/sqrt(multipliers[0]));
     break;
 
-  case CALIBRATE_PER_EXPER: {
-    assert(multipliers.length() == numExperiments);
-    size_t residual_offset = 0;
-    for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
-      // BMA TODO: try using view; hasn't worked as expected!
-      //      RealVector exp_resid(residuals_view(residuals, exp_ind));
-      //      exp_resid *= (1.0/sqrt(multipliers[exp_ind]));
-      for (size_t fn_ind = 0; fn_ind < experimentLengths[exp_ind]; ++fn_ind)
-	residuals[residual_offset + fn_ind] /= sqrt(multipliers[exp_ind]);
-      residual_offset += experimentLengths[exp_ind];
-    }
-    break;
-  }
-
-  case CALIBRATE_PER_RESP: {
-    assert(multipliers.length() == simulationSRD.num_response_groups());
-
-    size_t residual_offset = 0;
-    size_t num_scalar = simulationSRD.num_scalar_responses();
-    size_t num_fields = simulationSRD.num_field_response_groups();
-
-    for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
-
-      // each response has a different multiplier, but they don't
-      // differ across experiments
-      size_t multiplier_offset = 0;
-
-      // iterate scalar responses, then fields
-      // BMA TODO: encapsulate in ExperimentResponse?
-      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
-        residuals[residual_offset] /= sqrt(multipliers[multiplier_offset]);
-	++residual_offset;
-	++multiplier_offset;
-      } 
-
-      // each experiment can have different field lengths
-      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
-      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
-        Real sqrt_mult = sqrt(multipliers[multiplier_offset]);
-	for (size_t fc_ind = 0; fc_ind < field_lens[f_ind]; ++fc_ind) {
-	  residuals[residual_offset] /= sqrt_mult;
-	  ++residual_offset;
-	}
-	++multiplier_offset;
-      }
-    }
-    break;
-  }
-
-  case CALIBRATE_BOTH: {
-
-    assert(multipliers.length() == 
-	   numExperiments*simulationSRD.num_response_groups());
-
-    size_t residual_offset = 0, multiplier_offset = 0;
-    size_t num_scalar = simulationSRD.num_scalar_responses();
-    size_t num_fields = simulationSRD.num_field_response_groups();
-      
-    for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
-
-      // iterate scalar responses, then fields
-      // TODO: encapsulate in ExperimentResponse?
-      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
-	residuals[residual_offset] /= sqrt(multipliers[multiplier_offset]);
-	++residual_offset;
-	++multiplier_offset;
-      } 
-
-      // each experiment can have different field lengths
-      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
-      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
-	Real mult = sqrt(multipliers[multiplier_offset]);
-	for (size_t fc_ind = 0; fc_ind < field_lens[f_ind]; ++fc_ind) {
-	  residuals[residual_offset] /= mult;
-	  ++residual_offset;
-	}
-	++multiplier_offset;
-      }
-
-    }	       
+  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
+    RealVector expand_mults;
+    generate_multipliers(multipliers, multiplier_mode, expand_mults);
+    size_t total_resid = num_total_exppoints();
+    for (size_t resid_ind = 0; resid_ind < total_resid; ++resid_ind)
+      residuals[resid_ind] /= sqrt(expand_mults[resid_ind]);
     break;
   }
 
   default:
     // unknown mode
-    Cerr << "\nError: scale_residuals() called with unknown multiplier mode.\n";
+    Cerr << "\nError: unknown multiplier mode in scale_residuals().\n";
     abort_handler(-1);
     break;
   }
@@ -1331,90 +1255,39 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
     blocks mult_i * I * Cov_i. */
 Real ExperimentData::
 cov_determinant(const RealVector& multipliers, 
-		unsigned short multiplier_mode) const
+                unsigned short multiplier_mode) const
 {
   // initialize with product of experiment covariance determinants
   Real det = covarianceDeterminant; 
+  size_t total_resid = num_total_exppoints();
 
-  // for each experiment, add contribution from mult: det(mult_i*I*Cov_i)
-  size_t multiplier_offset = 0;
-  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+  switch (multiplier_mode) {
+    
+  case CALIBRATE_NONE:
+    // no-op: multiplier is 1.0
+    break;
 
-    switch (multiplier_mode) {
+  case CALIBRATE_ONE:
+    assert(multipliers.length() == 1);
+    det *= std::pow(multipliers[0], (double)total_resid);
+    break;
+    
+  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
+    RealVector expand_mults;
+    generate_multipliers(multipliers, multiplier_mode, expand_mults);
+    // for each experiment, add contribution from mult: det(mult_i*I*Cov_i)
+    for (size_t resid_ind = 0; resid_ind < total_resid; ++resid_ind)
+      det *= expand_mults[resid_ind];
+    break;
+  }
 
-    case CALIBRATE_NONE:
-      // no-op
-      break;
+  default:
+    // unknown mode
+    Cerr << "\nError: unknown multiplier mode in cov_determinant().\n";
+    abort_handler(-1);
+    break;
 
-    case CALIBRATE_ONE:
-      assert(multipliers.length() == 1);
-      det *= std::pow(multipliers[0], 
-		      (double)allExperiments[exp_ind].num_functions());
-      break;
-
-    case CALIBRATE_PER_EXPER:
-      assert(multipliers.length() == numExperiments);
-      det *= std::pow(multipliers[exp_ind], 
-		      (double)allExperiments[exp_ind].num_functions());
-      break;
-
-    case CALIBRATE_PER_RESP: {
-      assert(multipliers.length() == simulationSRD.num_response_groups());
-      size_t num_scalar = simulationSRD.num_scalar_responses();
-      size_t num_fields = simulationSRD.num_field_response_groups();
-      
-      // each response has a different multiplier, but they don't
-      // differ across experiments
-      multiplier_offset = 0;
-      
-      // iterate scalar responses, then fields
-      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
-	det *= multipliers[multiplier_offset];
-	++multiplier_offset;
-      } 
-      // each experiment can have different field lengths
-      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
-      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
-	det *= std::pow(multipliers[multiplier_offset], field_lens[f_ind]);
-	++multiplier_offset;
-      }
-      break;
-    }
-
-    case CALIBRATE_BOTH: {
-
-      assert(multipliers.length() == 
-	     numExperiments*simulationSRD.num_response_groups());
-      
-      size_t num_scalar = simulationSRD.num_scalar_responses();
-      size_t num_fields = simulationSRD.num_field_response_groups();
-      
-      // don't reset the multiplier_offset; each exp, each resp has its own
-
-      // iterate scalar responses, then fields
-      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
-	det *= multipliers[multiplier_offset];
-	++multiplier_offset;
-      } 
-
-      // each experiment can have different field lengths
-      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
-      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
-	det *= std::pow(multipliers[multiplier_offset], field_lens[f_ind]);
-	++multiplier_offset;
-      }
-      break;
-    }	       
-      
-    default:
-      // unknown mode
-      Cerr << "\nError: cov_determinant() called with unknown multiplier mode.\n";
-      abort_handler(-1);
-      break;
-
-    } // switch
-
-  }  // for each experiment
+  } // switch
 
   return det;
 }
@@ -1423,93 +1296,259 @@ cov_determinant(const RealVector& multipliers,
     blocks mult_i * I * Cov_i. */
 Real ExperimentData::
 log_cov_determinant(const RealVector& multipliers, 
-		    unsigned short multiplier_mode) const
+                    unsigned short multiplier_mode) const
 {
-  // initialize with product of experiment covariance determinants
+  // initialize with sum of experiment covariance log determinants
   Real log_det = logCovarianceDeterminant; 
+  size_t total_resid = num_total_exppoints();
 
-  // for each experiment, add contribution from mult: det(mult_i*I*Cov_i)
-  size_t multiplier_offset = 0;
-  for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+  switch (multiplier_mode) {
+    
+  case CALIBRATE_NONE:
+    // no-op: multiplier is 1.0
+    break;
 
-    switch (multiplier_mode) {
+  case CALIBRATE_ONE:
+    assert(multipliers.length() == 1);
+    log_det += std::log(multipliers[0]) * (double)total_resid;
+    break;
+    
+  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
+    RealVector expand_mults;
+    generate_multipliers(multipliers, multiplier_mode, expand_mults);
+    // for each experiment, add contribution from mult: det(mult_i*I*Cov_i)
+    for (size_t resid_ind = 0; resid_ind < total_resid; ++resid_ind)
+      log_det += std::log(expand_mults[resid_ind]);
+    break;
+  }
 
-    case CALIBRATE_NONE:
-      // no-op
-      break;
+  default:
+    // unknown mode
+    Cerr << "\nError: unknown multiplier mode in log_cov_determinant().\n";
+    abort_handler(-1);
+    break;
 
-    case CALIBRATE_ONE:
-      assert(multipliers.length() == 1);
-      log_det += (double)allExperiments[exp_ind].num_functions() * 
-	std::log(multipliers[0]);
-      break;
-
-    case CALIBRATE_PER_EXPER:
-      assert(multipliers.length() == numExperiments);
-      log_det += (double)allExperiments[exp_ind].num_functions() * 
-	std::log(multipliers[exp_ind]);
-      break;
-
-    case CALIBRATE_PER_RESP: {
-      assert(multipliers.length() == simulationSRD.num_response_groups());
-      size_t num_scalar = simulationSRD.num_scalar_responses();
-      size_t num_fields = simulationSRD.num_field_response_groups();
-      
-      // each response has a different multiplier, but they don't
-      // differ across experiments
-      multiplier_offset = 0;
-      
-      // iterate scalar responses, then fields
-      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
-	log_det += std::log(multipliers[multiplier_offset]);
-	++multiplier_offset;
-      } 
-      // each experiment can have different field lengths
-      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
-      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
-	log_det += field_lens[f_ind] * std::log(multipliers[multiplier_offset]);
-	++multiplier_offset;
-      }
-      break;
-    }
-
-    case CALIBRATE_BOTH: {
-
-      assert(multipliers.length() == 
-	     numExperiments*simulationSRD.num_response_groups());
-      
-      size_t num_scalar = simulationSRD.num_scalar_responses();
-      size_t num_fields = simulationSRD.num_field_response_groups();
-      
-      // don't reset the multiplier_offset; each exp, each resp has its own
-
-      // iterate scalar responses, then fields
-      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind) {
-	log_det += std::log(multipliers[multiplier_offset]);
-	++multiplier_offset;
-      } 
-
-      // each experiment can have different field lengths
-      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
-      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
-	log_det += field_lens[f_ind] * std::log(multipliers[multiplier_offset]);
-	++multiplier_offset;
-      }
-      break;
-    }	       
-      
-    default:
-      // unknown mode
-      Cerr << "\nError: scale_residuals() called with unknown multiplier mode.\n";
-      abort_handler(-1);
-      break;
-
-    } // switch
-
-  }  // for each experiment
+  } // switch
 
   return log_det;
 }
 
+
+/** Compute the gradient of scalar f(m) log(det(mult*Cov)) w.r.t. mults */
+void ExperimentData::
+log_cov_det_gradient(const RealVector& multipliers, 
+		     unsigned short multiplier_mode, size_t hyper_offset,
+		     RealVector& gradient) const
+{
+  switch (multiplier_mode) {
+
+  case CALIBRATE_NONE:
+    // no hyper-parameters being calibrated
+    break;
+
+  case CALIBRATE_ONE: {
+    // This multiplier affects all functions
+    assert(multipliers.length() == 1);
+    Real total_resid = (Real) num_total_exppoints();
+    gradient[hyper_offset] = total_resid / multipliers[0];   
+    break;
+  }
+
+  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
+    SizetArray resid_per_mult = residuals_per_multiplier(multiplier_mode);
+    assert(multipliers.length() == resid_per_mult.size());
+    for (size_t i=0; i<multipliers.length(); ++i)
+      gradient[hyper_offset + i] = ((Real) resid_per_mult[i]) / multipliers[i]; 
+    break;
+  }
+ 
+  }
+
+}
+
+/** Compute the gradient of scalar f(m) log(det(mult*Cov)) w.r.t. mults */
+void ExperimentData::
+log_cov_det_hessian(const RealVector& multipliers, 
+		    unsigned short multiplier_mode, size_t hyper_offset,
+		    RealMatrix& hessian) const 
+{
+  switch (multiplier_mode) {
+
+  case CALIBRATE_NONE:
+    // no hyper-parameters being calibrated
+    break;
+
+  case CALIBRATE_ONE: {
+    // This multiplier affects all functions
+    assert(multipliers.length() == 1);
+    Real total_resid = (Real) num_total_exppoints();
+    hessian(hyper_offset, hyper_offset) = 
+      -total_resid / multipliers[0] / multipliers[0] ;   
+    break;
+  }
+
+  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
+    SizetArray resid_per_mult = residuals_per_multiplier(multiplier_mode);
+    assert(multipliers.length() == resid_per_mult.size());
+    for (size_t i =0; i<multipliers.length(); ++i)
+      hessian(hyper_offset, hyper_offset) = 
+	-((Real) resid_per_mult[i]) / multipliers[i] / multipliers[i];   
+    break;
+  }
+ 
+  }
+}
+
+
+/** Calculate how many residuals each multiplier affects */
+SizetArray ExperimentData::
+residuals_per_multiplier(unsigned short multiplier_mode) const
+{
+  SizetArray resid_per_mult;
+  switch (multiplier_mode) {
+    
+  case CALIBRATE_PER_EXPER: {
+    resid_per_mult.resize(numExperiments, 0);
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      resid_per_mult[exp_ind] = fns_this_exp;
+    }
+    break;
+  }
+
+  case CALIBRATE_PER_RESP: {
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+    resid_per_mult.resize(num_scalar + num_fields, 0);
+    // iterate scalar responses, then fields
+    for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind)
+      resid_per_mult[s_ind] += numExperiments;
+    
+    // each experiment can have different field lengths
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind)
+	resid_per_mult[num_scalar + f_ind] += field_lens[f_ind];
+    }
+    break;
+  }
+
+  case CALIBRATE_BOTH: {
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+    size_t multiplier_offset = 0;
+    resid_per_mult.resize(numExperiments*simulationSRD.num_response_groups(), 0);
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+    
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind)
+        resid_per_mult[multiplier_offset++] = 1;
+      
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+	resid_per_mult[multiplier_offset++] = field_lens[f_ind];
+      }
+    }	       
+    break;
+  }
+
+  }
+
+  return resid_per_mult;
+}
+
+
+void ExperimentData::generate_multipliers(const RealVector& multipliers,
+                                          unsigned short multiplier_mode,
+                                          RealVector& expanded_multipliers) const
+{
+  // in most cases, we won't call this function for NONE or ONE cases
+  expanded_multipliers.resize(num_total_exppoints());
+  
+  switch (multiplier_mode) {
+    
+  case CALIBRATE_NONE:
+    expanded_multipliers = 1.0;
+    break;
+
+  case CALIBRATE_ONE:
+    assert(multipliers.length() == 1);
+    expanded_multipliers = multipliers[0];
+    break;
+
+  case CALIBRATE_PER_EXPER: {
+    assert(multipliers.length() == numExperiments);
+    size_t resid_offset = 0;
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      for (size_t fn_ind = 0; fn_ind < fns_this_exp; ++fn_ind)
+        expanded_multipliers[resid_offset++] = multipliers[exp_ind];
+    }
+    break;
+  }
+
+  case CALIBRATE_PER_RESP: {
+    assert(multipliers.length() == simulationSRD.num_response_groups());
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+    size_t resid_offset = 0;
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+      
+      // each response has a different multiplier, but they don't
+      // differ across experiments
+      size_t multiplier_offset = 0;
+      
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind)
+        expanded_multipliers[resid_offset++] = multipliers[multiplier_offset++];
+
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+        for (size_t i=0; i<field_lens[f_ind]; ++i)
+          expanded_multipliers[resid_offset++] = multipliers[multiplier_offset];
+        // only increment per-top-level response (each field has different mult)
+        ++multiplier_offset;
+      }
+    }
+    break;
+  }
+
+  case CALIBRATE_BOTH: {
+    assert(multipliers.length() == 
+           numExperiments*simulationSRD.num_response_groups());
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+    size_t resid_offset = 0, multiplier_offset = 0;
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+    
+      // don't reset the multiplier_offset; each exp, each resp has its own
+
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind)
+        expanded_multipliers[resid_offset++] = multipliers[multiplier_offset++];
+      
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+        for (size_t i=0; i<field_lens[f_ind]; ++i)
+          expanded_multipliers[resid_offset++] = multipliers[multiplier_offset];
+        // only increment per-top-level response (each field has different mult)
+        ++multiplier_offset;
+      }
+    }	       
+    break;
+  }
+    
+  default:
+    // unknown mode
+    Cerr << "\nError: unknown multiplier mode in generate_multipliers().\n";
+    abort_handler(-1);
+    break;
+      
+  } // switch
+
+}
 
 }  // namespace Dakota
