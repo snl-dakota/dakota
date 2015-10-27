@@ -3182,35 +3182,35 @@ Test Number 2 succeeded
 <<<<< Best data captured at function evaluation 6881
 dakota_bayes_linear.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 1801 total (1801 new, 0 duplicate)
+<<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0236863198e-01 uuv_1
-                      9.9217132703e-01 least_sq_term_1_ErrCov
+                      4.0249011757e-01 uuv_1
+                      9.8862118820e-01 least_sq_term_1_ErrCov
 <<<<< Best misfit              =
-                      4.8093354444e+01
+                      4.8264555816e+01
 <<<<< Best log prior           =
-                      2.0778183302e+00
+                      2.0742373462e+00
 <<<<< Best log posterior       =
-                      2.0787134841e+02
+                      2.0787579445e+02
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  4.0268821784e-01  4.7122841091e-03 -5.6382284677e+00  6.1380932067e+01
-least_sq_term_1_ErrCov  1.0072214587e+00  8.0957687618e-02  5.9769865167e-01  6.2794290770e-01
+         uuv_1  4.0262439658e-01  4.7209409486e-03 -5.5921239559e+00  6.0598387947e+01
+least_sq_term_1_ErrCov  1.0077936447e+00  7.9895882045e-02  6.8749510538e-01  8.0960029376e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 1910 total (1910 new, 0 duplicate)
+<<<<< Function evaluation summary: 1909 total (1909 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0276325322e-01 nuv_1
-                      9.7217321142e-01 least_sq_term_1_ErrCov
+                      4.0266247062e-01 nuv_1
+                      9.8315708443e-01 least_sq_term_1_ErrCov
 <<<<< Best misfit              =
-                      4.9083242560e+01
+                      4.8533229325e+01
 <<<<< Best log prior           =
-                      7.8498526653e-01
+                      8.0945812157e-01
 <<<<< Best log posterior       =
-                      2.0660671780e+02
+                      2.0661945795e+02
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         nuv_1  4.0318098420e-01  8.4593211294e-03  1.6712601358e+01  3.5272310936e+02
-least_sq_term_1_ErrCov  1.0412628144e+00  1.2431874145e-01  1.2231004898e+00  2.2294654684e+00
+         nuv_1  4.0302681077e-01  8.3909747134e-03  1.7170344413e+01  3.6571432592e+02
+least_sq_term_1_ErrCov  1.0399981366e+00  1.2175782162e-01  1.3780989965e+00  2.7244460969e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1735 total (1735 new, 0 duplicate)
 <<<<< Best parameters          =
