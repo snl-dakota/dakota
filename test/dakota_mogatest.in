@@ -23,16 +23,16 @@ environment
 
 method
   moga                #s0,#s1,#s2,#s4,#s5,#s6,#s7
-#  soga                                       #s3
+#  soga                                       #s3,#s8
   output silent 
     seed = 10983
     final_solutions = 3
   max_function_evaluations = 2500               #s0,#s4,#s5,#s6,#s7
 #  max_function_evaluations = 3000		          #s1,#s3
-#  max_function_evaluations = 2000		          #s2
+#  max_function_evaluations = 2000		          #s2,#s8
   initialization_type unique_random
-  crossover_type shuffle_random                 #s0,#s3,#s4,#s5,#s6,#s7
-    num_offspring = 2 num_parents = 2		        #s0,#s3,#s4,#s5,#s6,#s7
+  crossover_type shuffle_random                 #s0,#s3,#s4,#s5,#s6,#s7,#s8
+    num_offspring = 2 num_parents = 2		        #s0,#s3,#s4,#s5,#s6,#s7,#s8
 #  crossover_type				                        #s1,#s2
 #    multi_point_parameterized_binary = 2	      #s1,#s2
     crossover_rate = 0.8
@@ -58,34 +58,41 @@ variables
     upper_bounds      4    4    4	  #s0
     lower_bounds     -4	  -4   -4	  #s0
     descriptors     'x1' 'x2' 'x3'	#s0,#s4,#s5,#s6,#s7
-#  continuous_design = 2			      #s1,#s2,#s3
+#  continuous_design = 2			      #s1,#s2,#s3,#s8
 #    initial_point    0.5     	0.5	#s1
-#    upper_bounds     1         1		#s1
-#    lower_bounds     0         0		#s1
-#    descriptors      'x1'  	'x2'	#s1,#s2,#s3
+#    upper_bounds     1         1		#s1,#s8
+#    lower_bounds     0         0		#s1,#s8
+#    descriptors      'x1'  	'x2'	#s1,#s2,#s3,#s8
 #    initial_point      0     0    	#s2
 #    upper_bounds      20    20			#s2
 #    lower_bounds     -20   -20			#s2
 #    upper_bounds       2.    2.		#s3
 #    lower_bounds      -2.   -2.		#s3
-#  discrete_design_set              #s4,#s5,#s6,#s7
-#    integer = 3              			#s4,#s5,#s6,#s7
-#      initial_point     0    0	 0	#s4,#s5,#s6,#s7
-#      num_set_values = 5 5 5       #s4,#s5,#s6,#s7
-#      set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#s4,#s5,#s6,#s7
+#  discrete_design_set              #s4,#s5,#s6,#s7,#s8
+#    integer = 3              			#s4,#s5,#s6,#s7,#s8
+#      initial_point     0    0	 0	#s4,#s5,#s6,#s7,#s8
+#      num_set_values = 5 5 5       #s4,#s5,#s6,#s7,#s8
+#      set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4 	#s4,#s5,#s6,#s7,#s8
+#    string = 2 					#s8
+#      num_set_values = 3 3
+#      set_values = 'churchwarden' 'rhodesian' 'zulu'   #s8	
+#                   'author'       'dublin'    'poker'  #s8
+#      descriptors 's1' 's2'                            #s8
+
 
 interface
-  direct					#s0,#s1,#s2,#s3,#s4,#s6
+  direct					#s0,#s1,#s2,#s3,#s4,#s6,#s8
 # retain some fork tests of external mogatest drivers that have low eval count
 #  fork						#s5,#s7
     analysis_driver = 'mogatest1'		#s0,#s4,#s5,#s6,#s7
 #    analysis_driver = 'mogatest2'	#s1
 #    analysis_driver = 'mogatest3'	#s2
 #    analysis_driver = 'rosenbrock'	#s3
+#    analysis_driver = 'text_book'      #s8
 
 responses
   objective_functions = 2                       #s0,#s1,#s2,#s4,#s5,#s6,#s7
-#  objective_functions = 1                     	#s3
+#  objective_functions = 1                     	#s3,#s8
 #  nonlinear_inequality_constraints = 2  	      #s2
 #  nonlinear_inequality_upper_bounds = 0.0 0.0	#s2
   no_gradients

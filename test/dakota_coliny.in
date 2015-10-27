@@ -78,7 +78,7 @@ method,
 # 	    threshold_delta = 1.e-4		#s20,#s21
 #
 #	coliny_ea 				#s22,#s23,#s24,#s25,#s26
-#	coliny_ea 				#s27,#s28,#s29,#s30,#s31,#s32
+#	coliny_ea 				#s27,#s28,#s29,#s30,#s31,#s32,#s33
 #         DEFAULT OPTIONS
 #	    population_size = 5			#s24,#s25
 #	    crossover_rate 0.0			#s24,#s25
@@ -111,9 +111,9 @@ method,
 #	  OPTION TESTING 3
 #	    mutation_type offset_uniform 	#s30,#s31
 #
-#	coliny_beta				#s33
-#	  beta_solver_name 'sco:PatternSearch'	#s33
-#	  misc_options = 'initial_step=0.5'	#s33
+#	coliny_beta				#s34
+#	  beta_solver_name 'sco:PatternSearch'	#s34
+#	  misc_options = 'initial_step=0.5'	#s34
 
 variables,
 	continuous_design = 3
@@ -122,16 +122,16 @@ variables,
 #	  upper_bounds    10.0   10.0  10.0	#s2,#s3,#s4,#s5,#s6,#s7
 #	  upper_bounds    10.0   10.0  10.0	#s8,#s9,#s12,#s13,#s14,#s15
 #	  upper_bounds    10.0   10.0  10.0	#s16,#s17,#s18,#s19,#s21
-#	  upper_bounds    10.0   10.0  10.0	#s22,#s23,#s24,#s25,#s26,#s27
-#	  upper_bounds    10.0   10.0  10.0	#s28,#s29,#s30,#s31,#s32,#s33
+#	  upper_bounds    10.0   10.0  10.0	#s22,#s23,#s24,#s25,#s26,#s27,#s28
+#	  upper_bounds    10.0   10.0  10.0	#s29,#s30,#s31,#s32,#s33,#s34
 #	  upper_bounds     2.0    2.0   2.0	#s20
 	  lower_bounds   -10.0  -10.0 -10.0	#s0,#s1,#s2,#s3
 #	  lower_bounds   -10.0  -10.0 -10.0	#s6,#s7,#s8,#s9
 #	  lower_bounds   -10.0  -10.0 -10.0	#s14,#s15,#s16,#s17,#s21
-#	  lower_bounds   -10.0  -10.0 -10.0	#s22,#s23,#s24,#s25,#s26,#s27
-#	  lower_bounds   -10.0  -10.0 -10.0 #s28,#s29
-#         lower_bounds     0.0    0.0   0.0	#s4,#s5,#s12
-#         lower_bounds     0.0    0.0   0.0	#s13,#s18,#s19,#s30,#s31,#s32,#s33
+#	  lower_bounds   -10.0  -10.0 -10.0	#s22,#s23,#s24,#s25
+#	  lower_bounds   -10.0  -10.0 -10.0 	#s26,#s27,#s28,#s29
+#         lower_bounds     0.0    0.0   0.0	#s4,#s5,#s12#,s13,#s18,#s19
+#         lower_bounds     0.0    0.0   0.0	#s30,#s31,#s32,#s33,#s34
 #         lower_bounds    -2.0   -2.0  -2.0	#s20
 	  descriptors      'x1'  'x2'  'x3'
 #	discrete_design_range = 2		#s22,#s23,#s24,#s25,#s26
@@ -144,23 +144,27 @@ variables,
 #	  upper_bounds       4     9	#s27,#s28,#s29,#s30,#s31
 #	  descriptors      'y1'   'y2'	#s22,#s23,#s24,#s25,#s26
 #	  descriptors      'y1'   'y2'	#s27,#s28,#s29,#s30,#s31
-#       discrete_design_set					#s32
+#       discrete_design_set					#s32,#s33
 #         real = 2						#s32
 #           num_set_values = 4 5                                #s32
 #           set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7    #s32
 #           descriptors      'y1'   'y2'                        #s32
-#         integer = 2                           		#s32
-#           num_set_values = 2 2                                #s32
-#           set_values = 4 7 8 9                                #s32
-#           descriptors      'z1'   'z2'                        #s32
-
+#         integer = 2                           		#s32,#s33
+#           num_set_values = 2 2                                #s32,#s33
+#           set_values = 4 7 8 9                                #s32,#s33
+#           descriptors      'z1'   'z2'                        #s32,#s33
+#         string = 2                                            #s33
+#           num_set_values = 3 3				#s33
+#           set_values = 'apple' 'banana' 'pineapple'           #s33
+#                        'cottonwood' 'fir'   'maple'           #s33
+#           descriptors      's1'   's2'			#s33
 interface,
 	system asynch				#s0,#s6,#s10,#s20,#s22
 #       direct                                  #s1,#s2,#s3,#s5,#s7,#s8,#s9
 #       direct                                  #s11,#s14,#s15,#s16,#s17
 #	direct					#s19,#s21,#s23,#s24,#s25
 #	direct					#s26,#s27,#s28,#s29
-#	direct					#s31,#s32,#s33
+#	direct					#s31,#s32,#s33,#s34
 #	fork asynch evaluation_concurrency 100	#s4,#s12,#s13,#s18,#s30
 	  analysis_driver = 'text_book'
 
@@ -169,6 +173,6 @@ responses,
 #	nonlinear_inequality_constraints = 2 #s1,#s3,#s5,#s7
 #	nonlinear_inequality_constraints = 2 #s9,#s11,#s13,#s15,#s17
 #	nonlinear_inequality_constraints = 2 #s19,#s21,#s23,#s25,#s27
-#	nonlinear_inequality_constraints = 2 #s29,#s31,#s33
+#	nonlinear_inequality_constraints = 2 #s29,#s31,#s34
 	no_gradients
 	no_hessians
