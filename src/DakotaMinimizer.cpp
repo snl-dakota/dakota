@@ -47,7 +47,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
-  minimizerRecasts(0), optimizationFlag(true),
+  optimizationFlag(true),
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
 		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
@@ -70,8 +70,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
 Minimizer::Minimizer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
-  boundConstraintFlag(false), speculativeFlag(false), minimizerRecasts(0),
-  optimizationFlag(true),
+  boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false)
 {
@@ -90,9 +89,8 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
-  speculativeFlag(false), minimizerRecasts(0), optimizationFlag(true),
-  calibrationDataFlag(false),
-  numExperiments(0), numTotalCalibTerms(0),
+  speculativeFlag(false), optimizationFlag(true), 
+  calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false)
 { }
 
@@ -267,7 +265,7 @@ void Minimizer::initialize_run()
     // Dive into the originally passed model (could keep a shallow copy of it)
     // Don't use a reference here as want a shallow copy, not the instance
     Model usermodel(iteratedModel);
-    for (unsigned short i=1; i<=minimizerRecasts; ++i) {
+    for (unsigned short i=1; i<=myModelLayers; ++i) {
       usermodel = usermodel.subordinate_model();
     }
     
@@ -302,7 +300,7 @@ Model Minimizer::original_model(unsigned short recasts_left)
   // Dive into the originally passed model (could keep a shallow copy of it)
   // Don't use a reference here as want a shallow copy, not the instance
   Model usermodel(iteratedModel);
-  for (unsigned short i=1; i<=minimizerRecasts - recasts_left; ++i) {
+  for (unsigned short i=1; i<=myModelLayers - recasts_left; ++i) {
     usermodel = usermodel.subordinate_model();
   }
 
@@ -336,7 +334,7 @@ void Minimizer::data_transform_model()
 
   iteratedModel.
     assign_rep(new DataTransformModel(iteratedModel, expData), false);
-  ++minimizerRecasts;
+  ++myModelLayers;
   dataTransformModel = iteratedModel;
 
   // update sizes in Iterator view from the RecastModel
@@ -377,7 +375,7 @@ void Minimizer::scale_model()
   // iteratedModel becomes the sub-model of a RecastModel:
   iteratedModel.assign_rep(new ScalingModel(iteratedModel), false);
   scalingModel = iteratedModel;
-  ++minimizerRecasts;
+  ++myModelLayers;
 
 }
 

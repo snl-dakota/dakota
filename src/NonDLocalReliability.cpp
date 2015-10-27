@@ -1091,7 +1091,7 @@ void NonDLocalReliability::initialize_class_data()
   // now that vars/labels/bounds/targets have flowed down at run-time from any
   // higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  mppModel.update_from_subordinate_model(); // recurse_flag = true
+  mppModel.update_from_subordinate_model(); // depth = max
 }
 
 

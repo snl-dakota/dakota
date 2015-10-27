@@ -373,6 +373,10 @@ protected:
   /// employing a single model instance)
   Model iteratedModel;
 
+  /// number of Models locally (in Iterator or derived classes)
+  /// wrapped around the initially passed in Model
+  size_t myModelLayers;
+
   unsigned short methodName; ///< name of the iterator (the user's method spec)
 
   Real convergenceTol;  ///< iteration convergence tolerance

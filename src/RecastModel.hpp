@@ -170,7 +170,8 @@ protected:
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// pass request to subModel if recursing and then update from it
-  void update_from_subordinate_model(bool recurse_flag = true);
+  void update_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
   /// return subModel interface
   Interface& derived_interface();
 
@@ -439,11 +440,11 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
-inline void RecastModel::update_from_subordinate_model(bool recurse_flag)
+inline void RecastModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
-  if (recurse_flag)
-    subModel.update_from_subordinate_model(recurse_flag);
+  if (depth > 0)
+    subModel.update_from_subordinate_model(depth - 1);
   // now pull the latest updates from subModel
   update_from_sub_model();
 }

@@ -2513,10 +2513,10 @@ void Model::derived_subordinate_models(ModelList& ml, bool recurse_flag)
     will stop as soon as it encounters a Model that was instantiated normally,
     which is appropriate since ProblemDescDB-constructed Models use top-down
     information flow and do not require bottom-up updating. */
-void Model::update_from_subordinate_model(bool recurse_flag)
+void Model::update_from_subordinate_model(size_t depth)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_from_subordinate_model(recurse_flag);
+    modelRep->update_from_subordinate_model(depth);
   // else default if no redefinition is no-op
 }
 

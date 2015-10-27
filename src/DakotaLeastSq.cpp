@@ -168,7 +168,7 @@ void LeastSq::weight_model()
 		secondary_resp_map_indices, recast_secondary_offset,
 		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
 		sec_resp_recast), false);
-  ++minimizerRecasts;
+  ++myModelLayers;
 
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
@@ -386,11 +386,11 @@ void LeastSq::initialize_run()
 {
   Minimizer::initialize_run();
 
-  // pull any late updates into the RecastModel; may need to update from 
-  // the underlying user model in case of hybrid methods, so should recurse
-  // BMA TODO: setting true breaks pareto on surrogate model...
-  if (scaleFlag || calibrationDataFlag)
-    iteratedModel.update_from_subordinate_model(true);
+  // pull any late updates into the RecastModel; may need to update
+  // from the underlying user model in case of hybrid methods, so
+  // should recurse through any local transformations
+  if (myModelLayers > 0)
+    iteratedModel.update_from_subordinate_model(myModelLayers-1);
 
   // Track any previous object instance in case of recursion.  Note that
   // leastSqInstance and minimizerInstance must be tracked separately since

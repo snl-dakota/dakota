@@ -232,7 +232,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // now that variables/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  eifModel.update_from_subordinate_model(); // recurse_flag = true
+  eifModel.update_from_subordinate_model(); // depth = max
 
   // Build initial GP once for all response functions
   fHatModel.build_approximation();

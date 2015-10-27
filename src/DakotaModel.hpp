@@ -132,7 +132,8 @@ public:
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// propagate vars/labels/bounds/targets from the bottom up
-  virtual void update_from_subordinate_model(bool recurse_flag = true);
+  virtual void update_from_subordinate_model(size_t depth = 
+					     std::numeric_limits<size_t>::max());
   /// return the interface employed by the derived model class, if present:
   /// SingleModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface

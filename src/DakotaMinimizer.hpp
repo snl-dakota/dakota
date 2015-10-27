@@ -226,9 +226,6 @@ protected:
   /// total number of linear and nonlinear constraints
   size_t numConstraints;
 
-  /// number of RecastModels locally (in Minimizer or derived classes)
-  /// layered over the initially passed in Model
-  unsigned short minimizerRecasts;
   /// flag for use where optimization and NLS must be distinguished
   bool optimizationFlag;
   /// number of objective functions or least squares terms in the
@@ -287,7 +284,7 @@ private:
 
 
 inline Minimizer::Minimizer(): 
-  minimizerRecasts(0), calibrationDataFlag(false), scaleFlag(false)
+  calibrationDataFlag(false), scaleFlag(false)
 { }
 
 

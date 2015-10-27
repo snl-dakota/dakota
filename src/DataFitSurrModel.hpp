@@ -101,7 +101,8 @@ protected:
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// pass request to actualModel if recursing and then update from it
-  void update_from_subordinate_model(bool recurse_flag = true);
+  void update_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
   /// return approxInterface
   Interface& derived_interface();
 
@@ -382,12 +383,12 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
-inline void DataFitSurrModel::update_from_subordinate_model(bool recurse_flag)
+inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
 {
   if (!actualModel.is_null()) {
     // data flows from the bottom-up, so recurse first
-    if (recurse_flag)
-      actualModel.update_from_subordinate_model(recurse_flag);
+    if (depth > 0)
+      actualModel.update_from_subordinate_model(depth - 1);
     // now pull the latest updates from actualModel
     update_from_actual_model();
   }

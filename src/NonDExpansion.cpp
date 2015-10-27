@@ -636,7 +636,7 @@ void NonDExpansion::initialize_expansion()
   adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
 		       natafTransform.u_types());
   // now perform the general recursion
-  uSpaceModel.update_from_subordinate_model(); // recurse_flag = true
+  uSpaceModel.update_from_subordinate_model(); // depth = max
 
   // if a sub-iterator, reset any refinements that may have occurred
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();

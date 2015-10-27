@@ -401,7 +401,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
   // now that variables/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  mppModel.update_from_subordinate_model(); // recurse_flag = true
+  mppModel.update_from_subordinate_model(); // depth = max
 
   if (mppSearchType == EGRA_X) {
     // assign non-default global variable bounds for use in DACE.

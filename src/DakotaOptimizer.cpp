@@ -363,7 +363,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
 		secondary_resp_map_indices, recast_secondary_offset,
 		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
 		sec_resp_recast), false);
-  ++minimizerRecasts;
+  ++myModelLayers;
 
 
   // if Gauss-Newton recasting, then the RecastModel Response needs to
@@ -482,11 +482,11 @@ void Optimizer::initialize_run()
   // needed in the multi-recast case.  Can we make this update
   // sufficiently flexible to catch the subIterator and inactive case?
 
-  // pull any late updates into the RecastModel; may need to update from 
-  // the underlying user model in case of hybrid methods, so should recurse
-  // BMA TODO: setting true breaks pareto on surrogate model...
-  if (minimizerRecasts)
-    iteratedModel.update_from_subordinate_model(true);
+  // pull any late updates into the RecastModel; may need to update
+  // from the underlying user model in case of hybrid methods, so
+  // should recurse through any local transformations
+  if (myModelLayers > 0)
+    iteratedModel.update_from_subordinate_model(myModelLayers-1);
 
   // Track any previous object instance in case of recursion.  Note that
   // optimizerInstance and minimizerInstance must be tracked separately since

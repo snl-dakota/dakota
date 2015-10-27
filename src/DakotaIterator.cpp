@@ -135,6 +135,7 @@ extern ResultsManager  iterator_results_db;
 Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
+  myModelLayers(0),
   methodName(probDescDB.get_ushort("method.algorithm")),
   convergenceTol(probDescDB.get_real("method.convergence_tolerance")),
   maxIterations(probDescDB.get_int("method.max_iterations")),
@@ -175,6 +176,7 @@ Iterator::
 Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
+  myModelLayers(0),
   iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1),
@@ -198,7 +200,8 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
 Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
-  probDescDB(dummy_db), parallelLib(dummy_lib), methodName(method_name),
+  probDescDB(dummy_db), parallelLib(dummy_lib), 
+  myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
@@ -218,7 +221,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
-  resultsDB(iterator_results_db), methodName(DEFAULT_METHOD),
+  resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
   iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG

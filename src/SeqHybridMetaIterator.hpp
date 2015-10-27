@@ -228,6 +228,13 @@ inline void SeqHybridMetaIterator::update_local_results(int job_index)
 inline void SeqHybridMetaIterator::
 initialize_iterator(const VariablesArray& param_sets)
 {
+  // BMA TODO: This mixed use of pushing data at the Iterator
+  // vs. Models likely indicates we should standardize on pushing to
+  // the sub-iterators instead of maintaining a handle to the Model.
+  // The Iterator would then have to manage any recursive updates of
+  // its underlying models.  In particular, this could break if the
+  // Models associated with two Iterators have difference scaling.
+
   // Note: in current usage, we update an iterator with either:
   // > 1 set from parameterSets (numIteratorJobs == parameterSets.size())
   // > all of parameterSets (numIteratorJobs == 1)
