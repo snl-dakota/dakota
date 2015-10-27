@@ -3088,6 +3088,45 @@ Sample moment statistics for each posterior variable:
              w  2.5019851962e+00  3.4353065179e-03  1.9214581775e-02 -9.2030356347e-02
  stress_ErrCov  1.0260730453e+00  3.7387815958e-01  1.3538051020e+00  3.9436119762e+00
 displacement_ErrCov  1.4701743387e+00  6.8424971556e-01  1.5191416902e+00  2.5570099327e+00
+dakota_cantilever_queso_adapt.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 57 total (57 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.8585571958772816e+04 R
+                      3.1745105308047637e+07 E
+                      3.8342024098784805e+02 X
+                      6.9071902830683280e+02 Y
+<<<<< Best misfit              =
+                      9.7232889678060026e+00
+<<<<< Best log prior           =
+                     -1.1180165775994141e+01
+<<<<< Best log posterior       =
+                     -6.0360877272079229e+01
+Sample moment statistics for each posterior variable:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+             R  3.8581096355156245e+04  1.4480359021968875e+03 -3.2483034037070507e-02  1.7553896823763182e-04
+             E  3.1791806093215123e+07  1.0619084690014571e+06 -8.9806285054172541e-02 -9.8294931157805632e-02
+             X  3.8696571631320518e+02  5.5126211525803321e+01  5.7156446510439322e-02  3.4616022377741640e-02
+             Y  6.8709169879281205e+02  4.6524579967944611e+01 -2.4027027321664515e-01  7.5290582181112953e-02
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.9576109478771585e+04 R
+                      3.1000000000000000e+07 E
+                      3.0000000000000000e+02 X
+                      8.0000000000000000e+02 Y
+<<<<< Best misfit              =
+                      4.0276958954028089e+02
+<<<<< Best log prior           =
+                     -2.7725887222397811e+00
+<<<<< Best log posterior       =
+                     -4.4499960079079978e+02
+Sample moment statistics for each posterior variable:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+             R  3.9620713022226453e+04  9.1311400529996149e+01 -3.8092028611415940e-01 -6.6503750720652999e-01
+             E  3.0995153430777099e+07  5.2484029996716390e+03 -2.2092949209863062e+00  6.9458556153646089e+00
+             X  3.0037765747218265e+02  4.0070612730381622e-01  2.2329718888075596e+00  7.6079184235474369e+00
+             Y  8.0014151272082017e+02  1.4631250595699019e-01  1.8621305386734970e+00  4.3486764643327298e+00
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
