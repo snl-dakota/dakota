@@ -23024,54 +23024,54 @@ Partial Rank Correlation Matrix between input and output:
      dusrv_2  2.10716e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
-response_fn_1:  Min = 1.9566215512e-23  Max = 9.7747644457e+00
+response_fn_1:  Min = 2.7042832593e+02  Max = 8.2166641537e+03
 Simple Correlation Matrix among all inputs and outputs:
                      TF1u         TF2u      dussv_1 response_fn_1 
         TF1u  1.00000e+00 
         TF2u  2.23413e-02  1.00000e+00 
      dussv_1 -4.90601e-02 -1.40329e-01  1.00000e+00 
-response_fn_1 -4.57049e-01 -3.84777e-01 -1.15074e-01  1.00000e+00 
+response_fn_1  6.12808e-01  6.08995e-01  7.52649e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-        TF1u -5.03793e-01 
-        TF2u -4.52633e-01 
-     dussv_1 -2.37736e-01 
+        TF1u  7.82521e-01 
+        TF2u  7.86779e-01 
+     dussv_1  3.66382e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                      TF1u         TF2u      dussv_1 response_fn_1 
         TF1u  1.00000e+00 
         TF2u  4.16018e-02  1.00000e+00 
      dussv_1 -6.89655e-03 -1.55061e-01  1.00000e+00 
-response_fn_1 -6.30701e-01 -6.60957e-01  1.83092e-01  1.00000e+00 
+response_fn_1  6.13793e-01  6.70300e-01  1.10122e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-        TF1u -8.09262e-01 
-        TF2u -8.14401e-01 
-     dussv_1  1.82449e-01 
+        TF1u  8.26364e-01 
+        TF2u  8.59182e-01 
+     dussv_1  4.77046e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 60 total (30 new, 30 duplicate)
-response_fn_1:  Min = 2.9154781155e-35  Max = 9.9772160408e+00
+response_fn_1:  Min = 2.7042832593e+02  Max = 1.0328173411e+04
 Simple Correlation Matrix among all inputs and outputs:
                      TF1u         TF2u      dussv_1 response_fn_1 
         TF1u  1.00000e+00 
         TF2u  3.65152e-02  1.00000e+00 
      dussv_1 -4.14345e-02 -9.26543e-02  1.00000e+00 
-response_fn_1 -4.18081e-01 -3.25626e-01 -1.74101e-02  1.00000e+00 
+response_fn_1  6.39941e-01  6.05236e-01  8.39138e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-        TF1u -4.32694e-01 
-        TF2u -3.47075e-01 
-     dussv_1 -7.42395e-02 
+        TF1u  7.96504e-01 
+        TF2u  7.82223e-01 
+     dussv_1  3.27768e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                      TF1u         TF2u      dussv_1 response_fn_1 
         TF1u  1.00000e+00 
         TF2u  4.11225e-02  1.00000e+00 
      dussv_1 -8.89136e-04 -1.12587e-01  1.00000e+00 
-response_fn_1 -6.19950e-01 -6.36566e-01  9.82495e-02  1.00000e+00 
+response_fn_1  6.63073e-01  6.32453e-01  9.28036e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-        TF1u -7.71163e-01 
-        TF2u -7.76369e-01 
-     dussv_1  5.89768e-02 
+        TF1u  8.41676e-01 
+        TF2u  8.35009e-01 
+     dussv_1  3.69807e-01 
 dakota_textbook_lsq.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)

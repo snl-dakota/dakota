@@ -47,12 +47,12 @@ variables,
 #          elements 11.7 13.1 15.9 22.1 23.2			#s2,#s3
 #        discrete_uncertain_set					#s4,#s5
 #          string 1                                             #s4,#s5
-#          elements 'aniso1' 'aniso2' 'aniso3' 'iso1' 'iso2' 'iso3' #s4,#s5
+#          elements 'Dakota' 'gamely' 'handles'                 #s4,#s5
+#                   'my' 'string' 'variable'			#s4,#s5
 
 interface,
         direct
-	  analysis_driver = 'text_book'                        #s0,#s1,#s2,#s3
-#	  analysis_driver = 'gerstner'                         #s4,#s5
+	  analysis_driver = 'text_book'                        
 
 responses,
 	response_functions = 1
