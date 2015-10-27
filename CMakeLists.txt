@@ -300,6 +300,8 @@ set(dakota_boost_components
 option(HAVE_ACRO "Build the ACRO package." ON)
 if(HAVE_ACRO)
   list(APPEND dakota_boost_components "signals")
+  # Acro uses Boost.Signals (deprecated) instead of Boost.Signals2
+  add_definitions("-DBOOST_SIGNALS_NO_DEPRECATION_WARNING")
 endif()
 
 # Queso requires the program_options library in addition
