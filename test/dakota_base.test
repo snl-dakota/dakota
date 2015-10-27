@@ -11047,16 +11047,34 @@ dakota_piecewise_surrogate.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10 total (10 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
-Moment-based statistics for each response function:
+Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.8345917960e-01  4.0239502241e-01  1.2396523282e+00  6.4231750456e-01
- response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
- response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
+ response_fn_1  3.8419173650e-01  4.0222761721e-01  1.2351879633e+00  6.3421391116e-01
+ response_fn_2  7.2097013684e-02  3.4306455155e-01  4.5297526522e-01 -5.8610385541e-01
+ response_fn_3  6.9562298554e-02  3.3858086358e-01  5.2756997028e-01 -8.2640545784e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  9.5603121387e-02  6.7131523780e-01  2.7678146343e-01  7.3461645030e-01
- response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
- response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
+ response_fn_1  9.6455432758e-02  6.7192804024e-01  2.7666631624e-01  7.3431083367e-01
+ response_fn_2 -1.7331658246e-01  3.1751060983e-01  2.3597187674e-01  6.2630213857e-01
+ response_fn_3 -1.7264386044e-01  3.1176845755e-01  2.3288783830e-01  6.1811667216e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   2.4210241842e-02   1.0000000000e-01   3.9583184759e+00
+   1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   1.2229217374e+00   4.8160143076e-01
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.5114944531e-01   1.0000000000e-01   1.1082802056e+00
+   1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   6.8861171397e-01   1.1285189679e+00
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.7883729036e-01   1.0000000000e-01   1.2530352420e+00
+   1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
+   6.0000000000e-01   6.3872238806e-01   2.5824853532e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0000000000e-01
@@ -11076,13 +11094,13 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
           x2 -7.22482e-02  1.00000e+00 
-response_fn_1 -7.06235e-01 -6.26941e-01  1.00000e+00 
-response_fn_2  8.61628e-01 -5.31298e-01 -2.62005e-01  1.00000e+00 
-response_fn_3 -5.83075e-01  8.33989e-01 -1.22814e-01 -8.92771e-01  1.00000e+00 
+response_fn_1 -7.05624e-01 -6.27619e-01  1.00000e+00 
+response_fn_2  8.60570e-01 -5.33416e-01 -2.59065e-01  1.00000e+00 
+response_fn_3 -5.83534e-01  8.33741e-01 -1.22967e-01 -8.94079e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          x1 -9.67182e-01  9.74285e-01 -9.49997e-01 
-          x2 -9.60117e-01 -9.26578e-01  9.77252e-01 
+          x1 -9.67137e-01  9.74384e-01 -9.50220e-01 
+          x2 -9.60189e-01 -9.27638e-01  9.77302e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 
           x1  1.00000e+00 
@@ -11098,6 +11116,12 @@ dakota_pof.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.0941269757e+00  -9.0000000000e-01   1.1268552413e+00
+  -9.0000000000e-01  -8.0000000000e-01   2.1697500000e+00
+  -8.0000000000e-01  -5.0000000000e-01   1.2864800000e+00
+  -5.0000000000e-01  -1.3637474857e-01   4.9041698643e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -9.0000000000e-01   2.1875300000e-01
@@ -11106,6 +11130,14 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   7.3724670393e-05   2.0000000000e+00   1.5050554799e-01
+   2.0000000000e+00   1.3843939525e+02   5.1231537542e-03
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -9.6557461493e-01   1.0000000000e-01   1.8018447259e-01
+   1.0000000000e-01   4.9109430198e+00   1.6795044063e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e+00   3.0100000000e-01
@@ -11115,19 +11147,31 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.1497810666e+00  -9.0000000000e-01   5.3446805172e-02
+  -9.0000000000e-01  -8.0000000000e-01   1.3998000000e-01
+  -8.0000000000e-01  -5.0000000000e-01   7.9206666667e-02
+  -5.0000000000e-01   5.3296628965e+00   1.6276927446e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1515000000e-01
-  -8.0000000000e-01   4.3897800000e-01
-  -5.0000000000e-01   8.2255600000e-01
+  -9.0000000000e-01   1.3350000000e-02
+  -8.0000000000e-01   2.7348000000e-02
+  -5.0000000000e-01   5.1110000000e-02
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000000 total (1000000 new, 0 duplicate)
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.1497810666e+00  -9.0000000000e-01   5.3446805172e-02
+  -9.0000000000e-01  -8.0000000000e-01   1.3998000000e-01
+  -8.0000000000e-01  -5.0000000000e-01   7.9206666667e-02
+  -5.0000000000e-01   5.3296628965e+00   1.6276927446e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -9.0000000000e-01   2.1515000000e-01
-  -8.0000000000e-01   4.3897800000e-01
-  -5.0000000000e-01   8.2255600000e-01
+  -9.0000000000e-01   1.3350000000e-02
+  -8.0000000000e-01   2.7348000000e-02
+  -5.0000000000e-01   5.1110000000e-02
 dakota_portal_frame.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
