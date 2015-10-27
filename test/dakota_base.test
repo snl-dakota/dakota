@@ -3180,7 +3180,7 @@ Test Number 2 succeeded
 <<<<< Best objective function  =
                       1.6275512967e+01
 <<<<< Best data captured at function evaluation 6881
-dakota_bayestest.in
+dakota_bayes_textbook.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1801 total (1801 new, 0 duplicate)
 <<<<< Best parameters          =

@@ -30,9 +30,9 @@ interface,
 
 responses,
  	calibration_terms = 1
-        calibration_data_file = 'dakota_bayestest.1.dat'                #s0,#s1                  
-#        calibration_data_file = 'dakota_bayestest.2.dat'                #s2               
-#        calibration_data_file = 'dakota_bayestest.5.dat'                #s3               
+        calibration_data_file = 'dakota_bayes_textbook.1.dat'                #s0,#s1                  
+#        calibration_data_file = 'dakota_bayes_textbook.2.dat'                #s2               
+#        calibration_data_file = 'dakota_bayes_textbook.5.dat'                #s3               
           freeform
           num_experiments = 100
           variance_type = 'scalar'
