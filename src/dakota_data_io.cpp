@@ -208,10 +208,16 @@ read_covariance(const std::string& basename, int expt_num,
   std::string filename = basename + "." + convert_to_string(expt_num) + ".sigma";
   TabularIO::open_file(s, filename, "read_sigma_values");
   RealVectorArray va;
-  if( format == Dakota::CovarianceMatrix::VECTOR )
-    read_sized_data(s, va, 1, num_vals);
-  else
-    read_sized_data(s, va, num_vals, num_vals);
+  try {
+    if( format == Dakota::CovarianceMatrix::VECTOR )
+      read_sized_data(s, va, 1, num_vals);
+    else
+      read_sized_data(s, va, num_vals, num_vals);
+  }
+  catch(const FileReadException& fr_except) {
+        throw FileReadException("Error(s) in sigma file " + filename +
+            ":\n" + fr_except.what());
+  }
   copy_data(va, cov_vals);
 }
 
