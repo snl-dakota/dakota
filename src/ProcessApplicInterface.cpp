@@ -620,7 +620,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
       bfs::ifstream recovery_stream(prog_tagged_results);
       if (!recovery_stream) {
 	Cerr << "\nError: cannot open results file " << prog_tagged_results
-	     << std::endl;
+	  << " for evaluation " << boost::lexical_cast<std::string>(id) << std::endl;
 	abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
       }
       try {
@@ -639,7 +639,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
     bfs::ifstream recovery_stream(results_path);
     if (!recovery_stream) {
       Cerr << "\nError: cannot open results file " << results_path
-	   << std::endl;
+        << " for evaluation " << boost::lexical_cast<std::string>(id) << std::endl;
       abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
     }
     try {
