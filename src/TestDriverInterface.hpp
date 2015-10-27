@@ -132,6 +132,10 @@ private:
   /// utility to combine components of separable fns
   void separable_combine(Real mult_scale_factor, std::vector<Real> & w,
 			 std::vector<Real> & d1w, std::vector<Real> & d2w);
+  /// Compute Levenshtein distance between v and LEV_REF
+  Real levenshtein_distance(const String &v);
+  /// Cache results of Levenshtein distance calc for efficiency
+  static StringRealMap levenshteinDistanceCache;
 
 #ifdef DAKOTA_SALINAS
   int salinas(); ///< direct interface to the SALINAS structural dynamics code

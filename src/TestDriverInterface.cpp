@@ -31,6 +31,11 @@ namespace Dakota {
 
 /// offset used text_book exponent: 1.0 is nominal, 1.4 used for B&B testing
 const double POW_VAL = 1.0 ;
+/// levenshtein_distance computes the distance between its argument and this
+// reference string
+const String LEV_REF = "Dakota";
+
+StringRealMap TestDriverInterface::levenshteinDistanceCache;
 
 #ifdef DAKOTA_SALINAS
 /// subroutine interface to SALINAS simulation code
@@ -2395,7 +2400,7 @@ int TestDriverInterface::text_book()
   }
   // The presence of discrete variables can cause offsets in directFnDVV which
   // the text_book derivative logic does not currently account for.
-  if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
+  if ( (gradFlag || hessFlag) && (numADIV || numADRV || numADSV) ) {
     Cerr << "Error: text_book direct fn assumes no discrete variables in "
 	 << "derivative mode." << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -2435,8 +2440,10 @@ int TestDriverInterface::text_book1()
 	x_i = xC[i];
       else if (i<numACV+numADIV)
 	x_i = (Real)xDI[i-numACV];
-      else
+      else if (i<numACV+numADIV+numADRV)
 	x_i = xDR[i-numACV-numADIV];
+      else
+        x_i = levenshtein_distance(xDS[i-numACV-numADIV-numADRV]);
       local_val += std::pow(x_i-POW_VAL, 4);
 #ifdef TB_EXPENSIVE
       // MDO98/WCSMO99 TFLOP/NOW timings: j<=15000 used for fnVals[0] only
@@ -2550,8 +2557,10 @@ int TestDriverInterface::text_book2()
 	x_i = xC[i];
       else if (i<numACV+numADIV)
 	x_i = (Real)xDI[i-numACV];
-      else
+      else if (i<numACV+numADIV+numADRV)
 	x_i = xDR[i-numACV-numADIV];
+      else
+        x_i = levenshtein_distance(xDS[i-numACV-numADIV-numADRV]);
       if (i==0) // could be changed to i % 2 == 0 to get even vars.
         local_val += x_i*x_i;
       else if (i==1) // could be changed to i % 2 == 1 to get odd vars
@@ -2668,8 +2677,10 @@ int TestDriverInterface::text_book3()
 	x_i = xC[i];
       else if (i<numACV+numADIV)
 	x_i = (Real)xDI[i-numACV];
-      else
+      else if (i<numACV+numADIV+numADRV)
 	x_i = xDR[i-numACV-numADIV];
+      else
+        x_i = levenshtein_distance(xDS[i-numACV-numADIV-numADRV]);
       if (i==0) // could be changed to i % 2 == 0 to get even vars.
         local_val -= 0.5*x_i;
       else if (i==1) // could be changed to i % 2 == 1 to get odd vars
@@ -3945,6 +3956,38 @@ void TestDriverInterface::separable_combine(Real mult_scale_factor, std::vector<
   }
 }
 
+Real TestDriverInterface::levenshtein_distance(const String &v) {
+  /// Levenshtein distance is the number of changes (single character
+  // deletions, additions, or changes) to convert one string (v) to another
+  // (levenshteinReference). This nice implementation shamelessly stolen/adapted
+  // from Wikipedia, which attributes it to Wager and Fischer, 
+  // doi:10.1145/321796.321811.
+  // Results are stored in levenshteinDistanceCache to avoid needless repeated 
+  // calcuations
+  SRMCIter d_match;
+  d_match = levenshteinDistanceCache.find(v);
+  if (d_match != levenshteinDistanceCache.end())
+    return d_match->second;
+  const String &w = LEV_REF;
+  size_t v_len = v.size(), w_len = w.size();
+  IntMatrix d(v_len+1, w_len+1);
+  size_t i, j;
+  for(i=0; i<=v_len; ++i)
+    d(i,0) = i;
+  for(j=0; j<=w_len; ++j)
+    d(0,j) = j;
+  for(j=1; j<=w_len; ++j) {
+    for(i=1; i<=v_len; ++i) {
+      if(v[i-1] == w[j-1])
+        d(i,j) = d(i-1,j-1);
+      else
+        d(i,j) = std::min( d(i-1,j)+1, std::min(d(i  ,j-1) + 1,
+                                                d(i-1,j-1) + 1));
+    }
+  }
+  levenshteinDistanceCache[v] = d(v_len,w_len);
+  return levenshteinDistanceCache[v];
+}
 
 #ifdef DAKOTA_SALINAS
 int TestDriverInterface::salinas()

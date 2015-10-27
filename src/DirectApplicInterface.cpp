@@ -365,8 +365,11 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   // inactive vars would not be properly captured); rather, all of vars must be
   // mapped through.  This is important in particular for OUU since the inactive
   // variables are carrying data from the outer loop.
-  numACV = vars.acv(); numADIV = vars.adiv(); numADRV = vars.adrv();
-  numVars = numACV + numADIV + numADRV;
+  numACV = vars.acv();
+  numADIV = vars.adiv(); 
+  numADRV = vars.adrv();
+  numADSV = vars.adsv();
+  numVars = numACV + numADIV + numADRV + numADSV;
 
   // Initialize copies of incoming data
   //directFnVars = vars; // shared rep
@@ -374,78 +377,59 @@ set_local_data(const Variables& vars, const ActiveSet& set)
     size_t i;
     // set labels once (all processors)
     if (xCMLabels.size()  != numACV || xDIMLabels.size() != numADIV ||
-	xDRMLabels.size() != numADRV) {
+	xDRMLabels.size() != numADRV || xDSMLabels.size() != numADSV) {
       StringMultiArrayConstView acv_labels
 	= vars.all_continuous_variable_labels();
       StringMultiArrayConstView adiv_labels
 	= vars.all_discrete_int_variable_labels();
       StringMultiArrayConstView adrv_labels
 	= vars.all_discrete_real_variable_labels();
+      StringMultiArrayConstView adsv_labels
+	= vars.all_discrete_string_variable_labels();
       xCMLabels.resize(numACV);
       xDIMLabels.resize(numADIV);
       xDRMLabels.resize(numADRV);
+      xDSMLabels.resize(numADSV);
       //String label_i;
-      std::map<String, var_t>::iterator v_iter;
-      for (i=0; i<numACV; ++i) {
-	//label_i = toLower(acv_labels[i]);
-	v_iter = varTypeMap.find(acv_labels[i]);//(label_i);
-	if (v_iter == varTypeMap.end()) {
-	  Cerr << "Error: label \"" << acv_labels[i]//label_i
-	       << "\" not supported in analysis driver." << std::endl;
-	  abort_handler(INTERFACE_ERROR);
-	}
-	else
-	  xCMLabels[i] = v_iter->second;
-      }
-      for (i=0; i<numADIV; ++i) {
-	//label_i = toLower(adiv_labels[i]);
-	v_iter = varTypeMap.find(adiv_labels[i]);//(label_i);
-	if (v_iter == varTypeMap.end()) {
-	  Cerr << "Error: label \"" << adiv_labels[i]//label_i
-	       << "\" not supported in analysis driver." << std::endl;
-	  abort_handler(INTERFACE_ERROR);
-	}
-	else
-	  xDIMLabels[i] = v_iter->second;
-      }
-      for (i=0; i<numADRV; ++i) {
-	//label_i = toLower(adrv_labels[i]);
-	v_iter = varTypeMap.find(adrv_labels[i]);//(label_i);
-	if (v_iter == varTypeMap.end()) {
-	  Cerr << "Error: label \"" << adrv_labels[i]//label_i
-	       << "\" not supported in analysis driver." << std::endl;
-	  abort_handler(INTERFACE_ERROR);
-	}
-	else
-	  xDRMLabels[i] = v_iter->second;
-      }
+      // Map labels in a*v_labels to var_t enum in x*Labels through varTypeMap
+      map_labels_to_enum(acv_labels,xCMLabels);
+      map_labels_to_enum(adiv_labels,xDIMLabels);
+      map_labels_to_enum(adrv_labels,xDRMLabels);
+      map_labels_to_enum(adsv_labels,xDSMLabels);
     }
     // set variable values on every evaluation
     const RealVector& acv  = vars.all_continuous_variables();
     const IntVector&  adiv = vars.all_discrete_int_variables();
     const RealVector& adrv = vars.all_discrete_real_variables();
-    xCM.clear(); xDIM.clear(); xDRM.clear(); // more rigorous than overwrite
+    StringMultiArrayConstView adsv = vars.all_discrete_string_variables();
+    xCM.clear(); xDIM.clear(); xDRM.clear(); xDSM.clear(); // more rigorous than overwrite
     for (i=0; i<numACV; ++i)
       xCM[xCMLabels[i]] = acv[i];
     for (i=0; i<numADIV; ++i)
       xDIM[xDIMLabels[i]] = adiv[i];
     for (i=0; i<numADRV; ++i)
       xDRM[xDRMLabels[i]] = adrv[i];
+    for (i=0; i<numADSV; ++i)
+      xDSM[xDSMLabels[i]] = adsv[i];
   }
   if (localDataView & VARIABLES_VECTOR) {
     // set labels once (all processors)
     if (xCLabels.size()  != numACV || xDILabels.size() != numADIV ||
-	xDRLabels.size() != numADRV) {
+	xDRLabels.size() != numADRV || xDSLabels.size() != numADSV) {
       xCLabels.resize(boost::extents[numACV]);
       xCLabels = vars.all_continuous_variable_labels();
       xDILabels.resize(boost::extents[numADIV]);
       xDILabels = vars.all_discrete_int_variable_labels();
       xDRLabels.resize(boost::extents[numADRV]);
       xDRLabels = vars.all_discrete_real_variable_labels();
+      xDSLabels.resize(boost::extents[numADSV]);
+      xDSLabels = vars.all_discrete_string_variable_labels();
     }
     xC  = vars.all_continuous_variables();    // view OK
     xDI = vars.all_discrete_int_variables();  // view OK
     xDR = vars.all_discrete_real_variables(); // view OK
+    xDS.resize(boost::extents[numADSV]);
+    xDS = vars.all_discrete_string_variables(); // view OK
   }
 
   // -------------------------
@@ -562,6 +546,27 @@ void DirectApplicInterface::overlay_response(Response& response)
       response.read_data(sum_fns);
       delete [] sum_fns;
     }
+  }
+}
+
+
+void DirectApplicInterface::map_labels_to_enum(StringMultiArrayConstView &src, 
+  std::vector<var_t> &dest) {
+  // Helper to map variable labels (in src) to var_t enums (in dest); dest
+  // used to set mapped variable values for use in test functions
+  // See, e.g., cantilever.
+  size_t num_vars = dest.size();
+  std::map<String, var_t>::iterator v_iter;
+  for (size_t i=0; i<num_vars; ++i) {
+    //label_i = toLower(acv_labels[i]);
+    v_iter = varTypeMap.find(src[i]);//(label_i);
+    if (v_iter == varTypeMap.end()) {
+      Cerr << "Error: label \"" << src[i]//label_i
+           << "\" not supported in analysis driver." << std::endl;
+      abort_handler(INTERFACE_ERROR);
+    }
+    else
+      dest[i] = v_iter->second;
   }
 }
 

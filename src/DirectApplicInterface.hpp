@@ -157,6 +157,7 @@ protected:
   size_t numACV;  ///< total number of continuous variables
   size_t numADIV;  ///< total number of discete integer variables
   size_t numADRV;  ///< total number of discete real variables
+  size_t numADSV;  ///< total number of discete string variables
   size_t numDerivVars; ///< number of active derivative variables
 
   /// bit-wise record of which local data views are active;
@@ -171,15 +172,18 @@ protected:
   RealVector xC;  ///< continuous variables used within direct simulator fns
   IntVector  xDI; ///< discrete int variables used within direct simulator fns
   RealVector xDR; ///< discrete real variables used within direct simulator fns
+  StringMultiArray xDS; ///< discrete string variables used within direct simulator fns
   StringMultiArray xCLabels;  ///< continuous variable labels
   StringMultiArray xDILabels; ///< discrete integer variable labels
   StringMultiArray xDRLabels; ///< discrete real variable labels
+  StringMultiArray xDSLabels; ///< discrete string variable labels
 
   std::map<String, var_t>    varTypeMap;    ///< map from variable label to enum
   std::map<String, driver_t> driverTypeMap; ///< map from driver name to enum
   std::map<var_t, Real> xCM;  ///< map from var_t enum to continuous value
   std::map<var_t, int>  xDIM; ///< map from var_t enum to discrete int value
   std::map<var_t, Real> xDRM; ///< map from var_t enum to discrete real value
+  std::map<var_t, String> xDSM; ///< map from var_t enum to discrete string value
 
   /// var_t enumerations corresponding to DVV components
   std::vector<var_t> varTypeDVV;
@@ -189,6 +193,8 @@ protected:
   std::vector<var_t> xDIMLabels;
   /// var_t enumerations corresponding to discrete real variable labels
   std::vector<var_t> xDRMLabels;
+  /// var_t enumerations corresponding to discrete string variable labels
+  std::vector<var_t> xDSMLabels;
 
   //ActiveSet directFnActSet; // class scope ActiveSet object
   ShortArray directFnASV; ///< class scope active set vector
@@ -211,6 +217,10 @@ protected:
   /// (from the analysis_components interface specification)
   String2DArray analysisComponents;
 
+private:
+  /// map labels in src to var_t in dest
+  void map_labels_to_enum(StringMultiArrayConstView &src,
+      std::vector<var_t> &dest);
 };
 
 
