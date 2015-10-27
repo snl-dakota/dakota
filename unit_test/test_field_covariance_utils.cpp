@@ -39,6 +39,12 @@ void test_multiple_scalar_covariance_matrix()
 				     diagonal_map_indices, 
 				     scalar_map_indices );
 
+  // Test determinant and log_determinant
+  BOOST_CHECK( abs(exper_cov.determinant() - 8.0) <
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(8.0)) <
+	       10.*std::numeric_limits<double>::epsilon() );
+
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
@@ -147,6 +153,13 @@ void test_single_diagonal_block_covariance_matrix()
 				     diagonal_map_indices, 
 				     scalar_map_indices );
 
+
+  // Test determinant and log_determinant
+  BOOST_CHECK( abs(exper_cov.determinant() - 8.0) <
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(8.0)) <
+	       10.*std::numeric_limits<double>::epsilon() );
+
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
   RealVector residual( Teuchos::Copy, residual_array, num_residuals );
@@ -243,6 +256,12 @@ void test_single_full_block_covariance_matrix()
 				     matrix_map_indices,
 				     diagonal_map_indices, 
 				     scalar_map_indices );
+
+  // Test determinant and log_determinant
+  BOOST_CHECK( abs(exper_cov.determinant() - 6.75) <
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(6.75)) <
+	       10.*std::numeric_limits<double>::epsilon() );
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -386,6 +405,12 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 				     matrix_map_indices,
 				     diagonal_map_indices, 
 				     scalar_map_indices );
+
+  // Test determinant and log_determinant
+  BOOST_CHECK( abs(exper_cov.determinant() - 432.0) <
+	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(432.0)) <
+	       10.*std::numeric_limits<double>::epsilon() );
 
   int num_residuals = 9;
   Real residual_array[] = {1., 1., 2., 4., 1., 2., 4., 2., 4.};
