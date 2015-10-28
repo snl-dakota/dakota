@@ -1,0 +1,12 @@
+Blurb::
+Recursive k-d (RKD) Darts: Recursive Hyperplane Sampling for Numerical Integration of High-Dimensional Functions.
+
+Description::
+*** Disclaimer: The RKD method is currently in development mode, for further experimental verification. 
+*** Please contact Dakota team if you have further questions about using this method.
+
+Recursive k-d (RKD) darts is an algorithm to evaluate the integration of a d-dimensional black box function f(x) via recursive sampling over d, using a series of hyperplanes of variable dimensionality k = {d, d-1, …, 0}. Fundamentally, we decompose the d-dimensional integration problem into a series of nested one-dimensional problems. That is, we start at the root level (the whole domain) and start sampling down using hyperplanes of one lower dimension, all the way down to zero (points). A d-dimensional domain is subsampled using (d-1) hyperplanes, a (d-1)-dimensional sub-domain is subsampled using (d-2) hyperplanes, and so on. Every hyperplane, regardless of its dimension, is evaluated using sampled hyperplanes of one lower dimension, as shown in the set of figures above. Each hyperplane has direct information exchange with its parent hyperplane of one higher dimension, and its children of one lower dimension. In each one-dimensional problem, we construct a piecewise approximation surrogate model, using 1-dimensional Lagrange interpolation. Information is exchanged between different levels, including integration values, as well as interpolation and evaluation errors, in order to a) find the integration value up to that level, b) estimate the associated integration error, and c) guide the placement of future samples.Topics::        uncertainty_quantification	
+Examples::
+Theory::
+Faq::
+See_Also::	

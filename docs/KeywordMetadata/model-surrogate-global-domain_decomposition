@@ -1,10 +1,12 @@
 Blurb:: 
-Piecewise Domain Decomposition for Global Surrogates
+Piecewise Domain Decomposition for Global Surrogate Models
 
 Description:: 
-Most regression techniques use all available sample points to approximate the underlying function anywhere in the domain. An alternative option is to use piecewise decomposition to locally approximate the function at some point using a few sample points from its neighborhood. 
+Typical regression techniques use all available sample points to build continuous approximations the underlying function. 
 
-This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. It requires a decomposition cell type (currently set to be Voronoi cells), an optional number of support layers of neighbors, and optional discontinuity detection parameters (jump/gradient). 
+An alternative option is to use piecewise decomposition to locally approximate the function at some point using a few sample points from its neighborhood only. This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. It requires a decomposition cell type (currently set to be Voronoi cells). Optional parameters are: the number of layers of neighbors used to solve the regression problem (default is one layer), and an optional discontinuity detection capability (identified by a user-input jump or gradient threshold).
+
+The method can also make use of the gradient and Hessian information, if available. The user needs to specify the keyword user_derivatives. 
 
 Topics::
 Examples::

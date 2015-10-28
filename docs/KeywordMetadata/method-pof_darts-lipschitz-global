@@ -1,8 +1,9 @@
 Blurb::
 Specify global estimation of the Lipschitz estimate
+
 Description::
-The global approach uses 
-one Lipschitz estimate for the entire domain.  
+The global approach uses one Lipschitz estimate for the entire domain. This option is currently deactivated. Please refer to the local alternative.
+ 
 Topics::
 Examples::
 Theory::
