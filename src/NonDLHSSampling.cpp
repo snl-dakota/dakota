@@ -24,6 +24,8 @@
 #include "Teuchos_SerialDenseSolver.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "DakotaApproximation.hpp"
+//#include <Teuchos_MatrixMarket_Raw_Writer.hpp>
+
 
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -200,12 +202,17 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   RealMatrix principal_comp
     = pcaReducedBasis.get_right_singular_vector_transpose();
     
+  std::ofstream myfile;
+  myfile.open("princ_comp.txt");
   if (outputLevel == DEBUG_OUTPUT) {
     s << "principal components\n";
     for (samp=0; samp<numSamples; ++samp) {
-      for (fn=0; fn<numFunctions; ++fn)
+      for (fn=0; fn<numFunctions; ++fn) {
 	s << principal_comp(samp,fn) << "  " ;
+	myfile <<  std::fixed << std::setprecision(16) << principal_comp(samp,fn) << "  " ;
+      }
       s << '\n';
+      myfile << '\n';
     }
     s << std::endl;
   }
@@ -250,7 +257,6 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
 
   sharedData = SharedApproxData(approx_type, approx_order, numContinuousVars,
 				data_order, output_level);
-	           
   std::vector<Approximation> gpApproximations;
 
   // build one GP for each Principal Component
@@ -261,6 +267,11 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
     RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
     gpApproximations[i].add(allSamples, factor_i );
     gpApproximations[i].build();
+    std::stringstream ss;
+    ss << i;
+    std::string GPstring = ss.str();
+    const String GPPrefix = "PCA_GP";
+    gpApproximations[i].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
   }
 
   // Now form predictions based on new input points
@@ -268,11 +279,25 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   Real pca_coeff;
   RealVector this_pred(numFunctions);
   get_parameter_sets(iteratedModel); // NOTE:  allSamples is now different
-   
+
+  if (outputLevel == DEBUG_OUTPUT) {
+    s << "All Sample new values " << std::endl;
+    for (samp=0; samp<numSamples; ++samp) {
+      for (fn=0; fn<numContinuousVars; ++fn)
+        s << allSamples(samp,fn) << "  " ;
+        s << '\n';
+      }
+    s << std::endl;
+  } 
+
   RealMatrix predMatrix;
   predMatrix.reshape(numSamples, numFunctions);
 
   RealVector column_means = pcaReducedBasis.get_column_means();
+  for( int k=0; k<numFunctions; ++k )
+    myfile << std::fixed << std::setprecision(16) << column_means(k) << "  " ;
+  myfile << '\n';
+  myfile.close();
 
   for (int j = 0; j < numSamples; j++) {
     //this_pred = mean_vec;
@@ -291,11 +316,13 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
     for( int k=0; k<numFunctions; ++k )
       predMatrix(j,k) = this_pred(k)+column_means(k);
   }
-  s << "\nPrediction Matrix\n";
-  for (samp=0; samp<numSamples; ++samp) {
-    for (fn=0; fn<numFunctions; ++fn)
-      s << predMatrix(samp,fn) << "  " ;
-    s << '\n';
+  if (outputLevel == DEBUG_OUTPUT) {
+    s << "\nPrediction Matrix\n";
+    for (samp=0; samp<numSamples; ++samp) {
+      for (fn=0; fn<numFunctions; ++fn)
+        s << predMatrix(samp,fn) << "  " ;
+      s << '\n';
+    }
   }
 }
 
