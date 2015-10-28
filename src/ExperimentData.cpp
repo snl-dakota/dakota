@@ -12,6 +12,28 @@
 
 namespace Dakota {
 
+void scale(const RealVector& mults, RealVector& v)
+{
+  if (mults.length() != v.length()) {
+    Cerr << "\nError: incompatible multipliers and vector in scale.\n";
+    abort_handler(-1);
+  }
+  for (int j=0; j<v.length(); ++j)
+    v[j] /= sqrt(mults[j]);
+}
+
+
+void scale_rows(const RealVector& mults, RealMatrix& A)
+{
+  if (mults.length() != A.numCols()) {
+    Cerr << "\nError: incompatible multipliers and matrix in scale row.\n";
+    abort_handler(-1);
+  }
+  for (int j=0; j<A.numCols(); ++j)
+   for (int i=0; i<A.numRows(); ++i)
+     A[j][i] /= sqrt(mults[j]);
+}
+
 
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
@@ -1011,13 +1033,14 @@ scale_residuals(const Response& residual_response, ShortArray &total_asv,
 
 
 void ExperimentData::
-scale_residuals( Response& residual_response, ShortArray &total_asv ) const {
+scale_residuals(Response& residual_response, ShortArray &total_asv) const 
+{
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
 
   size_t calib_term_ind = 0; // index into the total set of calibration terms
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
-    // total length this exper
+    // total residuals in this exper
     size_t num_fns_exp = experiment_lengths[exp_ind]; 
     
     // apply noise covariance to the residuals for this experiment 
@@ -1026,18 +1049,14 @@ scale_residuals( Response& residual_response, ShortArray &total_asv ) const {
       Cout << "\nCalibration: weighting residuals with inverse of specified "
            << "error covariance." << std::endl;
        
-    // BMA @JDJ: The copies in the else clauses lmay have a size
-    // mismatch, with residual_response having total calibration terms
-    // being assigned to a left side that should be sized for one
-    // experiment
-
     // apply cov_inv_sqrt to the residual vector
     RealVector weighted_resid;
     if (total_asv[exp_ind] & 1)
       apply_covariance_inv_sqrt(residual_response.function_values(),
 				exp_ind, weighted_resid);
     else
-      weighted_resid = residual_response.function_values();
+      weighted_resid = 
+	residuals_view(residual_response.function_values(), exp_ind);
 
     // apply cov_inv_sqrt to each row of gradient matrix
     RealMatrix weighted_grad;
@@ -1046,24 +1065,23 @@ scale_residuals( Response& residual_response, ShortArray &total_asv ) const {
 				exp_ind, weighted_grad);
     }
     else
-      weighted_grad = residual_response.function_gradients();
+      weighted_grad = 
+	gradients_view(residual_response.function_gradients(), exp_ind);
 
     // apply cov_inv_sqrt to non-contiguous Hessian matrices
     RealSymMatrixArray weighted_hess;
     if (total_asv[exp_ind] & 4)
       apply_covariance_inv_sqrt(residual_response.function_hessians(), 
 				exp_ind, weighted_hess);
-    // JDJ it seems like the following will fail if (total_asv[exp_ind] & 4)
-    // is false as a copy or view of weighted hess is not made, it is instead
-    // just empty. Confirm with BMA
+    else
+      weighted_hess = hessians_view(residual_response.function_hessians(), 
+				    exp_ind);
 
-    //Todo: BMA/JDJ Only perform copy of resid, grads or hess if covariance
-    //matrix was applied to that data
     copy_field_data(weighted_resid, weighted_grad, weighted_hess, 
 		    calib_term_ind, num_fns_exp, residual_response);
 
     calib_term_ind += num_fns_exp;
-  } // for each experiment
+  }
 }
 
 
@@ -1251,6 +1269,122 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
 }
 
 
+/** In-place scaling of residual response by hyper-parameter multipliers */
+void ExperimentData::
+scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
+                size_t num_calib_params, Response& residual_response) const
+{
+  // BMA TODO: convert these all to block operations and verify
+  // derivative contributions.
+
+  // BMA TODO: incorporate ASV and map sure map solver always has asv & 1
+  // NOTE: In most general case the index into multipliers is exp_ind
+  // * num_response_groups + resp_ind (never per function ind, e.g.,
+  // in a field)
+  size_t num_hyper = multipliers.length();
+  size_t total_resid = num_total_exppoints();
+
+  switch (multiplier_mode) {
+
+  case CALIBRATE_NONE:
+    // no-op
+    break;
+
+  case CALIBRATE_ONE: {
+    assert(multipliers.length() == 1);
+    Real scale_factor = 1.0/sqrt(multipliers[0]);
+
+    RealVector fn_values = residual_response.function_values_view();
+    fn_values *= scale_factor;
+
+    if (residual_response.function_gradients().numCols() > 0) {
+
+      RealMatrix fn_grads = residual_response.function_gradients_view();
+      fn_grads *= scale_factor;
+
+      // augment with gradient entry for the hyper-parameter
+      Real grad_scale = -0.5/multipliers[0];
+      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind)
+	fn_grads(num_calib_params, resid_ind) = grad_scale * fn_values[resid_ind];
+
+    }
+
+    if (residual_response.function_hessians().size() > 0) {
+
+      Real hess_scale = 0.75*std::pow(multipliers[0], -2.0);
+      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
+	RealSymMatrix fn_hess = residual_response.function_hessian_view(resid_ind);
+	fn_hess *= scale_factor;
+	// augment with Hessian entry for the hyper-parameter
+	fn_hess(num_calib_params, num_calib_params) = 
+	  hess_scale * fn_values[resid_ind];
+      }
+
+    }
+    break;
+  }
+
+  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
+    RealVector expand_mults;
+    generate_multipliers(multipliers, multiplier_mode, expand_mults);
+
+    IntVector resid2mult_indices;
+    resid2mult_map(multiplier_mode, resid2mult_indices);
+
+    // TODO: have to promote gradient only ASV request to gradient +
+    // fn when there are hyperparameters
+
+    //    if (residual_response.function_values().length() > 0) {
+    RealVector resids = residual_response.function_values_view();
+    scale(expand_mults, resids);
+      //}
+    if (residual_response.function_gradients().numCols() > 0) {
+      RealMatrix resid_grads = residual_response.function_gradients_view();
+      scale_rows(expand_mults, resid_grads);
+      // augment with gradient entries for the hyper-parameters
+      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
+	int mult_ind = resid2mult_indices[resid_ind];
+	for (int i=0; i<num_hyper; ++i) {
+	  if (i == mult_ind) {
+	    Real grad_scale = -0.5/multipliers[mult_ind];
+	    resid_grads(num_calib_params + i, resid_ind) = 
+	      grad_scale * resids[resid_ind];
+	  }
+	  else 
+	    resid_grads(num_calib_params + i, resid_ind) = 0.0;
+	}
+      }
+    }
+    if (residual_response.function_hessians().size() > 0) {
+      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
+	RealSymMatrix fn_hess = 
+	  residual_response.function_hessian_view(resid_ind);
+	fn_hess *= expand_mults[resid_ind];
+	// augment with Hessian entries for the hyper-parameters
+	int mult_ind = resid2mult_indices[resid_ind];
+	for (int i=0; i<num_hyper; ++i) {
+	  if (i == mult_ind) {
+	    Real hess_scale = 0.75*std::pow(multipliers[mult_ind], -2.0);
+	    fn_hess(num_calib_params + i, num_calib_params +i) = 
+	      hess_scale * resids[resid_ind];
+	  }
+	  else 
+	    fn_hess(num_calib_params + i, num_calib_params + i) = 0.0;
+	}
+      }
+    }
+    break;
+  }
+
+  default:
+    // unknown mode
+    Cerr << "\nError: unknown multiplier mode in scale_residuals().\n";
+    abort_handler(-1);
+    break;
+  }
+}
+
+
 /** Determinant of the total covariance used in inference, which has
     blocks mult_i * I * Cov_i. */
 Real ExperimentData::
@@ -1292,11 +1426,11 @@ cov_determinant(const RealVector& multipliers,
   return det;
 }
 
-/** Determinant of the total covariance used in inference, which has
-    blocks mult_i * I * Cov_i. */
+/** Determinant of half the log of total covariance used in inference,
+    which has blocks mult_i * I * Cov_i. */
 Real ExperimentData::
-log_cov_determinant(const RealVector& multipliers, 
-                    unsigned short multiplier_mode) const
+half_log_cov_determinant(const RealVector& multipliers, 
+			 unsigned short multiplier_mode) const
 {
   // initialize with sum of experiment covariance log determinants
   Real log_det = logCovarianceDeterminant; 
@@ -1330,15 +1464,17 @@ log_cov_determinant(const RealVector& multipliers,
 
   } // switch
 
-  return log_det;
+  return log_det / 2.0;
 }
 
 
-/** Compute the gradient of scalar f(m) log(det(mult*Cov)) w.r.t. mults */
+/** Compute the gradient of scalar f(m) 0.5*log(det(mult*Cov))
+    w.r.t. mults.  Since this is the only use case, we include the 0.5
+    factor and perform an update in-place. */
 void ExperimentData::
-log_cov_det_gradient(const RealVector& multipliers, 
-		     unsigned short multiplier_mode, size_t hyper_offset,
-		     RealVector& gradient) const
+half_log_cov_det_gradient(const RealVector& multipliers, 
+			  unsigned short multiplier_mode, size_t hyper_offset,
+			  RealVector& gradient) const
 {
   switch (multiplier_mode) {
 
@@ -1350,7 +1486,8 @@ log_cov_det_gradient(const RealVector& multipliers,
     // This multiplier affects all functions
     assert(multipliers.length() == 1);
     Real total_resid = (Real) num_total_exppoints();
-    gradient[hyper_offset] = total_resid / multipliers[0];   
+    gradient[hyper_offset] += 
+      total_resid / multipliers[0] / 2.0;   
     break;
   }
 
@@ -1358,7 +1495,8 @@ log_cov_det_gradient(const RealVector& multipliers,
     SizetArray resid_per_mult = residuals_per_multiplier(multiplier_mode);
     assert(multipliers.length() == resid_per_mult.size());
     for (size_t i=0; i<multipliers.length(); ++i)
-      gradient[hyper_offset + i] = ((Real) resid_per_mult[i]) / multipliers[i]; 
+      gradient[hyper_offset + i] += 
+	((Real) resid_per_mult[i]) / multipliers[i] / 2.0; 
     break;
   }
  
@@ -1368,9 +1506,9 @@ log_cov_det_gradient(const RealVector& multipliers,
 
 /** Compute the gradient of scalar f(m) log(det(mult*Cov)) w.r.t. mults */
 void ExperimentData::
-log_cov_det_hessian(const RealVector& multipliers, 
-		    unsigned short multiplier_mode, size_t hyper_offset,
-		    RealMatrix& hessian) const 
+half_log_cov_det_hessian(const RealVector& multipliers, 
+			 unsigned short multiplier_mode, size_t hyper_offset,
+			 RealSymMatrix& hessian) const 
 {
   switch (multiplier_mode) {
 
@@ -1382,8 +1520,8 @@ log_cov_det_hessian(const RealVector& multipliers,
     // This multiplier affects all functions
     assert(multipliers.length() == 1);
     Real total_resid = (Real) num_total_exppoints();
-    hessian(hyper_offset, hyper_offset) = 
-      -total_resid / multipliers[0] / multipliers[0] ;   
+    hessian(hyper_offset, hyper_offset) += 
+      -total_resid / multipliers[0] / multipliers[0] / 2.0;   
     break;
   }
 
@@ -1391,8 +1529,8 @@ log_cov_det_hessian(const RealVector& multipliers,
     SizetArray resid_per_mult = residuals_per_multiplier(multiplier_mode);
     assert(multipliers.length() == resid_per_mult.size());
     for (size_t i =0; i<multipliers.length(); ++i)
-      hessian(hyper_offset, hyper_offset) = 
-	-((Real) resid_per_mult[i]) / multipliers[i] / multipliers[i];   
+      hessian(hyper_offset, hyper_offset) += 
+	-((Real) resid_per_mult[i]) / multipliers[i] / multipliers[i] / 2.0;   
     break;
   }
  
@@ -1550,5 +1688,95 @@ void ExperimentData::generate_multipliers(const RealVector& multipliers,
   } // switch
 
 }
+
+
+/// return the index of the multiplier that affects each residual
+void ExperimentData::resid2mult_map(unsigned short multiplier_mode,
+				    IntVector& resid2mult_indices) const
+{
+  // in most cases, we won't call this function for NONE or ONE cases
+  resid2mult_indices.resize(num_total_exppoints());
+  
+  switch (multiplier_mode) {
+    
+  case CALIBRATE_NONE:
+    Cerr << "\nError: cannot generate map for zero multipliers.\n";
+    abort_handler(-1);
+    break;
+
+  case CALIBRATE_ONE:
+    resid2mult_indices = 0;
+    break;
+
+  case CALIBRATE_PER_EXPER: {
+    size_t resid_offset = 0;
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+      size_t fns_this_exp = allExperiments[exp_ind].num_functions();
+      for (size_t fn_ind = 0; fn_ind < fns_this_exp; ++fn_ind)
+        resid2mult_indices[resid_offset++] = exp_ind;
+    }
+    break;
+  }
+
+  case CALIBRATE_PER_RESP: {
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+    size_t resid_offset = 0;
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+      
+      // each response has a different multiplier, but they don't
+      // differ across experiments
+      size_t multiplier_offset = 0;
+      
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind)
+        resid2mult_indices[resid_offset++] = multiplier_offset++;
+
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+        for (size_t i=0; i<field_lens[f_ind]; ++i)
+          resid2mult_indices[resid_offset++] = multiplier_offset;
+        // only increment per-top-level response (each field has different mult)
+        ++multiplier_offset;
+      }
+    }
+    break;
+  }
+
+  case CALIBRATE_BOTH: {
+    size_t num_scalar = simulationSRD.num_scalar_responses();
+    size_t num_fields = simulationSRD.num_field_response_groups();
+    size_t resid_offset = 0, multiplier_offset = 0;
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) {
+    
+      // don't reset the multiplier_offset; each exp, each resp has its own
+
+      // iterate scalar responses, then fields
+      for (size_t s_ind  = 0; s_ind < num_scalar; ++s_ind)
+        resid2mult_indices[resid_offset++] = multiplier_offset++;
+      
+      // each experiment can have different field lengths
+      const IntVector& field_lens = allExperiments[exp_ind].field_lengths();
+      for (size_t f_ind  = 0; f_ind < num_fields; ++f_ind) {
+        for (size_t i=0; i<field_lens[f_ind]; ++i)
+          resid2mult_indices[resid_offset++] = multiplier_offset;
+        // only increment per-top-level response (each field has different mult)
+        ++multiplier_offset;
+      }
+    }	       
+    break;
+  }
+    
+  default:
+    // unknown mode
+    Cerr << "\nError: unknown multiplier mode in generate_multipliers().\n";
+    abort_handler(-1);
+    break;
+      
+  } // switch
+
+}
+
 
 }  // namespace Dakota

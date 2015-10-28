@@ -355,9 +355,6 @@ data_difference_core(const Variables& submodel_vars,
                      Response& recast_response)
 {
   // BMA TODO: encapsulate this in ExperimentData?
-
-  
-
   bool apply_cov = expData.variance_active();
   // can't apply matrix-valued errors due to possibly incomplete
   // dataset when active set vector is in use (missing residuals)
@@ -370,13 +367,9 @@ data_difference_core(const Variables& submodel_vars,
   ShortArray total_asv = 
     expData.determine_active_request(recast_response, interrogate_field_data);
   // form residuals (and gradients/Hessians) from the simulation response
-  // BMA TODO: this will leave gradients and Hessians
-  // w.r.t. hyper-parameters empty or truncated
   expData.form_residuals(submodel_response, total_asv, recast_response);
-  if (apply_cov) {
-    // also scales gradients, Hessians
+  if (apply_cov)
     expData.scale_residuals(recast_response, total_asv);
-  }
 
   // TODO: may need to scale by hyperparameters in Covariance as well
   if (obsErrorMultiplierMode > CALIBRATE_NONE) {  
@@ -394,11 +387,13 @@ data_difference_core(const Variables& submodel_vars,
     hyper_params.sizeUninitialized(numHyperparams);
     copy_data_partial(recast_vars.continuous_variables(), num_calib_params, 
 		      numHyperparams, hyper_params);
-    RealVector residuals = recast_response.function_values_view();
-
-    // BMA TODO: scale gradients, Hessians by mults
-    // Model after the above scale_residuals
-    expData.scale_residuals(hyper_params, obsErrorMultiplierMode, residuals);
+    
+    // Apply hyperparameter multipliers to all fn, grad, Hess,
+    // including derivative contributions from hyperparmeters
+    // BMA TODO: Model after the above scale_residuals, operating block-wise
+    expData.
+      scale_residuals(hyper_params, obsErrorMultiplierMode, num_calib_params,
+		      recast_response);
   }
 }
 

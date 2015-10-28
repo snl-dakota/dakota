@@ -445,7 +445,7 @@ log_likelihood(const RealVector& residuals, const RealVector& all_params)
 
   Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
   Real half_log_det = 
-    expData.log_cov_determinant(hyper_params, obsErrorMultiplierMode) / 2.0;
+    expData.half_log_cov_determinant(hyper_params, obsErrorMultiplierMode);
 
   // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
   Real misfit = residuals.dot( residuals ) / 2.0;
@@ -618,37 +618,36 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 
 
 /** Response mapping callback used within RecastModel for MAP
-    pre-solve. The passed residual_resp has been differenced,
-    interpolated, and covariance-scaled */
+    pre-solve. Computes 
+
+      -log(post) = -log(like) - log(prior); where
+      -log(like) = 1/2*Nr*log(2*pi) + 1/2*log(det(Cov)) + 1/2*r'(Cov^{-1})*r
+                 = 1/2*Nr*log(2*pi) + 1/2*log(det(Cov)) + misfit
+
+    (misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r) The passed
+    residual_resp has been differenced, interpolated, and
+    covariance-scaled */
 void NonDBayesCalibration::
 neg_log_post_resp_mapping(const Variables& residual_vars,
                           const Variables& nlpost_vars,
                           const Response& residual_resp,
                           Response& nlpost_resp)
 {
-  if (nonDBayesInstance->obsErrorMultiplierMode > 0) {
-    // the hyper-parameters are now included in
-    // residual_vars/nlpost_vars, but we need to take derivatives
-    // w.r.t. them to enable this
-
-    // BMA TODO: update to include all likelihood terms (derivatives
-    // w.r.t. hyperparams will be a problem due to det(Cov))
-
-    // For now, MAP is self-consistent (doesn't call likelihood)
-
-    Cerr << "Error: observation error calibration unsupported in MAP pre-solve."
-         << std::endl;
-    abort_handler(-1);
-  }
-
   const RealVector& c_vars = nlpost_vars.continuous_variables();
   short nlpost_req = nlpost_resp.active_set_request_vector()[0];
   bool output_flag = (nonDBayesInstance->outputLevel >= DEBUG_OUTPUT);
+  // if needed, extract the trailing hyper-parameters
+  RealVector hyper_params;
+  if (nonDBayesInstance->numHyperparams > 0)
+    hyper_params = 
+      RealVector(Teuchos::View, 
+		 c_vars.values() + nonDBayesInstance->numContinuousVars, 
+		 nonDBayesInstance->numHyperparams);
+
   if (nlpost_req & 1) {
-    // misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r
     const RealVector& residuals = residual_resp.function_values();
-    Real misfit = residuals.dot( residuals ) / 2.0;
-    Real nlp = misfit - nonDBayesInstance->log_prior_density(c_vars);
+    Real nlp = -nonDBayesInstance->log_likelihood(residuals, c_vars) - 
+      nonDBayesInstance->log_prior_density(c_vars);
     nlpost_resp.function_value(nlp, 0);
     if (output_flag)
       Cout << "MAP pre-solve: negative log posterior = " << nlp << std::endl;
@@ -657,8 +656,14 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
   if (nlpost_req & 2) {
     // avoid copy by updating gradient vector in place
     RealVector log_grad = nlpost_resp.function_gradient_view(0);
+    // Gradient contribution from misfit
     nonDBayesInstance->
       expData.build_gradient_of_sum_square_residuals(residual_resp, log_grad);
+    // Add the contribution from 1/2*log(det(Cov))
+    nonDBayesInstance->expData.half_log_cov_det_gradient
+      (hyper_params, nonDBayesInstance->obsErrorMultiplierMode, 
+       nonDBayesInstance->numContinuousVars, log_grad);
+    // Add the contribution from -log(prior)
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior gradient:\n";
@@ -669,8 +674,14 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
   if (nlpost_req & 4) {
     // avoid copy by updating Hessian matrix in place
     RealSymMatrix log_hess = nlpost_resp.function_hessian_view(0);
+    // Hessian contribution from misfit
     nonDBayesInstance->
       expData.build_hessian_of_sum_square_residuals(residual_resp, log_hess);
+    // Add the contribution from 1/2*log(det(Cov))
+    nonDBayesInstance->expData.half_log_cov_det_hessian
+      (hyper_params, nonDBayesInstance->obsErrorMultiplierMode, 
+       nonDBayesInstance->numContinuousVars, log_hess);
+    // Add the contribution from -log(prior)
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
     if (output_flag) {
       Cout << "MAP pre-solve: negative log posterior Hessian:\n";

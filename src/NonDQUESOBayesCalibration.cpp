@@ -1471,7 +1471,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   RealVector hyper_params(numHyperparams);
   copy_gsl_partial(qv, numContinuousVars, hyper_params);
   Real half_log_det = 
-    expData.log_cov_determinant(hyper_params, obsErrorMultiplierMode) / 2.0;
+    expData.half_log_cov_determinant(hyper_params, obsErrorMultiplierMode);
   // misfit = -log(L) - 1/2*Nr*log(2*pi) - 1/2*log(det(Cov))
   Real misfit = (log_prior - log_post) - half_nr_log2pi - half_log_det;
 

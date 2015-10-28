@@ -52,6 +52,11 @@ enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
   */
   /// RealVectorArray interpolatedResults; 
   
+/// Element-wise scale of v by mults
+void scale(const RealVector& mults, RealVector& v);
+/// Scale each row of A by the mults 
+void scale_rows(const RealVector& mults, RealMatrix& A);
+
 
 /** The ExperimentData class is used to read and populate data 
     (currently from user-specified files and/or the input spec)
@@ -280,6 +285,14 @@ public:
 		       unsigned short multiplier_mode,
 		       RealVector& residuals) const;
 
+  /// in-place scale the residual response (functions, gradients,
+  /// Hessians) by sqrt(multipliers), according to blocks indicated by
+  /// multiplier mode
+  void scale_residuals(const RealVector& multipliers, 
+		       unsigned short multiplier_mode, size_t num_calib_params,
+		       Response& residual_response) const;
+
+
   /// returns the determinant of (covariance block-scaled by the
   /// passed multipliers)
   Real cov_determinant(const RealVector& multipliers, 
@@ -287,22 +300,24 @@ public:
 
   /// returns the log of the determinant of (covariance block-scaled
   /// by the passed multipliers)
-  Real log_cov_determinant(const RealVector& multipliers, 
-                           unsigned short multiplier_mode) const;
+  Real half_log_cov_determinant(const RealVector& multipliers, 
+				unsigned short multiplier_mode) const;
   
   /// populated the passed gradient with derivatives w.r.t. the
   /// hyper-parameter multipliers, starting at hyper_offset (must be
   /// sized)
-  void log_cov_det_gradient(const RealVector& multipliers, 
-			    unsigned short multiplier_mode, size_t hyper_offset,
-			    RealVector& gradient) const;
+  void half_log_cov_det_gradient(const RealVector& multipliers, 
+				 unsigned short multiplier_mode,
+				 size_t hyper_offset,
+				 RealVector& gradient) const;
 
   /// populated the passed Hessian with derivatives w.r.t. the
   /// hyper-parameter multipliers, starting at hyper_offset (must be
   /// sized)
-  void log_cov_det_hessian(const RealVector& multipliers, 
-			   unsigned short multiplier_mode, size_t hyper_offset,
-			   RealMatrix& hessian) const;
+  void half_log_cov_det_hessian(const RealVector& multipliers, 
+				unsigned short multiplier_mode, 
+				size_t hyper_offset,
+				RealSymMatrix& hessian) const;
 
   /// count the number of residuals influenced by each multiplier
   SizetArray residuals_per_multiplier(unsigned short multiplier_mode) const;
@@ -315,6 +330,8 @@ public:
                             unsigned short multiplier_mode,
                             RealVector& expanded_multipliers) const;
 
+  void resid2mult_map(unsigned short multiplier_mode,
+		      IntVector& resid2mult_indices) const;
 
 private:
 
