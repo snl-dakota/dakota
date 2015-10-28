@@ -10951,14 +10951,14 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_steel_column_mf.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 36 total (25 new, 11 duplicate)
- nln_ineq_con_1: 36 val (25 n, 11 d), 33 grad (25 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 870 total (834 new, 36 duplicate)
-  response_fn_1: 870 val (834 n, 36 d), 540 grad (504 n, 36 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 36 total (25 new, 11 duplicate)
- nln_ineq_con_1: 36 val (25 n, 11 d), 33 grad (25 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 870 total (834 new, 36 duplicate)
-  response_fn_1: 870 val (834 n, 36 d), 540 grad (504 n, 36 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 36 total (24 new, 12 duplicate)
+ nln_ineq_con_1: 36 val (24 n, 12 d), 33 grad (24 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 870 total (828 new, 42 duplicate)
+  response_fn_1: 870 val (828 n, 42 d), 540 grad (498 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 36 total (24 new, 12 duplicate)
+ nln_ineq_con_1: 36 val (24 n, 12 d), 33 grad (24 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 870 total (828 new, 42 duplicate)
+  response_fn_1: 870 val (828 n, 42 d), 540 grad (498 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -10969,32 +10969,32 @@ Test Number 0 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 37 total (27 new, 10 duplicate)
- nln_ineq_con_1: 37 val (27 n, 10 d), 34 grad (27 n, 7 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 877 total (848 new, 29 duplicate)
-  response_fn_1: 877 val (848 n, 29 d), 547 grad (518 n, 29 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 37 total (27 new, 10 duplicate)
- nln_ineq_con_1: 37 val (27 n, 10 d), 34 grad (27 n, 7 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 877 total (848 new, 29 duplicate)
-  response_fn_1: 877 val (848 n, 29 d), 547 grad (518 n, 29 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (27 new, 11 duplicate)
+ nln_ineq_con_1: 38 val (27 n, 11 d), 35 grad (27 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 884 total (849 new, 35 duplicate)
+  response_fn_1: 884 val (849 n, 35 d), 554 grad (519 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (27 new, 11 duplicate)
+ nln_ineq_con_1: 38 val (27 n, 11 d), 35 grad (27 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 884 total (849 new, 35 duplicate)
+  response_fn_1: 884 val (849 n, 35 d), 554 grad (519 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
-                      1.7500008319e+01 d
+                      1.7500009697e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -3.2565928168e+00
+                     -3.2565934347e+00
 <<<<< Best constraint values   =
-                      4.0000016639e+03
+                      4.0000019394e+03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 40 total (28 new, 12 duplicate)
- nln_ineq_con_1: 40 val (28 n, 12 d), 37 grad (28 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1432 total (1390 new, 42 duplicate)
-  response_fn_1: 1432 val (1390 n, 42 d), 835 grad (793 n, 42 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 40 total (28 new, 12 duplicate)
- nln_ineq_con_1: 40 val (28 n, 12 d), 37 grad (28 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1432 total (1390 new, 42 duplicate)
-  response_fn_1: 1432 val (1390 n, 42 d), 835 grad (793 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 41 total (29 new, 12 duplicate)
+ nln_ineq_con_1: 41 val (29 n, 12 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1439 total (1397 new, 42 duplicate)
+  response_fn_1: 1439 val (1397 n, 42 d), 842 grad (800 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 41 total (29 new, 12 duplicate)
+ nln_ineq_con_1: 41 val (29 n, 12 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1439 total (1397 new, 42 duplicate)
+  response_fn_1: 1439 val (1397 n, 42 d), 842 grad (800 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -11015,12 +11015,12 @@ Test Number 3 succeeded
   response_fn_1: 1460 val (1425 n, 35 d), 863 grad (828 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
-                      1.7499913662e+01 d
+                      1.7500011243e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -3.2361214439e+00
+                     -3.2361650479e+00
 <<<<< Best constraint values   =
-                      3.9999827323e+03
+                      4.0000022486e+03
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_steel_column_trsb.in
 Test Number 0 succeeded
@@ -20698,22 +20698,22 @@ Test Number 0 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 44 total (33 new, 11 duplicate)
- nln_ineq_con_1: 44 val (33 n, 11 d), 41 grad (33 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1460 total (1425 new, 35 duplicate)
-  response_fn_1: 1460 val (1425 n, 35 d), 863 grad (828 n, 35 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 44 total (33 new, 11 duplicate)
- nln_ineq_con_1: 44 val (33 n, 11 d), 41 grad (33 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1460 total (1425 new, 35 duplicate)
-  response_fn_1: 1460 val (1425 n, 35 d), 863 grad (828 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 43 total (32 new, 11 duplicate)
+ nln_ineq_con_1: 43 val (32 n, 11 d), 40 grad (32 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1453 total (1418 new, 35 duplicate)
+  response_fn_1: 1453 val (1418 n, 35 d), 856 grad (821 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 43 total (32 new, 11 duplicate)
+ nln_ineq_con_1: 43 val (32 n, 11 d), 40 grad (32 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1453 total (1418 new, 35 duplicate)
+  response_fn_1: 1453 val (1418 n, 35 d), 856 grad (821 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
-                      1.7499886693e+01 d
+                      1.7499982584e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -3.2361849980e+00
+                     -3.2362278465e+00
 <<<<< Best constraint values   =
-                      3.9999773386e+03
+                      3.9999965169e+03
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_steel_column_trsb.in
 Test Number 0 succeeded

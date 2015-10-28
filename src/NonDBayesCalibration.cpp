@@ -593,11 +593,14 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
   Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1., covariance,
 			       prior_chol_fact, covariance);
 
-  if (output_lev >= NORMAL_OUTPUT) {
+  if (output_lev > NORMAL_OUTPUT) {
     Cout << "Hessian of negative log-likelihood (from misfit):\n";
     write_data(Cout, hessian, true, true, true);
     //Cout << "2x2 determinant = " << hessian(0,0) * hessian(1,1) -
     //  hessian(0,1) * hessian(1,0) << '\n';
+
+    //Cout << "Cholesky factor of prior covariance:\n";
+    //write_data(Cout, prior_chol_fact, true, true, true);
 
     Cout << "Prior-preconditioned misfit Hessian:\n";
     write_data(Cout, LT_H_L, true, true, true);
@@ -606,7 +609,8 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
     if (num_neglect)
       Cout << "Hessian decomposition neglects " << num_neglect
            << " eigenvalues based on " << eigenval_tol << " tolerance.\n";
-
+  }
+  if (output_lev >= NORMAL_OUTPUT) {
     Cout << "Positive definite covariance from inverse of Hessian:\n";
     write_data(Cout, covariance, true, true, true);
     //Cout << "2x2 determinant = " << covariance(0,0) * covariance(1,1) -
