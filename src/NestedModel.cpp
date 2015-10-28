@@ -3125,10 +3125,4 @@ string_variable_mapping(const String& s_var, size_t mapped_index,
 }
 
 
-void NestedModel::eval_tag_prefix(const String& eval_id_str)
-{
-  evalTagPrefix = eval_id_str;
-}
-
-
 } // namespace Dakota

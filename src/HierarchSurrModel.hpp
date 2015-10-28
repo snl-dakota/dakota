@@ -140,9 +140,6 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
-  /// set the hierarchical eval ID tag prefix
-  void eval_tag_prefix(const String& eval_id_str);
-
 private:
 
   //
@@ -178,9 +175,6 @@ private:
   /// the reference high fidelity response computed in build_approximation()
   /// and used for calculating corrections.
   Response highFidRefResponse;
-
-  /// cached evalTag Prefix from parents to use at compute_response time
-  String evalTagPrefix;
 };
 
 

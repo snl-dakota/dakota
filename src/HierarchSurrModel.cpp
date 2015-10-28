@@ -1084,9 +1084,4 @@ void HierarchSurrModel::update_model(Model& model)
 }
 
 
-void HierarchSurrModel::eval_tag_prefix(const String& eval_id_str)
-{
-  evalTagPrefix = eval_id_str;
-}
-
 } // namespace Dakota

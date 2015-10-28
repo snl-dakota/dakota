@@ -240,9 +240,6 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
-  /// set the hierarchical eval ID tag prefix
-  void eval_tag_prefix(const String& eval_id_str);
-
   //
   //- Heading: Data members
   //
@@ -336,9 +333,6 @@ private:
   /// to generate the necessary data for building global approximations
   /// (optional for global since restart data may also be used)
   Iterator daceIterator;
-
-  /// cached evalTag Prefix from parents to use at compute_response time
-  String evalTagPrefix;
 };
 
 

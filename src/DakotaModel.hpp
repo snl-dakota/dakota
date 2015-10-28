@@ -1188,6 +1188,9 @@ protected:
   /// modified by Recasting
   ScalingOptions scalingOpts;
 
+  /// cached evalTag Prefix from parents to use at compute_response time
+  String evalTagPrefix;
+
 private:
  
   //

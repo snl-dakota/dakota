@@ -204,6 +204,9 @@ public:
 		       const ProgramOptions& prog_opts,
 		       bool force_cout_redirect, bool force_rst_redirect);
 
+  /// return the full output tag
+  String build_output_tag() const;
+  
   /// (Potentially) remove an output context and rebind streams
   void pop_output_tag();
 

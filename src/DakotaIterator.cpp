@@ -1099,7 +1099,13 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
       // don't need to invoke derived_init_communicators() since each unique
       // init only needs to be recursed once (see also Model::init_comms)
     }
-  }
+
+    // After partitioning is complete, output tags for concurrent
+    // iterators are established.  Initialize the eval id prefix for
+    // this Iterator and its underlying Model.  This may get appended
+    // to by any runtime updates as eval ids change.
+    eval_tag_prefix(parallelLib.output_manager().build_output_tag());
+ }
 }
 
 

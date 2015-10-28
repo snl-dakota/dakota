@@ -145,7 +145,7 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
 {
   fileTags.push_back(iterator_tag); 
 
-  String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
+  String file_tag = build_output_tag();
   
   if (outputLevel >= DEBUG_OUTPUT)
     std::cout << "\nDEBUG: Rank " << worldRank 
@@ -186,6 +186,10 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
 }
 
 
+String OutputManager::build_output_tag() const
+{  return std::accumulate(fileTags.begin(), fileTags.end(), String());  }
+
+
 /** For now this assumes the tag is .<int> */
 void OutputManager::pop_output_tag()
 {
@@ -198,7 +202,7 @@ void OutputManager::pop_output_tag()
   fileTags.pop_back();
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
+    String file_tag = build_output_tag();
     std::cout << "\nDEBUG: Rank " << worldRank << " popping output tag; new tag '"
 	      << file_tag << "'" << std::endl;
   }
@@ -293,7 +297,7 @@ create_tabular_datastream(const Variables& vars, const Response& response)
   // tabular data file set up
   // prevent multiple opens of tabular_data_file
   if (!tabularDataFStream.is_open()) {
-    String file_tag = std::accumulate(fileTags.begin(), fileTags.end(), String());
+    String file_tag = build_output_tag();
     TabularIO::open_file(tabularDataFStream, tabularDataFile + file_tag, 
 			 "DakotaGraphics");
   }

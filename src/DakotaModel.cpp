@@ -3987,8 +3987,14 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 /// implement this function to pass along to their sub Models/Interfaces
 void Model::eval_tag_prefix(const String& eval_id_str)
 {
-  if (modelRep)
+  if (modelRep) {
+    // update the base class cached value
+    modelRep->evalTagPrefix = eval_id_str;
+    // then derived classes may further forward this ID
     modelRep->eval_tag_prefix(eval_id_str);
+  }
+  else
+    evalTagPrefix = eval_id_str;  // default is to set at base only
   // Models are not required to forward this as they may not have an Interface
   // else { // letter lacking redefinition of virtual fn.
   //   Cerr << "Error: Letter lacking redefinition of virtual eval_tag_prefix()"

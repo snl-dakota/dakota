@@ -2113,9 +2113,4 @@ void DataFitSurrModel::update_from_actual_model()
 }
 
 
-void DataFitSurrModel::eval_tag_prefix(const String& eval_id_str)
-{
-  evalTagPrefix = eval_id_str;
-}
-
 } // namespace Dakota
