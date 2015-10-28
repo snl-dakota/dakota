@@ -130,7 +130,7 @@ variables,
 #	  lower_bounds   -10.0  -10.0 -10.0	#s14,#s15,#s16,#s17,#s21
 #	  lower_bounds   -10.0  -10.0 -10.0	#s22,#s23,#s24,#s25
 #	  lower_bounds   -10.0  -10.0 -10.0 	#s26,#s27,#s28,#s29
-#         lower_bounds     0.0    0.0   0.0	#s4,#s5,#s12#,s13,#s18,#s19
+#         lower_bounds     0.0    0.0   0.0	#s4,#s5,#s12,#s13,#s18,#s19
 #         lower_bounds     0.0    0.0   0.0	#s30,#s31,#s32,#s33,#s34
 #         lower_bounds    -2.0   -2.0  -2.0	#s20
 	  descriptors      'x1'  'x2'  'x3'
