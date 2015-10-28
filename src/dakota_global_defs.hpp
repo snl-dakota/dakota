@@ -120,6 +120,11 @@ enum { TABULAR_NONE = 0, TABULAR_HEADER = 1,
 /// options for results file format
 enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
 
+/// define special values for surrogateExportFormats
+enum { NO_MODEL_FORMAT=0, TEXT_ARCHIVE=1, BINARY_ARCHIVE=2, ALGEBRAIC_FILE=4,
+       ALGEBRAIC_CONSOLE=8 };
+
+
 #ifdef DAKOTA_MODELCENTER
 extern int mc_ptr_int;
 extern int dc_ptr_int;

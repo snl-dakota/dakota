@@ -68,10 +68,11 @@ public:
   /// builds the approximation from scratch
   virtual void build();
   /// exports the approximation
-  virtual void export_model(const String& fn_label);
+  //virtual void export_model(const String& fn_label);
   /// exports the approximation
-  virtual void export_model(const String& fn_label, const String& export_prefix, 
-                            const unsigned short export_format);
+  virtual void export_model(const String& fn_label, 
+      const String& export_prefix = "", 
+      const unsigned short export_format = NO_MODEL_FORMAT );
   /// rebuilds the approximation incrementally
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data

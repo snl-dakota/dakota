@@ -489,7 +489,7 @@ void SurfpackApproximation::build()
   }*/
 }
 
-
+/*
 void SurfpackApproximation::export_model(const String& fn_label)
 {
   String without_extension = sharedDataRep->modelExportPrefix + "." + fn_label;
@@ -526,16 +526,24 @@ void SurfpackApproximation::export_model(const String& fn_label)
     Cout << "\nModel for response " << fn_label << ":\n";
     Cout << model->asString();
   }    
-}
+}*/
 
 void SurfpackApproximation::export_model(const String& fn_label,
  					 const String& export_prefix, 
                                          const unsigned short export_format)
 {
-  String without_extension = export_prefix + "." + fn_label;
-  unsigned short formats = export_format; 
+   
+  String without_extension;
+  unsigned short formats;
+  if(export_format) {
+    without_extension = export_prefix + "." + fn_label;
+    formats = export_format;
+  } else {
+    without_extension = sharedDataRep->modelExportPrefix + "." + fn_label;
+    formats = sharedDataRep->modelExportFormat;
+  }
+  //unsigned short formats = export_format; 
   const bool &can_save = SurfpackInterface::HasFeature("model_save");
-  Cout << " formats " << formats ;
   // Saving to text archive
   if(formats & TEXT_ARCHIVE) {
     if(can_save) {

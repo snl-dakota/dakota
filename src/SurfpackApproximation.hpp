@@ -73,10 +73,10 @@ protected:
   void build();
 
   /// export the Surpack model to disk or console
-  void export_model(const String& fn_label);
+  //void export_model(const String& fn_label);
   /// export the Surpack model to disk or console
-  void export_model(const String& fn_label, const String& export_prefix, 
-                    const unsigned short export_format);
+  void export_model(const String& fn_label, const String& export_prefix = "", 
+                    const unsigned short export_format = NO_MODEL_FORMAT);
 
   // return #coefficients
   //RealVector approximation_coefficients(bool normalized) const;
