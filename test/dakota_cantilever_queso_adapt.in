@@ -1,4 +1,6 @@
-# DAKOTA Input File: dakota_uq_cantilever.in
+#@ *: DakotaConfig=HAVE_QUESO
+#@ p*: MPIProcs=1
+# DAKOTA Input File: dakota_cantilever_queso_adapt.in
 # Reliability analysis using the cantilever test function.
 
 environment
