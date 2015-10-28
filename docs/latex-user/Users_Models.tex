@@ -165,8 +165,6 @@ a prediction is desired.~\cite{Nea04}
 
 \textbf{Piecewise Decomposition Option for Global Surrogates}: Typically, the previous regression techniques use all available sample points to approximate the underlying function anywhere in the domain. An alternative option is to use piecewise decomposition to locally approximate the function at some point using a few sample points from its neighborhood. This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. It requires a decomposition cell type (currently set to be Voronoi cells), an optional number of support layers of neighbors, and optional discontinuity detection parameters (jump/gradient).   
 
-%VPS models provide a natural approach to decompose a high-dimensional domain using the implicit Voronoi tessellation around the known function evaluations as seeds. This decomposition enables low-order piecewise Least Squares polynomial approximation of the underlying function in each Voronoi cell, independently, using the function values at the seed and its neighbors. 
-
 %\textbf{Orthogonal Polynomials}: This technique involves the use of
 %multivariate orthogonal polynomials as a global basis for surrogate
 %modeling.  These multivariate polynomials are constructed as a product
@@ -523,7 +521,7 @@ parameter space, unless it is known a priori that the true data trends
 are close to linear, quadratic, or cubic. See~\cite{Mye95} for more
 information on polynomial models.
 
-This surrogate model is supoorted by the piecewise domain decomposition option, explained in~\ref{models:surf:piecewise_decomp}.
+This surrogate model supports the domain decomposition option, further explained in~\ref{models:surf:piecewise_decomp}.
 
 \subsubsection{Kriging/Gaussian-Process Spatial Interpolation Models}
 \label{models:surf:kriging}
@@ -758,7 +756,7 @@ models are as follows:
       correlation matrix.
 \end{itemize}
 
-This surrogate model is supoorted by the piecewise domain decomposition option, explained in~\ref{models:surf:piecewise_decomp}.
+This surrogate model supports the domain decomposition option, further explained in~\ref{models:surf:piecewise_decomp}.
 
 \subsubsection{Artificial Neural Network (ANN) Models}\label{models:surf:ann}
 
@@ -851,7 +849,7 @@ function or splines are used.
 Our implementation uses a Gaussian radial basis function. 
 The weights are determined via a linear least squares solution approach.
 See~\cite{Orr96} for more details.
-This surrogate model is supoorted by the piecewise domain decomposition option, explained in~\ref{models:surf:piecewise_decomp}.
+This surrogate model supports the domain decomposition option, further explained in~\ref{models:surf:piecewise_decomp}.
 
 \subsubsection{Moving Least Squares}\label{models:surf:mls}
 
@@ -880,9 +878,9 @@ a constrained region over a few points.  It does not appear to be working
 as well globally, at least at this point in time.
 
 \subsubsection{Piecewise Decomposition Option for Global Surrogate Models}\label{models:surf:piecewise_decomp}
-Regression techniques typically use all available sample points to approximate the underlying function anywhere in the domain. An alternative option is to use piecewise dcomposition to locally approximate the function at some point using a few sample points from its neighborhood. This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. The surrogate construction uses all available data, including derivatives, not only function evaluations. The use should list the keyword \texttt{use\_derivatives} to indicate the availability of derivative information for the surrogate to use. If listed, the user can replace the default response parameters \texttt{no\_gradients} and \texttt{no\_hessians} with other response options, e.g., \texttt{numerical\_gradients} or \texttt{analytic\_hessians}. More details on using gradients and Hessians, if available, can be found in chapter~\ref{responses}. 
+Regression techniques typically use all available sample points to approximate the underlying function anywhere in the domain. An alternative option is to use piecewise dcomposition to locally approximate the function at some point using a few sample points from its neighborhood. This option currently supports Polynomial Regression, Gaussian Process (GP) Interpolation, and Radial Basis Functions (RBF) Regression. This option requires a decomposition cell type. A valid cell type is one where any point in the domain is assigned to some cell(s), and each cell identifies its neighbor cells. Currently, only Voronoi cells are supported. Each cell constructs its own piece of the global surrogate, using the function information at its seed and a few layers of its neighbors, parametrized by \texttt{support\_layers}. It also supports an optional discontinuity detection capability \texttt{discontinuity\_detection}, specified by either a jump threshold value \texttt{jump\_threshold} or a gradient threshold one \texttt{gradient\_threshold}. 
 
-This option requires a decomposition cell type. A valid cell type is one where any point in the domain is assigned to some cell(s), and each cell identifies its neighbor cells. Currently, only Voronoi cells are supported. Each cell constructs its own piece of the global surrogate, using the function information at its seed and a few layers of its neighbors, parametrized by \texttt{support\_layers}. It also supports an optional discontinuity detection capability \texttt{discontinuity\_detection}, specified by either a jump threshold value \texttt{jump\_threshold} or a gradient threshold one \texttt{gradient\_threshold}. 
+The surrogate construction uses all available data, including derivatives, not only function evaluations. The user should list the keyword \texttt{use\_derivatives} to indicate the availability of derivative information for the surrogate to use. If listed, the user can replace the default response parameters \texttt{no\_gradients} and \texttt{no\_hessians} with other response options, e.g., \texttt{numerical\_gradients} or \texttt{analytic\_hessians}. More details on using gradients and Hessians, if available, can be found in chapter~\ref{responses}. 
 
 The features of the current (Voronoi) piecewise decomposition choice are further explained below: 
 
@@ -891,9 +889,7 @@ The features of the current (Voronoi) piecewise decomposition choice are further
 	\item The one-to-one mapping between the number of function evaluations and the number of Voronoi cells, regardless of the number of dimensions, eliminates the curse of dimensionality associated with standard domain decompositions. This Voronoi decomposition enables low-order piecewise polynomial approximation of the underlying function (and the associated error estimate) in the neighborhood of each function evaluation, independently. Moreover, the tessellation is naturally updated with the addition of new function evaluations.  
 \end{itemize}
 
-Extending the piecewise decomposition option to other global surrogate models is still under development. 
-
-%where $\mathbf{y}(\mathbf{x}) = \{y_m(\mathbf{x})\} = \prod_{k=1}^{d} x_{k}^{t_{m,k}}$ is the vector of monomial terms in $f({\bf x})$. Apparently, solving for $\mathbf{c}$ implies finding a matrix inverse, and depends on the number of neighbors involved in the surrogate construction, in each Voronoi cell. Therefore, we start with a slightly large number of neighbors; say twice the number of unknowns ($p+1$) and use numerical methods to solve for $\mathbf{c}$, e.g., Cholesky decomposition. When applicable, Cholesky decomposition is roughly twice as efficient as the LU decomposition. In the few cases when Cholesky decomposition failed to converge to a unique solution, the generalized minimal residual method (GMRES), an iterative method that approximates the solution by the vector in a Krylov subspace with minimal residual, is used. This dual approach of using Cholesky-GMRES with the number of neighbors set to twice the number of unknowns for each Voronoi cell has been found stable, even for high-dimensional problems.
+Extending the piecewise decomposition option to other global surrogate models is under development. 
 
 \subsubsection{Surrogate Diagnostic Metrics}\label{models:surf:diagnostics}
 

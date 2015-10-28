@@ -1842,9 +1842,9 @@ After the spheres are constructed, we construct a surrogate model and sample the
 \texttt{pof\_darts} handles multiple response functions and allows each to have multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will insert a number of spheres specified by the user-input parameter "samples". However, estimating the probability of failure for each failure threshold would utilize the total number of disks sampled for all failure thresholds. For each failure threshold, the sphere radii changes to generate the right spatial decomposition.
 
 The POF-Darts method is specified by the method keyword 
-\texttt{pof\_darts}. The sample budget is specified by \texttt{samples}.
-The user can either use a local or global approach to estimate the Lipschitz constant per sphere. 
-The local approach is specified with \texttt{lipschitz local} and the global approach with \texttt{lipschitz global}. 
+\texttt{pof\_darts}. The sample budget is specified by \texttt{samples}. The method can generally use a local or global approach to estimate the Lipschitz constant per sphere (\texttt{lipschitz local} or \texttt{lipschitz global}). However, only the local approach is currently supported and is the default if not specified by the user.
+
+%The user can either use a local or global approach to estimate the Lipschitz constant per sphere. The local approach is specified with \texttt{lipschitz local} and the global approach with \texttt{lipschitz global}. 
 
 The surrogate model used by the \texttt{pof\_darts} method for extensive sampling is typically a global surrogate that uses all available sample points to approximate the surrogate anywhere, or optionally a piecewise-decomposed one that uses small sample sets to build local patches of the global surrogate. The piecewise decomposition option is a new capability added to Dakota to help construct high-dimensional surrogates with cheap polynomial evaluations, using known function evaluations as well as gradient and Hessian information, if available. The piecewise decomposition option currently supports polynomial, Gaussian Process (GP), and Radial Basis Functions (RBF) surroagte models. It requires a \texttt{cell\_type}, set by default to Voronoi cells, an optional number of \texttt{support\_layers}, and an optional \texttt{discontinuity\_detection} parameter; see~\ref{models:surf:piecewise_decomp} for more details.
 
