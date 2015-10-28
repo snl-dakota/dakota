@@ -287,16 +287,6 @@ void Approximation::build()
   }
 }
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
-/*void Approximation::export_model(const String& fn_label
-    ) 
-{
-  if (approxRep)
-    approxRep->export_model(fn_label);
-  // if no export_model, return without doing anything
-}*/
 
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
@@ -309,6 +299,7 @@ void Approximation::export_model(const String& fn_label,
     approxRep->export_model(fn_label, export_prefix, export_format);
   // if no export_model, return without doing anything
 }
+
 
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly

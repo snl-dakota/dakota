@@ -489,50 +489,11 @@ void SurfpackApproximation::build()
   }*/
 }
 
-/*
-void SurfpackApproximation::export_model(const String& fn_label)
-{
-  String without_extension = sharedDataRep->modelExportPrefix + "." + fn_label;
-  const unsigned short &formats = sharedDataRep->modelExportFormat;
-  const bool &can_save = SurfpackInterface::HasFeature("model_save");
-  // Saving to text archive
-  if(formats & TEXT_ARCHIVE) {
-    if(can_save) {
-      String filename = without_extension + ".sps";
-      SurfpackInterface::Save(model,filename);
-    } else
-        Cerr << "\nRequested surrogate export to text archive failed: "
-		<< "Surfpack lacks support for model saving.\n";
-  }
-  // Saving to binary archive
-  if(formats & BINARY_ARCHIVE) {
-    if(can_save) {
-      String filename = without_extension + ".bsps";
-      SurfpackInterface::Save(model,filename);
-    } else
-        Cerr << "\nRequested surrogate export to binary archive failed: "
-	        << "Surfpack lacks support for model saving.\n";
-  }
-  // Saving to algebraic file
-  if(formats & ALGEBRAIC_FILE) {
-    String filename = without_extension + ".alg";
-    std::ofstream af(filename.c_str(),std::ofstream::out);
-    af << "Model for response " << fn_label << ":\n" << model->asString();
-    af.close();
-    Cout << "Model saved in algebraic format to file '" << filename << "'.\n";
-  }
-  // Writing in algebraic format to screen
-  if(formats & ALGEBRAIC_CONSOLE) {
-    Cout << "\nModel for response " << fn_label << ":\n";
-    Cout << model->asString();
-  }    
-}*/
 
 void SurfpackApproximation::export_model(const String& fn_label,
  					 const String& export_prefix, 
                                          const unsigned short export_format)
 {
-   
   String without_extension;
   unsigned short formats;
   if(export_format) {

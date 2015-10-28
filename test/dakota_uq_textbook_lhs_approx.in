@@ -19,6 +19,8 @@ model,
 	  polynomial quadratic		#s0
 # 	  neural_network		#s1
 #	  gaussian_process surfpack	#s2,#s4,#s5,#s6,#s7
+#           export_model                #s2
+#           filename_prefix = 'exported_GP'  formats = algebraic_file binary_archive #s2
 #	  mars				#s3
 
 # Test 2 with a samples file, free-form or annotated
