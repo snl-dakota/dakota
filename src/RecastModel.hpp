@@ -31,8 +31,12 @@ namespace Dakota {
     the subModel input/output into new problem forms.  This is
     currently used to recast SBO approximate subproblems, but can be
     used for multiobjective, input/output scaling, and other problem
-    modifications in the future. */
+    modifications in the future. 
 
+    For now, making the assumption that variables mappings are ordered
+    by submodel active continous, discrete int, discrete string,
+    discrete real variables, even though all current use cases are
+    continuous only */
 class RecastModel: public Model
 {
 public:
@@ -320,7 +324,7 @@ private:
   /// For each subModel variable, identifies the indices of the recast
   /// variables used to define it (maps RecastModel variables to
   /// subModel variables; data is packed with only the variable indices
-  /// employed rather than a sparsely filled N_sm x N_r matrix)
+  /// employed rather than a sparsely filled N_sm x N_r matrix).
   Sizet2DArray varsMapIndices;
   /// boolean set to true if the variables mapping involves a nonlinear
   /// transformation.  Used in transform_set() to manage the requirement for

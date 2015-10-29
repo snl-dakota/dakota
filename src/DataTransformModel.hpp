@@ -83,7 +83,8 @@ protected:
   // ---
 
   /// map the inbound expanded variables to the sub-model, discarding
-  /// hyperparams
+  /// hyperparams (assumes hyper-parameters are at end of active
+  /// continuous variables)
   static void vars_mapping(const Variables& recast_vars, 
 			   Variables& submodel_vars);
 

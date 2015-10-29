@@ -28,12 +28,12 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
 //   response mapping suffice Need test with data and constraints
 // * To be general, Variables map should be all active, not just continuous 
 //   aleatory....
-
-// Don't want to output message during recast retrieve... (or do we?)
-
+//  * Don't want to output message during recast retrieve... (or do we?)
 
 /** This constructor computes various indices and mappings, then
-    updates the properties of the RecastModel */
+    updates the properties of the RecastModel.  Hyper-parameters are
+    assumed to trail the active continuous variables when presented to
+    this RecastModel */
 DataTransformModel::
 DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
                    size_t num_hyper, unsigned short mult_mode, 
@@ -64,6 +64,10 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // BMA TODO: what variables subset and ordering convention do we
   // want to assume here? Do we need to iterate sub-types, or just the
   // containers...Assuming active for now.
+
+  // For now, we assume that any hyper-parameters are appended to the
+  // active continuous variables, and that active discrete int,
+  // string, real follow in both the recast and sub-model
   Sizet2DArray vars_map_indices(sub_model.tv());
   for (size_t i=0; i<sub_model.cv(); ++i) {
     vars_map_indices[i].resize(1);
@@ -190,9 +194,9 @@ data_transform_response(const Variables& sub_model_vars,
 }
 
 
-/** Incorporate the hyper parameters into Variables, assuming they are
-    at the end of the continuous aleatory array for now (only
-    addresses Bayesian case). */
+/** Incorporate the hyper parameters into Variables, assuming they are at the 
+    end of the active continuous variables.  For example, append them to 
+    continuous design or continuous aleatory uncertain. */ 
 SizetArray DataTransformModel::
 variables_expand(const Model& sub_model, size_t num_hyper)
 {
@@ -200,12 +204,39 @@ variables_expand(const Model& sub_model, size_t num_hyper)
   if (num_hyper) {
     const SharedVariablesData& svd = sub_model.current_variables().shared_data();
     vc_totals = svd.components_totals();
-    // BMA TODO: for now add to continuous aleatory; need to make an
-    // assumption about order and sub-types when inserting
-    // hyper-params... Need to make this more general for Minimizer
-    // vs. Bayes, though Minimizer doesn't support hyper for now.
-    //vc_totals[TOTAL_CDV] += num_hyper;
-    vc_totals[TOTAL_CAUV] += num_hyper;
+
+    short active_view = sub_model.current_variables().view().first;
+    switch (active_view) {
+      
+    case MIXED_DESIGN: case RELAXED_DESIGN:
+      // append to end of continuous design
+      vc_totals[TOTAL_CDV] += num_hyper; 
+      break;
+
+    case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
+      // append to end of continuous aleatory
+      vc_totals[TOTAL_CAUV] += num_hyper;
+
+    case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: 
+    case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
+      // append to end of continuous epistemic (note there may not actually be 
+      // any epistemic variables in the *_UNCERTAIN cases)
+      vc_totals[TOTAL_CEUV] += num_hyper;
+      break;
+
+    case MIXED_ALL: case RELAXED_ALL: case MIXED_STATE: case RELAXED_STATE:
+      // append to end of continuous state
+      vc_totals[TOTAL_CSV] += num_hyper;
+      break;
+
+    default:
+      Cerr << "\nError: invalid active variables view " << active_view 
+	   << " in DataTransformModel.\n";
+      abort_handler(-1);
+      break;
+
+    }
+
   }
   return vc_totals;
 }
@@ -271,16 +302,11 @@ gen_primary_resp_map(const SharedResponseData& srd,
 void DataTransformModel::vars_mapping(const Variables& recast_vars, 
 				      Variables& submodel_vars)
 {
-  // Forward the calibration parameters, omitting the hyper
-  // parameters.  Would suffice to take a view here and pass it along,
-  // but API doesn't allow...
-
-  // BMA TODO: This isn't fully general; assumes hyper-parameters trail cv
-  // Need to manage sub-types
-  RealVector calib_params;
-  copy_data_partial(recast_vars.continuous_variables(), 0,
-		    (int) submodel_vars.cv(), calib_params);
-  submodel_vars.continuous_variables(calib_params);
+  // Forward the calibration parameters, omitting the hyper-parameters, which 
+  // are assumed to trail the active continuous variables.
+  RealVector sm_cv = submodel_vars.continuous_variables_view();
+  copy_data_partial(recast_vars.continuous_variables(), 0, 
+		    (int)submodel_vars.cv(), sm_cv);
 }
 
 
@@ -290,16 +316,18 @@ void DataTransformModel::set_mapping(const Variables& recast_vars,
  				     const ActiveSet& recast_set,
  				     ActiveSet& sub_model_set)
 {
-  //  BMA TODO: This is likely wrong!  Need to review with Mike about
-  //  the IDs of the calibration params vs. hyper params
-  const SizetArray& recast_dvv = recast_set.derivative_vector();
+  // This transformation should forward DVV requests for derivatives
+  // w.r.t. calibration parameters and discard requests for
+  // derivatives w.r.t. hyper-parameters.
+  
+  // The sub-model should be working with variable IDs from 1 to
+  // number of active continuous variables
   SizetArray sub_model_dvv;
-  for (size_t i=0; i<recast_dvv.size(); ++i) {
-    if (recast_dvv[i] > 0)
+  const SizetArray& recast_dvv = recast_set.derivative_vector();
+  size_t max_sm_id = dtModelInstance->subordinate_model().cv();
+  for (size_t i=0; i<recast_dvv.size(); ++i)
+    if (1 <= recast_dvv[i] && recast_dvv[i] <= max_sm_id)
       sub_model_dvv.push_back(recast_dvv[i]);
-  }
-  // Not sure if these have to be ordered
-  std::sort(sub_model_dvv.begin(), sub_model_dvv.end());
   sub_model_set.derivative_vector(sub_model_dvv);
 }
 
@@ -361,22 +389,12 @@ data_difference_core(const Variables& submodel_vars,
                      const Response& submodel_response, 
                      Response& recast_response)
 {
-  // BMA TODO: encapsulate this in ExperimentData?
-  bool apply_cov = expData.variance_active();
-  // can't apply matrix-valued errors due to possibly incomplete
-  // dataset when active set vector is in use (missing residuals)
-  bool matrix_cov_active = expData.variance_type_active(MATRIX_SIGMA);
-
-  // BMA: perhaps a better name would be per_exp_asv?
-  bool interrogate_field_data = 
-    ( matrix_cov_active || expData.interpolate_flag() );
-  // BMA TODO: Make this call robust to zero and single experiment cases
-  ShortArray total_asv = 
-    expData.determine_active_request(recast_response, interrogate_field_data);
   // form residuals (and gradients/Hessians) from the simulation response
-  expData.form_residuals(submodel_response, total_asv, recast_response);
-  if (apply_cov)
-    expData.scale_residuals(recast_response, total_asv);
+  expData.form_residuals(submodel_response, recast_response);
+
+  // scale by (error covariance)^{-1/2}
+  if (expData.variance_active())
+    expData.scale_residuals(recast_response);
 
   // TODO: may need to scale by hyperparameters in Covariance as well
   if (obsErrorMultiplierMode > CALIBRATE_NONE) {  
@@ -397,7 +415,8 @@ data_difference_core(const Variables& submodel_vars,
     
     // Apply hyperparameter multipliers to all fn, grad, Hess,
     // including derivative contributions from hyperparmeters
-    // BMA TODO: Model after the above scale_residuals, operating block-wise
+    // BMA TODO: Model after the above scale_residuals, operating block-wise 
+    // and accounting for ASV
     expData.
       scale_residuals(hyper_params, obsErrorMultiplierMode, num_calib_params,
 		      recast_response);

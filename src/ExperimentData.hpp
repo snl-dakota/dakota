@@ -173,8 +173,7 @@ public:
   void get_main_diagonal( RealVector &diagonal, size_t experiment ) const;
 
   /// form residuals for all experiments, interpolating if necessary 
-  void form_residuals(const Response& sim_resp, const ShortArray &total_asv, 
-		      Response &residual_resp ) const;
+  void form_residuals(const Response& sim_resp, Response& residual_resp) const;
     
   /// form residuals for an individual experiment, interpolating if necessary 
   void form_residuals(const Response& sim_resp, size_t exp_num, 
@@ -197,20 +196,14 @@ public:
 				    size_t exp_offset,
 				    Response &interp_resp ) const; 
 
-  /// Perform check on the active request vector to make sure
-  /// it is amenable to interpolation of simulation data and application
-  /// of apply covariance
-  ShortArray determine_active_request(const Response& resid_resp,
-				      bool interogate_field_data) const;
-
   /// Apply the experiment data covariance to the residual data (scale
   /// functions by Gamma_d^{-1/2}), returning in scaled_residuals
-  void scale_residuals(const Response& residual_response, ShortArray &total_asv,
-                       RealVector& scaled_residuals) const;
+  void scale_residuals(const Response& residual_response, 
+		       RealVector& scaled_residuals) const;
 
   /// Apply the experiment data covariance to the residual data in-place 
   /// (scale functions, gradients, and Hessians by Gamma_d^{-1/2})
-  void scale_residuals(Response& residual_response, ShortArray &total_asv) const;
+  void scale_residuals(Response& residual_response) const;
 
   // All the following now assume any covariance scaling is already applied
 
@@ -319,6 +312,16 @@ public:
 				size_t hyper_offset,
 				RealSymMatrix& hessian) const;
 
+  /// generate variable labels for the covariance (error) multiplier hyperparams
+  StringArray hyperparam_labels(unsigned short multiplier_mode) const;
+
+protected:
+
+  /// Perform check on the active request vector to make sure
+  /// it is amenable to interpolation of simulation data and application
+  /// of apply covariance
+  ShortArray determine_active_request(const Response& resid_resp) const;
+
   /// count the number of residuals influenced by each multiplier
   SizetArray residuals_per_multiplier(unsigned short multiplier_mode) const;
 
@@ -332,9 +335,6 @@ public:
 
   void resid2mult_map(unsigned short multiplier_mode,
 		      IntVector& resid2mult_indices) const;
-
-  /// generate variable labels for the covariance (error) multiplier hyperparams
-  StringArray hyperparam_labels(unsigned short multiplier_mode) const;
 
 private:
 

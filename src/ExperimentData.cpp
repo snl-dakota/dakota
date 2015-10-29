@@ -820,17 +820,23 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
   
 }
 
-void ExperimentData::get_main_diagonal( RealVector &diagonal, 
-					size_t experiment ) const{
+
+void ExperimentData::
+get_main_diagonal(RealVector &diagonal, size_t experiment ) const
+{
   if ( !variance_active() )
     throw( std::runtime_error("ExperimentData::get_main_diagonal - covariance matrix is empty") );
     allExperiments[experiment].get_covariance_diagonal( diagonal );
 }
 
+
 void ExperimentData::
-form_residuals(const Response& sim_resp, const ShortArray &total_asv, 
-	       Response &residual_resp ) const
+form_residuals(const Response& sim_resp, Response& residual_resp) const
 {
+  // BMA: perhaps a better name would be per_exp_asv?
+  // BMA TODO: Make this call robust to zero and single experiment cases
+  ShortArray total_asv = determine_active_request(residual_resp);
+
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
   size_t residual_resp_offset = 0;
@@ -841,6 +847,7 @@ form_residuals(const Response& sim_resp, const ShortArray &total_asv,
     residual_resp_offset += num_fns_exp;
   }
 }
+
 
 void ExperimentData::
 form_residuals(const Response& sim_resp, size_t exp_ind, 
@@ -932,13 +939,21 @@ interpolate_simulation_data(const Response &sim_resp, size_t exp_ind,
   }
 }
 
+
+// BMA TODO: Make this call robust to zero and single experiment cases
 ShortArray ExperimentData::
-determine_active_request( const Response& resid_resp,
-			  bool interogate_field_data ) const 
+determine_active_request(const Response& resid_resp) const 
 {
+  ShortArray total_asv( numExperiments );
+
+  // can't apply matrix-valued errors due to possibly incomplete
+  // dataset when active set vector is in use (missing residuals)
+  bool interogate_field_data = 
+    variance_type_active(MATRIX_SIGMA) || interpolate_flag();
+
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
-  ShortArray total_asv( numExperiments );
+
 
   size_t calib_term_ind = 0; // index into the total set of calibration terms
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind){
@@ -1005,8 +1020,10 @@ determine_active_request( const Response& resid_resp,
 }
 
 void ExperimentData::
-scale_residuals(const Response& residual_response, ShortArray &total_asv,
-                RealVector& weighted_resid) const {
+scale_residuals(const Response& residual_response, 
+		RealVector& weighted_resid) const {
+
+  ShortArray total_asv = determine_active_request(residual_response);
 
   for (size_t exp_ind = 0; exp_ind < numExperiments; ++exp_ind) {
 
@@ -1032,9 +1049,10 @@ scale_residuals(const Response& residual_response, ShortArray &total_asv,
 }
 
 
-void ExperimentData::
-scale_residuals(Response& residual_response, ShortArray &total_asv) const 
+void ExperimentData::scale_residuals(Response& residual_response) const 
 {
+  ShortArray total_asv = determine_active_request(residual_response);
+
   IntVector experiment_lengths;
   per_exp_length(experiment_lengths);
 
