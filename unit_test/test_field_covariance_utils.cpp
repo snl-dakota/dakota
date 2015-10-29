@@ -855,42 +855,74 @@ void test_symmetric_eigenvalue_decomposition()
 
 void test_get_positive_definite_covariance_from_hessian()
 {
-  Real prior_chol_fact[] = { 0.02, 0., 0., 0.02 };
-  RealMatrix prior_L( Teuchos::View, prior_chol_fact, 2, 2, 2 );
+  // uncorrelated prior
+  Real prior_chol_fact1[] = { 0.2, 0., 0., 0.2 };
+  RealMatrix prior_L1(Teuchos::View, prior_chol_fact1, 2, 2, 2);
 
   // non positive definite matrix
-  Real hessian_array1[] = { 0.92, 1.44, 1.44, 0.08 };
-  RealSymMatrix hessian1( Teuchos::View, false, hessian_array1, 2, 2 );
+  Real misfit_h_array1[] = { 0.92, 1.44, 1.44, 0.08 };
+  RealSymMatrix misfit_hessian1(Teuchos::View, false, misfit_h_array1, 2, 2 );
 
   RealSymMatrix covariance1;
   NonDBayesCalibration::
-    get_positive_definite_covariance_from_hessian( hessian1, prior_L,
-						   covariance1, NORMAL_OUTPUT );
+    get_positive_definite_covariance_from_hessian(misfit_hessian1, prior_L1,
+						  covariance1, NORMAL_OUTPUT);
 
-
-  Real truth_covariance1_array[] ={ 0.32, 0.24, 0.24, 0.18 };
-  RealSymMatrix truth_covariance1( Teuchos::View, false, truth_covariance1_array, 2, 2);
+  // MATLAB result (no truncation of eigenvalues)
+  //Real truth_cov1_array[] ={  0.038703703703704, -0.002222222222222,
+  //			       -0.002222222222222,  0.04 };
+  // Dakota result (truncation of 1 eigenvalue)
+  Real truth_cov1_array[] ={ 3.81037037037037e-02, -1.42222222222222e-03,
+			    -1.42222222222222e-03,  3.89333333333333e-02 };
+  RealSymMatrix truth_covariance1(Teuchos::View, false, truth_cov1_array, 2, 2);
 
   truth_covariance1 -= covariance1;
   BOOST_CHECK( truth_covariance1.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
 
+  //////////////////////////////////////////////////////////////////////////////
+
+  // correlated prior
+  Real prior_chol_fact2[] = { 0.2, 0.05, 0., 0.2 };
+  RealMatrix prior_L2(Teuchos::View, prior_chol_fact2, 2, 2, 2);
+
   // positive definite matrix
-  Real hessian_array2[] = { 1.64, 0.48, 0.48, 1.36 };
-  RealSymMatrix hessian2( Teuchos::View, false, hessian_array2, 2, 2 );
+  Real misfit_h_array2[] = { 1.64, 0.48, 0.48, 1.36 };
+  RealSymMatrix misfit_hessian2(Teuchos::View, false, misfit_h_array2, 2, 2);
 
   RealSymMatrix covariance2;
   NonDBayesCalibration::
-    get_positive_definite_covariance_from_hessian( hessian2, prior_L,
-						   covariance2, NORMAL_OUTPUT );
+    get_positive_definite_covariance_from_hessian(misfit_hessian2, prior_L2,
+						  covariance2, NORMAL_OUTPUT);
 
-
-  Real truth_covariance2_array[] = { 0.68, -0.24, -0.24, 0.82 };
-  RealSymMatrix truth_covariance2( Teuchos::View, false, truth_covariance2_array, 2, 2);
+  // MATLAB and Dakota result (no truncation of eigenvalues):
+  Real truth_cov2_array[] = { 0.037120225312445, 0.008125330047527,
+			      0.008125330047527, 0.039714838936807 };
+  RealSymMatrix truth_covariance2(Teuchos::View, false, truth_cov2_array, 2, 2);
 
   truth_covariance2 -= covariance2;
   BOOST_CHECK( truth_covariance2.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
+
+  //////////////////////////////////////////////////////////////////////////////
+  /*
+  // zero misfit matrix: proposal covariance = prior covariance
+  // can't perform symmetric eigen-deomposition for L'HL = 0
+  Real misfit_h_array3[] = { 0., 0., 0., 0. };
+  RealSymMatrix misfit_hessian3(Teuchos::View, false, misfit_h_array3, 2, 2);
+
+  RealSymMatrix covariance3;
+  NonDBayesCalibration::
+    get_positive_definite_covariance_from_hessian(misfit_hessian3, prior_L2,
+						  covariance3, NORMAL_OUTPUT);
+
+  Real truth_cov3_array[] = { 4., 0.1, 0.1, 4.0025 };
+  RealSymMatrix truth_covariance3(Teuchos::View, false, truth_cov3_array, 2, 2);
+
+  truth_covariance3 -= covariance3;
+  BOOST_CHECK( truth_covariance3.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+  */
 }
 
 } // end namespace TestFieldCovariance
