@@ -16,7 +16,8 @@
 #define NOND_BAYES_CALIBRATION_H
 
 #include "NonDCalibration.hpp"
-#include <boost/math/distributions/inverse_gamma.hpp>
+#include "InvGammaRandomVariable.hpp"
+
 
 namespace Dakota {
 
@@ -164,8 +165,8 @@ protected:
   RealVector invGammaAlphas;
   /// alphas for inverse gamma distribution on hyper-params
   RealVector invGammaBetas;
-  /// distributions for hyper-params: BMA TODO: migrate to Pecos RV
-  std::vector<boost::math::inverse_gamma_distribution<> > invGammaDists;
+  /// distributions for hyper-params
+  std::vector<Pecos::RandomVariable> invGammaDists;
 
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator
@@ -222,7 +223,7 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
-    pdf *= boost::math::pdf(invGammaDists[i], vec[numContinuousVars + i]);
+    pdf *= invGammaDists[i].pdf(vec[numContinuousVars + i]);
 
   return pdf;
 }
@@ -249,8 +250,7 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
-    log_pdf += std::log(boost::math::pdf(invGammaDists[i], 
-					 vec[numContinuousVars + i]));
+    log_pdf += invGammaDists[i].log_pdf(vec[numContinuousVars + i]);
 
   return log_pdf;
 }

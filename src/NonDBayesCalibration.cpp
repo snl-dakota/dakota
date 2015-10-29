@@ -232,6 +232,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
          << "length 1 or number of calibrated\n       error multipliers.\n";
     abort_handler(PARSE_ERROR);
   }
+  invGammaDists.resize(numHyperparams);
   for (size_t i=0; i<numHyperparams; ++i) {
     // alpha = (mean/std_dev)^2 + 2
     // beta = mean*(alpha-1)
@@ -250,8 +251,10 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       beta = invGammaBetas[i];
     }
     // BMA TODO: could store only one inverse gamma if all parameters the same
-    invGammaDists.
-      push_back(boost::math::inverse_gamma_distribution<>(alpha, beta));
+    invGammaDists[i] = Pecos::RandomVariable(Pecos::INV_GAMMA);
+    Pecos::InvGammaRandomVariable* rv_rep = 
+      (Pecos::InvGammaRandomVariable*)(invGammaDists[i].random_variable_rep());
+    rv_rep->update(alpha, beta);
   }
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
@@ -425,7 +428,6 @@ void NonDBayesCalibration::initialize_model()
 }
 
 
-// BMA TODO: Account for constraint presence.
 /** Calculate the log-likelihood, accounting for contributions from
     covariance and hyperparameters, as well as constant term:
 

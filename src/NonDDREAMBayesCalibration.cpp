@@ -188,7 +188,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 
   // BMA TODO: share most of this code with QUESO class
 
-  // BMA TODO: support indepdent options
+  // BMA TODO: support independent options
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error "
          << "but have not provided experimental data information."<<std::endl;

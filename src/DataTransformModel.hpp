@@ -112,6 +112,9 @@ protected:
   // NOTE: Shouldn't need non-default active set or secondary response
   // recast; default based on indices should suffice.
 
+  /// expand the variable labels to include the hyper parameters
+  void expand_var_labels(const Model& sub_model);
+
   /// (if non-empty) expand submodel_array by replicates to populate a
   /// recast_array
   template<typename T>

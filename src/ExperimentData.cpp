@@ -1779,4 +1779,57 @@ void ExperimentData::resid2mult_map(unsigned short multiplier_mode,
 }
 
 
+StringArray ExperimentData::
+hyperparam_labels(unsigned short multiplier_mode) const
+{
+  String cm_prefix("CovMult");
+  StringArray hp_labels;
+
+  switch(multiplier_mode) {
+
+  case CALIBRATE_NONE:
+    break;
+    
+  case CALIBRATE_ONE:
+    hp_labels.push_back(cm_prefix);
+    break;
+
+  case CALIBRATE_PER_EXPER:
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind) 
+      hp_labels.
+	push_back(cm_prefix + "Exp" + boost::lexical_cast<String>(exp_ind+1));
+    break;
+	
+    // BMA TODO: Could use response labels here...
+  case CALIBRATE_PER_RESP: {
+    size_t num_resp = simulationSRD.num_scalar_responses() + 
+      simulationSRD.num_field_response_groups();
+    for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
+      hp_labels.
+	push_back(cm_prefix + "Resp" + boost::lexical_cast<String>(resp_ind+1));
+    break;
+  }
+
+  case CALIBRATE_BOTH: {
+    size_t num_resp = simulationSRD.num_scalar_responses() + 
+      simulationSRD.num_field_response_groups();
+    for (size_t exp_ind=0; exp_ind < numExperiments; ++exp_ind)
+      for (size_t resp_ind=0; resp_ind < num_resp; ++resp_ind)
+	hp_labels.
+	  push_back(cm_prefix + "Exp" + boost::lexical_cast<String>(exp_ind+1) +
+		    "Resp" + boost::lexical_cast<String>(resp_ind+1));
+    break;
+  }
+
+  default:
+    Cerr << "\nError: unkown multiplier mode in hyperparam_labels().\n";
+    abort_handler(-1);
+
+  }  
+
+  return hp_labels;
+
+}
+
+
 }  // namespace Dakota

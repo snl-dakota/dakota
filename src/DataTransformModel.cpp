@@ -117,6 +117,13 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 
 
   // ---
+  // Expand submodel Variables data to account for hyper-parameters
+  // ---
+
+  expand_var_labels(sub_model);
+
+
+  // ---
   // Expand any submodel Response data to the expanded residual size
   // ---
 
@@ -395,6 +402,21 @@ data_difference_core(const Variables& submodel_vars,
       scale_residuals(hyper_params, obsErrorMultiplierMode, num_calib_params,
 		      recast_response);
   }
+}
+
+
+void DataTransformModel::expand_var_labels(const Model& sub_model)
+{
+  // currentVariables should be sized by the RecastModel initialization
+  size_t num_calib = sub_model.cv();
+
+  StringMultiArrayConstView sm_labels(sub_model.continuous_variable_labels());
+  for (size_t i=0; i<num_calib; ++i)
+    currentVariables.continuous_variable_label(sm_labels[i], i);
+  
+  StringArray hyper_labels = expData.hyperparam_labels(obsErrorMultiplierMode);
+  for (size_t i=0; i<numHyperparams; ++i)
+    currentVariables.continuous_variable_label(hyper_labels[i], num_calib + i);
 }
 
 

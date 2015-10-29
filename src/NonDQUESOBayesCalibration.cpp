@@ -271,9 +271,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     // all hyperparams utilize inverse gamma priors, which may not
     // have finite variance; use std_dev = 0.05 * mode
     for (int i=0; i<numHyperparams; ++i) {
-      if (invGammaDists[i].shape() > 2.0)
+      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
         (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
-          boost::math::variance(invGammaDists[i]);
+          invGammaDists[i].variance();
       else
         (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
           std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
@@ -660,17 +660,10 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
   if (update_cntr == 1) { // overwrite as new file
     TabularIO::open_file(exportMCMCStream, mcmc_filename,
 			 "NonDQUESOBayesCalibration chain export");
-    StringArray resp_fn_sigmas;
-    if (numHyperparams > 0) {
-      resp_fn_sigmas.resize(numHyperparams);
-      // BMA TODO: populate based on exp * resp and name same as other places
-      const StringArray& resp_labels = iteratedModel.response_labels();
-      for (i=0; i<numHyperparams; ++i)
-        resp_fn_sigmas[i] = resp_labels[i] + "_sigma";
-    }
-    TabularIO::write_header_tabular(exportMCMCStream,
-      iteratedModel.current_variables(), resp_fn_sigmas, "mcmc_id",
-      exportMCMCFormat);
+    // the residual model includes labels for the hyper-parameters, if present
+    TabularIO::
+      write_header_tabular(exportMCMCStream, residualModel.current_variables(), 
+			   StringArray(), "mcmc_id", exportMCMCFormat);
     start = 0;
   }
   else
@@ -1118,8 +1111,6 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 {
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
-  // BMA TODO: change from uniform to inverse gamma prior and allow control for 
-  // cases where user didn't give covariance information
   paramSpace.reset(new 
     QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*quesoEnv,
     "param_", numContinuousVars + numHyperparams, NULL));
@@ -1130,8 +1121,6 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     natafTransform.u_bounds() : natafTransform.x_bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
-  // BMA TODO: fix bounds on inv gamma prior?  DBL_MAX?  Other? Could
-  // use percentiles.
   for (size_t i=0; i<numHyperparams; ++i) {
     paramMins[numContinuousVars + i] = 0.0;
     paramMaxs[numContinuousVars + i] = std::numeric_limits<Real>::infinity();
@@ -1160,8 +1149,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   // beta. Would prefer to use the mean (or 1.0), but would require
   // conditional logic (or user control).
   for (size_t i=0; i<numHyperparams; ++i)
-    (*paramInitials)[numContinuousVars + i] = 
-      boost::math::mode(invGammaDists[i]);
+    (*paramInitials)[numContinuousVars + i] = invGammaDists[i].mode();
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
@@ -1424,20 +1412,11 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 
   if (bestSamples.empty()) return;
 
-  StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
-  size_t j; StringArray combined_labels;
-  if (obsErrorMultiplierMode > 0) {
-    combined_labels.resize(numContinuousVars + numHyperparams);
-    for (j=0; j<numContinuousVars; ++j)
-      combined_labels[j] = cv_labels[j];
-    // BMA TODO: generate labels based on various cases, also in NonDBayes
-    const StringArray& resp_labels = iteratedModel.response_labels();
-    for (j=0; j<numFunctions; ++j)
-      combined_labels[j+numContinuousVars] = resp_labels[j] + "_ErrCov";
-  }
-  else
-    copy_data(cv_labels, combined_labels);
+  StringMultiArrayConstView cv_labels = 
+    iteratedModel.continuous_variable_labels();
+  // the residualModel includes any hyper-parameters
+  StringArray combined_labels;
+  copy_data(residualModel.continuous_variable_labels(), combined_labels);
 
   // ----------------------------------------
   // Output best sample which appoximates MAP
@@ -1455,11 +1434,11 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
     write_data(Cout, x_rv, cv_labels);
   }
   else
-    for (j=0; j<numContinuousVars; ++j)
+    for (size_t j=0; j<numContinuousVars; ++j)
       s << "                     " << std::setw(wpp7) << qv[j]
 	<< ' ' << cv_labels[j] << '\n';
   // print MAP for hyper-parameters (e.g., observation error params)
-  for (j=0; j<numHyperparams; ++j)
+  for (size_t j=0; j<numHyperparams; ++j)
     s << "                     " << std::setw(wpp7) << qv[numContinuousVars+j] 
       << ' ' << combined_labels[numContinuousVars + j] << '\n';
 
@@ -1467,7 +1446,6 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // instead of re-computing it
   Real log_prior = log_prior_density(qv), log_post = it->first;
   Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
-  // BMA TODO: compute log(det(Cov)) directly as product to avoid overflow
   RealVector hyper_params(numHyperparams);
   copy_gsl_partial(qv, numContinuousVars, hyper_params);
   Real half_log_det = 
@@ -1529,7 +1507,6 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
 
   nonDQUESOInstance->residualModel.compute_response();
   
-  // TODO: omit constraints
   const RealVector& residuals = 
     nonDQUESOInstance->residualModel.current_response().function_values();
   double log_like = nonDQUESOInstance->log_likelihood(residuals, all_params);

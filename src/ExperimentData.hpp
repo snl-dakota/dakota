@@ -333,6 +333,9 @@ public:
   void resid2mult_map(unsigned short multiplier_mode,
 		      IntVector& resid2mult_indices) const;
 
+  /// generate variable labels for the covariance (error) multiplier hyperparams
+  StringArray hyperparam_labels(unsigned short multiplier_mode) const;
+
 private:
 
   // initialization helpers
