@@ -2457,6 +2457,10 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
   }
   else { // > bds is 0, 1, 2, or 3 (0 ==> no bounds given, nothing more to do)
 
+    // Note: in the case of BoundedNormalRandomVariable, we are initializing
+    // to the gaussMean parameter of the unbounded normal and repairing to the
+    // bounds.  To assign to the mean of the bounded normal (bounds repair not
+    // necessary), use BoundedNormalRandomVariable::mean().
     switch(bds) {
     case 0: // no bounds
       Vcopyup(V, M, offset, n);
@@ -2586,6 +2590,11 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
       if      (mean < lower) (*V)[i] = lower;
       else if (mean > upper) (*V)[i] = upper;
       else                   (*V)[i] = mean;
+      // Note: in the case of BoundedLognormalRandomVariable, we are
+      // initializing to the mean parameter of the unbounded lognormal
+      // and repairing to the bounds.  To assign to the mean of the
+      // bounded lognormal (bounds repair not necessary), use
+      // BoundedLognormalRandomVariable::mean().
     }
 
     // infer global bounds if no distribution bounds spec
