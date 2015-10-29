@@ -2449,21 +2449,24 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     while (fail_flag) {
       fail_flag = 0; // reset each time prior to derived_map
       ++retries;
-      Cout << failureMessage << ": retry attempt number " << retries << ".\n";
+      Cout << failureMessage << ": retry attempt " << retries << "/" << 
+        failRetryLimit << " for evaluation " << failed_eval_id << ".\n";
       try { derived_map(vars, set, response, failed_eval_id); }
       catch(const FunctionEvalFailure& fneval_except) { 
         //Cout << "Caught FunctionEvalFailure in manage_failure; message: "
 	// fneval_except.what() << std::endl;
         fail_flag = 1;
 	if (retries >= failRetryLimit) {
-	  Cerr << "Retry limit exceeded.  Aborting..." << std::endl;
+	  Cerr << "Retry limit exceeded for evaluation " << failed_eval_id << 
+            ".  Aborting..." << std::endl;
           abort_handler(INTERFACE_ERROR);
 	}
       }
     }
   }
   else if (failAction == "recover") {
-    Cout << failureMessage << ": recovering with specified function values.\n";
+    Cout << failureMessage << ": recovering with specified function values " <<
+      "for evaluation " << failed_eval_id << ".\n";
     if (failRecoveryFnVals.length() != response.num_functions() ) {
       Cerr << "Error: length of recovery function values specification\n"
            << "       must equal the total number of functions." << std::endl;
@@ -2494,8 +2497,8 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     else
       source_pair = get_source_pair(vars); // also the serial case
 
-    Cout << '\n' << failureMessage << ": halving interval and retrying." 
-	 << std::endl;
+    Cout << '\n' << failureMessage << ": halving interval and retrying " <<
+     "evaluation " << failed_eval_id << "." << std::endl;
 
     // Now that source pt. is available, call the continuation algorithm.  
     // Mimic retry case in use of failed_eval_id to manage file names.
@@ -2504,7 +2507,8 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
 
   }
   else { // default is abort
-    Cerr << failureMessage << ": aborting..." << std::endl;
+    Cerr << failureMessage << ": aborting due to failure in evaluation " << 
+      failed_eval_id << "..." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 }
@@ -2597,11 +2601,12 @@ continuation(const Variables& target_vars, const ActiveSet& set,
     }
 
     if (fail_flag) {
+      Cout << "\nInterval halving attempt " << failures << " for evaluation " <<
+        failed_eval_id << " failed. Halving again." << std::endl;
       ++failures;
-      Cout << "\nEvaluation failed. Interval halving." << std::endl;
       if (failures > MAX_FAILURES) {
-	Cerr << "\n\nInterval halving limit exceeded in continuation: "
-	     << "aborting..." << std::endl;
+	Cerr << "\n\nInterval halving limit exceeded in continuation for " <<
+          "evaluation " << failed_eval_id << ": " << "aborting..." << std::endl;
 	abort_handler(INTERFACE_ERROR);
       }
 
@@ -2613,9 +2618,8 @@ continuation(const Variables& target_vars, const ActiveSet& set,
       }
     }
     else {
-      Cout << "\nEvaluation succeeded.\nContinuing with current step size."
-	   << std::endl;
-
+      Cout << "\nEvaluation succeeded.\nContinuing with current step size " <<
+        "for evaluation " << failed_eval_id << "." << std::endl;
       // Possibly append new continuation evals. to data_pairs list (?)
 
       if (current_pt == target_pt) // operator== in data_types.cpp
@@ -2631,7 +2635,8 @@ continuation(const Variables& target_vars, const ActiveSet& set,
       }
     }
   }
-  Cout << "Finished with continuation." << std::endl;
+  Cout << "Finished with continuation for evaluation " << failed_eval_id << 
+    "." << std::endl;
 }
 
 

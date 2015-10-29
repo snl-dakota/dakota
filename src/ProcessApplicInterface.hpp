@@ -227,6 +227,9 @@ private:
 			     const std::vector<String>& an_comps,
 			     const std::string& params_fname);
 
+  /// Open and read the results file at path, properly handling errors
+  void read_results_file(Response &response, const bfs::path &path, 
+      const int id);
   //
   //- Heading: Data
   //

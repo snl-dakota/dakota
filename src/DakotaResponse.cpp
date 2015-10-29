@@ -495,7 +495,7 @@ void Response::read(std::istream& s, const unsigned short format)
 
   // If a failure is detected, throw an error
   if (failure_reported(s)) 
-    throw FunctionEvalFailure(String("Failure captured"));
+    throw FunctionEvalFailure(String("failure captured"));
   
   // Destroy old values and set to zero (so that else assignments are not needed
   // below). The arrays have been properly sized by the Response constructor.
@@ -678,7 +678,7 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
   if(num_found != num_expected) {
     if(!errors.str().empty())
         errors << "\n";
-    errors << "-- Expected " << num_expected << " function values but found " 
+    errors << "-- Expected " << num_expected << " function value(s) but found " 
       << num_found << ".";
   }
 }
