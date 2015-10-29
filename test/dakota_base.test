@@ -3185,7 +3185,7 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0249011757e-01 uuv_1
-                      9.8862118820e-01 least_sq_term_1_ErrCov
+                      9.8862118820e-01 CovMult
 <<<<< Best misfit              =
                       4.8264555816e+01
 <<<<< Best log prior           =
@@ -3195,12 +3195,12 @@ Test Number 0 succeeded
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  4.0262439658e-01  4.7209409486e-03 -5.5921239559e+00  6.0598387947e+01
-least_sq_term_1_ErrCov  1.0077936447e+00  7.9895882045e-02  6.8749510538e-01  8.0960029376e-01
+       CovMult  1.0077936447e+00  7.9895882045e-02  6.8749510538e-01  8.0960029376e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1909 total (1909 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0266247062e-01 nuv_1
-                      9.8315708443e-01 least_sq_term_1_ErrCov
+                      9.8315708443e-01 CovMult
 <<<<< Best misfit              =
                       4.8533229325e+01
 <<<<< Best log prior           =
@@ -3210,12 +3210,12 @@ Test Number 1 succeeded
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          nuv_1  4.0302681077e-01  8.3909747134e-03  1.7170344413e+01  3.6571432592e+02
-least_sq_term_1_ErrCov  1.0399981366e+00  1.2175782162e-01  1.3780989965e+00  2.7244460969e+00
+       CovMult  1.0399981366e+00  1.2175782162e-01  1.3780989965e+00  2.7244460969e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1735 total (1735 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0277091714e-01 uuv_1
-                      9.9776889670e-04 least_sq_term_1_ErrCov
+                      9.9776889670e-04 CovMult
 <<<<< Best misfit              =
                       4.7824279605e+01
 <<<<< Best log prior           =
@@ -3225,7 +3225,7 @@ Test Number 2 succeeded
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  4.0212221096e-01  4.7276075141e-03 -5.5276434882e+00  5.7842029182e+01
-least_sq_term_1_ErrCov  1.0052067925e-03  2.4790752775e-05 -7.4518507562e-02  1.2264848527e-01
+CovMult  1.0052067925e-03  2.4790752775e-05 -7.4518507562e-02  1.2264848527e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 1872 total (1872 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3234,7 +3234,7 @@ Test Number 3 succeeded
                       3.6803934435e-01 uuv_3
                       5.2214856537e-01 uuv_4
                       3.1164384495e-01 uuv_5
-                      9.9948010586e-04 least_sq_term_1_ErrCov
+                      9.9948010586e-04 CovMult
 <<<<< Best misfit              =
                       4.9011411779e+01
 <<<<< Best log prior           =
@@ -3248,7 +3248,7 @@ Sample moment statistics for each posterior variable:
          uuv_3  3.2282290067e-01  1.1096860187e-01  2.6130090547e-01 -7.2479418074e-01
          uuv_4  4.1530807902e-01  1.1656440118e-01 -4.9938873605e-01 -5.5192973947e-01
          uuv_5  4.6278295641e-01  1.1226231223e-01 -8.8016599624e-01 -1.6661280873e-01
-least_sq_term_1_ErrCov  1.0111693631e-03  2.7271773086e-05 -6.8644051161e-02  1.3992391118e-01
+CovMult  1.0111693631e-03  2.7271773086e-05 -6.8644051161e-02  1.3992391118e-01
 dakota_big_dataset.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 300 total (300 new, 0 duplicate)

@@ -3055,8 +3055,8 @@ Test Number 4 succeeded
 <<<<< Best parameters          =
                       2.8725945587e+07 E
                       2.4993381806e+00 w
-                      8.5488028185e-01 stress_ErrCov
-                      8.9860299890e-01 displacement_ErrCov
+                      8.5488028185e-01 CovMultResp1
+                      8.9860299890e-01 CovMultResp2
 <<<<< Best misfit              =
                       1.1082170014e+01
 <<<<< Best log prior           =
@@ -3067,15 +3067,15 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
              E  2.8605946432e+07  1.3532115812e+05  1.3945884416e+00  1.3541457485e+00
              w  2.5016034131e+00  3.5684594382e-03 -1.2273953999e-01 -1.6888920395e-01
- stress_ErrCov  1.0044694859e+00  1.7084394579e-01  3.4221784361e-01  1.5077791544e-01
-displacement_ErrCov  1.0548221534e+00  1.8771627706e-01  6.6394070771e-01  5.6539171795e-01
+  CovMultResp1  1.0044694859e+00  1.7084394579e-01  3.4221784361e-01  1.5077791544e-01
+  CovMultResp2  1.0548221534e+00  1.8771627706e-01  6.6394070771e-01  5.6539171795e-01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.8639753447e+07 E
                       2.5011742137e+00 w
-                      6.8548822280e-01 stress_ErrCov
-                      9.2046475229e-01 displacement_ErrCov
+                      6.8548822280e-01 CovMultResp1
+                      9.2046475229e-01 CovMultResp2
 <<<<< Best misfit              =
                       1.2167647369e+01
 <<<<< Best log prior           =
@@ -3086,8 +3086,8 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
              E  2.8563846690e+07  9.5100350556e+04  1.2354358416e+00  7.9625733236e-01
              w  2.5019851962e+00  3.4353065179e-03  1.9214581775e-02 -9.2030356347e-02
- stress_ErrCov  1.0260730453e+00  3.7387815958e-01  1.3538051020e+00  3.9436119762e+00
-displacement_ErrCov  1.4701743387e+00  6.8424971556e-01  1.5191416902e+00  2.5570099327e+00
+  CovMultResp1  1.0260730453e+00  3.7387815958e-01  1.3538051020e+00  3.9436119762e+00
+  CovMultResp2  1.4701743387e+00  6.8424971556e-01  1.5191416902e+00  2.5570099327e+00
 dakota_cantilever_queso_adapt.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 57 total (57 new, 0 duplicate)
