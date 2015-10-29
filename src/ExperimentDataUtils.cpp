@@ -734,4 +734,25 @@ void compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
   }
 }
 
+bool is_matrix_symmetric( RealMatrix & matrix )
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  if( num_cols != num_rows )
+    return false;
+
+  bool is_symmetric = true;
+
+  for( int i=0; i<num_cols; ++i )
+    for( int j=i+1; j<num_cols; ++j ) {
+      if( matrix(i,j) != matrix(j,i) ) {
+        is_symmetric = false;
+        break;
+      }
+    }
+
+  return is_symmetric;
+}
+
 } //namespace Dakota

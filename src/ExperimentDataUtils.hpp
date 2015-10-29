@@ -263,6 +263,11 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
  */
 void compute_column_means( RealMatrix & matrix, RealVector & avg_vals );
 
+/**
+ * \brief Test if incoming matrix is symmetric
+ */
+bool is_matrix_symmetric( RealMatrix & matrix );
+
 } // namespace dakota
 
 #endif //EXPERIMENT_DATA_UTILS

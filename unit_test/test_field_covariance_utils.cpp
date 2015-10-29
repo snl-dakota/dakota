@@ -925,6 +925,31 @@ void test_get_positive_definite_covariance_from_hessian()
   */
 }
 
+void test_matrix_symmetry()
+{
+  Real matrix_array[] = { 1.64, 0.48, 0.48, 1.36 };
+  RealSymMatrix matrix( Teuchos::View, false, matrix_array, 2, 2 );
+
+  RealVector eigenvalues;
+  RealMatrix eigenvectors;
+  symmetric_eigenvalue_decomposition( matrix, eigenvalues, eigenvectors );
+
+  Real truth_eigenvalues_array[] = {1.,2.};
+  RealVector truth_eigenvalues( Teuchos::View, truth_eigenvalues_array, 2 );
+ 
+  truth_eigenvalues -=  eigenvalues;
+  BOOST_CHECK( truth_eigenvalues.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+
+
+  Real truth_eigenvectors_array[] ={ 0.6, -0.8, -0.8, -0.6 };
+  RealMatrix truth_eigenvectors( Teuchos::View, truth_eigenvectors_array, 2,2,2);
+
+  truth_eigenvectors -= eigenvectors;
+  BOOST_CHECK( truth_eigenvectors.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() );
+}
+
 } // end namespace TestFieldCovariance
 } // end namespace Dakota
 
