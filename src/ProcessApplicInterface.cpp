@@ -618,44 +618,11 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
       bfs::path prog_tagged_results
 	= WorkdirHelper::concat_path(results_path, prog_num);
       read_results_file(partial_response, prog_tagged_results, id);
-      /*
-      bfs::ifstream recovery_stream(prog_tagged_results);
-      if (!recovery_stream) {
-	Cerr << "\nError: cannot open results file " << prog_tagged_results
-	  << " for evaluation " << boost::lexical_cast<std::string>(id) << std::endl;
-	abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
-      }
-      try {
-        partial_response.read(recovery_stream,resultsFileFormat);
-        //recovery_stream >> partial_response;
-      }
-      catch(const FileReadException& fr_except) {
-        throw FileReadException("Error(s) in results file " + 
-            prog_tagged_results.string() + " for evaluation " + 
-            boost::lexical_cast<std::string>(id) + ":\n" + fr_except.what());
-      }*/
       response.overlay(partial_response);
     }
   }
-  else {
+  else 
     read_results_file(response,results_path,id);
-    /*
-    bfs::ifstream recovery_stream(results_path);
-    if (!recovery_stream) {
-      Cerr << "\nError: cannot open results file " << results_path
-        << " for evaluation " << boost::lexical_cast<std::string>(id) << std::endl;
-      abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
-    }
-    try {
-      response.read(recovery_stream,resultsFileFormat);
-      //recovery_stream >> response;
-    }
-    catch(const FileReadException& fr_except) {
-        throw FileReadException("Error(s) encountered reading results file " +
-           results_path.string() + " for Evaluation " + 
-           boost::lexical_cast<std::string>(id) + ":\n" + fr_except.what()); 
-    }*/
-  }
 
   // remove the workdir if in the map and we're not saving
   bool removing_workdir = (!workdir_path.empty() && !dirSave);
