@@ -354,33 +354,20 @@ primary_resp_differencer(const Variables& submodel_vars,
 
   if (dtModelInstance->outputLevel >= VERBOSE_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {
-    Cout << "Calibration data transformation:\n";
+    Cout << "Calibration data transformation; residuals:\n";
     write_data(Cout, recast_response.function_values(),
 	       recast_response.function_labels());
     Cout << std::endl;
   }
   if (dtModelInstance->outputLevel >= DEBUG_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {
-    size_t num_total_calib_terms = 
-      dtModelInstance->expData.num_total_exppoints();
-    const ShortArray& asv = recast_response.active_set_request_vector();
-    for (size_t i=0; i < num_total_calib_terms; ++i) {
-      if (asv[i] & 1) 
-        Cout << " residual_response function " << i << ' ' 
-	     << recast_response.function_value(i) << '\n';
-      if (asv[i] & 2) 
-        Cout << " residual_response gradient " << i << ' ' 
-	     << recast_response.function_gradient_view(i) << '\n';
-      if (asv[i] & 4) 
-        Cout << " residual_response hessian " << i << ' ' 
-	     << recast_response.function_hessian(i) << '\n';
-    }
+    Cout << "Calibration data transformation; full response:\n"
+	 << recast_response << std::endl;
   }
 
 }
 
 // BMA TODO: decide how much output to have and where...
-
 
 /** quiet version of function used in recovery of function values */
 void DataTransformModel::
@@ -389,7 +376,10 @@ data_difference_core(const Variables& submodel_vars,
                      const Response& submodel_response, 
                      Response& recast_response)
 {
-  // form residuals (and gradients/Hessians) from the simulation response
+  // form residuals (and gradients/Hessians) from the simulation
+  // response this call has to be careful not to resize gradients and
+  // Hessians in a way that tramples hyper-parameters: only update
+  // submodel cv entries, leaving objects sized
   expData.form_residuals(submodel_response, recast_response);
 
   // scale by (error covariance)^{-1/2}

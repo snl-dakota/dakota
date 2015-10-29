@@ -259,10 +259,19 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
-  if (calibrationData)
+  if (calibrationData) {
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
                               obsErrorMultiplierMode, mcmc_deriv_order), false);
+    RealVector lb = residualModel.continuous_lower_bounds();
+    RealVector ub = residualModel.continuous_upper_bounds();
+    for (size_t i=0; i<numHyperparams; ++i) {
+      lb[numContinuousVars + i] = 0.0;
+      ub[numContinuousVars + i] = std::numeric_limits<Real>::infinity();
+    }
+    residualModel.continuous_lower_bounds(lb);
+    residualModel.continuous_upper_bounds(ub);
+  }
   else
     residualModel = mcmcModel;  // shallow copy
 
@@ -484,13 +493,14 @@ void NonDBayesCalibration::prior_cholesky_factorization()
       natafTransform.u_moments() : natafTransform.x_moments();
     for (i=0; i<numContinuousVars; ++i)
       priorCovCholFactor(i,i) = dist_moments[i].second;
-    //for (i=numContinuousVars; i<num_params; ++i)
-    //  priorCovCholFactor(i,i) = invGammaDists.(); // TO DO
-    if (numHyperparams) {
-      Cerr << "prior_cholesky_factorization() not yet implmented for this case."
-	   << std::endl;
-      abort_handler(-1);
-    }
+    // for now we assume a variance when the inv gamma has infinite moments
+    for (i=0; i<numHyperparams; ++i)
+      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
+        priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) = 
+          invGammaDists[i].standard_deviation();
+      else
+        priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) =
+          0.05*(invGammaDists[i].mode());
   }
 }
 

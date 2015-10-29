@@ -230,7 +230,8 @@ void ExperimentData::load_data(const std::string& context_message)
   exp_srd.response_type(EXPERIMENT_RESPONSE);
   Response exp_resp(exp_srd);
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Constructing experiment response" << std::endl;
+    Cout << "Constructing experiment response; initial response is:" 
+	 << std::endl;
     exp_resp.write(Cout);
   }
 
@@ -857,7 +858,7 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
   size_t res_size = allExperiments[exp_ind].function_values().length();
 
   RealVector resid_fns = sim_resp.function_values();
-  size_t i,j;
+  size_t i, j;
   const IntVector simLengths = sim_resp.field_lengths();
   int numfields = num_fields();
 
@@ -865,8 +866,6 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
   RealVector residuals(Teuchos::View, all_residuals.values()+exp_offset,
 		       res_size);
 
-  if (outputLevel >= DEBUG_OUTPUT) 
-    Cout << "interpolate " << interpolateFlag << '\n';
   if (!interpolateFlag) {
 
     short asv = total_asv[exp_ind];
@@ -879,14 +878,29 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
       residuals[i]=
 	resid_fns[i]-allExperiments[exp_ind].function_value(i);
 
+      // populate only the part of the gradients/Hessians for this
+      // experiment, for the active submodel derivative variables
       if ( asv & 2 ){
-	RealVector sim_grad_i = 
-	  Teuchos::getCol(Teuchos::View, sim_grads, (int)i);
-	residual_resp.function_gradient(sim_grad_i, exp_offset+i);
+	size_t num_sm_cv = sim_grads.numRows();
+	RealMatrix resid_grads
+	  (gradients_view(residual_resp.function_gradients(), exp_ind));
+	resid_grads = 0.0;
+	for (size_t r_ind = 0; r_ind<res_size; ++r_ind)
+	  for (size_t i=0; i<num_sm_cv; ++i)
+	    resid_grads(i, r_ind) = sim_grads(i, r_ind);
       }
 
-      if ( asv & 4 )
-	residual_resp.function_hessian(sim_hessians[i], exp_offset+i);
+      if ( asv & 4 ) {
+	size_t num_sm_cv = sim_grads.numRows();
+	RealSymMatrixArray resid_hess
+	  (hessians_view(residual_resp.function_hessians(), exp_ind));
+	for (size_t r_ind = 0; r_ind<res_size; ++r_ind) {
+	  resid_hess[r_ind] = 0.0;
+	  for (size_t i=0; i<num_sm_cv; ++i)
+	    for (size_t j=0; j<num_sm_cv; ++j)
+	      resid_hess[r_ind](i,j) = sim_hessians[r_ind](i,j);
+	}
+      }
     }
   }else{   
     if (num_scalars() > 0) {
@@ -1010,10 +1024,6 @@ determine_active_request(const Response& resid_resp) const
 	total_asv[exp_ind] |= asv[calib_term_ind + fn_ind];
     }
 
-    if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
-      Cout << "\nLeast squares: weighting least squares terms with inverse of "
-	   << "specified error\n               covariance." << std::endl;
-           
     calib_term_ind += num_fns_exp;
   }  // for each experiment
   return(total_asv);
@@ -1030,8 +1040,9 @@ scale_residuals(const Response& residual_response,
     // apply noise covariance to the residuals for this experiment 
     // and store in correct place in weighted_residual
     if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
-      Cout << "\nCalibration: weighting residuals with inverse of specified "
-           << "error covariance." << std::endl;
+      Cout << "Calibration: weighting residuals for experiment " 
+	   << exp_ind + 1 << " with inverse of specified\nerror covariance." 
+	   << std::endl;
        
     // apply cov_inv_sqrt to the residual vector
     if (total_asv[exp_ind] & 1) {
@@ -1064,8 +1075,9 @@ void ExperimentData::scale_residuals(Response& residual_response) const
     // apply noise covariance to the residuals for this experiment 
     // and store in correct place in residual_response
     if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
-      Cout << "\nCalibration: weighting residuals with inverse of specified "
-           << "error covariance." << std::endl;
+      Cout << "Calibration: weighting residuals for experiment " 
+	   << exp_ind + 1 << "with inverse of\n specified error covariance." 
+	   << std::endl;
        
     // apply cov_inv_sqrt to the residual vector
     RealVector weighted_resid;
@@ -1358,37 +1370,37 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
       //}
     if (residual_response.function_gradients().numCols() > 0) {
       RealMatrix resid_grads = residual_response.function_gradients_view();
+      RealMatrix grad_hyper(Teuchos::View, resid_grads, num_hyper, 
+			    total_resid, num_calib_params, 0);
+      grad_hyper = 0;  // not stricly needed as done in form_residuals
       scale_rows(expand_mults, resid_grads);
       // augment with gradient entries for the hyper-parameters
       for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
 	int mult_ind = resid2mult_indices[resid_ind];
-	for (int i=0; i<num_hyper; ++i) {
+	for (int i=0; i<num_hyper; ++i)
 	  if (i == mult_ind) {
 	    Real grad_scale = -0.5/multipliers[mult_ind];
 	    resid_grads(num_calib_params + i, resid_ind) = 
 	      grad_scale * resids[resid_ind];
 	  }
-	  else 
-	    resid_grads(num_calib_params + i, resid_ind) = 0.0;
-	}
       }
     }
     if (residual_response.function_hessians().size() > 0) {
       for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
 	RealSymMatrix fn_hess = 
 	  residual_response.function_hessian_view(resid_ind);
+	// zero out the part corresponding to the hyper-parameters
+	RealSymMatrix hess_hyper(Teuchos::View, fn_hess, num_hyper, 
+				 num_calib_params);
+	hess_hyper = 0.0;  // not stricly needed as done in form_residuals
 	fn_hess *= expand_mults[resid_ind];
 	// augment with Hessian entries for the hyper-parameters
 	int mult_ind = resid2mult_indices[resid_ind];
-	for (int i=0; i<num_hyper; ++i) {
+	for (int i=0; i<num_hyper; ++i)
 	  if (i == mult_ind) {
 	    Real hess_scale = 0.75*std::pow(multipliers[mult_ind], -2.0);
-	    fn_hess(num_calib_params + i, num_calib_params +i) = 
-	      hess_scale * resids[resid_ind];
+	    hess_hyper(i, i) = hess_scale * resids[resid_ind];
 	  }
-	  else 
-	    fn_hess(num_calib_params + i, num_calib_params + i) = 0.0;
-	}
       }
     }
     break;
