@@ -266,7 +266,7 @@ void compute_column_means( RealMatrix & matrix, RealVector & avg_vals );
 /**
  * \brief Test if incoming matrix is symmetric
  */
-bool is_matrix_symmetric( RealMatrix & matrix );
+bool is_matrix_symmetric( const RealMatrix & matrix );
 
 } // namespace dakota
 

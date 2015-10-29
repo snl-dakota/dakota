@@ -734,7 +734,7 @@ void compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
   }
 }
 
-bool is_matrix_symmetric( RealMatrix & matrix )
+bool is_matrix_symmetric( const RealMatrix & matrix )
 {
   int num_cols = matrix.numCols();
   int num_rows = matrix.numRows();

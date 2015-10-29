@@ -927,27 +927,26 @@ void test_get_positive_definite_covariance_from_hessian()
 
 void test_matrix_symmetry()
 {
-  Real matrix_array[] = { 1.64, 0.48, 0.48, 1.36 };
-  RealSymMatrix matrix( Teuchos::View, false, matrix_array, 2, 2 );
+  // Test non-square matrix
+  RealMatrix test_rect_matrix(4,3, true);
+  bool is_symm = is_matrix_symmetric(test_rect_matrix);
+  BOOST_CHECK( !is_symm );
 
-  RealVector eigenvalues;
-  RealMatrix eigenvectors;
-  symmetric_eigenvalue_decomposition( matrix, eigenvalues, eigenvectors );
+  Real matrix_array[] = { 1.0, 0.7, 0.7, 0.7, 
+                          0.7, 1.0, 0.7, 0.7, 
+                          0.7, 0.7, 1.0, 0.7, 
+                          0.7, 0.7, 0.7, 1.0 };
 
-  Real truth_eigenvalues_array[] = {1.,2.};
-  RealVector truth_eigenvalues( Teuchos::View, truth_eigenvalues_array, 2 );
- 
-  truth_eigenvalues -=  eigenvalues;
-  BOOST_CHECK( truth_eigenvalues.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  // Test symmetric matrix
+  RealMatrix test_symm_mat(Teuchos::Copy, matrix_array, 4, 4, 4);
+  is_symm = is_matrix_symmetric(test_symm_mat);
+  BOOST_CHECK( is_symm );
 
-
-  Real truth_eigenvectors_array[] ={ 0.6, -0.8, -0.8, -0.6 };
-  RealMatrix truth_eigenvectors( Teuchos::View, truth_eigenvectors_array, 2,2,2);
-
-  truth_eigenvectors -= eigenvectors;
-  BOOST_CHECK( truth_eigenvectors.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  // Test non-symmetric square matrix
+  RealMatrix test_nonsymm_mat(test_symm_mat);
+  test_nonsymm_mat(1,0) = 0.5;
+  is_symm = is_matrix_symmetric(test_nonsymm_mat);
+  BOOST_CHECK( !is_symm );
 }
 
 } // end namespace TestFieldCovariance
@@ -978,6 +977,7 @@ int test_main( int argc, char* argv[] )      // note the name!
 
   // Test linear algebra routines
   test_symmetric_eigenvalue_decomposition();
+  test_matrix_symmetry();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
