@@ -510,35 +510,49 @@ void NonDLocalReliability::mean_value()
   size_t i, j, cntr;
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
+    size_t rl_len = requestedRespLevels[respFnCount].length(),
+           pl_len = requestedProbLevels[respFnCount].length(),
+           bl_len = requestedRelLevels[respFnCount].length(),
+           gl_len = requestedGenRelLevels[respFnCount].length(),
+        total_lev = rl_len + pl_len + bl_len + gl_len;
+
     Real& mean    = momentStats(0,respFnCount);
     Real& std_dev = momentStats(1,respFnCount);
+
+    RealVector dg_ds_meanx;
+    bool need_dg_ds = (final_asv[statCount] & 2); // mean stat
+    if (!need_dg_ds)
+      for (i=0, j=statCount+2; i<total_lev; ++i, ++j)
+	if (final_asv[j] & 2)
+	  { need_dg_ds = true; break; }
+    if (need_dg_ds) {
+      RealVector fn_grad_mean_x(Teuchos::View, fnGradsMeanX[respFnCount],
+				numUncertainVars);
+      // evaluate dg/ds at the variable means and store in finalStatistics
+      dg_ds_eval(ranVarMeansX, fn_grad_mean_x, dg_ds_meanx);
+    }
 
     // approximate response means already computed
     finalStatistics.function_value(mean, statCount);
     // sensitivity of response mean
-    if (final_asv[statCount] & 2) {
-      RealVector fn_grad_mean_x(numUncertainVars, false);
-      for (i=0; i<numUncertainVars; i++)
-	fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
-      // evaluate dg/ds at the variable means and store in finalStatistics
-      RealVector final_stat_grad;
-      dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
-      finalStatistics.function_gradient(final_stat_grad, statCount);
-    }
-    statCount++;
+    if (final_asv[statCount] & 2)
+      finalStatistics.function_gradient(dg_ds_meanx, statCount);
+    ++statCount;
 
     // approximate response std deviations already computed
     finalStatistics.function_value(std_dev, statCount);
     // sensitivity of response std deviation
     if (final_asv[statCount] & 2) {
       // Differentiating the first-order second-moment expression leads to
-      // 2nd-order d^2g/dxds sensitivities which would be awkward to compute
-      // (nonstandard DVV containing active and inactive vars)
-      Cerr << "Error: response std deviation sensitivity not yet supported."
+      // 2nd-order d^2g/dxds sensitivities which are:
+      // > awkward to compute (nonstandard DVV w/ active + inactive vars)
+      // > a higher-order term that we will neglect for simplicity
+      Cerr << "Warning: response std deviation sensitivity is zero for MVFOSM."
            << std::endl;
-      abort_handler(-1);
+      RealVector final_stat_grad(numUncertainVars); // init to 0.
+      finalStatistics.function_gradient(final_stat_grad, statCount);
     }
-    statCount++;
+    ++statCount;
 
     // If response std_dev is non-zero, compute importance factors.  Traditional
     // impFactors correspond to the diagonal terms in the computation of the
@@ -573,10 +587,6 @@ void NonDLocalReliability::mean_value()
     // For failure defined as g<0, beta is simply mean/sigma.  This is extended
     // to compute general cumulative probabilities for g<z or general
     // complementary cumulative probabilities for g>z.
-    size_t rl_len = requestedRespLevels[respFnCount].length(),
-           pl_len = requestedProbLevels[respFnCount].length(),
-           bl_len = requestedRelLevels[respFnCount].length(),
-           gl_len = requestedGenRelLevels[respFnCount].length();
     for (levelCount=0; levelCount<rl_len; levelCount++) {
       // computed = requested in MV case since no validation fn evals
       Real z = computedRespLevels[respFnCount][levelCount]
@@ -607,16 +617,34 @@ void NonDLocalReliability::mean_value()
       }
       switch (respLevelTarget) {
       case PROBABILITIES:
-	finalStatistics.function_value(p, statCount);    break;
+	finalStatistics.function_value(p, statCount);
+	if (final_asv[statCount] & 2) {
+	  // dsigma/ds contains H.O.T. and taken to be 0.
+	  // beta_cdf  = (mu - z-bar) / sigma -> dbeta/ds =  1/sigma dmu/ds
+	  // beta_ccdf = (z-bar - mu) / sigma -> dbeta/ds = -1/sigma dmu/ds
+	  // dp_cdf/ds  = -phi(-beta) dbeta/ds = -phi(-beta)/sigma dmu/ds
+	  // dp_ccdf/ds = -phi(-beta) dbeta/ds =  phi(-beta)/sigma dmu/ds
+	  RealVector final_stat_grad(dg_ds_meanx); // deep copy
+	  Real phi_m_beta = Pecos::NormalRandomVariable::std_pdf(-beta);
+	  if (cdfFlag) final_stat_grad.scale(-phi_m_beta/std_dev);
+	  else         final_stat_grad.scale( phi_m_beta/std_dev);
+	  finalStatistics.function_gradient(final_stat_grad, statCount);
+	}
+	break;
       case RELIABILITIES: case GEN_RELIABILITIES:
-	finalStatistics.function_value(beta, statCount); break;
+	finalStatistics.function_value(beta, statCount);
+	if (final_asv[statCount] & 2) {
+	  // dsigma/ds contains H.O.T. and taken to be 0.
+	  // beta_cdf  = (mu - z-bar) / sigma -> dbeta/ds =  1/sigma dmu/ds
+	  // beta_ccdf = (z-bar - mu) / sigma -> dbeta/ds = -1/sigma dmu/ds
+	  RealVector final_stat_grad(dg_ds_meanx); // deep copy
+	  if (cdfFlag) final_stat_grad.scale( 1./std_dev);
+	  else         final_stat_grad.scale(-1./std_dev);
+	  finalStatistics.function_gradient(final_stat_grad, statCount);
+	}
+	break;
       }
-      if (final_asv[statCount] & 2) {
-	Cerr << "Error: response probability/reliability/gen_reliability level "
-	     << "sensitivity not supported for Mean Value." << std::endl;
-	abort_handler(-1);
-      }
-      statCount++;
+      ++statCount;
       // Update specialty graphics
       if (!subIteratorFlag)
 	dakota_graphics.add_datapoint(respFnCount, z, p);
@@ -632,12 +660,9 @@ void NonDLocalReliability::mean_value()
       Real z = computedRespLevels[respFnCount][levelCount] = (cdfFlag)
         ? mean - beta * std_dev : mean + beta * std_dev;
       finalStatistics.function_value(z, statCount);
-      if (final_asv[statCount] & 2) {
-	Cerr << "Error: response level sensitivity not supported for Mean "
-	     << "Value." << std::endl;
-	abort_handler(-1);
-      }
-      statCount++;
+      if (final_asv[statCount] & 2)
+	finalStatistics.function_gradient(dg_ds_meanx, statCount);
+      ++statCount;
       // Update specialty graphics
       if (!subIteratorFlag)
 	dakota_graphics.add_datapoint(respFnCount, z, p);
@@ -654,12 +679,9 @@ void NonDLocalReliability::mean_value()
       Real z = computedRespLevels[respFnCount][levelCount] = (cdfFlag)
         ? mean - beta * std_dev	: mean + beta * std_dev;
       finalStatistics.function_value(z, statCount);
-      if (final_asv[statCount] & 2) {
-	Cerr << "Error: response level sensitivity not supported for Mean "
-	     << "Value." << std::endl;
-	abort_handler(-1);
-      }
-      statCount++;
+      if (final_asv[statCount] & 2)
+	finalStatistics.function_gradient(dg_ds_meanx, statCount);
+       ++statCount;
       // Update specialty graphics
       if (!subIteratorFlag)
 	dakota_graphics.add_datapoint(respFnCount, z, p);
@@ -727,7 +749,7 @@ void NonDLocalReliability::mpp_search()
       dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
       finalStatistics.function_gradient(final_stat_grad, statCount);
     }
-    statCount++;
+    ++statCount;
 
     // approximate response std deviations already computed
     finalStatistics.function_value(momentStats(1,respFnCount), statCount);
@@ -739,8 +761,9 @@ void NonDLocalReliability::mpp_search()
       Cerr << "Error: response std deviation sensitivity not yet supported."
            << std::endl;
       abort_handler(-1);
+      // TO DO: back out from dmean/ds and dbeta/ds
     }
-    statCount++;
+    ++statCount;
 
     // The most general case is to allow a combination of response, probability,
     // reliability, and generalized reliability level specifications for each
@@ -895,7 +918,7 @@ void NonDLocalReliability::mpp_search()
       // Update response/probability/reliability level data
       update_level_data();
 
-      statCount++;
+      ++statCount;
     } // end loop over levels
   } // end loop over response fns
 
