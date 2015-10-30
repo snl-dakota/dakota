@@ -834,6 +834,8 @@ get_main_diagonal(RealVector &diagonal, size_t experiment ) const
 }
 
 
+/** This assumes the souce gradient/Hessian are size less or equal to
+    the destination response, and that the leading part is to be populated. */
 void ExperimentData::
 form_residuals(const Response& sim_resp, Response& residual_resp) const
 {
@@ -853,33 +855,33 @@ form_residuals(const Response& sim_resp, Response& residual_resp) const
 }
 
 
+/** This assumes the souce gradient/Hessian are size less or equal to
+    the destination response, and that the leading part is to be populated. */
 void ExperimentData::
 form_residuals(const Response& sim_resp, size_t exp_ind, 
 	       const ShortArray &total_asv, size_t exp_offset, 
 	       Response &residual_resp ) const
 {
-  size_t res_size = allExperiments[exp_ind].function_values().length();
+  // size of the residuals for this one experiment
+  size_t exp_resid_size = allExperiments[exp_ind].function_values().length();
+  // the functions from the simulation
+  RealVector sim_fns = sim_resp.function_values();
+  RealMatrix sim_grads = sim_resp.function_gradients_view();
+  RealSymMatrixArray sim_hessians = sim_resp.function_hessians_view();
 
-  RealVector resid_fns = sim_resp.function_values();
   size_t i, j;
-  const IntVector simLengths = sim_resp.field_lengths();
-  int numfields = num_fields();
+  const IntVector& sim_field_lens = sim_resp.field_lengths();
 
+  short asv = total_asv[exp_ind];
   RealVector all_residuals = residual_resp.function_values_view();
-  RealVector residuals(Teuchos::View, all_residuals.values()+exp_offset,
-		       res_size);
+  RealVector exp_residuals(Teuchos::View, all_residuals.values()+exp_offset,
+			   exp_resid_size);
 
   if (!interpolateFlag) {
 
-    short asv = total_asv[exp_ind];
-    RealMatrix sim_grads = sim_resp.function_gradients_view();
-    RealSymMatrixArray sim_hessians = sim_resp.function_hessians_view();
-
-    //resid_fns -= allExperiments[exp_ind].function_values();
-    // residuals = resid_fns;
-    for (i=0; i<resid_fns.length(); i++){
-      residuals[i]=
-	resid_fns[i]-allExperiments[exp_ind].function_value(i);
+    for (i=0; i<exp_resid_size; i++){
+      exp_residuals[i] =
+	sim_fns[i] - allExperiments[exp_ind].function_value(i);
 
       // populate only the part of the gradients/Hessians for this
       // experiment, for the active submodel derivative variables
@@ -888,7 +890,7 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 	RealMatrix resid_grads
 	  (gradients_view(residual_resp.function_gradients(), exp_ind));
 	resid_grads = 0.0;
-	for (size_t r_ind = 0; r_ind<res_size; ++r_ind)
+	for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind)
 	  for (size_t i=0; i<num_sm_cv; ++i)
 	    resid_grads(i, r_ind) = sim_grads(i, r_ind);
       }
@@ -897,7 +899,7 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 	size_t num_sm_cv = sim_grads.numRows();
 	RealSymMatrixArray resid_hess
 	  (hessians_view(residual_resp.function_hessians(), exp_ind));
-	for (size_t r_ind = 0; r_ind<res_size; ++r_ind) {
+	for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind) {
 	  resid_hess[r_ind] = 0.0;
 	  for (size_t i=0; i<num_sm_cv; ++i)
 	    for (size_t j=0; j<num_sm_cv; ++j)
@@ -905,16 +907,37 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 	}
       }
     }
-  }else{   
-    if (num_scalars() > 0) {
-      for (i=0; i<num_scalars(); i++) 
-        residuals[i]= resid_fns[i]-allExperiments[exp_ind].function_value(i);
+
+  } else {   
+
+    for (i=0; i<num_scalars(); i++) {
+      exp_residuals[i] = sim_fns[i] - allExperiments[exp_ind].function_value(i);
+      // BMA: Looked like gradients and Hessians of the scalars weren't
+      // populated, so added:
+      if (asv & 2) {
+	size_t num_sm_cv = sim_grads.numRows();
+	RealVector resid_grad = 
+	  residual_resp.function_gradient_view(exp_offset+i);
+	resid_grad = 0.0;
+	for (size_t j=0; j<num_sm_cv; ++j)
+	  resid_grad[j] = sim_grads(j, i);
+      }
+      if (asv & 4) {
+	size_t num_sm_cv = sim_hessians[i].numRows();
+	RealSymMatrix resid_hess = 
+	  residual_resp.function_hessian_view(exp_offset+i);
+	resid_hess = 0.0;
+	for (size_t j=0; j<num_sm_cv; ++j)
+	  for (size_t k=0; k<num_sm_cv; ++k)
+	    resid_hess(j,k) = sim_hessians[i](j,k);
+
+      }
     }
 
     // interpolate the simulation data onto the coordinates of the experiment
-    // data
+    // data, populating functions, gradients, Hessians
 
-    // I think resisuals are stored in continguous order, 
+    // I think residuals are stored in continguous order, 
     // [exp1(scalars,fields),...,exp_n(scalars,fields)
     // if so need to pass exp_offset to interpolate function above
     // and inside that function set offset =  exp_offset and 
@@ -923,19 +946,19 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 				residual_resp);
 
     if (outputLevel >= DEBUG_OUTPUT) 
-      Cout << "interp values" << residuals << '\n';
+      Cout << "interp values" << exp_residuals << '\n';
 
-    if (total_asv[exp_ind] & 1) {
+    if (asv & 1) {
       // compute the residuals, i.e. subtract the experiment data values
       // from the (interpolated) simulation values.
       size_t cntr = num_scalars();
       for (i=0; i<num_fields(); i++){
 	size_t num_field_fns = field_data_view(i,exp_ind).length();
 	for (j=0; j<num_field_fns; j++, cntr++)
-	  residuals[cntr] -= field_data_view(i,exp_ind)[j];
+	  exp_residuals[cntr] -= field_data_view(i,exp_ind)[j];
       }
       if (outputLevel >= DEBUG_OUTPUT) 
-	Cout << "residuals in exp space" << residuals << '\n';
+	Cout << "residuals in exp space" << exp_residuals << '\n';
     }
   }
 }
@@ -1417,7 +1440,7 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
   }
 }
 
-
+// BMA Reviewed
 /** Determinant of the total covariance used in inference, which has
     blocks mult_i * I * Cov_i. */
 Real ExperimentData::
@@ -1442,7 +1465,9 @@ cov_determinant(const RealVector& multipliers,
   case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
     RealVector expand_mults;
     generate_multipliers(multipliers, multiplier_mode, expand_mults);
-    // for each experiment, add contribution from mult: det(mult_i*I*Cov_i)
+    // for each experiment, add contribution from mult: det(mult_i*I*Cov_i) 
+    // Don't need to exponentiate to block size as we're multiplying det by 
+    // each multiplier individiually
     for (size_t resid_ind = 0; resid_ind < total_resid; ++resid_ind)
       det *= expand_mults[resid_ind];
     break;
@@ -1501,6 +1526,7 @@ half_log_cov_determinant(const RealVector& multipliers,
 }
 
 
+// BMA Reviewed
 /** Compute the gradient of scalar f(m) 0.5*log(det(mult*Cov))
     w.r.t. mults.  Since this is the only use case, we include the 0.5
     factor and perform an update in-place. */
@@ -1537,6 +1563,7 @@ half_log_cov_det_gradient(const RealVector& multipliers,
 
 }
 
+// BMA Reviewed
 /** Compute the gradient of scalar f(m) log(det(mult*Cov)) w.r.t. mults */
 void ExperimentData::
 half_log_cov_det_hessian(const RealVector& multipliers, 
@@ -1571,6 +1598,7 @@ half_log_cov_det_hessian(const RealVector& multipliers,
 }
 
 
+// BMA Reviewed
 /** Calculate how many residuals each multiplier affects */
 SizetArray ExperimentData::
 residuals_per_multiplier(unsigned short multiplier_mode) const
@@ -1630,6 +1658,7 @@ residuals_per_multiplier(unsigned short multiplier_mode) const
 }
 
 
+// BMA Reviewed
 void ExperimentData::generate_multipliers(const RealVector& multipliers,
                                           unsigned short multiplier_mode,
                                           RealVector& expanded_multipliers) const

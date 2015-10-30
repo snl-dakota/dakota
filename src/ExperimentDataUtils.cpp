@@ -4,6 +4,8 @@
 
 namespace Dakota {
 
+/** This assumes the souce gradient/Hessian are size less or equal to
+    the destination response, and that the leading part is to be populated. */
 void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad, 
 		     const RealSymMatrixArray& fn_hess, size_t offset, 
 		     size_t num_fns, Response& response)
@@ -13,17 +15,28 @@ void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad,
     if (asv[i] & 1) {
       response.function_value(fn_vals[i], offset+i);
     }
+    // populate only the part of the gradients/Hessians for this
+    // experiment, for the active submodel derivative variables
     if (asv[i] & 2) {
-      RealVector raw_grad_i = 
-	Teuchos::getCol(Teuchos::View, fn_grad, (int)i);
-      response.function_gradient(raw_grad_i, offset+i);
+      size_t num_sm_cv = fn_grad.numRows();
+      RealVector resp_grad = response.function_gradient_view(offset+i);
+      resp_grad = 0.0;
+      for (size_t j=0; j<num_sm_cv; ++j)
+	resp_grad[j] = fn_grad(j, i);
     }
     if (asv[i] & 4) {
-      response.function_hessian(fn_hess[i], offset+i);
+      size_t num_sm_cv = fn_hess[i].numRows();
+      RealSymMatrix resp_hess = response.function_hessian_view(offset+i);
+      resp_hess = 0.0;
+      for (size_t j=0; j<num_sm_cv; ++j)
+	for (size_t k=0; k<num_sm_cv; ++k)
+	  resp_hess(j,k) = fn_hess[i](j,k);
     }
   }
 }
 
+/** This assumes the souce gradient/Hessian are size less or equal to
+    the destination response, and that the leading part is to be populated. */
 void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad, 
 		     const RealSymMatrixArray& fn_hess, size_t offset, 
 		     size_t num_fns, short total_asv, Response& response)
@@ -34,12 +47,19 @@ void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad,
       response.function_value(fn_vals[i], offset+i);
     }
     if (total_asv & 2) {
-      RealVector raw_grad_i = 
-	Teuchos::getCol(Teuchos::View, fn_grad, (int)i);
-      response.function_gradient(raw_grad_i, offset+i);
+      size_t num_sm_cv = fn_grad.numRows();
+      RealVector resp_grad = response.function_gradient_view(offset+i);
+      resp_grad = 0.0;
+      for (size_t j=0; j<num_sm_cv; ++j)
+	resp_grad[j] = fn_grad(j, i);
     }
     if (total_asv & 4) {
-      response.function_hessian(fn_hess[i], offset+i);
+      size_t num_sm_cv = fn_hess[i].numRows();
+      RealSymMatrix resp_hess = response.function_hessian_view(offset+i);
+      resp_hess = 0.0;
+      for (size_t j=0; j<num_sm_cv; ++j)
+	for (size_t k=0; k<num_sm_cv; ++k)
+	  resp_hess(j,k) = fn_hess[i](j,k); 
     }
   }
 }
