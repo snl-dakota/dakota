@@ -564,6 +564,9 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 	  // field_index to matrices map
 	  read_covariance(field_base.string(), exp_index+1, Dakota::CovarianceMatrix::MATRIX,
 			  field_lengths[field_index], working_cov_values);
+          // Check for symmetry
+          if( !is_matrix_symmetric(working_cov_values) )
+            throw std::runtime_error("Covariance matrix from \""+field_base.string()+"\" is not symmetric.");
 	  sigma_matrices[count_sigma_matrices] = working_cov_values;
 	  matrix_map_indices[count_sigma_matrices++] = fn_index; // or should it be field_index? - RWH 
 	  //sigma_matrices[count_sigma_matrices-1].print(Cout);
