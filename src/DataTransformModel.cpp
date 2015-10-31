@@ -26,8 +26,6 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
 //   default to same as their Iterator...
 // * Verify that the default variables, active set, and secondary
 //   response mapping suffice Need test with data and constraints
-// * To be general, Variables map should be all active, not just continuous 
-//   aleatory....
 //  * Don't want to output message during recast retrieve... (or do we?)
 
 /** This constructor computes various indices and mappings, then
@@ -334,14 +332,16 @@ void DataTransformModel::set_mapping(const Variables& recast_vars,
   // When calibrating hyper-parameters in a MAP solve, requests for
   // gradients and Hessians require lower-order data to be present.  This
   // could be relaxed depending on which derivative vars are requested.
-  ShortArray sub_model_asv = sub_model_set.request_vector();
-  for (size_t i=0; i<sub_model_asv.size(); ++i) {
-    if (sub_model_asv[i] & 4)
-      sub_model_asv[i] |= 2;
-    if (sub_model_asv[i] & 2)
-      sub_model_asv[i] |= 1;
+  if (dtModelInstance->numHyperparams > 0) {
+    ShortArray sub_model_asv = sub_model_set.request_vector();
+    for (size_t i=0; i<sub_model_asv.size(); ++i) {
+      if (sub_model_asv[i] & 4)
+	sub_model_asv[i] |= 2;
+      if (sub_model_asv[i] & 2)
+	sub_model_asv[i] |= 1;
+    }
+    sub_model_set.request_vector(sub_model_asv);
   }
-  sub_model_set.request_vector(sub_model_asv);
 }
 
 

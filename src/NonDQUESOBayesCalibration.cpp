@@ -1122,7 +1122,11 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   for (size_t i=0; i<numHyperparams; ++i) {
-    paramMins[numContinuousVars + i] = 0.0;
+    // inverse gamma is defined on [0,inf), but we may have to divide
+    // responses by up to mult^{5/2}, so bound away from 0.
+    // real_min()^{2/5} = 8.68836e-124, but we can't anticipate the
+    // problem scale.  Arbitrarily choose 1.0e-100 for now.
+    paramMins[numContinuousVars + i] = 1.0e-100;
     paramMaxs[numContinuousVars + i] = std::numeric_limits<Real>::infinity();
   }
   paramDomain.reset(new QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>

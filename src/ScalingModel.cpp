@@ -66,11 +66,11 @@ ScalingModel(Model& sub_model):
   // verify this is the correct way to default map the other
   // variables.
 
-  Sizet2DArray vars_map_indices(sub_model.tv());
-  bool nonlinear_vars_mapping = false;
   // We assume the mapping is for all active variables
   size_t total_active_vars = 
     sub_model.cv() + sub_model.div() + sub_model.dsv() + sub_model.drv();
+  Sizet2DArray vars_map_indices(total_active_vars);
+  bool nonlinear_vars_mapping = false;
   for (size_t i=0; i<total_active_vars; ++i) {
     vars_map_indices[i].resize(1);
     vars_map_indices[i][0] = i;
