@@ -761,7 +761,9 @@ void NonDLocalReliability::mpp_search()
       Cerr << "Error: response std deviation sensitivity not yet supported."
            << std::endl;
       abort_handler(-1);
-      // TO DO: back out from dmean/ds and dbeta/ds
+      // TO DO: back out from RIA/PMA equations (use closest level to mean?):
+      // RIA: dsigma/ds = (dmean/ds - sigma dbeta_cdf/ds) / beta_cdf
+      // PMA: dsigma/ds = (dmean/ds - dz/ds) / beta_cdf
     }
     ++statCount;
 
