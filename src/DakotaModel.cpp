@@ -931,7 +931,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
        fd_hess_by_grad_flag = false;
   const ShortArray& original_asv = original_set.request_vector();
   const SizetArray& original_dvv = original_set.derivative_vector();
-  ActiveSet new_set = original_set; // copy
   size_t i, j, k, map_counter = 0, num_deriv_vars = original_dvv.size();
   const RealVector *f2 = NULL;
   size_t ifg, nfg = 0;
@@ -960,9 +959,9 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   // contained in original_asv is most likely not a duplicate, but that an
   // augmented data requirement (appears in map_asv but not in original_asv)
   // may have been evaluated previously.
-  Response initial_map_response = currentResponse.copy();
+  ActiveSet new_set = original_set; // copy
   new_set.request_vector(map_asv);
-  initial_map_response.active_set(new_set);
+  Response initial_map_response(currentResponse.shared_data(), new_set);
   if (augmented_data_flag) {
     bool eval_found
       = db_lookup(currentVariables, new_set, initial_map_response);
@@ -992,10 +991,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     }
     else {
       derived_compute_response(new_set);
-      if (initial_map_response.is_null())
-	initial_map_response = currentResponse.copy();
-      else
-	initial_map_response.update(currentResponse);
+      initial_map_response.update(currentResponse);
     }
     ++map_counter;
   }
@@ -1003,9 +999,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     initialMapList.push_back(initial_map);
     dbCaptureList.push_back(db_capture);
   }
-
-  const RealVector& fn_vals_x0  = initial_map_response.function_values();
-  const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
 
   // ------------------------------
   // Estimate numerical derivatives
@@ -1052,6 +1045,9 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     else // general derivatives
       copy_data(currentVariables.all_continuous_variables(), x0); // view->copy
 
+    const RealVector& fn_vals_x0  = initial_map_response.function_values();
+    const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
+    
     // define c_l_bnds, c_u_bnds, cv_ids, cv_types
     const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
       ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
