@@ -2317,7 +2317,8 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 		( gradientType == "mixed" &&
 		  contains(gradIdNumerical, i+1) ) ) ) {
 	fd_grad_asv_out[i] = 1;
-	if (intervalType == "forward" || !ignoreBounds)
+	// ignoreBounds check fixes one-sided FD bug but causes ~67 DIFFs
+	if (intervalType == "forward")// || !ignoreBounds)
 	  map_asv_out[i] |= 1; // activate 1st bit
 	use_est_deriv = true;
       }
