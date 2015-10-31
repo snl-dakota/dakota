@@ -52,11 +52,6 @@ enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
   */
   /// RealVectorArray interpolatedResults; 
   
-/// Element-wise scale of v by mults
-void scale(const RealVector& mults, RealVector& v);
-/// Scale each row of A by the mults 
-void scale_rows(const RealVector& mults, RealMatrix& A);
-
 
 /** The ExperimentData class is used to read and populate data 
     (currently from user-specified files and/or the input spec)
@@ -271,12 +266,6 @@ public:
     const RealSymMatrixArray &func_hessians, 
     const RealMatrix &func_gradients, const RealVector &residuals,
     RealSymMatrix &ssr_hessian, const ShortArray& asrv);
-
-  /// in-place scale the residuals by sqrt(multipliers), according to
-  /// blocks indicated by multiplier mode
-  void scale_residuals(const RealVector& multipliers, 
-		       unsigned short multiplier_mode,
-		       RealVector& residuals) const;
 
   /// in-place scale the residual response (functions, gradients,
   /// Hessians) by sqrt(multipliers), according to blocks indicated by

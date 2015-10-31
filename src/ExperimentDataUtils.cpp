@@ -385,7 +385,10 @@ void CovarianceMatrix::apply_covariance_inverse_sqrt_to_gradients(
     throw( std::runtime_error( msg ) );
   }
   int num_grads = gradients.numRows();
-  if ( ( result.numRows() != num_grads ) || ( result.numCols() != numDOF_ ) )
+  // BMA: relaxed this to allow result to have extra rows that aren't
+  // populated (don't want to resize the result gradients); may want
+  // to throw error or change API.
+  if ( ( result.numRows() < num_grads ) || ( result.numCols() != numDOF_ ) )
     result.shapeUninitialized( num_grads, numDOF_ );
   if ( covIsDiagonal_ ) {
     for (int j=0; j<numDOF_; j++)

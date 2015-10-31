@@ -68,13 +68,13 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // For now, we assume that any hyper-parameters are appended to the
   // active continuous variables, and that active discrete int,
   // string, real follow in both the recast and sub-model
-  Sizet2DArray vars_map_indices(sub_model.tv());
+  size_t submodel_non_cv = sub_model.div() + sub_model.dsv() + sub_model.drv();
+  Sizet2DArray vars_map_indices(sub_model.cv() + submodel_non_cv);
   for (size_t i=0; i<sub_model.cv(); ++i) {
     vars_map_indices[i].resize(1);
     vars_map_indices[i][0] = i;
   }
   size_t recast_vars_ind = sub_model.cv();
-  size_t submodel_non_cv = sub_model.div() + sub_model.dsv() + sub_model.drv();
   for (size_t i=0; i<submodel_non_cv; ++i, ++recast_vars_ind) {
     vars_map_indices[i].resize(1);
     vars_map_indices[i][0] = recast_vars_ind;
@@ -216,6 +216,7 @@ variables_expand(const Model& sub_model, size_t num_hyper)
     case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
       // append to end of continuous aleatory
       vc_totals[TOTAL_CAUV] += num_hyper;
+      break;
 
     case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: 
     case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
@@ -329,6 +330,18 @@ void DataTransformModel::set_mapping(const Variables& recast_vars,
     if (1 <= recast_dvv[i] && recast_dvv[i] <= max_sm_id)
       sub_model_dvv.push_back(recast_dvv[i]);
   sub_model_set.derivative_vector(sub_model_dvv);
+
+  // When calibrating hyper-parameters in a MAP solve, requests for
+  // gradients and Hessians require lower-order data to be present.  This
+  // could be relaxed depending on which derivative vars are requested.
+  ShortArray sub_model_asv = sub_model_set.request_vector();
+  for (size_t i=0; i<sub_model_asv.size(); ++i) {
+    if (sub_model_asv[i] & 4)
+      sub_model_asv[i] |= 2;
+    if (sub_model_asv[i] & 2)
+      sub_model_asv[i] |= 1;
+  }
+  sub_model_set.request_vector(sub_model_asv);
 }
 
 

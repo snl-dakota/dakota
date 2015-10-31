@@ -4828,22 +4828,22 @@ Sample moment statistics for each posterior variable:
 Test Number 27 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0326356851e+00 x1
-                      1.0559570770e+00 x2
-                      1.0013513448e+00 CovMultExp1
-                      1.0033110321e+00 CovMultExp2
+                      1.0136218880e+00 x1
+                      1.0290344953e+00 x2
+                      1.0099323045e+00 CovMultExp1
+                      9.9109452868e-01 CovMultExp2
 <<<<< Best misfit              =
-                      2.5290027672e-02
+                      4.7840005168e-04
 <<<<< Best log prior           =
-                      1.3887711084e+00
+                      1.3802798011e+00
 <<<<< Best log posterior       =
-                     -9.4014368913e-01
+                     -9.2010531484e-01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  6.5490684267e-01  4.1960652484e-01 -9.0356382184e-01  5.1751740581e-01
-            x2  5.9067362520e-01  4.4900648288e-01  3.4964040879e-01 -9.0847303532e-01
-   CovMultExp1  1.0218787354e+00  9.9168565659e-02  2.1755067684e-01  6.8382771692e-04
-   CovMultExp2  1.0198867394e+00  9.5897580423e-02  4.2150566486e-01  3.3731353456e-01
+            x1  7.7762609409e-01  3.6377998420e-01 -1.3834322442e+00  1.8290614254e+00
+            x2  7.2706673859e-01  4.2674925645e-01 -6.9996369287e-02 -8.5739751075e-01
+   CovMultExp1  1.0078580412e+00  9.9728891882e-02  2.9857836210e-01 -2.8588016841e-01
+   CovMultExp2  1.0118299914e+00  1.0030022498e-01  2.9794864661e-01 -4.0340129717e-02
 dakota_sbo_hierarchical.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)

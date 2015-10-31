@@ -12,29 +12,6 @@
 
 namespace Dakota {
 
-void scale(const RealVector& mults, RealVector& v)
-{
-  if (mults.length() != v.length()) {
-    Cerr << "\nError: incompatible multipliers and vector in scale.\n";
-    abort_handler(-1);
-  }
-  for (int j=0; j<v.length(); ++j)
-    v[j] /= sqrt(mults[j]);
-}
-
-
-void scale_rows(const RealVector& mults, RealMatrix& A)
-{
-  if (mults.length() != A.numCols()) {
-    Cerr << "\nError: incompatible multipliers and matrix in scale row.\n";
-    abort_handler(-1);
-  }
-  for (int j=0; j<A.numCols(); ++j)
-   for (int i=0; i<A.numRows(); ++i)
-     A[j][i] /= sqrt(mults[j]);
-}
-
-
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
@@ -770,6 +747,9 @@ apply_covariance(const RealVector& residuals, size_t experiment) const
     return exp_resid.dot( exp_resid );
 }
 
+// BMA TODO: These functions don't get called when covariance is
+// inactive, but if they did, could undesireably resize the outbound
+// object.
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment, 
 			  RealVector& weighted_residuals) const
@@ -785,6 +765,9 @@ apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment,
   }
 }
 
+// BMA TODO: These functions don't get called when covariance is
+// inactive, but if they did, could undesireably resize the outbound
+// object.
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment, 
 			  RealMatrix& weighted_gradients) const
@@ -801,6 +784,9 @@ apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment,
   }
 }
 
+// BMA TODO: These functions don't get called when covariance is
+// inactive, but if they did, could undesireably resize the outbound
+// object.
 void ExperimentData::
 apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
 			  RealSymMatrixArray& weighted_hessians) const
@@ -1102,7 +1088,7 @@ void ExperimentData::scale_residuals(Response& residual_response) const
     // and store in correct place in residual_response
     if (outputLevel >= DEBUG_OUTPUT && total_asv[exp_ind] > 0)
       Cout << "Calibration: weighting residuals for experiment " 
-	   << exp_ind + 1 << "with inverse of\n specified error covariance." 
+	   << exp_ind + 1 << " with inverse of\n specified error covariance." 
 	   << std::endl;
        
     // apply cov_inv_sqrt to the residual vector
@@ -1287,58 +1273,18 @@ build_hessian_of_sum_square_residuals_from_function_data(
 }
 
 
-void ExperimentData::
-scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
-                RealVector& residuals) const
-{
-  // BMA TODO: consistent handling of ASV across non-experiment cases
-  // NOTE: In most general case the index into multipliers is exp_ind
-  // * num_response_groups + resp_ind (never per function ind, e.g.,
-  // in a field)
-  
-  switch (multiplier_mode) {
-
-  case CALIBRATE_NONE:
-    // no-op
-    break;
-
-  case CALIBRATE_ONE:
-    assert(multipliers.length() == 1);
-    residuals *= (1.0/sqrt(multipliers[0]));
-    break;
-
-  case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
-    RealVector expand_mults;
-    generate_multipliers(multipliers, multiplier_mode, expand_mults);
-    size_t total_resid = num_total_exppoints();
-    for (size_t resid_ind = 0; resid_ind < total_resid; ++resid_ind)
-      residuals[resid_ind] /= sqrt(expand_mults[resid_ind]);
-    break;
-  }
-
-  default:
-    // unknown mode
-    Cerr << "\nError: unknown multiplier mode in scale_residuals().\n";
-    abort_handler(-1);
-    break;
-  }
-}
-
-
 /** In-place scaling of residual response by hyper-parameter multipliers */
 void ExperimentData::
 scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
                 size_t num_calib_params, Response& residual_response) const
 {
-  // BMA TODO: convert these all to block operations and verify
-  // derivative contributions.
 
-  // BMA TODO: incorporate ASV and map sure map solver always has asv & 1
   // NOTE: In most general case the index into multipliers is exp_ind
   // * num_response_groups + resp_ind (never per function ind, e.g.,
   // in a field)
   size_t num_hyper = multipliers.length();
   size_t total_resid = num_total_exppoints();
+  const ShortArray& asv = residual_response.active_set_request_vector();
 
   switch (multiplier_mode) {
 
@@ -1348,32 +1294,34 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
 
   case CALIBRATE_ONE: {
     assert(multipliers.length() == 1);
-    Real scale_factor = 1.0/sqrt(multipliers[0]);
+    Real fn_scale = 1.0/sqrt(multipliers[0]);
+    Real grad_scale = -0.5/multipliers[0];
+    Real hess_scale = 0.75*std::pow(multipliers[0], -2.0);
+ 
+    for (size_t i=0; i<total_resid; ++i) {
 
-    RealVector fn_values = residual_response.function_values_view();
-    fn_values *= scale_factor;
+      Real& fn_value = residual_response.function_value_view(i);
+      if (asv[i] & 1)
+	 fn_value *= fn_scale;
 
-    if (residual_response.function_gradients().numCols() > 0) {
+      RealVector fn_grad = residual_response.function_gradient_view(i);
+      if (asv[i] & 2) {
+	// scale all of the gradient (including zeroed entries)
+	fn_grad *= fn_scale;
+	// then augment with gradient entry for the hyper-parameter
+	fn_grad[num_calib_params] = grad_scale * fn_value;
+      }
 
-      RealMatrix fn_grads = residual_response.function_gradients_view();
-      fn_grads *= scale_factor;
-
-      // augment with gradient entry for the hyper-parameter
-      Real grad_scale = -0.5/multipliers[0];
-      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind)
-	fn_grads(num_calib_params, resid_ind) = grad_scale * fn_values[resid_ind];
-
-    }
-
-    if (residual_response.function_hessians().size() > 0) {
-
-      Real hess_scale = 0.75*std::pow(multipliers[0], -2.0);
-      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
-	RealSymMatrix fn_hess = residual_response.function_hessian_view(resid_ind);
-	fn_hess *= scale_factor;
-	// augment with Hessian entry for the hyper-parameter
-	fn_hess(num_calib_params, num_calib_params) = 
-	  hess_scale * fn_values[resid_ind];
+      if (asv[i] & 4) {
+	RealSymMatrix fn_hess = residual_response.function_hessian_view(i);
+	// scale all of the Hessian (including zeroed entries)
+	fn_hess *= fn_scale;
+	// then augment with Hessian entries for the hyper-parameter
+	for (size_t j=0; j<num_calib_params; ++j)  {
+	  fn_hess(j, num_calib_params) = grad_scale * fn_grad[j];
+	  fn_hess(num_calib_params, j) = grad_scale * fn_grad[j];
+	}
+	fn_hess(num_calib_params, num_calib_params) = hess_scale * fn_value;
       }
 
     }
@@ -1381,52 +1329,40 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
   }
 
   case CALIBRATE_PER_EXPER: case CALIBRATE_PER_RESP: case CALIBRATE_BOTH: {
-    RealVector expand_mults;
-    generate_multipliers(multipliers, multiplier_mode, expand_mults);
-
     IntVector resid2mult_indices;
     resid2mult_map(multiplier_mode, resid2mult_indices);
 
-    // TODO: have to promote gradient only ASV request to gradient +
-    // fn when there are hyperparameters
+    for (size_t i=0; i<total_resid; ++i) {
+      // index of multiplier for this residual
+      int mult_ind = resid2mult_indices[i];
+      Real fn_scale = 1.0/sqrt(multipliers[mult_ind]);
+      Real grad_scale = -0.5/multipliers[mult_ind];
+      Real hess_scale = 0.75*std::pow(multipliers[mult_ind], -2.0);
 
-    //    if (residual_response.function_values().length() > 0) {
-    RealVector resids = residual_response.function_values_view();
-    scale(expand_mults, resids);
-      //}
-    if (residual_response.function_gradients().numCols() > 0) {
-      RealMatrix resid_grads = residual_response.function_gradients_view();
-      RealMatrix grad_hyper(Teuchos::View, resid_grads, num_hyper, 
-			    total_resid, num_calib_params, 0);
-      grad_hyper = 0;  // not stricly needed as done in form_residuals
-      scale_rows(expand_mults, resid_grads);
-      // augment with gradient entries for the hyper-parameters
-      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
-	int mult_ind = resid2mult_indices[resid_ind];
-	for (int i=0; i<num_hyper; ++i)
-	  if (i == mult_ind) {
-	    Real grad_scale = -0.5/multipliers[mult_ind];
-	    resid_grads(num_calib_params + i, resid_ind) = 
-	      grad_scale * resids[resid_ind];
-	  }
+      Real& fn_value = residual_response.function_value_view(i);
+      if (asv[i] & 1)
+	fn_value *= fn_scale;
+
+      RealVector fn_grad = residual_response.function_gradient_view(i);
+      if (asv[i] & 2) {
+	// scale all of the gradient (including zeroed entries)
+	fn_grad *= fn_scale;
+	// then augment with gradient entries for the hyper-parameters
+	// only 1 multiplier can affect a given residual
+	fn_grad[num_calib_params + mult_ind] = grad_scale * fn_value;
       }
-    }
-    if (residual_response.function_hessians().size() > 0) {
-      for (size_t resid_ind=0; resid_ind < total_resid; ++resid_ind) {
-	RealSymMatrix fn_hess = 
-	  residual_response.function_hessian_view(resid_ind);
-	// zero out the part corresponding to the hyper-parameters
-	RealSymMatrix hess_hyper(Teuchos::View, fn_hess, num_hyper, 
-				 num_calib_params);
-	hess_hyper = 0.0;  // not stricly needed as done in form_residuals
-	fn_hess *= expand_mults[resid_ind];
+      
+      if (asv[i] & 4) {
+	RealSymMatrix fn_hess = residual_response.function_hessian_view(i);
+	// scale all of the Hessian (including zeroed entries)
+	fn_hess *= fn_scale;
 	// augment with Hessian entries for the hyper-parameters
-	int mult_ind = resid2mult_indices[resid_ind];
-	for (int i=0; i<num_hyper; ++i)
-	  if (i == mult_ind) {
-	    Real hess_scale = 0.75*std::pow(multipliers[mult_ind], -2.0);
-	    hess_hyper(i, i) = hess_scale * resids[resid_ind];
-	  }
+	for (size_t j=0; j<num_calib_params; ++j)  {
+	  fn_hess(j, num_calib_params + mult_ind) = grad_scale * fn_grad[j];
+	  fn_hess(num_calib_params + mult_ind, j) = grad_scale * fn_grad[j];
+	}
+	fn_hess(num_calib_params + mult_ind, num_calib_params + mult_ind) = 
+	  hess_scale * fn_value;
       }
     }
     break;
