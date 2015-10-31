@@ -960,11 +960,10 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   // contained in original_asv is most likely not a duplicate, but that an
   // augmented data requirement (appears in map_asv but not in original_asv)
   // may have been evaluated previously.
-  Response initial_map_response;
+  Response initial_map_response = currentResponse.copy();
+  new_set.request_vector(map_asv);
+  initial_map_response.active_set(new_set);
   if (augmented_data_flag) {
-    initial_map_response = currentResponse.copy();
-    new_set.request_vector(map_asv);
-    initial_map_response.active_set(new_set);
     bool eval_found
       = db_lookup(currentVariables, new_set, initial_map_response);
     if (eval_found) {
@@ -1618,7 +1617,6 @@ synchronize_derivatives(const Variables& vars,
        fd_hess_by_grad_flag = false;
   RealVector dx;
   std::vector<const RealVector*> fx;
-  const RealVector *fx0;
   size_t ifg, nfg = 0;
 
   for (i=0; i<numFns; i++) {
@@ -1680,7 +1678,6 @@ synchronize_derivatives(const Variables& vars,
   if (fd_hess_flag && fd_hess_by_fn_flag && !centralHess) {
     dx.resize(num_deriv_vars);
     fx.resize(num_deriv_vars);
-    fx0 = &initial_map_response.function_values();
   }
 
   // Postprocess the finite difference responses
@@ -1808,7 +1805,7 @@ synchronize_derivatives(const Variables& vars,
 	      for(i = 0; i < numFns; ++i)
 		if (fd_hess_asv[i] & 1)
 		  new_fn_hessians[i](j,j)
-		    = ((*fx1)[i] - 2.*(*fx0)[i] + (*fx2)[i]) / denom;
+		    = ((*fx1)[i] - 2.*fn_vals_x0[i] + (*fx2)[i]) / denom;
 	    }
 	    else {
 	      hdiff = h1 - h2;
@@ -1816,7 +1813,7 @@ synchronize_derivatives(const Variables& vars,
 	      for (i = 0; i < numFns; i++)
 		if (fd_hess_asv[i] & 1)
 		  new_fn_hessians[i](j,j)
-		    = (h2*(*fx1)[i] + hdiff*(*fx0)[i] - h1*(*fx2)[i])/denom;
+		    = (h2*(*fx1)[i] + hdiff*fn_vals_x0[i] - h1*(*fx2)[i])/denom;
 	    }
 
 	    // off-diagonal terms
@@ -1830,7 +1827,7 @@ synchronize_derivatives(const Variables& vars,
 	      ++fd_resp_cit;
 	      for (i = 0; i < numFns; i++)
 		new_fn_hessians[i](j,k) =
-		  ((*fx12)[i] - (*fx1)[i] - (*fx2)[i] + (*fx0)[i]) / denom;
+		  ((*fx12)[i] - (*fx1)[i] - (*fx2)[i] + fn_vals_x0[i]) / denom;
 	    }
 	  }
 	}
