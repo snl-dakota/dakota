@@ -1,31 +1,31 @@
-strategy,
-	single_method graphics
+environment,
+	graphics
 
 method,
-        nond_sampling,
+        sampling,
 	  samples = 50,
-	  response_thresholds = 15.0
+	  response_levels = 15.0
 	  seed = 1
 	  sample_type lhs
 
 variables,
 	normal_uncertain = 2
-	  nuv_means             =  4.0, 2.0
-	  nuv_std_deviations    =  0.4, 0.2
-	  nuv_descriptor        =  'S'   'B'
+	  means             =  4.0, 2.0
+	  std_deviations    =  0.4, 0.2
+	  descriptor        =  'S'   'B'
 	lognormal_uncertain = 1
-	  lnuv_means             =  6.66667
-	  lnuv_error_factors     =  0.66667
-	  lnuv_descriptor        =  'P'
+	  means             =  6.66667
+	  error_factors     =  1.1
+	  descriptor        =  'P'
 
 interface,
-	application system #asynch evaluation_concurrency = 5
+	 system #asynch evaluation_concurrency = 5
 	  analysis_driver = 'abaq_driver'
 	  parameters_file = 'params.in'
 	  results_file = 'results.out'
 	  aprepro
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 	no_gradients
 	no_hessians

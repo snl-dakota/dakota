@@ -1,8 +1,7 @@
 # based on dakota_rosenbrock_grad_opt.in
 # includes examples of several DAKOTA + Cygwin interfaces
 
-strategy,
-	single_method
+environment,
 	  tabular_data
 
 method,
@@ -39,7 +38,7 @@ interface,
 	  results_file = 'results.out'
 
 responses,
-	num_least_squares_terms = 2		
+	least_squares_terms = 2		
 	analytic_gradients			
 	no_hessians
 

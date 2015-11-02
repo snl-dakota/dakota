@@ -9,10 +9,9 @@
 # because Gamma and H are 0, there is no liquid - only pressure loading
 
 
-strategy
+environment
   tabular_graphics_data
     tabular_graphics_file 'Ponly_LHS.dat'
-  single_method
 
 method
   sampling

@@ -1,14 +1,14 @@
 
 param:  FOOD:                    cost  f_min  f_max :=
-  "Quarter Pounder w Cheese"    1.84     .      .
-  "McLean Deluxe w Cheese"      2.19     .      .
-  "Big Mac"                      1.84     .      .
+  "Quarter_Pounder_w_Cheese"    1.84     .      .
+  "McLean_Deluxe_w_Cheese"      2.19     .      .
+  "Big_Mac"                      1.84     .      .
   "Filet-O-Fish"                 1.44     .      .
-  "McGrilled Chicken"            2.29     .      .
-  "Fries, small"                  .77     .      .
-  "Sausage McMuffin"             1.29     .      .
-  "1% Lowfat Milk"                .60     .      .
-  "Orange Juice"                  .72     .      . ;
+  "McGrilled_Chicken"            2.29     .      .
+  "Fries,_small"                  .77     .      .
+  "Sausage_McMuffin"             1.29     .      .
+  "1%_Lowfat_Milk"                .60     .      .
+  "Orange_Juice"                  .72     .      . ;
 
 param:  NUTR:   n_min  n_max :=
         Cal      2000      .

@@ -1,7 +1,6 @@
 # DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 1
 
-strategy,
-	single_method
+environment,
 	tabular_data
 
 method,
@@ -11,7 +10,7 @@ method,
 
 variables,
 	continuous_design = 3
-	  cdv_initial_point    1.0   1.0   1.0
+	  initial_point    1.0   1.0   1.0
 
 # Case 1: Run DAKOTA in parallel and launch M-1 serial analysis jobs at once
 #         Do not specify any evaluation concurrency (handled by parallel 
@@ -43,7 +42,7 @@ interface,
 	    file_save
 
 responses,
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 	no_gradients
 	no_hessians

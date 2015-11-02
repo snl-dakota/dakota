@@ -3,13 +3,13 @@
 
 variables,
 	continuous_design = 4
-	  cdv_descriptor 'Model.rosen_suzuki.x[0]'
+	  descriptor 'Model.rosen_suzuki.x[0]'
                          'Model.rosen_suzuki.x[1]'
                          'Model.rosen_suzuki.x[2]'
                          'Model.rosen_suzuki.x[3]'
-	  cdv_initial_point    0.    0.    0.    0.
-          cdv_upper_bounds   100.  100.  100.  100.
-          cdv_lower_bounds  -100. -100. -100. -100.
+	  initial_point    0.    0.    0.    0.
+          upper_bounds   100.  100.  100.  100.
+          lower_bounds  -100. -100. -100. -100.
 
 interface,
 	direct,
@@ -20,8 +20,8 @@ interface,
 	  'C:\\cygwin\\home\\hkim\\MC_MODELS\\ROSEN_SUZUKI\\rosen_suzuki.pxc'
 
 responses,
-	num_objective_functions = 1
-        num_nonlinear_inequality_constraints = 3
+	objective_functions = 1
+        nonlinear_inequality_constraints = 3
         nonlinear_inequality_lower_bounds = 0. 0. 0.
 	nonlinear_inequality_upper_bounds = 1.e31 1.e31 1.e31
 	response_descriptor       'Model.rosen_suzuki.f'
@@ -40,7 +40,6 @@ method,
 	  max_iterations = 100
 	  output quiet
 
-strategy,
-        single_method
+environment,
 #	  graphics
 	  tabular_data

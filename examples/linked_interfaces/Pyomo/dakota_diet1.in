@@ -16,15 +16,15 @@ method,
 variables
   continuous_design 9
     descriptors
-      'Buy[Sausage McMuffin]'
-      'Buy[Orange Juice]'
-      'Buy[Big Mac]'
+      'Buy[Sausage_McMuffin]'
+      'Buy[Orange_Juice]'
+      'Buy[Big_Mac]'
       'Buy[Filet-O-Fish]'
-      'Buy[Quarter Pounder w Cheese]'
-      'Buy[1% Lowfat Milk]'
-      'Buy[Fries, small]'
-      'Buy[McGrilled Chicken]'
-      'Buy[McLean Deluxe w Cheese]'
+      'Buy[Quarter_Pounder_w_Cheese]'
+      'Buy[1%_Lowfat_Milk]'
+      'Buy[Fries,_small]'
+      'Buy[McGrilled_Chicken]'
+      'Buy[McLean_Deluxe_w_Cheese]'
     lower_bounds 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
     upper_bounds 20.0 20.0 20.0 20.0 20.0 20.0 20.0 20.0 20.0
 #    initial_point None None None None None None None None None

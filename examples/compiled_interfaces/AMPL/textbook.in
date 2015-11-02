@@ -5,8 +5,7 @@
 # This tester populates a test matrix of fork/system vs. synch/asynch
 # vs. temporary/named files for the 1 piece interface.
 
-strategy,
-	single_method
+environment,
 	  graphics
 
 method,
@@ -32,8 +31,8 @@ interface,
 #	  file_tag				#3,#7
 
 responses,
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 	numerical_gradients
 	  method_source dakota
 	  interval_type central

@@ -5,10 +5,9 @@
 # the list parameter study is the simplest Dakota method
 # the variable values for each function evaluation are listed.
 
-strategy
+environment
   tabular_graphics_data
     tabular_graphics_file 'Ponly_list.dat'
-  single_method
 
 method
   list_parameter_study
