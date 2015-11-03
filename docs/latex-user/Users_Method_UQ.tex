@@ -622,7 +622,13 @@ the incremental samples are double the sample size of the previous
 sample. That is, if one starts with a very small sample size of 10,
 then one can use the incremental sampling capability to generate
 sample sizes of 20, 40, 80, etc. Also, a Dakota restart file
-(dakota.rst) must be available from the original sample. There are two
+(dakota.rst) must be available from the original sample. 
+Incremental sampling supports continuous uncertain variables
+and discrete uncertain variables such as discrete distributions (e.g. 
+binomial, Poisson, etc.) as well as histogram variables and 
+uncertain set types.
+
+There are two
 cases, random incremental and Latin Hypercube incremental sampling.
 We assume that LHS incremental will be most frequently used. One
 major advantage of LHS incremental sampling is that it maintains the
@@ -679,6 +685,38 @@ Note that if the restart file has a different name, that is fine; the
 correct restart file name should be used.
 
 \end{enumerate}
+
+\subsection{Principal Component Analysis} 
+As of Dakota 6.3, we added a capability to perform 
+Principal Component Analysis on field response data when 
+using LHS sampling.  Principal components analysis (PCA) 
+is a data reduction method and allows one to express an 
+ensemble of field data with a set of principal components 
+responsible for the spread of that data.
+
+Dakota can calculate the principal components of the response matrix of
+N samples * L responses (the field response of length L) 
+using the keyword \texttt{principal\_components}.
+The Dakota implementation is under active development:  the PCA capability
+may ultimately be specified elsewhere or used in different ways.
+For now, it is performed as a post-processing analysis based on a set of 
+Latin Hypercube samples.
+ 
+If the user specifies LHS sampling with field data responses and also 
+specifies \texttt{principal\_components}, Dakota will calculate the principal
+components by calculating the eigenvalues and eigenvectors of a centered 
+data matrix.   
+Further, if the user specifies \texttt{percent\_variance\_explained} = 0.99, 
+the number of components that accounts for at least 99 percent of the variance 
+in the responses will be retained.  The default for this percentage is 0.95.  
+In many applications, only a few principal components explain the majority 
+of the variance, resulting in significant data reduction.
+The principal components are written to a file, \texttt{princ\_comp.txt}.
+Dakota also uses the principal components to create a surrogate model by 
+representing the overall response as weighted sum of M principal components, 
+where the weights will be determined by Gaussian processes which are a function 
+of the input uncertain variables.  This reduced form then can be used for 
+sensitivity analysis, calibration, etc.  
 
 \section{Reliability Methods}\label{uq:reliability}
 
