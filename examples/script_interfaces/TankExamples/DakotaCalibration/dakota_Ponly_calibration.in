@@ -15,9 +15,13 @@
 environment
   tabular_graphics_data
     tabular_graphics_file 'Ponly_Tank1_calibration.dat'
-  method_pointer = 'method_nl2sol'
+  method_pointer = 'multi_start'
+
+method
+  id_method 'multi_start'
   multi_start
     random_starts = 10
+  method_pointer 'method_nl2sol'
 
 method
   id_method  = 'method_nl2sol'
