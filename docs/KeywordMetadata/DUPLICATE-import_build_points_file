@@ -1,12 +1,9 @@
 Blurb::
-File containing variable values and corresponding responses
+File containing points you wish to use to build a surrogate
 
 Description::
-The \c import_points_file allows the user to specify a file that
-contains a list of variable values and the model responses computed at
-those values.  These can be used by a number of methods in place of
-model evaluations.  When used to construct surrogate models or
-emulators these are often called build points or training data.
+The \c import_build_points_file allows the user to specify a file that
+contains a list of points used to construct a surrogate model.
 
 <b> Default Behavior </b>
 
@@ -15,7 +12,7 @@ Be default, methods do not import points from a file.
 <b> Usage Tips </b>
 
 Dakota parses input files without regard to whitespace, but the
-import_points_file must be in one of three formats:
+import_build_points_file must be in one of three formats:
 \li \c annotated (default)
 \li \c custom_annotated
 \li \c freeform
@@ -24,8 +21,9 @@ Topics::
 Examples::
 \verbatim
 method
-  list_parameter_study
-    import_points_file = 'dakota_pstudy.3.dat'
+  polynomial_chaos
+    expansion_order = 4	
+    import_build_points_file = 'dakota_uq_rosenbrock_pce_import.annot.pts.dat'
 \endverbatim
 Theory::
 Faq::

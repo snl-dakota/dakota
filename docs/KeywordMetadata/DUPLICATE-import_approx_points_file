@@ -1,4 +1,4 @@
-Blurb:: Filename for points at which to evaluate the surrogate
+Blurb:: Filename for points at which to evaluate the PCS/SE surrogate
 
 Description::
 
@@ -6,7 +6,7 @@ Description::
 No import of points at which to evalulate the surrogate.
 
 <b> Expected Output </b>
-The surrogate model will be evaluated at the provided list of points
+The PCS/SE surrogate model will be evaluated at the provided list of points
 and results tabulated and/or statistics computed at them, depending on
 the method context.
 
