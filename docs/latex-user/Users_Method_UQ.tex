@@ -2437,6 +2437,63 @@ decomposition) which have GPs as the coefficients.
 At this point, the GPMSA implementation in Dakota is an early 
 prototype. The user will have to edit the GPMSA class in the Dakota 
 source to tailor it to their problem and recompile before running GPMSA.
+
+Table~\ref{tab:bayes_comparison} compares the options available 
+with the QUESO and DREAM implementations in Dakota. 
+
+\begin{table}
+\centering
+\caption{Capabilities of Bayesian methods in Dakota}
+\label{tab:bayes_comparison}
+\begin{tabular}{|c|c|c|}
+\hline
+Capability           &  QUESO  & DREAM \\
+\hline
+Prior Distribution Types                &  Any continuous uncertain & Only uniform priors \\
+                                        &  distributions in Dakota  &                    \\
+\hline
+MCMC Type                               &  Delayed Rejection or &  DREAM (Differential \\
+                               &  Adaptive Metropolis  or &  Evolution Adaptive  \\
+                               &  Metropolis Hastings  or &  Metropolis) \\
+                               &  Delayed Rejection  &   \\
+                               &  Adaptive Metropolis (DRAM) or  &   \\
+                               &  Multilevel    &   \\
+\hline
+Can use PCE/SC Emulator                 &  Yes                      &  Yes               \\
+\hline
+Can use a GP Emulator                   &  Yes                      &  Yes               \\
+\hline
+Can update the emulator adaptively            &  Yes                      &  No          \\     
+to focus on high likelihood points            &                       &                \\
+\hline
+Uses MAP point from emulator            &  Yes                      &  No               \\
+as starting point for MCMC chain             &                       &                \\
+\hline
+Uses inverse Hessian of MAP point            &  Yes                      &  No        \\       
+of emulator as initial proposal covariance              &                       &                \\
+\hline
+Can import build points for emulator            &  Yes                      &  Yes               \\             
+\hline
+Can specify the proposal covariance from            &  Yes                      &  No             \\            
+the variance of the prior distribution or               &                       &                \\
+from values specified by the user or                &                       &                \\
+from the inverse Hessian of the emulator                &                       &                 \\             
+\hline
+Can calibrate error covariance multipliers           &  Yes                      &  Yes         \\                
+which multiply the SIGMA matrix used                &                       &                \\
+in the log-likelihood function                 &                       &                 \\             
+\hline
+Can be used in standardized space           &  Yes (default)                    &  Yes               \\             
+\hline
+Logit transform           &  Yes                     &  No              \\             
+\hline
+Can export samples from the chain           &  Yes                     &  Yes              \\             
+%Can export samples from the posterior density           &  No                     &  No              \\             
+\hline
+\end{tabular}
+\end{table}
+
+
 %One major difference between the GPMSA toolbox and the current
 %implementation in Dakota is that the current Dakota implementation
 %does not have an explicit ``discrepancy'' function $\delta$ which
