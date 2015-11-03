@@ -956,7 +956,7 @@ public:
   /// function to determine initial finite difference h (before step
   /// length adjustment) based on type of step desired
   Real initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
-		    String step_type);
+		    String step_type) const;
   /// function returning finite-difference step size (affected by bounds)
   Real FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag);
   /// function returning second central-difference step size (affected
@@ -1014,6 +1014,10 @@ protected:
 					  int max_eval_concurrency,
 					  bool recurse_flag = true);
 
+  //
+  //- Heading: Member functions
+  //
+
   /// default logic for defining asynchEvalFlag and evaluationCapacity
   /// based on ie_pl settings
   void set_ie_asynchronous_mode(int max_eval_concurrency);
@@ -1028,6 +1032,17 @@ protected:
   void string_variable_max(const StringRealMapArray& srma, size_t offset, 
 			   Variables& vars);
 
+  /// Initialize data needed for computing finite differences
+  /// (active/inactive, center point, and bounds)
+  SizetMultiArrayConstView
+  initialize_x0_bounds(const SizetArray& original_dvv, bool& active_derivs, 
+                       bool& inactive_derivs, RealVector& x0, RealVector& fd_lb,
+                       RealVector& fd_ub) const;
+
+  /// Compute the forward step for a finite difference gradient;
+  /// updates shortStep
+  Real forward_grad_step(size_t num_deriv_vars, size_t xj_index,
+                         Real x0_j, Real lb_j, Real ub_j);
 
   //
   //- Heading: Data
@@ -1238,15 +1253,15 @@ private:
   /// global or distribution bounds
   Real finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
 				     const RealVector& global_c_l_bnds,
-				     size_t cv_index);
+				     size_t cv_index) const;
   /// return the upper bound for a finite difference offset, drawn from
   /// global or distribution bounds
   Real finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
 				     const RealVector& global_c_u_bnds,
-				     size_t cv_index);
+				     size_t cv_index) const;
 
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
-  bool manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out, 
+  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out, 
 		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
 		  ShortArray& quasi_hess_asv_out);
 
