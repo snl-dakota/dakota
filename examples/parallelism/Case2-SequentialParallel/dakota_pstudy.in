@@ -1,4 +1,4 @@
-# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 2
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 2 (Sequential Parallel)
 
 environment,
 	tabular_data
@@ -12,9 +12,9 @@ variables,
 	continuous_design = 3
 	  initial_point    1.0   1.0   1.0
 
-# Case 4: Run DAKOTA in serial on a login node and launch each analysis job 
-#         into the queue with qsub (evaluation_concurrency = 1)
-#         Fork interface is recommended
+# Case 2 (Sequential Parallel): Run DAKOTA in serial and launch one parallel
+#         analysis job at a time.  Do not specify any evaluation concurrency
+#         fork interface is recommended.
 interface,
 	fork
 	  analysis_driver = 'text_book_par_driver'

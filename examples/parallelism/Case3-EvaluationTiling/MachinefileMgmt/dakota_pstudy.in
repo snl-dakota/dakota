@@ -1,4 +1,5 @@
-# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case3 Machinefile Management
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 3 (Evaluation Tiling with
+# Machinefile Management)
 
 environment,
 	tabular_data
@@ -12,8 +13,8 @@ variables,
 	continuous_design = 3
 	  initial_point    1.0   1.0   1.0
 
-# Case 3 machinefiles: Run DAKOTA in serial driver script will manage
-# the machine files for the load balancing of the parallel analysis
+# Case 3 (Evaluation Tiling with Machinefile Management): Run Dakota in serial, driver
+# script will manage the machine files for the load balancing of the parallel analysis
 interface,
 	fork,
 	  asynchronous evaluation_concurrency = 3

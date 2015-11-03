@@ -1,4 +1,4 @@
-# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 1
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 1 (Massively Serial)
 
 environment,
 	tabular_data
@@ -12,13 +12,13 @@ variables,
 	continuous_design = 3
 	  initial_point    1.0   1.0   1.0
 
-# Case 1: Run DAKOTA in parallel and launch M-1 serial analysis jobs at once
-#         Do not specify any evaluation concurrency (handled by parallel 
-#	  scheduler)
+# Case 1 (Massively Serial): Run Dakota in parallel and launch M-1 serial
+#         analysis jobs at once.  Do not specify any evaluation concurrency
+#         (handled by parallel scheduler)
 #         fork interface is recommended
 interface,
 	fork
-# In an M processor allocation, by default DAKOTA will configure with
+# In an M processor allocation, by default Dakota will configure with
 # a master scheduler with M-1 slave analysis processes.  Overriding
 # this with evaluation_scheduling peer static will avoid this dedicated 
 # master and use all M processors, but then each batch of M analyses will 

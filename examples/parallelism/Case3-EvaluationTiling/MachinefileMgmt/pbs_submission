@@ -2,7 +2,7 @@
 
 # PBS submission script for parallel Case 3 Machinefile Management: 
 # At most (M-1)/N simultaneous N proc jobs.  Here M=8, but we'll
-# schedule 1 proc for DAKOTA and 3 jobs each using N=2 processors, for a
+# schedule 1 proc for Dakota and 3 jobs each using N=2 processors, for a
 # total of 7 procs used.
 
 #PBS -l nodes=4:ppn=2:compute
@@ -14,7 +14,7 @@
 export DAKOTA=/path/to/dakota
 export PATH=$DAKOTA/bin:$DAKOTA/test:$PATH:.
 
-# this presumes one processor will be dedicated to running DAKOTA and the
+# this presumes one processor will be dedicated to running Dakota and the
 # remaining M-1 are available for analysis jobs, therefore we require
 #   CONCURRENCY * APPLIC_PROCS <= M-1
 #
@@ -22,7 +22,7 @@ export PATH=$DAKOTA/bin:$DAKOTA/test:$PATH:.
 #   CONCURRENCY * APPLIC_PROCS <= M is required)
 
 # number of simultaneous application jobs to run (used by setupNodes.sh)
-# *** must be same as DAKOTA evaluation_concurrency ***
+# *** must be same as Dakota evaluation_concurrency ***
 # CONCURRENCY=`grep concurr dakota_pstudy.in | cut -d "=" -f2`
 export CONCURRENCY=3 
 
@@ -41,6 +41,6 @@ export APPLIC_PROCS=2
 # processors.
 setup_nodes.sh $PBS_NODEFILE
 
-# Execute DAKOTA
+# Execute Dakota
 dakota -i dakota_pstudy.in -o dakota_pstudy.out
 

@@ -1,4 +1,4 @@
-# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 3 OpenMPI relative node
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 3 (Evaluation Tiling with MPICH)
 
 environment,
 	tabular_data
@@ -12,19 +12,21 @@ variables,
 	continuous_design = 3
 	  initial_point    1.0   1.0   1.0
 
-# Case 3 OpenMPI: Run DAKOTA in serial launching M=4 asynchronous local jobs
-# where each will schedule on an appropriate node using mpiexec relnode for
-# the parallel analysis 
+# Case 3 (Evaluation Tiling with MPICH): Run Dakota in serial launching M=3
+# asyncronous local jobs where each will connect to an mpiexec server to run
+# an N=2 processor parallel analysis 
 interface,
 	fork,
 	  asynchronous 
 
 	  # this must agree with the qsub and driver script files
-	  evaluation_concurrency = 4
+	  evaluation_concurrency = 3
 
+	  ###--- BEGIN SRUN ---###
 	  # this will guarantee that evaluations are replaced with
-          # evaluations modulo the evaluation concurrency
- 	  local_evaluation_static_scheduling
+          # evaluations modulo the evaluation concurrency:
+ 	  ##local_evaluation_static_scheduling
+	  ###--- END SRUN ---###
 
 	  analysis_driver = 'text_book_par_driver'
 	    parameters_file = 'params.in'
