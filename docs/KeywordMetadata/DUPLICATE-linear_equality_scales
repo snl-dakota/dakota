@@ -5,7 +5,7 @@ Each entry in \c linear_equality_scales may be a
 user-specified, nonzero characteristic value to be used in scaling each
 constraint. 
 
-See the \ref method-scaling page for details on how to use this keyword.
+See the scaling keyword in the \ref method section for details on how to use this keyword.
 
 Scaling for linear constraints is
 applied \e after any continuous variable scaling.

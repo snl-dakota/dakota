@@ -17,14 +17,12 @@ The library also contains a direct search algorithm, PDS
 (parallel direct search, %Dakota's \c optpp_pds method), which supports
 bound constraints.
 
-<b> Method Independent Controls </b>
-
-These are specified directly under the \c method block.
- -# \ref method-max_iterations
- -# \ref method-max_function_evaluations
- -# \ref method-convergence_tolerance 
- -# \ref method-output
- -# \ref method-speculative
+<b> Controls </b>
+ -# \c max_iterations
+ -# \c max_function_evaluations
+ -# \c convergence_tolerance 
+ -# \c output
+ -# \c speculative
 
 
 

@@ -23,8 +23,8 @@ regarding all SCOLIB methods </b>
 <b> Stopping Critieria </b>
 
 COBYLA currently only supports termination based on
- \li \ref method-max_function_evaluations
- \li \c solution_target
+ \li \ref method-coliny_cobyla-max_function_evaluations
+ \li \ref method-coliny_cobyla-solution_target
 
 Other method-independent stopping criteria (\c max_iterations and \c
 convergence_tolerance) will be ignored if set.

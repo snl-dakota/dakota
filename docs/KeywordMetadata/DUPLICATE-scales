@@ -1,7 +1,7 @@
 Blurb::
 Characteristic values for scaling
 Description::
-See the \ref method-scaling page for details on how to use this keyword.
+See the \c scaling keyword in the \ref method section for details on how to use this keyword.
 
 Topics::	
 Examples::

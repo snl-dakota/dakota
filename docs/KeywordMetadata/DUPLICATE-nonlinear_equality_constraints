@@ -11,7 +11,7 @@ for each constraint
 
 The \c scale_types and \c scales keywords are related to scaling
 of \f$ g \left( x \right) \f$.
-See the \ref method-scaling page for details.
+See the scaling keyword in the \ref method section for details.
 
 
 Topics::

@@ -19,9 +19,9 @@ The user may generally ignore the details of this internal iteration. If
 control is desired, however, there are a few variables with which the user
 can influence the iteration. 
 The user may specify: 
-\li \c max_iterations, the number of iterations carried out (this is a method independent control, see \ref method-max_iterations
-\li \c num_trials, the number of secondary sample points generated to adjust the location of the primary sample points
-\li \c trial_type, which controls how these secondary sample points are generated
+\li \ref method-fsu_cvt-max_iterations, the number of iterations carried out
+\li \ref method-fsu_cvt-num_trials, the number of secondary sample points generated to adjust the location of the primary sample points
+\li \ref method-fsu_cvt-trial_type, which controls how these secondary sample points are generated
 
 This method generates sets of uniform random variables on the 
 interval [0,1]. If the user specifies lower and upper bounds for a 
