@@ -2679,7 +2679,51 @@ verbose output in the method section will result in the likelihoods being printe
 %Dakota, so we recommend monitoring our updates to these capabilities.
 %If you would like additional information on emerging capabilities, 
 %contact the Dakota developers at dakota-developers@development.sandia.gov.
-  
+
+
+\subsection{Calibrating the Observation Error Model}
+
+As discussed in Section~\ref{input:calib_data}, Dakota accepts user
+information on the covariance $\Sigma_d$ among observation errors and
+includes this in the likelihood formulation:
+\begin{equation*}
+\log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma_d}^{-1} {R}
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r}.
+\end{equation*}
+
+In some cases, it can be helpful to fine tune the assumptions in this
+covariance during the calibration process.  Dakota supports
+calibrating one or more multipliers on the blocks of the error
+covariance.  So if $\Sigma_d$ is block diagonal: $\Sigma_d =
+\mbox{diag}({\Sigma_d}_1, ..., {\Sigma_d}_N)$, we instead formulate as
+$\Sigma_d = \mbox{diag}(m_1{\Sigma_d}_1, ..., m_P{\Sigma_d}_P)$ and
+calibrate the multipliers $m_i$ as hyper-parameters in the Bayesian
+inference process.
+
+The supported modes for calibrating observation error multipliers are
+shown in Figure\ref{fig:uq:obs_err_mult}: \texttt{one},
+\texttt{per\_experiment}, \texttt{per\_response}, and \texttt{both}.
+Here the two major blocks denote two experiments, while the inner
+blocks denote five response groups (two scalar, three field).  The
+priors on the hyper-parameters $m_i$ are taken to be inverse gamma
+distributions, with mean and mode approximately 1.0 and standard
+deviation approximately 0.1.
+
+\begin{figure}[htbp!]
+  \centering
+  \begin{subfigmatrix}{2}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateOne}}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerExperiment}}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerResponse}}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateBoth}}
+  \end{subfigmatrix}
+  \caption{Calibrating observational error covariance multipliers: (a)
+    one multiplier on whole user-provided covariance structure, (b)
+    multiplier per-experiment, (c) multiplier per-response, and (d)
+    both..}
+  \label{fig:uq:obs_err_mult}
+\end{figure}
+
 \section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
 
 The choice of uncertainty quantification method depends on how the
