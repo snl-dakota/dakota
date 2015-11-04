@@ -565,6 +565,7 @@ Real Model::forward_grad_step(size_t num_deriv_vars, size_t xj_index,
   //Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
   Real h = FDstep1(x0_j, lb_j, ub_j,
 		   initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradStepType));
+  return h;
 }
 
 
