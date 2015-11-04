@@ -2367,6 +2367,7 @@ Los Alamos National Laboratory. At this point, the QUESO
 implementation is the most well-developed within Dakota and is the one
 that we recommend.
 
+\subsection{QUESO}
 In the QUESO method, the user can run the MCMC sampling with 
 the simulation model directly. However, 
 if the model is expensive, we recommend that the user employs 
@@ -2388,8 +2389,9 @@ forming the Hessian of the misfit function (the negative
 log likelihood).  When derivative information is available inexpensively (e.g. from an emulator), 
 the derivative-based proposal covariance forms a more
 accurate proposal distribution, resulting in lower rejection rates and
-faster chain mixing.  Note that the derivative-based proposal covariance 
-should be updated periodically based on a \texttt{proposal\_updates} specification.
+faster chain mixing.  
+%Note that the derivative-based proposal covariance 
+%should be updated periodically based on a \texttt{proposal\_updates} specification.
 %may also be updated by adding high-likelihood evaluations of the actual simulation to the emulator build points in an adaptive fashion, thus refining the Hessian.  
 The \texttt{prior} setting means that Dakota will form the proposal from the variance of the prior distributions of the 
 parameters being calibrated.  When specifying the proposal covariance with values or from a file, the user 
@@ -2403,7 +2405,10 @@ such that transformation to unbounded domains may greatly reduce sample
 rejection rates.
 The specification details for keywords governing the proposal covariance are listed in the Reference Manual. 
 For more detail about derivative-based formulations involving the misfit Hessian, refer to the Theory Manual. 
-    
+
+Another feature is that the user can perform a deterministic gradient-based optimization before the MCMC sampling to get a good starting point for the chain.  The goal of the optimization is to maximize the log posterior, which is defined as the log-likelihood minus the log-prior. The Markov Chain in Bayesian calibration will be started at the best point found in the optimization (the maximum a posteriori probability point, also called the MAP point).  This will give an optimal starting point for the MCMC chain, which can help the process avoid a lot of the initial searching for high posterior probability points. Use of the optimization to generate a MAP starting point is specified with the keyword \texttt{pre\_solve}.  The pre-solve option can be used with an emulator or with no emulator.   
+
+\subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
 \texttt{chains} specification.  The total number of generations per chain in DREAM is
 the number of samples divided by the number of chains.
@@ -2422,6 +2427,7 @@ process.  The integer \texttt{jump\_step} forces a long jump every
 \texttt{jump\_step} generations.
 For more details about these parameters, refer to \cite{Vrugt}. 
 
+\subsection{GPMSA}
 For the GPMSA capability, a key part of the algorithm involves the 
 construction of an emulator from simulation runs 
 collected at various settings of input parameters. The emulator is a 
@@ -2438,6 +2444,7 @@ At this point, the GPMSA implementation in Dakota is an early
 prototype. The user will have to edit the GPMSA class in the Dakota 
 source to tailor it to their problem and recompile before running GPMSA.
 
+\subsection{Comparison of features for Bayesian Methods}
 Table~\ref{tab:bayes_comparison} compares the options available 
 with the QUESO and DREAM implementations in Dakota. 
 
@@ -2466,18 +2473,19 @@ Can use a GP Emulator                   &  Yes                      &  Yes      
 Can update the emulator adaptively            &  Yes                      &  No          \\     
 to focus on high likelihood points            &                       &                \\
 \hline
-Uses MAP point from emulator            &  Yes                      &  No               \\
+Uses MAP optimal point           &  Yes                      &  No               \\
 as starting point for MCMC chain             &                       &                \\
+(optimization can use emulator or actual model)   &                       &                \\
 \hline
 Uses inverse Hessian of MAP point            &  Yes                      &  No        \\       
-of emulator as initial proposal covariance              &                       &                \\
+as initial proposal covariance              &                       &                \\
 \hline
 Can import build points for emulator            &  Yes                      &  Yes               \\             
 \hline
 Can specify the proposal covariance from            &  Yes                      &  No             \\            
 the variance of the prior distribution or               &                       &                \\
 from values specified by the user or                &                       &                \\
-from the inverse Hessian of the emulator                &                       &                 \\             
+from the inverse Hessian                 &                       &                 \\             
 \hline
 Can calibrate error covariance multipliers           &  Yes                      &  Yes         \\                
 which multiply the SIGMA matrix used                &                       &                \\
@@ -2587,27 +2595,27 @@ accordance with Bayes Theorem~\ref{eqn:BayesThm} and the likelihood
 function~\ref{eqn:Likelihood}. Dakota's final output summary will
 currently report an evaluation count summary and the best sample point
 that was visited during the MCMC process, as measured by maximum
-posterior probability (an estimate of the MAP point).
+posterior probability (an estimate of the MAP point).  The final output 
+also summarizes the moments of the posterior samples from the chain (e.g. 
+mean of the chain, standard deviation of the chain samples, etc.)
 
 A variety of auxilliary output also exists.  The MCMC sample output is
-put into a directory called \texttt{outputData} in the directory from
+put into a directory called \texttt{QuesoDiagnostics} in the directory from
 which Dakota is run.  The file \texttt{display\_sub0.txt} contains
 information regarding the MCMC process.  The Matlab files contained in
-the \texttt{outputData} directory contain the chain files.  The files
+the \texttt{QuesoDiagnostics} directory contain the chain files.  The files
 to load in Matlab are \texttt{raw\_chain.m} or
 \texttt{filtered\_chain.m}, containing the full chain or the filtered
 chain values of the parameters\footnote{The full chain will be output
   in cases of adaptive posterior refinement or proposal updating,
   since these use cases access the entire acceptance chain to identify
-  refinement data or restarting points, respectively.}.  There are
-corresponding files containing the log likelihood values.  In
-addition, if verbose output is specified, the values that Dakota
+  refinement data or restarting points, respectively.}. 
+In addition, the accepted chain values that Dakota
 generates are written to a file in the run directory called
-QuesoOutput.txt.  The first columns of this file are the sample
-inputs, the next columns are the responses, and the final column is
-the log-likelihood.  Note that this file contains ALL values
-generated, including the ones rejected, so it is not the actual MCMC
-chain which contains only the accepted points.
+\texttt{dakota\_mcmc\_tabular.dat}.  The first columns of this file are the posterior 
+values of the input variables.  
+Finally, if one wants to see the likelihood of each point, specifying 
+verbose output in the method section will result in the likelihoods being printed. 
 
 %We expect to continue development of Bayesian calibration methods, 
 %so check for updates to this capability. The QUESO and GPMSA capabilities
