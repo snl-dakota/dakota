@@ -1,30 +1,29 @@
-Blurb::
-Stopping criterion based on convergence of the objective function
+Blurb:: Stopping criterion based on convergence of the objective function or statistics
+
 Description::
 The \c convergence_tolerance specification provides a real value for
 controlling the termination of iteration.
 
-It is a
-<b> relative convergence tolerance </b> for the objective function; i.e., if
-the change in the objective function between successive iterations
-divided by the previous objective function is less than the amount
-specified by convergence_tolerance, then this convergence criterion is
-satisfied on the current iteration.
+For optimization, it is most commonly a <b>relative convergence
+tolerance</b> for the objective function; i.e., if the change in the
+objective function between successive iterations divided by the
+previous objective function is less than the amount specified by
+convergence_tolerance, then this convergence criterion is satisfied on
+the current iteration.
 
 Therefore, permissible values are between 0 and 1, non-inclusive.
 
 <b> Behavior Varies by Package/Library </b>
 
-This control is used with optimization and least squares
-iterators (DOT, CONMIN, NPSOL, NLSSOL, OPT++, and SCOLIB) and is not
-used within the uncertainty quantification, design of experiments, or
-parameter study iterator branches.
+This control is used with most optimization and least squares
+iterators (DOT, CONMIN, NPSOL, NLSSOL, OPT++, and SCOLIB).  Most other
+Dakota methods (such as DACE or parameter studies) do not use this
+control, but some adaptive methods, such as adaptive UQ, do.
 
-Since no progress may be made on
-one iteration followed by significant progress on a subsequent
-iteration, some libraries require that the convergence tolerance be
-satisfied on two or more consecutive iterations prior to termination
-of iteration. 
+Since no progress may be made on one iteration followed by significant
+progress on a subsequent iteration, some libraries require that the
+convergence tolerance be satisfied on two or more consecutive
+iterations prior to termination of iteration.
 
 Notes on each library:
 \li DOT: must be satisfied for two consecutive iterations 

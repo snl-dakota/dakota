@@ -1,32 +1,37 @@
 Blurb:: Calibrate hyper-parameter multipliers on the observation error covariance
 
-Description::
-Calibrate one or more multipliers on the user-provided observation
-error covariance.  Options include \c one multiplier on the whole
-block-diagonal covariance structure, one multiplier \c per_experiment
-covariance block, one multiplier \c per_response covariance block, or
-separate multipliers for each response/experiment pair.
+Description:: Calibrate one or more multipliers on the user-provided
+observation error covariance (\ref
+responses-calibration_terms-calibration_data-variance_type).  Options
+include \c one multiplier on the whole block-diagonal covariance
+structure, one multiplier \c per_experiment covariance block, one
+multiplier \c per_response covariance block, or separate multipliers
+for each response/experiment pair (for a total of number experiments X
+number response groups).
 
-<b> Default Behavior </b>
-No hyper-parameter calibration.
+<b>Default Behavior:</b> No hyper-parameter calibration.  When
+hyper-parameter calibration is enabled, the default prior on the
+multiplier is a diffuse inverse gamma, with mean and mode
+approximately 1.0.
 
-<b> Expected Output </b>
+<b>Expected Output:</b> Final calibration results will include both
+inference parameters and one or more calibrated hyper-parameters.
 
-Final calibration results will include both inference parameters and
-one or more calibrated hyper-parameters.
-
-<b> Usage Tips </b>
-
-The per_response option can be useful when each response has its own measurement error process, but all experiments were gathered with the same equipment and conditions.  The per_experiment option might be used when working with data from
+<b>Usage Tips:</b> The per_response option can be useful when each
+response has its own measurement error process, but all experiments
+were gathered with the same equipment and conditions.  The
+per_experiment option might be used when working with data from
 multiple independent laboratories.
 
 Topics::
 
-Examples::
-Perform Bayesian calibration with 2 calibration variables and two
-hyper-parameter multipliers, one per each of two responses.  The
-multipliers are assumed the same across the 10 experiments.  The
-priors on the multipliers are specified using the alphas/betas
+Examples:: Perform Bayesian calibration with 2 calibration variables
+and two hyper-parameter multipliers, one per each of two responses.
+The multipliers are assumed the same across the 10 experiments.  The
+priors on the multipliers are specified using the \ref
+method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas
+and \ref
+method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas-hyperprior_betas
 keywords.
 
 \verbatim
@@ -51,7 +56,6 @@ responses
       num_experiments = 10
 	    variance_type = 'scalar'
 \endverbatim
-
 
 Theory::
 Faq::

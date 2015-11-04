@@ -1,5 +1,5 @@
-Blurb::
-Stopping criteria based on number of iterations
+Blurb:: Stopping criterion based on number of iterations
+
 Description::
 The maximum number of iterations (default: 100).  See also \c max_function_evaluations.
 
