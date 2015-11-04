@@ -2,8 +2,12 @@ Blurb::
 File containing points you wish to use to build a surrogate
 
 Description::
-The \c import_build_points_file allows the user to specify a file that
-contains a list of points used to construct a surrogate model.
+
+The \c import_build_points_file allows the user to specify a file
+that contains a list of points and responses used to construct a
+surrogate model.  These can be used by a number of methods in place of
+model evaluations.  When used to construct surrogate models or emulators
+these are often called build points or training data.
 
 <b> Default Behavior </b>
 
