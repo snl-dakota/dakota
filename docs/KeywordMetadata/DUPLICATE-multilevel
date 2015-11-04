@@ -14,6 +14,7 @@ delayed_rejection, \c adaptive_metropolis, \c metropolis_hastings, and
 The multilevel algorithm is a more experimental algorithm than the
 other MCMC approaches mentioned above.  It works well in cases where
 the prior can be "evolved" to a posterior in a structured way.
+Currently, the multilevel option is not in production form. 
 
 Topics::	bayesian_calibration	
 Examples::

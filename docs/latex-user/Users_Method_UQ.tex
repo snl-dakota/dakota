@@ -2378,7 +2378,7 @@ a polynomial chaos expansion, or a stochastic collocation expansion
 as the emulator for the \texttt{queso} method. The specification 
 details for these are listed in the Reference Manual. 
 One can also specify various settings for the MCMC sampling: 
-the sampling can use a standard Metropolis-Hastings algorithm (\texttt{metropolis\_hastings}), adaptive Metropolis (\texttt{adaptive\_metropolis}) for adapting the proposal covariance during the sampling, delayed rejection (\texttt{delayed\_rejection}) for backtracking from sample rejections, the full DRAM (\texttt{dram}) which involves both delayed rejection and adaptive Metropolis, or a multi-level algorithm (\texttt{multilevel}).
+the sampling can use a standard Metropolis-Hastings algorithm (\texttt{metropolis\_hastings}), adaptive Metropolis (\texttt{adaptive\_metropolis}) for adapting the proposal covariance during the sampling, delayed rejection (\texttt{delayed\_rejection}) for backtracking from sample rejections, the full DRAM (\texttt{dram}) which involves both delayed rejection and adaptive Metropolis, or a multi-level algorithm (\texttt{multilevel}).  This last option is not operational in Dakota 6.3.
 
 There are also controls to specify the proposal covariance which governs how the samples 
 are generated in the chain.  
@@ -2463,8 +2463,7 @@ MCMC Type                               &  Delayed Rejection or &  DREAM (Differ
                                &  Adaptive Metropolis  or &  Evolution Adaptive  \\
                                &  Metropolis Hastings  or &  Metropolis) \\
                                &  Delayed Rejection  &   \\
-                               &  Adaptive Metropolis (DRAM) or  &   \\
-                               &  Multilevel    &   \\
+                               &  Adaptive Metropolis (DRAM)  &   \\
 \hline
 Can use PCE/SC Emulator                 &  Yes                      &  Yes               \\
 \hline
@@ -2491,7 +2490,7 @@ Can calibrate error covariance multipliers           &  Yes                     
 which multiply the SIGMA matrix used                &                       &                \\
 in the log-likelihood function                 &                       &                 \\             
 \hline
-Can be used in standardized space           &  Yes (default)                    &  Yes               \\             
+Can be used in standardized space           &  Yes                    &  Yes               \\             
 \hline
 Logit transform           &  Yes                     &  No              \\             
 \hline
