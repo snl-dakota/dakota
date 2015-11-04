@@ -2278,28 +2278,28 @@ calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 
-There are three implementations of Bayesian calibration methods 
-in Dakota, where a ``prior distribution'' on a parameter is 
-updated through a Bayesian framework involving experimental data and 
-a likelihood function. 
-The theory behind Bayesian methods is best described in other sources 
-~\cite{Kenn01} and only a brief summary is given here. 
-In Bayesian methods, uncertain parameters are characterized by probability 
-density functions. These probability densities functions define the 
-permissible parameter values - the support, as well as the relative
- plausibility of each permissible parameter value. In the context of 
-calibration or any inference step, the probability density function 
-that describes knowledge before the incorporation of data is called 
-the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}  \right)$.
+In Bayesian calibration a ``prior distribution'' on a parameter is
+updated through a Bayesian framework involving experimental data and a
+likelihood function.  Bayesian inference theory is best left to other
+sources ~\cite{Kenn01} and only a brief summary is given here.  In
+Bayesian methods, uncertain parameters are characterized by
+probability density functions. These probability densities functions
+define the permissible parameter values - the support, as well as the
+relative plausibility of each permissible parameter value. In the
+context of calibration or any inference step, the probability density
+function that describes knowledge before the incorporation of data is
+called the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}
+\right)$.
  
-When data is available, the likelihood function describes how well 
-each parameter value is supported by the data. Bayes Theorem~\cite{Jaynes}, 
-shown in Equation~\ref{eqn:BayesThm}, is used for inference:  to 
-derive the plausible parameter values, based on the prior probability 
-density and the data $\boldsymbol{d}$. The result is the posterior parameter density 
-of the parameters $f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}} \right)$. It is 
-interpreted the same way as the prior, but includes the information 
-derived from the data.
+When data are available, the likelihood function describes how well
+each parameter value is supported by the data. Bayes
+Theorem~\cite{Jaynes}, shown in Equation~\ref{eq:BayesThm}, is used
+for inference: to derive the plausible parameter values, based on the
+prior probability density and the data $\boldsymbol{d}$. The result is
+the posterior parameter density of the parameters
+$f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}}
+\right)$. It is interpreted the same way as the prior, but includes
+the information derived from the data.
  
 \begin{equation}
 {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}} \label{eq:BayesThm}
@@ -2311,18 +2311,19 @@ derived from the data.
 %  {f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}}
 %\end{equation}
 
-The likelihood function is used to describe how well a model's 
-predictions are supported by the data. 
-The likelihood function can be written generally as:
+The likelihood function is used to describe how well a model's
+predictions are supported by the data.  The likelihood function can be
+written generally as:
 \begin{equation*}
   \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d})
 \end{equation*}
-where $\boldsymbol{\theta}$ are the parameters of model quantity of interest $q$. 
-The form of the function $\mathcal{F}$ can greatly influence the results. 
-The specific likelihood function used in Dakota is based on 
-Gaussian probability density functions. This means that we assume 
-the difference between the model quantity (e.g. quantity of interest returned from a computer simulation)
-and the experimental observations are Gaussian: 
+where $\boldsymbol{\theta}$ are the parameters of model quantity of
+interest $q$.  The form of the function $\mathcal{F}$ can greatly
+influence the results.  The specific likelihood function used in
+Dakota is based on Gaussian probability density functions. This means
+that we assume the difference between the model quantity
+(e.g. quantity of interest returned from a computer simulation) and
+the experimental observations are Gaussian:
 \begin{equation}\label{eq:model}
 d_i = q_i(\boldsymbol{\theta}) + \epsilon_i,
 \end{equation}
@@ -2332,8 +2333,8 @@ simulation quantity of interest $q_i$, for each of $n$ observations.
 
 If we assume that all experiments and observations are independent,
 then the probabilistic model defined by Eq.~(\ref{eq:model}) results
-in a likelihood function for $\boldsymbol{\theta}$ that is the product of $n$
-normal probability density functions:
+in a likelihood function for $\boldsymbol{\theta}$ that is the product
+of $n$ normal probability density functions:
 %as shown in Equation~\ref{eqn:Likelihood}.
 \begin{equation}\label{eqn:Likelihood}  
 \mathcal{L}(\boldsymbol{{\theta};d}) = \prod_{i=1}^n
@@ -2344,57 +2345,60 @@ normal probability density functions:
 where ${\sigma_d}^2$ refers to the measurement error of the data,
 assumed constant across all data observations in this case.
 
-We also support the more general case of a full covariance matrix, $\boldsymbol{\Sigma_d}$, that specifies the covariance between each observation $i$ and $j$. 
-In this case, the likelihood is commonly written in log form, where the log-likelihood is: %given in Equation~\ref{eqn:LogLikelihood}. 
+We also support the more general case of a full covariance matrix,
+$\boldsymbol{\Sigma_d}$, that specifies the covariance between each
+observation $i$ and $j$.  In this case, the likelihood is commonly
+written in log form, where the log-likelihood
+is: %given in Equation~\ref{eqn:LogLikelihood}.
 \begin{equation}\label{eqn:LogLikelihood}  
 \log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma_d}^{-1} {R}
 -\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r},
 \end{equation}
 where $\boldsymbol{r}$ is the vector of residuals between the data
-points and the model quantity of interest, $q(\boldsymbol{\theta})-\boldsymbol{d}$.
+points and the model quantity of interest,
+$q(\boldsymbol{\theta})-\boldsymbol{d}$.
 
-There are now four options to specify the measurement error for
-Bayesian calibration methods, with \texttt{variance\_type} being equal
-to \texttt{none} for no measurement error specified (in this case, the
-variance is one), \texttt{scalar} where a constant value
-${\sigma_d}^2$ is given for all observations, \texttt{diagonal} where
-a value is specified for the diagonal elements of the covariance
-matrix $\boldsymbol{\Sigma_d}$ meaning that each observation has its own
-measurement error but there are no cross terms, and \texttt{matrix}
-where the full covariance matrix $\boldsymbol{\Sigma_d}$ is specified.  
-Note that the \texttt{diagonal} and \texttt{matrix} terms are only 
-available for field response data.  For scalar responses, variance types
-can be specified to be \texttt{none} or \texttt{scalar}.  %Finally,
-%all the sigma values should be given as variances (${\sigma_d}^2$).
+Dakota admits four \texttt{variance\_type} options to specify the
+measurement error covariance: \texttt{none} for no measurement error
+specified (in this case, the variance is assumed to be one),
+\texttt{scalar} where a constant value ${\sigma_d}^2$ is given for all
+observations, \texttt{diagonal} where a value is specified for the
+diagonal elements of the covariance matrix $\boldsymbol{\Sigma_d}$
+meaning that each observation has its own measurement error but there
+are no cross terms, and \texttt{matrix} where the full covariance
+matrix $\boldsymbol{\Sigma_d}$ is specified.  The \texttt{diagonal}
+and \texttt{matrix} terms are only available for field response data.
+In contrast to earlier versions of Dakota, all measurement error
+variance should be specified with units of variance/covariance, not
+standard deviation.
 
-Markov Chain Monte Carlo (MCMC) is the standard method used to compute
-posterior parameter densities, given the observational data and the
-priors. There are many references that describe the basic
-algorithm~\cite{Gilks}, and in addition, the algorithms are an active
-research area.  Note that
-MCMC algorithms may require hundreds of thousands of steps to
-converge, depending on dimensionality, response nonlinearity, and the
-desired set of posterior statistics.  Since each iteration involves an
-evaluation of the model to obtain $q(\boldsymbol{\theta})$, surrogate models of
-expensive simulations are often employed to make the MCMC process
-tractable.
+Markov Chain Monte Carlo (MCMC) is the prototypical method used to
+estimate posterior parameter densities, given the observational data
+and the priors. There are many references that describe the basic
+algorithm~\cite{Gilks}, though this is an active research area.  MCMC
+algorithms may require hundreds of thousands of steps to converge,
+depending on dimensionality, response nonlinearity, and the desired
+set of posterior statistics.  Since each iteration involves an
+evaluation of the model to obtain $q(\boldsymbol{\theta})$, surrogate
+models of expensive simulations are often employed to make the MCMC
+process tractable.
  
-As mentioned above, we have three implementations for Bayesian
-calibration: QUESO, DREAM, and GPMSA.  They are specified with the
-\texttt{bayes\_calibration} keyword in combination with the
-\texttt{queso}, \texttt{dream}, or \texttt{gpmsa} selections,
-respectively.  The QUESO method uses components from the QUESO library
-(Quantification of Uncertainty for Estimation, Simulation, and
-Optimization) developed at The University of Texas at Austin.  It
-implements the DRAM algorithm, among others.  DRAM indicates the use
-of Delayed Rejection and Adaptive Metropolis~\cite{Haario}, where
-these two algorithm options can be activated in any combination.
+Dakota offers three approaches for Bayesian calibration: QUESO, DREAM,
+and GPMSA.  They are specified with the \texttt{bayes\_calibration}
+keyword in combination with the \texttt{queso}, \texttt{dream}, or
+\texttt{gpmsa} selections, respectively.  The QUESO method uses
+components from the QUESO library (Quantification of Uncertainty for
+Estimation, Simulation, and Optimization) developed at The University
+of Texas at Austin.  It implements the Delayed Rejection and Adaptive
+Metropolis~\cite{Haario} (DRAM) algorithm, among others.  Algorithm
+variants selectively combine the delayed rejection and adaptive
+elements.
 %
-DREAM uses an implementation of DiffeRential Evolution Adaptive Metropolis
-developed by John Burkardt.  The DREAM approach runs multiple
-different chains simultaneously for global exploration, and
-automatically tunes the proposal covariance during the process by a
-self-adaptive randomized subspace sampling~\cite{Vrugt}.  
+DREAM uses an implementation of DiffeRential Evolution Adaptive
+Metropolis developed by John Burkardt.  The DREAM approach runs
+concurrent chains for global exploration, and automatically tunes the
+proposal covariance during the process by a self-adaptive randomized
+subspace sampling~\cite{Vrugt}.
 %
 The GPMSA capability is based on the GPMSA Matlab toolbox developed at
 Los Alamos National Laboratory. At this point, the QUESO
@@ -2402,45 +2406,66 @@ implementation is the most well-developed within Dakota and is the one
 that we recommend.
 
 \subsection{QUESO}
-In the QUESO method, the user can run the MCMC sampling with 
-the simulation model directly. However, 
-if the model is expensive, we recommend that the user employs 
-a surrogate model (an emulator) because the Monte Carlo Markov Chain 
-will be much faster: the MCMC can generate thousands of samples 
-on the emulator in very little time. One can specify a Gaussian process,
-a polynomial chaos expansion, or a stochastic collocation expansion
-as the emulator for the \texttt{queso} method. The specification 
-details for these are listed in the Reference Manual. 
-One can also specify various settings for the MCMC sampling: 
-the sampling can use a standard Metropolis-Hastings algorithm (\texttt{metropolis\_hastings}), adaptive Metropolis (\texttt{adaptive\_metropolis}) for adapting the proposal covariance during the sampling, delayed rejection (\texttt{delayed\_rejection}) for backtracking from sample rejections, the full DRAM (\texttt{dram}) which involves both delayed rejection and adaptive Metropolis, or a multi-level algorithm (\texttt{multilevel}).  This last option is not operational in Dakota 6.3.
+The QUESO library includes several sampling algorithm variants.  One
+can use a standard Metropolis-Hastings algorithm
+(\texttt{metropolis\_hastings}), adaptive Metropolis
+(\texttt{adaptive\_metropolis}) for adapting the proposal covariance
+during the sampling, delayed rejection (\texttt{delayed\_rejection})
+for backtracking from sample rejections, the full DRAM (\texttt{dram})
+which involves both delayed rejection and adaptive Metropolis, or a
+multi-level algorithm (\texttt{multilevel}).  This last option is not
+yet production-ready in Dakota.
 
-There are also controls to specify the proposal covariance which governs how the samples 
-are generated in the chain.  
-The proposal covariance specifies the covariance structure of a multivariate normal distribution. 
-The user can specify \texttt{proposal\_covariance}, followed by \texttt{derivatives}, \texttt{prior}, 
-\texttt{values}, or \texttt{filename}.  The derivative specification involves 
-forming the Hessian of the misfit function (the negative
-log likelihood).  When derivative information is available inexpensively (e.g. from an emulator), 
-the derivative-based proposal covariance forms a more
-accurate proposal distribution, resulting in lower rejection rates and
-faster chain mixing.  
-%Note that the derivative-based proposal covariance 
-%should be updated periodically based on a \texttt{proposal\_updates} specification.
-%may also be updated by adding high-likelihood evaluations of the actual simulation to the emulator build points in an adaptive fashion, thus refining the Hessian.  
-The \texttt{prior} setting means that Dakota will form the proposal from the variance of the prior distributions of the 
-parameters being calibrated.  When specifying the proposal covariance with values or from a file, the user 
-can choose to specify only the diagonals of the covariance matrix or to specify the full covariance matrix.
-An additional control for QUESO is to perform a logit transformation (\texttt{logit\_transform}) which 
-performs an internal variable transformation from bounded domains to unbounded domains. %in order to reduce sample rejection due to an out-of-bounds condition.
-This option can be helpful when regions of high posterior density exist
-in the corners of a multi-dimensional bounded domain.  In these cases,
-it may be difficult to generate feasible samples from the proposal density,
-such that transformation to unbounded domains may greatly reduce sample
-rejection rates.
-The specification details for keywords governing the proposal covariance are listed in the Reference Manual. 
-For more detail about derivative-based formulations involving the misfit Hessian, refer to the Theory Manual. 
+With QUESO method, one may run the MCMC sampling on the simulation
+model directly.  However, if the model is expensive, use of a
+surrogate (emulator) model is recommended.  Options include a Gaussian
+process, a polynomial chaos expansion, or a stochastic collocation
+expansion.
 
-Another feature is that the user can perform a deterministic gradient-based optimization before the MCMC sampling to get a good starting point for the chain.  The goal of the optimization is to maximize the log posterior, which is defined as the log-likelihood minus the log-prior. The Markov Chain in Bayesian calibration will be started at the best point found in the optimization (the maximum a posteriori probability point, also called the MAP point).  This will give an optimal starting point for the MCMC chain, which can help the process avoid a lot of the initial searching for high posterior probability points. Use of the optimization to generate a MAP starting point is specified with the keyword \texttt{pre\_solve}.  The pre-solve option can be used with an emulator or with no emulator.   
+The proposal covariance refers to the covariance structure of a
+multivariate normal distribution, which governs sample generation in
+the chain.  One may specify \texttt{proposal\_covariance}, followed by
+\texttt{prior} (the default), \texttt{values}, \texttt{filename}, or
+\texttt{derivatives}.  With the \texttt{prior} setting, the proposal
+covariance will be set to the variance of the prior distributions of
+the parameters being calibrated.  When specifying the proposal
+covariance with input file values or from a separate file, the user
+may specify only the diagonals of the covariance matrix or the full
+covariance matrix.
+
+The derivatives option will use derivatives from the simulation or
+emulator model to form or approximate the Hessian of the misfit
+function (the negative log likelihood).  Especially when derivative
+information is available inexpensively (e.g. from an emulator), the
+derivative-based proposal covariance forms a more accurate proposal
+distribution, resulting in lower rejection rates and faster chain
+mixing.  When using an emulator, the derivative-based proposal
+covariance should be updated periodically using the
+\texttt{posterior\_adaptive} specification.  This will add simulation
+truth evaluations in areas of high-likelihood to the emulator training
+data, thus refining the Hessian.  For more detail about
+derivative-based formulations involving the misfit Hessian, refer to
+the Theory Manual.
+
+An additional control for QUESO is to perform a logit transformation
+(\texttt{logit\_transform}) which performs an internal variable
+transformation from bounded domains to unbounded
+domains. %in order to reduce sample rejection due to an out-of-bounds condition.
+This option can be helpful when regions of high posterior density
+exist in the corners of a multi-dimensional bounded domain.  In these
+cases, it may be difficult to generate feasible samples from the
+proposal density, such that transformation to unbounded domains may
+greatly reduce sample rejection rates.
+
+The \texttt{pre\_solve} option will perform a deterministic
+gradient-based optimization before the MCMC sampling to get a good
+starting point for the chain.  This pre-solve seeks to maximize the
+log posterior (the log-likelihood minus the log-prior) to identify the
+maximum a posteriori probability point, also called the MAP point.
+The Markov Chain will then be started at the MAP point, which can
+circumvent a lot of initial searching for high posterior probability
+points.  The pre-solve option can be used with an emulator or with no
+emulator.
 
 \subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
@@ -2506,22 +2531,17 @@ Can use a GP Emulator                   &  Yes                      &  Yes      
 Can update the emulator adaptively            &  Yes                      &  No          \\     
 to focus on high likelihood points            &                       &                \\
 \hline
-Uses MAP optimal point           &  Yes                      &  No               \\
+Use MAP optimal point           &  Yes                      &  No               \\
 as starting point for MCMC chain             &                       &                \\
 (optimization can use emulator or actual model)   &                       &                \\
 \hline
-Uses inverse Hessian of MAP point            &  Yes                      &  No        \\       
-as initial proposal covariance              &                       &                \\
-\hline
 Can import build points for emulator            &  Yes                      &  Yes               \\             
 \hline
-Can specify the proposal covariance from            &  Yes                      &  No             \\            
-the variance of the prior distribution or               &                       &                \\
-from values specified by the user or                &                       &                \\
-from the inverse Hessian                 &                       &                 \\             
+Can specify proposal covariance from            &  Yes                      &  No             \\            
+prior, user data, or derivatives               &                       &                \\
 \hline
 Can calibrate error covariance multipliers           &  Yes                      &  Yes         \\                
-which multiply the SIGMA matrix used                &                       &                \\
+which multiply the $\Sigma$ matrix used                &                       &                \\
 in the log-likelihood function                 &                       &                 \\             
 \hline
 Can be used in standardized space           &  Yes                    &  Yes               \\             
@@ -2552,26 +2572,24 @@ Can export samples from the chain           &  Yes                     &  Yes   
 
 \subsection{Bayesian Calibration Example}\label{uq:bayesian:ex}
 
-We briefly describe the process of running QUESO from Dakota.
-The user will create a Dakota input file such as the one shown 
-in~\ref{uq:figure18}. 
-Note that the method is \texttt{bayes\_calibration queso}, 
-specifying the QUESO algorithm with the DRAM (delayed
-rejection adaptive metropolis) solver. The number of 
-samples indicates the number of samples that the MCMC algorithm 
-will generate in its acceptance chain\footnote{If delayed rejection is active, the number of simulation evaluations will typically be higher due to backtracking.}, in this case 1000 (this usually will need to be larger). 
-For this example, we are using the \texttt{cantilever3} analytic 
-example, so we do not need to specify an emulator, but the lines 
-commented out give an idea of the options if the user wanted to 
-specify an emulator.  The proposal covariance 
-used has diagonal element values of 1.e6 and 0.1.  
-The calibration terms in the responses section refers to the 
-number of outputs that will be used in the calibration process:  
-in this case, it is just two. The calibration data file 
-has the observational data:  in this case, it is a freeform file 
-(e.g. no header or annotation) with ten experiments. For each 
-experiment, there are two experiment values, one for stress and one for displacement, followed 
-by two variance values for the error associated with that experiment for each quantity of interest. 
+To run a QUESO-based Bayesian calibration in Dakota, create a Dakota
+input file such as the one shown in~\ref{uq:figure18}.  Here, the
+QUESO DRAM (delayed rejection adaptive metropolis) solver is
+selected. The number of samples = 1000 indicates how many points to
+generate in the acceptance chain\footnote{If delayed rejection is
+  active, the number of simulation evaluations will typically be
+  higher due to backtracking.}.  This example uses the
+\texttt{cantilever3} algebraic model, so an emulator is not warranted,
+but the commented lines hint at related user optionsr.  The proposal
+covariance used has diagonal element values of 1.e6 and 0.1.  The
+calibration terms in the responses section refers to the number of
+outputs that will be used in the calibration process: in this case, it
+is just two. The calibration data file has the observational data: in
+this case, it is a freeform file (e.g. no header or annotation) with
+ten experiments. For each experiment, there are two experiment values,
+one for stress and one for displacement, followed by two variance
+values for the error associated with that experiment for each quantity
+of interest.
 
 \begin{figure}[htbp!]
 \centering
@@ -2624,7 +2642,7 @@ responses,
 
 When the input file shown in~\ref{uq:figure18} is run, Dakota will run
 the MCMC algorithm and generate a posterior sample of $\boldsymbol{\theta}$ in
-accordance with Bayes Theorem~\ref{eqn:BayesThm} and the likelihood
+accordance with Bayes Theorem~\ref{eq:BayesThm} and the likelihood
 function~\ref{eqn:Likelihood}. Dakota's final output summary will
 currently report an evaluation count summary and the best sample point
 that was visited during the MCMC process, as measured by maximum
