@@ -1147,14 +1147,13 @@ for $p=2$, all two-way interactions.
 
 \section{Linear regression} \label{uq:expansion:regress}
 
-Regression based approaches attempt to find regularized or exact
-solutions of the linear system:
+Regression-based PCE approaches solve the linear system:
 \begin{equation}
 \boldsymbol{\Psi} \boldsymbol{\alpha} = \boldsymbol{R} \label{eq:regression}
 \end{equation}
-to solve for the complete set of PCE coefficients
-$\boldsymbol{\alpha}$ that best reproduce a set of response values
-$\boldsymbol{R}$.  The set of response values can be defined on an
+for a set of PCE coefficients $\boldsymbol{\alpha}$ that best
+reproduce a set of response values $\boldsymbol{R}$.  The set of
+response values can be defined on an
 unstructured grid obtained from sampling within the density function
 of $\boldsymbol{\xi}$ (point collocation~\cite{pt_colloc1,pt_colloc2})
 or on a structured grid defined from uniform random sampling on the
@@ -1166,21 +1165,23 @@ to avoid sampling at roots of the basis polynomials\footnote{Generally
   speaking, dimension quadrature order $m_i$ greater than dimension
   expansion order $p_i$.}.  In either case, each row of the matrix
 $\boldsymbol{\Psi}$ contains the $N_t$ multivariate polynomial terms
-$\Psi_j$ evaluated at a particular $\boldsymbol{\xi}$ sample.  An
-over-sampling is most commonly used (\cite{pt_colloc2} recommends
-$2N_t$ samples), resulting in a least squares solution for the
-over-determined system, although unique determination ($N_t$ samples)
-and under-determination (fewer than $N_t$ samples) are also supported.
-As for sampling-based coefficient estimation, this approach is only
-valid for PCE and does not require synchronization with monomial
-coverage; thus it is common to combine this coefficient estimation
-approach with a traditional total-order chaos expansion in order to
-keep sampling requirements low.  In this case, simulation requirements
-for this approach scale as $\frac{r(n+p)!}{n!p!}$ ($r$ is an
-over-sampling factor with typical values $0.1 \leq r \leq 2$), which
-can be significantly more affordable than isotropic tensor-product
-quadrature (scales as $(p+1)^n$ for standard Gauss rules) for larger
-problems.
+$\Psi_j$ evaluated at a particular $\boldsymbol{\xi}$ sample.
+%% An over-sampling is most commonly used (\cite{pt_colloc2} recommends
+%% $2N_t$ samples), resulting in a least squares solution for the
+%% over-determined system, although unique determination ($N_t$ samples)
+%% and under-determination (fewer than $N_t$ samples) are also supported.
+%% As for sampling-based coefficient estimation, this approach is only
+%% valid for PCE and does not require synchronization with monomial
+%% coverage; thus
+It is common to combine this coefficient estimation approach with a
+total-order chaos expansion in order to keep sampling requirements
+low.  In this case, simulation requirements scale as
+$\frac{r(n+p)!}{n!p!}$ ($r$ is a collocation ratio with typical values
+$0.1 \leq r \leq 2$).
+%, which can be significantly more affordable than isotropic tensor-product
+%% quadrature (scales as $(p+1)^n$ for standard Gauss rules) for larger
+%% problems.
+%
 %A closely related technique is known as the ``probabilistic
 %collocation'' approach.  Rather than employing random over-sampling,
 %this technique uses a selected subset of $N_t$ Gaussian quadrature
@@ -1193,10 +1194,10 @@ point (refer to {\tt use\_derivatives} in the PCE regression
 specification details in the Dakota Reference Manual~\cite{RefMan}),
 which can aid in scaling with respect to the number of random
 variables, particularly for adjoint-based derivative approaches.
-Finally, one can additionally modify the order of the exponent 
-applied to $N_t$ in the over-sampling ratio calculation (refer to 
-{\tt ratio\_order} in the PCE regression specification details in the
-Dakota Reference Manual~\cite{RefMan}).
+%Finally, one can additionally modify the order of the exponent 
+%applied to $N_t$ in the collocation ratio calculation (refer to 
+%{\tt ratio\_order} in the PCE regression specification details in the
+%Dakota Reference Manual~\cite{RefMan}).
 
 Various methods can be employed to solve \eqref{eq:regression}.  The
 relative accuracy of each method is problem dependent. Traditionally,
