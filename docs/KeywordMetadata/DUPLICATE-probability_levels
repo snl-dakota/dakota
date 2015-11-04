@@ -14,6 +14,16 @@ mappings define either a cumulative distribution function (CDF) or a
 complementary cumulative distribution function (CCDF) for each
 response function. 
 
+If \c probability_levels are specified, Dakota will create two tables 
+in the standard output:  a Probability Density function (PDF) histogram and a Cumulative 
+Distribution Function (CDF) table.  The PDF histogram has the lower 
+and upper endpoints of each bin and the corresponding density of that 
+bin.  Note that the PDF histogram has bins defined by the 
+\c probability_levels and/or \c response_levels in the Dakota input file. 
+If there are not very many levels, the histogram will be coarse. 
+The CDF table has the list of response levels and the corresponding probability 
+that the response value is less than or equal to each response level threshold.  
+
 In the case of evidence-based epistemic methods,
 this is generalized to define either cumulative belief and
 plausibility functions (CBF and CPF) or complementary cumulative

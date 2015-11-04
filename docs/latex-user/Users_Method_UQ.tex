@@ -456,15 +456,27 @@ and the regions $x_1 < 0.3$ and $0.6 < x_1 < 0.9$ are completely
 missed. For the case where \texttt{samples = 10}, some clustering in
 the Monte Carlo samples is again evident with \texttt{4} samples in
 the range $0.5 < x_1 < 0.55$. In both cases, the stratification with
-LHS is superior. The response function statistics returned by Dakota
-are shown in Figure~\ref{uq:figure03}. The first two blocks of output
-specify the response sample means and sample standard deviations and
-confidence intervals for these statistics, as well as coefficients of
-variation. The last section of the output defines CDF pairs
-(\texttt{distribution cumulative} was specified) for the response
-functions by presenting the probability levels corresponding to the
-specified response levels (\texttt{response\_levels} were set and the
-default \texttt{compute probabilities} was used). Alternatively,
+LHS is superior. 
+
+The response function statistics returned by Dakota
+are shown in Figure~\ref{uq:figure03}. The first block of output
+specifies the response sample means, sample standard deviations, and 
+skewness and kurtosis.  The second block of output displays confidence 
+intervals on the means and standard deviations of the responses.  
+The third block defines Probability Density Function (PDF) histograms 
+of the samples: the histogram bins are defined by the lower and upper 
+values of the bin and the corresponding density for that bin.  
+Note that these bin endpoints correspond to the \texttt{response\_levels} 
+and/or \texttt{probability\_levels} defined by the user in the Dakota 
+input file.  If there are just a few levels, these histograms may be coarse. 
+Dakota does not do anything to optimize the bin size or spacing. 
+Finally, the last section of the output defines the Cumulative Distribution 
+Function (CDF) pairs.  In this case, 
+\texttt{distribution cumulative} was specified for the response
+functions, and Dakota presents the probability levels corresponding to the
+specified response levels (\texttt{response\_levels}) that were set.
+The
+default \texttt{compute probabilities} was used. Alternatively,
 Dakota could have provided CCDF pairings, reliability levels
 corresponding to prescribed response levels, or response levels
 corresponding to prescribed probability or reliability levels.
@@ -476,38 +488,57 @@ corresponding to prescribed probability or reliability levels.
 \begin{verbatim}
 Statistics based on 10 samples:
 
-Moments for each response function:
-response_fn_1:  Mean = 3.83840e-01  Std. Dev. = 4.02815e-01
-                Coeff. of Variation = 1.04944e+00
-response_fn_2:  Mean = 7.47987e-02  Std. Dev. = 3.46861e-01
-                Coeff. of Variation = 4.63726e+00
-response_fn_3:  Mean = 7.09462e-02  Std. Dev. = 3.41532e-01
-                Coeff. of Variation = 4.81397e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797327e-01
+ response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
+ response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
 
 95% confidence intervals for each response function:
-response_fn_1:  Mean = (  9.56831e-02, 6.71997e-01 ),
-             Std Dev = (  2.77071e-01, 7.35384e-01 )
-response_fn_2:  Mean = ( -1.73331e-01, 3.22928e-01 ),
-             Std Dev = (  2.38583e-01, 6.33233e-01 )
-response_fn_3:  Mean = ( -1.73371e-01, 3.15264e-01 ),
-             Std Dev = (  2.34918e-01, 6.23505e-01 )
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
+ response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
+ response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
 
-Probabilities for each response function:
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   2.3066424677e-02   1.0000000000e-01   3.8994678038e+00
+   1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   1.2250968624e+00   4.7992562123e-01
+PDF for response_fn_2:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.5261164651e-01   1.0000000000e-01   1.1046998102e+00
+   1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   6.9844576220e-01   1.0157877573e+00
+PDF for response_fn_3:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.8118095128e-01   1.0000000000e-01   1.2469321539e+00
+   1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
+   6.0000000000e-01   6.4526450977e-01   2.2092363423e+00
+
+Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0000000000e-01
    2.0000000000e-01   5.0000000000e-01
    6.0000000000e-01   7.0000000000e-01
 Cumulative Distribution Function (CDF) for response_fn_2:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   5.0000000000e-01
    2.0000000000e-01   7.0000000000e-01
    6.0000000000e-01   9.0000000000e-01
 Cumulative Distribution Function (CDF) for response_fn_3:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   6.0000000000e-01
    2.0000000000e-01   6.0000000000e-01
    6.0000000000e-01   9.0000000000e-01

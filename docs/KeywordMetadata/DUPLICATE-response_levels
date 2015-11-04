@@ -41,6 +41,16 @@ response function 3.  If the \c num_response_levels key were omitted
 from this example, then the response levels would be evenly distributed
 among the response functions (three levels each in this case).
 
+If \c response_levels are specified, Dakota will create two tables in the standard 
+output:  a Probability Density function (PDF) histogram and a Cumulative
+Distribution Function (CDF) table.  The PDF histogram has the lower
+and upper endpoints of each bin and the corresponding density of that
+bin.  Note that the PDF histogram has bins defined by the 
+\c probability_levels and/or \c response_levels in the Dakota input file. 
+If there are not very many levels, the histogram will be coarse. 
+The CDF table has the list of response levels and the corresponding probability
+that the response value is less than or equal to each response level threshold.
+
 Theory::
 Sets of response-probability pairs computed with the forward/inverse
 mappings define either a cumulative distribution function (CDF) or a
