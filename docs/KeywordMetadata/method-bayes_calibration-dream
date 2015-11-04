@@ -20,6 +20,9 @@ multiple chain process. The integer \c jump_step forces a long jump
 every \c jump_step generations.  For more details about these
 parameters, see \cite Vrugt.
 
+<b>Attention: </b> While the \c emulator specification for DREAM
+includes the keyword posterior_adaptive, it is not yet operational.
+
 Topics::	bayesian_calibration
 Examples::
 Theory::

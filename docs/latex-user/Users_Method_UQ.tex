@@ -991,10 +991,10 @@ algorithm (SQP or NIP) selections.
 All reliability methods output approximate values of the CDF/CCDF
 response-probability-reliability levels for prescribed response levels
 (RIA) or prescribed probability or reliability levels (PMA). In
-addition, the MV methods additionally output estimates of the mean and
-standard deviation of the response functions along with importance
-factors for each of the uncertain variables in the case of independent
-random variables.
+addition, the mean value methods additionally output estimates of the
+mean and standard deviation of the response functions along with
+importance factors for each of the uncertain variables in the case of
+independent random variables.
 
 \subsubsection{Mean-value Reliability with Textbook}
 \label{uq:examples:mv}
@@ -1015,13 +1015,15 @@ section of the Dakota Theory Manual~\cite{TheoMan}, and more detail on
 reliability methods in general (including the more advanced methods)
 is found in Section~\ref{uq:reliability}.
 
-Example output from the mean value method is displayed in 
-Figure~\ref{uq:examples:mv_results}. Note that since the mean of both inputs
-is 1, the mean value of the output for response 1 is zero. 
-However, the mean values of the constraints are both 0.5. 
-The mean value results indicate that variable x1 is more 
-important in constraint 1 while x2 is more important in constraint 2, 
-which is the case based on Equation~\ref{additional:textbook_f}.
+Example output from the mean value method is displayed in
+Figure~\ref{uq:examples:mv_results}. Note that since the mean of both
+inputs is 1, the mean value of the output for response 1 is zero.
+However, the mean values of the constraints are both 0.5.  The mean
+value results indicate that variable x1 is more important in
+constraint 1 while x2 is more important in constraint 2, which is the
+case based on Equation~\ref{additional:textbook_f}.  The importance
+factors are not available for the first response as the standard
+deviation is zero.
 
 \begin{figure}[htbp!]
   \centering
@@ -1040,7 +1042,6 @@ see \texttt{Dakota/examples/users/textbook\_uq\_meanvalue.in} }
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
------------------------------------------------------------------
 MV Statistics for response_fn_1:
   Approximate Mean Response                  =  0.0000000000e+00
   Approximate Standard Deviation of Response =  0.0000000000e+00
@@ -1048,14 +1049,13 @@ MV Statistics for response_fn_1:
 MV Statistics for response_fn_2:
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  9.4117647059e-01
-  Importance Factor for variable TF2ln       =  5.8823529412e-02
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
 MV Statistics for response_fn_3:
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  5.8823529412e-02
-  Importance Factor for variable TF2ln       =  9.4117647059e-01
------------------------------------------------------------------
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
 \end{verbatim}
 \end{small}
 \end{bigbox}
@@ -1158,66 +1158,69 @@ FORM, the Mean Value method, and the exact CDF for $g(x_1,x_2)=\frac{x_1}{x_2}$}
 \end{figure}
 
 If the user specifies \texttt{local\_reliability} as a method with no
-additional specification on how to do the MPP search, then no MPP
-search is done: the Mean Value method is used. The MV results are
-shown in Figure~\ref{uq:rel_output_mv} and consist of approximate mean
-and standard deviation of the response, the importance factors for
-each uncertain variable, and approximate probability/reliability
-levels for the prescribed response levels that have been inferred from
-the approximate mean and standard deviation (see Mean Value section in
+additional specification on how to do the MPP search (for example, by
+commenting out {\tt mpp\_search no\_approx} in
+Figure~\ref{uq:rel_input_form}), then no MPP search is done: the Mean
+Value method is used. The mean value results are shown in
+Figure~\ref{uq:rel_output_mv} and consist of approximate mean and
+standard deviation of the response, the importance factors for each
+uncertain variable, and approximate probability/reliability levels for
+the prescribed response levels that have been inferred from the
+approximate mean and standard deviation (see Mean Value section in
 Reliability Methods Chapter of Dakota Theory
 Manual~\cite{TheoMan}). It is evident that the statistics are
 considerably different from the fully converged FORM results; however,
 these rough approximations are also much less expensive to
 calculate. The importance factors are a measure of the sensitivity of
-the response function(s) to the uncertain input variables, but in this
-case, are not separable due to the presence of input correlation
-coefficients. A comparison of the mean value results with the FORM
-results is shown in Figure~\ref{uq:rel_form_compare}. The mean value
-results are not accurate near the tail values of the CDF, and can
-differ from the exact solution by as much as 0.11 in CDF estimates. A
-comprehensive comparison of various reliability methods applied to the
-logratio problem is provided in ~\cite{Eld06a}.
+the response function(s) to the uncertain input variables. A
+comparison of the mean value results with the FORM results is shown in
+Figure~\ref{uq:rel_form_compare}. The mean value results are not
+accurate near the tail values of the CDF, and can differ from the
+exact solution by as much as 0.11 in CDF estimates. A comprehensive
+comparison of various reliability methods applied to the logratio
+problem is provided in ~\cite{Eld06a}.
 
-\begin{figure}[htbp!] % Imp factors only if uncorrelated
+\begin{figure}[htbp!]
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
 MV Statistics for response_fn_1:
   Approximate Mean Response                  =  1.0000000000e+00
   Approximate Standard Deviation of Response =  5.9160798127e-01
-  Importance Factors not available.
+  Importance Factor for TF1ln                =  7.1428570714e-01
+  Importance Factor for TF2ln                =  7.1428572143e-01
+  Importance Factor for TF1ln     TF2ln      = -4.2857142857e-01
 Cumulative Distribution Function (CDF) for response_fn_1:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
-   4.0000000000e-01   1.5524721837e-01   1.0141851006e+00
-   5.0000000000e-01   1.9901236093e-01   8.4515425050e-01
-   5.5000000000e-01   2.2343641149e-01   7.6063882545e-01
-   6.0000000000e-01   2.4948115037e-01   6.7612340040e-01
-   6.5000000000e-01   2.7705656603e-01   5.9160797535e-01
-   7.0000000000e-01   3.0604494093e-01   5.0709255030e-01
-   7.5000000000e-01   3.3630190949e-01   4.2257712525e-01
-   8.0000000000e-01   3.6765834596e-01   3.3806170020e-01
-   8.5000000000e-01   3.9992305332e-01   2.5354627515e-01
-   9.0000000000e-01   4.3288618783e-01   1.6903085010e-01
-   1.0000000000e+00   5.0000000000e-01   0.0000000000e+00
-   1.0500000000e+00   5.3367668035e-01  -8.4515425050e-02
-   1.1500000000e+00   6.0007694668e-01  -2.5354627515e-01
-   1.2000000000e+00   6.3234165404e-01  -3.3806170020e-01
-   1.2500000000e+00   6.6369809051e-01  -4.2257712525e-01
-   1.3000000000e+00   6.9395505907e-01  -5.0709255030e-01
-   1.3500000000e+00   7.2294343397e-01  -5.9160797535e-01
-   1.4000000000e+00   7.5051884963e-01  -6.7612340040e-01
-   1.5000000000e+00   8.0098763907e-01  -8.4515425050e-01
-   1.5500000000e+00   8.2372893005e-01  -9.2966967555e-01
-   1.6000000000e+00   8.4475278163e-01  -1.0141851006e+00
-   1.6500000000e+00   8.6405064339e-01  -1.0987005257e+00
-   1.7000000000e+00   8.8163821351e-01  -1.1832159507e+00
-   1.7500000000e+00   8.9755305196e-01  -1.2677313758e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   4.0000000000e-01   1.5524721837e-01   1.0141851006e+00   1.0141851006e+00
+   5.0000000000e-01   1.9901236093e-01   8.4515425050e-01   8.4515425050e-01
+   5.5000000000e-01   2.2343641149e-01   7.6063882545e-01   7.6063882545e-01
+   6.0000000000e-01   2.4948115037e-01   6.7612340040e-01   6.7612340040e-01
+   6.5000000000e-01   2.7705656603e-01   5.9160797535e-01   5.9160797535e-01
+   7.0000000000e-01   3.0604494093e-01   5.0709255030e-01   5.0709255030e-01
+   7.5000000000e-01   3.3630190949e-01   4.2257712525e-01   4.2257712525e-01
+   8.0000000000e-01   3.6765834596e-01   3.3806170020e-01   3.3806170020e-01
+   8.5000000000e-01   3.9992305332e-01   2.5354627515e-01   2.5354627515e-01
+   9.0000000000e-01   4.3288618783e-01   1.6903085010e-01   1.6903085010e-01
+   1.0000000000e+00   5.0000000000e-01   0.0000000000e+00   0.0000000000e+00
+   1.0500000000e+00   5.3367668035e-01  -8.4515425050e-02  -8.4515425050e-02
+   1.1500000000e+00   6.0007694668e-01  -2.5354627515e-01  -2.5354627515e-01
+   1.2000000000e+00   6.3234165404e-01  -3.3806170020e-01  -3.3806170020e-01
+   1.2500000000e+00   6.6369809051e-01  -4.2257712525e-01  -4.2257712525e-01
+   1.3000000000e+00   6.9395505907e-01  -5.0709255030e-01  -5.0709255030e-01
+   1.3500000000e+00   7.2294343397e-01  -5.9160797535e-01  -5.9160797535e-01
+   1.4000000000e+00   7.5051884963e-01  -6.7612340040e-01  -6.7612340040e-01
+   1.5000000000e+00   8.0098763907e-01  -8.4515425050e-01  -8.4515425050e-01
+   1.5500000000e+00   8.2372893005e-01  -9.2966967555e-01  -9.2966967555e-01
+   1.6000000000e+00   8.4475278163e-01  -1.0141851006e+00  -1.0141851006e+00
+   1.6500000000e+00   8.6405064339e-01  -1.0987005257e+00  -1.0987005257e+00
+   1.7000000000e+00   8.8163821351e-01  -1.1832159507e+00  -1.1832159507e+00
+   1.7500000000e+00   8.9755305196e-01  -1.2677313758e+00  -1.2677313758e+00
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{Output from Reliability UQ example using MV.}
+\caption{Output from Reliability UQ example using mean value.}
 \label{uq:rel_output_mv}
 \end{figure}
 

@@ -7,6 +7,9 @@ use.
 
 <b>Usage Guidelines:</b> The WASABI method requires an emulator model.
 
+<b>Attention: </b> While the \c emulator specification for WASABI
+includes the keyword posterior_adaptive, it is not yet operational.
+
 Topics::
 
 Examples::

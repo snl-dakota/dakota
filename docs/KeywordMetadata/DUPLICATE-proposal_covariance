@@ -8,17 +8,17 @@ MVN probability density with prescribed covariance that is centered at
 the current chain point.  The accuracy of the proposal covariance has
 a significant effect on rejection rates and the efficiency of chain mixing.
 
-<b> Default Behavior </b>
+<b> Default Behavior </b> 
 
-If the proposal_covariance keyword is specified by the user, then one of
-the four options must be specified.  If the proposal_covariance block
-is omitted, then the prior covariance option is used as the default.
+The default proposal covariance is \c prior when no emulator is
+present; \c derivatives when an emulator is present.
 
 <b> Expected Output </b>
 
 The effect of the proposal covariance is reflected in the MCMC chain
 values and the rejection rates, which can be seen in the diagnostic
-outputs from the QUESO solver within the outputData directory.
+outputs from the QUESO solver within the \c QuesoDiagnostics
+directory.
 
 <b> Usage Tips </b>
 
