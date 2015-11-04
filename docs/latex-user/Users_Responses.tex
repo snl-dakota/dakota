@@ -184,10 +184,10 @@ shown in Figure \ref{responses:figure01}.
   \centering
   \begin{bigbox}
   \begin{alltt}
-    <double> <fn_tag\(\sb{1}\)>
-    <double> <fn_tag\(\sb{2}\)>
+    <double> <fn_label\(\sb{1}\)>
+    <double> <fn_label\(\sb{2}\)>
     ...
-    <double> <fn_tag\(\sb{m}\)> \color{blue}
+    <double> <fn_label\(\sb{m}\)> \color{blue}
     [ <double> <double> .. <double> ]
     [ <double> <double> .. <double> ]
     ...
@@ -208,20 +208,22 @@ and is followed by a block of requested gradients
 in red). If the amount of data in the file does not match the function
 request vector, Dakota will abort execution with an error message.
 
-Function values have no bracket delimiters and \emph{optionally} one
-character-string tag per function can be supplied.  These tags are not
-used by
-Dakota and are only included as an optional field for consistency with
-the parameters file format and for backwards compatibility.  If
-tags are used, they must be separated from
-numeric function values by white space (one or more blanks, tabs, or newline
-characters) and there must not
-be any white space embedded within a character-string tag (e.g., use
-``\texttt{variable1}'' or ``\texttt{variable\_1},'' but not
-``\texttt{variable 1}'').
+Function values have no bracket delimeters, but each may be followed by its own
+non-numeric label. Labels must be separated from numeric function 
+values by white space (one or more blanks, tabs, or newline characters) and they must 
+not contain any white space themselves (e.g., use ``\texttt{response1}'' or ``\texttt{response\_1},'' 
+but not ``\texttt{response 1}''). Labels also must not resemble numerical values.
+
+By default, function value labels are optional and are ignored by Dakota; they are 
+permitted only as a convenience to the user. However, if strict checking is activated
+by including the \texttt{labeled} keyword in the interface section of the Dakota input
+file, then labels are required for every function value. Further, labels must 
+exactly match the response descriptors of their corresponding function values. These 
+stricter labeling requirements enable Dakota to detect and report when function values 
+are returned out-of-order, or when specific function values are repeated or missing.
 
 Gradient vectors are surrounded by single brackets
-[\ldots$n_{dvv}$-vector of doubles\ldots]. Tags are not used and must
+[\ldots$n_{dvv}$-vector of doubles\ldots]. Labels are not used and must
 not be present. White space separating the brackets from the data is
 optional.
 
@@ -230,7 +232,7 @@ Hessian matrices are surrounded by double brackets
 components (numeric values for second partial derivatives) are
 listed by rows and separated by white space; in particular, they
 can be spread across multiple
-lines for readability.  Tags are not used and must not be present.
+lines for readability.  Labels are not used and must not be present.
 White space after the initial double bracket and before the final one
 is optional, but none can appear within the double brackets.
 
