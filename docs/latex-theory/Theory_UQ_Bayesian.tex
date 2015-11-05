@@ -39,7 +39,8 @@ Eq.~(\ref{eq:model}) results in a likelihood function for $\boldsymbol{\theta}$
 %that is the product of $n$ normal probability density functions 
 as shown in Eq.~\ref{eq:Likelihood}:
 \begin{equation}
-\mathcal{L}(\boldsymbol{\theta;d}) \propto % = \frac{1}{(2\pi)^n |\boldsymbol{\Sigma_d}|} 
+\mathcal{L}(\boldsymbol{\theta;d}) = 
+\frac{1}{\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}}
 \exp \left(
 -\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r} 
 \right), \label{eq:Likelihood}
@@ -50,27 +51,28 @@ where the residual vector $\boldsymbol{r}$ is defined from the
 differences between the model predictions and the corresponding
 observational data (i.e., $r_i = q_i(\boldsymbol{\theta}) - d_i$ for $i = 1,\dots,n$),
 $\boldsymbol{\Sigma_d}$ is the covariance matrix of the Gaussian data
-uncertainties, and we omit the leading multivariate normal (MVN)
-constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}$ for 
-simplicity\footnote{In practice, omitting this MVN constant can avoid 
-  precision loss due to subtractive cancellation in log-likelihood 
-  calculations; further, this shortcut will be canceled out by the 
-  normalization factor in the denominator of Eq.~\ref{eq:BayesThm}.}. 
-  % exception: calibrate sigma? (could rescale sigma after the fact)
+uncertainties. %, and we omit the leading multivariate normal (MVN)
+%constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}$ for 
+%simplicity. \footnote{In practice, omitting this MVN constant can avoid 
+  %precision loss due to subtractive cancellation in log-likelihood 
+  %calculations; further, this shortcut will be canceled out by the 
+  %normalization factor in the denominator of Eq.~\ref{eq:BayesThm}.}. 
 
-The negative log-likelihood is known as the misfit function:
+The negative log-likelihood is comprised of the misfit function:
 \begin{equation}
 M(\boldsymbol{\theta;d}) = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} 
 \boldsymbol{r} % + C
 \label{eq:misfit}
 \end{equation}
-It is evident that dropping $\boldsymbol{\Sigma_d}$ from this
-expression (or equivalently, taking it to be the identity) results in
+plus contributions from the leading normalization factor 
+($\frac{n}{2}\log(2\pi)$ and $\log(|\boldsymbol{\Sigma_d}|)/2$).
+It is evident that dropping $\boldsymbol{\Sigma_d}$ from Eq.~\ref{eq:misfit} 
+(or equivalently, taking it to be the identity) results in
 the ordinary least squares (OLS) approach commonly used in
-deterministic calibration.  Minimizing the misfit function is
-equivalent to maximizing the likelihood function and results in a
-solution known as the maximum likelihood estimate (MLE), which will be
-the same as the OLS estimate when the residuals have no relative
+deterministic calibration.  For a fixed $\boldsymbol{\Sigma_d}$, minimizing the misfit 
+function is equivalent to maximizing the likelihood function and results 
+in a solution known as the maximum likelihood estimate (MLE), which will 
+be the same as the OLS estimate when the residuals have no relative
 weighting (any multiple of identity in the data covariance matrix).
 
 When incorporating the prior density, the maximum {\it a posteriori}
@@ -107,14 +109,113 @@ first-order derivative information.  Since the second term in
 Eq.~\ref{eq:hess_misfit} includes the residual vector, it becomes less
 important as the residuals are driven toward zero.  This makes the
 Gauss-Newton approximation a good approximation for solutions with
-small residuals.
+small residuals.  It also has the feature of being at least positive
+semi-definite, whereas the full misfit Hessian may be indefinite in general.
 
-To form the MVN proposal density for the MCMC process, we define the
-proposal covariance to be the inverse of the misfit Hessian.  Since
-the full Hessian may be indefinite while the Gauss-Newton
-approximation is at least positive semi-definite, we may first attempt
-to invert the full Hessian, followed by recourse when necessary to
-inverting the Gauss-Newton approximate Hessian.
+%To form the MVN proposal density for the MCMC process, we define the
+%proposal covariance to be the inverse of the misfit Hessian.  Since
+%the full Hessian may be indefinite while the Gauss-Newton
+%approximation is at least positive semi-definite, we may first attempt
+%to invert the full Hessian, followed by recourse when necessary to
+%inverting the Gauss-Newton approximate Hessian.
+
+We are interested in preconditioning the MCMC sampling using an
+accurate local representation of the curvature of the posterior
+distribution, so we will define the MCMC proposal covariance to be the
+inverse of the Hessian of the negative log posterior.  From
+Eq.~\ref{eq:BayesThm} and simplifying notation to $\pi_{\rm post}$ for
+the posterior and $\pi_0$ for the prior, we have
+\begin{equation}
+\nabla^2_{\boldsymbol{\theta}} 
+  \left[ -\log(\pi_{\rm post}(\boldsymbol{\theta})) \right] = 
+  \nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) - 
+  \nabla^2_{\boldsymbol{\theta}} \left[ \log(\pi_0(\boldsymbol{\theta})) \right] 
+\label{eq:hess_post}
+\end{equation}
+
+A typical approach for defining a proposal density is to utilize a
+multivariate normal (MVN) distribution with mean centered at the current
+point in the chain and prescribed covariance.  Thus, in the specific case
+of an MVN proposal, we will utilize the fact that the Hessian of the
+negative log prior for a normal prior distribution is just the inverse 
+covariance:
+\begin{equation}
+-\nabla^2_{\boldsymbol{\theta}} \left[ \log(\pi_0(\boldsymbol{\theta})) \right] 
+= \boldsymbol{\Sigma_0}^{-1} 
+\label{eq:normal_prior_hess}
+\end{equation}
+For non-normal prior distributions, this is not true and, in the case
+of uniform or exponential priors, the Hessian of the negative log
+prior is in fact zero.  However, as justified by the approximation of
+an MVN proposal distribution and the desire to improve the
+conditioning of the resulting Hessian, we will employ the prior
+covariance for all prior distribution types.
+
+From here, we follow~\cite{Petra2014} and decompose the prior covariance 
+into its Cholesky factors, resulting in
+\begin{eqnarray}
+\boldsymbol{H_{\rm nlpost}} &=& \boldsymbol{H_M} + \boldsymbol{\Sigma_0}^{-1} \\
+  &=& \boldsymbol{H_M} + \boldsymbol{L}^{-T}\boldsymbol{L}^{-1} \\
+  &=& \boldsymbol{L}^{-T} \left[\boldsymbol{L}^T \boldsymbol{H_M} \boldsymbol{L}
+    + \boldsymbol{I} \right] \boldsymbol{L}^{-1}
+\end{eqnarray}
+where we again simplify notation to represent $\nabla^2_{\boldsymbol{\theta}} 
+  \left[ -\log(\pi_{\rm post}(\boldsymbol{\theta})) \right]$ as 
+$\boldsymbol{H_{\rm nlpost}}$ and 
+$\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta})$ as $\boldsymbol{H_M}$.  
+The inverse of this matrix is then
+\begin{equation}
+\boldsymbol{H_{\rm nlpost}}^{-1} = 
+  \boldsymbol{L} \left[\boldsymbol{L}^T \boldsymbol{H_M} \boldsymbol{L} +
+  \boldsymbol{I} \right]^{-1} \boldsymbol{L}^T
+\label{eq:inv_hess_nlpost}
+\end{equation}
+To address the indefiniteness of $\boldsymbol{H_M}$ (or to reduce the
+cost for large-scale problems by using a low-rank Hessian approximation), 
+we perform a symmetric eigenvalue decomposition of this prior-preconditioned
+misfit and truncate any eigenvalues below a prescribed tolerance, resulting in
+\begin{equation}
+\boldsymbol{L}^T \boldsymbol{H_M} \boldsymbol{L} \approx
+\boldsymbol{V}_r \boldsymbol{\Lambda}_r \boldsymbol{V}_r^T.
+\end{equation}
+for a matrix $\boldsymbol{V}_r$ of truncated eigenvectors and a diagonal 
+matrix of truncated eigenvalues 
+$\boldsymbol{\Lambda}_r = {\rm diag}(\lambda_1, \lambda_2, \dots, \lambda_r)$.
+We then apply the Sherman-Morrison-Woodbury formula to invert the sum of
+the decomposed matrix and identity as
+\begin{equation}
+\left[\boldsymbol{V}_r \boldsymbol{\Lambda}_r \boldsymbol{V}_r^T +
+  \boldsymbol{I} \right]^{-1} = \boldsymbol{I} - 
+  \boldsymbol{V}_r \boldsymbol{D}_r \boldsymbol{V}_r^T.
+\end{equation}
+for $\boldsymbol{D}_r = {\rm diag}(\frac{\lambda_1}{\lambda_1+1}, \frac{\lambda_2}{\lambda_2+1}, \dots, \frac{\lambda_r}{\lambda_r+1})$.  We now arrive
+at our final result for the covariance of the MVN proposal density:
+\begin{equation}
+\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_{\rm nlpost}}^{-1} \approx
+  \boldsymbol{L} \left[ \boldsymbol{I} - 
+  \boldsymbol{V}_r \boldsymbol{D}_r \boldsymbol{V}_r^T \right] \boldsymbol{L}^T
+\label{eq:inv_hess_nlpost_approx}
+\end{equation}
+
+
+\section{Pre-solve for MAP point} \label{uq:bayes:map}
+
+When an emulator model is in use, it is inexpensive to pre-solve for
+the MAP point by finding the optimal values for $\boldsymbol{\theta}$
+that maximize the negative log posterior.  This effectively eliminates
+the burn-in procedure for an MCMC chain where some initial portion of
+the Markov chain is discarded, as the MCMC chain can instead be
+initiated from a high probability starting point: the MAP solution.
+Further, a full Newton optimization solver can be used with the
+Hessian defined from Eq.~\ref{eq:hess_post}, irregardless of whether
+the misfit Hessian is a full Hessian (residual values, gradients, and
+Hessians are available for Eq~\ref{eq:hess_misfit}) or a Gauss-Newton
+Hessian (residual gradients are available for
+Eq~\ref{eq:hess_misfit_gn}).  Note that, in this case, there is no MVN
+approximation as in \S\ref{uq:bayes:prop}, so we will not employ
+Eq.~\ref{eq:normal_prior_hess}.  Rather, we employ the actual Hessians
+corresponding to the prior distributions in use.
+
 
 \section{Rosenbrock Example} \label{uq:bayes:ex}
 
@@ -131,9 +232,11 @@ that $M(\theta;d)$ is exactly the Rosenbrock function\footnote{The
 
 Assuming a uniform prior on $[-2,2]$,
 Figure~\ref{fig:rosen_prop_covar} shows the effect of different
-proposal covariance options, with the default prior covariance in
-Figure~\ref{fig:rosen_prop_covar}(a) and the misfit Hessian-based
-proposal covariance in Figure~\ref{fig:rosen_prop_covar}(b).
+proposal covariance components, with the default prior covariance 
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{\Sigma_0}$) in
+Figure~\ref{fig:rosen_prop_covar}(a) and a misfit Hessian-based
+proposal covariance ($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_M}^{-1}$) 
+in Figure~\ref{fig:rosen_prop_covar}(b).
 \begin{figure}[htbp]
   \begin{subfigmatrix}{2}
   \subfigure[Proposal covariance defined from uniform prior.]{\includegraphics{images/rosen_00_prior}}
@@ -156,24 +259,35 @@ information on the structure of the likelihood, resulting in low
 rejection rates for samples in the vicinity of this Hessian update.
 Once the chain moves away from this vicinity, however, the misfit
 Hessian-based approach may become inaccurate and actually impede
-progress. This implies the need to regularly update the misfit
-Hessian-based proposal covariance to sustain these MCMC improvements.
+progress. This implies the need to regularly update a Hessian-based
+proposal covariance to sustain these MCMC improvements.
 
 In Figure~\ref{fig:rosen_restart}, we show a result for a total of
 2000 MCMC samples initiated from $(-1,1)$, where we restart the chain
-with an updated misfit Hessian-based proposal covariance every 40
+with an updated Hessian-based proposal covariance every 40
 samples (Dakota specification: \texttt{samples = 2000
   proposal\_updates = 50}).  This case uses a standard normal prior,
 resulting in differences in the MLE and MAP estimates, as shown in
 Figure~\ref{fig:rosen_restart}(a).  Figure~\ref{fig:rosen_restart}(b)
-shows the history of rejection rates for each of the 50 chains
-compared to the rejection rate for a single 2000-sample chain using
-prior-based proposal covariance.
+shows the history of rejection rates for each of the 50 chains for
+misfit Hessian-based proposals 
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_M}^{-1}$)
+and negative log posterior Hessian-based proposals 
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_{\rm nlpost}}^{-1}$)
+compared to the rejection rate for a single 2000-sample chain 
+using prior-based proposal covariance 
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{\Sigma_0}$).
 \begin{figure}[htbp]
   \begin{subfigmatrix}{2}
   \subfigure[Restarted chain.]{\includegraphics{images/rosen_restart_mle_map}}
-  \subfigure[Rejection rates.]{\includegraphics{images/rosen_restart_reject}}
+  \subfigure[Rejection rates.]{\includegraphics{images/rosen_pce_m11_50up_stdnormal_rejection}}
   \end{subfigmatrix}
-  \caption{MCMC chain with 2000 total samples (black points), 50 proposal updates using the inverse of the misfit Hessian (performed at red circles), and standard normal prior.}
+  \caption{MCMC with Hessian-based proposals and standard normal prior. Left shows chain with 2000 total samples (black points) and 50 proposal updates using the inverse of the misfit Hessian (red circles). Right shows rejection rates for misfit Hessian-based and posterior Hessian-based proposals compared to default prior covariance proposal.}
 \label{fig:rosen_restart}
 \end{figure}
+A standard normal prior is not a strong prior in this case, and
+the posterior is likelihood dominated.  This leads to similar
+performance from misfit Hessian-based proposals and posterior
+Hessian-based proposals, with average rejection rates of 70\%, 19.5\%,
+and 16.4\% for prior-based, misfit Hessian-based, and posterior
+Hessian-based cases, respectively.
