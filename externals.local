@@ -5,7 +5,7 @@
 #    branching/tagging a release
 #  - Use Subversion 1.5 externals format
 #
--rHEAD	 svn+ssh://development.sandia.gov/usr/local/svn/dakota/snl/trunk 	local
--rHEAD	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/DOT/tags/1993	packages/DOT
--rHEAD	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/NLPQL/trunk 	packages/NLPQL
--rHEAD	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/NPSOL/tags/5.0.2	packages/NPSOL
+-rHEAD	 svn+ssh://development.sandia.gov/usr/local/svn/dakota/snl/branches/6.1	local
+-r12019	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/DOT/tags/1993	packages/DOT
+-r12019	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/NLPQL/trunk 	packages/NLPQL
+-r12019	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/NPSOL/tags/5.0.2	packages/NPSOL
