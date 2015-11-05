@@ -1,6 +1,6 @@
-Blurb::Perform the MCMC process in a standardized probability space.
+Blurb:: Perform Bayesian inference in standardized probability space
 
-Description::This option transforms the inference process (the MCMC sampling
+Description::This option transforms the inference process (MCMC sampling
 and any emulator model management) into a standardized probability space.  
 
 The variable transformations performed are as described in \ref
@@ -9,26 +9,26 @@ method-polynomial_chaos-askey.
 <b> Default Behavior </b>
 
 The default for the Gaussian process and no emulator options is to
-perform the MCMC process in the original probability space (no
+perform inference in the original probability space (no
 transformation).  Polynomial chaos and stochastic collocation
 emulators, on the other hand, are always formed in standardized
-probability space, such that the MCMC process is also performed in
-this standardized space.
+probability space, such that the inference process is also performed
+in this standardized space.
 
 <b> Expected Output </b>
 
 The user will see the truth model evaluations performed in the
-original space, whereas any diagnostics relating to the MCMC samples
-(e.g., QUESO data in the outputData directory) will report points and
-response data (response gradients and Hessians, if present, will
-differ but response values will not) that correspond to the
+original space, whereas any method diagnostics relating to the MCMC
+samples (e.g., QUESO data in the outputData directory) will report
+points and response data (response gradients and Hessians, if present,
+will differ but response values will not) that correspond to the
 transformed space.
 
 <b> Usage Tips </b>
 
 Selecting standardized_space generally has the effect of scaling the
-random variables to be of equal magnitude, which can improve the
-efficiency of the MCMC process.
+random variables to be of comparable magnitude, which can improve the
+efficiency of the Bayesian inference process.
 
 Topics::
 

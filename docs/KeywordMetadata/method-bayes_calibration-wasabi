@@ -1,0 +1,24 @@
+Blurb:: (Experimental Method) Non-MCMC Bayesian inference using interval analysis
+
+Description::
+Offers an alternative to Markov Chain Monte Carlo-based Bayesian
+inference.  This is a nascent capability, not yet ready for production
+use.
+
+<b>Usage Guidelines:</b> The WASABI method requires an emulator model.
+
+<b>Attention: </b> While the \c emulator specification for WASABI
+includes the keyword posterior_adaptive, it is not yet operational.
+
+Topics::
+
+Examples::
+\verbatim
+method
+  bayes_calibration
+    wasabi
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

@@ -1,5 +1,5 @@
 Blurb::
-Solves a mixed integer nonlinear optimization problem
+(Experimental Capability) Solves a mixed integer nonlinear optimization problem
 
 Description::
 The branch-and-bound optimization methods solves mixed integer nonlinear
@@ -13,7 +13,7 @@ in such a way that yields the solution to the original optimization problem.
 <b> Default Behavior </b>
 
 Branch-and-bound expects all discrete variables to be relaxable.  If your
-problem had categorical or otherwise non-relaxable discrete variables, then
+problem has categorical or otherwise non-relaxable discrete variables, then
 this is not the optimization method you are looking for.
 
 <b> Expected Output </b>

@@ -1,9 +1,11 @@
 Blurb::Specifies the diagonal matrix format when specifying a
 user-specified proposal covariance.
 
-Description::When specifying the MCMC proposal covariance in an input
-file, this keyword declares the use of a diagonal matrix format, i.e.,
-the user only provides the values along the diagonal.
+Description::
+
+When specifying the MCMC proposal covariance in an input file, this
+keyword declares the use of a diagonal matrix format, i.e., the user
+only provides the (positive) values along the diagonal.
 
 Topics::
 

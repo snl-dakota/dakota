@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# script to collect results from qsub-ed analysis runs and return them
+# to Dakota. 
+
+# ---------------------------
+# OUTPUT FILE POST PROCESSING
+# ---------------------------
+
+num=`echo $1 | cut -c 13-`
+topdir=`pwd`
+workdir=$topdir/workdir.$num
+cd $workdir
+
+# Normally any application-specific post-processing to prepare the
+# results.out file for Dakota would go here. Here we'll substitute a
+# copy command:
+
+cp application.out results2dakota
+
+# for demo, append the node name to see on which node this task ran
+# (comment out for actual application)
+uname -n >> results2dakota
+
+# When using Dakota's fork interface, the application can directly
+# write its output (if in the right format) to results.out.$num
+# (../$2) for Dakota, however for the system interface, use the
+# following move to avoid a race condition:
+
+cp results2dakota $topdir/$2
+cd $topdir
+
+# -------------
+# CLEANUP
+# -------------
+
+# Now it is likely safe to cleanup
+rm -rf $workdir

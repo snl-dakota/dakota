@@ -54,8 +54,8 @@ The user can also specify the following to affect the merit functions:
 
 The only method independent controls that are currently mapped to APPS
 are:
-\li \ref method-max_function_evaluations
-\li \ref method-constraint_tolerance
+\li \ref method-asynch_pattern_search-max_function_evaluations
+\li \ref method-asynch_pattern_search-constraint_tolerance
 \li \ref method-output
 
 Note that while APPS treats the constraint tolerance separately for

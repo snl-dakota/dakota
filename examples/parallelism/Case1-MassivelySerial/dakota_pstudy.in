@@ -1,0 +1,48 @@
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 1 (Massively Serial)
+
+environment,
+	tabular_data
+
+method,
+	vector_parameter_study
+	  step_vector =	 .1  .1	 .1
+	  num_steps = 19
+
+variables,
+	continuous_design = 3
+	  initial_point    1.0   1.0   1.0
+
+# Case 1 (Massively Serial): Run Dakota in parallel and launch M-1 serial
+#         analysis jobs at once.  Do not specify any evaluation concurrency
+#         (handled by parallel scheduler)
+#         fork interface is recommended
+interface,
+	fork
+# In an M processor allocation, by default Dakota will configure with
+# a master scheduler with M-1 slave analysis processes.  Overriding
+# this with evaluation_scheduling peer static will avoid this dedicated 
+# master and use all M processors, but then each batch of M analyses will 
+# have to complete before the next M are scheduled.  This may be useful if 
+# all evaluations are known to take the same processor time:
+
+#	  evaluation_scheduling peer static
+
+# Dynamic scheduling may also be specified. In this mode, the first peer will
+# attempt to act as both a master scheduler and an evaluation server. 
+# Consequently, all M processors will be used as in the static case. Unlike the
+# static case, evaluations are delegated to servers on the fly, making dynamic
+# scheduling the better choice when evaluations may be of varying duration.
+
+#         evaluation_scheduling peer dynamic
+
+	  analysis_driver = 'text_book_driver'
+	    parameters_file = 'params.in'
+	    results_file = 'results.out'
+	    file_tag
+	    file_save
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	no_gradients
+	no_hessians

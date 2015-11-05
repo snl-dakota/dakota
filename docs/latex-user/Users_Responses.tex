@@ -89,7 +89,7 @@ for ``quasi-Hessians":
 \item \texttt{no\_hessians}: Hessians will not be used.
 
 \item \texttt{numerical\_gradients}: Hessians are needed and will be
-  approximated by finite differences.  These finite differences may be
+  approximated by finite differences.  These finite differences may
   involve first-order differences of gradients (if analytic gradients
   are available for the response function of interest) or second-order 
   differences of function values (in all other cases).
@@ -113,35 +113,54 @@ with second-order limit state approximations or second-order
 probability integrations.
 
 \subsection{Field Data}
-Prior to Dakota 6.1, Dakota responses have been treated as 
-scalar responses.  That is, if the user specifies 
-\texttt{response\_functions=5}, Dakota treats the five responses as five separate scalar quantities.  There are some cases where responses are a ``field'' quantity, meaning that the responses are a function of one or more independent variables such as time and/or spatial location.  In these cases, the responses should be treated as field data.  For example, it can become 
-extremely cumbersome to represent 5000 values from a 
-time-temperature trace or a current-voltage curve in Dakota.  
-With scalar response quantities, we ignore the independent variable(s).  
-For example, if we have a response $R$ as a function of time $t$, 
-the user currently gives Dakota a set of discrete responses at particular times and Dakota doesn't know the times.  
+Prior to Dakota 6.1, Dakota responses have been treated as scalar
+responses.  That is, if the user specifies \texttt{response\_functions=5},
+Dakota treats the five responses as five separate scalar quantities.
+There are some cases where responses are a ``field'' quantity, meaning
+that the responses are a function of one or more independent variables
+such as time and/or spatial location.  In these cases, the responses
+should be treated as field data.  For example, it can become extremely
+cumbersome to represent 5000 values from a time-temperature trace or a
+current-voltage curve in Dakota.  With scalar response quantities, we
+ignore the independent variable(s).  For example, if we have a response
+$R$ as a function of time $t$, the user currently gives Dakota a set of
+discrete responses at particular times and Dakota doesn't know the times.
 
-With the field data capability, the user can specify that 
-they have one field response of size 5000 x 1 (for example). 
-Dakota will have a large set 
-of data $R=f(t)$, with both the response $R$ and independent 
-coordinates $t$ specified to Dakota.  
-The independent variable(s) can be useful in interpolation between simulation responses and experimental observations.  
-It also can be useful in surrogate construction.  
-We plan to handle correlation or structure between 
-field responses, which is currently not handled when 
-we treat the responses as individual, separate scalar 
-quantities. 
+With the field data capability, the user can specify that they have
+one field response of size 5000 x 1 (for example).  Dakota will have a
+large set of data $R=f(t)$, with both the response $R$ and independent
+coordinates $t$ specified to Dakota.  The independent variable(s) can be
+useful in interpolation between simulation responses and experimental
+observations.  It also can be useful in surrogate construction.
+We plan to handle correlation or structure between field responses,
+which is currently not handled when we treat the responses as individual,
+separate scalar quantities.
 
-For all three major response 
-types (\texttt{objective\_functions}, \texttt{calibration\_terms}, and \texttt{response\_functions}), one can specify field responses (e.g. with \texttt{field\_objectives}, \texttt{field\_calibration\_terms}, and \texttt{field\_responses}).  
-For each type of field response, one can specify the length of the field (e.g. \texttt{lengths=5000}) and the number of independent coordinates (\texttt{num\_coordinates\_per\_field}).  The user can specify the independent coordinates by specifying \texttt{read\_field\_coordinates} and providing the 
-coordinates in files named \texttt{response\_descriptor.coords}.  In the case of field data from physical experiments used to calibrate field data from simulation experiments, the specification is more involved:  the user should refer to the Dakota Reference manual to get the syntax. 
-Note that at this time, field responses may be specified by the user as outlined above.  All methods can handle field data, but currently the calibration methods are the only methods specialized for field data, specifically they interpolate the simulation field data to the experiment field data points to calculate the residual terms.  This is applicable to \texttt{nl2sol}, \texttt{nlssol}, \texttt{optpp\_g\_newton}, 
-the MCMC Bayesian methods, as well as general optimization methods that recast the residuals into a sum-of-squares error.  The other methods simply handle the field responses as a number of scalar responses currently. In future versions, we are planning some additional features with methods 
-that can handle field data, including reduction of the field data. 
- 
+For all three major response types (\texttt{objective\_functions},
+\texttt{calibration\_terms}, and \texttt{response\_functions}), one
+can specify field responses (e.g. with \texttt{field\_objectives},
+\texttt{field\_calibration\_terms}, and \texttt{field\_responses}).
+For each type of field response, one can specify the length
+of the field (e.g. \texttt{lengths=5000}) and the number of
+independent coordinates (\texttt{num\_coordinates\_per\_field}).
+The user can specify the independent coordinates by specifying
+\texttt{read\_field\_coordinates} and providing the coordinates in files
+named \texttt{response\_descriptor.coords}.  In the case of field data
+from physical experiments used to calibrate field data from simulation
+experiments, the specification is more involved:  the user should refer
+to the Dakota Reference manual to get the syntax.  Note that at this
+time, field responses may be specified by the user as outlined above.
+All methods can handle field data, but currently the calibration methods
+are the only methods specialized for field data, specifically they
+interpolate the simulation field data to the experiment field data points
+to calculate the residual terms.  This is applicable to \texttt{nl2sol},
+\texttt{nlssol}, \texttt{optpp\_g\_newton}, the MCMC Bayesian methods,
+as well as general optimization methods that recast the residuals into
+a sum-of-squares error.  The other methods simply handle the field
+responses as a number of scalar responses currently. In future versions,
+we are planning some additional features with methods that can handle
+field data, including reduction of the field data.
+
 \section{Dakota Results File Data Format}\label{responses:results}
 
 Simulation interfaces using system calls and forks to create
@@ -165,10 +184,10 @@ shown in Figure \ref{responses:figure01}.
   \centering
   \begin{bigbox}
   \begin{alltt}
-    <double> <fn_tag\(\sb{1}\)>
-    <double> <fn_tag\(\sb{2}\)>
+    <double> <fn_label\(\sb{1}\)>
+    <double> <fn_label\(\sb{2}\)>
     ...
-    <double> <fn_tag\(\sb{m}\)> \color{blue}
+    <double> <fn_label\(\sb{m}\)> \color{blue}
     [ <double> <double> .. <double> ]
     [ <double> <double> .. <double> ]
     ...
@@ -189,20 +208,22 @@ and is followed by a block of requested gradients
 in red). If the amount of data in the file does not match the function
 request vector, Dakota will abort execution with an error message.
 
-Function values have no bracket delimiters and \emph{optionally} one
-character-string tag per function can be supplied.  These tags are not
-used by
-Dakota and are only included as an optional field for consistency with
-the parameters file format and for backwards compatibility.  If
-tags are used, they must be separated from
-numeric function values by white space (one or more blanks, tabs, or newline
-characters) and there must not
-be any white space embedded within a character-string tag (e.g., use
-``\texttt{variable1}'' or ``\texttt{variable\_1},'' but not
-``\texttt{variable 1}'').
+Function values have no bracket delimiters, but each may be followed by its own
+non-numeric label. Labels must be separated from numeric function 
+values by white space (one or more blanks, tabs, or newline characters) and they must 
+not contain any white space themselves (e.g., use ``\texttt{response1}'' or ``\texttt{response\_1},'' 
+but not ``\texttt{response 1}''). Labels also must not resemble numerical values.
+
+By default, function value labels are optional and are ignored by Dakota; they are 
+permitted only as a convenience to the user. However, if strict checking is activated
+by including the \texttt{labeled} keyword in the interface section of the Dakota input
+file, then labels are required for every function value. Further, labels must 
+exactly match the response descriptors of their corresponding function values. These 
+stricter labeling requirements enable Dakota to detect and report when function values 
+are returned out-of-order, or when specific function values are repeated or missing.
 
 Gradient vectors are surrounded by single brackets
-[\ldots$n_{dvv}$-vector of doubles\ldots]. Tags are not used and must
+[\ldots$n_{dvv}$-vector of doubles\ldots]. Labels are not used and must
 not be present. White space separating the brackets from the data is
 optional.
 
@@ -211,7 +232,7 @@ Hessian matrices are surrounded by double brackets
 components (numeric values for second partial derivatives) are
 listed by rows and separated by white space; in particular, they
 can be spread across multiple
-lines for readability.  Tags are not used and must not be present.
+lines for readability.  Labels are not used and must not be present.
 White space after the initial double bracket and before the final one
 is optional, but none can appear within the double brackets.
 

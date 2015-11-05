@@ -1,9 +1,12 @@
 Blurb::Specifies the full matrix format when specifying a
 user-specified proposal covariance.
 
-Description::When specifying the MCMC proposal covariance in an input
-file, this keyword declares the use of a full matrix format, i.e., the
-user provides all values of the matrix, not just the diagonal.
+Description::
+
+When specifying the MCMC proposal covariance in an input file, this
+keyword declares the use of a full matrix format, i.e., the user
+provides all values of the matrix, not just the diagonal.  The matrix
+must be symmetric, positive-definite.
 
 Topics::
 

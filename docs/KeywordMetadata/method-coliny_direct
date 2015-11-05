@@ -45,12 +45,12 @@ that is suitable for most applications.
 <b> Stopping Critieria </b>
 
 DIRECT can be terminated with:
- \li \ref method-max_function_evaluations
- \li \ref method-max_iterations
- \li \ref method-convergence_tolerance
- \li \c solution_target
- \li \c max_boxsize_limit
- \li \c min_boxsize_limit - most effective in practice
+ \li \ref method-coliny_direct-max_function_evaluations
+ \li \ref method-coliny_direct-max_iterations
+ \li \ref method-coliny_direct-convergence_tolerance
+ \li \ref method-coliny_direct-solution_target
+ \li \ref method-coliny_direct-max_boxsize_limit
+ \li \ref method-coliny_direct-min_boxsize_limit - most effective in practice
 
 
 Topics::	package_scolib, package_coliny, global_optimization_methods

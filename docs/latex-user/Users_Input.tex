@@ -135,15 +135,18 @@ Manual~\cite{RefMan} for additional information on this specification.
 The flat file must be in free-form format as described in
 Section~\ref{input:tabularformat}.
 
-\subsection{Calibration (least squares) data import}
+\subsection{Calibration data import}\label{input:calib_data}
 
 Deterministic least squares and Bayesian Calibration methods allow
 specification of experimental observations to difference with
 responses in calculating a model misfit metric (such as a sum of
-squared residuals).  The default file format is {\tt annotated}, but
-the {\tt freeform} option is supported.  The data file is comprised of
-one or more experiments, each with one or more replicates, one row per
-replicate.  The columns of the data file contain, in sequence
+squared residuals). 
+
+For scalar responses, a simple tabular format is allowed.  The default
+file format is {\tt annotated}, but the {\tt freeform} option is
+supported.  The data file is comprised of one or more experiments,
+each with one or more replicates, one row per replicate.  The columns
+of the data file contain, in sequence
 \begin{itemize}
 \item {\bf configuration variables (optional):} state variable values
   indicating the configuration at which this experiment was conducted;
@@ -153,11 +156,32 @@ replicate.  The columns of the data file contain, in sequence
   values to difference with model responses; length number of
   responses.
 \item {\bf experimental standard deviations (optional):} measurement
-  errors (standard deviations) associated with the data; length 1
-  (same value for each model response) or num\_responses.
+  errors (standard deviations) associated with the data; 1 scalar for
+  each of the num\_responses.
 \end{itemize}
+
+Data informing field-valued responses are input using a separate file
+per response group, per experiment.  Field responses may optionally
+have scalar, diagonal, or matrix-valued error covariance information.
 See~\ref{nls:examples} and the Dakota Reference Manual Responses
 section for further details.
+
+As an example, Figure~\ref{fig:input:obs_err_cov} shows an observation
+vector with 5 responses; 2 scalar + 3 field (each field of length
+\textgreater 1).  The corresponding covariance matrix has scalar
+variance for each of the scalars, diagonal covariance for field 1,
+scalar covariance for field 2, and full matrix covariance for field 3.
+In total, Dakota supports block diagonal covariance $\Sigma$ across
+the responses, with blocks $\Sigma_i$, which could be fully dense
+within a given field response group.  Covariance across the
+highest-level responses (off-diagonal blocks) are not supported.
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[scale=0.5]{images/ObsErrorCovariance}
+  \caption{An example of scalar and field response data, with
+    associated block-diagonal observation error covariance.}
+  \label{fig:input:obs_err_cov}
+\end{figure}
 
 \subsection{PCE coefficient import}
 

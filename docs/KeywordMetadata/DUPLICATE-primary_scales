@@ -6,8 +6,7 @@ Each entry in
 to scale each response.  
 
 The argument may be of length 1 or the number of primary response
-functions.  See the \ref method-scaling page for details on how to use
-this keyword.
+functions.  See the \c scaling keyword in the \ref method section for details on how to use this keyword.
 
 Topics::	
 Examples::

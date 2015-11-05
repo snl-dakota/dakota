@@ -514,7 +514,7 @@ line per integration point.
 
 Most Dakota surrogate models, including all those implemented in
 Surfpack and some stochastic expansion approaches support the keyword
-\texttt{export\_points\_file = \emph{STRING}}.  When specified, any
+\texttt{export\_approx\_points\_file = \emph{STRING}}.  When specified, any
 approximate evaluations performed on the surrogate model will be
 output to the specified data file.  The data file can be exported in
 any of the tabular formats described in
@@ -522,12 +522,11 @@ Section~\ref{input:tabularformat} (default annotated).  This
 facilitates plotting or external diagnostics of the surrogate model.
 
 In addition, the Surfpack family of global surrogate models supports
-export (serialization) of surrogate models to text ({\tt .sps}) or
-binary ({\tt .bsps}) model files.  These files are not human readable
-(and don't contain an explicit algebraic form of the response surface
-model).  Instead they may be imported into the {\tt surfpack}
-executable or library API for evaluation, bypassing the reconstruction
-of the surrogate model from build data.
+export to a human-readable and self-documenting algebraic form, suitable for 
+reuse in user-developed tools, and to non-human readable model files, 
+which are intended for use with the {\tt surfpack} executable or library API. 
+The \texttt{export\_model} keyword group is used to specify model export filenames 
+and formats. It is fully described in the Dakota Reference Manual~\cite{RefMan}.
 
 \section{Variables Output from Pre-run}
 

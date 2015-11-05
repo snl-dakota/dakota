@@ -6430,44 +6430,44 @@ Test Number 1 succeeded
                       7.7070916534e-01
 <<<<< Best data captured at function evaluation 962
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 353 total (353 new, 0 duplicate)
+<<<<< Function evaluation summary: 538 total (538 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.7792876787e-01 x2
+                      2.9472747288e-01 x2
                       0.0000000000e+00 x3
                       0.0000000000e+00 x4
                       0.0000000000e+00 x5
-                      7.2532121940e-01 x6
+                      7.4396557561e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0763895643e+00
-<<<<< Best data captured at function evaluation 331
+                      1.0760359983e+00
+<<<<< Best data captured at function evaluation 538
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
+<<<<< Function evaluation summary: 370 total (370 new, 0 duplicate)
 <<<<< Best parameters          =
-                      7.1880834015e-01 x1
-                      4.9508942432e-01 x2
+                      1.0000000000e+00 x1
+                      2.8031875108e-01 x2
                       0.0000000000e+00 x3
-                      1.7808161115e-01 x4
-                      3.2941171057e-01 x5
-                      4.7484593672e-01 x6
-                      4.8493830564e-01 x7
+                      0.0000000000e+00 x4
+                      0.0000000000e+00 x5
+                      7.5850037575e-01 x6
+                      1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.1713290315e+00
-<<<<< Best data captured at function evaluation 109
+                      1.0759895937e+00
+<<<<< Best data captured at function evaluation 370
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 107 total (107 new, 0 duplicate)
+<<<<< Function evaluation summary: 619 total (619 new, 0 duplicate)
 <<<<< Best parameters          =
-                      7.6309750776e-01 x1
-                      5.2893317745e-01 x2
-                      0.0000000000e+00 x3
-                      1.9441712310e-01 x4
-                      2.9655697051e-01 x5
-                      4.5631809588e-01 x6
-                      4.4465582877e-01 x7
+                      1.0000000000e+00 x1
+                      2.8682799361e-01 x2
+                      9.1358549636e-16 x3
+                      1.2175942696e-16 x4
+                      1.1303501585e-17 x5
+                      7.4734794642e-01 x6
+                      1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.1744280465e+00
-<<<<< Best data not found in evaluation cache
+                      1.0760005327e+00
+<<<<< Best data captured at function evaluation 619
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -9613,22 +9613,22 @@ Test Number 0 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_ouu1_tbch.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 38 total (32 new, 6 duplicate)
-<<<<< Function evaluation summary (UQ_I): 1900 total (1900 new, 0 duplicate)
+<<<<< Function evaluation summary (OPTIONAL_I): 27 total (22 new, 5 duplicate)
+<<<<< Function evaluation summary (UQ_I): 1350 total (1350 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.9752504777e+00 d1
-                      1.7685966098e+00 d2
+                      1.9975407359e+00 d1
+                      1.7758602333e+00 d2
 <<<<< Best objective function  =
-                     -2.2367947323e+00
+                     -2.2654336157e+00
 <<<<< Best constraint values   =
-                     -4.1582550026e-01
-                     -3.3471050853e-01
-                     -6.6845590229e-06
-                      1.5833632585e+05
+                     -3.9710206254e-01
+                     -3.3362096501e-01
+                     -1.2263511467e-03
+                      1.5931343686e+05
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 18 total (17 new, 1 duplicate)
-<<<<< Function evaluation summary (UQ_I): 900 total (900 new, 0 duplicate)
+<<<<< Function evaluation summary (OPTIONAL_I): 20 total (17 new, 3 duplicate)
+<<<<< Function evaluation summary (UQ_I): 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.9922198416e+00 d1
                       1.7702076004e+00 d2
@@ -10314,7 +10314,7 @@ Test Number 1 succeeded
                       2.9998090256e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 4260 total (3990 new, 270 duplicate)
+<<<<< Function evaluation summary (UQ_I): 4560 total (3990 new, 570 duplicate)
 <<<<< Best parameters          =
                       2.4862410690e+00 w
                       2.4554450097e+00 t
@@ -10327,16 +10327,16 @@ Test Number 2 succeeded
                       3.0001306283e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 7952 total (4368 new, 3584 duplicate)
+<<<<< Function evaluation summary (UQ_I): 8680 total (4368 new, 4312 duplicate)
 <<<<< Best parameters          =
-                      1.9606684389e+00 w
-                      7.6978542536e+00 t
+                      1.9606684379e+00 w
+                      7.6978542574e+00 t
                       2.0000000000e+02 X_mean
-                      4.6948555184e+02 Y_mean
+                      4.6948555032e+02 Y_mean
 <<<<< Best objective function  =
                       1.5092939882e+01
 <<<<< Best constraint values   =
-                      7.7976285531e+00
+                      7.7976285643e+00
                       2.9998090263e+00
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_cantilever_trsb.in
@@ -11862,10 +11862,10 @@ Test Number 1 succeeded
 <<<<< Best data captured at function evaluation 19
 dakota_rbdo_cantilever.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 104 total (95 new, 9 duplicate)
-  response_fn_1: 104 val (95 n, 9 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 104 val (95 n, 9 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 104 val (95 n, 9 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 105 total (95 new, 10 duplicate)
+  response_fn_1: 105 val (95 n, 10 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 105 val (95 n, 10 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 105 val (95 n, 10 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.2383436445e+00 w
                       5.0812957966e+00 t
@@ -11876,10 +11876,10 @@ Test Number 0 succeeded
                       2.4760081493e-05
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 312 total (285 new, 27 duplicate)
-  response_fn_1: 104 val (95 n, 9 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 208 val (190 n, 18 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 208 val (190 n, 18 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 315 total (285 new, 30 duplicate)
+  response_fn_1: 105 val (95 n, 10 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 210 val (190 n, 20 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 210 val (190 n, 20 d), 105 grad (95 n, 10 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.2383436445e+00 w
                       5.0812957966e+00 t
@@ -11890,10 +11890,10 @@ Test Number 1 succeeded
                       2.4760081493e-05
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 686 total (644 new, 42 duplicate)
-  response_fn_1: 72 val (71 n, 1 d), 72 grad (71 n, 1 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 353 val (331 n, 22 d), 353 grad (331 n, 22 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 405 val (384 n, 21 d), 405 grad (384 n, 21 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 691 total (644 new, 47 duplicate)
+  response_fn_1: 73 val (71 n, 2 d), 73 grad (71 n, 2 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 356 val (331 n, 25 d), 356 grad (331 n, 25 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 408 val (384 n, 24 d), 408 grad (384 n, 24 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.4563070999e+00 w
                       3.8931294371e+00 t
@@ -11904,10 +11904,10 @@ Test Number 2 succeeded
                       1.0146363992e-03
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 1114 total (1111 new, 3 duplicate)
-  response_fn_1: 72 val (71 n, 1 d), 72 grad (71 n, 1 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 507 val (506 n, 1 d), 507 grad (506 n, 1 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 535 val (534 n, 1 d), 535 grad (534 n, 1 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1119 total (1111 new, 8 duplicate)
+  response_fn_1: 73 val (71 n, 2 d), 73 grad (71 n, 2 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 509 val (506 n, 3 d), 509 grad (506 n, 3 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 537 val (534 n, 3 d), 537 grad (534 n, 3 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.4563087186e+00 w
                       3.8931265964e+00 t
@@ -12358,17 +12358,17 @@ Test Number 3 succeeded
   -4.4576618766e-03   1.3490500616e-03   3.0145813479e+00   3.0001913904e+00
 dakota_rbdo_cantilever_mixed.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 3194 total (3194 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 3291 total (3291 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4582634937e+00 w
-                      2.4567495315e+00 t
+                      2.4582634498e+00 w
+                      2.4567495562e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
-                      6.0393376866e+00
+                      6.0393376394e+00
 <<<<< Best constraint values   =
-                      3.9342401517e+00
-                      3.0002363836e+00
+                      3.9342400793e+00
+                      3.0002362988e+00
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 764 total (764 new, 0 duplicate)
@@ -12384,7 +12384,7 @@ Test Number 1 succeeded
                       3.0005350187e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 2566 total (2566 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2667 total (2667 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.4570435929e+00 w
                       2.4582549694e+00 t
@@ -12394,7 +12394,7 @@ Test Number 2 succeeded
                       6.0400396224e+00
 <<<<< Best constraint values   =
                      -1.4846694584e-01
-                     -2.7606196637e-04
+                     -2.7606196589e-04
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 1194 total (1194 new, 0 duplicate)
@@ -12766,7 +12766,7 @@ Test Number 7 succeeded
    2.4835095143e-03   1.3498980316e-03   3.0000000000e+00   3.0000000000e+00
 dakota_rbdo_short_column.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 52 total (50 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 58 total (50 new, 8 duplicate)
 <<<<< Best parameters          =
                       7.9100936904e+00 b
                       2.5000000000e+01 h
@@ -12776,17 +12776,17 @@ Test Number 0 succeeded
                       6.1595239695e-03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 104 total (102 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 116 total (103 new, 13 duplicate)
 <<<<< Best parameters          =
-                      7.8989185920e+00 b
+                      7.8989185924e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      1.9747296480e+02
+                      1.9747296481e+02
 <<<<< Best constraint values   =
-                      6.1543431235e-03
+                      6.1543431151e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 102 total (99 new, 3 duplicate)
+<<<<< Function evaluation summary (UQ_I): 114 total (99 new, 15 duplicate)
 <<<<< Best parameters          =
                       7.9553917313e+00 b
                       2.5000000000e+01 h
@@ -12796,27 +12796,27 @@ Test Number 2 succeeded
                       5.6750981908e-03
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 302 total (298 new, 4 duplicate)
+<<<<< Function evaluation summary (UQ_I): 320 total (304 new, 16 duplicate)
 <<<<< Best parameters          =
-                      8.6837884214e+00 b
+                      8.6837884212e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1709471054e+02
+                      2.1709471053e+02
 <<<<< Best constraint values   =
-                      6.0247404903e-03
+                      6.0247404926e-03
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 313 total (309 new, 4 duplicate)
+<<<<< Function evaluation summary (UQ_I): 331 total (315 new, 16 duplicate)
 <<<<< Best parameters          =
-                      8.6837865104e+00 b
+                      8.6837865398e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1709466276e+02
+                      2.1709466349e+02
 <<<<< Best constraint values   =
-                      6.0247633388e-03
+                      6.0247629885e-03
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 560 total (556 new, 4 duplicate)
+<<<<< Function evaluation summary (UQ_I): 576 total (560 new, 16 duplicate)
 <<<<< Best parameters          =
                       8.6837884112e+00 b
                       2.5000000000e+01 h
@@ -12826,7 +12826,7 @@ Test Number 5 succeeded
                       6.0247406700e-03
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
-<<<<< Function evaluation summary (UQ_I): 17 total (16 new, 1 duplicate)
+<<<<< Function evaluation summary (UQ_I): 20 total (16 new, 4 duplicate)
 <<<<< Best parameters          =
                       7.9077699692e+00 b
                       2.5000000000e+01 h
@@ -12836,17 +12836,17 @@ Test Number 6 succeeded
                       2.5002065240e+00
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
-<<<<< Function evaluation summary (UQ_I): 34 total (32 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 40 total (34 new, 6 duplicate)
 <<<<< Best parameters          =
-                      7.8963893187e+00 b
+                      7.8963893186e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       1.9740973297e+02
 <<<<< Best constraint values   =
-                      2.5001906005e+00
+                      2.5001906004e+00
 <<<<< Best data not found in evaluation cache
 Test Number 8 succeeded
-<<<<< Function evaluation summary (UQ_I): 34 total (32 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 40 total (32 new, 8 duplicate)
 <<<<< Best parameters          =
                       7.9279671412e+00 b
                       2.5000000000e+01 h
@@ -12856,9 +12856,9 @@ Test Number 8 succeeded
                       2.5001914215e+00
 <<<<< Best data not found in evaluation cache
 Test Number 9 succeeded
-<<<<< Function evaluation summary (UQ_I): 158 total (156 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 173 total (161 new, 12 duplicate)
 <<<<< Best parameters          =
-                      8.6688760930e+00 b
+                      8.6688760929e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1672190232e+02
@@ -12866,17 +12866,17 @@ Test Number 9 succeeded
                       2.5002645188e+00
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
-<<<<< Function evaluation summary (UQ_I): 162 total (160 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 177 total (165 new, 12 duplicate)
 <<<<< Best parameters          =
-                      8.6688760086e+00 b
+                      8.6688760436e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1672190021e+02
+                      2.1672190109e+02
 <<<<< Best constraint values   =
-                      2.5002644597e+00
+                      2.5002644842e+00
 <<<<< Best data not found in evaluation cache
 Test Number 11 succeeded
-<<<<< Function evaluation summary (UQ_I): 283 total (281 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 295 total (283 new, 12 duplicate)
 <<<<< Best parameters          =
                       8.6688760782e+00 b
                       2.5000000000e+01 h
@@ -12886,7 +12886,7 @@ Test Number 11 succeeded
                       2.5002645085e+00
 <<<<< Best data not found in evaluation cache
 Test Number 12 succeeded
-<<<<< Function evaluation summary (UQ_I): 37 total (35 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 41 total (35 new, 6 duplicate)
 <<<<< Best parameters          =
                       7.9080300829e+00 b
                       2.5000000000e+01 h
@@ -12896,17 +12896,17 @@ Test Number 12 succeeded
                       8.8077009160e-05
 <<<<< Best data not found in evaluation cache
 Test Number 13 succeeded
-<<<<< Function evaluation summary (UQ_I): 88 total (83 new, 5 duplicate)
+<<<<< Function evaluation summary (UQ_I): 100 total (85 new, 15 duplicate)
 <<<<< Best parameters          =
                       8.5931375569e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1482843892e+02
 <<<<< Best constraint values   =
-                      5.2119765773e-04
+                      5.2119765774e-04
 <<<<< Best data not found in evaluation cache
 Test Number 14 succeeded
-<<<<< Function evaluation summary (UQ_I): 88 total (82 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 100 total (82 new, 18 duplicate)
 <<<<< Best parameters          =
                       8.6220199934e+00 b
                       2.5000000000e+01 h
@@ -12916,37 +12916,37 @@ Test Number 14 succeeded
                       5.3947762762e-04
 <<<<< Best data not found in evaluation cache
 Test Number 15 succeeded
-<<<<< Function evaluation summary (UQ_I): 177 total (171 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 195 total (176 new, 19 duplicate)
 <<<<< Best parameters          =
                       8.6711520732e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1677880183e+02
 <<<<< Best constraint values   =
-                      4.8058549902e-04
+                      4.8058549730e-04
 <<<<< Best data not found in evaluation cache
 Test Number 16 succeeded
-<<<<< Function evaluation summary (UQ_I): 179 total (173 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 197 total (179 new, 18 duplicate)
 <<<<< Best parameters          =
                       8.6711520732e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1677880183e+02
 <<<<< Best constraint values   =
-                      4.8058550412e-04
+                      4.8058550294e-04
 <<<<< Best data not found in evaluation cache
 Test Number 17 succeeded
-<<<<< Function evaluation summary (UQ_I): 264 total (258 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 285 total (260 new, 25 duplicate)
 <<<<< Best parameters          =
                       8.6711520727e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1677880182e+02
 <<<<< Best constraint values   =
-                      4.8058541103e-04
+                      4.8058541150e-04
 <<<<< Best data not found in evaluation cache
 Test Number 18 succeeded
-<<<<< Function evaluation summary (UQ_I): 37 total (35 new, 2 duplicate)
+<<<<< Function evaluation summary (UQ_I): 41 total (35 new, 6 duplicate)
 <<<<< Best parameters          =
                       7.9080462778e+00 b
                       2.5000000000e+01 h
@@ -12956,7 +12956,7 @@ Test Number 18 succeeded
                       8.7988407732e-05
 <<<<< Best data not found in evaluation cache
 Test Number 19 succeeded
-<<<<< Function evaluation summary (UQ_I): 88 total (83 new, 5 duplicate)
+<<<<< Function evaluation summary (UQ_I): 100 total (85 new, 15 duplicate)
 <<<<< Best parameters          =
                       8.5931626778e+00 b
                       2.5000000000e+01 h
@@ -12966,7 +12966,7 @@ Test Number 19 succeeded
                       5.2112694618e-04
 <<<<< Best data not found in evaluation cache
 Test Number 20 succeeded
-<<<<< Function evaluation summary (UQ_I): 88 total (82 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 100 total (82 new, 18 duplicate)
 <<<<< Best parameters          =
                       8.6220460339e+00 b
                       2.5000000000e+01 h
@@ -12976,34 +12976,34 @@ Test Number 20 succeeded
                       5.3945480520e-04
 <<<<< Best data not found in evaluation cache
 Test Number 21 succeeded
-<<<<< Function evaluation summary (UQ_I): 177 total (171 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 195 total (177 new, 18 duplicate)
 <<<<< Best parameters          =
                       8.6711789794e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1677947449e+02
 <<<<< Best constraint values   =
-                      4.8051538556e-04
+                      4.8051538386e-04
 <<<<< Best data not found in evaluation cache
 Test Number 22 succeeded
-<<<<< Function evaluation summary (UQ_I): 179 total (173 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 197 total (179 new, 18 duplicate)
 <<<<< Best parameters          =
                       8.6711789794e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1677947449e+02
 <<<<< Best constraint values   =
-                      4.8051539067e-04
+                      4.8051538949e-04
 <<<<< Best data not found in evaluation cache
 Test Number 23 succeeded
-<<<<< Function evaluation summary (UQ_I): 264 total (258 new, 6 duplicate)
+<<<<< Function evaluation summary (UQ_I): 291 total (262 new, 29 duplicate)
 <<<<< Best parameters          =
                       8.6711789789e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1677947447e+02
 <<<<< Best constraint values   =
-                      4.8051529759e-04
+                      4.8051529944e-04
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_short_column_analytic.in
 Test Number 0 succeeded
@@ -13778,10 +13778,10 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_steel_column.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 31 total (28 new, 3 duplicate)
- nln_ineq_con_1: 31 val (28 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 168 total (168 new, 0 duplicate)
-  response_fn_1: 137 val (137 n, 0 d), 168 grad (168 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 33 total (28 new, 5 duplicate)
+ nln_ineq_con_1: 33 val (28 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 176 total (176 new, 0 duplicate)
+  response_fn_1: 143 val (143 n, 0 d), 176 grad (176 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -13806,16 +13806,16 @@ Test Number 1 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 49 total (47 new, 2 duplicate)
- nln_ineq_con_1: 49 val (47 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 285 total (285 new, 0 duplicate)
-  response_fn_1: 236 val (236 n, 0 d), 285 grad (285 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 53 total (48 new, 5 duplicate)
+ nln_ineq_con_1: 53 val (48 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 305 total (305 new, 0 duplicate)
+  response_fn_1: 252 val (252 n, 0 d), 305 grad (305 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7499999882e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -5.2200720608e-03
+                     -5.2200720609e-03
 <<<<< Best constraint values   =
                       3.9999999765e+03
 <<<<< Best data not found in evaluation cache
@@ -15973,19 +15973,19 @@ Test Number 1 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_sbouu3_cantilever.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 500000 total (500000 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1775000 total (1775000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 w
-                      1.0000000000e+00 t
+                      4.0986246381e+00 w
+                      5.9843337046e+00 t
 <<<<< Best objective function  =
-                      1.0000000000e+00
+                      2.4527537564e+01
 <<<<< Best constraint values   =
-                      1.4689334293e+01
-                      1.3890536895e+02
+                      1.1259905944e+01
+                      1.2624995540e+02
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 370000 total (370000 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 385000 total (385000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0517612088e+00 w
@@ -20055,7 +20055,7 @@ Test Number 1 succeeded
                       3.0003130001e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 12231 total (11421 new, 810 duplicate)
+<<<<< Function evaluation summary (UQ_I): 13122 total (11421 new, 1701 duplicate)
 <<<<< Best parameters          =
                       2.4565779159e+00 w
                       2.4587740796e+00 t
@@ -20068,7 +20068,7 @@ Test Number 2 succeeded
                       2.9999210869e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 51759 total (29160 new, 22599 duplicate)
+<<<<< Function evaluation summary (UQ_I): 55404 total (29160 new, 26244 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 w
                       5.4076806626e+00 t
@@ -22855,16 +22855,16 @@ Test Number 8 succeeded
                      -5.0433737930e-03
 <<<<< Best data captured at function evaluation 22
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 59 total (48 new, 11 duplicate)
+<<<<< Function evaluation summary: 54 total (17 new, 37 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      4.3603021882e-01 x2
+                      4.3181315662e-01 x2
 <<<<< Best objective function  =
-                      1.6366338119e-01
+                      1.6672326949e-01
 <<<<< Best constraint values   =
-                      3.1984890592e-02
-                     -5.9877648280e-02
-<<<<< Best data captured at function evaluation 54
+                      3.4093421691e-02
+                     -6.3537397771e-02
+<<<<< Best data captured at function evaluation 11
 dakota_textbook_increment.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)

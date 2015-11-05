@@ -1,0 +1,41 @@
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 3 (Evaluation Tiling with MPICH)
+
+environment,
+	tabular_data
+
+method,
+	vector_parameter_study
+	  step_vector =	 .1  .1	 .1
+	  num_steps = 19
+
+variables,
+	continuous_design = 3
+	  initial_point    1.0   1.0   1.0
+
+# Case 3 (Evaluation Tiling with MPICH): Run Dakota in serial launching M=3
+# asyncronous local jobs where each will connect to an mpiexec server to run
+# an N=2 processor parallel analysis 
+interface,
+	fork,
+	  asynchronous 
+
+	  # this must agree with the qsub and driver script files
+	  evaluation_concurrency = 3
+
+	  ###--- BEGIN SRUN ---###
+	  # this will guarantee that evaluations are replaced with
+          # evaluations modulo the evaluation concurrency:
+ 	  ##local_evaluation_static_scheduling
+	  ###--- END SRUN ---###
+
+	  analysis_driver = 'text_book_par_driver'
+	    parameters_file = 'params.in'
+	    results_file = 'results.out'
+	    file_tag
+	    file_save
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	no_gradients
+	no_hessians

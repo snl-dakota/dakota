@@ -3,7 +3,7 @@ Export surrogate model in algebraic format to a file
 Description::
 After the surrogate model has been built, %Dakota will export it to a file in 
 a human-readable "algebraic" format. The file is named using the pattern 
-\c <prefix>.<response_descriptor>.alg. See \c filename_prefix for further information 
+\c {prefix}.{response_descriptor}.alg. See \c filename_prefix for further information 
 about exported surrogate file naming. The file contains sufficient 
 information for the user to (re)construct and evaluate the model outside of 
 %Dakota. 

@@ -516,7 +516,13 @@ scope of this text, but may be found in a variety of sources (cf.,
 include \texttt{coliny\_ea}, \texttt{soga}, and \texttt{moga}.  The
 latter is specifically designed for multi-objective problems,
 discussed further in~\ref{opt:additional}.  All variants can optimize
-over discrete variables in addition to continuous variables.
+over discrete variables, including discrete string variables, in
+addition to continuous variables.  We note that an experimental branch
+and bound capability is being matured to provide a gradient-based
+approach to solving mixed variable global optimization problems.  One
+key distinction is that it does not handle categorical variables
+(e.g., string variables).  The branch and bound method is discussed
+further in Section~\ref{adv_meth:minlp}.
 
 {\bf DIvision of RECTangles (DIRECT)}~\cite{Gab01} balances local
 search in promising regions of the design space with global search in
@@ -1256,7 +1262,7 @@ Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 Derivative-Free Global & nonsmooth; continuous variables; bound constraints
 & ncsu\_direct \\
 \hline
-         & nosmooth; continuous variables; & coliny\_direct, efficient\_global, \\
+         & nonsmooth; continuous variables; & coliny\_direct, efficient\_global, \\
          & bound constraints, & surrogate\_based\_global \\
          & linear and nonlinear constraints & \\
 \hline

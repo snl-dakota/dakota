@@ -17,11 +17,11 @@ parameters, so the keywords sometimes have slightly different meaning.
 <b> Stopping Criteria </b>
 
 The algorithm stops based on:
--# \ref method-max_iterations - number of iterations
--# \ref method-max_function_evaluations - number of function evaluations
--# \c solution_target and \ref method-convergence_tolerance
--# \c min_boxsize_limit
--# \c volume_boxsize_limit 
+-# \ref method-ncsu_direct-max_iterations - number of iterations
+-# \ref method-ncsu_direct-max_function_evaluations - number of function evaluations
+-# \ref method-ncsu_direct-solution_target and \ref method-ncsu_direct-convergence_tolerance
+-# \ref method-ncsu_direct-min_boxsize_limit
+-# \ref method-ncsu_direct-volume_boxsize_limit 
 
 This method will always strictly respect the number of iterations, but
 may slightly exceed the number of function evaluations, as it will

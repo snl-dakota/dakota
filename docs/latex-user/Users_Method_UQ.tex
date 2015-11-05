@@ -456,15 +456,27 @@ and the regions $x_1 < 0.3$ and $0.6 < x_1 < 0.9$ are completely
 missed. For the case where \texttt{samples = 10}, some clustering in
 the Monte Carlo samples is again evident with \texttt{4} samples in
 the range $0.5 < x_1 < 0.55$. In both cases, the stratification with
-LHS is superior. The response function statistics returned by Dakota
-are shown in Figure~\ref{uq:figure03}. The first two blocks of output
-specify the response sample means and sample standard deviations and
-confidence intervals for these statistics, as well as coefficients of
-variation. The last section of the output defines CDF pairs
-(\texttt{distribution cumulative} was specified) for the response
-functions by presenting the probability levels corresponding to the
-specified response levels (\texttt{response\_levels} were set and the
-default \texttt{compute probabilities} was used). Alternatively,
+LHS is superior. 
+
+The response function statistics returned by Dakota
+are shown in Figure~\ref{uq:figure03}. The first block of output
+specifies the response sample means, sample standard deviations, and 
+skewness and kurtosis.  The second block of output displays confidence 
+intervals on the means and standard deviations of the responses.  
+The third block defines Probability Density Function (PDF) histograms 
+of the samples: the histogram bins are defined by the lower and upper 
+values of the bin and the corresponding density for that bin.  
+Note that these bin endpoints correspond to the \texttt{response\_levels} 
+and/or \texttt{probability\_levels} defined by the user in the Dakota 
+input file.  If there are just a few levels, these histograms may be coarse. 
+Dakota does not do anything to optimize the bin size or spacing. 
+Finally, the last section of the output defines the Cumulative Distribution 
+Function (CDF) pairs.  In this case, 
+\texttt{distribution cumulative} was specified for the response
+functions, and Dakota presents the probability levels corresponding to the
+specified response levels (\texttt{response\_levels}) that were set.
+The
+default \texttt{compute probabilities} was used. Alternatively,
 Dakota could have provided CCDF pairings, reliability levels
 corresponding to prescribed response levels, or response levels
 corresponding to prescribed probability or reliability levels.
@@ -476,38 +488,57 @@ corresponding to prescribed probability or reliability levels.
 \begin{verbatim}
 Statistics based on 10 samples:
 
-Moments for each response function:
-response_fn_1:  Mean = 3.83840e-01  Std. Dev. = 4.02815e-01
-                Coeff. of Variation = 1.04944e+00
-response_fn_2:  Mean = 7.47987e-02  Std. Dev. = 3.46861e-01
-                Coeff. of Variation = 4.63726e+00
-response_fn_3:  Mean = 7.09462e-02  Std. Dev. = 3.41532e-01
-                Coeff. of Variation = 4.81397e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797327e-01
+ response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
+ response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
 
 95% confidence intervals for each response function:
-response_fn_1:  Mean = (  9.56831e-02, 6.71997e-01 ),
-             Std Dev = (  2.77071e-01, 7.35384e-01 )
-response_fn_2:  Mean = ( -1.73331e-01, 3.22928e-01 ),
-             Std Dev = (  2.38583e-01, 6.33233e-01 )
-response_fn_3:  Mean = ( -1.73371e-01, 3.15264e-01 ),
-             Std Dev = (  2.34918e-01, 6.23505e-01 )
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
+ response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
+ response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
 
-Probabilities for each response function:
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   2.3066424677e-02   1.0000000000e-01   3.8994678038e+00
+   1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   1.2250968624e+00   4.7992562123e-01
+PDF for response_fn_2:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.5261164651e-01   1.0000000000e-01   1.1046998102e+00
+   1.0000000000e-01   2.0000000000e-01   2.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   5.0000000000e-01
+   6.0000000000e-01   6.9844576220e-01   1.0157877573e+00
+PDF for response_fn_3:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -3.8118095128e-01   1.0000000000e-01   1.2469321539e+00
+   1.0000000000e-01   2.0000000000e-01   0.0000000000e+00
+   2.0000000000e-01   6.0000000000e-01   7.5000000000e-01
+   6.0000000000e-01   6.4526450977e-01   2.2092363423e+00
+
+Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0000000000e-01
    2.0000000000e-01   5.0000000000e-01
    6.0000000000e-01   7.0000000000e-01
 Cumulative Distribution Function (CDF) for response_fn_2:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   5.0000000000e-01
    2.0000000000e-01   7.0000000000e-01
    6.0000000000e-01   9.0000000000e-01
 Cumulative Distribution Function (CDF) for response_fn_3:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   6.0000000000e-01
    2.0000000000e-01   6.0000000000e-01
    6.0000000000e-01   9.0000000000e-01
@@ -622,7 +653,13 @@ the incremental samples are double the sample size of the previous
 sample. That is, if one starts with a very small sample size of 10,
 then one can use the incremental sampling capability to generate
 sample sizes of 20, 40, 80, etc. Also, a Dakota restart file
-(dakota.rst) must be available from the original sample. There are two
+(dakota.rst) must be available from the original sample. 
+Incremental sampling supports continuous uncertain variables
+and discrete uncertain variables such as discrete distributions (e.g. 
+binomial, Poisson, etc.) as well as histogram variables and 
+uncertain set types.
+
+There are two
 cases, random incremental and Latin Hypercube incremental sampling.
 We assume that LHS incremental will be most frequently used. One
 major advantage of LHS incremental sampling is that it maintains the
@@ -679,6 +716,38 @@ Note that if the restart file has a different name, that is fine; the
 correct restart file name should be used.
 
 \end{enumerate}
+
+\subsection{Principal Component Analysis} 
+As of Dakota 6.3, we added a capability to perform 
+Principal Component Analysis on field response data when 
+using LHS sampling.  Principal components analysis (PCA) 
+is a data reduction method and allows one to express an 
+ensemble of field data with a set of principal components 
+responsible for the spread of that data.
+
+Dakota can calculate the principal components of the response matrix of
+N samples * L responses (the field response of length L) 
+using the keyword \texttt{principal\_components}.
+The Dakota implementation is under active development:  the PCA capability
+may ultimately be specified elsewhere or used in different ways.
+For now, it is performed as a post-processing analysis based on a set of 
+Latin Hypercube samples.
+ 
+If the user specifies LHS sampling with field data responses and also 
+specifies \texttt{principal\_components}, Dakota will calculate the principal
+components by calculating the eigenvalues and eigenvectors of a centered 
+data matrix.   
+Further, if the user specifies \texttt{percent\_variance\_explained} = 0.99, 
+the number of components that accounts for at least 99 percent of the variance 
+in the responses will be retained.  The default for this percentage is 0.95.  
+In many applications, only a few principal components explain the majority 
+of the variance, resulting in significant data reduction.
+The principal components are written to a file, \texttt{princ\_comp.txt}.
+Dakota also uses the principal components to create a surrogate model by 
+representing the overall response as weighted sum of M principal components, 
+where the weights will be determined by Gaussian processes which are a function 
+of the input uncertain variables.  This reduced form then can be used for 
+sensitivity analysis, calibration, etc.  
 
 \section{Reliability Methods}\label{uq:reliability}
 
@@ -953,10 +1022,10 @@ algorithm (SQP or NIP) selections.
 All reliability methods output approximate values of the CDF/CCDF
 response-probability-reliability levels for prescribed response levels
 (RIA) or prescribed probability or reliability levels (PMA). In
-addition, the MV methods additionally output estimates of the mean and
-standard deviation of the response functions along with importance
-factors for each of the uncertain variables in the case of independent
-random variables.
+addition, mean value methods output estimates of the response means
+and standard deviations as well as importance factors that attribute
+variance among the set of uncertain variables (provided a nonzero
+response variance estimate).
 
 \subsubsection{Mean-value Reliability with Textbook}
 \label{uq:examples:mv}
@@ -977,13 +1046,15 @@ section of the Dakota Theory Manual~\cite{TheoMan}, and more detail on
 reliability methods in general (including the more advanced methods)
 is found in Section~\ref{uq:reliability}.
 
-Example output from the mean value method is displayed in 
-Figure~\ref{uq:examples:mv_results}. Note that since the mean of both inputs
-is 1, the mean value of the output for response 1 is zero. 
-However, the mean values of the constraints are both 0.5. 
-The mean value results indicate that variable x1 is more 
-important in constraint 1 while x2 is more important in constraint 2, 
-which is the case based on Equation~\ref{additional:textbook_f}.
+Example output from the mean value method is displayed in
+Figure~\ref{uq:examples:mv_results}. Note that since the mean of both
+inputs is 1, the mean value of the output for response 1 is zero.
+However, the mean values of the constraints are both 0.5.  The mean
+value results indicate that variable x1 is more important in
+constraint 1 while x2 is more important in constraint 2, which is the
+case based on Equation~\ref{additional:textbook_f}.  The importance
+factors are not available for the first response as the standard
+deviation is zero.
 
 \begin{figure}[htbp!]
   \centering
@@ -1002,7 +1073,6 @@ see \texttt{Dakota/examples/users/textbook\_uq\_meanvalue.in} }
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
------------------------------------------------------------------
 MV Statistics for response_fn_1:
   Approximate Mean Response                  =  0.0000000000e+00
   Approximate Standard Deviation of Response =  0.0000000000e+00
@@ -1010,14 +1080,13 @@ MV Statistics for response_fn_1:
 MV Statistics for response_fn_2:
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  9.4117647059e-01
-  Importance Factor for variable TF2ln       =  5.8823529412e-02
+  Importance Factor for TF1ln                =  9.4117647059e-01
+  Importance Factor for TF2ln                =  5.8823529412e-02
 MV Statistics for response_fn_3:
   Approximate Mean Response                  =  5.0000000000e-01
   Approximate Standard Deviation of Response =  1.0307764064e+00
-  Importance Factor for variable TF1ln       =  5.8823529412e-02
-  Importance Factor for variable TF2ln       =  9.4117647059e-01
------------------------------------------------------------------
+  Importance Factor for TF1ln                =  5.8823529412e-02
+  Importance Factor for TF2ln                =  9.4117647059e-01
 \end{verbatim}
 \end{small}
 \end{bigbox}
@@ -1120,66 +1189,69 @@ FORM, the Mean Value method, and the exact CDF for $g(x_1,x_2)=\frac{x_1}{x_2}$}
 \end{figure}
 
 If the user specifies \texttt{local\_reliability} as a method with no
-additional specification on how to do the MPP search, then no MPP
-search is done: the Mean Value method is used. The MV results are
-shown in Figure~\ref{uq:rel_output_mv} and consist of approximate mean
-and standard deviation of the response, the importance factors for
-each uncertain variable, and approximate probability/reliability
-levels for the prescribed response levels that have been inferred from
-the approximate mean and standard deviation (see Mean Value section in
+additional specification on how to do the MPP search (for example, by
+commenting out {\tt mpp\_search no\_approx} in
+Figure~\ref{uq:rel_input_form}), then no MPP search is done: the Mean
+Value method is used. The mean value results are shown in
+Figure~\ref{uq:rel_output_mv} and consist of approximate mean and
+standard deviation of the response, the importance factors for each
+uncertain variable, and approximate probability/reliability levels for
+the prescribed response levels that have been inferred from the
+approximate mean and standard deviation (see Mean Value section in
 Reliability Methods Chapter of Dakota Theory
 Manual~\cite{TheoMan}). It is evident that the statistics are
 considerably different from the fully converged FORM results; however,
 these rough approximations are also much less expensive to
 calculate. The importance factors are a measure of the sensitivity of
-the response function(s) to the uncertain input variables, but in this
-case, are not separable due to the presence of input correlation
-coefficients. A comparison of the mean value results with the FORM
-results is shown in Figure~\ref{uq:rel_form_compare}. The mean value
-results are not accurate near the tail values of the CDF, and can
-differ from the exact solution by as much as 0.11 in CDF estimates. A
-comprehensive comparison of various reliability methods applied to the
-logratio problem is provided in ~\cite{Eld06a}.
+the response function(s) to the uncertain input variables. A
+comparison of the mean value results with the FORM results is shown in
+Figure~\ref{uq:rel_form_compare}. The mean value results are not
+accurate near the tail values of the CDF, and can differ from the
+exact solution by as much as 0.11 in CDF estimates. A comprehensive
+comparison of various reliability methods applied to the logratio
+problem is provided in ~\cite{Eld06a}.
 
-\begin{figure}[htbp!] % Imp factors only if uncorrelated
+\begin{figure}[htbp!]
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
 MV Statistics for response_fn_1:
   Approximate Mean Response                  =  1.0000000000e+00
   Approximate Standard Deviation of Response =  5.9160798127e-01
-  Importance Factors not available.
+  Importance Factor for TF1ln                =  7.1428570714e-01
+  Importance Factor for TF2ln                =  7.1428572143e-01
+  Importance Factor for TF1ln     TF2ln      = -4.2857142857e-01
 Cumulative Distribution Function (CDF) for response_fn_1:
-     Response Level  Probability Level  Reliability Index
-     --------------  -----------------  -----------------
-   4.0000000000e-01   1.5524721837e-01   1.0141851006e+00
-   5.0000000000e-01   1.9901236093e-01   8.4515425050e-01
-   5.5000000000e-01   2.2343641149e-01   7.6063882545e-01
-   6.0000000000e-01   2.4948115037e-01   6.7612340040e-01
-   6.5000000000e-01   2.7705656603e-01   5.9160797535e-01
-   7.0000000000e-01   3.0604494093e-01   5.0709255030e-01
-   7.5000000000e-01   3.3630190949e-01   4.2257712525e-01
-   8.0000000000e-01   3.6765834596e-01   3.3806170020e-01
-   8.5000000000e-01   3.9992305332e-01   2.5354627515e-01
-   9.0000000000e-01   4.3288618783e-01   1.6903085010e-01
-   1.0000000000e+00   5.0000000000e-01   0.0000000000e+00
-   1.0500000000e+00   5.3367668035e-01  -8.4515425050e-02
-   1.1500000000e+00   6.0007694668e-01  -2.5354627515e-01
-   1.2000000000e+00   6.3234165404e-01  -3.3806170020e-01
-   1.2500000000e+00   6.6369809051e-01  -4.2257712525e-01
-   1.3000000000e+00   6.9395505907e-01  -5.0709255030e-01
-   1.3500000000e+00   7.2294343397e-01  -5.9160797535e-01
-   1.4000000000e+00   7.5051884963e-01  -6.7612340040e-01
-   1.5000000000e+00   8.0098763907e-01  -8.4515425050e-01
-   1.5500000000e+00   8.2372893005e-01  -9.2966967555e-01
-   1.6000000000e+00   8.4475278163e-01  -1.0141851006e+00
-   1.6500000000e+00   8.6405064339e-01  -1.0987005257e+00
-   1.7000000000e+00   8.8163821351e-01  -1.1832159507e+00
-   1.7500000000e+00   8.9755305196e-01  -1.2677313758e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   4.0000000000e-01   1.5524721837e-01   1.0141851006e+00   1.0141851006e+00
+   5.0000000000e-01   1.9901236093e-01   8.4515425050e-01   8.4515425050e-01
+   5.5000000000e-01   2.2343641149e-01   7.6063882545e-01   7.6063882545e-01
+   6.0000000000e-01   2.4948115037e-01   6.7612340040e-01   6.7612340040e-01
+   6.5000000000e-01   2.7705656603e-01   5.9160797535e-01   5.9160797535e-01
+   7.0000000000e-01   3.0604494093e-01   5.0709255030e-01   5.0709255030e-01
+   7.5000000000e-01   3.3630190949e-01   4.2257712525e-01   4.2257712525e-01
+   8.0000000000e-01   3.6765834596e-01   3.3806170020e-01   3.3806170020e-01
+   8.5000000000e-01   3.9992305332e-01   2.5354627515e-01   2.5354627515e-01
+   9.0000000000e-01   4.3288618783e-01   1.6903085010e-01   1.6903085010e-01
+   1.0000000000e+00   5.0000000000e-01   0.0000000000e+00   0.0000000000e+00
+   1.0500000000e+00   5.3367668035e-01  -8.4515425050e-02  -8.4515425050e-02
+   1.1500000000e+00   6.0007694668e-01  -2.5354627515e-01  -2.5354627515e-01
+   1.2000000000e+00   6.3234165404e-01  -3.3806170020e-01  -3.3806170020e-01
+   1.2500000000e+00   6.6369809051e-01  -4.2257712525e-01  -4.2257712525e-01
+   1.3000000000e+00   6.9395505907e-01  -5.0709255030e-01  -5.0709255030e-01
+   1.3500000000e+00   7.2294343397e-01  -5.9160797535e-01  -5.9160797535e-01
+   1.4000000000e+00   7.5051884963e-01  -6.7612340040e-01  -6.7612340040e-01
+   1.5000000000e+00   8.0098763907e-01  -8.4515425050e-01  -8.4515425050e-01
+   1.5500000000e+00   8.2372893005e-01  -9.2966967555e-01  -9.2966967555e-01
+   1.6000000000e+00   8.4475278163e-01  -1.0141851006e+00  -1.0141851006e+00
+   1.6500000000e+00   8.6405064339e-01  -1.0987005257e+00  -1.0987005257e+00
+   1.7000000000e+00   8.8163821351e-01  -1.1832159507e+00  -1.1832159507e+00
+   1.7500000000e+00   8.9755305196e-01  -1.2677313758e+00  -1.2677313758e+00
 \end{verbatim}
 \end{small}
 \end{bigbox}
-\caption{Output from Reliability UQ example using MV.}
+\caption{Output from Reliability UQ example using mean value.}
 \label{uq:rel_output_mv}
 \end{figure}
 
@@ -2206,28 +2278,28 @@ calculations, as well as comparisons on test problems.
 
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 
-There are three implementations of Bayesian calibration methods 
-in Dakota, where a ``prior distribution'' on a parameter is 
-updated through a Bayesian framework involving experimental data and 
-a likelihood function. 
-The theory behind Bayesian methods is best described in other sources 
-~\cite{Kenn01} and only a brief summary is given here. 
-In Bayesian methods, uncertain parameters are characterized by probability 
-density functions. These probability densities functions define the 
-permissible parameter values - the support, as well as the relative
- plausibility of each permissible parameter value. In the context of 
-calibration or any inference step, the probability density function 
-that describes knowledge before the incorporation of data is called 
-the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}  \right)$.
+In Bayesian calibration a ``prior distribution'' on a parameter is
+updated through a Bayesian framework involving experimental data and a
+likelihood function.  Bayesian inference theory is best left to other
+sources ~\cite{Kenn01} and only a brief summary is given here.  In
+Bayesian methods, uncertain parameters are characterized by
+probability density functions. These probability densities functions
+define the permissible parameter values - the support, as well as the
+relative plausibility of each permissible parameter value. In the
+context of calibration or any inference step, the probability density
+function that describes knowledge before the incorporation of data is
+called the prior, $f_{\boldsymbol{\Theta}}\left( \boldsymbol{\theta}
+\right)$.
  
-When data is available, the likelihood function describes how well 
-each parameter value is supported by the data. Bayes Theorem~\cite{Jaynes}, 
-shown in Equation~\ref{eqn:BayesThm}, is used for inference:  to 
-derive the plausible parameter values, based on the prior probability 
-density and the data $\boldsymbol{d}$. The result is the posterior parameter density 
-of the parameters $f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}} \right)$. It is 
-interpreted the same way as the prior, but includes the information 
-derived from the data.
+When data are available, the likelihood function describes how well
+each parameter value is supported by the data. Bayes
+Theorem~\cite{Jaynes}, shown in Equation~\ref{eq:BayesThm}, is used
+for inference: to derive the plausible parameter values, based on the
+prior probability density and the data $\boldsymbol{d}$. The result is
+the posterior parameter density of the parameters
+$f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}}
+\right)$. It is interpreted the same way as the prior, but includes
+the information derived from the data.
  
 \begin{equation}
 {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}} \label{eq:BayesThm}
@@ -2239,18 +2311,19 @@ derived from the data.
 %  {f_{\Theta |D}}\left( {\theta |d} \right) = \frac{{{f_\Theta }\left( \theta  \right)\mathcal{L}\left( {\theta ;d} \right)}}{{{f_D}\left( d \right)}}
 %\end{equation}
 
-The likelihood function is used to describe how well a model's 
-predictions are supported by the data. 
-The likelihood function can be written generally as:
+The likelihood function is used to describe how well a model's
+predictions are supported by the data.  The likelihood function can be
+written generally as:
 \begin{equation*}
   \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d})
 \end{equation*}
-where $\boldsymbol{\theta}$ are the parameters of model quantity of interest $q$. 
-The form of the function $\mathcal{F}$ can greatly influence the results. 
-The specific likelihood function used in Dakota is based on 
-Gaussian probability density functions. This means that we assume 
-the difference between the model quantity (e.g. quantity of interest returned from a computer simulation)
-and the experimental observations are Gaussian: 
+where $\boldsymbol{\theta}$ are the parameters of model quantity of
+interest $q$.  The form of the function $\mathcal{F}$ can greatly
+influence the results.  The specific likelihood function used in
+Dakota is based on Gaussian probability density functions. This means
+that we assume the difference between the model quantity
+(e.g. quantity of interest returned from a computer simulation) and
+the experimental observations are Gaussian:
 \begin{equation}\label{eq:model}
 d_i = q_i(\boldsymbol{\theta}) + \epsilon_i,
 \end{equation}
@@ -2260,8 +2333,8 @@ simulation quantity of interest $q_i$, for each of $n$ observations.
 
 If we assume that all experiments and observations are independent,
 then the probabilistic model defined by Eq.~(\ref{eq:model}) results
-in a likelihood function for $\boldsymbol{\theta}$ that is the product of $n$
-normal probability density functions:
+in a likelihood function for $\boldsymbol{\theta}$ that is the product
+of $n$ normal probability density functions:
 %as shown in Equation~\ref{eqn:Likelihood}.
 \begin{equation}\label{eqn:Likelihood}  
 \mathcal{L}(\boldsymbol{{\theta};d}) = \prod_{i=1}^n
@@ -2272,100 +2345,129 @@ normal probability density functions:
 where ${\sigma_d}^2$ refers to the measurement error of the data,
 assumed constant across all data observations in this case.
 
-We also support the more general case of a full covariance matrix, $\boldsymbol{\Sigma_d}$, that specifies the covariance between each observation $i$ and $j$. 
-In this case, the likelihood is commonly written in log form, where the log-likelihood is: %given in Equation~\ref{eqn:LogLikelihood}. 
+We also support the more general case of a full covariance matrix,
+$\boldsymbol{\Sigma_d}$, that specifies the covariance between each
+observation $i$ and $j$.  In this case, the likelihood is commonly
+written in log form, where the log-likelihood
+is: %given in Equation~\ref{eqn:LogLikelihood}.
 \begin{equation}\label{eqn:LogLikelihood}  
 \log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma_d}^{-1} {R}
 -\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r},
 \end{equation}
 where $\boldsymbol{r}$ is the vector of residuals between the data
-points and the model quantity of interest, $q(\boldsymbol{\theta})-\boldsymbol{d}$.
+points and the model quantity of interest,
+$q(\boldsymbol{\theta})-\boldsymbol{d}$.
 
-There are now four options to specify the measurement error for
-Bayesian calibration methods, with \texttt{variance\_type} being equal
-to \texttt{none} for no measurement error specified (in this case, the
-variance is one), \texttt{scalar} where a constant value
-${\sigma_d}^2$ is given for all observations, \texttt{diagonal} where
-a value is specified for the diagonal elements of the covariance
-matrix $\boldsymbol{\Sigma_d}$ meaning that each observation has its own
-measurement error but there are no cross terms, and \texttt{matrix}
-where the full covariance matrix $\boldsymbol{\Sigma_d}$ is specified.  
-Note that the \texttt{diagonal} and \texttt{matrix} terms are only 
-available for field response data.  For scalar responses, variance types
-can be specified to be \texttt{none} or \texttt{scalar}.  %Finally,
-%all the sigma values should be given as variances (${\sigma_d}^2$).
+Dakota admits four \texttt{variance\_type} options to specify the
+measurement error covariance: \texttt{none} for no measurement error
+specified (in this case, the variance is assumed to be one),
+\texttt{scalar} where a constant value ${\sigma_d}^2$ is given for all
+observations, \texttt{diagonal} where a value is specified for the
+diagonal elements of the covariance matrix $\boldsymbol{\Sigma_d}$
+meaning that each observation has its own measurement error but there
+are no cross terms, and \texttt{matrix} where the full covariance
+matrix $\boldsymbol{\Sigma_d}$ is specified.  The \texttt{diagonal}
+and \texttt{matrix} terms are only available for field response data.
+In contrast to earlier versions of Dakota, all measurement error
+variance should be specified with units of variance/covariance, not
+standard deviation.
 
-Markov Chain Monte Carlo (MCMC) is the standard method used to compute
-posterior parameter densities, given the observational data and the
-priors. There are many references that describe the basic
-algorithm~\cite{Gilks}, and in addition, the algorithms are an active
-research area.  Note that
-MCMC algorithms may require hundreds of thousands of steps to
-converge, depending on dimensionality, response nonlinearity, and the
-desired set of posterior statistics.  Since each iteration involves an
-evaluation of the model to obtain $q(\boldsymbol{\theta})$, surrogate models of
-expensive simulations are often employed to make the MCMC process
-tractable.
+Markov Chain Monte Carlo (MCMC) is the prototypical method used to
+estimate posterior parameter densities, given the observational data
+and the priors. There are many references that describe the basic
+algorithm~\cite{Gilks}, though this is an active research area.  MCMC
+algorithms may require hundreds of thousands of steps to converge,
+depending on dimensionality, response nonlinearity, and the desired
+set of posterior statistics.  Since each iteration involves an
+evaluation of the model to obtain $q(\boldsymbol{\theta})$, surrogate
+models of expensive simulations are often employed to make the MCMC
+process tractable.
  
-As mentioned above, we have three implementations for Bayesian
-calibration: QUESO, DREAM, and GPMSA.  They are specified with the
-\texttt{bayes\_calibration} keyword in combination with the
-\texttt{queso}, \texttt{dream}, or \texttt{gpmsa} selections,
-respectively.  The QUESO method uses components from the QUESO library
-(Quantification of Uncertainty for Estimation, Simulation, and
-Optimization) developed at The University of Texas at Austin.  It
-implements the DRAM algorithm, among others.  DRAM indicates the use
-of Delayed Rejection and Adaptive Metropolis~\cite{Haario}, where
-these two algorithm options can be activated in any combination.
+Dakota offers three approaches for Bayesian calibration: QUESO, DREAM,
+and GPMSA.  They are specified with the \texttt{bayes\_calibration}
+keyword in combination with the \texttt{queso}, \texttt{dream}, or
+\texttt{gpmsa} selections, respectively.  The QUESO method uses
+components from the QUESO library (Quantification of Uncertainty for
+Estimation, Simulation, and Optimization) developed at The University
+of Texas at Austin.  It implements the Delayed Rejection and Adaptive
+Metropolis~\cite{Haario} (DRAM) algorithm, among others.  Algorithm
+variants selectively combine the delayed rejection and adaptive
+elements.
 %
-DREAM uses an implementation of DiffeRential Evolution Adaptive Metropolis
-developed by John Burkardt.  The DREAM approach runs multiple
-different chains simultaneously for global exploration, and
-automatically tunes the proposal covariance during the process by a
-self-adaptive randomized subspace sampling~\cite{Vrugt}.  
+DREAM uses an implementation of DiffeRential Evolution Adaptive
+Metropolis developed by John Burkardt.  The DREAM approach runs
+concurrent chains for global exploration, and automatically tunes the
+proposal covariance during the process by a self-adaptive randomized
+subspace sampling~\cite{Vrugt}.
 %
 The GPMSA capability is based on the GPMSA Matlab toolbox developed at
 Los Alamos National Laboratory. At this point, the QUESO
 implementation is the most well-developed within Dakota and is the one
 that we recommend.
 
-In the QUESO method, the user can run the MCMC sampling with 
-the simulation model directly. However, 
-if the model is expensive, we recommend that the user employs 
-a surrogate model (an emulator) because the Monte Carlo Markov Chain 
-will be much faster: the MCMC can generate thousands of samples 
-on the emulator in very little time. One can specify a Gaussian process,
-a polynomial chaos expansion, or a stochastic collocation expansion
-as the emulator for the \texttt{queso} method. The specification 
-details for these are listed in the Reference Manual. 
-One can also specify various settings for the MCMC sampling: 
-the sampling can use a standard Metropolis-Hastings algorithm (\texttt{metropolis\_hastings}), adaptive Metropolis (\texttt{adaptive\_metropolis}) for adapting the proposal covariance during the sampling, delayed rejection (\texttt{delayed\_rejection}) for backtracking from sample rejections, the full DRAM (\texttt{dram}) which involves both delayed rejection and adaptive Metropolis, or a multi-level algorithm (\texttt{multilevel}).
+\subsection{QUESO}
+The QUESO library includes several sampling algorithm variants.  One
+can use a standard Metropolis-Hastings algorithm
+(\texttt{metropolis\_hastings}), adaptive Metropolis
+(\texttt{adaptive\_metropolis}) for adapting the proposal covariance
+during the sampling, delayed rejection (\texttt{delayed\_rejection})
+for backtracking from sample rejections, the full DRAM (\texttt{dram})
+which involves both delayed rejection and adaptive Metropolis, or a
+multi-level algorithm (\texttt{multilevel}).  This last option is not
+yet production-ready in Dakota.
 
-There are also controls to specify the proposal covariance which governs how the samples 
-are generated in the chain.  
-The proposal covariance specifies the covariance structure of a multivariate normal distribution. 
-The user can specify \texttt{proposal\_covariance}, followed by \texttt{derivatives}, \texttt{prior}, 
-\texttt{values}, or \texttt{filename}.  The derivative specification involves 
-forming the Hessian of the misfit function (the negative
-log likelihood).  When derivative information is available inexpensively (e.g. from an emulator), 
-the derivative-based proposal covariance forms a more
-accurate proposal distribution, resulting in lower rejection rates and
-faster chain mixing.  Note that the derivative-based proposal covariance 
-should be updated periodically based on a \texttt{proposal\_updates} specification.
-%may also be updated by adding high-likelihood evaluations of the actual simulation to the emulator build points in an adaptive fashion, thus refining the Hessian.  
-The \texttt{prior} setting means that Dakota will form the proposal from the variance of the prior distributions of the 
-parameters being calibrated.  When specifying the proposal covariance with values or from a file, the user 
-can choose to specify only the diagonals of the covariance matrix or to specify the full covariance matrix.
-An additional control for QUESO is to perform a logit transformation (\texttt{logit\_transform}) which 
-performs an internal variable transformation from bounded domains to unbounded domains. %in order to reduce sample rejection due to an out-of-bounds condition.
-This option can be helpful when regions of high posterior density exist
-in the corners of a multi-dimensional bounded domain.  In these cases,
-it may be difficult to generate feasible samples from the proposal density,
-such that transformation to unbounded domains may greatly reduce sample
-rejection rates.
-The specification details for keywords governing the proposal covariance are listed in the Reference Manual. 
-For more detail about derivative-based formulations involving the misfit Hessian, refer to the Theory Manual. 
-    
+With QUESO method, one may run the MCMC sampling on the simulation
+model directly.  However, if the model is expensive, use of a
+surrogate (emulator) model is recommended.  Options include a Gaussian
+process, a polynomial chaos expansion, or a stochastic collocation
+expansion.
+
+The proposal covariance refers to the covariance structure of a
+multivariate normal distribution, which governs sample generation in
+the chain.  One may specify \texttt{proposal\_covariance}, followed by
+\texttt{prior} (the default), \texttt{values}, \texttt{filename}, or
+\texttt{derivatives}.  With the \texttt{prior} setting, the proposal
+covariance will be set to the variance of the prior distributions of
+the parameters being calibrated.  When specifying the proposal
+covariance with input file values or from a separate file, the user
+may specify only the diagonals of the covariance matrix or the full
+covariance matrix.
+
+The derivatives option will use derivatives from the simulation or
+emulator model to form or approximate the Hessian of the misfit
+function (the negative log likelihood).  Especially when derivative
+information is available inexpensively (e.g. from an emulator), the
+derivative-based proposal covariance forms a more accurate proposal
+distribution, resulting in lower rejection rates and faster chain
+mixing.  When using an emulator, the derivative-based proposal
+covariance should be updated periodically using the
+\texttt{posterior\_adaptive} specification.  This will add simulation
+truth evaluations in areas of high-likelihood to the emulator training
+data, thus refining the Hessian.  For more detail about
+derivative-based formulations involving the misfit Hessian, refer to
+the Theory Manual.
+
+An additional control for QUESO is to perform a logit transformation
+(\texttt{logit\_transform}) which performs an internal variable
+transformation from bounded domains to unbounded
+domains. %in order to reduce sample rejection due to an out-of-bounds condition.
+This option can be helpful when regions of high posterior density
+exist in the corners of a multi-dimensional bounded domain.  In these
+cases, it may be difficult to generate feasible samples from the
+proposal density, such that transformation to unbounded domains may
+greatly reduce sample rejection rates.
+
+The \texttt{pre\_solve} option will perform a deterministic
+gradient-based optimization before the MCMC sampling to get a good
+starting point for the chain.  This pre-solve seeks to maximize the
+log posterior (the log-likelihood minus the log-prior) to identify the
+maximum a posteriori probability point, also called the MAP point.
+The Markov Chain will then be started at the MAP point, which can
+circumvent a lot of initial searching for high posterior probability
+points.  The pre-solve option can be used with an emulator or with no
+emulator.
+
+\subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
 \texttt{chains} specification.  The total number of generations per chain in DREAM is
 the number of samples divided by the number of chains.
@@ -2384,6 +2486,7 @@ process.  The integer \texttt{jump\_step} forces a long jump every
 \texttt{jump\_step} generations.
 For more details about these parameters, refer to \cite{Vrugt}. 
 
+\subsection{GPMSA}
 For the GPMSA capability, a key part of the algorithm involves the 
 construction of an emulator from simulation runs 
 collected at various settings of input parameters. The emulator is a 
@@ -2399,6 +2502,59 @@ decomposition) which have GPs as the coefficients.
 At this point, the GPMSA implementation in Dakota is an early 
 prototype. The user will have to edit the GPMSA class in the Dakota 
 source to tailor it to their problem and recompile before running GPMSA.
+
+\subsection{Comparison of features for Bayesian Methods}
+Table~\ref{tab:bayes_comparison} compares the options available 
+with the QUESO and DREAM implementations in Dakota. 
+
+\begin{table}
+\centering
+\caption{Capabilities of Bayesian methods in Dakota}
+\label{tab:bayes_comparison}
+\begin{tabular}{|c|c|c|}
+\hline
+Capability           &  QUESO  & DREAM \\
+\hline
+Prior Distribution Types                &  Any continuous uncertain & Only uniform priors \\
+                                        &  distributions in Dakota  &                    \\
+\hline
+MCMC Type                               &  Delayed Rejection or &  DREAM (Differential \\
+                               &  Adaptive Metropolis  or &  Evolution Adaptive  \\
+                               &  Metropolis Hastings  or &  Metropolis) \\
+                               &  Delayed Rejection  &   \\
+                               &  Adaptive Metropolis (DRAM)  &   \\
+\hline
+Can use PCE/SC Emulator                 &  Yes                      &  Yes               \\
+\hline
+Can use a GP Emulator                   &  Yes                      &  Yes               \\
+\hline
+Can update the emulator adaptively            &  Yes                      &  No          \\     
+to focus on high likelihood points            &                       &                \\
+\hline
+Use MAP optimal point           &  Yes                      &  No               \\
+as starting point for MCMC chain             &                       &                \\
+(optimization can use emulator or actual model)   &                       &                \\
+\hline
+Can import build points for emulator            &  Yes                      &  Yes               \\             
+\hline
+Can specify proposal covariance from            &  Yes                      &  No             \\            
+prior, user data, or derivatives               &                       &                \\
+\hline
+Can calibrate error covariance multipliers           &  Yes                      &  Yes         \\                
+which multiply the $\Sigma$ matrix used                &                       &                \\
+in the log-likelihood function                 &                       &                 \\             
+\hline
+Can be used in standardized space           &  Yes                    &  Yes               \\             
+\hline
+Logit transform           &  Yes                     &  No              \\             
+\hline
+Can export samples from the chain           &  Yes                     &  Yes              \\             
+%Can export samples from the posterior density           &  No                     &  No              \\             
+\hline
+\end{tabular}
+\end{table}
+
+
 %One major difference between the GPMSA toolbox and the current
 %implementation in Dakota is that the current Dakota implementation
 %does not have an explicit ``discrepancy'' function $\delta$ which
@@ -2416,26 +2572,24 @@ source to tailor it to their problem and recompile before running GPMSA.
 
 \subsection{Bayesian Calibration Example}\label{uq:bayesian:ex}
 
-We briefly describe the process of running QUESO from Dakota.
-The user will create a Dakota input file such as the one shown 
-in~\ref{uq:figure18}. 
-Note that the method is \texttt{bayes\_calibration queso}, 
-specifying the QUESO algorithm with the DRAM (delayed
-rejection adaptive metropolis) solver. The number of 
-samples indicates the number of samples that the MCMC algorithm 
-will generate in its acceptance chain\footnote{If delayed rejection is active, the number of simulation evaluations will typically be higher due to backtracking.}, in this case 1000 (this usually will need to be larger). 
-For this example, we are using the \texttt{cantilever3} analytic 
-example, so we do not need to specify an emulator, but the lines 
-commented out give an idea of the options if the user wanted to 
-specify an emulator.  The proposal covariance 
-used has diagonal element values of 1.e6 and 0.1.  
-The calibration terms in the responses section refers to the 
-number of outputs that will be used in the calibration process:  
-in this case, it is just two. The calibration data file 
-has the observational data:  in this case, it is a freeform file 
-(e.g. no header or annotation) with ten experiments. For each 
-experiment, there are two experiment values, one for stress and one for displacement, followed 
-by two variance values for the error associated with that experiment for each quantity of interest. 
+To run a QUESO-based Bayesian calibration in Dakota, create a Dakota
+input file such as the one shown in~\ref{uq:figure18}.  Here, the
+QUESO DRAM (delayed rejection adaptive metropolis) solver is
+selected. The number of samples = 1000 indicates how many points to
+generate in the acceptance chain\footnote{If delayed rejection is
+  active, the number of simulation evaluations will typically be
+  higher due to backtracking.}.  This example uses the
+\texttt{cantilever3} algebraic model, so an emulator is not warranted,
+but the commented lines hint at related user optionsr.  The proposal
+covariance used has diagonal element values of 1.e6 and 0.1.  The
+calibration terms in the responses section refers to the number of
+outputs that will be used in the calibration process: in this case, it
+is just two. The calibration data file has the observational data: in
+this case, it is a freeform file (e.g. no header or annotation) with
+ten experiments. For each experiment, there are two experiment values,
+one for stress and one for displacement, followed by two variance
+values for the error associated with that experiment for each quantity
+of interest.
 
 \begin{figure}[htbp!]
 \centering
@@ -2488,31 +2642,31 @@ responses,
 
 When the input file shown in~\ref{uq:figure18} is run, Dakota will run
 the MCMC algorithm and generate a posterior sample of $\boldsymbol{\theta}$ in
-accordance with Bayes Theorem~\ref{eqn:BayesThm} and the likelihood
+accordance with Bayes Theorem~\ref{eq:BayesThm} and the likelihood
 function~\ref{eqn:Likelihood}. Dakota's final output summary will
 currently report an evaluation count summary and the best sample point
 that was visited during the MCMC process, as measured by maximum
-posterior probability (an estimate of the MAP point).
+posterior probability (an estimate of the MAP point).  The final output 
+also summarizes the moments of the posterior samples from the chain (e.g. 
+mean of the chain, standard deviation of the chain samples, etc.)
 
 A variety of auxilliary output also exists.  The MCMC sample output is
-put into a directory called \texttt{outputData} in the directory from
+put into a directory called \texttt{QuesoDiagnostics} in the directory from
 which Dakota is run.  The file \texttt{display\_sub0.txt} contains
 information regarding the MCMC process.  The Matlab files contained in
-the \texttt{outputData} directory contain the chain files.  The files
+the \texttt{QuesoDiagnostics} directory contain the chain files.  The files
 to load in Matlab are \texttt{raw\_chain.m} or
 \texttt{filtered\_chain.m}, containing the full chain or the filtered
 chain values of the parameters\footnote{The full chain will be output
   in cases of adaptive posterior refinement or proposal updating,
   since these use cases access the entire acceptance chain to identify
-  refinement data or restarting points, respectively.}.  There are
-corresponding files containing the log likelihood values.  In
-addition, if verbose output is specified, the values that Dakota
+  refinement data or restarting points, respectively.}. 
+In addition, the accepted chain values that Dakota
 generates are written to a file in the run directory called
-QuesoOutput.txt.  The first columns of this file are the sample
-inputs, the next columns are the responses, and the final column is
-the log-likelihood.  Note that this file contains ALL values
-generated, including the ones rejected, so it is not the actual MCMC
-chain which contains only the accepted points.
+\texttt{dakota\_mcmc\_tabular.dat}.  The first columns of this file are the posterior 
+values of the input variables.  
+Finally, if one wants to see the likelihood of each point, specifying 
+verbose output in the method section will result in the likelihoods being printed. 
 
 %We expect to continue development of Bayesian calibration methods, 
 %so check for updates to this capability. The QUESO and GPMSA capabilities
@@ -2525,7 +2679,51 @@ chain which contains only the accepted points.
 %Dakota, so we recommend monitoring our updates to these capabilities.
 %If you would like additional information on emerging capabilities, 
 %contact the Dakota developers at dakota-developers@development.sandia.gov.
-  
+
+
+\subsection{Calibrating the Observation Error Model}
+
+As discussed in Section~\ref{input:calib_data}, Dakota accepts user
+information on the covariance $\Sigma_d$ among observation errors and
+includes this in the likelihood formulation:
+\begin{equation*}
+\log{\mathcal{L}(\boldsymbol{{\theta};d})} \propto % =-0.5 {R}^{T} {\Sigma_d}^{-1} {R}
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r}.
+\end{equation*}
+
+In some cases, it can be helpful to fine tune the assumptions in this
+covariance during the calibration process.  Dakota supports
+calibrating one or more multipliers on the blocks of the error
+covariance.  So if $\Sigma_d$ is block diagonal: $\Sigma_d =
+\mbox{diag}({\Sigma_d}_1, ..., {\Sigma_d}_N)$, we instead formulate as
+$\Sigma_d = \mbox{diag}(m_1{\Sigma_d}_1, ..., m_P{\Sigma_d}_P)$ and
+calibrate the multipliers $m_i$ as hyper-parameters in the Bayesian
+inference process.
+
+The supported modes for calibrating observation error multipliers are
+shown in Figure\ref{fig:uq:obs_err_mult}: \texttt{one},
+\texttt{per\_experiment}, \texttt{per\_response}, and \texttt{both}.
+Here the two major blocks denote two experiments, while the inner
+blocks denote five response groups (two scalar, three field).  The
+priors on the hyper-parameters $m_i$ are taken to be inverse gamma
+distributions, with mean and mode approximately 1.0 and standard
+deviation approximately 0.1.
+
+\begin{figure}[htbp!]
+  \centering
+  \begin{subfigmatrix}{2}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateOne}}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerExperiment}}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibratePerResponse}}
+    \subfigure[]{\includegraphics[scale=0.5]{images/CalibrateBoth}}
+  \end{subfigmatrix}
+  \caption{Calibrating observational error covariance multipliers: (a)
+    one multiplier on whole user-provided covariance structure, (b)
+    multiplier per-experiment, (c) multiplier per-response, and (d)
+    both..}
+  \label{fig:uq:obs_err_mult}
+\end{figure}
+
 \section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
 
 The choice of uncertainty quantification method depends on how the

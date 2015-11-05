@@ -1,0 +1,40 @@
+Blurb:: Perform deterministic optimization for MAP before Bayesian calibration
+
+Description::
+When specified, Dakota will perform a deterministic gradient-based
+optimization to maximize the log posterior (log-likelihood -
+log_prior).  The Markov Chain in Bayesian calibration will be started
+at the best point found in the optimization (the MAP point).
+Note that both optimization methods available (\c sqp and \c nip) 
+require gradients.  The gradients will be assessed based on 
+the model the user specifies (e.g. if an emulator is used, the 
+gradients will be taken with respect to the emulator, otherwise 
+they will be based on the user specification for the model, either 
+finite-difference or analytic gradients.)
+
+<b> Default Behavior </b>
+No MAP pre-solve; simply start the MCMC process at the user-specified
+initial value.
+
+<b> Expected Output </b>
+When pre-solve is enabled, the output will include a deterministic
+optimization, followed by a Bayesian calibration.  The final results
+will include the MAP point as well as posterior statistics from the
+MCMC chain.
+
+Topics::
+
+Examples::
+\verbatim
+method
+  bayes_calibration queso
+    samples = 2000 seed = 348
+    delayed_rejection
+    emulator
+      pce sparse_grid_level = 2
+      pre_solve nip		
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

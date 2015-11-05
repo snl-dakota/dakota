@@ -1,0 +1,31 @@
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 4 (Evaluation Submission)
+
+environment,
+	tabular_data
+
+method,
+	vector_parameter_study
+	  step_vector =	 .1  .1	 .1
+	  num_steps = 19
+
+variables,
+	continuous_design = 3
+	  initial_point    1.0   1.0   1.0
+
+# Case 4 (Evaluation Submission): Run DAKOTA in serial on a login node and
+#         launch each analysis job into the queue with qsub
+#         (evaluation_concurrency = 1)
+#         Fork interface is recommended
+interface,
+	fork
+	  analysis_driver = 'text_book_par_driver'
+	    parameters_file = 'params.in'
+	    results_file = 'results.out'
+	    file_tag
+	    file_save
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	no_gradients
+	no_hessians

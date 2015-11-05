@@ -1,0 +1,34 @@
+Blurb::
+Requires correct function value labels in results file
+Description::
+The \c labeled keyword directs %Dakota to enforce a stricter results file 
+format and enables more detailed error reporting.
+
+When the \c labeled keyword is used, function values in results
+files must be accompanied by their corresponding descriptors. If the 
+user did not supply response \ref responses-descriptors in her %Dakota 
+input file, then %Dakota auto-generated descriptors are expected.
+
+Distinct error messages are emitted for function values that are out-of-order,
+repeated, or missing. Labels that appear without a function value and unexpected data 
+are also reported as errors. %Dakota attempts to report all errors in a results
+file, not just the first it encounters. After reporting results file errors, %Dakota
+aborts.
+
+Labels for analytic gradients and Hessians currently are not supported.
+
+Although the \c labeled keyword is optional, its use is recommended to help catch
+and identify problems with results files. The User's Manual contains further information 
+about the results file format.
+
+<b> Default Behavior </b>
+<p> By default, %Dakota does not require labels for function values, and
+ignores them if they are present.</p>
+
+Topics::
+file_formats
+
+Examples::
+Theory::
+Faq::
+See_Also::

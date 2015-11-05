@@ -1,0 +1,26 @@
+Blurb:: Filename for points at which to evaluate the PCE/SC surrogate
+
+Description::
+
+<b> Default Behavior </b>
+No import of points at which to evaluate the surrogate.
+
+<b> Expected Output </b>
+The PCE/SC surrogate model will be evaluated at the list of points
+(input variable values) provided in the file and results tabulated
+and/or statistics computed at them, depending on the method context.
+
+Topics::
+
+Examples::
+\verbatim
+method
+  polynomial_chaos
+    expansion_order = 4	
+    import_approx_points_file = 'import.mcmc_annot.dat'
+      annotated 	
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

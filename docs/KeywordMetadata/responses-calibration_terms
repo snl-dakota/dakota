@@ -41,7 +41,7 @@ The optional keywords relate to scaling responses
 (for better numerical results),
 dealing with multiple residuals, and importing data.
 
-See \ref method-scaling for more details on scaling.
+See the \c scaling keyword in the \ref method section for more details on scaling.
 If scaling is specified, then it is
 applied to each residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
 (\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f] 

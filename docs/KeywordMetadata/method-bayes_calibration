@@ -14,8 +14,8 @@ requires a "likelihood function" that specifies the likelihood of
 observing a particular observation given the model and its associated
 parameterization; %Dakota assumes a Gaussian likelihood function
 currently. The algorithms that produce the posterior distributions on
-model parameters are Monte Carlo Markov Chain (MCMC) sampling
-algorithms. MCMC methods require many samples, often tens of
+model parameters are most commonly Monte Carlo Markov Chain (MCMC)
+sampling algorithms. MCMC methods require many samples, often tens of
 thousands, so in the case of model calibration, often emulators of the
 computational simulation are used. For more details on the algorithms
 underlying the methods, see the %Dakota User's manual.
@@ -42,11 +42,13 @@ functional data such as time series data.
 The Bayesian capabilities are under active development.  At this
 stage, the QUESO methods in %Dakota are the most advanced and robust,
 followed by DREAM, followed by GPMSA, which is in prototype form at
-this time.  Note that as of Dakota 6.2, the field responses and
-associated field data may be used with QUESO and DREAM.  That is, the
-user can specify field simulation data and field experiment data, and
-Dakota will interpolate and provide the proper residuals to the
-Bayesian calibration.
+this time.  %Dakota also has an experimental WASABI capability for
+non-MCMC Bayesian inference; it is not yet ready for production use.
+Note that as of Dakota 6.2, the field responses and associated field
+data may be used with QUESO and DREAM.  That is, the user can specify
+field simulation data and field experiment data, and Dakota will
+interpolate and provide the proper residuals to the Bayesian
+calibration.
 
 Topics::	bayesian_calibration, package_queso
 Examples::

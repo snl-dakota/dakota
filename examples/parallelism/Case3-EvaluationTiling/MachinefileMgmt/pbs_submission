@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# PBS submission script for parallel Case 3 Machinefile Management: 
+# At most (M-1)/N simultaneous N proc jobs.  Here M=8, but we'll
+# schedule 1 proc for Dakota and 3 jobs each using N=2 processors, for a
+# total of 7 procs used.
+
+#PBS -l nodes=4:ppn=2:compute
+#PBS -l walltime=00:05:00
+#PBS -N DAKOTA_Case3_MachinefileMgmt
+
+# for convenience, set DAKOTA and PATH environment variables
+# put . on path to pickup the simulator script
+export DAKOTA=/path/to/dakota
+export PATH=$DAKOTA/bin:$DAKOTA/test:$PATH:.
+
+# this presumes one processor will be dedicated to running Dakota and the
+# remaining M-1 are available for analysis jobs, therefore we require
+#   CONCURRENCY * APPLIC_PROCS <= M-1
+#
+# (if evaluation_static_scheduling is desired then all M are available and
+#   CONCURRENCY * APPLIC_PROCS <= M is required)
+
+# number of simultaneous application jobs to run (used by setupNodes.sh)
+# *** must be same as Dakota evaluation_concurrency ***
+# CONCURRENCY=`grep concurr dakota_pstudy.in | cut -d "=" -f2`
+export CONCURRENCY=3 
+
+# number of processors needed per application job (used by setupNodes.sh)
+export APPLIC_PROCS=2
+
+# there are slicker ways to manage this if in a SLURM environment, but
+# if desired, this script will convert a SLURM resource list to a
+# machinefile, one line per CPU, that can be used by setup_nodes
+## slurm2mach.sh localmachinefile
+
+# The following script parses the PBS node file and divides the nodes
+# up into unique subsets of nodes, each containing enough nodes for a
+# single application run.  This needs to be done in order to prevent
+# mpiexec/mpirun from assigning multiple application runs to the same
+# processors.
+setup_nodes.sh $PBS_NODEFILE
+
+# Execute Dakota
+dakota -i dakota_pstudy.in -o dakota_pstudy.out
+

@@ -4,7 +4,7 @@ User-customizable portion of exported model filenames
 Description::
 When a file-based export of a surrogate model is specified, %Dakota 
 writes one file per response, per requested format. The files are named
-using the pattern \c <prefix>.<response_descriptor>.<extension>.
+using the pattern \c {prefix}.{response_descriptor}.{extension}.
 
 The \c response_descriptor portion of the pattern is filled in using the
 response \ref responses-descriptors provided by the user (or, if none are
@@ -18,8 +18,8 @@ surrogate_models
 Examples::
 This input snippet directs %Dakota to write one algebraic format file and one binary archive file
 for each response. The names of the files will follow the patterns 
-\c my_surrogate.<response_descriptor>.alg (for the algebraic files) and 
-\c my_surrogate.<response_descriptor>.bsps (for the binary files).
+\c my_surrogate.{response_descriptor}.alg (for the algebraic files) and 
+\c my_surrogate.{response_descriptor}.bsps (for the binary files).
 
 \verbatim
 surrogate global gaussian_process surfpack

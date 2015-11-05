@@ -25,10 +25,10 @@ linear equality and inequality constraints.
 <b> Method Independent Controls - Stopping Critiera </b>
 
 Stopping critiera are set by:
-\li \ref method-max_iterations 
-\li \ref method-max_function_evaluations
-\li \ref method-convergence_tolerance
-\li \ref method-constraint_tolerance 
+\li \ref method-dot-max_iterations 
+\li \ref method-dot-max_function_evaluations
+\li \ref method-dot-convergence_tolerance
+\li \ref method-dot-constraint_tolerance 
 
 Note: The \c convergence_tolerance criterion must be satisfied
     for two consecutive iterations before DOT will terminate. 

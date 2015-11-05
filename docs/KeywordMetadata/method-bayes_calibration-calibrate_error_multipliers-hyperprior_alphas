@@ -1,0 +1,17 @@
+Blurb:: Shape (alpha) of the inverse gamma hyper-parameter prior
+
+Description:: 
+Shape of the prior distribution for calibrated error multipliers.
+Either a single value or number of hyper-parameters values may be
+specified.
+
+<b>Default:</b> 102.0 (with beta = 103.0) so mean and mode are
+approximately 1.0 and standard deviation is about 0.1.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

@@ -2,24 +2,24 @@
 parallelism
 ===========
 
-This directory contains examples of running DAKOTA on computing
-clusters with various combinations of DAKOTA and application level
+This directory contains examples of running Dakota on computing
+clusters with various combinations of Dakota and application level
 parallelism.  In each use case, a vector parameter study will be
 performed, requiring 20 model evaluations (application runs).
 
-In these, DAKOTA uses a fork simulation interface to call a shell
+In these, Dakota uses a fork simulation interface to call a shell
 script to launch the analysis application.  As described in the User's
-Manual, in black box mode, DAKOTA will call a driver script (also
+Manual, in black box mode, Dakota will call a driver script (also
 often called the simulator script) which prepares any necessary
 application input files, execute the application, and postprocesses
-results to return necessary metrics to DAKOTA (see Chapter 16 in the
+results to return necessary metrics to Dakota (see Chapter 16 in the
 User's Manual and tutorial/blackbox for examples).  Here this script
 will be called text_book_par_driver.
 
 Several use cases are summarized here and detailed below, depending on
-the necessary DAKOTA and application parallelism:
+the necessary Dakota and application parallelism:
 
-    DAKOTA    Application  Notes
+    Dakota    Application  Notes
 1.  parallel  serial       M-1 simultaneous application instances (N=1)
 2.  serial    parallel     1 simultaneous application instance on N procs
 3.  serial    parallel     M/N or (M-1)/N simultaneous N proc jobs
@@ -47,24 +47,24 @@ Files summary
 (Not all files appear in each directory.)
 
 pbs_submission        script file describing the job to be submitted with qsub
-dakota_pstudy.in      DAKOTA input file describing the study to execute
+dakota_pstudy.in      Dakota input file describing the study to execute
 text_book_par_driver  script to create working directories, prepare
 		      inputs, and run the analysis code
 text_book_simple_par  the binary "analysis code" to run (works in serial or
 		      parallel, although text_book is preferred for serial jobs)
-post_process	      collect the results of a DAKOTA study performed by 
-		      submitting analysis jobs to qsub (Case4 only)
+post_process	      collect the results of a Dakota study performed by 
+		      submitting analysis jobs to qsub (Case 4 only)
 
 To effectively exercise/test these parallelism approaches for the end-user's
 application, the modules loaded/MPI selection should be based on the
-application's needs and NOT Dakota's (the exception being Case1 in which the
+application's needs and NOT Dakota's (the exception being Case 1, in which the
 app is SERIAL).  Therefore, users should carefully select the modules/MPI on
 their platform and build the application themselves rather than relying on
-DAKOTA's configuration/binary for the text_book_simple_par on any HPC system.
+Dakota's configuration/binary for the text_book_simple_par on any HPC system.
  
-Please note that DAKOTA does NOT provide the binary executable for
+Please note that Dakota does NOT provide the binary executable for
 text_book_simple_par.  Instead, we provide the source code (in the 'test'
-subdirectory of a DAKOTA source distribution), with build instructions
+subdirectory of a Dakota source distribution), with build instructions
 documented as comments at the top of the text_book_simple_par.C source file.
 Further, we are committed to providing support to customers needing to
 leverage the many parallelism possibilities on HPC platforms.  Please send
@@ -73,64 +73,65 @@ text_book_simple_par/MPI/module loading for parallelism.
 
 
 =====
-Case1: Application running in serial (also known as massively serial
-analysis code execution, an embarrassingly parallel model).  In this
-case, jobs each require a single processor.  M-1 simultaneous analysis
-jobs are launched and as each job completes, another is to be
+Case1-MassivelySerial: Application running in serial (also known as
+massively serial analysis code execution, an embarrassingly parallel model).
+In this case, jobs each require a single processor.  M-1 simultaneous
+analysis jobs are launched and as each job completes, another is to be
 launched, until all jobs are complete.
 
 In this case, run dakota in parallel and have the analysis script
 launch the application in serial.  By default this will use one
-processor for the DAKOTA master and will launch M-1 simultaneous
+processor for the Dakota master and will launch M-1 simultaneous
 analysis jobs.
 
 OPTIONS:
 
-*. If you specify static_schedule in the DAKOTA input, you can have
-DAKOTA launch M jobs, but jobs will then be launched blocking, so all
+*. If you specify static_schedule in the Dakota input, you can have
+Dakota launch M jobs, but jobs will then be launched blocking, so all
 M will complete, then another M will be scheduled.
 
 *. If the analysis is extremely inexpensive, performance may be
-improved by launching multiple evaluation jobs local to each DAKOTA
+improved by launching multiple evaluation jobs local to each Dakota
 process, specifying
 
   asynchronous evaluation_concurrency = [2 or more]
 
-*. It is also possible to launch only one DAKOTA process per node, and
+*. It is also possible to launch only one Dakota process per node, and
 then use either asynchronous local as above, or launch the application
 in parallel using only the local processors (SMP parallelism):
 
   mpiexec -pernode -n 3 dakota -i dakota_pstudy.in
 
 =====
-Case2:  Application running in parallel (one simultaneous analysis job)
+Case2-SequentialParallel:  Application running in parallel
+                           (one simultaneous analysis job)
 
 This case is relevant for multi-processor analysis jobs, typically
 where the analysis is expensive (i.e., is long-running or it is not
 likely you can get enough processors to run more than one analysis
 simultaneously).  Note that for particularly long-running parallel
-jobs, Case4 below may be more appropriate.
+jobs, Case 4 below may be more appropriate.
 
-In this case, run DAKOTA in serial and within the driver script, use
+In this case, run Dakota in serial and within the driver script, use
 mpiexec -n K, where K<=M, to launch the application code in the
 processor allocation.
 
 ====== 
-Case 3: Single PBS processor allocation partitioned to run (M-1)/N or
-M/N parallel application jobs, each requiring N processors.  There are
-two ways to accomplish this, use option (a) if the application will
-work correctly in an MPICH/MVAPICH environment and option (b)
-otherwise.
+Case3-EvaluationTiling: Single PBS processor allocation partitioned to
+run (M-1)/N or M/N parallel application jobs, each requiring N
+processors.  There are two ways to accomplish this, use option (a) if
+the application will work correctly in an MPICH/MVAPICH environment and
+option (b) otherwise.
 
 ------
-Case3_MPICH: mpiexec -server option
+Option 1 - MPICH: mpiexec -server option
 (for applications that will behave using mpich/mvapich)
 
 Note that for various flavors of mpich there is a difference between
 mpirun and mpiexec, unlike openmpi.
 
 In this case, an mpiexec server process is started to service
-application requests for processors.  Then DAKOTA runs in serial and
+application requests for processors.  Then Dakota runs in serial and
 asynchronously launches M/N evaluations.  The simulator script calls
 mpiexec -n N to run the analysis in parallel and the mpiexec server doles
 out a subset of the available processors on which this task may run.
@@ -140,28 +141,28 @@ processor allocation permits.  An error may result if the application
 does not exit cleanly.
 
 ------ 
-Case3b: Script-based partitioning option.
+Option 2 - OpenMPI: Script-based partitioning option.
 
-This Case3_OpenMPI variant works when the application must be compiled with
+This OpenMPI variant works when the application must be compiled with
 OpenMPI or another MPI that does not support the -server mode.  A set
 of scripts are used to manage the partitioning of the M processor
-allocation among N-1 analysis jobs.  DAKOTA runs in serial.
+allocation among N-1 analysis jobs.  Dakota runs in serial.
 
 
 ===== 
-Case4: Running DAKOTA to submit jobs to a batch queue.  This option is
-probably only useful when the cost of an individual analysis
+Case4-EvaluationSubmission: Running Dakota to submit jobs to a batch queue.
+This option is probably only useful when the cost of an individual analysis
 evaluation is high (such that the job requries far too many processors
 or hours to run all the evaluations) and there is no feedback to
-DAKOTA required to generate the next evaluation points.  So this is
+Dakota required to generate the next evaluation points.  So this is
 likely more relevant for SA/UQ than optimization.  In this case
 
-1. DAKOTA runs once in serial on a login node
+1. Dakota runs once in serial on a login node
 	dakota dakota_pstudy.in
 2. For each evaluation, the simulator script (text_book_par_driver) will
    generate a pbs_submission script and submit it to the scheduler with qsub
-3. DAKOTA will exit
+3. Dakota will exit
 
 Later, when analysis is complete, change the analysis driver to
-'post_process' and again run DAKOTA on a login node to collect the
+'post_process' and again run Dakota on a login node to collect the
 results of the study.

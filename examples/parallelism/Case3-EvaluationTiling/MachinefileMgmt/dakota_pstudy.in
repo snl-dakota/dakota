@@ -1,0 +1,31 @@
+# DAKOTA INPUT FILE: dakota_pstudy.in for parallel Case 3 (Evaluation Tiling with
+# Machinefile Management)
+
+environment,
+	tabular_data
+
+method,
+	vector_parameter_study
+	  step_vector =	 .1  .1	 .1
+	  num_steps = 19
+
+variables,
+	continuous_design = 3
+	  initial_point    1.0   1.0   1.0
+
+# Case 3 (Evaluation Tiling with Machinefile Management): Run Dakota in serial, driver
+# script will manage the machine files for the load balancing of the parallel analysis
+interface,
+	fork,
+	  asynchronous evaluation_concurrency = 3
+	  analysis_driver = 'text_book_par_driver'
+	    parameters_file = 'params.in'
+	    results_file = 'results.out'
+	    file_tag
+	    file_save
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	no_gradients
+	no_hessians

@@ -3,7 +3,7 @@ Export surrogate model to a binary archive file
 Description::
 After the surrogate model has been built, %Dakota will export it to a binary 
 archival file suitable only for use with the surfpack executable (\c bin/surfpack).
-The file is named using the pattern \c <prefix>.<response_descriptor>.bsps, in which
+The file is named using the pattern \c {prefix}.{response_descriptor}.bsps, in which
 'bsps' stands for Binary Surfpack Surrogate. See \c filename_prefix for further 
 information about exported surrogate file naming.
 

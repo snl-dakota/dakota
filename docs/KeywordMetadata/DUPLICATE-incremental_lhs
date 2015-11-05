@@ -18,6 +18,10 @@ previous LHS (or incremental LHS) sampling study with sample size \f$
 N \f$ must have already been performed, and <b> the dakota restart
 file must be available from this previous study.</b> The variables
 and responses specifications must be the same in both studies.
+Incremental LHS sampling support both continuous uncertain 
+variables and discrete uncertain variables such as discrete distributions (e.g.
+binomial, Poisson, etc.) as well as histogram variables and
+uncertain set types.
 
 <b> Usage Tips </b>
 

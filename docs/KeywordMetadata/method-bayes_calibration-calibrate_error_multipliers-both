@@ -1,0 +1,12 @@
+Blurb:: Calibrate one hyper-parameter multiplier for each response/experiment pair
+
+Description::
+One hyper-parameter multiplying each experiment/response covariance block will be estimated.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

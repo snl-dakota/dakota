@@ -503,6 +503,73 @@ void Model::assign_rep(Model* model_rep, bool ref_count_incr)
 }
 
 
+SizetMultiArrayConstView
+Model::initialize_x0_bounds(const SizetArray& original_dvv, 
+			    bool& active_derivs, bool& inactive_derivs, 
+			    RealVector& x0, 
+			    RealVector& fd_lb, RealVector& fd_ub) const
+{
+  // Are derivatives w.r.t. active or inactive variables?
+  if (original_dvv == currentVariables.continuous_variable_ids()) {
+    active_derivs = true;
+    copy_data(currentVariables.continuous_variables(), x0); // view->copy
+  }
+  else if (original_dvv ==
+	   currentVariables.inactive_continuous_variable_ids()) {
+    inactive_derivs = true;
+    copy_data(currentVariables.inactive_continuous_variables(), x0);// vw->cpy
+  }
+  else // general derivatives
+    copy_data(currentVariables.all_continuous_variables(), x0); // view->copy
+
+  // define c_l_bnds, c_u_bnds, cv_ids, cv_types
+  const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
+    ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
+      all_continuous_lower_bounds() );
+  const RealVector& c_u_bnds = (active_derivs) ? continuous_upper_bounds() :
+    ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
+      all_continuous_upper_bounds() );
+  SizetMultiArrayConstView cv_ids = (active_derivs) ? continuous_variable_ids() :
+    ( (inactive_derivs) ? inactive_continuous_variable_ids() : 
+      all_continuous_variable_ids() );
+  UShortMultiArrayConstView cv_types = (active_derivs) ? 
+    continuous_variable_types() : 
+    ( (inactive_derivs) ? inactive_continuous_variable_types() : 
+      all_continuous_variable_types() );
+
+  // if not respecting bounds, leave at +/- infinity
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  fd_lb = -dbl_inf;
+  fd_ub =  dbl_inf;
+  if (!ignoreBounds) { // manage global/inferred vs. distribution bounds
+    size_t num_deriv_vars = original_dvv.size();
+    for (size_t j=0; j<num_deriv_vars; j++) {
+      size_t xj_index = find_index(cv_ids, original_dvv[j]);
+      fd_lb[j] = finite_difference_lower_bound(cv_types, c_l_bnds, xj_index);
+      fd_ub[j] = finite_difference_upper_bound(cv_types, c_u_bnds, xj_index);
+    }
+  }
+  
+  return cv_ids;
+}
+
+
+// compute a forward step for fd gradients; can't be const
+Real Model::forward_grad_step(size_t num_deriv_vars, size_t xj_index,
+			      Real x0_j, Real lb_j, Real ub_j)
+{
+  // Compute the offset for the ith gradient variable.
+  // Enforce a minimum delta of fdgss*.01
+  Real fdgss = (fdGradStepSize.length() == num_deriv_vars)
+    ? fdGradStepSize[xj_index] : fdGradStepSize[0];
+  //Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
+  Real h = FDstep1(x0_j, lb_j, ub_j,
+		   initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradStepType));
+  return h;
+}
+
+
+
 void Model::compute_response()
 {
   if (modelRep) // envelope fwd to letter
@@ -544,7 +611,7 @@ void Model::compute_response(const ActiveSet& set)
     ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0),
       fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
     // Manage map/estimate_derivs for a particular asv based on responses spec.
-    bool use_est_deriv = manage_asv(set.request_vector(), map_asv, fd_grad_asv,
+    bool use_est_deriv = manage_asv(set, map_asv, fd_grad_asv,
 				    fd_hess_asv, quasi_hess_asv);
 
     if (use_est_deriv) {
@@ -612,7 +679,7 @@ void Model::asynch_compute_response(const ActiveSet& set)
     // the user's gradients/Hessians spec.
     ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0),
       fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
-    bool use_est_deriv = manage_asv(set.request_vector(), map_asv, fd_grad_asv,
+    bool use_est_deriv = manage_asv(set, map_asv, fd_grad_asv,
 				    fd_hess_asv, quasi_hess_asv);
     int num_fd_evals;
     if (use_est_deriv) {
@@ -802,7 +869,8 @@ const IntResponseMap& Model::synchronize_nowait()
 
 /** Auxiliary function to determine initial finite difference h
     (before step length adjustment) based on type of step desired. */
-Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size, String step_type)
+Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size, 
+			 String step_type) const
 {
   Real h;
   if (step_type == "absolute")
@@ -817,79 +885,92 @@ Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size, String 
 
 
 /** Auxiliary function to compute forward or first central-difference
-    step size. */
+    step size, honoring bounds.  The first step is away from zero,
+    when possible.  Flips the direction or updates shortStep if can't
+    take the full requested step h_mag. */
 Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
 {
-  Real h, h1, h2;
+  Real h;
   shortStep = false;
   if (x0_j < 0.) {
     h = -h_mag;
     if (!ignoreBounds && x0_j + h < lb_j) {
+      // step would exceed lower bound; try flipping, else shorten
       if (x0_j + h_mag <= ub_j)
-	h = h_mag;
+        h = h_mag;
       else
-	goto shorten;
+        shortStep = true;
     }
   }
   else {
     h = h_mag;
     if (!ignoreBounds && x0_j + h > ub_j) {
+      // step would exceed upper bound; try flipping, else shorten
       if (x0_j - h_mag >= lb_j)
-	h = -h_mag;
+        h = -h_mag;
       else {
-      shorten:
-	shortStep = true;
-	h1 = x0_j - lb_j;
-	h2 = ub_j - x0_j;
-	if (h1 < h2)
-	  h = h2;
-	else
-	  h = -h1;
+        shortStep = true;
       }
     }
   }
+  
+  if (shortStep) {
+    // take the step to the furthest boundary
+    Real h1 = x0_j - lb_j;
+    Real h2 = ub_j - x0_j;
+    if (h1 < h2)
+      h = h2;
+    else
+      h = -h1;
+  }
+
   return h;
 }
 
 
-/** Auxiliary function to second central-difference step size,
+/** Auxiliary function to compute the second central-difference step size,
     honoring bounds. */
 Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h)
 {
-  Real h2 = -h;
+  Real h2 = -h;  // default is to take same size step in opposite direction
 
+  // if taking a shorter step to a boundary, the second step is half of it
   if (shortStep)
     h2 = 0.5*h;
   else if (!ignoreBounds) {
     Real h1;
     if (h2 < 0.) {
       if (x0_j + h2 < lb_j) {
-	shortStep = true;
-	h1 = h + h;
-	if (x0_j + h1 <= ub_j)
-	  h2 = h1;
-	else {
-	  h1 = 1.5*h;
-	  if (x0_j + h1 <= ub_j)
-	    h2 = h1;
-	  else
-	    h2 = 0.5*h;
-	}
+        // step would exceed lower bound; try full step in opposite
+        // direction; contracting until in-bounds
+        shortStep = true;
+        h1 = h + h;
+        if (x0_j + h1 <= ub_j)
+          h2 = h1;
+        else {
+          h1 = 1.5*h;
+          if (x0_j + h1 <= ub_j)
+            h2 = h1;
+          else
+            h2 = 0.5*h;
+        }
       }
     }
     else {
       if (x0_j + h2 > ub_j) {
-	shortStep = true;
-	h1 = h + h;
-	if (x0_j + h1 >= lb_j)
-	  h2 = h1;
-	else {
-	  h1 = 1.5*h;
-	  if (x0_j + h1 >= lb_j)
-	    h2 = h1;
-	  else
-	    h2 = 0.5*h;
-	}
+        // step would exceed upper bound; try full step in opposite
+        // direction; contracting until in-bounds
+        shortStep = true;
+        h1 = h + h;
+        if (x0_j + h1 >= lb_j)
+          h2 = h1;
+        else {
+          h1 = 1.5*h;
+          if (x0_j + h1 >= lb_j)
+            h2 = h1;
+          else
+            h2 = 0.5*h;
+        }
       }
     }
   }
@@ -927,30 +1008,29 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   // a database search when appropriate to retrieve the data instead of relying
   // solely on duplication detection.
   bool initial_map = false, augmented_data_flag = false, db_capture = false,
-       fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
-       fd_hess_by_grad_flag = false;
+    fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
+    fd_hess_by_grad_flag = false;
   const ShortArray& original_asv = original_set.request_vector();
   const SizetArray& original_dvv = original_set.derivative_vector();
-  ActiveSet new_set = original_set; // copy
   size_t i, j, k, map_counter = 0, num_deriv_vars = original_dvv.size();
-  const RealVector *fn_vals_x0 = 0, *f2 = 0;
+  const RealVector *f2 = NULL;
   size_t ifg, nfg = 0;
 
   for (i=0; i<numFns; i++) {
     if (map_asv[i]) {
       initial_map = true;
       if ( ( (map_asv[i] & 1) && !(original_asv[i] & 1) ) ||
-	   ( (map_asv[i] & 2) && !(original_asv[i] & 2) ) )
-	augmented_data_flag = true; // original_asv val/grad requests augmented
+           ( (map_asv[i] & 2) && !(original_asv[i] & 2) ) )
+        augmented_data_flag = true; // original_asv val/grad requests augmented
     }
     if (fd_grad_asv[i])
       fd_grad_flag = true;           // gradient finite differencing needed
     if (fd_hess_asv[i]) {
       fd_hess_flag = true;           // Hessian finite differencing needed ...
       if (fd_hess_asv[i] & 1)
-	fd_hess_by_fn_flag = true;   // ... by 2nd-order function differences
+        fd_hess_by_fn_flag = true;   // ... by 2nd-order function differences
       if (fd_hess_asv[i] & 2)
-	++nfg;                       // ... by 1st-order gradient differences
+        ++nfg;                       // ... by 1st-order gradient differences
     }
   }
   if (nfg)
@@ -961,17 +1041,18 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   // augmented data requirement (appears in map_asv but not in original_asv)
   // may have been evaluated previously.
   Response initial_map_response(currentResponse.copy());
+  ActiveSet new_set = original_set; // copy
   new_set.request_vector(map_asv);
   initial_map_response.active_set(new_set);
   if (augmented_data_flag) {
     bool eval_found = db_lookup(currentVariables, new_set, initial_map_response);
     if (eval_found) {
       if (outputLevel > SILENT_OUTPUT)
-	Cout << ">>>>> map at X performed previously and results retrieved\n\n";
+        Cout << ">>>>> map at X performed previously and results retrieved\n\n";
       initial_map = false; // reset
       if (asynch_flag) {
-	db_capture = true;
-	dbResponseList.push_back(initial_map_response);
+        db_capture = true;
+        dbResponseList.push_back(initial_map_response);
       }
     }
   }
@@ -980,14 +1061,14 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     if (outputLevel > SILENT_OUTPUT) {
       if (augmented_data_flag)
         Cout << ">>>>> Initial map for analytic portion of response\n      "
-	     << "augmented with data requirements for differencing:\n";
+             << "augmented with data requirements for differencing:\n";
       else
         Cout << ">>>>> Initial map for analytic portion of response:\n";
     }
     if (asynch_flag) {
       derived_asynch_compute_response(new_set);
       if (outputLevel > SILENT_OUTPUT)
-	Cout << "\n\n";
+        Cout << "\n\n";
     }
     else {
       derived_compute_response(new_set);
@@ -999,8 +1080,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     initialMapList.push_back(initial_map);
     dbCaptureList.push_back(db_capture);
   }
-  else if (fd_grad_flag || fd_hess_by_fn_flag)
-    fn_vals_x0 = &initial_map_response.function_values();
+  // else if (fd_grad_flag || fd_hess_by_fn_flag)
+  //   fn_vals_x0 = &initial_map_response.function_values();
 
   // ------------------------------
   // Estimate numerical derivatives
@@ -1019,545 +1100,522 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     if (!asynch_flag) {
       new_fn_hessians.resize(numFns);
       for (i=0; i<numFns; i++) {
-	new_fn_hessians[i].reshape(num_deriv_vars);
-	new_fn_hessians[i] = 0.;
+        new_fn_hessians[i].reshape(num_deriv_vars);
+        new_fn_hessians[i] = 0.;
       }
       if (fd_hess_by_fn_flag && !centralHess)
-	fx.resize(num_deriv_vars);
+        fx.resize(num_deriv_vars);
       if (fd_hess_by_grad_flag) {
-	fg.resize(ifg = nfg*num_deriv_vars);
-	while(ifg > 0)
-	  fg[--ifg].resize(num_deriv_vars);
+        fg.resize(ifg = nfg*num_deriv_vars);
+        while(ifg > 0)
+          fg[--ifg].resize(num_deriv_vars);
       }
     }
   }
   if (fd_grad_flag || fd_hess_flag) {
-    // define x0 and mode flags
-    bool active_derivs = false, inactive_derivs = false;
-    RealVector x0;
-    if (original_dvv == currentVariables.continuous_variable_ids()) {
-      active_derivs = true;
-      copy_data(currentVariables.continuous_variables(), x0); // view->copy
-    }
-    else if (original_dvv ==
-	     currentVariables.inactive_continuous_variable_ids()) {
-      inactive_derivs = true;
-      copy_data(currentVariables.inactive_continuous_variables(), x0);// vw->cpy
-    }
-    else // general derivatives
-      copy_data(currentVariables.all_continuous_variables(), x0); // view->copy
 
-    // define c_l_bnds, c_u_bnds, cv_ids, cv_types
-    const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
-      ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
-	                         all_continuous_lower_bounds() );
-    const RealVector& c_u_bnds = (active_derivs) ? continuous_upper_bounds() :
-      ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
-	                         all_continuous_upper_bounds() );
-    SizetMultiArrayConstView cv_ids = (active_derivs) ?
-      continuous_variable_ids() : ( (inactive_derivs) ?
-      inactive_continuous_variable_ids() : all_continuous_variable_ids() );
-    UShortMultiArrayConstView cv_types = (active_derivs) ?
-      continuous_variable_types() : ( (inactive_derivs) ?
-      inactive_continuous_variable_types() : all_continuous_variable_types() );
+    // define x0 and mode flags
+    bool active_derivs = false;    // derivatives w.r.t. active vars
+    bool inactive_derivs = false;  // derivs w.r.t. inactive vars
+    RealVector x0;
+
+    // define lower/upper bounds for finite differencing and cv_ids
+    RealVector fd_lb(num_deriv_vars), fd_ub(num_deriv_vars);
+    SizetMultiArrayConstView cv_ids = 
+      initialize_x0_bounds(original_dvv, active_derivs, inactive_derivs, 
+                           x0, fd_lb, fd_ub);
+
+    const RealVector& fn_vals_x0  = initial_map_response.function_values();
+    const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
 
     // ------------------------
     // Loop over num_deriv_vars
     // ------------------------
-    Real dbl_inf = std::numeric_limits<Real>::infinity();
-    RealVector x = x0; Real x0_j, lb_j = -dbl_inf, ub_j = dbl_inf;
+    RealVector x = x0; 
     for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
+
       size_t xj_index = find_index(cv_ids, original_dvv[j]);
-      x0_j = x0[xj_index];
-      if (!ignoreBounds) { // manage global/inferred vs. distribution bounds
-	lb_j = finite_difference_lower_bound(cv_types, c_l_bnds, xj_index);
-	ub_j = finite_difference_upper_bound(cv_types, c_u_bnds, xj_index);
-      }
+      Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
 
       if (fd_grad_flag) {
-	if (!ignoreBounds && lb_j >= ub_j) {
-	  if (asynch_flag)
-	    deltaList.push_back(0.);
-	  else
-	    for (i=0; i<numFns; i++)
-	      if (fd_grad_asv[i])
-		new_fn_grads(j,i) = 0.;
-	  continue;
-	}
-	new_set.request_vector(fd_grad_asv);
+        if (!ignoreBounds && lb_j >= ub_j) {
+          if (asynch_flag)
+            deltaList.push_back(0.);
+          else
+            for (i=0; i<numFns; i++)
+              if (fd_grad_asv[i])
+                new_fn_grads(j,i) = 0.;
+          continue;
+        }
+        new_set.request_vector(fd_grad_asv);
 
-	// Compute the offset for the ith gradient variable.
-	// Enforce a minimum delta of fdgss*.01
-	Real fdgss = (fdGradStepSize.length() == num_deriv_vars)
-	           ? fdGradStepSize[xj_index] : fdGradStepSize[0];
-	//Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
-	Real h = FDstep1(x0_j, lb_j, ub_j,
-			 initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradStepType));
-	if (asynch_flag) // communicate settings to synchronize_derivatives()
-	  deltaList.push_back(h);
+        // Compute the offset for the ith gradient variable.
+        Real h = forward_grad_step(num_deriv_vars, xj_index, x0_j, lb_j, ub_j);
 
-	// -------------------------
-	// Evaluate fn_vals_x_plus_h
-	// -------------------------
-	RealVector fn_vals_x_plus_h;
-	x[xj_index] = x0_j + h;
-	if (outputLevel > SILENT_OUTPUT)
-	  Cout << ">>>>> Dakota finite difference gradient evaluation for x["
-	       << j+1 << "] + h:\n";
-	if (active_derivs)
-	  currentVariables.continuous_variables(x);
-	else if (inactive_derivs)
-	  currentVariables.inactive_continuous_variables(x);
-	else
-	  currentVariables.all_continuous_variables(x);
-	if (asynch_flag) {
-	  derived_asynch_compute_response(new_set);
-	  if (outputLevel > SILENT_OUTPUT)
-	    Cout << "\n\n";
-	}
-	else {
-	  derived_compute_response(new_set);
-	  fn_vals_x_plus_h = currentResponse.function_values();
-	  if (intervalType == "forward") {
-	    for (i=0; i<numFns; i++)
-	      // prevent erroneous difference of vals present in fn_vals_x0 but
-	      // not in fn_vals_x_plus_h because of map/fd_grad asv differences
-	      if (fd_grad_asv[i])
-		new_fn_grads(j,i)
-		  = (fn_vals_x_plus_h[i] - (*fn_vals_x0)[i])/h;
-	  }
-	}
-	++map_counter;
+        if (asynch_flag) // communicate settings to synchronize_derivatives()
+          deltaList.push_back(h);
 
-	// --------------------------
-	// Evaluate fn_vals_x_minus_h
-	// --------------------------
-	if (intervalType == "central") {
-	  Real h1, h2 = FDstep2(x0_j, lb_j, ub_j, h);
-	  x[xj_index] = x0_j + h2;
-	  if (outputLevel > SILENT_OUTPUT)
-	    Cout << ">>>>> Dakota finite difference gradient evaluation for x["
-		 << j+1 << "] - h:\n";
-	  if (active_derivs)
-	    currentVariables.continuous_variables(x);
-	  else if (inactive_derivs)
-	    currentVariables.inactive_continuous_variables(x);
-	  else
-	    currentVariables.all_continuous_variables(x);
-	  if (asynch_flag) {
-	    deltaList.push_back(h2);
-	    derived_asynch_compute_response(new_set);
-	    if (outputLevel > SILENT_OUTPUT)
-	      Cout << "\n\n";
-	  }
-	  else {
-	    derived_compute_response(new_set);
-	    const RealVector& fn_vals_x_minus_h
-	      = currentResponse.function_values();
-	    // no need to check fd_grad_asv since it was used for both evals
-	    if (shortStep) {
-		Real h12 = h*h, h22 = h2*h2;
-		h1 = h*h2*(h2-h);
-		for(i = 0; i < numFns; ++i)
-		  new_fn_grads(j,i)
-		    = (	  h22*(fn_vals_x_plus_h[i]  - (*fn_vals_x0)[i]) -
-			  h12*(fn_vals_x_minus_h[i] - (*fn_vals_x0)[i]) ) / h1;
-		}
-	    else {
-	      h1 = h - h2;
-	      for (i=0; i<numFns; i++)
-		new_fn_grads(j,i)
-		  = (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i])/h1;
-	      }
-	  }
-	  ++map_counter;
-	}
+        // -------------------------
+        // Evaluate fn_vals_x_plus_h
+        // -------------------------
+        RealVector fn_vals_x_plus_h;
+        x[xj_index] = x0_j + h;
+        if (outputLevel > SILENT_OUTPUT)
+          Cout << ">>>>> Dakota finite difference gradient evaluation for x["
+               << j+1 << "] + h:\n";
+        if (active_derivs)
+          currentVariables.continuous_variables(x);
+        else if (inactive_derivs)
+          currentVariables.inactive_continuous_variables(x);
+        else
+          currentVariables.all_continuous_variables(x);
+        if (asynch_flag) {
+          derived_asynch_compute_response(new_set);
+          if (outputLevel > SILENT_OUTPUT)
+            Cout << "\n\n";
+        }
+        else {
+          derived_compute_response(new_set);
+          fn_vals_x_plus_h = currentResponse.function_values();
+          if (intervalType == "forward") {
+            for (i=0; i<numFns; i++)
+              // prevent erroneous difference of vals present in fn_vals_x0 but
+              // not in fn_vals_x_plus_h because of map/fd_grad asv differences
+              if (fd_grad_asv[i])
+                new_fn_grads(j,i) = (fn_vals_x_plus_h[i] - fn_vals_x0[i])/h;
+          }
+        }
+        ++map_counter;
+
+        // --------------------------
+        // Evaluate fn_vals_x_minus_h
+        // --------------------------
+        if (intervalType == "central") {
+          Real h1, h2 = FDstep2(x0_j, lb_j, ub_j, h);
+          x[xj_index] = x0_j + h2;
+          if (outputLevel > SILENT_OUTPUT)
+            Cout << ">>>>> Dakota finite difference gradient evaluation for x["
+                 << j+1 << "] - h:\n";
+          if (active_derivs)
+            currentVariables.continuous_variables(x);
+          else if (inactive_derivs)
+            currentVariables.inactive_continuous_variables(x);
+          else
+            currentVariables.all_continuous_variables(x);
+          if (asynch_flag) {
+            deltaList.push_back(h2);
+            derived_asynch_compute_response(new_set);
+            if (outputLevel > SILENT_OUTPUT)
+              Cout << "\n\n";
+          }
+          else {
+            derived_compute_response(new_set);
+            const RealVector& fn_vals_x_minus_h
+              = currentResponse.function_values();
+            // no need to check fd_grad_asv since it was used for both evals
+            if (shortStep) {
+              Real h12 = h*h, h22 = h2*h2;
+              h1 = h*h2*(h2-h);
+              for(i = 0; i < numFns; ++i)
+                new_fn_grads(j,i)
+                  = (	h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
+                      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
+            }
+            else {
+              h1 = h - h2;
+              for (i=0; i<numFns; i++)
+                new_fn_grads(j,i)
+                  = (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i]) / h1;
+            }
+          }
+          ++map_counter;
+        }
       }
 
       if (fd_hess_flag) {
-	new_set.request_vector(fd_hess_asv);
+        new_set.request_vector(fd_hess_asv);
 
-	// if analytic grads, then 1st-order gradient differences
-	// --> no interval type control (uses only forward diff of analytic
-	//     grads), separate finite diff step size.
-	// if numerical grads, then 2nd-order function differences
-	// --> no interval type control (uses only central diffs of numerical
-	//     grads from central fn diffs), separate finite diff step size.
-	//     Could get some eval reuse for diagonal Hessian terms by setting
-	//     fdHessStepSize to half of fdGradStepSize, but this is not hard-wired since
-	//     one generally wants fdHessStepSize > fdGradStepSize (if desired, the user
-	//     can set fdHessStepSize to fdGradStepSize/2 to get reuse).
-	// if mixed grads, then mixed 1st/2nd-order diffs for numerical Hessians
+        // If analytic grads, then 1st-order gradient differences
+        // > no interval type control (uses only forward diff of analytic
+        //   grads), separate finite diff step size.
+        // If numerical grads, then 2nd-order function differences
+        // > no interval type control (uses only central diffs of numerical
+        //   grads from central fn diffs), separate finite diff step size.
+        //   Could get some eval reuse for diagonal Hessian terms by setting
+        //   fdHessStepSize to half of fdGradStepSize, but this is not
+        //   hard-wired since generally want fdHessStepSize > fdGradStepSize
+        //   (if desired, the user can set fdHessStepSize to fdGradStepSize/2
+        //   to get reuse).
+        // If mixed grads, then mixed 1st/2nd-order diffs for numerical Hessians
 
-	if (fd_hess_by_fn_flag) {
-	  if (centralHess) {
-	    RealVector fn_vals_x_plus_2h, fn_vals_x_minus_2h;
+        if (fd_hess_by_fn_flag) {
+          if (centralHess) {
+            RealVector fn_vals_x_plus_2h, fn_vals_x_minus_2h;
 
-	    // Compute the 2nd-order Hessian offset for the ith variable.
-	    // Enforce a minimum delta of fdhss*.01
-	    Real fdhbfss = (fdHessByFnStepSize.length() == num_deriv_vars)
-	                 ? fdHessByFnStepSize[xj_index] : fdHessByFnStepSize[0];
-	    Real h_mag = fdhbfss * std::max(std::fabs(x0_j), .01);
-	    Real h = (x0_j < 0.) ? -h_mag : h_mag; // h has same sign as x0_j
-	    if (asynch_flag)// communicate settings to synchronize_derivatives()
-	      deltaList.push_back(h);
+            // Compute the 2nd-order Hessian offset for the ith variable.
+            // Enforce a minimum delta of fdhss*.01
+            Real fdhbfss = (fdHessByFnStepSize.length() == num_deriv_vars)
+              ? fdHessByFnStepSize[xj_index] : fdHessByFnStepSize[0];
+            Real h_mag = fdhbfss * std::max(std::fabs(x0_j), .01);
+            Real h = (x0_j < 0.) ? -h_mag : h_mag; // h has same sign as x0_j
+            if (asynch_flag)// communicate settings to synchronize_derivatives()
+              deltaList.push_back(h);
 
-	    // evaluate diagonal term
+            // evaluate diagonal term
 
-	    // --------------------------
-	    // Evaluate fn_vals_x_plus_2h
-	    // --------------------------
-	    x[xj_index] = x0[xj_index] + 2.*h;
-	    if (outputLevel > SILENT_OUTPUT)
-	      Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-		   << j+1 << "] + 2h:\n";
-	    if (active_derivs)
-	      currentVariables.continuous_variables(x);
-	    else if (inactive_derivs)
-	      currentVariables.inactive_continuous_variables(x);
-	    else
-	      currentVariables.all_continuous_variables(x);
-	    if (asynch_flag) {
-	      derived_asynch_compute_response(new_set);
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << "\n\n";
-	    }
-	    else {
-	      derived_compute_response(new_set);
-	      fn_vals_x_plus_2h = currentResponse.function_values();
-	    }
+            // --------------------------
+            // Evaluate fn_vals_x_plus_2h
+            // --------------------------
+            x[xj_index] = x0[xj_index] + 2.*h;
+            if (outputLevel > SILENT_OUTPUT)
+              Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
+                   << j+1 << "] + 2h:\n";
+            if (active_derivs)
+              currentVariables.continuous_variables(x);
+            else if (inactive_derivs)
+              currentVariables.inactive_continuous_variables(x);
+            else
+              currentVariables.all_continuous_variables(x);
+            if (asynch_flag) {
+              derived_asynch_compute_response(new_set);
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << "\n\n";
+            }
+            else {
+              derived_compute_response(new_set);
+              fn_vals_x_plus_2h = currentResponse.function_values();
+            }
 
-	    // ---------------------------
-	    // Evaluate fn_vals_x_minus_2h
-	    // ---------------------------
-	    x[xj_index] = x0[xj_index] - 2.*h;
-	    if (outputLevel > SILENT_OUTPUT)
-	      Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-		   << j+1 << "] - 2h:\n";
-	    if (active_derivs)
-	      currentVariables.continuous_variables(x);
-	    else if (inactive_derivs)
-	      currentVariables.inactive_continuous_variables(x);
-	    else
-	      currentVariables.all_continuous_variables(x);
-	    if (asynch_flag) {
-	      derived_asynch_compute_response(new_set);
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << "\n\n";
-	    }
-	    else {
-	      derived_compute_response(new_set);
-	      fn_vals_x_minus_2h = currentResponse.function_values();
-	    }
+            // ---------------------------
+            // Evaluate fn_vals_x_minus_2h
+            // ---------------------------
+            x[xj_index] = x0[xj_index] - 2.*h;
+            if (outputLevel > SILENT_OUTPUT)
+              Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
+                   << j+1 << "] - 2h:\n";
+            if (active_derivs)
+              currentVariables.continuous_variables(x);
+            else if (inactive_derivs)
+              currentVariables.inactive_continuous_variables(x);
+            else
+              currentVariables.all_continuous_variables(x);
+            if (asynch_flag) {
+              derived_asynch_compute_response(new_set);
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << "\n\n";
+            }
+            else {
+              derived_compute_response(new_set);
+              fn_vals_x_minus_2h = currentResponse.function_values();
+            }
 
-	    map_counter += 2;
-	    if (!asynch_flag) {
-	      for (i=0; i<numFns; i++)
-		// prevent error in differencing vals present in fn_vals_x0 but
-		// not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
-		if (fd_hess_asv[i] & 1)
-		  new_fn_hessians[i](j,j) = (fn_vals_x_plus_2h[i]
-                    - 2.*(*fn_vals_x0)[i] +  fn_vals_x_minus_2h[i])/(4.*h*h);
-	    }
+            map_counter += 2;
+            if (!asynch_flag) {
+              for (i=0; i<numFns; i++)
+                // prevent error in differencing vals present in fn_vals_x0 but
+                // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
+                if (fd_hess_asv[i] & 1)
+                  new_fn_hessians[i](j,j) = 
+                    (fn_vals_x_plus_2h[i]
+                     - 2.*fn_vals_x0[i] +  fn_vals_x_minus_2h[i])/(4.*h*h);
+            }
 
-	    // evaluate off-diagonal terms
+            // evaluate off-diagonal terms
 
-	    for (k=j+1; k<num_deriv_vars; k++) {
-	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
-	      RealVector fn_vals_x_plus_h_plus_h,  fn_vals_x_plus_h_minus_h,
-		         fn_vals_x_minus_h_plus_h, fn_vals_x_minus_h_minus_h;
+            for (k=j+1; k<num_deriv_vars; k++) {
+              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              RealVector fn_vals_x_plus_h_plus_h,  fn_vals_x_plus_h_minus_h,
+                fn_vals_x_minus_h_plus_h, fn_vals_x_minus_h_minus_h;
 
-	      // --------------------------------
-	      // Evaluate fn_vals_x_plus_h_plus_h
-	      // --------------------------------
-	      x[xj_index] = x0[xj_index] + h;
-	      x[xk_index] = x0[xk_index] + h;
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-		     << "x[" << j+1 << "] + h, x[" << k+1 << "] + h:\n";
-	      if (active_derivs)
-		currentVariables.continuous_variables(x);
-	      else if (inactive_derivs)
-		currentVariables.inactive_continuous_variables(x);
-	      else
-		currentVariables.all_continuous_variables(x);
-	      if (asynch_flag) {
-		derived_asynch_compute_response(new_set);
-		if (outputLevel > SILENT_OUTPUT)
-		  Cout << "\n\n";
-	      }
-	      else {
-		derived_compute_response(new_set);
-		fn_vals_x_plus_h_plus_h = currentResponse.function_values();
-	      }
-	      // ---------------------------------
-	      // Evaluate fn_vals_x_plus_h_minus_h
-	      // ---------------------------------
-	      //x[xj_index] = x0[xj_index] + h;
-	      x[xk_index] = x0[xk_index] - h;
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-		     << "x[" << j+1 << "] + h, x[" << k+1 << "] - h:\n";
-	      if (active_derivs)
-		currentVariables.continuous_variables(x);
-	      else if (inactive_derivs)
-		currentVariables.inactive_continuous_variables(x);
-	      else
-		currentVariables.all_continuous_variables(x);
-	      if (asynch_flag) {
-		derived_asynch_compute_response(new_set);
-		if (outputLevel > SILENT_OUTPUT)
-		  Cout << "\n\n";
-	      }
-	      else {
-		derived_compute_response(new_set);
-		fn_vals_x_plus_h_minus_h = currentResponse.function_values();
-	      }
-	      // ---------------------------------
-	      // Evaluate fn_vals_x_minus_h_plus_h
-	      // ---------------------------------
-	      x[xj_index] = x0[xj_index] - h;
-	      x[xk_index] = x0[xk_index] + h;
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-		     << "x[" << j+1 << "] - h, x[" << k+1 << "] + h:\n";
-	      if (active_derivs)
-		currentVariables.continuous_variables(x);
-	      else if (inactive_derivs)
-		currentVariables.inactive_continuous_variables(x);
-	      else
-		currentVariables.all_continuous_variables(x);
-	      if (asynch_flag) {
-		derived_asynch_compute_response(new_set);
-		if (outputLevel > SILENT_OUTPUT)
-		  Cout << "\n\n";
-	      }
-	      else {
-		derived_compute_response(new_set);
-		fn_vals_x_minus_h_plus_h = currentResponse.function_values();
-	      }
-	      // ----------------------------------
-	      // Evaluate fn_vals_x_minus_h_minus_h
-	      // ----------------------------------
-	      //x[xj_index] = x0[xj_index] - h;
-	      x[xk_index] = x0[xk_index] - h;
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-		     << "x[" << j+1 << "] - h, x[" << k+1 << "] - h:\n";
-	      if (active_derivs)
-		currentVariables.continuous_variables(x);
-	      else if (inactive_derivs)
-		currentVariables.inactive_continuous_variables(x);
-	      else
-		currentVariables.all_continuous_variables(x);
-	      if (asynch_flag) {
-		derived_asynch_compute_response(new_set);
-		if (outputLevel > SILENT_OUTPUT)
-		  Cout << "\n\n";
-	      }
-	      else {
-		derived_compute_response(new_set);
-		fn_vals_x_minus_h_minus_h = currentResponse.function_values();
-	      }
+              // --------------------------------
+              // Evaluate fn_vals_x_plus_h_plus_h
+              // --------------------------------
+              x[xj_index] = x0[xj_index] + h;
+              x[xk_index] = x0[xk_index] + h;
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << ">>>>> Dakota finite difference Hessian evaluation for "
+                     << "x[" << j+1 << "] + h, x[" << k+1 << "] + h:\n";
+              if (active_derivs)
+                currentVariables.continuous_variables(x);
+              else if (inactive_derivs)
+                currentVariables.inactive_continuous_variables(x);
+              else
+                currentVariables.all_continuous_variables(x);
+              if (asynch_flag) {
+                derived_asynch_compute_response(new_set);
+                if (outputLevel > SILENT_OUTPUT)
+                  Cout << "\n\n";
+              }
+              else {
+                derived_compute_response(new_set);
+                fn_vals_x_plus_h_plus_h = currentResponse.function_values();
+              }
+              // ---------------------------------
+              // Evaluate fn_vals_x_plus_h_minus_h
+              // ---------------------------------
+              //x[xj_index] = x0[xj_index] + h;
+              x[xk_index] = x0[xk_index] - h;
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << ">>>>> Dakota finite difference Hessian evaluation for "
+                     << "x[" << j+1 << "] + h, x[" << k+1 << "] - h:\n";
+              if (active_derivs)
+                currentVariables.continuous_variables(x);
+              else if (inactive_derivs)
+                currentVariables.inactive_continuous_variables(x);
+              else
+                currentVariables.all_continuous_variables(x);
+              if (asynch_flag) {
+                derived_asynch_compute_response(new_set);
+                if (outputLevel > SILENT_OUTPUT)
+                  Cout << "\n\n";
+              }
+              else {
+                derived_compute_response(new_set);
+                fn_vals_x_plus_h_minus_h = currentResponse.function_values();
+              }
+              // ---------------------------------
+              // Evaluate fn_vals_x_minus_h_plus_h
+              // ---------------------------------
+              x[xj_index] = x0[xj_index] - h;
+              x[xk_index] = x0[xk_index] + h;
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << ">>>>> Dakota finite difference Hessian evaluation for "
+                     << "x[" << j+1 << "] - h, x[" << k+1 << "] + h:\n";
+              if (active_derivs)
+                currentVariables.continuous_variables(x);
+              else if (inactive_derivs)
+                currentVariables.inactive_continuous_variables(x);
+              else
+                currentVariables.all_continuous_variables(x);
+              if (asynch_flag) {
+                derived_asynch_compute_response(new_set);
+                if (outputLevel > SILENT_OUTPUT)
+                  Cout << "\n\n";
+              }
+              else {
+                derived_compute_response(new_set);
+                fn_vals_x_minus_h_plus_h = currentResponse.function_values();
+              }
+              // ----------------------------------
+              // Evaluate fn_vals_x_minus_h_minus_h
+              // ----------------------------------
+              //x[xj_index] = x0[xj_index] - h;
+              x[xk_index] = x0[xk_index] - h;
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << ">>>>> Dakota finite difference Hessian evaluation for "
+                     << "x[" << j+1 << "] - h, x[" << k+1 << "] - h:\n";
+              if (active_derivs)
+                currentVariables.continuous_variables(x);
+              else if (inactive_derivs)
+                currentVariables.inactive_continuous_variables(x);
+              else
+                currentVariables.all_continuous_variables(x);
+              if (asynch_flag) {
+                derived_asynch_compute_response(new_set);
+                if (outputLevel > SILENT_OUTPUT)
+                  Cout << "\n\n";
+              }
+              else {
+                derived_compute_response(new_set);
+                fn_vals_x_minus_h_minus_h = currentResponse.function_values();
+              }
 
-	      map_counter += 4;
-	      if (!asynch_flag)
-		for (i=0; i<numFns; i++)
-		  // no need to check fd_hess_asv since used for each eval
-		  // NOTE: symmetry is naturally satisfied.  Teuchos maps
-		  // new_fn_hessians[i](j,k) and new_fn_hessians[i](k,j)
-		  // to the same memory cell.
-		  new_fn_hessians[i](j,k)
-		    = (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i]
-		    -  fn_vals_x_minus_h_plus_h[i]
-		    +  fn_vals_x_minus_h_minus_h[i] ) / (4.*h*h);
+              map_counter += 4;
+              if (!asynch_flag)
+                for (i=0; i<numFns; i++)
+                  // no need to check fd_hess_asv since used for each eval
+                  // NOTE: symmetry is naturally satisfied.  Teuchos maps
+                  // new_fn_hessians[i](j,k) and new_fn_hessians[i](k,j)
+                  // to the same memory cell.
+                  new_fn_hessians[i](j,k)
+                    = (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i]
+                       -  fn_vals_x_minus_h_plus_h[i]
+                       +  fn_vals_x_minus_h_minus_h[i] ) / (4.*h*h);
 
-	      x[xk_index] = x0[xk_index];
-	    }
-	  }
-	  else { //!! new logic
-	    RealVector fn_vals_x1, fn_vals_x12, fn_vals_x2;
+              x[xk_index] = x0[xk_index];
+            }
+          }
+          else { //!! new logic
+            RealVector fn_vals_x1, fn_vals_x12, fn_vals_x2;
 
-	    // Compute the 2nd-order Hessian offset for the ith variable.
-	    // Enforce a minimum delta of fdhss*.01
-	    Real fdhbfss = (fdHessByFnStepSize.length() == num_deriv_vars)
-	                 ? fdHessByFnStepSize[xj_index] : fdHessByFnStepSize[0];
-	    //	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
-	    //			      std::max(std::fabs(x0_j), .01));
-	    Real h1 = FDstep1(x0_j, lb_j, ub_j,
-		      initialize_h(x0_j, lb_j, ub_j, 2.*fdhbfss, fdHessStepType));
-	    Real h2 = FDstep2(x0_j, lb_j, ub_j, h1);
-	    Real denom, hdiff;
-	    if (asynch_flag) { // transfer settings to synchronize_derivatives()
-	      deltaList.push_back(h1);
-	      deltaList.push_back(h2);
-	    }
-	    dx[j] = h1;
+            // Compute the 2nd-order Hessian offset for the ith variable.
+            // Enforce a minimum delta of fdhss*.01
+            Real fdhbfss = (fdHessByFnStepSize.length() == num_deriv_vars)
+              ? fdHessByFnStepSize[xj_index] : fdHessByFnStepSize[0];
+            //	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
+            //			      std::max(std::fabs(x0_j), .01));
+            Real h1 = FDstep1(x0_j, lb_j, ub_j,
+                              initialize_h(x0_j, lb_j, ub_j, 2.*fdhbfss, fdHessStepType));
+            Real h2 = FDstep2(x0_j, lb_j, ub_j, h1);
+            Real denom, hdiff;
+            if (asynch_flag) { // transfer settings to synchronize_derivatives()
+              deltaList.push_back(h1);
+              deltaList.push_back(h2);
+            }
+            dx[j] = h1;
 
-	    // evaluate diagonal term
+            // evaluate diagonal term
 
-	    // --------------------------
-	    // Evaluate fn_vals_x1
-	    // --------------------------
-	    x[xj_index] = x0[xj_index] + h1;
-	    if (outputLevel > SILENT_OUTPUT)
-	      Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-		   << j+1 << "] + 2h:\n";
-	    if (active_derivs)
-	      currentVariables.continuous_variables(x);
-	    else if (inactive_derivs)
-	      currentVariables.inactive_continuous_variables(x);
-	    else
-	      currentVariables.all_continuous_variables(x);
-	    if (asynch_flag) {
-	      derived_asynch_compute_response(new_set);
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << "\n\n";
-	    }
-	    else {
-	      derived_compute_response(new_set);
-	      fx[j] = fn_vals_x1 = currentResponse.function_values();
-	    }
+            // --------------------------
+            // Evaluate fn_vals_x1
+            // --------------------------
+            x[xj_index] = x0[xj_index] + h1;
+            if (outputLevel > SILENT_OUTPUT)
+              Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
+                   << j+1 << "] + 2h:\n";
+            if (active_derivs)
+              currentVariables.continuous_variables(x);
+            else if (inactive_derivs)
+              currentVariables.inactive_continuous_variables(x);
+            else
+              currentVariables.all_continuous_variables(x);
+            if (asynch_flag) {
+              derived_asynch_compute_response(new_set);
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << "\n\n";
+            }
+            else {
+              derived_compute_response(new_set);
+              fx[j] = fn_vals_x1 = currentResponse.function_values();
+            }
 
-	    // ---------------------------
-	    // Evaluate fn_vals_x2
-	    // ---------------------------
-	    x[xj_index] = x0[xj_index] + h2;
-	    if (outputLevel > SILENT_OUTPUT)
-	      Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-		   << j+1 << "] - 2h:\n";
-	    if (active_derivs)
-	      currentVariables.continuous_variables(x);
-	    else if (inactive_derivs)
-	      currentVariables.inactive_continuous_variables(x);
-	    else
-	      currentVariables.all_continuous_variables(x);
-	    if (asynch_flag) {
-	      derived_asynch_compute_response(new_set);
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << "\n\n";
-	    }
-	    else {
-	      derived_compute_response(new_set);
-	      fn_vals_x2 = currentResponse.function_values();
-	    }
+            // ---------------------------
+            // Evaluate fn_vals_x2
+            // ---------------------------
+            x[xj_index] = x0[xj_index] + h2;
+            if (outputLevel > SILENT_OUTPUT)
+              Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
+                   << j+1 << "] - 2h:\n";
+            if (active_derivs)
+              currentVariables.continuous_variables(x);
+            else if (inactive_derivs)
+              currentVariables.inactive_continuous_variables(x);
+            else
+              currentVariables.all_continuous_variables(x);
+            if (asynch_flag) {
+              derived_asynch_compute_response(new_set);
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << "\n\n";
+            }
+            else {
+              derived_compute_response(new_set);
+              fn_vals_x2 = currentResponse.function_values();
+            }
 
-	    map_counter += 2;
-	    if (!asynch_flag) {
-	      if (h1 + h2 == 0.) {
-		denom = h1*h1;
-		for (i = 0; i < numFns; i++)
-		  // prevent erroneous difference of vals in fn_vals_x0 but not
-		  // in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
-		  if (fd_hess_asv[i] & 1)
-		    new_fn_hessians[i](j,j)
-		      = (fn_vals_x1[i] - 2.*(*fn_vals_x0)[i] + fn_vals_x2[i])
-		      / denom;
-	      }
-	      else {
-		hdiff = h1 - h2;
-		denom = 0.5*h1*h2*hdiff;
-		for (i = 0; i < numFns; i++)
-		  if (fd_hess_asv[i] & 1)
-		    new_fn_hessians[i](j,j)
-		      = (h2*fn_vals_x1[i] + hdiff*(*fn_vals_x0)[i] -
-			 h1*fn_vals_x2[i])/denom;
-	      }
-	    }
+            map_counter += 2;
+            if (!asynch_flag) {
+              if (h1 + h2 == 0.) {
+                denom = h1*h1;
+                for (i = 0; i < numFns; i++)
+                  // prevent erroneous difference of vals in fn_vals_x0 but not
+                  // in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
+                  if (fd_hess_asv[i] & 1)
+                    new_fn_hessians[i](j,j)
+                      = (fn_vals_x1[i] - 2.*fn_vals_x0[i] + fn_vals_x2[i])
+                      / denom;
+              }
+              else {
+                hdiff = h1 - h2;
+                denom = 0.5*h1*h2*hdiff;
+                for (i = 0; i < numFns; i++)
+                  if (fd_hess_asv[i] & 1)
+                    new_fn_hessians[i](j,j)
+                      = (h2*fn_vals_x1[i] + hdiff*fn_vals_x0[i] -
+                         h1*fn_vals_x2[i])/denom;
+              }
+            }
 
-	    // evaluate off-diagonal terms
+            // evaluate off-diagonal terms
 
-	    for (k = 0; k < j; k++) {
-	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
+            for (k = 0; k < j; k++) {
+              size_t xk_index = find_index(cv_ids, original_dvv[k]);
 
-	      // --------------------------------
-	      // Evaluate fn_vals_x12
-	      // --------------------------------
-	      h2 = dx[k];
-	      x[xj_index] = x0[xj_index] + h1;
-	      x[xk_index] = x0[xk_index] + h2;
-	      if (outputLevel > SILENT_OUTPUT)
-		Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-		     << "x[" << j+1 << "] + h, x[" << k+1 << "] + h:\n";
-	      if (active_derivs)
-		currentVariables.continuous_variables(x);
-	      else if (inactive_derivs)
-		currentVariables.inactive_continuous_variables(x);
-	      else
-		currentVariables.all_continuous_variables(x);
-	      if (asynch_flag) {
-		derived_asynch_compute_response(new_set);
-		if (outputLevel > SILENT_OUTPUT)
-		  Cout << "\n\n";
-	      }
-	      else {
-		derived_compute_response(new_set);
-		fn_vals_x12 = currentResponse.function_values();
-		denom = h1*h2;
-		f2 = &fx[k];
-		for (i=0; i<numFns; ++i)
-		  new_fn_hessians[i](j,k) = (fn_vals_x12[i] - fn_vals_x1[i] -
-		    (*f2)[i] + (*fn_vals_x0)[i]) / denom;
-	      }
+              // --------------------------------
+              // Evaluate fn_vals_x12
+              // --------------------------------
+              h2 = dx[k];
+              x[xj_index] = x0[xj_index] + h1;
+              x[xk_index] = x0[xk_index] + h2;
+              if (outputLevel > SILENT_OUTPUT)
+                Cout << ">>>>> Dakota finite difference Hessian evaluation for "
+                     << "x[" << j+1 << "] + h, x[" << k+1 << "] + h:\n";
+              if (active_derivs)
+                currentVariables.continuous_variables(x);
+              else if (inactive_derivs)
+                currentVariables.inactive_continuous_variables(x);
+              else
+                currentVariables.all_continuous_variables(x);
+              if (asynch_flag) {
+                derived_asynch_compute_response(new_set);
+                if (outputLevel > SILENT_OUTPUT)
+                  Cout << "\n\n";
+              }
+              else {
+                derived_compute_response(new_set);
+                fn_vals_x12 = currentResponse.function_values();
+                denom = h1*h2;
+                f2 = &fx[k];
+                for (i=0; i<numFns; ++i)
+                  new_fn_hessians[i](j,k) = (fn_vals_x12[i] - fn_vals_x1[i] -
+                                             (*f2)[i] + fn_vals_x0[i]) / denom;
+              }
 
-	      ++map_counter;
-	      x[xk_index] = x0[xk_index];
-	    }
-	  }
-	}
+              ++map_counter;
+              x[xk_index] = x0[xk_index];
+            }
+          }
+        }
 
-	if (fd_hess_by_grad_flag) {
+        if (fd_hess_by_grad_flag) {
 
-	  // Compute the 1st-order Hessian offset for the ith variable.
-	  // Enforce a minimum delta of fdhss*.01
-	  Real fdhbgss = (fdHessByGradStepSize.length() == num_deriv_vars)
-	               ? fdHessByGradStepSize[xj_index] : fdHessByGradStepSize[0];
-	  //	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
-	  //			   std::max(std::fabs(x0_j), .01));
-	  Real h = FDstep1(x0_j, lb_j, ub_j,
-			   initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessStepType));
-	  if (asynch_flag) // communicate settings to synchronize_derivatives()
-	    deltaList.push_back(h);
+          // Compute the 1st-order Hessian offset for the ith variable.
+          // Enforce a minimum delta of fdhss*.01
+          Real fdhbgss = (fdHessByGradStepSize.length() == num_deriv_vars)
+            ? fdHessByGradStepSize[xj_index] : fdHessByGradStepSize[0];
+          //	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
+          //			   std::max(std::fabs(x0_j), .01));
+          Real h = FDstep1(x0_j, lb_j, ub_j,
+                           initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessStepType));
+          if (asynch_flag) // communicate settings to synchronize_derivatives()
+            deltaList.push_back(h);
 
-	  // --------------------------
-	  // Evaluate fn_grads_x_plus_h
-	  // --------------------------
-	  x[xj_index] = x0[xj_index] + h;
-	  if (outputLevel > SILENT_OUTPUT)
-	    Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-		 << j+1 << "] + h:\n";
-	  if (active_derivs)
-	    currentVariables.continuous_variables(x);
-	  else if (inactive_derivs)
-	    currentVariables.inactive_continuous_variables(x);
-	  else
-	    currentVariables.all_continuous_variables(x);
-	  if (asynch_flag) {
-	    derived_asynch_compute_response(new_set);
-	    if (outputLevel > SILENT_OUTPUT)
-	      Cout << "\n\n";
-	  }
-	  else {
-	    derived_compute_response(new_set);
-	    const RealMatrix& fn_grads_x_plus_h
-	      = currentResponse.function_gradients();
-	    const RealMatrix& fn_grads_x0
-	      = initial_map_response.function_gradients();
-	    ifg = j;
-	    for (i=0; i<numFns; i++)
-	      // prevent erroneous difference of grads present in fn_grads_x0
-	      // but not in fn_grads_x_plus_h due to map_asv & fd_hess_asv diffs
-	      // NOTE: symmetry NOT enforced [could replace with 1/2 (H + H^T)]
+          // --------------------------
+          // Evaluate fn_grads_x_plus_h
+          // --------------------------
+          x[xj_index] = x0[xj_index] + h;
+          if (outputLevel > SILENT_OUTPUT)
+            Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
+                 << j+1 << "] + h:\n";
+          if (active_derivs)
+            currentVariables.continuous_variables(x);
+          else if (inactive_derivs)
+            currentVariables.inactive_continuous_variables(x);
+          else
+            currentVariables.all_continuous_variables(x);
+          if (asynch_flag) {
+            derived_asynch_compute_response(new_set);
+            if (outputLevel > SILENT_OUTPUT)
+              Cout << "\n\n";
+          }
+          else {
+            derived_compute_response(new_set);
+            const RealMatrix& fn_grads_x_plus_h
+              = currentResponse.function_gradients();
+            ifg = j;
+            for (i=0; i<numFns; i++)
+              // prevent erroneous difference of grads present in fn_grads_x0
+              // but not in fn_grads_x_plus_h due to map_asv & fd_hess_asv diffs
+              // NOTE: symmetry NOT enforced [could replace with 1/2 (H + H^T)]
 
-	      if (fd_hess_asv[i] & 2) {
-		//fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
-		for(k = 0; k < num_deriv_vars; ++k)
-		  fg[ifg][k] = (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k])/ h;
-		ifg += num_deriv_vars;
-	      }
-	  }
-	  ++map_counter;
-	}
+              if (fd_hess_asv[i] & 2) {
+                //fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
+                for(k = 0; k < num_deriv_vars; ++k)
+                  fg[ifg][k] = (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k])/ h;
+                ifg += num_deriv_vars;
+              }
+          }
+          ++map_counter;
+        }
       }
       x[xj_index] = x0[xj_index];
     }
@@ -1578,17 +1636,17 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     // differences by averaging off-diagonal terms: H' = 1/2 (H + H^T)
     if (fd_hess_by_grad_flag)
       for (i = ifg = 0; i < numFns; i++)
-	if (fd_hess_asv[i] & 2) {
-	  for (j=0; j<num_deriv_vars; j++) {
-	    for (k = 0; k < j; k++)
-	      new_fn_hessians[i](j,k) = 0.5 * (fg[ifg+j][k] + fg[ifg+k][j]);
-	    new_fn_hessians[i](j,j) = fg[ifg+j][j];
-	  }
-	  ifg += num_deriv_vars;
-	}
+        if (fd_hess_asv[i] & 2) {
+          for (j=0; j<num_deriv_vars; j++) {
+            for (k = 0; k < j; k++)
+              new_fn_hessians[i](j,k) = 0.5 * (fg[ifg+j][k] + fg[ifg+k][j]);
+            new_fn_hessians[i](j,j) = fg[ifg+j][j];
+          }
+          ifg += num_deriv_vars;
+        }
     update_response(currentVariables, currentResponse, fd_grad_asv, fd_hess_asv,
-		    quasi_hess_asv, original_set, initial_map_response,
-		    new_fn_grads, new_fn_hessians);
+                    quasi_hess_asv, original_set, initial_map_response,
+                    new_fn_grads, new_fn_hessians);
   }
 
   return map_counter;
@@ -1611,10 +1669,9 @@ synchronize_derivatives(const Variables& vars,
   const SizetArray& original_dvv = original_set.derivative_vector();
   size_t i, j, k, num_deriv_vars = original_dvv.size();
   bool fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
-       fd_hess_by_grad_flag = false;
+    fd_hess_by_grad_flag = false;
   RealVector dx;
   std::vector<const RealVector*> fx;
-  const RealVector *fx0;
   size_t ifg, nfg = 0;
 
   for (i=0; i<numFns; i++) {
@@ -1623,9 +1680,9 @@ synchronize_derivatives(const Variables& vars,
     if (fd_hess_asv[i]) {
       fd_hess_flag = true;           // Hessian finite differencing used ...
       if (fd_hess_asv[i] & 1)
-	fd_hess_by_fn_flag = true;   // ... with 2nd-order function differences
+        fd_hess_by_fn_flag = true;   // ... with 2nd-order function differences
       if (fd_hess_asv[i] & 2)
-	++nfg;                       // ... with 1st-order gradient differences
+        ++nfg;                       // ... with 1st-order gradient differences
     }
   }
   if (nfg)
@@ -1640,10 +1697,10 @@ synchronize_derivatives(const Variables& vars,
   RealVectorArray fg;
   if (fd_hess_flag) {
     if (fd_hess_by_grad_flag) {
-	fg.resize(ifg = nfg*num_deriv_vars);
-	while(ifg > 0)
-		fg[--ifg].resize(num_deriv_vars);
-	}
+      fg.resize(ifg = nfg*num_deriv_vars);
+      while(ifg > 0)
+        fg[--ifg].resize(num_deriv_vars);
+    }
     new_fn_hessians.resize(numFns);
     for (i=0; i<numFns; i++) {
       new_fn_hessians[i].reshape(num_deriv_vars);
@@ -1658,10 +1715,12 @@ synchronize_derivatives(const Variables& vars,
   Response initial_map_response;
   IntRespMCIter fd_resp_cit = fd_responses.begin();
   if (initial_map) {
-    initial_map_response = fd_resp_cit->second; ++fd_resp_cit;
+    initial_map_response = fd_resp_cit->second; 
+    ++fd_resp_cit;
   }
   else if (db_capture) {
-    initial_map_response = dbResponseList.front(); dbResponseList.pop_front();
+    initial_map_response = dbResponseList.front(); 
+    dbResponseList.pop_front();
   }
   else { // construct an empty initial_map_response
     initial_map_response = currentResponse.copy();
@@ -1674,7 +1733,6 @@ synchronize_derivatives(const Variables& vars,
   if (fd_hess_flag && fd_hess_by_fn_flag && !centralHess) {
     dx.resize(num_deriv_vars);
     fx.resize(num_deriv_vars);
-    fx0 = &initial_map_response.function_values();
   }
 
   // Postprocess the finite difference responses
@@ -1685,7 +1743,7 @@ synchronize_derivatives(const Variables& vars,
       cv_ids = currentVariables.continuous_variable_ids();
     }
     else if (original_dvv ==
-	     currentVariables.inactive_continuous_variable_ids()) {
+             currentVariables.inactive_continuous_variable_ids()) {
       cv_ids.resize(boost::extents[icv()]);
       cv_ids = currentVariables.inactive_continuous_variable_ids();
     }
@@ -1694,165 +1752,160 @@ synchronize_derivatives(const Variables& vars,
       cv_ids = currentVariables.all_continuous_variable_ids();
     }
     const RealVector& fn_vals_x0 = initial_map_response.function_values();
+    const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
     for (j=0; j<num_deriv_vars; j++) {
       size_t xj_index = find_index(cv_ids, original_dvv[j]);
 
       if (fd_grad_flag) { // numerical gradients
-	Real h = deltaList.front(); deltaList.pop_front();// first in, first out
+        Real h = deltaList.front(); deltaList.pop_front();// first in, first out
 
-	if (h == 0.) // lower bound == upper bound; report 0 gradient
-	  for (i=0; i<numFns; i++)
-	    new_fn_grads(j,i) = 0.;
-	else {
-	  const RealVector& fn_vals_x_plus_h
-	    = fd_resp_cit->second.function_values();
-	  ++fd_resp_cit;
-	  if (intervalType == "central") {
-	    Real h1, h12, h2, h22;
-	    const RealVector& fn_vals_x_minus_h
-	      = fd_resp_cit->second.function_values();
-	    ++fd_resp_cit;
-	    h2 = deltaList.front(); deltaList.pop_front();
-	    // no need to check fd_grad_asv since it was used for both map calls
-	    if (h + h2 == 0.) {
-	      h1 = h - h2;
-	      for (i=0; i<numFns; ++i)
-		new_fn_grads(j,i)
-		  = (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i])/h1;
-	    }
-	    else {
-	      h12 = h*h;
-	      h22 = h2*h2;
-	      h1  = h*h2*(h2-h);
-	      for (i=0; i<numFns; ++i)
-		new_fn_grads(j,i)
-		  = ( h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
-		      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
-	    }
-	  }
-	  else {
-	    const RealVector& fn_vals_x0
-	      = initial_map_response.function_values();
-	    for (i=0; i<numFns; i++)
-	      // prevent erroneous difference of vals present in fn_vals_x0 but
-	      // not in fn_vals_x_plus_h due to map_asv & fd_grad_asv diffs
-	      if (fd_grad_asv[i])
-		new_fn_grads(j,i)
-		  = (fn_vals_x_plus_h[i] - fn_vals_x0[i])/h;
-	  }
-	}
+        if (h == 0.) // lower bound == upper bound; report 0 gradient
+          for (i=0; i<numFns; i++)
+            new_fn_grads(j,i) = 0.;
+        else {
+          const RealVector& fn_vals_x_plus_h
+            = fd_resp_cit->second.function_values();
+          ++fd_resp_cit;
+          if (intervalType == "central") {
+            Real h1, h12, h2, h22;
+            const RealVector& fn_vals_x_minus_h
+              = fd_resp_cit->second.function_values();
+            ++fd_resp_cit;
+            h2 = deltaList.front(); deltaList.pop_front();
+            // no need to check fd_grad_asv since it was used for both map calls
+            if (h + h2 == 0.) {
+              h1 = h - h2;
+              for (i=0; i<numFns; ++i)
+                new_fn_grads(j,i)
+                  = (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i])/h1;
+            }
+            else {
+              h12 = h*h;
+              h22 = h2*h2;
+              h1  = h*h2*(h2-h);
+              for (i=0; i<numFns; ++i)
+                new_fn_grads(j,i)
+                  = ( h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
+                      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
+            }
+          }
+          else {
+            for (i=0; i<numFns; i++)
+              // prevent erroneous difference of vals present in fn_vals_x0 but
+              // not in fn_vals_x_plus_h due to map_asv & fd_grad_asv diffs
+              if (fd_grad_asv[i])
+                new_fn_grads(j,i) = (fn_vals_x_plus_h[i] - fn_vals_x0[i])/h;
+          }
+        }
       }
 
       if (fd_hess_flag) { // numerical Hessians
 
-	if (fd_hess_by_fn_flag) { // 2nd-order function differences
-	  if (centralHess) {
-	    Real h = deltaList.front(); deltaList.pop_front();// 1st in, 1st out
+        if (fd_hess_by_fn_flag) { // 2nd-order function differences
+          if (centralHess) {
+            Real h = deltaList.front(); deltaList.pop_front();// 1st in, 1st out
 
-	    // diagonal term
+            // diagonal term
 
-	    const RealVector& fn_vals_x_plus_2h
-	      = fd_resp_cit->second.function_values();
-	    ++fd_resp_cit;
-	    const RealVector& fn_vals_x_minus_2h
-	      = fd_resp_cit->second.function_values();
-	    ++fd_resp_cit;
-	    const RealVector& fn_vals_x0
-	      = initial_map_response.function_values();
-	    for (i=0; i<numFns; i++)
-	      // prevent erroneous difference of vals present in fn_vals_x0 but
-	      // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
-	      if (fd_hess_asv[i] & 1)
-		new_fn_hessians[i](j,j) = (fn_vals_x_plus_2h[i]
-		  - 2.*fn_vals_x0[i] + fn_vals_x_minus_2h[i])/(4.*h*h);
+            const RealVector& fn_vals_x_plus_2h
+              = fd_resp_cit->second.function_values();
+            ++fd_resp_cit;
+            const RealVector& fn_vals_x_minus_2h
+              = fd_resp_cit->second.function_values();
+            ++fd_resp_cit;
+            for (i=0; i<numFns; i++)
+              // prevent erroneous difference of vals present in fn_vals_x0 but
+              // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
+              if (fd_hess_asv[i] & 1)
+                new_fn_hessians[i](j,j) = 
+                  (fn_vals_x_plus_2h[i] - 2.*fn_vals_x0[i] + 
+                   fn_vals_x_minus_2h[i])/(4.*h*h);
 
-	    // off-diagonal terms
+            // off-diagonal terms
 
-	    for (k=j+1; k<num_deriv_vars; k++) {
-	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
-	      const RealVector& fn_vals_x_plus_h_plus_h
-		= fd_resp_cit->second.function_values();
-	      ++fd_resp_cit;
-	      const RealVector& fn_vals_x_plus_h_minus_h
-		= fd_resp_cit->second.function_values();
-	      ++fd_resp_cit;
-	      const RealVector& fn_vals_x_minus_h_plus_h
-		= fd_resp_cit->second.function_values();
-	      ++fd_resp_cit;
-	      const RealVector& fn_vals_x_minus_h_minus_h
-		= fd_resp_cit->second.function_values();
-	      ++fd_resp_cit;
-	      for (i=0; i<numFns; i++)
-		// no need to check fd_hess_asv since it was used for each eval
-		// NOTE: symmetry is naturally satisfied.
-		new_fn_hessians[i](j,k)
-		  = new_fn_hessians[i](k,j)
-		  = (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i]
-		  -  fn_vals_x_minus_h_plus_h[i] + fn_vals_x_minus_h_minus_h[i])
-		  / (4.*h*h);
-	    }
-	  }
-	  else { //!!
-	    Real denom, h1, h2, hdiff;
-	    const RealVector *fx1, *fx12, *fx2;
+            for (k=j+1; k<num_deriv_vars; k++) {
+              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              const RealVector& fn_vals_x_plus_h_plus_h
+                = fd_resp_cit->second.function_values();
+              ++fd_resp_cit;
+              const RealVector& fn_vals_x_plus_h_minus_h
+                = fd_resp_cit->second.function_values();
+              ++fd_resp_cit;
+              const RealVector& fn_vals_x_minus_h_plus_h
+                = fd_resp_cit->second.function_values();
+              ++fd_resp_cit;
+              const RealVector& fn_vals_x_minus_h_minus_h
+                = fd_resp_cit->second.function_values();
+              ++fd_resp_cit;
+              for (i=0; i<numFns; i++)
+                // no need to check fd_hess_asv since it was used for each eval
+                // NOTE: symmetry is naturally satisfied.
+                new_fn_hessians[i](j,k)
+                  = new_fn_hessians[i](k,j)
+                  = (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i]
+                     -  fn_vals_x_minus_h_plus_h[i] + fn_vals_x_minus_h_minus_h[i])
+                  / (4.*h*h);
+            }
+          }
+          else { //!!
+            Real denom, h1, h2, hdiff;
+            const RealVector *fx1, *fx12, *fx2;
 
-	    dx[j] = h1 = deltaList.front(); deltaList.pop_front();
-	    h2 = deltaList.front(); deltaList.pop_front();
-	    fx[j] = fx1 = &fd_resp_cit->second.function_values();
-	    ++fd_resp_cit;
-	    fx2 = &fd_resp_cit->second.function_values();
-	    ++fd_resp_cit;
-	    if (h1 + h2 == 0.) {
-	      denom = h1*h1;
-	      for(i = 0; i < numFns; ++i)
-		if (fd_hess_asv[i] & 1)
-		  new_fn_hessians[i](j,j)
-		    = ((*fx1)[i] - 2.*(*fx0)[i] + (*fx2)[i]) / denom;
-	    }
-	    else {
-	      hdiff = h1 - h2;
-	      denom = 0.5*h1*h2*hdiff;
-	      for (i = 0; i < numFns; i++)
-		if (fd_hess_asv[i] & 1)
-		  new_fn_hessians[i](j,j)
-		    = (h2*(*fx1)[i] + hdiff*(*fx0)[i] - h1*(*fx2)[i])/denom;
-	    }
+            dx[j] = h1 = deltaList.front(); deltaList.pop_front();
+            h2 = deltaList.front(); deltaList.pop_front();
+            fx[j] = fx1 = &fd_resp_cit->second.function_values();
+            ++fd_resp_cit;
+            fx2 = &fd_resp_cit->second.function_values();
+            ++fd_resp_cit;
+            if (h1 + h2 == 0.) {
+              denom = h1*h1;
+              for(i = 0; i < numFns; ++i)
+                if (fd_hess_asv[i] & 1)
+                  new_fn_hessians[i](j,j)
+                    = ((*fx1)[i] - 2.*fn_vals_x0[i] + (*fx2)[i]) / denom;
+            }
+            else {
+              hdiff = h1 - h2;
+              denom = 0.5*h1*h2*hdiff;
+              for (i = 0; i < numFns; i++)
+                if (fd_hess_asv[i] & 1)
+                  new_fn_hessians[i](j,j)
+                    = (h2*(*fx1)[i] + hdiff*fn_vals_x0[i] - h1*(*fx2)[i])/denom;
+            }
 
-	    // off-diagonal terms
+            // off-diagonal terms
 
-	    for(k = 0; k < j; ++k) {
-	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
-	      h2 = dx[k];
-	      denom = h1*h2;
-	      fx2 = fx[k];
-	      fx12 = &fd_resp_cit->second.function_values();
-	      ++fd_resp_cit;
-	      for (i = 0; i < numFns; i++)
-		new_fn_hessians[i](j,k) =
-		  ((*fx12)[i] - (*fx1)[i] - (*fx2)[i] + (*fx0)[i]) / denom;
-	    }
-	  }
-	}
-	if (fd_hess_by_grad_flag) { // 1st-order gradient differences
-	  Real h = deltaList.front(); deltaList.pop_front(); // 1st in, 1st out
+            for(k = 0; k < j; ++k) {
+              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              h2 = dx[k];
+              denom = h1*h2;
+              fx2 = fx[k];
+              fx12 = &fd_resp_cit->second.function_values();
+              ++fd_resp_cit;
+              for (i = 0; i < numFns; i++)
+                new_fn_hessians[i](j,k) =
+                  ((*fx12)[i] - (*fx1)[i] - (*fx2)[i] + fn_vals_x0[i]) / denom;
+            }
+          }
+        }
+        if (fd_hess_by_grad_flag) { // 1st-order gradient differences
+          Real h = deltaList.front(); deltaList.pop_front(); // 1st in, 1st out
 
-	  const RealMatrix& fn_grads_x_plus_h
-	    = fd_resp_cit->second.function_gradients();
-	  ++fd_resp_cit;
-	  const RealMatrix& fn_grads_x0
-	    = initial_map_response.function_gradients();
-	  ifg = j;
-	  for (i=0; i<numFns; i++)
-	    // prevent erroneous difference of grads present in fn_grads_x0 but
-	    // not in fn_grads_x_plus_h due to map_asv & fd_hess_asv diffs
-	    // NOTE: symmetry must be enforced below.
-	    if (fd_hess_asv[i] & 2) {
-	      //fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
-	      for(k = 0; k < num_deriv_vars; ++k)
-		fg[ifg][k] = (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k]) / h;
-	      ifg += num_deriv_vars;
-	    }
-	}
+          const RealMatrix& fn_grads_x_plus_h
+            = fd_resp_cit->second.function_gradients();
+          ++fd_resp_cit;
+          ifg = j;
+          for (i=0; i<numFns; i++)
+            // prevent erroneous difference of grads present in fn_grads_x0 but
+            // not in fn_grads_x_plus_h due to map_asv & fd_hess_asv diffs
+            // NOTE: symmetry must be enforced below.
+            if (fd_hess_asv[i] & 2) {
+              //fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
+              for(k = 0; k < num_deriv_vars; ++k)
+                fg[ifg][k] = (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k]) / h;
+              ifg += num_deriv_vars;
+            }
+        }
       }
     }
   }
@@ -1862,19 +1915,19 @@ synchronize_derivatives(const Variables& vars,
   if (fd_hess_by_grad_flag)
     for (i=0; i<numFns; i++)
       if (fd_hess_asv[i] & 2)
-	for (i = ifg = 0; i < numFns; i++)
-	  if (fd_hess_asv[i] & 2) {
-	    for (j=0; j<num_deriv_vars; j++) {
-	      for (k = 0; k < j; k++)
-		new_fn_hessians[i](j,k) = 0.5 * (fg[ifg+j][k] + fg[ifg+k][j]);
-	      new_fn_hessians[i](j,j) = fg[ifg+j][j];
-	    }
-	    ifg += num_deriv_vars;
-	  }
+        for (i = ifg = 0; i < numFns; i++)
+          if (fd_hess_asv[i] & 2) {
+            for (j=0; j<num_deriv_vars; j++) {
+              for (k = 0; k < j; k++)
+                new_fn_hessians[i](j,k) = 0.5 * (fg[ifg+j][k] + fg[ifg+k][j]);
+              new_fn_hessians[i](j,j) = fg[ifg+j][j];
+            }
+            ifg += num_deriv_vars;
+          }
 
   update_response(vars, new_response, fd_grad_asv, fd_hess_asv, quasi_hess_asv,
-		  original_set, initial_map_response, new_fn_grads,
-		  new_fn_hessians);
+                  original_set, initial_map_response, new_fn_grads,
+                  new_fn_hessians);
 }
 
 
@@ -2232,7 +2285,7 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 Real Model::
 finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
 			      const RealVector& global_c_l_bnds,
-			      size_t cv_index)
+			      size_t cv_index) const
 {
   // replace inferred lower bounds for unbounded distributions
   switch (cv_types[cv_index]) {
@@ -2257,7 +2310,7 @@ finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
 Real Model::
 finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
 			      const RealVector& global_c_u_bnds,
-			      size_t cv_index)
+			      size_t cv_index) const
 {
   // replace inferred upper bounds for unbounded/semi-bounded distributions
   switch (cv_types[cv_index]) {
@@ -2287,10 +2340,13 @@ finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
     initial map, finite difference gradient evals, finite difference
     Hessian evals, and quasi-Hessian updates, respectively.  If the
     returned use_est_deriv is false, then only map_asv_out is used. */
-bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
+bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 		       ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
 		       ShortArray& quasi_hess_asv_out)
 {
+  const ShortArray& asv_in = original_set.request_vector();
+  const SizetArray& original_dvv = original_set.derivative_vector();
+  
   // *_asv_out[i] have all been initialized to zero
 
   // For HierarchSurr and Recast models with no scaling (which contain no
@@ -2300,7 +2356,7 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
   if (!supportsEstimDerivs)
     return false;
 
-  bool use_est_deriv = false;
+  bool use_est_deriv = false, fd_grad_flag = false;
   size_t i, asv_len = asv_in.size();
   for (i=0; i<asv_len; ++i) {
 
@@ -2311,62 +2367,100 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
     // Function gradient requests
     if (asv_in[i] & 2) {
       if ( gradientType == "analytic" ||
-	   ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) )
-	map_asv_out[i] |= 2; // activate 2nd bit
+           ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) )
+        map_asv_out[i] |= 2; // activate 2nd bit
       else if ( methodSource == "dakota" && ( gradientType == "numerical" ||
-		( gradientType == "mixed" &&
-		  contains(gradIdNumerical, i+1) ) ) ) {
-	fd_grad_asv_out[i] = 1;
-	// ignoreBounds check fixes one-sided FD bug but causes ~67 DIFFs
-	if (intervalType == "forward")// || !ignoreBounds)
-	  map_asv_out[i] |= 1; // activate 1st bit
-	use_est_deriv = true;
+                                              ( gradientType == "mixed" &&
+                                                contains(gradIdNumerical, i+1) ) ) ) {
+        fd_grad_asv_out[i] = 1;
+        fd_grad_flag = true;
+        if (intervalType == "forward")
+          map_asv_out[i] |= 1; // activate 1st bit
+        use_est_deriv = true;
       }
       else { // could happen if an iterator requiring gradients is selected
-	     // with no_gradients or unsupported vendor numerical gradients
-	     // and lacks a separate error check.
-	Cerr << "Error: unsupported asv gradient request in Model::manage_asv."
-	     << std::endl;
-	abort_handler(MODEL_ERROR);
+        // with no_gradients or unsupported vendor numerical gradients
+        // and lacks a separate error check.
+        Cerr << "Error: unsupported asv gradient request in Model::manage_asv."
+             << std::endl;
+        abort_handler(MODEL_ERROR);
       }
       if ( surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
-	   ( hessianType == "quasi" ||
-	     ( hessianType == "mixed" && contains(hessIdQuasi, i+1) ) ) )
-	use_est_deriv = true;
+           ( hessianType == "quasi" ||
+             ( hessianType == "mixed" && contains(hessIdQuasi, i+1) ) ) )
+        use_est_deriv = true;
     }
 
     // Function Hessian requests
     if (asv_in[i] & 4) {
       if ( hessianType == "analytic" ||
-	   ( hessianType == "mixed" && contains(hessIdAnalytic, i+1) ) )
-	map_asv_out[i] |= 4; // activate 3rd bit
+           ( hessianType == "mixed" && contains(hessIdAnalytic, i+1) ) )
+        map_asv_out[i] |= 4; // activate 3rd bit
       else if ( hessianType == "numerical" ||
-		( hessianType == "mixed" && contains(hessIdNumerical, i+1) ) ) {
-	if ( gradientType == "analytic" ||
-	     ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) ) {
-	  // numerical Hessians from 1st-order gradient differences
-	  fd_hess_asv_out[i] = 2;
-	  map_asv_out[i] |= 2; // activate 2nd bit
-	}
-	else { // numerical Hessians from 2nd-order function differences
-	  fd_hess_asv_out[i] = 1;
-	  map_asv_out[i] |= 1; // activate 1st bit
-	}
-	use_est_deriv = true;
+                ( hessianType == "mixed" && contains(hessIdNumerical, i+1) ) ) {
+        if ( gradientType == "analytic" ||
+             ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) ) {
+          // numerical Hessians from 1st-order gradient differences
+          fd_hess_asv_out[i] = 2;
+          map_asv_out[i] |= 2; // activate 2nd bit
+        }
+        else { // numerical Hessians from 2nd-order function differences
+          fd_hess_asv_out[i] = 1;
+          map_asv_out[i] |= 1; // activate 1st bit
+        }
+        use_est_deriv = true;
       }
       else if ( hessianType == "quasi" ||
-		(hessianType == "mixed" && contains(hessIdQuasi, i+1))) {
-	quasi_hess_asv_out[i] = 2; // value not currently used
-	use_est_deriv = true; // update_response needed even if no secant update
+                (hessianType == "mixed" && contains(hessIdQuasi, i+1))) {
+        quasi_hess_asv_out[i] = 2; // value not currently used
+        use_est_deriv = true; // update_response needed even if no secant update
       }
       else { // could happen if an iterator requiring Hessians is selected
-	     // with no_hessians and it lacks a separate error check.
-	Cerr << "Error: unsupported asv Hessian request in Model::manage_asv."
-	     << std::endl;
-	abort_handler(MODEL_ERROR);
+        // with no_hessians and it lacks a separate error check.
+        Cerr << "Error: unsupported asv Hessian request in Model::manage_asv."
+             << std::endl;
+        abort_handler(MODEL_ERROR);
       }
     }
   }
+
+  // Depending on bounds-respecting differencing, finite difference gradients
+  // may require f(x0).  The following computes the step and updates shortStep.
+  if (fd_grad_flag && !ignoreBounds) { // protect call to forward_grad_step
+    size_t num_deriv_vars = original_dvv.size();
+
+    // define x0 and mode flags
+    bool active_derivs = false;    // derivatives w.r.t. active vars
+    bool inactive_derivs = false;  // derivs w.r.t. inactive vars
+    RealVector x0;
+
+    // define lower/upper bounds for finite differencing and cv_ids
+    RealVector fd_lb(num_deriv_vars), fd_ub(num_deriv_vars);
+    SizetMultiArrayConstView cv_ids = 
+      initialize_x0_bounds(original_dvv, active_derivs, inactive_derivs,
+                           x0, fd_lb, fd_ub);
+
+    // Accumulate short step over all derivative variables
+    bool short_step = false;
+    for (size_t j=0; j<num_deriv_vars; j++) {
+      size_t xj_index = find_index(cv_ids, original_dvv[j]);
+      Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
+      
+      // NOTE: resets shortStep to false for each variable
+      Real h = forward_grad_step(num_deriv_vars, xj_index, x0_j, lb_j, ub_j);
+      if (intervalType == "central")
+        Real h2 = FDstep2(x0_j, lb_j, ub_j, h);
+      
+      if (shortStep)
+        short_step = true;
+    }
+    
+    // update ASV with f(x0) requests needed for shortStep
+    for (i=0; i<asv_len; ++i)
+      if ( (fd_grad_asv_out[i] & 1) && short_step) 
+        map_asv_out[i] |= 1; // activate 1st bit
+  }
+
   return use_est_deriv;
 }
 
