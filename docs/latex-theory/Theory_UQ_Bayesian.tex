@@ -49,7 +49,7 @@ as shown in Eq.~\ref{eq:Likelihood}:
 \end{equation}
 where the residual vector $\boldsymbol{r}$ is defined from the
 differences between the model predictions and the corresponding
-observational data (i.e., $r_i = q_i(\boldsymbol{\theta}) - d_i$ for $i = 1,\dots,n$),
+observational data (i.e., $r_i = q_i(\boldsymbol{\theta}) - d_i$ for $i = 1,\dots,n$), and
 $\boldsymbol{\Sigma_d}$ is the covariance matrix of the Gaussian data
 uncertainties. %, and we omit the leading multivariate normal (MVN)
 %constant $1/\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}$ for 
@@ -58,21 +58,22 @@ uncertainties. %, and we omit the leading multivariate normal (MVN)
   %calculations; further, this shortcut will be canceled out by the 
   %normalization factor in the denominator of Eq.~\ref{eq:BayesThm}.}. 
 
-The negative log-likelihood is comprised of the misfit function:
+The negative log-likelihood is comprised of the misfit function
 \begin{equation}
-M(\boldsymbol{\theta;d}) = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} 
-\boldsymbol{r} % + C
+M(\boldsymbol{\theta;d}) 
+  = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r}
 \label{eq:misfit}
 \end{equation}
-plus contributions from the leading normalization factor 
-($\frac{n}{2}\log(2\pi)$ and $\log(|\boldsymbol{\Sigma_d}|)/2$).
-It is evident that dropping $\boldsymbol{\Sigma_d}$ from Eq.~\ref{eq:misfit} 
-(or equivalently, taking it to be the identity) results in
-the ordinary least squares (OLS) approach commonly used in
-deterministic calibration.  For a fixed $\boldsymbol{\Sigma_d}$, minimizing the misfit 
-function is equivalent to maximizing the likelihood function and results 
-in a solution known as the maximum likelihood estimate (MLE), which will 
-be the same as the OLS estimate when the residuals have no relative
+plus contributions from the leading normalization factor
+($\frac{n}{2}\log(2\pi)$ and $\frac{1}{2}\log(|\boldsymbol{\Sigma_d}|)$).  
+It is evident that dropping $\boldsymbol{\Sigma_d}$ from
+Eq.~\ref{eq:misfit} (or equivalently, taking it to be the identity)
+results in the ordinary least squares (OLS) approach commonly used in
+deterministic calibration.  For a fixed $\boldsymbol{\Sigma_d}$ (no
+hyper-parameters in the calibration), minimizing the misfit function 
+is equivalent to maximizing the likelihood function and results in a
+solution known as the maximum likelihood estimate (MLE), which will be
+the same as the OLS estimate when the residuals have no relative
 weighting (any multiple of identity in the data covariance matrix).
 
 When incorporating the prior density, the maximum {\it a posteriori}
@@ -86,6 +87,15 @@ from the MLE for cases of non-uniform prior probability.
 %\begin{equation}
 %-\text{log}\left[p(\mathbf{d}|\xi)\right] \;=\; \frac{1}{2}(f(\xi)-\mathbf{d})^T\boldsymbol{\Sigma_d}^{-1}(f(\xi)-\mathbf{d}) \;=\; M(\xi)
 %\end{equation}
+
+% TO DO: pre_solve needs a deactivation option
+In the sections to follow, we describe approaches for preconditioning the
+MCMC process by computing a locally-accurate proposal density 
+and for jump-starting the MCMC process by pre-solving for the MAP point.
+Within Dakota, these are separate options: one can configure a run to use
+either or both, although it is generally advantageous to employ both
+when the necessary problem structure (i.e., derivative support) is present.
+
 
 \section{Proposal Densities} \label{uq:bayes:prop}
 
@@ -202,23 +212,25 @@ at our final result for the covariance of the MVN proposal density:
 
 When an emulator model is in use, it is inexpensive to pre-solve for
 the MAP point by finding the optimal values for $\boldsymbol{\theta}$
-that maximize the negative log posterior.  This effectively eliminates
-the burn-in procedure for an MCMC chain where some initial portion of
-the Markov chain is discarded, as the MCMC chain can instead be
-initiated from a high probability starting point: the MAP solution.
-Further, a full Newton optimization solver can be used with the
-Hessian defined from Eq.~\ref{eq:hess_post}, irregardless of whether
-the misfit Hessian is a full Hessian (residual values, gradients, and
-Hessians are available for Eq~\ref{eq:hess_misfit}) or a Gauss-Newton
-Hessian (residual gradients are available for
-Eq~\ref{eq:hess_misfit_gn}).  Note that, in this case, there is no MVN
-approximation as in \S\ref{uq:bayes:prop}, so we will not employ
-Eq.~\ref{eq:normal_prior_hess}.  Rather, we employ the actual Hessians
-corresponding to the prior distributions in use.
-Finally, we emphasize that although the pre-solve for the MAP point 
-and the preconditioning of the proposal covariance both employ 
-Hessian information as described above, they are separate options in Dakota. 
-One can specify the use of either one or both:  the calculations are separate. 
+that maximize the log posterior (minimize the negative log posterior):
+\begin{equation}
+\boldsymbol{\theta}_{MAP} = \argmin_{\boldsymbol{\theta}} 
+\left[ -\log(\pi_{\rm post}(\boldsymbol{\theta})) \right]
+\label{eq:map_soln}
+\end{equation}
+This effectively eliminates the burn-in procedure for an MCMC chain
+where some initial portion of the Markov chain is discarded, as the
+MCMC chain can instead be initiated from a high probability starting
+point: the MAP solution.  Further, a full Newton optimization solver
+can be used with the Hessian defined from Eq.~\ref{eq:hess_post},
+irregardless of whether the misfit Hessian is a full Hessian (residual
+values, gradients, and Hessians are available for
+Eq~\ref{eq:hess_misfit}) or a Gauss-Newton Hessian (residual gradients
+are available for Eq~\ref{eq:hess_misfit_gn}).  Note that, in this
+case, there is no MVN approximation as in \S\ref{uq:bayes:prop}, so we
+will not employ Eq.~\ref{eq:normal_prior_hess}.  Rather, we employ the
+actual Hessians of the negative log priors for the prior distributions
+in use.
 
 
 \section{Rosenbrock Example} \label{uq:bayes:ex}
