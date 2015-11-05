@@ -273,97 +273,94 @@ see \texttt{Dakota/examples/users/textbook\_pareto\_strat.in} }
 \label{adv_meth:figure05}
 \end{figure}
 
-%\section{Mixed Integer Nonlinear Programming (MINLP)}\label{adv_meth:minlp}
+\section{Mixed Integer Nonlinear Programming (MINLP)}\label{adv_meth:minlp}
 
-%\emph{For Dakota 5.2, branch and bound is currently inoperative due to 
-%ongoing restructuring of PICO and its incorporation into COLINY.
-%This will be supported again in future releases.}
+Many nonlinear optimization problems involve a combination of discrete
+and continuous variables. These are known as mixed integer nonlinear
+programming (MINLP) problems. A typical MINLP optimization problem is
+formulated as follows:
 
-%Many nonlinear optimization problems involve a combination of discrete
-%and continuous variables. These are known as mixed integer nonlinear
-%programming (MINLP) problems. A typical MINLP optimization problem is
-%formulated as follows:
+\begin{eqnarray}
+  \hbox{minimize:} & & f(\mathbf{x,d})\nonumber\\
+  \hbox{subject to:} & & \mathbf{g}_{L} \leq \mathbf{g(x,d)}
+    \leq \mathbf{g}_{U}\nonumber\\
+  & & \mathbf{h(x,d)}=\mathbf{h}_{t}\label{adv_meth:equation01}\\
+  & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_{U}\nonumber\\
+  & & \mathbf{d} \in \{-2,-1,0,1,2\}\nonumber
+\end{eqnarray}
 
-%\begin{eqnarray}
-%  \hbox{minimize:} & & f(\mathbf{x,d})\nonumber\\
-%  \hbox{subject to:} & & \mathbf{g}_{L} \leq \mathbf{g(x,d)}
-%    \leq \mathbf{g}_{U}\nonumber\\
-%  & & \mathbf{h(x,d)}=\mathbf{h}_{t}\label{adv_meth:equation01}\\
-%  & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_{U}\nonumber\\
-%  & & \mathbf{d} \in \{-2,-1,0,1,2\}\nonumber
-%\end{eqnarray}
+where $\mathbf{d}$ is a vector whose elements are integer values. In
+situations where the discrete variables can be temporarily relaxed
+(i.e., noncategorical discrete variables, see
+Section~\ref{variables:design:ddv}), the branch-and-bound algorithm
+can be applied. Categorical variables (e.g., true/false variables,
+feature counts, etc.) that are not relaxable cannot be used with the
+branch and bound method.  During the branch and bound process, the
+discrete variables are treated as continuous variables and the
+integrality conditions on these variables are incrementally enforced
+through a sequence of optimization subproblems.  By the end of this
+process, an optimal solution that is feasible with respect to the
+integrality conditions is computed.
 
-%where $\mathbf{d}$ is a vector whose elements are integer values. In
-%situations where the discrete variables can be temporarily relaxed
-%(i.e., noncategorical discrete variables, see
-%Section~\ref{variables:design:ddv}), the branch-and-bound
-%algorithm can be applied. Categorical variables (e.g., true/false
-%variables, feature counts, etc.) that are not relaxable cannot be used
-%with the branch and bound method.  During the branch and bound
-%process, the discrete variables are treated as continuous variables
-%and the integrality conditions on these variables are incrementally
-%enforced through a sequence of optimization subproblems.  By the end
-%of this process, an optimal solution that is feasible with respect to
-%the integrality conditions is computed.
-
-%Dakota's branch and bound method (keyword:
-%\texttt{branch\_and\_bound}) can solve optimization problems having
-%either discrete or mixed continuous/discrete variables. This method
-%uses the parallel branch-and-bound algorithm from the PICO software
+Dakota's branch and bound method (keyword:
+\texttt{branch\_and\_bound}) can solve optimization problems having
+either discrete or mixed continuous/discrete variables. This method
+uses the parallel branch-and-bound algorithm from the PEBBL software
 %package~\cite{Eck97,Eck01} to generate a series of optimization
-%subproblems (``branches''). These subproblems are solved as continuous
-%variable problems using any of Dakota's nonlinear optimization
-%algorithms (e.g., DOT, NPSOL). When a solution to a branch is feasible
-%with respect to the integrality constraints, it provides an upper
-%bound on the optimal objective function, which can be used to prune
-%branches with higher objective functions that are not yet
-%feasible. Since solutions for different branches are independent,
-%parallel computing may be used to concurrently execute the
-%optimization subproblems.
+package~\cite{Eck09} to generate a series of optimization
+subproblems (``branches''). These subproblems are solved as continuous
+variable problems using any of Dakota's nonlinear optimization
+algorithms (e.g., DOT, NPSOL). When a solution to a branch is feasible
+with respect to the integrality constraints, it provides an upper
+bound on the optimal objective function, which can be used to prune
+branches with higher objective functions that are not yet
+feasible. Since solutions for different branches are independent,
+parallel computing may be used to concurrently execute the
+optimization subproblems.
 
-%PICO, by itself, targets the solution of mixed integer linear
-%programming (MILP) problems, and through coupling with Dakota's
-%nonlinear optimizers, is extended to solution of MINLP problems. In
-%the case of MILP problems, the upper bound obtained with a feasible
-%solution is an exact bound and the branch and bound process is
-%provably convergent to the global minimum. For nonlinear problems
-%which may exhibit nonconvexity or multimodality, the process is
-%heuristic in general, since there may be good solutions that are
-%missed during the solution of a particular branch. However, the
-%process still computes a series of locally optimal solutions, and is
-%therefore a natural extension of the results from local optimization
-%techniques for continuous domains. Only with rigorous global
-%optimization of each branch can a global minimum be guaranteed when
-%performing branch and bound on nonlinear problems of unknown
-%structure.
+PEBBL, by itself, targets the solution of mixed integer linear
+programming (MILP) problems, and through coupling with Dakota's
+nonlinear optimizers, is extended to solution of MINLP problems. In
+the case of MILP problems, the upper bound obtained with a feasible
+solution is an exact bound and the branch and bound process is
+provably convergent to the global minimum. For nonlinear problems
+which may exhibit nonconvexity or multimodality, the process is
+heuristic in general, since there may be good solutions that are
+missed during the solution of a particular branch. However, the
+process still computes a series of locally optimal solutions, and is
+therefore a natural extension of the results from local optimization
+techniques for continuous domains. Only with rigorous global
+optimization of each branch can a global minimum be guaranteed when
+performing branch and bound on nonlinear problems of unknown
+structure.
 
-%In cases where there are only a few discrete variables and when the
-%discrete values are drawn from a small set, then it may be reasonable
-%to perform a separate optimization problem for all of the possible
-%combinations of the discrete variables. However, this brute force
-%approach becomes computationally intractable if these conditions are
-%not met. The branch-and-bound algorithm will generally require
-%solution of fewer subproblems than the brute force method, although it
-%will still be significantly more expensive than solving a purely
-%continuous design problem.
+In cases where there are only a few discrete variables and when the
+discrete values are drawn from a small set, then it may be reasonable
+to perform a separate optimization problem for all of the possible
+combinations of the discrete variables. However, this brute force
+approach becomes computationally intractable if these conditions are
+not met. The branch-and-bound algorithm will generally require
+solution of fewer subproblems than the brute force method, although it
+will still be significantly more expensive than solving a purely
+continuous design problem.
 
-%\subsection{Example MINLP Problem}\label{adv_meth:minlp:example}
+\subsection{Example MINLP Problem}\label{adv_meth:minlp:example}
 
-%As an example, consider the following MINLP problem~\cite{Eld99}:
+As an example, consider the following MINLP problem~\cite{Eld99}:
 
-%\begin{eqnarray}
-%  \hbox{minimize:} & &
-%  f(\mathbf{x})=\sum_{i=1}^{6}(x_{i}-1.4)^{4}\nonumber\\
-%  & & g_{1}=x_{1}^{2}-\frac{x_{2}}{2} \leq 0\nonumber\\
-%  & & g_{2}=x_{2}^{2}-\frac{x_{1}}{2} \leq 0\label{adv_meth:equation02}\\
-%  & & -10 \leq x_{1},x_{2},x_{3},x_{4} \leq 10\nonumber\\
-%  & & x_{5},x_{6} \in \{0,1,2,3,4\}\nonumber
-%\end{eqnarray}
+\begin{eqnarray}
+  \hbox{minimize:} & &
+  f(\mathbf{x})=\sum_{i=1}^{6}(x_{i}-1.4)^{4}\nonumber\\
+  & & g_{1}=x_{1}^{2}-\frac{x_{2}}{2} \leq 0\nonumber\\
+  & & g_{2}=x_{2}^{2}-\frac{x_{1}}{2} \leq 0\label{adv_meth:equation02}\\
+  & & -10 \leq x_{1},x_{2},x_{3},x_{4} \leq 10\nonumber\\
+  & & x_{5},x_{6} \in \{0,1,2,3,4\}\nonumber
+\end{eqnarray}
 
-%This problem is a variant of the textbook test problem described in
-%Section~\ref{additional:textbook}. In addition to the introduction of
-%two integer variables, a modified value of $1.4$ is used inside the
-%quartic sum to render the continuous solution a non-integral solution.
+This problem is a variant of the textbook test problem described in
+Section~\ref{additional:textbook}. In addition to the introduction of
+two integer variables, a modified value of $1.4$ is used inside the
+quartic sum to render the continuous solution a non-integral solution.
 %Figure~\ref{adv_meth:figure06} shows a Dakota input file for solving this
 %problem. This input file is named \texttt{dakota\_bandb.in} in the
 %\texttt{Dakota/test} directory. Note the specification for the
@@ -382,47 +379,47 @@ see \texttt{Dakota/examples/users/textbook\_pareto\_strat.in} }
 %  \label{adv_meth:figure06}
 %\end{figure}
 
-%Figure~\ref{adv_meth:figure07} shows the sequence of branches generated
-%for this problem.  The first optimization subproblem relaxes the
-%integrality constraint on parameters $x_{5}$ and $x_{6}$, so that $0
-%\leq x_{5} \leq 4$ and $0 \leq x_{6} \leq 4$. The values for $x_{5}$
-%and $x_{6}$ at the solution to this first subproblem are
-%$x_{5}=x_{6}=1.4$.  Since $x_{5}$ and $x_{6}$ must be integers, the
-%next step in the solution process ``branches'' on parameter $x_{5}$ to
-%create two new optimization subproblems; one with $0 \leq x_{5} \leq
-%1$ and the other with $2 \leq x_{5} \leq 4$.  Note that, at this first
-%branching, the bounds on $x_{6}$ are still $0 \leq x_{6} \leq 4$.
-%Next, the two new optimization subproblems are solved.  Since they are
-%independent, they can be performed in parallel.  The branch-and-bound
-%process continues, operating on both $x_{5}$ and $x_{6}$ , until a
-%optimization subproblem is solved where $x_{5}$ and $x_{6}$ are
-%integer-valued. At the solution to this problem, the optimal values
-%for $x_{5}$ and $x_{6}$ are $x_{5}=x_{6}=1$.
+Figure~\ref{adv_meth:figure07} shows the sequence of branches generated
+for this problem.  The first optimization subproblem relaxes the
+integrality constraint on parameters $x_{5}$ and $x_{6}$, so that $0
+\leq x_{5} \leq 4$ and $0 \leq x_{6} \leq 4$. The values for $x_{5}$
+and $x_{6}$ at the solution to this first subproblem are
+$x_{5}=x_{6}=1.4$.  Since $x_{5}$ and $x_{6}$ must be integers, the
+next step in the solution process ``branches'' on parameter $x_{5}$ to
+create two new optimization subproblems; one with $0 \leq x_{5} \leq
+1$ and the other with $2 \leq x_{5} \leq 4$.  Note that, at this first
+branching, the bounds on $x_{6}$ are still $0 \leq x_{6} \leq 4$.
+Next, the two new optimization subproblems are solved.  Since they are
+independent, they can be performed in parallel.  The branch-and-bound
+process continues, operating on both $x_{5}$ and $x_{6}$ , until a
+optimization subproblem is solved where $x_{5}$ and $x_{6}$ are
+integer-valued. At the solution to this problem, the optimal values
+for $x_{5}$ and $x_{6}$ are $x_{5}=x_{6}=1$.
 
-%\begin{figure}
-%  \centering
-%  \includegraphics[scale=0.75]{images/branch_history}
-%  \caption{Branching history for example MINLP optimization problem.}
-%  \label{adv_meth:figure07}
-%\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{images/branch_history}
+  \caption{Branching history for example MINLP optimization problem.}
+  \label{adv_meth:figure07}
+\end{figure}
 
-%In this example problem, the branch-and-bound algorithm executes as
-%few as five and no more than seven optimization subproblems to reach
-%the solution. For comparison, the brute force approach would require
-%25 optimization problems to be solved (i.e., five possible values for
-%each of $x_{5}$ and $x_{6}$ ).
+In this example problem, the branch-and-bound algorithm executes as
+few as five and no more than seven optimization subproblems to reach
+the solution. For comparison, the brute force approach would require
+25 optimization problems to be solved (i.e., five possible values for
+each of $x_{5}$ and $x_{6}$ ).
 
-%In the example given above, the discrete variables are integer-valued.
-%In some cases, the discrete variables may be real-valued, such as $x
-%\in \{0.0,0.5,1.0,1.5,2.0\}$.  The branch-and-bound algorithm is
-%restricted to work with integer values. Therefore, it is up to the
-%user to perform a transformation between the discrete integer values
-%from Dakota and the discrete real values that are passed to the
-%simulation code (see Section~\ref{variables:design:ddv}).  When
-%integrality is not being relaxed, a common mapping is to use the
-%integer value from Dakota as the index into a vector of discrete real
-%values.  However, when integrality is relaxed, additional logic for
-%interpolating between the discrete real values is needed.
+In the example given above, the discrete variables are integer-valued.
+In some cases, the discrete variables may be real-valued, such as $x
+\in \{0.0,0.5,1.0,1.5,2.0\}$.  The branch-and-bound algorithm is
+restricted to work with integer values. Therefore, it is up to the
+user to perform a transformation between the discrete integer values
+from Dakota and the discrete real values that are passed to the
+simulation code (see Section~\ref{variables:design:ddv}).  When
+integrality is not being relaxed, a common mapping is to use the
+integer value from Dakota as the index into a vector of discrete real
+values.  However, when integrality is relaxed, additional logic for
+interpolating between the discrete real values is needed.
 % Note: it should be straightforward to extend MINLP to support
 % general discrete variables, if PICO would support it.  Does this
 % come up in MILP for logistics, etc.?

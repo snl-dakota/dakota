@@ -76,24 +76,24 @@ restricted vs. relaxable.  String variables cannot be relaxed.
   
 Gradient-based optimization methods cannot be directly applied to
 problems with discrete variables since derivatives only exist for a
-variable continuum. For problems with noncategorical variables, branch
-and bound techniques can be used to relax the discrete requirements
-and apply gradient-based methods to a series of generated
-subproblems. For problems with categorical variables,
-nongradient-based methods (e.g., \texttt{coliny\_ea}) are commonly
-used; however, most of those methods do not take advantage of any
-structure that may be associated with the categorical variables.  The
-exception is \texttt{mesh\_adaptive\_search}.  If it is possible to
-define a subjective relationship between the different values a given
+variable continuum. For problems with noncategorical variables, the
+experimental branch and bound capability (\texttt{branch\_and\_bound})
+can be used to relax the discrete requirements and apply
+gradient-based methods to a series of generated subproblems. For
+problems with categorical variables, nongradient-based methods (e.g.,
+\texttt{coliny\_ea}) are commonly used; however, most of those methods
+do not take advantage of any structure that may be associated with the
+categorical variables.  The exception is
+\texttt{mesh\_adaptive\_search}.  If it is possible to define a
+subjective relationship between the different values a given
 categorical variable can take on, the user can communicate that
 relationship in the form of an adjacency matrix.  The
 \texttt{mesh\_adaptive\_search} will take that relationship into
 consideration.  Further documentation can be found in~\cite{RefMan}
 under the keywords \texttt{adjacency\_matrix} and
-\texttt{neighbor\_order}.
-%Branch and bound techniques are discussed in
-%Section~\ref{adv_meth:minlp} and nongradient-based methods are further
-%described in Chapter~\ref{opt}.
+\texttt{neighbor\_order}.  Branch and bound techniques are discussed
+in Section~\ref{adv_meth:minlp} and nongradient-based methods are
+further described in Chapter~\ref{opt}.
 
 In addition to engineering applications, many non-engineering
 applications in the fields of scheduling, logistics, and resource
@@ -411,22 +411,22 @@ combinations of epistemic vs. aleatory variables being active
 in nested models.
 
 \subsection{Domain}\label{variables:domain}
-Another control that the user can specify in the variables specification 
-block controls the domain type.  We have two domains currently:  
-mixed and relaxed.  Both domain types can have design, uncertain, 
-and state variables.  The domain specifies how the discrete variables 
-are treated. If the user 
-specifies \texttt{mixed} in the variable specification block, 
-the continuous and discrete variables are treated separately. 
-If the user specifies \texttt{relaxed} in the variable specification block, 
-the discrete variables are relaxed and treated as continuous variables. 
-This may be useful in optimization problems involving both 
-continuous and discrete variables when a user would like 
-to use an optimization method that is designed for continuous variable 
-optimization.  All Dakota methods have a default value of mixed for the 
-domain type except for the branch-and-bound method which has a default 
-domain type of relaxed.  Note that the branch-and-bound method is 
-under development at this time. 
+Another control that the user can specify in the variables
+specification block controls the domain type.  We have two domains
+currently: mixed and relaxed.  Both domain types can have design,
+uncertain, and state variables.  The domain specifies how the discrete
+variables are treated. If the user specifies \texttt{mixed} in the
+variable specification block, the continuous and discrete variables
+are treated separately.  If the user specifies \texttt{relaxed} in the
+variable specification block, the discrete variables are relaxed and
+treated as continuous variables.  This may be useful in optimization
+problems involving both continuous and discrete variables when a user
+would like to use an optimization method that is designed for
+continuous variable optimization.  All Dakota methods have a default
+value of mixed for the domain type except for the branch-and-bound
+method which has a default domain type of relaxed.  Note that the
+branch-and-bound method is experimental and still under development at
+this time.
 
 \subsection{Precedence}\label{variables:precedence}
 If the user does not specify any explicit override of the active view 
