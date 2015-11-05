@@ -215,6 +215,10 @@ Eq~\ref{eq:hess_misfit_gn}).  Note that, in this case, there is no MVN
 approximation as in \S\ref{uq:bayes:prop}, so we will not employ
 Eq.~\ref{eq:normal_prior_hess}.  Rather, we employ the actual Hessians
 corresponding to the prior distributions in use.
+Finally, we emphasize that although the pre-solve for the MAP point 
+and the preconditioning of the proposal covariance both employ 
+Hessian information as described above, they are separate options in Dakota. 
+One can specify the use of either one or both:  the calculations are separate. 
 
 
 \section{Rosenbrock Example} \label{uq:bayes:ex}
