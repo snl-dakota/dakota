@@ -241,12 +241,12 @@ particular platform or shell.
    be extracted into the user's home directory, /home/username. 
 
    $ cd $HOME
-   $ tar xzvf /path/to/dakota-<release>.src.tar.gz
+   $ tar xzvf /path/to/dakota-<release>.public.src.tar.gz
 
-   You will see a new directory, /home/username/dakota-<release>.<platform>. In
+   You will see a new directory, /home/username/dakota-<release>.src. In
    the instructions below, $DAK_SRC refers to this directory.
 
-   $ export DAK_SRC=$HOME/dakota-<release>.<platform>
+   $ export DAK_SRC=$HOME/dakota-<release>.src
 
 3. Create separate build directory, e.g. $HOME/dakota-build. In the
    instructions below, $DAK_BUILD refers to the directory that you create
