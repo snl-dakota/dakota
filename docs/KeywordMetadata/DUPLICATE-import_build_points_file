@@ -2,12 +2,15 @@ Blurb::
 File containing points you wish to use to build a surrogate
 
 Description::
-
-The \c import_build_points_file allows the user to specify a file
-that contains a list of points and responses used to construct a
-surrogate model.  These can be used by a number of methods in place of
-model evaluations.  When used to construct surrogate models or emulators
-these are often called build points or training data.
+The \c import_build_points_file allows the user to specify a file that
+contains a list of points and truth model responses used to construct
+a surrogate model.  These can be used by all methods that (explicitly,
+e.g. surrogate-based optimization, or implicitly, e.g. efficient
+global optimization) operate on a surrogate.  In particular, these
+points and responses are used in place of truth model evaluations to
+construct the initial surrogate.  When used to construct surrogate
+models or emulators these are often called build points or training
+data.
 
 <b> Default Behavior </b>
 

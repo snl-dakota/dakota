@@ -1,14 +1,14 @@
-Blurb:: Filename for points at which to evaluate the PCS/SE surrogate
+Blurb:: Filename for points at which to evaluate the PCE/SC surrogate
 
 Description::
 
 <b> Default Behavior </b>
-No import of points at which to evalulate the surrogate.
+No import of points at which to evaluate the surrogate.
 
 <b> Expected Output </b>
-The PCS/SE surrogate model will be evaluated at the provided list of points
-and results tabulated and/or statistics computed at them, depending on
-the method context.
+The PCE/SC surrogate model will be evaluated at the list of points
+(input variable values) provided in the file and results tabulated
+and/or statistics computed at them, depending on the method context.
 
 Topics::
 
