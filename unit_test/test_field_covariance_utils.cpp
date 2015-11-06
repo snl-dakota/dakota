@@ -4,7 +4,8 @@
 #include "DakotaResponse.hpp"
 #include "NonDBayesCalibration.hpp"
 // Boost.Test
-#include <boost/test/minimal.hpp>
+#define BOOST_TEST_MODULE dakota_field_covariance_utils
+#include <boost/test/included/unit_test.hpp>
 
 //#include <boost/assign/std/vector.hpp>
 #include <boost/foreach.hpp>
@@ -40,10 +41,8 @@ void test_multiple_scalar_covariance_matrix()
 				     scalar_map_indices );
 
   // Test determinant and log_determinant
-  BOOST_CHECK( abs(exper_cov.determinant() - 8.0) <
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(8.0)) <
-	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK_CLOSE(exper_cov.determinant(), 8.0, 1.0e-12);
+  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(8.0), 1.0e-12);
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -155,10 +154,8 @@ void test_single_diagonal_block_covariance_matrix()
 
 
   // Test determinant and log_determinant
-  BOOST_CHECK( abs(exper_cov.determinant() - 8.0) <
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(8.0)) <
-	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK_CLOSE(exper_cov.determinant(), 8.0, 1.0e-12);
+  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(8.0), 1.0e-12);
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -258,10 +255,8 @@ void test_single_full_block_covariance_matrix()
 				     scalar_map_indices );
 
   // Test determinant and log_determinant
-  BOOST_CHECK( abs(exper_cov.determinant() - 6.75) <
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(6.75)) <
-	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK_CLOSE(exper_cov.determinant(), 6.75, 1.0e-12);
+  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(6.75), 1.0e-12);
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -407,10 +402,8 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 				     scalar_map_indices );
 
   // Test determinant and log_determinant
-  BOOST_CHECK( abs(exper_cov.determinant() - 432.0) <
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( abs(exper_cov.log_determinant() - std::log(432.0)) <
-	       10.*std::numeric_limits<double>::epsilon() );
+  BOOST_CHECK_CLOSE(exper_cov.determinant(), 432.0, 1.0e-12);
+  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(432.0), 1.0e-12);
 
   int num_residuals = 9;
   Real residual_array[] = {1., 1., 2., 4., 1., 2., 4., 2., 4.};
@@ -956,7 +949,8 @@ void test_matrix_symmetry()
 
 //____________________________________________________________________________//
 
-int test_main( int argc, char* argv[] )      // note the name!
+BOOST_AUTO_TEST_CASE( test_main )
+//int test_main( int argc, char* argv[] )      // note the name!
 {
   using namespace Dakota::TestFieldCovariance;
 
@@ -982,5 +976,5 @@ int test_main( int argc, char* argv[] )      // note the name!
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
-  return boost::exit_success;
+  //  return boost::exit_success;
 }
