@@ -42,7 +42,7 @@ as shown in Eq.~\ref{eq:Likelihood}:
 \mathcal{L}(\boldsymbol{\theta;d}) = 
 \frac{1}{\sqrt{(2\pi)^n |\boldsymbol{\Sigma_d}|}}
 \exp \left(
--\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r} 
+-\frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_{\boldsymbol{d}}^{-1} \boldsymbol{r} 
 \right), \label{eq:Likelihood}
 %\mathcal{L}({\theta};d) = \prod_{i=1}^n \frac{1}{\sigma \sqrt{2\pi}} \exp
 %\left[ - \frac{\left(d_i-\mathcal{M}({\theta})\right)^2}{2\sigma^2} \right]
@@ -61,7 +61,7 @@ uncertainties. %, and we omit the leading multivariate normal (MVN)
 The negative log-likelihood is comprised of the misfit function
 \begin{equation}
 M(\boldsymbol{\theta;d}) 
-  = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma_d}^{-1} \boldsymbol{r}
+  = \frac{1}{2} \boldsymbol{r}^T \boldsymbol{\Sigma}_{\boldsymbol{d}}^{-1} \boldsymbol{r}
 \label{eq:misfit}
 \end{equation}
 plus contributions from the leading normalization factor
@@ -104,14 +104,14 @@ from adjoint-capable simulations or from emulator models such as
 polynomial chaos, stochastic collocation, or Gaussian processes), we
 can form derivatives of the misfit function as
 \begin{eqnarray}
-\nabla_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma_d}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
-\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma_d}^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) + \nabla^2_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \cdot \left[\boldsymbol{\Sigma_d}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
+\nabla_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma}_{\boldsymbol{d}}^{-1}\,\boldsymbol{r} \label{eq:grad_misfit} \\
+\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) &=& \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma}_{\boldsymbol{d}}^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) + \nabla^2_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \cdot \left[\boldsymbol{\Sigma}_{\boldsymbol{d}}^{-1}\,\boldsymbol{r}\right] \label{eq:hess_misfit}
 \end{eqnarray}
 Neglecting the second term in Eq.~\ref{eq:hess_misfit} (a
 three-dimensional Hessian tensor dotted with the residual vector)
 results in the Gauss-Newton approximation to the misfit Hessian:
 \begin{equation}
-\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) \approx \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma_d}^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \label{eq:hess_misfit_gn}
+\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta}) \approx \nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta})^T\,\boldsymbol{\Sigma}_{\boldsymbol{d}}^{-1}\,\nabla_{\boldsymbol{\theta}} \boldsymbol{q}(\boldsymbol{\theta}) \label{eq:hess_misfit_gn}
 \end{equation}
 This approximation requires only gradients of the residuals, enabling
 its use in cases where models or model emulators only provide
@@ -151,23 +151,27 @@ negative log prior for a normal prior distribution is just the inverse
 covariance:
 \begin{equation}
 -\nabla^2_{\boldsymbol{\theta}} \left[ \log(\pi_0(\boldsymbol{\theta})) \right] 
-= \boldsymbol{\Sigma_0}^{-1} 
+= \boldsymbol{\Sigma}_{\boldsymbol{0}}^{-1}
 \label{eq:normal_prior_hess}
 \end{equation}
 For non-normal prior distributions, this is not true and, in the case
 of uniform or exponential priors, the Hessian of the negative log
 prior is in fact zero.  However, as justified by the approximation of
 an MVN proposal distribution and the desire to improve the
-conditioning of the resulting Hessian, we will employ the prior
-covariance for all prior distribution types.
+conditioning of the resulting Hessian, we will employ 
+Eq.~\ref{eq:normal_prior_hess} for all prior distribution types.
 
 From here, we follow~\cite{Petra2014} and decompose the prior covariance 
 into its Cholesky factors, resulting in
 \begin{eqnarray}
-\boldsymbol{H_{\rm nlpost}} &=& \boldsymbol{H_M} + \boldsymbol{\Sigma_0}^{-1} \\
-  &=& \boldsymbol{H_M} + \boldsymbol{L}^{-T}\boldsymbol{L}^{-1} \\
-  &=& \boldsymbol{L}^{-T} \left[\boldsymbol{L}^T \boldsymbol{H_M} \boldsymbol{L}
-    + \boldsymbol{I} \right] \boldsymbol{L}^{-1}
+\boldsymbol{H_{\rm nlpost}} 
+  &=& \boldsymbol{H_M} + \boldsymbol{\Sigma}_{\boldsymbol{0}}^{-1} \\
+  &=& \boldsymbol{H_M} + 
+      \boldsymbol{L}_{\boldsymbol{0}}^{-T}\boldsymbol{L}_{\boldsymbol{0}}^{-1} \\
+  &=& \boldsymbol{L}_{\boldsymbol{0}}^{-T} 
+      \left[\boldsymbol{L}_{\boldsymbol{0}}^T \boldsymbol{H_M} 
+            \boldsymbol{L}_{\boldsymbol{0}} + \boldsymbol{I} \right]
+      \boldsymbol{L}_{\boldsymbol{0}}^{-1}
 \end{eqnarray}
 where we again simplify notation to represent $\nabla^2_{\boldsymbol{\theta}} 
   \left[ -\log(\pi_{\rm post}(\boldsymbol{\theta})) \right]$ as 
@@ -175,18 +179,25 @@ $\boldsymbol{H_{\rm nlpost}}$ and
 $\nabla^2_{\boldsymbol{\theta}} M(\boldsymbol{\theta})$ as $\boldsymbol{H_M}$.  
 The inverse of this matrix is then
 \begin{equation}
-\boldsymbol{H_{\rm nlpost}}^{-1} = 
-  \boldsymbol{L} \left[\boldsymbol{L}^T \boldsymbol{H_M} \boldsymbol{L} +
-  \boldsymbol{I} \right]^{-1} \boldsymbol{L}^T
+\boldsymbol{H}_{\boldsymbol{\rm nlpost}}^{-1} = 
+  \boldsymbol{L}_{\boldsymbol{0}} \left[\boldsymbol{L}_{\boldsymbol{0}}^T \boldsymbol{H_M} \boldsymbol{L}_{\boldsymbol{0}} +
+  \boldsymbol{I} \right]^{-1} \boldsymbol{L}_{\boldsymbol{0}}^T
 \label{eq:inv_hess_nlpost}
 \end{equation}
+Note that the use of $\boldsymbol{\Sigma}_{\boldsymbol{0}}^{-1}$ for the Hessian of
+the negative log prior in Eq.~\ref{eq:normal_prior_hess} provides some
+continuity between the default proposal covariance and the proposal
+covariance from Hessian-based preconditioning: if the contributions
+from $\boldsymbol{H_M}$ are neglected, then 
+$\boldsymbol{H}_{\boldsymbol{\rm nlpost}}^{-1} = \boldsymbol{\Sigma_0}$, the default.
+
 To address the indefiniteness of $\boldsymbol{H_M}$ (or to reduce the
 cost for large-scale problems by using a low-rank Hessian approximation), 
 we perform a symmetric eigenvalue decomposition of this prior-preconditioned
 misfit and truncate any eigenvalues below a prescribed tolerance, resulting in
 \begin{equation}
-\boldsymbol{L}^T \boldsymbol{H_M} \boldsymbol{L} \approx
-\boldsymbol{V}_r \boldsymbol{\Lambda}_r \boldsymbol{V}_r^T.
+\boldsymbol{L}_{\boldsymbol{0}}^T \boldsymbol{H_M} \boldsymbol{L}_{\boldsymbol{0}} 
+\approx \boldsymbol{V}_r \boldsymbol{\Lambda}_r \boldsymbol{V}_r^T.
 \end{equation}
 for a matrix $\boldsymbol{V}_r$ of truncated eigenvectors and a diagonal 
 matrix of truncated eigenvalues 
@@ -201,9 +212,10 @@ the decomposed matrix and identity as
 for $\boldsymbol{D}_r = {\rm diag}(\frac{\lambda_1}{\lambda_1+1}, \frac{\lambda_2}{\lambda_2+1}, \dots, \frac{\lambda_r}{\lambda_r+1})$.  We now arrive
 at our final result for the covariance of the MVN proposal density:
 \begin{equation}
-\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_{\rm nlpost}}^{-1} \approx
-  \boldsymbol{L} \left[ \boldsymbol{I} - 
-  \boldsymbol{V}_r \boldsymbol{D}_r \boldsymbol{V}_r^T \right] \boldsymbol{L}^T
+\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H}_{\boldsymbol{\rm nlpost}}^{-1} \approx
+  \boldsymbol{L}_{\boldsymbol{0}} \left[ \boldsymbol{I} - 
+  \boldsymbol{V}_r \boldsymbol{D}_r \boldsymbol{V}_r^T \right] 
+  \boldsymbol{L}_{\boldsymbol{0}}^T
 \label{eq:inv_hess_nlpost_approx}
 \end{equation}
 
@@ -251,7 +263,8 @@ Figure~\ref{fig:rosen_prop_covar} shows the effect of different
 proposal covariance components, with the default prior covariance 
 ($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{\Sigma_0}$) in
 Figure~\ref{fig:rosen_prop_covar}(a) and a misfit Hessian-based
-proposal covariance ($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_M}^{-1}$) 
+proposal covariance 
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H}_{\boldsymbol{M}}^{-1}$) 
 in Figure~\ref{fig:rosen_prop_covar}(b).
 \begin{figure}[htbp]
   \begin{subfigmatrix}{2}
@@ -287,9 +300,9 @@ resulting in differences in the MLE and MAP estimates, as shown in
 Figure~\ref{fig:rosen_restart}(a).  Figure~\ref{fig:rosen_restart}(b)
 shows the history of rejection rates for each of the 50 chains for
 misfit Hessian-based proposals 
-($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_M}^{-1}$)
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H}_{\boldsymbol{M}}^{-1}$)
 and negative log posterior Hessian-based proposals 
-($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H_{\rm nlpost}}^{-1}$)
+($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{H}_{\boldsymbol{\rm nlpost}}^{-1}$)
 compared to the rejection rate for a single 2000-sample chain 
 using prior-based proposal covariance 
 ($\boldsymbol{\Sigma_{MVN}} = \boldsymbol{\Sigma_0}$).
@@ -301,9 +314,8 @@ using prior-based proposal covariance
   \caption{MCMC with Hessian-based proposals and standard normal prior. Left shows chain with 2000 total samples (black points) and 50 proposal updates (red circles) using the inverse of the misfit Hessian. Right shows rejection rates for misfit Hessian-based and posterior Hessian-based proposals compared to default prior covariance proposal.}
 \label{fig:rosen_restart}
 \end{figure}
-A standard normal prior is not a strong prior in this case, and
-the posterior is likelihood dominated.  This leads to similar
-performance from misfit Hessian-based proposals and posterior
-Hessian-based proposals, with average rejection rates of 70\%, 19.5\%,
-and 16.4\% for prior-based, misfit Hessian-based, and posterior
-Hessian-based cases, respectively.
+A standard normal prior is not a strong prior in this case, and the
+posterior is likelihood dominated.  This leads to similar performance
+from the two Hessian-based proposals, with average rejection rates of
+70\%, 19.5\%, and 16.4\% for prior-based, misfit Hessian-based, and
+posterior Hessian-based cases, respectively.
