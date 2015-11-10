@@ -81,7 +81,8 @@ enum { DEFAULT_METHOD=0,
        BRANCH_AND_BOUND=(MINIMIZER_BIT | OPTIMIZER_BIT | LEASTSQ_BIT) };
 
 /// Sub-methods, including sampling, inference algorithm, opt algorithm types
-enum { SUBMETHOD_DEFAULT=0,
+enum { SUBMETHOD_DEFAULT=0, // no specification
+       SUBMETHOD_NONE,      // spec override of default: no submethod
        /// Type of hybrid meta-iterator:
        SUBMETHOD_COLLABORATIVE,   SUBMETHOD_EMBEDDED,   SUBMETHOD_SEQUENTIAL,
        // Sampling and DOE types:
