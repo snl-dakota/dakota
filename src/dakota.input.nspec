@@ -1585,6 +1585,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             sqp {N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}
             |
             nip {N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}
+            |
+            none {N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}
            ]
           [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
             ( derivatives {N_mdm(lit,proposalCovType_derivatives)}

@@ -2017,6 +2017,7 @@
                         <oneOf>
                           <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
                           <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+                          <keyword  id="none" name="none" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}" label="none" help=""  />
                         </oneOf>
                       </keyword>
                       <keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >

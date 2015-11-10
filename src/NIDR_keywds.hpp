@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1787 distinct keywords (plus 236 aliases) **/
+/** 1788 distinct keywords (plus 236 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -370,8 +370,9 @@ static KeyWord
 		{"jump_step",0x29,0,5,0,0,0.,0.,0,N_mdm(int,jumpStep)},
 		{"num_cr",0x29,0,2,0,0,1.,0.,0,N_mdm(int,numCR)}
 		},
-	kw_62[2] = {
+	kw_62[3] = {
 		{"nip",8,0,1,1,0,0.,0.,0,N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)},
+		{"none",8,0,1,1,0,0.,0.,0,N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)},
 		{"sqp",8,0,1,1,0,0.,0.,0,N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}
 		},
 	kw_63[1] = {
@@ -401,7 +402,7 @@ static KeyWord
 		{"dram",8,0,1,0,0,0.,0.,0,N_mdm(lit,mcmcType_dram)},
 		{"metropolis_hastings",8,0,1,0,0,0.,0.,0,N_mdm(lit,mcmcType_metropolis_hastings)},
 		{"multilevel",8,0,1,0,0,0.,0.,0,N_mdm(lit,mcmcType_multilevel)},
-		{"pre_solve",8,2,3,0,kw_62},
+		{"pre_solve",8,3,3,0,kw_62},
 		{"proposal_covariance",8,4,4,0,kw_66,0.,0.,0,N_mdm(lit,proposalCovType_user)},
 		{"rng",8,2,2,0,kw_67}
 		},

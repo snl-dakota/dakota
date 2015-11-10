@@ -336,10 +336,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 
 void NonDQUESOBayesCalibration::run_chain_with_restarting()
 {
-  // Pre-solve for MAP point using optimization, prior to MCMC chain.  For
-  // now, tie the pre-solve to the existence of an emulator model.  Consider
-  // elevating to a spec option...
-  if (emulatorType && !mapOptimizer.is_null()) {
+  // Pre-solve for MAP point using optimization prior to MCMC.
+  // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
+  // manifesting here as a valid mapOptimizer instance.
+  if (!mapOptimizer.is_null()) {
     Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
 	 << std::endl;
     // set initial point (update gets pulled at run time by optimizer)

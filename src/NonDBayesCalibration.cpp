@@ -285,9 +285,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct optimizer for MAP pre-solve
   // -------------------------------------
+  // Emulator:     on by default; can be overridden with "pre_solve none"
+  // No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
+  //              relies on mapOptimizer ctor to enforce min derivative support
   unsigned short opt_alg_override
     = probDescDB.get_ushort("method.nond.pre_solve_method");
-  if (emulatorType || opt_alg_override) {
+  if ( opt_alg_override == SUBMETHOD_SQP || opt_alg_override == SUBMETHOD_NIP ||
+       ( emulatorType && opt_alg_override != SUBMETHOD_NONE ) ) {
 
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
       secondary_resp_map_indices;

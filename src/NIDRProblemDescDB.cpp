@@ -6993,6 +6993,7 @@ static Method_mp_utype
 	MP2s(methodName,CENTERED_PARAMETER_STUDY),
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
 	MP2s(preSolveMethod,SUBMETHOD_NIP),
+	MP2s(preSolveMethod,SUBMETHOD_NONE),
 	MP2s(preSolveMethod,SUBMETHOD_SQP),
 	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),

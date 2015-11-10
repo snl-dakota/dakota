@@ -1653,6 +1653,7 @@ KEYWORD12 method
 	    [ pre_solve
 	      sqp
 	      | nip
+	      | none
 	      ]
 	    [ proposal_covariance
 	      ( derivatives
@@ -1698,6 +1699,7 @@ KEYWORD12 method
 	    [ pre_solve
 	      sqp
 	      | nip
+	      | none
 	      ]
 	    [ proposal_covariance
 	      ( derivatives
