@@ -1,0 +1,15 @@
+Blurb::
+Deactivates MAP pre-solve prior to initiating the MCMC process.
+
+Description::
+Pre-solving for the maximum a posteriori probability (MAP) point could
+be undesirable when testing MCMC performance or too expensive to
+pursue in some settings.  The option "none" provides an override that
+deactivates the pre-solve option for cases where it would normally be
+active by default (e.g., for emulator models).
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

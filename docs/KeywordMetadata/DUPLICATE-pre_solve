@@ -1,26 +1,63 @@
 Blurb:: Perform deterministic optimization for MAP before Bayesian calibration
 
 Description::
-When specified, Dakota will perform a deterministic gradient-based
-optimization to maximize the log posterior (log-likelihood -
-log_prior).  The Markov Chain in Bayesian calibration will be started
-at the best point found in the optimization (the MAP point).
-Note that both optimization methods available (\c sqp and \c nip) 
-require gradients.  The gradients will be assessed based on 
-the model the user specifies (e.g. if an emulator is used, the 
-gradients will be taken with respect to the emulator, otherwise 
-they will be based on the user specification for the model, either 
-finite-difference or analytic gradients.)
+
+When specified, Dakota will perform a deterministic derivative-based
+optimization to maximize the log posterior (minimize the negative log
+posterior = misfit - log_prior + constant normalization factors).  The
+Markov chain in Bayesian calibration will subsequently be started at
+the best point found in the optimization (the MAP point), which can
+eliminate the need for "burn in" of the chain in which some initial
+portion of the chain is discarded. <!-- (points early in the search
+prior to navigation towards higher probability regions)-->
+Note that both optimization methods available (\c sqp and \c nip)
+require derivatives of the negative log posterior, either first-order
+in the case of SQP (with quasi-Newton Hessians from secant updates) or
+second-order in the case of full-Newton NIP (with explicit Hessian
+use).  The derivatives will be computed from the same model used for
+the MCMC process; e.g. if an emulator is used, the emulator
+derivatives will be used, otherwise they will be based on the user's
+model specification for the model.
+<!--either finite-difference or analytic gradients),-->
+It is important to clarify that the use of the Hessian of the negative
+log posterior within a full Newton solver does not strictly require
+Hessians from the model response quantities of interest (QoIs).
+Rather, the Hessian of the negative log posterior is formed from an
+exact Hessian of the negative log prior and a misfit Hessian that can
+be either exact or approximated: the full misfit Hessian can be formed
+using QoI residuals, gradients, and Hessians or the Gauss-Newton
+approximate misfit Hessian can be formed using only QoI gradients
+\cite TheoMan.  This configuration happens automaticlaly based on
+MAP solver selection and the emulator/model support for derivatives.
 
 <b> Default Behavior </b>
-No MAP pre-solve; simply start the MCMC process at the user-specified
-initial value.
+Depends on use of an emulator model.  If there is an emulator (for
+which derivatives are easily computed), then the MAP pre-solve is
+active by default and a full Newton NIP formulation is selected if
+OPT++ is available.  Depending on the emulator's support for
+derivatives of the simulated QoI (gradients for dakota GP and
+stochastic collocation; gradients and Hessians for surfpack GP and
+polynomial chaos), the contribution of the misfit Hessian to the
+Hessian of the negative log posterir will be computed either using the
+full misfit Hessian or its Gauss-Newton approximation (refer to
+Bayesian chapter in \cite TheoMan).  This default can be overridden
+using "pre_solve none."
+
+If no emulator model is specified, then the pre-solve is bypassed by
+default and the MCMC chain is initiated from user-specified (or
+default) initial value for the prior distributions of the random
+variables.  This default can be overridden by specifying "pre_solve
+nip" or "pre_solve sqp".
 
 <b> Expected Output </b>
 When pre-solve is enabled, the output will include a deterministic
 optimization, followed by a Bayesian calibration.  The final results
 will include the MAP point as well as posterior statistics from the
-MCMC chain.
+MCMC chain.  The MAP point that is reported is the point with highest
+posterior probability spanning both the pre-solve and the subsequent
+MCMC chain; it will most commonly reflect the end state of the
+pre-solve, although it can reflect subsuquent improvements from the
+chain evolution, should they occur.
 
 Topics::
 
