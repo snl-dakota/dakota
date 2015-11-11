@@ -79,6 +79,9 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   // concurrency for the initialSamples and allow batches in
   // subsequent phases; could instead take max of all these if
   // desired.
+
+  // The inbound model concurrency accounts for any finite differences,
+  // update with this method's concurency now:
   maxEvalConcurrency *= initialSamples;
 }
 
@@ -309,8 +312,12 @@ void EfficientSubspaceMethod::derived_init_communicators(ParLevLIter pl_iter)
   // Instead of using the helper iterators convenience function, we
   // directly set up communicators for each of the contexts that will
   // be encountered at run-time
+
+  // maxEvalConcurrency is initialized to initialSamples * model concurrency
   iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);//initialSamples
-  iteratedModel.init_communicators(pl_iter, batchSize);
+  // batch additions support concurrency up to batchSize * model concurrency
+  int batch_concurrency = batchSize * iteratedModel.derivative_concurrency();
+  iteratedModel.init_communicators(pl_iter, batch_concurrency);
   // defer this one to do it on the RecastModel at runtime
   //  iteratedModel.init_communicators(pl_iter, subspaceSamples);
 }
@@ -325,7 +332,8 @@ void EfficientSubspaceMethod::derived_set_communicators(ParLevLIter pl_iter)
 
 void EfficientSubspaceMethod::derived_free_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.free_communicators(pl_iter, batchSize);
+  int batch_concurrency = batchSize * iteratedModel.derivative_concurrency();
+  iteratedModel.free_communicators(pl_iter, batch_concurrency);
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);//initialSamples
   // defer this one to do it on the RecastModel at runtime
   //  iteratedModel.free_communicators(pl_iter, subspaceSamples);
@@ -404,9 +412,11 @@ generate_fullspace_samples(unsigned int diff_samples)
   // (initial build or batch update)
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   if (currIter == 1)
-    iteratedModel.set_communicators(pl_iter, initialSamples);
-  else
-    iteratedModel.set_communicators(pl_iter, batchSize);
+    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+  else {
+    int batch_concurrency = batchSize * iteratedModel.derivative_concurrency();
+    iteratedModel.set_communicators(pl_iter, batch_concurrency);
+  }
   // and generate the additional samples
   fullSpaceSampler.run();//(pl_iter);
 }
