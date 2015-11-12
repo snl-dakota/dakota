@@ -109,7 +109,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
     std::ifstream ampl_col(col.c_str());
     if (!ampl_col) {
-      Cerr << "\nError: failure opening " << col.c_str() << std::endl;
+      Cerr << "\nError: failure opening " << col << std::endl;
       abort_handler(IO_ERROR);
     }
     algebraicVarTags.resize(n_var);
@@ -118,7 +118,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
       if (ampl_col.good())
 	algebraicVarTags[i] = ampl_tag;
       else {
-	Cerr << "\nError: failure reading AMPL col file " << col.c_str() 
+	Cerr << "\nError: failure reading AMPL col file " << col
 	     << std::endl;
 	abort_handler(IO_ERROR);
       }
@@ -126,7 +126,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
     std::ifstream ampl_row(row.c_str());
     if (!ampl_row) {
-      Cerr << "\nError: failure opening " << row.c_str() << std::endl;
+      Cerr << "\nError: failure opening " << row << std::endl;
       abort_handler(IO_ERROR);
     }
     algebraicFnTags.resize(n_obj+n_con);
@@ -139,7 +139,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 	algebraicFnTypes[i] = algebraic_function_type(ampl_tag);
       }
       else {
-	Cerr << "\nError: failure reading AMPL row file " << row.c_str() 
+	Cerr << "\nError: failure reading AMPL row file " << row
 	     << std::endl;
 	abort_handler(IO_ERROR);
       }
