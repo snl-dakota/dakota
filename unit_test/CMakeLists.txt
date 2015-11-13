@@ -81,14 +81,14 @@ dakota_add_unit_test(NAME leja_sampling
 # Unit test: experiment data and readers
 # Demonstration of Teuchos test framework to driver several tests related to
 # ExperimentData and associated file readers
-option(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS "Enable sample unit tests driver" ON)
+option(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS "Enable Teuchos unit tests driver" ON)
 remove_definitions("-DHAVE_CONFIG_H")
 include_directories(${Teuchos_INCLUDE_DIRS})
 # Pecos is an unconditional Dakota dependency
 include_directories(${Pecos_SOURCE_DIR}/src)
 
-if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
-  set(dakota_sample_unit_tests
+if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
+  set(dakota_teuchos_unit_tests
     demo_teuchos.cpp
     covariance_reader.cpp
     expt_data.cpp
@@ -97,8 +97,8 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     data_conversions.cpp
     reduced_basis.cpp
     )
-  dakota_add_unit_test(NAME sample_unit_tests
-    SOURCES sample_unit_test_driver.cpp ${dakota_sample_unit_tests}
+  dakota_add_unit_test(NAME teuchos_unit_tests
+    SOURCES teuchos_unit_test_driver.cpp ${dakota_teuchos_unit_tests}
     LINK_DAKOTA_LIBS
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
@@ -109,7 +109,7 @@ if(DAKOTA_ENABLE_SAMPLE_UNIT_TESTS)
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     )
-endif() # DAKOTA_ENABLE_SAMPLE_UNIT_TESTS
+endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 
 
 # Unit test: Dakota output to binary HDF5 (depends on Teuchos and HDF5)
