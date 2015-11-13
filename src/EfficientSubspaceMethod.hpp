@@ -64,7 +64,7 @@ private:
 
   /// generate fullspace samples, append to matrix, and factor,
   /// returning whether tolerance met
-  void expand_basis(bool& mach_svtol_met, bool& user_svtol_met);
+  void expand_basis(bool& svtol_met);
 
   /// determine the number of full space samples for next iteration,
   /// based on batchSize, limiting by remaining function evaluation
@@ -80,7 +80,7 @@ private:
 
   /// factor the derivative matrix and analyze singular values,
   /// assessing convergence and rank, returning whether tolerance met
-  void compute_svd(bool& mach_svtol_met, bool& user_svtol_met);
+  void compute_svd(bool& svtol_met);
 
   /// print inner iteration stats after SVD
   void print_svd_stats();
@@ -132,8 +132,8 @@ private:
   /// total evaluations of model (accounting for UQ phase)
   unsigned int totalEvals;
 
-  /// user-specified tolerance on singular value ratio
-  double userSVTol;
+  /// tolerance on singular value ratio, max of user-specified and macheps
+  double SVTol;
 
   /// user-specified tolerance on nullspace 
   double nullspaceTol;

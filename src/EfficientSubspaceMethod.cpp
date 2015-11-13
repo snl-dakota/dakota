@@ -56,7 +56,7 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   initialSamples(probDescDB.get_int("method.samples")),    // default 0
   batchSize(probDescDB.get_int("method.nond.batch_size")), // default 0
   subspaceSamples(probDescDB.get_int("method.nond.emulator_samples")), // def 0
-  currIter(0), totalSamples(0), totalEvals(0), userSVTol(convergenceTol),
+  currIter(0), totalSamples(0), totalEvals(0), SVTol(std::max(convergenceTol,std::numeric_limits<Real>::epsilon())),
   nullspaceTol(convergenceTol/1.0e3), svRatio(0.0), reducedRank(0)
 {
   // the Iterator initializes:
@@ -98,17 +98,15 @@ void EfficientSubspaceMethod::quantify_uncertainty()
 
   Cout << "ESM: Performing sampling to build reduced space" << std::endl;
 
-  // whether user singular value tolerance met
-  bool user_svtol_met = false;
-  // whether macheps singular value tolerance met
-  bool mach_svtol_met = false;
+  // whether singular value tolerance met
+  bool svtol_met = false;
   // whether reconstruction error tolerance met
   bool recon_tol_met = false;
 
   // iterate until numerically singular or small reconstruction error
-  while (!mach_svtol_met && !recon_tol_met &&
-	 currIter < maxIterations && totalEvals < maxFunctionEvals &&
-	 reducedRank < numContinuousVars) {
+  while (!svtol_met && !recon_tol_met &&
+         currIter < maxIterations && totalEvals < maxFunctionEvals &&
+         reducedRank < numContinuousVars) {
 
     // Run the inner iteration until user tol met (if possible), then check
     // reconstruction error, then continue outer if not tight enough
@@ -116,38 +114,38 @@ void EfficientSubspaceMethod::quantify_uncertainty()
 
       // initially do this loop until user tolerance met
       // once met (userSVTol will always be met),
-      while (!user_svtol_met && !mach_svtol_met &&
-	     currIter < maxIterations && totalEvals < maxFunctionEvals
-	     && reducedRank < numContinuousVars) {
+      while (!svtol_met && currIter < maxIterations && 
+             totalEvals < maxFunctionEvals
+             && reducedRank < numContinuousVars) {
 
-	++currIter;  // any addition of batch of points counts as an iteration
-	Cout << "\nESM: Iteration " << currIter << "." << std::endl;
-	expand_basis(mach_svtol_met, user_svtol_met);
-	print_svd_stats();
+        ++currIter;  // any addition of batch of points counts as an iteration
+        Cout << "\nESM: Iteration " << currIter << "." << std::endl;
+        expand_basis(svtol_met);
+        print_svd_stats();
 
       } // until SVD converged
 
-      if (user_svtol_met || mach_svtol_met) {
-	Cout << "\nESM: SVD converged to tolerance.\n     Proceeding to "
-	     << "reconstruction with reduced rank = " << reducedRank << "."
-	     << std::endl;
+      if (svtol_met) {
+        Cout << "\nESM: SVD converged to tolerance.\n     Proceeding to "
+             << "reconstruction with reduced rank = " << reducedRank << "."
+             << std::endl;
       }
       else {
-	Cout << "\nESM: SVD not converged within budget.";
-	if (currIter >= maxIterations)
-	  Cout << "\n     Maximum iterations reached.";
-	if (totalEvals >= maxFunctionEvals)
-	  Cout << " \n    Maximum function evaluations reached.";
-	Cout << "\n    Proceeding to reconstruction with reducedRank = "
-	     << reducedRank << std::endl;
+        Cout << "\nESM: SVD not converged within budget.";
+        if (currIter >= maxIterations)
+          Cout << "\n     Maximum iterations reached.";
+        if (totalEvals >= maxFunctionEvals)
+          Cout << " \n    Maximum function evaluations reached.";
+        Cout << "\n    Proceeding to reconstruction with reducedRank = "
+             << reducedRank << std::endl;
       }
 
     }
     else {
-	++currIter;  // any addition of batch of points counts as an iteration
-	Cout << "\nESM: Iteration " << currIter << "." << std::endl;
-	expand_basis(mach_svtol_met, user_svtol_met);
-	print_svd_stats();
+      ++currIter;  // any addition of batch of points counts as an iteration
+      Cout << "\nESM: Iteration " << currIter << "." << std::endl;
+      expand_basis(svtol_met);
+      print_svd_stats();
     }
 
     // update the reducedBasis
@@ -155,7 +153,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
     // cols of derivativeMatrix; extract it instead of using BLAS directly
     // TODO: could probably do a View and avoid the Copy
     RealMatrix reduced_basis_U(Teuchos::Copy, derivativeMatrix,
-			       numContinuousVars, reducedRank);
+                               numContinuousVars, reducedRank);
     reducedBasis = reduced_basis_U;
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "\nESM: Reduced basis is";
@@ -179,8 +177,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
        << std::endl;
 
   Cout << "\n --- ESM Build Convergence Criteria ---"
-       << "\n  user tolerance on SVD met?: " << user_svtol_met
-       << "\n  macheps tolerance on SVD met?: " << mach_svtol_met
+       << "\n  tolerance on SVD met?: " << svtol_met
        << "\n  reconstruction tolerance met?: " << recon_tol_met
        << "\n  max_iterations reached: " << (bool) (currIter >= maxIterations)
        << "\n  max_evals reached: " << (bool) (totalEvals >= maxFunctionEvals)
@@ -207,18 +204,18 @@ void EfficientSubspaceMethod::validate_inputs()
       (unsigned int) std::ceil( (double) numContinuousVars / 100.0 );
     initialSamples = std::max(2, initialSamples);
     Cout << "\nInfo: Efficient subspace method setting (initial) samples = "
-	 << initialSamples << "." << std::endl;
+         << initialSamples << "." << std::endl;
   }
   else if (initialSamples < 2) {
     initialSamples = 2;
     Cout << "\nWarning: Efficient subspace method resetting samples to minimum "
-	 << "allowed = " << initialSamples << "." << std::endl;
+         << "allowed = " << initialSamples << "." << std::endl;
   }
 
   if (initialSamples > maxFunctionEvals) {
     error_flag = true;
     Cerr << "\nError: Efficient subspace method build samples exceeds function "
-	 << "budget." << std::endl;
+         << "budget." << std::endl;
   }
 
   if (batchSize <= 0) {
@@ -226,24 +223,24 @@ void EfficientSubspaceMethod::validate_inputs()
     batchSize = 1;
   }
   else if (batchSize > initialSamples) {
-    batchSize = initialSamples;
     Cout << "\nWarning: batch_size = " << batchSize << " exceeds (initial) "
-	 << "samples = " << initialSamples << ";\n        resetting batch_size "
-	 << "= " << batchSize << "." << std::endl;
+         << "samples = " << initialSamples << ";\n        resetting batch_size "
+         << "= " << initialSamples << "." << std::endl;
+    batchSize = initialSamples;
   }
 
   // maxIterations controls the number of build iterations
   if (maxIterations < 0) {
     maxIterations = 1;
     Cout << "\nInfo: Efficient subspace method setting max_iterations = "
-	 << maxIterations << "." << std::endl;
+         << maxIterations << "." << std::endl;
   }
 
   // emulator samples don't count toward the sample budget
   if (subspaceSamples <= 0) {
     subspaceSamples = 10*initialSamples;
     Cout << "\nInfo: Efficient subspace method setting emulator_samples = "
-	 << subspaceSamples << "\n      (10*samples specified)." << std::endl;
+         << subspaceSamples << "\n      (10*samples specified)." << std::endl;
   }
 
 
@@ -253,7 +250,7 @@ void EfficientSubspaceMethod::validate_inputs()
     error_flag = true;
     Cerr << "\nError: Efficient subspace method only supports normal uncertain "
          << "variables;\n       remove other variable specifications."
-	 << std::endl;
+         << std::endl;
   }
 
   // validate response data
@@ -261,7 +258,7 @@ void EfficientSubspaceMethod::validate_inputs()
     error_flag = true;
     Cerr << "\nError: Efficient subspace method requires gradients.\n"
          << "       Please select numerical, analytic (recommended), or mixed "
-	 << "gradients." << std::endl;
+         << "gradients." << std::endl;
   }
 
   if (error_flag)
@@ -287,7 +284,7 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
   // configure this sampler initially to work with initialSamples
   Analyzer* ndlhss =
     new NonDLHSSampling(iteratedModel, sample_type, initialSamples, mc_seed,
-			rng, ACTIVE_UNIFORM);
+                        rng, ACTIVE_UNIFORM);
   // allow random number sequence to span multiple calls to run()
   ndlhss->vary_pattern(true);
   fullSpaceSampler.assign_rep(ndlhss, false);
@@ -341,7 +338,7 @@ void EfficientSubspaceMethod::derived_free_communicators(ParLevLIter pl_iter)
 
 
 void EfficientSubspaceMethod::
-expand_basis(bool& mach_svtol_met, bool& user_svtol_met)
+expand_basis(bool& svtol_met)
 {
   // determine number of points to add
   unsigned int diff_samples = calculate_fullspace_samples();
@@ -350,7 +347,7 @@ expand_basis(bool& mach_svtol_met, bool& user_svtol_met)
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "ESM: Adding " << diff_samples << " full-space samples."
-	 << std::endl;
+         << std::endl;
 
   // evaluate samples with fullSpaceSampler
   generate_fullspace_samples(diff_samples);
@@ -359,7 +356,7 @@ expand_basis(bool& mach_svtol_met, bool& user_svtol_met)
   append_sample_matrices(diff_samples);
 
   // factor the derivative matrix and estimate the information content
-  compute_svd(mach_svtol_met, user_svtol_met);
+  compute_svd(svtol_met);
 }
 
 
@@ -433,13 +430,13 @@ append_sample_matrices(unsigned int diff_samples)
   // TODO: could easily filter NaN/Inf responses and omit
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nESM: Iteration " << currIter << ". DACE iterator returned "
-	     << all_responses.size() << " samples. (Expected diff_samples = "
-	     << diff_samples << ".)" << std::endl;
+         << all_responses.size() << " samples. (Expected diff_samples = "
+         << diff_samples << ".)" << std::endl;
   }
 
   int sample_insert_point = varsMatrix.numCols();
   derivativeMatrix.reshape(numContinuousVars,
-			   totalSamples*numFunctions);
+                           totalSamples*numFunctions);
   varsMatrix.reshape(numContinuousVars, totalSamples);
 
   unsigned int diff_sample_ind = 0;
@@ -454,7 +451,7 @@ append_sample_matrices(unsigned int diff_samples)
     for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
       unsigned int col_ind = sample_ind * numFunctions + fn_ind;
       for (unsigned int var_ind = 0; var_ind < numContinuousVars; ++var_ind) {
-	derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind);
+        derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind);
       }
     }
     for (unsigned int var_ind = 0; var_ind < numContinuousVars; ++var_ind) {
@@ -464,7 +461,7 @@ append_sample_matrices(unsigned int diff_samples)
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nESM: Iteration " << currIter
-	 << ". Compiled derivative matrix is:\n";
+         << ". Compiled derivative matrix is:\n";
     derivativeMatrix.print(Cout);
     Cout << std::endl;
   }
@@ -472,182 +469,171 @@ append_sample_matrices(unsigned int diff_samples)
 
 
 void EfficientSubspaceMethod::
-compute_svd(bool& mach_svtol_met, bool& user_svtol_met)
+compute_svd(bool& svtol_met)
 {
   // Want eigenvalues of derivMatrix*derivMatrix^T, so perform SVD of
   // derivMatrix and square them
 
-    RealVector singular_values;
-    RealMatrix V_transpose;
-    // BMA: This overwrites the derivativeMatrix with left singular
-    // vectors, probably not what we want...
-    svd(derivativeMatrix, singular_values, V_transpose);
+  RealVector singular_values;
+  RealMatrix V_transpose;
+  // BMA: This overwrites the derivativeMatrix with left singular
+  // vectors, probably not what we want...
+  svd(derivativeMatrix, singular_values, V_transpose);
 
-////////////////////////////////////////////////////////////////////////////////
-    // BEGIN: Computational kernel to compute Bing Li's criterion for the
-    // eigenvalue gap
+  /////////////////////////////////////////////////////////////////////////////
+  // BEGIN: Computational kernel to compute Bing Li's criterion for the
+  // eigenvalue gap
 
-    // TODO: Analyze whether we need to worry about this
-    if(singular_values.length() == 0)
+  // TODO: Analyze whether we need to worry about this
+  if(singular_values.length() == 0)
+  {
+    Cerr << "No computed singular values available!" << std::endl;
+    abort_handler(-1);
+  }
+
+  int num_vars = derivativeMatrix.numRows();
+  // TODO: Analyze whether we need this check and can have differing numbers
+  // of singular values returned
+  if(num_vars != singular_values.length())
+  {
+    Cerr << "Number of computed singular_values does not match the dimension "
+         "of the space of gradient samples! Logic not currently supported!"
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  // Stores Bing Li's criterion
+  std::vector<RealMatrix::scalarType> bing_li_criterion(num_vars, 0);
+
+  // Compute part 1 of criterion: relative energy in next eigenvalue in the
+  // spectrum
+
+  RealMatrix::scalarType eigen_sum = singular_values[0] * singular_values[0];
+
+  for(size_t i = 0; i < num_vars - 1; ++i)
+  {
+    RealMatrix::scalarType eigen_val = singular_values[i+1] *
+                                       singular_values[i+1];
+    bing_li_criterion[i] = eigen_val;
+    eigen_sum += eigen_val;
+  }
+
+  for(size_t i = 0; i < num_vars; ++i)
+    bing_li_criterion[i] /= eigen_sum;
+
+  // Compute part 2 of criterion: bootstrapped determinant metric
+
+  RealMatrix bootstrapped_sample(num_vars, derivativeMatrix.numCols());
+  RealVector sample_sing_vals;
+  RealMatrix sample_sing_vectors;
+
+  Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
+
+  std::vector<RealMatrix::scalarType> bootstrapped_determinants(num_vars);
+
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
+    numFunctions);
+
+  // TODO: Get number of bootstrap samples from problem desc database
+  size_t num_replicates = 100;
+  for (size_t i = 0; i < num_replicates; ++i)
+  {
+    bootstrap_sampler(bootstrapped_sample);
+
+    svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
+
+    // Overwrite bootstrap replicate with singular matrix product
+    bootstrapped_sample.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0,
+                                 V_transpose, sample_sing_vectors, 0.0);
+
+    for(size_t j = 0; j < num_vars; ++j)
     {
-      Cerr << "No computed singular values available!" << std::endl;
-      abort_handler(-1);
-    }
+      size_t num_sing_vec = j + 1;
 
-    int num_vars = derivativeMatrix.numRows();
-    // TODO: Analyze whether we need this check and can have differing numbers
-    // of singular values returned
-    if(num_vars != singular_values.length())
-    {
-      Cerr << "Number of computed singular_values does not match the dimension "
-              "of the space of gradient samples! Logic not currently supported!"
-           << std::endl;
-      abort_handler(-1);
-    }
+      RealMatrix submatrix(Teuchos::Copy, bootstrapped_sample, num_sing_vec,
+                           num_sing_vec);
 
-    // Stores Bing Li's criterion
-    std::vector<RealMatrix::scalarType> bing_li_criterion(num_vars, 0);
+      // Get determinant from LU decomposition
 
-    // Compute part 1 of criterion: relative energy in next eigenvalue in the
-    // spectrum
+      Teuchos::SerialDenseVector<RealMatrix::ordinalType,
+              RealMatrix::ordinalType> pivot(num_sing_vec);
+      RealMatrix::ordinalType info;
 
-    RealMatrix::scalarType eigen_sum = singular_values[0] * singular_values[0];
+      lapack.GETRF(num_sing_vec, num_sing_vec, submatrix.values(),
+                   num_sing_vec, pivot.values(), &info);
 
-    for(size_t i = 0; i < num_vars - 1; ++i)
-    {
-      RealMatrix::scalarType eigen_val = singular_values[i+1] *
-                                         singular_values[i+1];
-      bing_li_criterion[i] = eigen_val;
-      eigen_sum += eigen_val;
-    }
-
-    for(size_t i = 0; i < num_vars; ++i)
-      bing_li_criterion[i] /= eigen_sum;
-
-    // Compute part 2 of criterion: bootstrapped determinant metric
-
-    RealMatrix bootstrapped_sample(num_vars, derivativeMatrix.numCols());
-    RealVector sample_sing_vals;
-    RealMatrix sample_sing_vectors;
-
-    Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
-
-    std::vector<RealMatrix::scalarType> bootstrapped_determinants(num_vars);
-
-    BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
-                                                   numFunctions);
-
-    // TODO: Get number of bootstrap samples from problem desc database
-    size_t num_replicates = 100;
-    for (size_t i = 0; i < num_replicates; ++i)
-    {
-      bootstrap_sampler(bootstrapped_sample);
-
-      svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
-
-      // Overwrite bootstrap replicate with singular matrix product
-      bootstrapped_sample.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0,
-                                   V_transpose, sample_sing_vectors, 0.0);
-
-      for(size_t j = 0; j < num_vars; ++j)
+      RealMatrix::scalarType det = 1.0;
+      for (size_t i = 0; i < j; ++i)
       {
-        size_t num_sing_vec = j + 1;
-
-        RealMatrix submatrix(Teuchos::Copy, bootstrapped_sample, num_sing_vec,
-                             num_sing_vec);
-
-        // Get determinant from LU decomposition
-
-        Teuchos::SerialDenseVector<RealMatrix::ordinalType,
-                                   RealMatrix::ordinalType> pivot(num_sing_vec);
-        RealMatrix::ordinalType info;
-
-        lapack.GETRF(num_sing_vec, num_sing_vec, submatrix.values(),
-                     num_sing_vec, pivot.values(), &info);
-
-        RealMatrix::scalarType det = 1.0;
-        for (size_t i = 0; i < j; ++i)
-        {
-          det *= submatrix(i,i);
-        }
-
-        bootstrapped_determinants[j] += std::abs(det);
+        det *= submatrix(i,i);
       }
-    }
 
-    RealMatrix::scalarType det_sum = 0.0;
-    for (size_t i = 0; i < num_vars; ++i)
+      bootstrapped_determinants[j] += std::abs(det);
+    }
+  }
+
+  RealMatrix::scalarType det_sum = 0.0;
+  for (size_t i = 0; i < num_vars; ++i)
+  {
+    bootstrapped_determinants[i] = 1 - bootstrapped_determinants[i] /
+                                   static_cast<RealMatrix::scalarType>(num_replicates);
+    det_sum += bootstrapped_determinants[i];
+  }
+
+  for (size_t i = 0; i < num_vars; ++i)
+  {
+    bing_li_criterion[i] += bootstrapped_determinants[i] / det_sum;
+  }
+
+  // Cutoff is minimum of the criterion
+  reducedRank = 0;
+  RealMatrix::scalarType criterion_min =
+    bing_li_criterion[reducedRank];
+  for (size_t i = 1; i < num_vars; ++i)
+  {
+    if(criterion_min > bing_li_criterion[i])
     {
-      bootstrapped_determinants[i] = 1 - bootstrapped_determinants[i] /
-        static_cast<RealMatrix::scalarType>(num_replicates);
-      det_sum += bootstrapped_determinants[i];
+      criterion_min = bing_li_criterion[i];
+      reducedRank = i;
     }
+  }
 
-    for (size_t i = 0; i < num_vars; ++i)
-    {
-      bing_li_criterion[i] += bootstrapped_determinants[i] / det_sum;
+  // END: Computational kernel to compute Bing Li's criterion
+  /////////////////////////////////////////////////////////////////////////////
+
+  // TODO: if a reducedRank met the tolerance, but we added more
+  // samples to meet construction error, need to allow this bigger
+  // than svdtol and not truncate
+  Real inf_norm = derivativeMatrix.normInf();
+
+  // See Golub and VanLoan discussion of numerical rank; use
+  // tolerance applied to the sup norm...
+
+  // if first time, iterate until we meet user tolerance
+  // otherwise continue until we're numerically rank deficient
+  Real svtol = inf_norm * SVTol;
+
+  int num_singular_values = singular_values.length();
+  reducedRank = num_singular_values;
+  double sv_small = 1., sv_large = DBL_MAX;
+  for (unsigned int i=0; i<num_singular_values; ++i) {
+    sv_small = singular_values[i];
+    sv_large = singular_values[0];
+    svRatio = singular_values[i] / singular_values[0];
+
+    if (svRatio < svtol) {
+      svtol_met = true;
+      reducedRank = i;
+      break;
     }
+  }
 
-    // Cutoff is minimum of the criterion
-    reducedRank = 0;
-    RealMatrix::scalarType criterion_min =
-      bing_li_criterion[reducedRank];
-    for (size_t i = 1; i < num_vars; ++i)
-    {
-      if(criterion_min > bing_li_criterion[i])
-      {
-        criterion_min = bing_li_criterion[i];
-        reducedRank = i;
-      }
-    }
-
-    // END: Computational kernel to compute Bing Li's criterion
-////////////////////////////////////////////////////////////////////////////////
-
-    // TODO: if a reducedRank met the tolerance, but we added more
-    // samples to meet construction error, need to allow this bigger
-    // than svdtol and not truncate
-    double inf_norm = derivativeMatrix.normInf();
-
-    // See Golub and VanLoan discussion of numerical rank; use
-    // tolerance applied to the sup norm...
-
-    // if first time, iterate until we meet user tolerance
-    // otherwise continue until we're numerically rank deficient
-    double user_svtol = inf_norm * userSVTol;
-    double mach_svtol = inf_norm * std::numeric_limits<Real>::epsilon();
-
-    int num_singular_values = singular_values.length();
-    reducedRank = num_singular_values;
-    double sv_small = 1., sv_large = DBL_MAX;
-    for (unsigned int i=0; i<num_singular_values; ++i) {
-
-      // we assume the user tolerance is looser than machine; could improve
-      // this logic
-      sv_small = singular_values[i];
-      sv_large = singular_values[0];
-      svRatio = singular_values[i] / singular_values[0];
-
-      if (svRatio < mach_svtol) {
-	mach_svtol_met = true;
-	reducedRank = i;
-	if (svRatio < user_svtol)
-	  user_svtol_met = true;
-	break;
-      }
-      else if (svRatio < user_svtol) {
-	user_svtol_met = true;
-	reducedRank = i;
-	break;
-      }
-    }
-
-    if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "\nESM: Iteration " << currIter << ": singular values are [ ";
-      for (unsigned int i=0; i<num_singular_values; ++i)
-	Cout << singular_values[i] << " ";
-      Cout << "]" << std::endl;
-    }
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nESM: Iteration " << currIter << ": singular values are [ ";
+    for (unsigned int i=0; i<num_singular_values; ++i)
+      Cout << singular_values[i] << " ";
+    Cout << "]" << std::endl;
+  }
 }
 
 
@@ -655,10 +641,10 @@ void EfficientSubspaceMethod::print_svd_stats()
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n --- ESM Iteration " << currIter << " Statistics --- "
-	 << "\n  small/large singular value: " << svRatio
-	 << "\n  build samples: " << totalSamples
-	 << "\n  estimated reduced rank: " << reducedRank
-	 << std::endl;
+         << "\n  small/large singular value: " << svRatio
+         << "\n  build samples: " << totalSamples
+         << "\n  estimated reduced rank: " << reducedRank
+         << std::endl;
 }
 
 
@@ -676,7 +662,7 @@ assess_reconstruction(bool& recon_tol_met)
   if (verif_samples > maxFunctionEvals - totalEvals) {
     verif_samples = maxFunctionEvals - totalEvals;
     Cout << "\nESM: Warning: " << verif_samples << " verification samples "
-	 << "desired, but budget only permits " << verif_samples << std::endl;
+         << "desired, but budget only permits " << verif_samples << std::endl;
   }
   totalEvals += verif_samples;
 
@@ -708,13 +694,13 @@ assess_reconstruction(bool& recon_tol_met)
   Real alpha = 1.0;
   Real beta = 0.0;
   u_trans_delta_x.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha,
-			   reducedBasis, perturbations, beta);
+                           reducedBasis, perturbations, beta);
 
   // compute -1.0 * ( U * u_trans_delta_x ) + 1.0 * delta_x
   alpha = -1.0;
   beta = 1.0;
   perturbations.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha,
-			 reducedBasis, u_trans_delta_x, beta);
+                         reducedBasis, u_trans_delta_x, beta);
 
   // the matrix perturbations now contains the delta_x_perp
   // NEED to evaluate at nomimal + delta_x_perp
@@ -732,13 +718,13 @@ assess_reconstruction(bool& recon_tol_met)
 
   // Reconstruction phase requires only functions
   // TODO: get off the model?
-//   ActiveSet recon_set = dace_iterator.active_set(); // copy
-//   unsigned short request_value = 1;
-//   recon_set.request_values(request_value);
+  //   ActiveSet recon_set = dace_iterator.active_set(); // copy
+  //   unsigned short request_value = 1;
+  //   recon_set.request_values(request_value);
   activeSet.request_values(1);
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nESM: Evaluating at nominal, and at " << verif_samples
-	 << " points orthogonal to the subspace" << std::endl;
+         << " points orthogonal to the subspace" << std::endl;
 
   // evaluate model at nominal values
   iteratedModel.continuous_variables(nominal_vars);
@@ -771,7 +757,7 @@ assess_reconstruction(bool& recon_tol_met)
 
     // standard deviation of Kvec
     double K_mu = std::accumulate(&Kvec[0], &Kvec[0]+verif_samples, 0.0) /
-      (Real) verif_samples;
+                  (Real) verif_samples;
     double K_sigma = 0.0;
     // Could decimate Kvec with (K-mu)^2; opt for simplicity
     for (unsigned int j=0; j<verif_samples; ++j) {
@@ -780,9 +766,9 @@ assess_reconstruction(bool& recon_tol_met)
     K_sigma = std::sqrt(K_sigma / (Real) (verif_samples-1));
 
     Cout << "\nESM: Reconstruction statistics over " << verif_samples
-	 << " samples for function " << i << ":\n  K_sigma = " << K_sigma
-	 << "\n  K_mu = " << K_mu
-	 << "\n  L2 (recon) error = " << recon_error << std::endl;
+         << " samples for function " << i << ":\n  K_sigma = " << K_sigma
+         << "\n  K_mu = " << K_mu
+         << "\n  L2 (recon) error = " << recon_error << std::endl;
 
     // if any function violates, continue process
     if (recon_error > nullspaceTol)
@@ -806,7 +792,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   // variable depends on all of the recast (reduced) variables, since
   // in general, they will
   Sizet2DArray vars_map_indices(numContinuousVars,
-				SizetArray(num_recast_vars));
+                                SizetArray(num_recast_vars));
   for (size_t i=0; i<numContinuousVars; ++i)
     for (size_t recasti=0; recasti<num_recast_vars; ++recasti)
       vars_map_indices[i][recasti] = recasti;
@@ -817,7 +803,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   // must be initialized! TODO: handle constraints?
   Sizet2DArray primary_resp_map_indices(numFunctions,
-					SizetArray(numFunctions, 0));
+                                        SizetArray(numFunctions, 0));
   for (size_t i=0; i<numFunctions; ++i)
     primary_resp_map_indices[i][i] = i;
 
@@ -827,7 +813,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   size_t recast_secondary_offset = 0;
 
   BoolDequeArray nonlinear_resp_map(numFunctions,
-				    BoolDeque(numFunctions, false));
+                                    BoolDeque(numFunctions, false));
 
   // primary and secondary resp_maps are NULL
 
@@ -845,10 +831,10 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   vars_transform_model.assign_rep(
     new RecastModel(iteratedModel, vars_map_indices, recast_vars_comps_total,
-		    all_relax_di, all_relax_dr, nonlinear_vars_map, map_xi_to_x,
-		    NULL, primary_resp_map_indices,  secondary_resp_map_indices,
-		    recast_secondary_offset, recast_resp_order,
-		    nonlinear_resp_map, NULL, NULL), false);
+                    all_relax_di, all_relax_dr, nonlinear_vars_map, map_xi_to_x,
+                    NULL, primary_resp_map_indices,  secondary_resp_map_indices,
+                    recast_secondary_offset, recast_resp_order,
+                    nonlinear_resp_map, NULL, NULL), false);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   vars_transform_model.init_communicators(pl_iter, subspaceSamples);
@@ -873,7 +859,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
   // might want true for multiple calls...
   bool vary_pattern = false;
   NonD::construct_lhs(reduced_space_sampler, vars_transform_model, sample_type,
-		      subspaceSamples, mc_seed, String(), vary_pattern);
+                      subspaceSamples, mc_seed, String(), vary_pattern);
 
   bool all_data = true;
   bool gen_stats = true;
@@ -900,7 +886,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
 /// transform and set the distribution parameters in the reduced model
 void EfficientSubspaceMethod::
 uncertain_vars_to_subspace(Model& native_model,
-			   Model& vars_transform_model)
+                           Model& vars_transform_model)
 {
   const Pecos::AleatoryDistParams& native_params =
     native_model.aleatory_distribution_parameters();
@@ -936,7 +922,7 @@ uncertain_vars_to_subspace(Model& native_model,
   // mu_xi <-- 1.0 * reducedBasis^T * mu_x + 0.0 * mu_xi
   Teuchos::BLAS<int, Real> teuchos_blas;
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m,
-		    mu_x.values(), incx, beta, mu_xi.values(), incy);
+                    mu_x.values(), incx, beta, mu_xi.values(), incy);
 
   // convert the correlations C_x to variance V_x
   // V_x <-- diag(sd_x) * C_x * diag(sd_x)
@@ -945,7 +931,7 @@ uncertain_vars_to_subspace(Model& native_model,
   if (native_correl) {
     for (int row=0; row<reducedBasis.numRows(); ++row)
       for (int col=0; col<reducedBasis.numRows(); ++col)
-	V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
+        V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
   }
   else {
     V_x = 0.0;
@@ -997,16 +983,16 @@ uncertain_vars_to_subspace(Model& native_model,
     Cout << "\ncorrel_xi = \n" << correl_xi;
 
   reduced_dist_params.uncertain_correlations(correl_xi);
-    //  }
+  //  }
 
-//   RealVector x_reduced(reducedRank);
-//   x_reduced = 1.0;
+  //   RealVector x_reduced(reducedRank);
+  //   x_reduced = 1.0;
 
-//   Cout << "x_reduced is\n";
-//   Cout << x_reduced << std::endl;
+  //   Cout << "x_reduced is\n";
+  //   Cout << x_reduced << std::endl;
 
-//   vars_transform_model.continuous_variables(x_reduced);
-//   vars_transform_model.compute_response();
+  //   vars_transform_model.continuous_variables(x_reduced);
+  //   vars_transform_model.compute_response();
 
 }
 
@@ -1042,7 +1028,7 @@ map_xi_to_x(const Variables& recast_xi_vars, Variables& sub_model_x_vars)
   int incy = 1;
 
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, reduced_basis.values(), m,
-		    xi.values(), incx, beta, x.values(), incy);
+                    xi.values(), incx, beta, x.values(), incy);
 
   if (esmInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Recast vars are\n";
