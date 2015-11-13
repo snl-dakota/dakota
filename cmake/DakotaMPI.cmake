@@ -33,12 +33,13 @@ function(DakotaFindMPI)
 
     message(STATUS "DAKOTA MPI: requested.")
 
-    if (DAKOTA_MPI_WRAPPER_ONLY AND CMAKE_CXX_COMPILER AND NOT MPI_CXX_COMPILER)
+    if (DAKOTA_MPI_WRAPPER_ONLY AND CMAKE_CXX_COMPILER)
       # In this case, skip the probe and let the wrapper do its thing.
-      set(MPI_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH 
-	"MPI CXX compiler overridden with CXX compiler")
-      message(STATUS "  Wrapper only requested (skipping MPI probe)")
-      message(STATUS "  MPI_CXX_COMPILER set to ${MPI_CXX_COMPILER}") 
+      message(STATUS "  Wrapper only requested; Skipping MPI probe")
+      if(MPI_CXX_COMPILER)
+        message(WARNING 
+           "  MPI_CXX_COMPILER was set, but will be ignored; Use CMAKE_CXX_COMPILER to specify\n  C++ MPI compiler wrapper.")
+      endif()
     else()
       find_package(MPI)
 
