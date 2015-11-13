@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cctype>
 #include <boost/algorithm/string.hpp>
-using namespace std;
 
 enum var_t { FT1,  FT2 };
 
@@ -26,36 +25,36 @@ int main(int argc, char** argv)
 {
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
-  ifstream fin(argv[1]);
+  std::ifstream fin(argv[1]);
   if (!fin) {
-    cerr << "\nError: failure opening " << argv[1] << endl;
+    std::cerr << "\nError: failure opening " << argv[1] << std::endl;
     exit(-1);
   }
   size_t i, j, num_vars, num_fns, num_deriv_vars, num_ac;
-  string text, hier_tag;
+  std::string text, hier_tag;
 
-  // define the string to enumeration map
-  map<string, var_t> var_t_map;
+  // define the std::string to enumeration map
+  std::map<std::string, var_t> var_t_map;
   var_t_map["failthresh1"] = FT1; var_t_map["failthresh2"] = FT2;
 
-  // Get the parameter vector and ignore the labels
+  // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> text;
   if (num_vars != 2 && num_vars != 10) {
-    cerr << "Error: wrong number of variables for trajectory_post().\n";
+    std::cerr << "Error: wrong number of variables for trajectory_post().\n";
     exit(-1);
   }
-  map<var_t, double> vars;
-  //vector<var_t> labels(num_vars);
-  double value_i; string label_i; //var_t v_i;
-  map<string, var_t>::iterator v_iter;
+  std::map<var_t, double> vars;
+  //std::vector<var_t> labels(num_vars);
+  double value_i; std::string label_i; //var_t v_i;
+  std::map<std::string, var_t>::iterator v_iter;
   for (i=0; i<num_vars; i++) {
     fin >> value_i >> label_i;
     transform(label_i.begin(), label_i.end(), label_i.begin(),
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
     // if (v_iter == var_t_map.end()) {
-    //   cerr << "Error: label \"" << label_i << "\" not supported in analysis "
-    // 	   << "driver." << endl;
+    //   std::cerr << "Error: label \"" << label_i << "\" not supported in analysis "
+    // 	   << "driver." << std::endl;
     //   exit(-1);
     // }
     // else
@@ -68,21 +67,21 @@ int main(int argc, char** argv)
       vars[v_iter->second] = value_i;
   }
 
-  // Get the ASV vector and ignore the labels
+  // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> text;
   if (num_fns != 1) {
-    cerr << "Error: wrong number of functions in trajectory_post.\n";
+    std::cerr << "Error: wrong number of functions in trajectory_post.\n";
     exit(-1);
   }
-  vector<short> ASV(num_fns);
+  std::vector<short> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
 
-  // Get the DVV vector and ignore the labels
+  // Get the DVV std::vector and ignore the labels
   fin >> num_deriv_vars >> text;
-  //vector<var_t> DVV(num_deriv_vars);
+  //std::vector<var_t> DVV(num_deriv_vars);
   unsigned int dvv_i;
   for (i=0; i<num_deriv_vars; i++) {
     fin >> dvv_i;
@@ -90,9 +89,9 @@ int main(int argc, char** argv)
     //DVV[i] = labels[dvv_i-1];
   }
 
-  // Extract the AC vector and ignore the labels
+  // Extract the AC std::vector and ignore the labels
   fin >> num_ac >> text;
-  vector<string> AC(num_ac);
+  std::vector<std::string> AC(num_ac);
   for (i=0; i<num_ac; i++) {
     fin >> AC[i];
     fin.ignore(256, '\n');
@@ -101,37 +100,37 @@ int main(int argc, char** argv)
 #ifdef HIERARCH_TAG
   // Extract the hierarchical fn eval tags (required to link to opt interface)
   fin >> hier_tag; fin.ignore(256, '\n');
-  vector<string> tags;
+  std::vector<std::string> tags;
   boost::split(tags, hier_tag, boost::is_any_of(".: "));
   size_t num_tags = tags.size();
   if (num_tags < 2) {
-    cerr << "Error: insufficient hierarchical tag depth." << endl;
+    std::cerr << "Error: insufficient hierarchical tag depth." << std::endl;
     exit(-1);
   }
-  string e_tag   = tags[0];                 // if file_tag is on
-  //string e_tag = tags[0] + '.' + tags[0]; // if file_tag is off (hack)
+  std::string e_tag   = tags[0];                 // if file_tag is on
+  //std::string e_tag = tags[0] + '.' + tags[0]; // if file_tag is off (hack)
   for (i=1; i<num_tags-1; ++i)
     e_tag += '.' + tags[i]; // up one level from last tag
 
   // Compute and output responses
-  string history = "../epistemic_simulation." + e_tag + "/time_history.dat";
+  std::string history = "../epistemic_simulation." + e_tag + "/time_history.dat";
 #else
-  string history = "time_history.dat";
+  std::string history = "time_history.dat";
 #endif
 
-  ifstream hist_in(history.c_str());
+  std::ifstream hist_in(history.c_str());
   if (!fin) {
-    cerr << "\nError: failure opening " << history << endl;
+    std::cerr << "\nError: failure opening " << history << std::endl;
     exit(-1);
   }
-  ofstream fout(argv[2]);
+  std::ofstream fout(argv[2]);
   if (!fout) {
-    cerr << "\nError: failure creating " << argv[2] << endl;
+    std::cerr << "\nError: failure creating " << argv[2] << std::endl;
     exit(-1);
   }
   fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  fout.setf(std::ios::scientific);
+  fout.setf(std::ios::right);
 
   size_t num_delta;
   hist_in >> num_delta;

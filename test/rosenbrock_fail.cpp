@@ -14,7 +14,6 @@
 #include <map>
 #include <algorithm>
 #include <cctype>
-using namespace std;
 
 enum var_t { X1, X2 };
 
@@ -28,33 +27,33 @@ int main(int argc, char** argv)
 
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
-  ifstream fin(argv[1]);
+  std::ifstream fin(argv[1]);
   if (!fin) {
-    cerr << "\nError: failure opening " << argv[1] << endl;
+    std::cerr << "\nError: failure opening " << argv[1] << std::endl;
     exit(-1);
   }
   size_t i, j, num_vars, num_fns, num_deriv_vars;
-  string vars_text, fns_text, dvv_text;
+  std::string vars_text, fns_text, dvv_text;
 
-  // define the string to enumeration map
-  map<string, var_t> var_t_map;
+  // define the std::string to enumeration map
+  std::map<std::string, var_t> var_t_map;
   var_t_map["x1"] = X1;
   var_t_map["x2"] = X2;
 
-  // Get the parameter vector and ignore the labels
+  // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> vars_text;
-  map<var_t, double> vars;
-  vector<var_t> labels(num_vars);
-  double var_i; string label_i; var_t v_i;
-  map<string, var_t>::iterator v_iter;
+  std::map<var_t, double> vars;
+  std::vector<var_t> labels(num_vars);
+  double var_i; std::string label_i; var_t v_i;
+  std::map<std::string, var_t>::iterator v_iter;
   for (i=0; i<num_vars; i++) {
     fin >> var_i >> label_i;
     transform(label_i.begin(), label_i.end(), label_i.begin(),
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
     if (v_iter == var_t_map.end()) {
-      cerr << "Error: label \"" << label_i << "\" not supported in analysis "
-	   << "driver." << endl;
+      std::cerr << "Error: label \"" << label_i << "\" not supported in analysis "
+	   << "driver." << std::endl;
       exit(-1);
     }
     else
@@ -63,17 +62,17 @@ int main(int argc, char** argv)
     labels[i] = v_i;
   }
 
-  // Get the ASV vector and ignore the labels
+  // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> fns_text;
-  vector<short> ASV(num_fns);
+  std::vector<short> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
 
-  // Get the DVV vector and ignore the labels
+  // Get the DVV std::vector and ignore the labels
   fin >> num_deriv_vars >> dvv_text;
-  vector<var_t> DVV(num_deriv_vars);
+  std::vector<var_t> DVV(num_deriv_vars);
   unsigned int dvv_i;
   for (i=0; i<num_deriv_vars; i++) {
     fin >> dvv_i;
@@ -82,11 +81,11 @@ int main(int argc, char** argv)
   }
 
   if (num_vars != 2) {
-    cerr << "Wrong number of variables for the rosenbrock problem\n";
+    std::cerr << "Wrong number of variables for the rosenbrock problem\n";
     exit(-1);
   }
   if (num_fns < 1 || num_fns > 2) { // 1 fn -> opt, 2 fns -> least sq
-    cerr << "Wrong number of functions in rosenbrock problem\n";
+    std::cerr << "Wrong number of functions in rosenbrock problem\n";
     exit(-1);
   }
 
@@ -96,14 +95,14 @@ int main(int argc, char** argv)
   double f1 = x2-x1*x1;
   double f2 = 1.-x1;
 
-  ofstream fout(argv[2]);
+  std::ofstream fout(argv[2]);
   if (!fout) {
-    cerr << "\nError: failure creating " << argv[2] << endl;
+    std::cerr << "\nError: failure creating " << argv[2] << std::endl;
     exit(-1);
   }
   fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  fout.setf(std::ios::scientific);
+  fout.setf(std::ios::right);
 
   if (least_sq_flag) {
     if (ASV[0] & 1) // **** Residual R1:

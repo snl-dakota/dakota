@@ -18,37 +18,36 @@
 //KRD modified this starting from shubert.cpp
 int main(int argc, char** argv)
 {
-  using namespace std;
 
-  ifstream fin(argv[1]);
+  std::ifstream fin(argv[1]);
   if (!fin) {
     std::cerr << "\nError: failure opening " << argv[1] << std::endl;
     exit(-1);
   }
   size_t i, j, k, num_vars, num_fns, num_deriv_vars;
-  string vars_text, fns_text, dvv_text;
+  std::string vars_text, fns_text, dvv_text;
 
-  // Get the parameter vector and ignore the labels
+  // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> vars_text;
-  vector<double> x(num_vars);
+  std::vector<double> x(num_vars);
   for (i=0; i<num_vars; i++) {
     fin >> x[i];
     fin.ignore(256, '\n');
   }
 
-  // Get the ASV vector and ignore the labels
+  // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> fns_text;
   if(num_fns!=1) {
     std::cerr << "\nError: Smoothed Herbie doesn't support constraints but you said #constraints=" << num_fns-1 << std::endl;
     exit(-1);
   }
-  vector<int> ASV(num_fns);
+  std::vector<int> ASV(num_fns);
   fin >> ASV[0];
   fin.ignore(256, '\n');
 
-  // Get the DVV vector and ignore the labels
+  // Get the DVV std::vector and ignore the labels
   fin >> num_deriv_vars >> dvv_text;
-  vector<int> DVV(num_deriv_vars);
+  std::vector<int> DVV(num_deriv_vars);
   for (i=0; i<num_deriv_vars; i++) {
     fin >> DVV[i];
     fin.ignore(256, '\n');
@@ -62,19 +61,19 @@ int main(int argc, char** argv)
   // Compute the results and output them directly to argv[2] (the NO_FILTER
   // option is used).  Response tags are now optional; output them for ease
   // of results readability.
-  ofstream fout(argv[2]);
+  std::ofstream fout(argv[2]);
   if (!fout) {
     std::cerr << "\nError: failure creating " << argv[2] << std::endl;
     exit(-1);
   }
   fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  fout.setf(std::ios::scientific);
+  fout.setf(std::ios::right);
 
   // **** f:
   // f(\underline{x})=-\prod_{i=1}^num_vars w(x_i) //latex notation
   // w(x_i) = \exp(-(x_i-1)^2)+\exp(-0.8*(x_i+1)^2) //w for smoothed herbie
-  vector<double> w(num_vars);  
+  std::vector<double> w(num_vars);  
   if (ASV[0] >= 1) 
     for (i=0; i<num_vars; i++) {
       double dtemp1=x[i]-1.0;
@@ -92,7 +91,7 @@ int main(int argc, char** argv)
   // **** df/dx:
   // df/dx_i=-(\prod_{j=1}^{i-1} w(x_j)) * dw(x_i)/dx_i * (\prod_{j=i+1}^{num_vars} w(x_j))
   // dw/dx_i= -2*(x_i-1)*\exp(-(x_i-1)^2)-0.8*2*(x_i+1)*\exp(-0.8*(x_i+1)^2) //for smoothed herbie
-  vector<double> d1w(num_vars);
+  std::vector<double> d1w(num_vars);
   if (ASV[0] >= 2) {
     for (i=0; i<num_deriv_vars; i++) {
       int ii=DVV[i]-1;

@@ -16,54 +16,53 @@
 
 int main(int argc, char** argv)
 {
-  using namespace std;
 
-  ifstream fin(argv[1]);
+  std::ifstream fin(argv[1]);
   if (!fin) {
-    cerr << "\nError: failure opening " << argv[1] << endl;
+    std::cerr << "\nError: failure opening " << argv[1] << std::endl;
     exit(-1);
   }
   size_t i, num_vars, num_fns;
-  string vars_text, fns_text;
+  std::string vars_text, fns_text;
 
-  // Get the parameter vector and ignore the labels
+  // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> vars_text;
-  vector<double> x(num_vars-1);
+  std::vector<double> x(num_vars-1);
   for (i=0; i<num_vars-1; i++) {
     fin >> x[i];
     fin.ignore(256, '\n');
   }
 
-  string thisstring; 
+  std::string thisstring; 
   fin >> thisstring;
   fin.ignore(256, '\n');
-  //cout << thisstring << "this string";
+  //cout << thisstring << "this std::string";
 
-  // Get the ASV vector and ignore the labels
+  // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> fns_text;
-  vector<int> ASV(num_fns);
+  std::vector<int> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
 
   if (num_vars != 3) {
-    cerr << "Wrong number of variables for the gerstner problem\n";
+    std::cerr << "Wrong number of variables for the gerstner problem\n";
     exit(-1);
   }
   if (num_fns != 1) {
-    cerr << "Wrong number of functions for the gerstner problem\n";
+    std::cerr << "Wrong number of functions for the gerstner problem\n";
     exit(-1);
   }
  
-  ofstream fout(argv[2]);
+  std::ofstream fout(argv[2]);
   if (!fout) {
-    cerr << "\nError: failure creating " << argv[2] << endl;
+    std::cerr << "\nError: failure creating " << argv[2] << std::endl;
     exit(-1);
   }
   fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  fout.setf(std::ios::scientific);
+  fout.setf(std::ios::right);
 
   short test_fn; double even_coeff, odd_coeff, inter_coeff;
   if (thisstring        == "iso1")
@@ -79,13 +78,13 @@ int main(int argc, char** argv)
   else if (thisstring == "aniso3")
     { test_fn = 3; even_coeff = 10.; odd_coeff = 5.; }
   else {
-    cerr << "Error: analysis component specification required in gerstner "
+    std::cerr << "Error: analysis component specification required in gerstner "
          << "direct fn." << std::endl;
     exit(-1);
   }
   //cout << even_coeff << "even_coeff" << "\n";
   //cout << odd_coeff << "odd_coeff" << "\n";
-  vector<double> xC;
+  std::vector<double> xC;
   xC.resize(2);
   xC[0]=x[0];
   xC[1]=x[1];

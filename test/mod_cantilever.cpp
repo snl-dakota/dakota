@@ -21,39 +21,38 @@ enum var_t { W, T, R, E, X, Y };
 
 int main(int argc, char** argv)
 {
-  using namespace std;
 
   // This test problem is an OUU example from Applied Research Associates
   // (42nd AIAA SDM conference, April 2001).
 
-  ifstream fin(argv[1]);
+  std::ifstream fin(argv[1]);
   if (!fin) {
-    cerr << "\nError: failure opening " << argv[1] << endl;
+    std::cerr << "\nError: failure opening " << argv[1] << std::endl;
     exit(-1);
   }
   size_t i, j, num_vars, num_fns, num_deriv_vars;
-  string vars_text, fns_text, dvv_text;
+  std::string vars_text, fns_text, dvv_text;
 
-  // define the string to enumeration map
-  map<string, var_t> var_t_map;
+  // define the std::string to enumeration map
+  std::map<std::string, var_t> var_t_map;
   var_t_map["w"] = W; var_t_map["t"] = T;
   var_t_map["r"] = R; var_t_map["e"] = E;
   var_t_map["x"] = X; var_t_map["y"] = Y;
 
-  // Get the parameter vector and ignore the labels
+  // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> vars_text;
-  map<var_t, double> vars;
-  vector<var_t> labels(num_vars);
-  double var_i; string label_i; var_t v_i;
-  map<string, var_t>::iterator v_iter;
+  std::map<var_t, double> vars;
+  std::vector<var_t> labels(num_vars);
+  double var_i; std::string label_i; var_t v_i;
+  std::map<std::string, var_t>::iterator v_iter;
   for (i=0; i<num_vars; i++) {
     fin >> var_i >> label_i;
     transform(label_i.begin(), label_i.end(), label_i.begin(),
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
     if (v_iter == var_t_map.end()) {
-      cerr << "Error: label \"" << label_i << "\" not supported in analysis "
-	   << "driver." << endl;
+      std::cerr << "Error: label \"" << label_i << "\" not supported in analysis "
+	   << "driver." << std::endl;
       exit(-1);
     }
     else
@@ -62,17 +61,17 @@ int main(int argc, char** argv)
     labels[i] = v_i;
   }
 
-  // Get the ASV vector and ignore the labels
+  // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> fns_text;
-  vector<short> ASV(num_fns);
+  std::vector<short> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
 
-  // Get the DVV vector and ignore the labels
+  // Get the DVV std::vector and ignore the labels
   fin >> num_deriv_vars >> dvv_text;
-  vector<var_t> DVV(num_deriv_vars);
+  std::vector<var_t> DVV(num_deriv_vars);
   unsigned int dvv_i;
   for (i=0; i<num_deriv_vars; i++) {
     fin >> dvv_i;
@@ -81,13 +80,13 @@ int main(int argc, char** argv)
   }
 
   if (num_vars != 4 && num_vars != 6) {
-    cerr << "Error: Wrong number of variables in mod_cantilever test fn."
-	 << endl;
+    std::cerr << "Error: Wrong number of variables in mod_cantilever test fn."
+	 << std::endl;
     exit(-1);
   }
   if (num_fns < 2 || num_fns > 3) {
-    cerr << "Error: wrong number of response functions in mod_cantilever test "
-	 << "fn." << endl;
+    std::cerr << "Error: wrong number of response functions in mod_cantilever test "
+	 << "fn." << std::endl;
     exit(-1);
   }
 
@@ -97,7 +96,7 @@ int main(int argc, char** argv)
   // augmentation.  It does not support mixed insertion/augmentation.  In
   // the 6 variable case, w,t,R,E,X,Y are all passed in; in the 4 variable
   // case, w,t assume local values.
-  map<var_t, double>::iterator m_iter = vars.find(W);
+  std::map<var_t, double>::iterator m_iter = vars.find(W);
   double w = (m_iter == vars.end()) ? 2.5 : m_iter->second; // beam width
   m_iter = vars.find(T);
   double t = (m_iter == vars.end()) ? 2.5 : m_iter->second; // beam thickness
@@ -124,14 +123,14 @@ int main(int argc, char** argv)
   double D1 = 4.*pow(L,3)/e/area, D2 = pow(y/t_sq, 2)+pow(x/w_sq, 2);
   double D3 = D1/sqrt(D2),        displ = D1*sqrt(D2);
 
-  ofstream fout(argv[2]); // do not instantiate until ready to write results
+  std::ofstream fout(argv[2]); // do not instantiate until ready to write results
   if (!fout) {
-    cerr << "\nError: failure creating " << argv[2] << endl;
+    std::cerr << "\nError: failure creating " << argv[2] << std::endl;
     exit(-1);
   }
   fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  fout.setf(std::ios::scientific);
+  fout.setf(std::ios::right);
 
   // **** f:
   if (objective && (ASV[0] & 1))

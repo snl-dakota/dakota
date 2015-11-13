@@ -16,38 +16,37 @@
 
 int main(int argc, char** argv)
 {
-  using namespace std;
 
   // This example problem arose as a demonstration for the Technologies 
   // Enabling Agile Manufacturing (TEAM) multi-lab project.
 
-  ifstream fin(argv[1]);
+  std::ifstream fin(argv[1]);
   if (!fin) {
-    cerr << "\nError: failure opening " << argv[1] << endl;
+    std::cerr << "\nError: failure opening " << argv[1] << std::endl;
     exit(-1);
   }
   size_t i, num_vars, num_fns;
-  string vars_text, fns_text;
+  std::string vars_text, fns_text;
 
-  // Get the parameter vector and ignore the labels
+  // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> vars_text;
-  vector<double> x(num_vars);
+  std::vector<double> x(num_vars);
   for (i=0; i<num_vars; i++) {
     fin >> x[i];
     fin.ignore(256, '\n');
   }
 
-  // Get the ASV vector and ignore the labels
+  // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> fns_text;
-  vector<int> ASV(num_fns);
+  std::vector<int> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
 
   if (num_vars != 2 || num_fns != 4) {
-    cerr << "Error: wrong number of inputs/outputs in cyl_head test function."
-         << endl;
+    std::cerr << "Error: wrong number of inputs/outputs in cyl_head test function."
+         << std::endl;
     exit(-1);
   }
 
@@ -66,20 +65,20 @@ int main(int argc, char** argv)
   double horse_power = 250.+200.*(x[0]/1.833-1.);
   double max_stress = 750. + pow(fabs(wall_thickness),-2.5);
 
-  cout << "In cyl_head evaluator:\nwarranty = " << warranty 
+  std::cout << "In cyl_head evaluator:\nwarranty = " << warranty 
        << "\ncycle_time = " << cycle_time
        << "\nwall_thickness = " << wall_thickness
        << "\nhorse_power = " << horse_power
-       << "\nmax_stress = " << max_stress << endl;
+       << "\nmax_stress = " << max_stress << std::endl;
 
-  ofstream fout(argv[2]); // do not instantiate until ready to write results
+  std::ofstream fout(argv[2]); // do not instantiate until ready to write results
   if (!fout) {
-    cerr << "\nError: failure creating " << argv[2] << endl;
+    std::cerr << "\nError: failure creating " << argv[2] << std::endl;
     exit(-1);
   }
   fout.precision(15); // 16 total digits
-  fout.setf(ios::scientific);
-  fout.setf(ios::right);
+  fout.setf(std::ios::scientific);
+  fout.setf(std::ios::right);
 
   // **** f:
   if (ASV[0] & 1)

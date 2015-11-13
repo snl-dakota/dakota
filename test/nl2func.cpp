@@ -4,7 +4,6 @@
 #include <cstring>
 /* #include "f2c.h" */
 
-using namespace std;
 
 typedef int integer;
 typedef double doublereal;
