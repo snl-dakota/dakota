@@ -34,34 +34,29 @@ function(DakotaFindMPI)
     message(STATUS "DAKOTA MPI: requested.")
 
     if (DAKOTA_MPI_WRAPPER_ONLY AND CMAKE_CXX_COMPILER AND NOT MPI_CXX_COMPILER)
-      # Help MPI find the compiler In this case?
-      # May be better to just require users to set MPI_CXX_COMPILER as
-      # well to preclude the probe finding a different
-      # MPI_CXX_COMPILER than is set for CMAKE_CXX_COMPILER
+      # In this case, skip the probe and let the wrapper do its thing.
       set(MPI_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH 
 	"MPI CXX compiler overridden with CXX compiler")
+      message(STATUS "  Wrapper only requested (skipping MPI probe)")
+      message(STATUS "  MPI_CXX_COMPILER set to ${MPI_CXX_COMPILER}") 
+    else()
+      find_package(MPI)
+
+      # cmake-2.8.5 and newer discriminate among compiler types; we only need CXX
+      # is that true, or do we only need C functions?
+      if(NOT MPI_CXX_FOUND)
+        message(FATAL_ERROR "DAKOTA MPI requested, but MPI for C++ not found. "
+          " Please build a serial configuration instead")
+      endif()
+
+      message(STATUS "Dakota MPI C++ configuration:")
+      foreach(output 
+  	FOUND COMPILER COMPILE_FLAGS INCLUDE_PATH LINK_FLAGS LIBRARIES)
+        message(STATUS "  MPI_CXX_${output}: ${MPI_CXX_${output}}")
+      endforeach()
+      message(STATUS "  MPIEXEC: ${MPIEXEC}")
+    
     endif()
-
-    #if (NOT DAKOTA_MPI_WRAPPER_ONLY)
-    # Do not use REQUIRED option since we only need MPI_CXX; instead perform 
-    # our own error check below.
-    find_package(MPI)
-    #endif()
-
-    message(STATUS "Dakota MPI C++ configuration:")
-    foreach(output 
-	FOUND COMPILER COMPILE_FLAGS INCLUDE_PATH LINK_FLAGS LIBRARIES)
-      message(STATUS "  MPI_CXX_${output}: ${MPI_CXX_${output}}")
-    endforeach()
-    message(STATUS "  MPIEXEC: ${MPIEXEC}")
-
-    # cmake-2.8.5 and newer discriminate among compiler types; we only need CXX
-    # is that true, or do we only need C functions?
-    if(NOT MPI_CXX_FOUND)
-      message(FATAL_ERROR "DAKOTA MPI requested, but MPI for C++ not found. "
-        " Please build a serial configuration instead")
-    endif()
-
   else()
     message(STATUS "DAKOTA MPI: not requested.")
   endif()
