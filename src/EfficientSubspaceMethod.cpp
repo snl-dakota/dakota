@@ -57,7 +57,7 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   batchSize(probDescDB.get_int("method.nond.batch_size")), // default 0
   subspaceSamples(probDescDB.get_int("method.nond.emulator_samples")), // def 0
   currIter(0), totalSamples(0), totalEvals(0), SVTol(std::max(convergenceTol,std::numeric_limits<Real>::epsilon())),
-  nullspaceTol(convergenceTol/1.0e3), svRatio(0.0), reducedRank(0)
+  performAssessment(false), nullspaceTol(convergenceTol/1.0e3), svRatio(0.0), numReplicates(100), reducedRank(0)
 {
   // the Iterator initializes:
   //   maxIterations    (default -1)
@@ -112,8 +112,8 @@ void EfficientSubspaceMethod::quantify_uncertainty()
     // reconstruction error, then continue outer if not tight enough
     if (currIter == 0) {
 
-      // initially do this loop until user tolerance met
-      // once met (userSVTol will always be met),
+      // initially do this loop until tolerance met
+      // once met (SVTol will always be met),
       while (!svtol_met && currIter < maxIterations && 
              totalEvals < maxFunctionEvals
              && reducedRank < numContinuousVars) {
@@ -162,7 +162,14 @@ void EfficientSubspaceMethod::quantify_uncertainty()
 
     // evaluate the fidelity of the reconstruction via orthogonal subspace
     // evaluations (constrained to stay in bounds)
-    assess_reconstruction(recon_tol_met);
+    if (performAssessment) {
+      assess_reconstruction(recon_tol_met);
+    }
+    else {
+      // Bypass tolerance check if no reconstruction:
+      recon_tol_met = true;
+      Cout << "\nESM: Reconstruction has been bypassed. performAssessment = false" << std::endl;
+    }
 
     if (!recon_tol_met)
       Cout << "\nESM: Reconstruction tolerance not met." << std::endl;
@@ -177,9 +184,14 @@ void EfficientSubspaceMethod::quantify_uncertainty()
        << std::endl;
 
   Cout << "\n --- ESM Build Convergence Criteria ---"
-       << "\n  tolerance on SVD met?: " << svtol_met
-       << "\n  reconstruction tolerance met?: " << recon_tol_met
-       << "\n  max_iterations reached: " << (bool) (currIter >= maxIterations)
+       << "\n  tolerance on SVD met?: " << svtol_met;
+  if(performAssessment) {
+    Cout << "\n  reconstruction tolerance met?: " << recon_tol_met;
+  }
+  else {    
+    Cout << "\n  reconstruction tolerance met?: bypassed";
+  }
+  Cout << "\n  max_iterations reached: " << (bool) (currIter >= maxIterations)
        << "\n  max_evals reached: " << (bool) (totalEvals >= maxFunctionEvals)
        << "\n  max rank reached: " << (bool) (reducedRank >= numContinuousVars)
        << std::endl;
@@ -497,7 +509,7 @@ compute_svd(bool& svtol_met)
   if(num_vars != singular_values.length())
   {
     Cerr << "Number of computed singular_values does not match the dimension "
-         "of the space of gradient samples! Logic not currently supported!"
+            "of the space of gradient samples! Logic not currently supported!"
          << std::endl;
     abort_handler(-1);
   }
@@ -508,12 +520,11 @@ compute_svd(bool& svtol_met)
   // Compute part 1 of criterion: relative energy in next eigenvalue in the
   // spectrum
 
-  RealMatrix::scalarType eigen_sum = singular_values[0] * singular_values[0];
-
-  for(size_t i = 0; i < num_vars - 1; ++i)
+  RealMatrix::scalarType eigen_sum = 0.0;
+  for(size_t i = 0; i < num_vars; ++i)
   {
-    RealMatrix::scalarType eigen_val = singular_values[i+1] *
-                                       singular_values[i+1];
+    RealMatrix::scalarType eigen_val = singular_values[i] *
+                                       singular_values[i];
     bing_li_criterion[i] = eigen_val;
     eigen_sum += eigen_val;
   }
@@ -535,8 +546,7 @@ compute_svd(bool& svtol_met)
     numFunctions);
 
   // TODO: Get number of bootstrap samples from problem desc database
-  size_t num_replicates = 100;
-  for (size_t i = 0; i < num_replicates; ++i)
+  for (size_t i = 0; i < numReplicates; ++i)
   {
     bootstrap_sampler(bootstrapped_sample);
 
@@ -573,10 +583,11 @@ compute_svd(bool& svtol_met)
   }
 
   RealMatrix::scalarType det_sum = 0.0;
+  bootstrapped_determinants[0] = 0.0;
   for (size_t i = 0; i < num_vars; ++i)
   {
-    bootstrapped_determinants[i] = 1 - bootstrapped_determinants[i] /
-                                   static_cast<RealMatrix::scalarType>(num_replicates);
+    bootstrapped_determinants[i] = 1.0 - bootstrapped_determinants[i] /
+                                   static_cast<RealMatrix::scalarType>(numReplicates);
     det_sum += bootstrapped_determinants[i];
   }
 
@@ -585,48 +596,37 @@ compute_svd(bool& svtol_met)
     bing_li_criterion[i] += bootstrapped_determinants[i] / det_sum;
   }
 
-  // Cutoff is minimum of the criterion
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nESM: Iteration " << currIter
+         << ". Bing Li Criterion values are [ ";
+    for (size_t i = 0; i < num_vars; ++i)
+    {
+      Cout << bing_li_criterion[i] << " ";
+    }
+    Cout << "]" << std::endl;
+  }
+
+  // Cutoff is 1st minimum of the criterion
   reducedRank = 0;
-  RealMatrix::scalarType criterion_min =
-    bing_li_criterion[reducedRank];
   for (size_t i = 1; i < num_vars; ++i)
   {
-    if(criterion_min > bing_li_criterion[i])
+    if(bing_li_criterion[i-1] < bing_li_criterion[i])
     {
-      criterion_min = bing_li_criterion[i];
-      reducedRank = i;
+      svtol_met = true;
+      reducedRank = i-1;
+      break;
     }
   }
 
   // END: Computational kernel to compute Bing Li's criterion
   /////////////////////////////////////////////////////////////////////////////
 
-  // TODO: if a reducedRank met the tolerance, but we added more
-  // samples to meet construction error, need to allow this bigger
-  // than svdtol and not truncate
-  Real inf_norm = derivativeMatrix.normInf();
-
-  // See Golub and VanLoan discussion of numerical rank; use
-  // tolerance applied to the sup norm...
-
-  // if first time, iterate until we meet user tolerance
-  // otherwise continue until we're numerically rank deficient
-  Real svtol = inf_norm * SVTol;
-
   int num_singular_values = singular_values.length();
-  reducedRank = num_singular_values;
-  double sv_small = 1., sv_large = DBL_MAX;
-  for (unsigned int i=0; i<num_singular_values; ++i) {
-    sv_small = singular_values[i];
-    sv_large = singular_values[0];
-    svRatio = singular_values[i] / singular_values[0];
 
-    if (svRatio < svtol) {
-      svtol_met = true;
-      reducedRank = i;
-      break;
-    }
-  }
+  // Compute ratio of largest singular value not in active subspace to
+  // largest singular value in active subspace:
+  int sv_cutoff_ind = (reducedRank < num_singular_values)?(reducedRank):(num_singular_values-1);
+  svRatio = singular_values[sv_cutoff_ind]/singular_values[0];
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nESM: Iteration " << currIter << ": singular values are [ ";

@@ -135,11 +135,17 @@ private:
   /// tolerance on singular value ratio, max of user-specified and macheps
   double SVTol;
 
+  /// boolean flag to determine if reconstruction assessment is performed
+  bool performAssessment;
+
   /// user-specified tolerance on nullspace 
   double nullspaceTol;
 
   /// current singular value ratio (sigma_k/sigma_0)
   double svRatio;
+
+  /// Number of bootstrap samples for Bing Li criterion
+  size_t numReplicates;
 
 
   // Data for numerical representation
