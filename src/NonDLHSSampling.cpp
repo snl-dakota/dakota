@@ -25,7 +25,9 @@
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "DakotaApproximation.hpp"
 //#include <Teuchos_MatrixMarket_Raw_Writer.hpp>
-
+#include "nested_sampling.hpp"
+#include "BasisPolynomial.hpp"
+#include "SharedOrthogPolyApproxData.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -109,11 +111,130 @@ NonDLHSSampling::~NonDLHSSampling()
 
 void NonDLHSSampling::pre_run()
 {
-  // run LHS to generate parameter sets
-  if (!varBasedDecompFlag)
-    get_parameter_sets(iteratedModel);
+  // run LHS to generate parameter sets; for VBD we defer to run for now
+  // BMA TODO: there's no reason VBD can't be supported in pre-run
+  if (!varBasedDecompFlag) {
+    
+    // BMA TODO: for now samples_vec is the full set of increments;
+    // will change to initial vs. refinement samples; written to be
+    // backward compatible for now
+    int seq_len = 1;
+    IntVector samples_vec(seq_len);
+    samples_vec = numSamples;
+    bool d_optimal = false;
+
+    // BMA TODO: VBD and other functions aren't accounting for string variables
+    // Sampling supports modes beyond just active
+    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+      drv_start, num_drv;
+    mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+		dsv_start, num_dsv, drv_start, num_drv);
+    size_t num_vars = num_cv + num_div + num_dsv + num_drv;
+    int previous_samples = 0, total_samples = samples_vec.normOne();
+    
+    if (allSamples.numRows() != num_vars || 
+	allSamples.numCols() != total_samples)
+      allSamples.shape(num_vars, total_samples);
+    
+    for (int batch_ind = 0; batch_ind < seq_len; ++batch_ind) {
+
+      // generate samples of each batch size to reproduce the series
+      // of increments, including the point selection
+      int new_samples = samples_vec[batch_ind];
+
+      // BMA TODO: Is this correct?
+      // the user may have fixed the seed; we have to advance it
+      if (seq_len > 1)
+	varyPattern = true;
+
+      if (d_optimal)
+	// populate the correct subset of allSamples, preserving previous
+	d_optimal_parameter_set(previous_samples, new_samples, allSamples);
+      else {
+	// sub-matrix of allSamples to populate
+	RealMatrix selected_samples(Teuchos::View, allSamples, 
+				    num_vars, new_samples,  // num row/col
+				    0, previous_samples);   // start row/col
+	get_lhs_samples(iteratedModel, new_samples, selected_samples);
+      }
+      previous_samples += new_samples;
+    }
+  }
 }
 
+
+/** For now, when this function is called, numSamples is the number of
+    new samples to generate. */
+void NonDLHSSampling::
+d_optimal_parameter_set(int previous_samples, int new_samples,
+			RealMatrix& full_samples)
+{
+  // BMA TODO: prohibit discrete variables... and possibly epistemic as well
+  // Guide user to MC vs. LHS...
+  // Sampling supports modes beyond just active
+  size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+    drv_start, num_drv;
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+	      dsv_start, num_dsv, drv_start, num_drv);
+  size_t num_vars = num_cv + num_div + num_dsv + num_drv;
+ 
+
+  int total_samples = previous_samples + new_samples;
+
+  // BMA TODO: allow user control and detect bad alloc
+  int oversample_ratio = 10;
+  int num_candidates = oversample_ratio*new_samples;
+
+  // generate a parameter set of size candidate 
+  RealMatrix candidate_samples(num_vars, num_candidates);
+  get_lhs_samples(iteratedModel, num_candidates, candidate_samples);
+
+  // initial samples is a view of the first previous samples columns
+  RealMatrix initial_samples(Teuchos::View, full_samples, 
+			     num_vars, previous_samples, 0, 0);
+
+  // downselect points, populating full_samples with the initial
+  // points plus any new selected points
+  RealMatrix selected_samples(Teuchos::View, full_samples, 
+			      num_vars, total_samples, 0, 0);
+
+  Cout << "initial samples " << initial_samples << std::endl;
+  Cout << "candidate samples " << candidate_samples << std::endl;
+
+  // BMA TODO: can we use numerically generated for discrete types?
+  // initialize nataf transform
+  initialize_random_variables(EXTENDED_U);
+  // Build polynomial basis using default basis configuration options
+  Pecos::BasisConfigOptions bc_options;
+  std::vector<Pecos::BasisPolynomial> poly_basis;
+  Pecos::SharedOrthogPolyApproxData::
+    construct_basis(natafTransform.u_types(),
+		    iteratedModel.aleatory_distribution_parameters(), 
+		    bc_options, poly_basis);
+
+  // BMA TODO: construct and preserve the LejaSampler if possible
+  // BMA TODO: discuss with John what's needed...
+  LejaSampler down_sampler;
+  down_sampler.set_precondition(true);
+  down_sampler.set_polynomial_basis(poly_basis);
+  down_sampler.set_total_degree_basis_from_num_samples(num_vars, total_samples);
+
+  // transform from x to u space; should we make a copy?
+  bool x_to_u = true;
+  transform_samples(initial_samples, x_to_u);
+  transform_samples(candidate_samples, x_to_u);
+
+  // this interface takes an initial set of samples, number of samples
+  // to add, a candidate set, and returns selected = [initial, new]
+  down_sampler.Sampler::enrich_samples(num_vars, initial_samples, new_samples,
+				       candidate_samples, selected_samples);
+  // transform from u back to x space
+  bool u_to_x = false;
+  transform_samples(selected_samples, u_to_x);
+
+  Cout << "selected samples " << selected_samples << std::endl;
+  Cout << "full_samples " << full_samples << std::endl;
+}
 
 void NonDLHSSampling::post_input()
 {

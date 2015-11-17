@@ -173,25 +173,43 @@ NonDSampling::~NonDSampling()
 void NonDSampling::transform_samples(bool x_to_u)
 {
   // transform x_samples to u_samples for use by expansionSampler
-  RealMatrix orig_samples(allSamples); // deep copy
+  transform_samples(allSamples, x_to_u, numSamples);
+}
+
+
+void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
+				     int num_samples)
+{
+  if (num_samples == 0)
+    num_samples = sample_matrix.numCols();
   if (x_to_u)
-    for (size_t i=0; i<numSamples; ++i) {
-      RealVector x_samp(Teuchos::View, orig_samples[i], numContinuousVars),
-                 u_samp(Teuchos::View,   allSamples[i], numContinuousVars);
+    for (size_t i=0; i<num_samples; ++i) {
+      RealVector x_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
+      RealVector u_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
       natafTransform.trans_X_to_U(x_samp, u_samp);
     }
   else
-    for (size_t i=0; i<numSamples; ++i) {
-      RealVector u_samp(Teuchos::View, orig_samples[i], numContinuousVars),
-	         x_samp(Teuchos::View,   allSamples[i], numContinuousVars);
+    for (size_t i=0; i<num_samples; ++i) {
+      RealVector u_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
+      RealVector x_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
       natafTransform.trans_U_to_X(u_samp, x_samp);
     }
 }
 
 
 /** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes. */
+    user-defined model in any of the four sampling modes and populates
+    class member allSamples. */
 void NonDSampling::get_parameter_sets(Model& model)
+{
+  get_lhs_samples(model, numSamples, allSamples);
+}
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    the specified design matrix. */
+void NonDSampling::get_lhs_samples(const Model& model, int num_samples,
+				   RealMatrix& design_matrix)
 {
   initialize_lhs(true);
 
@@ -219,7 +237,8 @@ void NonDSampling::get_parameter_sets(Model& model)
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
 					 model.continuous_upper_bounds(),
-					 numSamples, allSamples, backfillFlag);
+					 num_samples, design_matrix, 
+					 backfillFlag);
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
@@ -227,7 +246,8 @@ void NonDSampling::get_parameter_sets(Model& model)
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
 					 model.all_continuous_upper_bounds(),
-					 numSamples, allSamples, backfillFlag);
+					 num_samples, design_matrix, 
+					 backfillFlag);
     }
     else { // A, E, A+E UNCERTAIN
       // sample uniformly from {A,E,A+E} UNCERTAIN lower/upper bounds
@@ -249,23 +269,23 @@ void NonDSampling::get_parameter_sets(Model& model)
 	const_cast<Real*>(&all_c_u_bnds[start_acv]), num_acv);
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
       // TO DO: add support for uniform discrete
-      lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, 
-					 uncertain_c_u_bnds,
-					 numSamples, allSamples, backfillFlag);
+      lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, uncertain_c_u_bnds,
+					 num_samples, design_matrix, 
+					 backfillFlag);
     }
     break;
   case ALEATORY_UNCERTAIN:
     lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-			       numSamples, allSamples, backfillFlag);
+			       num_samples, design_matrix, backfillFlag);
     break;
   case EPISTEMIC_UNCERTAIN:
     lhsDriver.generate_samples(model.epistemic_distribution_parameters(),
-			       numSamples, allSamples, backfillFlag);
+			       num_samples, design_matrix, backfillFlag);
     break;
   case UNCERTAIN:
     lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
 			       model.epistemic_distribution_parameters(),
-			       numSamples, allSamples, backfillFlag);
+			       num_samples, design_matrix, backfillFlag);
     break;
   case ACTIVE: case ALL: {
     // extract design and state bounds
@@ -328,14 +348,14 @@ void NonDSampling::get_parameter_sets(Model& model)
 	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
 	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-   	  ds_state_sets, dr_state_sets, empty_adp, empty_edp, numSamples,
-	  allSamples, sampleRanks);
+   	  ds_state_sets, dr_state_sets, empty_adp, empty_edp, num_samples,
+	  design_matrix, sampleRanks);
       else
 	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
 	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-   	  ds_state_sets, dr_state_sets, empty_adp, empty_edp, numSamples,
-	  allSamples, sampleRanks);
+   	  ds_state_sets, dr_state_sets, empty_adp, empty_edp, num_samples,
+	  design_matrix, sampleRanks);
     }
     else if ( samplingVarsMode == ACTIVE &&
 	      ( model_view == RELAXED_ALEATORY_UNCERTAIN ||
@@ -346,13 +366,13 @@ void NonDSampling::get_parameter_sets(Model& model)
   	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
 	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  empty_edp, numSamples, allSamples, sampleRanks);
+	  empty_edp, num_samples, design_matrix, sampleRanks);
       else
 	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
   	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
 	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  empty_edp, numSamples, allSamples, sampleRanks);
+	  empty_edp, num_samples, design_matrix, sampleRanks);
     }
     else if ( samplingVarsMode == ACTIVE &&
 	      ( model_view == RELAXED_EPISTEMIC_UNCERTAIN ||
@@ -363,14 +383,14 @@ void NonDSampling::get_parameter_sets(Model& model)
   	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
 	  ds_state_sets, dr_state_sets, empty_adp,
-	  model.epistemic_distribution_parameters(), numSamples, allSamples,
+	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
 	  sampleRanks);
       else
 	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
   	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
 	  ds_state_sets, dr_state_sets, empty_adp,
-	  model.epistemic_distribution_parameters(), numSamples, allSamples,
+	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
 	  sampleRanks);
     }
     else {
@@ -379,14 +399,14 @@ void NonDSampling::get_parameter_sets(Model& model)
 	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
 	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  model.epistemic_distribution_parameters(), numSamples, allSamples,
+	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
 	  sampleRanks);
       else
 	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
 	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
 	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
 	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  model.epistemic_distribution_parameters(), numSamples, allSamples,
+	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
 	  sampleRanks);
 	  // warning sampleRanks will empty. 
 	  // See comment in lhs_driver.cpp generate_unique_samples()

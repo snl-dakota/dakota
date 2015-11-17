@@ -35,7 +35,10 @@ void Sampler::enrich_samples( int num_dims, const RealMatrix &initial_samples,
   // Allocate memory for selected samples
   int num_initial_samples = initial_samples.numCols(),
     num_total_samples = num_new_samples + num_initial_samples;
-  selected_samples.shapeUninitialized( num_dims, num_total_samples );
+  // Be careful not to disconnect if this is a Teuchos::View
+  if (selected_samples.numRows() != num_dims ||
+      selected_samples.numCols() != num_total_samples)
+    selected_samples.shapeUninitialized( num_dims, num_total_samples );
 
   // Copy initial samples into selected samples
   RealMatrix initial_samples_view( Teuchos::View, selected_samples,

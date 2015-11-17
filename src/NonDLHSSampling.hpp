@@ -85,6 +85,16 @@ protected:
   /// print the final statistics
   void print_results(std::ostream& s);
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// generate a d-optimal parameter set, leaving the first
+  /// previous_samples columns intact and adding new_samples new
+  /// columns following them
+  void d_optimal_parameter_set(int previous_samples, int new_samples, 
+			       RealMatrix& full_samples);
+
 private:
 
   //

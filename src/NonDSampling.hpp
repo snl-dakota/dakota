@@ -98,6 +98,10 @@ public:
   /// run time and an imported sample_matrix is typically in x-space.
   void transform_samples(bool x_to_u = true);
 
+  /// transform the specified samples matrix from x to u or u to x
+  void transform_samples(RealMatrix& sample_matrix, bool x_to_u, 
+			 int num_samples = 0);
+
 protected:
 
   //
@@ -206,6 +210,13 @@ protected:
 		   size_t& div_start,  size_t& num_div,
 		   size_t& dsv_start,  size_t& num_dsv,
 		   size_t& drv_start,  size_t& num_drv) const;
+
+
+  /// Uses lhsDriver to generate a set of samples from the
+  /// distributions/bounds defined in the incoming model and populates
+  /// the specified design matrix.
+  void get_lhs_samples(const Model& model, int num_samples, 
+		       RealMatrix& design_matrix);
 
   //
   //- Heading: Data members
