@@ -556,9 +556,9 @@ compute_svd(bool& svtol_met)
     bootstrapped_sample.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0,
                                  V_transpose, sample_sing_vectors, 0.0);
 
-    for(size_t j = 0; j < num_vars; ++j)
+    for(size_t j = 1; j < num_vars; ++j)
     {
-      size_t num_sing_vec = j + 1;
+      size_t num_sing_vec = j;
 
       RealMatrix submatrix(Teuchos::Copy, bootstrapped_sample, num_sing_vec,
                            num_sing_vec);
@@ -584,7 +584,7 @@ compute_svd(bool& svtol_met)
 
   RealMatrix::scalarType det_sum = 0.0;
   bootstrapped_determinants[0] = 0.0;
-  for (size_t i = 0; i < num_vars; ++i)
+  for (size_t i = 1; i < num_vars; ++i)
   {
     bootstrapped_determinants[i] = 1.0 - bootstrapped_determinants[i] /
                                    static_cast<RealMatrix::scalarType>(numReplicates);
