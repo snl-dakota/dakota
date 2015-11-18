@@ -56,14 +56,31 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   initialSamples(probDescDB.get_int("method.samples")),    // default 0
   batchSize(probDescDB.get_int("method.nond.batch_size")), // default 0
   subspaceSamples(probDescDB.get_int("method.nond.emulator_samples")), // def 0
-  currIter(0), totalSamples(0), totalEvals(0), SVTol(std::max(convergenceTol,std::numeric_limits<Real>::epsilon())),
-  performAssessment(false), nullspaceTol(convergenceTol/1.0e3), svRatio(0.0), numReplicates(100), reducedRank(0)
+  currIter(0), totalSamples(0), totalEvals(0),
+  SVTol(std::max(convergenceTol,std::numeric_limits<Real>::epsilon())),
+  performAssessment(false), nullspaceTol(convergenceTol/1.0e3),
+  svRatio(0.0), numReplicates(100), reducedRank(0), transformVars(true)
 {
   // the Iterator initializes:
   //   maxIterations    (default -1)
   //   convergenceTol   (default 1.0e-4); tolerance before checking recon error
   //   maxFunctionEvals (default 1000)
   validate_inputs();
+
+
+  if(transformVars) {
+    // Initialize transformation:
+    initialize_random_variable_transformation();
+    initialize_random_variable_types(STD_NORMAL_U);
+    initialize_random_variable_parameters();
+    initialize_random_variable_correlations();
+    //verify_correlation_support(STD_NORMAL_U);
+
+    transform_model(iteratedModel, fullSpaceModel, true);
+  }
+  else {
+    fullSpaceModel = iteratedModel;
+  }
 
   // initialize the fullspace Monte Carlo derivative sampler; this
   // will configure it to perform initialSamples
@@ -266,7 +283,7 @@ void EfficientSubspaceMethod::validate_inputs()
   }
 
   // validate response data
-  if (iteratedModel.gradient_type() == "none") {
+  if (fullSpaceModel.gradient_type() == "none") {
     error_flag = true;
     Cerr << "\nError: Efficient subspace method requires gradients.\n"
          << "       Please select numerical, analytic (recommended), or mixed "
@@ -294,12 +311,14 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
   std::string rng; // use default random number generator
 
   // configure this sampler initially to work with initialSamples
-  Analyzer* ndlhss =
-    new NonDLHSSampling(iteratedModel, sample_type, initialSamples, mc_seed,
-                        rng, ACTIVE_UNIFORM);
-  // allow random number sequence to span multiple calls to run()
-  ndlhss->vary_pattern(true);
+  NonDLHSSampling* ndlhss =
+    new NonDLHSSampling(fullSpaceModel, sample_type, initialSamples, mc_seed,
+                        rng, true, ACTIVE_UNIFORM);
+
   fullSpaceSampler.assign_rep(ndlhss, false);
+
+  if (transformVars)
+    ndlhss->initialize_random_variables(natafTransform); // shallow copy
 
   // TODO: review whether this is needed
   //fullSpaceSampler.sub_iterator_flag(true);
@@ -313,39 +332,39 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
 void EfficientSubspaceMethod::derived_init_communicators(ParLevLIter pl_iter)
 {
   // In ESM, the same model will be used in multiple contexts:
-  //  - fullSpaceSampler(iteratedModel) with initialSamples
-  //  - fullSpaceSampler(iteratedModel) with batchSamples
+  //  - fullSpaceSampler(fullSpaceModel) with initialSamples
+  //  - fullSpaceSampler(fullSpaceModel) with batchSamples
   //  - direct compute_response() of verif_samples, one at a time
-  //  - reduced_space_sampler(RecastModel(iteratedModel)) with subspaceSamples
+  //  - reduced_space_sampler(RecastModel(fullSpaceModel)) with subspaceSamples
 
   // Instead of using the helper iterators convenience function, we
   // directly set up communicators for each of the contexts that will
   // be encountered at run-time
 
   // maxEvalConcurrency is initialized to initialSamples * model concurrency
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+  fullSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);//initialSamples
   // batch additions support concurrency up to batchSize * model concurrency
-  int batch_concurrency = batchSize * iteratedModel.derivative_concurrency();
-  iteratedModel.init_communicators(pl_iter, batch_concurrency);
+  int batch_concurrency = batchSize * fullSpaceModel.derivative_concurrency();
+  fullSpaceModel.init_communicators(pl_iter, batch_concurrency);
   // defer this one to do it on the RecastModel at runtime
-  //  iteratedModel.init_communicators(pl_iter, subspaceSamples);
+  //  fullSpaceModel.init_communicators(pl_iter, subspaceSamples);
 }
 
 
 void EfficientSubspaceMethod::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-  iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+  fullSpaceModel.set_communicators(pl_iter, maxEvalConcurrency);//initialSamples
 }
 
 
 void EfficientSubspaceMethod::derived_free_communicators(ParLevLIter pl_iter)
 {
-  int batch_concurrency = batchSize * iteratedModel.derivative_concurrency();
-  iteratedModel.free_communicators(pl_iter, batch_concurrency);
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+  int batch_concurrency = batchSize * fullSpaceModel.derivative_concurrency();
+  fullSpaceModel.free_communicators(pl_iter, batch_concurrency);
+  fullSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);//initialSamples
   // defer this one to do it on the RecastModel at runtime
-  //  iteratedModel.free_communicators(pl_iter, subspaceSamples);
+  //  fullSpaceModel.free_communicators(pl_iter, subspaceSamples);
 }
 
 
@@ -421,10 +440,10 @@ generate_fullspace_samples(unsigned int diff_samples)
   // (initial build or batch update)
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   if (currIter == 1)
-    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+    fullSpaceModel.set_communicators(pl_iter, maxEvalConcurrency);
   else {
-    int batch_concurrency = batchSize * iteratedModel.derivative_concurrency();
-    iteratedModel.set_communicators(pl_iter, batch_concurrency);
+    int batch_concurrency = batchSize * fullSpaceModel.derivative_concurrency();
+    fullSpaceModel.set_communicators(pl_iter, batch_concurrency);
   }
   // and generate the additional samples
   fullSpaceSampler.run();//(pl_iter);
@@ -671,7 +690,7 @@ assess_reconstruction(bool& recon_tol_met)
 
   // TODO: Relies on normal distribution for now
   const RealVector& nominal_vars =
-    iteratedModel.aleatory_distribution_parameters().normal_means();
+    fullSpaceModel.aleatory_distribution_parameters().normal_means();
 
   // Find vectors orthogonal to each initial perturbation
   // for test problem, nominal is 0.5 for all x
@@ -727,10 +746,10 @@ assess_reconstruction(bool& recon_tol_met)
          << " points orthogonal to the subspace" << std::endl;
 
   // evaluate model at nominal values
-  iteratedModel.continuous_variables(nominal_vars);
-  iteratedModel.compute_response(activeSet);
+  fullSpaceModel.continuous_variables(nominal_vars);
+  fullSpaceModel.compute_response(activeSet);
   const RealVector& ynominal =
-    iteratedModel.current_response().function_values();
+    fullSpaceModel.current_response().function_values();
 
   // TODO: use array of RealVectors here
 
@@ -738,10 +757,10 @@ assess_reconstruction(bool& recon_tol_met)
   // TODO: asynch as well
   RealMatrix Kmat(verif_samples, numFunctions);
   for (int j=0; j<verif_samples; ++j) {
-    iteratedModel.continuous_variables(getCol(Teuchos::View, perp_points, j));
-    iteratedModel.compute_response(activeSet);
+    fullSpaceModel.continuous_variables(getCol(Teuchos::View, perp_points, j));
+    fullSpaceModel.compute_response(activeSet);
     // compute y(perp) - y(nominal)
-    RealVector deviation(iteratedModel.current_response().function_values());
+    RealVector deviation(fullSpaceModel.current_response().function_values());
     deviation -= ynominal;
     Teuchos::setCol(deviation, j, Kmat);
   }
@@ -824,13 +843,13 @@ void EfficientSubspaceMethod::reduced_space_uq()
   SizetArray recast_vars_comps_total(16, 0);
   recast_vars_comps_total[TOTAL_CAUV] = reducedRank;
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  const Response& curr_resp = iteratedModel.current_response();
+  const Response& curr_resp = fullSpaceModel.current_response();
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   vars_transform_model.assign_rep(
-    new RecastModel(iteratedModel, vars_map_indices, recast_vars_comps_total,
+    new RecastModel(fullSpaceModel, vars_map_indices, recast_vars_comps_total,
                     all_relax_di, all_relax_dr, nonlinear_vars_map, map_xi_to_x,
                     NULL, primary_resp_map_indices,  secondary_resp_map_indices,
                     recast_secondary_offset, recast_resp_order,
@@ -841,7 +860,7 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   // convert the normal distributionsto the reduced space and set in the
   // reduced model
-  uncertain_vars_to_subspace(iteratedModel, vars_transform_model);
+  uncertain_vars_to_subspace(fullSpaceModel, vars_transform_model);
 
   // Perform UQ on it
   Iterator reduced_space_sampler;
@@ -858,8 +877,14 @@ void EfficientSubspaceMethod::reduced_space_uq()
 
   // might want true for multiple calls...
   bool vary_pattern = false;
-  NonD::construct_lhs(reduced_space_sampler, vars_transform_model, sample_type,
-                      subspaceSamples, mc_seed, String(), vary_pattern);
+  NonDLHSSampling* lhs_rep =
+    new NonDLHSSampling(vars_transform_model, sample_type, subspaceSamples, mc_seed,
+                        String(), vary_pattern);
+
+  reduced_space_sampler.assign_rep(lhs_rep, false);
+
+  if (transformVars)
+    lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
   bool all_data = true;
   bool gen_stats = true;
