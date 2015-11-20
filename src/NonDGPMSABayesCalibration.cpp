@@ -162,16 +162,13 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "Got to line 196 \n" ;
   QUESO::GslVector paramMins(paramSpace.zeroVector());
   QUESO::GslVector paramMaxs(paramSpace.zeroVector());
-  const RealVector& lower_bounds = mcmcModel.continuous_lower_bounds();
-  const RealVector& upper_bounds = mcmcModel.continuous_upper_bounds();
-  const RealVector& init_point   = mcmcModel.continuous_variables();
-  Cout << "Initial Points " << init_point << "\nlower_bounds " << lower_bounds
+  RealRealPairArray bnds = (standardizedSpace) ?
+    natafTransform.u_bounds() : natafTransform.x_bounds();
+  for (size_t i=0; i<numUncertainVars; ++i)
+    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  const RealVector& init_point = mcmcModel.continuous_variables();
+  Cout << "Initial Points " << init_point
        << '\n'; // << "emulatorType " << emulatorType << '\n';
-
-  for (size_t i=0;i<numUncertainVars;i++) {
-    paramMins[i]=0.;//lower_bounds[i];
-    paramMaxs[i]=1.00000001;//upper_bounds[i]; // prudenci 2013-08-25
-  }
  
   QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
     paramDomain("param_",paramSpace,paramMins,paramMaxs);

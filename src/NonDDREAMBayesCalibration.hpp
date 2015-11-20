@@ -109,8 +109,8 @@ protected:
   /// how often to perform a long jump in generations
   int jumpStep;
 
-  /// uniform prior PDFs for each variable
-  std::vector<boost::math::uniform> priorDistributions;
+  // uniform prior PDFs for each variable
+  //std::vector<boost::math::uniform> priorDistributions;
   /// random number engine for sampling the prior
   boost::mt19937 rnumGenerator;
   /// samplers for the uniform prior PDFs for each variable

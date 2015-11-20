@@ -61,22 +61,19 @@ problem_value (std::string *chain_filename, std::string *gr_filename,
 /// forwarder to prior_density needed by DREAM
 double prior_density (int par_num, double zp[]) 
 {
-  return Dakota::NonDDREAMBayesCalibration::
-    prior_density (par_num, zp); 
+  return Dakota::NonDDREAMBayesCalibration::prior_density(par_num, zp); 
 }
 
 /// forwarder to prior_sample needed by DREAM
 double* prior_sample (int par_num)
 {
-  return Dakota::NonDDREAMBayesCalibration::
-    prior_sample(par_num);
+  return Dakota::NonDDREAMBayesCalibration::prior_sample(par_num);
 }
 
 /// forwarder to sample_likelihood needed by DREAM
 double sample_likelihood (int par_num, double zp[])
 {
-  return Dakota::NonDDREAMBayesCalibration::
-    sample_likelihood(par_num, zp);
+  return Dakota::NonDDREAMBayesCalibration::sample_likelihood(par_num, zp);
 }
 
 
@@ -206,36 +203,16 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   int total_num_params = numContinuousVars + numHyperparams;
   
+  const RealVector& init_point = mcmcModel.continuous_variables();
+  Cout << "Initial Points " << init_point << '\n';
+
   // resize, initializing to zero
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
-
-  const RealVector& lower_bounds = mcmcModel.continuous_lower_bounds();
-  const RealVector& upper_bounds = mcmcModel.continuous_upper_bounds();
-  const RealVector& init_point   = mcmcModel.continuous_variables();
-  Cout << "Initial Points " << init_point << '\n';
-
-  if (emulatorType == GP_EMULATOR || emulatorType == KRIGING_EMULATOR || 
-      emulatorType == NO_EMULATOR) {
-    for (size_t i=0;i<numContinuousVars;i++) {
-      paramMins[i] = lower_bounds[i];
-      paramMaxs[i] = upper_bounds[i];
-    }
-  }
-  else { // case PCE_EMULATOR: case SC_EMULATOR:
-    Iterator* se_iter = nonDDREAMInstance->stochExpIterator.iterator_rep();
-    Pecos::ProbabilityTransformation& nataf = 
-      ((NonD*)se_iter)->variable_transformation(); 
-    RealVector lower_u, upper_u;
-    nataf.trans_X_to_U(lower_bounds,lower_u);
-    nataf.trans_X_to_U(upper_bounds,upper_u);
-    for (size_t i=0;i<numContinuousVars;i++) {
-//      paramMins[i]=lower_bounds[i];
-//      paramMaxs[i]=upper_bounds[i];
-      paramMins[i]=lower_u[i];
-      paramMaxs[i]=upper_u[i];
-    }
-  }
+  RealRealPairArray bnds = (standardizedSpace) ?
+    natafTransform.u_bounds() : natafTransform.x_bounds();
+  for (size_t i=0; i<numContinuousVars; ++i)
+    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
   // BMA TODO: change from uniform to inverse gamma prior and allow control for 
@@ -261,13 +238,11 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // the prior is assumed uniform for DREAM
 
   // clear since this is a run-time operation
-  priorDistributions.clear();
+  //priorDistributions.clear();
   priorSamplers.clear();
   for (int i=0; i<total_num_params; ++i) {
-    priorDistributions.
-      push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
-    priorSamplers.
-      push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
+    //priorDistributions.push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
+    priorSamplers.push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
   }
 
   ////////////////////////////////////////////////////////
@@ -408,13 +383,15 @@ problem_value(string *chain_filename, string *gr_filename, double &gr_threshold,
 }
 
 /** See documentation in DREAM examples) 
-    BMA TODO: Change this to support all Dakota distribution types */			     
+    BMA TODO: Change this to support all Dakota distribution types */
 double  NonDDREAMBayesCalibration::prior_density ( int par_num, double zp[] )
 {
-  int i;
-  double value;
+  Dakota::RealVector vec(Teuchos::View, zp, par_num);
+  return nonDBayesInstance->prior_density(vec);
 
-  value = 1.0;
+  /*
+  int i;
+  double value = 1.0;
 
   for ( i = 0; i < par_num; i++ )    
   {
@@ -424,7 +401,9 @@ double  NonDDREAMBayesCalibration::prior_density ( int par_num, double zp[] )
   }
 
   return value;
+  */
 }
+
 
 /** See documentation in DREAM examples) */			     
 double *  NonDDREAMBayesCalibration::prior_sample ( int par_num )

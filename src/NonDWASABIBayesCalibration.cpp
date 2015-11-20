@@ -65,7 +65,7 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
 {
 
   // instantiate WASABI objects
-  NonDWASABIInstance = this;
+  nonDBayesInstance = NonDWASABIInstance = this;
 
   ////////////////////////////////////////////////////////
   // Step 1 of 10: Build the response surface approximation (RSA)
@@ -103,9 +103,10 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   // resize, initializing to zero
   paramMins.size(numContinuousVars);
   paramMaxs.size(numContinuousVars);
-
-  const RealVector& lower_bounds = mcmcModel.continuous_lower_bounds();
-  const RealVector& upper_bounds = mcmcModel.continuous_upper_bounds();
+  RealRealPairArray bnds = (standardizedSpace) ?
+    natafTransform.u_bounds() : natafTransform.x_bounds();
+  for (size_t i=0; i<numContinuousVars; ++i)
+    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
 
   // TMW: evaluation of prior should be elevated to NonDBayes 
   // (even for MCMC-based methods)
@@ -113,37 +114,16 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   // May want to use KDE to generate prior samples if given samples from prior
   // Nataf should be encapsulated in new pecos model class
 
-  if (emulatorType == GP_EMULATOR || emulatorType == KRIGING_EMULATOR || 
-      emulatorType == NO_EMULATOR) {
-    for (size_t i=0;i<numContinuousVars;i++) {
-      paramMins[i] = lower_bounds[i];
-      paramMaxs[i] = upper_bounds[i];
-    }
-  }
-  else { // case PCE_EMULATOR: case SC_EMULATOR:
-    Iterator* se_iter = NonDWASABIInstance->stochExpIterator.iterator_rep();
-    Pecos::ProbabilityTransformation& nataf = 
-      ((NonD*)se_iter)->variable_transformation(); 
-    RealVector lower_u, upper_u;
-    nataf.trans_X_to_U(lower_bounds,lower_u);
-    nataf.trans_X_to_U(upper_bounds,upper_u);
-    for (size_t i=0;i<numContinuousVars;i++) {
-      paramMins[i]=lower_u[i];
-      paramMaxs[i]=upper_u[i];
-    }
-  }
- 
   Cout << "INFO (WASABI): paramMins  " << paramMins << '\n';
   Cout << "INFO (WASABI): paramMaxs  " << paramMaxs << '\n';
 
-
   // clear since this is a run-time operation
-  priorDistributions.clear();
+  //priorDistributions.clear();
   priorSamplers.clear();
   int total_num_params = numContinuousVars; 
   for (int i=0; i<total_num_params; ++i) {
-    priorDistributions.
-      push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
+    //priorDistributions.
+    //  push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
     priorSamplers.
       push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
   }
@@ -355,19 +335,20 @@ void NonDWASABIBayesCalibration::print_results(std::ostream& s)
 
 double  NonDWASABIBayesCalibration::prior_density( int par_num, double zp[] )
 {
-  int i;
-  double value;
+  Dakota::RealVector vec(Teuchos::View, zp, par_num);
+  return nonDBayesInstance->prior_density(vec);
 
-  value = 1.0;
+  /*
+  int i;
+  double value = 1.0;
 
   for ( i = 0; i < par_num; i++ )    
   {
-    //value = value * r8_uniform_pdf (NonDDREAMInstance->paramMins[i],
-    //				    NonDDREAMInstance->paramMaxs[i], zp[i] );
     value *= boost::math::pdf(NonDWASABIInstance->priorDistributions[i], zp[i]);
   }
 
   return value;
+  */
 }
 
 void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)

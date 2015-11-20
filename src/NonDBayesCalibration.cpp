@@ -225,9 +225,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     numHyperparams = numExperiments * num_resp_groups;
 
   // Setup priors distributions on hyper-parameters
-  if ( (invGammaAlphas.length() > 1 && invGammaAlphas.length() != numHyperparams)
-       ||
-       (invGammaAlphas.length() !=  invGammaBetas.length()) ) {
+  if ( (invGammaAlphas.length()  > 1 &&
+	invGammaAlphas.length() != numHyperparams) ||
+       (invGammaAlphas.length() != invGammaBetas.length()) ) {
     Cerr << "\nError: hyperprior_alphas and hyperprior_betas must both have "
          << "length 1 or number of calibrated\n       error multipliers.\n";
     abort_handler(PARSE_ERROR);
@@ -237,19 +237,14 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // alpha = (mean/std_dev)^2 + 2
     // beta = mean*(alpha-1)
     // default:
-    Real alpha = 102.0; 
-    Real beta = 103.0;  
+    Real alpha = 102.0, beta = 103.0;  
     // however chosen to have mode = beta/(alpha+1) = 1.0 (initial point)
     //   mean = beta/(alpha-1) ~ 1.0
     //   s.d. ~ 0.1
-    if (invGammaAlphas.length() == 1) {
-      alpha = invGammaAlphas[0];
-      beta = invGammaBetas[0];
-    }
-    else if (invGammaAlphas.length() == numHyperparams) {
-      alpha = invGammaAlphas[i];
-      beta = invGammaBetas[i];
-    }
+    if (invGammaAlphas.length() == 1)
+      { alpha = invGammaAlphas[0]; beta = invGammaBetas[0]; }
+    else if (invGammaAlphas.length() == numHyperparams)
+      { alpha = invGammaAlphas[i]; beta = invGammaBetas[i]; }
     // BMA TODO: could store only one inverse gamma if all parameters the same
     invGammaDists[i] = Pecos::RandomVariable(Pecos::INV_GAMMA);
     Pecos::InvGammaRandomVariable* rv_rep = 
@@ -342,30 +337,29 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
     // RecastModel for bound-constrained argmin(misfit - log prior)
     if (opt_alg_override)
-      negLogPostModel.assign_rep
-        (new RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
-                         all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-                         set_recast, primary_resp_map_indices, 
-                         secondary_resp_map_indices, 0, nlp_resp_order, 
-                         nonlinear_resp_map, neg_log_post_resp_mapping, NULL),
-         false);
+      negLogPostModel.assign_rep(new 
+	RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
+		    all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+		    set_recast, primary_resp_map_indices, 
+		    secondary_resp_map_indices, 0, nlp_resp_order, 
+		    nonlinear_resp_map, neg_log_post_resp_mapping, NULL),false);
 
     switch (opt_alg_override) {
 #ifdef HAVE_NPSOL
     case SUBMETHOD_SQP: {
       // SQP with BFGS Hessians
       int npsol_deriv_level = 3;
-      mapOptimizer.assign_rep
-        (new NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),
-         false);
+      mapOptimizer.assign_rep(new
+	NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),
+	false);
       break;
     }
 #endif
 #ifdef HAVE_OPTPP
     case SUBMETHOD_NIP:
       // full Newton (OPTPP::OptBCNewton)
-      mapOptimizer.assign_rep
-        (new SNLLOptimizer("optpp_newton", negLogPostModel), false);
+      mapOptimizer.assign_rep(new 
+	SNLLOptimizer("optpp_newton", negLogPostModel), false);
       break;
 #endif
     }

@@ -398,24 +398,32 @@ public:
 
   /// return the active continuous variables from currentVariables
   const RealVector& continuous_variables() const;
+  /// return an active continuous variable from currentVariables
+  Real continuous_variable(size_t i) const;
   /// set the active continuous variables in currentVariables
   void continuous_variables(const RealVector& c_vars);
   /// set an active continuous variable in currentVariables
   void continuous_variable(Real c_var, size_t i);
   /// return the active discrete integer variables from currentVariables
   const IntVector& discrete_int_variables() const;
+  /// return an active discrete integer variable from currentVariables
+  int discrete_int_variable(size_t i) const;
   /// set the active discrete integer variables in currentVariables
   void discrete_int_variables(const IntVector& d_vars);
   /// set an active discrete integer variable in currentVariables
   void discrete_int_variable(int d_var, size_t i);
   /// return the active discrete string variables from currentVariables
   StringMultiArrayConstView discrete_string_variables() const;
+  /// return an active discrete string variable from currentVariables
+  const String& discrete_string_variable(size_t i) const;
   /// set the active discrete string variables in currentVariables
   void discrete_string_variables(StringMultiArrayConstView d_vars);
   /// set an active discrete string variable in currentVariables
   void discrete_string_variable(const String& d_var, size_t i);
   /// return the active discrete real variables from currentVariables
   const RealVector& discrete_real_variables() const;
+  /// return an active discrete real variable from currentVariables
+  Real discrete_real_variable(size_t i) const;
   /// set the active discrete real variables in currentVariables
   void discrete_real_variables(const RealVector& d_vars);
   /// set an active discrete real variable in currentVariables
@@ -668,36 +676,48 @@ public:
 
   /// return the active continuous lower bounds from userDefinedConstraints
   const RealVector& continuous_lower_bounds() const;
+  /// return an active continuous lower bound from userDefinedConstraints
+  Real continuous_lower_bound(size_t i) const;
   /// set the active continuous lower bounds in userDefinedConstraints
   void continuous_lower_bounds(const RealVector& c_l_bnds);
   /// set the i-th active continuous lower bound in userDefinedConstraints
   void continuous_lower_bound(Real c_l_bnd, size_t i);
   /// return the active continuous upper bounds from userDefinedConstraints
   const RealVector& continuous_upper_bounds() const;
+  /// return an active continuous upper bound from userDefinedConstraints
+  Real continuous_upper_bound(size_t i) const;
   /// set the active continuous upper bounds in userDefinedConstraints
   void continuous_upper_bounds(const RealVector& c_u_bnds);
   /// set the i-th active continuous upper bound from userDefinedConstraints
   void continuous_upper_bound(Real c_u_bnd, size_t i);
   /// return the active discrete int lower bounds from userDefinedConstraints
   const IntVector& discrete_int_lower_bounds() const;
+  /// return an active discrete int lower bound from userDefinedConstraints
+  int discrete_int_lower_bound(size_t i) const;
   /// set the active discrete int lower bounds in userDefinedConstraints
   void discrete_int_lower_bounds(const IntVector& d_l_bnds);
   /// set the i-th active discrete int lower bound in userDefinedConstraints
   void discrete_int_lower_bound(int d_l_bnd, size_t i);
   /// return the active discrete int upper bounds from userDefinedConstraints
   const IntVector& discrete_int_upper_bounds() const;
+  /// return an active discrete int upper bound from userDefinedConstraints
+  int discrete_int_upper_bound(size_t i) const;
   /// set the active discrete int upper bounds in userDefinedConstraints
   void discrete_int_upper_bounds(const IntVector& d_u_bnds);
   /// set the i-th active discrete int upper bound in userDefinedConstraints
   void discrete_int_upper_bound(int d_u_bnd, size_t i);
   /// return the active discrete real lower bounds from userDefinedConstraints
   const RealVector& discrete_real_lower_bounds() const;
+  /// return an active discrete real lower bound from userDefinedConstraints
+  Real discrete_real_lower_bound(size_t i) const;
   /// set the active discrete real lower bounds in userDefinedConstraints
   void discrete_real_lower_bounds(const RealVector& d_l_bnds);
   /// set the i-th active discrete real lower bound in userDefinedConstraints
   void discrete_real_lower_bound(Real d_l_bnd, size_t i);
   /// return the active discrete real upper bounds from userDefinedConstraints
   const RealVector& discrete_real_upper_bounds() const;
+  /// return an active discrete real upper bound from userDefinedConstraints
+  Real discrete_real_upper_bound(size_t i) const;
   /// set the active discrete real upper bounds in userDefinedConstraints
   void discrete_real_upper_bounds(const RealVector& d_u_bnds);
   /// set the i-th active discrete real upper bound in userDefinedConstraints
@@ -1459,6 +1479,13 @@ inline const RealVector& Model::continuous_variables() const
 }
 
 
+inline Real Model::continuous_variable(size_t i) const
+{
+  return (modelRep) ? modelRep->currentVariables.continuous_variable(i)
+                    : currentVariables.continuous_variable(i);
+}
+
+
 inline void Model::continuous_variables(const RealVector& c_vars) 
 {
   if (modelRep) modelRep->currentVariables.continuous_variables(c_vars);
@@ -1477,6 +1504,13 @@ inline const IntVector& Model::discrete_int_variables() const
 {
   return (modelRep) ? modelRep->currentVariables.discrete_int_variables()
                     : currentVariables.discrete_int_variables();
+}
+
+
+inline int Model::discrete_int_variable(size_t i) const
+{
+  return (modelRep) ? modelRep->currentVariables.discrete_int_variable(i)
+                    : currentVariables.discrete_int_variable(i);
 }
 
 
@@ -1501,6 +1535,13 @@ inline StringMultiArrayConstView Model::discrete_string_variables() const
 }
 
 
+inline const String& Model::discrete_string_variable(size_t i) const
+{
+  return (modelRep) ? modelRep->currentVariables.discrete_string_variable(i)
+                    : currentVariables.discrete_string_variable(i);
+}
+
+
 inline void Model::discrete_string_variables(StringMultiArrayConstView d_vars) 
 {
   if (modelRep) modelRep->currentVariables.discrete_string_variables(d_vars);
@@ -1519,6 +1560,13 @@ inline const RealVector& Model::discrete_real_variables() const
 {
   return (modelRep) ? modelRep->currentVariables.discrete_real_variables()
                     : currentVariables.discrete_real_variables();
+}
+
+
+inline Real Model::discrete_real_variable(size_t i) const
+{
+  return (modelRep) ? modelRep->currentVariables.discrete_real_variable(i)
+                    : currentVariables.discrete_real_variable(i);
 }
 
 
@@ -2331,6 +2379,13 @@ inline const RealVector& Model::continuous_lower_bounds() const
 }
 
 
+inline Real Model::continuous_lower_bound(size_t i) const
+{
+  return (modelRep) ? modelRep->userDefinedConstraints.continuous_lower_bound(i)
+                    : userDefinedConstraints.continuous_lower_bound(i);
+}
+
+
 inline void Model::continuous_lower_bounds(const RealVector& c_l_bnds)
 {
   if (modelRep)
@@ -2353,6 +2408,13 @@ inline const RealVector& Model::continuous_upper_bounds() const
 {
   return (modelRep) ? modelRep->userDefinedConstraints.continuous_upper_bounds()
                     : userDefinedConstraints.continuous_upper_bounds();
+}
+
+
+inline Real Model::continuous_upper_bound(size_t i) const
+{
+  return (modelRep) ? modelRep->userDefinedConstraints.continuous_upper_bound(i)
+                    : userDefinedConstraints.continuous_upper_bound(i);
 }
 
 
@@ -2382,6 +2444,14 @@ inline const IntVector& Model::discrete_int_lower_bounds() const
 }
 
 
+inline int Model::discrete_int_lower_bound(size_t i) const
+{
+  return (modelRep) ?
+    modelRep->userDefinedConstraints.discrete_int_lower_bound(i) :
+    userDefinedConstraints.discrete_int_lower_bound(i);
+}
+
+
 inline void Model::discrete_int_lower_bounds(const IntVector& d_l_bnds)
 {
   if (modelRep)
@@ -2405,6 +2475,14 @@ inline const IntVector& Model::discrete_int_upper_bounds() const
   return (modelRep) ?
     modelRep->userDefinedConstraints.discrete_int_upper_bounds() :
     userDefinedConstraints.discrete_int_upper_bounds();
+}
+
+
+inline int Model::discrete_int_upper_bound(size_t i) const
+{
+  return (modelRep) ?
+    modelRep->userDefinedConstraints.discrete_int_upper_bound(i) :
+    userDefinedConstraints.discrete_int_upper_bound(i);
 }
 
 
@@ -2434,6 +2512,14 @@ inline const RealVector& Model::discrete_real_lower_bounds() const
 }
 
 
+inline Real Model::discrete_real_lower_bound(size_t i) const
+{
+  return (modelRep) ?
+    modelRep->userDefinedConstraints.discrete_real_lower_bound(i) :
+    userDefinedConstraints.discrete_real_lower_bound(i);
+}
+
+
 inline void Model::discrete_real_lower_bounds(const RealVector& d_l_bnds)
 {
   if (modelRep)
@@ -2457,6 +2543,14 @@ inline const RealVector& Model::discrete_real_upper_bounds() const
   return (modelRep) ?
     modelRep->userDefinedConstraints.discrete_real_upper_bounds() :
     userDefinedConstraints.discrete_real_upper_bounds();
+}
+
+
+inline Real Model::discrete_real_upper_bound(size_t i) const
+{
+  return (modelRep) ?
+    modelRep->userDefinedConstraints.discrete_real_upper_bound(i) :
+    userDefinedConstraints.discrete_real_upper_bound(i);
 }
 
 

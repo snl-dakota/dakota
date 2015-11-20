@@ -611,27 +611,25 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (num_u_nuv || num_u_bnuv) {
     size_t num_total_nuv = num_u_nuv+num_u_bnuv;
-    RealVector nuv_means(num_total_nuv, false),
-      nuv_std_devs(num_total_nuv, false), nuv_l_bnds(num_total_nuv, false),
-      nuv_u_bnds(num_total_nuv, false);
+    // u_adp was lightweight constructed; must size before entry assign
+    u_adp.nuv(num_total_nuv);
     if (num_u_bnuv) {
-      const Pecos::RealVector& x_nuv_means    = x_adp.normal_means();
-      const Pecos::RealVector& x_nuv_std_devs = x_adp.normal_std_deviations();
-      const Pecos::RealVector& x_nuv_l_bnds   = x_adp.normal_lower_bounds();
-      const Pecos::RealVector& x_nuv_u_bnds   = x_adp.normal_upper_bounds();
       size_t n_cntr = 0, x_n_cntr = 0;;
       for (i=numContDesVars; i<num_cdv_cauv; ++i) {
 	x_type = x_ran_vars[i].type(); u_type = u_types[i];
 	if (u_type == Pecos::BOUNDED_NORMAL) {
-	  nuv_means[n_cntr]    = x_nuv_means[x_n_cntr];
-	  nuv_std_devs[n_cntr] = x_nuv_std_devs[x_n_cntr];
-	  nuv_l_bnds[n_cntr]   = x_nuv_l_bnds[x_n_cntr];
-	  nuv_u_bnds[n_cntr]   = x_nuv_u_bnds[x_n_cntr];
+	  u_adp.normal_mean(x_adp.normal_mean(x_n_cntr), n_cntr);
+	  u_adp.normal_std_deviation(
+	    x_adp.normal_std_deviation(x_n_cntr), n_cntr);
+	  u_adp.normal_lower_bound(x_adp.normal_lower_bound(x_n_cntr), n_cntr);
+	  u_adp.normal_upper_bound(x_adp.normal_upper_bound(x_n_cntr), n_cntr);
 	  ++n_cntr;
 	}
 	else if (u_type == Pecos::STD_NORMAL) {
-	  nuv_means[n_cntr]  = 0.;	 nuv_std_devs[n_cntr] = 1.;
-	  nuv_l_bnds[n_cntr] = -dbl_inf; nuv_u_bnds[n_cntr]   = dbl_inf;
+	  u_adp.normal_mean(0., n_cntr);
+	  u_adp.normal_std_deviation(1., n_cntr);
+	  u_adp.normal_lower_bound(-dbl_inf, n_cntr);
+	  u_adp.normal_upper_bound( dbl_inf, n_cntr);
 	  ++n_cntr;
 	}
 	if (x_type == Pecos::NORMAL || x_type == Pecos::BOUNDED_NORMAL)
@@ -639,13 +637,13 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
       }
     }
     else {
-      nuv_means  = 0.;       nuv_std_devs = 1.;
-      nuv_l_bnds = -dbl_inf; nuv_u_bnds   = dbl_inf;
+      for (i=0; i<num_total_nuv; ++i) {
+	u_adp.normal_mean(0., i);
+	u_adp.normal_std_deviation(1., i);
+	u_adp.normal_lower_bound(-dbl_inf, i);
+	u_adp.normal_upper_bound( dbl_inf, i);
+      }
     }
-    u_adp.normal_means(nuv_means);
-    u_adp.normal_std_deviations(nuv_std_devs);
-    u_adp.normal_lower_bounds(nuv_l_bnds);
-    u_adp.normal_upper_bounds(nuv_u_bnds);
   }
   if (num_u_lnuv || num_u_blnuv) {
     u_adp.lognormal_means(x_adp.lognormal_means());
@@ -659,10 +657,9 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     }
   }
   if (num_u_uuv) {
-    RealVector uuv_l_bnds(num_u_uuv, false); uuv_l_bnds = -1.;
-    RealVector uuv_u_bnds(num_u_uuv, false); uuv_u_bnds =  1.;
-    u_adp.uniform_lower_bounds(uuv_l_bnds);
-    u_adp.uniform_upper_bounds(uuv_u_bnds);
+    u_adp.uuv(num_u_uuv); // size before entry assign
+    for (i=0; i<num_u_uuv; ++i)
+      { u_adp.uniform_lower_bound(-1., i); u_adp.uniform_upper_bound( 1., i); }
   }
   if (num_u_luuv) {
     u_adp.loguniform_lower_bounds(x_adp.loguniform_lower_bounds());
@@ -674,21 +671,25 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     u_adp.triangular_upper_bounds(x_adp.triangular_upper_bounds());
   }
   if (num_u_euv) {
-    RealVector euv_betas(num_u_euv, false); euv_betas = 1.;
-    u_adp.exponential_betas(euv_betas);
+    u_adp.euv(num_u_euv); // size before entry assign
+    for (i=0; i<num_u_euv; ++i)
+      u_adp.exponential_beta(1., i);
   }
   if (num_u_buv) {
-    RealVector buv_l_bnds(num_u_buv, false); buv_l_bnds = -1.;
-    RealVector buv_u_bnds(num_u_buv, false); buv_u_bnds =  1.;
-    u_adp.beta_alphas(x_adp.beta_alphas());
-    u_adp.beta_betas(x_adp.beta_betas());
-    u_adp.beta_lower_bounds(buv_l_bnds);
-    u_adp.beta_upper_bounds(buv_u_bnds);
+    u_adp.buv(num_u_buv); // size before entry assign
+    for (i=0; i<num_u_buv; ++i) {
+      u_adp.beta_alpha(x_adp.beta_alpha(i), i);
+      u_adp.beta_beta(x_adp.beta_beta(i), i);
+      u_adp.beta_lower_bound(-1., i);
+      u_adp.beta_upper_bound( 1., i);
+    }
   }
   if (num_u_gauv) {
-    u_adp.gamma_alphas(x_adp.gamma_alphas());
-    RealVector gauv_betas(num_u_gauv, false); gauv_betas = 1.;
-    u_adp.gamma_betas(gauv_betas);
+    u_adp.gauv(num_u_gauv); // size before entry assign
+    for (i=0; i<num_u_gauv; ++i) {
+      u_adp.gamma_alpha(x_adp.gamma_alpha(i), i);
+      u_adp.gamma_beta(1., i);
+    }
   }
   if (num_u_guuv) {
     u_adp.gumbel_alphas(x_adp.gumbel_alphas());
@@ -724,20 +725,6 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
     RealVector c_l_bnds(numContinuousVars, false); c_l_bnds = -1.;
     RealVector c_u_bnds(numContinuousVars, false); c_u_bnds =  1.;
     // handle nonstandard bounds
-    const RealVector& x_c_l_bnds = x_model.continuous_lower_bounds();
-    const RealVector& x_c_u_bnds = x_model.continuous_upper_bounds();
-    const RealVector& lnuv_means     = x_adp.lognormal_means();
-    const RealVector& lnuv_std_devs  = x_adp.lognormal_std_deviations();
-    const RealVector& lnuv_lambdas   = x_adp.lognormal_lambdas();
-    const RealVector& lnuv_zetas     = x_adp.lognormal_zetas();
-    const RealVector& lnuv_err_facts = x_adp.lognormal_error_factors();
-    const RealVector& gauv_alphas = x_adp.gamma_alphas();
-    const RealVector& guuv_alphas = x_adp.gumbel_alphas();
-    const RealVector& guuv_betas  = x_adp.gumbel_betas();
-    const RealVector& fuv_alphas  = x_adp.frechet_alphas();
-    const RealVector& fuv_betas   = x_adp.frechet_betas();
-    const RealVector& wuv_alphas  = x_adp.weibull_alphas();
-    const RealVector& wuv_betas   = x_adp.weibull_betas();
     size_t i, lnuv_cntr = 0, gauv_cntr = 0, guuv_cntr = 0, fuv_cntr = 0,
       wuv_cntr = 0;
     for (i=numContDesVars; i<num_cdv_cauv; ++i) {
@@ -749,44 +736,45 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
       case Pecos::STD_GAMMA: {
 	Real mean, stdev;
 	Pecos::GammaRandomVariable::
-	  moments_from_params(gauv_alphas[guuv_cntr], 1., mean, stdev);
+	  moments_from_params(x_adp.gamma_alpha(gauv_cntr), 1., mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++gauv_cntr; break;
       }
       case Pecos::BOUNDED_NORMAL: case Pecos::BOUNDED_LOGNORMAL:
       case Pecos::LOGUNIFORM:     case Pecos::TRIANGULAR:
       case Pecos::HISTOGRAM_BIN:
 	// bounded distributions: x-space has desired bounds
-	c_l_bnds[i] = x_c_l_bnds[i]; c_u_bnds[i] = x_c_u_bnds[i]; break;
-      // Note: Could use x_c_l_bnds/x_c_u_bnds for the following cases as well
-      // except that NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
+	c_l_bnds[i] = x_model.continuous_lower_bound(i);
+	c_u_bnds[i] = x_model.continuous_upper_bound(i); break;
+      // Note: Could use x_model bounds for the following cases as well except
+      // that NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
       case Pecos::LOGNORMAL: { // semi-bounded distribution
 	Real mean, stdev;
-	Pecos::moments_from_lognormal_spec(lnuv_means, lnuv_std_devs,
-					   lnuv_lambdas, lnuv_zetas,
-					   lnuv_err_facts, lnuv_cntr,
-					   mean, stdev);
+	Pecos::moments_from_lognormal_spec(x_adp.lognormal_means(),
+	  x_adp.lognormal_std_deviations(), x_adp.lognormal_lambdas(),
+	  x_adp.lognormal_zetas(), x_adp.lognormal_error_factors(),
+	  lnuv_cntr, mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++lnuv_cntr; break;
       }
       case Pecos::GUMBEL: { // unbounded distribution
 	Real mean, stdev;
 	Pecos::GumbelRandomVariable::
-	  moments_from_params(guuv_alphas[guuv_cntr], guuv_betas[guuv_cntr],
-			      mean, stdev);
+	  moments_from_params(x_adp.gumbel_alpha(guuv_cntr),
+			      x_adp.gumbel_beta(guuv_cntr), mean, stdev);
 	c_l_bnds[i] = mean - bound*stdev; c_u_bnds[i] = mean + bound*stdev;
 	++guuv_cntr; break;
       }
       case Pecos::FRECHET: { // semibounded distribution
 	Real mean, stdev;
 	Pecos::FrechetRandomVariable::
-	  moments_from_params(fuv_alphas[fuv_cntr], fuv_betas[fuv_cntr],
-			      mean, stdev);
+	  moments_from_params(x_adp.frechet_alpha(fuv_cntr),
+			      x_adp.frechet_beta(fuv_cntr), mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++fuv_cntr; break;
       }
       case Pecos::WEIBULL: { // semibounded distribution
 	Real mean, stdev;
 	Pecos::WeibullRandomVariable::
-	  moments_from_params(wuv_alphas[wuv_cntr], wuv_betas[wuv_cntr],
-			      mean, stdev);
+	  moments_from_params(x_adp.weibull_alpha(wuv_cntr),
+			      x_adp.weibull_beta(wuv_cntr), mean, stdev);
 	c_l_bnds[i] = 0.; c_u_bnds[i] = mean + bound*stdev; ++wuv_cntr; break;
       }
       }
