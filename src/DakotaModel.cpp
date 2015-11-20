@@ -3278,7 +3278,8 @@ set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       = modelPCIterMap.find(key);
     if (map_iter == modelPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
-           << "Model::set_communicators()." << std::endl;
+           << "Model::set_communicators() for key(" << key.first << ", "
+           << key.second << ")." << std::endl;
       abort_handler(MODEL_ERROR);
     }
     else

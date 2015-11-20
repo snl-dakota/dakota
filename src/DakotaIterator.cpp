@@ -1132,7 +1132,7 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
       = methodPCIterMap.find(pl_index);
     if (map_iter == methodPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
-           << "Iterator::set_communicators()." << std::endl;
+           << "Iterator::set_communicators() for pl_index = " << pl_index << "." << std::endl;
       abort_handler(-1);
     }
     else

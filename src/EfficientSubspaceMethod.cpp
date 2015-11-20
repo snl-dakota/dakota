@@ -72,11 +72,11 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
     // Initialize transformation:
     initialize_random_variable_transformation();
     initialize_random_variable_types(STD_NORMAL_U);
-    initialize_random_variable_parameters();
+    initialize_random_variable_parameters(); // TODO Move to runtime
     initialize_random_variable_correlations();
     //verify_correlation_support(STD_NORMAL_U);
 
-    transform_model(iteratedModel, fullSpaceModel, true);
+    transform_model(iteratedModel, fullSpaceModel);
   }
   else {
     fullSpaceModel = iteratedModel;
@@ -313,7 +313,7 @@ void EfficientSubspaceMethod::init_fullspace_sampler()
   // configure this sampler initially to work with initialSamples
   NonDLHSSampling* ndlhss =
     new NonDLHSSampling(fullSpaceModel, sample_type, initialSamples, mc_seed,
-                        rng, true, ACTIVE_UNIFORM);
+                        rng, true);
 
   fullSpaceSampler.assign_rep(ndlhss, false);
 
@@ -341,8 +341,7 @@ void EfficientSubspaceMethod::derived_init_communicators(ParLevLIter pl_iter)
   // directly set up communicators for each of the contexts that will
   // be encountered at run-time
 
-  // maxEvalConcurrency is initialized to initialSamples * model concurrency
-  fullSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+  fullSpaceSampler.init_communicators(pl_iter);
   // batch additions support concurrency up to batchSize * model concurrency
   int batch_concurrency = batchSize * fullSpaceModel.derivative_concurrency();
   fullSpaceModel.init_communicators(pl_iter, batch_concurrency);
@@ -351,18 +350,21 @@ void EfficientSubspaceMethod::derived_init_communicators(ParLevLIter pl_iter)
 }
 
 
+// Unnecessary due to run(pl_iter) which invokes set_communicators on
+// fullSpaceSampler
+/*
 void EfficientSubspaceMethod::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-  fullSpaceModel.set_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+  fullSpaceSampler.set_communicators(pl_iter);
 }
-
+*/
 
 void EfficientSubspaceMethod::derived_free_communicators(ParLevLIter pl_iter)
 {
   int batch_concurrency = batchSize * fullSpaceModel.derivative_concurrency();
   fullSpaceModel.free_communicators(pl_iter, batch_concurrency);
-  fullSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);//initialSamples
+  fullSpaceSampler.free_communicators(pl_iter);
   // defer this one to do it on the RecastModel at runtime
   //  fullSpaceModel.free_communicators(pl_iter, subspaceSamples);
 }
@@ -446,7 +448,7 @@ generate_fullspace_samples(unsigned int diff_samples)
     fullSpaceModel.set_communicators(pl_iter, batch_concurrency);
   }
   // and generate the additional samples
-  fullSpaceSampler.run();//(pl_iter);
+  fullSpaceSampler.run(pl_iter);
 }
 
 
@@ -856,7 +858,6 @@ void EfficientSubspaceMethod::reduced_space_uq()
                     nonlinear_resp_map, NULL, NULL), false);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  vars_transform_model.init_communicators(pl_iter, subspaceSamples);
 
   // convert the normal distributionsto the reduced space and set in the
   // reduced model
@@ -886,18 +887,20 @@ void EfficientSubspaceMethod::reduced_space_uq()
   if (transformVars)
     lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
+  reduced_space_sampler.init_communicators(pl_iter);
+
   bool all_data = true;
   bool gen_stats = true;
   reduced_space_sampler.sampling_reset(subspaceSamples, all_data, gen_stats);
 
   reduced_space_sampler.sub_iterator_flag(false);
-  reduced_space_sampler.run();//(pl_iter);
+  reduced_space_sampler.run(pl_iter);
 
   // reduced space UQ results
   Cout << " --- ESM: Results of reduced-space UQ --- \n";
   reduced_space_sampler.print_results(Cout);
 
-  vars_transform_model.free_communicators(pl_iter, subspaceSamples);
+  reduced_space_sampler.free_communicators(pl_iter);
 
 }
 
