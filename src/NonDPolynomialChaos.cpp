@@ -344,7 +344,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  // global bounds are needed for communicating non-distribution bounds
+  // global bounds are needed for communicating cdv/ceuv/csv bounds
   // and for supporting NonDBayesCalibration::mapOptimizer
   bool global_bnds = true;
     //= (numContDesVars || numContEpistUncVars || numContStateVars);
@@ -423,7 +423,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  // global bounds are needed for communicating non-distribution bounds
+  // global bounds are needed for communicating cdv/ceuv/csv bounds
   // and for supporting NonDBayesCalibration::mapOptimizer
   bool global_bnds = true;
     //= (numContDesVars || numContEpistUncVars || numContStateVars);

@@ -258,14 +258,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
                               obsErrorMultiplierMode, mcmc_deriv_order), false);
-    RealVector lb = residualModel.continuous_lower_bounds();
-    RealVector ub = residualModel.continuous_upper_bounds();
+    // update bounds for hyper-parameters
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (size_t i=0; i<numHyperparams; ++i) {
-      lb[numContinuousVars + i] = 0.0;
-      ub[numContinuousVars + i] = std::numeric_limits<Real>::infinity();
+      residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
+      residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
-    residualModel.continuous_lower_bounds(lb);
-    residualModel.continuous_upper_bounds(ub);
   }
   else
     residualModel = mcmcModel;  // shallow copy

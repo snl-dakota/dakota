@@ -76,7 +76,7 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
     initialize_random_variable_correlations();
     //verify_correlation_support(STD_NORMAL_U);
 
-    transform_model(iteratedModel, fullSpaceModel);
+    transform_model(iteratedModel, fullSpaceModel); // global bounds not needed
   }
   else {
     fullSpaceModel = iteratedModel;
