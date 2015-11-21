@@ -59,14 +59,13 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   lhsIter.assign_rep(new
-    NonDLHSSampling(mcmcModel, sample_type, emulatorSamples, randomSeed, rng,
-		    true, ACTIVE_UNIFORM), false);
+    NonDLHSSampling(mcmcModel, sample_type, emulatorSamples, randomSeed, rng),
+    false);
 
   Cerr << "Error: NonDGPMSABayesCalibration requires the user to update the vectors and parameters "
-         << "governing this model manually in the NonDGPMSABayesianCalibration class "
-         << "and then recompile.  For further instructions, contact a Dakota developer."  << std::endl;
-    abort_handler(METHOD_ERROR);
-
+       << "governing this model manually in the NonDGPMSABayesianCalibration class "
+       << "and then recompile.  For further instructions, contact a Dakota developer." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 

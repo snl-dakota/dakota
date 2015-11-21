@@ -178,12 +178,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator; Model lhs_model;
-    if (standardizedSpace) transform_model(iteratedModel,lhs_model,true);//glbal
+    if (standardizedSpace) transform_model(iteratedModel, lhs_model);//dist bnds
     else                   lhs_model = iteratedModel; // shared rep
+    // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
+    // samples in regions of higher prior density
     NonDLHSSampling* lhs_rep = new
       NonDLHSSampling(lhs_model, sample_type, samples, randomSeed,
-        probDescDB.get_string("method.random_number_generator"), true,
-	ACTIVE_UNIFORM);
+        probDescDB.get_string("method.random_number_generator"));
     lhs_iterator.assign_rep(lhs_rep, false);
 
     // natafTransform is not fully updated at this point, but using
@@ -203,7 +204,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   case NO_EMULATOR:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) transform_model(iteratedModel, mcmcModel);// !global
+    if (standardizedSpace) transform_model(iteratedModel, mcmcModel);//dist bnds
     else                   mcmcModel = iteratedModel; // shared rep
 
     if (mcmcModel.gradient_type() != "none") mcmc_deriv_order |= 2;

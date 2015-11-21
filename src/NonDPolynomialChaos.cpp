@@ -79,11 +79,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  // For data import, global bounds needed for DataFitSurrModel::inside()
-  bool global_bnds
-    = ( numContDesVars || numContEpistUncVars || numContStateVars ||
-	( !import_pts_file.empty() && pt_reuse == "region" ) );
-  transform_model(iteratedModel, g_u_model, global_bnds);
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -344,11 +340,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  // global bounds are needed for communicating cdv/ceuv/csv bounds
-  // and for supporting NonDBayesCalibration::mapOptimizer
-  bool global_bnds = true;
-    //= (numContDesVars || numContEpistUncVars || numContStateVars);
-  transform_model(iteratedModel, g_u_model, global_bnds);
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -423,11 +415,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  // global bounds are needed for communicating cdv/ceuv/csv bounds
-  // and for supporting NonDBayesCalibration::mapOptimizer
-  bool global_bnds = true;
-    //= (numContDesVars || numContEpistUncVars || numContStateVars);
-  transform_model(iteratedModel, g_u_model, global_bnds);
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
 
   Iterator u_space_sampler;
   UShortArray exp_order;

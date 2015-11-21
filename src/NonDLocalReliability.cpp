@@ -229,14 +229,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       outputLevel, sample_reuse), false);
 
     // transform g_hat_x_model from x-space to u-space
-    transform_model(g_hat_x_model, uSpaceModel, true); // globally bounded
+    transform_model(g_hat_x_model, uSpaceModel, true); // truncated dist bounds
   }
   else if (mppSearchType ==  AMV_U || mppSearchType == AMV_PLUS_U ||
 	   mppSearchType == TANA_U) { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, true); // globally bounded
+    transform_model(iteratedModel, g_u_model, true); // truncated dist bounds
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -256,7 +256,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   }
   else if (mppSearchType == NO_APPROX) { // Recast( iteratedModel )
     // Recast g(x) to G(u)
-    transform_model(iteratedModel, uSpaceModel, true); // globally bounded
+    transform_model(iteratedModel, uSpaceModel, true); // truncated dist bounds
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -342,7 +342,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String rng; // empty string: use default
 
-    // Note: global bounds definition in transform_model() can be true
+    // Note: truncated distribution bounds in transform_model() can be true
     // (to bound an optimizer search) with AIS use_model_bounds = false
     // (AIS will ignore these global bounds); extreme values are needed
     // to define bounds for outer PDF bins.
@@ -355,7 +355,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: {
       Model g_u_model;
-      transform_model(iteratedModel, g_u_model); // global bounds not needed
+      transform_model(iteratedModel, g_u_model); // original dist bounds
       import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
 	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
 	cdfFlag, x_model_flag, use_model_bounds, track_extreme);

@@ -47,11 +47,12 @@ public:
   NonDLHSSampling(Model& model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,
 		  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
-  /// alternate constructor for sample generation "on the fly"
+  /// alternate constructor for uniform sample generation "on the fly"
   NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		  const String& rng, const RealVector& lower_bnds,
 		  const RealVector& upper_bnds);
-  /// alternate constructor for sample generation of correlated normals "on the fly"
+  /// alternate constructor for sample generation of correlated normals
+  /// "on the fly"
   NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		  const String& rng, const RealVector& means, 
                   const RealVector& std_devs, const RealVector& lower_bnds,
