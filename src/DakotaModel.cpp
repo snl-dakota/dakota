@@ -1013,7 +1013,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   const ShortArray& original_asv = original_set.request_vector();
   const SizetArray& original_dvv = original_set.derivative_vector();
   size_t i, j, k, map_counter = 0, num_deriv_vars = original_dvv.size();
-  const RealVector *f2 = NULL;
   size_t ifg, nfg = 0;
 
   for (i=0; i<numFns; i++) {
@@ -1036,17 +1035,20 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   if (nfg)
     fd_hess_by_grad_flag = true;
 
-  // The logic for performing a data_pairs search is that a data request
-  // contained in original_asv is most likely not a duplicate, but that an
-  // augmented data requirement (appears in map_asv but not in original_asv)
-  // may have been evaluated previously.
-  Response initial_map_response(currentResponse.copy());
-  ActiveSet new_set = original_set; // copy
-  new_set.request_vector(map_asv);
-  initial_map_response.active_set(new_set);
+  ActiveSet new_set(map_asv, original_set.derivative_vector());
+  //Response initial_map_response(currentResponse.copy());
+  //initial_map_response.active_set(new_set); // wasteful if new_set << resp set
+  // TO DO: issue with quasi-Hessian space allocation (BMA)
+  Response initial_map_response(currentResponse.shared_data(), new_set);
+
+  // The logic for incurring an additional data_pairs search (beyond the
+  // existing duplicate detection) is that a data request contained in
+  // original_asv is most likely not a duplicate, but there is a good chance
+  // that an augmented data reqmt (appears in map_asv but not in original_asv)
+  // has been evaluated previously.  The additional search allows us to trap
+  // this common case more gracefully (special header, no evaluation echo).
   if (augmented_data_flag) {
-    bool eval_found = db_lookup(currentVariables, new_set, initial_map_response);
-    if (eval_found) {
+    if (db_lookup(currentVariables, new_set, initial_map_response)) {
       if (outputLevel > SILENT_OUTPUT)
         Cout << ">>>>> map at X performed previously and results retrieved\n\n";
       initial_map = false; // reset
@@ -1056,19 +1058,22 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
       }
     }
   }
+  if (asynch_flag) { // communicate settings to synchronize_derivatives()
+    initialMapList.push_back(initial_map);
+    dbCaptureList.push_back(db_capture);
+  }
 
   if (initial_map) {
     if (outputLevel > SILENT_OUTPUT) {
+      Cout << ">>>>> Initial map for analytic portion of response";
       if (augmented_data_flag)
-        Cout << ">>>>> Initial map for analytic portion of response\n      "
-             << "augmented with data requirements for differencing:\n";
-      else
-        Cout << ">>>>> Initial map for analytic portion of response:\n";
+	Cout << "\n      augmented with data requirements for differencing";
+      Cout << ":\n";
     }
     if (asynch_flag) {
       derived_asynch_compute_response(new_set);
       if (outputLevel > SILENT_OUTPUT)
-        Cout << "\n\n";
+	Cout << "\n\n";
     }
     else {
       derived_compute_response(new_set);
@@ -1076,12 +1081,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     }
     ++map_counter;
   }
-  if (asynch_flag) { // communicate settings to synchronize_derivatives()
-    initialMapList.push_back(initial_map);
-    dbCaptureList.push_back(db_capture);
-  }
-  // else if (fd_grad_flag || fd_hess_by_fn_flag)
-  //   fn_vals_x0 = &initial_map_response.function_values();
 
   // ------------------------------
   // Estimate numerical derivatives
@@ -1218,8 +1217,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               h1 = h*h2*(h2-h);
               for(i = 0; i < numFns; ++i)
                 new_fn_grads(j,i)
-                  = (	h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
-                      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
+                  = ( h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
+		      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
             }
             else {
               h1 = h - h2;
@@ -1315,8 +1314,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 // prevent error in differencing vals present in fn_vals_x0 but
                 // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
                 if (fd_hess_asv[i] & 1)
-                  new_fn_hessians[i](j,j) = 
-                    (fn_vals_x_plus_2h[i]
+                  new_fn_hessians[i](j,j) = (fn_vals_x_plus_2h[i]
                      - 2.*fn_vals_x0[i] +  fn_vals_x_minus_2h[i])/(4.*h*h);
             }
 
@@ -1445,7 +1443,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             //	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
             //			      std::max(std::fabs(x0_j), .01));
             Real h1 = FDstep1(x0_j, lb_j, ub_j,
-                              initialize_h(x0_j, lb_j, ub_j, 2.*fdhbfss, fdHessStepType));
+	      initialize_h(x0_j, lb_j, ub_j, 2.*fdhbfss, fdHessStepType));
             Real h2 = FDstep2(x0_j, lb_j, ub_j, h1);
             Real denom, hdiff;
             if (asynch_flag) { // transfer settings to synchronize_derivatives()
@@ -1554,10 +1552,10 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 derived_compute_response(new_set);
                 fn_vals_x12 = currentResponse.function_values();
                 denom = h1*h2;
-                f2 = &fx[k];
+                const RealVector& f2 = fx[k];
                 for (i=0; i<numFns; ++i)
                   new_fn_hessians[i](j,k) = (fn_vals_x12[i] - fn_vals_x1[i] -
-                                             (*f2)[i] + fn_vals_x0[i]) / denom;
+                                             f2[i] + fn_vals_x0[i]) / denom;
               }
 
               ++map_counter;
@@ -1575,7 +1573,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           //	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
           //			   std::max(std::fabs(x0_j), .01));
           Real h = FDstep1(x0_j, lb_j, ub_j,
-                           initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessStepType));
+            initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessStepType));
           if (asynch_flag) // communicate settings to synchronize_derivatives()
             deltaList.push_back(h);
 
@@ -1644,6 +1642,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           }
           ifg += num_deriv_vars;
         }
+
     update_response(currentVariables, currentResponse, fd_grad_asv, fd_hess_asv,
                     quasi_hess_asv, original_set, initial_map_response,
                     new_fn_grads, new_fn_hessians);
@@ -1722,7 +1721,7 @@ synchronize_derivatives(const Variables& vars,
     initial_map_response = dbResponseList.front(); 
     dbResponseList.pop_front();
   }
-  else { // construct an empty initial_map_response
+  else { // construct an empty initial_map_response  **** TO DO ****
     initial_map_response = currentResponse.copy();
     ActiveSet initial_map_set = currentResponse.active_set(); // copy
     initial_map_set.request_values(0);
@@ -1751,7 +1750,7 @@ synchronize_derivatives(const Variables& vars,
       cv_ids.resize(boost::extents[acv()]);
       cv_ids = currentVariables.all_continuous_variable_ids();
     }
-    const RealVector& fn_vals_x0 = initial_map_response.function_values();
+    const RealVector& fn_vals_x0  = initial_map_response.function_values();
     const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
     for (j=0; j<num_deriv_vars; j++) {
       size_t xj_index = find_index(cv_ids, original_dvv[j]);
@@ -1842,8 +1841,8 @@ synchronize_derivatives(const Variables& vars,
                 // NOTE: symmetry is naturally satisfied.
                 new_fn_hessians[i](j,k)
                   = new_fn_hessians[i](k,j)
-                  = (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i]
-                     -  fn_vals_x_minus_h_plus_h[i] + fn_vals_x_minus_h_minus_h[i])
+                  = (fn_vals_x_plus_h_plus_h[i]  - fn_vals_x_plus_h_minus_h[i]
+                  -  fn_vals_x_minus_h_plus_h[i] + fn_vals_x_minus_h_minus_h[i])
                   / (4.*h*h);
             }
           }
@@ -1993,8 +1992,11 @@ update_response(const Variables& vars, Response& new_response,
 
   if (initial_map) {
     if (fd_grad_flag) { // merge new_fn_grads with initial map grads
-      RealMatrix partial_fn_grads = initial_map_response.function_gradients();
-      partial_fn_grads.reshape(new_fn_grads.numRows(), new_fn_grads.numCols());
+      RealMatrix partial_fn_grads;
+      if (initial_map_grad_flag)
+	partial_fn_grads = initial_map_response.function_gradients();
+      else
+	partial_fn_grads.shape(new_fn_grads.numRows(), new_fn_grads.numCols());
       for (i=0; i<numFns; ++i) {
 	// overwrite partial_fn_grads with new_fn_grads based on fd_grad_asv
 	// (needed for case of mixed gradients)
@@ -2033,7 +2035,7 @@ update_response(const Variables& vars, Response& new_response,
     // merge initial map Hessians, new_fn_hessians, and quasiHessians
     if (fd_hess_flag || quasi_hess_flag) {
       RealSymMatrixArray partial_fn_hessians;
-      if (initial_map)
+      if (initial_map_hess_flag)
 	partial_fn_hessians = initial_map_response.function_hessians();
       else
 	partial_fn_hessians.resize(numFns);
@@ -2370,8 +2372,7 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
            ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) )
         map_asv_out[i] |= 2; // activate 2nd bit
       else if ( methodSource == "dakota" && ( gradientType == "numerical" ||
-                                              ( gradientType == "mixed" &&
-                                                contains(gradIdNumerical, i+1) ) ) ) {
+		( gradientType == "mixed" && contains(gradIdNumerical, i+1)))) {
         fd_grad_asv_out[i] = 1;
         fd_grad_flag = true;
         if (intervalType == "forward")

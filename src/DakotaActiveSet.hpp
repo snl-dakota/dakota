@@ -52,6 +52,7 @@ public:
   ActiveSet();                                      ///< default constructor
   ActiveSet(size_t num_fns, size_t num_deriv_vars); ///< standard constructor
   ActiveSet(size_t num_fns);                        ///< partial constructor
+  ActiveSet(const ShortArray& asv, const SizetArray& dvv); ///< alt constructor
   ActiveSet(const ActiveSet& set);                  ///< copy constructor
   ~ActiveSet();                                     ///< destructor
 
@@ -129,6 +130,10 @@ private:
 
 inline ActiveSet::ActiveSet()
 { }
+
+
+inline ActiveSet::ActiveSet(const ShortArray& asv, const SizetArray& dvv)
+{ requestVector = asv; derivVarsVector = dvv; }
 
 
 inline ActiveSet::ActiveSet(const ActiveSet& set)
