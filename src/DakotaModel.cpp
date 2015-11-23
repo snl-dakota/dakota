@@ -1036,9 +1036,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     fd_hess_by_grad_flag = true;
 
   ActiveSet new_set(map_asv, original_set.derivative_vector());
-  //Response initial_map_response(currentResponse.copy());
-  //initial_map_response.active_set(new_set); // wasteful if new_set << resp set
-  // TO DO: issue with quasi-Hessian space allocation (BMA)
   Response initial_map_response(currentResponse.shared_data(), new_set);
 
   // The logic for incurring an additional data_pairs search (beyond the
@@ -1721,12 +1718,11 @@ synchronize_derivatives(const Variables& vars,
     initial_map_response = dbResponseList.front(); 
     dbResponseList.pop_front();
   }
-  else { // construct an empty initial_map_response  **** TO DO ****
-    initial_map_response = currentResponse.copy();
-    ActiveSet initial_map_set = currentResponse.active_set(); // copy
-    initial_map_set.request_values(0);
-    initial_map_response.active_set(initial_map_set);
-    initial_map_response.reset_inactive();
+  else { // construct an empty initial_map_response
+    ShortArray asv(numFns, 0);
+    ActiveSet initial_map_set(asv, original_dvv);
+    initial_map_response
+      = Response(currentResponse.shared_data(), initial_map_set);
   }
 
   if (fd_hess_flag && fd_hess_by_fn_flag && !centralHess) {
