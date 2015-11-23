@@ -60,7 +60,7 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   SVTol(std::max(convergenceTol,std::numeric_limits<Real>::epsilon())),
   performAssessment(false), nullspaceTol(convergenceTol/1.0e3),
   svRatio(0.0), numReplicates(100), reducedRank(0), transformVars(true),
-  gradientScaleFactors(numFunctions,1.0)
+  gradientScaleFactors(numFunctions,1.0), subspaceIDMethod(SUBSPACE_ID_CONSTANTINE)
 {
   // the Iterator initializes:
   //   maxIterations    (default -1)
@@ -168,9 +168,8 @@ void EfficientSubspaceMethod::quantify_uncertainty()
 
     // update the reducedBasis
     // the reduced basis is dimension N x r and stored in the first r
-    // cols of derivativeMatrix; extract it instead of using BLAS directly
-    // TODO: could probably do a View and avoid the Copy
-    RealMatrix reduced_basis_U(Teuchos::Copy, derivativeMatrix,
+    // cols of leftSingularVectors; extract it instead of using BLAS directly
+    RealMatrix reduced_basis_U(Teuchos::View, leftSingularVectors,
                                numContinuousVars, reducedRank);
     reducedBasis = reduced_basis_U;
     if (outputLevel >= DEBUG_OUTPUT) {
@@ -528,13 +527,8 @@ compute_svd(bool& svtol_met)
 
   RealVector singular_values;
   RealMatrix V_transpose;
-  // BMA: This overwrites the derivativeMatrix with left singular
-  // vectors, probably not what we want...
-  svd(derivativeMatrix, singular_values, V_transpose);
-
-  /////////////////////////////////////////////////////////////////////////////
-  // BEGIN: Computational kernel to compute Bing Li's criterion for the
-  // eigenvalue gap
+  leftSingularVectors = derivativeMatrix;
+  svd(leftSingularVectors, singular_values, V_transpose);
 
   // TODO: Analyze whether we need to worry about this
   if(singular_values.length() == 0)
@@ -543,16 +537,47 @@ compute_svd(bool& svtol_met)
     abort_handler(-1);
   }
 
-  int num_vars = derivativeMatrix.numRows();
   // TODO: Analyze whether we need this check and can have differing numbers
   // of singular values returned
-  if(num_vars != singular_values.length())
+  if(derivativeMatrix.numRows() != singular_values.length())
   {
     Cerr << "Number of computed singular_values does not match the dimension "
             "of the space of gradient samples! Logic not currently supported!"
          << std::endl;
     abort_handler(-1);
   }
+
+  // Identify the active subspace using one of the methods below:
+  switch(subspaceIDMethod) {
+    case SUBSPACE_ID_BING_LI:
+      computeBingLiCriterion(singular_values, svtol_met);
+      break;
+    case SUBSPACE_ID_CONSTANTINE:
+      computeConstantineMetric(singular_values, svtol_met);
+      break;
+    default:
+      computeBingLiCriterion(singular_values, svtol_met);
+  }
+
+  int num_singular_values = singular_values.length();
+
+  // Compute ratio of largest singular value not in active subspace to
+  // largest singular value in active subspace:
+  int sv_cutoff_ind = (reducedRank < num_singular_values)?(reducedRank):(num_singular_values-1);
+  svRatio = singular_values[sv_cutoff_ind]/singular_values[0];
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nESM: Iteration " << currIter << ": singular values are [ ";
+    for (unsigned int i=0; i<num_singular_values; ++i)
+      Cout << singular_values[i] << " ";
+    Cout << "]" << std::endl;
+  }
+}
+
+void EfficientSubspaceMethod::
+computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
+{
+  int num_vars = derivativeMatrix.numRows();
 
   // Stores Bing Li's criterion
   std::vector<RealMatrix::scalarType> bing_li_criterion(num_vars, 0);
@@ -593,8 +618,8 @@ compute_svd(bool& svtol_met)
     svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
 
     // Overwrite bootstrap replicate with singular matrix product
-    bootstrapped_sample.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0,
-                                 V_transpose, sample_sing_vectors, 0.0);
+    bootstrapped_sample.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0,
+                                 leftSingularVectors, bootstrapped_sample, 0.0);
 
     for(size_t j = 1; j < num_vars; ++j)
     {
@@ -657,25 +682,84 @@ compute_svd(bool& svtol_met)
       break;
     }
   }
-
-  // END: Computational kernel to compute Bing Li's criterion
-  /////////////////////////////////////////////////////////////////////////////
-
-  int num_singular_values = singular_values.length();
-
-  // Compute ratio of largest singular value not in active subspace to
-  // largest singular value in active subspace:
-  int sv_cutoff_ind = (reducedRank < num_singular_values)?(reducedRank):(num_singular_values-1);
-  svRatio = singular_values[sv_cutoff_ind]/singular_values[0];
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter << ": singular values are [ ";
-    for (unsigned int i=0; i<num_singular_values; ++i)
-      Cout << singular_values[i] << " ";
-    Cout << "]" << std::endl;
-  }
 }
 
+void EfficientSubspaceMethod::
+computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
+{
+  int num_vars = derivativeMatrix.numRows();
+
+  // Stores Constantine's metric
+  RealArray constantine_metric(num_vars-1, 0);
+
+  // Compute bootstrapped subspaces
+  RealMatrix bootstrapped_sample(num_vars, derivativeMatrix.numCols());
+  RealMatrix dist_mat(num_vars, num_vars);
+  RealVector sample_sing_vals;
+  RealMatrix sample_sing_vectors;
+  RealVector dist_sing_vals;
+  RealMatrix dist_sing_vectors;
+
+  Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
+
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
+    numFunctions);
+
+  // TODO: Get number of bootstrap samples from problem desc database
+  for (size_t i = 0; i < numReplicates; ++i)
+  {
+    bootstrap_sampler(bootstrapped_sample);
+
+    svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
+
+    for(size_t j = 0; j < num_vars-1; ++j)
+    {
+      size_t num_sing_vec = j+1;
+
+      RealMatrix submatrix(Teuchos::View, leftSingularVectors, num_vars,
+                           num_sing_vec);
+
+      RealMatrix submatrix_bootstrap(Teuchos::View, bootstrapped_sample,
+                                     num_vars, num_sing_vec);
+
+      dist_mat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0,
+                        submatrix, submatrix, 0.0);
+
+      dist_mat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0,
+                        submatrix_bootstrap, submatrix_bootstrap, 1.0);
+
+      // The spectral norm is slow, let's use the Frobenius norm instead.
+      // Compute the spectral norm of dist_mat (largest singular value):
+      //svd(dist_mat, dist_sing_vals, dist_sing_vectors);
+      //constantine_metric[j] += dist_sing_vals(0) / numReplicates;
+
+      constantine_metric[j] += dist_mat.normFrobenius() / numReplicates;
+    }
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nESM: Iteration " << currIter
+         << ". Constantine metric are [ ";
+    for (size_t i = 0; i < num_vars-1; ++i)
+    {
+      Cout << constantine_metric[i] << " ";
+    }
+    Cout << "]" << std::endl;
+  }
+
+  // Cutoff is global minimum of metric
+  reducedRank = 0;
+  Real min_val = 0;
+  svtol_met = true; // This just bypasses the tolerance check
+  for (size_t i = 0; i < num_vars-1; ++i)
+  {
+    if(constantine_metric[i] < min_val || i == 0)
+    {
+      min_val = constantine_metric[i];
+      reducedRank = i+1;
+    }
+  }
+}
 
 void EfficientSubspaceMethod::print_svd_stats()
 {

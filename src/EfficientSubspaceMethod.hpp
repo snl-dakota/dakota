@@ -49,6 +49,12 @@ public:
   /// ESM re-implementation of the virtual UQ iterator function
   void quantify_uncertainty();
 
+  /// Enumeration of active subspace identification methods
+  enum SubspaceIDMethod {
+    SUBSPACE_ID_BING_LI,
+    SUBSPACE_ID_CONSTANTINE
+  };
+
 private:
 
   // Initialization methods 
@@ -82,6 +88,12 @@ private:
   /// assessing convergence and rank, returning whether tolerance met
   void compute_svd(bool& svtol_met);
 
+  /// compute Bing Li's criterion to identify the active subspace
+  void computeBingLiCriterion(RealVector& singular_values, bool& svtol_met);
+
+  /// compute Constantine's metric to identify the active subspace
+  void computeConstantineMetric(RealVector& singular_values, bool& svtol_met);
+
   /// print inner iteration stats after SVD
   void print_svd_stats();
 
@@ -107,7 +119,6 @@ private:
   /// submodel variables (linear transformation)
   static void map_xi_to_x(const Variables& recast_xi_vars, 
 			  Variables& sub_model_x_vars);
-  
   
   // Data controlling iteration and status
 
@@ -163,6 +174,9 @@ private:
   /// [ dy1/dx(k=1) | dy2/dx(k=1) | ... | dyM/dx(k=1) | k=2 | ... | k=n_s ]
   RealMatrix derivativeMatrix;
 
+  /// matrix of the left singular vectors of derivativeMatrix
+  RealMatrix leftSingularVectors;
+
   /// matrix of fullspace variable points samples
   /// size numContinuousVars * (numSamples)
   RealMatrix varsMatrix;
@@ -177,6 +191,9 @@ private:
   /// Gradient scaling factors to make multiple response function gradients
   /// similar orders of magnitude.
   RealArray gradientScaleFactors;
+
+  /// Contains which method should be used to identify active subspace dimension
+  SubspaceIDMethod subspaceIDMethod;
 
   /// Model including full space uncertain variables. Transformed to standard
   /// normal variables if transformVars == true.
