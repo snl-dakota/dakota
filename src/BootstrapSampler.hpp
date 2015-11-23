@@ -141,7 +141,7 @@ public:
       blockSize(block_size ? block_size : 1)
   {
     if(block_size &&
-      (block_size > this->dataSize || this->dataSize % block_size != 0))
+      (block_size > this->dataSize || orig_data.size() % block_size != 0))
         throw "Boostrap sampler data size must be a multiple of block size.";
   }
 
@@ -210,7 +210,7 @@ public:
       blockSize(block_size ? block_size : 1)
   {
     if(block_size &&
-      (block_size > this->dataSize || this->dataSize % block_size != 0))
+      (block_size > this->dataSize || orig_data.numCols() % block_size != 0))
         throw "Boostrap sampler data size must be a multiple of block size.";
   }
 
