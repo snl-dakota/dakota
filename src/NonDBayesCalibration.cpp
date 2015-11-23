@@ -178,8 +178,14 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator; Model lhs_model;
-    if (standardizedSpace) transform_model(iteratedModel, lhs_model);//dist bnds
-    else                   lhs_model = iteratedModel; // shared rep
+    // NKM requires finite bounds for scaling and init of correlation lengths.
+    // Default truncation is +/-10 sigma, which may be overly conservative for
+    // these purposes, but +/-3 sigma has little to no effect in current tests.
+    bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
+    if (standardizedSpace)
+      transform_model(iteratedModel, lhs_model, truncate_bnds);//, 3.);
+    else
+      lhs_model = iteratedModel; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
     // samples in regions of higher prior density
     NonDLHSSampling* lhs_rep = new
