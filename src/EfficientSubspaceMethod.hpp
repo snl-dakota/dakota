@@ -174,6 +174,10 @@ private:
   /// active subspace identification.
   bool transformVars;
 
+  /// Gradient scaling factors to make multiple response function gradients
+  /// similar orders of magnitude.
+  RealArray gradientScaleFactors;
+
   /// Model including full space uncertain variables. Transformed to standard
   /// normal variables if transformVars == true.
   Model fullSpaceModel;

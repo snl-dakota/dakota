@@ -59,7 +59,8 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   currIter(0), totalSamples(0), totalEvals(0),
   SVTol(std::max(convergenceTol,std::numeric_limits<Real>::epsilon())),
   performAssessment(false), nullspaceTol(convergenceTol/1.0e3),
-  svRatio(0.0), numReplicates(100), reducedRank(0), transformVars(true)
+  svRatio(0.0), numReplicates(100), reducedRank(0), transformVars(true),
+  gradientScaleFactors(numFunctions,1.0)
 {
   // the Iterator initializes:
   //   maxIterations    (default -1)
@@ -476,6 +477,23 @@ append_sample_matrices(unsigned int diff_samples)
   IntRespMCIter resp_it  = all_responses.begin();
   IntRespMCIter resp_end = all_responses.end();
 
+  // Compute gradient scaling factors if more than 1 response function
+  // and only on the first iteration
+  if(numFunctions > 1 && currIter == 1) {
+    for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
+      const RealVector& resp_vector = resp_it->second.function_values();
+      for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+        gradientScaleFactors[fn_ind] += resp_vector(fn_ind) / 
+          static_cast<Real>(diff_samples);
+      }
+    }
+  }
+
+  // Reset iterators and indices
+  diff_sample_ind = 0;
+  resp_it  = all_responses.begin();
+  resp_end = all_responses.end();
+
   for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
     // the absolute sample number to insert into
     unsigned int sample_ind = sample_insert_point + diff_sample_ind;
@@ -484,7 +502,8 @@ append_sample_matrices(unsigned int diff_samples)
     for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
       unsigned int col_ind = sample_ind * numFunctions + fn_ind;
       for (unsigned int var_ind = 0; var_ind < numContinuousVars; ++var_ind) {
-        derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind);
+        derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind) / 
+          gradientScaleFactors[fn_ind];
       }
     }
     for (unsigned int var_ind = 0; var_ind < numContinuousVars; ++var_ind) {
