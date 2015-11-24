@@ -20,9 +20,9 @@ namespace {
 
   // Create submatrix consisting of the two input parameter columns
   std::pair<RealMatrix, RealMatrix> get_parameter_and_response_submatrices() {
-    static RealMatrix * param_sub_mat = NULL;
-    static RealMatrix * response_sub_mat = NULL;
-    if( !param_sub_mat )
+    static RealMatrix param_sub_mat;
+    static RealMatrix response_sub_mat;
+    if (param_sub_mat.empty() || response_sub_mat.empty())
     {
       const std::string filename = "dakota_tabular_svd.dat";
       std::ifstream in_file;
@@ -38,12 +38,13 @@ namespace {
       //test_mat.print(std::cout);
 
       // Create submatrix consisting of the two input parameter columns
-      param_sub_mat = new RealMatrix(Teuchos::Copy, test_mat, test_mat.numRows(), 2, 0, 1);
+      param_sub_mat = RealMatrix(Teuchos::Copy, test_mat, test_mat.numRows(), 2, 0, 1);
 
       // Create submatrix consisting of the 50 response columns
-      response_sub_mat = new RealMatrix(Teuchos::Copy, test_mat, test_mat.numRows(), 50, 0, 3);
+      response_sub_mat = RealMatrix(Teuchos::Copy, test_mat, test_mat.numRows(), 50, 0, 3);
     }
-    return std::make_pair<RealMatrix, RealMatrix>(*param_sub_mat, *response_sub_mat);
+
+    return std::make_pair(param_sub_mat, response_sub_mat);
   }
 }
 
