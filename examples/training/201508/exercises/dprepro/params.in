@@ -1,0 +1,14 @@
+                                          4 variables
+                     -1.200000000000000e+00 x1
+                      1.100000000000000e+00 x2
+                      9.500000000000000e-01 xc_mult
+                      1.020000000000000e+00 yc_upper
+                                          1 functions
+                                          1 ASV_1:response_fn_1
+                                          4 derivative_variables
+                                          1 DVV_1:x1
+                                          2 DVV_2:x2
+                                          3 DVV_3:xc_mult
+                                          4 DVV_4:yc_upper
+                                          0 analysis_components
+                                          1 eval_id

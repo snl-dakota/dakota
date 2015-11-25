@@ -1,0 +1,30 @@
+Title of Model: Rosenbrock black box
+***************************************************************************
+* Description:	This is an input file to the Rosenbrock black box
+*               Fortran simulator.  This simulator is structured so
+*               as to resemble the input/output from an engineering
+*               simulation code, even though Rosenbrock's function
+*               is a simple analytic function.  The node, element,
+*               and material blocks are dummy inputs.
+*
+* Input:  x1 and x2
+* Output: objective function value
+*************************************************************************** 
+*               xc  yc
+node 1 location {xc_mult*0.0} 0.0
+node 2 location {xc_mult*0.0} {yc_upper}
+node 3 location {xc_mult*1.0} 0.0
+node 4 location {xc_mult*1.0} {yc_upper}
+node 5 location {xc_mult*2.0} 0.0
+node 6 location {xc_mult*2.0} {yc_upper}
+node 7 location {xc_mult*3.0} 0.0
+node 8 location {xc_mult*3.0} {yc_upper}
+element 1 nodes 1 3 4 2
+element 2 nodes 3 5 6 4
+element 3 nodes 5 7 8 6
+element 4 nodes 7 9 10 8
+material 1 elements 1 2
+material 2 elements 3 4
+variable 1 {x1 = -1.0}
+variable 2 {x2 = 1.0}
+end
