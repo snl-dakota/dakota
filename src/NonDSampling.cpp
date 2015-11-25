@@ -902,7 +902,7 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
     num_samp = 0;
     Real min = DBL_MAX, max = -DBL_MAX;
     for (it=samples.begin(); it!=samples.end(); ++it) {
-      const Real& sample = it->second.function_value(i);
+      Real sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	if (sample < min) min = sample;
 	if (sample > max) max = sample;
@@ -934,7 +934,7 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 
   using boost::math::isfinite;
   size_t i, j, num_obs = samples.size(), num_samp;
-  Real sum, var, skew, kurt;
+  Real sum, var, skew, kurt, sample;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
   if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
@@ -947,7 +947,7 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
     sum = var = skew = kurt = 0.;
     // means
     for (it=samples.begin(); it!=samples.end(); ++it) {
-      const Real& sample = it->second.function_value(i);
+      sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	sum += sample;
 	++num_samp;
@@ -972,7 +972,7 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
     // accumulate variance, skewness, and kurtosis
     Real centered_fn, pow_fn;
     for (it=samples.begin(); it!=samples.end(); ++it) {
-      const Real& sample = it->second.function_value(i);
+      sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	pow_fn  = centered_fn = sample - mean;
 	pow_fn *= centered_fn; var  += pow_fn;
@@ -1073,7 +1073,7 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
   using boost::math::isfinite;
   size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols(),
     num_samp;
-  Real sum, var, skew, kurt;
+  Real sum, var, skew, kurt, sample;
 
   if (momentStats.empty()) momentStats.shapeUninitialized(4, num_qoi);
 
@@ -1083,7 +1083,7 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
     sum = var = skew = kurt = 0.;
     // means
     for (j=0; j<num_obs; ++j) {
-      Real sample = samples(i,j);
+      sample = samples(i,j);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	sum += sample;
 	++num_samp;
@@ -1108,7 +1108,7 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
     // accumulate variance, skewness, and kurtosis
     Real centered_fn, pow_fn;
     for (j=0; j<num_obs; ++j) {
-      Real sample = samples(i,j);
+      sample = samples(i,j);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	pow_fn  = centered_fn = sample - mean;
 	pow_fn *= centered_fn; var  += pow_fn;
@@ -1157,8 +1157,8 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   using boost::math::isfinite;
   size_t i, j, k, num_obs = samples.size(), num_samp, bin_accumulator;
   const StringArray& resp_labels = iteratedModel.response_labels();
-  RealArray sorted_samples; // STL-based array for sorting
-  SizetArray bins; Real min, max;
+  std::multiset<Real> sorted_samples; // STL-based array for sorting
+  SizetArray bins; Real min, max, sample;
 
   // check if moments are required, and if so, compute them now
   if (momentStats.empty()) {
@@ -1183,7 +1183,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   }
 
   if (pdfOutput) extremeValues.resize(numFunctions);
-  IntRespMCIter it;
+  IntRespMCIter s_it; std::multiset<Real>::iterator ss_it;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -1197,34 +1197,31 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     // ----------------------------------------------------------------------
     num_samp = 0;
     if (pl_len || gl_len) { // sort samples array for p/beta* -> z mappings
-      sorted_samples.clear(); sorted_samples.reserve(num_obs);
-      for (it=samples.begin(); it!=samples.end(); ++it) {
-	const Real& sample = it->second.function_value(i);
+      sorted_samples.clear();
+      for (s_it=samples.begin(); s_it!=samples.end(); ++s_it) {
+        sample = s_it->second.function_value(i);
 	if (isfinite(sample))
-	  { ++num_samp; sorted_samples.push_back(sample); }
+	  { ++num_samp; sorted_samples.insert(sample); }
       }
       // sort in ascending order
-      std::sort(sorted_samples.begin(), sorted_samples.end());
       if (pdfOutput)
-	{ min = sorted_samples[0]; max = sorted_samples[num_samp-1]; }
+        { min = *sorted_samples.begin(); max = *(--sorted_samples.end()); }
       // in case of rl_len mixed with pl_len/gl_len, bin using sorted array.
-      // Note: all bins open on right end due to use of less than.
       if (rl_len && respLevelTarget != RELIABILITIES) {
 	const RealVector& req_rl_i = requestedRespLevels[i];
-        bins.assign(rl_len+1, 0); size_t samp_cntr = 0;
+        bins.assign(rl_len+1, 0); ss_it = sorted_samples.begin();
 	for (j=0; j<rl_len; ++j)
-	  while (samp_cntr<num_samp && sorted_samples[samp_cntr]<req_rl_i[j])
-	    { ++bins[j]; ++samp_cntr; }
-	if (num_samp > samp_cntr)
-	  bins[rl_len] += num_samp - samp_cntr;
+	  while (ss_it!=sorted_samples.end() && *ss_it <= req_rl_i[j])// p(g<=z)
+	    { ++bins[j]; ++ss_it; }
+	bins[rl_len] += std::distance(ss_it, sorted_samples.end());
       }
     }
     else if (rl_len && respLevelTarget != RELIABILITIES) {
       // in case of rl_len without pl_len/gl_len, bin from original sample set
       const RealVector& req_rl_i = requestedRespLevels[i];
       bins.assign(rl_len+1, 0); min = DBL_MAX; max = -DBL_MAX;
-      for (it=samples.begin(); it!=samples.end(); ++it) {
-	const Real& sample = it->second.function_value(i);
+      for (s_it=samples.begin(); s_it!=samples.end(); ++s_it) {
+	sample = s_it->second.function_value(i);
 	if (isfinite(sample)) {
 	  ++num_samp;
 	  if (pdfOutput) {
@@ -1232,10 +1229,10 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	    if (sample > max) max = sample;
 	  }
 	  // 1st PDF bin from -inf to 1st resp lev; last PDF bin from last resp
-	  // lev to +inf. Note: all bins open on right end due to use of <.
+	  // lev to +inf.
 	  bool found = false;
 	  for (k=0; k<rl_len; ++k)
-	    if (sample < req_rl_i[k])
+	    if (sample <= req_rl_i[k]) // cumulative p(g<=z)
 	      { ++bins[k]; found = true; break; }
 	  if (!found)
 	    ++bins[rl_len];
@@ -1266,13 +1263,12 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	break;
       }
       case RELIABILITIES: { // z -> beta (based on moment projection)
-	Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
+	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
 	for (j=0; j<rl_len; j++) {
-	  const Real& z = requestedRespLevels[i][j];
-	  if (std_dev > Pecos::SMALL_NUMBER) {
-	    Real ratio = (mean - z)/std_dev;
-	    computedRelLevels[i][j] = (cdfFlag) ? ratio : -ratio;
-	  }
+	  Real z = requestedRespLevels[i][j];
+	  if (std_dev > Pecos::SMALL_NUMBER)
+	    computedRelLevels[i][j] = (cdfFlag) ?
+	      (mean - z)/std_dev : (z - mean)/std_dev;
 	  else
 	    computedRelLevels[i][j]
 	      = ( (cdfFlag && mean <= z) || (!cdfFlag && mean > z) )
@@ -1285,28 +1281,35 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
       Real p = (j<pl_len) ? requestedProbLevels[i][j] :	Pecos::
 	NormalRandomVariable::std_cdf(-requestedGenRelLevels[i][j-pl_len]);
-      // since each sample has 1/N probability, a probability level can be
-      // directly converted to an index within a sorted array (index =~ p * N)
-      Real cdf_p_x_obs = (cdfFlag) ? p*(Real)num_samp : (1.-p)*(Real)num_samp;
-      // convert to an int and round down using std::floor().  Apply a small
-      // numerical adjustment so that probabilities on the boundaries
-      // (common with round probabilities and factor of 10 samples)
-      // are consistently rounded down (consistent with CDF p(g<=z)).
-      Real order = (cdf_p_x_obs > .9)
-	         ? std::pow(10., ceil(std::log10(cdf_p_x_obs))) : 0.;
-      int index = (int)std::floor(cdf_p_x_obs - order*DBL_EPSILON);
-      // clip at array ends due to possible roundoff effects
-      if (index < 0)         index = 0;
-      if (index >= num_samp) index = num_samp - 1;
-      if (j<pl_len)
-	computedRespLevels[i][j] = sorted_samples[index];
-      else
-	computedRespLevels[i][j+bl_len] = sorted_samples[index];
+      Real p_cdf = (cdfFlag) ? p : 1. - p;
+      // since each sample has 1/N probability, p can be directly converted
+      // to an index within sorted_samples (id = p * N; index = id - 1)
+      // Note 1: duplicate samples are not aggregated (separate id increments).
+      // Note 2: since p_cdf(min_sample) = 1/N and p_cdf(max_sample) = 1, we
+      //   extrapolate to the left of min, but not to the right of max.
+      //   id < 1 indicates this extrapolation left of the min sample.
+      // Note 3: we exclude any extrapolated z from extremeValues; should we
+      //   omit any out-of-bounds resp levels within NonD::compute_densities()?
+      //   --> PDF estimation based only on z->p binning or p->z interpolation
+      //       within the sample bounds.
+      Real cdf_incr_id = p_cdf * (Real)num_samp, lo_id;
+      ss_it = sorted_samples.begin();
+      if (cdf_incr_id < 1.) // extrapolate left of min sample using 1st slope
+	lo_id = 1.;
+      else { // linear interpolation between closest neighbors in sequence
+        lo_id = std::floor(cdf_incr_id);
+	std::advance(ss_it, (size_t)lo_id - 1);
+      }
+      Real z, z_lo = *ss_it; ++ss_it;
+      if (ss_it == sorted_samples.end()) z = z_lo;
+      else          z = z_lo + (cdf_incr_id - lo_id) * (*ss_it - z_lo);
+      if (j<pl_len) computedRespLevels[i][j] = z;
+      else          computedRespLevels[i][j+bl_len] = z;
     }
     if (bl_len) {
-      Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
+      Real mean = momentStats(0,i), std_dev = momentStats(1,i);
       for (j=0; j<bl_len; j++) { // beta -> z
-	const Real& beta = requestedRelLevels[i][j];
+	Real beta = requestedRelLevels[i][j];
 	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
 	  mean - beta * std_dev : mean + beta * std_dev;
       }
