@@ -135,9 +135,10 @@ DataMethodRep::DataMethodRep():
   adaptPosteriorRefine(false), logitTransform(false),
   preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  batchSize(0), calibrateErrorMode(CALIBRATE_NONE), numChains(3), numCR(3),
-  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), lipschitzType("local"),
-  // Parameter Study
+  batchSize(0), lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE), 
+  numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), 
+  generatePosteriorSamples(false), evaluatePosteriorDensity(false),
+    // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
   refinementRate(2.),
