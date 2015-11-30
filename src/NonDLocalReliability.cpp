@@ -861,7 +861,7 @@ void NonDLocalReliability::mpp_search()
 	  secondary_resp_map[0].resize(1);
 	  secondary_resp_map[0][0] = respFnCount;
 	  nonlinear_resp_map[1] = BoolDeque(1, false);
-	  mpp_model_rep->initialize(vars_map, false, NULL, NULL,
+	  mpp_model_rep->init_maps(vars_map, false, NULL, NULL,
 	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	    RIA_objective_eval, RIA_constraint_eval);
 	}
@@ -876,11 +876,11 @@ void NonDLocalReliability::mpp_search()
 	  // 2nd-order PMA, we utilize curvature of the surrogate (if any)
 	  // to update beta* 
 	  if (pma2_flag)
-	    mpp_model_rep->initialize(vars_map, false, NULL, PMA2_set_mapping,
+	    mpp_model_rep->init_maps(vars_map, false, NULL, PMA2_set_mapping,
 	      primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	      PMA_objective_eval, PMA2_constraint_eval);
 	  else
-	    mpp_model_rep->initialize(vars_map, false, NULL, NULL,
+	    mpp_model_rep->init_maps(vars_map, false, NULL, NULL,
 	      primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	      PMA_objective_eval, PMA_constraint_eval);	    
 	}

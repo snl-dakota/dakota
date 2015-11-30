@@ -17,26 +17,35 @@
 #define RECAST_MODEL_H
 
 #include "DakotaModel.hpp"
-#include "DakotaInterface.hpp"
+// BMA TODO: remove this on next pass (once ESM updated)
 #include "ParallelLibrary.hpp"
-#include "DataModel.hpp"
-
 
 namespace Dakota {
+
+class Interface;
 
 /// Derived model class which provides a thin wrapper around a sub-model
 /// in order to recast the form of its inputs and/or outputs.
 
 /** The RecastModel class uses function pointers to allow recasting of
-    the subModel input/output into new problem forms.  This is
-    currently used to recast SBO approximate subproblems, but can be
-    used for multiobjective, input/output scaling, and other problem
-    modifications in the future. 
+    the subModel input/output into new problem forms.  For example,
+    this is used to recast SBO approximate subproblems, multiobjective
+    and least-squares reductions, and variable/response.
 
     For now, making the assumption that variables mappings are ordered
     by submodel active continous, discrete int, discrete string,
     discrete real variables, even though all current use cases are
-    continuous only */
+    continuous only. 
+
+    When not using the standard (full) constructor, client code must
+    make sure to complete initialization before using the
+    RecastModel's mapping functions.  Initialization steps:
+      1. sub model (all ctors do this)
+      2. init_sizes: once known, size Variables, Response, Constraints
+         (full and intermediate ctor do this)
+      3. init_maps: set indices and callback pointers
+         (only full ctor does this)
+*/
 class RecastModel: public Model
 {
 public:
@@ -45,7 +54,8 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  /// standard constructor
+  /// standard (full) constructor; assumes provided sizes and map
+  /// functions are final and constructs all member data
   RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	      const SizetArray& vars_comps_total, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
@@ -66,12 +76,21 @@ public:
 					  const Variables& recast_vars,
 					  const Response& sub_model_response,
 					  Response& recast_response));
-  /// alternate constructor
+
+  /// alternate constructor; uses provided sizes to construct
+  /// Variables, Response and Constraints so Model can be passed to an
+  /// Iterator; requires subsequent init_maps() call.
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
 	      size_t num_recast_secondary_fns, size_t recast_secondary_offset,
 	      short recast_resp_order);
+
+  /// lightest constructor used when transform sizes aren't known at
+  /// construct time; doesn't initialize variables and responses, so
+  /// this Model can't be used to construct an Iterator; requires
+  /// subsequent init_sizes() and init_maps() calls.
+  RecastModel(const Model& sub_model);
 
   /// destructor
   ~RecastModel();
@@ -80,26 +99,35 @@ public:
   //- Heading: Member functions
   //
 
-  /// completes initialization of the RecastModel after alternate construction
-  void initialize(const Sizet2DArray& vars_map_indices,
-		  bool nonlinear_vars_mapping,
-		  void (*variables_map)     (const Variables& recast_vars,
-					     Variables& sub_model_vars),
-		  void (*set_map)           (const Variables& recast_vars,
-					     const ActiveSet& recast_set,
-					     ActiveSet& sub_model_set),
-		  const Sizet2DArray& primary_resp_map_indices,
-		  const Sizet2DArray& secondary_resp_map_indices,
-		  const BoolDequeArray& nonlinear_resp_mapping,
-		  void (*primary_resp_map)  (const Variables& sub_model_vars,
-					     const Variables& recast_vars,
-					     const Response& sub_model_response,
-					     Response& recast_response),
-		  void (*secondary_resp_map)(const Variables& sub_model_vars,
-					     const Variables& recast_vars,
-					     const Response& sub_model_response,
-					     Response& recast_response));
+  /// update recast sizes and size Variables and Response members
+  /// after alternate construction
+  void 
+  init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	     const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
+	     size_t num_recast_secondary_fns, size_t recast_secondary_offset,
+	     short recast_resp_order);
 
+  /// initialize recast indices and map callbacks after alternate
+  /// construction
+  void init_maps(const Sizet2DArray& vars_map_indices,
+		 bool nonlinear_vars_mapping,
+		 void (*variables_map)     (const Variables& recast_vars,
+					    Variables& sub_model_vars),
+		 void (*set_map)           (const Variables& recast_vars,
+					    const ActiveSet& recast_set,
+					    ActiveSet& sub_model_set),
+		 const Sizet2DArray& primary_resp_map_indices,
+		 const Sizet2DArray& secondary_resp_map_indices,
+		 const BoolDequeArray& nonlinear_resp_mapping,
+		 void (*primary_resp_map)  (const Variables& sub_model_vars,
+					    const Variables& recast_vars,
+					    const Response& sub_model_response,
+					    Response& recast_response),
+		 void (*secondary_resp_map)(const Variables& sub_model_vars,
+					    const Variables& recast_vars,
+					    const Response& sub_model_response,
+					    Response& recast_response));
+  
   /// provide optional inverse mappings
   void inverse_mappings(
     void (*inv_vars_map)     (const Variables& sub_model_vars,
@@ -302,6 +330,26 @@ protected:
   bool db_lookup(const Variables& search_vars, 
 		 const ActiveSet& search_set, Response& found_resp);
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// initialize currentVariables and related info from the passed
+  /// size/type info
+  bool init_variables(const SizetArray& vars_comps_totals,
+		      const BitArray& all_relax_di, 
+		      const BitArray& all_relax_dr);
+  /// initialize currentResponse from the passed size info
+  void init_response(size_t num_recast_primary_fns, 
+		     size_t num_recast_secondary_fns, 
+		     short recast_resp_order, bool reshape_vars);
+  /// initialize userDefinedConstraints from the passed size info
+  void init_constraints(size_t num_recast_secondary_fns,
+			size_t recast_secondary_offset, bool reshape_vars);
+
+  /// the sub-model underlying the function pointers
+  Model subModel;
+
 private:
 
   //
@@ -317,9 +365,6 @@ private:
   //
   //- Heading: Data members
   //
-
-  /// the sub-model underlying the function pointers
-  Model subModel;
 
   /// For each subModel variable, identifies the indices of the recast
   /// variables used to define it (maps RecastModel variables to

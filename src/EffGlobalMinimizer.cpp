@@ -257,7 +257,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     for (size_t i=0; i<numFunctions; i++)
       primary_resp_map[0][i] = i;
     RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
-    eif_model_rep->initialize(vars_map, false, NULL, NULL,
+    eif_model_rep->init_maps(vars_map, false, NULL, NULL,
       primary_resp_map, secondary_resp_map, nonlinear_resp_map,
       EIF_objective_eval, NULL);
 

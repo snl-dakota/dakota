@@ -23,6 +23,7 @@
 #ifdef HAVE_OPTPP
 #include "SNLLOptimizer.hpp"
 #endif // HAVE_OPTPP
+#include "ParallelLibrary.hpp"
 
 //#define DEBUG
 
@@ -196,7 +197,7 @@ void NonDLocalInterval::quantify_uncertainty()
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
 
     primary_resp_map[0][0] = respFnCntr;
-    model_rep->initialize(vars_map, false, NULL, NULL, primary_resp_map,
+    model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
 			  secondary_resp_map, nonlinear_resp_map,
 			  extract_objective, NULL);
 

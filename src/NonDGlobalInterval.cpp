@@ -282,7 +282,7 @@ void NonDGlobalInterval::quantify_uncertainty()
     primary_resp_map[0][0] = respFnCntr;
     nonlinear_resp_map[0][respFnCntr] = true;
     if (!eifFlag)
-      int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+      int_opt_model_rep->init_maps(vars_map, false, NULL, NULL,
 	primary_resp_map, secondary_resp_map, nonlinear_resp_map, 
 	extract_objective, NULL);
 
@@ -292,7 +292,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 
       // initialize the recast model for lower bound estimation
       if (eifFlag)
-	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	int_opt_model_rep->init_maps(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  EIF_objective_min, NULL);
       else {
@@ -326,7 +326,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 
       // initialize the recast model for upper bound estimation
       if (eifFlag)
-	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	int_opt_model_rep->init_maps(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  EIF_objective_max, NULL);
       else {

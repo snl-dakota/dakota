@@ -506,7 +506,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  //secondary_resp_map[0][0] = respFnCount;
 	  //BoolDequeArray nonlinear_resp_map(2);
 	  //nonlinear_resp_map[1] = BoolDeque(1, false);
-	  //mpp_model_rep->initialize(vars_map, false, NULL, NULL,
+	  //mpp_model_rep->init_maps(vars_map, false, NULL, NULL,
 	  //  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  //  RIA_objective_eval, RIA_constraint_eval);
 
@@ -515,7 +515,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  primary_resp_map.resize(1);
 	  primary_resp_map[0].resize(1);
 	  primary_resp_map[0][0] = respFnCount;
-	  mpp_model_rep->initialize(vars_map, false, NULL, NULL,
+	  mpp_model_rep->init_maps(vars_map, false, NULL, NULL,
 	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	    EFF_objective_eval, NULL);
 	}
@@ -531,7 +531,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  //secondary_resp_map.reshape(1); // one constraint, no contributors
 	  //BoolDequeArray nonlinear_resp_map(2);
 	  //nonlinear_resp_map[0] = BoolDeque(1, false);
-	  //mpp_model_rep->initialize(vars_map, false, NULL, set_map,
+	  //mpp_model_rep->init_maps(vars_map, false, NULL, set_map,
 	  //  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  //  PMA_objective_eval, PMA_constraint_eval);
 
@@ -542,7 +542,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  primary_resp_map.resize(1);
 	  primary_resp_map[0].resize(1);
 	  primary_resp_map[0][0] = respFnCount;
-	  mpp_model_rep->initialize(vars_map, false, NULL, NULL,
+	  mpp_model_rep->init_maps(vars_map, false, NULL, NULL,
 	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	    EIF_objective_eval, NULL);
 	}

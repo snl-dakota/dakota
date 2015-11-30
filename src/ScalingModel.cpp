@@ -119,9 +119,9 @@ ScalingModel(Model& sub_model):
     (secondaryRespScaleFlag || varsScaleFlag) ? secondary_resp_scaler : NULL;
   
   RecastModel::
-    initialize(vars_map_indices, nonlinear_vars_mapping, variables_map, set_map,
-	       primary_resp_map_indices, secondary_resp_map_indices, 
-	       nonlinear_resp_mapping, primary_resp_map, secondary_resp_map);
+    init_maps(vars_map_indices, nonlinear_vars_mapping, variables_map, set_map,
+	      primary_resp_map_indices, secondary_resp_map_indices, 
+	      nonlinear_resp_mapping, primary_resp_map, secondary_resp_map);
 
   // need inverse vars mapping for use with late updates from sub-model
   inverse_mappings(variables_unscaler, NULL, NULL, NULL);
