@@ -294,7 +294,7 @@ void NonDAdaptImpSampling::quantify_uncertainty()
       }
     }
     // infer PDFs from computedProbLevels
-    compute_densities(extremeValues);
+    compute_densities(extremeValues, true);
     // propagate computedProbLevels to finalStatistics
     update_final_statistics();
   }

@@ -1916,14 +1916,20 @@ void NonD::initialize_level_mappings()
 }
 
 
-/** This function infers PDFs from the CDF/CCDF level mappings, in
-    order to enable PDF computation after CDF/CCDF probability level
-    refinement (e.g., from importance sampling).  If not accommodating
-    refinements, it is more efficient to compute CDF/CCDF and PDF bins
-    together, as in NonDSampling::compute_level_mappings(). */
+/** This function infers PDFs from the CDF/CCDF level mappings, in order
+    to enable PDF computation after CDF/CCDF probability level refinement
+    (e.g., from importance sampling).  
+
+    prob_refinement alerts the routine to exclude inverse CDF mappings
+    from the PDF, since refinement only applies to z->p mappings and
+    mixing refined and unrefined probability mappings results in an
+    inconsistency (potentially manifesting as negative density values).
+
+    all_levels_computed is an option used by reliability methods where 
+    computed*Levels are defined across the union of all requested levels. */
 void NonD::
 compute_densities(const RealRealPairArray& min_max_fns,
-		  bool all_levels_computed)
+		  bool prob_refinement, bool all_levels_computed)
 {
   if (!pdfOutput)
     return;
@@ -1950,19 +1956,19 @@ compute_densities(const RealRealPairArray& min_max_fns,
 
     // Define a unique sorted map of response levels -> cdf probabilities.
     // (refer to NonD::initialize_level_mappings() for default indexing;
-    // all_levels_computed is an option used by reliability methods where
-    // computed*Levels are defined across the union of all requested levels)
     cdf_map.clear(); min = min_max_fns[i].first; max = min_max_fns[i].second;
     if (all_levels_computed) {
       for (j=0; j<rl_len; ++j) {
         z = comp_rlev_i[j]; // request may be outside extreme values
 	cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
       }
-      size_t total_len = rl_len + pl_len + bl_len + gl_len;
-      for (j=rl_len; j<total_len; ++j) {
-        z = comp_rlev_i[j];
-	//if (z >= min && z <= max) // exclude any extrapolations outside bounds
-	  cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+      if (!prob_refinement || !rl_len) {
+	size_t total_len = rl_len + pl_len + bl_len + gl_len;
+	for (j=rl_len; j<total_len; ++j) {
+	  z = comp_rlev_i[j];
+	  //if (z >= min && z <= max) // exclude any extrapolations outside bnds
+	    cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+	}
       }
     }
     else {
@@ -1982,18 +1988,20 @@ compute_densities(const RealRealPairArray& min_max_fns,
 	}
 	break;
       }
-      for (j=0; j<pl_len; ++j) {
-	z = comp_rlev_i[j];
-	//if (z >= min && z <= max) // exclude any extrapolations outside bounds
-	  cdf_map[z] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
-      }
-      // exclude reliability level mappings from cdf_map
-      for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
-	z = comp_rlev_i[cntr];
-	//if (z >= min && z <= max) {// exclude any extrapolations outside bnds
-	  Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
-	  cdf_map[z] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
-	//}
+      if (!prob_refinement || !rl_len) {
+	for (j=0; j<pl_len; ++j) {
+	  z = comp_rlev_i[j];
+	  //if (z >= min && z <= max) // exclude any extrapolations outside bnds
+	    cdf_map[z] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
+	}
+	// exclude reliability level mappings from cdf_map
+	for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
+	  z = comp_rlev_i[cntr];
+	  //if (z >= min && z <= max) {//exclude any extrapolations outside bnds
+	    Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
+	    cdf_map[z] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
+	  //}
+	}
       }
     }
 

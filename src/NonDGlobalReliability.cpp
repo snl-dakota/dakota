@@ -82,7 +82,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
   // standard reliability indices are not defined and should be precluded
   // via the input spec.  requestedRelLevels is default sized in NonD and
-  // cannot be used for empty() tests.
+  // cannot be used for the empty() test below.
   if (!probDescDB.get_rva("method.nond.reliability_levels").empty() ||
       respLevelTarget == RELIABILITIES) {
     Cerr << "Error: reliability indices are not defined for global reliability "
@@ -91,9 +91,9 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   }
 
   // requestedProbLevels & requestedGenRelLevels are not yet supported
-  // since PMA EGRA is currently a research issue.  requestedProbLevels
-  // and requestedGenRelLevels are default sized in NonD and cannot be
-  // used for empty() tests.
+  // since PMA EGRA requires additional R&D.  Note: requestedProbLevels and
+  // requestedGenRelLevels are default sized in NonD and cannot be used for
+  // the empty() tests below.
   if (!probDescDB.get_rva("method.nond.probability_levels").empty() ||
       !probDescDB.get_rva("method.nond.gen_reliability_levels").empty()) {
     Cerr << "Error: Inverse reliability mappings not currently supported in "
@@ -825,7 +825,7 @@ void NonDGlobalReliability::importance_sampling()
 	importance_sampler_rep->
 	  initialize(gp_inputs, x_data_flag, respFnCount, 0., z);
       }
-      else
+      else // not operational (see error traps in ctor)
 	importance_sampler_rep->initialize(gp_inputs, x_data_flag,
 	  respFnCount, 0., computedRespLevels[respFnCount][levelCount]);
 
@@ -848,9 +848,10 @@ void NonDGlobalReliability::importance_sampling()
       }
     }
   }
-  // post-process level mappings to define PDFs (using all_levels_computed mode)
+  // post-process level mappings to define PDFs (using prob_refined and
+  // all_levels_computed modes)
   if (pdfOutput)
-    compute_densities(importance_sampler_rep->extreme_values(), true);
+    compute_densities(importance_sampler_rep->extreme_values(), true, true);
 }
 
 

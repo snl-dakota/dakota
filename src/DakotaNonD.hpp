@@ -165,6 +165,7 @@ protected:
   /// compute the PDF bins from the CDF/CCDF values and store in
   /// computedPDF{Abscissas,Ordinates}
   void compute_densities(const RealRealPairArray& min_max_fns,
+			 bool prob_refinement = false,
 			 bool all_levels_computed = false);
   /// output the PDFs reflected in computedPDF{Abscissas,Ordinates} using
   /// default qoi_type and pdf_labels

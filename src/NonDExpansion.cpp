@@ -1867,8 +1867,9 @@ void NonDExpansion::compute_numerical_statistics()
     archive_from_resp(i); archive_to_resp(i); 
   }
 
-  // now that level arrays are updated, infer the PDFs
-  compute_densities(min_max_fns);
+  // now that level arrays are updated, infer the PDFs.
+  // imp_sampling flag prevents mixing of refined and unrefined level mappings.
+  compute_densities(min_max_fns, imp_sampling);
 }
 
 

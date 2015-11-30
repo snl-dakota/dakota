@@ -1321,8 +1321,9 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     archive_to_resp(i);
   }
 
-  // post-process computed z/p/beta* levels to form PDFs.  embedding this
-  // call within compute_level_mappings() simplifies management of min/max.
+  // post-process computed z/p/beta* levels to form PDFs (prob_refined and
+  // all_levels_computed default to false).  embedding this call within
+  // compute_level_mappings() simplifies management of min/max.
   compute_densities(extremeValues);
 }
 

@@ -319,14 +319,21 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 #endif
   }
 
+  // integration refinement is only active for RIA mappings --> prevent
+  // importanceSampler definition and PDF estimation if no RIA.
   if (integrationRefinement) {
-    for (size_t i=0; i<numFunctions; i++) // TO DO: too restrictive (mixed levs)
-      if (!requestedProbLevels[i].empty() || !requestedRelLevels[i].empty() ||
-	  !requestedGenRelLevels[i].empty()) {
-	Cerr << "\nError: importance sampling methods only supported for RIA."
-	     << "\n\n";
-	abort_handler(-1);
-      }
+    bool no_ria_override = true;
+    for (size_t i=0; i<numFunctions; ++i)
+      if (!requestedRespLevels[i].empty())
+	{ no_ria_override = false; break; }
+    if (no_ria_override) {
+      Cerr << "\nWarning: probability_refinement specification is ignored in "
+	   << "the absence of response_level mappings.\n";
+      integrationRefinement = NO_INT_REFINE;
+    }
+  }
+
+  if (integrationRefinement) {
     // integration refinement requires an MPP, but it may be unconverged (AMV)
     if (!mppSearchType) {
       Cerr << "\nError: integration refinement only supported for MPP methods."
@@ -473,11 +480,12 @@ void NonDLocalReliability::quantify_uncertainty()
   if (mppSearchType) mpp_search();
   else               mean_value();
 
-  // post-process level mappings to define PDFs (using all_levels_computed mode)
+  // post-process level mappings to define PDFs (using prob_refined and
+  // all_levels_computed modes)
   if (pdfOutput && integrationRefinement) {
     NonDAdaptImpSampling* import_sampler_rep
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-    compute_densities(import_sampler_rep->extreme_values(), true);
+    compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
 
   numRelAnalyses++;
@@ -735,7 +743,7 @@ void NonDLocalReliability::mpp_search()
   // multiple response functions.
   size_t i;
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
+  for (respFnCount=0; respFnCount<numFunctions; ++respFnCount) {
 
     // approximate response means already computed
     finalStatistics.function_value(momentStats(0,respFnCount), statCount);
@@ -783,7 +791,7 @@ void NonDLocalReliability::mpp_search()
       initialize_level_data();
 
     // Loop over response/probability/reliability levels
-    for (levelCount=0; levelCount<num_levels; levelCount++) {
+    for (levelCount=0; levelCount<num_levels; ++levelCount) {
 
       // The rl_len response levels are performed first using the RIA
       // formulation, followed by the pl_len probability levels and the
@@ -2290,7 +2298,8 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     }
   }
 
-  if (integrationRefinement) { // IS/AIS/MMAIS
+  if (integrationRefinement &&                                  // IS/AIS/MMAIS
+      levelCount < requestedRespLevels[respFnCount].length()) { // RIA only
     // rep needed for access to functions not mapped to Iterator level
     NonDAdaptImpSampling* import_sampler_rep
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
