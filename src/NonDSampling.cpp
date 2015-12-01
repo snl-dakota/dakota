@@ -1247,8 +1247,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     // ----------------
     if (rl_len) {
       switch (respLevelTarget) {
-      case PROBABILITIES: case GEN_RELIABILITIES: {
-	// z -> p/beta* (based on binning)
+      case PROBABILITIES: case GEN_RELIABILITIES: // z -> p/beta* (from binning)
 	bin_accumulator = 0;
 	for (j=0; j<rl_len; ++j) { // compute CDF/CCDF p/beta*
 	  bin_accumulator += bins[j];
@@ -1261,8 +1260,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	      = -Pecos::NormalRandomVariable::inverse_std_cdf(computed_prob);
 	}
 	break;
-      }
-      case RELIABILITIES: { // z -> beta (based on moment projection)
+      case RELIABILITIES: { // z -> beta (from moment projection)
 	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
 	for (j=0; j<rl_len; j++) {
 	  Real z = requestedRespLevels[i][j];

@@ -1920,8 +1920,8 @@ void NonD::initialize_level_mappings()
     to enable PDF computation after CDF/CCDF probability level refinement
     (e.g., from importance sampling).  
 
-    prob_refinement alerts the routine to exclude inverse CDF mappings
-    from the PDF, since refinement only applies to z->p mappings and
+    prob_refinement alerts the routine to exclude inverse mappings from
+    the PDF, since refinement only applies to z->p forward mappings and
     mixing refined and unrefined probability mappings results in an
     inconsistency (potentially manifesting as negative density values).
 
@@ -1962,7 +1962,7 @@ compute_densities(const RealRealPairArray& min_max_fns,
         z = comp_rlev_i[j]; // request may be outside extreme values
 	cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
       }
-      if (!prob_refinement || !rl_len) {
+      if (!prob_refinement || !rl_len) { // don't combine refined/unrefined
 	size_t total_len = rl_len + pl_len + bl_len + gl_len;
 	for (j=rl_len; j<total_len; ++j) {
 	  z = comp_rlev_i[j];
@@ -1988,7 +1988,7 @@ compute_densities(const RealRealPairArray& min_max_fns,
 	}
 	break;
       }
-      if (!prob_refinement || !rl_len) {
+      if (!prob_refinement || !rl_len) { // don't combine refined/unrefined
 	for (j=0; j<pl_len; ++j) {
 	  z = comp_rlev_i[j];
 	  //if (z >= min && z <= max) // exclude any extrapolations outside bnds
@@ -2014,17 +2014,19 @@ compute_densities(const RealRealPairArray& min_max_fns,
       if (max > lev_last) ++pdf_size;
       RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
       RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
-      if (min < lev_0) {
-	abs_i[0] = min;
-	ord_i[0] = it->second/(lev_0 - min);
-	offset = 1;
+      if (min < lev_0) { // first bin accumulates p0 over [min,lev0]
+	offset   = 1;   prev_p   = it->second;
+	abs_i[0] = min;	ord_i[0] = prev_p/(lev_0 - min);
       }
-      else offset = 0;
+      else { // first bin accumulates p0+p1 over [lev0,lev1]
+	offset   = 0;   prev_p   = 0.;
+      }
+      prev_r = it->first;
       for (j=0; j<core_pdf_bins; ++j) {
-	prev_r = it->first; prev_p = it->second; ++it;
-	new_r  = it->first; new_p  = it->second;
+	++it; new_r = it->first; new_p = it->second;
 	abs_i[j+offset] = prev_r;
 	ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
+	prev_r = new_r; prev_p = new_p;
       }
       if (max > lev_last) {
 	abs_i[pdf_size-1] = lev_last;
