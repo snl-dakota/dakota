@@ -17,8 +17,6 @@
 #define RECAST_MODEL_H
 
 #include "DakotaModel.hpp"
-// BMA TODO: remove this on next pass (once ESM updated)
-#include "ParallelLibrary.hpp"
 
 namespace Dakota {
 

@@ -66,16 +66,18 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // For now, we assume that any hyper-parameters are appended to the
   // active continuous variables, and that active discrete int,
   // string, real follow in both the recast and sub-model
-  size_t submodel_non_cv = sub_model.div() + sub_model.dsv() + sub_model.drv();
-  Sizet2DArray vars_map_indices(sub_model.cv() + submodel_non_cv);
-  for (size_t i=0; i<sub_model.cv(); ++i) {
+  size_t submodel_cv = sub_model.cv();
+  size_t submodel_dv = sub_model.div() + sub_model.dsv() + sub_model.drv();
+  Sizet2DArray vars_map_indices(submodel_cv + submodel_dv);
+  for (size_t i=0; i<submodel_cv; ++i) {
     vars_map_indices[i].resize(1);
     vars_map_indices[i][0] = i;
   }
-  size_t recast_vars_ind = sub_model.cv();
-  for (size_t i=0; i<submodel_non_cv; ++i, ++recast_vars_ind) {
-    vars_map_indices[i].resize(1);
-    vars_map_indices[i][0] = recast_vars_ind;
+  // skip the trailing continuous hyper-parameters
+  size_t recast_dv_start = submodel_cv + numHyperparams;
+  for (size_t i=0; i<submodel_dv; ++i) {
+    vars_map_indices[submodel_cv + i].resize(1);
+    vars_map_indices[submodel_cv + i][0] = recast_dv_start + i;
   }
   bool nonlinear_vars_mapping = false;
 

@@ -27,6 +27,7 @@
 #include "SensAnalysisGlobal.hpp"
 #include "DiscrepancyCorrection.hpp"
 #include "dakota_tabular_io.hpp"
+#include "ParallelLibrary.hpp"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA

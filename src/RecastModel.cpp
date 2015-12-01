@@ -151,7 +151,13 @@ RecastModel::RecastModel(const Model& sub_model):
   //  underlying user model, then wrap it in this RecastModel
   //  Model(BaseConstructor(), problem_db),
   subModel(sub_model)
-{ /* empty ctor */ }
+{ 
+  modelType = "recast";
+  supportsEstimDerivs = false; // subModel estimates derivatives by default
+  
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel();
+}
 
 
 void RecastModel::

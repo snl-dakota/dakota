@@ -24,6 +24,7 @@
 #elif defined(DAKOTA_UTILIB)
 #include <utilib/seconds.h>
 #endif
+#include "ParallelLibrary.hpp"
 
 //#define DEBUG
 

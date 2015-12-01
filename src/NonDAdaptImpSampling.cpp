@@ -23,6 +23,7 @@
 #include "ProblemDescDB.hpp"
 #include "NonDLHSSampling.hpp"
 #include "pecos_stat_util.hpp"
+#include "ParallelLibrary.hpp"
 
 static const char rcsId[] = "@(#) $Id: NonDAdaptImpSampling.cpp 4058 2006-10-26 01:39:40Z lpswile $";
 

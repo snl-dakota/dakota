@@ -454,7 +454,7 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 set(model_src DakotaModel.cpp SingleModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ScalingModel.cpp
   SurrogateModel.cpp DataFitSurrModel.cpp HierarchSurrModel.cpp
-  DiscrepancyCorrection.cpp)
+  ActiveSubspaceModel.cpp DiscrepancyCorrection.cpp)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
