@@ -1184,6 +1184,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 
   if (pdfOutput) extremeValues.resize(numFunctions);
   IntRespMCIter s_it; std::multiset<Real>::iterator ss_it;
+  bool extrapolated_mappings = false;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -1292,8 +1293,12 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       //       within the sample bounds.
       Real cdf_incr_id = p_cdf * (Real)num_samp, lo_id;
       ss_it = sorted_samples.begin();
-      if (cdf_incr_id < 1.) // extrapolate left of min sample using 1st slope
-	lo_id = 1.;
+      if (cdf_incr_id < 1.) { // extrapolate left of min sample using 1st slope
+	lo_id = 1.; extrapolated_mappings = true;
+	Cerr << "Warning: extrapolation required for response " << i+1;
+	if (j<pl_len) Cerr <<    " for probability level " << j+1       <<".\n";
+	else Cerr << " for generalized reliability level " << j+1-pl_len<<".\n";
+      }
       else { // linear interpolation between closest neighbors in sequence
         lo_id = std::floor(cdf_incr_id);
 	std::advance(ss_it, (size_t)lo_id - 1);
@@ -1318,6 +1323,11 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     // archive the mappings to response levels
     archive_to_resp(i);
   }
+
+  if (extrapolated_mappings)
+    Cerr << "Warning: extrapolations required to evaluate inverse mappings.  "
+	 << "Consistent slope\n         (uniform density) assumed for "
+	 << "extrapolation into distribution tail.\n\n";
 
   // post-process computed z/p/beta* levels to form PDFs (prob_refined and
   // all_levels_computed default to false).  embedding this call within

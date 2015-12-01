@@ -2034,7 +2034,7 @@ compute_densities(const RealRealPairArray& min_max_fns,
 	abs_i[pdf_size]   = max;    // no ordinate for final abscissa
       }
       else
-	abs_i[pdf_size] = last_r; // no ordinate for final abscissa
+	abs_i[pdf_size]   = last_r; // no ordinate for final abscissa
 
       archive_pdf(i);
     }
