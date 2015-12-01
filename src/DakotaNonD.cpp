@@ -1939,9 +1939,9 @@ compute_densities(const RealRealPairArray& min_max_fns,
   archive_allocate_pdf();
 
   size_t i, j, cntr, core_pdf_bins, pdf_size, offset;
-  Real z, min, max, lev_0, lev_last, prev_r, prev_p, new_r, new_p;
+  Real z, min, max, prev_r, prev_p, new_r, new_p, last_r;
   std::map<Real, Real> cdf_map;
-  std::map<Real, Real>::iterator it, it0, it_last;
+  std::map<Real, Real>::iterator it, it_last;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -2006,35 +2006,34 @@ compute_densities(const RealRealPairArray& min_max_fns,
     }
 
     if (!cdf_map.empty()) {
-      it = it0 = cdf_map.begin(); it_last = --cdf_map.end();
-      lev_0 = it0->first; lev_last = it_last->first;
+      it      =   cdf_map.begin(); prev_r = it->first;
+      it_last = --cdf_map.end();   last_r = it_last->first;
       // compute computedPDF{Abscissas,Ordinates} from bin counts and widths
       core_pdf_bins = cdf_map.size()-1; pdf_size = core_pdf_bins;
-      if (min < lev_0)    ++pdf_size;
-      if (max > lev_last) ++pdf_size;
+      if (min < prev_r) ++pdf_size;
+      if (max > last_r) ++pdf_size;
       RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
       RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
-      if (min < lev_0) { // first bin accumulates p0 over [min,lev0]
+      if (min < prev_r) { // first bin accumulates p0 over [min,lev0]
 	offset   = 1;   prev_p   = it->second;
-	abs_i[0] = min;	ord_i[0] = prev_p/(lev_0 - min);
+	abs_i[0] = min;	ord_i[0] = prev_p/(prev_r - min);
       }
       else { // first bin accumulates p0+p1 over [lev0,lev1]
 	offset   = 0;   prev_p   = 0.;
       }
-      prev_r = it->first;
       for (j=0; j<core_pdf_bins; ++j) {
 	++it; new_r = it->first; new_p = it->second;
 	abs_i[j+offset] = prev_r;
 	ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
 	prev_r = new_r; prev_p = new_p;
       }
-      if (max > lev_last) {
-	abs_i[pdf_size-1] = lev_last;
-	ord_i[pdf_size-1] = (1. - it_last->second)/(max - lev_last);
+      if (max > last_r) {
+	abs_i[pdf_size-1] = last_r;
+	ord_i[pdf_size-1] = (1. - it_last->second)/(max - last_r);
 	abs_i[pdf_size]   = max;    // no ordinate for final abscissa
       }
       else
-	abs_i[pdf_size] = lev_last; // no ordinate for final abscissa
+	abs_i[pdf_size] = last_r; // no ordinate for final abscissa
 
       archive_pdf(i);
     }
