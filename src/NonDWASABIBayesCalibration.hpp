@@ -61,15 +61,6 @@ public:
 		 int par_num, int &printstep, std::string *restart_read_filename, 
 		 std::string *restart_write_filename);
 
-  /// Compute the prior density at specified point zp
-  static double prior_density (int par_num, double zp[]);
-
-  // NOTE: Memory is freed inside the dream core
-  /// Sample the prior and return an array of parameter values
-  //static double* prior_sample (int par_num);
-
-  void prior_sample ( RealVector & sample);
-         
   void compute_responses(RealMatrix & samples, RealMatrix & responses);
 
 protected:
@@ -131,12 +122,8 @@ protected:
   /// upper bounds on calibrated parameters
   RealVector paramMaxs;
 
-  // uniform prior PDFs for each variable
-  //std::vector<boost::math::uniform> priorDistributions;
   /// random number engine for sampling the prior
   boost::mt19937 rnumGenerator;
-  /// samplers for the uniform prior PDFs for each variable
-  std::vector<boost::uniform_real<double> > priorSamplers;
 
 private:
 
@@ -144,9 +131,6 @@ private:
   // - Heading: Data
   // 
 
-  /// Pointer to current class instance for use in static callback functions
-  static NonDWASABIBayesCalibration* NonDWASABIInstance;
-  
 };
 
 } // namespace Dakota

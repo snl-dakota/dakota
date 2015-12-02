@@ -29,8 +29,6 @@ using std::string;
 
 namespace Dakota {
 
-//initialization of statics
-NonDWASABIBayesCalibration* NonDWASABIBayesCalibration::NonDWASABIInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
@@ -64,8 +62,8 @@ NonDWASABIBayesCalibration::~NonDWASABIBayesCalibration()
 void NonDWASABIBayesCalibration::quantify_uncertainty()
 {
 
-  // instantiate WASABI objects
-  nonDBayesInstance = NonDWASABIInstance = this;
+  // initialize static pointers
+  nonDBayesInstance = this;
 
   ////////////////////////////////////////////////////////
   // Step 1 of 10: Build the response surface approximation (RSA)
@@ -117,18 +115,6 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   Cout << "INFO (WASABI): paramMins  " << paramMins << '\n';
   Cout << "INFO (WASABI): paramMaxs  " << paramMaxs << '\n';
 
-  /*
-  priorDistributions.clear(); // clear since this is a run-time operation
-  priorSamplers.clear();
-  int total_num_params = numContinuousVars; 
-  for (int i=0; i<total_num_params; ++i) {
-    priorDistributions.
-      push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
-    priorSamplers.
-      push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
-  }
-  */
-
   ////////////////////////////////////////////////////////
   // Step 2 of 10: Generate a large set of samples (s_prior) from the prior
   ////////////////////////////////////////////////////////
@@ -141,9 +127,8 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   RealMatrix samples_from_prior((int)numContinuousVars, numSamples, false);
   
   for (int j=0; j<numSamples; j++) {
-    RealVector newsample(Teuchos::View, samples_from_prior[j], 
-			 numContinuousVars);
-    prior_sample(newsample);
+    RealVector samp_j(Teuchos::View, samples_from_prior[j], numContinuousVars);
+    prior_sample(rnumGenerator, samp_j);
   }
     
   ////////////////////////////////////////////////////////
@@ -196,9 +181,9 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   RealVector prior_density_vals(samples_for_posterior_eval.numCols(), false);
 
   for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-    double priorval = prior_density(numContinuousVars, 
-				    samples_for_posterior_eval[j]);
-    prior_density_vals[j] = priorval;
+    RealVector samp_j(Teuchos::View, samples_for_posterior_eval[j],
+		      numContinuousVars);
+    prior_density_vals[j] = prior_density(samp_j);
   }
   
   ////////////////////////////////////////////////////////
@@ -329,46 +314,12 @@ void NonDWASABIBayesCalibration::print_results(std::ostream& s)
 {
   NonDBayesCalibration::print_results(s);
 
-//  additional WASABI output
+  //  additional WASABI output
 }
 
-
-double  NonDWASABIBayesCalibration::prior_density( int par_num, double zp[] )
+void NonDWASABIBayesCalibration::
+compute_responses(RealMatrix & samples, RealMatrix & responses)
 {
-  Dakota::RealVector vec(Teuchos::View, zp, par_num);
-  return nonDBayesInstance->prior_density(vec);
-
-  /*
-  int i;
-  double value = 1.0;
-
-  for ( i = 0; i < par_num; i++ )    
-  {
-    value *= boost::math::pdf(NonDWASABIInstance->priorDistributions[i], zp[i]);
-  }
-
-  return value;
-  */
-}
-
-void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)
-{
-  nonDBayesInstance->prior_sample(NonDWASABIInstance->rnumGenerator, sample);
-
-  /*
-  // check that sample size matches number of priorsamples
-  if (sample.length() != NonDWASABIInstance->priorSamplers.size()) {
-    throw (std::runtime_error("NonDWASABIBayesCalibration::prior_sample: Sample had incorrect size"));
-  }
-
-  for (int i = 0; i < sample.length(); i++ ){
-    sample[i] =
-      NonDWASABIInstance->priorSamplers[i](NonDWASABIInstance->rnumGenerator);
-  }
-  */
-}
-
-void NonDWASABIBayesCalibration::compute_responses(RealMatrix & samples, RealMatrix & responses) {
 
   int num_samples = samples.numCols();
   responses.shapeUninitialized(numFunctions, num_samples);
@@ -376,10 +327,10 @@ void NonDWASABIBayesCalibration::compute_responses(RealMatrix & samples, RealMat
   for (int j=0; j<num_samples; j++) {
     RealVector sample(Teuchos::View, samples[j], numContinuousVars);
     
-    NonDWASABIInstance->mcmcModel.continuous_variables(sample); 
+    mcmcModel.continuous_variables(sample); 
 
-    NonDWASABIInstance->mcmcModel.compute_response();
-    const Response& curr_resp = NonDWASABIInstance->mcmcModel.current_response();
+    mcmcModel.compute_response();
+    const Response& curr_resp = mcmcModel.current_response();
     const RealVector& fn_vals = curr_resp.function_values();
 
     RealVector response_col(Teuchos::View, responses[j], numFunctions); 
