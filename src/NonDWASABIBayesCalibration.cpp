@@ -117,17 +117,17 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   Cout << "INFO (WASABI): paramMins  " << paramMins << '\n';
   Cout << "INFO (WASABI): paramMaxs  " << paramMaxs << '\n';
 
-  // clear since this is a run-time operation
-  //priorDistributions.clear();
+  /*
+  priorDistributions.clear(); // clear since this is a run-time operation
   priorSamplers.clear();
   int total_num_params = numContinuousVars; 
   for (int i=0; i<total_num_params; ++i) {
-    //priorDistributions.
-    //  push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
+    priorDistributions.
+      push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
     priorSamplers.
       push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
   }
-
+  */
 
   ////////////////////////////////////////////////////////
   // Step 2 of 10: Generate a large set of samples (s_prior) from the prior
@@ -353,8 +353,10 @@ double  NonDWASABIBayesCalibration::prior_density( int par_num, double zp[] )
 
 void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)
 {
-  // check that sample size matches number of priorsamples
+  nonDBayesInstance->prior_sample(NonDWASABIInstance->rnumGenerator, sample);
 
+  /*
+  // check that sample size matches number of priorsamples
   if (sample.length() != NonDWASABIInstance->priorSamplers.size()) {
     throw (std::runtime_error("NonDWASABIBayesCalibration::prior_sample: Sample had incorrect size"));
   }
@@ -363,7 +365,7 @@ void NonDWASABIBayesCalibration::prior_sample ( RealVector & sample)
     sample[i] =
       NonDWASABIInstance->priorSamplers[i](NonDWASABIInstance->rnumGenerator);
   }
-
+  */
 }
 
 void NonDWASABIBayesCalibration::compute_responses(RealMatrix & samples, RealMatrix & responses) {

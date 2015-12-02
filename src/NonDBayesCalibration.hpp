@@ -53,6 +53,10 @@ public:
   template <typename VectorType>
   Real log_prior_density(const VectorType& vec);
 
+  /// draw a multivariate sample from the prior distribution
+  template <typename Engine>
+  void prior_sample(Engine& rng, RealVector& prior_samples);
+
   /**
    * \brief Compute the proposal covariance C based on low-rank approximation
    * to the prior-preconditioned misfit Hessian.
@@ -247,12 +251,35 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
     for (size_t i=0; i<numContinuousVars; ++i)
       log_pdf += natafTransform.x_log_pdf(vec[i], i);
 
-
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
     log_pdf += invGammaDists[i].log_pdf(vec[numContinuousVars + i]);
 
   return log_pdf;
+}
+
+
+template <typename Engine> 
+void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
+{
+  if (natafTransform.x_correlation()) {
+    Cerr << "Error: prior_sample() does not support correlated prior samples."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  if (prior_samples.empty())
+    prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
+  if (standardizedSpace)
+    for (size_t i=0; i<numContinuousVars; ++i)
+      prior_samples[i] = natafTransform.draw_u_sample(i, rng);
+  else
+    for (size_t i=0; i<numContinuousVars; ++i)
+      prior_samples[i] = natafTransform.draw_x_sample(i, rng);
+
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    prior_samples[numContinuousVars + i] = invGammaDists[i].draw_sample(rng);
 }
 
 

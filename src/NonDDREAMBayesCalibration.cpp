@@ -234,17 +234,17 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
   // Step 4 of 5: Instantiate the inverse problem
   ////////////////////////////////////////////////////////
   
+  /*
   // initialize the prior PDF and sampler
   // the prior is assumed uniform for DREAM
-
-  // clear since this is a run-time operation
-  //priorDistributions.clear();
+  priorDistributions.clear(); // clear since this is a run-time operation
   priorSamplers.clear();
   for (int i=0; i<total_num_params; ++i) {
-    //priorDistributions.push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
+    priorDistributions.push_back(boost::math::uniform(paramMins[i], paramMaxs[i]));
     priorSamplers.push_back(boost::uniform_real<double>(paramMins[i], paramMaxs[i]));
   }
-
+  */
+  
   ////////////////////////////////////////////////////////
   // Step 5 of 5: Solve the inverse problem
   ////////////////////////////////////////////////////////
@@ -382,8 +382,7 @@ problem_value(string *chain_filename, string *gr_filename, double &gr_threshold,
   return;
 }
 
-/** See documentation in DREAM examples) 
-    BMA TODO: Change this to support all Dakota distribution types */
+/** See documentation in DREAM examples */
 double  NonDDREAMBayesCalibration::prior_density ( int par_num, double zp[] )
 {
   Dakota::RealVector vec(Teuchos::View, zp, par_num);
@@ -405,21 +404,26 @@ double  NonDDREAMBayesCalibration::prior_density ( int par_num, double zp[] )
 }
 
 
-/** See documentation in DREAM examples) */			     
+/** See documentation in DREAM examples */			     
 double *  NonDDREAMBayesCalibration::prior_sample ( int par_num )
 {
-  int i;
-  double *zp;
+  // This is not a memory leak, as DREAM deallocates on their side (the API was
+  // not designed for the injection of this function into the DREAM namespace)
+  double *zp = ( double * ) malloc ( par_num * sizeof ( double ) );
 
-  zp = ( double * ) malloc ( par_num * sizeof ( double ) );
+  RealVector prior_dist_samples(Teuchos::View, zp, par_num);
+  nonDBayesInstance->
+    prior_sample(nonDDREAMInstance->rnumGenerator, prior_dist_samples);
 
-  for ( i = 0; i < par_num; i++ )
+  /*
+  for ( int i = 0; i < par_num; i++ )
   {
-    //    zp[i] = r8_uniform_sample ( nonDDREAMInstance->paramMins[i], 
-    //				nonDDREAMInstance->paramMaxs[i] );
+    //zp[i] = r8_uniform_sample ( nonDDREAMInstance->paramMins[i], 
+    //				  nonDDREAMInstance->paramMaxs[i] );
     zp[i] =
       nonDDREAMInstance->priorSamplers[i](nonDDREAMInstance->rnumGenerator);
   }
+  */
 
   return zp;
 }
