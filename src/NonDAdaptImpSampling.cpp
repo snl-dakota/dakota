@@ -40,12 +40,20 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   importanceSamplingType(
     probDescDB.get_ushort("method.nond.integration_refinement")),
   initLHS(true), useModelBounds(false), invertProb(false),
-  trackExtremeValues(pdfOutput), // used for defining PDF bounds
-  // size of refinement batches is separate from initial LHS size (numSamples)
-  refineSamples(probDescDB.get_int("method.nond.refinement_samples"))
+  trackExtremeValues(pdfOutput) // used for defining PDF bounds
 {
+  // size of refinement batches is separate from initial LHS size (numSamples)
+  const IntVector& db_refine_samples = 
+    probDescDB.get_iv("method.nond.refinement_samples");
   // if separate refinement batch size not provided, reuse initial LHS size
-  if (!refineSamples) refineSamples = numSamples;
+  refineSamples = numSamples; // default
+  if (db_refine_samples.length() == 1)
+    refineSamples = db_refine_samples[0];
+  else if (db_refine_samples.length() > 1) {
+    Cerr << "\nError (NonDAdaptImpSampling): refinement_samples must be length "
+         << "1 if specified." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
 
   statsFlag = true;
   initialize_random_variables(STD_NORMAL_U);//ASKEY_U,EXTENDED_U

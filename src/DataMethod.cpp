@@ -127,8 +127,8 @@ DataMethodRep::DataMethodRep():
   regressionL2Penalty(0.), crossValidation(false), //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   //expansionSampleType("lhs"),
-  sampleType(SUBMETHOD_DEFAULT), reliabilitySearchType(MV),
-  integrationRefine(NO_INT_REFINE), refineSamples(0),
+  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), reliabilitySearchType(MV),
+  integrationRefine(NO_INT_REFINE),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
@@ -254,7 +254,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << crossValidation //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << reliabilitySearchType
+    << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
@@ -393,7 +393,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> crossValidation //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
-    >> exportExpansionFile >> sampleType >> reliabilitySearchType
+    >> exportExpansionFile >> sampleType >> dOptimal >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
@@ -531,7 +531,7 @@ void DataMethodRep::write(std::ostream& s) const
     << crossValidation //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << reliabilitySearchType
+    << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels

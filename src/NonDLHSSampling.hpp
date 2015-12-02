@@ -105,6 +105,15 @@ private:
   /// number of response functions; used to distinguish NonD from opt/NLS usage
   size_t numResponseFunctions;
 
+  /// list of refinement sample batch sizes
+  IntVector refineSamples;
+
+  /// whether to generate d-optimal point sets
+  bool dOptimal;
+
+  /// oversampling ratio for d-optimal candidate set generation (default 10.0)
+  Real oversampleRatio;
+
   /// flags computation of variance-based decomposition indices
   bool varBasedDecompFlag;
 

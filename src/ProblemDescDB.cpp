@@ -1646,6 +1646,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 	{"fsu_quasi_mc.primeBase", P primeBase},
 	{"fsu_quasi_mc.sequenceLeap", P sequenceLeap},
 	{"fsu_quasi_mc.sequenceStart", P sequenceStart},
+	{"nond.refinement_samples", P refineSamples},
 	{"parameter_study.steps_per_variable", P stepsPerVariable}};
     #undef P
     KW<IntVector, DataMethodRep> *kw;
@@ -1724,8 +1725,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
-	{"nond.collocation_points", P collocationPoints},
-	{"nond.expansion_samples", P expansionSamples}};
+      {"nond.collocation_points", P collocationPoints},
+      {"nond.expansion_samples", P expansionSamples}};
     #undef P
 
     KW<SizetArray, DataMethodRep> *kw;
@@ -2546,7 +2547,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.batch_size", P batchSize},
 	{"nond.emulator_samples", P emulatorSamples},
 	{"nond.proposal_covariance_updates", P proposalCovUpdates},
-	{"nond.refinement_samples", P refineSamples},
 	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
@@ -2984,6 +2984,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
 	{"nond.cross_validation", P crossValidation},
+	{"nond.d_optimal", P dOptimal},
 	{"nond.evaluate_posterior_density", P evaluatePosteriorDensity},
 	{"nond.generate_posterior_samples", P generatePosteriorSamples},
 	{"nond.logit_transform", P logitTransform},

@@ -524,8 +524,16 @@ construct_expansion_sampler(const String& import_approx_file,
 	  { imp_sampling = true; break; }
 
     if (imp_sampling) {
-      int refine_samples = probDescDB.get_int("method.nond.refinement_samples");
-      if (!refine_samples) refine_samples = 1000; // context-specific default
+      int refine_samples = 1000; // context-specific default
+      const IntVector& db_refine_samples = 
+        probDescDB.get_iv("method.nond.refinement_samples");
+      if (db_refine_samples.length() == 1)
+        refine_samples = db_refine_samples[0];
+      else if (db_refine_samples.length() > 1) {
+        Cerr << "\nError (NonDExpansion): refinement_samples must be length "
+             << "1 if specified." << std::endl;
+        abort_handler(PARSE_ERROR);
+      }
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep

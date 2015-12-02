@@ -880,6 +880,8 @@ public:
   /// the \c sample_type specification in \ref MethodNonDMC, \ref
   /// MethodNonDPCE, and \ref MethodNonDSC
   unsigned short sampleType;
+  /// whether to generate D-optimal designs
+  bool dOptimal;
   /// the type of limit state search in \ref MethodNonDLocalRel
   /// (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
   /// \c u_taylor_mpp, \c u_two_point, or \c no_approx) or
@@ -894,7 +896,7 @@ public:
   unsigned short integrationRefine;
   /// the \c refinement_samples selection in \ref MethodNonDLocalRel,
   /// \ref MethodNonDPCE, and \ref MethodNonDSC
-  int refineSamples;
+  IntVector refineSamples;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD
   short distributionType;

@@ -969,7 +969,7 @@ KEYWORD12 method
 	    import
 	    | adapt_import
 	    | mm_adapt_import
-	    [ refinement_samples INTEGER ]
+	    [ refinement_samples INTEGERLIST ]
 	    ]
 	  [ import_approx_points_file STRING
 	    [ annotated
@@ -1080,7 +1080,7 @@ KEYWORD12 method
 	    import
 	    | adapt_import
 	    | mm_adapt_import
-	    [ refinement_samples INTEGER ]
+	    [ refinement_samples INTEGERLIST ]
 	    ]
 	  [ import_approx_points_file STRING
 	    [ annotated
@@ -1152,6 +1152,10 @@ KEYWORD12 method
 	      previous_samples INTEGER
 	      )
 	    ]
+	  [ refinement_samples INTEGERLIST ]
+	  [ d_optimal
+	    [ oversample_ratio REAL ]
+	    ]
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]
 	    ]
@@ -1200,7 +1204,7 @@ KEYWORD12 method
 	  import
 	  | adapt_import
 	  | mm_adapt_import
-	  [ refinement_samples INTEGER ]
+	  [ refinement_samples INTEGERLIST ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -1984,7 +1988,7 @@ KEYWORD12 method
 		import
 		| adapt_import
 		| mm_adapt_import
-		[ refinement_samples INTEGER ]
+		[ refinement_samples INTEGERLIST ]
 		[ seed INTEGER > 0 ]
 		]
 	      ]

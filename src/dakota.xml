@@ -150,6 +150,24 @@
         <param type='REALLIST' />
       </keyword>"
     >
+    <!-- # TO DO: flatten this group and review contexts for inclusion: -->
+    <!-- Defaults from old reference manual to be inserted: 
+	 local_reliability: 0
+	 PCE: 0 (samples on approximation)
+	 MCMC: 10000
+	 FSU, QMC, CVT: 0 (or min req for surrogate build)
+	 PSUADE: 10*(numVars+1)
+	 Global interval, evidence: 10000 LHS, numVars^2 for EGO
+	 DACE, sampling: minimum required
+      -->
+    <!ENTITY default_samples_seed
+      "<keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='method-dependent'>
+         <param type='INTEGER' />
+       </keyword>
+       <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
+         <param type='INTEGER' constraint='> 0' />
+       </keyword>"
+    >
 ]>
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
@@ -1179,13 +1197,12 @@
               </keyword>
               &default_max_iterations;
             </keyword>
-            <!-- Begin group for samples and seed? -->
-            <required>
+            <required> <!-- Group for samples and seed -->
               <oneOf>
-                <required>
+                <required> <!-- Group with distribution, problev, genrellev, RNG -->
                   <oneOf>
-                    <required>
-                      <required>
+                    <required> <!-- Group with rel/resp; compute prob/rel/gen/sys -->
+                      <required>  <!-- Group with fixed_seed, max_iterations, convergence_tolerance (PCE, SC, Sampling) -->
                         <oneOf>
                           <keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
                             <alias name="nond_polynomial_chaos"/>
@@ -1397,8 +1414,8 @@
                                 <keyword  id="adapt_import" name="adapt_import" code="{N_mdm(utype,integrationRefine_AIS)}" label="adapt_import" help=""  />
                                 <keyword  id="mm_adapt_import" name="mm_adapt_import" code="{N_mdm(utype,integrationRefine_MMAIS)}" label="mm_adapt_import" help=""  />
                               </oneOf>
-                              <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(int,refineSamples)}" label="Refinement samples" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" >
-                                <param type="INTEGER" />
+                              <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" >
+                                <param type="INTEGERLIST" />
                               </keyword>
                             </keyword>
                             <keyword  id="import_approx_points_file" name="import_approx_points_file" code="{N_mdm(str,importApproxPtsFile)}" label="File name for importing samples for evaluating the PCE" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no point import from a file" >
@@ -1508,8 +1525,8 @@
                                 <keyword  id="adapt_import1" name="adapt_import" code="{N_mdm(utype,integrationRefine_AIS)}" label="adapt_import" help=""  />
                                 <keyword  id="mm_adapt_import1" name="mm_adapt_import" code="{N_mdm(utype,integrationRefine_MMAIS)}" label="mm_adapt_import" help=""  />
                               </oneOf>
-                              <keyword  id="refinement_samples1" name="refinement_samples" code="{N_mdm(int,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
-                                <param type="INTEGER" />
+                              <keyword  id="refinement_samples1" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
+                                <param type="INTEGERLIST" />
                               </keyword>
                             </keyword>
                             <keyword  id="import_approx_points_file1" name="import_approx_points_file" code="{N_mdm(str,importApproxPtsFile)}" label="File name for importing samples for evaluating the interpolant" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="no point import from a file" >
@@ -1540,6 +1557,14 @@
                                 </required>
                               </oneOf>
                             </keyword>
+                            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" >
+                              <param type="INTEGERLIST" />
+                            </keyword>
+			                      <keyword  id="d_optimal" name="d_optimal" code="{N_mdm(true,dOptimal)}" label="D-Optimal sample design" help="" minOccurs="0" default="off"> 
+                              <keyword  id="oversample_ratio" name="oversample_ratio" code="{N_mdm(Real,collocationRatio)}" label="Candidate oversampling ratio" help="" minOccurs="0" default="10.0" >
+                                <param type="REAL" />
+                              </keyword>
+                            </keyword>
                             <keyword  id="variance_based_decomp2" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="variance_based_decomp" help="" minOccurs="0" default="no variance-based decomposition" >
                               <keyword  id="drop_tolerance2" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance" help="" minOccurs="0" default="All VBD indices displayed" >
                                 <param type="REAL" />
@@ -1557,7 +1582,7 @@
                         <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
                         &default_max_iterations;
                         &default_convergence_tolerance;
-                      </required>
+                      </required>  <!-- Group with fixed_seed, max_iterations, convergence_tolerance (PCE, SC, Sampling) -->
                       <keyword  id="reliability_levels" name="reliability_levels" code="{N_mdm(resplevs,reliabilityLevels)}" label="reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
                         <param type="REALLIST" />
                         <keyword  id="num_reliability_levels" name="num_reliability_levels" code="{N_mdm(num_resplevs,reliabilityLevels)}" label="num_reliability_levels" help="" minOccurs="0" default="reliability_levels evenly distributed among response functions" >
@@ -1583,7 +1608,7 @@
                           </keyword>
                         </keyword>
                       </keyword>
-                    </required>
+                    </required> <!-- Group with rel/resp; compute prob/rel/gen/sys -->
                     <keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
                       <alias name="nond_importance_sampling"/>
                       <oneOf>
@@ -1591,8 +1616,8 @@
                         <keyword  id="adapt_import2" name="adapt_import" code="{N_mdm(utype,integrationRefine_AIS)}" label="adapt_import" help=""  />
                         <keyword  id="mm_adapt_import2" name="mm_adapt_import" code="{N_mdm(utype,integrationRefine_MMAIS)}" label="mm_adapt_import" help=""  />
                       </oneOf>
-                      <keyword  id="refinement_samples2" name="refinement_samples" code="{N_mdm(int,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
-                        <param type="INTEGER" />
+                      <keyword  id="refinement_samples2" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
+                        <param type="INTEGERLIST" />
                       </keyword>
                       <keyword  id="response_levels1" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
                         <param type="REALLIST" />
@@ -1857,7 +1882,7 @@
                       <keyword  id="rnum2" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
                     </oneOf>
                   </keyword>
-                </required>
+                </required> <!-- Group with distribution, problev, genrellev -->
                 <keyword  id="global_interval_est" name="global_interval_est" code="{N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}" label="global_interval_est" help="" minOccurs="1" group="Uncertainty Quantification" >
                   <alias name="nond_global_interval_est"/>
                   <optional>
@@ -2286,23 +2311,8 @@
                   </keyword>
                 </keyword>
               </oneOf>
-              <!-- # TO DO: flatten this group and review contexts for inclusion: -->
-	      <!-- Defaults from old reference manual to be inserted: 
-		   local_reliability: 0
-		   PCE: 0 (samples on approximation)
-		   MCMC: 10000
-		   FSU, QMC, CVT: 0 (or min req for surrogate build)
-		   PSUADE: 10*(numVars+1)
-		   Global interval, evidence: 10000 LHS, numVars^2 for EGO
-		   DACE, sampling: minimum required
-		-->
-              <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" default="method-dependent">
-                <param type="INTEGER" />
-              </keyword>
-              <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-                <param type="INTEGER" constraint="> 0" />
-              </keyword>
-            </required>
+              &default_samples_seed;
+            </required> <!-- Group for samples and seed -->
             <keyword  id="local_evidence" name="local_evidence" code="{N_mdm(utype,methodName_LOCAL_EVIDENCE)}" label="local_evidence" help="" minOccurs="1" group="Uncertainty Quantification" >
               <alias name="nond_local_evidence"/>
               <optional>
@@ -2358,7 +2368,7 @@
               </optional>
               &default_convergence_tolerance;
             </keyword>
-            <required>
+            <required> <!-- Group with distribution, problev, genrellev -->
               <oneOf>
                 <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="1" group="Uncertainty Quantification" >
                   <alias name="nond_local_reliability"/>
@@ -2394,8 +2404,8 @@
                           <keyword  id="adapt_import3" name="adapt_import" code="{N_mdm(utype,integrationRefine_AIS)}" label="adapt_import" help=""  />
                           <keyword  id="mm_adapt_import3" name="mm_adapt_import" code="{N_mdm(utype,integrationRefine_MMAIS)}" label="mm_adapt_import" help=""  />
                         </oneOf>
-                        <keyword  id="refinement_samples3" name="refinement_samples" code="{N_mdm(int,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
-                          <param type="INTEGER" />
+                        <keyword  id="refinement_samples3" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
+                          <param type="INTEGERLIST" />
                         </keyword>
                         <keyword  id="seed8" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="system-generated (non-repeatable)" >
                           <param type="INTEGER" constraint="> 0" />
@@ -2508,7 +2518,7 @@
                   <param type="INTEGERLIST" />
                 </keyword>
               </keyword>
-            </required>
+            </required> <!-- Group with distribution, problev, genrellev -->
             <keyword  id="fsu_quasi_mc" name="fsu_quasi_mc" code="{0}" label="fsu_quasi_mc" help="" minOccurs="1" group="DACE" >
               <oneOf label="sequence type">
                 <keyword  id="halton1" name="halton" code="{N_mdm(utype,methodName_FSU_HALTON)}" label="halton" help=""  />

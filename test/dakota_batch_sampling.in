@@ -1,0 +1,59 @@
+#@ s2: Restart=write
+#@ s3: Restart=read DependsOn=s2
+#
+# Batch sampling with multiple distribution types
+# (based on dakota_uq_rosenbrock_verify, test s5)
+#   0: generate 700 D-optimal points
+#   1: single study to generate 400 + 200 + 100 D-optimal points
+#   2: initial study to generate 400 D-optimal points
+#   3: restarted study to generate (400) + 200 + 100 D-optimal points
+#      (should be identifcal to 1)
+
+environment,
+#  tabular_data                                     #s1,#s3
+#    tabular_data_file = 'samples_700.dat'          #s1
+#    tabular_data_file = 'samples_700_restart.dat'  #s3
+
+method,
+	sampling
+    seed = 12347
+    samples = 700                                   #s0
+#    samples = 400                                  #s1,#s2,#s3
+#      refinement_samples = 200 100                 #s1,#s3
+      d_optimal                                     
+      oversample_ratio 5.0                          #s0
+	  response_levels = .1 1. 50. 100. 500. 1000.
+	  output silent
+
+variables,
+	normal_uncertain = 1
+      	  means             =  0.
+	  std_deviations    =  1.
+	  descriptors       = 'x1'
+	uniform_uncertain = 1
+      	  lower_bounds      = -2.
+	  upper_bounds      =  2.
+	  descriptors       = 'x2'
+	exponential_uncertain = 1
+	  betas             =  2.
+	  descriptors       = 'x3'
+	beta_uncertain = 1
+	  alphas            =  1.5
+	  betas             =  2.
+      	  lower_bounds      = -2.
+	  upper_bounds      =  2.
+	  descriptors       = 'x4'
+	gamma_uncertain = 1
+	  alphas           =  2.5
+	  betas            =  2.
+	  descriptors      = 'x5'
+
+interface,
+	direct
+	  analysis_driver = 'generalized_rosenbrock'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians

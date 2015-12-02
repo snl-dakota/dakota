@@ -342,10 +342,18 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     }
 
     // For NonDLocal, integration refinement is applied to the original model
-    int refine_samples = probDescDB.get_int("method.nond.refinement_samples"),
-        refine_seed    = probDescDB.get_int("method.random_seed");
-    if (!refine_samples) refine_samples = 1000; // context-specific default
-
+    int refine_samples = 1000; // context-specific default
+    const IntVector& db_refine_samples = 
+      probDescDB.get_iv("method.nond.refinement_samples");
+    if (db_refine_samples.length() == 1)
+      refine_samples = db_refine_samples[0];
+    else if (db_refine_samples.length() > 1) {
+      Cerr << "\nError (NonDLocalReliability): refinement_samples must be "
+           << "length 1 if specified." << std::endl;
+      abort_handler(PARSE_ERROR);
+    }
+    int refine_seed    = probDescDB.get_int("method.random_seed");
+   
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String rng; // empty string: use default
 

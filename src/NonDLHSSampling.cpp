@@ -39,6 +39,9 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model), numResponseFunctions(0),
+  refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
+  dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
+  oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   pcaFlag(probDescDB.get_bool("method.principal_components")),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
   percentVarianceExplained(
@@ -60,7 +63,8 @@ NonDLHSSampling(Model& model, unsigned short sample_type, int samples,
 		short sampling_vars_mode): 
   NonDSampling(RANDOM_SAMPLING, model, sample_type, samples, seed, rng,
 	       vary_pattern, sampling_vars_mode),
-  numResponseFunctions(numFunctions), pcaFlag(false), varBasedDecompFlag(false)
+  numResponseFunctions(numFunctions), dOptimal(false), oversampleRatio(0.0),
+  pcaFlag(false), varBasedDecompFlag(false)
 { }
 
 
@@ -78,7 +82,8 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const String& rng, const RealVector& lower_bnds,
 		const RealVector& upper_bnds): 
   NonDSampling(sample_type, samples, seed, rng, lower_bnds, upper_bnds),
-  numResponseFunctions(0), pcaFlag(false), varBasedDecompFlag(false)
+  numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0), 
+  pcaFlag(false), varBasedDecompFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -99,7 +104,8 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const RealVector& upper_bnds, RealSymMatrix& correl): 
   NonDSampling(sample_type, samples, seed, rng, means, std_devs,
 	       lower_bnds, upper_bnds, correl),
-  numResponseFunctions(0), pcaFlag(false), varBasedDecompFlag(false)
+  numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0),
+  pcaFlag(false), varBasedDecompFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -114,28 +120,27 @@ NonDLHSSampling::~NonDLHSSampling()
 void NonDLHSSampling::pre_run()
 {
   // run LHS to generate parameter sets; for VBD we defer to run for now
-  // BMA TODO: there's no reason VBD can't be supported in pre-run
+  // BMA TODO: There's no reason VBD can't be supported in pre-run
+  //           Also, update incremental LHS to follow this convention
   if (!varBasedDecompFlag) {
     
-    // BMA TODO: for now samples_vec is the full set of increments;
-    // will change to initial vs. refinement samples; written to be
-    // backward compatible for now
-    int seq_len = 1;
+    // Initial numSamples may be augmented by 1 or more sets of refineSamples
+    int seq_len = 1 + refineSamples.length();
     IntVector samples_vec(seq_len);
-    samples_vec = numSamples;
-    bool d_optimal = false;
+    samples_vec[0] = numSamples;
+    copy_data_partial(refineSamples, samples_vec, 1);
 
     // BMA TODO: VBD and other functions aren't accounting for string variables
     // Sampling supports modes beyond just active
     size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
       drv_start, num_drv;
     mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-		dsv_start, num_dsv, drv_start, num_drv);
+                dsv_start, num_dsv, drv_start, num_drv);
     size_t num_vars = num_cv + num_div + num_dsv + num_drv;
     int previous_samples = 0, total_samples = samples_vec.normOne();
     
     if (allSamples.numRows() != num_vars || 
-	allSamples.numCols() != total_samples)
+        allSamples.numCols() != total_samples)
       allSamples.shape(num_vars, total_samples);
     
     for (int batch_ind = 0; batch_ind < seq_len; ++batch_ind) {
@@ -147,17 +152,17 @@ void NonDLHSSampling::pre_run()
       // BMA TODO: Is this correct?
       // the user may have fixed the seed; we have to advance it
       if (seq_len > 1)
-	varyPattern = true;
+        varyPattern = true;
 
-      if (d_optimal)
-	// populate the correct subset of allSamples, preserving previous
-	d_optimal_parameter_set(previous_samples, new_samples, allSamples);
+      if (dOptimal)
+        // populate the correct subset of allSamples, preserving previous
+        d_optimal_parameter_set(previous_samples, new_samples, allSamples);
       else {
-	// sub-matrix of allSamples to populate
-	RealMatrix selected_samples(Teuchos::View, allSamples, 
-				    num_vars, new_samples,  // num row/col
-				    0, previous_samples);   // start row/col
-	get_lhs_samples(iteratedModel, new_samples, selected_samples);
+        // sub-matrix of allSamples to populate
+        RealMatrix selected_samples(Teuchos::View, allSamples, 
+                                    num_vars, new_samples,  // num row/col
+                                    0, previous_samples);   // start row/col
+        get_lhs_samples(iteratedModel, new_samples, selected_samples);
       }
       previous_samples += new_samples;
     }
@@ -183,9 +188,9 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 
   int total_samples = previous_samples + new_samples;
 
-  // BMA TODO: allow user control and detect bad alloc
-  int oversample_ratio = 10;
-  int num_candidates = oversample_ratio*new_samples;
+  // BMA TODO: detect bad alloc in the candidate set
+  Real oversample_ratio = (oversampleRatio > 0.0) ? oversampleRatio : 10.0;
+  int num_candidates = (int) std::ceil(oversample_ratio * (Real) new_samples);
 
   // generate a parameter set of size candidate 
   RealMatrix candidate_samples(num_vars, num_candidates);
@@ -199,9 +204,6 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // points plus any new selected points
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
-
-  Cout << "initial samples " << initial_samples << std::endl;
-  Cout << "candidate samples " << candidate_samples << std::endl;
 
   // BMA TODO: can we use numerically generated for discrete types?
   // initialize nataf transform
@@ -234,8 +236,10 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   bool u_to_x = false;
   transform_samples(selected_samples, u_to_x);
 
-  Cout << "selected samples " << selected_samples << std::endl;
-  Cout << "full_samples " << full_samples << std::endl;
+  // Cout << "initial samples " << initial_samples << std::endl;
+  // Cout << "candidate samples " << candidate_samples << std::endl;
+  // Cout << "selected samples " << selected_samples << std::endl;
+  // Cout << "full_samples " << full_samples << std::endl;
 }
 
 void NonDLHSSampling::post_input()

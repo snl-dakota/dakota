@@ -930,7 +930,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 adapt_import {N_mdm(utype,integrationRefine_AIS)}
                 |
                 mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-                [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
+                [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
                ]
               [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
                 [ 
@@ -1038,7 +1038,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 adapt_import {N_mdm(utype,integrationRefine_AIS)}
                 |
                 mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-                [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
+                [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
                ]
               [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
                 [ 
@@ -1086,6 +1086,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                   previous_samples INTEGER {N_mdm(int,previousSamples)}
                  )
                ]
+              [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+              [ d_optimal {N_mdm(true,dOptimal)}
+                [ oversample_ratio REAL {N_mdm(Real,collocationRatio)} ]
+               ]
               [ variance_based_decomp {N_mdm(true,vbdFlag)}
                 [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
                ]
@@ -1124,7 +1128,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           adapt_import {N_mdm(utype,integrationRefine_AIS)}
           |
           mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-          [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
+          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
           [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
             [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
             [ compute {0}
@@ -1932,7 +1936,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               adapt_import {N_mdm(utype,integrationRefine_AIS)}
               |
               mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-              [ refinement_samples INTEGER {N_mdm(int,refineSamples)} ]
+              [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
               [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
              ]
            ]

@@ -6506,6 +6506,7 @@ static Real
 
 static IntVector
 	MP_(primeBase),
+	MP_(refineSamples),
 	MP_(sequenceLeap),
 	MP_(sequenceStart),
 	MP_(stepsPerVariable);
@@ -6706,7 +6707,7 @@ static unsigned short
 
 static SizetArray
 	MP_(collocationPoints),
-	MP_(expansionSamples);
+        MP_(expansionSamples);
 
 static UShortArray
         MP_(expansionOrder),
@@ -6757,6 +6758,7 @@ static bool
 	MP_(backfillFlag),
 	MP_(constantPenalty),
 	MP_(crossValidation),
+	MP_(dOptimal),
         MP_(evaluatePosteriorDensity),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),
@@ -6818,7 +6820,6 @@ static int
         MP_(procsPerIterator),
         MP_(proposalCovUpdates),
 	MP_(randomSeed),
-	MP_(refineSamples),
 	MP_(searchSchemeSize),
 	MP_(totalPatternSize),
 	MP_(verifyLevel);
