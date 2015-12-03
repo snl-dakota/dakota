@@ -1,0 +1,22 @@
+Blurb:: Generate a D-optimal sampling design
+
+Description::
+This option will generate a sampling design that is approximately
+D-optimal by downselecting from a set of candidate sample points.
+
+<b> Default Behavior </b>
+
+If not specified, a standard sampling design (MC or LHS) will be generated.
+
+Topics::	
+Examples::
+\verbatim
+method
+  sampling
+    sample_type random
+    samples = 20
+    d_optimal
+\endverbatim
+Theory::
+Faq::
+See_Also::	
