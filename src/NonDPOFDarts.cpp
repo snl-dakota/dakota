@@ -666,7 +666,6 @@ void NonDPOFDarts::quantify_uncertainty()
         double* x_actual = new double[_n_dim];
         for (size_t idim = 0; idim < _n_dim; idim++) x_actual[idim] = _xmin[idim] + x[idim] * (_xmax[idim] - _xmin[idim]);
         compute_response(x_actual);
-        
         _num_inserted_points++;
         
         // Adjusting Spheres radii due to new point
@@ -692,6 +691,7 @@ void NonDPOFDarts::quantify_uncertainty()
             update_global_L();
             for (size_t isample = 0; isample < _num_inserted_points; isample++) assign_sphere_radius_POF(isample);
         }
+        delete [] x_actual;
     }
     
     void NonDPOFDarts::compute_response(double* x)

@@ -902,6 +902,7 @@ namespace Dakota
                 //}
                     
             }
+            delete [] x_vps;
             return f_VPS;
         }
         else if (_vps_subsurrogate == GP)
@@ -912,6 +913,7 @@ namespace Dakota
             
             double f_gp = gpApproximations[iclosest].value(c_vars);
             
+            delete [] x_vps;
             return f_gp;
         }
         else
