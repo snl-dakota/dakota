@@ -29,13 +29,19 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
-  NonDSampling(problem_db, model)
+  NonDSampling(problem_db, model),
+  pilotSamples(probDescDB.get_iv("method.nond.pilot_samples"))
 {
   sampleType = SUBMETHOD_RANDOM;
 
-  // check the iteratedModel for the appropriate hierarchical structure...
-  // set the responseMode to MODEL_DISCREPANCY
-  // TO DO
+  // check the iteratedModel for the appropriate hierarchical structure
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: Multilevel Monte Carlo requires a hierarchical surrogate "
+	 << "model specification." << std::endl;
+    abort_handler(-1);
+  }
+  // set SurrogateModel::responseMode
+  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 }
 
 
@@ -78,8 +84,8 @@ void NonDMultilevelSampling::quantify_uncertainty()
   // discretization based on some criterion, e.g. CFL condition.
   // Can we reliably capture runtime estimates as part of pilot run w/i Dakota?
   // Ultimately seems desirable to support either online or offline cost
-  // estimates, to allow more accurate resource allocation when possible or
-  // necessary (e.g., combustion processes with expense that is highly
+  // estimates, to allow more accurate resource allocation when possible
+  // or necessary (e.g., combustion processes with expense that is highly
   // parameter dependent).
   
   size_t lev, num_lev = 1,//iteratedModel.discretization_levels().size(),

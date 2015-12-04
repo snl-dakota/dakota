@@ -1122,6 +1122,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
          )
         |
+        ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
+          [ pilot_samples INTEGERLIST {N_mdm(ivec,pilotSamples)} ]
+          [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+          [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+         )
+        |
         ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
           import {N_mdm(utype,integrationRefine_IS)}
           |

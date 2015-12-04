@@ -6505,6 +6505,7 @@ static Real
 #define MP3s(x,y,z) method_mp_TYPE_DATA_##x##_##z = {&DataMethodRep::x,&DataMethodRep::y,z}
 
 static IntVector
+	MP_(pilotSamples),
 	MP_(primeBase),
 	MP_(refineSamples),
 	MP_(sequenceLeap),
@@ -6902,10 +6903,10 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE);
 
 static Method_mp_utype
-  MP2s(calibrateErrorMode,CALIBRATE_ONE),
-  MP2s(calibrateErrorMode,CALIBRATE_PER_EXPER),
-  MP2s(calibrateErrorMode,CALIBRATE_PER_RESP),
-  MP2s(calibrateErrorMode,CALIBRATE_BOTH),
+	MP2s(calibrateErrorMode,CALIBRATE_ONE),
+	MP2s(calibrateErrorMode,CALIBRATE_PER_EXPER),
+	MP2s(calibrateErrorMode,CALIBRATE_PER_RESP),
+	MP2s(calibrateErrorMode,CALIBRATE_BOTH),
         MP2s(exportApproxFormat,TABULAR_NONE),
         MP2s(exportApproxFormat,TABULAR_HEADER),
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
@@ -6926,7 +6927,7 @@ static Method_mp_utype
         MP2s(importBuildFormat,TABULAR_EVAL_ID),
         MP2s(importBuildFormat,TABULAR_IFACE_ID),
         MP2s(importBuildFormat,TABULAR_ANNOTATED),
-  MP2s(integrationRefine,AIS),
+	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
@@ -6970,8 +6971,9 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTILEVEL_SAMPLING),
         MP2s(methodName,POF_DARTS),
-    MP2s(methodName,RKD_DARTS),
+	MP2s(methodName,RKD_DARTS),
 	MP2s(methodName,POLYNOMIAL_CHAOS),
 	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,STOCH_COLLOCATION),

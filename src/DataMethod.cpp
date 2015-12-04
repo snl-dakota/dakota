@@ -256,21 +256,20 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << tensorGridFlag << tensorGridOrder << importExpansionFile
     << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << distributionType << responseLevelTarget << responseLevelTargetReduce
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
-    << preSolveMethod << proposalCovType << proposalCovUpdates
-    << proposalCovInputType << proposalCovData << proposalCovFile
-    << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
-    << numChains << numCR << crossoverChainPairs
+    << pilotSamples << distributionType << responseLevelTarget
+    << responseLevelTargetReduce << responseLevels << probabilityLevels
+    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << adaptPosteriorRefine << logitTransform << preSolveMethod
+    << proposalCovType << proposalCovUpdates << proposalCovInputType
+    << proposalCovData << proposalCovFile << fitnessMetricType
+    << batchSelectionType << batchSize << calibrateErrorMode << hyperPriorAlphas
+    << hyperPriorBetas << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
-    ;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -395,15 +394,15 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
     >> exportExpansionFile >> sampleType >> dOptimal >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
-    >> responseLevels >> probabilityLevels >> reliabilityLevels
-    >> genReliabilityLevels >> emulatorSamples >> emulatorOrder >> emulatorType
-    >> mcmcType >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
-    >> preSolveMethod >> proposalCovType >> proposalCovUpdates
-    >> proposalCovInputType >> proposalCovData >> proposalCovFile
-    >> fitnessMetricType >> batchSelectionType >> batchSize
-    >> calibrateErrorMode  >> hyperPriorAlphas >> hyperPriorBetas
-    >> numChains >> numCR >> crossoverChainPairs
+    >> pilotSamples >> distributionType >> responseLevelTarget
+    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
+    >> reliabilityLevels >> genReliabilityLevels >> emulatorSamples
+    >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
+    >> adaptPosteriorRefine >> logitTransform >> preSolveMethod
+    >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
+    >> proposalCovData >> proposalCovFile >> fitnessMetricType
+    >> batchSelectionType >> batchSize >> calibrateErrorMode >> hyperPriorAlphas
+    >> hyperPriorBetas >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
     >> dataDistFile >> posteriorDensityExportFilename
@@ -533,15 +532,15 @@ void DataMethodRep::write(std::ostream& s) const
     << tensorGridFlag << tensorGridOrder << importExpansionFile
     << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << distributionType << responseLevelTarget << responseLevelTargetReduce
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << emulatorSamples << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
-    << preSolveMethod << proposalCovType << proposalCovUpdates
-    << proposalCovInputType << proposalCovData << proposalCovFile
-    << fitnessMetricType << batchSelectionType << batchSize
-    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
-    << numChains << numCR << crossoverChainPairs
+    << pilotSamples << distributionType << responseLevelTarget
+    << responseLevelTargetReduce << responseLevels << probabilityLevels
+    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << adaptPosteriorRefine << logitTransform << preSolveMethod
+    << proposalCovType << proposalCovUpdates << proposalCovInputType
+    << proposalCovData << proposalCovFile << fitnessMetricType
+    << batchSelectionType << batchSize << calibrateErrorMode << hyperPriorAlphas
+    << hyperPriorBetas << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile << posteriorDensityExportFilename

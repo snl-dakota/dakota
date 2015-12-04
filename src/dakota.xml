@@ -1609,6 +1609,15 @@
                         </keyword>
                       </keyword>
                     </required> <!-- Group with rel/resp; compute prob/rel/gen/sys -->
+                    <keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
+                      <alias name="multilevel_mc"/>
+                      <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(ivec,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
+			<!-- <alias name="initial_samples"/> -->
+                        <param type="INTEGERLIST" />
+                      </keyword>
+                      &default_max_iterations;
+                      &default_convergence_tolerance;
+                    </keyword>
                     <keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
                       <alias name="nond_importance_sampling"/>
                       <oneOf>

@@ -1200,6 +1200,29 @@ KEYWORD12 method
 	  [ model_pointer STRING ]
 	  )
 	|
+	( multilevel_sampling ALIAS multilevel_mc
+	  [ pilot_samples INTEGERLIST ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ model_pointer STRING ]
+	  )
+	|
 	( importance_sampling ALIAS nond_importance_sampling
 	  import
 	  | adapt_import

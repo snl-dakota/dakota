@@ -67,6 +67,8 @@ private:
   //- Heading: Data
   //
 
+  /// number of pilot samples to perform per level, to initialize the iteration
+  IntVector pilotSamples;
 };
 
 

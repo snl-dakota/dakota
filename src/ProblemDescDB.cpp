@@ -1646,6 +1646,7 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 	{"fsu_quasi_mc.primeBase", P primeBase},
 	{"fsu_quasi_mc.sequenceLeap", P sequenceLeap},
 	{"fsu_quasi_mc.sequenceStart", P sequenceStart},
+	{"nond.pilot_samples", P pilotSamples},
 	{"nond.refinement_samples", P refineSamples},
 	{"parameter_study.steps_per_variable", P stepsPerVariable}};
     #undef P

@@ -897,6 +897,8 @@ public:
   /// the \c refinement_samples selection in \ref MethodNonDLocalRel,
   /// \ref MethodNonDPCE, and \ref MethodNonDSC
   IntVector refineSamples;
+  /// the \c pilot_samples selection in \ref MethodMultilevelMC
+  IntVector pilotSamples;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD
   short distributionType;
