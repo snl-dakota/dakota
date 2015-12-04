@@ -31,8 +31,19 @@ namespace Dakota {
     correlations through use of a mixing routine.  The NonDLHSSampling
     class provides a C++ wrapper for the LHS library and is used for
     performing forward propagations of parameter uncertainties into
-    response statistics. */
+    response statistics. 
 
+    Batch generation options, including D-Optimal and incremental LHS
+    are provided.
+
+    The incremental LHS sampling capability allows one to supplement
+    an initial sample of size n to size 2n while maintaining the
+    correct stratification of the 2n samples and also maintaining the
+    specified correlation structure.  The incremental version of LHS
+    will return a sample of size n, which when combined with the
+    original sample of size n, allows one to double the size of the
+    sample.
+*/
 class NonDLHSSampling: public NonDSampling
 {
 public:
@@ -94,7 +105,31 @@ protected:
   /// previous_samples columns intact and adding new_samples new
   /// columns following them
   void d_optimal_parameter_set(int previous_samples, int new_samples, 
-			       RealMatrix& full_samples);
+                               RealMatrix& full_samples);
+
+  /// Populate the first new_samples columns of allSamples with an LHS
+  /// design and update the stored ranks
+  void initial_increm_lhs_set(int new_samples, 
+                              RealMatrix& full_samples, IntMatrix& full_ranks);
+
+  /// generate a new batch that is Latin w.r.t. the previous samples
+  void increm_lhs_parameter_set(int previous_samples, int new_samples,
+                                RealMatrix& full_samples, IntMatrix& all_ranks);
+
+  /// store the ranks of the last generated sample for continuous
+  /// (based on sampleRanks) and calculate/store discrete ranks
+  void store_ranks(const RealMatrix& sample_values, IntMatrix &sample_ranks);
+
+  /// store the ranks of the increment only (may need to store the
+  /// initial ranks as well)
+  void store_ranks(int previous_samples, IntMatrix& increm_ranks);
+
+  /// merge the discrete ranks into a submatrix of sampleRanks
+  void combine_discrete_ranks(const RealMatrix& initial_values, 
+                              const RealMatrix& increm_values);
+
+  /// sort algorithm to compute ranks for rank correlations
+  static bool rank_sort(const int& x, const int& y);
 
 private:
 
@@ -113,6 +148,9 @@ private:
 
   /// oversampling ratio for d-optimal candidate set generation (default 10.0)
   Real oversampleRatio;
+
+  /// static data used by static rank_sort() fn
+  static RealArray rawData;
 
   /// flags computation of variance-based decomposition indices
   bool varBasedDecompFlag;

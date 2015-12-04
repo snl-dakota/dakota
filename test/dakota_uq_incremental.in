@@ -9,10 +9,12 @@ environment,
 
 method,
 	sampling
-          seed = 234
-	  sample_type lhs samples = 10		#s0
-#         sample_type incremental_lhs		#s1
-#	  previous_samples = 10 samples = 20	#s1
+    seed = 234
+    samples = 10	
+	  sample_type lhs               #s0
+#   sample_type incremental_lhs		#s1,#sTwo
+#	    refinement_samples = 10	    #s1
+#	    refinement_samples = 10 20	#sTwo
 
 variables,
 	uniform_uncertain = 2
@@ -20,7 +22,7 @@ variables,
 	  upper_bounds = 3 3
 	normal_uncertain = 2
 	  means = 10 2
-          std_deviations = 2. 1.0
+    std_deviations = 2. 1.0
 
 interface,
 	system

@@ -12,11 +12,11 @@ environment,
         tabular_data
 
 method,
-        sampling,
-	  samples = 30 seed = 1833 			       	#s0,#s2,#s4
-#	  samples = 60 seed = 1833 			 	#s1,#s3,#s5
-          sample_type lhs                                       #s0,#s2,#s4
-#	  sample_type incremental_lhs previous_samples = 30	#s1,#s3,#s5
+  sampling
+	  samples = 30 seed = 1833
+      sample_type lhs                 #s0,#s2,#s4
+#     sample_type incremental_lhs     #s1,#s3,#s5
+#       refinement_samples = 30       #s1,#s3,#s5
 
 variables,
 #       active all                                              #s4,#s5

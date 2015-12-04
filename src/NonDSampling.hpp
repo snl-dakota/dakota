@@ -24,7 +24,7 @@ namespace Dakota {
 
 
 /// Base class for common code between NonDLHSSampling,
-/// NonDIncremLHSSampling, and NonDAdaptImpSampling
+/// NonDAdaptImpSampling, and other specializations
 
 /** This base class provides common code for sampling methods which
     employ the Latin Hypercube Sampling (LHS) package from Sandia
@@ -33,7 +33,6 @@ namespace Dakota {
     in SAND98-0210, which was converted to a UNIX link library in
     2001.  The 1970's vintage LHS (that had been f2c'd and converted
     to incomplete classes) has been removed. */
-
 class NonDSampling: public NonD
 {
 public:

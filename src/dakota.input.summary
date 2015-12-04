@@ -1146,11 +1146,8 @@ KEYWORD12 method
 	  [ sample_type
 	    random
 	    | lhs
-	    |
-	    ( incremental_lhs
-	      | incremental_random
-	      previous_samples INTEGER
-	      )
+	    | incremental_lhs
+	    | incremental_random
 	    ]
 	  [ refinement_samples INTEGERLIST ]
 	  [ d_optimal

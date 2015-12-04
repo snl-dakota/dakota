@@ -25,7 +25,6 @@
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
-#include "NonDIncremLHSSampling.hpp"
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
@@ -407,11 +406,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDAdaptiveSampling(problem_db, model);  break;
 #endif
   case RANDOM_SAMPLING:
-    switch (probDescDB.get_ushort("method.sample_type")) {
-    case SUBMETHOD_INCREMENTAL_LHS: case SUBMETHOD_INCREMENTAL_RANDOM:
-      return new  NonDIncremLHSSampling(problem_db, model); break;
-    default: return new NonDLHSSampling(problem_db, model); break;
-    } break;
+    return new NonDLHSSampling(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return new NonDMultilevelSampling(problem_db, model); break;
 #ifdef HAVE_ESM 

@@ -40,7 +40,7 @@ samples.
 One way to ensure the restart file is saved is to specify a non-default name,
 via a command line option:
 \verbatim 
-dakota -i LHS_10.in -w LHS_10.rst
+dakota -input LHS_10.in -write_restart LHS_10.rst
 \endverbatim
 
 which uses the input file:
@@ -80,7 +80,7 @@ and the restart file is written to LHS_10.rst.
 
 Then an incremental LHS study can be run with:
 \verbatim 
-dakota -i LHS_20.in -r LHS_10.rst -w LHS_20.rst
+dakota -input LHS_20.in -read_restart LHS_10.rst -write_restart LHS_20.rst
 \endverbatim
 where \c LHS_20.in is shown below, and LHS_10.rst is the restart
 file containing the results of the previous LHS study.
@@ -94,8 +94,8 @@ environment
 method
   sampling
     sample_type incremental_lhs
-    samples = 20
-    previous_samples = 10
+    samples = 10
+      refinement_samples = 10
 
 model
   single

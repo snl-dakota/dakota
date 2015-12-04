@@ -27,22 +27,22 @@ simulations can be completed within available time.
 
 Topics::	
 Examples::
-For example, say a user performs
-an initial study using \c random as the \c sample_type, and generates 50
-samples. If the user creates a new input file where \c samples is now
-specified to be 60, the \c sample_type is defined to be \c
-incremental_random, and \c previous_samples is
-specified to be 50, the user will get 10 new random samples. 
-The M new samples will be combined with the N previous
-samples to generate a combined sample of size M+N. 
 
-The method block would be the following:
+For example, say a user performs an initial study using \c random as
+the \c sample_type, and generates 50 samples. If the user creates a
+new input file where \c samples is 50, the \c sample_type is defined
+to be \c incremental_random, and \c refinement_samples is specified to
+be 10, the user will get 10 new random samples.  The M new samples
+will be combined with the N previous samples to generate a combined
+sample of size M+N.
+
+The method block for the incremented study would be the following:
 \verbatim
 method
   sampling
     sample_type incremental_random
-    samples = 60
-    previous_samples = 50
+    samples = 50
+      refinement_samples = 10
 \endverbatim
 The syntax for
 running the second sample set is: 

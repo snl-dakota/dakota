@@ -1551,9 +1551,6 @@
                                     <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}" label="incremental_lhs" help=""  default="no sample reuse in coefficient estimation" />
                                     <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_RANDOM)}" label="incremental_random" help=""  />
                                   </oneOf>
-                                  <keyword  id="previous_samples" name="previous_samples" code="{N_mdm(int,previousSamples)}" label="previous_samples" help=""  default="0 (no previous_samples)" >
-                                    <param type="INTEGER" />
-                                  </keyword>
                                 </required>
                               </oneOf>
                             </keyword>
