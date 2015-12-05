@@ -33,6 +33,9 @@ enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
 enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
        COMBINED_CORRECTION };
 
+/// define special values for active subspace identification methods
+enum { SUBSPACE_ID_DEFAULT=0, SUBSPACE_ID_BING_LI, SUBSPACE_ID_CONSTANTINE };
+
 
 /// Body class for model specification data.
 
@@ -272,6 +275,11 @@ public:
   /// scheduling approach for concurrent sub-iterator parallelism:
   /// {DEFAULT,MASTER,PEER}_SCHEDULING
   short subMethodScheduling;
+
+  // subspace models
+
+  /// Contains which method should be used to identify active subspace dimension
+  unsigned short subspaceIdMethod;
 
 private:
 

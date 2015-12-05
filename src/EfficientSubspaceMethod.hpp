@@ -94,6 +94,9 @@ private:
   /// normal variables if transformVars == true.
   Model fullSpaceModel;
 
+  /// Contains which method should be used to identify active subspace dimension
+  unsigned short subspaceIdMethod;
+
 };
 
 }

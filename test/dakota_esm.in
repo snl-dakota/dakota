@@ -18,6 +18,12 @@ method,
   max_iterations = 10
   max_function_evaluations = 2000
 
+#model                                 #s1,#s2
+#  single                              #s1,#s2
+#  subspace                            #s1,#s2
+#    truncation_method bing_li         #s1
+#    truncation_method constantine     #s2
+
 variables,
   normal_uncertain = 100
     means = 100*0.5

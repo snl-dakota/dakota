@@ -25,13 +25,14 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 ActiveSubspaceModel::
 ActiveSubspaceModel(const Model& sub_model, 
 		    int random_seed, int initial_samples, int batch_size,
-		    double conv_tol, size_t max_iter, size_t max_evals):
+		    double conv_tol, size_t max_iter, size_t max_evals,
+        unsigned short subspace_id_method):
   RecastModel(sub_model), randomSeed(random_seed), 
   initialSamples(initial_samples), batchSize(batch_size), 
   maxIterations(max_iter), maxFunctionEvals(max_evals),
   svTol(std::max(conv_tol, std::numeric_limits<Real>::epsilon())),
   performAssessment(false), nullspaceTol(conv_tol/1.0e3),
-  subspaceIDMethod(SUBSPACE_ID_CONSTANTINE), numReplicates(100),
+  subspaceIdMethod(subspace_id_method), numReplicates(100),
   numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
   currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),  reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0))
@@ -444,14 +445,14 @@ compute_svd(bool& svtol_met)
   }
 
   // Identify the active subspace using one of the methods below:
-  switch(subspaceIDMethod) {
+  switch(subspaceIdMethod) {
   case SUBSPACE_ID_CONSTANTINE:
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "ESM: Determining eigenvalue gap with boostrap and Constantine "
 	   << "metric." << std::endl;
     computeConstantineMetric(singular_values, svtol_met);
     break;
-  case SUBSPACE_ID_BING_LI: default:
+  case SUBSPACE_ID_BING_LI: case SUBSPACE_ID_DEFAULT: default:
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "ESM: Determining eigenvalue gap with boostrap and Bing-Li "
 	   << "metric." << std::endl;

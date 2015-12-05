@@ -54,7 +54,8 @@ public:
   /// standard constructor
   ActiveSubspaceModel(const Model& sub_model, 
 		      int random_seed, int initial_samples, int batch_size,
-		      double conv_tol, size_t max_iter, size_t max_evals);
+		      double conv_tol, size_t max_iter, size_t max_evals,
+          unsigned short subspace_id_method);
 
   /// destructor
   ~ActiveSubspaceModel();
@@ -63,11 +64,10 @@ public:
   /// initializing the RecastModel so we have valid variables/responses
   void initialize();
 
-  /// Enumeration of active subspace identification methods
-  enum SubspaceIDMethod {
-    SUBSPACE_ID_BING_LI,
-    SUBSPACE_ID_CONSTANTINE
-  };
+
+  unsigned short subspace_id() const;
+  void subspace_id(short id);
+  
 
 protected:
 
@@ -197,7 +197,7 @@ protected:
   double nullspaceTol;
 
   /// Contains which method should be used to identify active subspace dimension
-  SubspaceIDMethod subspaceIDMethod;
+  unsigned short subspaceIdMethod;
 
   /// Number of bootstrap samples for Bing Li criterion
   size_t numReplicates;

@@ -21,7 +21,7 @@ EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   initialSamples(probDescDB.get_int("method.samples")),    // default 0
   batchSize(probDescDB.get_int("method.nond.batch_size")), // default 0
   subspaceSamples(probDescDB.get_int("method.nond.emulator_samples")), // def 0
-  transformVars(true)
+  transformVars(true), subspaceIdMethod(probDescDB.get_ushort("model.subspace.truncation_method"))
  
 {
   // the Iterator initializes:
@@ -81,7 +81,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
   // until we add to the Model constructor chain...
   ActiveSubspaceModel* as_model = new ActiveSubspaceModel
     (iteratedModel, mc_seed, initialSamples, batchSize, convergenceTol, 
-     maxIterations, maxFunctionEvals);
+     maxIterations, maxFunctionEvals, subspaceIdMethod);
   Model subspace_model;
   subspace_model.assign_rep(as_model, false);
 

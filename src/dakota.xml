@@ -2996,6 +2996,14 @@
           </keyword>
         </keyword>
       </oneOf>
+      <keyword id="subspace" name="subspace" code="{0}" label="subspace" minOccurs="0">
+        <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
+          <oneOf>
+            <keyword id="bing_li" name="bing_li" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)}" />
+            <keyword id="constantine" name="constantine" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}" />
+          </oneOf>
+        </keyword>
+      </keyword>
     </keyword>
 
     

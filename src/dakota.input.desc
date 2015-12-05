@@ -2144,6 +2144,10 @@ TAG "model/nested/sub_method_pointer/primary_response_mapping"
 TAG "model/nested/sub_method_pointer/secondary_response_mapping"
 	DESC "{Secondary response mappings for nested models} ModelCommands.html#ModelNested"
 
+TAG "model/subspace"
+TAG "model/subspace/truncation_method"
+TAG "model/subspace/truncation_method/bing_li"
+TAG "model/subspace/truncation_method/constantine"
 TAG "variables"
 	DESC "{Variables} A variables object specifies the parameter set to be iterated by a particular method. VarCommands.html"
 

@@ -2407,6 +2407,13 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ secondary_response_mapping REALLIST {N_mom(RealDL,secondaryRespCoeffs)} ]
      )
    )
+  [ subspace {0}
+    [ truncation_method {0}
+      bing_li {N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)}
+      |
+      constantine {N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}
+     ]
+   ]
 
 KEYWORD12 variables {N_vam3(start,0,stop)}
   [ id_variables STRING {N_vam(str,idVariables)} ]

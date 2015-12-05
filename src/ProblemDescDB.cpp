@@ -2759,7 +2759,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	Locked_db();
     #define P &DataModelRep::
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
-      // must be sorted by string (key)
+      // must be sorted by string (key)  
+	{"subspace.truncation_method", P subspaceIdMethod},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
 	{"surrogate.import_build_format", P importBuildFormat},

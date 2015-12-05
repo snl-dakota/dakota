@@ -37,7 +37,8 @@ DataModelRep::DataModelRep():
   crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
   importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
-  subMethodScheduling(DEFAULT_SCHEDULING), referenceCount(1)
+  subMethodScheduling(DEFAULT_SCHEDULING), subspaceIdMethod(SUBSPACE_ID_DEFAULT),
+  referenceCount(1)
 { }
 
 
@@ -65,7 +66,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << importChallengeFormat << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
-    << subMethodProcs << subMethodScheduling;
+    << subMethodProcs << subMethodScheduling << subspaceIdMethod;
 }
 
 
@@ -94,7 +95,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> importChallengeFormat >> importChallengeActive
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
     >> primaryRespCoeffs >> secondaryRespCoeffs >> subMethodServers
-    >> subMethodProcs >> subMethodScheduling;
+    >> subMethodProcs >> subMethodScheduling >> subspaceIdMethod;
 }
 
 
@@ -122,7 +123,7 @@ void DataModelRep::write(std::ostream& s) const
     << importChallengeFormat << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
-    << subMethodProcs << subMethodScheduling;
+    << subMethodProcs << subMethodScheduling << subspaceIdMethod;
 }
 
 

@@ -7126,7 +7126,9 @@ static Model_mp_utype
         MP2s(modelExportFormat,TEXT_ARCHIVE),
         MP2s(modelExportFormat,BINARY_ARCHIVE),
         MP2s(modelExportFormat,ALGEBRAIC_FILE),
-        MP2s(modelExportFormat,ALGEBRAIC_CONSOLE);
+        MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
+        MP2s(subspaceIdMethod,SUBSPACE_ID_BING_LI),
+        MP2s(subspaceIdMethod,SUBSPACE_ID_CONSTANTINE);
 
 static Real
 	MP_(annRange),
