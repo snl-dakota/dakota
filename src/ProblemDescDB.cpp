@@ -1646,7 +1646,6 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 	{"fsu_quasi_mc.primeBase", P primeBase},
 	{"fsu_quasi_mc.sequenceLeap", P sequenceLeap},
 	{"fsu_quasi_mc.sequenceStart", P sequenceStart},
-	{"nond.pilot_samples", P pilotSamples},
 	{"nond.refinement_samples", P refineSamples},
 	{"parameter_study.steps_per_variable", P stepsPerVariable}};
     #undef P
@@ -1727,7 +1726,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
       {"nond.collocation_points", P collocationPoints},
-      {"nond.expansion_samples", P expansionSamples}};
+      {"nond.expansion_samples", P expansionSamples},
+      {"nond.pilot_samples", P pilotSamples}};
     #undef P
 
     KW<SizetArray, DataMethodRep> *kw;

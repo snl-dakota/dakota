@@ -30,7 +30,7 @@ namespace Dakota {
 NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
-  pilotSamples(probDescDB.get_iv("method.nond.pilot_samples"))
+  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
 {
   sampleType = SUBMETHOD_RANDOM;
 
@@ -97,8 +97,10 @@ void NonDMultilevelSampling::quantify_uncertainty()
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
   Real agg_var_l, eps = 1.e-6, sum_var_cost, mean;
   
-  // pilot sample...
-  N_l.assign(num_lev, 0); delta_N_l.assign(num_lev, 100);
+  // Initialize for pilot sample
+  N_l.assign(num_lev, 0);
+  if (pilotSamples.empty()) delta_N_l.assign(num_lev, 100); // default
+  else                      delta_N_l = pilotSamples;
 
   // How to manage a set of statistics:
   // 1. Simplest: proposal is to use the mean estimator to drive the algorithm,

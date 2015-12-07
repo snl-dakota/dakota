@@ -68,7 +68,7 @@ private:
   //
 
   /// number of pilot samples to perform per level, to initialize the iteration
-  IntVector pilotSamples;
+  SizetArray pilotSamples;
 };
 
 

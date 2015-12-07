@@ -6505,7 +6505,6 @@ static Real
 #define MP3s(x,y,z) method_mp_TYPE_DATA_##x##_##z = {&DataMethodRep::x,&DataMethodRep::y,z}
 
 static IntVector
-	MP_(pilotSamples),
 	MP_(primeBase),
 	MP_(refineSamples),
 	MP_(sequenceLeap),
@@ -6708,7 +6707,8 @@ static unsigned short
 
 static SizetArray
 	MP_(collocationPoints),
-        MP_(expansionSamples);
+        MP_(expansionSamples),
+  	MP_(pilotSamples);
 
 static UShortArray
         MP_(expansionOrder),

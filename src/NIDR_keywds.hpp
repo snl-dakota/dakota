@@ -1452,7 +1452,7 @@ static KeyWord
 		{0,0,4,0,0,kw_33},
 		{"convergence_tolerance",10,0,3,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
 		{"max_iterations",0x29,0,2,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"pilot_samples",13,0,1,0,0,0.,0.,0,N_mdm(ivec,pilotSamples)}
+		{"pilot_samples",13,0,1,0,0,0.,0.,0,N_mdm(szarray,pilotSamples)}
 		},
 	kw_241[9] = {
 		{0,0,1,0,0,kw_27},
