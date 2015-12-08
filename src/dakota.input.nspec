@@ -807,9 +807,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
                ]
               ( 
-                quadrature_order ALIAS ordered_quadrature_levels INTEGERLIST {N_mdm(usharray,quadratureOrder)}
+                quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrder)}
                 |
-                ( sparse_grid_level ALIAS ordered_sparse_grid_levels INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+                ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
                   [ 
                     restricted {N_mdm(type,growthOverride_RESTRICTED)}
                     |
@@ -827,7 +827,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
               |
               ( 
-                ( expansion_order ALIAS ordered_expansion_levels INTEGERLIST {N_mdm(usharray,expansionOrder)}
+                ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
                   [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
                   [ basis_type {0}
                     tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
@@ -840,7 +840,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                      )
                    ]
                   ( 
-                    collocation_points ALIAS ordered_collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                    collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                     |
                     collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                     [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
@@ -878,14 +878,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
                    )
                   |
-                  ( expansion_samples ALIAS ordered_expansion_samples INTEGERLIST {N_mdm(szarray,expansionSamples)}
+                  ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamples)}
                     [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
                     [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
                    )
                  )
                 |
                 ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-                  collocation_points ALIAS ordered_collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                  collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                   [ cross_validation {N_mdm(true,crossValidation)} ]
                   [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
                   [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -997,9 +997,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 |
                 wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
                ]
-              quadrature_order ALIAS ordered_quadrature_levels INTEGERLIST {N_mdm(usharray,quadratureOrder)}
+              quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrder)}
               |
-              ( sparse_grid_level ALIAS ordered_sparse_grid_levels INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+              ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
                 [ 
                   restricted {N_mdm(type,growthOverride_RESTRICTED)}
                   |
@@ -1488,9 +1488,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                )
               |
               ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
-                sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+                sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
                 |
-                ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
+                ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
                   collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                   [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                   [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1511,7 +1511,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                    ]
                  )
                 |
-                ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                   [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                   [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                     [ 
@@ -1533,7 +1533,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                )
               |
               ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
-                sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+                sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
                )
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
              ]
@@ -1645,9 +1645,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             |
             ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
-              sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
               |
-              ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1668,7 +1668,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  ]
                )
               |
-              ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                   [ 
@@ -1690,7 +1690,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             |
             ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
-              sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
              )
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            ]
@@ -1753,9 +1753,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             |
             ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
-              sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
               |
-              ( expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1776,7 +1776,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  ]
                )
               |
-              ( collocation_points INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                   [ 
@@ -1798,7 +1798,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             |
             ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
-              sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
              )
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            ]
@@ -2375,7 +2375,7 @@ KEYWORD model {N_mom3(start,0,stop)}
      )
     |
     ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
-      ordered_model_fidelities STRINGLIST {N_mom(strL,orderedModelPointers)}
+      ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST {N_mom(strL,orderedModelPointers)}
       ( correction {0}
         zeroth_order {N_mom(order,approxCorrectionOrder_0)}
         |

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1799 distinct keywords (plus 246 aliases) **/
+/** 1799 distinct keywords (plus 239 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -348,12 +348,12 @@ static KeyWord
 		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_58[3] = {
-		{"collocation_points",13,3,1,1,kw_54,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"expansion_order",13,4,1,1,kw_57,0.,0.,0,N_mdm(usharray,expansionOrder)},
-		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
+		{"collocation_points_sequence",13,3,1,1,kw_54,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"expansion_order_sequence",13,4,1,1,kw_57,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_59[1] = {
-		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
+		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_60[5] = {
 		{"gaussian_process",8,6,1,1,kw_51},
@@ -476,12 +476,12 @@ static KeyWord
 		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_81[3] = {
-		{"collocation_points",13,3,1,1,kw_77,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"expansion_order",13,4,1,1,kw_80,0.,0.,0,N_mdm(usharray,expansionOrder)},
-		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
+		{"collocation_points_sequence",13,3,1,1,kw_77,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"expansion_order_sequence",13,4,1,1,kw_80,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_82[1] = {
-		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
+		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_83[5] = {
 		{"gaussian_process",8,6,1,1,kw_74},
@@ -571,12 +571,12 @@ static KeyWord
 		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_99[3] = {
-		{"collocation_points",13,3,1,1,kw_95,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"expansion_order",13,4,1,1,kw_98,0.,0.,0,N_mdm(usharray,expansionOrder)},
-		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
+		{"collocation_points_sequence",13,3,1,1,kw_95,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"expansion_order_sequence",13,4,1,1,kw_98,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_100[1] = {
-		{"sparse_grid_level",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
+		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_101[5] = {
 		{"gaussian_process",8,6,1,1,kw_92},
@@ -1614,15 +1614,13 @@ static KeyWord
 		{"reuse_points",8,0,1,0,0,0.,0.,0,N_mdm(lit,pointReuse_all)},
 		{"reuse_samples",0,0,1,0,0,0.,0.,-1,N_mdm(lit,pointReuse_all)}
 		},
-	kw_267[8] = {
+	kw_267[6] = {
 		{0,0,2,0,0,kw_257},
 		{"basis_type",8,3,2,0,kw_259},
-		{"collocation_points",13,17,3,1,kw_265,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_points_sequence",13,17,3,1,kw_265,0.,0.,0,N_mdm(szarray,collocationPoints)},
 		{"collocation_ratio",10,17,3,1,kw_265,0.,0.,0,N_mdm(Realp,collocationRatio)},
 		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
-		{"expansion_samples",13,3,3,1,kw_266,0.,0.,0,N_mdm(szarray,expansionSamples)},
-		{"ordered_collocation_points",5,17,3,1,kw_265,0.,0.,-4,N_mdm(szarray,collocationPoints)},
-		{"ordered_expansion_samples",5,3,3,1,kw_266,0.,0.,-2,N_mdm(szarray,expansionSamples)}
+		{"expansion_samples_sequence",13,3,3,1,kw_266,0.,0.,0,N_mdm(szarray,expansionSamples)}
 		},
 	kw_268[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)},
@@ -1645,49 +1643,48 @@ static KeyWord
 		{"custom_annotated",8,3,1,0,kw_270,0.,0.,0,N_mdm(utype,importApproxFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importApproxFormat_TABULAR_NONE)}
 		},
-	kw_272[7] = {
+	kw_272[6] = {
 		{0,0,2,0,0,kw_257},
-		{"collocation_points",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
 		{"cross_validation",8,0,2,0,0,0.,0.,0,N_mdm(true,crossValidation)},
-		{"ordered_collocation_points",5,0,1,1,0,0.,0.,-2,N_mdm(szarray,collocationPoints)},
 		{"reuse_points",8,0,4,0,0,0.,0.,0,N_mdm(lit,pointReuse_all)},
 		{"reuse_samples",0,0,4,0,0,0.,0.,-1,N_mdm(lit,pointReuse_all)},
 		{"tensor_grid",13,0,3,0,0,0.,0.,0,N_mdm(usharray,tensorGridOrder)}
 		},
 	kw_273[3] = {
-		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
-		{"nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
-		{"non_nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
-		},
-	kw_274[3] = {
-		{0,0,3,0,0,kw_273},
-		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
-		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
-		},
-	kw_275[3] = {
 		{"decay",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)},
 		{"generalized",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)},
 		{"sobol",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
 		},
-	kw_276[2] = {
-		{"dimension_adaptive",8,3,1,1,kw_275},
+	kw_274[2] = {
+		{"dimension_adaptive",8,3,1,1,kw_273},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_277[4] = {
+	kw_275[4] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_AIS)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_IS)},
 		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_MMAIS)},
 		{"refinement_samples",13,0,2,0,0,0.,0.,0,N_mdm(ivec,refineSamples)}
 		},
-	kw_278[2] = {
+	kw_276[3] = {
+		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
+		{"nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
+		{"non_nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
+		},
+	kw_277[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(utype,sampleType_SUBMETHOD_LHS)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+		},
+	kw_278[3] = {
+		{0,0,3,0,0,kw_276},
+		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
+		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
 	kw_279[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"interaction_order",0x19,0,1,0,0,0.,0.,0,N_mdm(ushint,vbdOrder)}
 		},
-	kw_280[30] = {
+	kw_280[27] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,2,0,0,kw_28},
 		{0,0,4,0,0,kw_33},
@@ -1696,26 +1693,23 @@ static KeyWord
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
 		{"diagonal_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)},
-		{"expansion_order",13,7,3,1,kw_267,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"expansion_order_sequence",13,5,3,1,kw_267,0.,0.,0,N_mdm(usharray,expansionOrder)},
 		{"export_approx_points_file",11,3,10,0,kw_269,0.,0.,0,N_mdm(str,exportApproxPtsFile)},
 		{"export_expansion_file",11,0,11,0,0,0.,0.,0,N_mdm(str,exportExpansionFile)},
 		{"export_points_file",3,3,10,0,kw_269,0.,0.,-2,N_mdm(str,exportApproxPtsFile)},
 		{"full_covariance",8,0,5,0,0,0.,0.,0,N_mdm(type,covarianceControl_FULL_COVARIANCE)},
 		{"import_approx_points_file",11,4,9,0,kw_271,0.,0.,0,N_mdm(str,importApproxPtsFile)},
 		{"import_expansion_file",11,0,3,1,0,0.,0.,0,N_mdm(str,importExpansionFile)},
-		{"least_interpolation",0,6,3,1,kw_272,0.,0.,6,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
+		{"least_interpolation",0,5,3,1,kw_272,0.,0.,3,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"normalized",8,0,6,0,0,0.,0.,0,N_mdm(true,normalizedCoeffs)},
-		{"oli",0,6,3,1,kw_272,0.,0.,4,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
-		{"ordered_expansion_levels",5,7,3,1,kw_267,0.,0.,-10,N_mdm(usharray,expansionOrder)},
-		{"ordered_quadrature_levels",5,3,3,1,kw_273,0.,0.,5,N_mdm(usharray,quadratureOrder)},
-		{"ordered_sparse_grid_levels",5,2,3,1,kw_274,0.,0.,7,N_mdm(usharray,sparseGridLevel)},
-		{"orthogonal_least_interpolation",8,6,3,1,kw_272,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
-		{"p_refinement",8,2,1,0,kw_276,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
-		{"probability_refinement",8,4,8,0,kw_277},
-		{"quadrature_order",13,3,3,1,kw_273,0.,0.,0,N_mdm(usharray,quadratureOrder)},
-		{"sample_refinement",0,4,8,0,kw_277,0.,0.,-2},
-		{"sample_type",8,2,7,0,kw_278},
-		{"sparse_grid_level",13,2,3,1,kw_274,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
+		{"oli",0,5,3,1,kw_272,0.,0.,1,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
+		{"orthogonal_least_interpolation",8,5,3,1,kw_272,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
+		{"p_refinement",8,2,1,0,kw_274,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
+		{"probability_refinement",8,4,8,0,kw_275},
+		{"quadrature_order_sequence",13,3,3,1,kw_276,0.,0.,0,N_mdm(usharray,quadratureOrder)},
+		{"sample_refinement",0,4,8,0,kw_275,0.,0.,-2},
+		{"sample_type",8,2,7,0,kw_277},
+		{"sparse_grid_level_sequence",13,2,3,1,kw_278,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
 		{"variance_based_decomp",8,2,4,0,kw_279,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
 		},
@@ -1802,35 +1796,35 @@ static KeyWord
 		{"custom_annotated",8,3,1,0,kw_295,0.,0.,0,N_mdm(utype,importApproxFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importApproxFormat_TABULAR_NONE)}
 		},
-	kw_297[4] = {
-		{"hierarchical",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)},
-		{"nodal",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)},
-		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
-		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
-		},
-	kw_298[2] = {
+	kw_297[2] = {
 		{"generalized",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)},
 		{"sobol",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
 		},
-	kw_299[2] = {
-		{"dimension_adaptive",8,2,1,1,kw_298},
+	kw_298[2] = {
+		{"dimension_adaptive",8,2,1,1,kw_297},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_300[4] = {
+	kw_299[4] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_AIS)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_IS)},
 		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(utype,integrationRefine_MMAIS)},
 		{"refinement_samples",13,0,2,0,0,0.,0.,0,N_mdm(ivec,refineSamples)}
 		},
-	kw_301[2] = {
+	kw_300[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(utype,sampleType_SUBMETHOD_LHS)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+		},
+	kw_301[4] = {
+		{"hierarchical",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)},
+		{"nodal",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)},
+		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
+		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
 	kw_302[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"interaction_order",0x19,0,1,0,0,0.,0.,0,N_mdm(ushint,vbdOrder)}
 		},
-	kw_303[27] = {
+	kw_303[25] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,2,0,0,kw_28},
 		{0,0,4,0,0,kw_33},
@@ -1846,15 +1840,13 @@ static KeyWord
 		{"import_approx_points_file",11,4,11,0,kw_296,0.,0.,0,N_mdm(str,importApproxPtsFile)},
 		{"nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
-		{"ordered_quadrature_levels",5,0,3,1,0,0.,0.,5,N_mdm(usharray,quadratureOrder)},
-		{"ordered_sparse_grid_levels",5,4,3,1,kw_297,0.,0.,7,N_mdm(usharray,sparseGridLevel)},
-		{"p_refinement",8,2,1,0,kw_299,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
+		{"p_refinement",8,2,1,0,kw_298,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
 		{"piecewise",8,0,2,0,0,0.,0.,0,NIDRProblemDescDB::method_piecewise},
-		{"probability_refinement",8,4,10,0,kw_300},
-		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(usharray,quadratureOrder)},
-		{"sample_refinement",0,4,10,0,kw_300,0.,0.,-2},
-		{"sample_type",8,2,9,0,kw_301},
-		{"sparse_grid_level",13,4,3,1,kw_297,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
+		{"probability_refinement",8,4,10,0,kw_299},
+		{"quadrature_order_sequence",13,0,3,1,0,0.,0.,0,N_mdm(usharray,quadratureOrder)},
+		{"sample_refinement",0,4,10,0,kw_299,0.,0.,-2},
+		{"sample_type",8,2,9,0,kw_300},
+		{"sparse_grid_level_sequence",13,4,3,1,kw_301,0.,0.,0,N_mdm(usharray,sparseGridLevel)},
 		{"use_derivatives",8,0,5,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
 		{"variance_based_decomp",8,2,7,0,kw_302,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
@@ -2154,10 +2146,10 @@ static KeyWord
 		{"nond_local_interval_est",0,3,4,1,kw_212,0.,0.,-20,N_mdm(utype,methodName_LOCAL_INTERVAL_EST)},
 		{"nond_local_reliability",0,5,4,1,kw_220,0.,0.,-20,N_mdm(utype,methodName_LOCAL_RELIABILITY)},
 		{"nond_pof_darts",0,3,4,1,kw_248,0.,0.,15,N_mdm(utype,methodName_POF_DARTS)},
-		{"nond_polynomial_chaos",0,25,4,1,kw_280,0.,0.,15,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
+		{"nond_polynomial_chaos",0,22,4,1,kw_280,0.,0.,15,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
 		{"nond_rkd_darts",0,3,4,1,kw_285,0.,0.,17,N_mdm(utype,methodName_RKD_DARTS)},
 		{"nond_sampling",0,6,4,1,kw_290,0.,0.,17,N_mdm(utype,methodName_RANDOM_SAMPLING)},
-		{"nond_stoch_collocation",0,22,4,1,kw_303,0.,0.,19,N_mdm(utype,methodName_STOCH_COLLOCATION)},
+		{"nond_stoch_collocation",0,20,4,1,kw_303,0.,0.,19,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"nonlinear_cg",8,4,4,1,kw_304,0.,0.,0,N_mdm(utype,methodName_NONLINEAR_CG)},
 		{"npsol_sqp",8,0,4,1,kw_306,0.,0.,0,N_mdm(utype,methodName_NPSOL_SQP)},
 		{"optpp_cg",8,0,4,1,kw_308,0.,0.,0,N_mdm(utype,methodName_OPTPP_CG)},
@@ -2169,14 +2161,14 @@ static KeyWord
 		{"output",8,5,2,0,kw_313},
 		{"pareto_set",8,7,4,1,kw_316,0.,0.,0,N_mdm(utype,methodName_PARETO_SET)},
 		{"pof_darts",8,3,4,1,kw_248,0.,0.,0,N_mdm(utype,methodName_POF_DARTS)},
-		{"polynomial_chaos",8,25,4,1,kw_280,0.,0.,0,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
+		{"polynomial_chaos",8,22,4,1,kw_280,0.,0.,0,N_mdm(utype,methodName_POLYNOMIAL_CHAOS)},
 		{"psuade_moat",8,1,4,1,kw_317,0.,0.,0,N_mdm(utype,methodName_PSUADE_MOAT)},
 		{"richardson_extrap",8,6,4,1,kw_318,0.,0.,0,N_mdm(utype,methodName_RICHARDSON_EXTRAP)},
 		{"rkd_darts",8,3,4,1,kw_285,0.,0.,0,N_mdm(utype,methodName_RKD_DARTS)},
 		{"sampling",8,6,4,1,kw_290,0.,0.,0,N_mdm(utype,methodName_RANDOM_SAMPLING)},
 		{"soga",8,15,4,1,kw_324,0.,0.,0,N_mdm(utype,methodName_SOGA)},
 		{"stanford",8,2,4,1,kw_325},
-		{"stoch_collocation",8,22,4,1,kw_303,0.,0.,0,N_mdm(utype,methodName_STOCH_COLLOCATION)},
+		{"stoch_collocation",8,20,4,1,kw_303,0.,0.,0,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"surrogate_based_global",8,8,4,1,kw_326,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)},
 		{"surrogate_based_local",8,16,4,1,kw_332,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)},
 		{"vector_parameter_study",8,3,4,1,kw_333,0.,0.,0,N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}
@@ -2433,8 +2425,9 @@ static KeyWord
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_2)},
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
-	kw_380[2] = {
+	kw_380[3] = {
 		{"correction",8,6,2,2,kw_379},
+		{"model_fidelity_sequence",7,0,1,1,0,0.,0.,1,N_mom(strL,orderedModelPointers)},
 		{"ordered_model_fidelities",15,0,1,1,0,0.,0.,0,N_mom(strL,orderedModelPointers)}
 		},
 	kw_381[1] = {
@@ -2450,7 +2443,7 @@ static KeyWord
 		},
 	kw_384[5] = {
 		{"global",8,26,2,1,kw_378},
-		{"hierarchical",8,2,2,1,kw_380,0.,0.,0,N_mom(lit,surrogateType_hierarchical)},
+		{"hierarchical",8,3,2,1,kw_380,0.,0.,0,N_mom(lit,surrogateType_hierarchical)},
 		{"id_surrogates",13,0,1,0,0,0.,0.,0,N_mom(intsetm1,surrogateFnIndices)},
 		{"local",8,1,2,1,kw_382,0.,0.,0,N_mom(lit,surrogateType_local_taylor)},
 		{"multipoint",8,1,2,1,kw_383,0.,0.,0,N_mom(lit,surrogateType_multipoint_tana)}

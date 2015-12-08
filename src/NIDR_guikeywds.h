@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1799 distinct keywords (plus 246 aliases) **/
+/** 1799 distinct keywords (plus 239 aliases) **/
 
 static GuiKeyWord
 	kw_1[3] = {
@@ -339,12 +339,12 @@ static GuiKeyWord
 		{"posterior_adaptive",8,0,2,0,2077}
 		},
 	kw_55[3] = {
-		{"collocation_points",13,3,1,1,2095,kw_51},
-		{"expansion_order",13,4,1,1,2073,kw_54},
-		{"sparse_grid_level",13,0,1,1,2071}
+		{"collocation_points_sequence",13,3,1,1,2095,kw_51},
+		{"expansion_order_sequence",13,4,1,1,2073,kw_54},
+		{"sparse_grid_level_sequence",13,0,1,1,2071}
 		},
 	kw_56[1] = {
-		{"sparse_grid_level",13,0,1,1,2117}
+		{"sparse_grid_level_sequence",13,0,1,1,2117}
 		},
 	kw_57[5] = {
 		{"gaussian_process",8,6,1,1,2043,kw_48},
@@ -464,12 +464,12 @@ static GuiKeyWord
 		{"posterior_adaptive",8,0,2,0,1799}
 		},
 	kw_77[3] = {
-		{"collocation_points",13,3,1,1,1817,kw_73},
-		{"expansion_order",13,4,1,1,1795,kw_76},
-		{"sparse_grid_level",13,0,1,1,1793}
+		{"collocation_points_sequence",13,3,1,1,1817,kw_73},
+		{"expansion_order_sequence",13,4,1,1,1795,kw_76},
+		{"sparse_grid_level_sequence",13,0,1,1,1793}
 		},
 	kw_78[1] = {
-		{"sparse_grid_level",13,0,1,1,1839}
+		{"sparse_grid_level_sequence",13,0,1,1,1839}
 		},
 	kw_79[5] = {
 		{"gaussian_process",8,6,1,1,1765,kw_70},
@@ -566,12 +566,12 @@ static GuiKeyWord
 		{"posterior_adaptive",8,0,2,0,1961}
 		},
 	kw_95[3] = {
-		{"collocation_points",13,3,1,1,1979,kw_91},
-		{"expansion_order",13,4,1,1,1957,kw_94},
-		{"sparse_grid_level",13,0,1,1,1955}
+		{"collocation_points_sequence",13,3,1,1,1979,kw_91},
+		{"expansion_order_sequence",13,4,1,1,1957,kw_94},
+		{"sparse_grid_level_sequence",13,0,1,1,1955}
 		},
 	kw_96[1] = {
-		{"sparse_grid_level",13,0,1,1,2001}
+		{"sparse_grid_level_sequence",13,0,1,1,2001}
 		},
 	kw_97[5] = {
 		{"gaussian_process",8,6,1,1,1927,kw_88},
@@ -1672,16 +1672,14 @@ static GuiKeyWord
 		{"reuse_points",8,0,1,0,1133},
 		{"reuse_samples",0,0,1,0,1132}
 		},
-	kw_252[9] = {
+	kw_252[7] = {
 		{"basis_type",8,3,2,0,1079,kw_244},
-		{"collocation_points",13,17,3,1,1091,kw_250,0.,0.,0.,0,"{Number collocation points to estimate coeffs} MethodCommands.html#MethodNonDPCE"},
+		{"collocation_points_sequence",13,17,3,1,1091,kw_250},
 		{"collocation_ratio",10,17,3,1,1093,kw_250,0.,0.,0.,0,"{Collocation point oversampling ratio to estimate coeffs} MethodCommands.html#MethodNonDPCE"},
 		{"dimension_preference",14,0,1,0,1077},
-		{"expansion_samples",13,3,3,1,1131,kw_251,0.,0.,0.,0,"{Number simulation samples to estimate coeffs} MethodCommands.html#MethodNonDPCE"},
+		{"expansion_samples_sequence",13,3,3,1,1131,kw_251},
 		{"import_build_points_file",11,4,4,0,1147,kw_242},
-		{"import_points_file",3,4,4,0,1146,kw_242},
-		{"ordered_collocation_points",5,17,3,1,1090,kw_250},
-		{"ordered_expansion_samples",5,3,3,1,1130,kw_251}
+		{"import_points_file",3,4,4,0,1146,kw_242}
 		},
 	kw_253[3] = {
 		{"eval_id",8,0,2,0,1217},
@@ -1704,58 +1702,57 @@ static GuiKeyWord
 		{"custom_annotated",8,3,1,0,1197,kw_255},
 		{"freeform",8,0,1,0,1205}
 		},
-	kw_257[8] = {
-		{"collocation_points",13,0,1,1,1139},
+	kw_257[7] = {
+		{"collocation_points_sequence",13,0,1,1,1139},
 		{"cross_validation",8,0,2,0,1141},
 		{"import_build_points_file",11,4,5,0,1147,kw_242},
 		{"import_points_file",3,4,5,0,1146,kw_242},
-		{"ordered_collocation_points",5,0,1,1,1138},
 		{"reuse_points",8,0,4,0,1145},
 		{"reuse_samples",0,0,4,0,1144},
 		{"tensor_grid",13,0,3,0,1143}
 		},
 	kw_258[3] = {
+		{"decay",8,0,1,1,1051},
+		{"generalized",8,0,1,1,1053},
+		{"sobol",8,0,1,1,1049}
+		},
+	kw_259[2] = {
+		{"dimension_adaptive",8,3,1,1,1047,kw_258},
+		{"uniform",8,0,1,1,1045}
+		},
+	kw_260[4] = {
+		{"adapt_import",8,0,1,1,1187},
+		{"import",8,0,1,1,1185},
+		{"mm_adapt_import",8,0,1,1,1189},
+		{"refinement_samples",13,0,2,0,1191,0,0.,0.,0.,0,"{Refinement samples} MethodCommands.html#MethodNonDLocalRel"}
+		},
+	kw_261[3] = {
 		{"dimension_preference",14,0,1,0,1067,0,0.,0.,0.,0,"{Dimension preference for anisotropic tensor and sparse grids} MethodCommands.html#MethodNonDPCE"},
 		{"nested",8,0,2,0,1069},
 		{"non_nested",8,0,2,0,1071}
 		},
-	kw_259[5] = {
+	kw_262[2] = {
+		{"lhs",8,0,1,1,1179},
+		{"random",8,0,1,1,1181}
+		},
+	kw_263[5] = {
 		{"dimension_preference",14,0,2,0,1067,0,0.,0.,0.,0,"{Dimension preference for anisotropic tensor and sparse grids} MethodCommands.html#MethodNonDPCE"},
 		{"nested",8,0,3,0,1069},
 		{"non_nested",8,0,3,0,1071},
 		{"restricted",8,0,1,0,1063},
 		{"unrestricted",8,0,1,0,1065}
 		},
-	kw_260[3] = {
-		{"decay",8,0,1,1,1051},
-		{"generalized",8,0,1,1,1053},
-		{"sobol",8,0,1,1,1049}
-		},
-	kw_261[2] = {
-		{"dimension_adaptive",8,3,1,1,1047,kw_260},
-		{"uniform",8,0,1,1,1045}
-		},
-	kw_262[4] = {
-		{"adapt_import",8,0,1,1,1187},
-		{"import",8,0,1,1,1185},
-		{"mm_adapt_import",8,0,1,1,1189},
-		{"refinement_samples",13,0,2,0,1191,0,0.,0.,0.,0,"{Refinement samples} MethodCommands.html#MethodNonDLocalRel"}
-		},
-	kw_263[2] = {
-		{"lhs",8,0,1,1,1179},
-		{"random",8,0,1,1,1181}
-		},
 	kw_264[2] = {
 		{"drop_tolerance",10,0,2,0,1169,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDMC"},
 		{"interaction_order",0x19,0,1,0,1167,0,0.,0.,0.,0,"{Restriction of order of VBD interations} MethodCommands.html#MethodNonDPCE"}
 		},
-	kw_265[37] = {
+	kw_265[34] = {
 		{"askey",8,0,2,0,1055},
 		{"convergence_tolerance",10,0,23,0,1363},
 		{"cubature_integrand",9,0,3,1,1073,0,0.,0.,0.,0,"{Cubature integrand order for PCE coefficient estimation} MethodCommands.html#MethodNonDPCE"},
 		{"diagonal_covariance",8,0,5,0,1171},
 		{"distribution",8,2,15,0,1679,kw_27,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
-		{"expansion_order",13,9,3,1,1075,kw_252,0.,0.,0.,0,"{Expansion order} MethodCommands.html#MethodNonDPCE"},
+		{"expansion_order_sequence",13,7,3,1,1075,kw_252},
 		{"export_approx_points_file",11,3,10,0,1209,kw_254},
 		{"export_expansion_file",11,0,11,0,1223,0,0.,0.,0.,0,"{File name for exporting the coefficients and multi-index of a PCE } MethodCommands.html#MethodNonDPCE"},
 		{"export_points_file",3,3,10,0,1208,kw_254},
@@ -1764,27 +1761,24 @@ static GuiKeyWord
 		{"gen_reliability_levels",14,1,17,0,1689,kw_28,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
 		{"import_approx_points_file",11,4,9,0,1193,kw_256},
 		{"import_expansion_file",11,0,3,1,1163,0,0.,0.,0.,0,"{File name for importing expansion values and multi index to build a PCE} MethodCommands.html#MethodNonDPCE"},
-		{"least_interpolation",0,8,3,1,1136,kw_257},
+		{"least_interpolation",0,7,3,1,1136,kw_257},
 		{"max_iterations",0x29,0,22,0,1361},
 		{"model_pointer",11,0,12,0,2473},
 		{"normalized",8,0,6,0,1175,0,0.,0.,0.,0,"{Output PCE coefficients corresponding to normalized basis} MethodCommands.html#MethodNonDPCE"},
-		{"oli",0,8,3,1,1136,kw_257},
-		{"ordered_expansion_levels",5,9,3,1,1074,kw_252},
-		{"ordered_quadrature_levels",5,3,3,1,1058,kw_258},
-		{"ordered_sparse_grid_levels",5,5,3,1,1060,kw_259},
-		{"orthogonal_least_interpolation",8,8,3,1,1137,kw_257,0.,0.,0.,0,"{Orthogonal Least Interpolation (OLI)} MethodCommands.html#MethodNonDPCE"},
-		{"p_refinement",8,2,1,0,1043,kw_261,0.,0.,0.,0,"{Automated polynomial order refinement} MethodCommands.html#MethodNonDPCE"},
+		{"oli",0,7,3,1,1136,kw_257},
+		{"orthogonal_least_interpolation",8,7,3,1,1137,kw_257,0.,0.,0.,0,"{Orthogonal Least Interpolation (OLI)} MethodCommands.html#MethodNonDPCE"},
+		{"p_refinement",8,2,1,0,1043,kw_259,0.,0.,0.,0,"{Automated polynomial order refinement} MethodCommands.html#MethodNonDPCE"},
 		{"probability_levels",14,1,16,0,1685,kw_29,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
-		{"probability_refinement",8,4,8,0,1183,kw_262,0.,0.,0.,0,"{Importance sampling refinement} MethodCommands.html#MethodNonDLocalRel"},
-		{"quadrature_order",13,3,3,1,1059,kw_258,0.,0.,0.,0,"{Quadrature order for PCE coefficient estimation} MethodCommands.html#MethodNonDPCE"},
+		{"probability_refinement",8,4,8,0,1183,kw_260,0.,0.,0.,0,"{Importance sampling refinement} MethodCommands.html#MethodNonDLocalRel"},
+		{"quadrature_order_sequence",13,3,3,1,1059,kw_261},
 		{"reliability_levels",14,1,19,0,1365,kw_237,0.,0.,0.,0,"{Reliability levels} MethodCommands.html#MethodNonD"},
 		{"response_levels",14,2,20,0,1369,kw_240,0.,0.,0.,0,"{Response levels} MethodCommands.html#MethodNonD"},
 		{"rng",8,2,18,0,1693,kw_30,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
-		{"sample_refinement",0,4,8,0,1182,kw_262},
-		{"sample_type",8,2,7,0,1177,kw_263,0.,0.,0.,0,"{Sampling type} MethodCommands.html#MethodNonDMC"},
+		{"sample_refinement",0,4,8,0,1182,kw_260},
+		{"sample_type",8,2,7,0,1177,kw_262,0.,0.,0.,0,"{Sampling type} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,13,0,2197,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
 		{"seed",0x19,0,14,0,2199,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
-		{"sparse_grid_level",13,5,3,1,1061,kw_259,0.,0.,0.,0,"{Sparse grid level for PCE coefficient estimation} MethodCommands.html#MethodNonDPCE"},
+		{"sparse_grid_level_sequence",13,5,3,1,1061,kw_263},
 		{"variance_based_decomp",8,2,4,0,1165,kw_264,0.,0.,0.,0,"{Variance based decomposition (VBD)} MethodCommands.html#MethodNonDMC"},
 		{"wiener",8,0,2,0,1057}
 		},
@@ -1882,35 +1876,35 @@ static GuiKeyWord
 		{"custom_annotated",8,3,1,0,1305,kw_280},
 		{"freeform",8,0,1,0,1313}
 		},
-	kw_282[4] = {
-		{"hierarchical",8,0,2,0,1265},
-		{"nodal",8,0,2,0,1263},
-		{"restricted",8,0,1,0,1259},
-		{"unrestricted",8,0,1,0,1261}
-		},
-	kw_283[2] = {
+	kw_282[2] = {
 		{"generalized",8,0,1,1,1235},
 		{"sobol",8,0,1,1,1233}
 		},
-	kw_284[2] = {
-		{"dimension_adaptive",8,2,1,1,1231,kw_283},
+	kw_283[2] = {
+		{"dimension_adaptive",8,2,1,1,1231,kw_282},
 		{"uniform",8,0,1,1,1229}
 		},
-	kw_285[4] = {
+	kw_284[4] = {
 		{"adapt_import",8,0,1,1,1295},
 		{"import",8,0,1,1,1293},
 		{"mm_adapt_import",8,0,1,1,1297},
 		{"refinement_samples",13,0,2,0,1299}
 		},
-	kw_286[2] = {
+	kw_285[2] = {
 		{"lhs",8,0,1,1,1287},
 		{"random",8,0,1,1,1289}
+		},
+	kw_286[4] = {
+		{"hierarchical",8,0,2,0,1265},
+		{"nodal",8,0,2,0,1263},
+		{"restricted",8,0,1,0,1259},
+		{"unrestricted",8,0,1,0,1261}
 		},
 	kw_287[2] = {
 		{"drop_tolerance",10,0,2,0,1279,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} MethodCommands.html#MethodNonDSC"},
 		{"interaction_order",0x19,0,1,0,1277,0,0.,0.,0.,0,"{Restriction of order of VBD interations} MethodCommands.html#MethodNonDSC"}
 		},
-	kw_288[34] = {
+	kw_288[32] = {
 		{"askey",8,0,2,0,1251},
 		{"convergence_tolerance",10,0,24,0,1363},
 		{"diagonal_covariance",8,0,8,0,1281},
@@ -1927,21 +1921,19 @@ static GuiKeyWord
 		{"model_pointer",11,0,13,0,2473},
 		{"nested",8,0,6,0,1271},
 		{"non_nested",8,0,6,0,1273},
-		{"ordered_quadrature_levels",5,0,3,1,1254},
-		{"ordered_sparse_grid_levels",5,4,3,1,1256,kw_282},
-		{"p_refinement",8,2,1,0,1227,kw_284},
+		{"p_refinement",8,2,1,0,1227,kw_283},
 		{"piecewise",8,0,2,0,1249},
 		{"probability_levels",14,1,17,0,1685,kw_29,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
-		{"probability_refinement",8,4,10,0,1291,kw_285},
-		{"quadrature_order",13,0,3,1,1255,0,0.,0.,0.,0,"{Quadrature order for collocation points} MethodCommands.html#MethodNonDSC"},
+		{"probability_refinement",8,4,10,0,1291,kw_284},
+		{"quadrature_order_sequence",13,0,3,1,1255},
 		{"reliability_levels",14,1,20,0,1365,kw_237,0.,0.,0.,0,"{Reliability levels} MethodCommands.html#MethodNonD"},
 		{"response_levels",14,2,21,0,1369,kw_240,0.,0.,0.,0,"{Response levels} MethodCommands.html#MethodNonD"},
 		{"rng",8,2,19,0,1693,kw_30,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
-		{"sample_refinement",0,4,10,0,1290,kw_285},
-		{"sample_type",8,2,9,0,1285,kw_286},
+		{"sample_refinement",0,4,10,0,1290,kw_284},
+		{"sample_type",8,2,9,0,1285,kw_285},
 		{"samples",9,0,14,0,2197,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
 		{"seed",0x19,0,15,0,2199,0,0.,0.,0.,0,"{Refinement seed} MethodCommands.html#MethodNonDLocalRel"},
-		{"sparse_grid_level",13,4,3,1,1257,kw_282,0.,0.,0.,0,"{Sparse grid level for collocation points} MethodCommands.html#MethodNonDSC"},
+		{"sparse_grid_level_sequence",13,4,3,1,1257,kw_286},
 		{"use_derivatives",8,0,5,0,1269,0,0.,0.,0.,0,"{Derivative enhancement flag} MethodCommands.html#MethodNonDSC"},
 		{"variance_based_decomp",8,2,7,0,1275,kw_287,0.,0.,0.,0,"{Variance-based decomposition (VBD)} MethodCommands.html#MethodNonDSC"},
 		{"wiener",8,0,2,0,1253}
@@ -2275,10 +2267,10 @@ static GuiKeyWord
 		{"nond_local_interval_est",0,4,4,1,2236,kw_201},
 		{"nond_local_reliability",0,9,4,1,2244,kw_209},
 		{"nond_pof_darts",0,10,4,1,1550,kw_236},
-		{"nond_polynomial_chaos",0,37,4,1,1040,kw_265},
+		{"nond_polynomial_chaos",0,34,4,1,1040,kw_265},
 		{"nond_rkd_darts",0,10,4,1,1576,kw_270},
 		{"nond_sampling",0,18,4,1,1330,kw_275},
-		{"nond_stoch_collocation",0,34,4,1,1224,kw_288},
+		{"nond_stoch_collocation",0,32,4,1,1224,kw_288},
 		{"nonlinear_cg",8,5,4,1,961,kw_289,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"npsol_sqp",8,19,4,1,379,kw_290,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"optpp_cg",8,17,4,1,453,kw_291,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
@@ -2290,14 +2282,14 @@ static GuiKeyWord
 		{"output",8,5,2,0,87,kw_296,0.,0.,0.,0,"{Output verbosity} MethodCommands.html#MethodIndControl"},
 		{"pareto_set",8,10,4,1,149,kw_299,0.,0.,0.,0,"{Pareto set minimization} MethodCommands.html#MethodMetaParetoSet"},
 		{"pof_darts",8,10,4,1,1551,kw_236},
-		{"polynomial_chaos",8,37,4,1,1041,kw_265,0.,0.,0.,0,0,"Uncertainty Quantification"},
+		{"polynomial_chaos",8,34,4,1,1041,kw_265,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"psuade_moat",8,4,4,1,2193,kw_300,0.,0.,0.,0,"{PSUADE MOAT method} MethodCommands.html#MethodPSUADE","DACE"},
 		{"richardson_extrap",8,7,4,1,2459,kw_301,0.,0.,0.,0,"{Richardson extrapolation} MethodCommands.html#MethodSolnRichardson","Verification Studies"},
 		{"rkd_darts",8,10,4,1,1577,kw_270},
 		{"sampling",8,18,4,1,1331,kw_275,0.,0.,0.,0,"{Nondeterministic sampling method} MethodCommands.html#MethodNonDMC","Uncertainty Quantification"},
 		{"soga",8,24,4,1,677,kw_307,0.,0.,0.,0,0,"Optimization: Global"},
 		{"stanford",8,21,4,1,383,kw_308},
-		{"stoch_collocation",8,34,4,1,1225,kw_288,0.,0.,0.,0,0,"Uncertainty Quantification"},
+		{"stoch_collocation",8,32,4,1,1225,kw_288,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"surrogate_based_global",8,8,4,1,251,kw_309,0.,0.,0.,0,0,"Surrogate-based Methods"},
 		{"surrogate_based_local",8,16,4,1,183,kw_315,0.,0.,0.,0,0,"Surrogate-based Methods"},
 		{"vector_parameter_study",8,4,4,1,2421,kw_316,0.,0.,0.,0,"{Vector parameter study} MethodCommands.html#MethodPSVPS","Parameter Studies"}
@@ -2554,8 +2546,9 @@ static GuiKeyWord
 		{"second_order",8,0,1,1,2777},
 		{"zeroth_order",8,0,1,1,2773}
 		},
-	kw_363[2] = {
+	kw_363[3] = {
 		{"correction",8,6,2,2,2771,kw_362,0.,0.,0.,0,"{Surrogate correction approach} ModelCommands.html#ModelSurrH"},
+		{"model_fidelity_sequence",7,0,1,1,2768},
 		{"ordered_model_fidelities",15,0,1,1,2769}
 		},
 	kw_364[2] = {
@@ -2568,7 +2561,7 @@ static GuiKeyWord
 		},
 	kw_366[5] = {
 		{"global",8,26,2,1,2497,kw_361,0.,0.,0.,0,"[CHOOSE surrogate category]{Global approximations } ModelCommands.html#ModelSurrG"},
-		{"hierarchical",8,2,2,1,2767,kw_363,0.,0.,0.,0,"{Hierarchical approximation } ModelCommands.html#ModelSurrH"},
+		{"hierarchical",8,3,2,1,2767,kw_363,0.,0.,0.,0,"{Hierarchical approximation } ModelCommands.html#ModelSurrH"},
 		{"id_surrogates",13,0,1,0,2495,0,0.,0.,0.,0,"{Surrogate response ids} ModelCommands.html#ModelSurrogate"},
 		{"local",8,2,2,1,2761,kw_364,0.,0.,0.,0,"{Local approximation} ModelCommands.html#ModelSurrL"},
 		{"multipoint",8,2,2,1,2757,kw_365,0.,0.,0.,0,"{Multipoint approximation} ModelCommands.html#ModelSurrMP"}

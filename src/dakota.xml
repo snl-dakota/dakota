@@ -1228,12 +1228,10 @@
                             <oneOf label="Coefficient estimation approach">
                               <required>
                                 <oneOf>
-                                  <keyword  id="quadrature_order" name="quadrature_order" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
-                                    <alias name="ordered_quadrature_levels"/>
+                                  <keyword  id="quadrature_order_sequence" name="quadrature_order_sequence" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
                                     <param type="INTEGERLIST" />
                                   </keyword>
-                                  <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-                                    <alias name="ordered_sparse_grid_levels"/>
+                                  <keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
                                     <param type="INTEGERLIST" />
                                     <optional>
                                       <oneOf>
@@ -1258,8 +1256,7 @@
                               </keyword>
                               <required>
                                 <oneOf>
-                                  <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-                                    <alias name="ordered_expansion_levels"/>
+                                  <keyword  id="expansion_order_sequence" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
                                     <param type="INTEGERLIST" />
                                     <keyword  id="dimension_preference1" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="dimension_preference" help="" minOccurs="0" default="isotropic grids" >
                                       <param type="REALLIST" />
@@ -1294,8 +1291,7 @@
                                     <oneOf>
                                       <required>
                                         <oneOf>
-                                          <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-					    <alias name="ordered_collocation_points"/>
+                                          <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                             <param type="INTEGERLIST" />
                                           </keyword>
                                           <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
@@ -1354,8 +1350,7 @@
                                           <alias name="reuse_samples"/>
                                         </keyword>
                                       </required>
-                                      <keyword  id="expansion_samples" name="expansion_samples" code="{N_mdm(szarray,expansionSamples)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-					<alias name="ordered_expansion_samples"/>
+                                      <keyword  id="expansion_samples_sequence" name="expansion_samples_sequence" code="{N_mdm(szarray,expansionSamples)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
                                         <param type="INTEGERLIST" />
                                         <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
                                           <alias name="reuse_samples"/>
@@ -1367,8 +1362,7 @@
                                   <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
                                     <alias name="least_interpolation"/>
                                     <alias name="oli"/>
-                                    <keyword  id="collocation_points1" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
-				      <alias name="ordered_collocation_points"/>
+                                    <keyword  id="collocation_points_sequence1" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
                                       <param type="INTEGERLIST" />
                                     </keyword>
                                     <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
@@ -1475,12 +1469,10 @@
                               </oneOf>
                             </optional>
                             <oneOf label="Interpolation grid type">
-                              <keyword  id="quadrature_order1" name="quadrature_order" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for collocation points" help="MethodCommands.html#MethodNonDSC"  >
-                                <alias name="ordered_quadrature_levels"/>
+                              <keyword  id="quadrature_order_sequence1" name="quadrature_order_sequence" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for collocation points" help="MethodCommands.html#MethodNonDSC"  >
                                 <param type="INTEGERLIST" />
                               </keyword>
-                              <keyword  id="sparse_grid_level1" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for collocation points" help="MethodCommands.html#MethodNonDSC" minOccurs="1" >
-                                <alias name="ordered_sparse_grid_levels"/>
+                              <keyword  id="sparse_grid_level_sequence1" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for collocation points" help="MethodCommands.html#MethodNonDSC" minOccurs="1" >
                                 <param type="INTEGERLIST" />
                                 <optional>
                                   <oneOf>
@@ -1968,10 +1960,10 @@
                               </keyword>
                               <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
 				<oneOf>
-				  <keyword  id="sparse_grid_level2" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+				  <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
                                     <param type="INTEGERLIST" />
 				  </keyword>
-				  <keyword  id="expansion_order1" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				  <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				    <param type="INTEGERLIST" />
 				    <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				      <param type="REAL" />
@@ -1985,7 +1977,7 @@
 				      <keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
                                     </keyword>
 				  </keyword>
-				  <keyword  id="collocation_points2" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				  <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                     <param type="INTEGERLIST" />
                                     <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
                                     </keyword>
@@ -1999,7 +1991,7 @@
 				</oneOf>
                               </keyword>
                               <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-                                <keyword  id="sparse_grid_level3" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                                <keyword  id="sparse_grid_level_sequence3" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
                                   <param type="INTEGERLIST" />
                                 </keyword>
                               </keyword>
@@ -2107,10 +2099,10 @@
                           </keyword>
                           <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
                             <oneOf>
-                              <keyword  id="sparse_grid_level4" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                              <keyword  id="sparse_grid_level_sequence4" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
                                 <param type="INTEGERLIST" />
                               </keyword>
-			      <keyword  id="expansion_order2" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <keyword  id="expansion_order_sequence2" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				<param type="INTEGERLIST" />
 				<keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
@@ -2124,7 +2116,7 @@
 				  <keyword  id="active_only13" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
                                 </keyword>
 			      </keyword>
-			      <keyword  id="collocation_points3" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+			      <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                 <param type="INTEGERLIST" />
                                 <keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
                                 </keyword>
@@ -2138,7 +2130,7 @@
                             </oneOf>
                           </keyword>
                           <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-                            <keyword  id="sparse_grid_level5" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                            <keyword  id="sparse_grid_level_sequence5" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
                               <param type="INTEGERLIST" />
                             </keyword>
                           </keyword>
@@ -2216,10 +2208,10 @@
                           </keyword>
                           <keyword  id="pce3" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
                             <oneOf>
-                              <keyword  id="sparse_grid_level6" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                              <keyword  id="sparse_grid_level_sequence6" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
                                 <param type="INTEGERLIST" />
                               </keyword>
-			      <keyword  id="expansion_order3" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <keyword  id="expansion_order_sequence3" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				<param type="INTEGERLIST" />
 				<keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				  <param type="REAL" />
@@ -2233,7 +2225,7 @@
 				  <keyword  id="active_only16" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
                                 </keyword>
 			      </keyword>
-			      <keyword  id="collocation_points4" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+			      <keyword  id="collocation_points_sequence4" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
                                 <param type="INTEGERLIST" />
                                 <keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
                                 </keyword>
@@ -2247,7 +2239,7 @@
                             </oneOf>
                           </keyword>
                           <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-                            <keyword  id="sparse_grid_level7" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="sparse_grid_level" help="" minOccurs="1" >
+                            <keyword  id="sparse_grid_level_sequence7" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
                               <param type="INTEGERLIST" />
                             </keyword>
                           </keyword>
@@ -2951,6 +2943,7 @@
             </required>
             <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical approximation " help="ModelCommands.html#ModelSurrH" minOccurs="1" >
               <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Pointers to specifications of the model fidelities" help="ModelCommands.html#ModelSurrH"  >
+                <alias name="model_fidelity_sequence"/>
                 <param type="STRINGLIST" in_taglist="model" />
               </keyword>
 	      <!--
