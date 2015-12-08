@@ -7138,6 +7138,8 @@ static Real
 	MP_(percentFold);
 
 static RealVector
+	MP_(discretizationCosts),
+	MP_(discretizationLevels),
 	MP_(krigingCorrelations),
       //MP_(krigingMaxCorrelations),
       //MP_(krigingMinCorrelations),
@@ -7145,6 +7147,7 @@ static RealVector
 	MP_(secondaryRespCoeffs);
 
 static String
+	MP_(actualModelPointer),
 	MP_(decompCellType),
 	MP_(exportApproxPtsFile),
 	MP_(idModel),
@@ -7153,18 +7156,17 @@ static String
 	MP_(importChallengePtsFile),
 	MP_(interfacePointer),
 	MP_(krigingOptMethod),
-	MP_(lowFidelityModelPointer),
 	MP_(modelExportPrefix),
 	MP_(optionalInterfRespPointer),
 	MP_(responsesPointer),
 	MP_(subMethodPointer),
-	MP_(truthModelPointer),
 	MP_(variablesPointer);
 
 static StringArray
+        MP_(diagMetrics),
+	MP_(orderedModelPointers),
 	MP_(primaryVarMaps),
-        MP_(secondaryVarMaps),
-        MP_(diagMetrics);
+        MP_(secondaryVarMaps);
 
 static bool
 	MP_(crossValidateFlag),

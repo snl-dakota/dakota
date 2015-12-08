@@ -53,8 +53,7 @@ method,
 model,
 	id_model = 'SURROGATE'
 	surrogate hierarchical
-          low_fidelity_model  = 'LOFI'
-          high_fidelity_model = 'HIFI'
+          ordered_model_fidelities = 'LOFI' 'HIFI'
 #         SECOND ORDER REQUIRES HESSIAN INFO
 #         correction additive       second_order
 #         correction multiplicative second_order

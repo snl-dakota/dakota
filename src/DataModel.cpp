@@ -45,12 +45,12 @@ DataModelRep::DataModelRep():
 void DataModelRep::write(MPIPackBuffer& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
-    << responsesPointer << hierarchicalTags << subMethodPointer 
-    << surrogateFnIndices << surrogateType << truthModelPointer
-    << lowFidelityModelPointer << pointsTotal << pointsManagement
-    << approxPointReuse << importBuildPtsFile << importBuildFormat
-    << exportSurrogate << modelExportPrefix << modelExportFormat
-    << importBuildActive
+    << responsesPointer << hierarchicalTags << subMethodPointer
+    << discretizationLevels << discretizationCosts << surrogateFnIndices
+    << surrogateType << actualModelPointer << orderedModelPointers
+    << pointsTotal << pointsManagement << approxPointReuse
+    << importBuildPtsFile << importBuildFormat << exportSurrogate
+    << modelExportPrefix << modelExportFormat << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
@@ -75,11 +75,11 @@ void DataModelRep::read(MPIUnpackBuffer& s)
 {
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> hierarchicalTags >> subMethodPointer 
-    >> surrogateFnIndices >> surrogateType >> truthModelPointer
-    >> lowFidelityModelPointer >> pointsTotal >> pointsManagement
-    >> approxPointReuse >> importBuildPtsFile >> importBuildFormat
-    >> exportSurrogate >> modelExportPrefix >> modelExportFormat
-    >> importBuildActive
+    >> discretizationLevels >> discretizationCosts >> surrogateFnIndices
+    >> surrogateType >> actualModelPointer >> orderedModelPointers
+    >> pointsTotal >> pointsManagement >> approxPointReuse
+    >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
+    >> modelExportPrefix >> modelExportFormat >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
@@ -103,11 +103,11 @@ void DataModelRep::write(std::ostream& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << hierarchicalTags << subMethodPointer 
-    << surrogateFnIndices << surrogateType << truthModelPointer
-    << lowFidelityModelPointer << pointsTotal << pointsManagement
-    << approxPointReuse << importBuildPtsFile << importBuildFormat
-    << exportSurrogate << modelExportPrefix << modelExportFormat
-    << importBuildActive
+    << discretizationLevels << discretizationCosts << surrogateFnIndices
+    << surrogateType << actualModelPointer << orderedModelPointers
+    << pointsTotal << pointsManagement << approxPointReuse
+    << importBuildPtsFile << importBuildFormat << exportSurrogate
+    << modelExportPrefix << modelExportFormat << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag

@@ -1872,6 +1872,8 @@ TAG "model/single"
 TAG "model/single/interface_pointer"
 	DESC "{Interface set pointer} ModelCommands.html#ModelSingle"
 
+TAG "model/single/discretization_levels"
+TAG "model/single/discretization_levels/discretization_costs"
 TAG "model/surrogate"
 TAG "model/surrogate/id_surrogates"
 	DESC "{Surrogate response ids} ModelCommands.html#ModelSurrogate"
@@ -2096,12 +2098,7 @@ TAG "model/surrogate/multipoint/actual_model_pointer"
 TAG "model/surrogate/hierarchical"
 	DESC "{Hierarchical approximation } ModelCommands.html#ModelSurrH"
 
-TAG "model/surrogate/hierarchical/low_fidelity_model_pointer"
-	DESC "{Pointer to the low fidelity model specification} ModelCommands.html#ModelSurrH"
-
-TAG "model/surrogate/hierarchical/high_fidelity_model_pointer"
-	DESC "{Pointer to the high fidelity model specification} ModelCommands.html#ModelSurrH"
-
+TAG "model/surrogate/hierarchical/ordered_model_fidelities"
 TAG "model/surrogate/hierarchical/correction"
 	DESC "{Surrogate correction approach} ModelCommands.html#ModelSurrH"
 

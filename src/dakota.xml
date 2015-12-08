@@ -1229,9 +1229,11 @@
                               <required>
                                 <oneOf>
                                   <keyword  id="quadrature_order" name="quadrature_order" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
+                                    <alias name="ordered_quadrature_levels"/>
                                     <param type="INTEGERLIST" />
                                   </keyword>
                                   <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+                                    <alias name="ordered_sparse_grid_levels"/>
                                     <param type="INTEGERLIST" />
                                     <optional>
                                       <oneOf>
@@ -1257,6 +1259,7 @@
                               <required>
                                 <oneOf>
                                   <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+                                    <alias name="ordered_expansion_levels"/>
                                     <param type="INTEGERLIST" />
                                     <keyword  id="dimension_preference1" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="dimension_preference" help="" minOccurs="0" default="isotropic grids" >
                                       <param type="REALLIST" />
@@ -1292,6 +1295,7 @@
                                       <required>
                                         <oneOf>
                                           <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+					    <alias name="ordered_collocation_points"/>
                                             <param type="INTEGERLIST" />
                                           </keyword>
                                           <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
@@ -1351,6 +1355,7 @@
                                         </keyword>
                                       </required>
                                       <keyword  id="expansion_samples" name="expansion_samples" code="{N_mdm(szarray,expansionSamples)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+					<alias name="ordered_expansion_samples"/>
                                         <param type="INTEGERLIST" />
                                         <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
                                           <alias name="reuse_samples"/>
@@ -1363,9 +1368,10 @@
                                     <alias name="least_interpolation"/>
                                     <alias name="oli"/>
                                     <keyword  id="collocation_points1" name="collocation_points" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
+				      <alias name="ordered_collocation_points"/>
                                       <param type="INTEGERLIST" />
                                     </keyword>
-                                    <!-- #		          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
+                                    <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
                                     <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" />
                                     <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" >
                                       <param type="INTEGERLIST" />
@@ -1470,9 +1476,11 @@
                             </optional>
                             <oneOf label="Interpolation grid type">
                               <keyword  id="quadrature_order1" name="quadrature_order" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for collocation points" help="MethodCommands.html#MethodNonDSC"  >
+                                <alias name="ordered_quadrature_levels"/>
                                 <param type="INTEGERLIST" />
                               </keyword>
                               <keyword  id="sparse_grid_level1" name="sparse_grid_level" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for collocation points" help="MethodCommands.html#MethodNonDSC" minOccurs="1" >
+                                <alias name="ordered_sparse_grid_levels"/>
                                 <param type="INTEGERLIST" />
                                 <optional>
                                   <oneOf>
@@ -2638,8 +2646,15 @@
       <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical evaluation tags" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="no hierarchical tagging" />
       <oneOf>
         <keyword  id="single" name="single" code="{N_mom(lit,modelType_single)}" label="single" help="" minOccurs="1" default="N/A ( single if no model specification)" >
+          <alias name="simulation"/>
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface set pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
+          </keyword>
+          <keyword  id="discretization_levels" name="discretization_levels" code="{N_mom(RealDL,discretizationLevels)}" label="Simulation discretization levels" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of default discretization" >
+            <param type="REALLIST" />
+	    <keyword  id="discretization_costs" name="discretization_costs" code="{N_mom(RealDL,discretizationCosts)}" label="Simulation cost estimates for discretization levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
+              <param type="REALLIST" />
+            </keyword>
           </keyword>
         </keyword>
         <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="surrogate" help="" minOccurs="1" >
@@ -2801,7 +2816,7 @@
 		  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
 		  </keyword>
-		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,truthModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
                     <param type="STRING" in_taglist="model" />
 		  </keyword>
 		</oneOf>
@@ -2930,17 +2945,22 @@
                   <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor series local approximation " help="ModelCommands.html#ModelSurrL"  />
                 </keyword>
               </oneOf>
-              <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,truthModelPointer)}" label="actual_model_pointer" help=""  >
+              <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help=""  >
                 <param type="STRING" in_taglist="model" />
               </keyword>
             </required>
             <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical approximation " help="ModelCommands.html#ModelSurrH" minOccurs="1" >
-              <keyword  id="low_fidelity_model_pointer" name="low_fidelity_model_pointer" code="{N_mom(str,lowFidelityModelPointer)}" label="Pointer to the low fidelity model specification" help="ModelCommands.html#ModelSurrH"  >
+              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Pointers to specifications of the model fidelities" help="ModelCommands.html#ModelSurrH"  >
+                <param type="STRINGLIST" in_taglist="model" />
+              </keyword>
+	      <!--
+	      <keyword  id="low_fidelity_model_pointer" name="low_fidelity_model_pointer" code="{N_mom(str,lowFidelityModelPointer)}" label="Pointer to the low fidelity model specification" help="ModelCommands.html#ModelSurrH"  >
                 <param type="STRING" in_taglist="model" />
               </keyword>
-              <keyword  id="high_fidelity_model_pointer" name="high_fidelity_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Pointer to the high fidelity model specification" help="ModelCommands.html#ModelSurrH"  >
+              <keyword  id="high_fidelity_model_pointer" name="high_fidelity_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Pointer to the high fidelity model specification" help="ModelCommands.html#ModelSurrH"  >
                 <param type="STRING" in_taglist="model" />
-              </keyword>
+		</keyword>
+	      -->
               <keyword  id="correction1" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrH" minOccurs="1" default="no surrogate correction" >
                 <oneOf label="correction order">
                   <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="zeroth_order" help=""  />

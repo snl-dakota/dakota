@@ -34,8 +34,7 @@ method,
 model,
 	id_model = 'SURROGATE'
 	surrogate hierarchical
-	  low_fidelity_model  = 'LOFI'
-	  high_fidelity_model = 'HIFI'
+	  ordered_model_fidelities = 'LOFI' 'HIFI'
 	  correction additive       second_order	#s0,#s3,#s6,#s9
 #	  correction multiplicative second_order	#s1,#s4,#s7,#s10
 #	  correction combined       second_order	#s2,#s5,#s8,#s11

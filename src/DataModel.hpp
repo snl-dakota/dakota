@@ -85,6 +85,17 @@ public:
   /// \ref ModelNested)
   String subMethodPointer;
 
+  // single/simulation models
+
+  /// array of discretization levels in space/time that manage a secondary
+  /// hierarchy of fidelity within the scope of a single model form (from \c
+  /// discretization_levels specification; see also \c ordered_model_fidelities)
+  RealVector discretizationLevels;
+  /// array of relative simulation costs corresponding to each of the
+  /// discretization levels (from \c discretization_costs specification;
+  /// see also \c discretization_levels)
+  RealVector discretizationCosts;
+
   // surrogate models
 
   /// array specifying the response function set that is approximated
@@ -94,15 +105,13 @@ public:
   /// polynomial,kriging), or hierarchical
   String surrogateType;
   /// pointer to the model specification for constructing the truth model
-  /// used in building local, multipoint, and hierarchical approximations
-  /// (from the \c actual_model_pointer specification in \ref ModelSurrL
-  /// and \ref ModelSurrMP and the \c high_fidelity_model_pointer
+  /// used in constructing surrogates (from the \c actual_model_pointer
+  /// specification in \ref ModelSurrL and \ref ModelSurrMP)
+  String actualModelPointer;
+  /// an ordered list of model pointers (low to high) corresponding to a
+  /// hierarchy of modeling fidelity (from the \c ordered_model_fidelities
   /// specification in \ref ModelSurrH)
-  String truthModelPointer;
-  /// pointer to the low fidelity model specification used in
-  /// hierarchical approximations (from the \c low_fidelity_model_pointer
-  /// specification in \ref ModelSurrH)
-  String lowFidelityModelPointer;
+  StringArray orderedModelPointers;
 
   // controls for number of points with which to build the model
 

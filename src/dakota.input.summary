@@ -860,13 +860,13 @@ KEYWORD12 method
 	    ]
 	  [ askey
 	  | wiener ]
-	  ( quadrature_order INTEGERLIST
+	  ( quadrature_order ALIAS ordered_quadrature_levels INTEGERLIST
 	    [ dimension_preference REALLIST ]
 	    [ nested
 	    | non_nested ]
 	    )
 	  |
-	  ( sparse_grid_level INTEGERLIST
+	  ( sparse_grid_level ALIAS ordered_sparse_grid_levels INTEGERLIST
 	    [ restricted
 	    | unrestricted ]
 	    [ dimension_preference REALLIST ]
@@ -875,7 +875,7 @@ KEYWORD12 method
 	    )
 	  | cubature_integrand INTEGER
 	  |
-	  ( expansion_order INTEGERLIST
+	  ( expansion_order ALIAS ordered_expansion_levels INTEGERLIST
 	    [ dimension_preference REALLIST ]
 	    [ basis_type
 	      tensor_product
@@ -886,7 +886,7 @@ KEYWORD12 method
 		[ soft_convergence_limit INTEGER ]
 		)
 	      ]
-	    ( collocation_points INTEGERLIST
+	    ( collocation_points ALIAS ordered_collocation_points INTEGERLIST
 	      | collocation_ratio REAL
 	      [ ratio_order REAL ]
 	      [ ( least_squares
@@ -917,7 +917,7 @@ KEYWORD12 method
 	      [ reuse_points ALIAS reuse_samples ]
 	      )
 	    |
-	    ( expansion_samples INTEGERLIST
+	    ( expansion_samples ALIAS ordered_expansion_samples INTEGERLIST
 	      [ reuse_points ALIAS reuse_samples ]
 	      [ incremental_lhs ]
 	      )
@@ -936,7 +936,7 @@ KEYWORD12 method
 	    )
 	  |
 	  ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
-	    collocation_points INTEGERLIST
+	    collocation_points ALIAS ordered_collocation_points INTEGERLIST
 	    [ cross_validation ]
 	    [ tensor_grid INTEGERLIST ]
 	    [ reuse_points ALIAS reuse_samples ]
@@ -1054,9 +1054,9 @@ KEYWORD12 method
 	  [ piecewise
 	  | askey
 	  | wiener ]
-	  quadrature_order INTEGERLIST
+	  quadrature_order ALIAS ordered_quadrature_levels INTEGERLIST
 	  |
-	  ( sparse_grid_level INTEGERLIST
+	  ( sparse_grid_level ALIAS ordered_sparse_grid_levels INTEGERLIST
 	    [ restricted
 	    | unrestricted ]
 	    [ nodal
@@ -2171,8 +2171,11 @@ KEYWORD model
 	[ variables_pointer STRING ]
 	[ responses_pointer STRING ]
 	[ hierarchical_tagging ]
-	( single
+	( single ALIAS simulation
 	  [ interface_pointer STRING ]
+	  [ discretization_levels REALLIST
+	    discretization_costs REALLIST
+	    ]
 	  )
 	|
 	( surrogate
@@ -2367,8 +2370,7 @@ KEYWORD model
 	    )
 	  |
 	  ( hierarchical
-	    low_fidelity_model_pointer STRING
-	    high_fidelity_model_pointer STRING
+	    ordered_model_fidelities STRINGLIST
 	    ( correction
 	      zeroth_order
 	      | first_order

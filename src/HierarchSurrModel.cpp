@@ -30,10 +30,10 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   // initialize centralHess even though it's irrelevant for pass through
   centralHess = problem_db.get_bool("responses.central_hess");
 
-  const String& low_fid_model_ptr
-    = problem_db.get_string("model.surrogate.low_fidelity_model_pointer");
-  const String& high_fid_model_ptr
-    = problem_db.get_string("model.surrogate.high_fidelity_model_pointer");
+  const StringArray& ordered_model_ptrs
+    = problem_db.get_sa("model.surrogate.ordered_model_pointers");
+  const String&  low_fid_model_ptr = ordered_model_ptrs.front();
+  const String& high_fid_model_ptr = ordered_model_ptrs.back();
 
   size_t model_index = problem_db.get_db_model_node(); // for restoration
 

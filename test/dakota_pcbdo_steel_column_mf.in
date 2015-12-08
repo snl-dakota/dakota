@@ -31,8 +31,7 @@ model,
 	variables_pointer  = 'OPTIM_V'
 	responses_pointer  = 'OPTIM_R'
 	surrogate hierarchical
-	  low_fidelity_model  = 'LO_FI'
-	  high_fidelity_model = 'HI_FI'
+	  ordered_model_fidelities = 'LO_FI' 'HI_FI'
 	  correction additive first_order	#s0,#s2
 #	  correction additive second_order	#s1,#s3
 

@@ -1454,6 +1454,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       // must be sorted by string (key)
 	{"nested.primary_response_mapping", P primaryRespCoeffs},
 	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
+	{"single.discretization_costs", P discretizationCosts},
+	{"single.discretization_levels", P discretizationLevels},
 	{"surrogate.kriging_correlations", P krigingCorrelations},
 	{"surrogate.kriging_max_correlations", P krigingMaxCorrelations},
 	{"surrogate.kriging_min_correlations", P krigingMinCorrelations}};
@@ -2110,7 +2112,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       // must be sorted by string (key)
 	{"metrics", P diagMetrics},
 	{"nested.primary_variable_mapping", P primaryVarMaps},
-	{"nested.secondary_variable_mapping", P secondaryVarMaps}};
+	{"nested.secondary_variable_mapping", P secondaryVarMaps},
+	{"surrogate.ordered_model_pointers", P orderedModelPointers}};
     #undef P
 
     KW<StringArray, DataModelRep> *kw;
@@ -2334,15 +2337,13 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"interface_pointer", P interfacePointer},
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
-	{"surrogate.actual_model_pointer", P truthModelPointer},
+	{"surrogate.actual_model_pointer", P actualModelPointer},
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
-	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
 	{"surrogate.import_build_points_file", P importBuildPtsFile},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
-	{"surrogate.low_fidelity_model_pointer", P lowFidelityModelPointer},
 	{"surrogate.mars_interpolation", P marsInterpolation},
 	{"surrogate.model_export_prefix", P modelExportPrefix},
 	{"surrogate.point_reuse", P approxPointReuse},
@@ -3579,7 +3580,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
   const char *L;
   if (!dbRep)
 	Null_rep1("set(StringArray&)");
-  if ((L = Begins(entry_name, "method..linear_"))) {
+  if ((L = Begins(entry_name, "method.linear_"))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::
