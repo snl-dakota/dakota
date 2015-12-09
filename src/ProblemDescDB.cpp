@@ -1655,6 +1655,18 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     if ((kw = (KW<IntVector, DataMethodRep>*)Binsearch(IVdme, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
+  else if (L = Begins(entry_name, "model.")) {
+    if (dbRep->modelDBLocked)
+      Locked_db();
+    #define P &DataModelRep::
+    static KW<IntVector, DataModelRep> IVdr[] = {	
+      // must be sorted by string (key)
+      {"refinement_samples", P refineSamples}};
+    #undef P
+    KW<IntVector, DataModelRep> *kw;
+    if ((kw = (KW<IntVector, DataModelRep>*)Binsearch(IVdr, L)))
+      return dbRep->dataModelIter->dataModelRep->*kw->p;
+  }
   else if (L = Begins(entry_name, "responses.")) {
     if (dbRep->responsesDBLocked)
       Locked_db();
@@ -2485,6 +2497,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     #define P &DataModelRep::
     static KW<Real, DataModelRep> Rdmo[] = {	
       // must be sorted by string (key)
+      {"convergence_tolerance", P convergenceTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
       {"surrogate.neural_network_range", P annRange},
@@ -2571,6 +2584,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
     #define P &DataModelRep::
     static KW<int, DataModelRep> Idmo[] = {	
       // must be sorted by string (key)
+	{"initial_samples", P initialSamples},
+	{"max_iterations", P maxIterations},
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
         {"surrogate.decomp_support_layers", P decompSupportLayers},

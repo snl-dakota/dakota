@@ -1402,6 +1402,19 @@ model_RealDL(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_ivec(const char *keyname, Values *val, void **g, void *v)
+{
+  DataModelRep *dm = (*(Mod_Info**)g)->dmo;
+  IntVector *iv = &(dm->**(IntVector DataModelRep::**)v);
+  size_t i, n = val->n;
+  iv->sizeUninitialized(n);
+
+  int *z = val->i;
+  for(i = 0; i < n; i++)
+    (*iv)[i] = z[i];
+}
+
+void NIDRProblemDescDB::
 model_false(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->**(bool DataModelRep::**)v = false;
@@ -7065,6 +7078,7 @@ static Model_mp_lit
 	MP2(marsInterpolation,cubic),
 	MP2(modelType,nested),
 	MP2(modelType,single),
+	MP2(modelType,subspace),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
 	MP2(surrogateType,global_gaussian),
@@ -7132,6 +7146,7 @@ static Model_mp_utype
 
 static Real
 	MP_(annRange),
+	MP_(convergenceTolerance),
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
@@ -7145,6 +7160,9 @@ static RealVector
       //MP_(krigingMinCorrelations),
 	MP_(primaryRespCoeffs),
 	MP_(secondaryRespCoeffs);
+
+static IntVector
+	MP_(refineSamples);
 
 static String
 	MP_(actualModelPointer),
@@ -7196,6 +7214,8 @@ static short
 
 static int
         MP_(decompSupportLayers),
+        MP_(initialSamples),
+        MP_(maxIterations),
         MP_(numFolds),
         MP_(pointsTotal),
         MP_(subMethodProcs),

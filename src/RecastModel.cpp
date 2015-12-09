@@ -25,6 +25,7 @@ namespace Dakota {
 #define SUB_MODEL 2
 //#define DEBUG
 
+
 /** Default recast model constructor.  Requires full definition of the
     transformation; if any mappings are NULL, they are assumed to
     remain so in later initialization or updates.  Parameter
@@ -144,12 +145,20 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 }
 
 
+RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
+  Model(BaseConstructor(), problem_db), subModel(sub_model)
+{
+  modelType = "recast";
+  supportsEstimDerivs = false; // subModel estimates derivatives by default
+  
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel();
+}
+
+
 RecastModel::RecastModel(const Model& sub_model):
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
    	sub_model.parallel_library()),
-  // How do we do this?  Want to construct subModel from the
-  //  underlying user model, then wrap it in this RecastModel
-  //  Model(BaseConstructor(), problem_db),
   subModel(sub_model)
 { 
   modelType = "recast";

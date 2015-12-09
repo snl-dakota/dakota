@@ -6,35 +6,44 @@ environment
 
 method,
   efficient_subspace
-  seed = 24620
-  # initial build samples
+    model_pointer = 'SUBSPACE'
+    seed = 24620
+    # evals in the subspace
     samples = 100
-  # additional samples per iteration
-  batch_size = 2
-  # evals in the subspace
-  emulator_samples = 100
-  convergence_tolerance = 1.0e-3
-    output debug
-  max_iterations = 10
-  max_function_evaluations = 2000
+  output debug
 
-#model                                 #s1,#s2
-#  single                              #s1,#s2
-#  subspace                            #s1,#s2
-#    truncation_method bing_li         #s1
-#    truncation_method constantine     #s2
+model                             
+  subspace
+    id_model = 'SUBSPACE'
+    actual_model_pointer = 'FULLSPACE'
+    initial_samples  100
+      refinement_samples 2
+    max_iterations = 10
+    convergence_tolerance = 1.0e-3
+#   truncation_method bing_li         #s1
+#   truncation_method constantine     #s2
+
+model 
+  single
+  id_model = 'FULLSPACE'
+    variables_pointer = 'ID_V'  
+    interface_pointer = 'ID_I'  
+    responses_pointer = 'ID_R'  
 
 variables,
+  id_variables = 'ID_V'
   normal_uncertain = 100
     means = 100*0.5
     std_deviations = 100*0.2
 
 interface,
+  id_interface = 'ID_I'
   direct
       analysis_driver = 'aniso_quad_form'
     analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'
 
 responses,
+  id_responses = 'ID_R'
   num_response_functions = 1
   analytic_gradients
   no_hessians

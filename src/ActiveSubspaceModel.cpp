@@ -17,6 +17,66 @@ namespace Dakota {
 /// initialization of static needed by RecastModel
 ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 
+// BMA TODO: Consider whether a DACE Iterator is justified; don't need
+// the modularity yet, but a lot of the build controls better belong
+// in a helper iterator specification.
+
+ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
+  RecastModel(problem_db, get_sub_model(problem_db)),
+  randomSeed(24620), 
+  initialSamples(problem_db.get_int("model.initial_samples")),
+  batchSize(0),  // updated later
+  maxIterations(problem_db.get_int("model.max_iterations")),
+  // may need to allow this control later if doing nullspace verification:
+  maxFunctionEvals(std::numeric_limits<int>::max()),
+  // need to offer user control
+  svTol(std::max(problem_db.get_real("model.convergence_tolerance"),
+		 std::numeric_limits<Real>::epsilon())),
+  performAssessment(false), 
+  nullspaceTol(problem_db.get_real("model.convergence_tolerance")/1.0e3),
+  subspaceIdMethod(probDescDB.get_ushort("model.subspace.truncation_method")),
+  numReplicates(100),
+  numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
+  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),  reducedRank(0),
+  gradientScaleFactors(RealArray(numFunctions, 1.0))
+{
+  asmInstance = this;
+  modelType = "subspace";
+
+  const IntVector& db_refine_samples = 
+    problem_db.get_iv("model.refinement_samples");
+  if (db_refine_samples.length() == 1)
+    batchSize = db_refine_samples[0];
+  else if (db_refine_samples.length() > 1) {
+    Cerr << "\nError (ActiveSubspaceModel): refinement_samples must be "
+	 << "length 1 if specified." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+
+  validate_inputs();
+
+  // initialize the fullspace Monte Carlo derivative sampler; this
+  // will configure it to perform initialSamples
+  init_fullspace_sampler();
+}
+
+
+Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
+{
+  Model sub_model;
+
+  const String& actual_model_pointer
+    = problem_db.get_string("model.surrogate.actual_model_pointer");
+  size_t model_index = problem_db.get_db_model_node(); // for restoration
+  problem_db.set_db_model_nodes(actual_model_pointer);
+  sub_model = problem_db.get_model();
+  //check_submodel_compatibility(actualModel);
+  problem_db.set_db_model_nodes(model_index); // restore
+
+  return sub_model;
+}
+
+
 /** An ActiveSubspaceModel will be built over all functions, without
     differentiating primary vs. secondary constraints.  However the
     associated RecastModel has to differentiate. Currently identifies
@@ -38,9 +98,10 @@ ActiveSubspaceModel(const Model& sub_model,
   gradientScaleFactors(RealArray(numFunctions, 1.0))
 {
   asmInstance = this;
+  modelType = "subspace";
   
   // BMA TODO: probably want to do numerical derivatives in the
-  // smaller subspace, not in the subModel space...
+  // smaller subspace, not in the subModel space... (not yet)
   //supportsEstimDerivs = true;
 
   // We can't even initialize the RecastModel sizes until after the
@@ -54,6 +115,75 @@ ActiveSubspaceModel(const Model& sub_model,
 
 ActiveSubspaceModel::~ActiveSubspaceModel()
 {  /* empty dtor */  }
+
+
+void ActiveSubspaceModel::validate_inputs()
+{
+  bool error_flag = false;
+
+  // validate iteration controls
+
+  // set default initialSamples, with lower bound of 2
+  // TODO: allow other user control of initial sample rule?
+  if (initialSamples <= 0) {
+    initialSamples =
+      (unsigned int) std::ceil( (double) subModel.cv() / 100.0 );
+    initialSamples = std::max(2, initialSamples);
+    Cout << "\nInfo: Efficient subspace method setting (initial) samples = "
+         << initialSamples << "." << std::endl;
+  }
+  else if (initialSamples < 2) {
+    initialSamples = 2;
+    Cout << "\nWarning: Efficient subspace method resetting samples to minimum "
+         << "allowed = " << initialSamples << "." << std::endl;
+  }
+
+  if (initialSamples > maxFunctionEvals) {
+    error_flag = true;
+    Cerr << "\nError: Efficient subspace method build samples exceeds function "
+         << "budget." << std::endl;
+  }
+
+  if (batchSize <= 0) {
+    // default is to add one point at a time
+    batchSize = 1;
+  }
+  else if (batchSize > initialSamples) {
+    Cout << "\nWarning: batch_size = " << batchSize << " exceeds (initial) "
+         << "samples = " << initialSamples << ";\n        resetting batch_size "
+         << "= " << initialSamples << "." << std::endl;
+    batchSize = initialSamples;
+  }
+
+  // maxIterations controls the number of build iterations
+  if (maxIterations < 0) {
+    maxIterations = 1;
+    Cout << "\nInfo: Efficient subspace method setting max_iterations = "
+         << maxIterations << "." << std::endl;
+  }
+
+  // validate variables specification
+  // BMA TODO: allow other variable types
+  if (// subModel.cv() != numNormalVars ||
+      subModel.div() > 0 || subModel.dsv() > 0 || subModel.drv() > 0) {
+    error_flag = true;
+    Cerr << "\nError: Efficient subspace method only supports normal uncertain "
+         << "variables;\n       remove other variable specifications."
+         << std::endl;
+  }
+
+  // validate response data
+  if (subModel.gradient_type() == "none") {
+    error_flag = true;
+    Cerr << "\nError: Efficient subspace method requires gradients.\n"
+         << "       Please select numerical, analytic (recommended), or mixed "
+         << "gradients." << std::endl;
+  }
+
+  if (error_flag)
+    abort_handler(-1);
+}
+
 
 
 /** May eventually take on init_comms and related operations.  Also
@@ -107,12 +237,13 @@ void ActiveSubspaceModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
-  // In subspace identification, the same model will be used in multiple contexts:
+  // The same model is used in multiple contexts, with varying degrees
+  // of concurrency: 
   //  - fullspaceSampler(subModel) with initialSamples
   //  - fullspaceSampler(subModel) with batchSamples
   //  - direct compute_response() of verif_samples, one at a time
 
-  // The fullspace sampler will be used for both initialSamples and batchSamples
+  // The inbound subMmodel concurrency accounts for any finite differences
 
   // BMA: taken from DataFitSurrModel daceIterator; is this correct?
   // init comms for daceIterator
@@ -329,19 +460,6 @@ generate_fullspace_samples(unsigned int diff_samples)
   // from intialSamples to batchSamples
   fullspaceSampler.sampling_reference(diff_samples);
   fullspaceSampler.sampling_reset(diff_samples, true, false);
-
-  // BMA: shouldn't need this anymore as the fullspaceSampler should
-  // call set as needed?
-
-  // select the right comm for current model evaluation concurrency
-  // (initial build or batch update)
-  // ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  // if (currIter == 1)
-  //   subModel.set_communicators(pl_iter, maxEvalConcurrency);
-  // else {
-  //   int batch_concurrency = batchSize * subModel.derivative_concurrency();
-  //   subModel.set_communicators(pl_iter, batch_concurrency);
-  // }
 
   // and generate the additional samples
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
@@ -941,6 +1059,10 @@ void ActiveSubspaceModel::update_linear_constraints()
     transformation.
 
     TODO: Generalize to convert other random variable types (non-normal)
+
+    TODO: The translation of the correlations from full to reduced
+    space is likely wrong for rank correlations; should be correct for
+    covariance.
 */
 /// transform and set the distribution parameters in the reduced model
 void ActiveSubspaceModel::uncertain_vars_to_subspace()

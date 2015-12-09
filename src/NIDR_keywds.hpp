@@ -2204,8 +2204,13 @@ static KeyWord
 		{"bing_li",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)},
 		{"constantine",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}
 		},
-	kw_342[1] = {
-		{"truncation_method",8,2,1,0,kw_341}
+	kw_342[6] = {
+		{"actual_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,actualModelPointer)},
+		{"convergence_tolerance",10,0,5,0,0,0.,0.,0,N_mom(Real,convergenceTolerance)},
+		{"initial_samples",9,0,2,0,0,0.,0.,0,N_mom(int,initialSamples)},
+		{"max_iterations",9,0,4,0,0,0.,0.,0,N_mom(int,maxIterations)},
+		{"refinement_samples",13,0,3,0,0,0.,0.,0,N_mom(ivec,refineSamples)},
+		{"truncation_method",8,2,6,0,kw_341}
 		},
 	kw_343[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)},
@@ -2455,7 +2460,7 @@ static KeyWord
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
 		{"simulation",0,2,5,1,kw_340,0.,0.,1,N_mom(lit,modelType_single)},
 		{"single",8,2,5,1,kw_340,0.,0.,0,N_mom(lit,modelType_single)},
-		{"subspace",8,1,6,0,kw_342},
+		{"subspace",8,6,5,1,kw_342,0.,0.,0,N_mom(lit,modelType_subspace)},
 		{"surrogate",8,5,5,1,kw_384,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},

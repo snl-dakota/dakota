@@ -3008,17 +3008,31 @@
             </keyword>
           </keyword>
         </keyword>
+	<keyword  id="subspace" name="subspace" code="{N_mom(lit,modelType_subspace)}" label="subspace" help="" minOccurs="1" >
+	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+	    <param type="STRING" in_taglist="model" />
+	  </keyword>
+	  <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='initial samples' help='' minOccurs='0' default='model-dependent'>
+	    <param type='INTEGER' />
+	  </keyword>
+	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" >
+	    <param type="INTEGERLIST" />
+	  </keyword>
+	  <keyword  id='max_iterations' name='max_iterations' code='{N_mom(int,maxIterations)}' label='max build iterations' help='' minOccurs='0' default='1'>
+	    <param type='INTEGER' />
+	  </keyword>
+	  <keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mom(Real,convergenceTolerance)}' label='Convergence tolerance' help='' minOccurs='0' default='1.0e-4' >
+	    <param type='REAL' />
+	  </keyword>
+	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
+	    <oneOf>
+	      <keyword id="bing_li" name="bing_li" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)}" />
+	      <keyword id="constantine" name="constantine" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}" />
+	    </oneOf>
+	  </keyword>
+	</keyword>
       </oneOf>
-      <keyword id="subspace" name="subspace" code="{0}" label="subspace" minOccurs="0">
-        <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
-          <oneOf>
-            <keyword id="bing_li" name="bing_li" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)}" />
-            <keyword id="constantine" name="constantine" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}" />
-          </oneOf>
-        </keyword>
-      </keyword>
     </keyword>
-
     
     <!-- **** TOPLEVEL *** -->
     <keyword id="variables" name="variables" minOccurs="1" maxOccurs="unbounded" code="{N_vam3(start,0,stop)}" label="Variables" help="VarCommands.html">

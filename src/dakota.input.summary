@@ -2399,12 +2399,18 @@ KEYWORD model
 	    [ secondary_response_mapping REALLIST ]
 	    )
 	  )
-	[ subspace
+	|
+	( subspace
+	  actual_model_pointer STRING
+	  [ initial_samples INTEGER ]
+	  [ refinement_samples INTEGERLIST ]
+	  [ max_iterations INTEGER ]
+	  [ convergence_tolerance REAL ]
 	  [ truncation_method
 	    bing_li
 	    | constantine
 	    ]
-	  ]
+	  )
 
 KEYWORD12 variables
 	[ id_variables STRING ]

@@ -61,6 +61,7 @@ class ProblemDescDB
   /// NestedModel requires access to get_interface(), get_response(),
   /// get_iterator(), and get_model()
   friend class NestedModel;
+  friend class ActiveSubspaceModel;
 
   /// Environment requires access to get_iterator()
   friend class Environment;

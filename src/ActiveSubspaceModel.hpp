@@ -14,6 +14,9 @@
 
 namespace Dakota {
 
+/// forward declarations
+class ProblemDescDB;
+
 //---
 // BMA: Wishlist / notes:
 //
@@ -51,7 +54,10 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  /// standard constructor
+  /// Problem database constructor
+  ActiveSubspaceModel(ProblemDescDB& problem_db);
+
+  /// lightweight constructor
   ActiveSubspaceModel(const Model& sub_model, 
 		      int random_seed, int initial_samples, int batch_size,
 		      double conv_tol, size_t max_iter, size_t max_evals,
@@ -63,11 +69,6 @@ public:
   /// sample the full space to identify the subspace, and finish
   /// initializing the RecastModel so we have valid variables/responses
   void initialize();
-
-
-  unsigned short subspace_id() const;
-  void subspace_id(short id);
-  
 
 protected:
 
@@ -88,8 +89,15 @@ protected:
   // Construct time convenience functions
   // ---
 
+  /// retrieve the sub-Model from the DB to pass up the constructor chain
+  Model get_sub_model(ProblemDescDB& problem_db);
+
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler();
+
+  /// validate the build controls and set defaults
+  void validate_inputs();
+
 
   // ---
   // Subspace identification functions: rank-revealing build phase
@@ -182,8 +190,10 @@ protected:
 
   /// number of points to add at each iteration
   int batchSize;
+
   /// maximum number of build iterations
   int maxIterations;
+
   /// maximum number of build evaluations
   int maxFunctionEvals;
 

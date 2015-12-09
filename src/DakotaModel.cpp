@@ -20,6 +20,7 @@
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
+#include "ActiveSubspaceModel.hpp"
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
 
@@ -378,6 +379,8 @@ Model* Model::get_model(ProblemDescDB& problem_db)
     else
       return new DataFitSurrModel(problem_db);  // local/multipt/global approx
   }
+  else if ( model_type == "subspace" )
+    return new ActiveSubspaceModel(problem_db);
   else {
     Cerr << "Invalid model type: " << model_type << std::endl;
     return NULL;

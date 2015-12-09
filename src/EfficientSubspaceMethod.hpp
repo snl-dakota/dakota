@@ -74,12 +74,6 @@ private:
   /// seed controlling all samplers
   int seedSpec;
 
-  /// initial number of samples at which to query the truth model
-  int initialSamples;
-
-  /// number of points to add at each iteration
-  int batchSize;
-
   /// number of UQ samples to perform in the reduced space
   int subspaceSamples;
 
@@ -93,10 +87,6 @@ private:
   /// Model including full space uncertain variables. Transformed to standard
   /// normal variables if transformVars == true.
   Model fullSpaceModel;
-
-  /// Contains which method should be used to identify active subspace dimension
-  unsigned short subspaceIdMethod;
-
 };
 
 }

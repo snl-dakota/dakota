@@ -20,6 +20,7 @@
 
 namespace Dakota {
 
+class ProblemDescDB;
 class Interface;
 
 /// Derived model class which provides a thin wrapper around a sub-model
@@ -83,6 +84,11 @@ public:
 	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
 	      size_t num_recast_secondary_fns, size_t recast_secondary_offset,
 	      short recast_resp_order);
+
+  /// Problem DB-based ctor, e.g., for use in subspace model; assumes
+  /// mappings to be initialized later; only initializes based on
+  /// sub-model
+  RecastModel(ProblemDescDB& problem_db, const Model& sub_model);
 
   /// lightest constructor used when transform sizes aren't known at
   /// construct time; doesn't initialize variables and responses, so

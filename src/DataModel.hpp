@@ -287,6 +287,15 @@ public:
 
   // subspace models
 
+  /// initial samples to build the subspace model
+  int initialSamples;
+  /// refinement samples to add in each batch
+  IntVector refineSamples;
+  /// maximum number of subspace build iterations
+  int maxIterations;
+  /// convergence tolerance on build process
+  Real convergenceTolerance;
+
   /// Contains which method should be used to identify active subspace dimension
   unsigned short subspaceIdMethod;
 
