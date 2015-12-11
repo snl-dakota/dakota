@@ -14,16 +14,28 @@
 #include <cassert>
 #include <iostream>
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/random/binomial_distribution.hpp>
+#include <boost/random/negative_binomial_distribution.hpp>
+
 
 namespace Dakota {
 namespace TestLejaSampling {
 
 /** \brief Create an AleatoryDistParams object such that all variables are 
  * uniform in [l_bnd, u_bnd]
+
+  Note this function sets specific distribution parameters 
+  that are not general. They must coincide with the parameters used
+  in generate_samples
+
  */
-  Pecos::AleatoryDistParams 
-  initialize_homgeneous_uniform_aleatory_dist_params(int num_vars, Real l_bnd, 
-						     Real u_bnd ){
+Pecos::AleatoryDistParams 
+initialize_homgeneous_uniform_aleatory_dist_params( short utype, 
+						    int num_vars ){
 
   RealVector nuv_means;
   RealVector nuv_std_devs;     RealVector nuv_l_bnds;
@@ -49,11 +61,29 @@ namespace TestLejaSampling {
   IntRealMapArray hpuiv_prs;   StringRealMapArray hpusv_prs;
   RealRealMapArray hpurv_prs;  RealSymMatrix uv_corr;
 
-  uuv_l_bnds.sizeUninitialized( num_vars );
-  uuv_l_bnds = l_bnd;
-  uuv_u_bnds.sizeUninitialized( num_vars );
-  uuv_u_bnds = u_bnd;
-
+  switch (utype){
+  case Pecos::STD_UNIFORM:
+    uuv_l_bnds.sizeUninitialized( num_vars );
+    uuv_u_bnds.sizeUninitialized( num_vars );
+    uuv_l_bnds = -1; uuv_u_bnds = 1;
+    break;
+  case Pecos::POISSON:
+    puv_lambdas.sizeUninitialized( num_vars );
+    puv_lambdas = 5;
+    break;
+  case Pecos::BINOMIAL:
+    biuv_p_per_tr.sizeUninitialized( num_vars );
+    biuv_num_trials.sizeUninitialized( num_vars );
+    biuv_p_per_tr = 0.5;
+    biuv_num_trials = 20;
+    break;
+  case Pecos::NEGATIVE_BINOMIAL:
+    nbuv_p_per_tr.sizeUninitialized( num_vars );
+    nbuv_num_trials.sizeUninitialized( num_vars );
+    nbuv_p_per_tr = 0.5;
+    nbuv_num_trials = 20;
+    break;
+  }
   Pecos::AleatoryDistParams adp(nuv_means,
 				nuv_std_devs,     nuv_l_bnds,
 				nuv_u_bnds,       lnuv_means,
@@ -78,21 +108,99 @@ namespace TestLejaSampling {
 				hpuiv_prs,        hpusv_prs,
 				hpurv_prs,  uv_corr);
   return adp;
+  }
+
+  template <typename T>
+  void generate_samples( T& rvt, int num_vars, int num_samples, 
+			 RealMatrix &samples ){
+    samples.shapeUninitialized( num_vars, num_samples );
+    for(int i=0; i<num_vars; i++) 
+      for(int j=0; j<num_samples; j++) 
+	samples(i,j) = rvt();
+  }
+
+  template void generate_samples(boost::variate_generator< boost::mt19937, 
+				 boost::random::uniform_real_distribution<Real> > &rvt, 
+				 int num_vars, int num_samples, 
+				 RealMatrix &samples);
+  template void generate_samples(boost::variate_generator< boost::mt19937, 
+				 boost::random::poisson_distribution<> > &rvt, 
+				 int num_vars, int num_samples, 
+				 RealMatrix &samples);
+  template void generate_samples(boost::variate_generator< boost::mt19937, 
+				 boost::random::binomial_distribution<> > &rvt, 
+				 int num_vars, int num_samples, 
+				 RealMatrix &samples);
+  template void generate_samples(boost::variate_generator< boost::mt19937, 
+				 boost::random::negative_binomial_distribution<> > &rvt, 
+				 int num_vars, int num_samples, 
+				 RealMatrix &samples);
+
+  /**  Note this function sets specific distribution parameters 
+       that are not general. They must coincide with the parameters used
+       in initialize_homgeneous_uniform_aleatory_dist_params
+  */
+void generate_samples(short utype, int num_vars, int num_candidate_samples, 
+		      int seed, RealMatrix &candidate_samples){
+    boost::mt19937 gen;
+    gen.seed(seed);
+
+    switch (utype){
+    case Pecos::STD_UNIFORM:
+      {
+	boost::random::uniform_real_distribution<Real> un_dist(-1.,1.);
+	boost::variate_generator< boost::mt19937, 
+	  boost::random::uniform_real_distribution<Real> > un_rvt(gen, un_dist);
+	generate_samples( un_rvt, num_vars, num_candidate_samples, 
+			  candidate_samples );
+	break;
+      }
+    case Pecos::POISSON:
+      {
+	Real poisson_lambda = 5;
+	boost::poisson_distribution<> po_dist(poisson_lambda);
+	boost::variate_generator< boost::mt19937, 
+	  boost::poisson_distribution<> > po_rvt(gen, po_dist);
+	generate_samples( po_rvt, num_vars, num_candidate_samples, 
+			  candidate_samples );
+      break;
+    }
+  case Pecos::BINOMIAL:
+    {
+      int n=20;
+      Real p=0.5;
+      boost::random::binomial_distribution<> bi_dist(n,p);
+      boost::variate_generator<boost::mt19937, 
+	boost::random::binomial_distribution<> > bi_rvt(gen, bi_dist);
+      generate_samples( bi_rvt, num_vars, num_candidate_samples, 
+			candidate_samples );
+      break;
+    }
+  case Pecos::NEGATIVE_BINOMIAL:
+    {
+      int n=20;
+      Real p=0.5;
+      boost::random::negative_binomial_distribution<> nbi_dist(n,p);
+      boost::variate_generator<boost::mt19937, 
+	boost::random::negative_binomial_distribution<> > 
+	nbi_rvt(gen, nbi_dist);
+      generate_samples( nbi_rvt, num_vars, num_candidate_samples, 
+			candidate_samples );
+    }
+    break;
+  }
 }
 
-void test_uniform_leja_sequence(){
-  int num_vars = 2;
-  int num_initial_samples = 10;
-  int num_new_samples = 20;
-  int num_candidate_samples = 10000;
-  int seed = 1;
+void test_leja_sequence_helper(short utype, int num_vars, 
+			       int num_initial_samples, int num_new_samples,
+			       const RealMatrix &candidate_samples){
 
   // Currently Leja Sampler assumes that the samples are in U space
   // that is the native space of the polynomial. For Legendre polynomials
   // the parameter range is [-1,1]
   Pecos::AleatoryDistParams adp = 
-    initialize_homgeneous_uniform_aleatory_dist_params(num_vars,-1,1);
-  ShortArray u_types(num_vars,Pecos::STD_UNIFORM);
+    initialize_homgeneous_uniform_aleatory_dist_params(utype, num_vars);
+  ShortArray u_types(num_vars,utype);
 
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
@@ -105,12 +213,6 @@ void test_uniform_leja_sequence(){
   sampler.set_precondition(true);
   sampler.set_polynomial_basis(poly_basis);
   
-  // Get candidate samples. Replace this with samples generated by Dakota,
-  // which are sampled from the probability measure of each aleatory variable
-  RealMatrix candidate_samples;
-  sampler.get_candidate_samples( num_vars, num_candidate_samples, seed,
-				 candidate_samples );
-
   // Generate initial samples
   RealMatrix initial_samples, empty_matrix;
   // The test only works if we use the same degree at every step.
@@ -144,7 +246,26 @@ void test_uniform_leja_sequence(){
   combined_samples -= enriched_samples;
   BOOST_CHECK( combined_samples.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
-  
+}
+
+void test_uniform_leja_sequence(){
+  int num_vars = 2;
+  int num_initial_samples = 10;
+  int num_new_samples = 20;
+  int num_candidate_samples = 10000;
+  int seed = 1;
+
+  int num_utype_tests = 2;
+  short utypes[] = { Pecos::STD_UNIFORM, Pecos::POISSON };
+  RealMatrix candidate_samples;
+
+  for (int i=0; i< num_utype_tests; i++){
+    generate_samples( utypes[i], num_vars, num_candidate_samples, seed,
+		      candidate_samples );
+    
+    test_leja_sequence_helper(utypes[i], num_vars, num_initial_samples, 
+			      num_new_samples, candidate_samples );
+  }
 }
 
 } // end namespace TestFieldCovariance
