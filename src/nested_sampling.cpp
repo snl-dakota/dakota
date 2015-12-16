@@ -104,9 +104,11 @@ get_enriched_sample_indices( int num_dims,
 					     num_total_samples, 
 					     num_initial_samples );
   if ( selected_sample_indices.length() < num_total_samples ) {
-    std::string msg = "enrich_samples: The basis matrix has rank less than";
-    msg += " num_total_samples. Try increasing the degree of the basis.";
-    throw( std::runtime_error( msg ) );
+    std::stringstream msg;
+    msg << "enrich_samples: The basis matrix has rank " 
+	<< selected_sample_indices.length()<< " less than num_total_samples "
+	<< num_total_samples<< ". Try increasing the degree of the basis.";
+    throw( std::runtime_error( msg.str() ) );
   }
 
   // Get indices of columns to keep in candidate sample matrix

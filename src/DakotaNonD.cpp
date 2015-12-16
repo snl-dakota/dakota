@@ -1203,7 +1203,8 @@ void NonD::initialize_random_variable_types(short u_space_type)
   // > if EXTENDED_U (PCE/SC with Askey plus numerically-generated polynomials),
   //   then u-space involves at most linear scaling to std distributions.
 
-  size_t i, av_cntr = 0, num_active_vars = iteratedModel.cv();
+  size_t i, av_cntr = 0, num_active_vars = iteratedModel.cv() + 
+    iteratedModel.div() + iteratedModel.dsv() + iteratedModel.drv();
   ShortArray x_types(num_active_vars), u_types(num_active_vars);
   bool err_flag = false;
 
@@ -1373,21 +1374,59 @@ void NonD::initialize_random_variable_types(short u_space_type)
     }
   }
 
-  /*
+  
   // discrete int aleatory uncertain
-  for (i=0; i<numPoissonVars; ++i, ++av_cntr)
+  for (i=0; i<numPoissonVars; ++i, ++av_cntr){
     x_types[av_cntr] = u_types[av_cntr] = Pecos::POISSON;
-  for (i=0; i<numBinomialVars; ++i, ++av_cntr)
+    switch (u_space_type) {
+    case STD_NORMAL_U:
+      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
+    case ASKEY_U: case STD_UNIFORM_U:
+      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
+    case EXTENDED_U:
+      u_types[av_cntr] = Pecos::POISSON; break;
+    }
+  }
+  for (i=0; i<numBinomialVars; ++i, ++av_cntr){
     x_types[av_cntr] = u_types[av_cntr] = Pecos::BINOMIAL;
-  for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
+    switch (u_space_type) {
+    case STD_NORMAL_U:
+      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
+    case ASKEY_U: case STD_UNIFORM_U:
+      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
+    case EXTENDED_U:
+      u_types[av_cntr] = Pecos::BINOMIAL; break;
+    }
+  }
+  for (i=0; i<numNegBinomialVars; ++i, ++av_cntr){
     x_types[av_cntr] = u_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
-  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
+    switch (u_space_type) {
+    case STD_NORMAL_U:
+      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
+    case ASKEY_U: case STD_UNIFORM_U:
+      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
+    case EXTENDED_U:
+      u_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL; break;
+    }
+  }
+  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr){
     x_types[av_cntr] = u_types[av_cntr] = Pecos::HYPERGEOMETRIC;
-  for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
+    switch (u_space_type) {
+    case STD_NORMAL_U:
+      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
+    case ASKEY_U: case STD_UNIFORM_U:
+      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
+    case EXTENDED_U:
+      u_types[av_cntr] = Pecos::HYPERGEOMETRIC; break;
+    }
+  }
 
+  /*
+  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
+  x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
+  for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
+  x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
+  
   // discrete string aleatory uncertain
   for (i=0; i<numHistogramPtStringVars; ++i, ++av_cntr)
     x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_STRING;
@@ -1481,7 +1520,7 @@ void NonD::initialize_random_variable_types()
   for (i=0; i<numHistogramBinVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HISTOGRAM_BIN;
 
-  /*
+  
   // discrete int aleatory uncertain
   for (i=0; i<numPoissonVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::POISSON;
@@ -1489,10 +1528,12 @@ void NonD::initialize_random_variable_types()
     x_types[av_cntr] = Pecos::BINOMIAL;
   for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::GEOMETRIC;
   for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
+
+  /*
+  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::GEOMETRIC;
   for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
 
