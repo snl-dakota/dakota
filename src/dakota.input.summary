@@ -2410,6 +2410,8 @@ KEYWORD model
 	    bing_li
 	    | constantine
 	    ]
+	  [ reduced_rank INTEGER ]
+	  [ bootstrap_samples INTEGER ]
 	  )
 
 KEYWORD12 variables

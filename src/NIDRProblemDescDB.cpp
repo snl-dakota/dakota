@@ -7217,7 +7217,9 @@ static int
         MP_(initialSamples),
         MP_(maxIterations),
         MP_(numFolds),
+        MP_(numReplicates),
         MP_(pointsTotal),
+        MP_(reducedRank),
         MP_(subMethodProcs),
         MP_(subMethodServers);
 

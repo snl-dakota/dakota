@@ -299,6 +299,12 @@ public:
   /// Contains which method should be used to identify active subspace dimension
   unsigned short subspaceIdMethod;
 
+  /// value for active subspace size
+  int reducedRank;
+
+  /// Number of bootstrap samples for subspace identification
+  int numReplicates;
+
 private:
 
   //

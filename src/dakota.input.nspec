@@ -2421,6 +2421,8 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       constantine {N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}
      ]
+    [ reduced_rank INTEGER {N_mom(int,reducedRank)} ]
+    [ bootstrap_samples INTEGER {N_mom(int,numReplicates)} ]
    )
 
 KEYWORD12 variables {N_vam3(start,0,stop)}

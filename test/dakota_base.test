@@ -5753,6 +5753,84 @@ Partial Rank Correlation Matrix between input and output:
              -7.71985e-02 
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
   response_fn_1: 200 val (200 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+Test Number 3 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  9.2732777981e+01  4.7174021724e+01  8.8453569437e-01  8.8009441679e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  8.3372428623e+01  1.0209312734e+02  4.1419113999e+01  5.4800893729e+01
+Simple Correlation Matrix among all inputs and outputs:
+                                                                              response_fn_1 
+              1.00000e+00 
+              6.15127e-04  1.00000e+00 
+             -1.07933e-02 -9.63579e-03  1.00000e+00 
+             -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
+              1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
+response_fn_1 -9.40193e-01  9.36295e-02  4.31109e-02  2.78542e-02  8.64386e-03  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+             -9.45370e-01 
+              2.78822e-01 
+              1.02445e-01 
+              6.94365e-02 
+              6.53512e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                                                                              response_fn_1 
+              1.00000e+00 
+              2.69787e-02  1.00000e+00 
+              1.55656e-02  3.07591e-02  1.00000e+00 
+             -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+             -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+response_fn_1 -9.68689e-01  8.86529e-02  3.63276e-02  1.53375e-02 -8.19682e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+             -9.76687e-01 
+              4.71821e-01 
+              2.18311e-01 
+              7.28040e-02 
+             -7.71985e-02 
+<<<<< Function evaluation summary (ID_I): 200 total (200 new, 0 duplicate)
+  response_fn_1: 200 val (200 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+Test Number 4 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  9.2741176534e+01  4.6274247445e+01  9.3698022564e-01  1.1149183470e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  8.3559361913e+01  1.0192299115e+02  4.0629106023e+01  5.3755648214e+01
+Simple Correlation Matrix among all inputs and outputs:
+                                                                 response_fn_1 
+              1.00000e+00 
+              2.05370e-02  1.00000e+00 
+             -3.50183e-02  3.33012e-03  1.00000e+00 
+              2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
+response_fn_1 -9.26777e-01  1.21583e-01  4.69340e-02 -2.49616e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+             -9.36335e-01 
+              3.74614e-01 
+              3.99631e-02 
+             -7.00668e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                                                                 response_fn_1 
+              1.00000e+00 
+             -2.30663e-02  1.00000e+00 
+             -5.51215e-02 -3.72037e-04  1.00000e+00 
+              3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
+response_fn_1 -9.55140e-01  1.61656e-01  5.43894e-02 -3.53315e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+             -9.64197e-01 
+              4.71544e-01 
+              7.53754e-03 
+              5.77136e-04 
+<<<<< Function evaluation summary (ID_I): 200 total (200 new, 0 duplicate)
+  response_fn_1: 200 val (200 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
 dakota_experiment_read.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)

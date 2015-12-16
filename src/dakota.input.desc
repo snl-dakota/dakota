@@ -2136,6 +2136,8 @@ TAG "model/subspace/convergence_tolerance"
 TAG "model/subspace/truncation_method"
 TAG "model/subspace/truncation_method/bing_li"
 TAG "model/subspace/truncation_method/constantine"
+TAG "model/subspace/reduced_rank"
+TAG "model/subspace/bootstrap_samples"
 TAG "variables"
 	DESC "{Variables} A variables object specifies the parameter set to be iterated by a particular method. VarCommands.html"
 

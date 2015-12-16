@@ -22,6 +22,8 @@ model
     convergence_tolerance = 1.0e-3
 #   truncation_method bing_li         #s1
 #   truncation_method constantine     #s2
+#   reduced_rank 5                    #s3
+#   bootstrap_samples 150             #s4
 
 model 
   single

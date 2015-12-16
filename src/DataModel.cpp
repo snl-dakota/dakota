@@ -39,7 +39,8 @@ DataModelRep::DataModelRep():
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING),
   initialSamples(0), maxIterations(-1), convergenceTolerance(1.0e-4), 
-  subspaceIdMethod(SUBSPACE_ID_DEFAULT), referenceCount(1)
+  subspaceIdMethod(SUBSPACE_ID_DEFAULT), referenceCount(1),
+  reducedRank(0), numReplicates(100)
 { }
 
 
@@ -69,7 +70,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
     << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
-    << convergenceTolerance << subspaceIdMethod;
+    << convergenceTolerance << subspaceIdMethod
+    << reducedRank << numReplicates;
 }
 
 
@@ -100,7 +102,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> primaryRespCoeffs >> secondaryRespCoeffs >> subMethodServers
     >> subMethodProcs >> subMethodScheduling     
     >> initialSamples >> refineSamples >> maxIterations 
-    >> convergenceTolerance >> subspaceIdMethod;
+    >> convergenceTolerance >> subspaceIdMethod
+    >> reducedRank >> numReplicates;
 }
 
 
@@ -130,7 +133,8 @@ void DataModelRep::write(std::ostream& s) const
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
     << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
-    << convergenceTolerance << subspaceIdMethod;
+    << convergenceTolerance << subspaceIdMethod
+    << reducedRank << numReplicates;
 }
 
 

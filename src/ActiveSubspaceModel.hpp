@@ -209,7 +209,7 @@ protected:
   /// Contains which method should be used to identify active subspace dimension
   unsigned short subspaceIdMethod;
 
-  /// Number of bootstrap samples for Bing Li criterion
+  /// Number of bootstrap samples for subspace identification
   size_t numReplicates;
 
   // ---

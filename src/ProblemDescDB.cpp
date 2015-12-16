@@ -2588,6 +2588,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
+        {"subspace.bootstrap_samples", P numReplicates},
+        {"subspace.reduced_rank", P reducedRank},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
         {"surrogate.points_total", P pointsTotal}};

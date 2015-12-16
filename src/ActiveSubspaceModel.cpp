@@ -35,9 +35,10 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   performAssessment(false), 
   nullspaceTol(problem_db.get_real("model.convergence_tolerance")/1.0e3),
   subspaceIdMethod(probDescDB.get_ushort("model.subspace.truncation_method")),
-  numReplicates(100),
+  numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
-  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),  reducedRank(0),
+  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
+  reducedRank(problem_db.get_int("model.subspace.reduced_rank")),
   gradientScaleFactors(RealArray(numFunctions, 1.0))
 {
   asmInstance = this;
@@ -562,20 +563,29 @@ compute_svd(bool& svtol_met)
     abort_handler(-1);
   }
 
-  // Identify the active subspace using one of the methods below:
-  switch(subspaceIdMethod) {
-  case SUBSPACE_ID_CONSTANTINE:
+  if (reducedRank > 0 && reducedRank <= singular_values.length()) {
+    // reducedRank has been provided, set svtol_met to true:
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "ESM: Determining eigenvalue gap with boostrap and Constantine "
-	   << "metric." << std::endl;
-    computeConstantineMetric(singular_values, svtol_met);
-    break;
-  case SUBSPACE_ID_BING_LI: case SUBSPACE_ID_DEFAULT: default:
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "ESM: Determining eigenvalue gap with boostrap and Bing-Li "
-	   << "metric." << std::endl;
-    computeBingLiCriterion(singular_values, svtol_met);
-    break;
+      Cout << "ESM: Subspace size has been specified as reduced_rank = " << reducedRank
+	         << "." << std::endl;
+    svtol_met = true;
+  }
+  else {
+    // Identify the active subspace using one of the methods below:
+    switch(subspaceIdMethod) {
+    case SUBSPACE_ID_CONSTANTINE:
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "ESM: Determining eigenvalue gap with boostrap and Constantine "
+	     << "metric." << std::endl;
+      computeConstantineMetric(singular_values, svtol_met);
+      break;
+    case SUBSPACE_ID_BING_LI: case SUBSPACE_ID_DEFAULT: default:
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "ESM: Determining eigenvalue gap with boostrap and Bing-Li "
+	     << "metric." << std::endl;
+      computeBingLiCriterion(singular_values, svtol_met);
+      break;
+    }
   }
 
   int num_singular_values = singular_values.length();
@@ -629,7 +639,6 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
   BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
     numFunctions);
 
-  // TODO: Get number of bootstrap samples from problem desc database
   for (size_t i = 0; i < numReplicates; ++i)
   {
     bootstrap_sampler(bootstrapped_sample);
@@ -724,7 +733,6 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
   BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
     numFunctions);
 
-  // TODO: Get number of bootstrap samples from problem desc database
   for (size_t i = 0; i < numReplicates; ++i)
   {
     bootstrap_sampler(bootstrapped_sample);

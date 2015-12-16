@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1799 distinct keywords (plus 239 aliases) **/
+/** 1806 distinct keywords (plus 239 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2204,11 +2204,13 @@ static KeyWord
 		{"bing_li",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)},
 		{"constantine",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}
 		},
-	kw_342[6] = {
+	kw_342[8] = {
 		{"actual_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,actualModelPointer)},
+		{"bootstrap_samples",9,0,8,0,0,0.,0.,0,N_mom(int,numReplicates)},
 		{"convergence_tolerance",10,0,5,0,0,0.,0.,0,N_mom(Real,convergenceTolerance)},
 		{"initial_samples",9,0,2,0,0,0.,0.,0,N_mom(int,initialSamples)},
 		{"max_iterations",9,0,4,0,0,0.,0.,0,N_mom(int,maxIterations)},
+		{"reduced_rank",9,0,7,0,0,0.,0.,0,N_mom(int,reducedRank)},
 		{"refinement_samples",13,0,3,0,0,0.,0.,0,N_mom(ivec,refineSamples)},
 		{"truncation_method",8,2,6,0,kw_341}
 		},
@@ -2460,7 +2462,7 @@ static KeyWord
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
 		{"simulation",0,2,5,1,kw_340,0.,0.,1,N_mom(lit,modelType_single)},
 		{"single",8,2,5,1,kw_340,0.,0.,0,N_mom(lit,modelType_single)},
-		{"subspace",8,6,5,1,kw_342,0.,0.,0,N_mom(lit,modelType_subspace)},
+		{"subspace",8,8,5,1,kw_342,0.,0.,0,N_mom(lit,modelType_subspace)},
 		{"surrogate",8,5,5,1,kw_384,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},
