@@ -120,9 +120,9 @@ protected:
   /// (based on sampleRanks) and calculate/store discrete ranks
   void store_ranks(const RealMatrix& sample_values, IntMatrix &sample_ranks);
 
-  /// store the ranks of the increment only (may need to store the
-  /// initial ranks as well)
-  void store_ranks(int previous_samples, IntMatrix& increm_ranks);
+  /// store the combined ranks from sampleRanks to leading submatrix
+  /// local cached ranks matrix
+  void store_ranks(IntMatrix& full_ranks);
 
   /// merge the discrete ranks into a submatrix of sampleRanks
   void combine_discrete_ranks(const RealMatrix& initial_values, 

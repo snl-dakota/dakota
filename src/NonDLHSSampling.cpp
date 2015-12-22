@@ -255,9 +255,6 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   Cout << "initial_ranks\n" << initial_ranks << '\n';
 #endif //DEBUG
 
-  // BMA TODO: (review) have to be careful about the total range of
-  // the combined ranks is it 1 to total_samples, or 1 to batch_samples?
-
   // initialize the matrix which identifies whether the sample 2 rank should
   // be switched or not.  The switch matrix is only for continuous variables
   BoolDequeArray switch_ranks(numContinuousVars, 
@@ -289,9 +286,6 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   Cout << "increm_ranks\n" << increm_ranks;
 #endif // DEBUG
 
-  // BMA TODO: do we have to request a sample of size total, or can we just
-  // do the increment?
-
   // Calculate the combined ranks of continuous vars, populating sampleRanks
   sampleRanks.shapeUninitialized(num_vars, total_samples);
   for (int s=0; s<previous_samples; ++s)
@@ -311,12 +305,10 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   // (populates sampleRanks)
   combine_discrete_ranks(initial_samples, increm_samples);
 
-  // Stored the combined ranks for increm_ranks...so they are
-  // available to next iteration 
-  // BMA TODO: Should we also be updating the initial_ranks so they
-  // are correct when a subsequent batch comes along?
-  // BMA: worried that if we store all ranks the first partition will differ.
-  store_ranks(previous_samples, increm_ranks);
+  // Store the combined ranks so they are available to next iteration.
+  // The total range of the combined ranks should now be 1 to total_samples.
+  // BMA TODO: may not need to store this as well as sampleRanks
+  store_ranks(full_ranks);
   
   // send LHS the full sampleRanks matrix for the combined set and get
   // back a sample that maintains the structure
@@ -380,14 +372,16 @@ store_ranks(const RealMatrix& sample_values, IntMatrix& sample_ranks)
 }
 
 
-void NonDLHSSampling::
-store_ranks(int previous_samples, IntMatrix& increm_ranks)
+void NonDLHSSampling::store_ranks(IntMatrix& full_ranks)
 {
-  int num_vars = increm_ranks.numRows();
-  int new_samples = increm_ranks.numCols();
-  for (int s=0; s<new_samples; ++s)
+  const int num_vars = sampleRanks.numRows();
+  const int total_samples = sampleRanks.numCols();
+  // Leading sub-matrix to populate
+  IntMatrix combined_ranks(Teuchos::View, full_ranks,
+                           num_vars, total_samples, 0, 0);
+  for (int s=0; s<total_samples; ++s)
     for (int v=0; v<num_vars; ++v)
-      increm_ranks(v,s) = boost::math::round(sampleRanks(v,previous_samples+s));
+      combined_ranks(v,s) = boost::math::round(sampleRanks(v,s));
 }
 
 

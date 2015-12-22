@@ -12,9 +12,9 @@ method,
     seed = 234
     samples = 10	
 	  sample_type lhs               #s0
-#   sample_type incremental_lhs		#s1,#sTwo
+#   sample_type incremental_lhs		#s1,#s2
 #	    refinement_samples = 10	    #s1
-#	    refinement_samples = 10 20	#sTwo
+#	    refinement_samples = 10 20	#s2
 
 variables,
 	uniform_uncertain = 2

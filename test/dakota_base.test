@@ -42869,6 +42869,44 @@ Partial Rank Correlation Matrix between input and output:
        nuv_2 -8.57261e-10 -8.57261e-10 
        uuv_1 -2.17931e-09 -2.17931e-09 
        uuv_2  4.90460e-10  4.90460e-10 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  9.8653898422e+03  1.3362552814e+04  4.4955962850e+00  2.4172568780e+01
+ response_fn_2  1.0587871873e+02  5.1528963239e+01  1.9289880857e+00  7.0338067148e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.5918381258e+03  1.4138941559e+04  1.0946082378e+04  1.7157992060e+04
+ response_fn_2  8.9398956786e+01  1.2235848067e+02  4.2210518030e+01  6.6165017601e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    nuv_1        nuv_2        uuv_1        uuv_2 response_fn_1 response_fn_2 
+       nuv_1  1.00000e+00 
+       nuv_2 -3.89234e-03  1.00000e+00 
+       uuv_1 -5.81564e-02  3.45157e-02  1.00000e+00 
+       uuv_2  2.25281e-02  7.26982e-02 -3.98292e-02  1.00000e+00 
+response_fn_1  8.39944e-01 -1.28455e-01 -3.35642e-02 -3.53456e-02  1.00000e+00 
+response_fn_2  9.78820e-01 -7.53708e-02 -5.70023e-02 -7.48075e-03  9.29835e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 
+       nuv_1  8.47614e-01  9.81576e-01 
+       nuv_2 -2.26265e-01 -3.43568e-01 
+       uuv_1  3.37760e-02  7.23775e-03 
+       uuv_2 -8.43641e-02 -1.26785e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    nuv_1        nuv_2        uuv_1        uuv_2 response_fn_1 response_fn_2 
+       nuv_1  1.00000e+00 
+       nuv_2 -5.94747e-02  1.00000e+00 
+       uuv_1 -9.06191e-02  1.17636e-01  1.00000e+00 
+       uuv_2 -4.65291e-02  2.58912e-02 -4.84053e-02  1.00000e+00 
+response_fn_1  1.00000e+00 -5.94747e-02 -9.06191e-02 -4.65291e-02  1.00000e+00 
+response_fn_2  1.00000e+00 -5.94747e-02 -9.06191e-02 -4.65291e-02  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 
+       nuv_1  1.00000e+00  1.00000e+00 
+       nuv_2  2.55037e-02  2.55037e-02 
+       uuv_1  3.24891e-02  3.24891e-02 
+       uuv_2  1.74357e-02  1.74357e-02 
 dakota_uq_ishigami_adapt_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 3745 total (3375 new, 370 duplicate)
