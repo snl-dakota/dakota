@@ -107,7 +107,7 @@ namespace Dakota
         
         #ifdef DEBUG_TEST_FUNCTION
         //*** Test function for debugging only
-        _vps_test_function = Cone;
+        _vps_test_function = UnitSphere;
         // Functions available for debugging: {SmoothHerbie, Herbie, Cone, Cross, UnitSphere, Linear34}
         #endif
         
@@ -518,14 +518,6 @@ namespace Dakota
             if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
         }
         
-        // scale input domain to be a unit box
-        for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
-        {
-            for (size_t idim = 0; idim < _n_dim; idim++)
-            {
-                _sample_points[ipoint][idim] = (_sample_points[ipoint][idim] - _xmin[idim]) / (_xmax[idim] - _xmin[idim]);
-            }
-        }
         _diag = std::sqrt((double)_n_dim);
         
         // =======================
@@ -2046,7 +2038,8 @@ namespace Dakota
                 h += dx * dx;
             }
             h = std::sqrt(h);
-            if (h < 0.5) return 1.0;
+            //if (h < 0.5) return 1.0;
+            if ((h < 0.5) || (h > 1.0)) return 1.0;
             return 0.0;
         }
         else if (_vps_test_function == Linear34)
@@ -2436,17 +2429,28 @@ namespace Dakota
                                 file << "newpath" << std::endl;
                                 file << x1 * scale << " " << y1 * scale << " moveto" << std::endl;
                                 file << x2 * scale << " " << y2 * scale << " lineto" << std::endl;
+                                
                                 file << "closepath" << std::endl;
                                 file << "gsave" << std::endl;
                                 file << "grestore" << std::endl;
-                                if (gs < 0.5)
-                                {
-                                    file << 1.0 - 2 * gs << " " << 2 * gs << " " << 0.0 << " setrgbcolor" << std::endl;
-                                }
-                                else
-                                {
-                                    file << 0.0 << " " << 2.0 - 2 * gs << " " << 2 * gs - 1.0 << " setrgbcolor" << std::endl;
-                                }
+                                
+                                double r, g, b;
+                                
+                                if (gs < 0.25)     r = 1.0;
+                                else if (gs < 0.5) r = 1.0 - 16.0 * (gs - 0.25) * (gs - 0.25);
+                                else               r = 0.0;
+                                
+                                double go(0.25), gn(1.0 - go);
+                                if (gs < go)      g = gs / go;
+                                else if (gs < gn) g = 1.0;
+                                else              g = 1.0 / (1.0 - gn) - gs / (1.0 - gn);
+                                
+                                if (gs < 0.5)       b = 0.0;
+                                else if (gs < 0.75) b = 1.0 - 16.0 * (gs - 0.75) * (gs - 0.75);
+                                else                b = 1.0;
+                                
+                                file << r << " " << g << " " << b << " setrgbcolor" << std::endl;
+                                
                                 file << "0.02 setlinewidth" << std::endl;
                                 file << "stroke" << std::endl;
                             }
@@ -2913,14 +2917,23 @@ namespace Dakota
                         file << "closepath" << std::endl;
                         file << "gsave" << std::endl;
                         file << "grestore" << std::endl;
-                        if (gs < 0.5)
-                        {
-                            file << 1.0 - 2 * gs << " " << 2 * gs << " " << 0.0 << " setrgbcolor" << std::endl;
-                        }
-                        else
-                        {
-                            file << 0.0 << " " << 2.0 - 2 * gs << " " << 2 * gs - 1.0 << " setrgbcolor" << std::endl;
-                        }
+                        
+                        double r, g, b;
+                        
+                        if (gs < 0.25)     r = 1.0;
+                        else if (gs < 0.5) r = 1.0 - 16.0 * (gs - 0.25) * (gs - 0.25);
+                        else               r = 0.0;
+                        
+                        double go(0.25), gn(1.0 - go);
+                        if (gs < go)      g = gs / go;
+                        else if (gs < gn) g = 1.0;
+                        else              g = 1.0 / (1.0 - gn) - gs / (1.0 - gn);
+                        
+                        if (gs < 0.5)       b = 0.0;
+                        else if (gs < 0.75) b = 1.0 - 16.0 * (gs - 0.75) * (gs - 0.75);
+                        else                b = 1.0;
+                        
+                        file << r << " " << g << " " << b << " setrgbcolor" << std::endl;
                         file << " fill" << std::endl;
                     }
                 }
