@@ -59,12 +59,19 @@ namespace Dakota
                 if (numRounds == -1)
                   numRounds = 100;
                 
-                numEmulEval = probDescDB.get_int("method.nond.emulator_samples");
+                numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");
                 if (numEmulEval == 0)
                   numEmulEval = 400; 
-                batchSize = probDescDB.get_int("method.nond.batch_size");
-                if (batchSize == 0)
-		  batchSize = 1;
+		batchSize = 1;
+		const IntVector& db_refine_samples = 
+		  probDescDB.get_iv("method.nond.refinement_samples");
+		if (db_refine_samples.length() == 1)
+		  batchSize = db_refine_samples[0];
+		else if (db_refine_samples.length() > 1) {
+		  Cerr << "\nError (NonDAdaptiveSampling): refinement_samples must be "
+		       << "length 1 if specified." << std::endl;
+		  abort_handler(PARSE_ERROR);
+		}
                 batchStrategy = probDescDB.get_string("method.batch_selection");
                 if (batchStrategy.empty())
 		  batchStrategy="naive";

@@ -7,9 +7,9 @@ environment
 method
    rkd_darts
      model_pointer = 'SURR' 
-      samples = 100
+      build_samples = 100
       seed = 8493
-      emulator_samples = 1.E5              
+      samples_on_emulator = 1.E5              
 
 model,                                         
         id_model = 'SURR'    			 

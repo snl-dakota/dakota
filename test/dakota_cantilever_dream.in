@@ -4,7 +4,7 @@
 
 method,									
         bayes_calibration dream,						
-          samples = 1000 seed = 348					
+          chain_samples = 1000 seed = 348					
           chains = 5
          # output verbose
 

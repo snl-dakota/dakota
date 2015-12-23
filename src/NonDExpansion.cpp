@@ -40,7 +40,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
   numUncertainQuant(0), numSamplesOnModel(0),
-  numSamplesOnExpansion(probDescDB.get_int("method.samples")),
+  numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
   nestedRules(false),
   piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
   useDerivs(probDescDB.get_bool("method.derivative_usage")),

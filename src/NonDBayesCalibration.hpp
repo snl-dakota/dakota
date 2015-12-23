@@ -149,7 +149,7 @@ protected:
   Iterator stochExpIterator;
 
   /// number of samples in the chain (e.g. number of MCMC samples)
-  int numSamples;
+  int chainSamples;
   /// number of update cycles for MCMC chain (implemented by restarting
   /// of short chains)
   int chainCycles;

@@ -15,7 +15,7 @@ method,
 #	  response_levels = 0.0				#s2,#s3,#s6,#s7
 #	  compute reliabilities				#s2,#s3,#s6,#s7
 #	  compute probabilities
-#	    samples = 100000 seed = 1237 fixed_seed
+#	    samples_on_emulator = 100000 seed = 1237 fixed_seed
 #	  cumulative distribution			#s2,#s3,#s6,#s7
 #	  output silent
 

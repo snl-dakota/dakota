@@ -815,6 +815,9 @@ KEYWORD12 method
 	  )
 	|
 	( efficient_global
+	  [ initial_samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ max_iterations INTEGER >= 0 ]
 	  [ gaussian_process ALIAS kriging
 	    surfpack
 	    | dakota
@@ -843,12 +846,15 @@ KEYWORD12 method
 	    |
 	    ( freeform
 	    ]
-	  [ seed INTEGER > 0 ]
-	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( polynomial_chaos ALIAS nond_polynomial_chaos
+	  [ samples_on_emulator ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ fixed_seed ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ p_refinement
 	    uniform
 	    |
@@ -995,9 +1001,6 @@ KEYWORD12 method
 	    ( freeform
 	    ]
 	  [ export_expansion_file STRING ]
-	  [ fixed_seed ]
-	  [ max_iterations INTEGER >= 0 ]
-	  [ convergence_tolerance REAL ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
 	    ]
@@ -1027,12 +1030,15 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( stoch_collocation ALIAS nond_stoch_collocation
+	  [ samples_on_emulator ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ fixed_seed ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
 	  [ ( p_refinement
 	      uniform
 	      |
@@ -1105,9 +1111,6 @@ KEYWORD12 method
 	    |
 	    ( freeform
 	    ]
-	  [ fixed_seed ]
-	  [ max_iterations INTEGER >= 0 ]
-	  [ convergence_tolerance REAL ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
 	    ]
@@ -1137,12 +1140,13 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( sampling ALIAS nond_sampling
+	  [ initial_samples ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ fixed_seed ]
 	  [ sample_type
 	    random
 	    | lhs
@@ -1160,9 +1164,6 @@ KEYWORD12 method
 	  [ principal_components
 	    [ percent_variance_explained REAL ]
 	    ]
-	  [ fixed_seed ]
-	  [ max_iterations INTEGER >= 0 ]
-	  [ convergence_tolerance REAL ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
 	    ]
@@ -1192,12 +1193,11 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( multilevel_sampling ALIAS multilevel_mc
+	  [ seed INTEGER > 0 ]
 	  [ pilot_samples INTEGERLIST ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
@@ -1215,12 +1215,12 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
+	  [ initial_samples ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  import
 	  | adapt_import
 	  | mm_adapt_import
@@ -1252,13 +1252,13 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( gpais ALIAS gaussian_process_adaptive_importance_sampling
-	  [ emulator_samples INTEGER ]
+	  [ build_samples ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
 	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
@@ -1308,13 +1308,13 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( adaptive_sampling ALIAS nond_adaptive_sampling
-	  [ emulator_samples INTEGER ]
+	  [ initial_samples ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
 	  [ fitness_metric
 	    predicted_variance
 	    | distance
@@ -1326,7 +1326,7 @@ KEYWORD12 method
 	    | topology
 	    | constant_liar
 	    ]
-	  [ batch_size INTEGER ]
+	  [ refinement_samples INTEGERLIST ]
 	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
@@ -1377,17 +1377,17 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( pof_darts ALIAS nond_pof_darts
+	  build_samples ALIAS samples INTEGER
+	  [ seed INTEGER > 0 ]
 	  [ lipschitz
 	    local
 	    | global
 	    ]
-	  [ emulator_samples INTEGER ]
+	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -1413,17 +1413,17 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( rkd_darts ALIAS nond_rkd_darts
+	  build_samples ALIAS samples INTEGER
+	  [ seed INTEGER > 0 ]
 	  [ lipschitz
 	    local
 	    | global
 	    ]
-	  [ emulator_samples INTEGER ]
+	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -1449,17 +1449,12 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( efficient_subspace ALIAS nond_efficient_subspace
-	  [ emulator_samples INTEGER ]
-	  [ batch_size INTEGER ]
-	  [ max_iterations INTEGER >= 0 ]
-	  [ convergence_tolerance REAL ]
-	  [ max_function_evaluations INTEGER >= 0 ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ distribution
 	    cumulative
 	    | complementary
@@ -1474,12 +1469,12 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( global_evidence ALIAS nond_global_evidence
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ sbo
 	    | ego
 	    [ gaussian_process ALIAS kriging
@@ -1538,12 +1533,15 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( global_interval_est ALIAS nond_global_interval_est
+	  [ samples INTEGER ]
+	  [ seed INTEGER > 0 ]
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
+	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ sbo
 	    | ego
 	    [ gaussian_process ALIAS kriging
@@ -1581,21 +1579,18 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ max_iterations INTEGER >= 0 ]
-	  [ convergence_tolerance REAL ]
-	  [ max_function_evaluations INTEGER >= 0 ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( bayes_calibration ALIAS nond_bayes_calibration
 	  ( queso
+	    chain_samples ALIAS samples INTEGER
+	    [ seed INTEGER > 0 ]
 	    [ emulator
 	      ( gaussian_process ALIAS kriging
 		surfpack
 		| dakota
-		[ emulator_samples INTEGER ]
+		[ build_samples ALIAS emulator_samples INTEGER ]
 		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
@@ -1698,7 +1693,9 @@ KEYWORD12 method
 	    )
 	  |
 	  ( gpmsa
-	    emulator_samples INTEGER
+	    chain_samples ALIAS samples INTEGER
+	    [ seed INTEGER > 0 ]
+	    build_samples ALIAS emulator_samples INTEGER
 	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
@@ -1744,11 +1741,13 @@ KEYWORD12 method
 	    )
 	  |
 	  ( wasabi
+	    [ samples INTEGER ]
+	    [ seed INTEGER > 0 ]
 	    [ emulator
 	      ( gaussian_process ALIAS kriging
 		surfpack
 		| dakota
-		[ emulator_samples INTEGER ]
+		[ build_samples ALIAS emulator_samples INTEGER ]
 		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
@@ -1825,6 +1824,8 @@ KEYWORD12 method
 	    )
 	  |
 	  ( dream
+	    chain_samples ALIAS samples INTEGER
+	    [ seed INTEGER > 0 ]
 	    [ chains INTEGER >= 3 ]
 	    [ num_cr INTEGER >= 1 ]
 	    [ crossover_chain_pairs INTEGER >= 0 ]
@@ -1834,7 +1835,7 @@ KEYWORD12 method
 	      ( gaussian_process ALIAS kriging
 		surfpack
 		| dakota
-		[ emulator_samples INTEGER ]
+		[ build_samples ALIAS emulator_samples INTEGER ]
 		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
@@ -1905,8 +1906,6 @@ KEYWORD12 method
 	    ]
 	  [ convergence_tolerance REAL ]
 	  [ max_iterations INTEGER >= 0 ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
@@ -1918,6 +1917,8 @@ KEYWORD12 method
 	  | oa_lhs
 	  | box_behnken
 	  | central_composite
+	  [ initial_samples ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ main_effects ]
 	  [ quality_metrics ]
 	  [ variance_based_decomp
@@ -1925,12 +1926,12 @@ KEYWORD12 method
 	    ]
 	  [ fixed_seed ]
 	  [ symbols INTEGER ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( fsu_cvt
+	  [ initial_samples ALIAS samples INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ latinize ]
 	  [ quality_metrics ]
 	  [ variance_based_decomp
@@ -1944,14 +1945,12 @@ KEYWORD12 method
 	    ]
 	  [ num_trials INTEGER ]
 	  [ max_iterations INTEGER >= 0 ]
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
 	|
 	( psuade_moat
 	  [ partitions INTEGERLIST ]
-	  [ samples INTEGER ]
+	  [ initial_samples ALIAS samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
@@ -2111,7 +2110,7 @@ KEYWORD12 method
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]
 	    ]
-	  [ samples INTEGER ]
+	  [ initial_samples ALIAS samples INTEGER ]
 	  [ fixed_sequence ]
 	  [ sequence_start INTEGERLIST ]
 	  [ sequence_leap INTEGERLIST ]

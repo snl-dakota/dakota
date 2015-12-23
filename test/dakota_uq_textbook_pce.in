@@ -11,7 +11,7 @@ method,
 	  expansion_samples  = 250			#s0
 #	  quadrature_order   = 5			#s1
 #	  collocation_points = 30			#s2
-	  samples = 10000 seed = 12347
+	  samples_on_emulator = 10000 seed = 12347
 	  sample_type lhs
 	  response_levels = .4 .5 .55 .6 .65 .7
 	   .75 .8 .85 .9 1. 1.05 1.15 1.2 1.25 1.3

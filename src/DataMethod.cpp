@@ -113,7 +113,7 @@ DataMethodRep::DataMethodRep():
   // COLINY, JEGA, NonD, & DACE
   randomSeed(0),
   // NonD & DACE
-  numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
+  numSamples(0), fixedSeedFlag(false), vbdFlag(false),
   vbdDropTolerance(-1.),backfillFlag(false), pcaFlag(false),
   percentVarianceExplained(0.95),
   // NonD
@@ -130,12 +130,13 @@ DataMethodRep::DataMethodRep():
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
-  responseLevelTargetReduce(COMPONENT), emulatorSamples(0), emulatorOrder(0),
+  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0), samplesOnEmulator(0),
+  emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), logitTransform(false),
   preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  batchSize(0), lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE), 
+  lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE), 
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), 
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
     // Parameter Study
@@ -239,7 +240,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << historyFile << displayFormat << vns << neighborOrder << showAllEval;
 
   // NonD & DACE
-  s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
+  s << numSamples << fixedSeedFlag << fixedSequenceFlag
     << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
     << percentVarianceExplained;
 
@@ -258,12 +259,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples 
+    << samplesOnEmulator
     << emulatorOrder << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
-    << batchSelectionType << batchSize << calibrateErrorMode << hyperPriorAlphas
+    << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
@@ -377,7 +379,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> historyFile >> displayFormat >> vns >> neighborOrder >> showAllEval;
 
   // NonD & DACE
-  s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag >> previousSamples
+  s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
     >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag 
     >> percentVarianceExplained;
 
@@ -396,12 +398,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> pilotSamples >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> emulatorSamples
+    >> reliabilityLevels >> genReliabilityLevels >> chainSamples >> buildSamples 
+    >> samplesOnEmulator
     >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
-    >> batchSelectionType >> batchSize >> calibrateErrorMode >> hyperPriorAlphas
+    >> batchSelectionType >> calibrateErrorMode >> hyperPriorAlphas
     >> hyperPriorBetas >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
@@ -515,7 +518,7 @@ void DataMethodRep::write(std::ostream& s) const
   s << historyFile << displayFormat << vns << neighborOrder << showAllEval;
 
   // NonD & DACE
-  s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
+  s << numSamples << fixedSeedFlag << fixedSequenceFlag
     << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag 
     << percentVarianceExplained;
 
@@ -534,12 +537,13 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples 
+    << samplesOnEmulator
     << emulatorOrder << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
-    << batchSelectionType << batchSize << calibrateErrorMode << hyperPriorAlphas
+    << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance

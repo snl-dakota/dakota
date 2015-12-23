@@ -4,7 +4,7 @@
 method,									
         bayes_calibration queso
 # NOTE: typically you will want O(10^4) samples; this is just a short test
-         samples = 1000 seed = 348
+         chain_samples = 1000 seed = 348
           dram  # | delayed_rejection | adaptive_metropolis | metropolis_hastings
 #         calibrate_error_multipliers per_response            #p4,#p5
             # inverse gamma prior

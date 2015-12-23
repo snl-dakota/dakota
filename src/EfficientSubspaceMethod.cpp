@@ -102,7 +102,7 @@ void EfficientSubspaceMethod::validate_inputs()
   // emulator samples don't count toward the sample budget
   if (subspaceSamples <= 0) {
     subspaceSamples = 100;
-    Cout << "\nInfo: Efficient subspace method setting emulator_samples = "
+    Cout << "\nInfo: Efficient subspace method setting samples = "
          << subspaceSamples << "\n      (10*samples specified)." << std::endl;
   }
 

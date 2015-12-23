@@ -51,6 +51,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   // get point samples file
   const String& import_pts_file
     = probDescDB.get_string("method.import_build_points_file");
+  // BMA: This was previously using numSamples = initial_samples from base class
+  numSamples = probDescDB.get_int("method.build_samples");
   int samples = numSamples;
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
@@ -74,7 +76,7 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.export_approx_format")), false);
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
-  numEmulEval = probDescDB.get_int("method.nond.emulator_samples");
+  numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");
   if (numEmulEval==0)
     numEmulEval = 10000;
   construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,

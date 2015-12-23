@@ -13,7 +13,7 @@ environment,
 
 method,
   sampling
-	  samples = 30 seed = 1833
+	  initial_samples = 30 seed = 1833
       sample_type lhs                 #s0,#s2,#s4
 #     sample_type incremental_lhs     #s1,#s3,#s5
 #       refinement_samples = 30       #s1,#s3,#s5

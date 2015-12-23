@@ -9,7 +9,7 @@
 # it is cleanest to have a simple, standalone file. 
 # In the current version of the test, all of the different 
 # importance_sampling versions (import, adapt_import, and mm_adapt_import) 
-# start with 250 samples ("samples = 250"). 
+# start with 250 samples ("initial_samples = 250"). 
 # Then, more samples are added based on the three types of importance sampling.  
 # Each time samples are added, 100 samples are added around certain points 
 # of interest ("refinement_samples = 100"). 
@@ -23,16 +23,16 @@ environment,
 	  tabular_data
 
 method,
-        importance_sampling
+  importance_sampling
 	  import                                   #s0,#s3,#s4
 #	  adapt_import                             #s1
 #	  mm_adapt_import                          #s2
 	  response_levels = 0.5 5 50 500 
 	 #response_levels = 3.0  
-          samples = 250
+    initial_samples = 250
 	  refinement_samples = 100
 	  seed = 5639
-          output quiet 
+    output quiet 
 
 variables,
 #       uniform_uncertain = 2                     #s3

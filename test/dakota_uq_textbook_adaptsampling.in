@@ -3,14 +3,14 @@
 
 method,
 	adaptive_sampling,
-	  samples = 20
+	  initial_samples = 20
 	  seed = 1234
 	  # rng mt19937
 	  rng rnum2 
           response_levels =  10.0
-          emulator_samples = 400
+          samples_on_emulator = 400
           max_iterations = 50
-          batch_size = 2
+          refinement_samples = 2
           batch_selection = naive
           fitness_metric = predicted_variance
           #fitness_metric = distance

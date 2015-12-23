@@ -52,8 +52,8 @@ namespace Dakota {
 
 NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
-  emulatorSamples(probDescDB.get_int("method.nond.emulator_samples")),
-  samples(probDescDB.get_int("method.samples"))
+  emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
+  samples(probDescDB.get_int("method.build_samples"))
 {
     // Constructor
     std::cout << "------------------" << std::endl;

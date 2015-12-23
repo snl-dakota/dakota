@@ -38,6 +38,7 @@ NonDBayesCalibration::
 NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
+  chainSamples(0), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
@@ -61,21 +62,21 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   // manage sample partitions and defaults
-  int samples_spec = probDescDB.get_int("method.samples");
+  int samples_spec = probDescDB.get_int("method.nond.chain_samples");
   if (proposalCovarType == "derivatives") {
     int pc_update_spec
       = probDescDB.get_int("method.nond.proposal_covariance_updates");
     if (pc_update_spec < 1) { // default partition: update every 100 samples
-      numSamples  = 100;
-      chainCycles = (int)floor((Real)samples_spec / (Real)numSamples + .5);
+      chainSamples  = 100;
+      chainCycles = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
     }
     else { // partition as specified
-      numSamples  = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
+      chainSamples  = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
       chainCycles = pc_update_spec;
     }
   }
   else
-    { numSamples = samples_spec; chainCycles = 1; }
+    { chainSamples = samples_spec; chainCycles = 1; }
 
   // assign default maxIterations (DataMethod default is -1)
   if (adaptPosteriorRefine && maxIterations < 0)
@@ -169,7 +170,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       if (iteratedModel.hessian_type()  != "none") data_order |= 4;
     }
     unsigned short sample_type = SUBMETHOD_DEFAULT;
-    int samples = probDescDB.get_int("method.nond.emulator_samples");
+    int samples = probDescDB.get_int("method.build_samples");
     // get point samples file
     const String& import_pts_file
       = probDescDB.get_string("method.import_build_points_file");

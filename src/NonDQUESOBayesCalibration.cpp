@@ -371,24 +371,24 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
   if (outputLevel >= NORMAL_OUTPUT) {
     if (chainCycles > 1)
-      Cout << "Running chain in batches of " << numSamples << " with "
+      Cout << "Running chain in batches of " << chainSamples << " with "
 	   << chainCycles << " restarts." << std::endl;
     else
-      Cout << "Running chain with " << numSamples << " samples." << std::endl;
+      Cout << "Running chain with " << chainSamples << " samples." << std::endl;
   }
 
   // clear for each (composite) chain
   bestSamples.clear();
   uniqueSamples.resize(0); // previous capacity preserved w/o any reallocation
-  uniqueSamples.reserve(numSamples * chainCycles);
+  uniqueSamples.reserve(chainSamples * chainCycles);
   acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
-				     numSamples * chainCycles);
+				     chainSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
   size_t update_cntr = 0;
   unsigned short batch_size = (adaptPosteriorRefine) ? 5 : 1;
   //copy_data(mcmcModel.continuous_variables(), prevCenter);
-  update_chain_size(numSamples);
+  update_chain_size(chainSamples);
 
   // update proposal covariance and recenter after short chain: a
   // workaround for inability to update proposal covariance on the fly
@@ -417,7 +417,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     // account for redundancy between final and initial chain points
     if (update_cntr == 1)
-      update_chain_size(numSamples+1);
+      update_chain_size(chainSamples+1);
 
     // This approach is too greedy and can get stuck (i.e., no point in new
     // chain has smaller mismatch than current optimal value):
@@ -437,7 +437,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 void NonDQUESOBayesCalibration::compute_statistics()
 {
   /* Once restarts are retired:
-  RealMatrix acceptance_chain(numContinuousVars + numHyperparams, numSamples);
+  RealMatrix acceptance_chain(numContinuousVars + numHyperparams, chainSamples);
   aggregate_acceptance_chain(1, acceptance_chain);
   NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
   nond_rep->compute_moments(acceptance_chain);
@@ -677,7 +677,7 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
   QUESO::GslVector qv(paramSpace->zeroVector());
   exportMCMCStream << std::setprecision(write_precision) 
 		   << std::resetiosflags(std::ios::floatfield);
-  size_t sample_cntr = (update_cntr - 1) * numSamples + 1;
+  size_t sample_cntr = (update_cntr - 1) * chainSamples + 1;
   for (i=start; i<num_mcmc; ++i, ++sample_cntr) {
     TabularIO::write_leading_columns(exportMCMCStream, sample_cntr,
 				     empty_id,//mcmcModel.interface_id(),
@@ -713,7 +713,7 @@ aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain)
   QUESO::GslVector qv(paramSpace->zeroVector());
   
   size_t i, j, num_params = numContinuousVars + numHyperparams,
-    sample_index = (update_cntr - 1) * numSamples,
+    sample_index = (update_cntr - 1) * chainSamples,
     start = (update_cntr == 1) ? 0 : 1; // 1st chain pt is redundant
   for (i=start; i<num_mcmc; ++i, ++sample_index) {
     mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
@@ -1351,7 +1351,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
   calIpMhOptionsValues->m_rawChainDataInputFileName   = ".";
-  calIpMhOptionsValues->m_rawChainSize = (numSamples) ? numSamples : 48576;
+  calIpMhOptionsValues->m_rawChainSize = (chainSamples) ? chainSamples : 48576;
   //calIpMhOptionsValues->m_rawChainGenerateExtra     = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod     = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes   = true;

@@ -18,7 +18,7 @@ method,
 	sampling
     seed = 12347
     samples = 700                                   #s0
-#    samples = 400                                  #s1,#s2,#s3
+#    initial_samples = 400                          #s1,#s2,#s3
 #      refinement_samples = 200 100                 #s1,#s3
       d_optimal                                     
       oversample_ratio 5.0                          #s0

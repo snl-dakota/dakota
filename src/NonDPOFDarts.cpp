@@ -51,9 +51,9 @@ namespace Dakota {
 
 NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
-  emulatorSamples(probDescDB.get_int("method.nond.emulator_samples")),
+  emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
   lipschitzType(probDescDB.get_string("method.lipschitz")),
-  samples(probDescDB.get_int("method.samples"))
+  samples(probDescDB.get_int("method.build_samples"))
 {
     // any initialization is done here.   For now, you should just specify
     // the number of samples, but eventually we will get that from the input spec

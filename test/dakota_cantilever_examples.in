@@ -37,7 +37,7 @@ method
 #    sparse_grid_level = 2 #non_nested			#s6
 #    sample_type lhs					#s6
 #    seed 12347  					#s6
-#    samples = 10000					#s6
+#    samples_on_emulator = 10000					#s6
 #    num_probability_levels = 0 17 17					#s4,#s5,#s6
 #    probability_levels =						#s4,#s5,#s6
 #      .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999	#s4,#s5,#s6

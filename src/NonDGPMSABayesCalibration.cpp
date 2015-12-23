@@ -54,12 +54,12 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_build_active_only")),
-  emulatorSamples(probDescDB.get_int("method.nond.emulator_samples"))
+  buildSamples(probDescDB.get_int("method.build_samples"))
 {   
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   lhsIter.assign_rep(new
-    NonDLHSSampling(mcmcModel, sample_type, emulatorSamples, randomSeed, rng),
+    NonDLHSSampling(mcmcModel, sample_type, buildSamples, randomSeed, rng),
     false);
 
   Cerr << "Error: NonDGPMSABayesCalibration requires the user to update the vectors and parameters "
@@ -114,7 +114,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
   nonDBayesInstance = nonDGPMSAInstance = this;
-  Cout << "\nNum Samples " << numSamples << '\n';
+  Cout << "\nNum Samples " << chainSamples << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;
 
@@ -215,7 +215,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  //        constructor, step 04 of 09.
  // ***********************************************************************
  
-  int num_simulations = emulatorSamples;
+  int num_simulations = buildSamples;
   Cout << "num_simulations " << num_simulations << '\n';
 
   std::vector<unsigned int> simulationChunkSizes(2,0.); // prudenci_new_2013_09_06
@@ -1192,7 +1192,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 #endif
   mhVarOptions->m_rawChainDataInputFileName = ".";
   mhVarOptions->m_rawChainDataInputFileType = "m";
-  mhVarOptions->m_rawChainSize = numSamples;                                  
+  mhVarOptions->m_rawChainSize = chainSamples;                                  
    // IMPORTANT
   mhVarOptions->m_rawChainGenerateExtra = 0;
   mhVarOptions->m_rawChainDisplayPeriod = 1000;

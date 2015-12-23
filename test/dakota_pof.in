@@ -10,13 +10,13 @@ environment
 method
    pof_darts
      model_pointer = 'SURR' 
-      samples = 100
+      build_samples = 100
 #      lipschitz local                      #s1,#s2
       seed = 8493
       response_levels = -0.9 -0.8 -0.5       #s0,#s2,#s3 
       #num_response_levels = 1 1
 #      response_levels = 2.0 0.1             #s1 
-#	emulator_samples = 1.E3              #s1        
+#	samples_on_emulator = 1.E3              #s1        
 
 model,                                         
         id_model = 'SURR'    			 

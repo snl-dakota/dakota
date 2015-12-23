@@ -4,12 +4,12 @@
 # The "true" CDF probability of the Herbie function for a response level 
 # of -1.065 is approximately 1.5%.  The "true" CDF probability 
 # of the Herbie function for a response level of -1.0985 is 
-# approximately 0.25%.  The main controls here are samples (number of initial 
-# LHS samples to build the initial GP), emulator_samples (number of samples
+# approximately 0.25%.  The main controls here are build_samples (number of initial 
+# LHS samples to build the initial GP), samples_on_emulator (number of samples
 # used to query the emulator: preferably, this should be at least 1000), and 
 # the max_iterations (number of additional iterations where a "true" 
 # simulation point is added to the GP at each iteration). The results 
-# are more accurate with the default settings of  emulator_samples = 10000 
+# are more accurate with the default settings of  samples_on_emulator = 10000 
 # and max_iterations = 150.  However, for the purposes of testing cost, 
 # I have lowered these numbers. 
 	
@@ -22,12 +22,12 @@ method,
 #	  import
 #	output debug
         gpais 
-        emulator_samples = 100
+        samples_on_emulator = 100
         max_iterations = 5 
 #	response_levels = -1.0985
         response_levels = -1.065 
         compute probabilities
-        samples = 100
+        build_samples = 100
 #	seed6 = 3847 
         seed = 4326
 #	seed8 = 19993 

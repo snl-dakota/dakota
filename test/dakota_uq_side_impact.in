@@ -4,11 +4,13 @@
 #@ s3: TimeoutDelay=360
 
 method,
-	sampling			#s0,#s1
-#	polynomial_chaos		#s2,#s3
-#	  expansion_order = 2		#s2,#s3
-#	  collocation_ratio = 2.	#s2,#s3
-	  samples = 100000 seed = 12347
+	sampling                          #s0,#s1
+    samples = 100000                #s0,#s1
+#	polynomial_chaos                  #s2,#s3
+#	  expansion_order = 2		          #s2,#s3
+#	  collocation_ratio = 2.	        #s2,#s3
+#	  samples_on_emulator = 100000    #s2,#s3
+    seed = 12347
 	  response_levels = 1. 32. 32. 32. .32 .32 .32 4.01 9.9 15.69	
 	  compute probabilities
 	  series system			#s0,#s2

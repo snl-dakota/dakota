@@ -76,9 +76,10 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
     if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
   }
-  // Use a hardwired minimal initial samples.
-  int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,
-      lhs_seed = probDescDB.get_int("method.random_seed");
+  int db_samples = probDescDB.get_int("method.samples");  
+  int samples = (db_samples > 0) ? db_samples : 
+    (numContinuousVars+1)*(numContinuousVars+2)/2;
+  int lhs_seed = probDescDB.get_int("method.random_seed");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   String rng; // empty string: use default
   //int symbols = samples; // symbols needed for DDACE

@@ -100,7 +100,7 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // don't use max_function_evaluations, since we have num_samples
   // consider max_iterations = generations, and adjust as needed?
 
-  Cout << "INFO (DREAM): requested samples = " << numSamples
+  Cout << "INFO (DREAM): requested samples = " << chainSamples
        << "\nINFO (DREAM): requested chains = " << numChains << std::endl;
 
   if (numChains < 3) {
@@ -109,18 +109,18 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	 << std::endl;
   }
 
-  numGenerations = std::floor((Real)numSamples/numChains);
+  numGenerations = std::floor((Real)chainSamples/numChains);
   if (numGenerations < 2) {
     numGenerations = 2;
-    numSamples = numGenerations * numChains;
+    chainSamples = numGenerations * numChains;
     Cout << "WARN (DREAM): generations = samples / chains = " << numGenerations 
 	 << " is less than 2.\n             setting generations = 2, for "
-	 << numSamples << " total samples." << std::endl;
+	 << chainSamples << " total samples." << std::endl;
   }
   else {
-    numSamples = numGenerations * numChains;
+    chainSamples = numGenerations * numChains;
     Cout << "INFO (DREAM): will use " << numChains << " chains with "
-	 << numGenerations << " generations,\nfor " << numSamples 
+	 << numGenerations << " generations,\nfor " << chainSamples 
 	 << " total samples." << std::endl;
   }
 
@@ -161,7 +161,7 @@ void NonDDREAMBayesCalibration::quantify_uncertainty()
 
   // diagnostic information
   Cout << "INFO (DREAM): Standardized space " << standardizedSpace << '\n';
-  Cout << "INFO (DREAM): Num Samples " << numSamples << '\n';
+  Cout << "INFO (DREAM): Num Samples " << chainSamples << '\n';
   Cout << "INFO (DREAM): Calibrating " << numHyperparams 
        << " error hyperparameters.\n";
  

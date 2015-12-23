@@ -766,8 +766,6 @@ public:
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout an execution with repeated sampling.
   bool fixedSequenceFlag;
-  /// the number of previous samples when augmenting a LHS sample
-  int previousSamples;
   /// the \c var_based_decomp specification for a variety of sampling methods
   bool vbdFlag;
   /// the \c var_based_decomp tolerance for omitting index output
@@ -894,8 +892,9 @@ public:
   /// refinement selection in \ref MethodNonDLocalRel, \ref MethodNonDPCE,
   /// and \ref MethodNonDSC
   unsigned short integrationRefine;
-  /// the \c refinement_samples selection in \ref MethodNonDLocalRel,
-  /// \ref MethodNonDPCE, and \ref MethodNonDSC
+  /// Sequence of refinement samples, e.g., the size of the batch
+  /// (e.g. number of supplemental points added) to be added to be
+  /// added to the build points for an emulator at each iteration
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
@@ -915,9 +914,13 @@ public:
   RealVectorArray reliabilityLevels;
   /// the \c gen_reliability_levels specification in \ref MethodNonD
   RealVectorArray genReliabilityLevels;
-  /// the number of samples to construct a GP emulator for Bayesian 
-  /// calibration methods (\ref MethodNonDBayesCalib)
-  int emulatorSamples;
+  /// the number of MCMC chain samples
+  int chainSamples;
+  /// the number of samples to construct an emulator, e.g., for
+  /// Bayesian calibration methods
+  int buildSamples;
+  /// number of samples to perform on emulator
+  int samplesOnEmulator;
   /// The total order to be used in construction of a VPS surrogate 
   int emulatorOrder;
   /// the \c emulator specification in \ref MethodNonDBayesCalib
@@ -950,9 +953,6 @@ public:
   /// the \c batch selection type specification in \ref
   /// MethodNonDAdaptive
   String batchSelectionType;
-  /// The size of the batch (e.g. number of supplemental points added) to be
-  /// added to be added to the build points for an emulator at each iteration
-  int batchSize;
   /// the \c Lipschitz type specification in \ref
   /// MethodNonDPOFDarts (e.g. either local or global estimation)
   String lipschitzType;

@@ -6808,13 +6808,13 @@ static short
 	MP_(refinementType);
 
 static int
-	MP_(batchSize),
+	MP_(buildSamples),
+	MP_(chainSamples),
 	MP_(concurrentRandomJobs),
 	MP_(contractAfterFail),
 	MP_(covarianceType),
         MP_(crossoverChainPairs),
         MP_(emulatorOrder),
-	MP_(emulatorSamples),
 	MP_(expandAfterSuccess),
         MP_(iteratorServers),
 	MP_(jumpStep),
@@ -6830,10 +6830,10 @@ static int
 	MP_(numSymbols),
 	MP_(numTrials),
 	MP_(populationSize),
-	MP_(previousSamples),
         MP_(procsPerIterator),
         MP_(proposalCovUpdates),
 	MP_(randomSeed),
+	MP_(samplesOnEmulator),
 	MP_(searchSchemeSize),
 	MP_(totalPatternSize),
 	MP_(verifyLevel);

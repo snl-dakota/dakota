@@ -2542,6 +2542,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<int, DataMethodRep> Idme[] = {	
       // must be sorted by string (key)
+	{"build_samples", P buildSamples},
 	{"coliny.contract_after_failure", P contractAfterFail},
 	{"coliny.expand_after_success", P expandAfterSuccess},
 	{"coliny.mutation_range", P mutationRange},
@@ -2559,15 +2560,14 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
-	{"nond.batch_size", P batchSize},
-	{"nond.emulator_samples", P emulatorSamples},
+	{"nond.chain_samples", P chainSamples},
 	{"nond.proposal_covariance_updates", P proposalCovUpdates},
+	{"nond.samples_on_emulator", P samplesOnEmulator},
 	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
 	{"population_size", P populationSize},
-	{"previous_samples", P previousSamples},
 	{"processors_per_iterator", P procsPerIterator},
 	{"random_seed", P randomSeed},
 	{"samples", P numSamples},

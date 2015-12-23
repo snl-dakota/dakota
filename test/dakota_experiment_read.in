@@ -25,8 +25,8 @@ environment
 method,
           nl2sol         			#s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8
 #          bayes_calibration dream 		#s4
-#          samples = 60				#s4
-#          chains = 3				#s4
+#          chain_samples = 60				  #s4
+#          chains = 3				          #s4
           output debug
 
 variables,
