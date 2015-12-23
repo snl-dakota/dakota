@@ -1222,6 +1222,32 @@ void Interface::combine_approximation(short corr_type)
   }
 }
 
+RealArray Interface::cv_diagnostics(const String& metric_type, unsigned num_folds)
+{
+  if (interfaceRep) // envelope fwd to letter
+    return interfaceRep->cv_diagnostics(metric_type, num_folds);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
+	 << "function.\n       This interface does not "
+	 << "support cross-validation diagnostics." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+RealArray Interface::challenge_diagnostics(const String& metric_type,
+					    const RealMatrix& challenge_pts)
+{
+  if (interfaceRep) // envelope fwd to letter
+    return interfaceRep->challenge_diagnostics(metric_type, challenge_pts);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual challenge_"
+	 << "diagnostics() function.\n       This interface does not "
+	 << "support challenge data diagnostics." << std::endl;
+    abort_handler(-1);
+  }
+}
+
 
 void Interface::clear_current()
 {

@@ -107,6 +107,10 @@ protected:
   void store_approximation();
   void combine_approximation(short corr_type);
 
+  RealArray cv_diagnostics(const String& metric_type, unsigned num_folds);
+  RealArray challenge_diagnostics(const String& metric_type,
+				  const RealMatrix& challenge_pts);
+
   void clear_current();
   void clear_all();
   void clear_saved();

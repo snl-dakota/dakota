@@ -493,11 +493,37 @@ Real Approximation::diagnostic(const String& metric_type)
 }
 
 
+Real Approximation::cv_diagnostic(const String& metric_type, unsigned num_folds)
+{
+  if (!approxRep) {
+    Cerr << "Error: cv_diagnostic() not available for this approximation type." 
+  	   << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->cv_diagnostic(metric_type, num_folds);
+}
+
+
 void Approximation::primary_diagnostics(int fn_index)
 {
   if (approxRep)
     approxRep->primary_diagnostics(fn_index);
   // else no-op
+}
+
+
+Real Approximation::
+challenge_diagnostic(const String& metric_type,
+		     const RealMatrix& challenge_points)
+{
+  if (!approxRep) {
+    Cerr << "Error: challenge_diagnostic() not available for this approximation " 
+	 << " type." << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->challenge_diagnostic(metric_type, challenge_points);
 }
 
 

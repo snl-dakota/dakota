@@ -779,6 +779,38 @@ void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 }
 
 
+RealArray ApproximationInterface::cv_diagnostics(const String& metric_type,
+						 unsigned num_folds)
+{
+  RealArray cv_diags;
+  ISIter a_it = approxFnIndices.begin();
+  ISCIter a_end = approxFnIndices.end();
+  for ( ; a_it != a_end; ++a_it) {
+    size_t index = *a_it;
+    cv_diags.push_back(functionSurfaces[index].
+		       cv_diagnostic(metric_type, num_folds));
+  }
+  return cv_diags;
+}
+
+
+RealArray ApproximationInterface::
+challenge_diagnostics(const String& metric_type, 
+		      const RealMatrix& challenge_points)
+{
+  RealArray chall_diags;
+  ISIter a_it = approxFnIndices.begin();
+  ISCIter a_end = approxFnIndices.end();
+  for ( ; a_it != a_end; ++a_it) {
+    size_t index = *a_it;
+    chall_diags.push_back(functionSurfaces[index].
+			  challenge_diagnostic(metric_type, challenge_points));
+  }
+  return chall_diags;
+}
+
+
+
 const RealVectorArray& ApproximationInterface::
 approximation_coefficients(bool normalized)
 {

@@ -175,6 +175,12 @@ public:
   /// combine the current approximation with one previously stored
   virtual void combine_approximation(short corr_type);
 
+  /// approximation cross-validation quality metrics per response function
+  virtual RealArray cv_diagnostics(const String& metric_type, unsigned num_folds);
+  /// approximation challenge data metrics per response function
+  virtual RealArray challenge_diagnostics(const String& metric_type,
+					  const RealMatrix& challenge_pts);
+
   /// clears current data from an approximation interface
   virtual void clear_current();
   /// clears all data from an approximation interface

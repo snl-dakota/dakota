@@ -109,12 +109,22 @@ public:
   virtual bool diagnostics_available();
   /// retrieve a single diagnostic metric for the diagnostic type specified
   virtual Real diagnostic(const String& metric_type);
+  /// retrieve a single diagnostic metric for the diagnostic type
+  /// specified, applying num_folds-cross validation
+  virtual Real cv_diagnostic(const String& metric_type, unsigned num_folds);
   /// compute and print all requested diagnostics and cross-validation 
   virtual void primary_diagnostics(int fn_index);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
+  virtual Real challenge_diagnostic(const String& metric_type,
+				    const RealMatrix& challenge_points);
+  /// compute and print all requested diagnostics for user provided
+  /// challenge pts
   virtual void challenge_diagnostics(const RealMatrix& challenge_points, 
 				     int fn_index);
+
+  // TODO: private implementation of cross-validation:
+  //  void cross_validate(metrics, folds)
 
   /// return the coefficient array computed by build()/rebuild()
   virtual RealVector approximation_coefficients(bool normalized) const;
