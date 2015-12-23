@@ -4088,10 +4088,6 @@
       <keyword  id="id_responses" name="id_responses" code="{N_rem(str,idResponses)}" label="Responses set identifier" help="RespCommands.html#RespSetId" minOccurs="0" default="use of last responses parsed" >
         <param type="STRING" taglist="responses" />
       </keyword>
-      <keyword  id="descriptors35" name="descriptors" code="{N_rem(strL,responseLabels)}" label="Response labels" help="RespCommands.html#RespLabels" minOccurs="0" default="root strings plus numeric identifiers" >
-        <alias name="response_descriptors"/>
-        <param type="STRINGLIST" />
-      </keyword>
       <!-- # Note: since NIDR does not support BOOLLIST or ENUMLIST, we employ one of two different approaches below for array alternation:
            #       (1) id_* lists used when there are conditional sub-specifications (e.g., mixed grads, mixed Hessians)
            #       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
@@ -4100,6 +4096,10 @@
         <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization" help="RespCommands.html#RespFnOpt" minOccurs="1" >
           <alias name="num_objective_functions"/>
           <param type="INTEGER" constraint=">= 0" />
+          <keyword  id="descriptors35" name="descriptors" code="{N_rem(strL,responseLabels)}" label="Response labels" help="RespCommands.html#RespLabels" minOccurs="0" default="root strings plus numeric identifiers" >
+	    <alias name="response_descriptors"/>
+	    <param type="STRINGLIST" constraint="LEN objective_functions"/>
+	  </keyword>		  
           <keyword  id="sense" name="sense" code="{N_rem(strL,primaryRespFnSense)}" label="Optimization sense" help="RespCommands.html#RespFnOpt" minOccurs="0" default="vector values = 'minimize'" >
             <param type="STRINGLIST" constraint="LEN1 objective_functions" />
           </keyword>
@@ -4171,6 +4171,10 @@
           <alias name="least_squares_terms"/>
           <alias name="num_least_squares_terms"/>
           <param type="INTEGER" constraint=">= 0" />
+          <keyword  id="descriptors35" name="descriptors" code="{N_rem(strL,responseLabels)}" label="Response labels" help="RespCommands.html#RespLabels" minOccurs="0" default="root strings plus numeric identifiers" >
+	    <alias name="response_descriptors"/>
+	    <param type="STRINGLIST" constraint="LEN calibration_terms"/>
+	  </keyword>			  
           <keyword  id="scalar_calibration_terms" name="scalar_calibration_terms" code="{N_rem(sizet,numScalarLeastSqTerms)}" label="scalar_calibration_terms" help="" minOccurs="0" >
             <param type="INTEGER" constraint=">= 0" />
           </keyword>
@@ -4290,6 +4294,10 @@
         <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses" help="RespCommands.html#RespFnGen" minOccurs="1" >
           <alias name="num_response_functions"/>
           <param type="INTEGER" constraint=">= 0" />
+          <keyword  id="descriptors35" name="descriptors" code="{N_rem(strL,responseLabels)}" label="Response labels" help="RespCommands.html#RespLabels" minOccurs="0" default="root strings plus numeric identifiers" >
+	    <alias name="response_descriptors"/>
+	    <param type="STRINGLIST" constraint="LEN response_functions"/>
+	  </keyword>			  
           <keyword  id="scalar_responses" name="scalar_responses" code="{N_rem(sizet,numScalarResponseFunctions)}" label="scalar_responses" help="" minOccurs="0" >
             <alias name="num_scalar_responses"/>
             <param type="INTEGER" constraint=">= 0" />
