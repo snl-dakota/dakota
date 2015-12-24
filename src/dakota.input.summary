@@ -2298,7 +2298,16 @@ KEYWORD model
 	    [ total_points INTEGER
 	    | minimum_points
 	    | recommended_points ]
-	    [ dace_method_pointer STRING
+	    [ ( dace_method_pointer STRING
+		[ auto_refinement
+		  [ max_iterations INTEGER > 0 ]
+		  [ max_function_evaluations INTEGER > 0 ]
+		  [ convergence_tolerance REAL ]
+		  [ cross_validation_metric STRING
+		    [ folds INTEGER > 0 ]
+		    ]
+		  ]
+		)
 	    | actual_model_pointer STRING ]
 	    [ reuse_points ALIAS reuse_samples
 	      all

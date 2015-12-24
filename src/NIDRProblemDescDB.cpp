@@ -7176,6 +7176,7 @@ static String
 	MP_(krigingOptMethod),
 	MP_(modelExportPrefix),
 	MP_(optionalInterfRespPointer),
+	MP_(refineCVMetric),
 	MP_(responsesPointer),
 	MP_(subMethodPointer),
 	MP_(variablesPointer);
@@ -7187,6 +7188,7 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+	MP_(autoRefine),
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
 	MP_(exportSurrogate),
@@ -7215,11 +7217,13 @@ static short
 static int
         MP_(decompSupportLayers),
         MP_(initialSamples),
+        MP_(maxFunctionEvals),
         MP_(maxIterations),
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
         MP_(reducedRank),
+        MP_(refineCVFolds),
         MP_(subMethodProcs),
         MP_(subMethodServers);
 

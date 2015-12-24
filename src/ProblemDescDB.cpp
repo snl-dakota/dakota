@@ -2359,6 +2359,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.mars_interpolation", P marsInterpolation},
 	{"surrogate.model_export_prefix", P modelExportPrefix},
 	{"surrogate.point_reuse", P approxPointReuse},
+	{"surrogate.refine_cv_metric", P refineCVMetric},
         {"surrogate.trend_order", P trendOrder},
 	{"surrogate.type", P surrogateType},
 	{"type", P modelType}};
@@ -2585,6 +2586,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
     static KW<int, DataModelRep> Idmo[] = {	
       // must be sorted by string (key)
 	{"initial_samples", P initialSamples},
+	{"max_function_evals", P maxFunctionEvals},
 	{"max_iterations", P maxIterations},
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
@@ -2592,7 +2594,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"subspace.reduced_rank", P reducedRank},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
-        {"surrogate.points_total", P pointsTotal}};
+        {"surrogate.points_total", P pointsTotal},
+        {"surrogate.refine_cv_folds", P refineCVFolds}};
     #undef P
 
     KW<int, DataModelRep> *kw;
@@ -3034,6 +3037,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataModelRep> Bdmo[] = {	
       // must be sorted by string (key)
 	{"hierarchical_tags", P hierarchicalTags},
+	{"surrogate.auto_refine", P autoRefine},
 	{"surrogate.challenge_points_file_active", P importChallengeActive},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},

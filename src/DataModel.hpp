@@ -305,6 +305,15 @@ public:
   /// Number of bootstrap samples for subspace identification
   int numReplicates;
 
+  /// whether automatic surrogate refinement is enabled
+  bool autoRefine;
+  /// maximum evals in refinement
+  int maxFunctionEvals;
+  /// metric to use in cross-validation guided refinement
+  String refineCVMetric;
+  /// number of cross-validation folds in guided refinement
+  int refineCVFolds;
+
 private:
 
   //

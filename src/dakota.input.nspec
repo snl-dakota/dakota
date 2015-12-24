@@ -2311,7 +2311,16 @@ KEYWORD model {N_mom3(start,0,stop)}
         recommended_points {N_mom(type,pointsManagement_RECOMMENDED_POINTS)}
        ]
       [ 
-        dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+        ( dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+          [ auto_refinement {N_mom(true,autoRefine)}
+            [ max_iterations INTEGER > 0 {N_mom(int,maxIterations)} ]
+            [ max_function_evaluations INTEGER > 0 {N_mom(int,maxFunctionEvals)} ]
+            [ convergence_tolerance REAL {N_mom(Real,convergenceTolerance)} ]
+            [ cross_validation_metric STRING {N_mom(str,refineCVMetric)}
+              [ folds INTEGER > 0 {N_mom(int,refineCVFolds)} ]
+             ]
+           ]
+         )
         |
         actual_model_pointer STRING {N_mom(str,actualModelPointer)}
        ]
