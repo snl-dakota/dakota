@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=AcceptanceTest
 #@ s0: Restart=write
 #@ s1: Restart=read
 
@@ -25,10 +25,10 @@ variables,
     std_deviations = 2. 1.0
 
 interface,
-	system
+	direct
 	  analysis_driver = 'text_book'
-	  parameters_file = 'params.in'
-	  results_file = 'results.out'
+	  #parameters_file = 'params.in'
+	  #results_file = 'results.out'
 
 responses,
 	response_functions = 2
