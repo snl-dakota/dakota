@@ -1643,7 +1643,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       |
       ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
-        [ samples INTEGER {N_mdm(int,numSamples)} ]
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
         [ emulator {0}
           ( gaussian_process ALIAS kriging {0}
@@ -2000,6 +1999,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       |
       ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
+        [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
         x_gaussian_process ALIAS x_kriging {N_mdm(utype,reliabilitySearchType_EGRA_X)}
         |
         u_gaussian_process ALIAS u_kriging {N_mdm(utype,reliabilitySearchType_EGRA_U)}

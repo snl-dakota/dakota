@@ -120,13 +120,13 @@ void NonDWASABIBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
 
   // diagnostic information
-  //chainSamples = probDescDB.get_int("method.samples");
-  chainSamples = 10000;
-  Cout << "INFO (WASABI): Num Samples " << chainSamples << '\n';
+  // BMA: changed this from chainSamples to avoid confusion
+  int prior_samples = 10000;
+  Cout << "INFO (WASABI): Num Samples " << prior_samples << '\n';
  
-  RealMatrix samples_from_prior((int)numContinuousVars, chainSamples, false);
+  RealMatrix samples_from_prior((int)numContinuousVars, prior_samples, false);
   
-  for (int j=0; j<chainSamples; j++) {
+  for (int j=0; j<prior_samples; j++) {
     RealVector samp_j(Teuchos::View, samples_from_prior[j], numContinuousVars);
     prior_sample(rnumGenerator, samp_j);
   }

@@ -10,6 +10,8 @@ method,
 	global_reliability
 	  x_gaussian_process dakota   #s0
 #	  x_gaussian_process surfpack #s1
+    # explicit default:
+#   initial_samples = 6         #s1 
 #	  u_gaussian_process
 	  response_levels = .5 1. 5. 10. 50. 100. 500. 1000.
 	  seed = 123457

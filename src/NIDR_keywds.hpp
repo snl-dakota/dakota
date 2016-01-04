@@ -600,15 +600,14 @@ static KeyWord
 	kw_101[1] = {
 		{"evaluate_posterior_density",8,0,1,1,0,0.,0.,0,N_mdm(true,evaluatePosteriorDensity)}
 		},
-	kw_102[8] = {
-		{"data_distribution",8,2,4,1,kw_88},
-		{"emulator",8,5,3,0,kw_100},
-		{"generate_posterior_samples",8,1,8,0,kw_101,0.,0.,0,N_mdm(true,generatePosteriorSamples)},
-		{"posterior_density_export_filename",11,0,5,0,0,0.,0.,0,N_mdm(str,posteriorDensityExportFilename)},
-		{"posterior_samples_export_filename",11,0,6,0,0,0.,0.,0,N_mdm(str,posteriorSamplesExportFilename)},
-		{"posterior_samples_import_filename",11,0,7,0,0,0.,0.,0,N_mdm(str,posteriorSamplesImportFilename)},
-		{"samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numSamples)},
-		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
+	kw_102[7] = {
+		{"data_distribution",8,2,3,1,kw_88},
+		{"emulator",8,5,2,0,kw_100},
+		{"generate_posterior_samples",8,1,7,0,kw_101,0.,0.,0,N_mdm(true,generatePosteriorSamples)},
+		{"posterior_density_export_filename",11,0,4,0,0,0.,0.,0,N_mdm(str,posteriorDensityExportFilename)},
+		{"posterior_samples_export_filename",11,0,5,0,0,0.,0.,0,N_mdm(str,posteriorSamplesExportFilename)},
+		{"posterior_samples_import_filename",11,0,6,0,0,0.,0.,0,N_mdm(str,posteriorSamplesImportFilename)},
+		{"seed",0x19,0,1,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
 	kw_103[9] = {
 		{0,0,1,0,0,kw_27},
@@ -619,7 +618,7 @@ static KeyWord
 		{"max_iterations",0x29,0,5,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"queso",8,6,1,1,kw_85,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_QUESO)},
 		{"standardized_space",8,0,2,0,0,0.,0.,0,N_mdm(true,standardizedSpace)},
-		{"wasabi",8,8,1,1,kw_102,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
+		{"wasabi",8,7,1,1,kw_102,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
 		},
 	kw_104[1] = {
 		{"model_pointer",11,0,1,0,0,0.,0.,0,N_mdm(str,modelPointer)}
@@ -1154,25 +1153,26 @@ static KeyWord
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_186[18] = {
+	kw_186[19] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,3,0,0,kw_177},
-		{"convergence_tolerance",10,0,10,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
-		{"dakota",8,0,2,0,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
-		{"export_approx_points_file",11,3,4,0,kw_179,0.,0.,0,N_mdm(str,exportApproxPtsFile)},
-		{"export_points_file",3,3,4,0,kw_179,0.,0.,-1,N_mdm(str,exportApproxPtsFile)},
-		{"import_build_points_file",11,4,3,0,kw_181,0.,0.,0,N_mdm(str,importBuildPtsFile)},
-		{"import_points_file",3,4,3,0,kw_181,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
-		{"max_iterations",0x29,0,9,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"response_levels",14,2,8,0,kw_184,0.,0.,0,N_mdm(resplevs,responseLevels)},
-		{"rng",8,2,7,0,kw_185},
-		{"seed",0x19,0,6,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
-		{"surfpack",8,0,2,0,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)},
-		{"u_gaussian_process",8,0,1,1,0,0.,0.,0,N_mdm(utype,reliabilitySearchType_EGRA_U)},
-		{"u_kriging",0,0,1,1,0,0.,0.,-1,N_mdm(utype,reliabilitySearchType_EGRA_U)},
-		{"use_derivatives",8,0,5,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
-		{"x_gaussian_process",8,0,1,1,0,0.,0.,0,N_mdm(utype,reliabilitySearchType_EGRA_X)},
-		{"x_kriging",0,0,1,1,0,0.,0.,-1,N_mdm(utype,reliabilitySearchType_EGRA_X)}
+		{"convergence_tolerance",10,0,11,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
+		{"dakota",8,0,3,0,0,0.,0.,0,N_mdm(type,emulatorType_GP_EMULATOR)},
+		{"export_approx_points_file",11,3,5,0,kw_179,0.,0.,0,N_mdm(str,exportApproxPtsFile)},
+		{"export_points_file",3,3,5,0,kw_179,0.,0.,-1,N_mdm(str,exportApproxPtsFile)},
+		{"import_build_points_file",11,4,4,0,kw_181,0.,0.,0,N_mdm(str,importBuildPtsFile)},
+		{"import_points_file",3,4,4,0,kw_181,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
+		{"initial_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numSamples)},
+		{"max_iterations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"response_levels",14,2,9,0,kw_184,0.,0.,0,N_mdm(resplevs,responseLevels)},
+		{"rng",8,2,8,0,kw_185},
+		{"seed",0x19,0,7,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
+		{"surfpack",8,0,3,0,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING_EMULATOR)},
+		{"u_gaussian_process",8,0,2,1,0,0.,0.,0,N_mdm(utype,reliabilitySearchType_EGRA_U)},
+		{"u_kriging",0,0,2,1,0,0.,0.,-1,N_mdm(utype,reliabilitySearchType_EGRA_U)},
+		{"use_derivatives",8,0,6,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
+		{"x_gaussian_process",8,0,2,1,0,0.,0.,0,N_mdm(utype,reliabilitySearchType_EGRA_X)},
+		{"x_kriging",0,0,2,1,0,0.,0.,-1,N_mdm(utype,reliabilitySearchType_EGRA_X)}
 		},
 	kw_187[2] = {
 		{"master",8,0,1,1,0,0.,0.,0,N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)},
@@ -2151,7 +2151,7 @@ static KeyWord
 		{"genie_opt_darts",8,3,4,1,kw_155,0.,0.,0,N_mdm(utype,methodName_GENIE_OPT_DARTS)},
 		{"global_evidence",8,7,4,1,kw_165,0.,0.,0,N_mdm(utype,methodName_GLOBAL_EVIDENCE)},
 		{"global_interval_est",8,10,4,1,kw_173,0.,0.,0,N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)},
-		{"global_reliability",8,16,4,1,kw_186,0.,0.,0,N_mdm(utype,methodName_GLOBAL_RELIABILITY)},
+		{"global_reliability",8,17,4,1,kw_186,0.,0.,0,N_mdm(utype,methodName_GLOBAL_RELIABILITY)},
 		{"gpais",8,11,4,1,kw_154,0.,0.,0,N_mdm(utype,methodName_GPAIS)},
 		{"hybrid",8,5,4,1,kw_196,0.,0.,0,N_mdm(utype,methodName_HYBRID)},
 		{"id_method",11,0,1,0,0,0.,0.,0,N_mdm(str,idMethod)},
@@ -2175,7 +2175,7 @@ static KeyWord
 		{"nond_efficient_subspace",0,2,4,1,kw_141,0.,0.,-30,N_mdm(utype,methodName_EFFICIENT_SUBSPACE)},
 		{"nond_global_evidence",0,7,4,1,kw_165,0.,0.,-24,N_mdm(utype,methodName_GLOBAL_EVIDENCE)},
 		{"nond_global_interval_est",0,10,4,1,kw_173,0.,0.,-24,N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)},
-		{"nond_global_reliability",0,16,4,1,kw_186,0.,0.,-24,N_mdm(utype,methodName_GLOBAL_RELIABILITY)},
+		{"nond_global_reliability",0,17,4,1,kw_186,0.,0.,-24,N_mdm(utype,methodName_GLOBAL_RELIABILITY)},
 		{"nond_importance_sampling",0,10,4,1,kw_200,0.,0.,-21,N_mdm(utype,methodName_IMPORTANCE_SAMPLING)},
 		{"nond_local_evidence",0,6,4,1,kw_210,0.,0.,-20,N_mdm(utype,methodName_LOCAL_EVIDENCE)},
 		{"nond_local_interval_est",0,3,4,1,kw_211,0.,0.,-20,N_mdm(utype,methodName_LOCAL_INTERVAL_EST)},

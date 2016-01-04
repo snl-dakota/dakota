@@ -1741,7 +1741,6 @@ KEYWORD12 method
 	    )
 	  |
 	  ( wasabi
-	    [ samples INTEGER ]
 	    [ seed INTEGER > 0 ]
 	    [ emulator
 	      ( gaussian_process ALIAS kriging
@@ -2043,6 +2042,7 @@ KEYWORD12 method
 	  )
 	|
 	( global_reliability ALIAS nond_global_reliability
+	  [ initial_samples INTEGER ]
 	  x_gaussian_process ALIAS x_kriging
 	  | u_gaussian_process ALIAS u_kriging
 	  [ surfpack

@@ -2171,13 +2171,9 @@
 		  </keyword>
 		</required>
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
-		  <!-- TODO: ask John and Tim for more specific term -->
-		  <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='method-dependent'>
-		    <param type='INTEGER' />
-		  </keyword>
 		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
 		    <param type='INTEGER' constraint='> 0' />
-		  </keyword>
+		    </keyword>
 		  <keyword  id="emulator2" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
 		    <oneOf label="emulator type" >
 		      <keyword  id="gaussian_process4" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
@@ -2579,6 +2575,9 @@
                 </keyword>
                 <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability" help="" minOccurs="1" group="Uncertainty Quantification" >
                   <alias name="nond_global_reliability"/>
+		  <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='(d+1)(d+2)/2'>
+		    <param type='INTEGER' />
+		  </keyword>
                   <oneOf>
                     <keyword  id="x_gaussian_process" name="x_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_X)}" label="x_gaussian_process" help=""  >
                       <alias name="x_kriging"/>
