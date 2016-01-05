@@ -19618,41 +19618,41 @@ response_fn_1 Sobol' indices:
 <<<<< Function evaluation summary (HIFI_FN): 200 total (200 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    6.6522398368e-01  He0  He0
-   3.2467821082e+00  He1  He0
-  -7.8019425133e-01  He0  He1
-   5.9072381018e-01  He2  He0
-  -7.5687155655e-01  He1  He1
-   5.0779503596e-01  He0  He2
-   1.0483244492e+00  He3  He0
-   2.2819307984e-01  He2  He1
-   1.2473703058e-01  He1  He2
-  -2.7720759185e-01  He0  He3
-  -9.5769341136e-02  He4  He0
-  -1.3500217093e-01  He3  He1
-   2.8700630344e-01  He2  He2
-   2.5433800245e-02  He1  He3
-  -6.5302229060e-03  He0  He4
-  -5.8416315968e-03  He5  He0
-   6.4309066528e-02  He4  He1
-   5.4818391330e-02  He3  He2
-   4.4542463662e-02  He2  He3
-  -9.1591847643e-03  He1  He4
-  -9.0155562862e-04  He0  He5
-  -1.8289593352e-02  He6  He0
-  -1.6280191087e-02  He5  He1
-  -5.8846295868e-02  He4  He2
-   1.9614798272e-02  He3  He3
-   1.5858672734e-03  He2  He4
-  -2.9780953436e-05  He1  He5
-   1.4883345968e-07  He0  He6
+   3.3399107475e+00  He1  He0
+  -8.1732446902e-01  He0  He1
+   7.2172007887e-01  He2  He0
+  -4.2448655723e-01  He1  He1
+   7.0766635565e-01  He0  He2
+   9.9327837772e-01  He3  He0
+  -4.1254182605e-02  He2  He1
+   2.1552601228e-02  He1  He2
+  -1.9537868862e-01  He0  He3
+   4.2558146444e-02  He4  He0
+   6.7526722839e-03  He3  He1
+   4.6202134004e-01  He2  He2
+   9.3687874843e-02  He1  He3
+   9.3203143281e-03  He0  He4
+  -2.1251574464e-02  He5  He0
+  -1.3655680351e-02  He4  He1
+  -6.8038277651e-02  He3  He2
+   6.0312263861e-02  He2  He3
+   3.1210568293e-02  He1  He4
+   1.0968694531e-02  He0  He5
+  -1.3264335509e-03  He6  He0
+  -7.5756481195e-04  He5  He1
+  -1.5620008648e-02  He4  He2
+  -7.8494648477e-03  He3  He3
+  -3.8250394154e-02  He2  He4
+   1.1916365924e-02  He1  He5
+   1.2175579115e-03  He0  He6
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  6.6522398368e-01  4.6269912830e+00
+ response_fn_1  6.6522398368e-01  4.6315409913e+00
 response_fn_1 Sobol' indices:
                                   Main             Total
-                      8.5470740782e-01  9.2589115014e-01 x1
-                      7.4108849860e-02  1.4529259218e-01 x2
-                      7.1183742324e-02 x1 x2 
+                      8.4915202840e-01  9.1067018171e-01 x1
+                      8.9329818288e-02  1.5084797160e-01 x2
+                      6.1518153312e-02 x1 x2 
 Test Number 16 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+00  He0  He0
