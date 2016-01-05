@@ -11,7 +11,7 @@ expansion), or a \c sc emulator (stochastic collocation). For the
 \c gaussian_process emulator, the user must specify whether to use the 
 \c surfpack or \c dakota version of the Gaussian process. 
 The user can define the number of samples 
-\c emulator_samples from which the emulator should be built. It is also 
+\c build_samples from which the emulator should be built. It is also 
 possible to build the Gaussian process from points read in from the 
 \c import_points_file and to export approximation-based sample evaluations 
 using \c export_points_file. For \c pce or \c sc, the user can define a \c sparse_grid_level. 

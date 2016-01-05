@@ -1,0 +1,31 @@
+Blurb::
+Number of Markov Chain Monte Carlo posterior samples
+
+Description::
+The \c chain_samples keyword indicates the number of draws from the
+posterior distribution to perform.  When an emulator is active, this
+will be the number of samples on the constructed surrogate model.
+
+<b> Default Behavior </b>
+
+The default number of chain samples is method-dependent.  QUESO
+methods use 48576.  DREAM uses (number of generations) x (number of
+chains).
+
+<b> Usage Tips </b>
+
+MCMC methods typically require a large number of chain samples to
+converge, often thousands to millions.
+
+Topics::	
+
+Examples::
+\verbatim
+method
+  bayes_calibration queso
+    chain_samples = 20000
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

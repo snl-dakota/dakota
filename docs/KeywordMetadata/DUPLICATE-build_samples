@@ -1,0 +1,31 @@
+Blurb::
+Number of initial model evaluations used in build phase
+
+Description:: 
+
+The number of build points or training points used in the initial
+phase of an algorithm or model construction.  Typically these are the
+initial set of data points used to construct (train) a surrogate model
+(emulator). If the number of \c build_samples is less than the minimum
+number of points required to build the surrogate, Dakota will augment
+the samples to obtain the minimum required.
+
+Topics:: 
+
+Examples:: 
+Perform GP-based adaptive importance sampling, building the GP with
+100 points and then performing 100 approxmiate evaluations to evaluate
+the probability.
+
+\verbatim
+method
+  gpais
+    build_samples = 100
+    samples_on_emulator = 100
+    max_iterations = 5
+    response_levels = -1.065
+\endverbatim
+
+Theory:: 
+Faq:: 
+See_Also::

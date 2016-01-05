@@ -1,0 +1,40 @@
+Blurb::
+Initial number of samples for sampling-based methods
+
+Description::
+The \c initial_samples keyword is used to define the number of initial
+samples (i.e., randomly chosen sets of variable values) at which to
+execute a model.  The initial samples may later be augmented in an
+iterative process.
+
+<b> Default Behavior </b>
+
+By default, Dakota will use the minimum number of samples required by
+the chosen method.
+
+<b> Usage Tips </b>
+
+To obtain linear sensitivities or to construct a linear response
+surface, at least dim+1 samples should be used, where "dim" is the
+number of variables.  For sensitivities to quadratic terms or
+quadratic response surfaces, at least (dim+1)(dim+2)/2 samples are
+needed.  For uncertainty quantification, we recommend at least 10*dim
+samples.  For \c variance_based_decomp, we recommend hundreds to
+thousands of samples.  Note that for \c variance_based_decomp, the
+number of simulations performed will be N*(dim+2).
+
+
+Topics::	
+
+Examples::
+\verbatim
+method
+  sampling
+    sample_type random
+    initial_samples = 20
+    refinement_samples = 5
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

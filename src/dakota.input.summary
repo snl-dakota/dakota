@@ -1144,7 +1144,7 @@ KEYWORD12 method
 	  )
 	|
 	( sampling ALIAS nond_sampling
-	  [ initial_samples ALIAS samples INTEGER ]
+	  [ samples ALIAS initial_samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ fixed_seed ]
 	  [ sample_type
@@ -1219,7 +1219,7 @@ KEYWORD12 method
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
-	  [ initial_samples ALIAS samples INTEGER ]
+	  [ samples ALIAS initial_samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  import
 	  | adapt_import
@@ -1258,7 +1258,7 @@ KEYWORD12 method
 	( gpais ALIAS gaussian_process_adaptive_importance_sampling
 	  [ build_samples ALIAS samples INTEGER ]
 	  [ seed INTEGER > 0 ]
-	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
+	  [ samples_on_emulator INTEGER ]
 	  [ import_build_points_file ALIAS import_points_file STRING
 	    [ annotated
 	    |
@@ -1314,7 +1314,7 @@ KEYWORD12 method
 	( adaptive_sampling ALIAS nond_adaptive_sampling
 	  [ initial_samples ALIAS samples INTEGER ]
 	  [ seed INTEGER > 0 ]
-	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
+	  [ samples_on_emulator INTEGER ]
 	  [ fitness_metric
 	    predicted_variance
 	    | distance
@@ -1387,7 +1387,7 @@ KEYWORD12 method
 	    local
 	    | global
 	    ]
-	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
+	  [ samples_on_emulator INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -1423,7 +1423,7 @@ KEYWORD12 method
 	    local
 	    | global
 	    ]
-	  [ samples_on_emulator ALIAS emulator_samples INTEGER ]
+	  [ samples_on_emulator INTEGER ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -1590,7 +1590,7 @@ KEYWORD12 method
 	      ( gaussian_process ALIAS kriging
 		surfpack
 		| dakota
-		[ build_samples ALIAS emulator_samples INTEGER ]
+		[ build_samples INTEGER ]
 		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
@@ -1695,7 +1695,7 @@ KEYWORD12 method
 	  ( gpmsa
 	    chain_samples ALIAS samples INTEGER
 	    [ seed INTEGER > 0 ]
-	    build_samples ALIAS emulator_samples INTEGER
+	    build_samples INTEGER
 	    [ import_build_points_file ALIAS import_points_file STRING
 	      [ annotated
 	      |
@@ -1746,7 +1746,7 @@ KEYWORD12 method
 	      ( gaussian_process ALIAS kriging
 		surfpack
 		| dakota
-		[ build_samples ALIAS emulator_samples INTEGER ]
+		[ build_samples INTEGER ]
 		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
@@ -1834,7 +1834,7 @@ KEYWORD12 method
 	      ( gaussian_process ALIAS kriging
 		surfpack
 		| dakota
-		[ build_samples ALIAS emulator_samples INTEGER ]
+		[ build_samples INTEGER ]
 		[ posterior_adaptive ]
 		[ import_build_points_file ALIAS import_points_file STRING
 		  [ annotated
@@ -1916,7 +1916,7 @@ KEYWORD12 method
 	  | oa_lhs
 	  | box_behnken
 	  | central_composite
-	  [ initial_samples ALIAS samples INTEGER ]
+	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ main_effects ]
 	  [ quality_metrics ]
@@ -1929,7 +1929,7 @@ KEYWORD12 method
 	  )
 	|
 	( fsu_cvt
-	  [ initial_samples ALIAS samples INTEGER ]
+	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ latinize ]
 	  [ quality_metrics ]
@@ -1949,7 +1949,7 @@ KEYWORD12 method
 	|
 	( psuade_moat
 	  [ partitions INTEGERLIST ]
-	  [ initial_samples ALIAS samples INTEGER ]
+	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]
 	  [ model_pointer STRING ]
 	  )
@@ -2110,7 +2110,7 @@ KEYWORD12 method
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]
 	    ]
-	  [ initial_samples ALIAS samples INTEGER ]
+	  [ samples INTEGER ]
 	  [ fixed_sequence ]
 	  [ sequence_start INTEGERLIST ]
 	  [ sequence_leap INTEGERLIST ]

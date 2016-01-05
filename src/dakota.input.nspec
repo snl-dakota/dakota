@@ -1083,7 +1083,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( sampling ALIAS nond_sampling {N_mdm(utype,methodName_RANDOM_SAMPLING)}
-          [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+          [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
           [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
           [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ sample_type {0}
@@ -1137,7 +1137,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       |
       ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
-        [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+        [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
         import {N_mdm(utype,integrationRefine_IS)}
         |
@@ -1165,7 +1165,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(utype,methodName_GPAIS)}
         [ build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)} ]
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ samples_on_emulator ALIAS emulator_samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+        [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
           [ 
             annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
@@ -1216,7 +1216,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       ( adaptive_sampling ALIAS nond_adaptive_sampling {N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}
         [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ samples_on_emulator ALIAS emulator_samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+        [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
         [ fitness_metric {0}
           predicted_variance {N_mdm(lit,fitnessMetricType_predicted_variance)}
           |
@@ -1290,7 +1290,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           global {N_mdm(lit,lipschitzType_global)}
          ]
-        [ samples_on_emulator ALIAS emulator_samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+        [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
         [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
           [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
           [ compute {0}
@@ -1314,7 +1314,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           global {N_mdm(lit,lipschitzType_global)}
          ]
-        [ samples_on_emulator ALIAS emulator_samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+        [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
         [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
           [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
           [ compute {0}
@@ -1489,7 +1489,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
               |
               dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-              [ build_samples ALIAS emulator_samples INTEGER {N_mdm(int,buildSamples)} ]
+              [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
@@ -1580,7 +1580,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
           chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
           [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          build_samples ALIAS emulator_samples INTEGER {N_mdm(int,buildSamples)}
+          build_samples INTEGER {N_mdm(int,buildSamples)}
           [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
             [ 
               annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
@@ -1649,7 +1649,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
             |
             dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-            [ build_samples ALIAS emulator_samples INTEGER {N_mdm(int,buildSamples)} ]
+            [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -1759,7 +1759,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
             |
             dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-            [ build_samples ALIAS emulator_samples INTEGER {N_mdm(int,buildSamples)} ]
+            [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -1862,7 +1862,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       box_behnken {N_mdm(utype,subMethod_SUBMETHOD_BOX_BEHNKEN)}
       |
       central_composite {N_mdm(utype,subMethod_SUBMETHOD_CENTRAL_COMPOSITE)}
-      [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+      [ samples INTEGER {N_mdm(int,numSamples)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ main_effects {N_mdm(true,mainEffectsFlag)} ]
       [ quality_metrics {N_mdm(true,volQualityFlag)} ]
@@ -1874,7 +1874,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( fsu_cvt {N_mdm(utype,methodName_FSU_CVT)}
-      [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+      [ samples INTEGER {N_mdm(int,numSamples)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ latinize {N_mdm(true,latinizeFlag)} ]
       [ quality_metrics {N_mdm(true,volQualityFlag)} ]
@@ -1895,7 +1895,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     |
     ( psuade_moat {N_mdm(utype,methodName_PSUADE_MOAT)}
       [ partitions INTEGERLIST {N_mdm(usharray,varPartitions)} ]
-      [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+      [ samples INTEGER {N_mdm(int,numSamples)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
      )
     |
@@ -2084,7 +2084,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ variance_based_decomp {N_mdm(true,vbdFlag)}
         [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
        ]
-      [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+      [ samples INTEGER {N_mdm(int,numSamples)} ]
       [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]
       [ sequence_start INTEGERLIST {N_mdm(ivec,sequenceStart)} ]
       [ sequence_leap INTEGERLIST {N_mdm(ivec,sequenceLeap)} ]

@@ -1558,9 +1558,9 @@
 		    </keyword>
 		    <keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method" help="MethodCommands.html#MethodNonDMC" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_sampling"/>
-		      <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-			<alias name="samples" />
-			<param type='INTEGER' />
+		      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='(initial) samples' help='' minOccurs='0' default='0'>
+			      <alias name="initial_samples" />
+			      <param type='INTEGER' />
 		      </keyword>
  		      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 			<param type="INTEGER" constraint="> 0" />
@@ -1645,8 +1645,8 @@
 		</keyword>
 		<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
 		  <alias name="nond_importance_sampling"/>
-		  <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-		    <alias name='samples' />
+		  <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='(initial) samples' help='' minOccurs='0' default='0'>
+		    <alias name='initial_samples' />
 		    <param type='INTEGER' />
 		  </keyword>
 		  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
@@ -1691,7 +1691,6 @@
 		    <param type='INTEGER' constraint='> 0' />
 		  </keyword>
 		  <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" default="10000">
-		    <alias name="emulator_samples"/>
 		    <param type="INTEGER" />
 		  </keyword>
 		  <keyword  id="import_build_points_file2" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="File name for points to be imported as the basis for the initial emulator" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="no point import from a file" >
@@ -1735,7 +1734,6 @@
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="samples_on_emulator1" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Number of samples on the emulator to generate a new true sample each iteration" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="400" >
-		    <alias name="emulator_samples" />
 		    <param type="INTEGER" />
 		  </keyword>
 		  <keyword  id="fitness_metric" name="fitness_metric" code="{0}" label="Fitness metric" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="predicted_variance" >
@@ -1806,7 +1804,6 @@
 		    </oneOf>
 		  </keyword>
 		  <keyword  id="samples_on_emulator6" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" >
-		    <alias name="emulator_samples" />
 		    <param type="INTEGER" />
 		  </keyword>
 		  <keyword  id="response_levels4" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
@@ -1844,7 +1841,6 @@
 		    </oneOf>
 		  </keyword>
 		  <keyword  id="samples_on_emulator6" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" >
-		    <alias name="emulator_samples" />
 		    <param type="INTEGER" />
 		  </keyword>
 		  <keyword  id="response_levels4" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
@@ -2032,7 +2028,6 @@
 			      <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
 			    </oneOf>
 			    <keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			      <alias name="emulator_samples" />
 			      <param type="INTEGER" />
 			    </keyword>
 			    <keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
@@ -2112,8 +2107,7 @@
 			<param type='INTEGER' constraint='> 0' />
 		      </keyword>
 		      <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
-			<alias name="emulator_samples" />
-			<param type="INTEGER" />
+			      <param type="INTEGER" />
 		      </keyword>
 		      <keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
 			<alias name="import_points_file"/>
@@ -2183,7 +2177,6 @@
 			  <keyword  id="dakota4" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
 			</oneOf>
 			<keyword  id="build_samples5" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			  <alias name="emulator_samples" />
 			  <param type="INTEGER" />
 			</keyword>
 			<keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
@@ -2300,7 +2293,6 @@
 			  <keyword  id="dakota4" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
 			</oneOf>
 			<keyword  id="build_samples5" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			  <alias name="emulator_samples" />
 			  <param type="INTEGER" />
 			</keyword>
 			<keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
@@ -2384,8 +2376,7 @@
 		<keyword  id="box_behnken" name="box_behnken" code="{N_mdm(utype,subMethod_SUBMETHOD_BOX_BEHNKEN)}" label="box_behnken" help=""  />
 		<keyword  id="central_composite" name="central_composite" code="{N_mdm(utype,subMethod_SUBMETHOD_CENTRAL_COMPOSITE)}" label="central_composite" help=""  />
 	      </oneOf>
-	      <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-		<alias name='samples' />
+	      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
 		<param type='INTEGER' />
 	      </keyword>
 	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
@@ -2404,8 +2395,7 @@
 	      </keyword>
 	    </keyword>
 	    <keyword  id="fsu_cvt" name="fsu_cvt" code="{N_mdm(utype,methodName_FSU_CVT)}" label="fsu_cvt" help="" minOccurs="1" group="DACE" >
-	      <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-		<alias name='samples' />
+	      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
 		<param type='INTEGER' />
 	      </keyword>
 	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
@@ -2435,9 +2425,8 @@
 	      <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions" help="MethodCommands.html#MethodPSUADE" minOccurs="0" default="3" >
 		<param type="INTEGERLIST" />
 	      </keyword>
-	      <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-		<alias name='samples' />
-		<param type='INTEGER' />
+	      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
+		      <param type='INTEGER' />
 	      </keyword>
 	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 		<param type="INTEGER" constraint="> 0" />
@@ -2666,10 +2655,9 @@
                   <param type="REAL" />
                 </keyword>
               </keyword>
-	      <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-		<alias name='samples' />
-		<param type='INTEGER' />
-	      </keyword>
+	            <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
+		            <param type='INTEGER' />
+	            </keyword>
               <keyword  id="fixed_sequence" name="fixed_sequence" code="{N_mdm(true,fixedSequenceFlag)}" label="Fixed sequence flag" help="MethodCommands.html#MethodFSUDACE" minOccurs="0" default="sequence not fixed: sampling patterns are variable among multiple QMC runs" />
               <keyword  id="sequence_start" name="sequence_start" code="{N_mdm(ivec,sequenceStart)}" label="Sequence starting indices" help="MethodCommands.html#MethodFSUDACE" minOccurs="0" default="Vector of zeroes" >
                 <param type="INTEGERLIST" />

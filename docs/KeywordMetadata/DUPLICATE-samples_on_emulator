@@ -1,0 +1,25 @@
+Blurb::
+Number of samples at which to evaluate an emulator (surrogate)
+
+Description::
+How many approximate function evaluations to perform on the emulator
+model, e.g., to compute statistics
+
+<b> Default Behavior </b>
+
+The default number of samples is method-dependent.
+
+Topics::	
+
+Examples::
+Perform 10000 samples on the PCE approximation of the true model:
+\verbatim
+method
+  polynomial_chaos
+    quadrature_order    = 2
+    samples_on_emulator = 10000
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	
