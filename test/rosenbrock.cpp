@@ -53,8 +53,8 @@ int main(int argc, char** argv)
 	      (int(*)(int))tolower);
     v_iter = var_t_map.find(label_i);
     if (v_iter == var_t_map.end()) {
-      std::cerr << "Error: label \"" << label_i << "\" not supported in analysis "
-	   << "driver." << std::endl;
+      std::cerr << "Error: label \"" << label_i
+		<< "\" not supported in analysis driver." << std::endl;
       exit(-1);
     }
     else

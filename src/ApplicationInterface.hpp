@@ -441,9 +441,9 @@ private:
   /// or asynchronous
   short interfaceSynchronization;
 
-  // used by synch_nowait to manage output frequency (since this
-  // function may be called many times prior to any completions)
-  //bool headerFlag;
+  /// used by synch_nowait to manage header output frequency (since this
+  /// function may be called many times prior to any completions)
+  bool headerFlag;
 
   /// used to manage a user request to deactivate the active set vector
   /// control.

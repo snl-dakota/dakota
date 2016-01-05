@@ -51,7 +51,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
     problem_db.get_short("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
   interfaceSynchronization(problem_db.get_short("interface.synchronization")),
-  //headerFlag(true),
+  headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
   nearbyDuplicateDetect(
@@ -61,8 +61,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   restartFileFlag(problem_db.get_bool("interface.restart_file")),
   gradientType(problem_db.get_string("responses.gradient_type")),
   hessianType(problem_db.get_string("responses.hessian_type")),
-  gradMixedAnalyticIds(problem_db.get_is("responses.gradients.mixed.id_analytic")),
-  hessMixedAnalyticIds(problem_db.get_is("responses.hessians.mixed.id_analytic")),
+  gradMixedAnalyticIds(
+    problem_db.get_is("responses.gradients.mixed.id_analytic")),
+  hessMixedAnalyticIds(
+    problem_db.get_is("responses.hessians.mixed.id_analytic")),
   failAction(problem_db.get_string("interface.failure_capture.action")),
   failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
@@ -685,8 +687,8 @@ const IntResponseMap& ApplicationInterface::synch()
   else rawResponseMap.clear();
 
   if (coreMappings) {
-    size_t core_prp_entries = beforeSynchCorePRPQueue.size();
-    Cout << "\nBlocking synchronize of " << core_prp_entries <<" asynchronous ";
+    size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
+    Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
     if (!interfaceId.empty()) Cout << interfaceId << ' ';
     Cout << "evaluations";
     if (hist_duplicates || queue_duplicates)
@@ -695,7 +697,7 @@ const IntResponseMap& ApplicationInterface::synch()
 
     // Process nonduplicate evaluations for either the message passing or local 
     // asynchronous case.
-    if (core_prp_entries) {
+    if (core_prp_jobs) {
       if (ieMessagePass) { // single or multi-processor servers
 	if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
 	else {
@@ -788,9 +790,11 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
   bool hist_duplicates = !historyDuplicateMap.empty(),
       queue_duplicates = !beforeSynchDuplicateMap.empty();
   if (coreMappings) {
-    size_t core_prp_entries = beforeSynchCorePRPQueue.size();
-    if (core_prp_entries || hist_duplicates) { //if (headerFlag) {
-      Cout << "\nNonblocking synchronize of " << core_prp_entries
+    size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
+    // suppress repeated header output for longer jobs;
+    // don't need to check queue_duplicates since none w/o core queue
+    if ( headerFlag && (core_prp_jobs || hist_duplicates) ) {
+      Cout << "\nNonblocking synchronize of " << core_prp_jobs
 	   << " asynchronous ";
       if (!interfaceId.empty()) Cout << interfaceId << ' ';
       Cout << "evaluations";
@@ -801,7 +805,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
     }
 
     // Test nonduplicate evaluations and add completions to rawResponseMap
-    if (core_prp_entries) {
+    if (core_prp_jobs) {
       if (ieMessagePass) { // single or multi-processor servers
 	if (ieDedMasterFlag)
 	  master_dynamic_schedule_evaluations_nowait();
@@ -821,7 +825,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       else // local to processor
 	asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
     }
-    //headerFlag = !rawResponseMap.empty();
+    headerFlag = !rawResponseMap.empty();
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nNonblocking synchronize of " << beforeSynchAlgPRPQueue.size();
@@ -855,7 +859,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
   if (hist_duplicates) {
     rawResponseMap.insert(historyDuplicateMap.begin(),
 			  historyDuplicateMap.end());
-    historyDuplicateMap.clear();
+    historyDuplicateMap.clear(); headerFlag = true;
   }
 
   // Merge core mappings and algebraic mappings into rawResponseMap
@@ -1563,10 +1567,12 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   }
 
   // Step 2: check status of running jobs and backfill any completions
-  Cout << "Master dynamic schedule: second pass testing for completions ("
-       << num_running << " running)";
-  if (num_running == num_jobs) Cout << '\n';
-  else Cout << " and backfilling (" << num_jobs-num_running << " remaining)\n";
+  if (headerFlag) {
+    Cout << "Master dynamic schedule: second pass testing for completions ("
+	 << num_running << " running)";
+    if (num_running == num_jobs) Cout << '\n';
+    else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
+  }
   test_receives_backfill(assign_iter, false); // !peer
 
   if (msgPassRunningMap.empty()) {
@@ -1728,10 +1734,12 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   }
 
   // Step 2: check status of running jobs and backfill any completions
-  Cout << "Peer dynamic schedule: second pass testing for completions ("
-       << num_running << " running)";
-  if (num_running == num_jobs) Cout << '\n';
-  else Cout << " and backfilling (" << num_jobs-num_running << " remaining)\n";
+  if (headerFlag) {
+    Cout << "Peer dynamic schedule: second pass testing for completions ("
+	 << num_running << " running)";
+    if (num_running == num_jobs) Cout << '\n';
+    else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
+  }
   if (num_remote_running)
     test_receives_backfill(assign_iter, true); // peer
   if (num_local_running)
@@ -1789,9 +1797,11 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
 
   // Step 2: process any completed jobs and backfill if necessary
   num_active = asynchLocalActivePRPQueue.size(); // update
-  Cout << "Second pass: testing for completions (" << num_active << " running)";
-  if (num_active == num_jobs) Cout << '\n';
-  else Cout << " and backfilling (" << num_jobs - num_active << " remaining)\n";
+  if (headerFlag) {
+    Cout << "Second pass: testing for completions (" << num_active<<" running)";
+    if (num_active == num_jobs) Cout << '\n';
+    else Cout << " and backfilling (" << num_jobs-num_active << " remaining)\n";
+  }
   test_local_backfill(local_prp_queue, local_prp_iter);
 }
 
