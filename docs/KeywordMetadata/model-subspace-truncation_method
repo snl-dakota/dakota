@@ -1,0 +1,23 @@
+Blurb::
+Metric that controls active subspace cut-off
+
+Description::
+Metric that controls how many basis vectors are retained in the active
+subspace.  For example based on eigenvalue gap or trade-off in
+eigenvalue energy vs. bootstrap replicate variability.
+
+<b> Default Behavior </b>
+
+The default is to use the Bing-Li "ladle" diagnostic.
+
+<b> Usage Tips </b>
+
+If the automated diagnostics do not yield desirable results, consider
+using the explicit \c reduced_rank truncation option.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::

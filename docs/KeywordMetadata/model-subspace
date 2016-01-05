@@ -1,0 +1,49 @@
+Blurb::
+Active (variable) subspace model
+
+Description::
+A model that transforms the original model (given by \c
+actual_model_pointer) to one with a reduced set of variables.  This
+reduced model is identified by iteratively sampling the gradient of
+the original model and performing a singular value decomposition of
+the gradient matrix.
+
+<b> Expected Output </b>
+
+When active, a subspace model will perform an initial sampling design,
+potentially followed by bootstrap sampling-guided refinement steps to
+identify the active subspace.
+
+<b> Usage Tips </b>
+
+Consider using options for total energy vs. eigenvalue gap to avoid missing the most efficient subspace truncation.
+
+<b> Additional Discussion </b>
+
+(Optional.  Put it here or in the Theory block.  If not here, remove 
+header.)
+
+Topics::
+
+Examples::
+Perform an initial 100 samples to identify the active subspace, then
+refine by adding 2 samples at a time until either the convergence
+tolerance or maximum iterations are reached.
+
+\verbatim
+model                             
+  subspace
+    id_model = 'SUBSPACE'
+    actual_model_pointer = 'FULLSPACE'
+    initial_samples  100
+      refinement_samples 2
+    max_iterations = 10
+    convergence_tolerance = 1.0e-3
+    truncation_method bing_li
+\endverbatim
+
+Theory::
+See book and papers by Paul G. Constantine (need reference).
+
+Faq::
+See_Also::

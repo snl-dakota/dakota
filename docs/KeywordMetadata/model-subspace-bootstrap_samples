@@ -1,0 +1,18 @@
+Blurb::
+Number of bootstrap replicates to calculate truncation metrics
+
+Description::
+
+The number of bootstrap replicates to assess effectiveness of the
+subspace truncation.
+
+<b> Default Behavior </b>
+
+Use 100 replicates.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::

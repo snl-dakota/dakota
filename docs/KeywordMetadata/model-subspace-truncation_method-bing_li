@@ -1,0 +1,19 @@
+Blurb::
+Use the Bing-Li "ladle" diagnostic to truncate subspace
+
+Description::
+Uses a trade-off criterion to determine where to truncate the active subspace.
+
+<b> Usage Tips </b>
+
+If this automated diagnostic does not yield desirable results, consider
+using the explicit \c reduced_rank truncation option.
+
+Topics::
+
+Examples::
+Theory::
+See Bing-Li SIAM presentation.
+
+Faq::
+See_Also::

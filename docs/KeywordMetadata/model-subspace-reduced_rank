@@ -1,0 +1,24 @@
+Blurb::
+Explicitly specify the desired reduced rank
+
+Description::
+This control explicitly indicates the number of basis vectors to
+retain.  The subspace model will include exactly \c reduced_rank
+variables.
+
+<b> Default Behavior </b>
+
+Unlimited; as many basis vectors will be retained as are needed to
+meet the convergence tolerance.
+
+<b> Usage Tips </b>
+
+This control can be helpful when a priori studies have identified the
+essential information content in the variables space.
+
+Topics::
+
+Examples::
+Theory::
+Faq::
+See_Also::

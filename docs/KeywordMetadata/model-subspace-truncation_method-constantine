@@ -1,0 +1,20 @@
+Blurb::
+Use the Constantine diagnostic to truncate subspace
+
+Description::
+Uses a simple eigenvalue gap criterion to determine where to truncate
+the active subspace.
+
+<b> Usage Tips </b>
+
+If this automated diagnostic does not yield desirable results, consider
+using the explicit \c reduced_rank truncation option.
+
+Topics::
+
+Examples::
+Theory::
+See Constantine, et al.
+
+Faq::
+See_Also::
