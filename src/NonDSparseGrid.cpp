@@ -15,6 +15,8 @@
 #include "dakota_data_io.hpp"
 #include "dakota_system_defs.hpp"
 #include "NonDSparseGrid.hpp"
+#include "CombinedSparseGridDriver.hpp"
+#include "HierarchSparseGridDriver.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
 #include "PolynomialApproximation.hpp"
@@ -91,13 +93,24 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     // INTEGRATION_MODE:   standardize on precision: i = 2m-1 = 2(2l+1)-1 = 4l+1
     // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
-  bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
-  bool track_uniq_prod_wts = false;
-  bool track_colloc_indices
-    = (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID);
-  ssgDriver->initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
-    ec_options, bc_options, growth_rate, store_colloc, track_uniq_prod_wts,
-    track_colloc_indices);
+  if (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID) {
+    bool track_colloc = false, track_uniq_prod_wts = false; // defaults
+    ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
+      initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
+		      ec_options, bc_options, growth_rate, track_colloc,
+		      track_uniq_prod_wts);
+  }
+  else if (exp_coeffs_soln_approach == Pecos::HIERARCHICAL_SPARSE_GRID) {
+    bool track_colloc_indices = false; // non-default
+    ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
+      initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
+		      ec_options, bc_options, growth_rate,
+		      track_colloc_indices);
+  }
+  else
+    ssgDriver->
+      initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
+		      ec_options, bc_options, growth_rate);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
 
@@ -126,9 +139,15 @@ NonDSparseGrid(Model& model, const UShortArray& ssg_level_seq,
   ssgDriver->mode(driver_mode);
   ssgDriver->growth_rate(growth_rate);
   ssgDriver->refinement_control(refine_control);
-  ssgDriver->store_collocation_details(true); // for SC and sparse PCE via SPAM
-  ssgDriver->track_unique_product_weights(track_uniq_prod_wts);
-  ssgDriver->track_collocation_indices(track_colloc_indices);
+  if (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID) {
+    Pecos::CombinedSparseGridDriver* csg_driver
+      = (Pecos::CombinedSparseGridDriver*)ssgDriver;
+    csg_driver->track_collocation_details(true); // for SC & sparse PCE via SPAM
+    csg_driver->track_unique_product_weights(track_uniq_prod_wts);
+  }
+  else if (exp_coeffs_soln_approach == Pecos::HIERARCHICAL_SPARSE_GRID)
+    ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
+      track_collocation_indices(track_colloc_indices);
 
   // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,

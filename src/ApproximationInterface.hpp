@@ -105,7 +105,7 @@ protected:
   void finalize_approximation();
 
   void store_approximation();
-  void combine_approximation(short corr_type);
+  void combine_approximation(short corr_type, bool swap);
 
   RealArray cv_diagnostics(const String& metric_type, unsigned num_folds);
   RealArray challenge_diagnostics(const String& metric_type,
@@ -293,11 +293,12 @@ inline void ApproximationInterface::store_approximation()
 }
 
 
-inline void ApproximationInterface::combine_approximation(short corr_type)
+inline void ApproximationInterface::
+combine_approximation(short corr_type, bool swap)
 {
-  sharedData.pre_combine(corr_type); // do shared aggregation first
+  sharedData.pre_combine(corr_type, swap); // do shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine(corr_type);
+    functionSurfaces[*it].combine(corr_type, swap);
   sharedData.post_combine(corr_type); // do shared cleanup last
 }
 

@@ -202,7 +202,7 @@ protected:
   void restore();
   void finalize();
   void store();
-  void combine(short corr_type);
+  void combine(short corr_type, bool swap);
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -545,13 +545,15 @@ inline void PecosApproximation::store()
 }
 
 
-inline void PecosApproximation::combine(short corr_type)
+inline void PecosApproximation::combine(short corr_type, bool swap)
 {
   // base class implementation manages approxData state
   //Approximation::combine(corr_type);
+  if (swap) approxData.swap();
+
   // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
   // PECOS combination type enumerations coincide.
-  pecosBasisApprox.combine_coefficients(corr_type);
+  pecosBasisApprox.combine_coefficients(corr_type, swap);
 }
 
 

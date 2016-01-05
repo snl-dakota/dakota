@@ -369,9 +369,9 @@ void Approximation::store()
 }
 
 
-void Approximation::combine(short corr_type)
+void Approximation::combine(short corr_type, bool swap)
 {
-  if (approxRep) approxRep->combine(corr_type);
+  if (approxRep) approxRep->combine(corr_type, swap);
 //else           approxData.combine(); // base contribution; derived augments
 }
 

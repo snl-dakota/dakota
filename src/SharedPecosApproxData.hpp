@@ -124,7 +124,7 @@ protected:
   void post_finalize();
 
   void store();
-  void pre_combine(short corr_type);
+  void pre_combine(short corr_type, bool swap);
   void post_combine(short corr_type);
 
 private:
@@ -203,8 +203,8 @@ inline void SharedPecosApproxData::store()
 { pecosSharedDataRep->store_data(); }
 
 
-inline void SharedPecosApproxData::pre_combine(short corr_type)
-{ pecosSharedDataRep->pre_combine_data(corr_type); }
+inline void SharedPecosApproxData::pre_combine(short corr_type, bool swap)
+{ pecosSharedDataRep->pre_combine_data(corr_type, swap); }
 
 
 inline void SharedPecosApproxData::post_combine(short corr_type)

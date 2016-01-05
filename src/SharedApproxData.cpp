@@ -37,8 +37,10 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
   buildDataOrder(1), 
-  modelExportPrefix(problem_db.get_string("model.surrogate.model_export_prefix")),
-  modelExportFormat(problem_db.get_ushort("model.surrogate.model_export_format")),
+  modelExportPrefix(
+    problem_db.get_string("model.surrogate.model_export_prefix")),
+  modelExportFormat(
+    problem_db.get_ushort("model.surrogate.model_export_format")),
   dataRep(NULL), referenceCount(1)
 {
   // increment the buildDataOrder based on derivative usage and response
@@ -462,10 +464,10 @@ void SharedApproxData::store()
 }
 
 
-void SharedApproxData::pre_combine(short corr_type)
+void SharedApproxData::pre_combine(short corr_type, bool swap)
 {
   if (dataRep)
-    dataRep->pre_combine(corr_type);
+    dataRep->pre_combine(corr_type, swap);
   else {
     Cerr << "\nError: pre_combine() not defined for this shared approximation "
 	 << "type." << std::endl;

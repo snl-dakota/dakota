@@ -676,49 +676,65 @@ const IntResponseMap& ApplicationInterface::synch()
   // Process history duplicates (see duplication_detect) since response data 
   // has been extracted from the data_pairs list.  These duplicates are not 
   // written to data_pairs or write_restart.
-  rawResponseMap.clear();
-  rawResponseMap = historyDuplicateMap;
-  historyDuplicateMap.clear();
+  size_t hist_duplicates = historyDuplicateMap.size(),
+        queue_duplicates = beforeSynchDuplicateMap.size();
+  if (hist_duplicates) {
+    rawResponseMap = historyDuplicateMap;
+    historyDuplicateMap.clear();
+  }
+  else rawResponseMap.clear();
 
-  // Process nonduplicate evaluations for either the message passing or local 
-  // asynchronous case.
-  size_t core_prp_entries = beforeSynchCorePRPQueue.size(), num_synch_jobs
-    = (coreMappings) ? core_prp_entries : beforeSynchAlgPRPQueue.size();
-  if (num_synch_jobs == 0) return rawResponseMap;
-  Cout << "\nBlocking synchronize of " << num_synch_jobs
-       << " asynchronous evaluations" << std::endl; // disincludes duplicates
-  if (core_prp_entries) {
-    if (ieMessagePass) { // single or multi-processor servers
-      if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
-      else {
-	// utilize asynch local evals to accomplish a dynamic peer schedule
-	// (even if hybrid mode not specified) unless precluded by direct
-	// interface, multiProcEvalFlag (includes single proc analysis cases),
-	// static scheduling override, or static asynch local specification.
-	if ( asynchLocalEvalStatic || multiProcEvalFlag ||
-	     (interfaceType & DIRECT_INTERFACE_BIT) ||
-	     evalScheduling == PEER_STATIC_SCHEDULING )
-	  peer_static_schedule_evaluations();
-	else // utilizes asynch local evals even if hybrid mode not specified
-	  peer_dynamic_schedule_evaluations();
+  if (coreMappings) {
+    size_t core_prp_entries = beforeSynchCorePRPQueue.size();
+    Cout << "\nBlocking synchronize of " << core_prp_entries <<" asynchronous ";
+    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    Cout << "evaluations";
+    if (hist_duplicates || queue_duplicates)
+      Cout << " and " << hist_duplicates + queue_duplicates << " duplicates";
+    Cout << std::endl;
+
+    // Process nonduplicate evaluations for either the message passing or local 
+    // asynchronous case.
+    if (core_prp_entries) {
+      if (ieMessagePass) { // single or multi-processor servers
+	if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
+	else {
+	  // utilize asynch local evals to accomplish a dynamic peer schedule
+	  // (even if hybrid mode not specified) unless precluded by direct
+	  // interface, multiProcEvalFlag (includes single proc analysis cases),
+	  // static scheduling override, or static asynch local specification.
+	  if ( asynchLocalEvalStatic || multiProcEvalFlag ||
+	       (interfaceType & DIRECT_INTERFACE_BIT) ||
+	       evalScheduling == PEER_STATIC_SCHEDULING )
+	    peer_static_schedule_evaluations();
+	  else // utilizes asynch local evals even if hybrid mode not specified
+	    peer_dynamic_schedule_evaluations();
+	}
       }
+      else // local to processor
+	asynchronous_local_evaluations(beforeSynchCorePRPQueue);
     }
-    else // local to processor
-      asynchronous_local_evaluations(beforeSynchCorePRPQueue);
+  }
+  else if (!beforeSynchAlgPRPQueue.empty()) {
+    Cout << "\nBlocking synchronize of " << beforeSynchAlgPRPQueue.size();
+    if (!interfaceId.empty()) Cout << ' ' << interfaceId;
+    Cout << " algebraic mappings" << std::endl;
   }
 
   // Now that beforeSynchCorePRPQueue processing is complete, process duplicates
   // detected within beforeSynchCorePRPQueue (see duplication_detect).
-  for (std::map<int, std::pair<PRPQueueHIter, Response> >::const_iterator
-       bsd_iter  = beforeSynchDuplicateMap.begin();
-       bsd_iter != beforeSynchDuplicateMap.end(); bsd_iter++) {
-    // due to id_vars_set_compare, the desired response set could be a subset
-    // of the beforeSynchCorePRPQueue duplicate response -> use update().
-    rawResponseMap[bsd_iter->first] = (bsd_iter->second).second;
-    rawResponseMap[bsd_iter->first].update(
-      (bsd_iter->second).first->response());
+  if (queue_duplicates) {
+    for (std::map<int, std::pair<PRPQueueHIter, Response> >::const_iterator
+	 bsd_iter  = beforeSynchDuplicateMap.begin();
+	 bsd_iter != beforeSynchDuplicateMap.end(); bsd_iter++) {
+      // due to id_vars_set_compare, the desired response set could be a subset
+      // of the beforeSynchCorePRPQueue duplicate response -> use update().
+      rawResponseMap[bsd_iter->first] = (bsd_iter->second).second;
+      rawResponseMap[bsd_iter->first].update(
+	(bsd_iter->second).first->response());
+    }
+    beforeSynchDuplicateMap.clear();
   }
-  beforeSynchDuplicateMap.clear();
   beforeSynchCorePRPQueue.clear();
 
   // Merge core mappings and algebraic mappings into rawResponseMap
@@ -746,8 +762,8 @@ const IntResponseMap& ApplicationInterface::synch()
 	rawResponseMap[alg_prp_it->eval_id()] = total_response;
       }
     }
+    beforeSynchAlgPRPQueue.clear();
   }
-  beforeSynchAlgPRPQueue.clear();
 
   if (outputLevel > QUIET_OUTPUT) // output completed responses
     for (IntRespMCIter rr_iter = rawResponseMap.begin();
@@ -769,50 +785,66 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 {
   rawResponseMap.clear();
 
-  // Test nonduplicate evaluations and add completions to rawResponseMap
-  size_t core_prp_entries = beforeSynchCorePRPQueue.size(), num_synch_jobs
-    = (coreMappings) ? core_prp_entries : beforeSynchAlgPRPQueue.size();
-  if (num_synch_jobs == 0) return rawResponseMap;
-  //if (headerFlag) // set whenever an executed job (nonduplicate) completes
-    Cout << "\nNonblocking synchronize of " << num_synch_jobs
-         << " asynchronous evaluations" << std::endl; // disincludes duplicates
-  if (core_prp_entries) {
-    if (ieMessagePass) { // single or multi-processor servers
-      if (ieDedMasterFlag)
-	master_dynamic_schedule_evaluations_nowait();
-      else {
-	if ( asynchLocalEvalStatic || multiProcEvalFlag ||
-	     (interfaceType & DIRECT_INTERFACE_BIT) ||
-	     evalScheduling == PEER_STATIC_SCHEDULING ) {
-	  //peer_static_schedule_evaluations_nowait(); // needed for override?
-	  Cerr << "Error: message passing requires nonblocking scheduler."
-	       << std::endl;
-	  abort_handler(-1);
-	}
-	else
-	  peer_dynamic_schedule_evaluations_nowait();
-      }
+  bool hist_duplicates = !historyDuplicateMap.empty(),
+      queue_duplicates = !beforeSynchDuplicateMap.empty();
+  if (coreMappings) {
+    size_t core_prp_entries = beforeSynchCorePRPQueue.size();
+    if (core_prp_entries || hist_duplicates) { //if (headerFlag) {
+      Cout << "\nNonblocking synchronize of " << core_prp_entries
+	   << " asynchronous ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluations";
+      if (hist_duplicates || queue_duplicates)
+	Cout << " and " << historyDuplicateMap.size()
+	  + beforeSynchDuplicateMap.size() << " duplicates";
+      Cout << std::endl;
     }
-    else // local to processor
-      asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
+
+    // Test nonduplicate evaluations and add completions to rawResponseMap
+    if (core_prp_entries) {
+      if (ieMessagePass) { // single or multi-processor servers
+	if (ieDedMasterFlag)
+	  master_dynamic_schedule_evaluations_nowait();
+	else {
+	  if ( asynchLocalEvalStatic || multiProcEvalFlag ||
+	       (interfaceType & DIRECT_INTERFACE_BIT) ||
+	       evalScheduling == PEER_STATIC_SCHEDULING ) {
+	    //peer_static_schedule_evaluations_nowait(); // needed for override?
+	    Cerr << "Error: message passing requires nonblocking scheduler."
+		 << std::endl;
+	    abort_handler(-1);
+	  }
+	  else
+	    peer_dynamic_schedule_evaluations_nowait();
+	}
+      }
+      else // local to processor
+	asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
+    }
+    //headerFlag = !rawResponseMap.empty();
   }
-  //headerFlag = !rawResponseMap.empty();
+  else if (!beforeSynchAlgPRPQueue.empty()) {
+    Cout << "\nNonblocking synchronize of " << beforeSynchAlgPRPQueue.size();
+    if (!interfaceId.empty()) Cout << ' ' << interfaceId;
+    Cout << " algebraic mappings" << std::endl;
+  }
 
   // Since beforeSynchCorePRPQueue processing will not in general be completed, 
   // process duplicates listed in beforeSynchDuplicateMap only if the 
   // original/nonduplicate beforeSynchCorePRPQueue job is complete.
-  for (std::map<int, std::pair<PRPQueueHIter, Response> >::iterator 
-       bsd_iter  = beforeSynchDuplicateMap.begin();
-       bsd_iter != beforeSynchDuplicateMap.end(); bsd_iter++) {
-    const ParamResponsePair& scheduled_pr = *(bsd_iter->second).first;
-    if (rawResponseMap.find(scheduled_pr.eval_id()) != rawResponseMap.end()) {
-      // due to id_vars_set_compare, the desired response set could be
-      // a subset of the duplicate response -> use update().
-      Response& response = (bsd_iter->second).second;
-      response.update(scheduled_pr.response());
-      rawResponseMap[bsd_iter->first] = response;
+  if (queue_duplicates && !rawResponseMap.empty())
+    for (std::map<int, std::pair<PRPQueueHIter, Response> >::iterator 
+	 bsd_iter  = beforeSynchDuplicateMap.begin();
+	 bsd_iter != beforeSynchDuplicateMap.end(); bsd_iter++) {
+      const ParamResponsePair& scheduled_pr = *(bsd_iter->second).first;
+      if (rawResponseMap.find(scheduled_pr.eval_id()) != rawResponseMap.end()) {
+	// due to id_vars_set_compare, the desired response set could be
+	// a subset of the duplicate response -> use update().
+	Response& response = (bsd_iter->second).second;
+	response.update(scheduled_pr.response());
+	rawResponseMap[bsd_iter->first] = response;
+      }
     }
-  }
 
   // Process history duplicates (see duplication_detect).  In the _nowait case,
   // this goes after the schedulers so as to not interfere with rawResponseMap
@@ -820,8 +852,11 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
   // streamline their rawResponseMap searches.  Note: since data_pairs is
   // checked first in duplication_detect(), it is not possible to have a
   // beforeSynchDuplicateMap entry that references a historyDuplicateMap entry.
-  rawResponseMap.insert(historyDuplicateMap.begin(), historyDuplicateMap.end());
-  historyDuplicateMap.clear();
+  if (hist_duplicates) {
+    rawResponseMap.insert(historyDuplicateMap.begin(),
+			  historyDuplicateMap.end());
+    historyDuplicateMap.clear();
+  }
 
   // Merge core mappings and algebraic mappings into rawResponseMap
   if (coreMappings && algebraicMappings) { // update completed core jobs

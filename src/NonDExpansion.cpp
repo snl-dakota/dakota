@@ -206,9 +206,10 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDExpansion::initialize(short u_space_type)
 {
-  // if multifidelity UQ, initial phase captures the model discrepancy
+  // if multifidelity UQ with hierarchical surrogates, ordered_model_fidelities
+  // is from low to high --> initial expansion is for the low fidelity model
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
 
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
   initialize_random_variable_transformation();
@@ -565,32 +566,32 @@ void NonDExpansion::quantify_uncertainty()
 {
   initialize_expansion();
 
-  // single fidelity or multifidelity discrepancy expansion
+  // single fidelity or initial low fidelity expansion
   compute_expansion();  // nominal iso/aniso expansion from input spec
   if (refineType)
     refine_expansion(); // uniform/adaptive p-/h-refinement
 
-  // multifidelity LF expansion
+  // manage multifidelity expansions
   if (iteratedModel.surrogate_type() == "hierarchical") {
-    // output and capture discrepancy results
-    Cout << "\n-------------------------------------------"
-	 << "\nMultifidelity UQ: model discrepancy results"
-	 << "\n-------------------------------------------\n\n";
+    // output and capture low fidelity results
+    Cout << "\n--------------------------------------"
+	 << "\nMultifidelity UQ: low fidelity results"
+	 << "\n--------------------------------------\n\n";
     compute_print_converged_results(true);
     // store current state.  Note: a subsequent finalize_approximation()
     // within refine_expansion() must distinguish between saved trial sets
     // and stored expansions.
     uSpaceModel.store_approximation();
 
-    // change HierarchSurrModel::responseMode to uncorrected LF model
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    increment_specification_sequence(); // advance from discrepancy to LF spec
+    // change HierarchSurrModel::responseMode to model discrepancy
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    increment_specification_sequence(); // advance from LF to discrepancy spec
     update_expansion();   // nominal iso/aniso expansion from input spec
     if (refineType)
       refine_expansion(); // uniform/adaptive p-/h-refinement
-    Cout << "\n--------------------------------------"
-	 << "\nMultifidelity UQ: low fidelity results"
-	 << "\n--------------------------------------\n\n";
+    Cout << "\n-------------------------------------------"
+	 << "\nMultifidelity UQ: model discrepancy results"
+	 << "\n-------------------------------------------\n\n";
     compute_print_converged_results(true);
 
     // compute aggregate expansion and generate its statistics
