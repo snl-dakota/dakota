@@ -38,7 +38,12 @@ list(APPEND EXT_TPL_INCDIRS
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
-# DAKOTA-specific processing of specification maintenance options
+# Input specification maintenance options
+if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
+  # Build Java utilities needed for XML (dakota.xml) to NIDR 
+  # (dakota.input.nspec) translation and/or reference manual generation.
+  add_subdirectory(java_utils)
+endif()
 include(DakotaEnableSpecMaint)
 DakotaEnableSpecMaint()
 
@@ -412,8 +417,8 @@ else()
 endif(HAVE_PECOS)
 
 
-## DAKOTA library sources.
-set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp)
+## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation
+set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp NIDR_keywds.hpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
@@ -857,11 +862,6 @@ if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
 endif()
 
-if(ENABLE_SPEC_MAINT)
-  # force dependency on generated files in source tree
-  add_dependencies(dakota_src dakota-spec-files)
-endif()
-
 if(HAVE_QUESO AND NOT DAKOTA_QUESO_CMAKE)
   # Enforce QUESO config header creation prior to compiling dakota sources
   add_dependencies(dakota_src queso_ext)
@@ -1034,32 +1034,6 @@ set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
 message(STATUS "Dakota_TPL_LIBRARIES: ${Dakota_TPL_LIBRARIES}")
 
-
-if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
-  # Build Java utilities needed for XML (dakota.xml) to NIDR 
-  # (dakota.input.nspec) translation and/or reference manual generation.
-  add_subdirectory(java_utils)
-endif()
-
-if (ENABLE_SPEC_MAINT)
-  get_target_property(xml2nidr_jar xml2nidr JAR_FILE)
-
-  # WJB - Perhaps combine custom_command with custom_target?
-  # Use dakota.xml to create dakota.input.nspec
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
-    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
-      gov.sandia.dart.dakota.XMLToNIDRTranslator
-      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
-      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-    )
-
-  # Create target, always generate XML -> NIDR during ALL target
-  add_custom_target(dakota-gen-nspec ALL 
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec)
-
-endif()
 
 if (DAKOTA_API_JAVA)
   add_subdirectory(api/java)

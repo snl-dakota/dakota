@@ -4,8 +4,20 @@
 function(DakotaEnableSpecMaint)
 
   if (ENABLE_SPEC_MAINT)
-  
-    # generate dakota.input.summary using nidrgen
+    
+    get_target_property(xml2nidr_jar xml2nidr JAR_FILE)
+
+    # xml2nidr: dakota.xml --> dakota.input.nspec
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
+      COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
+        gov.sandia.dart.dakota.XMLToNIDRTranslator
+        ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
+        ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+      )
+
+    # nidrgen: dakota.input.nspec --> dakota.input.summary
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary"
       DEPENDS nidrgen 
@@ -48,11 +60,13 @@ function(DakotaEnableSpecMaint)
 ##      )
 ## DISABLED GUI METADATA
   
-    # generate NIDR_keywds.hpp
+    # nidrgen: dakota.input.nspec --> NIDR_keywds.hpp
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp"
       DEPENDS nidrgen 
               ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+	      # Artifical dependence to force generation
+	      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
 ##  	          ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
       COMMAND ${NIDR_BINARY_DIR}/nidrgen
       ARGS    dakota.input.nspec > NIDR_keywds.hpp
@@ -64,17 +78,17 @@ function(DakotaEnableSpecMaint)
       )
   
     # create a special target and add to "all" target
-    add_custom_target(dakota-spec-files 
-      ALL
-      DEPENDS ##nidrgen
-              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
-              ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp
-## DISABLED GUI METADATA
-##  	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
-##  	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h
-## DISABLED GUI METADATA
-      VERBATIM
-      )
+#    add_custom_target(dakota-spec-files 
+#      ALL
+#      DEPENDS ##nidrgen
+#              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
+#              ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp
+### DISABLED GUI METADATA
+###  	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
+###  	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h
+### DISABLED GUI METADATA
+#      VERBATIM
+#      )
   
 ## DISABLED GUI METADATA
 ##    # Target jaguar-files builds targets needed for jaguar that are not
