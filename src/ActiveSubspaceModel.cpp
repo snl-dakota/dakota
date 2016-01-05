@@ -189,7 +189,7 @@ void ActiveSubspaceModel::validate_inputs()
 
 /** May eventually take on init_comms and related operations.  Also
     may want ide of build/update like DataFitSurrModel, eventually. */
-void ActiveSubspaceModel::initialize()
+bool ActiveSubspaceModel::init_mapping()
 {
   // runtime operation to identify the subspace model (if not later
   // returning to update the subpsace)
@@ -205,8 +205,19 @@ void ActiveSubspaceModel::initialize()
 
   // update with subspace constraints
   update_linear_constraints();
+
+  if (reducedRank != numFullspaceVars)
+    return true; // Size of variables has changed
+  else
+    return false; // Size of variables is the same
 }
 
+
+bool ActiveSubspaceModel::finalize_mapping()
+{
+  // TODO: return to full space
+  return false; // This will become true when TODO is implemented.
+}
 
 void ActiveSubspaceModel::init_fullspace_sampler()
 {

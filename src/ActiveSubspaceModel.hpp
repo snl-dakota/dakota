@@ -66,9 +66,13 @@ public:
   /// destructor
   ~ActiveSubspaceModel();
 
-  /// sample the full space to identify the subspace, and finish
-  /// initializing the RecastModel so we have valid variables/responses
-  void initialize();
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  bool init_mapping();
+  bool finalize_mapping();
 
 protected:
 

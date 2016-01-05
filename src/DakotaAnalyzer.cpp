@@ -129,6 +129,14 @@ void Analyzer::initialize_run()
     // This is needed for reused objects.
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
+    // Initialize model:
+    bool var_size_changed = iteratedModel.model_rep()->init_mapping();
+
+    if (var_size_changed) {
+      // Resize
+      // TODO: update the iterator based on a different number of variables
+    }
+
     // Do not reset the evaluation reference for sub-iterators
     // (previously managed via presence/absence of ostream)
     //if (!subIteratorFlag)

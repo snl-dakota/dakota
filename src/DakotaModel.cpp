@@ -2701,6 +2701,20 @@ int Model::derivative_concurrency() const
 }
 
 
+bool Model::init_mapping()
+{
+  // Base class default behavior is no-op
+  return false; // Variables size did not change
+}
+
+
+bool Model::finalize_mapping()
+{
+  // Base class default behavior is no-op
+  return false; // Variables size did not change
+}
+
+
 void Model::build_approximation()
 {
   if (modelRep) // envelope fwd to letter

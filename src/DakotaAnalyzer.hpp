@@ -92,6 +92,7 @@ protected:
 
   void initialize_run();
   void post_run(std::ostream& s);
+  void finalize_run();
 
   void pre_output();
 
@@ -278,6 +279,22 @@ inline void Analyzer::response_results_active_set(const ActiveSet& set)
 
 inline bool Analyzer::compact_mode() const
 { return compactMode; }
+
+
+inline void Analyzer::finalize_run()
+{
+  if (!iteratedModel.is_null()) {
+    // finalize model:
+    bool var_size_changed = iteratedModel.model_rep()->finalize_mapping();
+
+    if (var_size_changed) {
+      // Resize
+      // TODO: update the iterator based on a different number of variables
+    }
+  }
+
+  Iterator::finalize_run(); // included for completeness
+}
 
 } // namespace Dakota
 

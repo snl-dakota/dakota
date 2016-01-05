@@ -301,6 +301,16 @@ inline Real Minimizer::constraint_tolerance() const
 
 inline void Minimizer::finalize_run()
 {
+  if (!iteratedModel.is_null()) {
+    // finalize model:
+    bool var_size_changed = iteratedModel.model_rep()->finalize_mapping();
+
+    if (var_size_changed) {
+      // Resize
+      // TODO: update the iterator based on a different number of variables
+    }
+  }
+
   // Restore previous object instance in case of recursion.
   minimizerInstance = prevMinInstance;
   Iterator::finalize_run(); // included for completeness
