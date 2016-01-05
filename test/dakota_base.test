@@ -18612,8 +18612,9 @@ Moment statistics for each response function:
   integration:  5.0000000000e-01  4.2646805273e+00  2.2392833690e+00  4.2066673752e+01
 response_fn_1 Sobol' indices:
                                   Main             Total
-                      8.5223367698e-01  8.5223367698e-01 x1
-                      7.9037800687e-02  7.9037800687e-02 x2
+                      8.5223367698e-01  9.2096219931e-01 x1
+                      7.9037800687e-02  1.4776632302e-01 x2
+                      6.8728522337e-02 x1 x2 
 Test Number 1 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+00  He0  He0
