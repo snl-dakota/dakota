@@ -130,7 +130,7 @@ void Analyzer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // Initialize model:
-    bool var_size_changed = iteratedModel.model_rep()->initialize_mapping();
+    bool var_size_changed = iteratedModel.initialize_mapping();
 
     if (var_size_changed) {
       // Resize

@@ -285,7 +285,7 @@ inline void Analyzer::finalize_run()
 {
   if (!iteratedModel.is_null()) {
     // finalize model:
-    bool var_size_changed = iteratedModel.model_rep()->finalize_mapping();
+    bool var_size_changed = iteratedModel.finalize_mapping();
 
     if (var_size_changed) {
       // Resize

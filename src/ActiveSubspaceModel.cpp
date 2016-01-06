@@ -191,6 +191,9 @@ void ActiveSubspaceModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping()
 {
+  // TODO: create modes to switch between active, inactive, and complete
+  //       subspaces
+
   // runtime operation to identify the subspace model (if not later
   // returning to update the subpsace)
   identify_subspace();
