@@ -43,6 +43,8 @@ SingleModel::SingleModel(ProblemDescDB& problem_db):
 void SingleModel::
 initialize_solution_control(const String& control, const RealVector& cost)
 {
+  if (control.empty()) return; // TO DO: defaults...
+  
   // find the variable label used for solution control within the
   // inactive discrete variables
   solnControlVarIndex = find_index(
