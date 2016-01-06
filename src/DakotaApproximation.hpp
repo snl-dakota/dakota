@@ -117,7 +117,8 @@ public:
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   virtual Real challenge_diagnostic(const String& metric_type,
-				    const RealMatrix& challenge_points);
+				    const RealMatrix& challenge_points,
+                                    int fn_index);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   virtual void challenge_diagnostics(const RealMatrix& challenge_points, 

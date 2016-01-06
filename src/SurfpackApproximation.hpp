@@ -118,6 +118,14 @@ protected:
   /// challenge pts
   void challenge_diagnostics(const RealMatrix& challenge_points, int fn_index);
 
+  /// compute and return cross-validation for metric_type with num_folds
+  Real cv_diagnostic(const String& metric_type, unsigned num_folds);
+  /// compute and print all requested diagnostics for user provided
+  /// challenge pts
+  Real challenge_diagnostic(const String& metric_type,
+			    const RealMatrix& challenge_points,
+                            int fn_index);
+ 
 private:
 
   //

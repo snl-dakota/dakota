@@ -864,7 +864,31 @@ challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
 
 }
 
+Real SurfpackApproximation::cv_diagnostic(const String &metric_type, 
+                                          unsigned num_folds) {
+  StringArray diag_set;
+  diag_set.push_back(metric_type);
+  CrossValidationFitness CV_fitness(num_folds);
+  VecDbl cv_metrics;
+  CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
+  return cv_metrics[0];
+}
 
+Real SurfpackApproximation::challenge_diagnostic(const String& metric_type,
+                          const RealMatrix& challenge_points,
+                          int fn_index) {
+  // JAS: painful but probably unavoidable data copy on every call.
+  SurfData chal_data;
+  size_t num_v = sharedDataRep->numVars;
+  for (size_t row=0; row<challenge_points.numRows(); ++row) {
+    RealArray x(num_v);
+    for (size_t col=0; col<num_v; ++col)
+      x[col] = challenge_points[col][row];
+      Real f = challenge_points[num_v + fn_index][row];
+      chal_data.addPoint(SurfPoint(x, f));
+  }
+  return diagnostic(metric_type, *model, chal_data);
+}
 
 /** Copy the data stored in Dakota-style SurrogateData into
     Surfpack-style SurfPoint and SurfData objects. */

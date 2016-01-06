@@ -804,7 +804,9 @@ challenge_diagnostics(const String& metric_type,
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     chall_diags.push_back(functionSurfaces[index].
-			  challenge_diagnostic(metric_type, challenge_points));
+			  challenge_diagnostic(metric_type, 
+                                               challenge_points,
+                                               index));
   }
   return chall_diags;
 }

@@ -515,7 +515,8 @@ void Approximation::primary_diagnostics(int fn_index)
 
 Real Approximation::
 challenge_diagnostic(const String& metric_type,
-		     const RealMatrix& challenge_points)
+		     const RealMatrix& challenge_points,
+                     int fn_index)
 {
   if (!approxRep) {
     Cerr << "Error: challenge_diagnostic() not available for this approximation " 
@@ -523,7 +524,7 @@ challenge_diagnostic(const String& metric_type,
     abort_handler(-1);
   }
 
-  return approxRep->challenge_diagnostic(metric_type, challenge_points);
+  return approxRep->challenge_diagnostic(metric_type, challenge_points, fn_index);
 }
 
 
