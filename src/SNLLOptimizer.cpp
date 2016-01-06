@@ -465,7 +465,7 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
     snllOptInstance->iteratedModel.continuous_variables(x);
-    snllOptInstance->iteratedModel.compute_response();// default active set
+    snllOptInstance->iteratedModel.evaluate();// default active set
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
     // constraint eval, assume for now that a matching constraint eval might
@@ -548,8 +548,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
     //  for (i=0; i<snllOptInstance->numNonlinearConstraints; i++)
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
-    snllOptInstance->
-      iteratedModel.compute_response(snllOptInstance->activeSet);
+    snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
     lastFnEvalLocn = NLFEvaluator;
   }
 
@@ -637,8 +636,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
     //  for (i=0; i<snllOptInstance->numNonlinearConstraints; i++)
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
-    snllOptInstance->
-      iteratedModel.compute_response(snllOptInstance->activeSet);
+    snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
     lastFnEvalLocn = NLFEvaluator;
   }
 
@@ -677,12 +675,12 @@ constraint0_evaluator(int n, const RealVector& x, RealVector& g,
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator called with mode = 1";
 
-  // set model variables prior to compute_response()
+  // set model variables prior to evaluate()
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator vars = \n" << x;
   snllOptInstance->iteratedModel.continuous_variables(x);
 
-  snllOptInstance->iteratedModel.compute_response(); // default active set
+  snllOptInstance->iteratedModel.evaluate(); // default active set
   lastFnEvalLocn = CONEvaluator;
   lastEvalVars   = x;
 
@@ -703,14 +701,13 @@ constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
     Cout << "\nSNLLOptimizer::constraint1_evaluator called with mode = "
          << mode;
 
-  // set model variables and active set prior to compute_response()
+  // set model variables and active set prior to evaluate()
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint1_evaluator vars = \n" << x;
   snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->activeSet.request_values(mode);
-  snllOptInstance->
-    iteratedModel.compute_response(snllOptInstance->activeSet);
+  snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = mode;
   lastEvalVars   = x;
@@ -742,14 +739,13 @@ constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
     Cout << "\nSNLLOptimizer::constraint2_evaluator called with mode = "
          << mode;
 
-  // set model variables and active set prior to compute_response().
+  // set model variables and active set prior to evaluate().
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint2_evaluator vars = \n" << x;
   snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->activeSet.request_values(mode);
-  snllOptInstance->
-    iteratedModel.compute_response(snllOptInstance->activeSet);
+  snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = mode;
   lastEvalVars   = x;

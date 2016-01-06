@@ -285,7 +285,7 @@ namespace Dakota
 			for(int i = 0; i < new_Xs.size(); i++) 
 			{
 				iteratedModel.continuous_variables(new_Xs[i]);
-				iteratedModel.compute_response();
+				iteratedModel.evaluate();
 				responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
 										iteratedModel.current_response()));
 				points_to_add.push_back(iteratedModel.current_variables());
@@ -615,7 +615,7 @@ void NonDAdaptiveSampling::output_round_data(int round, int respFnCount)
 
   for(int i = 0; i < validationSetSize; i++) {
     surrogate_model.continuous_variables(validationSet[i]);
-    surrogate_model.compute_response();
+    surrogate_model.evaluate();
     yModel[i] = surrogate_model.current_response().function_value(respFnCount);
 
     if(outputValidationData) {
@@ -692,7 +692,7 @@ void NonDAdaptiveSampling::output_round_data(int round, int respFnCount)
 
     for(int i = 0; i < new_Xs.size(); i++) {
       iteratedModel.continuous_variables(new_Xs[i]);
-      iteratedModel.compute_response();
+      iteratedModel.evaluate();
 
       for(int j = 0; j < new_Xs[i].length(); j++)
         candidate_out << new_Xs[i][j] << " ";
@@ -872,7 +872,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       
       Cout << "Updaing surrogate" << std::endl;
       gpModel.continuous_variables(gpCvars[max_index]);
-      gpModel.compute_response();
+      gpModel.evaluate();
       Response current_response = gpModel.current_response();
       current_response.function_value_view(respFnCount) = mean_value;
       IntResponsePair response_to_add(gpModel.evaluation_id(),current_response);
@@ -1199,7 +1199,7 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
 
   Model& surrogate_model = gpModel.surrogate_model();
   surrogate_model.continuous_variables(test_point);
-  surrogate_model.compute_response();
+  surrogate_model.evaluate();
   Real guessed_value = 
     surrogate_model.current_response().function_value(respFnCount);
 
@@ -1237,7 +1237,7 @@ Real NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount,
 
   Model& surrogate_model = gpModel.surrogate_model();
   surrogate_model.continuous_variables(test_point);
-  surrogate_model.compute_response();
+  surrogate_model.evaluate();
   temp_x[test_point.length()] = 
     surrogate_model.current_response().function_value(respFnCount);
   Real ret_value = ScoreTOPOB((*AMSC), temp_x);
@@ -1269,7 +1269,7 @@ Real NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount,
 
   Model& surrogate_model = gpModel.surrogate_model();
   surrogate_model.continuous_variables(test_point);
-  surrogate_model.compute_response();
+  surrogate_model.evaluate();
   temp_x[test_point.length()] = 
     surrogate_model.current_response().function_value(respFnCount);
   Real ret_value = ScoreTOPOP((*AMSC), temp_x);
@@ -1297,7 +1297,7 @@ Real NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount,
 
   Model& surrogate_model = gpModel.surrogate_model();
   surrogate_model.continuous_variables(test_point);
-  surrogate_model.compute_response();
+  surrogate_model.evaluate();
   temp_x[test_point.length()] 
     = surrogate_model.current_response().function_value(respFnCount);
   Real ret_value = ScoreTOPOP((*AMSC), temp_x);

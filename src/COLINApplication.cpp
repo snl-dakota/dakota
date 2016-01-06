@@ -283,7 +283,7 @@ spawn_evaluation_impl(const utilib::Any &domain,
 
   colin_request_to_dakota_request(domain, requests, seed);
 
-  iteratedModel.asynch_compute_response();
+  iteratedModel.evaluate_nowait();
 
   return(iteratedModel.evaluation_id());
 }
@@ -306,7 +306,7 @@ perform_evaluation_impl(const utilib::Any &domain,
 
   colin_request_to_dakota_request(domain, requests, seed);
 
-  iteratedModel.compute_response();
+  iteratedModel.evaluate();
 
   dakota_response_to_colin_response(iteratedModel.current_response(), colin_responses);
 }

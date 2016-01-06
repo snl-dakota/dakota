@@ -249,7 +249,7 @@ void NLPQLPOptimizer::initialize_run()
 
 void NLPQLPOptimizer::core_run()
 {
-  // TO DO: utilize L concurrency with asynch_compute_response()/synchronize()
+  // TO DO: utilize L concurrency with evaluate_nowait()/synchronize()
 
   const RealVector& cdv_lower_bnds
     = iteratedModel.continuous_lower_bounds();
@@ -304,7 +304,7 @@ void NLPQLPOptimizer::core_run()
       copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
       iteratedModel.continuous_variables(local_cdv);
     }
-    iteratedModel.compute_response(activeSet);
+    iteratedModel.evaluate(activeSet);
     const Response& local_response = iteratedModel.current_response();
 
     // pack up the response function values

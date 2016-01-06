@@ -1302,7 +1302,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
 /** Update subModel's inactive variables with active variables from
     currentVariables, compute the optional interface and sub-iterator
     responses, and map these to the total model response. */
-void NestedModel::derived_compute_response(const ActiveSet& set)
+void NestedModel::derived_evaluate(const ActiveSet& set)
 {
   ++nestedModelEvalCntr;
 
@@ -1357,9 +1357,9 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
     ParLevLIter pl_iter
       = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
     if (subIteratorSched.messagePass) {
-      // For derived_compute_response(), subIterator scheduling would not
+      // For derived_evaluate(), subIterator scheduling would not
       // normally be expected, but singleton jobs could use this fn assuming
-      // no dedicated master overload (enforced in Model::compute_response()).
+      // no dedicated master overload (enforced in Model::evaluate()).
       // Given this protection, don't schedule the job -- execute it locally.
       if (subIteratorSched.iteratorScheduling == PEER_SCHEDULING &&
 	  subIteratorSched.peerAssignJobs) {
@@ -1412,7 +1412,7 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
 
 /** Asynchronous execution of subIterator on subModel and, optionally,
     optionalInterface. */
-void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
+void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++nestedModelEvalCntr;
 

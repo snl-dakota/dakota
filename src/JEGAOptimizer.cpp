@@ -2112,14 +2112,14 @@ JEGAOptimizer::Evaluator::Evaluate(
             // The following method call will use the default
             // Active set vector which is to just compute
             // function values, no gradients or hessians.
-            this->_model.asynch_compute_response();
+            this->_model.evaluate_nowait();
         }
         else
         {
             // The following method call will use the default
             // Active set vector which is to just compute
             // function values, no gradients or hessians.
-            this->_model.compute_response();
+            this->_model.evaluate();
 
             // increment the number of performed evaluations by 1
             this->IncrementNumberEvaluations();

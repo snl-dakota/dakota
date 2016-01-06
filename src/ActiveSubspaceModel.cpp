@@ -256,7 +256,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // of concurrency: 
   //  - fullspaceSampler(subModel) with initialSamples
   //  - fullspaceSampler(subModel) with batchSamples
-  //  - direct compute_response() of verif_samples, one at a time
+  //  - direct evaluate() of verif_samples, one at a time
 
   // The inbound subMmodel concurrency accounts for any finite differences
 
@@ -894,7 +894,7 @@ assess_reconstruction(bool& recon_tol_met)
 
   // evaluate model at nominal values
   subModel.continuous_variables(nominal_vars);
-  subModel.compute_response(active_set);
+  subModel.evaluate(active_set);
   const RealVector& ynominal =
     subModel.current_response().function_values();
 
@@ -905,7 +905,7 @@ assess_reconstruction(bool& recon_tol_met)
   RealMatrix Kmat(verif_samples, numFunctions);
   for (int j=0; j<verif_samples; ++j) {
     subModel.continuous_variables(getCol(Teuchos::View, perp_points, j));
-    subModel.compute_response(active_set);
+    subModel.evaluate(active_set);
     // compute y(perp) - y(nominal)
     RealVector deviation(subModel.current_response().function_values());
     deviation -= ynominal;
@@ -1193,7 +1193,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   //   Cout << x_reduced << std::endl;
 
   //   vars_transform_model.continuous_variables(x_reduced);
-  //   vars_transform_model.compute_response();
+  //   vars_transform_model.evaluate();
 
 }
 

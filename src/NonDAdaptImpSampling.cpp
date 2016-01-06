@@ -652,9 +652,9 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
 
     // get response value at the sample point
     if (asynch_flag) // set from uSpaceModel for stand-alone or on-the-fly
-      uSpaceModel.asynch_compute_response(set);
+      uSpaceModel.evaluate_nowait(set);
     else {
-      uSpaceModel.compute_response(set);
+      uSpaceModel.evaluate(set);
       fn_samples[i]
 	= uSpaceModel.current_response().function_value(respFnIndex);
     }

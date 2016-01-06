@@ -896,7 +896,7 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
         iteratedModel.continuous_variables(newX);
         // bypass the surrogate model to evaluate the underlying truth model
         iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-        iteratedModel.compute_response();
+        iteratedModel.evaluate();
         
         // TODO: later, generalize DataFitSurrModel to automatically
         // cache the points when in bypass mode
@@ -929,7 +929,7 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
         // TODO: use active_set_vector for efficiency if you truly only
         // need 1 response function?
         
-        iteratedModel.compute_response();
+        iteratedModel.evaluate();
         
         const RealVector& fn_vals = iteratedModel.current_response().function_values();
         

@@ -169,7 +169,7 @@ EffGlobalMinimizer::~EffGlobalMinimizer()
 
 void EffGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
-  // iteratedModel is evaluated to add truth data (single compute_response())
+  // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   // approxSubProbMinimizer.init_communicators() recursion is currently
@@ -196,7 +196,7 @@ void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
   // is not otherwise covered by the recursion.
   //fHatModel.free_communicators(pl_iter, fHatMaxConcurrency);
 
-  // iteratedModel is evaluated to add truth data (single compute_response())
+  // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 */
@@ -276,7 +276,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
     // Get expected value for output
     fHatModel.continuous_variables(c_vars);
-    fHatModel.compute_response();
+    fHatModel.evaluate();
     const RealVector& mean = fHatModel.current_response().function_values();
     Real aug_lag = augmented_lagrangian_merit(mean,
       iteratedModel.primary_response_fn_sense(),
@@ -344,7 +344,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       iteratedModel.continuous_variables(c_vars);
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(dataOrder);
-      iteratedModel.compute_response(set);
+      iteratedModel.evaluate(set);
       IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
 				      iteratedModel.current_response());
     
@@ -420,7 +420,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 	  test_pt[1] = lbnd[1] + float(k)*interval1;
       
 	  fHatModel.continuous_variables(test_pt);
-	  fHatModel.compute_response();
+	  fHatModel.evaluate();
 	  const Response& gp_resp = fHatModel.current_response();
 	  const RealVector& gp_fn = gp_resp.function_values();
 	  
@@ -602,7 +602,7 @@ void EffGlobalMinimizer::get_best_sample()
     const RealVector& sams = gp_data_0.continuous_variables(i);
 
     fHatModel.continuous_variables(sams);
-    fHatModel.compute_response();
+    fHatModel.evaluate();
     const RealVector& f_hat = fHatModel.current_response().function_values();
     fn = augmented_lagrangian_merit(f_hat,
       iteratedModel.primary_response_fn_sense(),

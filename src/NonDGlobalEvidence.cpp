@@ -183,7 +183,7 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
 		
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
-    fHatModel.compute_response(set);
+    fHatModel.evaluate(set);
     approxFnStar = fHatModel.current_response().function_value(respFnCntr);
   }
 #ifdef DEBUG

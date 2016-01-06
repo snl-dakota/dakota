@@ -114,7 +114,7 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
     //iteratedModel.discrete_int_variables(di_vars);
     //iteratedModel.discrete_string_variables(ds_vars);
     //iteratedModel.discrete_real_variables(dr_vars);
-    iteratedModel.asynch_compute_response(activeSet);
+    iteratedModel.evaluate_nowait(activeSet);
   }
   const IntResponseMap& response_map = iteratedModel.synchronize();
   IntRespMCIter   r_cit = response_map.begin();

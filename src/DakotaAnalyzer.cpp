@@ -198,9 +198,9 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 
     // compute the response
     if (asynch_flag)
-      model.asynch_compute_response(activeSet);
+      model.evaluate_nowait(activeSet);
     else {
-      model.compute_response(activeSet);
+      model.evaluate(activeSet);
       const Response& resp = model.current_response();
       int eval_id = model.evaluation_id();
       if (log_best_flag) // update best variables/response

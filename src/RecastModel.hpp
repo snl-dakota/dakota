@@ -182,12 +182,12 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  /// portion of compute_response() specific to RecastModel
-  /// (forward to subModel.compute_response())
-  void derived_compute_response(const ActiveSet& set);
-  /// portion of asynch_compute_response() specific to RecastModel
-  /// (forward to subModel.asynch_compute_response())
-  void derived_asynch_compute_response(const ActiveSet& set);
+  /// portion of evaluate() specific to RecastModel
+  /// (forward to subModel.evaluate())
+  void derived_evaluate(const ActiveSet& set);
+  /// portion of evaluate_nowait() specific to RecastModel
+  /// (forward to subModel.evaluate_nowait())
+  void derived_evaluate_nowait(const ActiveSet& set);
   /// portion of synchronize() specific to RecastModel
   /// (forward to subModel.synchronize())
   const IntResponseMap& derived_synchronize();
@@ -399,14 +399,14 @@ private:
   /// augment the subModel function value/gradient requirements.
   BoolDequeArray nonlinearRespMapping;
 
-  /// map of recast active set passed to derived_asynch_compute_response().
+  /// map of recast active set passed to derived_evaluate_nowait().
   /// Needed for currentResponse update in synchronization routines.
   IntActiveSetMap recastSetMap;
-  /// map of recast variables used by derived_asynch_compute_response().
+  /// map of recast variables used by derived_evaluate_nowait().
   /// Needed for primaryRespMapping() and secondaryRespMapping() in
   /// synchronization routines.
   IntVariablesMap recastVarsMap;
-  /// map of subModel variables used by derived_asynch_compute_response().
+  /// map of subModel variables used by derived_evaluate_nowait().
   /// Needed for primaryRespMapping() and secondaryRespMapping() in
   /// synchronization routines.
   IntVariablesMap subModelVarsMap;

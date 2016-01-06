@@ -135,7 +135,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   // This aggressive logic is appropriate for invocations of the Model via
   // Iterator::run(), but is fragile w.r.t. invocations of the Model outside
-  // this scope (e.g., Model::compute_response() within SBLMinimizer).  The
+  // this scope (e.g., Model::evaluate() within SBLMinimizer).  The
   // default responseMode value is AUTO_CORRECTED_SURROGATE, which mitigates
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
@@ -222,7 +222,7 @@ void HierarchSurrModel::build_approximation()
   // -->> move lowFidelityModel out and restructure if(!approxBuilds)
   //ActiveSet temp_set = lowFidelityModel.current_response().active_set();
   //temp_set.request_values(1);
-  //lowFidelityModel.compute_response(temp_set);
+  //lowFidelityModel.evaluate(temp_set);
   //const Response& lo_fi_response = lowFidelityModel.current_response();
 
   if (hierarchicalTagging) {
@@ -250,7 +250,7 @@ void HierarchSurrModel::build_approximation()
   asv_mapping(total_asv, hf_asv, lf_asv, true);
   ActiveSet hf_set = highFidRefResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  highFidelityModel.compute_response(hf_set);
+  highFidelityModel.evaluate(hf_set);
   highFidRefResponse.update(highFidelityModel.current_response());
 
   // could compute the correction to lowFidelityModel here, but rely on an
@@ -306,7 +306,7 @@ build_approximation(const RealVector& c_vars, const Response& response)
     portion, compute the high fidelity response if needed with
     build_approximation(), and, if correction is active, correct the
     low fidelity results. */
-void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
+void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++hierModelEvalCntr;
 
@@ -340,7 +340,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet hi_fi_set = set; hi_fi_set.request_vector(hi_fi_asv);
-      highFidelityModel.compute_response(hi_fi_set);
+      highFidelityModel.evaluate(hi_fi_set);
       if (mixed_eval)
 	hi_fi_response = highFidelityModel.current_response(); // shared rep
       else {
@@ -350,12 +350,12 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
       break;
     }
     case BYPASS_SURROGATE:
-      highFidelityModel.compute_response(set);
+      highFidelityModel.evaluate(set);
       currentResponse.active_set(set);
       currentResponse.update(highFidelityModel.current_response());
       break;
     case MODEL_DISCREPANCY:
-      highFidelityModel.compute_response(set);
+      highFidelityModel.evaluate(set);
       break;
     }
   }
@@ -380,9 +380,9 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
       lo_fi_set = set; lo_fi_set.request_vector(lo_fi_asv);
-      lowFidelityModel.compute_response(lo_fi_set); break;
+      lowFidelityModel.evaluate(lo_fi_set); break;
     case MODEL_DISCREPANCY:
-      lowFidelityModel.compute_response(set);       break;
+      lowFidelityModel.evaluate(set);       break;
     }
 
     // post-process
@@ -441,7 +441,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     portion, compute the high fidelity response with build_approximation()
     (for correcting the low fidelity results in derived_synchronize() and
     derived_synchronize_nowait()) if not performed previously. */
-void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
+void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++hierModelEvalCntr;
 
@@ -497,20 +497,20 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
   }
 
   // HierarchSurrModel's asynchEvalFlag is set if _either_ LF or HF is
-  // asynchronous, resulting in use of derived_asynch_compute_response().
+  // asynchronous, resulting in use of derived_evaluate_nowait().
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
 
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    highFidelityModel.asynch_compute_response(hi_fi_set);
+    highFidelityModel.evaluate_nowait(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
     truthIdMap[highFidelityModel.evaluation_id()] = hierModelEvalCntr;
   }
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
-    lowFidelityModel.asynch_compute_response(lo_fi_set);
+    lowFidelityModel.evaluate_nowait(lo_fi_set);
     // store map from LF eval id to HierarchSurrModel id
     surrIdMap[lowFidelityModel.evaluation_id()] = hierModelEvalCntr;
     // store variables set needed for correction
@@ -521,13 +521,13 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
   // now launch any blocking evals
   if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
     component_parallel_mode(HF_MODEL);
-    highFidelityModel.compute_response(hi_fi_set);
+    highFidelityModel.evaluate(hi_fi_set);
     cachedTruthRespMap[highFidelityModel.evaluation_id()]
       = highFidelityModel.current_response().copy();
   }
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
     component_parallel_mode(LF_MODEL);
-    lowFidelityModel.compute_response(lo_fi_set);
+    lowFidelityModel.evaluate(lo_fi_set);
     Response lo_fi_response(lowFidelityModel.current_response().copy());
     // correct LF response prior to caching
     if (responseMode == AUTO_CORRECTED_SURROGATE) {
@@ -547,7 +547,7 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     highFidelityModel, or both (mixed case).  For the lowFidelityModel
     portion, apply correction (if active) to each response in the array.
     derived_synchronize() is designed for the general case where
-    derived_asynch_compute_response() may be inconsistent in its use
+    derived_evaluate_nowait() may be inconsistent in its use
     of low fidelity evaluations, high fidelity evaluations, or both. */
 const IntResponseMap& HierarchSurrModel::derived_synchronize()
 {
@@ -595,7 +595,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       // add cached truth evals for processing, where evals are cached from:
       // (a) recovered HF asynch evals that could not be returned since LF
       //     eval portions were still pending, or
-      // (b) synchronous HF evals performed within asynch_compute_response()
+      // (b) synchronous HF evals performed within evaluate_nowait()
       for (IntRespMCIter r_cit = cachedTruthRespMap.begin();
 	   r_cit != cachedTruthRespMap.end(); ++r_cit)
 	hi_fi_resp_map_proxy[r_cit->first] = r_cit->second;
@@ -653,7 +653,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       // add cached approx evals for processing, where evals are cached from:
       // (a) recovered LF asynch evals that could not be returned since HF
       //     eval portions were still pending, or
-      // (b) synchronous LF evals performed within asynch_compute_response()
+      // (b) synchronous LF evals performed within evaluate_nowait()
       // Do not correct them a second time.
       for (IntRespMCIter r_cit = cachedApproxRespMap.begin();
 	   r_cit != cachedApproxRespMap.end(); ++r_cit)
@@ -716,7 +716,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     lowFidelityModel, highFidelityModel, or both (mixed case).  For
     the lowFidelityModel portion, apply correction (if active) to each
     response in the map.  derived_synchronize_nowait() is designed for
-    the general case where derived_asynch_compute_response() may be
+    the general case where derived_evaluate_nowait() may be
     inconsistent in its use of actual evals, approx evals, or both. */
 const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
 {
@@ -754,7 +754,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       // add cached truth evals for processing, where evals are cached from:
       // (a) recovered HF asynch evals that could not be returned since LF
       //     eval portions were still pending, or
-      // (b) synchronous HF evals performed within asynch_compute_response()
+      // (b) synchronous HF evals performed within evaluate_nowait()
       for (IntRespMCIter r_cit = cachedTruthRespMap.begin();
 	   r_cit != cachedTruthRespMap.end(); ++r_cit)
 	hi_fi_resp_map_proxy[r_cit->first] = r_cit->second;
@@ -816,7 +816,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       // add cached approx evals for processing, where evals are cached from:
       // (a) recovered LF asynch evals that could not be returned since HF
       //     eval portions were still pending, or
-      // (b) synchronous LF evals performed within asynch_compute_response()
+      // (b) synchronous LF evals performed within evaluate_nowait()
       // Do not correct them a second time.
       for (IntRespMCIter r_cit = cachedApproxRespMap.begin();
 	   r_cit != cachedApproxRespMap.end(); ++r_cit)

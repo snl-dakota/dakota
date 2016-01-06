@@ -185,9 +185,9 @@ void SurrBasedGlobalMinimizer::core_run()
 
       // request the evaluation in synchronous or asyncronous mode.
       if (truth_asynch_flag)
-        truth_model.asynch_compute_response();
+        truth_model.evaluate_nowait();
       else {
-        truth_model.compute_response();
+        truth_model.evaluate();
 	truth_resp_results[truth_model.evaluation_id()]
 	  = truth_model.current_response().copy();
       }

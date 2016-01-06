@@ -283,7 +283,7 @@ public:
 
   /// Return a flag indicating the combination of multiprocessor
   /// evaluations and a dedicated master iterator scheduling.  Used
-  /// in synchronous compute_response functions to prevent the error
+  /// in synchronous evaluate functions to prevent the error
   /// of trying to run a multiprocessor job on the master.
   virtual bool derived_master_overload() const;
 
@@ -322,22 +322,22 @@ public:
   /// return the sub-models in nested and surrogate models
   ModelList& subordinate_models(bool recurse_flag = true);
 
-  // TO DO: synchronous compute_response() should return int codes for
+  // TO DO: synchronous evaluate() should return int codes for
   // algorithm-specific mitigation of captured failures
 
   /// Compute the Response at currentVariables (default ActiveSet).
-  void compute_response();
+  void evaluate();
   /// Compute the Response at currentVariables (specified ActiveSet).
-  void compute_response(const ActiveSet& set);
+  void evaluate(const ActiveSet& set);
 
   /// Spawn an asynchronous job (or jobs) that computes the value of the 
   /// Response at currentVariables (default ActiveSet).
-  void asynch_compute_response();
+  void evaluate_nowait();
   /// Spawn an asynchronous job (or jobs) that computes the value of the 
   /// Response at currentVariables (specified ActiveSet).
-  void asynch_compute_response(const ActiveSet& set);
+  void evaluate_nowait(const ActiveSet& set);
 
-  // TO DO: for asynch_compute_response(), add access fns for ShortArray/List
+  // TO DO: for evaluate_nowait(), add access fns for ShortArray/List
   // return codes for algorithm-specific mitigation of captured failures.
 
   /// Execute a blocking scheduling algorithm to collect the
@@ -966,7 +966,7 @@ public:
   ParConfigLIter parallel_configuration_iterator() const;
 
   /// set modelAutoGraphicsFlag to activate posting of graphics data within
-  /// compute_response/synchronize functions (automatic graphics posting in
+  /// evaluate/synchronize functions (automatic graphics posting in
   /// the model as opposed to graphics posting at the strategy level).
   void auto_graphics(const bool flag);
 
@@ -1015,10 +1015,10 @@ protected:
   //- Heading: Virtual functions
   //
 
-  /// portion of compute_response() specific to derived model classes
-  virtual void derived_compute_response(const ActiveSet& set);
-  /// portion of asynch_compute_response() specific to derived model classes
-  virtual void derived_asynch_compute_response(const ActiveSet& set);
+  /// portion of evaluate() specific to derived model classes
+  virtual void derived_evaluate(const ActiveSet& set);
+  /// portion of evaluate_nowait() specific to derived model classes
+  virtual void derived_evaluate_nowait(const ActiveSet& set);
 
   /// portion of synchronize() specific to derived model classes
   virtual const IntResponseMap& derived_synchronize();
@@ -1229,7 +1229,7 @@ protected:
   /// modified by Recasting
   ScalingOptions scalingOpts;
 
-  /// cached evalTag Prefix from parents to use at compute_response time
+  /// cached evalTag Prefix from parents to use at evaluate time
   String evalTagPrefix;
 
 private:
@@ -1295,14 +1295,14 @@ private:
   //- Heading: Data
   //
 
-  /// evaluation counter for top-level compute_response() and
-  /// asynch_compute_response() calls.  Differs from lower level counters
-  /// in case of numerical derivative estimation (several lower level
-  /// evaluations are assimilated into a single higher level evaluation)
+  /// evaluation counter for top-level evaluate() and evaluate_nowait()
+  /// calls.  Differs from lower level counters in case of numerical
+  /// derivative estimation (several lower level evaluations are
+  /// assimilated into a single higher level evaluation)
   int modelEvalCntr;
 
   /// flags presence of estimated derivatives within a set of calls to
-  /// asynch_compute_response()
+  /// evaluate_nowait()
   bool estDerivsFlag;
 
   /// map<> used for tracking modelPCIter instances using depth of parallelism
@@ -1313,19 +1313,19 @@ private:
   /// init_communicators(); set from IteratorScheduler::init_iterator()
   bool initCommsBcastFlag;
 
-  /// flag for posting of graphics data within compute_response
+  /// flag for posting of graphics data within evaluate()
   /// (automatic graphics posting in the model as opposed to
   /// graphics posting at the strategy level)
   bool modelAutoGraphicsFlag;
 
-  /// history of vars populated in asynch_compute_response() and used in
+  /// history of vars populated in evaluate_nowait() and used in
   /// synchronize().
   VariablesList varsList;
   /// if estimate_derivatives() is used, transfers ASVs from
-  /// asynch_compute_response() to synchronize()
+  /// evaluate_nowait() to synchronize()
   std::list<ShortArray> asvList;
   /// if estimate_derivatives() is used, transfers ActiveSets from
-  /// asynch_compute_response() to synchronize()
+  /// evaluate_nowait() to synchronize()
   std::list<ActiveSet> setList;
   /// transfers initial_map flag values from estimate_derivatives() to
   /// synchronize_derivatives()

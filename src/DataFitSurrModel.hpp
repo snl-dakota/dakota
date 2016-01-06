@@ -83,10 +83,10 @@ protected:
   // synch_nowait() where approxInterface is a local, multipoint, or global
   // approximation.
   //
-  /// portion of compute_response() specific to DataFitSurrModel
-  void derived_compute_response(const ActiveSet& set);
-  /// portion of asynch_compute_response() specific to DataFitSurrModel
-  void derived_asynch_compute_response(const ActiveSet& set);
+  /// portion of evaluate() specific to DataFitSurrModel
+  void derived_evaluate(const ActiveSet& set);
+  /// portion of evaluate_nowait() specific to DataFitSurrModel
+  void derived_evaluate_nowait(const ActiveSet& set);
   /// portion of synchronize() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize();
   /// portion of synchronize_nowait() specific to DataFitSurrModel
@@ -290,8 +290,7 @@ private:
   //- Heading: Data members
   //
 
-  /// number of calls to derived_compute_response()/
-  /// derived_asynch_compute_response()
+  /// number of calls to derived_evaluate()/derived_evaluate_nowait()
   int surrModelEvalCntr;
 
   /// total points the user specified to construct the surrogate

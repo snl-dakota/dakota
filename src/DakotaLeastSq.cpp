@@ -543,7 +543,7 @@ void LeastSq::get_confidence_intervals()
   short asv_request = 2;
   iteratedModel.continuous_variables(best_c_vars);
   activeSet.request_values(asv_request);
-  iteratedModel.compute_response(activeSet);
+  iteratedModel.evaluate(activeSet);
   const RealMatrix& fn_grads
     = iteratedModel.current_response().function_gradients();
 

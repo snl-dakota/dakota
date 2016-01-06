@@ -170,7 +170,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
         for (size_t idim = 0; idim < _num_dim; idim++) newX[idim] = _dart[idim];
         
         iteratedModel.continuous_variables(newX);
-        iteratedModel.compute_response();
+        iteratedModel.evaluate();
         
         
         double fval = 0.0;

@@ -329,7 +329,7 @@ compute_responses(RealMatrix & samples, RealMatrix & responses)
     
     mcmcModel.continuous_variables(sample); 
 
-    mcmcModel.compute_response();
+    mcmcModel.evaluate();
     const Response& curr_resp = mcmcModel.current_response();
     const RealVector& fn_vals = curr_resp.function_values();
 

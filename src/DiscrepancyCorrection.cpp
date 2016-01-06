@@ -661,7 +661,7 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
   if (cache_it == data_pairs.get<hashed>().end()) {
     // perform approx fn eval to retrieve missing data
     surrModel.active_variables(search_vars);
-    surrModel.compute_response(search_set);
+    surrModel.evaluate(search_set);
     return surrModel.current_response();
   }
   else

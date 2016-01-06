@@ -261,10 +261,10 @@ bool SurrogateModel::force_rebuild()
 	// outer level values/bounds do not reflect inner level updates).
 
 	// force_rebuild() is called within the context of an approximate
-	// derived_compute_response(), whereas update_actual_model() and
-	// update_global() are called w/i the context of build_approximation().
-	// Therefore, one must be cautious with assuming that top-level updates
-	// have propagated to lower levels.  (The only current use case involves
+	// derived_evaluate(), whereas update_actual_model() and update_global()
+	// are called w/i the context of build_approximation().  Therefore, one
+	// must be cautious with assuming that top-level updates have propagated
+	// to lower levels.  (The only current use case involves
 	// uSpaceModel.force_rebuild() w/i NonDExpansion::compute_expansion(),
 	// although it may prove useful for other u-space approximations within
 	// PCE/SC and local/global reliability).

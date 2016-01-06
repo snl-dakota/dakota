@@ -444,7 +444,7 @@ void DOTOptimizer::core_run()
     }
 
     iteratedModel.continuous_variables(designVars);
-    iteratedModel.compute_response(activeSet);
+    iteratedModel.evaluate(activeSet);
     const Response& local_response = iteratedModel.current_response();
 
     // Populate proper data for input back to DOT through parameter list

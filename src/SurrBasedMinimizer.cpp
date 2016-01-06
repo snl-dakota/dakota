@@ -104,7 +104,7 @@ SurrBasedMinimizer::~SurrBasedMinimizer()
 
 void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
-  // iteratedModel is evaluated to add truth data (single compute_response())
+  // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
 
   // Allocate comms in approxSubProbModel/iteratedModel for parallel SBM.
@@ -128,7 +128,7 @@ void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
-  // iteratedModel is evaluated to add truth data (single compute_response())
+  // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
 
   // set communicators for approxSubProbModel/iteratedModel
@@ -143,7 +143,7 @@ void SurrBasedMinimizer::derived_free_communicators(ParLevLIter pl_iter)
   // free communicators for approxSubProbModel/iteratedModel
   approxSubProbMinimizer.free_communicators(pl_iter);
 
-  // iteratedModel is evaluated to add truth data (single compute_response())
+  // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 

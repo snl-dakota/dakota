@@ -279,13 +279,13 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 
   if (asv_request && npsolInstance->numNonlinearConstraints == 0) {
     // constraint_eval has not been called.  Therefore, set vars/asv
-    // and perform a compute_response prior to data recovery.
+    // and perform an evaluate() prior to data recovery.
     RealVector local_des_vars(n, false);
     copy_data(x, n, local_des_vars);
     npsolInstance->iteratedModel.continuous_variables(local_des_vars);
     npsolInstance->activeSet.request_values(asv_request);
     npsolInstance->
-      iteratedModel.compute_response(npsolInstance->activeSet);
+      iteratedModel.evaluate(npsolInstance->activeSet);
     if (++npsolInstance->fnEvalCntr == npsolInstance->maxFunctionEvals) {
       mode = -1; // terminate NPSOL (see mode discussion in "User-Supplied
 	         // Subroutines" section of NPSOL manual)

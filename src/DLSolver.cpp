@@ -86,7 +86,7 @@ ComputeResponses1(Optimizer1 *o, int mode, int n, double *x)
 	copy_data(x, n, lx);
 	o->M->continuous_variables(lx);
 	o->activeSet_()->request_values(mode);
-	o->M->compute_response(*o->activeSet_());
+	o->M->evaluate(*o->activeSet_());
 	}
 
  static void

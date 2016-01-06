@@ -562,7 +562,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 
 	// Get expected value at u* for output
 	uSpaceModel.continuous_variables(c_vars_u);
-	uSpaceModel.compute_response();
+	uSpaceModel.evaluate();
 	const RealVector& g_hat_fns
 	  = uSpaceModel.current_response().function_values();
 
@@ -624,7 +624,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  iteratedModel.continuous_variables(c_vars_x);
 	  ActiveSet set = iteratedModel.current_response().active_set();
 	  set.request_values(0); set.request_value(dataOrder, respFnCount);
-	  iteratedModel.compute_response(set);
+	  iteratedModel.evaluate(set);
 	  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
 					  iteratedModel.current_response());
 
@@ -711,7 +711,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    uSpaceModel.continuous_variables(u_pt);
 	    ActiveSet set = uSpaceModel.current_response().active_set();
 	    set.request_values(0); set.request_value(1, respFnCount);
-	    uSpaceModel.compute_response(set);
+	    uSpaceModel.evaluate(set);
 	    const Response& gp_resp = uSpaceModel.current_response();
 	    const RealVector& gp_fn = gp_resp.function_values();
 	    
@@ -720,7 +720,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    
 	    RealVector variance;
 	    if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
-	      // RecastModel::derived_compute_response() propagates u_pt to x_pt
+	      // RecastModel::derived_evaluate() propagates u_pt to x_pt
 	      Model& dfs_model = uSpaceModel.subordinate_model();
 	      variance = dfs_model.approximation_variances(
 		dfs_model.current_variables()); // x_pt
@@ -744,7 +744,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	      iteratedModel.continuous_variables(x_pt);
 	      set = iteratedModel.current_response().active_set();
 	      set.request_values(0); set.request_value(1, respFnCount);
-	      iteratedModel.compute_response(set);
+	      iteratedModel.evaluate(set);
 	      const Response& true_resp = iteratedModel.current_response();
 	      const RealVector& true_fn = true_resp.function_values();
 	      
@@ -790,7 +790,7 @@ void NonDGlobalReliability::importance_sampling()
       // don't use derivatives in the importance sampling
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(0); set.request_value(1, respFnCount);
-      iteratedModel.compute_response(set);
+      iteratedModel.evaluate(set);
       const Response& true_resp = iteratedModel.current_response();
       const RealVector& true_fn = true_resp.function_values();
       finalStatistics.function_value(true_fn[respFnCount], statCount);
@@ -1046,7 +1046,7 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
 
     // form -{grad_f} = m_grad_f = -grad[G_hat(u)]
     uSpaceModel.continuous_variables(u);
-    uSpaceModel.compute_response();
+    uSpaceModel.evaluate();
     const Real* grad_f = uSpaceModel.current_response().function_gradient(0);
     RealVector m_grad_f(numContAleatUncVars, false);
     for (size_t i=0; i<numContAleatUncVars; ++i)

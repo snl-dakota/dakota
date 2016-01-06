@@ -71,10 +71,10 @@ protected:
   // Perform the response computation portions specific to this derived class.
   // In this case, this involves running the subIterator on the subModel.
 
-  /// portion of compute_response() specific to NestedModel
-  void derived_compute_response(const ActiveSet& set);
-  /// portion of asynch_compute_response() specific to NestedModel
-  void derived_asynch_compute_response(const ActiveSet& set);
+  /// portion of evaluate() specific to NestedModel
+  void derived_evaluate(const ActiveSet& set);
+  /// portion of evaluate_nowait() specific to NestedModel
+  void derived_evaluate_nowait(const ActiveSet& set);
   /// portion of synchronize() specific to NestedModel
   const IntResponseMap& derived_synchronize();
   // portion of synchronize_nowait() specific to NestedModel
@@ -269,8 +269,7 @@ private:
   //- Heading: Data members
   //
 
-  /// number of calls to derived_compute_response()/
-  /// derived_asynch_compute_response()
+  /// number of calls to derived_evaluate()/derived_evaluate_nowait()
   int nestedModelEvalCntr;
   /// boolean to trigger one-time updates on first call to update_sub_model()
   bool firstUpdate;
@@ -470,7 +469,7 @@ inline int NestedModel::local_eval_concurrency()
 
 
 /** Derived master overload for subModel is handled separately in
-    subModel.compute_response() within subIterator.run(). */
+    subModel.evaluate() within subIterator.run(). */
 inline bool NestedModel::derived_master_overload() const
 {
   bool oi_overload = ( !optInterfacePointer.empty() &&

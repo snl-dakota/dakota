@@ -82,7 +82,7 @@ void NonlinearCGOptimizer::core_run()
     // get function and gradient -- should discern whether linesearch
     // is in use and only request gradient if appropriate
     activeSet.request_values(3);
-    iteratedModel.compute_response(activeSet);
+    iteratedModel.evaluate(activeSet);
     const Response&   response  = iteratedModel.current_response();
     const RealVector& functions = response.function_values();
 
@@ -602,7 +602,7 @@ Real NonlinearCGOptimizer::linesearch_eval(const Real& trial_step,
     trialVars[i] = designVars[i] + trial_step * searchDirection[i];
   iteratedModel.continuous_variables(trialVars);
   activeSet.request_values(req_val);
-  iteratedModel.compute_response(activeSet);
+  iteratedModel.evaluate(activeSet);
   const Response& response = iteratedModel.current_response();
   const RealVector& functions = response.function_values();
   

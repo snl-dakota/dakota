@@ -566,7 +566,7 @@ void NonDQUESOBayesCalibration::precondition_proposal()
   ActiveSet set = residual_resp.active_set(); // copy
   set.request_values(precondRequestValue);
   // compute response (emulator case echoed to Cout if outputLevel > NORMAL)
-  residualModel.compute_response(set);
+  residualModel.evaluate(set);
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
@@ -1509,7 +1509,7 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
     residualModel.current_variables().continuous_variables_view();
   nonDQUESOInstance->copy_gsl(paramValues, all_params);
 
-  nonDQUESOInstance->residualModel.compute_response();
+  nonDQUESOInstance->residualModel.evaluate();
   
   const RealVector& residuals = 
     nonDQUESOInstance->residualModel.current_response().function_values();

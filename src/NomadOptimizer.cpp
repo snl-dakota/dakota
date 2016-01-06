@@ -383,7 +383,7 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   }
 
   // Compute the Response using Dakota Interface
-  _model.compute_response();
+  _model.evaluate();
 
   // Obtain Model response
   const RealVector& ftn_vals = _model.current_response().function_values();

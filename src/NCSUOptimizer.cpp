@@ -207,9 +207,9 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 
       // request the evaluation in synchronous or asynchronous mode
       if (ncsudirectInstance->iteratedModel.asynch_flag())
-	ncsudirectInstance->iteratedModel.asynch_compute_response();
+	ncsudirectInstance->iteratedModel.evaluate_nowait();
       else {
-	ncsudirectInstance->iteratedModel.compute_response();
+	ncsudirectInstance->iteratedModel.evaluate();
 	// record the response in the function vector
 	Real fn_val = ncsudirectInstance->
 	  iteratedModel.current_response().function_value(0);

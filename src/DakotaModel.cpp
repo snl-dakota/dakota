@@ -573,10 +573,10 @@ Real Model::forward_grad_step(size_t num_deriv_vars, size_t xj_index,
 
 
 
-void Model::compute_response()
+void Model::evaluate()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->compute_response();
+    modelRep->evaluate();
   else { // letter
     ++modelEvalCntr;
 
@@ -586,11 +586,11 @@ void Model::compute_response()
 
     if (derived_master_overload()) {
       // prevents error of trying to run a multiproc. direct job on the master
-      derived_asynch_compute_response(temp_set);
+      derived_evaluate_nowait(temp_set);
       currentResponse = derived_synchronize().begin()->second;
     }
     else // perform a normal synchronous map
-      derived_compute_response(temp_set);
+      derived_evaluate(temp_set);
 
     if (modelAutoGraphicsFlag) {
       OutputManager& output_mgr = parallelLib.output_manager();
@@ -601,15 +601,15 @@ void Model::compute_response()
 }
 
 
-void Model::compute_response(const ActiveSet& set)
+void Model::evaluate(const ActiveSet& set)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->compute_response(set);
+    modelRep->evaluate(set);
   else { // letter
     ++modelEvalCntr;
 
     // Derivative estimation support goes here and is not replicated in the
-    // default asv version of compute_response -> a good reason for using an
+    // default asv version of evaluate -> a good reason for using an
     // overloaded function design rather than a default parameter design.
     ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0),
       fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
@@ -632,12 +632,12 @@ void Model::compute_response(const ActiveSet& set)
     else if (derived_master_overload()) {
       // This map must be asynchronous since it prevents the error of trying
       // to run a multiprocessor direct job on the master.
-      derived_asynch_compute_response(set);
+      derived_evaluate_nowait(set);
       currentResponse = derived_synchronize().begin()->second;
     }
     else
       // Perform synchronous eval
-      derived_compute_response(set);
+      derived_evaluate(set);
 
     if (modelAutoGraphicsFlag) {
       OutputManager& output_mgr = parallelLib.output_manager();
@@ -648,10 +648,10 @@ void Model::compute_response(const ActiveSet& set)
 }
 
 
-void Model::asynch_compute_response()
+void Model::evaluate_nowait()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->asynch_compute_response();
+    modelRep->evaluate_nowait();
   else { // letter
     ++modelEvalCntr;
 
@@ -660,7 +660,7 @@ void Model::asynch_compute_response()
     temp_set.request_values(1); // function values only
 
     // perform an asynchronous parameter-to-response mapping
-    derived_asynch_compute_response(temp_set);
+    derived_evaluate_nowait(temp_set);
 
     // history of vars must be catalogued for use in synchronize()
     if (modelAutoGraphicsFlag)
@@ -671,10 +671,10 @@ void Model::asynch_compute_response()
 }
 
 
-void Model::asynch_compute_response(const ActiveSet& set)
+void Model::evaluate_nowait(const ActiveSet& set)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->asynch_compute_response(set);
+    modelRep->evaluate_nowait(set);
   else { // letter
     ++modelEvalCntr;
 
@@ -687,7 +687,7 @@ void Model::asynch_compute_response(const ActiveSet& set)
     int num_fd_evals;
     if (use_est_deriv) {
       // Compute requested derivatives not available from the simulation.  Since
-      // we expect multiple asynch_compute_response()/estimate_derivatives()
+      // we expect multiple evaluate_nowait()/estimate_derivatives()
       // calls prior to synchronize()/synchronize_derivatives(), we must perform
       // some additional bookkeeping so that the response arrays can be properly
       // recombined into estimated gradients/Hessians.
@@ -701,7 +701,7 @@ void Model::asynch_compute_response(const ActiveSet& set)
 					  quasi_hess_asv, set, true);
     }
     else {
-      derived_asynch_compute_response(set);
+      derived_evaluate_nowait(set);
       num_fd_evals = -1; // no deriv est; distinguish from QN updating
     }
 
@@ -1006,7 +1006,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   // second-order function-difference Hessians, and/or (3) fn_grads_x0 for
   // first-order gradient-difference Hessians.  The fn_vals_x0/fn_grads_x0 data
   // may already be available from preceding function evaluations (e.g., an
-  // iterator such as OPT++ requests fn. values in one compute_response call
+  // iterator such as OPT++ requests fn. values in one evaluate call
   // followed by a gradient request, followed by a Hessian request), so perform
   // a database search when appropriate to retrieve the data instead of relying
   // solely on duplication detection.
@@ -1071,12 +1071,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
       Cout << ":\n";
     }
     if (asynch_flag) {
-      derived_asynch_compute_response(new_set);
+      derived_evaluate_nowait(new_set);
       if (outputLevel > SILENT_OUTPUT)
 	Cout << "\n\n";
     }
     else {
-      derived_compute_response(new_set);
+      derived_evaluate(new_set);
       initial_map_response.update(currentResponse);
     }
     ++map_counter;
@@ -1169,12 +1169,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
         else
           currentVariables.all_continuous_variables(x);
         if (asynch_flag) {
-          derived_asynch_compute_response(new_set);
+          derived_evaluate_nowait(new_set);
           if (outputLevel > SILENT_OUTPUT)
             Cout << "\n\n";
         }
         else {
-          derived_compute_response(new_set);
+          derived_evaluate(new_set);
           fn_vals_x_plus_h = currentResponse.function_values();
           if (intervalType == "forward") {
             for (i=0; i<numFns; i++)
@@ -1203,12 +1203,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             currentVariables.all_continuous_variables(x);
           if (asynch_flag) {
             deltaList.push_back(h2);
-            derived_asynch_compute_response(new_set);
+            derived_evaluate_nowait(new_set);
             if (outputLevel > SILENT_OUTPUT)
               Cout << "\n\n";
           }
           else {
-            derived_compute_response(new_set);
+            derived_evaluate(new_set);
             const RealVector& fn_vals_x_minus_h
               = currentResponse.function_values();
             // no need to check fd_grad_asv since it was used for both evals
@@ -1276,12 +1276,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             else
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
-              derived_asynch_compute_response(new_set);
+              derived_evaluate_nowait(new_set);
               if (outputLevel > SILENT_OUTPUT)
                 Cout << "\n\n";
             }
             else {
-              derived_compute_response(new_set);
+              derived_evaluate(new_set);
               fn_vals_x_plus_2h = currentResponse.function_values();
             }
 
@@ -1299,12 +1299,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             else
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
-              derived_asynch_compute_response(new_set);
+              derived_evaluate_nowait(new_set);
               if (outputLevel > SILENT_OUTPUT)
                 Cout << "\n\n";
             }
             else {
-              derived_compute_response(new_set);
+              derived_evaluate(new_set);
               fn_vals_x_minus_2h = currentResponse.function_values();
             }
 
@@ -1340,12 +1340,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               else
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
-                derived_asynch_compute_response(new_set);
+                derived_evaluate_nowait(new_set);
                 if (outputLevel > SILENT_OUTPUT)
                   Cout << "\n\n";
               }
               else {
-                derived_compute_response(new_set);
+                derived_evaluate(new_set);
                 fn_vals_x_plus_h_plus_h = currentResponse.function_values();
               }
               // ---------------------------------
@@ -1363,12 +1363,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               else
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
-                derived_asynch_compute_response(new_set);
+                derived_evaluate_nowait(new_set);
                 if (outputLevel > SILENT_OUTPUT)
                   Cout << "\n\n";
               }
               else {
-                derived_compute_response(new_set);
+                derived_evaluate(new_set);
                 fn_vals_x_plus_h_minus_h = currentResponse.function_values();
               }
               // ---------------------------------
@@ -1386,12 +1386,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               else
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
-                derived_asynch_compute_response(new_set);
+                derived_evaluate_nowait(new_set);
                 if (outputLevel > SILENT_OUTPUT)
                   Cout << "\n\n";
               }
               else {
-                derived_compute_response(new_set);
+                derived_evaluate(new_set);
                 fn_vals_x_minus_h_plus_h = currentResponse.function_values();
               }
               // ----------------------------------
@@ -1409,12 +1409,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               else
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
-                derived_asynch_compute_response(new_set);
+                derived_evaluate_nowait(new_set);
                 if (outputLevel > SILENT_OUTPUT)
                   Cout << "\n\n";
               }
               else {
-                derived_compute_response(new_set);
+                derived_evaluate(new_set);
                 fn_vals_x_minus_h_minus_h = currentResponse.function_values();
               }
 
@@ -1468,12 +1468,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             else
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
-              derived_asynch_compute_response(new_set);
+              derived_evaluate_nowait(new_set);
               if (outputLevel > SILENT_OUTPUT)
                 Cout << "\n\n";
             }
             else {
-              derived_compute_response(new_set);
+              derived_evaluate(new_set);
               fx[j] = fn_vals_x1 = currentResponse.function_values();
             }
 
@@ -1491,12 +1491,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             else
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
-              derived_asynch_compute_response(new_set);
+              derived_evaluate_nowait(new_set);
               if (outputLevel > SILENT_OUTPUT)
                 Cout << "\n\n";
             }
             else {
-              derived_compute_response(new_set);
+              derived_evaluate(new_set);
               fn_vals_x2 = currentResponse.function_values();
             }
 
@@ -1544,12 +1544,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               else
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
-                derived_asynch_compute_response(new_set);
+                derived_evaluate_nowait(new_set);
                 if (outputLevel > SILENT_OUTPUT)
                   Cout << "\n\n";
               }
               else {
-                derived_compute_response(new_set);
+                derived_evaluate(new_set);
                 fn_vals_x12 = currentResponse.function_values();
                 denom = h1*h2;
                 const RealVector& f2 = fx[k];
@@ -1591,12 +1591,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           else
             currentVariables.all_continuous_variables(x);
           if (asynch_flag) {
-            derived_asynch_compute_response(new_set);
+            derived_evaluate_nowait(new_set);
             if (outputLevel > SILENT_OUTPUT)
               Cout << "\n\n";
           }
           else {
-            derived_compute_response(new_set);
+            derived_evaluate(new_set);
             const RealMatrix& fn_grads_x_plus_h
               = currentResponse.function_gradients();
             ifg = j;
@@ -1653,9 +1653,9 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 
 
 /** Merge an array of fd_responses into a single new_response.  This
-    function is used both by synchronous compute_response() for the
+    function is used both by synchronous evaluate() for the
     case of asynchronous estimate_derivatives() and by synchronize()
-    for the case where one or more asynch_compute_response() calls has
+    for the case where one or more evaluate_nowait() calls has
     employed asynchronous estimate_derivatives(). */
 void Model::
 synchronize_derivatives(const Variables& vars,
@@ -2465,10 +2465,10 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 }
 
 
-void Model::derived_compute_response(const ActiveSet& set)
+void Model::derived_evaluate(const ActiveSet& set)
 {
   if (modelRep) // should not occur: protected fn only used by the letter
-    modelRep->derived_compute_response(set); // envelope fwd to letter
+    modelRep->derived_evaluate(set); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_compute_"
          << "response() function.\nNo default defined at base class."
@@ -2478,13 +2478,13 @@ void Model::derived_compute_response(const ActiveSet& set)
 }
 
 
-void Model::derived_asynch_compute_response(const ActiveSet& set)
+void Model::derived_evaluate_nowait(const ActiveSet& set)
 {
   if (modelRep) // should not occur: protected fn only used by the letter
-    modelRep->derived_asynch_compute_response(set); // envelope fwd to letter
+    modelRep->derived_evaluate_nowait(set); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual derived_asynch_"
-         << "compute_response() function.\nNo default defined at base class."
+         << "evaluate() function.\nNo default defined at base class."
          << std::endl;
     abort_handler(MODEL_ERROR);
   }

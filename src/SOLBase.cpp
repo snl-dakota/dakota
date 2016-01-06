@@ -425,13 +425,12 @@ constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
       // inactive by a lot). So far, needc[i]=0 has only been observed for
       // partial finite difference requests in the case of mixed gradients.
 
-    // Update model variables from x for use in compute_response()
+    // Update model variables from x for use in evaluate()
     RealVector local_des_vars(Teuchos::Copy, x, n);
     optLSqInstance->iteratedModel.continuous_variables(local_des_vars);
 
     optLSqInstance->activeSet.request_vector(local_asv);
-    optLSqInstance->
-      iteratedModel.compute_response(optLSqInstance->activeSet);
+    optLSqInstance->iteratedModel.evaluate(optLSqInstance->activeSet);
     solInstance->fnEvalCntr++;
   }
   

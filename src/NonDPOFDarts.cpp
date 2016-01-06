@@ -702,7 +702,7 @@ void NonDPOFDarts::core_run()
         iteratedModel.continuous_variables(newX);
 	// bypass the surrogate model to evaluate the underlying truth model
 	iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-        iteratedModel.compute_response();
+        iteratedModel.evaluate();
 
 	// TODO: later, generalize DataFitSurrModel to automatically
 	// cache the points when in bypass mode
@@ -1147,7 +1147,7 @@ void NonDPOFDarts::core_run()
 	iteratedModel.continuous_variable(x[vi], vi);
       // TODO: use active_set_vector for efficiency if you truly only
       // need 1 response function?
-      iteratedModel.compute_response();
+      iteratedModel.evaluate();
       const RealVector& fn_vals = 
 	iteratedModel.current_response().function_values();
       return fn_vals[function_index];

@@ -475,7 +475,7 @@ void NonDGlobalInterval::evaluate_response_star_truth()
     set.request_values(dataOrder);
   else
     { set.request_values(0); set.request_value(dataOrder, respFnCntr); }
-  iteratedModel.compute_response(set);
+  iteratedModel.evaluate(set);
 
   // Update the GP approximation
   IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),

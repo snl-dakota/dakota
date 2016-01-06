@@ -127,8 +127,7 @@ protected:
 
   /// number of calls to build_approximation()
   /** used as a flag to automatically build the approximation if one of the
-      derived compute_response functions is called prior to
-      build_approximation(). */
+      derived evaluate functions is called prior to build_approximation(). */
   size_t approxBuilds;
 
   /// the index of the active metaiterator-iterator parallelism level

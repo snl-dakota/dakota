@@ -567,7 +567,7 @@ void SurrBasedLocalMinimizer::core_run()
 	     << "recasting.\n";
         iteratedModel.active_variables(vars_star);
 	// leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-	iteratedModel.compute_response(val_set);
+	iteratedModel.evaluate(val_set);
 	responseStarApprox.update(iteratedModel.current_response());
       }
       else // Note: fn values only
@@ -586,11 +586,11 @@ void SurrBasedLocalMinimizer::core_run()
       if (multiLayerBypassFlag) {
 	short mode = truth_model.surrogate_response_mode();
 	truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-	truth_model.compute_response(val_set);
+	truth_model.evaluate(val_set);
 	truth_model.surrogate_response_mode(mode); // restore
       }
       else
-	truth_model.compute_response(val_set);
+	truth_model.evaluate(val_set);
       responseStarTruth.first = truth_model.evaluation_id();
       responseStarTruth.second.update(truth_model.current_response());
 
@@ -833,11 +833,11 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
     if (multiLayerBypassFlag) {
       short mode = truth_model.surrogate_response_mode();
       truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-      truth_model.compute_response(responseCenterTruth.second.active_set());
+      truth_model.evaluate(responseCenterTruth.second.active_set());
       truth_model.surrogate_response_mode(mode); // restore
     }
     else
-      truth_model.compute_response(responseCenterTruth.second.active_set());
+      truth_model.evaluate(responseCenterTruth.second.active_set());
     responseCenterTruth.first = truth_model.evaluation_id();
     responseCenterTruth.second.update(truth_model.current_response());
   }
@@ -922,7 +922,7 @@ void SurrBasedLocalMinimizer::find_center_approx()
   else { // responseCenterApprox not available
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    iteratedModel.compute_response(responseCenterApprox.active_set());
+    iteratedModel.evaluate(responseCenterApprox.active_set());
     responseCenterApprox.update(iteratedModel.current_response());
   }
 }
@@ -1784,14 +1784,14 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
     = sblmInstance->approxSubProbModel.current_response().active_set();
   local_set.request_vector(local_asv);
 
-  // update model variables x from tau_and_x for use in compute_response()
+  // update model variables x from tau_and_x for use in evaluate()
   //RealVector local_des_vars(n-1);
   // WJB: copy vs. view?? copy_data(&tau_and_x[1], n-1, local_des_vars);
   RealVector local_des_vars(Teuchos::View, &tau_and_x[1], n-1);
   sblmInstance->approxSubProbModel.continuous_variables(local_des_vars);
 
   // compute response
-  sblmInstance->approxSubProbModel.compute_response(local_set);
+  sblmInstance->approxSubProbModel.evaluate(local_set);
   const Response& resp = sblmInstance->approxSubProbModel.current_response();
 
   // get constraint relaxation slack vectors

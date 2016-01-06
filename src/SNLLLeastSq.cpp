@@ -294,8 +294,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       local_asv[i] = 0; //mode & 3; // nonlinear constraints (if present)
 
     snllLSqInstance->activeSet.request_vector(local_asv);
-    snllLSqInstance->
-      iteratedModel.compute_response(snllLSqInstance->activeSet);
+    snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
     lastFnEvalLocn = NLFEvaluator;
   }
   const Response& local_response
@@ -377,7 +376,7 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
     abort_handler(-1);
   }
 
-  // set model variables and asv prior to compute_response().
+  // set model variables and asv prior to evaluate()
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
          << x;
@@ -388,8 +387,7 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
-  snllLSqInstance->
-    iteratedModel.compute_response(snllLSqInstance->activeSet);
+  snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
@@ -443,7 +441,7 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
     abort_handler(-1);
   }
 
-  // set model variables and asv prior to compute_response().
+  // set model variables and asv prior to evaluate()
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
          << x;
@@ -454,8 +452,7 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
-  snllLSqInstance->
-    iteratedModel.compute_response(snllLSqInstance->activeSet);
+  snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;

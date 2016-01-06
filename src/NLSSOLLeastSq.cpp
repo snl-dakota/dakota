@@ -103,13 +103,12 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
 
   if (asv_request && nlssolInstance->numNonlinearConstraints == 0) {
     // constraint_eval has not been called.  Therefore, set vars/asv
-    // and perform a compute_response prior to data recovery.
+    // and perform an evaluate() prior to data recovery.
     RealVector local_des_vars(n);
     copy_data(x, n, local_des_vars);
     nlssolInstance->iteratedModel.continuous_variables(local_des_vars);
     nlssolInstance->activeSet.request_values(asv_request);
-    nlssolInstance->
-      iteratedModel.compute_response(nlssolInstance->activeSet);
+    nlssolInstance->iteratedModel.evaluate(nlssolInstance->activeSet);
     if (++nlssolInstance->fnEvalCntr == nlssolInstance->maxFunctionEvals) {
       mode = -1; // terminate NLSSOL (see mode discussion in "User-Supplied
       // Subroutines" section of NPSOL manual)

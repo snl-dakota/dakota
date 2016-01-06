@@ -1012,7 +1012,7 @@ void NonDLocalReliability::initial_taylor_series()
       uSpaceModel.component_parallel_mode(TRUTH_MODEL);
     iteratedModel.continuous_variables(ranVarMeansX);
     activeSet.request_vector(asrv);
-    iteratedModel.compute_response(activeSet);
+    iteratedModel.evaluate(activeSet);
     const Response& curr_resp = iteratedModel.current_response();
     fnValsMeanX       = curr_resp.function_values();
     fnGradsMeanX      = curr_resp.function_gradients();
@@ -1125,7 +1125,7 @@ void NonDLocalReliability::initialize_class_data()
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty())
       activeSet.request_value(1, i); // only fn vals needed at median unc vars
-  iteratedModel.compute_response(activeSet);
+  iteratedModel.evaluate(activeSet);
   medianFnVals = iteratedModel.current_response().function_values();
   */
 
@@ -1223,7 +1223,7 @@ void NonDLocalReliability::initialize_level_data()
       short mode = (taylorOrder == 2) ? 7 : 3;
       activeSet.request_values(0); activeSet.request_value(mode, respFnCount);
 
-      iteratedModel.compute_response(activeSet);
+      iteratedModel.evaluate(activeSet);
       const Response& curr_resp = iteratedModel.current_response();
       computedRespLevel = curr_resp.function_value(respFnCount);
       fnGradX = curr_resp.function_gradient_copy(respFnCount);
@@ -1454,7 +1454,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     uSpaceModel.component_parallel_mode(TRUTH_MODEL);
     activeSet.request_values(0); activeSet.request_value(1, respFnCount);
     iteratedModel.continuous_variables(mostProbPointX);
-    iteratedModel.compute_response(activeSet); 
+    iteratedModel.evaluate(activeSet); 
     computedRespLevel
       = iteratedModel.current_response().function_value(respFnCount);
     break;
@@ -1503,7 +1503,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     activeSet.request_values(0);
     activeSet.request_value(mode, respFnCount);
     iteratedModel.continuous_variables(mostProbPointX);
-    iteratedModel.compute_response(activeSet);
+    iteratedModel.evaluate(activeSet);
     const Response& curr_resp = iteratedModel.current_response();
     computedRespLevel = curr_resp.function_value(respFnCount);
 #ifdef MPP_CONVERGE_RATE
@@ -1603,7 +1603,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       iteratedModel.continuous_variables(mostProbPointX);
       activeSet.request_values(0);
       activeSet.request_value(remaining_mode, respFnCount);
-      iteratedModel.compute_response(activeSet);
+      iteratedModel.evaluate(activeSet);
       const Response& curr_resp = iteratedModel.current_response();
       if (remaining_mode & 2)
 	fnGradX = curr_resp.function_gradient_copy(respFnCount);
@@ -2172,7 +2172,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     }
     inactive_grad_set.derivative_vector(filtered_final_dvv);
     */
-    iteratedModel.compute_response(inactive_grad_set);
+    iteratedModel.evaluate(inactive_grad_set);
     const Response& curr_resp = iteratedModel.current_response();
     if (secondaryACVarMapTargets.empty())
       final_stat_grad = curr_resp.function_gradient_copy(respFnCount);

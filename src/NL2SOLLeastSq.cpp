@@ -200,8 +200,7 @@ calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
   copy_data(x, p, xd);
   nl2solInstance->iteratedModel.continuous_variables(xd);
   nl2solInstance->activeSet.request_values(spec + 1);
-  nl2solInstance->
-    iteratedModel.compute_response(nl2solInstance->activeSet);
+  nl2solInstance->iteratedModel.evaluate(nl2solInstance->activeSet);
   const Response& lr = nl2solInstance->iteratedModel.current_response();
 
   const RealVector& lf = lr.function_values();
@@ -275,8 +274,7 @@ calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui, void *ur, Vf vf)
     nl2solInstance->iteratedModel.continuous_variables(xd);
 
     nl2solInstance->activeSet.request_values(2);
-    nl2solInstance->
-      iteratedModel.compute_response(nl2solInstance->activeSet);
+    nl2solInstance->iteratedModel.evaluate(nl2solInstance->activeSet);
     const Response& lr = nl2solInstance->iteratedModel.current_response();
 
     const RealMatrix& lg = lr.function_gradients();

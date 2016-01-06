@@ -300,7 +300,7 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
   nonDDREAMInstance->residualModel.continuous_variables(all_params); 
 
   // Compute simulation response to use in likelihood 
-  nonDDREAMInstance->residualModel.compute_response();
+  nonDDREAMInstance->residualModel.evaluate();
   const RealVector& residuals = 
     nonDDREAMInstance->residualModel.current_response().function_values();
   double log_like = nonDDREAMInstance->log_likelihood(residuals, all_params);

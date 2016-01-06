@@ -56,12 +56,12 @@ protected:
   // class.  In this case, it simply employs userDefinedInterface.map()/
   // synch()/synch_nowait()
   //
-  /// portion of compute_response() specific to SimulationModel
+  /// portion of evaluate() specific to SimulationModel
   /// (invokes a synchronous map() on userDefinedInterface)
-  void derived_compute_response(const ActiveSet& set);
-  /// portion of asynch_compute_response() specific to SimulationModel
+  void derived_evaluate(const ActiveSet& set);
+  /// portion of evaluate_nowait() specific to SimulationModel
   /// (invokes an asynchronous map() on userDefinedInterface)
-  void derived_asynch_compute_response(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set);
   /// portion of synchronize() specific to SimulationModel
   /// (invokes synch() on userDefinedInterface)
   const IntResponseMap& derived_synchronize();
@@ -166,7 +166,7 @@ inline Interface& SimulationModel::derived_interface()
 { return userDefinedInterface; }
 
 
-inline void SimulationModel::derived_compute_response(const ActiveSet& set)
+inline void SimulationModel::derived_evaluate(const ActiveSet& set)
 {
   // store/set/restore ParallelLibrary::currPCIter to simplify recursion
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
@@ -178,8 +178,7 @@ inline void SimulationModel::derived_compute_response(const ActiveSet& set)
 }
 
 
-inline void SimulationModel::
-derived_asynch_compute_response(const ActiveSet& set)
+inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
 { userDefinedInterface.map(currentVariables, set, currentResponse, true); }
 
 

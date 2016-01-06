@@ -855,7 +855,7 @@ void DataFitSurrModel::build_local_multipoint()
   ActiveSet set = actualModel.current_response().active_set(); // copy
   set.request_vector(actual_asv);
   set.derivative_vector(actualModel.continuous_variable_ids());
-  actualModel.compute_response(set);
+  actualModel.evaluate(set);
 
   const Variables& curr_vars = actualModel.current_variables();
   IntResponsePair curr_resp_pr(actualModel.evaluation_id(),
@@ -1141,7 +1141,7 @@ inside(const RealVector& c_vars, const IntVector& di_vars,
     or both (mixed case).  For the approxInterface portion, build the
     approximation if needed, evaluate the approximate response, and apply 
     correction (if active) to the results. */
-void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
+void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
@@ -1175,7 +1175,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet actual_set = set;
       actual_set.request_vector(actual_asv);
-      actualModel.compute_response(actual_set);
+      actualModel.evaluate(actual_set);
       if (mixed_eval)
 	actual_response = actualModel.current_response(); // shared rep
       else {
@@ -1185,14 +1185,14 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       break;
     }
     case BYPASS_SURROGATE:
-      actualModel.compute_response(set);
+      actualModel.evaluate(set);
       currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
       // TODO: Add to surrogate build data
       //      add_datapoint(....)
       break;
     case MODEL_DISCREPANCY:
-      actualModel.compute_response(set);
+      actualModel.evaluate(set);
       break;
     }
   }
@@ -1272,7 +1272,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     approximate response in a quasi-asynchronous approach
     (ApproximationInterface::map() performs the map synchronously and
     bookkeeps the results for return in derived_synchronize() below). */
-void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
+void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
@@ -1304,10 +1304,10 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet actual_set = set;
       actual_set.request_vector(actual_asv);
-      actualModel.asynch_compute_response(actual_set); break;
+      actualModel.evaluate_nowait(actual_set); break;
     }
     case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
-      actualModel.asynch_compute_response(set);        break;
+      actualModel.evaluate_nowait(set);        break;
     }
     // store mapping from actualModel eval id to DataFitSurrModel id
     truthIdMap[actualModel.evaluation_id()] = surrModelEvalCntr;
@@ -1359,7 +1359,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     approxInterface, or both (mixed case).  For the approxInterface
     portion, apply correction (if active) to each response in the array.
     derived_synchronize() is designed for the general case where
-    derived_asynch_compute_response() may be inconsistent in its use
+    derived_evaluate_nowait() may be inconsistent in its use
     of actual evaluations, approximate evaluations, or both. */
 const IntResponseMap& DataFitSurrModel::derived_synchronize()
 {
@@ -1454,7 +1454,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
     actualModel, approxInterface, or both (mixed case).  For the
     approxInterface portion, apply correction (if active) to each
     response in the map.  derived_synchronize_nowait() is designed for
-    the general case where derived_asynch_compute_response() may be
+    the general case where derived_evaluate_nowait() may be
     inconsistent in its use of actual evals, approx evals, or both. */
 const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 {

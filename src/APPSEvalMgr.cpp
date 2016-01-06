@@ -109,14 +109,14 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
     // Need to map between DAKOTA and APPS tags for asynchronous
     // evaluations.
 
-    iteratedModel.asynch_compute_response();
+    iteratedModel.evaluate_nowait();
     tagList[iteratedModel.evaluation_id()] = apps_tag;
   }
   else {
     // Need to associate responses with APPS tags for synchronous
     // evaluations.
 
-    iteratedModel.compute_response();
+    iteratedModel.evaluate();
     functionList[apps_tag] = iteratedModel.current_response().function_values();
   }
 

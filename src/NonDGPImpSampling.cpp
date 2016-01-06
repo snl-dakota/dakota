@@ -320,7 +320,7 @@ void NonDGPImpSampling::core_run()
          
          // add new_X to the build points and append approximation
         iteratedModel.continuous_variables(new_X);
-        iteratedModel.compute_response();
+        iteratedModel.evaluate();
         IntResponsePair resp_truth(iteratedModel.evaluation_id(),
                                    iteratedModel.current_response());
         gpModel.append_approximation(iteratedModel.current_variables(), resp_truth, true);
@@ -369,7 +369,7 @@ void NonDGPImpSampling::core_run()
           RealVector exp_ind_this(numPtsTotal);
           for (k = 0; k < numPtsTotal; k++){ 
             gpModel.continuous_variables(gp_final_data[k]);
-            gpModel.compute_response();
+            gpModel.evaluate();
             this_mean = gpModel.current_response().function_values();
             this_var
 	      = gpModel.approximation_variances(gpModel.current_variables());

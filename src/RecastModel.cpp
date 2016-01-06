@@ -341,7 +341,7 @@ void RecastModel::inverse_mappings(
 /** The RecastModel is evaluated by an Iterator for a recast problem
     formulation.  Therefore, the currentVariables, incoming active set,
     and output currentResponse all correspond to the recast inputs/outputs. */
-void RecastModel::derived_compute_response(const ActiveSet& set)
+void RecastModel::derived_evaluate(const ActiveSet& set)
 {
   // transform from recast (Iterator) to sub-model (user) variables
   transform_variables(currentVariables, subModel.current_variables());
@@ -353,7 +353,7 @@ void RecastModel::derived_compute_response(const ActiveSet& set)
 
   // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
-  subModel.compute_response(sub_model_set);
+  subModel.evaluate(sub_model_set);
 
   // recast the subModel response ("user space") into the currentResponse
   // ("iterator space")
@@ -373,7 +373,7 @@ void RecastModel::derived_compute_response(const ActiveSet& set)
 }
 
 
-void RecastModel::derived_asynch_compute_response(const ActiveSet& set)
+void RecastModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   // transform from recast (Iterator) to sub-model (user) variables
   transform_variables(currentVariables, subModel.current_variables());
@@ -385,7 +385,7 @@ void RecastModel::derived_asynch_compute_response(const ActiveSet& set)
 
   // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
-  subModel.asynch_compute_response(sub_model_set);
+  subModel.evaluate_nowait(sub_model_set);
 
   // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
   if (respMapping) {

@@ -469,7 +469,7 @@ void CONMINOptimizer::core_run()
 
     copy_data(conminDesVars, num_cv, local_cdv);
     iteratedModel.continuous_variables(local_cdv);
-    iteratedModel.compute_response(activeSet);
+    iteratedModel.evaluate(activeSet);
     const Response& local_response = iteratedModel.current_response();
 
     // Populate proper data for input back to CONMIN through parameter list.

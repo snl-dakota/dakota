@@ -121,7 +121,7 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // in ParallelLibrary::resolve_inputs when there is a user spec that can't
   // be supported from a single processor).  However, a dedicated master can
   // run a local single-processor job if the algorithm uses a synchronous eval
-  // (see derived_master_overload() usage in Model::compute_response()).
+  // (see derived_master_overload() usage in Model::evaluate()).
   if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
   else {
@@ -372,12 +372,12 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 
 
 /** The function evaluator for application interfaces.  Called from
-    derived_compute_response() and derived_asynch_compute_response() in
-    derived Model classes.  If asynch_flag is not set, perform a blocking
-    evaluation (using derived_map()).  If asynch_flag is set, add the job
-    to the beforeSynchCorePRPQueue queue for execution by one of the
-    scheduler routines in synch() or synch_nowait().  Duplicate function
-    evaluations are detected with duplication_detect(). */
+    derived_evaluate() and derived_evaluate_nowait() in derived Model
+    classes.  If asynch_flag is not set, perform a blocking evaluation
+    (using derived_map()).  If asynch_flag is set, add the job to the
+    beforeSynchCorePRPQueue queue for execution by one of the
+    scheduler routines in synch() or synch_nowait().  Duplicate
+    function evaluations are detected with duplication_detect(). */
 void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 			       Response& response, bool asynch_flag)
 {
