@@ -152,7 +152,7 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
   // The following "best" initializations are done here instead of in
   // Minimizer for this lightweight case
-  std::pair<short,short> view(MIXED_DESIGN, EMPTY);
+  std::pair<short,short> view(MIXED_DESIGN, EMPTY_VIEW);
   SizetArray vc_totals(NUM_VC_TOTALS, 0);
   vc_totals[TOTAL_CDV] = num_cv;  vc_totals[TOTAL_DDIV] = num_div;
   vc_totals[TOTAL_DDSV] = num_dsv; vc_totals[TOTAL_DDRV] = num_drv;

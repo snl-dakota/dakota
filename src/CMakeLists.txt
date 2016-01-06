@@ -456,7 +456,7 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
   DataResponses.cpp)
 
 ## Model sources.
-set(model_src DakotaModel.cpp SingleModel.cpp NestedModel.cpp
+set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ScalingModel.cpp
   SurrogateModel.cpp DataFitSurrModel.cpp HierarchSurrModel.cpp
   ActiveSubspaceModel.cpp DiscrepancyCorrection.cpp)

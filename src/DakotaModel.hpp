@@ -133,9 +133,9 @@ public:
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// propagate vars/labels/bounds/targets from the bottom up
   virtual void update_from_subordinate_model(size_t depth = 
-					     std::numeric_limits<size_t>::max());
+    std::numeric_limits<size_t>::max());
   /// return the interface employed by the derived model class, if present:
-  /// SingleModel::userDefinedInterface, DataFitSurrModel::approxInterface,
+  /// SimulationModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface
   virtual Interface& derived_interface();
 
@@ -1105,7 +1105,7 @@ protected:
 
   /// model identifier string from the input file
   String modelId;
-  /// type of model: single, nested, or surrogate
+  /// type of model: simulation, nested, or surrogate
   String modelType;
   /// type of surrogate model: local_*, multipoint_*, global_*, or hierarchical
   String surrogateType;

@@ -301,7 +301,7 @@ inline void IteratorScheduler::update(ParConfigLIter pc_iter, size_t index)
 template <typename MetaType> void IteratorScheduler::
 schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
-  // As for invocations of an Interface (see SingleModel.hpp and
+  // As for invocations of an Interface (see SimulationModel.hpp and
   // NestedModel.[ch]pp), we wrap job scheduling with store/set/restore
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(

@@ -52,8 +52,8 @@ class ProblemDescDB
 
   /// Model requires access to get_variables() and get_response()
   friend class Model;
-  /// SingleModel requires access to get_interface()
-  friend class SingleModel;
+  /// SimulationModel requires access to get_interface()
+  friend class SimulationModel;
   /// HierarchSurrModel requires access to get_model()
   friend class HierarchSurrModel;
   /// DataFitSurrModel requires access to get_iterator() and get_model()
@@ -662,10 +662,10 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
 inline bool ProblemDescDB::model_has_interface(DataModelRep* model_rep) const
 {
   // The following Models pull from the interface specification:
-  //   SingleModel (userDefinedInterface)
+  //   SimulationModel (userDefinedInterface)
   //   NestedModel (optionalInterface)
   //   DataFitSurrModel (approxInterface)
-  return ( model_rep->modelType == "single" ||
+  return ( model_rep->modelType == "simulation" ||
 	   model_rep->modelType == "nested" ||
 	   ( model_rep->modelType == "surrogate" &&
 	     model_rep->surrogateType != "hierarchical") );

@@ -2147,7 +2147,7 @@ KEYWORD model {N_mom3(start,0,stop)}
   [ variables_pointer STRING {N_mom(str,variablesPointer)} ]
   [ responses_pointer STRING {N_mom(str,responsesPointer)} ]
   [ hierarchical_tagging {N_mom(true,hierarchicalTags)} ]
-  ( single ALIAS simulation {N_mom(lit,modelType_single)}
+  ( single ALIAS simulation {N_mom(lit,modelType_simulation)}
     [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
     [ solution_level_control STRING {N_mom(str,solutionLevelControl)}
       solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}

@@ -6,16 +6,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       SingleModel
-//- Description: Implementation code for the SingleModel class
+//- Class:       SimulationModel
+//- Description: Implementation code for the SimulationModel class
 //- Owner:       Mike Eldred
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
-#include "SingleModel.hpp"
+#include "SimulationModel.hpp"
 #include "ProblemDescDB.hpp"
 
-static const char rcsId[]="@(#) $Id: SingleModel.cpp 6492 2009-12-19 00:04:28Z briadam $";
+static const char rcsId[]="@(#) $Id: SimulationModel.cpp 6492 2009-12-19 00:04:28Z briadam $";
 
 
 using namespace std;
@@ -26,24 +26,25 @@ namespace Dakota {
 #define INTERFACE 1
 
 
-SingleModel::SingleModel(ProblemDescDB& problem_db):
+SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
-  userDefinedInterface(problem_db.get_interface())
+  userDefinedInterface(problem_db.get_interface()),
+  solnControlVarIndex(0), solnControlVarType(EMPTY_TYPE)
 {
   componentParallelMode = INTERFACE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
 
   initialize_solution_control(
-    problem_db.get_string("model.single.solution_level_control"),
-    problem_db.get_rv("model.single.solution_level_cost"));
+    problem_db.get_string("model.simulation.solution_level_control"),
+    problem_db.get_rv("model.simulation.solution_level_cost"));
 }
 
 
-void SingleModel::
+void SimulationModel::
 initialize_solution_control(const String& control, const RealVector& cost)
 {
-  if (control.empty()) return; // TO DO: defaults...
+  if (control.empty()) return;
   
   // find the variable label used for solution control within the
   // inactive discrete variables
@@ -137,7 +138,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
     num_lev = discreteStateSetRealValues[solnControlVarIndex-offset].size();
     break;
   default:
-    Cerr << "Error: unsupported variable type in SingleModel::"
+    Cerr << "Error: unsupported variable type in SimulationModel::"
 	 << "initialize_solution_control" << std::endl;
     abort_handler(MODEL_ERROR); break;
   }
@@ -147,12 +148,12 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // --> solnControlCostMap sorts on cost key and maps to the unordered index
   //     of these sorted values.
   // > Example 1:
-  //     model single
+  //     model simulation
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. 2. 200.
   //   results in solnControlCostMap = { {2., 1}, {10., 0}, {200., 2} }
   // > Example 2:
-  //     model single
+  //     model simulation
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. # scalar multiplier
   // results in solnControlCostMap = { {1., 0}, {10., 1}, {100., 2} }
@@ -175,11 +176,11 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-void SingleModel::component_parallel_mode(short mode)
+void SimulationModel::component_parallel_mode(short mode)
 {
   if (mode != INTERFACE) {
-    Cerr << "Error: SingleModel only supports the INTERFACE component parallel "
-	 << "mode." << endl;
+    Cerr << "Error: SimulationModel only supports the INTERFACE component "
+	 << "parallel mode." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   parallelLib.parallel_configuration_iterator(modelPCIter);
@@ -187,11 +188,11 @@ void SingleModel::component_parallel_mode(short mode)
 }
 
 
-/** SingleModel doesn't need to change the tagging, so just forward to
+/** SimulationModel doesn't need to change the tagging, so just forward to
     Interface */
-void SingleModel::eval_tag_prefix(const String& eval_id_str)
+void SimulationModel::eval_tag_prefix(const String& eval_id_str)
 {
-  // Single model uses the counter from the interface
+  // Simulation model uses the counter from the interface
   bool append_iface_id = true;
   userDefinedInterface.eval_tag_prefix(eval_id_str, append_iface_id);
 }

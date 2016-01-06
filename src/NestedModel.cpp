@@ -145,7 +145,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     active2ADSVarMapTargets.resize(num_curr_vars);
     active2ADRVarMapTargets.resize(num_curr_vars);
   }
-  short inactive_sm_view = EMPTY;
+  short inactive_sm_view = EMPTY_VIEW;
   UShortMultiArrayConstView curr_c_types
     = currentVariables.continuous_variable_types();
   UShortMultiArrayConstView curr_di_types
@@ -516,7 +516,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // subModel view updating must be performed before subIterator instantiation
   // since any model recastings will pick up the inactive view (and inactive
   // view differences cause problems with recursion updating).
-  if (inactive_sm_view != EMPTY)
+  if (inactive_sm_view != EMPTY_VIEW)
     subModel.inactive_view(inactive_sm_view); // recurse
 }
 
@@ -1918,7 +1918,7 @@ void NestedModel::update_inactive_view(short new_view, short& view)
 	  view = (relaxed) ? RELAXED_UNCERTAIN : MIXED_UNCERTAIN;
       }
   }
-  else if (view == EMPTY)
+  else if (view == EMPTY_VIEW)
     view = new_view;   
   else if (view != new_view) {
     // there are a few acceptable view promotions

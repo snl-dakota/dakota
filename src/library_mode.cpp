@@ -365,7 +365,7 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
   // directly.  Iterator updates should be performed only on the Iterator
   // master processor, but Model updates are performed on all processors.
   Dakota::ModelList models
-    = env.filtered_model_list("single", "direct", "plugin_text_book");
+    = env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter;
   for (ml_iter = models.begin(); ml_iter != models.end(); ml_iter++) {
     const Dakota::StringArray& drivers
@@ -385,10 +385,11 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 }
 
 
-/** Demonstration of simple plugin where client code doesn't require access to 
-    detailed Dakota data (such as Model-based parallel configuration information)
-    to construct the DirectApplicInterface.  This example plugs-in a derived serial
-    direct application interface instance ("plugin_rosenbrock"). */
+/** Demonstration of simple plugin where client code doesn't require
+    access to detailed Dakota data (such as Model-based parallel
+    configuration information) to construct the DirectApplicInterface.
+    This example plugs-in a derived serial direct application
+    interface instance ("plugin_rosenbrock"). */
 void serial_interface_plugin(Dakota::LibraryEnvironment& env)
 {
   std::string model_type(""); // demo: empty string will match any model type
@@ -403,9 +404,9 @@ void serial_interface_plugin(Dakota::LibraryEnvironment& env)
     env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
 
   if (!plugged_in) {
-    Cerr << "Error: no serial interface plugin performed.  Check compatibility "
-	 << "between parallel\n       configuration and selected analysis_driver."
-	 << std::endl;
+    Cerr << "Error: no serial interface plugin performed.  Check "
+	 << "compatibility between parallel\n       configuration and "
+	 << "selected analysis_driver." << std::endl;
     Dakota::abort_handler(-1);
   }
 }
@@ -413,16 +414,17 @@ void serial_interface_plugin(Dakota::LibraryEnvironment& env)
 
 /** From a filtered list of Model candidates, plug-in a derived direct
     application interface instance ("plugin_text_book" for parallel).
-    This approach provides more complete access to the Model, e.g., for access to analysis communicators. */
+    This approach provides more complete access to the Model, e.g.,
+    for access to analysis communicators. */
 void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
 {
   // get the list of all models matching the specified model, interface, driver:
   Dakota::ModelList filt_models = 
-    env.filtered_model_list("single", "direct", "plugin_text_book");
+    env.filtered_model_list("simulation", "direct", "plugin_text_book");
   if (filt_models.empty()) {
-    Cerr << "Error: no parallel interface plugin performed.  Check compatibility "
-	 << "between parallel\n       configuration and selected analysis_driver."
-	 << std::endl;
+    Cerr << "Error: no parallel interface plugin performed.  Check "
+	 << "compatibility between parallel\n       configuration and "
+	 << "selected analysis_driver." << std::endl;
     Dakota::abort_handler(-1);
   }
 

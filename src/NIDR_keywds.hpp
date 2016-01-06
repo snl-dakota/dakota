@@ -2495,8 +2495,8 @@ static KeyWord
 		{"id_model",11,0,1,0,0,0.,0.,0,N_mom(str,idModel)},
 		{"nested",8,2,5,1,kw_336,0.,0.,0,N_mom(lit,modelType_nested)},
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
-		{"simulation",0,2,5,1,kw_338,0.,0.,1,N_mom(lit,modelType_single)},
-		{"single",8,2,5,1,kw_338,0.,0.,0,N_mom(lit,modelType_single)},
+		{"simulation",0,2,5,1,kw_338,0.,0.,1,N_mom(lit,modelType_simulation)},
+		{"single",8,2,5,1,kw_338,0.,0.,0,N_mom(lit,modelType_simulation)},
 		{"subspace",8,8,5,1,kw_340,0.,0.,0,N_mom(lit,modelType_subspace)},
 		{"surrogate",8,5,5,1,kw_385,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}

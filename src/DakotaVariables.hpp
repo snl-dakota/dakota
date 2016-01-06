@@ -1451,9 +1451,9 @@ inline void Variables::build_views()
 {
   // called only from letters
   const std::pair<short,short>& view = sharedVarsData.view();
-  if (view.first)  //!= EMPTY)
+  if (view.first  != EMPTY_VIEW)
     build_active_views();
-  if (view.second) //!= EMPTY)
+  if (view.second != EMPTY_VIEW)
     build_inactive_views();
 }
 

@@ -974,7 +974,7 @@ view_start_counts(short view, size_t& cv_start, size_t& div_start,
     num_dsrv  = variablesCompsTotals[TOTAL_DSRV];
 
   switch (view) {
-  case EMPTY: // should only happen for inactive views
+  case EMPTY_VIEW: // should only happen for inactive views
     cv_start = div_start = dsv_start = drv_start =
       num_cv = num_div = num_dsv = num_drv = 0;
     break;

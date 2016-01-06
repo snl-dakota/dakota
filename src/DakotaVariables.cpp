@@ -223,7 +223,7 @@ Variables::get_view(const ProblemDescDB& problem_db) const
     view.first = method_map(view_spec, relaxed);
   }
 
-  view.second = EMPTY; // inactive views only set by NestedModel
+  view.second = EMPTY_VIEW; // inactive views only set by NestedModel
 #ifdef DEBUG
   Cout << "Variables view: active_view = " << view.first
        << " inactive_view = " << view.second << std::endl;
@@ -306,7 +306,7 @@ void Variables::inactive_view(short view2)
   else {
     short view1 = sharedVarsData.view().first;
     // If active view is {RELAXED,MIXED}_ALL, outer level active view is
-    // aggregated in inner loop all view and inactive view remains EMPTY.
+    // aggregated in inner loop all view and inactive view remains EMPTY_VIEW.
     // Disallow assignment of an inactive ALL view.
     if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
       sharedVarsData.inactive_view(view2);
@@ -464,8 +464,8 @@ void Variables::build_active_views()
   // called only from letters
 
   // Initialize active view vectors and counts
-  if (sharedVarsData.view().first == EMPTY) {
-    Cerr << "Error: active view cannot be EMPTY in Variables::"
+  if (sharedVarsData.view().first == EMPTY_VIEW) {
+    Cerr << "Error: active view cannot be EMPTY_VIEW in Variables::"
 	 << "build_active_views()." << std::endl;
     abort_handler(-1);
   }

@@ -261,8 +261,9 @@ Constraints::~Constraints()
 void Constraints::build_active_views()
 {
   // Initialize active views
-  if (sharedVarsData.view().first == EMPTY) {
-    Cerr << "Error: active view cannot be EMPTY in VarConstraints."<< std::endl;
+  if (sharedVarsData.view().first == EMPTY_VIEW) {
+    Cerr << "Error: active view cannot be EMPTY_VIEW in VarConstraints."
+	 << std::endl;
     abort_handler(-1);
   }
   sharedVarsData.initialize_active_start_counts();
@@ -338,7 +339,7 @@ void Constraints::inactive_view(short view2)
   else {
     short view1 = sharedVarsData.view().first;
     // If active view is {RELAXED,MIXED}_ALL, outer level active view is
-    // aggregated in inner loop all view and inactive view remains EMPTY.
+    // aggregated in inner loop all view and inactive view remains EMPTY_VIEW.
     // Disallow assignment of an inactive ALL view.
     if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
       sharedVarsData.inactive_view(view2); // likely redundant with Variables

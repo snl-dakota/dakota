@@ -404,7 +404,7 @@ void ProblemDescDB::check_input()
       ++num_errors;
     }
     if (dataModelList.empty()) { // Allow model omission
-      DataModel data_model; // use defaults: modelType == "single"
+      DataModel data_model; // use defaults: modelType == "simulation"
       dataModelList.push_back(data_model);
     }
 
@@ -843,19 +843,19 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
               boost::bind(DataInterface::id_compare, _1, interface_tag) );
 	// echo warning if a default interface list entry will be used and more
 	// than 1 interface specification is present.  Currently this can only
-	// happen for single models, since surrogate model specifications do not
-	// contain interface pointers and the omission of an optional interface
-	// pointer in nested models indicates the omission of an optional
+	// happen for simulation models, since surrogate model specifications
+	// do not contain interface ptrs and the omission of an optional
+	// interface ptr in nested models indicates the omission of an optional
 	// interface (rather than the presence of an unidentified interface).
 	if (dataInterfaceIter == dataInterfaceList.end()) {
 	  if (parallelLib.world_rank() == 0 &&
-	      MoRep->modelType == "single")
+	      MoRep->modelType == "simulation")
 	    Cerr << "\nWarning: empty interface id string not found.\n         "
 		 << "Last interface specification parsed will be used.\n";
 	  --dataInterfaceIter; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-		 MoRep->modelType == "single"  &&
+		 MoRep->modelType == "simulation"  &&
 		 std::count_if(dataInterfaceList.begin(),
 			       dataInterfaceList.end(),
 			       boost::bind(DataInterface::id_compare, _1,
@@ -1454,7 +1454,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       // must be sorted by string (key)
 	{"nested.primary_response_mapping", P primaryRespCoeffs},
 	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
-	{"single.solution_level_cost", P solutionLevelCost},
+	{"simulation.solution_level_cost", P solutionLevelCost},
 	{"surrogate.kriging_correlations", P krigingCorrelations},
 	{"surrogate.kriging_max_correlations", P krigingMaxCorrelations},
 	{"surrogate.kriging_min_correlations", P krigingMinCorrelations}};
@@ -2348,7 +2348,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"interface_pointer", P interfacePointer},
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
-	{"single.solution_level_control", P solutionLevelControl},
+	{"simulation.solution_level_control", P solutionLevelControl},
 	{"surrogate.actual_model_pointer", P actualModelPointer},
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.dace_method_pointer", P subMethodPointer},

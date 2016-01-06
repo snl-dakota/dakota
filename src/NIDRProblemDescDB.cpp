@@ -7077,7 +7077,7 @@ static Model_mp_lit
 	MP2(marsInterpolation,linear),
 	MP2(marsInterpolation,cubic),
 	MP2(modelType,nested),
-	MP2(modelType,single),
+	MP2(modelType,simulation),
 	MP2(modelType,subspace),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),

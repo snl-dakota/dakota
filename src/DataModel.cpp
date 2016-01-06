@@ -18,7 +18,7 @@
 namespace Dakota {
 
 DataModelRep::DataModelRep():
-  modelType("single"),
+  modelType("simulation"),
 //approxPointReuse("none"), // default depends on point import
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),

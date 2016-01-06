@@ -2755,7 +2755,7 @@
       </keyword>
       <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical evaluation tags" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="no hierarchical tagging" />
       <oneOf>
-        <keyword  id="single" name="single" code="{N_mom(lit,modelType_single)}" label="single" help="" minOccurs="1" default="N/A ( single if no model specification)" >
+        <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="single" help="" minOccurs="1" default="N/A ( single if no model specification)" >
           <alias name="simulation"/>
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface set pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />

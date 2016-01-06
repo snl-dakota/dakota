@@ -16,7 +16,7 @@
 #include "PRPMultiIndex.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
-#include "SingleModel.hpp"
+#include "SimulationModel.hpp"
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
@@ -369,8 +369,8 @@ Model* Model::get_model(ProblemDescDB& problem_db)
   // constructor due to the use of BaseConstructor.
 
   const String& model_type = problem_db.get_string("model.type");
-  if ( model_type == "single" )
-    return new SingleModel(problem_db);
+  if ( model_type == "simulation" )
+    return new SimulationModel(problem_db);
   else if ( model_type == "nested")
     return new NestedModel(problem_db);
   else if ( model_type == "surrogate") {
@@ -2597,12 +2597,12 @@ void Model::derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->derived_subordinate_models(ml, recurse_flag);
-  // else: default implementation (single models) is no-op.
+  // else: default implementation (SimulationModel) is no-op.
 }
 
 
 /** used only for instantiate-on-the-fly model recursions (all RecastModel
-    instantiations and alternate DataFitSurrModel instantiations).  Single,
+    instantiations and alternate DataFitSurrModel instantiations).  Simulation,
     Hierarchical, and Nested Models do not redefine the function since they
     do not support instantiate-on-the-fly.  This means that the recursion
     will stop as soon as it encounters a Model that was instantiated normally,
@@ -2645,7 +2645,7 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->primary_response_fn_weights(wts, recurse_flag);
-  else // default does not support recursion (SingleModel, NestedModel)
+  else // default does not support recursion (SimulationModel, NestedModel)
     primaryRespFnWts = wts;
 }
 
@@ -3130,8 +3130,8 @@ size_t Model::mi_parallel_level_index() const
 }
 
 
-/** SingleModels and HierarchSurrModels redefine this virtual function.  A
-    default value of "synchronous" prevents asynch local operations for:
+/** SimulationModels and HierarchSurrModels redefine this virtual function.
+    A default value of "synchronous" prevents asynch local operations for:
 \li NestedModels: a subIterator can support message passing parallelism,
     but not asynch local.
 \li DataFitSurrModels: while asynch evals on approximations will work due
@@ -3145,7 +3145,7 @@ short Model::local_eval_synchronization()
 }
 
 
-/** SingleModels and HierarchSurrModels redefine this virtual function. */
+/** SimulationModels and HierarchSurrModels redefine this virtual function. */
 int Model::local_eval_concurrency()
 {
   if (modelRep) // should not occur: protected fn only used by the letter
@@ -3564,7 +3564,7 @@ void Model::inactive_view(short view, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->inactive_view(view, recurse_flag);
-  else { // default does not support recursion (SingleModel, NestedModel)
+  else { // default does not support recursion (SimulationModel, NestedModel)
     currentVariables.inactive_view(view);
     userDefinedConstraints.inactive_view(view);
   }
