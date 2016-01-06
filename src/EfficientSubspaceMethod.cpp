@@ -59,7 +59,7 @@ EfficientSubspaceMethod::~EfficientSubspaceMethod()
 }
 
 
-void EfficientSubspaceMethod::quantify_uncertainty()
+void EfficientSubspaceMethod::core_run()
 {
   // ----
   // Instantiate the DACE iterator, using default RNG and samples

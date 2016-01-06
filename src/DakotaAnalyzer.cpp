@@ -57,7 +57,8 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 
 Analyzer::Analyzer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
-  writePrecision(0), numObjFns(0), numLSqTerms(0) // default: no best data tracking
+  numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  writePrecision(0)
 {
   update_from_model(iteratedModel); // variable/response counts & checks
 }
@@ -65,7 +66,8 @@ Analyzer::Analyzer(unsigned short method_name, Model& model):
 
 Analyzer::Analyzer(unsigned short method_name):
   Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
-  writePrecision(0), numObjFns(0), numLSqTerms(0) // default: no best data tracking
+  numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  writePrecision(0)
 { }
 
 
@@ -144,6 +146,10 @@ void Analyzer::initialize_run()
       iteratedModel.set_evaluation_reference();
   }
 }
+
+
+void Analyzer::pre_run()
+{ bestVarsRespMap.clear(); }
 
 
 void Analyzer::post_run(std::ostream& s)

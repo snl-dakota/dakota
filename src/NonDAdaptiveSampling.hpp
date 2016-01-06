@@ -59,13 +59,8 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  /// perform the GP importance sampling and return probability of failure.
-  void quantify_uncertainty();
-  
-  /// returns the probability calculated by the importance sampling
+  void core_run();
   Real final_probability();
- 
-  /// print the final statistics
   void print_results(std::ostream& s);
 
 private:

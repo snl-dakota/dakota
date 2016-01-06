@@ -119,7 +119,6 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
 
   void initialize_run();
-  void core_run();
   void finalize_run();
 
   // return the final uncertain variables from the nondeterministic iteration
@@ -132,9 +131,6 @@ protected:
   //
   //- Heading: New virtual member functions
   //
-
-  /// Mapping of the core_run() virtual function for the NonD branch
-  virtual void quantify_uncertainty() = 0;
 
   /// initializes respCovariance
   virtual void initialize_response_covariance();
@@ -465,12 +461,6 @@ inline void NonD::initialize_run()
   prevNondInstance = nondInstance; 
   nondInstance = this; 
 }
-
-
-/** Performs a forward uncertainty propagation of parameter
-    distributions into response statistics. */
-inline void NonD::core_run()
-{ bestVarsRespMap.clear(); quantify_uncertainty(); }
 
 
 inline void NonD::finalize_run()

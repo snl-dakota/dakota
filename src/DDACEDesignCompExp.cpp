@@ -88,13 +88,15 @@ DDACEDesignCompExp::~DDACEDesignCompExp() { }
 
 void DDACEDesignCompExp::pre_run()
 {
+  Analyzer::pre_run();
+
   // obtain a set of samples for evaluation; if VBD, defer to run phase
   if (!varBasedDecompFlag)
     get_parameter_sets(iteratedModel);
 }
 
 
-void DDACEDesignCompExp::extract_trends()
+void DDACEDesignCompExp::core_run()
 {
   // If VBD has been selected, evaluate a series of parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
@@ -166,14 +168,14 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   Cout << "\nDACE method = " << submethod_enum_to_string(daceMethod) 
        << " Samples = " << numSamples << " Symbols = " << numSymbols;
 
-  // If a seed is specified, use it to get repeatable behavior, else allow DDACE
-  // to generate different samples each time (seeded from a system clock).  For
-  // the case where extract_trends() may be called multiple times for the same
+  // If a seed is specified, use it to get repeatable behavior, else allow
+  // DDACE to generate different samples each time (seeded from a system clock).
+  // For the case where core_run() may be called multiple times for the same
   // iterator object (e.g., SBO), the varyPattern flag manages whether or not
   // an old seed is reused.  This allows for repeatable studies in which the
-  // sampling pattern varies from one extract_trends() call to the next.  The
-  // implementation of this feature is more straightforward than in NonDSampling
-  // due to the persistence of the DDACE data.
+  // sampling pattern varies from one core_run() call to the next.  The
+  // implementation of this feature is more straightforward than in
+  // NonDSampling due to the persistence of the DDACE data.
   if (numDACERuns == 1) {
     if (seedSpec) // user seed specification: repeatable behavior
       DistributionBase::setSeed(randomSeed);

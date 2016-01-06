@@ -57,7 +57,7 @@ public:
   void derived_free_communicators(ParLevLIter pl_iter);
 
   /// performs adaptive importance sampling and computes probability of failure
-  void quantify_uncertainty();
+  void core_run();
 
   /// print the final statistics
   void print_results(std::ostream& s);

@@ -46,19 +46,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  // together the three run components perform a forward uncertainty
-  // propagation by using LHS to generate a set of parameter samples,
-  // performing function evaluations on these parameter samples, and
-  // computing statistics on the ensemble of results.
-
-  /// generate LHS samples in non-VBD cases
   void pre_run();
-  /// perform the evaluate parameter sets portion of run
-  void quantify_uncertainty();
-  /// generate statistics for LHS runs in non-VBD cases
+  void core_run();
   void post_run(std::ostream& s);
-
-  /// print the final statistics
   void print_results(std::ostream& s);
 
 private:

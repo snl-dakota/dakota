@@ -59,7 +59,7 @@ NonDWASABIBayesCalibration::~NonDWASABIBayesCalibration()
 
 
 /** Perform the uncertainty quantification */
-void NonDWASABIBayesCalibration::quantify_uncertainty()
+void NonDWASABIBayesCalibration::core_run()
 {
 
   // initialize static pointers

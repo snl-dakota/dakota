@@ -86,7 +86,7 @@ NonDIntegration::~NonDIntegration()
 { }
 
 
-void NonDIntegration::quantify_uncertainty()
+void NonDIntegration::core_run()
 {
   //if (standAloneMode)
   //  initialize_random_variable_parameters(); // capture any dist param updates
@@ -109,7 +109,7 @@ void NonDIntegration::quantify_uncertainty()
 
 
 /** Virtual function called from probDescDB-based constructors and from
-    NonDIntegration::quantify_uncertainty() */
+    NonDIntegration::core_run() */
 void NonDIntegration::
 check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars)
 {

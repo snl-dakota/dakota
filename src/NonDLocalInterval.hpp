@@ -54,7 +54,7 @@ public:
   /// Performs a gradient-based optimization to determine interval
   /// bounds for an entire function or interval bounds on a particular
   /// statistical estimator
-  void quantify_uncertainty();
+  void core_run();
 
   /// return name of active optimizer method
   unsigned short uses_method() const;

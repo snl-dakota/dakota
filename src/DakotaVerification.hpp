@@ -45,15 +45,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void core_run();
   void print_results(std::ostream& s);
-
-  //
-  //- Heading: New virtual member functions
-  //
-
-  /// Redefines the core_run() virtual function for the Verification branch
-  virtual void perform_verification() = 0;
 
   //
   //- Heading: Member functions
@@ -75,10 +67,6 @@ private:
 
 
 inline Verification::~Verification() { }
-
-
-inline void Verification::core_run()
-{ /* bestVarsRespMap.clear(); */ perform_verification(); }
 
 } // namespace Dakota
 

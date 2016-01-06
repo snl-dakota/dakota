@@ -58,7 +58,7 @@ public:
   // instantiation in ApproximationInterface currently bypasses envelope,
   // which requires that they be public.
   void pre_run();
-  void extract_trends();
+  void core_run();
   void post_input();
   void post_run(std::ostream& s);
   int num_samples() const;

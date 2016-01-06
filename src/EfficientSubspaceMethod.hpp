@@ -56,7 +56,7 @@ public:
   // void derived_free_communicators(ParLevLIter pl_iter);
 
   /// ESM re-implementation of the virtual UQ iterator function
-  void quantify_uncertainty();
+  void core_run();
 
 private:
 

@@ -69,9 +69,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  /// redefined from DakotaNonD
-  void quantify_uncertainty();
-  // redefined from DakotaNonD
+  void core_run();
   void print_results(std::ostream& s);
 
   /// Extract a subset of samples for posterior eval according to the

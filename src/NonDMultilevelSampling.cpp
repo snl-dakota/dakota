@@ -55,12 +55,15 @@ NonDMultilevelSampling::~NonDMultilevelSampling()
 
 void NonDMultilevelSampling::pre_run()
 {
+  Analyzer::pre_run();
+
+  // TO DO
 }
 
 
 /** Loop over the set of samples and compute responses.  Compute
     statistics on the set of responses if statsFlag is set. */
-void NonDMultilevelSampling::quantify_uncertainty()
+void NonDMultilevelSampling::core_run()
 {
   // to start, assume one model form with multiple discretization levels...
   // later, return hierarchy of model forms from the hierarchical surrogate,

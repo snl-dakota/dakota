@@ -94,7 +94,7 @@ NonDPOFDarts::~NonDPOFDarts()
 { }
 
 
-void NonDPOFDarts::quantify_uncertainty()
+void NonDPOFDarts::core_run()
 {
     _eval_error = false; _safety_factor = 2.0;
     

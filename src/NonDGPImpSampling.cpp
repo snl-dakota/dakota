@@ -129,9 +129,8 @@ void NonDGPImpSampling::derived_free_communicators(ParLevLIter pl_iter)
 
 /** Calculate the failure probabilities for specified probability levels 
     using Gaussian process based importance sampling. */
-void NonDGPImpSampling::quantify_uncertainty()
+void NonDGPImpSampling::core_run()
 {
-
   numPtsTotal = numSamples + numPtsAdd;
  
   // Build initial GP model.  This will be built over the initial LHS sample set

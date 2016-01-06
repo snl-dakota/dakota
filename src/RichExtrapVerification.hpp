@@ -45,7 +45,7 @@ public:
 
   //void initialize_run();
   //void pre_run();
-  void perform_verification(); // invoked by core_run()
+  void core_run();
   //void post_run(std::ostream& s);
   //void finalize_run();
   void print_results(std::ostream& s);

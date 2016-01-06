@@ -151,7 +151,7 @@ NonDSparseGrid(Model& model, const UShortArray& ssg_level_seq,
 
   // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
-  // it is deferred until run time in NonDIntegration::quantify_uncertainty().
+  // it is deferred until run time in NonDIntegration::core_run().
   //check_variables(x_ran_vars);
 }
 

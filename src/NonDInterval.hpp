@@ -48,11 +48,11 @@ public:
   ~NonDInterval();                                       ///< destructor
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual member function redefinitions
   //
 
   // performs an epistemic uncertainty propagation using interval propagation
-  //virtual void quantify_uncertainty();
+  //void core_run();
 
   /// print the cumulative distribution functions for belief and plausibility
   void print_results(std::ostream& s);

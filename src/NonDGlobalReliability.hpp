@@ -49,14 +49,7 @@ public:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  /// performs an uncertainty propagation using analytical reliability 
-  /// methods which solve constrained optimization problems to obtain
-  /// approximations of the cumulative distribution function of response 
-  void quantify_uncertainty();
-
-  /// print the approximate mean, standard deviation, and importance factors
-  /// when using the mean value method or the CDF/CCDF information when using
-  /// MPP-search-based reliability methods
+  void core_run();
   void print_results(std::ostream& s);
 
 private:

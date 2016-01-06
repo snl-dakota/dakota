@@ -71,6 +71,8 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
     /** Generate Parameter Sets. */
     void NonDRKDDarts::pre_run()
     {
+        Analyzer::pre_run();
+
         Cout << "*** Generating " << samples << " points *** " << '\n';
         
         initiate_random_number_generator(seed);
@@ -80,7 +82,7 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
     }
     // --------------------------
     /** Loop over the set of samples and compute responses. */
-    void NonDRKDDarts::quantify_uncertainty()
+    void NonDRKDDarts::core_run()
     {
         Cout << "*** Quantifying uncertainty *** " << '\n';
         
@@ -117,6 +119,8 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
         s << "-----------------------------------------------------------------\n";
         
         exit_rkd_darts(); // clean up memory
+
+	Analyzer::post_run(s);
     }
     /////////////////////////////////////////////////////////////
     //

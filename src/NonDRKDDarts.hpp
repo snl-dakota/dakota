@@ -41,12 +41,11 @@ public:
 
     ~NonDRKDDarts();                                       ///< destructor
 
-    // ----------------------
-    // - Heading: Member functions
-    // ----------------------
+    //
+    //- Heading: Virtual function redefinitions
+    //
 
-    // perform analysis
-    void quantify_uncertainty();
+    void core_run();
 
 protected:
     
@@ -70,9 +69,9 @@ protected:
     
     void create_rkd_containers(size_t expected_num_samples);
         
-    /// -----
-    /// perform the evaluate parameter sets portion of run
-    /// void quantify_uncertainty();
+    // -----
+    // perform the evaluate parameter sets portion of run
+    //void core_run();
     
     void execute();
     

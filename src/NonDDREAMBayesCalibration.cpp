@@ -154,7 +154,7 @@ NonDDREAMBayesCalibration::~NonDDREAMBayesCalibration()
 
 
 /** Perform the uncertainty quantification */
-void NonDDREAMBayesCalibration::quantify_uncertainty()
+void NonDDREAMBayesCalibration::core_run()
 {
   // instantiate DREAM objects and execute
   nonDBayesInstance = nonDDREAMInstance = this;

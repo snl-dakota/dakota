@@ -85,7 +85,7 @@ protected:
   /// generate LHS samples in non-VBD cases
   void pre_run();
   /// perform the evaluate parameter sets portion of run
-  void quantify_uncertainty();
+  void core_run();
   /// generate statistics for LHS runs in non-VBD cases
   void post_run(std::ostream& s);
 

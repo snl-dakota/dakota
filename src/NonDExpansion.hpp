@@ -44,7 +44,7 @@ public:
   ~NonDExpansion();
 
   //
-  //- Heading: Virtual function redefinitions
+  //- Heading: Virtual member function redefinitions
   //
 
   void derived_init_communicators(ParLevLIter pl_iter);
@@ -52,7 +52,7 @@ public:
   void derived_free_communicators(ParLevLIter pl_iter);
 
   /// perform a forward uncertainty propagation using PCE/SC methods
-  void quantify_uncertainty(); // pure virtual fn. called by NonD
+  void core_run();
   /// print the final statistics
   void print_results(std::ostream& s);
 
@@ -182,7 +182,7 @@ protected:
   /// Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS for PCE regression
   short expansionBasisType;
 
-  /// number of invocations of quantify_uncertainty()
+  /// number of invocations of core_run()
   size_t numUncertainQuant;
 
   /// number of truth samples performed on g_u_model to form the expansion

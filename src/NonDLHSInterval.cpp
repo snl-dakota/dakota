@@ -77,7 +77,7 @@ void NonDLHSInterval::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
-void NonDLHSInterval::quantify_uncertainty()
+void NonDLHSInterval::core_run()
 {
   // set up data structures
   initialize();

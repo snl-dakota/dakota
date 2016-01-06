@@ -128,6 +128,8 @@ NonDLHSSampling::~NonDLHSSampling()
 
 void NonDLHSSampling::pre_run()
 {
+  Analyzer::pre_run();
+
   // BMA TODO: need to resolve interaction of MC/LHS with D-Optimal
 
   // run LHS to generate parameter sets; for VBD we defer to run for now
@@ -511,7 +513,7 @@ void NonDLHSSampling::post_input()
 
 /** Loop over the set of samples and compute responses.  Compute
     statistics on the set of responses if statsFlag is set. */
-void NonDLHSSampling::quantify_uncertainty()
+void NonDLHSSampling::core_run()
 {
   // If VBD has been selected, evaluate a series of parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.

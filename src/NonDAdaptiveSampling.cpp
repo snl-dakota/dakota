@@ -200,7 +200,7 @@ namespace Dakota
 
 
 	//This is where all the magic happens
-	void NonDAdaptiveSampling::quantify_uncertainty() 
+	void NonDAdaptiveSampling::core_run() 
 	{
 		#pragma region Quantify Uncertainity:
 		numPtsTotal = numSamples + numRounds * batchSize;		

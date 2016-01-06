@@ -52,17 +52,17 @@ public:
   ~NonDPOFDarts();                                       ///< destructor
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual member function redefinitions
   //
 
   /// perform POFDart analysis and return probability of failure 
-  void quantify_uncertainty();
+  void core_run();
 
 protected: 
+
   //
   //- Heading: Convenience functions
   //
-    
     
     void initiate_random_number_generator(unsigned long x);
     

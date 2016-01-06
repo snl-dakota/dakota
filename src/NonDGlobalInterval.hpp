@@ -52,9 +52,9 @@ public:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  /// Performs an optimization to determine interval bounds for an   
-  /// entire function or interval bounds on a particular statistical estimator
-  void quantify_uncertainty();
+  /// Performs an optimization to determine interval bounds for an entire
+  /// function or interval bounds on a particular statistical estimator
+  void core_run();
 
   const Model& algorithm_space_model() const;
 

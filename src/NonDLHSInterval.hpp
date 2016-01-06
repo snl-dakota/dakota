@@ -47,7 +47,7 @@ public:
   void derived_free_communicators(ParLevLIter pl_iter);
 
   /// performs an epistemic uncertainty propagation using LHS samples
-  void quantify_uncertainty();
+  void core_run();
 
 protected:
 

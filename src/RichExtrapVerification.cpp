@@ -36,6 +36,8 @@ RichExtrapVerification(ProblemDescDB& problem_db, Model& model):
 /*
 void RichExtrapVerification::pre_run()
 {
+  Analyzer::pre_run();
+
   // Capture any changes resulting from the strategy layer's
   // passing of best variable info between iterators.
   if (studyType == ) {
@@ -57,7 +59,7 @@ void RichExtrapVerification::pre_run()
 */
 
 
-void RichExtrapVerification::perform_verification()
+void RichExtrapVerification::core_run()
 {
   /*
   // perform the evaluations; multidim exception
@@ -90,8 +92,8 @@ void RichExtrapVerification::perform_verification()
       Cout << "\nConverging estimates of quantities of interest.\n\n";
     converge_qoi();   break;
   default:
-    Cerr << "\nError: bad study type in RichExtrapVerification::perform_"
-	 << "verification().\n       studyType = " << studyType << std::endl;
+    Cerr << "\nError: bad study type in RichExtrapVerification::core_run()."
+	 << "\n       studyType = " << studyType << std::endl;
     abort_handler(-1);
   }
 }

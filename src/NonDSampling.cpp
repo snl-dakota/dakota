@@ -821,7 +821,7 @@ void NonDSampling::initialize_lhs(bool write_message)
 
 /** Default implementation generates allResponses from either allSamples
     or allVariables. */
-void NonDSampling::quantify_uncertainty()
+void NonDSampling::core_run()
 {
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);

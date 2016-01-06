@@ -74,7 +74,7 @@ protected:
   // random seed for integration refinement
   //int refinementSeed;
 
-  /// number of invocations of quantify_uncertainty()
+  /// number of invocations of core_run()
   size_t numRelAnalyses;
 
   /// number of approximation cycles for the current respFnCount/levelCount

@@ -255,7 +255,7 @@ void NonDGlobalInterval::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
-void NonDGlobalInterval::quantify_uncertainty()
+void NonDGlobalInterval::core_run()
 {
   // set the object instance pointer for use within static member functions
   NonDGlobalInterval* prev_instance = nondGIInstance;

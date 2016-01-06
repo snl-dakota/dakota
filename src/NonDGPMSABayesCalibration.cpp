@@ -101,7 +101,7 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 
 
 /** Perform the uncertainty quantification */
-void NonDGPMSABayesCalibration::quantify_uncertainty()
+void NonDGPMSABayesCalibration::core_run()
 {
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();

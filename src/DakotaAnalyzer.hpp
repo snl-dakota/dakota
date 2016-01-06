@@ -91,6 +91,7 @@ protected:
   void update_from_model(const Model& model);
 
   void initialize_run();
+  void pre_run();
   void post_run(std::ostream& s);
   void finalize_run();
 

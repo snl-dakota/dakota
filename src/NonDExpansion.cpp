@@ -562,7 +562,7 @@ construct_expansion_sampler(const String& import_approx_file,
 }
 
 
-void NonDExpansion::quantify_uncertainty()
+void NonDExpansion::core_run()
 {
   initialize_expansion();
 
@@ -787,12 +787,12 @@ void NonDExpansion::compute_expansion()
     poly_approx_rep->expansion_gradient_flag(expansion_grad_flag);
   }
 
-  // If OUU/SOP (multiple calls to quantify_uncertainty()), an expansion
-  // constructed over the full range of all variables does not need to be
-  // reconstructed on subsequent calls.  However, an all_vars construction
-  // over a trust region needs rebuilding when the trust region is updated.
-  // In the checks below, all_approx detects any variable insertions or ASV
-  // omissions and force_rebuild() manages variable augmentations.
+  // If OUU/SOP (multiple calls to core_run()), an expansion constructed over
+  // the full range of all variables does not need to be reconstructed on
+  // subsequent calls.  However, an all_vars construction over a trust region
+  // needs rebuilding when the trust region is updated.  In the checks below,
+  // all_approx detects any variable insertions or ASV omissions and
+  // force_rebuild() manages variable augmentations.
   bool all_approx = false;
   if (all_vars && numUncertainQuant && secondaryACVarMapTargets.empty()) {
     all_approx = true;

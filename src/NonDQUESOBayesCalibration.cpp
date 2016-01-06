@@ -241,7 +241,7 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 
 
 /** Perform the uncertainty quantification */
-void NonDQUESOBayesCalibration::quantify_uncertainty()
+void NonDQUESOBayesCalibration::core_run()
 {
   // instantiate QUESO objects and execute
   nonDBayesInstance = nonDQUESOInstance = this;

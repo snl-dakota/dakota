@@ -126,7 +126,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     err_flag = true;
   }
   if (err_flag)
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 
   maxEvalConcurrency *= numEvals;
 }
@@ -134,7 +134,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
 
 void ParamStudy::pre_run()
 {
-  Iterator::pre_run();  // for completeness
+  Analyzer::pre_run();
 
   // Capture any changes in initialCVPoint resulting from the strategy layer's
   // passing of best variable info between iterators.  If no such variable 
@@ -229,13 +229,13 @@ void ParamStudy::pre_run()
     break;
   default:
     Cerr << "\nError: bad methodName (" << method_enum_to_string(methodName)
-	 << ") in ParamStudy::extract_trends()." << std::endl;
-    abort_handler(-1);
+	 << ") in ParamStudy::pre_run()." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
 }
 
 
-void ParamStudy::extract_trends()
+void ParamStudy::core_run()
 {
   // perform the evaluations; multidim exception
   bool log_resp_flag = (methodName == MULTIDIM_PARAMETER_STUDY)

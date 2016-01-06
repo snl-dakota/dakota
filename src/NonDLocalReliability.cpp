@@ -483,7 +483,7 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
-void NonDLocalReliability::quantify_uncertainty()
+void NonDLocalReliability::core_run()
 {
   if (mppSearchType) mpp_search();
   else               mean_value();

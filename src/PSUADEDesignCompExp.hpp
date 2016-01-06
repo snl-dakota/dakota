@@ -40,14 +40,15 @@ public:
   /// destructor
   ~PSUADEDesignCompExp();
     
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
-  // NOTE: these could be protected (letter-envelope)
   void pre_run();
   void post_input();
-  void extract_trends();
+  void core_run();
   void post_run(std::ostream& s);
 
   int num_samples() const;

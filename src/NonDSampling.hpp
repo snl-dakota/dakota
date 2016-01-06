@@ -131,7 +131,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void quantify_uncertainty();
+  void core_run();
 
   int num_samples() const;
 

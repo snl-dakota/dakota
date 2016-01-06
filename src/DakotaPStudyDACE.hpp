@@ -48,15 +48,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void core_run();
   void print_results(std::ostream& s);
-
-  //
-  //- Heading: New virtual member functions
-  //
-
-  /// Mapping of the core_run() virtual function for the PStudy/DACE branch
-  virtual void extract_trends() = 0;
 
   //
   //- Heading: Member functions
@@ -93,10 +85,6 @@ private:
   /// quality measure
   double tauMeas;
 };
-
-
-inline void PStudyDACE::core_run()
-{ bestVarsRespMap.clear(); extract_trends(); }
 
 } // namespace Dakota
 

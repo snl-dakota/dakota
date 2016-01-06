@@ -53,7 +53,7 @@ public:
   //
   
   void pre_run();
-  void extract_trends();
+  void core_run();
   void post_input();
   void post_run(std::ostream& s);
 

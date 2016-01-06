@@ -170,7 +170,7 @@ void NonDLocalInterval::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
-void NonDLocalInterval::quantify_uncertainty()
+void NonDLocalInterval::core_run()
 {
   // set the object instance pointer for use within static member functions
   NonDLocalInterval* prev_instance = nondLIInstance;

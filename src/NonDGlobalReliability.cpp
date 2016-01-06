@@ -378,7 +378,7 @@ void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
-void NonDGlobalReliability::quantify_uncertainty()
+void NonDGlobalReliability::core_run()
 {
   // initialize the random variable arrays and the correlation Cholesky factor
   initialize_random_variable_parameters();

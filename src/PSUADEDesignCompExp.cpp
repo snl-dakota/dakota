@@ -55,6 +55,8 @@ PSUADEDesignCompExp::~PSUADEDesignCompExp()
 
 void PSUADEDesignCompExp::pre_run()
 {
+  Analyzer::pre_run();
+
   // obtain a set of samples for evaluation
   get_parameter_sets(iteratedModel);
 }
@@ -67,7 +69,7 @@ void PSUADEDesignCompExp::post_input()
 }
 
 
-void PSUADEDesignCompExp::extract_trends()
+void PSUADEDesignCompExp::core_run()
 {
   // evaluate the sample set to obtain the corresponding set of results
   //evaluate_parameter_sets(iteratedModel, allDataFlag, true);
@@ -179,11 +181,11 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 
     // Set seed value for input to CVT.  A user-specified seed gives you
     // repeatable behavior but no specification gives you random behavior (seed
-    // generated from a system clock).  For the cases where extract_trends() may
-    // be called multiple times for the same DACE object (e.g., SBO), a
-    // deterministic sequence of seed values is used (unless fixed_seed has been
-    // specified).  This renders the study repeatable but the sampling pattern
-    // varies from one run to the next.
+    // generated from a system clock).  For the cases where core_run() may be
+    // called multiple times for the same DACE object (e.g., SBO), a
+    // deterministic sequence of seed values is used (unless fixed_seed has
+    // been specified).  This renders the study repeatable but the sampling
+    // pattern varies from one run to the next.
     if (numDACERuns == 1) { // set initial seed
       if (!seedSpec) // no user specification: random behavior
 	// Generate initial seed from a system clock.  NOTE: the system clock

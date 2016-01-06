@@ -247,7 +247,7 @@ initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
 }
 
 
-void NonDAdaptImpSampling::quantify_uncertainty()
+void NonDAdaptImpSampling::core_run()
 {
   //TMW: Only converge COV for MMAIS
   bool cov_flag = (importanceSamplingType == MMAIS);

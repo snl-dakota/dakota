@@ -68,7 +68,7 @@ public:
   /// performs an uncertainty propagation using analytical reliability 
   /// methods which solve constrained optimization problems to obtain
   /// approximations of the cumulative distribution function of response 
-  void quantify_uncertainty();
+  void core_run();
 
   /// print the approximate mean, standard deviation, and importance factors
   /// when using the mean value method or the CDF/CCDF information when using
