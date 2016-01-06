@@ -247,7 +247,7 @@ void NLPQLPOptimizer::initialize_run()
 }
 
 
-void NLPQLPOptimizer::find_optimum()
+void NLPQLPOptimizer::core_run()
 {
   // TO DO: utilize L concurrency with asynch_compute_response()/synchronize()
 

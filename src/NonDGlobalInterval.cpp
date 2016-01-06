@@ -315,7 +315,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 	Cout << "\n>>>>> Initiating global minimization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
-	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
+	//intervalOptimizer.reset(); // redundant for COLINOptimizer::core_run()
 	intervalOptimizer.run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
 	post_process_run_results(false);
@@ -349,7 +349,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 	Cout << "\n>>>>> Initiating global maximization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
-	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
+	//intervalOptimizer.reset(); // redundant for COLINOptimizer::core_run()
 	intervalOptimizer.run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
 	post_process_run_results(true);

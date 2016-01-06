@@ -33,7 +33,7 @@ namespace Dakota {
     The user input mappings are as follows: \c max_iterations is
     mapped into CONMIN's \c ITMAX parameter, \c
     max_function_evaluations is implemented directly in the
-    find_optimum() loop since there is no CONMIN parameter equivalent,
+    core_run() loop since there is no CONMIN parameter equivalent,
     \c convergence_tolerance is mapped into CONMIN's \c DELFUN and \c
     DABFUN parameters, \c output verbosity is mapped into CONMIN's \c
     IPRINT parameter (verbose: \c IPRINT = 4; quiet: \c IPRINT = 2),
@@ -61,7 +61,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  void find_optimum();
+  void core_run();
 
 protected:
 

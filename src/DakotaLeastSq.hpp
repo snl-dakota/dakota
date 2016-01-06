@@ -49,7 +49,6 @@ protected:
   //
 
   void initialize_run();
-  void core_run();
   void post_run(std::ostream& s);
   void finalize_run();
   void print_results(std::ostream& s);
@@ -57,11 +56,6 @@ protected:
   //
   //- Heading: New virtual member functions
   //
-
-  /// Used within the least squares branch for minimizing the sum of
-  /// squares residuals.  Redefines the run virtual function
-  /// for the least squares branch.
-  virtual void minimize_residuals() = 0;
 
   /// Calculate confidence intervals on estimated parameters
   void get_confidence_intervals();
@@ -112,10 +106,6 @@ inline LeastSq::LeastSq(): weightFlag(false)
 
 inline LeastSq::~LeastSq()
 { }
-
-
-inline void LeastSq::core_run()
-{ minimize_residuals(); }
 
 
 inline void LeastSq::finalize_run()

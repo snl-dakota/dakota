@@ -315,14 +315,14 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 }
 
 
-void NPSOLOptimizer::find_optimum()
+void NPSOLOptimizer::core_run()
 {
   if (setUpType == "model")
     find_optimum_on_model();
   else if (setUpType == "user_functions")
     find_optimum_on_user_functions();
   else {
-    Cerr << "Error: bad setUpType in NPSOLOptimizer::find_optimum()."
+    Cerr << "Error: bad setUpType in NPSOLOptimizer::core_run()."
          << std::endl;
     abort_handler(-1);
   }

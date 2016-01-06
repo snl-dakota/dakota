@@ -246,7 +246,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 }
 
 
-void NCSUOptimizer::find_optimum()
+void NCSUOptimizer::core_run()
 {
   //------------------------------------------------------------------
   //     Solve the problem.

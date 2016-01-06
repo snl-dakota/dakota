@@ -351,7 +351,7 @@ void CONMINOptimizer::initialize_run()
 }
 
 
-void CONMINOptimizer::find_optimum()
+void CONMINOptimizer::core_run()
 {
   size_t i, j, fn_eval_cntr;
   int num_cv = numContinuousVars;

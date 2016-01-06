@@ -58,7 +58,7 @@ OptDartsOptimizer::OptDartsOptimizer(Model& model): Optimizer(GENIE_OPT_DARTS, m
 }
 
 
-void OptDartsOptimizer::find_optimum()
+void OptDartsOptimizer::core_run()
 {
     
     Cout << "I am now computing best values! " << '\n';
@@ -115,7 +115,7 @@ void OptDartsOptimizer::find_optimum()
       best_fns[0] = _fb;
       bestResponseArray.front().function_values(best_fns);
     }
-    Cout << "In body of find_optimizer " << '\n';
+    Cout << "In body of core_run\n";
     
     opt_darts_terminate();
 }

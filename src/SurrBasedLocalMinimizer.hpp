@@ -49,6 +49,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// Performs local surrogate-based minimization by minimizing local,
+  /// global, or hierarchical surrogates over a series of trust regions.
+  void core_run();
+
   /// reset convergence controls in case of multiple SBLM executions
   void reset();
 
@@ -57,10 +61,6 @@ private:
   //
   //- Heading: Convenience member functions
   //
-
-  /// Performs local surrogate-based minimization by minimizing local,
-  /// global, or hierarchical surrogates over a series of trust regions.
-  void minimize_surrogates();
 
   /// compute current trust region bounds
   bool tr_bounds(const RealVector& global_lower_bnds,

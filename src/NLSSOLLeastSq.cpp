@@ -137,7 +137,7 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
 }
 
 
-void NLSSOLLeastSq::minimize_residuals()
+void NLSSOLLeastSq::core_run()
 {
   //------------------------------------------------------------------
   //     Solve the problem.

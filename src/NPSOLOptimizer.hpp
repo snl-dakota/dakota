@@ -83,7 +83,7 @@ public:
   //- Heading: Member functions
   //
 
-  void find_optimum();
+  void core_run();
 
 private:
 
@@ -91,9 +91,9 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// called by find_optimum for setUpType == "model"
+  /// called by core_run for setUpType == "model"
   void find_optimum_on_model();
-  /// called by find_optimum for setUpType == "user_functions"
+  /// called by core_run for setUpType == "user_functions"
   void find_optimum_on_user_functions();
 
   //

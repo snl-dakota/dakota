@@ -554,7 +554,7 @@ if(HAVE_ACRO)
 
   list(APPEND interface_src COLINApplication.cpp)
   list(APPEND iterator_src COLINOptimizer.cpp 
-  	      		   PEBBLOptimizer.cpp PEBBLBranching.cpp)
+  	      		   PEBBLMinimizer.cpp PEBBLBranching.cpp)
 
   foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
     string(TOUPPER "${acro_dep}" ACRODEP)

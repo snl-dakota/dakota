@@ -583,7 +583,7 @@ class JEGAOptimizer::EvaluatorCreator :
  * This is necessary because DAKOTA requires that all problem
  * information be extracted from the problem description DB at the
  * time of Optimizer construction and the front end does it all in
- * the execute algorithm method which must be called in find_optimum.
+ * the execute algorithm method which must be called in core_run.
  */
 class JEGAOptimizer::Driver :
     public JEGA::FrontEnd::Driver
@@ -740,7 +740,7 @@ Public Methods
 ===============================================================================
 */
 void
-JEGAOptimizer::find_optimum(
+JEGAOptimizer::core_run(
     )
 {
     EDDY_FUNC_DEBUGSCOPE

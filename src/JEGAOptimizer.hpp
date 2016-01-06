@@ -202,7 +202,7 @@ class JEGAOptimizer :
          * This is necessary because DAKOTA requires that all problem
          * information be extracted from the problem description DB at the
          * time of Optimizer construction and the front end does it all in
-         * the execute algorithm method which must be called in find_optimum.
+         * the execute algorithm method which must be called in core_run.
          */
         class Driver;
 
@@ -482,7 +482,7 @@ class JEGAOptimizer :
          */
         virtual
         void
-        find_optimum(
+        core_run(
             );
 
         /**

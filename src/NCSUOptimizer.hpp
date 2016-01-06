@@ -59,10 +59,10 @@ public:
   ~NCSUOptimizer(); ///< destructor
     
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
 
-  void find_optimum();
+  void core_run();
 
 private:
 

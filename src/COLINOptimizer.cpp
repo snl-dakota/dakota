@@ -257,14 +257,14 @@ COLINOptimizer(const String& method_string, Model& model):
   set_solver_parameters();
 }
 
-/** find_optimum redefines the Optimizer virtual function to perform
+/** core_run redefines the Optimizer virtual function to perform
     the optimization using COLIN. It first sets up the problem data,
     then executes optimize() on the COLIN solver and finally
     catalogues the results. */
 
-void COLINOptimizer::find_optimum()
+void COLINOptimizer::core_run()
 {
-  // Much of this is performed in find_optimum in order to capture any
+  // Much of this is performed in core_run in order to capture any
   // reassignment at the strategy layer (after iterator construction).
 
   try {
@@ -362,7 +362,7 @@ void COLINOptimizer::find_optimum()
 	index = set_value_to_index(div_init[i], dsiv_values[dsi_cntr]);
 	if (index == _NPOS) {
 	  Cerr << "\nError: failure in discrete integer set lookup within "
-	       << "COLINOptimizer::find_optimum()" << std::endl;
+	       << "COLINOptimizer::core_run()" << std::endl;
 	  abort_handler(-1);
 	}
 	else
@@ -379,7 +379,7 @@ void COLINOptimizer::find_optimum()
       index = set_value_to_index(drv_init[i], dsrv_values[i]);
       if (index == _NPOS) {
 	Cerr << "\nError: failure in discrete real set lookup within "
-	     << "COLINOptimizer::find_optimum()" << std::endl;
+	     << "COLINOptimizer::core_run()" << std::endl;
 	abort_handler(-1);
       }
       else
@@ -392,7 +392,7 @@ void COLINOptimizer::find_optimum()
       index = set_value_to_index(dsv_init[i], dssv_values[i]);
       if (index == _NPOS) {
 	Cerr << "\nError: failure in discrete string set lookup within "
-	     << "COLINOptimizer::find_optimum()" << std::endl;
+	     << "COLINOptimizer::core_run()" << std::endl;
 	abort_handler(-1);
       }
       else
@@ -834,7 +834,7 @@ void COLINOptimizer::set_solver_parameters()
     // Buffer the constraint_penalty here.  In DAKOTA, this is a
     // property of the solver; in COLIN, it is a property of the
     // reformulated application.  Unfortunately, the probDescDB is
-    // locked by the time we hit find_optimum().
+    // locked by the time we hit core_run().
 
     constraint_penalty = probDescDB.get_real("method.constraint_penalty");
     constant_penalty = probDescDB.get_bool("method.coliny.constant_penalty");

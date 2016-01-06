@@ -95,7 +95,7 @@ NomadOptimizer::NomadOptimizer(Model& model):
 // Driver, this class runs the Mads algorithm.  This is the stuff that
 // normally went into the main of the sample programs
 
-void NomadOptimizer::find_optimum()
+void NomadOptimizer::core_run()
 {
   // Set up Output (NOMAD::Display)
   NOMAD::Display out (std::cout);

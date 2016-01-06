@@ -80,7 +80,7 @@ public:
   void reset();
 
   /// iterates the COLIN solver to determine the optimal solution
-  void find_optimum();
+  void core_run();
 
   // COLIN methods cannot yet accept multiple initial points
   //bool accepts_multiple_points() const;

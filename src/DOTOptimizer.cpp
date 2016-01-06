@@ -347,7 +347,7 @@ void DOTOptimizer::initialize_run()
 }
 
 
-void DOTOptimizer::find_optimum()
+void DOTOptimizer::core_run()
 {
   size_t i, j, fn_eval_cntr;
   int num_cv = numContinuousVars;

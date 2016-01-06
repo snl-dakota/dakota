@@ -59,18 +59,9 @@ protected:
   //
 
   void initialize_run();
-  void core_run();
   void post_run(std::ostream& s);
   void finalize_run();
   void print_results(std::ostream& s);
-
-  //
-  //- Heading: New virtual member functions
-  //
-
-  /// Used within the optimizer branch for computing the optimal solution.
-  /// Redefines the run virtual function for the optimizer branch.
-  virtual void find_optimum() = 0;
 
   //
   //- Heading: Data
@@ -122,10 +113,6 @@ inline Optimizer::Optimizer(): localObjectiveRecast(false)
 
 inline Optimizer::~Optimizer()
 { }
-
-
-inline void Optimizer::core_run()
-{ find_optimum(); }
 
 
 inline void Optimizer::finalize_run()

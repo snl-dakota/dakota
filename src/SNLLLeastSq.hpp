@@ -78,8 +78,8 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  /// Performs the iterations to determine the least squares solution.
-  void minimize_residuals();
+  /// compute the least squares solution
+  void core_run();
 
 protected:
 

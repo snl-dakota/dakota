@@ -67,8 +67,12 @@ public:
     if (evalMgr) delete evalMgr;
   }
 
-  /// Performs the iterations to determine the optimal solution.
-  void find_optimum();
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  /// compute the optimal solution
+  void core_run();
 
 protected:
 

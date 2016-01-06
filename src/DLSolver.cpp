@@ -228,7 +228,7 @@ DLSolver::botch(const char *fmt, ...)
 	}
 
 DLSolver::DLSolver(Model& model):
-	Optimizer1(model), dl_find_optimum(0), dl_destructor(0), dlLib(0)
+	Optimizer1(model), dl_core_run(0), dl_destructor(0), dlLib(0)
 {
 	const String &dlDetails = probDescDB.get_string("method.dl_solver.dlDetails");
 	char *s, *s0;
@@ -249,17 +249,17 @@ DLSolver::~DLSolver()
 { cleanup(); }
 
  void
-DLSolver::find_optimum()
+DLSolver::core_run()
 {
 	Dakota_funcs *df;
 	Dakota_probsize ps;
 	char *s, *s0;
 	typedef void* (*dl_constructor_t)(Optimizer1*, Dakota_funcs*,
-			dl_find_optimum_t*, dl_destructor_t*);
+			dl_core_run_t*, dl_destructor_t*);
 	dl_constructor_t dl_constructor;
 	void *h;
-	if (!dl_find_optimum) {	// Load the shared library if this is
-				// the first find_optimum() invocation.
+	if (!dl_core_run) {	// Load the shared library if this is
+				// the first core_run() invocation.
 		df = DF = new Dakota_funcs;
 		if (!df)
 			botch("new Dakota_Funcs failure");
@@ -289,10 +289,10 @@ DLSolver::find_optimum()
 		df->dakota_cerr = dakota_cerr;
 		df->dakota_cout = dakota_cout;
 		DEBUG_unlock
-		dl_Optimizer = (*dl_constructor)(this, df, &dl_find_optimum, &dl_destructor);
+		dl_Optimizer = (*dl_constructor)(this, df, &dl_core_run, &dl_destructor);
 		DEBUG_lock
 		}
-	if (dl_find_optimum) {
+	if (dl_core_run) {
 		df = DF;
 		df->Stderr = stderr;
 		df->dakota_cerr = dakota_cerr;
@@ -306,10 +306,10 @@ DLSolver::find_optimum()
 		ps.objrecast = localObjectiveRecast_();
 		df->ps = &ps;
 		M = iteratedModel_();
-		(*dl_find_optimum)(dl_Optimizer, this, options);
+		(*dl_core_run)(dl_Optimizer, this, options);
 		}
 	else
-		botch("dl_find_optimum is null in find_optimum");
+		botch("dl_core_run is null in core_run");
 	}
 
  int

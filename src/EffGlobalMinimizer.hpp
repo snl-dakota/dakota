@@ -47,7 +47,7 @@ public:
   //void derived_set_communicators(ParLevLIter pl_iter);
   //void derived_free_communicators(ParLevLIter pl_iter);
 
-  void minimize_surrogates();
+  void core_run();
 
   const Model& algorithm_space_model() const;
 

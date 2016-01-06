@@ -31,7 +31,7 @@ namespace Dakota {
     The user input mappings are as follows: \c max_iterations is
     mapped into DOT's \c ITMAX parameter within its \c IPRM array, \c
     max_function_evaluations is implemented directly in the
-    find_optimum() loop since there is no DOT parameter equivalent, \c
+    core_run() loop since there is no DOT parameter equivalent, \c
     convergence_tolerance is mapped into DOT's \c DELOBJ parameter
     (the relative convergence tolerance) within its \c RPRM array, \c
     output verbosity is mapped into DOT's \c IPRINT parameter within
@@ -60,7 +60,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  void find_optimum();
+  void core_run();
 
 protected:
 

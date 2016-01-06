@@ -66,7 +66,7 @@ NonlinearCGOptimizer::~NonlinearCGOptimizer()
 { }
 
 
-void NonlinearCGOptimizer::find_optimum()
+void NonlinearCGOptimizer::core_run()
 {
 
   // TODO: Once DAKOTA moves to Teuchos for its numerical data type,

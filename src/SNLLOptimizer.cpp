@@ -523,7 +523,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
   // constant asv settings should we override the mode on every evaluator call
   // (the latter two will waste computations during the line/trust region search
   // for the sake of parallel load balance or interface simplicity).
-  // modeOverrideFlag is set in find_optimum() according to this logic.
+  // modeOverrideFlag is set in core_run() according to this logic.
 
   // Emulates NPSOLOptimizer::objective_eval() when nonlinear constraints are
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
@@ -613,7 +613,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
   // we override the mode on every evaluator call, since this will waste
   // computations during the line/trust region search (for the sake of parallel
   // load balance or interface simplicity).  modeOverrideFlag is set in
-  // find_optimum() according to this logic.
+  // core_run() according to this logic.
 
   // Emulates NPSOLOptimizer::objective_eval() when nonlinear constraints are
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
@@ -821,7 +821,7 @@ void SNLLOptimizer::initialize_run()
 }
 
 
-void SNLLOptimizer::find_optimum()
+void SNLLOptimizer::core_run()
 { theOptimizer->optimize(); }
 
 

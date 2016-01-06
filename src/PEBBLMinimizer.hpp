@@ -26,8 +26,13 @@ public:
          ~PebbldMinimizer()
          { if (branchAndBound) delete branchAndBound; }
 
-         /// Calls the Pebbl Branch and Bound solver
-	 void bound_subproblem();
+protected:
+
+        /// Calls the Pebbl Branch and Bound solver
+        void core_run();
+
+        /// Redefinition of default results printing.
+        void print_results(std::ostream& s);
 
 private:
         /// 
@@ -35,15 +40,6 @@ private:
 
         /// Minimizer used to solve the subproblem on each branch.
         Iterator subProbMinimizer;
-
-        /// Implementation of branch-and-bound optimization.
-        void core_run();
-
-        /// Redefinition of default results printing.
-        void print_results(std::ostream& s);
 };
-
-inline void PebbldMinimizer::core_run()
-{ bound_subproblem(); }
 
 }     // namespace

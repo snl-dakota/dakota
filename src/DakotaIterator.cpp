@@ -80,7 +80,7 @@
 #endif
 #ifdef DAKOTA_COLINY
 #include "COLINOptimizer.hpp"
-#include "PEBBLOptimizer.hpp"
+#include "PEBBLMinimizer.hpp"
 #endif
 #ifdef DAKOTA_HOPS
 #include "APPSOptimizer.hpp"

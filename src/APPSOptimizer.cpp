@@ -37,12 +37,12 @@ APPSOptimizer::APPSOptimizer(Model& model):
   set_apps_parameters(); // set specification values using DB
 }
 
-/** find_optimum redefines the Optimizer virtual function to perform
+/** core_run redefines the Optimizer virtual function to perform
     the optimization using HOPS. It first sets up the problem data,
     then executes minimize() on the HOPS optimizer, and finally
     catalogues the results. */
 
-void APPSOptimizer::find_optimum()
+void APPSOptimizer::core_run()
 {
   // Tell the evalMgr whether or not to do asynchronous evaluations
   // and maximum available concurrency.
@@ -344,7 +344,7 @@ void APPSOptimizer::set_apps_parameters()
 
 void APPSOptimizer::initialize_variables_and_constraints()
 {
-  // Initialize variables and bounds.  This is performed in find_optimum
+  // Initialize variables and bounds.  This is performed in core_run
   // in order to capture any reassignment at the strategy layer (after
   // iterator construction).  
 

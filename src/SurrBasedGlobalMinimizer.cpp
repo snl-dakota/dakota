@@ -86,7 +86,7 @@ SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
 { }
 
 
-void SurrBasedGlobalMinimizer::minimize_surrogates()
+void SurrBasedGlobalMinimizer::core_run()
 {
   // Extract subIterator/subModel(s) from the SurrogateModel
   Model&    truth_model   = iteratedModel.truth_model();

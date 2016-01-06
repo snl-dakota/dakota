@@ -1,4 +1,4 @@
-#include "PEBBLOptimizer.hpp"
+#include "PEBBLMinimizer.hpp"
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
 
@@ -57,7 +57,7 @@ PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, int max_iter, in
 
 /** redefines default iterator logic to execute branch and bound and
     extract optimization results. **/
-void PebbldMinimizer::bound_subproblem()
+void PebbldMinimizer::core_run()
 {
 	InitializeTiming();
 	branchAndBound->search();

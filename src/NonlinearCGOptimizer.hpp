@@ -54,7 +54,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void find_optimum();
+  void core_run();
 
 private:
 

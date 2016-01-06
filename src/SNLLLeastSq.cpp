@@ -519,7 +519,7 @@ void SNLLLeastSq::initialize_run()
 }
 
 
-void SNLLLeastSq::minimize_residuals()
+void SNLLLeastSq::core_run()
 { theOptimizer->optimize(); }
 
 

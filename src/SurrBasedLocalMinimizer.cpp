@@ -362,7 +362,7 @@ SurrBasedLocalMinimizer::~SurrBasedLocalMinimizer()
     response functions.  The size of the trust region is varied according to
     the goodness of the agreement between the approximations and the true
     response functions. */
-void SurrBasedLocalMinimizer::minimize_surrogates()
+void SurrBasedLocalMinimizer::core_run()
 {
   // static pointer to SurrBasedLocalMinimizer instance
   sblmInstance = this;

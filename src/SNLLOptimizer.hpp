@@ -98,11 +98,11 @@ public:
   ~SNLLOptimizer(); ///< destructor
     
   //
-  //- Heading: Member functions
+  //- Heading: Virtual member function redefinitions
   //
 
   /// Performs the iterations to determine the optimal solution.
-  void find_optimum();
+  void core_run();
 
 protected:
 

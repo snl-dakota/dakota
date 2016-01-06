@@ -295,7 +295,7 @@ calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui, void *ur, Vf vf)
 }
 
 
-void NL2SOLLeastSq::minimize_residuals()
+void NL2SOLLeastSq::core_run()
 {
   // set the object instance pointer for use within the static member fns
   NL2SOLLeastSq* prev_instance = nl2solInstance;

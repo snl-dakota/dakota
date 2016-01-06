@@ -168,9 +168,9 @@ inline void SetBestRespFns(Optimizer1 *o, int n, double *x)
 
 #endif //NO_DAKOTA_DLSOLVER_FUNCS_INLINE
 
-typedef void (*dl_find_optimum_t)(void*, Optimizer1*, char*);
+typedef void (*dl_core_run_t)(void*, Optimizer1*, char*);
 typedef void (*dl_destructor_t)(void**);
-extern "C" void *dl_constructor(Optimizer1 *, Dakota_funcs*, dl_find_optimum_t *, dl_destructor_t *);
+extern "C" void *dl_constructor(Optimizer1 *, Dakota_funcs*, dl_core_run_t *, dl_destructor_t *);
 
 } // namespace Dakota
 

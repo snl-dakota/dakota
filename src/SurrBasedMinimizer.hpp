@@ -48,16 +48,7 @@ protected:
 
   /// initialize graphics customized for surrogate-based iteration
   void initialize_graphics(int iterator_server_id = 1);
-  void core_run();
   void print_results(std::ostream& s);
-
-  //
-  //- Heading: New virtual member functions
-  //
-
-  /// Used for computing the optimal solution using a surrogate-based
-  /// approach.  Redefines the Iterator::core_run() virtual function.
-  virtual void minimize_surrogates() = 0;
 
   //
   //- Heading: Utility member functions
@@ -166,10 +157,6 @@ protected:
   /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
   size_t miPLIndex;
 };
-
-
-inline void SurrBasedMinimizer::core_run()
-{ minimize_surrogates(); }
 
 } // namespace Dakota
 

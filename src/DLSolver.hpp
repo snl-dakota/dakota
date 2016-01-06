@@ -33,14 +33,14 @@ class DLSolver: public Optimizer1
 public:
 	DLSolver(Model& model);
 	~DLSolver();
-	void find_optimum();
+	void core_run();
 
 private:
 	char *details;
 	void *dlLib;
 	void **pdlLib;
 	void *dl_Optimizer;
-	void (*dl_find_optimum)(void*, Optimizer1*, char*);
+	void (*dl_core_run)(void*, Optimizer1*, char*);
 	void (*dl_destructor)(void**);
 	void botch(const char*,...);
 	void cleanup();

@@ -50,7 +50,7 @@ public:
   //- Heading: Member functions
   //
 
-  void minimize_residuals();
+  void core_run();
 
 private:
 

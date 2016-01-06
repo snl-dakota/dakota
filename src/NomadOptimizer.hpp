@@ -74,7 +74,7 @@ public:
   //
 	       
   /// Calls the NOMAD solver
-  void find_optimum();
+  void core_run();
 
 private:
   

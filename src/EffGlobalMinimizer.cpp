@@ -71,7 +71,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (approx_type == "global_gaussian") {
       Cerr << "\nError: efficient_global does not support gaussian_process "
 	   << "when derivatives present; use kriging instead." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
     if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
     if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
@@ -146,7 +146,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 #else
   Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. " 
        << "Aborting process." << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 #endif //HAVE_NCSU
 }
 
@@ -202,20 +202,20 @@ void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 */
 
 
-void EffGlobalMinimizer::minimize_surrogates()
+void EffGlobalMinimizer::core_run()
 {
   if (setUpType=="model")
     minimize_surrogates_on_model();
   else if (setUpType=="user_functions") {
     //minimize_surrogates_on_user_functions();
-    Cerr << "Error: bad setUpType in EffGlobalMinimizer::minimize_surrogates()."
+    Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   else {
-    Cerr << "Error: bad setUpType in EffGlobalMinimizer::minimize_surrogates()."
+    Cerr << "Error: bad setUpType in EffGlobalMinimizer::core_run()."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 

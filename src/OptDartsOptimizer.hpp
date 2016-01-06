@@ -46,7 +46,7 @@ namespace Dakota {
          //
 	       
          /// Calls the OptDarts algorithm
-         void find_optimum();
+         void core_run();
          
 	  
      private:
