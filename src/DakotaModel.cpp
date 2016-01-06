@@ -2701,7 +2701,7 @@ int Model::derivative_concurrency() const
 }
 
 
-bool Model::init_mapping()
+bool Model::initialize_mapping()
 {
   // Base class default behavior is no-op
   return false; // Variables size did not change

@@ -71,7 +71,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool init_mapping();
+  bool initialize_mapping();
   bool finalize_mapping();
 
 protected:

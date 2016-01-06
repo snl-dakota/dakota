@@ -77,7 +77,7 @@ void EfficientSubspaceMethod::quantify_uncertainty()
   // a common init() chain
   ActiveSubspaceModel* as_model = 
     dynamic_cast<ActiveSubspaceModel*>(iteratedModel.model_rep());
-  as_model->init_mapping();
+  as_model->initialize_mapping();
 
   // perform the reduced space UQ
   Cout << "\nESM: Performing reduced-space UQ" << std::endl;

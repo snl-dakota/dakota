@@ -148,7 +148,7 @@ public:
   virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
 
   /// initialize model mapping, returns true if the variables size has changed
-  virtual bool init_mapping();
+  virtual bool initialize_mapping();
 
   /// finalize model mapping, returns true if the variables size has changed
   virtual bool finalize_mapping();

@@ -189,7 +189,7 @@ void ActiveSubspaceModel::validate_inputs()
 
 /** May eventually take on init_comms and related operations.  Also
     may want ide of build/update like DataFitSurrModel, eventually. */
-bool ActiveSubspaceModel::init_mapping()
+bool ActiveSubspaceModel::initialize_mapping()
 {
   // runtime operation to identify the subspace model (if not later
   // returning to update the subpsace)
