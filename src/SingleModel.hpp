@@ -134,13 +134,27 @@ private:
   //
   //- Heading: Convenience member functions
   //
-    
+
+  /// process the solution level inputs to define solnControlVarIndex,
+  /// solnControlVarType, and solnControlCostMap
+  void initialize_solution_control(const String& control,
+				   const RealVector& cost);
+
   //
   //- Heading: Data members
   //
 
   /// the interface used for mapping variables to responses
   Interface userDefinedInterface;
+
+  /// index of the inactive discrete variable that controls the set/range of
+  /// solution levels
+  size_t solnControlVarIndex;
+  /// type of the inactive discrete variable that controls the set/range of
+  /// solution levels
+  short solnControlVarType;
+  /// sorted array of relative costs associated with a set of solution levels
+  std::map<Real, size_t> solnControlCostMap;
 };
 
 

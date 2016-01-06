@@ -2760,9 +2760,9 @@
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface set pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
           </keyword>
-          <keyword  id="discretization_levels" name="discretization_levels" code="{N_mom(RealDL,discretizationLevels)}" label="Simulation discretization levels" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of default discretization" >
-            <param type="REALLIST" />
-	    <keyword  id="discretization_costs" name="discretization_costs" code="{N_mom(RealDL,discretizationCosts)}" label="Simulation cost estimates for discretization levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
+          <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation solution level control variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" >
+            <param type="STRING" />
+	    <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative simulation cost factors for solution levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
               <param type="REALLIST" />
             </keyword>
           </keyword>

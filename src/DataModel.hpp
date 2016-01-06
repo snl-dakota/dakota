@@ -87,14 +87,17 @@ public:
 
   // single/simulation models
 
-  /// array of discretization levels in space/time that manage a secondary
-  /// hierarchy of fidelity within the scope of a single model form (from \c
-  /// discretization_levels specification; see also \c ordered_model_fidelities)
-  RealVector discretizationLevels;
+  /// (state) variable identifier that defines a set or range of solution
+  /// level controls (space/time discretization levels, iterative convergence
+  /// tolerances, etc.) for defining a secondary hierarchy of fidelity within
+  /// the scope of a single model form (from \c solution_level_control
+  /// specification; see also \c ordered_model_fidelities)
+  String solutionLevelControl;
   /// array of relative simulation costs corresponding to each of the
-  /// discretization levels (from \c discretization_costs specification;
-  /// see also \c discretization_levels)
-  RealVector discretizationCosts;
+  /// solution levels (from \c solution_level_cost specification; see also
+  /// \c solution_level_control); a scalar input is interpreted as a constant
+  /// cost multiplier to be applied recursively
+  RealVector solutionLevelCost;
 
   // surrogate models
 

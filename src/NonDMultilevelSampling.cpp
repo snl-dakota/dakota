@@ -34,14 +34,18 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
 {
   sampleType = SUBMETHOD_RANDOM;
 
-  // check the iteratedModel for the appropriate hierarchical structure
-  if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: Multilevel Monte Carlo requires a hierarchical surrogate "
-	 << "model specification." << std::endl;
+  // check iteratedModel for model form hierarchy and/or discretization levels
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    Cerr << "Error: Multilevel Monte Carlo does not yet support a hierarchical "
+	 << "surrogate model specification." << std::endl;
     abort_handler(-1);
+
+    // set SurrogateModel::responseMode
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // level 0
   }
-  // set SurrogateModel::responseMode
-  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  //else { // TO DO
+  //  = iteratedModel.solution_levels();
+  //}
 }
 
 
@@ -73,11 +77,10 @@ void NonDMultilevelSampling::quantify_uncertainty()
   //model
   //  single id_model = 'LF'
   //    # point to state vars; ordered based on set values for h, delta-t
-  //    discretization_levels = 'dssiv_space' 'dssiv_time'
+  //    solution_level_control = 'dssiv1'
   //    # relative cost estimates in same order as state set values
-  //    # --> re-sort into map keyed by cost
-  //    discretization_level_costs = 10 2 .02 # space
-  //                                 1 10 100 # time
+  //    # --> re-sort into map keyed by increasing cost
+  //    solution_level_cost = 10 2 200
   //
   // Need to formulate as a coordinated progression towards convergence, where
   // e.g., time step is NOT a state parameter and is inferred from the spatial
@@ -88,13 +91,14 @@ void NonDMultilevelSampling::quantify_uncertainty()
   // or necessary (e.g., combustion processes with expense that is highly
   // parameter dependent).
   
-  size_t lev, num_lev = 1,//iteratedModel.discretization_levels().size(),
+  size_t lev, num_lev = 1,//iteratedModel.solution_levels(),
     qoi, num_qoi = iteratedModel.num_functions(), samp, new_N_l;
   SizetArray N_l, delta_N_l;
   RealVector agg_var(num_lev, false), cost(num_lev);
   RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
              exp_Y(num_qoi, num_lev, false),  var_Y(num_qoi, num_lev, false);
-  bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
+  bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false,
+    hierarch_flag = (iteratedModel.surrogate_type() == "hierarchical");
   Real agg_var_l, eps = 1.e-6, sum_var_cost, mean;
   
   // Initialize for pilot sample
@@ -121,8 +125,11 @@ void NonDMultilevelSampling::quantify_uncertainty()
     sum_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      // set the discretization level within the model form
-      //iteratedModel.discretization_level_index(lev);
+      if (hierarch_flag && lev == 1)
+	iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+
+      // set the solution/discretization level within the model form
+      //iteratedModel.solution_level_index(lev);
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
       // update total samples performed for this level

@@ -7153,13 +7153,12 @@ static Real
 	MP_(percentFold);
 
 static RealVector
-	MP_(discretizationCosts),
-	MP_(discretizationLevels),
 	MP_(krigingCorrelations),
       //MP_(krigingMaxCorrelations),
       //MP_(krigingMinCorrelations),
 	MP_(primaryRespCoeffs),
-	MP_(secondaryRespCoeffs);
+	MP_(secondaryRespCoeffs),
+  	MP_(solutionLevelCost);
 
 static IntVector
 	MP_(refineSamples);
@@ -7178,6 +7177,7 @@ static String
 	MP_(optionalInterfRespPointer),
 	MP_(refineCVMetric),
 	MP_(responsesPointer),
+	MP_(solutionLevelControl),
 	MP_(subMethodPointer),
 	MP_(variablesPointer);
 

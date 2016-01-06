@@ -2217,11 +2217,11 @@ static KeyWord
 		{"sub_method_pointer",11,7,2,1,kw_335,0.,0.,0,N_mom(str,subMethodPointer)}
 		},
 	kw_337[1] = {
-		{"discretization_costs",14,0,1,1,0,0.,0.,0,N_mom(RealDL,discretizationCosts)}
+		{"solution_level_cost",14,0,1,1,0,0.,0.,0,N_mom(RealDL,solutionLevelCost)}
 		},
 	kw_338[2] = {
-		{"discretization_levels",14,1,2,0,kw_337,0.,0.,0,N_mom(RealDL,discretizationLevels)},
-		{"interface_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,interfacePointer)}
+		{"interface_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,interfacePointer)},
+		{"solution_level_control",11,1,2,0,kw_337,0.,0.,0,N_mom(str,solutionLevelControl)}
 		},
 	kw_339[2] = {
 		{"bing_li",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)},

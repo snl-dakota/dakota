@@ -381,8 +381,8 @@ public:
   StringMultiArrayConstView inactive_discrete_int_variable_labels() const;
   /// set the inactive discrete variable labels
   void inactive_discrete_int_variable_labels(
-
     StringMultiArrayConstView idi_vars);
+
   /// return the inactive discrete variable labels
   StringMultiArrayConstView inactive_discrete_string_variable_labels() const;
   /// set the inactive discrete variable labels

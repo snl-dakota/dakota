@@ -2172,8 +2172,8 @@ KEYWORD model
 	[ hierarchical_tagging ]
 	( single ALIAS simulation
 	  [ interface_pointer STRING ]
-	  [ discretization_levels REALLIST
-	    discretization_costs REALLIST
+	  [ solution_level_control STRING
+	    solution_level_cost REALLIST
 	    ]
 	  )
 	|

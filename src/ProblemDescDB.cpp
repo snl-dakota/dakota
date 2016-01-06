@@ -1454,8 +1454,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       // must be sorted by string (key)
 	{"nested.primary_response_mapping", P primaryRespCoeffs},
 	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
-	{"single.discretization_costs", P discretizationCosts},
-	{"single.discretization_levels", P discretizationLevels},
+	{"single.solution_level_cost", P solutionLevelCost},
 	{"surrogate.kriging_correlations", P krigingCorrelations},
 	{"surrogate.kriging_max_correlations", P krigingMaxCorrelations},
 	{"surrogate.kriging_min_correlations", P krigingMinCorrelations}};
@@ -2349,6 +2348,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"interface_pointer", P interfacePointer},
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
+	{"single.solution_level_control", P solutionLevelControl},
 	{"surrogate.actual_model_pointer", P actualModelPointer},
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
