@@ -29,16 +29,16 @@ and member functions involved.
 
 For a synchronous (i.e., blocking) mapping of parameters to responses,
 an iterator invokes 
-\ref Model::compute_response "Model::compute_response()" to 
+\ref Model::evaluate "Model::evaluate()" to 
 perform a function evaluation.  This function is all that is seen from the
 iterator level, as underlying complexities are isolated.  The binding
 of this top level function with lower level functions is as follows:
 <ul>
-<li> \ref Model::compute_response "Model::compute_response()" utilizes 
-\ref Model::derived_compute_response "Model::derived_compute_response()"
+<li> \ref Model::evaluate "Model::evaluate()" utilizes 
+\ref Model::derived_evaluate "Model::derived_evaluate()"
 for portions of the response computation specific to derived model classes.
 <li> \ref 
-Model::derived_compute_response "Model::derived_compute_response()" 
+Model::derived_evaluate "Model::derived_evaluate()" 
 directly or indirectly invokes \ref Interface::map "Interface::map()".
 <li> \ref Interface::map "Interface::map()" utilizes \ref 
 ApplicationInterface::derived_map "ApplicationInterface::derived_map()"
@@ -51,7 +51,7 @@ for portions of the mapping specific to derived application interface classes.
 
 For an asynchronous (i.e., nonblocking) mapping of parameters to
 responses, an iterator invokes \ref 
-Model::asynch_compute_response "Model::asynch_compute_response()"
+Model::evaluate_nowait "Model::evaluate_nowait()"
 multiple times to queue asynchronous jobs and then invokes either
 \ref Model::synchronize "Model::synchronize()" or \ref
 Model::synchronize_nowait "Model::synchronize_nowait()" to
@@ -60,9 +60,9 @@ these functions are all that is seen from the iterator level, as
 underlying complexities are isolated.  The binding of these top level
 functions with lower level functions is as follows:
 <ul>
-<li> \ref Model::asynch_compute_response "Model::asynch_compute_response()"
+<li> \ref Model::evaluate_nowait "Model::evaluate_nowait()"
 utilizes \ref
-Model::derived_asynch_compute_response "Model::derived_asynch_compute_response()"
+Model::derived_evaluate_nowait "Model::derived_evaluate_nowait()"
 for portions of the response computation specific to derived model classes.
 <li> This derived model class function directly or indirectly 
 invokes \ref Interface::map "Interface::map()" in asynchronous mode, 
