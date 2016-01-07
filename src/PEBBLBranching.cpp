@@ -4,6 +4,8 @@ namespace Dakota {
 // MAIN PROBLEM CLASS
 PebbldBranching::PebbldBranching()
 {
+  // Reset has to be called here.  Otherwise, something doesn't get
+  // initialized appropriately in PEBBL and results in a crash.
   branchingInit(minimization);
   pebbl::branching::reset();
 }
@@ -11,7 +13,8 @@ PebbldBranching::PebbldBranching()
 PebbldBranching::~PebbldBranching()
 {}
 
-// Creates a new empty Sub Branch
+// Creates a new empty Sub Branch, as specified in PEBBLE
+// documentation
 pebbl::branchSub* PebbldBranching::blankSub()
 {
   PebbldBranchSub* newDakotaSub = new PebbldBranchSub();
@@ -26,6 +29,7 @@ PebbldBranchSub::PebbldBranchSub()
 PebbldBranchSub::~PebbldBranchSub()
 {}
 
+// Enable access to the sub-problem global data
 PebbldBranching* PebbldBranchSub::global() const
 {
   return globalPtr;
@@ -36,17 +40,25 @@ pebbl::branching* PebbldBranchSub::bGlobal() const
   return global();
 }
 
-
+// Set pointer to the sub-problem global data
 void PebbldBranchSub::setGlobalInfo(PebbldBranching* _global)
 {
   globalPtr = _global;
 }
 
+// Set up the problem at the root node
 void PebbldBranchSub::setRootComputation()
 {
-  childNum = 0;
+  // Use this model and solver
   subModel = globalPtr->parentModel;
   subNLPSolver = globalPtr->nlpSolver;
+
+  // The only model-related data that differs across sub-problems are
+  // the initial variable values and the bounds.  This needs to be a
+  // deep copy.  While it may seem unnecessary at the root node, there
+  // is code shared with the sub-problems that requires it to be here
+  // for consistency, i.e., so there are not seg faults due to these
+  // not existing.
   cont_vars.resize(subModel.continuous_variables().length());
   lower_bounds.resize(subModel.continuous_lower_bounds().length());
   upper_bounds.resize(subModel.continuous_upper_bounds().length());
@@ -63,12 +75,14 @@ void PebbldBranchSub::boundComputation(double* controlParam)
   // Calculate the bound -- Solve Problem Relaxation.
   // The Discrete Domain is relaxed into a Continuous Domain.
 
+  // Reset the model variable values and bounds for the sub-problem.
   subModel.continuous_variables(cont_vars);
   subModel.continuous_lower_bounds(lower_bounds);
   subModel.continuous_upper_bounds(upper_bounds);
 
+  // Run the solver.
   subNLPSolver.run();
-     
+
   Variables _variables = subNLPSolver.variables_results();
   Response _response = subNLPSolver.response_results();
      
@@ -88,13 +102,6 @@ void PebbldBranchSub::boundComputation(double* controlParam)
   // When Bounding is over, call
   // If state is not set to bounded, boundComputation will be called again
   setState(bounded);
-
-  for (int i=0; i<subModel.continuous_variables().length(); i++)
-    cont_vars[i] = subModel.continuous_variables()[i];
-  for (int i=0; i<subModel.continuous_lower_bounds().length(); i++)
-    lower_bounds[i] = subModel.continuous_lower_bounds()[i];
-  for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
-    upper_bounds[i] = subModel.continuous_upper_bounds()[i];
 }
 
 // In this case, a Candidate Solution is one in which the Discrete
@@ -156,6 +163,8 @@ pebbl::branchSub* PebbldBranchSub::makeChild(int whichChild)
 {
   // if whichChild is 0, it's lower bound; else, it's upper bound
   PebbldBranchSub *temp = new PebbldBranchSub();
+  // Child won't have access to the current variable values and
+  // bounds, so pass them through.
   temp->pebbldSubAsChildOf(this, splitVar, whichChild, candidate_x, lower_bounds, upper_bounds);
   return temp;
 }
@@ -163,11 +172,21 @@ pebbl::branchSub* PebbldBranchSub::makeChild(int whichChild)
 // Set up all the data for the subproblem.     
 void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar, int whichChild, std::vector<double> _candidate_x, RealVector _lower_bounds, RealVector _upper_bounds)
 {
+  // Use this model and solver. Note that the model is the same as
+  // that used at the parent node and for all other sub-problems.
+  // Since the only things that change are initial variable values and
+  // bounds, re-use the model and just reset that data before running
+  // the solver.  There is some chance we will have to re-consider
+  // this in the parallel version...not sure if we'll have
+  // accesses/updates to the model over the course of the optimization
+  // stomping on each other.
   globalPtr = parent->global();
-  childNum = whichChild;
   subModel = parent->global()->parentModel;
   subNLPSolver = parent->global()->nlpSolver;
 
+  // The only model-related data that differs across sub-problems are
+  // the initial variable values and the bounds.  This needs to be a
+  // deep copy.
   cont_vars.resize(subModel.continuous_variables().length());
   lower_bounds.resize(subModel.continuous_lower_bounds().length());
   upper_bounds.resize(subModel.continuous_upper_bounds().length());
@@ -178,6 +197,8 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
   for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
     upper_bounds[i] = _upper_bounds[i];
 
+  // Reset the bounds for this sub-problem.  Also move the initial
+  // variable value to feasible if necessary.
   if(whichChild==0)
   {
     upper_bounds[_splitVar] = floor(cont_vars[_splitVar]);

@@ -35,7 +35,7 @@ protected:
         void print_results(std::ostream& s);
 
 private:
-        /// 
+        /// Object that implements the branching and bounding logic.
         PebbldBranching* branchAndBound;
 
         /// Minimizer used to solve the subproblem on each branch.

@@ -13,9 +13,13 @@ class PebbldBranching : virtual public pebbl::branching
 protected:
   /// Original model, before branching
   Model parentModel;
+  /// Solver to be used at root node
   Iterator nlpSolver;
+  /// Initial variable values for root node
   RealVector cont_vars;
+  /// Lower bounds for root node
   RealVector lower_bounds;
+  /// Upper bounds for root node
   RealVector upper_bounds;
 
 public:
@@ -38,15 +42,21 @@ class PebbldBranchSub : virtual public pebbl::branchSub
 protected:
   /// Pointer referring to all info passed to subproblem
   PebbldBranching* globalPtr;
+  /// Model used for sub-problem
   Model subModel;
+  /// Solver used for sub-problems
   Iterator subNLPSolver;
+  /// Candidate solution after solving sub-problem (also the bound)
   std::vector<double> candidate_x;
+  /// Objective value at the candidate solution
   double candidate_objFn;
   /// Variable to branch on 
   int splitVar;
-  int childNum;
+  /// Initial variable values for sub-problem
   RealVector cont_vars;
+  /// Lower bounds for sub-problem
   RealVector lower_bounds;
+  /// Upper bounds for sub-problem
   RealVector upper_bounds;
 
 public:
