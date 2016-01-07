@@ -1,10 +1,9 @@
 Blurb::
-Number of bootstrap replicates to calculate truncation metrics
+Number of bootstrap replicates used in truncation metrics
 
 Description::
 
-The number of bootstrap replicates to assess effectiveness of the
-subspace truncation.
+The number of bootstrap replicates used to estimate the active subspace size.
 
 <b> Default Behavior </b>
 

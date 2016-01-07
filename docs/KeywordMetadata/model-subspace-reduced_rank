@@ -1,5 +1,5 @@
 Blurb::
-Explicitly specify the desired reduced rank
+Explicitly specify the desired subspace size
 
 Description::
 This control explicitly indicates the number of basis vectors to

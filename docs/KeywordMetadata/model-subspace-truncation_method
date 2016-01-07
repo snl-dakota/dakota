@@ -1,14 +1,14 @@
 Blurb::
-Metric that controls active subspace cut-off
+Metric that estimates active subspace size
 
 Description::
 Metric that controls how many basis vectors are retained in the active
-subspace.  For example based on eigenvalue gap or trade-off in
-eigenvalue energy vs. bootstrap replicate variability.
+subspace.  For example based on bootstrap subspace variability or trade-off
+in eigenvalue energy vs. bootstrap replicate variability.
 
 <b> Default Behavior </b>
 
-The default is to use the Bing-Li "ladle" diagnostic.
+The default is to use the Bing Li "ladle" diagnostic.
 
 <b> Usage Tips </b>
 

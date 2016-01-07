@@ -18,11 +18,6 @@ identify the active subspace.
 
 Consider using options for total energy vs. eigenvalue gap to avoid missing the most efficient subspace truncation.
 
-<b> Additional Discussion </b>
-
-(Optional.  Put it here or in the Theory block.  If not here, remove 
-header.)
-
 Topics::
 
 Examples::
@@ -43,7 +38,40 @@ model
 \endverbatim
 
 Theory::
-See book and papers by Paul G. Constantine (need reference).
+The idea behind active subspaces is to find directions in the input variable
+space in which the quantity of interest is nearly constant. After rotation of
+the input variables, this method can allow significant dimension reduction. Below is a brief summary of the process.
+
+1. Compute the gradient of the quantity of interest, \f$q = f(\mathbf{x})\f$,
+    at several locations sampled from the full input space,
+    \f[\nabla_{\mathbf{x}} f_i = \nabla f(\mathbf{x}_i).\f]
+
+2. Compute the eigendecomposition of the matrix \f$\hat{\mathbf{C}}\f$,
+    \f[\hat{\mathbf{C}} = \frac{1}{M}\sum_{i=1}^{M}\nabla_{\mathbf{x}} f_i\nabla_{\mathbf{x}} f_i^T = \hat{\mathbf{W}}\hat{\mathbf{\Lambda}}\hat{\mathbf{W}}^T,\f]
+    where \f$\hat{\mathbf{W}}\f$ has eigenvectors as columns, 
+    \f$\hat{\mathbf{\Lambda}} = \text{diag}(\hat{\lambda}_1,\:\ldots\:,\hat{\lambda}_N)\f$
+    contains eigenvalues, and \f$N\f$ is the total number of parameters.
+
+3. Using a \ref model-subspace-truncation_method or specifying a
+    \ref model-subspace-reduced_rank to estimate the active subspace size, 
+    split the eigenvectors into active and inactive directions,
+    \f[\hat{\mathbf{W}} = \left[\hat{\mathbf{W}}_1\quad\hat{\mathbf{W}}_2\right].\f]
+    These eigenvectors are used to rotate the input variables.
+
+4. Next the input variables, \f$\mathbf{x}\f$, are expanded in terms of active and
+    inactive variables,
+    \f[\mathbf{x} = \hat{\mathbf{W}}_1\mathbf{y} + \hat{\mathbf{W}}_2\mathbf{z}.\f]
+
+5. A surrogate is then built as a function of the active variables,
+    \f[g(\mathbf{y}) \approx f(\mathbf{x})\f]
+
+For additional information, see:
+
+1. Constantine, Paul G. "Active Subspaces: Emerging Ideas for Dimension Reduction in Parameter Studies". Vol. 2. SIAM, 2015.
+
+2. Constantine, Paul G., Eric Dow, and Qiqi Wang. "Active subspace methods in theory and practice: Applications to kriging surfaces." SIAM Journal on Scientific Computing 36.4 (2014): A1500-A1524.
+
+3. Constantine, Paul, and David Gleich. "Computing Active Subspaces." arXiv preprint arXiv:1408.0545 (2014).
 
 Faq::
 See_Also::
