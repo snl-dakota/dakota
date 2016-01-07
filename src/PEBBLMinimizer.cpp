@@ -42,7 +42,9 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minim
     subProbMinimizer
       = probDescDB.get_iterator(subprob_method_name, iteratedModel);
 
-  branchAndBound = new PebbldBranching(model, subProbMinimizer);
+  branchAndBound = new PebbldBranching();
+  branchAndBound->setModel(model);
+  branchAndBound->setIterator(subProbMinimizer);
 }
 
 PebbldMinimizer::PebbldMinimizer(Model &model)

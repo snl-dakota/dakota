@@ -13,8 +13,8 @@ method
   id_method = 'SubNLP'
   conmin_frcg					#s0
 #  npsol_sqp					#s1
-#  coliny_ea					#stwo
-#    seed = 12345				#stwo
+#  coliny_ea					#s2
+#    seed = 12345				#s2
     max_iterations = 100
     max_function_evaluations = 100
 
@@ -24,11 +24,11 @@ variables,
 	  upper_bounds    10.0   10.0  10.0
 	  lower_bounds   -10.0  -10.0 -10.0
 	  descriptors      'x1'  'x2'  'x3'
-#	discrete_design_range = 2		#stwo
-#	  initial_point      2     2		#stwo
-#	  lower_bounds       1     1		#stwo
-#	  upper_bounds       4     9		#stwo
-#	  descriptors      'y1'   'y2'		#stwo
+#	discrete_design_range = 2		#s2
+#	  initial_point      2     2		#s2
+#	  lower_bounds       1     1		#s2
+#	  upper_bounds       4     9		#s2
+#	  descriptors      'y1'   'y2'		#s2
 	discrete_design_set			#s0,#s1
 	  integer = 1				#s0,#s1
 	    num_set_values = 4			#s0,#s1
