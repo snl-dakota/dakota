@@ -43,8 +43,9 @@ using surfpack::fromVec;
     surface is created later. */
 SurfpackApproximation::
 SurfpackApproximation(const ProblemDescDB& problem_db,
-		      const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data), //surface(NULL),
+		      const SharedApproxData& shared_data,
+                      const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label), //surface(NULL),
   surfData(NULL), model(NULL), factory(NULL)
   //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
 {
@@ -500,7 +501,7 @@ void SurfpackApproximation::export_model(const String& fn_label,
     without_extension = export_prefix + "." + fn_label;
     formats = export_format;
   } else {
-    without_extension = sharedDataRep->modelExportPrefix + "." + fn_label;
+    without_extension = sharedDataRep->modelExportPrefix + "." + approxLabel;
     formats = sharedDataRep->modelExportFormat;
   }
   //unsigned short formats = export_format; 

@@ -44,7 +44,7 @@ public:
   /// primary constructor
   ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 			 bool am_cache, const String& am_interface_id,
-			 size_t num_fns);
+			 const StringArray& fn_labels);
   /// alternate constructor for instantiations on the fly
   ApproximationInterface(const String& approx_type,
 			 const UShortArray& approx_order,
@@ -96,7 +96,7 @@ protected:
 			   const RealVector& dr_l_bnds,
 			   const RealVector& dr_u_bnds);
 
-  void export_approximation(const StringArray& fn_labels);
+  void export_approximation();
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
   void pop_approximation(bool save_surr_data);

@@ -39,8 +39,10 @@ namespace Dakota {
     letter IS the representation, its rep pointer is set to NULL (an
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
-			     const SharedApproxData& shared_data):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
+			     const SharedApproxData& shared_data,
+                             const String& approx_label):
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL), approxLabel(approx_label), 
+  referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -86,7 +88,8 @@ Approximation::Approximation():
     execute get_approx, since Approximation(BaseConstructor, problem_db)
     builds the actual base class data for the derived approximations. */
 Approximation::
-Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data):
+Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+              const String& approx_label):
   sharedDataRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -95,7 +98,7 @@ Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data):
 #endif
 
   // Set the rep pointer to the appropriate derived type
-  approxRep = get_approx(problem_db, shared_data);
+  approxRep = get_approx(problem_db, shared_data, approx_label);
   if ( !approxRep ) // bad type or insufficient memory
     abort_handler(-1);
 }
@@ -104,7 +107,8 @@ Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data):
 /** Used only by the envelope constructor to initialize approxRep to the 
     appropriate derived type. */
 Approximation* Approximation::
-get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data)
+get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+           const String& approx_label)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_approx(ProblemDescDB&)."
@@ -113,18 +117,18 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data)
 
   bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
-    return new VPSApproximation(problem_db, shared_data);
+    return new VPSApproximation(problem_db, shared_data, approx_label);
   } else {
     const String& approx_type = shared_data.data_rep()->approxType;
     if (approx_type == "local_taylor")
-      return new TaylorApproximation(problem_db, shared_data);
+      return new TaylorApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_tana")
-      return new TANA3Approximation(problem_db, shared_data);
+      return new TANA3Approximation(problem_db, shared_data, approx_label);
     else if (strends(approx_type, "_orthogonal_polynomial") ||
 	     strends(approx_type, "_interpolation_polynomial"))
-      return new PecosApproximation(problem_db, shared_data);
+      return new PecosApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
-      return new GaussProcApproximation(problem_db, shared_data);
+      return new GaussProcApproximation(problem_db, shared_data, approx_label);
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
 	     approx_type == "global_kriging"        ||
@@ -132,7 +136,7 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data)
 	     approx_type == "global_radial_basis"   ||
 	     approx_type == "global_mars"           ||
 	     approx_type == "global_moving_least_squares")
-      return new SurfpackApproximation(problem_db, shared_data);
+      return new SurfpackApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."

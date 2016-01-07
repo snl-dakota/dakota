@@ -28,7 +28,7 @@ extern PRPCache data_pairs;
 ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
-		       size_t num_fns):
+		       const StringArray& fn_labels):
   Interface(BaseConstructor(), problem_db), 
   approxFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("environment.graphics")),
@@ -49,6 +49,7 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 
   // process approxFnIndices.  IntSets are sorted and unique.  Error checking
   // is performed in SurrogateModel and does not need to be replicated here.
+  size_t num_fns = fn_labels.size();
   if (approxFnIndices.empty()) // default: all fns are approximated
     for (int i=0; i<num_fns; i++)
       approxFnIndices.insert(i);
@@ -64,7 +65,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
                   + actualModelVars.dsv() + actualModelVars.drv();
   sharedData = SharedApproxData(problem_db, num_vars);
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it] = Approximation(problem_db, sharedData);
+    functionSurfaces[*it] = Approximation(problem_db, sharedData,
+                                          fn_labels[*it]);
 
   /*
   // Old approach for scaling/offsetting approximation results read the data
@@ -651,10 +653,10 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 
 /** This function calls export on each approximation */
 void ApproximationInterface::
-export_approximation(const StringArray& fn_labels)
+export_approximation()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].export_model(fn_labels[*it]);
+    functionSurfaces[*it].export_model();
 }
    
 

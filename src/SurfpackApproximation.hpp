@@ -52,7 +52,8 @@ public:
   SurfpackApproximation();
   /// standard constructor: Surfpack surface of appropriate type will be created
   SurfpackApproximation(const ProblemDescDB& problem_db,
-			const SharedApproxData& shared_data);
+			const SharedApproxData& shared_data,
+                        const String& approx_label);
   /// alternate constructor
   SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor

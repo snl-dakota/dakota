@@ -36,8 +36,9 @@ namespace Dakota
     /// standard constructor (to call VPS from an input deck)
     
     VPSApproximation::VPSApproximation(const ProblemDescDB& problem_db,
-                                       const SharedApproxData& shared_data):
-                                       Approximation(BaseConstructor(), problem_db, shared_data),
+                                       const SharedApproxData& shared_data,
+                                       const String& approx_label):
+                                       Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
                                        _disc_min_jump(problem_db.get_real("model.surrogate.discont_jump_thresh")),
                                        _disc_min_grad(problem_db.get_real("model.surrogate.discont_grad_thresh"))
     {

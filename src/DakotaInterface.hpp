@@ -154,7 +154,7 @@ public:
     const RealVector& dr_u_bnds);
 
   /// export the approximation to disk
-  virtual void export_approximation(const StringArray& fn_labels);
+  virtual void export_approximation();
 
   /// rebuilds the approximation after a data update
   virtual void rebuild_approximation(const BoolDeque& rebuild_deque);

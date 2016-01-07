@@ -122,8 +122,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     if (actualModel.evaluation_cache() && !actualModel.derivative_estimation())
       cache = true;
   }
+  const StringArray fn_labels = (actualModel.is_null()) ? 
+    currentResponse.function_labels() :  actualModel.response_labels();
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
-    cache, interface_id, numFns), false);
+    cache, interface_id, fn_labels), false);
 
   // initialize the DiscrepancyCorrection instance
   short corr_type = problem_db.get_short("model.surrogate.correction_type");
@@ -310,7 +312,7 @@ void DataFitSurrModel::build_approximation()
       actualModel.discrete_real_upper_bounds());
     if(exportSurrogate) {
       const StringArray fn_labels(actualModel.response_labels());
-      approxInterface.export_approximation(fn_labels);
+      approxInterface.export_approximation();
     }
   }
   approxBuilds++;

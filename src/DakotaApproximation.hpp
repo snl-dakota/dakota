@@ -49,7 +49,8 @@ public:
   /// default constructor
   Approximation();
   /// standard constructor for envelope
-  Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data);
+  Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+                const String& approx_label);
    /// alternate constructor
   Approximation(const SharedApproxData& shared_data);
   /// copy constructor
@@ -68,7 +69,7 @@ public:
   /// builds the approximation from scratch
   virtual void build();
   /// exports the approximation
-  virtual void export_model(const String& fn_label, 
+  virtual void export_model(const String& fn_label = "", 
       const String& export_prefix = "", 
       const unsigned short export_format = NO_MODEL_FORMAT );
   /// rebuilds the approximation incrementally
@@ -235,7 +236,8 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Approximation(BaseConstructor, const ProblemDescDB& problem_db,
-		const SharedApproxData& shared_data);
+		const SharedApproxData& shared_data, 
+                const String& approx_label);
 
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
@@ -261,6 +263,9 @@ protected:
   /// contains the approximation data that is shared among the response set
   SharedApproxData* sharedDataRep;
 
+  /// label for approximation, if applicable
+  String approxLabel;
+
 private:
 
   //
@@ -270,7 +275,8 @@ private:
   /// Used only by the standard envelope constructor to initialize
   /// approxRep to the appropriate derived type.
   Approximation* get_approx(ProblemDescDB& problem_db,
-			    const SharedApproxData& shared_data);
+			    const SharedApproxData& shared_data,
+                            const String& approx_label);
 
   /// Used only by the alternate envelope constructor to initialize
   /// approxRep to the appropriate derived type.

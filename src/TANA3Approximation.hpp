@@ -39,7 +39,8 @@ public:
   TANA3Approximation();
   /// standard constructor
   TANA3Approximation(ProblemDescDB& problem_db,
-		     const SharedApproxData& shared_data);
+		     const SharedApproxData& shared_data,
+                     const String& approx_label);
   /// alternate constructor
   TANA3Approximation(const SharedApproxData& shared_data);
   /// destructor

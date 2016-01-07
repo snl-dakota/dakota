@@ -43,8 +43,9 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
 
 PecosApproximation::
 PecosApproximation(ProblemDescDB& problem_db,
-		   const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data)
+		   const SharedApproxData& shared_data,
+                   const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
   //sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
 {
   // Dakota::PecosApproximation manages the Pecos::BasisApproximation instance,

@@ -134,8 +134,9 @@ Real getRmax(const RealMatrix& xset)
 
 GaussProcApproximation::
 GaussProcApproximation(const ProblemDescDB& problem_db,
-		       const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data),
+		       const SharedApproxData& shared_data,
+                       const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
   usePointSelection(problem_db.get_bool("model.surrogate.point_selection"))
 {
   const String& trend_string

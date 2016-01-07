@@ -20,8 +20,9 @@ namespace Dakota {
 
 TANA3Approximation::
 TANA3Approximation(ProblemDescDB& problem_db,
-		   const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data)
+		   const SharedApproxData& shared_data,
+                   const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 {
   // sanity checks
   if (sharedDataRep->buildDataOrder != 3) {

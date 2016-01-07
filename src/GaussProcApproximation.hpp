@@ -56,7 +56,8 @@ public:
   GaussProcApproximation(const SharedApproxData& shared_data);
   /// standard constructor
   GaussProcApproximation(const ProblemDescDB& problem_db,
-			 const SharedApproxData& shared_data);
+			 const SharedApproxData& shared_data,
+                         const String& approx_label);
   /// destructor
   ~GaussProcApproximation();
 

@@ -20,8 +20,9 @@ namespace Dakota {
 
 TaylorApproximation::
 TaylorApproximation(ProblemDescDB& problem_db,
-		    const SharedApproxData& shared_data):
-  Approximation(BaseConstructor(), problem_db, shared_data)
+		    const SharedApproxData& shared_data,
+                    const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
 { }
 
 

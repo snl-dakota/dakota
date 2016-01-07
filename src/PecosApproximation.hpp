@@ -42,7 +42,8 @@ public:
   PecosApproximation();
   /// standard ProblemDescDB-driven constructor
   PecosApproximation(ProblemDescDB& problem_db,
-		     const SharedApproxData& shared_data);
+		     const SharedApproxData& shared_data,
+                     const String& approx_label);
   /// alternate constructor
   PecosApproximation(const SharedApproxData& shared_data);
   /// destructor

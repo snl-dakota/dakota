@@ -46,7 +46,8 @@ namespace Dakota
 
         /// standard constructor (to call VPS from an input deck)
         VPSApproximation(const ProblemDescDB& problem_db,
-                         const SharedApproxData& shared_data);
+                         const SharedApproxData& shared_data,
+                         const String& approx_label);
     
         /// Alternate constructor (to call VPS from another method like POF-darts)
         VPSApproximation(const SharedApproxData& shared_data);
