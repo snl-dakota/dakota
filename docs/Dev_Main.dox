@@ -288,8 +288,8 @@ used, they may be of arbitrary type so that a variety of recursions
 are supported. 
 
 <ul> 
-<li> \ref Dakota::SingleModel "SingleModel": variables are mapped into
-responses using a single \ref Dakota::Interface "Interface" object.
+<li> \ref Dakota::SimulationModel "SimulationModel": variables are mapped into
+responses using a simulation-based \ref Dakota::Interface "Interface" object.
 No sub-iterators or sub-models are used.
 
 <li> \ref Dakota::SurrogateModel "SurrogateModel": variables are mapped
