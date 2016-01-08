@@ -142,8 +142,8 @@ public:
   /// number of discrete levels within solution control (SimulationModel)
   virtual size_t solution_levels() const;
   /// activate a particular level within the solution level control
-  /// (SimulationModel)
-  virtual void solution_level_index(size_t index);
+  /// and return the cost estimate (SimulationModel)
+  virtual Real solution_level_index(size_t index);
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms

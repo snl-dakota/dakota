@@ -203,11 +203,15 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-void SimulationModel::solution_level_index(size_t lev_index)
+Real SimulationModel::solution_level_index(size_t lev_index)
 {
+  // incoming soln level index is an index into the ordered std::map<>,
+  // not to be confused with the value in the key-value map that corresponds
+  // to the discrete variable value index (val_index below).
   std::map<Real, size_t>::const_iterator cost_cit = solnCntlCostMap.begin();
   std::advance(cost_cit, lev_index);
   size_t val_index = cost_cit->second;
+
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {
@@ -277,6 +281,8 @@ void SimulationModel::solution_level_index(size_t lev_index)
     break;
   }
   }
+
+  return cost_cit->first; // cost estimate for this solution level index
 }
 
 

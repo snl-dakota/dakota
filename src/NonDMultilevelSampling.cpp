@@ -100,7 +100,7 @@ void NonDMultilevelSampling::core_run()
   size_t lev, num_lev = iteratedModel.solution_levels(), // single model form
     qoi, num_qoi = iteratedModel.num_functions(), iter = 0, samp, new_N_l;
   SizetArray N_l, delta_N_l;
-  RealVector agg_var(num_lev, false), cost(num_lev);
+  RealVector agg_var(num_lev, false),          cost(num_lev, false);
   RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
              exp_Y(num_qoi, num_lev, false),  var_Y(num_qoi, num_lev, false);
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false,
@@ -137,8 +137,8 @@ void NonDMultilevelSampling::core_run()
 	iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
       // set the solution/discretization level within the model form
-      iteratedModel.solution_level_index(lev);
-      
+      cost[lev] = iteratedModel.solution_level_index(lev);
+
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
       // update total samples performed for this level

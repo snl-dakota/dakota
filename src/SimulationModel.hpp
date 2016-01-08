@@ -54,8 +54,8 @@ protected:
   
   /// return size of solnControlCostMap
   size_t solution_levels() const;
-  /// activate entry in solnControlCostMap
-  void solution_level_index(size_t index);
+  /// activate entry in solnControlCostMap and return cost estimate
+  Real solution_level_index(size_t lev_index);
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/

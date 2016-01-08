@@ -2638,17 +2638,18 @@ size_t Model::solution_levels() const
 }
 
 
-/** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_index(size_t index)
+/** activate a particular level within a solution / discretization
+    hierarchy and return the cost estimate. */
+Real Model::solution_level_index(size_t index)
 {
-  if (modelRep)
-    modelRep->solution_level_index(index); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
          << "() function.\n       solution_level_index is not supported by this"
 	 << " Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
+
+  return modelRep->solution_level_index(index); // envelope fwd to letter
 }
 
 
