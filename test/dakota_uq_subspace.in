@@ -1,0 +1,60 @@
+# DAKOTA INPUT FILE - dakota_uq_subspace.in
+# Contains regression tests for using model subspace
+# with several methods
+
+environment
+  tabular_data
+
+# Tests 0-9 are for sampling methods:
+method,                             #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    sample_type random              #s0,#s1,#s2,#s3,#s4
+#   sample_type lhs                 #s5
+#   sample_type incremental_lhs     #s6,#s7
+#   sample_type incremental_random  #s8,#s9
+#     refinement_samples = 100      #s6,#s8
+#     refinement_samples = 100 200  #s7,#s9
+  output debug                      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+
+# Tests 0-4 test the various subspace input parameters
+# with method sampling
+model                             
+  subspace
+    id_model = 'SUBSPACE'
+    actual_model_pointer = 'FULLSPACE'
+    initial_samples  100
+      refinement_samples 2
+    max_iterations = 10
+    convergence_tolerance = 1.0e-3
+#   truncation_method bing_li         #s1
+#   truncation_method constantine     #s2
+#   reduced_rank 5                    #s3
+#   bootstrap_samples 150             #s4
+
+model 
+  single
+  id_model = 'FULLSPACE'
+    variables_pointer = 'ID_V'  
+    interface_pointer = 'ID_I'  
+    responses_pointer = 'ID_R'  
+
+variables,
+  id_variables = 'ID_V'
+  normal_uncertain = 100
+    means = 100*0.5
+    std_deviations = 100*0.2
+
+interface,
+  id_interface = 'ID_I'
+  direct
+    analysis_driver = 'aniso_quad_form'
+    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'
+
+responses,
+  id_responses = 'ID_R'
+  num_response_functions = 1
+  analytic_gradients
+  no_hessians
