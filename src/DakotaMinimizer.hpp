@@ -306,8 +306,7 @@ inline void Minimizer::finalize_run()
     bool var_size_changed = iteratedModel.finalize_mapping();
 
     if (var_size_changed) {
-      // Resize
-      // TODO: update the iterator based on a different number of variables
+      resize();
     }
   }
 

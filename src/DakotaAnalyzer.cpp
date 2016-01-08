@@ -71,6 +71,17 @@ Analyzer::Analyzer(unsigned short method_name):
 { }
 
 
+void Analyzer::resize()
+{
+  Iterator::resize();
+
+  numContinuousVars = iteratedModel.cv();
+  numDiscreteIntVars = iteratedModel.div();
+  numDiscreteStringVars = iteratedModel.dsv();
+  numDiscreteRealVars = iteratedModel.drv();
+  numFunctions = iteratedModel.num_functions();
+}
+
 void Analyzer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);
@@ -135,8 +146,7 @@ void Analyzer::initialize_run()
     bool var_size_changed = iteratedModel.initialize_mapping();
 
     if (var_size_changed) {
-      // Resize
-      // TODO: update the iterator based on a different number of variables
+      resize();
     }
 
     // Do not reset the evaluation reference for sub-iterators

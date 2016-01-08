@@ -120,6 +120,7 @@ protected:
 
   void initialize_run();
   void finalize_run();
+  void resize();
 
   // return the final uncertain variables from the nondeterministic iteration
   //const Variables& variables_results() const;

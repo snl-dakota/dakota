@@ -337,6 +337,9 @@ protected:
   /// be meaningful after a call to initial_points mutator.
   virtual const VariablesArray& initial_points() const;
 
+  /// reinitializes iterator based on new variable size
+  virtual void resize();
+
   //
   //- Heading: Member functions
   //

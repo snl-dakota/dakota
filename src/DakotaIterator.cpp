@@ -251,6 +251,12 @@ Iterator::Iterator(ProblemDescDB& problem_db):
 }
 
 
+void Iterator::resize()
+{
+  // Base class currently is a no-op
+}
+
+
 /** Used only by the envelope constructor to initialize iteratorRep to
     the appropriate derived type, as given by the DB's method_name.
     Supports all iterators and meta-iterators.  These instantiations

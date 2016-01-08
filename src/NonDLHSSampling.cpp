@@ -52,12 +52,6 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
 { 
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
-
-  // incremental needs CDF to compute ranks
-  if (sampleType == SUBMETHOD_INCREMENTAL_LHS) {
-    initialize_random_variable_transformation();
-    initialize_random_variable_types(); // x_types only
-  }
 }
 
 
@@ -129,6 +123,12 @@ NonDLHSSampling::~NonDLHSSampling()
 void NonDLHSSampling::pre_run()
 {
   Analyzer::pre_run();
+
+  // incremental needs CDF to compute ranks
+  if (sampleType == SUBMETHOD_INCREMENTAL_LHS) {
+    initialize_random_variable_transformation();
+    initialize_random_variable_types(); // x_types only
+  }
 
   // BMA TODO: need to resolve interaction of MC/LHS with D-Optimal
 

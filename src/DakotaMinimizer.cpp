@@ -244,8 +244,7 @@ void Minimizer::initialize_run()
     bool var_size_changed = iteratedModel.initialize_mapping();
 
     if (var_size_changed) {
-      // Resize
-      // TODO: update the iterator based on a different number of variables
+      resize();
     }
 
     // Do not reset the evaluation reference for sub-iterators
