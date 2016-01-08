@@ -313,7 +313,7 @@ void ActiveSubspaceModel::identify_subspace()
   // iterate until numerically singular or small reconstruction error
   while (!svtol_met && !recon_tol_met &&
          currIter < maxIterations && totalEvals < maxFunctionEvals &&
-         reducedRank < numFullspaceVars) {
+         reducedRank <= numFullspaceVars) {
 
     // Run the inner iteration until user tol met (if possible), then check
     // reconstruction error, then continue outer if not tight enough
@@ -323,7 +323,7 @@ void ActiveSubspaceModel::identify_subspace()
       // once met (svTol will always be met),
       while (!svtol_met && currIter < maxIterations && 
              totalEvals < maxFunctionEvals
-             && reducedRank < numFullspaceVars) {
+             && reducedRank <= numFullspaceVars) {
 
         ++currIter;  // any addition of batch of points counts as an iteration
         Cout << "\nESM: Iteration " << currIter << "." << std::endl;
