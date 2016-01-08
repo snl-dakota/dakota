@@ -152,15 +152,15 @@ private:
   /// the interface used for mapping variables to responses
   Interface userDefinedInterface;
 
-  /// type of the inactive discrete variable that controls the set/range of
+  /// type of the discrete variable that controls the set/range of
   /// solution levels
   short solnCntlVarType;
-  /// index of the inactive discrete variable that controls the set/range of
-  /// solution levels
-  size_t solnCntlIDVIndex;
-  /// index of the discrete set variable that controls the set/range of
-  /// solution levels (manages case where solnCntlVarType is a subset of
-  /// the inactive variables)
+  /// index of the discrete variable (within all view) that controls the
+  /// set/range of solution levels
+  size_t solnCntlADVIndex;
+  /// index of the discrete set variable (within its type array, managing
+  /// offset when solnCntlVarType is a subset of all discrete variables)
+  /// that controls the set/range of solution levels
   size_t solnCntlSetIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::map<Real, size_t> solnCntlCostMap;
