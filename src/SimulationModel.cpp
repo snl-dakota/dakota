@@ -29,7 +29,7 @@ namespace Dakota {
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   userDefinedInterface(problem_db.get_interface()),
-  solnControlVarIndex(0), solnControlVarType(EMPTY_TYPE)
+  solnCntlVarType(EMPTY_TYPE), solnCntlIDVIndex(0), solnCntlSetIndex(0)
 {
   componentParallelMode = INTERFACE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -48,23 +48,23 @@ initialize_solution_control(const String& control, const RealVector& cost)
   
   // find the variable label used for solution control within the
   // inactive discrete variables
-  solnControlVarIndex = find_index(
+  solnCntlIDVIndex = find_index(
     currentVariables.inactive_discrete_int_variable_labels(), control);
-  if (solnControlVarIndex != _NPOS)
-    solnControlVarType = currentVariables.
-      inactive_discrete_int_variable_types()[solnControlVarIndex];
+  if (solnCntlIDVIndex != _NPOS)
+    solnCntlVarType = currentVariables.
+      inactive_discrete_int_variable_types()[solnCntlIDVIndex];
   else {
-    solnControlVarIndex = find_index(
+    solnCntlIDVIndex = find_index(
       currentVariables.inactive_discrete_string_variable_labels(), control);
-    if (solnControlVarIndex != _NPOS)
-      solnControlVarType = currentVariables.
-	inactive_discrete_string_variable_types()[solnControlVarIndex];
+    if (solnCntlIDVIndex != _NPOS)
+      solnCntlVarType = currentVariables.
+	inactive_discrete_string_variable_types()[solnCntlIDVIndex];
     else {
-      solnControlVarIndex = find_index(
+      solnCntlIDVIndex = find_index(
 	currentVariables.inactive_discrete_real_variable_labels(), control);
-      if (solnControlVarIndex != _NPOS)
-	solnControlVarType = currentVariables.
-	  inactive_discrete_real_variable_types()[solnControlVarIndex];
+      if (solnCntlIDVIndex != _NPOS)
+	solnCntlVarType = currentVariables.
+	  inactive_discrete_real_variable_types()[solnCntlIDVIndex];
      else {
 	Cerr << "Error: solution_level_control string identifier not found "
 	     << "within inactive discrete variable labels." << std::endl;
@@ -74,68 +74,72 @@ initialize_solution_control(const String& control, const RealVector& cost)
   }
 
   // get size of corresponding set values
-  size_t i, num_lev, offset;
-  switch (solnControlVarType) {
+  size_t i, num_lev;
+  switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE:
+    //solnCntlSetIndex = solnCntlIDVIndex;
     num_lev = userDefinedConstraints.inactive_discrete_int_upper_bounds()
-              [solnControlVarIndex]
+              [solnCntlIDVIndex]
             - userDefinedConstraints.inactive_discrete_int_lower_bounds()
-              [solnControlVarIndex];
+              [solnCntlIDVIndex];
     break;
   case DISCRETE_DESIGN_SET_INT:
-    offset = find_index(currentVariables.inactive_discrete_int_variable_types(),
-			DISCRETE_DESIGN_SET_INT);
-    num_lev = discreteDesignSetIntValues[solnControlVarIndex-offset].size();
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_int_variable_types(),
+		 DISCRETE_DESIGN_SET_INT);
+    num_lev = discreteDesignSetIntValues[solnCntlSetIndex].size();
     break;
   case DISCRETE_DESIGN_SET_STRING:
-    offset = find_index(
-      currentVariables.inactive_discrete_string_variable_types(),
-      DISCRETE_DESIGN_SET_STRING);
-    num_lev = discreteDesignSetStringValues[solnControlVarIndex-offset].size();
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_string_variable_types(),
+		 DISCRETE_DESIGN_SET_STRING);
+    num_lev = discreteDesignSetStringValues[solnCntlSetIndex].size();
     break;
   case DISCRETE_DESIGN_SET_REAL:
-    offset = find_index(
-      currentVariables.inactive_discrete_real_variable_types(),
-      DISCRETE_DESIGN_SET_REAL);
-    num_lev = discreteDesignSetRealValues[solnControlVarIndex-offset].size();
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_real_variable_types(),
+		 DISCRETE_DESIGN_SET_REAL);
+    num_lev = discreteDesignSetRealValues[solnCntlSetIndex].size();
     break;
   case DISCRETE_UNCERTAIN_SET_INT:
-    offset = find_index(currentVariables.inactive_discrete_int_variable_types(),
-			DISCRETE_UNCERTAIN_SET_INT);
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_int_variable_types(),
+		 DISCRETE_UNCERTAIN_SET_INT);
     num_lev = epistDistParams.discrete_set_int_values_probabilities()
-      [solnControlVarIndex-offset].size();
+      [solnCntlSetIndex].size();
     break;
   case DISCRETE_UNCERTAIN_SET_STRING:
-    offset = find_index(
-      currentVariables.inactive_discrete_string_variable_types(),
-      DISCRETE_UNCERTAIN_SET_STRING);
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_string_variable_types(),
+		 DISCRETE_UNCERTAIN_SET_STRING);
     num_lev = epistDistParams.discrete_set_string_values_probabilities()
-      [solnControlVarIndex-offset].size();
+      [solnCntlSetIndex].size();
     break;
   case DISCRETE_UNCERTAIN_SET_REAL:
-    offset = find_index(
-      currentVariables.inactive_discrete_real_variable_types(),
-      DISCRETE_UNCERTAIN_SET_REAL);
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_real_variable_types(),
+		 DISCRETE_UNCERTAIN_SET_REAL);
     num_lev = epistDistParams.discrete_set_real_values_probabilities()
-      [solnControlVarIndex-offset].size();
+      [solnCntlSetIndex].size();
     break;
   case DISCRETE_STATE_SET_INT:
-    offset = find_index(currentVariables.inactive_discrete_int_variable_types(),
-			DISCRETE_STATE_SET_INT);
-    num_lev = discreteStateSetIntValues[solnControlVarIndex-offset].size();
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_int_variable_types(),
+		 DISCRETE_STATE_SET_INT);
+    num_lev = discreteStateSetIntValues[solnCntlSetIndex].size();
     break;
   case DISCRETE_STATE_SET_STRING:
-    offset = find_index(
-      currentVariables.inactive_discrete_string_variable_types(),
-      DISCRETE_STATE_SET_STRING);
-    num_lev = discreteStateSetStringValues[solnControlVarIndex-offset].size();
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_string_variable_types(),
+		 DISCRETE_STATE_SET_STRING);
+    num_lev = discreteStateSetStringValues[solnCntlSetIndex].size();
     break;
   case DISCRETE_STATE_SET_REAL:
-    offset = find_index(
-      currentVariables.inactive_discrete_real_variable_types(),
-      DISCRETE_STATE_SET_REAL);
-    num_lev = discreteStateSetRealValues[solnControlVarIndex-offset].size();
+    solnCntlSetIndex = solnCntlIDVIndex -
+      find_index(currentVariables.inactive_discrete_real_variable_types(),
+		 DISCRETE_STATE_SET_REAL);
+    num_lev = discreteStateSetRealValues[solnCntlSetIndex].size();
     break;
   default:
     Cerr << "Error: unsupported variable type in SimulationModel::"
@@ -145,33 +149,113 @@ initialize_solution_control(const String& control, const RealVector& cost)
   
   // process cost array to create ordered map.
   // Specified set values are sorted on input, but specified costs are not
-  // --> solnControlCostMap sorts on cost key and maps to the unordered index
+  // --> solnCntlCostMap sorts on cost key and maps to the unordered index
   //     of these sorted values.
   // > Example 1:
   //     model simulation
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. 2. 200.
-  //   results in solnControlCostMap = { {2., 1}, {10., 0}, {200., 2} }
+  //   results in solnCntlCostMap = { {2., 1}, {10., 0}, {200., 2} }
   // > Example 2:
   //     model simulation
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. # scalar multiplier
-  // results in solnControlCostMap = { {1., 0}, {10., 1}, {100., 2} }
+  // results in solnCntlCostMap = { {1., 0}, {10., 1}, {100., 2} }
   if (cost.length() == 1) {
     Real multiplier = cost[0], prod = 1.;
     for (i=0; i<num_lev; ++i) { // assume increasing cost
-      solnControlCostMap.insert(std::pair<Real, size_t>(prod, i));//TO DO:ranges
+      solnCntlCostMap.insert(std::pair<Real, size_t>(prod, i));
       prod *= multiplier;
     }
   }
   else if (cost.length() == num_lev)
     for (i=0; i<num_lev; ++i)
-      solnControlCostMap.insert(std::pair<Real, size_t>(cost[i], i));//TO DO
+      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
   else {
     Cerr << "Error: solution_level_cost specification of length "
 	 << cost.length() << " provided;\n       expected scalar or vector "
 	 << "of length " << num_lev << "." << std::endl;
     abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void SimulationModel::solution_level_index(size_t lev_index)
+{
+  std::map<Real, size_t>::const_iterator cost_cit = solnCntlCostMap.begin();
+  std::advance(cost_cit, lev_index);
+  size_t val_index = cost_cit->second;
+  switch (solnCntlVarType) {
+  case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
+  case DISCRETE_STATE_RANGE: {
+    int val = val_index + userDefinedConstraints.
+      inactive_discrete_int_lower_bounds()[solnCntlIDVIndex];
+    currentVariables.inactive_discrete_int_variable(val, solnCntlIDVIndex);
+    break;
+  }
+  //////////////////////////////
+  case DISCRETE_DESIGN_SET_INT: {
+    ISCIter cit = discreteDesignSetIntValues[solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_int_variable(*cit, solnCntlIDVIndex);
+    break;
+  }
+  case DISCRETE_DESIGN_SET_STRING: {
+    SSCIter cit = discreteDesignSetStringValues[solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_string_variable(*cit, solnCntlIDVIndex);
+    break;
+  }
+  case DISCRETE_DESIGN_SET_REAL: {
+    RSCIter cit = discreteDesignSetRealValues[solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_real_variable(*cit, solnCntlIDVIndex);
+    break;
+  }
+  //////////////////////////////
+  case DISCRETE_UNCERTAIN_SET_INT: {
+    IRMCIter cit = epistDistParams.discrete_set_int_values_probabilities()
+      [solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_int_variable(cit->first,
+						    solnCntlIDVIndex);
+    break;
+  }
+  case DISCRETE_UNCERTAIN_SET_STRING: {
+    SRMCIter cit = epistDistParams.discrete_set_string_values_probabilities()
+      [solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_string_variable(cit->first,
+						       solnCntlIDVIndex);
+    break;
+  }
+  case DISCRETE_UNCERTAIN_SET_REAL: {
+    RRMCIter cit = epistDistParams.discrete_set_real_values_probabilities()
+      [solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_real_variable(cit->first,
+						     solnCntlIDVIndex);
+    break;
+  }
+  //////////////////////////////
+  case DISCRETE_STATE_SET_INT: {
+    ISCIter cit = discreteStateSetIntValues[solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_int_variable(*cit, solnCntlIDVIndex);
+    break;
+  }
+  case DISCRETE_STATE_SET_STRING: {
+    SSCIter cit = discreteStateSetStringValues[solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_string_variable(*cit, solnCntlIDVIndex);
+    break;
+  }
+  case DISCRETE_STATE_SET_REAL: {
+    RSCIter cit = discreteStateSetRealValues[solnCntlSetIndex].begin();
+    std::advance(cit, val_index);
+    currentVariables.inactive_discrete_real_variable(*cit, solnCntlIDVIndex);
+    break;
+  }
   }
 }
 

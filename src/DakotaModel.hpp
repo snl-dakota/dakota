@@ -139,6 +139,12 @@ public:
   /// or NestedModel::optionalInterface
   virtual Interface& derived_interface();
 
+  /// number of discrete levels within solution control (SimulationModel)
+  virtual size_t solution_levels() const;
+  /// activate a particular level within the solution level control
+  /// (SimulationModel)
+  virtual void solution_level_index(size_t index);
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
   virtual void primary_response_fn_weights(const RealVector& wts, 
@@ -149,7 +155,6 @@ public:
 
   /// initialize model mapping, returns true if the variables size has changed
   virtual bool initialize_mapping();
-
   /// finalize model mapping, returns true if the variables size has changed
   virtual bool finalize_mapping();
 
@@ -977,18 +982,6 @@ public:
   /// that are not mapped to the top Model level
   Model* model_rep() const;
 
-  /// flags finite-difference step size adjusted by bounds
-  bool shortStep;
-  /// function to determine initial finite difference h (before step
-  /// length adjustment) based on type of step desired
-  Real initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
-		    String step_type) const;
-  /// function returning finite-difference step size (affected by bounds)
-  Real FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag);
-  /// function returning second central-difference step size (affected
-  /// by bounds)
-  Real FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h);
-
 protected:
 
   //
@@ -1291,6 +1284,16 @@ private:
 		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
 		  ShortArray& quasi_hess_asv_out);
 
+  /// function to determine initial finite difference h (before step
+  /// length adjustment) based on type of step desired
+  Real initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
+		    String step_type) const;
+  /// function returning finite-difference step size (affected by bounds)
+  Real FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag);
+  /// function returning second central-difference step size (affected
+  /// by bounds)
+  Real FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h);
+
   //
   //- Heading: Data
   //
@@ -1304,6 +1307,8 @@ private:
   /// flags presence of estimated derivatives within a set of calls to
   /// evaluate_nowait()
   bool estDerivsFlag;
+  /// flags finite-difference step size adjusted by bounds
+  bool shortStep;
 
   /// map<> used for tracking modelPCIter instances using depth of parallelism
   /// level and max evaluation concurrency as the lookup keys

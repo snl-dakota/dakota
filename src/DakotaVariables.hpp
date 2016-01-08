@@ -356,21 +356,29 @@ public:
   const RealVector& inactive_continuous_variables() const;
   /// set the inactive continuous variables
   void inactive_continuous_variables(const RealVector& ic_vars);
+  /// set an inactive continuous variable
+  void inactive_continuous_variable(Real ic_var, size_t index);
 
-  /// return the inactive discrete variables
+  /// return the inactive discrete int variables
   const IntVector& inactive_discrete_int_variables() const;
-  /// set the inactive discrete variables
+  /// set the inactive discrete int variables
   void inactive_discrete_int_variables(const IntVector& idi_vars);
+  /// set an inactive discrete int variable
+  void inactive_discrete_int_variable(int idi_var, size_t index);
 
-  /// return the inactive discrete variables
+  /// return the inactive discrete string variables
   StringMultiArrayConstView inactive_discrete_string_variables() const;
-  /// set the inactive discrete variables
+  /// set the inactive discrete string variables
   void inactive_discrete_string_variables(StringMultiArrayConstView ids_vars);
+  /// set an inactive discrete string variable
+  void inactive_discrete_string_variable(const String& ids_var, size_t index);
 
-  /// return the inactive discrete variables
+  /// return the inactive discrete real variables
   const RealVector& inactive_discrete_real_variables() const;
-  /// set the inactive discrete variables
+  /// set the inactive discrete real variables
   void inactive_discrete_real_variables(const RealVector& idr_vars);
+  /// set an inactive discrete real variable
+  void inactive_discrete_real_variable(Real idr_var, size_t index);
 
   /// return the inactive continuous variable labels
   StringMultiArrayConstView inactive_continuous_variable_labels() const;
@@ -1098,12 +1106,19 @@ inline const RealVector& Variables::inactive_continuous_variables() const
 }
 
 
-inline void Variables::
-inactive_continuous_variables(const RealVector& ic_vars)
+inline void Variables::inactive_continuous_variables(const RealVector& ic_vars)
 {
   // carefully use assign to update the data the view points to
   if (variablesRep) variablesRep->inactiveContinuousVars.assign(ic_vars);
   else              inactiveContinuousVars.assign(ic_vars);
+}
+
+
+inline void Variables::inactive_continuous_variable(Real ic_var, size_t index)
+{
+  // carefully use assign to update the data the view points to
+  if (variablesRep) variablesRep->inactiveContinuousVars[index] = ic_var;
+  else              inactiveContinuousVars[index] = ic_var;
 }
 
 
@@ -1120,6 +1135,14 @@ inactive_discrete_int_variables(const IntVector& idi_vars)
   // carefully use assign to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteIntVars.assign(idi_vars);
   else              inactiveDiscreteIntVars.assign(idi_vars);
+}
+
+
+inline void Variables::inactive_discrete_int_variable(int idi_var, size_t index)
+{
+  // carefully use assign to update the data the view points to
+  if (variablesRep) variablesRep->inactiveDiscreteIntVars[index] = idi_var;
+  else              inactiveDiscreteIntVars[index] = idi_var;
 }
 
 
@@ -1143,6 +1166,16 @@ inactive_discrete_string_variables(StringMultiArrayConstView ids_vars)
 }
 
 
+inline void Variables::
+inactive_discrete_string_variable(const String& ids_var, size_t index)
+{
+  if (variablesRep)
+    variablesRep->inactive_discrete_string_variable(ids_var, index);
+  else
+    allDiscreteStringVars[sharedVarsData.idsv_start()+index] = ids_var;
+}
+
+
 inline const RealVector& Variables::inactive_discrete_real_variables() const
 {
   return (variablesRep) ? variablesRep->inactiveDiscreteRealVars :
@@ -1156,6 +1189,15 @@ inactive_discrete_real_variables(const RealVector& idr_vars)
   // carefully use assign to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteRealVars.assign(idr_vars);
   else              inactiveDiscreteRealVars.assign(idr_vars);
+}
+
+
+inline void Variables::
+inactive_discrete_real_variable(Real idr_var, size_t index)
+{
+  // carefully use assign to update the data the view points to
+  if (variablesRep) variablesRep->inactiveDiscreteRealVars[index] = idr_var;
+  else              inactiveDiscreteRealVars[index] = idr_var;
 }
 
 

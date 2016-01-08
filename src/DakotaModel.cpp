@@ -2628,6 +2628,30 @@ Interface& Model::derived_interface()
 }
 
 
+/** return the number of levels within a solution / discretization hierarchy. */
+size_t Model::solution_levels() const
+{
+  if (modelRep)
+    return modelRep->solution_levels(); // envelope fwd to letter
+  else // letter lacking redefinition of virtual fn.
+    return 1;
+}
+
+
+/** activate a particular level within a solution / discretization hierarchy. */
+void Model::solution_level_index(size_t index)
+{
+  if (modelRep)
+    modelRep->solution_level_index(index); // envelope fwd to letter
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
+         << "() function.\n       solution_level_index is not supported by this"
+	 << " Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */

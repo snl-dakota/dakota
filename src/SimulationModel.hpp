@@ -51,6 +51,11 @@ protected:
 
   /// return userDefinedInterface
   Interface& derived_interface();
+  
+  /// return size of solnControlCostMap
+  size_t solution_levels() const;
+  /// activate entry in solnControlCostMap
+  void solution_level_index(size_t index);
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/
@@ -147,14 +152,18 @@ private:
   /// the interface used for mapping variables to responses
   Interface userDefinedInterface;
 
-  /// index of the inactive discrete variable that controls the set/range of
-  /// solution levels
-  size_t solnControlVarIndex;
   /// type of the inactive discrete variable that controls the set/range of
   /// solution levels
-  short solnControlVarType;
+  short solnCntlVarType;
+  /// index of the inactive discrete variable that controls the set/range of
+  /// solution levels
+  size_t solnCntlIDVIndex;
+  /// index of the discrete set variable that controls the set/range of
+  /// solution levels (manages case where solnCntlVarType is a subset of
+  /// the inactive variables)
+  size_t solnCntlSetIndex;
   /// sorted array of relative costs associated with a set of solution levels
-  std::map<Real, size_t> solnControlCostMap;
+  std::map<Real, size_t> solnCntlCostMap;
 };
 
 
@@ -164,6 +173,10 @@ inline SimulationModel::~SimulationModel()
 
 inline Interface& SimulationModel::derived_interface()
 { return userDefinedInterface; }
+
+
+inline size_t SimulationModel::solution_levels() const
+{ return (solnCntlCostMap.empty()) ? 1 : solnCntlCostMap.size(); }
 
 
 inline void SimulationModel::derived_evaluate(const ActiveSet& set)

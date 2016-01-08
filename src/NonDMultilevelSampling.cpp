@@ -43,9 +43,12 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     // set SurrogateModel::responseMode
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // level 0
   }
-  //else { // TO DO
-  //  = iteratedModel.solution_levels();
-  //}
+  else if (iteratedModel.model_type() != "simulation") {
+        //|| iteratedModel.solution_levels() <=1) {
+    Cerr << "Error: Multilevel Monte Carlo currently requires a simulation "
+	 << "model specification." << std::endl;
+    abort_handler(-1);
+  }
 }
 
 
@@ -78,7 +81,7 @@ void NonDMultilevelSampling::core_run()
   // most correlated alternative (or a convex combination of alternatives)
 
   //model
-  //  single id_model = 'LF'
+  //  simulation id_model = 'LF'
   //    # point to state vars; ordered based on set values for h, delta-t
   //    solution_level_control = 'dssiv1'
   //    # relative cost estimates in same order as state set values
@@ -94,7 +97,7 @@ void NonDMultilevelSampling::core_run()
   // or necessary (e.g., combustion processes with expense that is highly
   // parameter dependent).
   
-  size_t lev, num_lev = 1,//iteratedModel.solution_levels(),
+  size_t lev, num_lev = iteratedModel.solution_levels(), // single model form
     qoi, num_qoi = iteratedModel.num_functions(), samp, new_N_l;
   SizetArray N_l, delta_N_l;
   RealVector agg_var(num_lev, false), cost(num_lev);
@@ -132,7 +135,8 @@ void NonDMultilevelSampling::core_run()
 	iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
       // set the solution/discretization level within the model form
-      //iteratedModel.solution_level_index(lev);
+      iteratedModel.solution_level_index(lev);
+      
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
       // update total samples performed for this level
