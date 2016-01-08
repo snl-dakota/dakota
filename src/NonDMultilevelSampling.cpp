@@ -98,7 +98,7 @@ void NonDMultilevelSampling::core_run()
   // parameter dependent).
   
   size_t lev, num_lev = iteratedModel.solution_levels(), // single model form
-    qoi, num_qoi = iteratedModel.num_functions(), samp, new_N_l;
+    qoi, num_qoi = iteratedModel.num_functions(), iter = 0, samp, new_N_l;
   SizetArray N_l, delta_N_l;
   RealVector agg_var(num_lev, false), cost(num_lev);
   RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
@@ -106,11 +106,13 @@ void NonDMultilevelSampling::core_run()
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false,
     hierarch_flag = (iteratedModel.surrogate_type() == "hierarchical");
   Real agg_var_l, eps = 1.e-6, sum_var_cost, mean;
+  IntRespMCIter r_it;
   
   // Initialize for pilot sample
   N_l.assign(num_lev, 0);
-  if (pilotSamples.empty()) delta_N_l.assign(num_lev, 100); // default
-  else                      delta_N_l = pilotSamples;
+  if      (pilotSamples.empty())     delta_N_l.assign(num_lev, 100); // default
+  else if (pilotSamples.size() == 1) delta_N_l.assign(num_lev, pilotSamples[0]);
+  else                               delta_N_l = pilotSamples;
 
   // How to manage a set of statistics:
   // 1. Simplest: proposal is to use the mean estimator to drive the algorithm,
@@ -126,7 +128,7 @@ void NonDMultilevelSampling::core_run()
   // 2. Better: select N_l based on convergence in aggregated variance
   
   // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l)) {
+  while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
       
     sum_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
@@ -152,8 +154,8 @@ void NonDMultilevelSampling::core_run()
       Real *sum_Y_l = sum_Y[lev], *sum_Y2_l = sum_Y2[lev],
 	   *exp_Y_l = exp_Y[lev],  *var_Y_l =  var_Y[lev];
       for (qoi=0; qoi<num_qoi; ++qoi) {
-	for (samp=0; samp<numSamples; ++samp) {
-	  Real delta_fn  = allResponses[samp].function_value(qoi);
+	for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+	  Real delta_fn  = r_it->second.function_value(qoi);
 	  sum_Y_l[qoi]  += delta_fn; // running sum across all increments
 	  sum_Y2_l[qoi] += delta_fn * delta_fn;
 	}
@@ -175,6 +177,7 @@ void NonDMultilevelSampling::core_run()
 	      * 2. / (eps * eps);
       delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
     }
+    ++iter;
   }
 
   // aggregate mean and variance of estimator(s)

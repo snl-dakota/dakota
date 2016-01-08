@@ -18,17 +18,17 @@ model,
 	  solution_level_cost = 1. 2. 4. 8.
 
 variables,
-	uniform_uncertain = 9
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
 	  lower_bounds      =  9*-1.
 	  upper_bounds      =  9* 1.
 	discrete_state_set integer = 1
-          set_values = 4 8 16 32
+          set_values = 5 9 17 33 # number of mesh pts including boundary
 
 interface,
 	direct
 	  analysis_driver = 'diffusion_1d'
 
 responses,
-	response_functions = 3
+	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
 	no_gradients
 	no_hessians
