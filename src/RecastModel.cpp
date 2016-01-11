@@ -146,7 +146,10 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 
 
 RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
-  Model(BaseConstructor(), problem_db), subModel(sub_model)
+  Model(BaseConstructor(), problem_db), subModel(sub_model),
+  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
+  secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
+  invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -159,7 +162,9 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
 RecastModel::RecastModel(const Model& sub_model):
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
    	sub_model.parallel_library()),
-  subModel(sub_model)
+  subModel(sub_model), variablesMapping(NULL), setMapping(NULL),
+  primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 { 
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default

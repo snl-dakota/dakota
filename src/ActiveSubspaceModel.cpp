@@ -195,7 +195,7 @@ bool ActiveSubspaceModel::initialize_mapping()
   //       subspaces
 
   // runtime operation to identify the subspace model (if not later
-  // returning to update the subpsace)
+  // returning to update the subspace)
   identify_subspace();
 
   // complete initialization of the base RecastModel
