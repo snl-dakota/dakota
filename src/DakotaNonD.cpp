@@ -230,6 +230,11 @@ NonD::NonD(unsigned short method_name, Model& model):
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
   resize();
+
+  // current set of statistics is mean, standard deviation, and 
+  // probability of failure for each response function 
+  //ShortArray asv(3*numFunctions, 1); 
+  //finalStatistics = Response(numUncertainVars, asv);
 }
 
 
@@ -277,7 +282,8 @@ void NonD::resize()
       active_view == RELAXED_ALEATORY_UNCERTAIN ||
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
       active_view == MIXED_ALEATORY_UNCERTAIN) { // aleatory or both
-    const Pecos::AleatoryDistParams& adp = iteratedModel.aleatory_distribution_parameters();
+    const Pecos::AleatoryDistParams& adp
+      = iteratedModel.aleatory_distribution_parameters();
     numNormalVars       = adp.normal_means().length();
     numLognormalVars    = adp.lognormal_means().length();
     numUniformVars      = adp.uniform_lower_bounds().length();
@@ -314,7 +320,8 @@ void NonD::resize()
       active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
       active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
-    const Pecos::EpistemicDistParams& edp = iteratedModel.epistemic_distribution_parameters();
+    const Pecos::EpistemicDistParams& edp
+      = iteratedModel.epistemic_distribution_parameters();
     numContIntervalVars  = edp.continuous_interval_basic_probabilities().size();
 
     numDiscIntervalVars  = edp.discrete_interval_basic_probabilities().size();
@@ -1375,59 +1382,51 @@ void NonD::initialize_random_variable_types(short u_space_type)
       u_types[av_cntr] = Pecos::HISTOGRAM_BIN; break;
     }
   }
-
   
   // discrete int aleatory uncertain
   for (i=0; i<numPoissonVars; ++i, ++av_cntr){
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::POISSON;
+    x_types[av_cntr] = Pecos::POISSON;
     switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
-    case ASKEY_U: case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
-    case EXTENDED_U:
+    case STD_NORMAL_U: case STD_UNIFORM_U:
+      err_flag = true; break;
+    case ASKEY_U: case EXTENDED_U:
       u_types[av_cntr] = Pecos::POISSON; break;
     }
   }
   for (i=0; i<numBinomialVars; ++i, ++av_cntr){
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::BINOMIAL;
+    x_types[av_cntr] = Pecos::BINOMIAL;
     switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
-    case ASKEY_U: case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
-    case EXTENDED_U:
+    case STD_NORMAL_U: case STD_UNIFORM_U:
+      err_flag = true; break;
+    case ASKEY_U: case EXTENDED_U:
       u_types[av_cntr] = Pecos::BINOMIAL; break;
     }
   }
   for (i=0; i<numNegBinomialVars; ++i, ++av_cntr){
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
+    x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
     switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
-    case ASKEY_U: case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
-    case EXTENDED_U:
+    case STD_NORMAL_U: case STD_UNIFORM_U:
+      err_flag = true; break;
+    case ASKEY_U: case EXTENDED_U:
       u_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL; break;
     }
   }
+  /*
+  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
+  */
   for (i=0; i<numHyperGeomVars; ++i, ++av_cntr){
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::HYPERGEOMETRIC;
+    x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
     switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;    break;
-    case ASKEY_U: case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;   break;
-    case EXTENDED_U:
+    case STD_NORMAL_U: case STD_UNIFORM_U:
+      err_flag = true; break;
+    case ASKEY_U: case EXTENDED_U:
       u_types[av_cntr] = Pecos::HYPERGEOMETRIC; break;
     }
   }
-
   /*
-  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
-  x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
   for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
-  x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
+    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
   
   // discrete string aleatory uncertain
   for (i=0; i<numHistogramPtStringVars; ++i, ++av_cntr)
@@ -1530,12 +1529,13 @@ void NonD::initialize_random_variable_types()
     x_types[av_cntr] = Pecos::BINOMIAL;
   for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
-
   /*
   for (i=0; i<numGeometricVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::GEOMETRIC;
+  */
+  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
+  /*
   for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
 
