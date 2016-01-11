@@ -75,6 +75,8 @@ public:
   void polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis);
   /// get Pecos::SharedOrthogPolyApproxData::polynomialBasis
   const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
+  /// get Pecos::SharedOrthogPolyApproxData::polynomialBasis
+  std::vector<Pecos::BasisPolynomial>& polynomial_basis();
 
   /// set Pecos::SharedOrthogPolyApproxData::multiIndex and allocate
   /// associated arrays
@@ -252,6 +254,14 @@ polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 
 inline const std::vector<Pecos::BasisPolynomial>& SharedPecosApproxData::
 polynomial_basis() const
+{
+  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
+    polynomial_basis();
+}
+
+
+inline std::vector<Pecos::BasisPolynomial>& SharedPecosApproxData::
+polynomial_basis()
 {
   return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
     polynomial_basis();

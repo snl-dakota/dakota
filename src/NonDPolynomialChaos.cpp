@@ -659,11 +659,13 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   // TO DO: utilize static fn instead of 0th poly_approx; this would also
   // facilitate usage from other surrogate types (especially GP).
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  SharedApproxData&          shared_approx = uSpaceModel.shared_approximation();
   PecosApproximation* poly_approx_rep
     = (PecosApproximation*)poly_approxs[0].approx_rep();
+  SharedPecosApproxData* shared_data_rep
+    = (SharedPecosApproxData*)shared_approx.data_rep();
 
-  Pecos::SurrogateData surr_data;
-  poly_approx_rep->surrogate_data( surr_data );
+  const Pecos::SurrogateData& surr_data = poly_approx_rep->surrogate_data();
   int num_surr_data_pts = surr_data.points();
   RealMatrix current_samples( numContinuousVars, num_surr_data_pts, false );
   for (int j=0; j<num_surr_data_pts; ++j) 
@@ -673,9 +675,9 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   LejaSampler sampler;
   sampler.set_seed(randomSeed);
   sampler.set_precondition(true);
-  std::vector<Pecos::BasisPolynomial> polynomial_basis;
-  poly_approx_rep->polynomial_basis( polynomial_basis );
-  sampler.set_polynomial_basis( polynomial_basis );
+  std::vector<Pecos::BasisPolynomial>& poly_basis
+    = shared_data_rep->polynomial_basis();
+  sampler.set_polynomial_basis( poly_basis );
   sampler.set_total_degree_basis_from_num_samples( numContinuousVars, new_size );
   RealMatrix candidate_samples_matrix;
   Pecos::convert( candidate_samples, candidate_samples_matrix );
@@ -693,7 +695,8 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
 
 void NonDPolynomialChaos::
 select_refinement_points(const RealVectorArray& candidate_samples,
-			 unsigned short batch_size, RealMatrix& best_samples)
+				    unsigned short batch_size,
+				    RealMatrix& best_samples)
 {
   // from initial candidate_samples, select the best batch_size points in terms
   // of information content, as determined by pivoted LU factorization
