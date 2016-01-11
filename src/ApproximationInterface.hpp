@@ -107,9 +107,10 @@ protected:
   void store_approximation();
   void combine_approximation(short corr_type, bool swap);
 
-  RealArray cv_diagnostics(const String& metric_type, unsigned num_folds);
-  RealArray challenge_diagnostics(const String& metric_type,
-				  const RealMatrix& challenge_pts);
+  Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
+  Real2DArray challenge_diagnostics(const StringArray& metric_types,
+				  const RealMatrix& challenge_pts,
+                                  const RealVector& challenge_resps);
 
   void clear_current();
   void clear_all();
@@ -196,8 +197,10 @@ private:
   unsigned short challengeFormat;
   /// whether to import active only
   bool challengeActiveOnly;
-  /// container for the challenge points data
+  /// container for the challenge points data (variables only)
   RealMatrix challengePoints;
+  /// container for the challenge points data (responses only)
+  RealMatrix challengeResponses;
 
   /// copy of the actualModel variables object used to simplify conversion 
   /// among differing variable views

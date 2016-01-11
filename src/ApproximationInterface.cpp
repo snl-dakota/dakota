@@ -637,7 +637,8 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
       if (!challengeFile.empty()) {
 	if (challengePoints.empty())
 	  read_challenge_points(active_only);
-	functionSurfaces[index].challenge_diagnostics(challengePoints, index);
+        functionSurfaces[index].challenge_diagnostics(challengePoints,
+                        getCol(Teuchos::View,challengeResponses,index));
       }
     }
   }
@@ -781,34 +782,35 @@ void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 }
 
 
-RealArray ApproximationInterface::cv_diagnostics(const String& metric_type,
+Real2DArray ApproximationInterface::cv_diagnostics(const StringArray& metric_types,
 						 unsigned num_folds)
 {
-  RealArray cv_diags;
+  Real2DArray cv_diags;
   ISIter a_it = approxFnIndices.begin();
   ISCIter a_end = approxFnIndices.end();
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     cv_diags.push_back(functionSurfaces[index].
-		       cv_diagnostic(metric_type, num_folds));
+		       cv_diagnostic(metric_types, num_folds));
   }
   return cv_diags;
 }
 
 
-RealArray ApproximationInterface::
-challenge_diagnostics(const String& metric_type, 
-		      const RealMatrix& challenge_points)
+Real2DArray ApproximationInterface::
+challenge_diagnostics(const StringArray& metric_types, 
+		      const RealMatrix& challenge_pts,
+                      const RealVector& challenge_resps)
 {
-  RealArray chall_diags;
+  Real2DArray chall_diags;
   ISIter a_it = approxFnIndices.begin();
   ISCIter a_end = approxFnIndices.end();
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     chall_diags.push_back(functionSurfaces[index].
-			  challenge_diagnostic(metric_type, 
-                                               challenge_points,
-                                               index));
+			  challenge_diagnostic(metric_types, 
+                                               challenge_pts,
+                                               challenge_resps));
   }
   return chall_diags;
 }
@@ -880,7 +882,10 @@ void ApproximationInterface::read_challenge_points(bool active_only)
   // translate to the matrix, using real vector only for convenience
   size_t num_points = pts_array.size()/num_cols;
   RealVector pts_vec(Teuchos::View, &pts_array[0], pts_array.size());
-  copy_data(pts_vec, challengePoints, num_points, num_cols);
+  RealMatrix chal_var_resp;
+  copy_data(pts_vec, chal_var_resp, num_points, num_cols);
+  challengePoints = RealMatrix(Teuchos::Copy,chal_var_resp,num_points,num_vars);
+  challengeResponses = RealMatrix(Teuchos::Copy,chal_var_resp,num_points,num_fns,0,num_vars);
 }
 
 } // namespace Dakota

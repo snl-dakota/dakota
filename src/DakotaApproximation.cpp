@@ -497,7 +497,7 @@ Real Approximation::diagnostic(const String& metric_type)
 }
 
 
-Real Approximation::cv_diagnostic(const String& metric_type, unsigned num_folds)
+RealArray Approximation::cv_diagnostic(const StringArray& metric_types, unsigned num_folds)
 {
   if (!approxRep) {
     Cerr << "Error: cv_diagnostic() not available for this approximation type." 
@@ -505,7 +505,7 @@ Real Approximation::cv_diagnostic(const String& metric_type, unsigned num_folds)
     abort_handler(-1);
   }
 
-  return approxRep->cv_diagnostic(metric_type, num_folds);
+  return approxRep->cv_diagnostic(metric_types, num_folds);
 }
 
 
@@ -517,10 +517,10 @@ void Approximation::primary_diagnostics(int fn_index)
 }
 
 
-Real Approximation::
-challenge_diagnostic(const String& metric_type,
+RealArray Approximation::
+challenge_diagnostic(const StringArray& metric_types,
 		     const RealMatrix& challenge_points,
-                     int fn_index)
+                     const RealVector& challenge_resps)
 {
   if (!approxRep) {
     Cerr << "Error: challenge_diagnostic() not available for this approximation " 
@@ -528,15 +528,16 @@ challenge_diagnostic(const String& metric_type,
     abort_handler(-1);
   }
 
-  return approxRep->challenge_diagnostic(metric_type, challenge_points, fn_index);
+  return approxRep->challenge_diagnostic(metric_types, challenge_points, challenge_resps);
 }
 
 
 void Approximation::
-challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
+challenge_diagnostics(const RealMatrix& challenge_points,
+                      const RealVector& challenge_resps)
 {
   if (approxRep)
-    approxRep->challenge_diagnostics(challenge_points, fn_index);
+    approxRep->challenge_diagnostics(challenge_points, challenge_resps);
   // else no-op
 }
 

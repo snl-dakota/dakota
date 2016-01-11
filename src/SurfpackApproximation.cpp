@@ -732,22 +732,23 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
 
 void SurfpackApproximation::primary_diagnostics(int fn_index)
 {
+  String func_description;
+  if(approxLabel.size()) 
+    func_description = "; function " + approxLabel;  
   SharedSurfpackApproxData* shared_surf_data_rep
     = (SharedSurfpackApproxData*)sharedDataRep;
   const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "\n--- Default surrogate metrics; function " << (fn_index + 1)
-	   << std::endl;
+      Cout << "\n--- Default surrogate metrics" << func_description << std::endl;
       diagnostic("root_mean_squared");	
       diagnostic("mean_abs");
       diagnostic("rsquared");
     }
   }
   else {
-    Cout << "\n--- User-requested surrogate metrics; function " 
-	 << (fn_index + 1) << std::endl;
+    Cout << "\n--- User-requested surrogate metrics" << func_description  << std::endl;
     int num_diag = diag_set.size();
     for (int j = 0; j < num_diag; ++j)
       diagnostic(diag_set[j]);
@@ -776,12 +777,12 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
       }
 
       Cout << "\n--- Cross validation (" << num_folds << " folds) of user-"
-	   << "requested surrogate metrics; function " << (fn_index + 1) 
-	   << std::endl;
+	   << "requested surrogate metrics; function" << func_description << std::endl;
 
-      CrossValidationFitness CV_fitness(num_folds);
-      VecDbl cv_metrics;
-      CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
+      RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
+      //CrossValidationFitness CV_fitness(num_folds);
+      //VecDbl cv_metrics;
+      //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
       
       for (int j = 0; j < num_diag; ++j) {
 	const String& metric_type = diag_set[j];
@@ -798,12 +799,13 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
     }
     if (shared_surf_data_rep->pressFlag) {
       Cout << "\n--- PRESS (leave one out CV) of user-requested "
-	   << "surrogate metrics; function " << (fn_index + 1) << std::endl;
+	   << "surrogate metrics" << func_description << std::endl;
 
       // perform press as CV with N folds
-      CrossValidationFitness CV_fitness(surfData->size());
-      VecDbl cv_metrics;
-      CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
+      RealArray cv_metrics = cv_diagnostic(diag_set, surfData->size());
+      //CrossValidationFitness CV_fitness(surfData->size());
+      //VecDbl cv_metrics;
+      //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
      
       for (int j = 0; j < num_diag; ++j) {
 	const String& metric_type = diag_set[j];
@@ -823,33 +825,26 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
 
 
 void SurfpackApproximation::
-challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
+challenge_diagnostics(const RealMatrix& challenge_points,
+                      const RealVector& challenge_responses)
 {
   if (!model) { 
     Cerr << "Error: surface is null in SurfpackApproximation::diagnostic()"
 	 << std::endl;  
     abort_handler(-1);
   }
-
-  // BMA TODO: later don't recopy every time, just copy once and setDefaultIndex
-  SurfData chal_data;
-
-  size_t num_v = sharedDataRep->numVars;
-  for (size_t row=0; row<challenge_points.numRows(); ++row) {
-    RealArray x(num_v);
-    for (size_t col=0; col<num_v; ++col)
-      x[col] = challenge_points[col][row];
-    Real f = challenge_points[num_v + fn_index][row];
-    chal_data.addPoint(SurfPoint(x, f));
-  }
-
+  
+  String func_description;
+  if(approxLabel.size()) 
+    func_description = "; function " + approxLabel;  
+    
   const StringArray& diag_set
     = ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
       Cout << "\n--- Default surrogate metrics for user challenge "
-	   << "data; function " << (fn_index + 1) << std::endl;
+	   << "data" << func_description << std::endl;
       diagnostic("root_mean_squared");	
       diagnostic("mean_abs");
       diagnostic("rsquared");
@@ -857,38 +852,37 @@ challenge_diagnostics(const RealMatrix& challenge_points, int fn_index)
   }
   else {
     Cout << "\n--- User-requested surrogate metrics for user " 
-	 << "challenge data; function " << (fn_index+1) << std::endl;
-    int num_diag = diag_set.size();
-    for (int j = 0; j < num_diag; ++j)
-      diagnostic(diag_set[j], *model, chal_data);
+	 << "challenge data" << func_description << std::endl;
+    challenge_diagnostic(diag_set, challenge_points, challenge_responses);
   }
 
 }
 
-Real SurfpackApproximation::cv_diagnostic(const String &metric_type, 
-                                          unsigned num_folds) {
-  StringArray diag_set;
-  diag_set.push_back(metric_type);
+RealArray SurfpackApproximation::cv_diagnostic(const StringArray& metric_types, 
+                                               unsigned num_folds) {
   CrossValidationFitness CV_fitness(num_folds);
   VecDbl cv_metrics;
-  CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
-  return cv_metrics[0];
+  CV_fitness.eval_metrics(cv_metrics, *model, *surfData, metric_types);
+  return cv_metrics;
 }
 
-Real SurfpackApproximation::challenge_diagnostic(const String& metric_type,
-                          const RealMatrix& challenge_points,
-                          int fn_index) {
+RealArray SurfpackApproximation::challenge_diagnostic(const StringArray& metric_types,
+			    const RealMatrix& challenge_points,
+                            const RealVector& challenge_responses) {
   // JAS: painful but probably unavoidable data copy on every call.
   SurfData chal_data;
+  RealArray chal_metrics;
   size_t num_v = sharedDataRep->numVars;
   for (size_t row=0; row<challenge_points.numRows(); ++row) {
     RealArray x(num_v);
     for (size_t col=0; col<num_v; ++col)
       x[col] = challenge_points[col][row];
-      Real f = challenge_points[num_v + fn_index][row];
-      chal_data.addPoint(SurfPoint(x, f));
+    Real f = challenge_responses[row];
+    chal_data.addPoint(SurfPoint(x, f));
   }
-  return diagnostic(metric_type, *model, chal_data);
+  for (int j = 0; j < metric_types.size(); ++j)
+    chal_metrics.push_back(diagnostic(metric_types[j], *model, chal_data));
+  return chal_metrics;
 }
 
 /** Copy the data stored in Dakota-style SurrogateData into
