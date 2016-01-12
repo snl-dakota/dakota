@@ -104,14 +104,15 @@ void NonDMultilevelSampling::core_run()
   // estimates, to allow more accurate resource allocation when possible
   // or necessary (e.g., combustion processes with expense that is highly
   // parameter dependent).
-  
-  size_t lev, num_lev = iteratedModel.solution_levels(), // single model form
+
+  Model& surr_model = iteratedModel.surrogate_model();
+  size_t lev, num_lev = surr_model.solution_levels(), // single model form
     qoi, num_qoi = iteratedModel.num_functions(), iter = 0, samp, new_N_l,
     mf_index = 0; // only 1 model form for now
   SizetArray N_l, delta_N_l;
   RealVector agg_var(num_lev, false);
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = iteratedModel.surrogate_model().solution_level_cost();
+  RealVector cost = surr_model.solution_level_cost();
   RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
              exp_Y(num_qoi, num_lev, false),  var_Y(num_qoi, num_lev, false);
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;

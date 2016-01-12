@@ -3,6 +3,7 @@ environment,
 	graphics
 
 method,
+	model_pointer = 'HIERARCH'
         multilevel_sampling
 	  pilot_samples = 100 seed = 1237
 	  max_iterations = 2
@@ -13,6 +14,13 @@ method,
 #			    3.5e+05 4.0e+05 4.5e+05
 
 model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'SIM1'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'SIM1'
 	simulation
 	  solution_level_control = 'dssiv_1'
 	  solution_level_cost = 1. 2. 4. 8.
