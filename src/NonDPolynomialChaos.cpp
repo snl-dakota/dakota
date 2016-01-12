@@ -27,7 +27,6 @@
 #include "dakota_tabular_io.hpp"
 #include "nested_sampling.hpp"
 
-
 namespace Dakota {
 
 /** This constructor is called for a standard letter-envelope iterator
@@ -644,7 +643,7 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 void NonDPolynomialChaos::
-select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
+select_refinement_points(const RealVectorArray& candidate_samples,
 			 unsigned short batch_size, 
 			 RealMatrix& best_samples)
 {
@@ -675,26 +674,60 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   LejaSampler sampler;
   sampler.set_seed(randomSeed);
   sampler.set_precondition(true);
+  //sampler.set_precondition(false);
   std::vector<Pecos::BasisPolynomial>& poly_basis
     = shared_data_rep->polynomial_basis();
   sampler.set_polynomial_basis( poly_basis );
   sampler.set_total_degree_basis_from_num_samples( numContinuousVars, new_size );
   RealMatrix candidate_samples_matrix;
   Pecos::convert( candidate_samples, candidate_samples_matrix );
-  sampler.Sampler::enrich_samples((int)numContinuousVars, current_samples, 
-				  (int)batch_size, candidate_samples_matrix, 
-				  best_samples);
+  //sampler.Sampler::enrich_samples((int)numContinuousVars, current_samples, 
+  //				  (int)batch_size, candidate_samples_matrix, 
+  //				  best_samples);
+
+  // Remove any candidate samples already in the initial sample set
+  RealMatrix unique_candidate_samples;
+  sampler.get_unique_samples( current_samples, (int)batch_size, 
+			      candidate_samples_matrix,
+			      unique_candidate_samples );
+  IntVector selected_candidate_indices;
+  sampler.get_enriched_sample_indices( (int)numContinuousVars, 
+				       current_samples, (int)batch_size, 
+				       unique_candidate_samples, 
+				       selected_candidate_indices );
+  best_samples.shapeUninitialized( (int)numContinuousVars, (int)batch_size );
+  Pecos::extract_submatrix_from_column_indices( unique_candidate_samples,
+						selected_candidate_indices,
+						best_samples );
+  
+  
   
   if (outputLevel >= DEBUG_OUTPUT) {
+    // write samples to output
     Cout << "Select refinement pts: best_samples =\n";
     write_data(Cout, best_samples);
+
+    // write samples to file
+    std::ofstream export_file_stream;
+    std::string filename = "bayesian-adaptive-emulator-samples-";
+    filename+=static_cast<std::ostringstream*>(&(std::ostringstream()<<
+						 best_samples.numCols()+
+						 num_surr_data_pts))->str();
+    filename += ".txt";
+    TabularIO::open_file(export_file_stream, filename,
+			 "adaptive emulator samples");
+    bool brackets = false, row_rtn = true, final_rtn = true;
+    Dakota::write_data(export_file_stream, best_samples,
+		       brackets, row_rtn, final_rtn);
+    export_file_stream.close();
+
   }
   
 }
 
 
 void NonDPolynomialChaos::
-select_refinement_points(const RealVectorArray& candidate_samples,
+select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
 				    unsigned short batch_size,
 				    RealMatrix& best_samples)
 {
