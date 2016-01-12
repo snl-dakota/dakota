@@ -125,9 +125,13 @@ public:
   /// models and truth_model() in surrogate models; used for a directed
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
-  /// return the approximation sub-model in surrogate models
+  /// set the active approximation sub-model in surrogate models
+  virtual void surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index);
+  /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
-  /// return the truth sub-model in surrogate models
+  /// set the active truth sub-model in surrogate models
+  virtual void truth_model(size_t hf_model_index, size_t hf_soln_lev_index);
+  /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -143,7 +147,9 @@ public:
   virtual size_t solution_levels() const;
   /// activate a particular level within the solution level control
   /// and return the cost estimate (SimulationModel)
-  virtual Real solution_level_index(size_t index);
+  virtual void solution_level_index(size_t index);
+  /// return ordered cost estimates across solution levels (SimulationModel)
+  virtual RealVector solution_level_cost() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms

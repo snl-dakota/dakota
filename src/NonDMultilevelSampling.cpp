@@ -35,20 +35,28 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   sampleType = SUBMETHOD_RANDOM;
 
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    Cerr << "Error: Multilevel Monte Carlo does not yet support a hierarchical "
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: Multilevel Monte Carlo requires a hierarchical "
 	 << "surrogate model specification." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
+  }
+  // set SurrogateModel::responseMode
+  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);// no discrepancy
+  // set initial low fidelity model form and solution level
+  size_t mf_index = 0; // model form 0
+  iteratedModel.surrogate_model(mf_index, 0); // solution level 0
 
-    // set SurrogateModel::responseMode
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // level 0
+  /*
+  // Check for model forms and solution levels
+  if (iteratedModel.model_forms() > 1) {
+    hierarchMode = true;
   }
-  else if (iteratedModel.model_type() != "simulation") {
-        //|| iteratedModel.solution_levels() <=1) {
-    Cerr << "Error: Multilevel Monte Carlo currently requires a simulation "
-	 << "model specification." << std::endl;
-    abort_handler(-1);
+  if (sub_model.model_type() == "simulation" &&
+      sub_model.solution_levels() > 1) {
+    solnCntlMode = true;
+    // TO DO
   }
+  */
 }
 
 
@@ -98,13 +106,15 @@ void NonDMultilevelSampling::core_run()
   // parameter dependent).
   
   size_t lev, num_lev = iteratedModel.solution_levels(), // single model form
-    qoi, num_qoi = iteratedModel.num_functions(), iter = 0, samp, new_N_l;
+    qoi, num_qoi = iteratedModel.num_functions(), iter = 0, samp, new_N_l,
+    mf_index = 0; // only 1 model form for now
   SizetArray N_l, delta_N_l;
-  RealVector agg_var(num_lev, false),          cost(num_lev, false);
+  RealVector agg_var(num_lev, false);
+  // retrieve cost estimates across soln levels for a particular model form
+  RealVector cost = iteratedModel.surrogate_model().solution_level_cost();
   RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
              exp_Y(num_qoi, num_lev, false),  var_Y(num_qoi, num_lev, false);
-  bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false,
-    hierarch_flag = (iteratedModel.surrogate_type() == "hierarchical");
+  bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
   Real agg_var_l, eps = 1.e-6, sum_var_cost, mean;
   IntRespMCIter r_it;
   
@@ -133,12 +143,13 @@ void NonDMultilevelSampling::core_run()
     sum_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      if (hierarch_flag && lev == 1)
+      if (lev == 1)
 	iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-
-      // set the solution/discretization level within the model form
-      cost[lev] = iteratedModel.solution_level_index(lev);
-
+      if (lev) {
+	iteratedModel.surrogate_model(mf_index, lev-1);
+	iteratedModel.truth_model(mf_index,     lev);
+      }
+      
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
       // update total samples performed for this level

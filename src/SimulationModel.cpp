@@ -203,7 +203,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-Real SimulationModel::solution_level_index(size_t lev_index)
+/* Real */void SimulationModel::solution_level_index(size_t lev_index)
 {
   // incoming soln level index is an index into the ordered std::map<>,
   // not to be confused with the value in the key-value map that corresponds
@@ -282,7 +282,17 @@ Real SimulationModel::solution_level_index(size_t lev_index)
   }
   }
 
-  return cost_cit->first; // cost estimate for this solution level index
+  //return cost_cit->first; // cost estimate for this solution level index
+}
+
+
+RealVector SimulationModel::solution_level_cost() const
+{
+  RealVector cost_levels(solnCntlCostMap.size(), false);
+  std::map<Real, size_t>::const_iterator cit; size_t i;
+  for (cit=solnCntlCostMap.begin(), i=0; cit!=solnCntlCostMap.end(); ++cit, ++i)
+    cost_levels[i] = cit->first;
+  return cost_levels;
 }
 
 

@@ -2552,6 +2552,19 @@ Model& Model::subordinate_model()
 }
 
 
+void Model::surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->surrogate_model(lf_model_index, lf_soln_lev_index);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model("
+	 << "size_t, size_t) function.\n       surrogate_model activation is "
+	 << "not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -2561,6 +2574,19 @@ Model& Model::surrogate_model()
     return modelRep->surrogate_model();
   else // letter lacking redefinition of virtual fn.
     return dummy_model; // return null/empty envelope
+}
+
+
+void Model::truth_model(size_t hf_model_index, size_t hf_soln_lev_index)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->truth_model(hf_model_index, hf_soln_lev_index);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual truth_model("
+	 << "size_t, size_t) function.\n       truth_model activation is "
+	 << "not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 
@@ -2640,16 +2666,29 @@ size_t Model::solution_levels() const
 
 /** activate a particular level within a solution / discretization
     hierarchy and return the cost estimate. */
-Real Model::solution_level_index(size_t index)
+void Model::solution_level_index(size_t index)
 {
-  if (!modelRep) { // letter lacking redefinition of virtual fn.
+  if (modelRep)
+    modelRep->solution_level_index(index); // envelope fwd to letter
+  else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
          << "() function.\n       solution_level_index is not supported by this"
 	 << " Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
+}
 
-  return modelRep->solution_level_index(index); // envelope fwd to letter
+
+RealVector Model::solution_level_cost() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_cost"
+         << "() function.\n       solution_level_cost is not supported by this "
+	 << "Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_cost(); // envelope fwd to letter
 }
 
 
