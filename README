@@ -117,16 +117,15 @@ system runtimes, Doxygen, LaTeX, CMake, etc.
 ------------------------------------------------------------------------------
 Overview
 
-The Dakota (Design Analysis Kit for Optimization and Terascale Applications) 
-toolkit provides a flexible, extensible interface between analysis codes and 
-iteration methods. Dakota contains algorithms for optimization with gradient 
-and nongradient-based methods; uncertainty quantification with sampling, 
-reliability, stochastic expansion, and epistemic methods; parameter estimation 
-with nonlinear least squares methods; and sensitivity/variance analysis with 
-design of experiments and parameter study capabilities.  These capabilities 
-may be used on their own or as components within advanced strategies such as 
-surrogate-based optimization, mixed integer nonlinear programming, or 
-optimization under uncertainty.
+The Dakota toolkit provides a flexible, extensible interface between analysis 
+codes and iteration methods. Dakota contains algorithms for optimization with 
+gradient and nongradient-based methods; uncertainty quantification with 
+sampling, reliability, stochastic expansion, and epistemic methods; parameter 
+estimation with nonlinear least squares methods; and sensitivity/variance 
+analysis with design of experiments and parameter study capabilities.  These 
+capabilities may be used on their own or as components within advanced 
+strategies such as surrogate-based optimization, mixed integer nonlinear 
+programming, or optimization under uncertainty.
 
 Refer to http://dakota.sandia.gov/ for additional information,
 including support contacts.
@@ -156,6 +155,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.3		   11/15/15 (refer to svn externals for TPL tags)
 6.2		   05/15/15 (refer to svn externals for TPL tags)
 6.1		   11/15/14 (refer to svn externals for TPL tags)
 6.0		   05/15/14 (refer to svn externals for TPL tags)

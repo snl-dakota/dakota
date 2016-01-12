@@ -2,8 +2,7 @@
 DAKOTA INSTALL
 ==============
 
-The Design Analysis Kit for Optimization and Terascale Applications
-(Dakota) is a framework which provides access to a broad variety of
+Dakota is a framework which provides access to a broad variety of
 algorithms and services.  Downloading pre-built binaries from the
 Dakota web site or accessing a site-supported installation are the
 simplest routes to access Dakota.
@@ -139,7 +138,15 @@ I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
 
-      	   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/test:$PATH
+         export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/test:$PATH
+     
+      If installing Dakota on a Linux system, also set LD_LIBRARY_PATH:
+         
+         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INSTALL_DIR/lib:$INSTALL_DIR/bin
+
+      On a Mac, set DYLD_LIBRARY_PATH:
+
+         export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$INSTALL_DIR/lib:$INSTALL_DIR/bin
 
    c. Save and close file.
    d. Update changes in your terminal window. At
@@ -153,7 +160,15 @@ I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
 
-      	   setenv path=($INSTALL_DIR/bin $INSTALL_DIR/test $path)
+         setenv path=($INSTALL_DIR/bin $INSTALL_DIR/test $path)
+
+      If installing Dakota on a Linux system, also set LD_LIBRARY_PATH:
+         
+         setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${INSTALL_DIR}/lib:${INSTALL_DIR}/bin"
+
+      On a Mac, set DYLD_LIBRARY_PATH:
+
+         setenv DYLD_LIBRARY_PATH "${DYLD_LIBRARY_PATH}:${INSTALL_DIR}/lib:${INSTALL_DIR}/bin"
 
    c. Save and close file.
    d. Update changes in your terminal window. At
@@ -306,8 +321,7 @@ Other Resources
 ===============
 
 For additional help with installing Dakota from source, please
-visit Dakota Developer portal at 
-http://dakota.sandia.gov/content/developer-portal.
+visit https://dakota.sandia.gov/content/build-compile-source-code
 
 Topic include:
 * accessing Dakota via Subversion repository checkout
