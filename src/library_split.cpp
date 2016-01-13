@@ -218,7 +218,7 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
 
   // Get only the models that match our plugin criteria
   Dakota::ModelList models = 
-    env.filtered_model_list("single", "direct", "plugin_text_book");
+    env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter = models.begin(), ml_end = models.end();
   for ( ; ml_iter != ml_end; ++ml_iter) {
     Dakota::Interface& model_iface = ml_iter->derived_interface();
