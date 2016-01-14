@@ -90,15 +90,18 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
   if ( cv_active_view == sm_active_view ) {
     // common cases: Distinct on Distinct (e.g., opt/UQ on local/multipt/hier)
     //               All on All           (e.g., DACE/PStudy on global)
-    size_t sm_cv = sub_model.cv(), sm_div = sub_model.div(),
-      sm_drv = sub_model.drv(), cv_cv = currentVariables.cv(),
-      cv_div = currentVariables.div(), cv_drv = currentVariables.drv();
-    if ( sm_cv != cv_cv || sm_div != cv_div || sm_drv != cv_drv ) {
+    size_t sm_cv = sub_model.cv(),     sm_div = sub_model.div(),
+      sm_dsv = sub_model.dsv(),        sm_drv = sub_model.drv(),
+      cv_cv  = currentVariables.cv(),  cv_div = currentVariables.div(),
+      cv_dsv = currentVariables.dsv(), cv_drv = currentVariables.drv();
+    if ( sm_cv  != cv_cv  || sm_div != cv_div ||
+	 sm_dsv != cv_dsv || sm_drv != cv_drv ) {
       Cerr << "Error: incompatibility between approximate and actual model "
 	   << "variable sets within\n       SurrogateModel: active approximate "
 	   << "= " << cv_cv << " continuous, " << cv_div << " discrete int, "
-	   << "and " << cv_drv << " discrete real and\n       active actual = "
-	   << sm_cv << " continuous, " << sm_div << " discrete int, and "
+	   << cv_dsv << " discrete string, and " << cv_drv << " discrete real "
+	   << "and\n       active actual = " << sm_cv << " continuous, "
+	   << sm_div << " discrete int, " << sm_dsv << " discrete string, and "
 	   << sm_drv << " discrete real.  Check consistency of variables "
 	   << "specifications." << std::endl;
       error_flag = true;
@@ -108,34 +111,42 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
     if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
 	 cv_active_view >= RELAXED_DESIGN ) {
       // common case: Distinct on All (e.g., opt/UQ on global surrogate)
-      size_t sm_cv  = sub_model.cv(), sm_div  = sub_model.div(),
-	sm_drv  = sub_model.drv(), cv_acv = currentVariables.acv(),
-	cv_adiv = currentVariables.adiv(), cv_adrv = currentVariables.adrv();
-      if ( sm_cv != cv_acv || sm_div != cv_adiv || sm_drv != cv_adrv ) {
+      size_t sm_cv  = sub_model.cv(),      sm_div  = sub_model.div(),
+	sm_dsv  = sub_model.dsv(),         sm_drv  = sub_model.drv(),
+	cv_acv  = currentVariables.acv(),  cv_adiv = currentVariables.adiv(),
+	cv_adsv = currentVariables.adsv(), cv_adrv = currentVariables.adrv();
+      if ( sm_cv  != cv_acv  || sm_div != cv_adiv ||
+	   sm_dsv != cv_adsv || sm_drv != cv_adrv ) {
 	Cerr << "Error: incompatibility between approximate and actual model "
 	     << "variable sets within\n       SurrogateModel: active "
 	     << "approximate = " << cv_acv << " continuous, " << cv_adiv
-	     << " discrete int, and " << cv_adrv << " discrete real (All view) "
-	     << "and\n       active actual = " << sm_cv << " continuous, "
-	     << sm_div << " discrete int, and " << sm_drv << " discrete real.  "
-	     << "Check consistency of variables specifications." << std::endl;
+	     << " discrete int, " << cv_adsv << " discrete string, and "
+	     << cv_adrv << " discrete real (All view) and\n       "
+	     << "active actual = " << sm_cv << " continuous, " << sm_div
+	     << " discrete int, " << sm_dsv << " discrete string, and "
+	     << sm_drv << " discrete real.  Check consistency of variables "
+	     << "specifications." << std::endl;
 	error_flag = true;
       }
     }
     else if ( ( cv_active_view == RELAXED_ALL || cv_active_view == MIXED_ALL )
 	      && sm_active_view >= RELAXED_DESIGN ) {
       // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
-      size_t sm_acv = sub_model.acv(), sm_adiv = sub_model.adiv(),
-	sm_adrv = sub_model.adrv(), cv_cv = currentVariables.cv(),
-	cv_div = currentVariables.div(), cv_drv = currentVariables.drv();
-      if ( sm_acv != cv_cv || sm_adiv != cv_div || sm_adrv != cv_drv ) {
+      size_t sm_acv = sub_model.acv(),    sm_adiv = sub_model.adiv(),
+	sm_adsv = sub_model.adsv(),       sm_adrv = sub_model.adrv(),
+	cv_cv   = currentVariables.cv(),  cv_div  = currentVariables.div(),
+	cv_dsv  = currentVariables.dsv(), cv_drv  = currentVariables.drv();
+      if ( sm_acv  != cv_cv  || sm_adiv != cv_div ||
+	   sm_adsv != cv_dsv || sm_adrv != cv_drv ) {
 	Cerr << "Error: incompatibility between approximate and actual model "
 	     << "variable sets within\n       SurrogateModel: active "
 	     << "approximate = " << cv_cv << " continuous, " << cv_div
-	     << " discrete int, and " << cv_drv << " discrete real and\n       "
-	     << "active actual = " << sm_acv << " continuous, " << sm_adiv
-	     << " discrete int, and " << sm_adrv << " discrete real (All view)."
-	     << "  Check consistency of variables specifications." << std::endl;
+	     << " discrete int, " << cv_dsv << " discrete string, and "
+	     << cv_drv << " discrete real and\n       active actual = "
+	     << sm_acv << " continuous, " << sm_adiv << " discrete int, "
+	     << sm_adsv << " discrete string, and " << sm_adrv
+	     << " discrete real (All view).  Check consistency of variables "
+	     << "specifications." << std::endl;
 	error_flag = true;
       }
     }
@@ -152,10 +163,12 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
 	|| surrogateType == "hierarchical" ) &&
 	 ( sub_model.cv() != currentVariables.cv() ||
            sub_model.div() != currentVariables.div() ||
+           sub_model.dsv() != currentVariables.dsv() ||
            sub_model.drv() != currentVariables.drv() ) ) ||
        ( strbegins(surrogateType, "global_") &&
 	 ( sub_model.cv() != currentVariables.acv() ||
 	   sub_model.div() != currentVariables.adiv() ||
+	   sub_model.dsv() != currentVariables.adsv() ||
 	   sub_model.drv() != currentVariables.adrv() ) ) ) {
     Cerr << "Error: subordinate model not compatible within SurrogateModel.\n"
 	 << "       Check consistency of variables specifications for\n"
@@ -189,6 +202,8 @@ bool SurrogateModel::force_rebuild()
     if ( referenceICVars  != currentVariables.inactive_continuous_variables() ||
 	 referenceIDIVars !=
 	 currentVariables.inactive_discrete_int_variables()                   ||
+	 referenceIDSVars !=
+	 currentVariables.inactive_discrete_string_variables()                ||
 	 referenceIDRVars !=
 	 currentVariables.inactive_discrete_real_variables() )
       return true;
@@ -201,6 +216,7 @@ bool SurrogateModel::force_rebuild()
 	   userDefinedConstraints.discrete_int_lower_bounds()                 ||
 	   referenceDIUBnds !=
 	   userDefinedConstraints.discrete_int_upper_bounds()                 ||
+	   // no discrete string bounds
 	   referenceDRLBnds !=
 	   userDefinedConstraints.discrete_real_lower_bounds()                ||
 	   referenceDRUBnds !=
@@ -218,6 +234,8 @@ bool SurrogateModel::force_rebuild()
 	 ( referenceICVars != currentVariables.inactive_continuous_variables()||
 	   referenceIDIVars !=
 	   currentVariables.inactive_discrete_int_variables()                 ||
+	   referenceIDSVars !=
+	   currentVariables.inactive_discrete_string_variables()              ||
 	   referenceIDRVars !=
 	   currentVariables.inactive_discrete_real_variables() ) )
       return true;
@@ -231,12 +249,16 @@ bool SurrogateModel::force_rebuild()
         currentVariables.continuous_variables());
       truthModelVars.all_discrete_int_variables(
         currentVariables.discrete_int_variables());
+      truthModelVars.all_discrete_string_variables(
+        currentVariables.discrete_string_variables());
       truthModelVars.all_discrete_real_variables(
         currentVariables.discrete_real_variables());
       // perform check on inactive data at sub-model level
       if ( referenceICVars  != truthModelVars.inactive_continuous_variables() ||
 	   referenceIDIVars !=
 	   truthModelVars.inactive_discrete_int_variables() ||
+	   referenceIDSVars !=
+	   truthModelVars.inactive_discrete_string_variables() ||
 	   referenceIDRVars !=
 	   truthModelVars.inactive_discrete_real_variables() )
 	return true;
@@ -246,8 +268,9 @@ bool SurrogateModel::force_rebuild()
     Model sub_model = actual_model.subordinate_model();
     while (sub_model.model_type() == "recast")
       sub_model = sub_model.subordinate_model();
-    if ( referenceICVars  != sub_model.inactive_continuous_variables()    ||
-         referenceIDIVars != sub_model.inactive_discrete_int_variables()  ||
+    if ( referenceICVars  != sub_model.inactive_continuous_variables()      ||
+         referenceIDIVars != sub_model.inactive_discrete_int_variables()    ||
+         referenceIDSVars != sub_model.inactive_discrete_string_variables() ||
          referenceIDRVars != sub_model.inactive_discrete_real_variables() )
       return true;
     */
@@ -280,6 +303,7 @@ bool SurrogateModel::force_rebuild()
 	    referenceCUBnds  != sub_model.continuous_upper_bounds()    ||
 	    referenceDILBnds != sub_model.discrete_int_lower_bounds()  ||
 	    referenceDIUBnds != sub_model.discrete_int_upper_bounds()  ||
+	    // no discrete string bounds
 	    referenceDRLBnds != sub_model.discrete_real_lower_bounds() ||
 	    referenceDRUBnds != sub_model.discrete_real_upper_bounds())
 	  return true;
@@ -294,6 +318,7 @@ bool SurrogateModel::force_rebuild()
 		  userDefinedConstraints.discrete_int_lower_bounds()  ||
 		  referenceDIUBnds !=
 		  userDefinedConstraints.discrete_int_upper_bounds()  ||
+		  // no discrete string bounds
 		  referenceDRLBnds !=
 		  userDefinedConstraints.discrete_real_lower_bounds() ||
 		  referenceDRUBnds !=
@@ -311,6 +336,7 @@ bool SurrogateModel::force_rebuild()
 		  userDefinedConstraints.all_discrete_int_lower_bounds()   ||
 		  referenceDIUBnds !=
 		  userDefinedConstraints.all_discrete_int_upper_bounds()   ||
+		  // no discrete string bounds
 		  referenceDRLBnds !=
 		  userDefinedConstraints.all_discrete_real_lower_bounds()  ||
 		  referenceDRUBnds !=
@@ -330,6 +356,7 @@ bool SurrogateModel::force_rebuild()
 	  userDefinedConstraints.discrete_int_lower_bounds());
 	truthModelCons.all_discrete_int_upper_bounds(
 	  userDefinedConstraints.discrete_int_upper_bounds());
+	// no discrete string bounds
 	truthModelCons.all_discrete_real_lower_bounds(
 	  userDefinedConstraints.discrete_real_lower_bounds());
 	truthModelCons.all_discrete_real_upper_bounds(
@@ -339,6 +366,7 @@ bool SurrogateModel::force_rebuild()
 	     referenceCUBnds  != truthModelCons.continuous_upper_bounds()    ||
 	     referenceDILBnds != truthModelCons.discrete_int_lower_bounds()  ||
 	     referenceDIUBnds != truthModelCons.discrete_int_upper_bounds()  ||
+	     // no discrete string bounds
 	     referenceDRLBnds != truthModelCons.discrete_real_lower_bounds() ||
 	     referenceDRUBnds != truthModelCons.discrete_real_upper_bounds() )
 	  return true;

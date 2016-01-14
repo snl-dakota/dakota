@@ -55,8 +55,58 @@ bool operator==(const IntArray& dia1, const IntArray& dia2);
 bool operator==(const ShortArray& dsa1, const ShortArray& dsa2);
 /// equality operator for StringArray
 bool operator==(const StringArray& dsa1, const StringArray& dsa2);
-/// equality operator for SizetArray and SizetMultiArrayConstView
-bool operator==(const SizetArray& sa, SizetMultiArrayConstView smav);
+
+/// equality operator for std::vector and boost::multi_array::const_array_view
+template <typename T>
+bool operator==(const std::vector<T>& vec,
+	        typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav)
+{
+  // Check for equality in array lengths
+  size_t len = vec.size();
+  if ( mav.size() != len )
+    return false;
+  // Check each size_t
+  for (size_t i=0; i<len; ++i)
+    if ( mav[i] != vec[i] )
+      return false;
+  return true;
+}
+  
+/// equality operator for boost::multi_array::const_array_view and std::vector
+template <typename T>
+bool operator==(typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav,
+		const std::vector<T>& vec)
+{ return (vec == mav); } // flip order
+
+/// equality operator for boost::multi_array and
+/// boost::multi_array::const_array_view
+template <typename T>
+bool operator==(const boost::multi_array<T, 1>& ma,
+		typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav)
+{
+  if (ma.size() != mav.size())
+    return false;
+  // Note: template dependent names require disambiguation
+  typename boost::multi_array<T, 1>::template
+    const_array_view<1>::type::const_iterator cit1 = mav.begin(),
+    end1 = mav.end();
+  typename boost::multi_array<T, 1>::const_iterator cit2 = ma.begin();
+  for ( ; cit1 != end1; ++cit1, ++cit2)
+    if (*cit1 != *cit2)
+      return false;
+  return true;
+}
+
+/// equality operator for boost::multi_array::const_array_view and
+/// boost::multi_array
+template <typename T>
+bool operator==(typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav,
+		const boost::multi_array<T, 1>& ma)
+{ return (ma == mav); } // flip order
 
 
 // ----------------------------------------------
@@ -75,14 +125,35 @@ inline bool operator!=(const ShortArray& dsa1, const ShortArray& dsa2)
 inline bool operator!=(const StringArray& dsa1, const StringArray& dsa2)
 { return !(dsa1 == dsa2); }
 
-/// inequality operator for StringArray
-inline bool operator!=(const SizetArray& sa, SizetMultiArrayConstView smav)
-{ return !(sa == smav); }
+/// inequality operator for std::vector and boost::multi_array::const_array_view
+template <typename T>
+bool operator!=(const std::vector<T>& vec,
+		typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav)
+{ return !(vec == mav); }
 
-/// inequality operator for StringMultiArray view vs. container
-bool operator!=(const StringMultiArrayView& sma1, 
-		const StringMultiArray& sma2);
+/// inequality operator for boost::multi_array::const_array_view and std::vector
+template <typename T>
+bool operator!=(typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav,
+		const std::vector<T>& vec)
+{ return !(vec == mav); } // flip order
 
+/// inequality operator for boost::multi_array and
+/// boost::multi_array::const_array_view
+template <typename T>
+bool operator!=(const boost::multi_array<T, 1>& ma,
+		typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav)
+{ return !(ma == mav); }
+
+/// inequality operator for boost::multi_array::const_array_view and
+/// boost::multi_array
+template <typename T>
+bool operator!=(typename boost::multi_array<T, 1>::template
+		  const_array_view<1>::type mav,
+		const boost::multi_array<T, 1>& ma)
+{ return !(ma == mav); } // flip order
 
 // ---------------------------------
 // miscellaneous numerical utilities

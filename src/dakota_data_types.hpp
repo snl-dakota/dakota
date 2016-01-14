@@ -114,6 +114,7 @@ typedef std::list<Iterator>            IteratorList;
 //typedef std::list<ParallelConfiguration> ParConfigList;
 
 typedef std::pair<int, int>            IntIntPair;
+typedef std::pair<size_t, size_t>      SizetSizetPair;
 typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;

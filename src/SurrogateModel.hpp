@@ -161,6 +161,10 @@ protected:
   /// the approximation is built using a Distinct view; used to detect when
   /// a rebuild is required.
   IntVector referenceIDIVars;
+  /// stores a reference copy of the inactive discrete string variables when
+  /// the approximation is built using a Distinct view; used to detect when
+  /// a rebuild is required.
+  StringMultiArray referenceIDSVars;
   /// stores a reference copy of the inactive discrete real variables when
   /// the approximation is built using a Distinct view; used to detect when
   /// a rebuild is required.

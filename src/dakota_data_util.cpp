@@ -76,41 +76,6 @@ bool operator==(const StringArray& dsa1, const StringArray& dsa2)
 }
 
 
-bool operator==(const SizetArray& sa, SizetMultiArrayConstView smav)
-{
-  // Check for equality in array lengths
-  size_t len = sa.size();
-  if ( smav.size() != len )
-    return false;
-
-  // Check each size_t
-  size_t i;
-  for (i=0; i<len; ++i)
-    if ( smav[i] != sa[i] )
-      return false;
-
-  return true;
-}
-
-
-bool operator!=(const StringMultiArrayView& sma1, 
-		const StringMultiArray& sma2)
-{
-  if (sma1.size() != sma2.size())
-    return true;
-  StringMultiArrayView::const_iterator it1 = sma1.begin();
-  StringMultiArrayView::const_iterator end1 = sma1.end();
-  StringMultiArray::const_iterator it2 = sma2.begin();
-  for ( ; it1 != end1; ++it1, ++it2)
-    if (*it1 != *it2) {
-      return true;
-    }
-  // all entries are equal
-  return false;
-}
-
-
-
 // ---------------------------------
 // miscellaneous numerical utilities
 // ---------------------------------

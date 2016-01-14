@@ -164,12 +164,15 @@ private:
   ModelArray orderedModels;
   /// index of the low fidelity model that is currently active within
   /// orderedModels; provides approximate low fidelity function evaluations.
-  size_t lowFidelityIndex;
+  SizetSizetPair lowFidelityIndices;
   /// index of the high fidelity model that is currently active within
   /// orderedModels; provides truth evaluations for computing corrections
   /// to the low fidelity results.
-  size_t highFidelityIndex;
-
+  SizetSizetPair highFidelityIndices;
+  /// flag indicating that the {low,high}FidelityIndices correspond to the
+  /// same model instance, requiring modifications to the updating process
+  bool sameModelForm;
+  
   /// the reference truth (high fidelity) response computed in
   /// build_approximation() and used for calculating corrections
   Response truthResponseRef;
@@ -185,28 +188,34 @@ inline HierarchSurrModel::~HierarchSurrModel()
 
 
 inline Model& HierarchSurrModel::surrogate_model()
-{ return orderedModels[lowFidelityIndex]; }
+{ return orderedModels[lowFidelityIndices.first]; }
 
 
 inline void HierarchSurrModel::
 surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index)
 {
-  lowFidelityIndex = lf_model_index;
-  Model& lf_model = orderedModels[lowFidelityIndex];
+  lowFidelityIndices.first  = lf_model_index;
+  lowFidelityIndices.second = lf_soln_lev_index;
+  sameModelForm = (lf_model_index == highFidelityIndices.first);
+  
+  Model& lf_model = orderedModels[lf_model_index];
   lf_model.solution_level_index(lf_soln_lev_index);
   //deltaCorr.surrogate_model(lf_model); deltaCorr.clear(); // TO DO
 }
 
 
 inline Model& HierarchSurrModel::truth_model()
-{ return orderedModels[highFidelityIndex]; }
+{ return orderedModels[highFidelityIndices.first]; }
 
 
 inline void HierarchSurrModel::
 truth_model(size_t hf_model_index, size_t hf_soln_lev_index)
 {
-  highFidelityIndex = hf_model_index;
-  orderedModels[highFidelityIndex].solution_level_index(hf_soln_lev_index);
+  highFidelityIndices.first  = hf_model_index;
+  highFidelityIndices.second = hf_soln_lev_index;
+  sameModelForm = (hf_model_index == lowFidelityIndices.first);
+  
+  orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
 }
 
 
@@ -240,7 +249,7 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
   // don't pass to low fidelity model (in case it includes surrogates) since
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case
-    orderedModels[highFidelityIndex].surrogate_response_mode(mode);
+    orderedModels[highFidelityIndices.first].surrogate_response_mode(mode);
 }
 
 
@@ -272,8 +281,8 @@ estimate_partition_bounds(int max_eval_concurrency)
 
 inline void HierarchSurrModel::derived_init_serial()
 {
-  orderedModels[lowFidelityIndex].init_serial();
-  orderedModels[highFidelityIndex].init_serial();
+  orderedModels[lowFidelityIndices.first].init_serial();
+  orderedModels[highFidelityIndices.first].init_serial();
 }
 
 
@@ -303,11 +312,11 @@ inline int HierarchSurrModel::evaluation_id() const
 
 inline void HierarchSurrModel::set_evaluation_reference()
 {
-  //orderedModels[lowFidelityIndex].set_evaluation_reference();
+  //orderedModels[lowFidelityIndices.first].set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
   //if (responseMode == BYPASS_SURROGATE)
-  //  orderedModels[highFidelityIndex].set_evaluation_reference();
+  //  orderedModels[highFidelityIndices.first].set_evaluation_reference();
 
   // may want to add this in time
   //hierModelEvalRef = hierModelEvalCntr;
@@ -316,8 +325,8 @@ inline void HierarchSurrModel::set_evaluation_reference()
 
 inline void HierarchSurrModel::fine_grained_evaluation_counters()
 {
-  orderedModels[lowFidelityIndex].fine_grained_evaluation_counters();
-  orderedModels[highFidelityIndex].fine_grained_evaluation_counters();
+  orderedModels[lowFidelityIndices.first].fine_grained_evaluation_counters();
+  orderedModels[highFidelityIndices.first].fine_grained_evaluation_counters();
 }
 
 
@@ -325,10 +334,10 @@ inline void HierarchSurrModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
-  orderedModels[lowFidelityIndex].print_evaluation_summary(s, minimal_header,
-							   relative_count);
-  orderedModels[highFidelityIndex].print_evaluation_summary(s, minimal_header,
-							    relative_count);
+  orderedModels[lowFidelityIndices.first].print_evaluation_summary(s,
+    minimal_header, relative_count);
+  orderedModels[highFidelityIndices.first].print_evaluation_summary(s,
+    minimal_header, relative_count);
 }
 
 } // namespace Dakota
