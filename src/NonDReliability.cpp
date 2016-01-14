@@ -56,6 +56,15 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
 NonDReliability::~NonDReliability()
 { }
 
+void NonDReliability::resize()
+{
+  NonD::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void NonDReliability::initialize_graphics(int iterator_server_id)
 {

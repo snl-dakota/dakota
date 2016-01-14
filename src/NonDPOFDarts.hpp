@@ -61,6 +61,13 @@ public:
 protected: 
 
   //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  void resize();
+
+
+  //
   //- Heading: Convenience functions
   //
     

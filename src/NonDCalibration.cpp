@@ -116,6 +116,15 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
 NonDCalibration::~NonDCalibration()
 { }
 
+void NonDCalibration::resize()
+{
+  NonD::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 //void NonDCalibration::print_results(std::ostream& s)
 //{ Cout << "Posterior sample results " << '\n'; }

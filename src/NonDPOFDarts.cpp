@@ -93,6 +93,15 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
 NonDPOFDarts::~NonDPOFDarts()
 { }
 
+void NonDPOFDarts::resize()
+{
+  NonD::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void NonDPOFDarts::core_run()
 {

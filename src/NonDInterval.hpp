@@ -59,6 +59,12 @@ public:
 
 protected: 
 
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  void resize();
+
   /// initialize finalStatistics for belief/plausibility results sets
   void initialize_final_statistics();
 

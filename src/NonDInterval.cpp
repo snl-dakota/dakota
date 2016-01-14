@@ -77,6 +77,15 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, Model& model):
 NonDInterval::~NonDInterval()
 {}
 
+void NonDInterval::resize()
+{
+  NonD::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void NonDInterval::initialize_final_statistics()
 {

@@ -64,6 +64,16 @@ NonDMultilevelSampling::~NonDMultilevelSampling()
 { }
 
 
+void NonDMultilevelSampling::resize()
+{
+  NonDSampling::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDMultilevelSampling::pre_run()
 {
   Analyzer::pre_run();

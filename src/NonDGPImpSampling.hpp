@@ -72,6 +72,14 @@ public:
 
   /// returns the probability calculated by the importance sampling
   Real final_probability();
+
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void resize();
  
 private:
 

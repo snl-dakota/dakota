@@ -66,6 +66,15 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
     // Destructor
     NonDRKDDarts::~NonDRKDDarts()
     { }
+
+void NonDRKDDarts::resize()
+{
+  NonD::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
     
     // --------------------------
     /** Generate Parameter Sets. */

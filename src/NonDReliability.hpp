@@ -43,6 +43,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
+
   /// initialize graphics customized for reliability methods
   void initialize_graphics(int iterator_server_id = 1);
 

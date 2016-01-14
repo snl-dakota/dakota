@@ -92,6 +92,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
   void core_run();
 
   //

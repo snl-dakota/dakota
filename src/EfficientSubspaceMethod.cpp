@@ -70,15 +70,6 @@ void EfficientSubspaceMethod::core_run()
   else
     Cout << "ESM: build seed (system-generated) = " << mc_seed << std::endl;
 
-  // build the reduced space model; this must occur at runtime as it
-  // requires model evaluations
-
-  // BMA TODO: remove this cast and use envelope, once Models all have
-  // a common init() chain
-  ActiveSubspaceModel* as_model = 
-    dynamic_cast<ActiveSubspaceModel*>(iteratedModel.model_rep());
-  as_model->initialize_mapping();
-
   // perform the reduced space UQ
   Cout << "\nESM: Performing reduced-space UQ" << std::endl;
   reduced_space_uq(iteratedModel);

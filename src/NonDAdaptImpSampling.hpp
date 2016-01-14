@@ -87,6 +87,14 @@ public:
   /// return extremeValues
   const RealRealPairArray& extreme_values() const;
 
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void resize();
+
 private:
 
   //

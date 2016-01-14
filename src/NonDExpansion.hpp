@@ -107,6 +107,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
+
   /// set covarianceControl defaults and shape respCovariance
   void initialize_response_covariance();
   /// update function values within finalStatistics

@@ -91,6 +91,15 @@ NonDExpansion(unsigned short method_name, Model& model,
 NonDExpansion::~NonDExpansion()
 { }
 
+void NonDExpansion::resize()
+{
+  NonD::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void NonDExpansion::derived_init_communicators(ParLevLIter pl_iter)
 {
