@@ -52,6 +52,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
   void post_run(std::ostream& s);
 
   //

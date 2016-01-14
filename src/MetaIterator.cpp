@@ -53,6 +53,16 @@ MetaIterator::~MetaIterator()
 { }
 
 
+void MetaIterator::resize()
+{
+  Iterator::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 bool MetaIterator::
 new_model(const String& method_ptr, const String& model_ptr)
 {

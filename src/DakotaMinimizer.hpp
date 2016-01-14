@@ -76,6 +76,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void resize();
   void update_from_model(const Model& model);
 
   void initialize_run();

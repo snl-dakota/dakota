@@ -95,6 +95,16 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
 { }
 
 
+void Minimizer::resize()
+{
+  Iterator::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void Minimizer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);

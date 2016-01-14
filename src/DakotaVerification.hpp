@@ -45,16 +45,11 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void resize();
   void print_results(std::ostream& s);
 
   //
   //- Heading: Member functions
-  //
-
-protected:
-
-  //
-  //- Heading: Data
   //
 
 private:

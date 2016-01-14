@@ -48,6 +48,16 @@ Verification::Verification(unsigned short method_name, Model& model):
 }
 
 
+void Verification::resize()
+{
+  Analyzer::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void Verification::print_results(std::ostream& s)
 {
   Analyzer::print_results(s);
