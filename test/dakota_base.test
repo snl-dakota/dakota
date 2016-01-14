@@ -6246,6 +6246,22 @@ Partial Rank Correlation Matrix between input and output:
               5.22213e-01 
              -2.61481e-02 
               2.94673e-02 
+Test Number 10 succeeded
+<<<<< Function evaluation summary (ID_I): 1600 total (1600 new, 0 duplicate)
+  response_fn_1: 1600 val (1600 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  1.2983032161079763e-01  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0
+  -7.2477115981444309e-02  He1  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0
+  1.9060055729201941e-02  He2  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0
+  -6.5575204170314517e-03  He0  He2  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0
+  -4.2482706974656184e-03  He2  He0  He1  He1  He1  He0  He0  He0  He0  He0  He0  He0  He0  He0  He0
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  1.2983032161079763e-01  7.8112748931693329e-02
 dakota_experiment_read.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)

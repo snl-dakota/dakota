@@ -15,6 +15,9 @@ private:
 
   int order_;
   int numQOI_;
+  String kernel_;
+  RealVector singularValues_;
+  RealMatrix leftSingularVectors_;
   RealVector boundaryConditions_;
   RealVector physicalDomainLimits_;
 
@@ -27,7 +30,7 @@ public:
 
   ~SpectralDiffusionModel();
 
-  void initialize( int order, const RealVector &bndry_conds,
+  void initialize( int order, String kernel, const RealVector &bndry_conds,
 		   const RealVector &domain_limits );
 
   void form_collocation_matrix( const RealVector &diagonal,

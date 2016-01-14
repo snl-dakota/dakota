@@ -1,6 +1,7 @@
 #include "spectral_diffusion.hpp"
 #include "sandia_rules.hpp"
 #include "LinearAlgebra.hpp"
+#include "dakota_linear_algebra.hpp"
 
 namespace Dakota {
 
@@ -121,13 +122,13 @@ void chebyshev_derivative_matrix(int order, RealMatrix &derivative_matrix,
   // derivative matrix I return will be the negative of the matlab version
 }
 
-SpectralDiffusionModel::SpectralDiffusionModel() : order_(0),numQOI_(1) {};
+SpectralDiffusionModel::SpectralDiffusionModel() : order_(0),numQOI_(1), kernel_("") {};
 
 SpectralDiffusionModel::~SpectralDiffusionModel(){};
 
 void SpectralDiffusionModel::
-initialize( int order, const RealVector &bndry_conds,
-	    const RealVector &domain_limits ){
+initialize( int order, String kernel, const RealVector &bndry_conds,
+            const RealVector &domain_limits ){
 
   // Set boundary_conditions
     if ( bndry_conds.length() != 2 ){
@@ -162,6 +163,27 @@ initialize( int order, const RealVector &bndry_conds,
   for (int j=0; j<order_+1; j++)
     for (int i=0; i<order_+1; i++)
       derivativeMatrix_(i,j) *= 2. / range;
+
+  // Get kernel specification String
+  kernel_ = kernel;
+  if (kernel_ == "exponential") {
+    Real field_mean = 0.1, field_std_dev = 0.5;
+    int num_mesh_points =collocationPoints_.numCols();
+
+    // Form correlation matrix:
+    Real beta = 0.2;
+    RealMatrix Corr(num_mesh_points,num_mesh_points);
+    for (int i = 0; i < num_mesh_points; i++) {
+      for (int j = 0; j < num_mesh_points; j++) {
+        Corr(i,j) = std::exp(-std::abs(collocationPoints_(0,i) - collocationPoints_(0,j))/beta);
+      }
+    }
+
+    leftSingularVectors_ = Corr;
+    RealMatrix VT;
+    // svd gives: Corr = leftSingularVectors_*singularValues_*VT;
+    svd(leftSingularVectors_, singularValues_, VT);
+  }
 }
 
 void SpectralDiffusionModel::
@@ -181,7 +203,7 @@ form_collocation_matrix( const RealVector &diagonal,
 
 void SpectralDiffusionModel::
 apply_boundary_conditions( RealMatrix &collocation_matrix, 
-			   RealVector &forcing ) const {
+                           RealVector &forcing ) const {
   
   for (int j=0; j<order_+1; j++){
     collocation_matrix(0,j) = 0.; 
@@ -220,7 +242,7 @@ solve( const RealVector &diffusivity, const RealVector &forcing_in,
 }
 
 void SpectralDiffusionModel::run( const RealVector &sample, 
-				  RealVector &solution ) const {
+                                  RealVector &solution ) const {
 
   // Evaluate diffusivity for given random sample
   RealVector diffusivity;
@@ -243,11 +265,11 @@ void SpectralDiffusionModel::evaluate( const RealVector &sample,
 }
 
 void SpectralDiffusionModel::interpolate( const RealVector &mesh_values,
-					  const RealVector &interp_samples,
-					  RealVector &interp_values ) const {
+                                          const RealVector &interp_samples,
+                                          RealVector &interp_values ) const {
   RealVector mesh_points( Teuchos::View, collocationPoints_.values(), order_+1 );
   lagrange_interpolation_1d( interp_samples, mesh_points, mesh_values, 
-			     interp_values );
+                             interp_values );
 }
 
 double SpectralDiffusionModel::integrate( const RealVector &mesh_values ) const {
@@ -269,49 +291,71 @@ double SpectralDiffusionModel::integrate( const RealVector &mesh_values ) const 
   return gl_vals.dot( gl_wts );
 }
 
- void SpectralDiffusionModel::qoi_functional( const RealVector &solution, 
-					      RealVector &result ) const{
-   // Set quantities of interest to be values of solution equally spaced
-   // within in [0.05,0.95] of [a,b]
-   RealVector qoi_coords( numQOI_, false );
-   if (numQOI_ > 1) {
-     Real range = physicalDomainLimits_[1]-physicalDomainLimits_[0];
-     Real h = (range*0.9) / (Real)(numQOI_-1);
-     for (int i=0; i<numQOI_; i++)
-       qoi_coords[i] = physicalDomainLimits_[0]+range*0.05+(Real)i*h;
-   }
-   else
-     qoi_coords[0] = (physicalDomainLimits_[1]+physicalDomainLimits_[0])/2.;
-   RealVector mesh_points( Teuchos::View, collocationPoints_.values(), order_+1);
-   interpolate( solution, qoi_coords, result );
- };
+void SpectralDiffusionModel::qoi_functional( const RealVector &solution, 
+                                             RealVector &result ) const {
+  // Set quantities of interest to be values of solution equally spaced
+  // within in [0.05,0.95] of [a,b]
+  RealVector qoi_coords( numQOI_, false );
+  if (numQOI_ > 1) {
+    Real range = physicalDomainLimits_[1]-physicalDomainLimits_[0];
+    Real h = (range*0.9) / (Real)(numQOI_-1);
+    for (int i=0; i<numQOI_; i++)
+      qoi_coords[i] = physicalDomainLimits_[0]+range*0.05+(Real)i*h;
+  }
+  else
+    qoi_coords[0] = (physicalDomainLimits_[1]+physicalDomainLimits_[0])/2.;
+  RealVector mesh_points( Teuchos::View, collocationPoints_.values(), order_+1);
+  interpolate( solution, qoi_coords, result );
+};
 
- void SpectralDiffusionModel::
- diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
-		       RealVector &diffusivity ) const{
+void SpectralDiffusionModel::
+diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
+                      RealVector &diffusivity ) const {
+  int num_mesh_points = mesh_points.numCols(), num_stoch_dims = sample.length();
+  diffusivity.size( num_mesh_points ); // initialize to zero
 
-   Real field_mean = 1., field_std_dev = 4.;
-   int num_mesh_points = mesh_points.numCols(), num_stoch_dims = sample.length();
-     diffusivity.size( num_mesh_points ); // initialize to zero
-   for (int d=0; d<num_stoch_dims; d++){
-     Real dPI = PI*(Real)(d+1);
-     for (int i=0; i<num_mesh_points; i++){
-       diffusivity[i] += std::cos(2.*dPI*mesh_points(0,i))/(dPI*dPI)*sample[d];
-     }
-   }
-   for (int i=0; i<num_mesh_points; i++)
-     diffusivity[i] = diffusivity[i] * field_std_dev + field_mean;
- };
+  if (kernel_ == "exponential") {
+    Real field_mean = 0.1, field_std_dev = 0.5;
+
+    // Form correlation matrix:
+    Real beta = 0.2;
+    RealMatrix Corr(num_mesh_points,num_mesh_points);
+    for (int i = 0; i < num_mesh_points; i++) {
+      for (int j = 0; j < num_mesh_points; j++) {
+        Corr(i,j) = std::exp(-std::abs(mesh_points(0,i) - mesh_points(0,j))/beta);
+      }
+    }
+
+    for (int d=0; d<num_stoch_dims; d++) {
+      for (int i=0; i<num_mesh_points; i++) {
+        diffusivity[i] += singularValues_[d]*leftSingularVectors_(i,d)*sample[d];
+      }
+    }
+    for (int i=0; i<num_mesh_points; i++)
+      diffusivity[i] = std::exp(diffusivity[i] * field_std_dev) + field_mean;
+  }
+  else {
+    Real field_mean = 1., field_std_dev = 4.;
+    for (int d=0; d<num_stoch_dims; d++) {
+      Real dPI = PI*(Real)(d+1);
+      for (int i=0; i<num_mesh_points; i++) {
+        diffusivity[i] += std::cos(2.*dPI*mesh_points(0,i))/(dPI*dPI)*sample[d];
+      }
+    }
+    for (int i=0; i<num_mesh_points; i++)
+      diffusivity[i] = diffusivity[i] * field_std_dev + field_mean;
+  }
+};
   
- void SpectralDiffusionModel::forcing_function( const RealVector &sample, 
-						const RealMatrix &mesh_points,
-						RealVector &forcing ) const {
-   int num_mesh_points = mesh_points.numCols();
-   forcing.sizeUninitialized( num_mesh_points );
-   for (int i=0; i<num_mesh_points; i++){
-     forcing[i] = -1.;
-   }
- };
+void SpectralDiffusionModel::forcing_function( const RealVector &sample, 
+                                               const RealMatrix &mesh_points,
+                                               RealVector &forcing ) const {
+  int num_mesh_points = mesh_points.numCols();
+  forcing.sizeUninitialized( num_mesh_points );
+  for (int i=0; i<num_mesh_points; i++) {
+    forcing[i] = -1.;
+  }
+};
 
 void SpectralDiffusionModel::set_num_qoi( int num_qoi ){
   numQOI_ = num_qoi;

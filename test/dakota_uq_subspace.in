@@ -3,10 +3,12 @@
 # with several methods
 
 environment
-  tabular_data
+  output_precision = 16
+  method_pointer = 'ID_METHOD'
 
 # Tests 0-9 are for sampling methods:
-method,                             #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+method,
+  id_method = 'ID_METHOD'
   sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
     model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
     seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
@@ -17,7 +19,15 @@ method,                             #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 #   sample_type incremental_random  #s8,#s9
 #     refinement_samples = 100      #s6,#s8
 #     refinement_samples = 100 200  #s7,#s9
-  output debug                      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+# polynomial_chaos                  #s10
+#   model_pointer = 'SUBSPACE'      #s10
+#   expansion_order   = 6           #s10
+#   collocation_points = 100        #s10
+#   omp                             #s10
+#   basis_type                      #s10
+#     adapted                       #s10
+#   seed = 1234567                  #s10
+  output debug
 
 # Tests 0-4 test the various subspace input parameters
 # with method sampling
@@ -33,6 +43,7 @@ model
 #   truncation_method constantine     #s2
 #   reduced_rank 5                    #s3
 #   bootstrap_samples 150             #s4
+#   reduced_rank 15                   #s10
 
 model 
   single
@@ -43,18 +54,25 @@ model
 
 variables,
   id_variables = 'ID_V'
-  normal_uncertain = 100
-    means = 100*0.5
-    std_deviations = 100*0.2
+  normal_uncertain = 100              #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    means = 100*0.5                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    std_deviations = 100*0.2          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+# normal_uncertain = 15               #s10
+#   means = 15*0.                     #s10
+#   std_deviations = 15*1.            #s10
+# discrete_state_set string 1         #s10
+#   set_values = "exponential"        #s10
 
 interface,
   id_interface = 'ID_I'
   direct
-    analysis_driver = 'aniso_quad_form'
-    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'
+    analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+#   analysis_driver = 'diffusion_1d'	                                          #s10
 
 responses,
   id_responses = 'ID_R'
   num_response_functions = 1
-  analytic_gradients
+  analytic_gradients          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+# numerical_gradients         #s10
   no_hessians

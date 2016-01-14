@@ -1529,6 +1529,9 @@ int TestDriverInterface::diffusion_1d(){
   // Get the mesh resolution from the first discrete integer variable
   int order = ( numADIV ) ? xDI[0] : 20;
 
+  // Get the kernel specification from the first discrete string variable
+  String kernel = ( numADSV) ? xDS[0] : "default";
+
   // ------------------------------------------------------------- //
   // Initialize and evaluate model 
   // ------------------------------------------------------------- //
@@ -1536,7 +1539,7 @@ int TestDriverInterface::diffusion_1d(){
   domain_limits[1] = 1.;
 
   SpectralDiffusionModel model;
-  model.initialize( order, bndry_conds, domain_limits );
+  model.initialize( order, kernel, bndry_conds, domain_limits );
   model.set_num_qoi( numFns );
   
   model.evaluate( xC, fnVals ); 
