@@ -131,6 +131,15 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
   maxEvalConcurrency *= numEvals;
 }
 
+void ParamStudy::resize()
+{
+  PStudyDACE::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void ParamStudy::pre_run()
 {

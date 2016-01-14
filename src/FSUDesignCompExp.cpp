@@ -164,6 +164,15 @@ FSUDesignCompExp(Model& model, int samples, int seed,
 
 FSUDesignCompExp::~FSUDesignCompExp() { }
 
+void FSUDesignCompExp::resize()
+{
+  PStudyDACE::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void FSUDesignCompExp::pre_run()
 {

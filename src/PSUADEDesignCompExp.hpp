@@ -46,6 +46,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
   void pre_run();
   void post_input();
   void core_run();

@@ -85,6 +85,15 @@ DDACEDesignCompExp(Model& model, int samples, int symbols, int seed,
 
 DDACEDesignCompExp::~DDACEDesignCompExp() { }
 
+void DDACEDesignCompExp::resize()
+{
+  PStudyDACE::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
 
 void DDACEDesignCompExp::pre_run()
 {

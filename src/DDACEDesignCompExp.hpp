@@ -67,6 +67,14 @@ public:
   void vary_pattern(bool pattern_flag);
   void get_parameter_sets(Model& model);
 
+protected:
+  
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  void resize();
+
 private:
 
   //

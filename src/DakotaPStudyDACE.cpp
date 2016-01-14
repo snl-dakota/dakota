@@ -62,6 +62,14 @@ PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
 PStudyDACE::~PStudyDACE() { }
 
 
+void PStudyDACE::resize()
+{
+  Analyzer::resize();
+
+  // Current nothing to be done here -> no-op
+}
+
+
 /** Calculation of volumetric quality measures developed by FSU. */
 void PStudyDACE::
 volumetric_quality(int ndim, int num_samples, double* sample_points)

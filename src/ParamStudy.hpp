@@ -57,6 +57,14 @@ public:
   void post_input();
   void post_run(std::ostream& s);
 
+protected:
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  void resize();
+
 private:
 
   //

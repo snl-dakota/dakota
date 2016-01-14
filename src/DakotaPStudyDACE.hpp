@@ -48,6 +48,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void resize();
   void print_results(std::ostream& s);
 
   //
