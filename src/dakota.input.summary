@@ -2421,6 +2421,11 @@ KEYWORD model
 	  [ reduced_rank INTEGER ]
 	  [ bootstrap_samples INTEGER ]
 	  )
+	|
+	( random_field
+	  dace_method_pointer STRING
+	  propagation_model_pointer STRING
+	  )
 
 KEYWORD12 variables
 	[ id_variables STRING ]

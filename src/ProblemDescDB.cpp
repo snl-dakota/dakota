@@ -2344,14 +2344,15 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataModelRep::
     static KW<String, DataModelRep> Sdmo[] = {	
       // must be sorted by string (key)
+	{"dace_method_pointer", P subMethodPointer},
 	{"id", P idModel},
 	{"interface_pointer", P interfacePointer},
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
+	{"rf.propagation_model_pointer", P propagationModelPointer},
 	{"simulation.solution_level_control", P solutionLevelControl},
 	{"surrogate.actual_model_pointer", P actualModelPointer},
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
-	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.decomp_cell_type", P decompCellType},
 	{"surrogate.export_approx_points_file", P exportApproxPtsFile},
 	{"surrogate.import_build_points_file", P importBuildPtsFile},

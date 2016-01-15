@@ -62,6 +62,7 @@ class ProblemDescDB
   /// get_iterator(), and get_model()
   friend class NestedModel;
   friend class ActiveSubspaceModel;
+  friend class RandomFieldModel;
 
   /// Environment requires access to get_iterator()
   friend class Environment;

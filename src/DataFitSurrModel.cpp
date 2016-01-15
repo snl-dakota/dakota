@@ -61,7 +61,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // to continuously reset at the strategy level (which would be wasteful
   // since the type of derived model may not be known at the strategy level).
   const String& dace_method_pointer
-    = problem_db.get_string("model.surrogate.dace_method_pointer");
+    = problem_db.get_string("model.dace_method_pointer");
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.actual_model_pointer");
   if (!dace_method_pointer.empty()) { // global DACE approximations

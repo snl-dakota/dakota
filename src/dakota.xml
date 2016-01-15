@@ -3173,7 +3173,15 @@
         <param type='INTEGER' />
       </keyword>
 	</keyword>
-      </oneOf>
+	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
+	  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
+        <param type="STRING" in_taglist="method" />
+      </keyword>
+	  <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="model accepting RF" help="" minOccurs="1" >
+	    <param type="STRING" in_taglist="model" />
+	  </keyword>
+    </keyword>	
+    </oneOf>
     </keyword>
     
     <!-- **** TOPLEVEL *** -->

@@ -42,7 +42,6 @@ DataModelRep::DataModelRep():
   subspaceIdMethod(SUBSPACE_ID_DEFAULT), referenceCount(1),
   reducedRank(0), numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10)
-
 { }
 
 
@@ -74,7 +73,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << subspaceIdMethod
     << reducedRank << numReplicates << autoRefine << maxFunctionEvals
-    << refineCVMetric << refineCVFolds;
+    << refineCVMetric << refineCVFolds << propagationModelPointer;
 }
 
 
@@ -107,7 +106,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> initialSamples >> refineSamples >> maxIterations 
     >> convergenceTolerance >> subspaceIdMethod
     >> reducedRank >> numReplicates >> autoRefine >> maxFunctionEvals
-    >> refineCVMetric >> refineCVFolds;;
+    >> refineCVMetric >> refineCVFolds >> propagationModelPointer;
 }
 
 
@@ -139,7 +138,7 @@ void DataModelRep::write(std::ostream& s) const
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << subspaceIdMethod
     << reducedRank << numReplicates << autoRefine << maxFunctionEvals
-    << refineCVMetric << refineCVFolds;
+    << refineCVMetric << refineCVFolds << propagationModelPointer;
 }
 
 

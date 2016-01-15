@@ -2464,6 +2464,11 @@ KEYWORD model {N_mom3(start,0,stop)}
     [ reduced_rank INTEGER {N_mom(int,reducedRank)} ]
     [ bootstrap_samples INTEGER {N_mom(int,numReplicates)} ]
    )
+  |
+  ( random_field {N_mom(lit,modelType_random_field)}
+    dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+    propagation_model_pointer STRING {N_mom(str,propagationModelPointer)}
+   )
 
 KEYWORD12 variables {N_vam3(start,0,stop)}
   [ id_variables STRING {N_vam(str,idVariables)} ]

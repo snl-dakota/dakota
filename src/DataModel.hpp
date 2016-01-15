@@ -36,6 +36,8 @@ enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
 /// define special values for active subspace identification methods
 enum { SUBSPACE_ID_DEFAULT=0, SUBSPACE_ID_BING_LI, SUBSPACE_ID_CONSTANTINE };
 
+/// define types of random field approximations
+enum { RF_KARHUNEN_LOEVE=0, RF_PCA_GP, RF_ICA };
 
 /// Body class for model specification data.
 
@@ -316,6 +318,11 @@ public:
   String refineCVMetric;
   /// number of cross-validation folds in guided refinement
   int refineCVFolds;
+
+  // random field models
+
+  /// pointer to the model through which to propagate the random field
+  String propagationModelPointer;
 
 private:
 
