@@ -77,6 +77,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// increment to next in sequence of refinement samples
+  void sampling_increment();
+
   // together the three run components perform a forward uncertainty
   // propagation by using LHS to generate a set of parameter samples,
   // performing function evaluations on these parameter samples, and

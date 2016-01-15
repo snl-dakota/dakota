@@ -167,7 +167,7 @@ public:
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
   /// build a new SurrogateModel approximation using/enforcing
-  /// response at vars
+  /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
 				   const IntResponsePair& response_pr);
 

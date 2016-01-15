@@ -124,7 +124,7 @@ protected:
   void build_approximation();
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points that
-  /// augment the vars/response anchor point
+  /// augment the passed vars/response anchor point
   bool build_approximation(const Variables& vars,
 			   const IntResponsePair& response_pr);
 
@@ -243,7 +243,12 @@ protected:
   //
   //- Heading: Data members
   //
+
+  /// whether to export the surrogate to file
   const bool exportSurrogate;
+
+  /// whether to automatically refine the surrogate during the build phase
+  const bool autoRefine;
 
 private:
 
@@ -275,6 +280,13 @@ private:
   void build_global();
   /// Builds a local or multipoint approximation using actualModel
   void build_local_multipoint();
+
+  /// Gather data from the DACE iterator and update the approximation iface
+  void run_dace_iterator();
+  /// Refine the built surrogate until convergence criteria are met
+  void refine_surrogate();
+  /// Call build_approximation on the interface, passing appropriate constraints
+  void interface_build_approx();
 
   /// update actualModel with data from current variables/labels/bounds/targets
   void update_actual_model();

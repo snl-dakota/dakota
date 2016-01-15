@@ -179,6 +179,9 @@ public:
   /// set reference number of samples, which is a lower bound during reset 
   virtual void sampling_reference(int samples_ref);
 
+  /// increment to next in sequence of refinement samples
+  virtual void sampling_increment();
+
   /// return sampling name
   virtual unsigned short sampling_scheme() const;
 

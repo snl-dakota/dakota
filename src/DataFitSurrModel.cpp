@@ -42,7 +42,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     problem_db.get_string("model.surrogate.import_build_points_file")),
   exportPointsFile(
     problem_db.get_string("model.surrogate.export_approx_points_file")),
-  exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format"))
+  exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format")),
+  autoRefine(problem_db.get_bool("model.surrogate.auto_refine"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -163,7 +164,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
   exportSurrogate(false),
   manageRecasting(false), exportPointsFile(export_approx_points_file),
-  exportFormat(export_approx_format), importPointsFile(import_build_points_file)
+  exportFormat(export_approx_format), importPointsFile(import_build_points_file),
+  autoRefine(false)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -269,7 +271,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 /** This function constructs a new approximation, discarding any
     previous data.  It constructs any required data for
     SurrogateData::{vars,resp}Data and does not define an anchor point
-    for SurrogateData::anchor{Vars,Resp}. */
+    for SurrogateData::anchor{Vars,Resp}, so is an unconstrained build. */
 void DataFitSurrModel::build_approximation()
 {
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
@@ -285,6 +287,7 @@ void DataFitSurrModel::build_approximation()
     // NOTE: branch used by SBO
     update_local_multipoint();
     build_local_multipoint();
+    interface_build_approx();
   }
   else { // global approximation.  NOTE: branch not used by SBO.
     update_global();
@@ -294,27 +297,10 @@ void DataFitSurrModel::build_approximation()
     // build_approximation if global approximations had easy access
     // to the truth/approx responses.  Instead, it is called from
     // SurrBasedLocalMinimizer using data from the trust region center.
+    if (!autoRefine)  // if autoRefine, approx already built in build_global
+      interface_build_approx();
   }
-  if (actualModel.is_null())
-    approxInterface.build_approximation(
-      userDefinedConstraints.continuous_lower_bounds(),
-      userDefinedConstraints.continuous_upper_bounds(),
-      userDefinedConstraints.discrete_int_lower_bounds(),
-      userDefinedConstraints.discrete_int_upper_bounds(),
-      userDefinedConstraints.discrete_real_lower_bounds(),
-      userDefinedConstraints.discrete_real_upper_bounds());
-  else { // employ sub-model vars view, if available
-    approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
-      actualModel.continuous_upper_bounds(),
-      actualModel.discrete_int_lower_bounds(),
-      actualModel.discrete_int_upper_bounds(),
-      actualModel.discrete_real_lower_bounds(),
-      actualModel.discrete_real_upper_bounds());
-    if(exportSurrogate) {
-      const StringArray fn_labels(actualModel.response_labels());
-      approxInterface.export_approximation();
-    }
-  }
+
   approxBuilds++;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
@@ -401,9 +387,12 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
-      strbegins(surrogateType, "multipoint_"))
+      strbegins(surrogateType, "multipoint_")) {
     // NOTE: branch not used by SBO
     update_local_multipoint();
+    // anchor is given, so no need for build_local_multipoint
+    interface_build_approx();
+  }
   else { // global approximation.  NOTE: branch used by SBO.
     update_global();
     build_global();
@@ -412,22 +401,10 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     // build_approximation if global approximations had easy access
     // to the truth/approx responses.  Instead, it is called from
     // SurrBasedLocalMinimizer using data from the trust region center.
+    if (!autoRefine)  // if autoRefine, approx already built in build_global
+      interface_build_approx();
   }
-  if (actualModel.is_null())
-    approxInterface.build_approximation(
-      userDefinedConstraints.continuous_lower_bounds(),
-      userDefinedConstraints.continuous_upper_bounds(),
-      userDefinedConstraints.discrete_int_lower_bounds(),
-      userDefinedConstraints.discrete_int_upper_bounds(),
-      userDefinedConstraints.discrete_real_lower_bounds(),
-      userDefinedConstraints.discrete_real_upper_bounds());
-  else // employ sub-model vars view, if available
-    approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
-      actualModel.continuous_upper_bounds(),
-      actualModel.discrete_int_lower_bounds(),
-      actualModel.discrete_int_upper_bounds(),
-      actualModel.discrete_real_lower_bounds(),
-      actualModel.discrete_real_upper_bounds());
+
   approxBuilds++;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
@@ -435,8 +412,9 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be
   // preferable to flow this up from the surrogate, but keep it simple for now.
-  return (strbegins(surrogateType, "local_") || strbegins(surrogateType, "multipoint_")
-	  || surrogateType == "global_polynomial");
+  return (strbegins(surrogateType, "local_") ||
+	  strbegins(surrogateType, "multipoint_") ||
+	  surrogateType == "global_polynomial");
 }
 
 
@@ -795,6 +773,29 @@ void DataFitSurrModel::update_local_multipoint()
 }
 
 
+void DataFitSurrModel::interface_build_approx()
+{
+  if (actualModel.is_null())
+    approxInterface.build_approximation(
+      userDefinedConstraints.continuous_lower_bounds(),
+      userDefinedConstraints.continuous_upper_bounds(),
+      userDefinedConstraints.discrete_int_lower_bounds(),
+      userDefinedConstraints.discrete_int_upper_bounds(),
+      userDefinedConstraints.discrete_real_lower_bounds(),
+      userDefinedConstraints.discrete_real_upper_bounds());
+  else { // employ sub-model vars view, if available
+    approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
+      actualModel.continuous_upper_bounds(),
+      actualModel.discrete_int_lower_bounds(),
+      actualModel.discrete_int_upper_bounds(),
+      actualModel.discrete_real_lower_bounds(),
+      actualModel.discrete_real_upper_bounds());
+    if (exportSurrogate)
+      approxInterface.export_approximation();
+  }
+}
+
+
 void DataFitSurrModel::update_global()
 {
   // Store the actualModel active variable bounds and inactive variable values
@@ -1032,36 +1033,17 @@ void DataFitSurrModel::build_global()
     new_points = daceIterator.num_samples();
 
     // only run the iterator if work to do
-    if (new_points) {
-      // Define the data requests
-      ActiveSet set = daceIterator.active_set(); // copy
-      ShortArray actual_asv, approx_asv;
-      asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
-      set.request_vector(actual_asv);
-      daceIterator.active_set(set);
-      // prepend hierarchical tag before running
-      if (hierarchicalTagging) {
-	String eval_tag = evalTagPrefix + '.' + 
-	  boost::lexical_cast<String>(surrModelEvalCntr+1);
-	daceIterator.eval_tag_prefix(eval_tag);
-      }
-      // run the iterator
-      ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-      daceIterator.run(pl_iter);
-
-      // Append vars/resp arrays to the approximation.  If actualModel evals
-      // are not already cached, cache them now to provide persistence (thereby
-      // allowing approximation classes to consistently utilize shallow copies).
-      if (daceIterator.compact_mode())
-	approxInterface.append_approximation(daceIterator.all_samples(),
-					     daceIterator.all_responses());
-      else
-	approxInterface.append_approximation(daceIterator.all_variables(),
-					     daceIterator.all_responses());
-    }
+    if (new_points)
+      run_dace_iterator();
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
+
+    // BMA TODO: Move this to an external refiner
+    // on subsequent builds, samples will get reset to base via above
+    // sampling reset
+    if (autoRefine)
+      refine_surrogate();
   }
 
   // *******************************
@@ -1073,6 +1055,70 @@ void DataFitSurrModel::build_global()
   Cout << "Constructing global approximations with " << anchor << " anchor, "
        << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";
+}
+
+
+void DataFitSurrModel::run_dace_iterator()
+{
+  // Define the data requests
+  ActiveSet set = daceIterator.active_set(); // copy
+  ShortArray actual_asv, approx_asv;
+  asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
+  set.request_vector(actual_asv);
+  daceIterator.active_set(set);
+  // prepend hierarchical tag before running
+  if (hierarchicalTagging) {
+    String eval_tag = evalTagPrefix + '.' + 
+      boost::lexical_cast<String>(surrModelEvalCntr+1);
+    daceIterator.eval_tag_prefix(eval_tag);
+  }
+  // run the iterator
+  ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
+  daceIterator.run(pl_iter);
+
+  // Append vars/resp arrays to the approximation.  If actualModel evals
+  // are not already cached, cache them now to provide persistence (thereby
+  // allowing approximation classes to consistently utilize shallow copies).
+  if (daceIterator.compact_mode())
+    approxInterface.append_approximation(daceIterator.all_samples(),
+					 daceIterator.all_responses());
+  else
+    approxInterface.append_approximation(daceIterator.all_variables(),
+					 daceIterator.all_responses());
+}
+
+void DataFitSurrModel::refine_surrogate()
+{
+  Real conv_tol = 1.0e-3;
+  int max_iter = 3, curr_iter = 0, num_folds = 10;
+  StringArray diag_metrics(1, "root_mean_squared");
+
+  // build and check diagnostics
+  interface_build_approx();
+  Real2DArray cv_diags = 
+    approxInterface.cv_diagnostics(diag_metrics, num_folds);
+  RealArray cv_per_fn(currentResponse.num_functions());
+  for (size_t i=0; i<currentResponse.num_functions(); ++i)
+    cv_per_fn[i] = cv_diags[i][0];
+  Real cv_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
+
+  while (cv_err > conv_tol && curr_iter++ < max_iter) {
+    // sampling reset only resets the base numSamples; if there are
+    // refinement samples, increment them here and add points
+    daceIterator.sampling_increment();
+    Cout << "Refining surrogate with " << daceIterator.num_samples() 
+	 << " samples (iteration " << curr_iter << ")\n";
+    run_dace_iterator();
+
+    // build and check diagnostics
+    interface_build_approx();
+    Real2DArray cv_diags = 
+      approxInterface.cv_diagnostics(diag_metrics, num_folds);
+    RealArray cv_per_fn(currentResponse.num_functions());
+    for (size_t i=0; i<currentResponse.num_functions(); ++i)
+      cv_per_fn[i] = cv_diags[i][0];
+    cv_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
+  }
 }
 
 

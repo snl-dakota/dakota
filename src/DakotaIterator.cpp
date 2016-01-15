@@ -1458,6 +1458,19 @@ sampling_reference(int samples_ref)
   }
 }
 
+void Iterator::
+sampling_increment()
+{
+  if (iteratorRep) // envelope fwd to letter
+    iteratorRep->sampling_increment();
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: letter class does not redefine sampling_increment() "
+	 << "virtual fn.\nThis iterator does not support incremental sampling."
+	 << std::endl;
+    abort_handler(-1);
+  }
+}
+
 unsigned short Iterator::sampling_scheme() const
 {
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!

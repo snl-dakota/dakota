@@ -230,6 +230,9 @@ protected:
   unsigned short sampleType;  ///< the sample type: default, random, lhs,
                               ///< incremental random, or incremental lhs
 
+  /// current increment in a sequence of samples
+  int samplesIncrement;
+
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
 
   bool statsFlag;   ///< flags computation/output of statistics
@@ -324,6 +327,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   numSamples = (min_samples > samplesRef) ? min_samples : samplesRef;
   // note that previous value of numSamples is irrelevant: may increase or
   // decrease relative to previous value
+  samplesIncrement = 0;
 
   allDataFlag = all_data_flag;
   statsFlag   = stats_flag;

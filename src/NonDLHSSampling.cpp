@@ -120,6 +120,17 @@ NonDLHSSampling::~NonDLHSSampling()
 { }
 
 
+void NonDLHSSampling::sampling_increment()
+{
+  // if no refinment samples, leave numSamples at baseline
+  varyPattern = true;
+  if (refineSamples.length() > 0) {
+    numSamples = refineSamples[samplesIncrement];
+    samplesIncrement = std::min(samplesIncrement + 1, refineSamples.length()-1);
+  }
+}
+
+
 void NonDLHSSampling::pre_run()
 {
   Analyzer::pre_run();
@@ -135,13 +146,25 @@ void NonDLHSSampling::pre_run()
   // run LHS to generate parameter sets; for VBD we defer to run for now
   // BMA TODO: There's no reason VBD can't be supported in pre-run
   if (!varBasedDecompFlag) {
-    
+
+    // DataFitSurrModel sets subIteratorFlag; if true it will manage
+    // batch increments 
+    // BMA TODO: refactor to handle increments more gracefully
+    bool sample_all_batches = !subIteratorFlag;
+
     // Initial numSamples may be augmented by 1 or more sets of refineSamples
-    int seq_len = 1 + refineSamples.length();
+    int seq_len = 1;
+    if (sample_all_batches)
+      seq_len += refineSamples.length();
+    // the user may have fixed the seed; we have to advance it
+    if (refineSamples.length() > 0)
+      varyPattern = true;
+
     IntVector samples_vec(seq_len);
     // BMA TODO: should this be samplesRef?
     samples_vec[0] = numSamples;
-    copy_data_partial(refineSamples, samples_vec, 1);
+    if (sample_all_batches)
+      copy_data_partial(refineSamples, samples_vec, 1);
 
     // BMA TODO: VBD and other functions aren't accounting for string variables
     // Sampling supports modes beyond just active... do member
@@ -166,9 +189,6 @@ void NonDLHSSampling::pre_run()
       // generate samples of each batch size to reproduce the series
       // of increments, including the point selection
       int new_samples = samples_vec[batch_ind];
-
-      // the user may have fixed the seed; we have to advance it
-      if (seq_len > 1) varyPattern = true;
 
       // BMA TODO: incremental LHS isn't a special method any longer;
       // do it automatically for seq_len > 1; also allow D-Optimal

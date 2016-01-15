@@ -39,7 +39,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
   rngName(probDescDB.get_string("method.random_number_generator")),
-  sampleType(probDescDB.get_ushort("method.sample_type")),
+  sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
@@ -75,7 +75,8 @@ NonDSampling(unsigned short method_name, Model& model,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), statsFlag(false), allDataFlag(true),
+  sampleType(sample_type), samplesIncrement(0), 
+  statsFlag(false), allDataFlag(true),
   samplingVarsMode(sampling_vars_mode), sampleRanksMode(IGNORE_RANKS),
   varyPattern(vary_pattern), backfillFlag(false), numLHSRuns(0)
 {
@@ -104,7 +105,8 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), statsFlag(false),
+  numSamples(samples), rngName(rng), sampleType(sample_type), 
+  samplesIncrement(0), statsFlag(false),
   allDataFlag(true), samplingVarsMode(ACTIVE_UNIFORM),
   sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
   numLHSRuns(0)
@@ -129,7 +131,8 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), statsFlag(false),
+  numSamples(samples), rngName(rng), sampleType(sample_type), 
+  samplesIncrement(0), statsFlag(false),
   allDataFlag(true), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
   numLHSRuns(0)
@@ -151,6 +154,7 @@ NonDSampling::
 NonDSampling(Model& model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
+  samplesIncrement(0),
   statsFlag(true), allDataFlag(true), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS), varyPattern(false), backfillFlag(false),
   numLHSRuns(0)
