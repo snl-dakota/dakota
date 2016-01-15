@@ -782,8 +782,8 @@ void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 }
 
 
-Real2DArray ApproximationInterface::cv_diagnostics(const StringArray& metric_types,
-						 unsigned num_folds)
+Real2DArray ApproximationInterface::
+cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
   Real2DArray cv_diags;
   ISIter a_it = approxFnIndices.begin();

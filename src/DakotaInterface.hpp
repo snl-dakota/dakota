@@ -176,7 +176,8 @@ public:
   virtual void combine_approximation(short corr_type, bool swap);
 
   /// approximation cross-validation quality metrics per response function
-  virtual RealArray cv_diagnostics(const String& metric_type, unsigned num_folds);
+  virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
+				     unsigned num_folds);
   /// approximation challenge data metrics per response function
   virtual RealArray challenge_diagnostics(const String& metric_type,
 					  const RealMatrix& challenge_pts);

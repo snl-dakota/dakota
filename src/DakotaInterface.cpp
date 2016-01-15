@@ -1222,10 +1222,11 @@ void Interface::combine_approximation(short corr_type, bool swap)
   }
 }
 
-RealArray Interface::cv_diagnostics(const String& metric_type, unsigned num_folds)
+Real2DArray Interface::
+cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
   if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->cv_diagnostics(metric_type, num_folds);
+    return interfaceRep->cv_diagnostics(metric_types, num_folds);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
 	 << "function.\n       This interface does not "
