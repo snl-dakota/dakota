@@ -337,11 +337,11 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
     hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
-    mixed_eval = (hi_fi_eval && lo_fi_eval); break;
+    mixed_eval = (hi_fi_eval && lo_fi_eval);            break;
   case BYPASS_SURROGATE:
-    hi_fi_eval = true; lo_fi_eval = false;   break;
+    hi_fi_eval = true; lo_fi_eval = mixed_eval = false; break;
   case MODEL_DISCREPANCY:
-    hi_fi_eval = lo_fi_eval = true;          break;
+    hi_fi_eval = lo_fi_eval = mixed_eval = true;        break;
   }
 
   Model& lf_model = orderedModels[lowFidelityIndices.first];
@@ -357,6 +357,15 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   }
 
   if (sameModelForm) update_model(lf_model);
+
+  // Notes on repetitive setting of model.solution_level_index():
+  // > when LF & HF are the same model, then setting the index for low or high
+  //   invalidates the other fidelity definition.
+  // > within a single evaluate(), could protect these updates with
+  //   "if (sameModelForm && mixed_eval)", but this does not guard against
+  //   changes in eval requirements from the previous evaluate().  Detecting
+  //   the current solution index state is currently as expensive as resetting
+  //   it, so just reset.
   
   // ------------------------------
   // Compute high fidelity response
@@ -542,6 +551,15 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
 
+  // Notes on repetitive setting of model.solution_level_index():
+  // > when LF & HF are the same model, then setting the index for low or high
+  //   invalidates the other fidelity definition.
+  // > within a single evaluate(), could protect these updates with
+  //   "if (sameModelForm && mixed_eval)", but this does not guard against
+  //   changes in eval requirements from the previous evaluate().  Detecting
+  //   the current solution index state is currently as expensive as resetting
+  //   it, so just reset.
+  
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
