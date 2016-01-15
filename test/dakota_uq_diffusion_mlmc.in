@@ -6,7 +6,7 @@ method,
 	model_pointer = 'HIERARCH'
         multilevel_sampling
 	  pilot_samples = 100 seed = 1237
-	  max_iterations = 2
+	  max_iterations = 0
 	  convergence_tolerance = 1.e-2
 #	  complementary distribution
 #	  response_levels = 3.6e+11 4.0e+11 4.4e+11
