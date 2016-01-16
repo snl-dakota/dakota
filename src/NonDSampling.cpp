@@ -1410,7 +1410,8 @@ void NonDSampling::
 print_moments(std::ostream& s, String qoi_type,
 	      const StringArray& moment_labels) const
 {
-  size_t i, j, width = write_precision+7, num_qoi = momentStats.numCols();
+  size_t i, j, width = write_precision+7, num_moments = momentStats.numRows(),
+    num_qoi = momentStats.numCols();
 
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
@@ -1420,7 +1421,7 @@ print_moments(std::ostream& s, String qoi_type,
   for (i=0; i<num_qoi; ++i) {
     const Real* moments_i = momentStats[i];
     s << std::setw(14) << moment_labels[i];
-    for (j=0; j<4; ++j)
+    for (j=0; j<num_moments; ++j)
       s << ' ' << std::setw(width) << moments_i[j];
     s << '\n';
   }

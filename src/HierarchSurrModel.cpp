@@ -361,11 +361,11 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   // Notes on repetitive setting of model.solution_level_index():
   // > when LF & HF are the same model, then setting the index for low or high
   //   invalidates the other fidelity definition.
-  // > within a single evaluate(), could protect these updates with
+  // > within a single derived_evaluate(), could protect these updates with
   //   "if (sameModelForm && mixed_eval)", but this does not guard against
-  //   changes in eval requirements from the previous evaluate().  Detecting
+  //   changes in eval requirements from the previous evaluation.  Detecting
   //   the current solution index state is currently as expensive as resetting
-  //   it, so just reset.
+  //   it, so just reset each time.
   
   // ------------------------------
   // Compute high fidelity response
@@ -551,14 +551,8 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // To manage general case of mixed asynch, launch nonblocking evals first,
   // followed by blocking evals.
 
-  // Notes on repetitive setting of model.solution_level_index():
-  // > when LF & HF are the same model, then setting the index for low or high
-  //   invalidates the other fidelity definition.
-  // > within a single evaluate(), could protect these updates with
-  //   "if (sameModelForm && mixed_eval)", but this does not guard against
-  //   changes in eval requirements from the previous evaluate().  Detecting
-  //   the current solution index state is currently as expensive as resetting
-  //   it, so just reset.
+  // For notes on repetitive setting of model.solution_level_index(), see
+  // derived_evaluate() above.
   
   // launch nonblocking evals before any blocking ones
   if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously

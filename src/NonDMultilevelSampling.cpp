@@ -40,11 +40,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
 	 << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  // set SurrogateModel::responseMode
-  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);// no discrepancy
-  // set initial low fidelity model form and solution level
-  size_t mf_index = 0; // model form 0
-  iteratedModel.surrogate_model(mf_index, 0); // solution level 0
 
   /*
   // Check for model forms and solution levels
@@ -126,7 +121,7 @@ void NonDMultilevelSampling::core_run()
   RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
              exp_Y(num_qoi, num_lev, false),  var_Y(num_qoi, num_lev, false);
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
-  Real agg_var_l, eps = 1.e-6, sum_var_cost, mean;
+  Real agg_var_l, eps = 1., sum_sqrt_var_cost, mean; // TO DO: relative eps...
   IntRespMCIter r_it;
   
   // Initialize for pilot sample
@@ -151,12 +146,16 @@ void NonDMultilevelSampling::core_run()
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
       
-    sum_var_cost = 0.;
+    // set initial surrogate responseMode and model indices for lev 0
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    iteratedModel.surrogate_model(mf_index, 0); // solution level 0
+
+    sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      if (lev == 1)
-	iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
       if (lev) {
+	if (lev == 1) // update responseMode for levels 1:num_lev-1
+	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF -LF
 	iteratedModel.surrogate_model(mf_index, lev-1);
 	iteratedModel.truth_model(mf_index,     lev);
       }
@@ -166,51 +165,62 @@ void NonDMultilevelSampling::core_run()
       // update total samples performed for this level
       N_l[lev]  += numSamples;
 
-      // generate new MC parameter sets
-      get_parameter_sets(iteratedModel);// pull dist params from any model
-      // evaluate the parameter sets on the hierarchical model
-      // TO DO: would be desirable to return delta-QoI for all levels...
-      evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+      if (numSamples) {
+	// generate new MC parameter sets
+	get_parameter_sets(iteratedModel);// pull dist params from any model
+	// evaluate the parameter sets on the hierarchical model
+	// TO DO: would be desirable to return delta-QoI for all levels...
+	evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
       
-      // process allResponses... loop over new samples and qoi...
-      Real *sum_Y_l = sum_Y[lev], *sum_Y2_l = sum_Y2[lev],
-	   *exp_Y_l = exp_Y[lev],  *var_Y_l =  var_Y[lev];
-      for (qoi=0; qoi<num_qoi; ++qoi) {
-	for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-	  Real delta_fn  = r_it->second.function_value(qoi);
-	  sum_Y_l[qoi]  += delta_fn; // running sum across all increments
-	  sum_Y2_l[qoi] += delta_fn * delta_fn;
+	// process allResponses... loop over new samples and qoi...
+	Real *sum_Y_l = sum_Y[lev], *sum_Y2_l = sum_Y2[lev],
+	     *exp_Y_l = exp_Y[lev],  *var_Y_l =  var_Y[lev];
+	for (qoi=0; qoi<num_qoi; ++qoi) {
+	  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+	    Real delta_fn  = r_it->second.function_value(qoi);
+	    sum_Y_l[qoi]  += delta_fn; // running sum across all increments
+	    sum_Y2_l[qoi] += delta_fn * delta_fn;
+	  }
+	  mean = exp_Y_l[qoi] = sum_Y_l[qoi] / N_l[lev];
+	  var_Y_l[qoi] = sum_Y2_l[qoi] / N_l[lev] - mean * mean;// TO DO: prec.
+	  // TO DO: other stats?
 	}
-	mean = exp_Y_l[qoi] = sum_Y_l[qoi] / N_l[lev];
-	var_Y_l[qoi] = sum_Y2_l[qoi] / N_l[lev] - mean * mean;
-	// TO DO: other stats?
-      }
 
-      // aggregate independent variances across QoI for estimating N_l
-      Real& agg_var_l = agg_var[lev]; agg_var_l = 0.;
-      for (qoi=0; qoi<num_qoi; ++qoi)
-	agg_var_l += var_Y_l[qoi];
-      sum_var_cost += agg_var_l * cost[lev];
+	// aggregate independent variances across QoI for estimating N_l
+	Real& agg_var_l = agg_var[lev]; agg_var_l = 0.; // TO DO: zero out?
+	for (qoi=0; qoi<num_qoi; ++qoi)
+	  agg_var_l += var_Y_l[qoi];
+	sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+      }
+      //else {
+        // TO DO: zero out?
+      //}
     }
 
     // update targets based on variance estimates
     for (lev=0; lev<num_lev; ++lev) {
-      new_N_l = std::sqrt(agg_var[lev] / cost[lev] * sum_var_cost)
+      // Equation 3.9 in CTR Annual Research Briefs:
+      // "A multifidelity control variate approach for the multilevel Monte 
+      // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
+      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * sum_sqrt_var_cost
 	      * 2. / (eps * eps);
       delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
     }
     ++iter;
+    Cout << "MLMC iteration " << iter << " sample increments:\n" << delta_N_l
+	 << std::endl;
   }
 
   // aggregate mean and variance of estimator(s)
+  if (momentStats.empty()) momentStats.shape(2, numFunctions); // init to 0
+  else                     momentStats = 0.;
   // Final estimator result is sum of final mu_l from telescopic sum
   // Final variance of estimator is a similar sum of variances
-  RealVector exp_f(num_qoi), var_f(num_qoi); exp_f = 0.;
   for (lev=0; lev<num_lev; ++lev) {
     Real *exp_Y_l = exp_Y[lev], *var_Y_l = var_Y[lev];
     for (qoi=0; qoi<num_qoi; ++qoi) {
-      exp_f[qoi] += exp_Y_l[qoi];
-      var_f[qoi] += var_Y_l[qoi];
+      momentStats(0,qoi) += exp_Y_l[qoi];
+      momentStats(1,qoi) += var_Y_l[qoi];
     }
   }
 }
@@ -219,8 +229,8 @@ void NonDMultilevelSampling::core_run()
 void NonDMultilevelSampling::post_run(std::ostream& s)
 {
   // Statistics are generated here and output in print_results() below
-  if (statsFlag) // calculate statistics on allResponses
-    compute_statistics(allSamples, allResponses);
+  //if (statsFlag) // calculate statistics on allResponses
+  //  compute_statistics(allSamples, allResponses);
 
   Analyzer::post_run(s);
 }
@@ -229,8 +239,8 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
 void NonDMultilevelSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
-    s << "\nStatistics based on " << numSamples << " samples:\n";
-    print_statistics(s);
+    s << "\nStatistics based on multilevel sample set:\n"; //<< N_l; // TO DO
+    print_moments(s);//print_statistics(s);
   }
 }
 
