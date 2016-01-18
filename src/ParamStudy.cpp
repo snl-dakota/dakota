@@ -135,6 +135,15 @@ void ParamStudy::resize()
 {
   PStudyDACE::resize();
 
+  // TODO:  To get resize() working, move contents of ParamStudy::pre_run()
+  //        to ParamStudy::initialize_run() before Analyzer::initialize_run()
+  //        is called. This populates allVariables. If the model is a
+  //        RecastModel, call inverse_transform_variables() on each entry in
+  //        allVariables to resize and transform to the RecastModel. This call
+  //        to inverse_transform_variables() must occur after
+  //        Analyzer::initialize_run(). Also in ActiveSubspaceModel,
+  //        inverse_transform_variables() is not yet implemented.
+
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
