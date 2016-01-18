@@ -145,6 +145,15 @@ void RandomFieldModel::get_field_data()
   // run daceIterator
 
   // populate rfBuildData;
+  
+  // temporary data for testing
+  std::ifstream rf_file;
+  rf_file.open("rfbuild.test");
+  RealVectorArray va;
+  read_sized_data(rf_file, va, 5, 50);
+  rfBuildData.reshape(5,50);
+  copy_data(va,rfBuildData);
+  
 }
 
 
@@ -153,6 +162,18 @@ void RandomFieldModel::identify_field_model()
   switch(expansionForm) {
   case RF_KARHUNEN_LOEVE:
     // TODO: Use ReducedBasis class to manage the decomposition
+    {rfBasis.set_matrix(rfBuildData);
+    rfBasis.update_svd(); //includes centering the matrix
+    percentVariance = 0.9; //hardcoded: need to remove
+    ReducedBasis::VarianceExplained truncation(percentVariance);
+    actualReducedRank = truncation.get_num_components(rfBasis);
+    Cout << "number of actual basis functions used " 
+         << actualReducedRank
+         << '\n' << std::endl;
+    //These will have a size of actualReducedRank
+    RealVector rfEigenvalues = rfBasis.get_singular_values();
+    RealMatrix rfBasisFns = rfBasis.get_right_singular_vector_transpose();
+    } 
     break;
   case RF_PCA_GP:
     break;
