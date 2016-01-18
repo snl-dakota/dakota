@@ -51,7 +51,14 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
   sequenceIndex(0),
-  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized"))
+  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
+  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
+  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
+  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
+  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
+  importBuildPointsFile(probDescDB.get_string("method.import_approx_points_file")),
+  importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
+  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only"))
 {
   // -------------------
   // input sanity checks
@@ -61,10 +68,9 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
-  short data_order,
-    u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  resolve_inputs(u_space_type, data_order);
-  initialize(u_space_type);
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+  initialize(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -97,25 +103,19 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       dimPrefSpec, numContinuousVars, exp_order);
   }
   if (expansionImportFile.empty()) {
-    const UShortArray& quad_order_seq_spec
-      = probDescDB.get_usa("method.nond.quadrature_order");
-    const UShortArray& ssg_level_seq_spec
-      = probDescDB.get_usa("method.nond.sparse_grid_level");
-    unsigned short cub_int_spec
-      = probDescDB.get_ushort("method.nond.cubature_integrand");
-    if (!quad_order_seq_spec.empty()) {
+    if (!quadOrderSeqSpec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
-      construct_quadrature(u_space_sampler, g_u_model, quad_order_seq_spec,
+      construct_quadrature(u_space_sampler, g_u_model, quadOrderSeqSpec,
 	dimPrefSpec);
     }
-    else if (!ssg_level_seq_spec.empty()) {
+    else if (!ssgLevelSeqSpec.empty()) {
       expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
-      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_seq_spec,
+      construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec,
 	dimPrefSpec);
     }
-    else if (cub_int_spec != USHRT_MAX) {
+    else if (cubIntSpec != USHRT_MAX) {
       expansionCoeffsApproach = Pecos::CUBATURE;
-      construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
+      construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
     }
     else { // expansion_samples or collocation_{points,ratio}
       if (!expSamplesSeqSpec.empty()) { // expectation
@@ -291,8 +291,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, import_pts_file,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
+    importBuildFormat,
+    importBuildActiveOnly,
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
@@ -301,9 +301,9 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Construct expansionSampler, if needed
   // -------------------------------------
   construct_expansion_sampler(
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"),
-    probDescDB.get_bool("method.import_approx_active_only"));
+    importBuildPointsFile,
+    importBuildFormat,
+    importBuildActiveOnly);
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -321,7 +321,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), l2Penalty(0.), //initSGLevel(0),
   numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
-  normalizedCoeffOutput(false)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
 {
   // -------------------
   // input sanity checks
@@ -332,8 +332,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
   short data_order;
-  resolve_inputs(u_space_type, data_order);
-  initialize(u_space_type);
+  resolve_inputs(uSpaceType, data_order);
+  initialize(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -396,7 +396,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   tensorRegression(false), crossValidation(cv_flag), l2Penalty(0.),
   numAdvance(3), expOrderSeqSpec(exp_order_seq), dimPrefSpec(dim_pref),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
-  normalizedCoeffOutput(false)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
 {
   // -------------------
   // input sanity checks
@@ -407,8 +407,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
   short data_order;
-  resolve_inputs(u_space_type, data_order);
-  initialize(u_space_type);
+  resolve_inputs(uSpaceType, data_order);
+  initialize(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -494,6 +494,152 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 
 NonDPolynomialChaos::~NonDPolynomialChaos()
 { }
+
+
+void NonDPolynomialChaos::resize()
+{
+  NonDExpansion::resize();
+
+  // Free communicators before we rebuild:
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  free_communicators(pl_iter);
+  
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+  initialize(uSpaceType);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
+  // generated using active sampling view:
+  Iterator u_space_sampler;
+  if (expansionCoeffsApproach == Pecos::QUADRATURE) {
+    construct_quadrature(u_space_sampler,  g_u_model, quadOrderSeqSpec, dimPrefSpec);
+  }
+  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
+    construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec, dimPrefSpec);
+  }
+  else if (expansionCoeffsApproach == Pecos::CUBATURE) {
+    construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
+
+    // --------------------------------
+    // Construct G-hat(u) = uSpaceModel
+    // --------------------------------
+    // G-hat(u) uses an orthogonal polynomial approximation over the
+    // active/uncertain variables (using same view as iteratedModel/g_u_model:
+    // not the typical All view for DACE).  No correction is employed.
+    // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+    short  corr_order = -1, corr_type = NO_CORRECTION;
+    String pt_reuse, approx_type =
+      //(piecewiseBasis) ? "piecewise_projection_orthogonal_polynomial" :
+      "global_projection_orthogonal_polynomial";
+    UShortArray exp_order; // empty for numerical integration approaches
+    ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+    pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                               // TO DO: consider passing in data_mode
+    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+      outputLevel, pt_reuse), false);
+  }
+  else {
+      UShortArray exp_order;
+    if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
+        expOrderSeqSpec.empty()) {
+      // extract number of collocation points
+      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
+        collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+      // Construct u_space_sampler
+      String rng("mt19937");
+      construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+    }
+    else { // expansion_order-based
+
+      // resolve expansionBasisType, exp_terms, numSamplesOnModel
+      expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
+        Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
+      unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
+        expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+        dimPrefSpec, numContinuousVars, exp_order);
+
+      size_t exp_terms;
+      switch (expansionBasisType) {
+      case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
+      case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
+        exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+        break;
+      case Pecos::TENSOR_PRODUCT_BASIS:
+        exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+        break;
+      }
+  
+	    if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
+	      collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
+	    else if (collocRatio > 0.)     // define colloc pts from collocRatio
+	      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+
+      // Construct u_space_sampler
+      if (tensorRegression) { // tensor sub-sampling
+        UShortArray dim_quad_order(numContinuousVars);
+        // define nominal quadrature order as exp_order + 1
+        // (m > p avoids most of the 0's in the Psi measurement matrix)
+        for (size_t i=0; i<numContinuousVars; ++i)
+	  dim_quad_order[i] = exp_order[i] + 1;
+        construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+			     dimPrefSpec);
+      }
+      else {
+        String rng("mt19937");
+        construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		      numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+      }
+    }
+
+    // --------------------------------
+    // Construct G-hat(u) = uSpaceModel
+    // --------------------------------
+    // G-hat(u) uses an orthogonal polynomial approximation over the
+    // active/uncertain variables (using same view as iteratedModel/g_u_model:
+    // not the typical All view for DACE).  No correction is employed.
+    // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+    short  corr_order = -1, corr_type = NO_CORRECTION;
+    String pt_reuse, approx_type =
+      //(piecewiseBasis) ? "piecewise_regression_orthogonal_polynomial" :
+      "global_regression_orthogonal_polynomial";
+    ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+    if (!importBuildPointsFile.empty()) pt_reuse = "all";
+    pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                               // TO DO: consider passing in data_mode
+    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+      outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
+      importBuildActiveOnly), false);
+  }
+
+  initialize_u_space_model();
+
+  // Re-initialize communicators:
+  init_communicators(pl_iter);
+  set_communicators(pl_iter);
+
+  // no expansionSampler, no numSamplesOnExpansion
+}
 
 
 void NonDPolynomialChaos::derived_init_communicators(ParLevLIter pl_iter)

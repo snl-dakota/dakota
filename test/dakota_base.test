@@ -6252,6 +6252,70 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  1.2983032161079763e-01  7.8112748931693329e-02
+Test Number 11 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  8.6614602620944609e+01  He0  He0  He0  He0  He0
+  -4.7538089860759840e+01  He1  He0  He0  He0  He0
+  5.4028870281349866e+00  He0  He1  He0  He0  He0
+  -3.8659312357314157e-01  He0  He0  He1  He0  He0
+  4.5237445628389633e-02  He0  He0  He0  He1  He0
+  1.5230691793659393e-02  He0  He0  He0  He0  He1
+  1.1286306837804672e+01  He2  He0  He0  He0  He0
+  4.3797631604106897e+00  He1  He1  He0  He0  He0
+  6.1390702156283039e+00  He0  He2  He0  He0  He0
+  -4.9251352338156484e-01  He1  He0  He1  He0  He0
+  2.0284733973373922e-01  He0  He1  He1  He0  He0
+  2.1667022481987850e+00  He0  He0  He2  He0  He0
+  7.7313811014941713e-01  He1  He0  He0  He1  He0
+  -4.7575409874032160e-01  He0  He1  He0  He1  He0
+  1.0974813671797909e-01  He0  He0  He1  He1  He0
+  2.6627094583386746e-01  He0  He0  He0  He2  He0
+  2.9338479733693754e-03  He1  He0  He0  He0  He1
+  8.1855668801709761e-03  He0  He1  He0  He0  He1
+  -1.5885201370625036e-02  He0  He0  He1  He0  He1
+  -3.9676373875634002e-03  He0  He0  He0  He1  He1
+  8.4049752534378630e-02  He0  He0  He0  He0  He2
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.6614602620944609e+01  5.1470363900133059e+01
+Test Number 12 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 231 total (231 new, 0 duplicate)
+  response_fn_1: 231 val (231 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 231 total (231 new, 0 duplicate)
+  response_fn_1: 231 val (231 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  8.6614602620944964e+01  He0  He0  He0  He0  He0
+  -4.7538089860759868e+01  He1  He0  He0  He0  He0
+  5.4028870281349928e+00  He0  He1  He0  He0  He0
+  -3.8659312357314063e-01  He0  He0  He1  He0  He0
+  4.5237445628387794e-02  He0  He0  He0  He1  He0
+  1.5230691793656589e-02  He0  He0  He0  He0  He1
+  1.1286306837804670e+01  He2  He0  He0  He0  He0
+  4.3797631604107039e+00  He1  He1  He0  He0  He0
+  6.1390702156283057e+00  He0  He2  He0  He0  He0
+  -4.9251352338157439e-01  He1  He0  He1  He0  He0
+  2.0284733973375249e-01  He0  He1  He1  He0  He0
+  2.1667022481987881e+00  He0  He0  He2  He0  He0
+  7.7313811014941991e-01  He1  He0  He0  He1  He0
+  -4.7575409874032404e-01  He0  He1  He0  He1  He0
+  1.0974813671796245e-01  He0  He0  He1  He1  He0
+  2.6627094583387378e-01  He0  He0  He0  He2  He0
+  2.9338479733769800e-03  He1  He0  He0  He0  He1
+  8.1855668801538717e-03  He0  He1  He0  He0  He1
+  -1.5885201370617871e-02  He0  He0  He1  He0  He1
+  -3.9676373875597946e-03  He0  He0  He0  He1  He1
+  8.4049752534371552e-02  He0  He0  He0  He0  He2
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.6614602620944964e+01  5.1470363900133087e+01
 dakota_experiment_read.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)

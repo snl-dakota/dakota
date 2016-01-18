@@ -63,6 +63,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
@@ -176,6 +177,27 @@ private:
 
   /// user request for use of normalization when outputting PCE coefficients
   bool normalizedCoeffOutput;
+
+  /// user requested expansion type
+  short uSpaceType;
+
+  /// user request of quadrature order
+  UShortArray quadOrderSeqSpec;
+
+  /// user request of sparse grid level
+  UShortArray ssgLevelSeqSpec;
+
+  /// cubature integrand
+  unsigned short cubIntSpec;
+
+  /// user specified import approx. points file
+  String importBuildPointsFile;
+
+  /// user specified import file format
+  unsigned short importBuildFormat;
+
+  /// user specified import build active only
+  bool importBuildActiveOnly;
 };
 
 

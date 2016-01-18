@@ -223,6 +223,16 @@ NonDStochCollocation::~NonDStochCollocation()
 { }
 
 
+void NonDStochCollocation::resize()
+{
+  NonDExpansion::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDStochCollocation::
 resolve_inputs(short& u_space_type, short& data_order)
 {

@@ -52,6 +52,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void resize();
   void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
   //void initialize_expansion();
