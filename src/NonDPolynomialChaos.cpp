@@ -545,14 +545,75 @@ void NonDPolynomialChaos::resize()
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  if (expansionCoeffsApproach == Pecos::QUADRATURE) {
+  UShortArray exp_order; // empty for numerical integration approaches
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE:
     construct_quadrature(u_space_sampler,  g_u_model, quadOrderSeqSpec, dimPrefSpec);
-  }
-  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
+    break;
+  case Pecos::COMBINED_SPARSE_GRID:
     construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec, dimPrefSpec);
-  }
-  else if (expansionCoeffsApproach == Pecos::CUBATURE)
+    break;
+  case Pecos::CUBATURE:
     construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
+    break;
+  default:
+    {
+      if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
+          expOrderSeqSpec.empty()) {
+        // extract number of collocation points
+        numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
+          collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+        // Construct u_space_sampler
+        String rng("mt19937");
+        construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+	        numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+      }
+      else { // expansion_order-based
+        // resolve expansionBasisType, exp_terms, numSamplesOnModel
+        if (!expansionBasisType)
+          expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
+            Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
+        unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
+          expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+        NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+          dimPrefSpec, numContinuousVars, exp_order);
+
+        size_t exp_terms;
+        switch (expansionBasisType) {
+        case Pecos::TOTAL_ORDER_BASIS:
+        case Pecos::ADAPTED_BASIS_GENERALIZED:
+        case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
+          exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+          break;
+        case Pecos::TENSOR_PRODUCT_BASIS:
+          exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+          break;
+        }
+    
+        if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
+          collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
+        else if (collocRatio > 0.)     // define colloc pts from collocRatio
+          numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+
+        // Construct u_space_sampler
+        if (tensorRegression) { // tensor sub-sampling
+          UShortArray dim_quad_order(numContinuousVars);
+          // define nominal quadrature order as exp_order + 1
+          // (m > p avoids most of the 0's in the Psi measurement matrix)
+          for (size_t i=0; i<numContinuousVars; ++i)
+            dim_quad_order[i] = exp_order[i] + 1;
+          construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+		         dimPrefSpec);
+        }
+        else {
+          String rng("mt19937");
+          construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+	          numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+        }
+      }
+    }
+    break;
+  }
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -561,91 +622,23 @@ void NonDPolynomialChaos::resize()
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse, approx_type =
-    //(piecewiseBasis) ? "piecewise_projection_orthogonal_polynomial" :
-    "global_projection_orthogonal_polynomial";
-  UShortArray exp_order; // empty for numerical integration approaches
+  short corr_order = -1, corr_type = NO_CORRECTION;
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
+  pce_set.request_values(7);
+  if(expansionCoeffsApproach == Pecos::QUADRATURE ||
+      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::CUBATURE) {
+    String pt_reuse, approx_type = "global_projection_orthogonal_polynomial";
+    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+      outputLevel, pt_reuse), false);
+  }
+  else {
+    String pt_reuse, approx_type = "global_regression_orthogonal_polynomial";
 
-  if (expansionCoeffsApproach != Pecos::QUADRATURE &&
-      expansionCoeffsApproach != Pecos::COMBINED_SPARSE_GRID &&
-      expansionCoeffsApproach != Pecos::CUBATURE) {
-    UShortArray exp_order;
-    if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
-        expOrderSeqSpec.empty()) {
-      // extract number of collocation points
-      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
-        collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-      // Construct u_space_sampler
-      String rng("mt19937");
-      construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
-    }
-    else { // expansion_order-based
+    if (!importBuildPointsFile.empty())
+      pt_reuse = "all";
 
-      // resolve expansionBasisType, exp_terms, numSamplesOnModel
-      if (!expansionBasisType)
-        expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
-          Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
-      unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
-        expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-        dimPrefSpec, numContinuousVars, exp_order);
-
-      size_t exp_terms;
-      switch (expansionBasisType) {
-      case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
-      case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
-        exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-        break;
-      case Pecos::TENSOR_PRODUCT_BASIS:
-        exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
-        break;
-      }
-  
-	    if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
-	      collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
-	    else if (collocRatio > 0.)     // define colloc pts from collocRatio
-	      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-
-      // Construct u_space_sampler
-      if (tensorRegression) { // tensor sub-sampling
-        UShortArray dim_quad_order(numContinuousVars);
-        // define nominal quadrature order as exp_order + 1
-        // (m > p avoids most of the 0's in the Psi measurement matrix)
-        for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_order[i] + 1;
-        construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
-			     dimPrefSpec);
-      }
-      else {
-        String rng("mt19937");
-        construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		      numSamplesOnModel, randomSeed, rng, false, ACTIVE);
-      }
-    }
-
-    // --------------------------------
-    // Construct G-hat(u) = uSpaceModel
-    // --------------------------------
-    // G-hat(u) uses an orthogonal polynomial approximation over the
-    // active/uncertain variables (using same view as iteratedModel/g_u_model:
-    // not the typical All view for DACE).  No correction is employed.
-    // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-    short  corr_order = -1, corr_type = NO_CORRECTION;
-    String pt_reuse, approx_type =
-      //(piecewiseBasis) ? "piecewise_regression_orthogonal_polynomial" :
-      "global_regression_orthogonal_polynomial";
-    ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-    if (!importBuildPointsFile.empty()) pt_reuse = "all";
-    pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                               // TO DO: consider passing in data_mode
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
       pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
       outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,

@@ -317,15 +317,6 @@ diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
   if (kernel_ == "exponential") {
     Real field_mean = 0.1, field_std_dev = 0.5;
 
-    // Form correlation matrix:
-    Real beta = 0.2;
-    RealMatrix Corr(num_mesh_points,num_mesh_points);
-    for (int i = 0; i < num_mesh_points; i++) {
-      for (int j = 0; j < num_mesh_points; j++) {
-        Corr(i,j) = std::exp(-std::abs(mesh_points(0,i) - mesh_points(0,j))/beta);
-      }
-    }
-
     for (int d=0; d<num_stoch_dims; d++) {
       for (int i=0; i<num_mesh_points; i++) {
         diffusivity[i] += singularValues_[d]*leftSingularVectors_(i,d)*sample[d];

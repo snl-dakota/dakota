@@ -6684,6 +6684,187 @@ Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
   expansion:    8.6614602620942748e+01  5.1470363900132917e+01
   integration:  8.6614602620944211e+01  5.1470363900132945e+01  1.1938843548474569e+00  2.0724283936792869e+00
+Test Number 14 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 32 total (32 new, 0 duplicate)
+  response_fn_1: 32 val (32 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 32 total (32 new, 0 duplicate)
+  response_fn_1: 32 val (32 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  8.6614602620944623e+01  He0  He0  He0  He0  He0
+  -4.7538089860759833e+01  He1  He0  He0  He0  He0
+  5.4028870281349821e+00  He0  He1  He0  He0  He0
+  4.3797631604107057e+00  He1  He1  He0  He0  He0
+  -3.8659312357313791e-01  He0  He0  He1  He0  He0
+  -4.9251352338156917e-01  He1  He0  He1  He0  He0
+  2.0284733973374203e-01  He0  He1  He1  He0  He0
+  -9.9920072216264089e-15  He1  He1  He1  He0  He0
+  4.5237445628385053e-02  He0  He0  He0  He1  He0
+  7.7313811014942391e-01  He1  He0  He0  He1  He0
+  -4.7575409874031727e-01  He0  He1  He0  He1  He0
+  -3.7747582837255322e-15  He1  He1  He0  He1  He0
+  1.0974813671797023e-01  He0  He0  He1  He1  He0
+  -1.1102230246251565e-15  He1  He0  He1  He1  He0
+  -2.2204460492503131e-16  He0  He1  He1  He1  He0
+  -3.5527136788005009e-15  He1  He1  He1  He1  He0
+  1.5230691793647999e-02  He0  He0  He0  He0  He1
+  2.9338479733655998e-03  He1  He0  He0  He0  He1
+  8.1855668801547044e-03  He0  He1  He0  He0  He1
+  6.8833827526759706e-15  He1  He1  He0  He0  He1
+  -1.5885201370627433e-02  He0  He0  He1  He0  He1
+  -1.1102230246251565e-15  He1  He0  He1  He0  He1
+  -2.2204460492503131e-16  He0  He1  He1  He0  He1
+  -3.5527136788005009e-15  He1  He1  He1  He0  He1
+  -3.9676373875712212e-03  He0  He0  He0  He1  He1
+  1.1324274851176597e-14  He1  He0  He0  He1  He1
+  5.9952043329758453e-15  He0  He1  He0  He1  He1
+  -1.7763568394002505e-15  He1  He1  He0  He1  He1
+  6.6613381477509392e-16  He0  He0  He1  He1  He1
+  -8.8817841970012523e-16  He1  He0  He1  He1  He1
+  -7.9936057773011271e-15  He0  He1  He1  He1  He1
+  6.6613381477509392e-15  He1  He1  He1  He1  He1
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+  expansion:    8.6614602620944623e+01  4.8057417984047433e+01
+  integration:  8.6614602620944623e+01  4.8057417984047433e+01 -6.1533972850669957e-02 -1.9147305565178165e+00
+Test Number 15 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  8.6614602620944908e+01  He0  He0  He0  He0  He0
+  -4.7538089860760024e+01  He1  He0  He0  He0  He0
+  5.4028870281349324e+00  He0  He1  He0  He0  He0
+  -3.8659312357292208e-01  He0  He0  He1  He0  He0
+  4.5237445628354966e-02  He0  He0  He0  He1  He0
+  1.5230691793799156e-02  He0  He0  He0  He0  He1
+  1.1286306837804597e+01  He2  He0  He0  He0  He0
+  4.3797631604107448e+00  He1  He1  He0  He0  He0
+  6.1390702156282044e+00  He0  He2  He0  He0  He0
+  -4.9251352338141441e-01  He1  He0  He1  He0  He0
+  2.0284733973382885e-01  He0  He1  He1  He0  He0
+  2.1667022481987797e+00  He0  He0  He2  He0  He0
+  7.7313811014935130e-01  He1  He0  He0  He1  He0
+  -4.7575409874045882e-01  He0  He1  He0  He1  He0
+  1.0974813671810124e-01  He0  He0  He1  He1  He0
+  2.6627094583372735e-01  He0  He0  He0  He2  He0
+  2.9338479732716749e-03  He1  He0  He0  He0  He1
+  8.1855668801034120e-03  He0  He1  He0  He0  He1
+  -1.5885201370682132e-02  He0  He0  He1  He0  He1
+  -3.9676373873451798e-03  He0  He0  He0  He1  He1
+  8.4049752534408828e-02  He0  He0  He0  He0  He2
+  -2.3397950243975174e-14  He3  He0  He0  He0  He0
+  6.9166894434147252e-14  He2  He1  He0  He0  He0
+  -4.2077452633293433e-14  He1  He2  He0  He0  He0
+  1.3100631690576847e-14  He0  He3  He0  He0  He0
+  -1.4210854715202004e-14  He2  He0  He1  He0  He0
+  -3.1308289294429414e-14  He1  He1  He1  He0  He0
+  4.8849813083506888e-14  He0  He2  He1  He0  He0
+  2.8199664825478976e-14  He1  He0  He2  He0  He0
+  1.4210854715202004e-14  He0  He1  He2  He0  He0
+  -7.9936057773011271e-15  He0  He0  He3  He0  He0
+  -2.1316282072803006e-14  He2  He0  He0  He1  He0
+  -2.4480417692984702e-14  He1  He1  He0  He1  He0
+  -4.6074255521943996e-14  He0  He2  He0  He1  He0
+  9.9698027611339057e-14  He1  He0  He1  He1  He0
+  3.7303493627405260e-14  He0  He1  He1  He1  He0
+  3.5749181392930041e-14  He0  He0  He2  He1  He0
+  8.3266726846886741e-15  He1  He0  He0  He2  He0
+  -3.1530333899354446e-14  He0  He1  He0  He2  He0
+  -1.6209256159527285e-14  He0  He0  He1  He2  He0
+  -2.5729418595688003e-14  He0  He0  He0  He3  He0
+  -3.4416913763379853e-14  He2  He0  He0  He0  He1
+  6.9000360980453479e-14  He1  He1  He0  He0  He1
+  5.1902926401226068e-14  He0  He2  He0  He0  He1
+  6.0562665993302289e-14  He1  He0  He1  He0  He1
+  -5.0626169922907138e-14  He0  He1  He1  He0  He1
+  -4.7628567756419216e-14  He0  He0  He2  He0  He1
+  5.0182080713057076e-14  He1  He0  He0  He1  He1
+  1.5321077739827160e-14  He0  He1  He0  He1  He1
+  3.2862601528904634e-14  He0  He0  He1  He1  He1
+  -1.0824674490095276e-14  He0  He0  He0  He2  He1
+  -9.4035890185750759e-14  He1  He0  He0  He0  He2
+  -9.1038288019262836e-15  He0  He1  He0  He0  He2
+  6.2172489379008766e-14  He0  He0  He1  He0  He2
+  -1.9539925233402755e-14  He0  He0  He0  He1  He2
+  9.1968533483255399e-15  He0  He0  He0  He0  He3
+  1.5543122344752192e-14  He4  He0  He0  He0  He0
+  2.1205259770340490e-14  He3  He1  He0  He0  He0
+  -5.6843418860808015e-14  He2  He2  He0  He0  He0
+  2.3536728122053319e-14  He1  He3  He0  He0  He0
+  -2.0761170560490427e-14  He0  He4  He0  He0  He0
+  1.8873791418627661e-14  He3  He0  He1  He0  He0
+  1.4210854715202004e-14  He2  He1  He1  He0  He0
+  -1.5543122344752192e-15  He1  He2  He1  He0  He0
+  0.0000000000000000e+00  He0  He3  He1  He0  He0
+  -2.0428103653102880e-14  He2  He0  He2  He0  He0
+  1.6098233857064770e-14  He1  He1  He2  He0  He0
+  -9.7699626167013776e-15  He0  He2  He2  He0  He0
+  -1.5543122344752192e-15  He1  He0  He3  He0  He0
+  -1.1102230246251565e-14  He0  He1  He3  He0  He0
+  1.1990408665951691e-14  He0  He0  He4  He0  He0
+  2.6867397195928788e-14  He3  He0  He0  He1  He0
+  -2.4202861936828413e-14  He2  He1  He0  He1  He0
+  -1.9984014443252818e-14  He1  He2  He0  He1  He0
+  -1.4210854715202004e-14  He0  He3  He0  He1  He0
+  -3.3306690738754696e-15  He2  He0  He1  He1  He0
+  -4.8405723873656825e-14  He1  He1  He1  He1  He0
+  -6.4392935428259079e-15  He0  He2  He1  He1  He0
+  -6.5281113847959205e-14  He1  He0  He2  He1  He0
+  4.6185277824406512e-14  He0  He1  He2  He1  He0
+  1.5432100042289676e-14  He0  He0  He3  He1  He0
+  8.2156503822261584e-15  He2  He0  He0  He2  He0
+  -7.5495165674510645e-15  He1  He1  He0  He2  He0
+  -2.9753977059954195e-14  He0  He2  He0  He2  He0
+  2.6201263381153694e-14  He1  He0  He1  He2  He0
+  1.5154544286133387e-14  He0  He1  He1  He2  He0
+  -8.4099394115355608e-15  He0  He0  He2  He2  He0
+  -2.1982415887578100e-14  He1  He0  He0  He3  He0
+  -3.2529534621517087e-14  He0  He1  He0  He3  He0
+  6.1950444774083735e-14  He0  He0  He1  He3  He0
+  -1.7194579093882112e-14  He0  He0  He0  He4  He0
+  -1.3322676295501878e-14  He3  He0  He0  He0  He1
+  -1.8540724511240114e-14  He2  He1  He0  He0  He1
+  7.7715611723760958e-15  He1  He2  He0  He0  He1
+  -9.1038288019262836e-15  He0  He3  He0  He0  He1
+  -8.5487172896137054e-15  He2  He0  He1  He0  He1
+  1.7985612998927536e-14  He1  He1  He1  He0  He1
+  7.1054273576010019e-15  He0  He2  He1  He0  He1
+  4.2743586448068527e-15  He1  He0  He2  He0  He1
+  6.6613381477509392e-15  He0  He1  He2  He0  He1
+  7.1054273576010019e-15  He0  He0  He3  He0  He1
+  3.2751579226442118e-14  He2  He0  He0  He1  He1
+  2.0372592501871623e-14  He1  He1  He0  He1  He1
+  1.1657341758564144e-14  He0  He2  He0  He1  He1
+  -3.6970426720017713e-14  He1  He0  He1  He1  He1
+  -1.3766765505351941e-14  He0  He1  He1  He1  He1
+  1.1102230246251565e-16  He0  He0  He2  He1  He1
+  -1.3045120539345589e-14  He1  He0  He0  He2  He1
+  -2.4313884239290928e-14  He0  He1  He0  He2  He1
+  -1.2878587085651816e-14  He0  He0  He1  He2  He1
+  5.7343019221889335e-14  He0  He0  He0  He3  He1
+  1.3766765505351941e-14  He2  He0  He0  He0  He2
+  -4.3860748366597591e-14  He1  He1  He0  He0  He2
+  -4.4408920985006262e-16  He0  He2  He0  He0  He2
+  1.2434497875801753e-14  He1  He0  He1  He0  He2
+  2.5757174171303632e-14  He0  He1  He1  He0  He2
+  -3.5527136788005009e-15  He0  He0  He2  He0  He2
+  -3.5971225997855072e-14  He1  He0  He0  He1  He2
+  -5.2402526762307389e-14  He0  He1  He0  He1  He2
+  3.2418512319054571e-14  He0  He0  He1  He1  He2
+  -1.5543122344752192e-14  He0  He0  He0  He2  He2
+  4.8405723873656825e-14  He1  He0  He0  He0  He3
+  1.1934897514720433e-14  He0  He1  He0  He0  He3
+  -2.4202861936828413e-14  He0  He0  He1  He0  He3
+  4.3520742565306136e-14  He0  He0  He0  He1  He3
+  3.5527136788005009e-15  He0  He0  He0  He0  He4
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.6614602620944908e+01  5.1470363900133158e+01
 dakota_experiment_read.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
