@@ -10,6 +10,7 @@
 #define RANDOM_FIELD_MODEL_H
 
 #include "ReducedBasis.hpp"
+#include "DakotaApproximation.hpp"
 #include "RecastModel.hpp"
 #include "DakotaIterator.hpp"
 
@@ -139,6 +140,8 @@ protected:
   /// generate a PCA/GP realization and write to file
   void generate_pca_gp_realization();
 
+  /// write a field realization to console and file
+  void write_field(const RealVector& field_prediction);
 
   // ---
   // Member data
@@ -160,6 +163,9 @@ protected:
   IntVector fieldLengths;
   /// data matrix with realizations of the random field to approximate
   RealMatrix rfBuildData;
+
+  /// matrix of samples used to build the RF data
+  RealMatrix rfBuildVars;
 
   /// String dataDirectoryBasename;
 
@@ -201,7 +207,7 @@ protected:
   // ---
 
   /// approximate models used to map the uncertain vars through the PCA approx
-  //  std::vector<Approximation> gpModels;
+  std::vector<Approximation> gpApproximations;
 
 
   // ---

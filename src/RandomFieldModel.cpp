@@ -135,41 +135,100 @@ bool RandomFieldModel::finalize_mapping()
 }
 
 
+/** Populate rfBuildData */
 void RandomFieldModel::get_field_data()
 {
   // TODO: either load the data matrix using ReducedBasis utilities or
   // run daceIterator
 
-  // populate rfBuildData;
-  
-  // temporary data for testing
-  std::ifstream rf_file;
-  rf_file.open("rfbuild.test");
-  RealVectorArray va;
-  read_sized_data(rf_file, va, 5, 50);
-  rfBuildData.reshape(5,50);
-  copy_data(va,rfBuildData);
-  
+  if (daceIterator.is_null()) {
+    // TODO: temporary data for testing
+    std::ifstream rf_file;
+    rf_file.open("rfbuild.test");
+    RealVectorArray va;
+    read_sized_data(rf_file, va, 5, 50);
+    rfBuildData.reshape(5,50);
+    copy_data(va,rfBuildData);
+  }
+  else {
+    // generate samples of the random field
+    Cout << "\nRandomFieldModel: Gathering random field data from RF-generating "
+         << "model" << std::endl;
+    daceIterator.run();
+    size_t num_samples = daceIterator.num_samples();
+    // BMA TODO: relax assumption of allSamples / compactMode
+    // Generalize to discrete vars
+    if (expansionForm == RF_PCA_GP) {
+      rfBuildVars.reshape(subModel.cv(), num_samples);
+      rfBuildVars.assign(daceIterator.all_samples());
+    }
+    rfBuildData.reshape(num_samples, numFunctions);
+    const IntResponseMap& all_resp = daceIterator.all_responses();
+    IntRespMCIter r_it = all_resp.begin(); 
+    for (size_t samp=0; samp<num_samples; ++samp, ++r_it)
+      for (size_t fn=0; fn<numFunctions; ++fn) 
+        rfBuildData(samp,fn) = r_it->second.function_value(fn);
+  }
 }
 
 
 void RandomFieldModel::identify_field_model()
 {
+  // operations common to both representations
+  rfBasis.set_matrix(rfBuildData);
+  rfBasis.update_svd();  // includes centering the matrix
+  percentVariance = 0.9; // hardcoded: need to remove
+  ReducedBasis::VarianceExplained truncation(percentVariance);
+  actualReducedRank = truncation.get_num_components(rfBasis);
+  Cout << "RandomFieldModel: retaining " << actualReducedRank 
+       << " basis functions." << std::endl;
+
   switch(expansionForm) {
   case RF_KARHUNEN_LOEVE: {
-    // TODO: Use ReducedBasis class to manage the decomposition
-    rfBasis.set_matrix(rfBuildData);
-    rfBasis.update_svd();  // includes centering the matrix
-    percentVariance = 0.9; // hardcoded: need to remove
-    ReducedBasis::VarianceExplained truncation(percentVariance);
-    actualReducedRank = truncation.get_num_components(rfBasis);
-    Cout << "RandomFieldModel: number of basis functions used " 
-         << actualReducedRank << '\n' << std::endl;
     break;
   }
-  case RF_PCA_GP:
-    // will also build the GP approximations
+  case RF_PCA_GP: {
+
+    int num_samples = rfBuildData.numRows();
+
+    // Get the centered version of the original response matrix
+    const RealMatrix& centered_matrix = rfBasis.get_matrix();
+    // for now get the first factor score
+    const RealMatrix& principal_comp
+      = rfBasis.get_right_singular_vector_transpose();
+
+    // Compute the factor scores
+    RealMatrix factor_scores(num_samples, numFunctions);
+    int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
+                                       centered_matrix, principal_comp, 0.);
+    RealMatrix
+      f_scores(Teuchos::Copy, factor_scores, num_samples, num_samples, 0, 0);
+
+    // build the GP approximations, one per principal component
+    String approx_type("global_kriging"); // Surfpack GP
+    UShortArray approx_order;
+    short data_order = 1;  // assume only function values
+    short output_level = NORMAL_OUTPUT;
+    SharedApproxData sharedData;
+
+    // BMA TODO: generalize to discrete vars if possible
+    sharedData = SharedApproxData(approx_type, approx_order, subModel.cv(),
+                                  data_order, output_level);
+
+    // build one GP for each Principal Component
+    gpApproximations.clear();
+    for (int i = 0; i < actualReducedRank; ++i)
+      gpApproximations.push_back(Approximation(sharedData));
+    for (int i = 0; i < actualReducedRank; ++i) {
+      RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
+      gpApproximations[i].add(rfBuildVars, factor_i);
+      gpApproximations[i].build();
+      const String gp_string = boost::lexical_cast<String>(i);
+      const String gp_prefix = "PCA_GP";
+      gpApproximations[i].export_model(gp_string, gp_prefix, ALGEBRAIC_FILE);
+    }
     break;
+  }
   default:
     Cerr << "Not implemented";
     break;
@@ -334,33 +393,37 @@ void RandomFieldModel::initialize_rf_coeffs()
 void RandomFieldModel::vars_mapping(const Variables& recast_augmented_vars, 
                                     Variables& sub_model_vars)
 {
-  // send the submodel all but the N(0,1) vars
+  if (rfmInstance->expansionForm == RF_KARHUNEN_LOEVE) {
+    // send the submodel all but the N(0,1) vars
 
-  // BMA TODO: generalize this for other views; for now, assume cv()
-  // starts with normal uncertain
-  size_t num_sm_cv = rfmInstance->subModel.cv();
-  const Pecos::AleatoryDistParams& adp = 
-    rfmInstance->subModel.aleatory_distribution_parameters();
-  size_t num_sm_normal = adp.normal_means().length();
-  const RealVector& augmented_cvars = 
-    recast_augmented_vars.continuous_variables();
+    // BMA TODO: generalize this for other views; for now, assume cv()
+    // starts with normal uncertain
+    size_t num_sm_cv = rfmInstance->subModel.cv();
+    const Pecos::AleatoryDistParams& adp = 
+      rfmInstance->subModel.aleatory_distribution_parameters();
+    size_t num_sm_normal = adp.normal_means().length();
+    const RealVector& augmented_cvars = 
+      recast_augmented_vars.continuous_variables();
 
-  size_t i = 0;
-  RealVector sm_cvars(num_sm_cv);
-  for ( ; i<num_sm_normal; ++i)
-    sm_cvars[i] = augmented_cvars[i];
-  // skip the N(0,1) coeffs, if they exist
-  for ( ; i<num_sm_cv; ++i)
-    sm_cvars[i] = augmented_cvars[rfmInstance->actualReducedRank + i];
+    size_t i = 0;
+    RealVector sm_cvars(num_sm_cv);
+    for ( ; i<num_sm_normal; ++i)
+      sm_cvars[i] = augmented_cvars[i];
+    // skip the N(0,1) coeffs, if they exist
+    for ( ; i<num_sm_cv; ++i)
+      sm_cvars[i] = augmented_cvars[rfmInstance->actualReducedRank + i];
 
-  // propagate variables to subModel
-  sub_model_vars.continuous_variables(sm_cvars);
-  sub_model_vars.
-    discrete_int_variables(recast_augmented_vars.discrete_int_variables());
-  sub_model_vars.
-    discrete_string_variables(recast_augmented_vars.discrete_string_variables());
-  sub_model_vars.
-    discrete_real_variables(recast_augmented_vars.discrete_real_variables());
+    // propagate variables to subModel
+    sub_model_vars.continuous_variables(sm_cvars);
+    sub_model_vars.discrete_int_variables(recast_augmented_vars.
+                                          discrete_int_variables());
+    sub_model_vars.discrete_string_variables(recast_augmented_vars.
+                                             discrete_string_variables());
+    sub_model_vars.discrete_real_variables(recast_augmented_vars.
+                                           discrete_real_variables());
+  }
+  else
+    sub_model_vars.active_variables(recast_augmented_vars);
 }
 
 
@@ -415,14 +478,47 @@ void RandomFieldModel::generate_kl_realization()
     rf_ev_i.scale(rf_sqrt_eigenvalues[i] * kl_coeffs[i]);
     kl_prediction += rf_ev_i;
   }
-  // TODO: write to file per eval, preferrably in work_directory
-  Cout << "KL Prediction:\n" << kl_prediction << std::endl;
+
+  write_field(kl_prediction);
 }
 
 
 void RandomFieldModel::generate_pca_gp_realization()
 {
-  // TODO
+  // augment the mean prediction with the GP contributions
+  RealVector pca_prediction = rfBasis.get_column_means();
+
+  // BMA TODO: make sure this is the right matrix with right dimensions
+  const RealMatrix& principal_comp
+    = rfBasis.get_right_singular_vector_transpose();
+
+  for (int i=0; i<actualReducedRank; ++i) {
+    const RealVector& new_sample = currentVariables.continuous_variables();
+    Real pca_coeff = gpApproximations[i].value(new_sample);
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "DEBUG: pca_coeff = " << pca_coeff << '\n';
+    for (int k=0; k<numFunctions; ++k)
+      pca_prediction[k] += pca_coeff*principal_comp(i,k);
+  }
+
+  write_field(pca_prediction);
+}
+
+
+void RandomFieldModel::write_field(const RealVector& field_prediction)
+{
+  // TODO: write to file per eval, preferrably in work_directory
+  // BMA TODO: something smarter than modelEvalCntr / eval ID
+  if (outputLevel >= VERBOSE_OUTPUT) {
+    String pred_count(boost::lexical_cast<String>(evaluation_id() + 1));
+    std::ofstream myfile;
+    myfile.open(("field_prediction." + pred_count + ".txt").c_str());
+    Cout << "Field prediction " << pred_count << "\n";
+    Cout << field_prediction << std::endl;
+    for (int i=0; i<field_prediction.length(); ++i) 
+      myfile << field_prediction[i] << " ";
+    myfile << std::endl;
+  }
 }
 
 /// map the inbound ActiveSet to the sub-model (map derivative variables)
