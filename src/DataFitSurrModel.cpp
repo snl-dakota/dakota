@@ -19,6 +19,10 @@
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/rolling_mean.hpp>
+
 
 static const char rcsId[]="@(#) $Id: DataFitSurrModel.cpp 7034 2010-10-22 20:16:32Z mseldre $";
 
@@ -43,7 +47,12 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   exportPointsFile(
     problem_db.get_string("model.surrogate.export_approx_points_file")),
   exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format")),
-  autoRefine(problem_db.get_bool("model.surrogate.auto_refine"))
+  autoRefine(problem_db.get_bool("model.surrogate.auto_refine")),
+  maxIterations(problem_db.get_int("model.max_iterations")),
+  maxFuncEvals(problem_db.get_int("model.max_function_evals")),
+  convergenceTolerance(problem_db.get_real("model.convergence_tolerance")),
+  refineCVMetric(problem_db.get_string("model.surrogate.refine_cv_metric")),
+  refineCVFolds(problem_db.get_int("model.surrogate.refine_cv_folds"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -165,7 +174,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   exportSurrogate(false),
   manageRecasting(false), exportPointsFile(export_approx_points_file),
   exportFormat(export_approx_format), importPointsFile(import_build_points_file),
-  autoRefine(false)
+  autoRefine(false), maxIterations(100), maxFuncEvals(1000),
+  convergenceTolerance(1e-4), refineCVMetric("root_mean_square"),
+  refineCVFolds(10)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -1089,35 +1100,95 @@ void DataFitSurrModel::run_dace_iterator()
 
 void DataFitSurrModel::refine_surrogate()
 {
-  Real conv_tol = 1.0e-3;
-  int max_iter = 3, curr_iter = 0, num_folds = 10;
-  StringArray diag_metrics(1, "root_mean_squared");
 
-  // build and check diagnostics
+  StringArray diag_metrics(1, refineCVMetric);
+  int curr_iter = 0; // initial surrogate build is iteration 0
+
+  // parameter to be added to spec: compute a moving average of 
+  // the reduction in CV error over soft_conv_limit iterations.
+  // If it falls below convergencTolerance, halt.
+  // Elsewhere in Dakota, soft_convergence_limit caps the number of 
+  // consecutive iterations that show limited improvement.
+  // In my limited testing, cv error reduction can be 
+  // "noisy" with respect to increasing sample count. If the noise is 'bigger' 
+  // than the convergence tolerance, the count can be reset frequently
+  // even though the overall trend in the error is not downward. Filtering 
+  // with a moving average helps to capture the trend instead of the 
+  // noisy, instantaneous change.
+  int soft_conv_limit = std::numeric_limits<int>::max();
+  String scl_string ( std::getenv(String("SOFT_CONV_LIMIT").c_str()));
+  if(scl_string.size() > 0)
+    soft_conv_limit = atoi(scl_string.c_str());
+    
+  // accumulate num_samples in each iteration in total_evals.
+  int total_evals = 0, num_samples;
+
+  // accumulator for rolling average of length soft_conv_limit 
+  using namespace boost::accumulators;
+  accumulator_set<Real, stats<tag::rolling_mean> > mean_err(
+      tag::rolling_window::window_size = soft_conv_limit);
+
+  num_samples = daceIterator.num_samples();
+  total_evals += num_samples;
+
+  // build surrogate from initial sample
   interface_build_approx();
   Real2DArray cv_diags = 
-    approxInterface.cv_diagnostics(diag_metrics, num_folds);
+    approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
   RealArray cv_per_fn(currentResponse.num_functions());
   for (size_t i=0; i<currentResponse.num_functions(); ++i)
     cv_per_fn[i] = cv_diags[i][0];
-  Real cv_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
+  Real curr_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
+  // keep prev_err to calculate improvement
+  Real prev_err = curr_err;
+  Cout << "\n------------\nAuto-refinement initial error (" << refineCVMetric 
+    << "): " << curr_err << std::endl;
+  while (true) {
+    // convergence conditions. messages will need to be fixed if we add
+    // challenge error
+    if(curr_err <= convergenceTolerance) {
+      Cout << "\n------------\nAuto-refined surrogate(s) converged: "
+        << "Cross-validation error criterion met.\n";
+      break;
+    } else if(curr_iter++ == maxIterations) {
+      Cout << "\n------------\nAuto-refinment halted: Maximum iterations.\n";
+      break;
+    } else if( curr_iter >= soft_conv_limit && 
+        rolling_mean(mean_err) < convergenceTolerance) {
+      Cout << "\n------------\nAuto-refinment halted: Average reduction in "
+        << "cross-validation error over\nprevious " << soft_conv_limit 
+        << " iterations less than " << "convergence_tolerance (" 
+        << convergenceTolerance << ")\n";
+      break;
+    } else if(total_evals >= maxFuncEvals) {
+      Cout << "\n------------\nAuto-refinment halted: Maximum function evaluations met "
+        << "or exceeded.\n";
+      break;
+    }
 
-  while (cv_err > conv_tol && curr_iter++ < max_iter) {
     // sampling reset only resets the base numSamples; if there are
     // refinement samples, increment them here and add points
     daceIterator.sampling_increment();
-    Cout << "Refining surrogate with " << daceIterator.num_samples() 
+    num_samples = daceIterator.num_samples();
+    total_evals += num_samples;
+    Cout << "\n------------\nRefining surrogate(s) with " << num_samples 
 	 << " samples (iteration " << curr_iter << ")\n";
     run_dace_iterator();
 
     // build and check diagnostics
     interface_build_approx();
     Real2DArray cv_diags = 
-      approxInterface.cv_diagnostics(diag_metrics, num_folds);
+      approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
     RealArray cv_per_fn(currentResponse.num_functions());
     for (size_t i=0; i<currentResponse.num_functions(); ++i)
       cv_per_fn[i] = cv_diags[i][0];
-    cv_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
+    curr_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
+    Cout << "\n------------\nAuto-refinement iteration " << curr_iter 
+      << " complete.\n";
+    Cout << "Cross-validation error (" << refineCVMetric << "): " << curr_err << std::endl;
+    mean_err(prev_err-curr_err);
+    prev_err = curr_err;
+    Cout << "Mean reduction in CV error: " << rolling_mean(mean_err) << std::endl;
   }
 }
 

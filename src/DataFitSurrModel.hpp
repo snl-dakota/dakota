@@ -249,6 +249,16 @@ protected:
 
   /// whether to automatically refine the surrogate during the build phase
   const bool autoRefine;
+  /// Maximum number of times to refine the surrogate
+  const int maxIterations;
+  /// Maximum number of evaluations while refining a surrogate
+  const int maxFuncEvals;
+  /// Convergence criterion, compared to CV score for specified metric
+  const Real convergenceTolerance;
+  /// Type of error metric to test for surrogate refinement convegence 
+  const String refineCVMetric;
+  /// Number of cross validation folds for surrogate refinement
+  const int refineCVFolds;
 
 private:
 
