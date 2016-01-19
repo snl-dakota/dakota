@@ -114,14 +114,13 @@ void NonDMultilevelSampling::core_run()
   size_t lev, num_lev = surr_model.solution_levels(), // single model form
     qoi, iter = 0, samp, new_N_l, mf_index = 0; // only 1 model form for now
   SizetArray N_l, delta_N_l;
-  RealVector agg_var(num_lev, false);
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = surr_model.solution_level_cost();
+  RealVector cost = surr_model.solution_level_cost(), agg_var(num_lev);
   RealMatrix sum_Y(numFunctions, num_lev), sum_Y2(numFunctions, num_lev),
     exp_Y(numFunctions, num_lev, false), var_Y(numFunctions, num_lev, false);
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
-  Real agg_var_l, eps_sq_div_2, relative_fact = .1, sum_sqrt_var_cost,
-    estimator_var = 0., mean, var;
+  Real agg_var_l, eps_sq_div_2, relative_fact = .1, // user spec?
+    sum_sqrt_var_cost, estimator_var = 0., mean, var;
   IntRespMCIter r_it;
   
   // Initialize for pilot sample
@@ -165,8 +164,9 @@ void NonDMultilevelSampling::core_run()
       // update total samples performed for this level
       N_l[lev]  += numSamples;
 
-      // aggregate variances across QoI for estimating N_l
-      Real& agg_var_l = agg_var[lev]; agg_var_l = 0.;
+      // aggregate variances across QoI for estimating N_l (justification:
+      // for independent QoI, sum of QoI variances = variance of QoI sum)
+      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (numSamples) {
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
@@ -187,24 +187,25 @@ void NonDMultilevelSampling::core_run()
 	  }
 	}
 	// compute mean and variance for current accumulation of samples:
+	agg_var_l = 0.;
 	for (qoi=0; qoi<numFunctions; ++qoi) {
 	  mean = exp_Y_l[qoi] = sum_Y_l[qoi] / N_l[lev];
 	  // Note: precision loss in variance is difficult to avoid without
 	  // storing full sample history; must accumulate Y^2 across iterations
 	  // instead of (Y-mean)^2 since mean is updated on each iteration.
-	  var  = var_Y_l[qoi] = sum_Y2_l[qoi] / N_l[lev] - mean * mean;
+	  var = var_Y_l[qoi] = sum_Y2_l[qoi] / N_l[lev] - mean * mean;
 	  agg_var_l += var;
 	}
       }
-      else // no update to variance, but need agg_var_l for sum_sqrt_var_cost
-	for (qoi=0; qoi<numFunctions; ++qoi)
-	  agg_var_l += var_Y(qoi, lev);
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
       if (iter == 0) estimator_var += agg_var_l / N_l[lev];
     }
-    // compute epsilon target based on relative tolerance: discretization MSE
-    // (eps^2 / 2) matched to estimator variance (\Sum var_Y_l / N_l)
+    // compute epsilon target based on relative tolerance: total MSE = eps^2
+    // which is equally apportioned (eps^2 / 2) among discretization MSE and
+    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+    // discretization error, we compute an initial estimator variance and
+    // then seek to reduce it by a relative_factor <= 1.
     if (iter == 0)
       eps_sq_div_2 = estimator_var * relative_fact; // eps^2 / 2 = var * factor
 
