@@ -57,6 +57,12 @@ public:
   /// destructor
   ~NonDPolynomialChaos();
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void initialize_run();
+
 protected:
 
   //
@@ -198,6 +204,9 @@ private:
 
   /// user specified import build active only
   bool importBuildActiveOnly;
+
+  /// local flag to signal a resizing occurred
+  bool resizedFlag;
 };
 
 

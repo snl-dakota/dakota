@@ -58,7 +58,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
   importBuildPointsFile(probDescDB.get_string("method.import_approx_points_file")),
   importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
-  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only"))
+  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
+  resizedFlag(false)
 {
   // -------------------
   // input sanity checks
@@ -321,7 +322,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), l2Penalty(0.), //initSGLevel(0),
   numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false)
 {
   // -------------------
   // input sanity checks
@@ -396,7 +397,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   tensorRegression(false), crossValidation(cv_flag), l2Penalty(0.),
   numAdvance(3), expOrderSeqSpec(exp_order_seq), dimPrefSpec(dim_pref),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false)
 {
   // -------------------
   // input sanity checks
@@ -496,8 +497,24 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 { }
 
 
+void NonDPolynomialChaos::initialize_run()
+{
+  NonD::initialize_run();
+
+  // If iteratedModel is an ActiveSubspaceModel and resize has not been called,
+  // do it now. This forces resize to be called for subspace
+  // even if the number of variables has not changed. This allows skipping
+  // potentially unnecessary grid initialization in initialize_u_space_model()
+  // which can take quite a long time to run.
+  if (!resizedFlag && iteratedModel.model_type() == "subspace")
+    resize();
+}
+
+
 void NonDPolynomialChaos::resize()
 {
+  resizedFlag = true;
+
   NonDExpansion::resize();
 
   // Free communicators before we rebuild:
@@ -534,30 +551,32 @@ void NonDPolynomialChaos::resize()
   else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
     construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec, dimPrefSpec);
   }
-  else if (expansionCoeffsApproach == Pecos::CUBATURE) {
+  else if (expansionCoeffsApproach == Pecos::CUBATURE)
     construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
 
-    // --------------------------------
-    // Construct G-hat(u) = uSpaceModel
-    // --------------------------------
-    // G-hat(u) uses an orthogonal polynomial approximation over the
-    // active/uncertain variables (using same view as iteratedModel/g_u_model:
-    // not the typical All view for DACE).  No correction is employed.
-    // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-    short  corr_order = -1, corr_type = NO_CORRECTION;
-    String pt_reuse, approx_type =
-      //(piecewiseBasis) ? "piecewise_projection_orthogonal_polynomial" :
-      "global_projection_orthogonal_polynomial";
-    UShortArray exp_order; // empty for numerical integration approaches
-    ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-    pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                               // TO DO: consider passing in data_mode
-    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse), false);
-  }
-  else {
-      UShortArray exp_order;
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short  corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type =
+    //(piecewiseBasis) ? "piecewise_projection_orthogonal_polynomial" :
+    "global_projection_orthogonal_polynomial";
+  UShortArray exp_order; // empty for numerical integration approaches
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                             // TO DO: consider passing in data_mode
+  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+    pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse), false);
+
+  if (expansionCoeffsApproach != Pecos::QUADRATURE &&
+      expansionCoeffsApproach != Pecos::COMBINED_SPARSE_GRID &&
+      expansionCoeffsApproach != Pecos::CUBATURE) {
+    UShortArray exp_order;
     if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
         expOrderSeqSpec.empty()) {
       // extract number of collocation points
@@ -571,8 +590,9 @@ void NonDPolynomialChaos::resize()
     else { // expansion_order-based
 
       // resolve expansionBasisType, exp_terms, numSamplesOnModel
-      expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
-        Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
+      if (!expansionBasisType)
+        expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
+          Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
       unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
         expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
       NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
@@ -637,8 +657,6 @@ void NonDPolynomialChaos::resize()
   // Re-initialize communicators:
   init_communicators(pl_iter);
   set_communicators(pl_iter);
-
-  // no expansionSampler, no numSamplesOnExpansion
 }
 
 
@@ -716,10 +734,12 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // construct it for the former and (conditionally) pass it in to the latter.
   shared_data_rep->construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
-  if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
+  // If the model type is subspace, only initialize grid after resizing.
+  if (( expansionCoeffsApproach == Pecos::QUADRATURE ||
        expansionCoeffsApproach == Pecos::CUBATURE   ||
        expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-       ( tensorRegression && numSamplesOnModel ) ) {
+       ( tensorRegression && numSamplesOnModel ) ) &&
+       (resizedFlag || iteratedModel.model_type() != "subspace")) {
     NonDIntegration* u_space_sampler_rep = 
       (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
     u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
