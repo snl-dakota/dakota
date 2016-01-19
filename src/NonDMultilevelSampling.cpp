@@ -112,16 +112,16 @@ void NonDMultilevelSampling::core_run()
 
   Model& surr_model = iteratedModel.surrogate_model();
   size_t lev, num_lev = surr_model.solution_levels(), // single model form
-    qoi, num_qoi = iteratedModel.num_functions(), iter = 0, samp, new_N_l,
-    mf_index = 0; // only 1 model form for now
+    qoi, iter = 0, samp, new_N_l, mf_index = 0; // only 1 model form for now
   SizetArray N_l, delta_N_l;
   RealVector agg_var(num_lev, false);
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = surr_model.solution_level_cost();
-  RealMatrix sum_Y(num_qoi, num_lev),        sum_Y2(num_qoi, num_lev),
-             exp_Y(num_qoi, num_lev, false),  var_Y(num_qoi, num_lev, false);
+  RealMatrix sum_Y(numFunctions, num_lev), sum_Y2(numFunctions, num_lev),
+    exp_Y(numFunctions, num_lev, false), var_Y(numFunctions, num_lev, false);
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
-  Real agg_var_l, eps = 1., sum_sqrt_var_cost, mean; // TO DO: relative eps...
+  Real agg_var_l, eps_sq_div_2, relative_fact = .1, sum_sqrt_var_cost,
+    estimator_var = 0., mean, var;
   IntRespMCIter r_it;
   
   // Initialize for pilot sample
@@ -155,7 +155,7 @@ void NonDMultilevelSampling::core_run()
 
       if (lev) {
 	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF -LF
+	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF - LF
 	iteratedModel.surrogate_model(mf_index, lev-1);
 	iteratedModel.truth_model(mf_index,     lev);
       }
@@ -165,45 +165,56 @@ void NonDMultilevelSampling::core_run()
       // update total samples performed for this level
       N_l[lev]  += numSamples;
 
+      // aggregate variances across QoI for estimating N_l
+      Real& agg_var_l = agg_var[lev]; agg_var_l = 0.;
       if (numSamples) {
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 	// evaluate the parameter sets on the hierarchical model
-	// TO DO: would be desirable to return delta-QoI for all levels...
 	evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
       
-	// process allResponses... loop over new samples and qoi...
+	// process allResponses: accumulate new samples for each qoi
 	Real *sum_Y_l = sum_Y[lev], *sum_Y2_l = sum_Y2[lev],
-	     *exp_Y_l = exp_Y[lev],  *var_Y_l =  var_Y[lev];
-	for (qoi=0; qoi<num_qoi; ++qoi) {
-	  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-	    Real delta_fn  = r_it->second.function_value(qoi);
-	    sum_Y_l[qoi]  += delta_fn; // running sum across all increments
+	     *exp_Y_l = exp_Y[lev],  *var_Y_l =  var_Y[lev], delta_fn;
+	for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+	  const RealVector& delta_fns = r_it->second.function_values();
+	  for (qoi=0; qoi<numFunctions; ++qoi) {
+	    delta_fn = delta_fns[qoi];
+	    // sum_Y*_l are running sums across all increments:
+	    sum_Y_l[qoi]  += delta_fn;
 	    sum_Y2_l[qoi] += delta_fn * delta_fn;
+	    //sum_Y3_l (skewness), sum_Y4_l (kurtosis), ...
 	  }
-	  mean = exp_Y_l[qoi] = sum_Y_l[qoi] / N_l[lev];
-	  var_Y_l[qoi] = sum_Y2_l[qoi] / N_l[lev] - mean * mean;// TO DO: prec.
-	  // TO DO: other stats?
 	}
-
-	// aggregate independent variances across QoI for estimating N_l
-	Real& agg_var_l = agg_var[lev]; agg_var_l = 0.; // TO DO: zero out?
-	for (qoi=0; qoi<num_qoi; ++qoi)
-	  agg_var_l += var_Y_l[qoi];
-	sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+	// compute mean and variance for current accumulation of samples:
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  mean = exp_Y_l[qoi] = sum_Y_l[qoi] / N_l[lev];
+	  // Note: precision loss in variance is difficult to avoid without
+	  // storing full sample history; must accumulate Y^2 across iterations
+	  // instead of (Y-mean)^2 since mean is updated on each iteration.
+	  var  = var_Y_l[qoi] = sum_Y2_l[qoi] / N_l[lev] - mean * mean;
+	  agg_var_l += var;
+	}
       }
-      //else {
-        // TO DO: zero out?
-      //}
+      else // no update to variance, but need agg_var_l for sum_sqrt_var_cost
+	for (qoi=0; qoi<numFunctions; ++qoi)
+	  agg_var_l += var_Y(qoi, lev);
+
+      sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+      if (iter == 0) estimator_var += agg_var_l / N_l[lev];
     }
+    // compute epsilon target based on relative tolerance: discretization MSE
+    // (eps^2 / 2) matched to estimator variance (\Sum var_Y_l / N_l)
+    if (iter == 0)
+      eps_sq_div_2 = estimator_var * relative_fact; // eps^2 / 2 = var * factor
 
     // update targets based on variance estimates
+    Real fact = sum_sqrt_var_cost / eps_sq_div_2;
     for (lev=0; lev<num_lev; ++lev) {
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * sum_sqrt_var_cost
-	      * 2. / (eps * eps);
+      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * fact;
       delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
     }
     ++iter;
@@ -212,16 +223,14 @@ void NonDMultilevelSampling::core_run()
   }
 
   // aggregate mean and variance of estimator(s)
-  if (momentStats.empty()) momentStats.shape(2, numFunctions); // init to 0
-  else                     momentStats = 0.;
-  // Final estimator result is sum of final mu_l from telescopic sum
-  // Final variance of estimator is a similar sum of variances
-  for (lev=0; lev<num_lev; ++lev) {
-    Real *exp_Y_l = exp_Y[lev], *var_Y_l = var_Y[lev];
-    for (qoi=0; qoi<num_qoi; ++qoi) {
-      momentStats(0,qoi) += exp_Y_l[qoi];
-      momentStats(1,qoi) += var_Y_l[qoi];
-    }
+  if (momentStats.empty()) momentStats.shapeUninitialized(2, numFunctions);
+  // Final estimator result is sum of final mu_l from telescopic sum;
+  // final variance of estimator is a similar sum of variances.
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    mean = 0.; var = 0.;
+    for (lev=0; lev<num_lev; ++lev)
+      { mean += exp_Y(qoi,lev); var += var_Y(qoi,lev); }
+    momentStats(0,qoi) = mean; momentStats(1,qoi) = std::sqrt(var);
   }
 }
 
