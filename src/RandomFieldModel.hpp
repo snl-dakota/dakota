@@ -45,7 +45,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  /// for KL models, the model is augmented with the random coeffs of the KL
   bool initialize_mapping();
+  /// currently no-op
   bool finalize_mapping();
 
 protected:
@@ -82,7 +84,11 @@ protected:
   void validate_inputs();
 
 
-  /// Source data generation: get the field date either from file or
+  // ---
+  // Convenience functions for reading and decomposing the field
+  // ---
+
+  /// Source data generation: get the field data either from file or
   /// simulation by running the DACE Iterator.  Populates rfBuildData.
   void get_field_data();
 
@@ -121,6 +127,18 @@ protected:
   static void set_mapping(const Variables& recast_vars,
 			  const ActiveSet& recast_set,
 			  ActiveSet& sub_model_set);
+
+  /// generate a random field realization, then evaluate the submodel
+  void derived_evaluate(const ActiveSet& set);
+  /// generate a random field realization, then evaluate the submodel (asynch)
+  void derived_evaluate_nowait(const ActiveSet& set);
+
+  /// generate a KL realization and write to file
+  void generate_kl_realization();
+
+  /// generate a PCA/GP realization and write to file
+  void generate_pca_gp_realization();
+
 
   // ---
   // Member data
@@ -168,7 +186,7 @@ protected:
   //  String rfSuiteCmd;
 
   // ---
-  // Data for KL representation
+  // Data for both field representations
   // ---
 
   /// number of bases retained in decomposition
@@ -177,15 +195,20 @@ protected:
   /// reduced basis representation (for KL or PCA case)
   ReducedBasis rfBasis;
 
+
+  // ---
+  // Data for PCA/GP model
+  // ---
+
+  /// approximate models used to map the uncertain vars through the PCA approx
+  //  std::vector<Approximation> gpModels;
+
+
   // ---
   // Propagation (sub) model
   // ---
   
-  // propModelPtr: shouldn't need to store: it's the subModel of the RecastModel
-
-  /// during evaluate(), impose field on the sub-model, then call
-  /// subModel.evaluate()
-  void generate_field_realization();
+  // propModel: don't need to store: it's the subModel of the RecastModel
 
   // ---
   // Helper members
