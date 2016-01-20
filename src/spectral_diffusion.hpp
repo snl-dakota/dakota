@@ -20,6 +20,7 @@ private:
   RealMatrix leftSingularVectors_;
   RealVector boundaryConditions_;
   RealVector physicalDomainLimits_;
+  RealVector qoiCoords_;
 
   RealMatrix derivativeMatrix_;
   RealMatrix collocationPoints_;
@@ -64,6 +65,11 @@ public:
 				 RealVector &result) const;  
 
   void set_num_qoi( int num_qoi );
+
+  void set_qoi_coords( const RealVector& qoi_coords )
+  {
+    qoiCoords_ = qoi_coords;
+  }
 
   void get_collocation_points(RealMatrix &result ) const;
 

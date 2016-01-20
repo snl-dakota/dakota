@@ -1510,7 +1510,7 @@ int TestDriverInterface::diffusion_1d(){
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if ( ( numVars < 1 )  || ( numADIV > 1 ) || numADRV ) {
+  if ( ( numVars < 1 )  || ( numADIV > 1 ) ) {
     Cerr << "Error: Bad variable types in diffusion_1d direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -1538,9 +1538,27 @@ int TestDriverInterface::diffusion_1d(){
   RealVector bndry_conds(2), domain_limits(2); // initialize to zero
   domain_limits[1] = 1.;
 
+  // Get QoI coordinates:
+  RealVector qoi_coords( numFns, false );
+  if (numADRV == numFns) {
+    for (int i=0; i<numFns; i++)
+      qoi_coords[i] = xDR[i];
+  }
+  else {
+    if (numFns > 1) {
+      Real range = domain_limits[1]-domain_limits[0];
+      Real h = (range*0.9) / (Real)(numFns-1);
+      for (int i=0; i<numFns; i++)
+        qoi_coords[i] = domain_limits[0]+range*0.05+(Real)i*h;
+    }
+    else
+      qoi_coords[0] = (domain_limits[1]+domain_limits[0])/2.;
+  }
+
   SpectralDiffusionModel model;
   model.initialize( order, kernel, bndry_conds, domain_limits );
   model.set_num_qoi( numFns );
+  model.set_qoi_coords( qoi_coords );
   
   model.evaluate( xC, fnVals ); 
   return  0;

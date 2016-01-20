@@ -293,19 +293,7 @@ double SpectralDiffusionModel::integrate( const RealVector &mesh_values ) const 
 
 void SpectralDiffusionModel::qoi_functional( const RealVector &solution, 
                                              RealVector &result ) const {
-  // Set quantities of interest to be values of solution equally spaced
-  // within in [0.05,0.95] of [a,b]
-  RealVector qoi_coords( numQOI_, false );
-  if (numQOI_ > 1) {
-    Real range = physicalDomainLimits_[1]-physicalDomainLimits_[0];
-    Real h = (range*0.9) / (Real)(numQOI_-1);
-    for (int i=0; i<numQOI_; i++)
-      qoi_coords[i] = physicalDomainLimits_[0]+range*0.05+(Real)i*h;
-  }
-  else
-    qoi_coords[0] = (physicalDomainLimits_[1]+physicalDomainLimits_[0])/2.;
-  RealVector mesh_points( Teuchos::View, collocationPoints_.values(), order_+1);
-  interpolate( solution, qoi_coords, result );
+  interpolate( solution, qoiCoords_, result );
 };
 
 void SpectralDiffusionModel::
