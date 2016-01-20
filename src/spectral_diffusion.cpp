@@ -303,7 +303,7 @@ diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
   diffusivity.size( num_mesh_points ); // initialize to zero
 
   if (kernel_ == "exponential") {
-    Real field_mean = 0.1, field_std_dev = 0.5;
+    Real field_offset = 0.1, field_std_dev = 0.5;
 
     for (int d=0; d<num_stoch_dims; d++) {
       for (int i=0; i<num_mesh_points; i++) {
@@ -311,7 +311,7 @@ diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
       }
     }
     for (int i=0; i<num_mesh_points; i++)
-      diffusivity[i] = std::exp(diffusivity[i] * field_std_dev) + field_mean;
+      diffusivity[i] = std::exp(diffusivity[i] * field_std_dev) + field_offset;
   }
   else {
     Real field_mean = 1., field_std_dev = 4.;

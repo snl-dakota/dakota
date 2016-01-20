@@ -1530,7 +1530,7 @@ int TestDriverInterface::diffusion_1d(){
   int order = ( numADIV ) ? xDI[0] : 20;
 
   // Get the kernel specification from the first discrete string variable
-  String kernel = ( numADSV) ? xDS[0] : "default";
+  String kernel = ( numADSV ) ? xDS[0] : "default";
 
   // ------------------------------------------------------------- //
   // Initialize and evaluate model 
