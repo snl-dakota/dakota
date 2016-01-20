@@ -126,11 +126,13 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
   /// set the active approximation sub-model in surrogate models
-  virtual void surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index);
+  virtual void surrogate_model(size_t lf_model_index,
+			       size_t lf_soln_lev_index = _NPOS);
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
   /// set the active truth sub-model in surrogate models
-  virtual void truth_model(size_t hf_model_index, size_t hf_soln_lev_index);
+  virtual void truth_model(size_t hf_model_index,
+			   size_t hf_soln_lev_index = _NPOS);
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
   /// portion of subordinate_models() specific to derived model classes

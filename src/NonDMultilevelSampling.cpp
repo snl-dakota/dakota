@@ -43,7 +43,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
 
   /*
   // Check for model forms and solution levels
-  if (iteratedModel.model_forms() > 1) {
+  if (iteratedModel.subordinate_models(false).size() > 1) {
     hierarchMode = true;
   }
   if (sub_model.model_type() == "simulation" &&
@@ -77,24 +77,39 @@ void NonDMultilevelSampling::pre_run()
 }
 
 
-/** Loop over the set of samples and compute responses.  Compute
-    statistics on the set of responses if statsFlag is set. */
+/** The primary run function manages the general case: a hierarchy of model 
+    forms (from the ordered model fidelities within a HierarchSurrModel), 
+    each of which may contain multiple discretization levels. */
 void NonDMultilevelSampling::core_run()
 {
-  // to start, assume one model form with multiple discretization levels...
-  // later, return hierarchy of model forms from the hierarchical surrogate,
-  // each of which may contain multiple discretization levels...
-
   //model,
   //  surrogate hierarchical
   //    ordered_model_fidelities = 'LF' 'MF' 'HF'
   //
-  // Note: how to specify peer dimension of equivalent alternatives
-  // May want to include these in MLMC process with adaptive selection of
-  // most correlated alternative (or a convex combination of alternatives)
+  // Future: include peer alternatives (1D list --> matrix)
+  //         For MLMC, could seek adaptive selection of most correlated
+  //         alternative (or a convex combination of alternatives).
 
+  size_t mf_index = 0, num_mf = iteratedModel.subordinate_models(false).size();
+  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
+  //   num_mf     = iteratedModel.model_hierarchy_depth();
+  //   num_peer_i = iteratedModel.model_peer_breadth(i);
+
+  multilevel_mc(mf_index); // MLMC (standalone or to initialize MLMF)
+
+  if (num_mf > 1) {
+    // MLMF
+  }
+}
+
+
+/** This function performs "geometrical" MLMC on a single model form
+    with multiple discretization levels. */
+void NonDMultilevelSampling::multilevel_mc(size_t mf_index)
+{
   //model
-  //  simulation id_model = 'LF'
+  //  id_model = 'LF'
+  //  simulation
   //    # point to state vars; ordered based on set values for h, delta-t
   //    solution_level_control = 'dssiv1'
   //    # relative cost estimates in same order as state set values
@@ -103,16 +118,19 @@ void NonDMultilevelSampling::core_run()
   //
   // Need to formulate as a coordinated progression towards convergence, where
   // e.g., time step is NOT a state parameter and is inferred from the spatial
-  // discretization based on some criterion, e.g. CFL condition.
+  // discretization based on stability criteria, e.g. CFL condition.
   // Can we reliably capture runtime estimates as part of pilot run w/i Dakota?
   // Ultimately seems desirable to support either online or offline cost
   // estimates, to allow more accurate resource allocation when possible
   // or necessary (e.g., combustion processes with expense that is highly
   // parameter dependent).
 
+  iteratedModel.surrogate_model(mf_index);// LF soln_lev_index not updated (yet)
+  iteratedModel.truth_model(mf_index);    // HF soln_lev_index not updated (yet)
+
   Model& surr_model = iteratedModel.surrogate_model();
   size_t lev, num_lev = surr_model.solution_levels(), // single model form
-    qoi, iter = 0, samp, new_N_l, mf_index = 0; // only 1 model form for now
+    qoi, iter = 0, samp, new_N_l;
   SizetArray N_l, delta_N_l;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = surr_model.solution_level_cost(), agg_var(num_lev);

@@ -71,11 +71,11 @@ protected:
   /// return the active low fidelity model
   Model& surrogate_model();
   /// set the active low fidelity model
-  void surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index);
+  void surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index = _NPOS);
   /// return the active high fidelity model
   Model& truth_model();
   /// set the active high fidelity model
-  void truth_model(size_t lf_model_index, size_t lf_soln_lev_index);
+  void truth_model(size_t lf_model_index, size_t lf_soln_lev_index = _NPOS);
   
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -194,13 +194,17 @@ inline Model& HierarchSurrModel::surrogate_model()
 inline void HierarchSurrModel::
 surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index)
 {
-  lowFidelityIndices.first  = lf_model_index;
-  lowFidelityIndices.second = lf_soln_lev_index;
+  lowFidelityIndices.first = lf_model_index;
   sameModelForm = (lf_model_index == highFidelityIndices.first);
-  
-  Model& lf_model = orderedModels[lf_model_index];
-  lf_model.solution_level_index(lf_soln_lev_index);
-  //deltaCorr.surrogate_model(lf_model); deltaCorr.clear(); // TO DO
+
+  if (lf_soln_lev_index != _NPOS) {  
+    lowFidelityIndices.second = lf_soln_lev_index;
+    orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
+  }
+
+  // TO DO:
+  //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
+  //deltaCorr.clear();
 }
 
 
@@ -211,11 +215,13 @@ inline Model& HierarchSurrModel::truth_model()
 inline void HierarchSurrModel::
 truth_model(size_t hf_model_index, size_t hf_soln_lev_index)
 {
-  highFidelityIndices.first  = hf_model_index;
-  highFidelityIndices.second = hf_soln_lev_index;
+  highFidelityIndices.first = hf_model_index;
   sameModelForm = (hf_model_index == lowFidelityIndices.first);
-  
-  orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+
+  if (hf_soln_lev_index != _NPOS) {
+    highFidelityIndices.second = hf_soln_lev_index;
+    orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+  }
 }
 
 

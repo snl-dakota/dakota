@@ -55,6 +55,12 @@ protected:
 private:
 
   //
+  //- Heading: Helper functions
+  //
+
+  void multilevel_mc(size_t mf_index);
+
+  //
   //- Heading: Data
   //
 
