@@ -73,6 +73,7 @@ public:
 
   bool initialize_mapping();
   bool finalize_mapping();
+  bool mapping_initialized();
 
 protected:
 
@@ -244,6 +245,8 @@ protected:
   /// current singular value ratio (sigma_k/sigma_0)
   double svRatio;
 
+  /// boolean flag to determine if mapping has been fully initialized
+  bool subspaceInitialized;
 
   // Data for numerical representation
 

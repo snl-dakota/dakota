@@ -164,6 +164,9 @@ public:
   /// finalize model mapping, returns true if the variables size has changed
   virtual bool finalize_mapping();
 
+  /// return true if mapping has been fully initialized, false otherwise.
+  virtual bool mapping_initialized();
+
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
   /// build a new SurrogateModel approximation using/enforcing

@@ -38,6 +38,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
+  subspaceInitialized(false),
   reducedRank(problem_db.get_int("model.subspace.reduced_rank")),
   gradientScaleFactors(RealArray(numFunctions, 1.0))
 {
@@ -95,7 +96,8 @@ ActiveSubspaceModel(const Model& sub_model,
   performAssessment(false), nullspaceTol(conv_tol/1.0e3),
   subspaceIdMethod(subspace_id_method), numReplicates(100),
   numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
-  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),  reducedRank(0),
+  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
+  subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0))
 {
   asmInstance = this;
@@ -209,6 +211,8 @@ bool ActiveSubspaceModel::initialize_mapping()
   // update with subspace constraints
   update_linear_constraints();
 
+  subspaceInitialized = true;
+
   if (reducedRank != numFullspaceVars)
     return true; // Size of variables has changed
   else
@@ -220,6 +224,12 @@ bool ActiveSubspaceModel::finalize_mapping()
 {
   // TODO: return to full space
   return false; // This will become true when TODO is implemented.
+}
+
+
+bool ActiveSubspaceModel::mapping_initialized()
+{
+  return subspaceInitialized;
 }
 
 void ActiveSubspaceModel::init_fullspace_sampler()

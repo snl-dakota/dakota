@@ -207,6 +207,10 @@ private:
 
   /// local flag to signal a resizing occurred
   bool resizedFlag;
+
+  /// local flag to signal an explicit call to resize
+  /// is necessary if resizedFlag is false
+  bool callResize;
 };
 
 

@@ -501,12 +501,11 @@ void NonDPolynomialChaos::initialize_run()
 {
   NonD::initialize_run();
 
-  // If iteratedModel is an ActiveSubspaceModel and resize has not been called,
-  // do it now. This forces resize to be called for subspace
-  // even if the number of variables has not changed. This allows skipping
-  // potentially unnecessary grid initialization in initialize_u_space_model()
-  // which can take quite a long time to run.
-  if (!resizedFlag && iteratedModel.model_type() == "subspace")
+  // If grid initialization was skipped at construct time and resize has not
+  // been called, do it now. This allows skipping potentially unnecessary grid
+  // initialization in initialize_u_space_model() which can take quite a long
+  // time to run.
+  if (!resizedFlag && callResize)
     resize();
 }
 
@@ -727,15 +726,19 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // construct it for the former and (conditionally) pass it in to the latter.
   shared_data_rep->construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
-  // If the model type is subspace, only initialize grid after resizing.
-  if (( expansionCoeffsApproach == Pecos::QUADRATURE ||
+  // If the model is not yet fully initialized, skip grid initialization.
+  if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
        expansionCoeffsApproach == Pecos::CUBATURE   ||
        expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-       ( tensorRegression && numSamplesOnModel ) ) &&
-       (resizedFlag || iteratedModel.model_type() != "subspace")) {
-    NonDIntegration* u_space_sampler_rep = 
-      (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-    u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
+       ( tensorRegression && numSamplesOnModel ) ) {
+    if (iteratedModel.mapping_initialized()) {
+      NonDIntegration* u_space_sampler_rep = 
+        (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+      u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
+    }
+    else {
+      callResize = true;
+    }
   }
 
   // NumerGenOrthogPolynomial instances need to compute polyCoeffs and

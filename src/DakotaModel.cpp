@@ -2790,6 +2790,17 @@ bool Model::finalize_mapping()
 }
 
 
+bool Model::mapping_initialized()
+{
+  if (modelRep)
+    return modelRep->mapping_initialized();
+  else {
+    // Base class default behavior is true
+    return true;
+  }
+}
+
+
 void Model::build_approximation()
 {
   if (modelRep) // envelope fwd to letter
