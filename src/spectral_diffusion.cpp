@@ -24,7 +24,7 @@ void gauss_legendre_pts_wts_1D( int level, RealVector& result_0,
     // compute pts and weights
     webbur::legendre_compute( level, x_ptr, w_ptr );
   }
-  result_1 *= wt_factor;  // polynomial weight fn -> PDF
+  //result_1 *= wt_factor;  // polynomial weight fn -> PDF
 };
 
 void lagrange_interpolation_1d( const RealVector &samples, 
@@ -282,7 +282,6 @@ double SpectralDiffusionModel::integrate( const RealVector &mesh_values ) const 
   int range = physicalDomainLimits_[1] - physicalDomainLimits_[0];
   for (int i=0; i<gl_pts.length(); i++)
     gl_pts[i] = range*( gl_pts[i]+1.)/2.+physicalDomainLimits_[0];
-  // Remove factor of 0.5 from weights
   gl_wts *= range;
   
   // Interpolate mesh values onto quadrature nodes

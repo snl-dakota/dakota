@@ -1529,6 +1529,11 @@ int TestDriverInterface::diffusion_1d(){
   // Get the mesh resolution from the first discrete integer variable
   int order = ( numADIV ) ? xDI[0] : 20;
 
+  if (order % 2 != 0) {
+    Cerr << "Error: Mesh order must be even." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
   // Get the kernel specification from the first discrete string variable
   String kernel = ( numADSV ) ? xDS[0] : "default";
 
