@@ -523,6 +523,17 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "*.f" EXCLUDE 
   )
 
+# Install helper scripts to bin/:
+install(PROGRAMS "scripts/dprepro" DESTINATION "bin")
+# dakota.bat is useful in both native and Cygwin due to command prompt usage
+if (MSVC OR CYGWIN)
+  install(PROGRAMS "scripts/dakota.bat" DESTINATION "bin")
+endif()
+# dakota.sh is useful for all except native windows builds
+if(NOT MSVC)
+  install(PROGRAMS "scripts/dakota.sh" DESTINATION "bin")
+endif()
+
 
 # Final CPack settings
 

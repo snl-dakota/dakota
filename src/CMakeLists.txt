@@ -947,23 +947,6 @@ install(FILES ${Dakota_hdr} DESTINATION include)
 file(GLOB Dakota_spec_files dakota.input.*)
 install(FILES ${Dakota_spec_files} DESTINATION bin)
 
-# dakota.bat is useful in both native and Cygwin due to command prompt usage
-if (MSVC OR CYGWIN)
-  # WJB - ToDo: evaluate executable permission for .bat files on Windows
-  install( FILES ${Dakota_SOURCE_DIR}/scripts/dakota.bat
-    DESTINATION "bin" PERMISSIONS
-    OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-  )
-endif()
-
-# dakota.sh is useful for all except native windows builds
-if(NOT MSVC)
-  install( FILES ${Dakota_SOURCE_DIR}/scripts/dakota.sh
-    DESTINATION "bin" PERMISSIONS
-    OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-  )
-endif()
-
 if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)
   target_link_libraries(dakota_dll_api ${DAKOTA_ALL_LIBS})

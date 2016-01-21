@@ -430,6 +430,11 @@ dprepro params.in app.template app.input
 
 dprepro --output-format='%10.5f' params.in app.template app.input
 
+Alternately, specify per-field formatting within the delimiters in the
+templaqte file:
+  {DakotaParam1,%10.5f}
+  {DakotaParam2,%06d}
+
 =item B<specifying double brackets as delimiters>
 
 dprepro --left-delimiter='[[' --right-delimiter=']]' params.in app.template app.input
