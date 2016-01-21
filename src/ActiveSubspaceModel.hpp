@@ -254,7 +254,13 @@ protected:
   unsigned int reducedRank;
 
   /// basis for the reduced subspace
-  RealMatrix reducedBasis;
+  RealMatrix activeBasis;
+
+  /// basis for the inactive subspace
+  RealMatrix inactiveBasis;
+
+  /// current inactive variables
+  RealVector inactiveVars;
 
   /// matrix of derivative data with numFunctions columns per fullspace sample;
   /// each column contains the gradient of one function at one sample point, 

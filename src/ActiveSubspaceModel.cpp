@@ -313,7 +313,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 void ActiveSubspaceModel::identify_subspace()
 {
-  Cout << "ESM: Performing sampling to build reduced space" << std::endl;
+  Cout << "ASM: Performing sampling to build reduced space" << std::endl;
 
   // whether singular value tolerance met
   bool svtol_met = false;
@@ -336,19 +336,19 @@ void ActiveSubspaceModel::identify_subspace()
              && reducedRank <= numFullspaceVars) {
 
         ++currIter;  // any addition of batch of points counts as an iteration
-        Cout << "\nESM: Iteration " << currIter << "." << std::endl;
+        Cout << "\nASM: Iteration " << currIter << "." << std::endl;
         expand_basis(svtol_met);
         print_svd_stats();
 
       } // until SVD converged
 
       if (svtol_met) {
-        Cout << "\nESM: SVD converged to tolerance.\n     Proceeding to "
+        Cout << "\nASM: SVD converged to tolerance.\n     Proceeding to "
              << "reconstruction with reduced rank = " << reducedRank << "."
              << std::endl;
       }
       else {
-        Cout << "\nESM: SVD not converged within budget.";
+        Cout << "\nASM: SVD not converged within budget.";
         if (currIter >= maxIterations)
           Cout << "\n     Maximum iterations reached.";
         if (totalEvals >= maxFunctionEvals)
@@ -360,20 +360,26 @@ void ActiveSubspaceModel::identify_subspace()
     }
     else {
       ++currIter;  // any addition of batch of points counts as an iteration
-      Cout << "\nESM: Iteration " << currIter << "." << std::endl;
+      Cout << "\nASM: Iteration " << currIter << "." << std::endl;
       expand_basis(svtol_met);
       print_svd_stats();
     }
 
-    // update the reducedBasis
+    // update the activeBasis
     // the reduced basis is dimension N x r and stored in the first r
     // cols of leftSingularVectors; extract it instead of using BLAS directly
-    RealMatrix reduced_basis_U(Teuchos::View, leftSingularVectors,
+    RealMatrix reduced_basis_W1(Teuchos::View, leftSingularVectors,
                                numFullspaceVars, reducedRank);
-    reducedBasis = reduced_basis_U;
+    activeBasis = reduced_basis_W1;
+
+    RealMatrix reduced_basis_W2(Teuchos::View, leftSingularVectors,
+                               numFullspaceVars, numFullspaceVars - reducedRank,
+                               0, reducedRank);
+
+    inactiveBasis = reduced_basis_W2;
     if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "\nESM: Reduced basis is";
-      reducedBasis.print(Cout);
+      Cout << "\nASM: Active basis is";
+      activeBasis.print(Cout);
     }
 
     // evaluate the fidelity of the reconstruction via orthogonal subspace
@@ -384,22 +390,22 @@ void ActiveSubspaceModel::identify_subspace()
     else {
       // Bypass tolerance check if no reconstruction:
       recon_tol_met = true;
-      Cout << "\nESM: Reconstruction has been bypassed. performAssessment = false" << std::endl;
+      Cout << "\nASM: Reconstruction has been bypassed. performAssessment = false" << std::endl;
     }
 
     if (!recon_tol_met)
-      Cout << "\nESM: Reconstruction tolerance not met." << std::endl;
+      Cout << "\nASM: Reconstruction tolerance not met." << std::endl;
 
   } // until reconstruction converged
 
-  Cout << "\n --- ESM Final Build Statistics ---"
+  Cout << "\n --- ASM Final Build Statistics ---"
        << "\n  total iterations: " << currIter
        << "\n  small/large singular value: " << svRatio
        << "\n  build samples: " << totalSamples
        << "\n  reduced rank: " << reducedRank
        << std::endl;
 
-  Cout << "\n --- ESM Build Convergence Criteria ---"
+  Cout << "\n --- ASM Build Convergence Criteria ---"
        << "\n  tolerance on SVD met?: " << svtol_met;
   if(performAssessment) {
     Cout << "\n  reconstruction tolerance met?: " << recon_tol_met;
@@ -427,7 +433,7 @@ expand_basis(bool& svtol_met)
   totalEvals += diff_samples;
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "ESM: Adding " << diff_samples << " full-space samples."
+    Cout << "ASM: Adding " << diff_samples << " full-space samples."
          << std::endl;
 
   // evaluate samples with fullspaceSampler
@@ -502,7 +508,7 @@ append_sample_matrices(unsigned int diff_samples)
 
   // TODO: could easily filter NaN/Inf responses and omit
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter << ". DACE iterator returned "
+    Cout << "\nASM: Iteration " << currIter << ". DACE iterator returned "
          << all_responses.size() << " samples. (Expected diff_samples = "
          << diff_samples << ".)" << std::endl;
   }
@@ -551,7 +557,7 @@ append_sample_matrices(unsigned int diff_samples)
   }
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter
+    Cout << "\nASM: Iteration " << currIter
          << ". Compiled derivative matrix is:\n";
     derivativeMatrix.print(Cout);
     Cout << std::endl;
@@ -590,7 +596,7 @@ compute_svd(bool& svtol_met)
   if (reducedRank > 0 && reducedRank <= singular_values.length()) {
     // reducedRank has been provided, set svtol_met to true:
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "ESM: Subspace size has been specified as reduced_rank = " << reducedRank
+      Cout << "ASM: Subspace size has been specified as reduced_rank = " << reducedRank
 	         << "." << std::endl;
     svtol_met = true;
   }
@@ -599,13 +605,13 @@ compute_svd(bool& svtol_met)
     switch(subspaceIdMethod) {
     case SUBSPACE_ID_CONSTANTINE:
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "ESM: Determining eigenvalue gap with boostrap and Constantine "
+        Cout << "ASM: Determining eigenvalue gap with boostrap and Constantine "
 	     << "metric." << std::endl;
       computeConstantineMetric(singular_values, svtol_met);
       break;
     case SUBSPACE_ID_BING_LI: case SUBSPACE_ID_DEFAULT: default:
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "ESM: Determining eigenvalue gap with boostrap and Bing-Li "
+        Cout << "ASM: Determining eigenvalue gap with boostrap and Bing-Li "
 	     << "metric." << std::endl;
       computeBingLiCriterion(singular_values, svtol_met);
       break;
@@ -620,7 +626,7 @@ compute_svd(bool& svtol_met)
   svRatio = singular_values[sv_cutoff_ind]/singular_values[0];
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter << ": singular values are [ ";
+    Cout << "\nASM: Iteration " << currIter << ": singular values are [ ";
     for (unsigned int i=0; i<num_singular_values; ++i)
       Cout << singular_values[i] << " ";
     Cout << "]" << std::endl;
@@ -714,7 +720,7 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
   }
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter
+    Cout << "\nASM: Iteration " << currIter
          << ". Bing Li Criterion values are [ ";
     for (size_t i = 0; i < num_vars; ++i)
     {
@@ -789,7 +795,7 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
   }
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nESM: Iteration " << currIter
+    Cout << "\nASM: Iteration " << currIter
          << ". Constantine metric are [ ";
     for (size_t i = 0; i < num_vars-1; ++i)
     {
@@ -815,7 +821,7 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
 void ActiveSubspaceModel::print_svd_stats()
 {
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n --- ESM Iteration " << currIter << " Statistics --- "
+    Cout << "\n --- ASM Iteration " << currIter << " Statistics --- "
          << "\n  small/large singular value: " << svRatio
          << "\n  build samples: " << totalSamples
          << "\n  estimated reduced rank: " << reducedRank
@@ -836,13 +842,13 @@ assess_reconstruction(bool& recon_tol_met)
   unsigned int verif_samples = std::min(wilks_max_samples, totalSamples);
   if (verif_samples > maxFunctionEvals - totalEvals) {
     verif_samples = maxFunctionEvals - totalEvals;
-    Cout << "\nESM: Warning: " << verif_samples << " verification samples "
+    Cout << "\nASM: Warning: " << verif_samples << " verification samples "
          << "desired, but budget only permits " << verif_samples << std::endl;
   }
   totalEvals += verif_samples;
 
   // Calculate perturbations of the samples from nominal and project
-  // orthogonal to reducedBasis U
+  // orthogonal to activeBasis U
 
   // TODO: Relies on normal distribution for now
   const RealVector& nominal_vars =
@@ -869,13 +875,13 @@ assess_reconstruction(bool& recon_tol_met)
   Real alpha = 1.0;
   Real beta = 0.0;
   u_trans_delta_x.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha,
-                           reducedBasis, perturbations, beta);
+                           activeBasis, perturbations, beta);
 
   // compute -1.0 * ( U * u_trans_delta_x ) + 1.0 * delta_x
   alpha = -1.0;
   beta = 1.0;
   perturbations.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha,
-                         reducedBasis, u_trans_delta_x, beta);
+                         activeBasis, u_trans_delta_x, beta);
 
   // the matrix perturbations now contains the delta_x_perp
   // NEED to evaluate at nomimal + delta_x_perp
@@ -899,7 +905,7 @@ assess_reconstruction(bool& recon_tol_met)
   ActiveSet active_set = subModel.current_response().active_set();
   active_set.request_values(1);
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nESM: Evaluating at nominal, and at " << verif_samples
+    Cout << "\nASM: Evaluating at nominal, and at " << verif_samples
          << " points orthogonal to the subspace" << std::endl;
 
   // evaluate model at nominal values
@@ -941,7 +947,7 @@ assess_reconstruction(bool& recon_tol_met)
     }
     K_sigma = std::sqrt(K_sigma / (Real) (verif_samples-1));
 
-    Cout << "\nESM: Reconstruction statistics over " << verif_samples
+    Cout << "\nASM: Reconstruction statistics over " << verif_samples
          << " samples for function " << i << ":\n  K_sigma = " << K_sigma
          << "\n  K_mu = " << K_mu
          << "\n  L2 (recon) error = " << recon_error << std::endl;
@@ -1117,12 +1123,13 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   }
 
   // reduced space characterization: mean mu, std dev sd
-  RealVector mu_xi(reducedRank), sd_xi(reducedRank);
+  RealVector mu_y(reducedRank), sd_y(reducedRank);
+  RealVector mu_z(inactiveBasis.numCols());
 
 
-  // xi_mu = reducedBasis^T * x_mu
-  int m = reducedBasis.numRows();
-  int n = reducedBasis.numCols();
+  // mu_y = activeBasis^T * mu_x
+  int m = activeBasis.numRows();
+  int n = activeBasis.numCols();
   double alpha = 1.0;
   double beta = 0.0;
 
@@ -1130,53 +1137,53 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   int incy = 1;
 
   // y <-- alpha*A*x + beta*y
-  // mu_xi <-- 1.0 * reducedBasis^T * mu_x + 0.0 * mu_xi
+  // mu_y <-- 1.0 * activeBasis^T * mu_x + 0.0 * mu_y
   Teuchos::BLAS<int, Real> teuchos_blas;
-  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m,
-                    mu_x.values(), incx, beta, mu_xi.values(), incy);
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, activeBasis.values(), m,
+                    mu_x.values(), incx, beta, mu_y.values(), incy);
 
   // convert the correlations C_x to variance V_x
   // V_x <-- diag(sd_x) * C_x * diag(sd_x)
   // not using symmetric so we can multiply() below
-  RealMatrix V_x(reducedBasis.numRows(), reducedBasis.numRows(), false);
+  RealMatrix V_x(activeBasis.numRows(), activeBasis.numRows(), false);
   if (native_correl) {
-    for (int row=0; row<reducedBasis.numRows(); ++row)
-      for (int col=0; col<reducedBasis.numRows(); ++col)
+    for (int row=0; row<activeBasis.numRows(); ++row)
+      for (int col=0; col<activeBasis.numRows(); ++col)
         V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
   }
   else {
     V_x = 0.0;
-    for (int row=0; row<reducedBasis.numRows(); ++row)
+    for (int row=0; row<activeBasis.numRows(); ++row)
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
 
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nreducedBasis = \n" << reducedBasis;
+    Cout << "\nactiveBasis = \n" << activeBasis;
     Cout << "\nV_x =\n" << V_x;
   }
 
-  // compute V_xi = U^T * V_x * U
+  // compute V_y = U^T * V_x * U
   alpha = 1.0;
   beta = 0.0;
   RealMatrix UTVx(n, m, false);
-  UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, reducedBasis, V_x, beta);
-  RealMatrix V_xi(reducedRank, reducedRank, false);
-  V_xi.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, UTVx, reducedBasis, beta);
+  UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, activeBasis, V_x, beta);
+  RealMatrix V_y(reducedRank, reducedRank, false);
+  V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, UTVx, activeBasis, beta);
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nV_xi = \n" << V_xi;
+    Cout << "\nV_y = \n" << V_y;
 
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
-    sd_xi = std::sqrt(V_xi(i,i));
+    sd_y = std::sqrt(V_y(i,i));
 
   // update the reduced space model
   Pecos::AleatoryDistParams& reduced_dist_params =
     aleatory_distribution_parameters();
 
-  reduced_dist_params.normal_means(mu_xi);
-  reduced_dist_params.normal_std_deviations(sd_xi);
+  reduced_dist_params.normal_means(mu_y);
+  reduced_dist_params.normal_std_deviations(sd_y);
 
 
   // compute the correlations in reduced space
@@ -1185,52 +1192,56 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
   // Unless the native correl was alpha*I, the reduced variables will
   // be correlated in general, so always set the correltions
-  RealSymMatrix correl_xi(reducedRank, false);
+  RealSymMatrix correl_y(reducedRank, false);
   for (int row=0; row<reducedRank; ++row)
     for (int col=0; col<reducedRank; ++col)
-      correl_xi(row, col) = V_xi(row,col)/sd_xi(row)/sd_xi(col);
+      correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\ncorrel_xi = \n" << correl_xi;
+    Cout << "\ncorrel_y = \n" << correl_y;
 
-  reduced_dist_params.uncertain_correlations(correl_xi);
-  //  }
+  reduced_dist_params.uncertain_correlations(correl_y);
 
-  //   RealVector x_reduced(reducedRank);
-  //   x_reduced = 1.0;
 
-  //   Cout << "x_reduced is\n";
-  //   Cout << x_reduced << std::endl;
+  // mu_z = inactiveBasis^T * mu_x
+  m = inactiveBasis.numRows();
+  n = inactiveBasis.numCols();
+  alpha = 1.0;
+  beta = 0.0;
 
-  //   vars_transform_model.continuous_variables(x_reduced);
-  //   vars_transform_model.evaluate();
+  incx = 1;
+  int incz = 1;
 
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, inactiveBasis.values(), m,
+                    mu_x.values(), incx, beta, mu_z.values(), incz);
+
+  inactiveVars = mu_z;
 }
 
 
 
 /**
   Perform the variables mapping from recast reduced dimension
-  variables xi to original model x variables via linear transformation.
+  variables y to original model x variables via linear transformation.
   Maps only continuous variables.
 */
 void ActiveSubspaceModel::
-vars_mapping(const Variables& recast_xi_vars, Variables& sub_model_x_vars)
+vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
 {
   Teuchos::BLAS<int, Real> teuchos_blas;
 
-  const RealVector& xi = recast_xi_vars.continuous_variables();
+  const RealVector& y = recast_y_vars.continuous_variables();
   // TODO: does this yield a view or a copy?
   //RealVector x = sub_model_x_vars.continuous_variables();
   RealVector x;
   copy_data(sub_model_x_vars.continuous_variables(), x);
 
-  //  Calculate x = reducedBasis*xi via matvec directly into x cv in submodel
+  //  Calculate x = activeBasis*y + inactiveBasis*inactiveVars via matvec directly into x cv in submodel
   //void 	GEMV (ETransp trans, const OrdinalType m, const OrdinalType n, const alpha_type alpha, const A_type *A, const OrdinalType lda, const x_type *x, const OrdinalType incx, const beta_type beta, ScalarType *y, const OrdinalType incy) const
   // 	Performs the matrix-std::vector operation: y <- alpha*A*x+beta*y or y <- alpha*A'*x+beta*y where A is a general m by n matrix.
-  const RealMatrix& reduced_basis = asmInstance->reducedBasis;
-  int m = reduced_basis.numRows();
-  int n = reduced_basis.numCols();
+  const RealMatrix& W1 = asmInstance->activeBasis;
+  int m = W1.numRows();
+  int n = W1.numCols();
 
   double alpha = 1.0;
   double beta = 0.0;
@@ -1238,20 +1249,32 @@ vars_mapping(const Variables& recast_xi_vars, Variables& sub_model_x_vars)
   int incx = 1;
   int incy = 1;
 
-  teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, reduced_basis.values(), m,
-                    xi.values(), incx, beta, x.values(), incy);
+  teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
+                    y.values(), incy, beta, x.values(), incx);
+
+  // Now add the inactive variable's contribution:
+  const RealMatrix& W2 = asmInstance->inactiveBasis;
+  const RealVector& z = asmInstance->inactiveVars;
+  m = W2.numRows();
+  n = W2.numCols();
+
+  alpha = 1.0;
+  beta = 1.0;
+
+  int incz = 1;
+
+  teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W2.values(), m,
+                    z.values(), incz, beta, x.values(), incx);
+
+  sub_model_x_vars.continuous_variables(x);
 
   if (asmInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Recast vars are\n";
-    Cout << recast_xi_vars << std::endl;
-    //    xi.print(Cout);
+    Cout << recast_y_vars << std::endl;
 
     Cout << "Submodel vars are\n";
     Cout << sub_model_x_vars << std::endl;
-    //x.print(Cout);
   }
-
-  sub_model_x_vars.continuous_variables(x);
 
 }
 
