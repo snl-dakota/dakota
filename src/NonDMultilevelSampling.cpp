@@ -95,11 +95,16 @@ void NonDMultilevelSampling::core_run()
   //   num_mf     = iteratedModel.model_hierarchy_depth();
   //   num_peer_i = iteratedModel.model_peer_breadth(i);
 
-  multilevel_mc(mf_index); // MLMC (standalone or to initialize MLMF)
-
   if (num_mf > 1) {
-    // MLMF
+    if (iteratedModel.surrogate_model().solution_levels()) {
+      // both model forms and solutions levels --> ML-MF-MC
+    }
+    else {
+      // only model forms --> control variate MC
+    }
   }
+  else // only solutions levels --> traditional ML-MC
+    multilevel_mc(mf_index);
 }
 
 
@@ -137,8 +142,8 @@ void NonDMultilevelSampling::multilevel_mc(size_t mf_index)
   RealMatrix sum_Y(numFunctions, num_lev), sum_Y2(numFunctions, num_lev),
     exp_Y(numFunctions, num_lev, false), var_Y(numFunctions, num_lev, false);
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
-  Real agg_var_l, eps_sq_div_2, relative_fact = .1, // user spec?
-    sum_sqrt_var_cost, estimator_var = 0., mean, var;
+  Real agg_var_l, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
+    mean, var;
   IntRespMCIter r_it;
   
   // Initialize for pilot sample
@@ -217,15 +222,15 @@ void NonDMultilevelSampling::multilevel_mc(size_t mf_index)
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
-      if (iter == 0) estimator_var += agg_var_l / N_l[lev];
+      if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
     // discretization error, we compute an initial estimator variance and
     // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0)
-      eps_sq_div_2 = estimator_var * relative_fact; // eps^2 / 2 = var * factor
+    if (iter == 0) // eps^2 / 2 = var * relative factor
+      eps_sq_div_2 = estimator_var0 * convergenceTol;
 
     // update targets based on variance estimates
     Real fact = sum_sqrt_var_cost / eps_sq_div_2;

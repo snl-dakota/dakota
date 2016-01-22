@@ -1,12 +1,12 @@
 
-environment,
-	graphics
+#environment,
+#	graphics
 
 method,
 	model_pointer = 'HIERARCH'
         multilevel_sampling
 	  pilot_samples = 100 seed = 1237
-	  max_iterations = 1
+	  max_iterations = 5
 	  convergence_tolerance = 1.e-2
 #	  complementary distribution
 #	  response_levels = 3.6e+11 4.0e+11 4.4e+11
@@ -23,14 +23,18 @@ model,
 	id_model = 'SIM1'
 	simulation
 	  solution_level_control = 'dssiv_1'
-	  solution_level_cost = 1. 2. 4. 8.
+	  solution_level_cost = 1. 2. 4. 8. 16.
 
 variables,
 	uniform_uncertain = 9	 # number of cosine terms in soln expansion
 	  lower_bounds      =  9*-1.
 	  upper_bounds      =  9* 1.
-	discrete_state_set integer = 1
-          set_values = 5 9 17 33 # number of mesh pts including boundary
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+            set_values = 4 8 16 32 64
+	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
+	    initial_state = 'cosine'
+            set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
 
 interface,
 	direct
