@@ -5666,33 +5666,33 @@ Sample moment statistics for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  8.3473275231e+01  1.0179242743e+02  4.0530701586e+01  5.3625451053e+01
 Simple Correlation Matrix among all inputs and outputs:
-                                                                 response_fn_1 
-              1.00000e+00 
-              2.05370e-02  1.00000e+00 
-             -3.50183e-02  3.33012e-03  1.00000e+00 
-              2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.05370e-02  1.00000e+00 
+       ssv_3 -3.50183e-02  3.33012e-03  1.00000e+00 
+       ssv_4  2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
 response_fn_1 -9.45287e-01 -9.59514e-02  6.40602e-02 -3.68650e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-             -9.48193e-01 
-             -2.35937e-01 
-              9.87173e-02 
-             -3.75429e-02 
+       ssv_1 -9.48193e-01 
+       ssv_2 -2.35937e-01 
+       ssv_3  9.87173e-02 
+       ssv_4 -3.75429e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                                                                 response_fn_1 
-              1.00000e+00 
-             -2.30663e-02  1.00000e+00 
-             -5.51215e-02 -3.72037e-04  1.00000e+00 
-              3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -2.30663e-02  1.00000e+00 
+       ssv_3 -5.51215e-02 -3.72037e-04  1.00000e+00 
+       ssv_4  3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
 response_fn_1 -9.69409e-01 -9.58056e-02  6.29583e-02 -3.38074e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-             -9.76288e-01 
-             -4.81985e-01 
-              4.37748e-02 
-             -1.31257e-02 
+       ssv_1 -9.76288e-01 
+       ssv_2 -4.81985e-01 
+       ssv_3  4.37748e-02 
+       ssv_4 -1.31257e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5705,33 +5705,33 @@ Sample moment statistics for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  8.3473275231e+01  1.0179242743e+02  4.0530701586e+01  5.3625451053e+01
 Simple Correlation Matrix among all inputs and outputs:
-                                                                 response_fn_1 
-              1.00000e+00 
-              2.05370e-02  1.00000e+00 
-             -3.50183e-02  3.33012e-03  1.00000e+00 
-              2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.05370e-02  1.00000e+00 
+       ssv_3 -3.50183e-02  3.33012e-03  1.00000e+00 
+       ssv_4  2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
 response_fn_1 -9.45287e-01 -9.59514e-02  6.40602e-02 -3.68650e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-             -9.48193e-01 
-             -2.35937e-01 
-              9.87173e-02 
-             -3.75429e-02 
+       ssv_1 -9.48193e-01 
+       ssv_2 -2.35937e-01 
+       ssv_3  9.87173e-02 
+       ssv_4 -3.75429e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                                                                 response_fn_1 
-              1.00000e+00 
-             -2.30663e-02  1.00000e+00 
-             -5.51215e-02 -3.72037e-04  1.00000e+00 
-              3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -2.30663e-02  1.00000e+00 
+       ssv_3 -5.51215e-02 -3.72037e-04  1.00000e+00 
+       ssv_4  3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
 response_fn_1 -9.69409e-01 -9.58056e-02  6.29583e-02 -3.38074e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-             -9.76288e-01 
-             -4.81985e-01 
-              4.37748e-02 
-             -1.31257e-02 
+       ssv_1 -9.76288e-01 
+       ssv_2 -4.81985e-01 
+       ssv_3  4.37748e-02 
+       ssv_4 -1.31257e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5744,37 +5744,37 @@ Sample moment statistics for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  8.3459915770e+01  1.0211310000e+02  4.1269739765e+01  5.4603259336e+01
 Simple Correlation Matrix among all inputs and outputs:
-                                                                              response_fn_1 
-              1.00000e+00 
-              6.15127e-04  1.00000e+00 
-             -1.07933e-02 -9.63579e-03  1.00000e+00 
-             -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
-              1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  6.15127e-04  1.00000e+00 
+       ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
+       ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
+       ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
 response_fn_1 -9.36308e-01 -9.65121e-02  4.91517e-02  2.40980e-02  1.12936e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-             -9.41809e-01 
-             -2.76171e-01 
-              1.11843e-01 
-              6.17104e-02 
-              7.60075e-02 
+       ssv_1 -9.41809e-01 
+       ssv_2 -2.76171e-01 
+       ssv_3  1.11843e-01 
+       ssv_4  6.17104e-02 
+       ssv_5  7.60075e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                                                                              response_fn_1 
-              1.00000e+00 
-              2.69787e-02  1.00000e+00 
-              1.55656e-02  3.07591e-02  1.00000e+00 
-             -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
-             -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
 response_fn_1 -9.62364e-01 -1.31317e-01  4.87249e-02  1.28173e-02 -1.26133e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-             -9.69889e-01 
-             -4.04455e-01 
-              2.67336e-01 
-              4.41297e-02 
-             -2.47454e-02 
+       ssv_1 -9.69889e-01 
+       ssv_2 -4.04455e-01 
+       ssv_3  2.67336e-01 
+       ssv_4  4.41297e-02 
+       ssv_5 -2.47454e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5787,37 +5787,37 @@ Sample moment statistics for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  8.3459915770e+01  1.0211310000e+02  4.1269739765e+01  5.4603259336e+01
 Simple Correlation Matrix among all inputs and outputs:
-                                                                              response_fn_1 
-              1.00000e+00 
-              6.15127e-04  1.00000e+00 
-             -1.07933e-02 -9.63579e-03  1.00000e+00 
-             -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
-              1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  6.15127e-04  1.00000e+00 
+       ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
+       ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
+       ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
 response_fn_1 -9.36308e-01 -9.65121e-02  4.91517e-02  2.40980e-02  1.12936e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-             -9.41809e-01 
-             -2.76171e-01 
-              1.11843e-01 
-              6.17104e-02 
-              7.60075e-02 
+       ssv_1 -9.41809e-01 
+       ssv_2 -2.76171e-01 
+       ssv_3  1.11843e-01 
+       ssv_4  6.17104e-02 
+       ssv_5  7.60075e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                                                                              response_fn_1 
-              1.00000e+00 
-              2.69787e-02  1.00000e+00 
-              1.55656e-02  3.07591e-02  1.00000e+00 
-             -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
-             -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
 response_fn_1 -9.62364e-01 -1.31317e-01  4.87249e-02  1.28173e-02 -1.26133e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-             -9.69889e-01 
-             -4.04455e-01 
-              2.67336e-01 
-              4.41297e-02 
-             -2.47454e-02 
+       ssv_1 -9.69889e-01 
+       ssv_2 -4.04455e-01 
+       ssv_3  2.67336e-01 
+       ssv_4  4.41297e-02 
+       ssv_5 -2.47454e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5830,33 +5830,33 @@ Sample moment statistics for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  8.3473275231e+01  1.0179242743e+02  4.0530701586e+01  5.3625451053e+01
 Simple Correlation Matrix among all inputs and outputs:
-                                                                 response_fn_1 
-              1.00000e+00 
-              2.05370e-02  1.00000e+00 
-             -3.50183e-02  3.33012e-03  1.00000e+00 
-              2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.05370e-02  1.00000e+00 
+       ssv_3 -3.50183e-02  3.33012e-03  1.00000e+00 
+       ssv_4  2.57094e-02  9.81287e-03 -1.11018e-03  1.00000e+00 
 response_fn_1 -9.45287e-01 -9.59514e-02  6.40602e-02 -3.68650e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-             -9.48193e-01 
-             -2.35937e-01 
-              9.87173e-02 
-             -3.75429e-02 
+       ssv_1 -9.48193e-01 
+       ssv_2 -2.35937e-01 
+       ssv_3  9.87173e-02 
+       ssv_4 -3.75429e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                                                                 response_fn_1 
-              1.00000e+00 
-             -2.30663e-02  1.00000e+00 
-             -5.51215e-02 -3.72037e-04  1.00000e+00 
-              3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
+                    ssv_1        ssv_2        ssv_3        ssv_4 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -2.30663e-02  1.00000e+00 
+       ssv_3 -5.51215e-02 -3.72037e-04  1.00000e+00 
+       ssv_4  3.44914e-02 -1.93459e-02  2.52145e-02  1.00000e+00 
 response_fn_1 -9.69409e-01 -9.58056e-02  6.29583e-02 -3.38074e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-             -9.76288e-01 
-             -4.81985e-01 
-              4.37748e-02 
-             -1.31257e-02 
+       ssv_1 -9.76288e-01 
+       ssv_2 -4.81985e-01 
+       ssv_3  4.37748e-02 
+       ssv_4 -1.31257e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
 dakota_experiment_read.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
@@ -67637,6 +67637,28 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  8.6614602620944851e+01  5.1470363900133187e+01
+Test Number 16 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 1 total (1 new, 0 duplicate)
+  response_fn_1: 1 val (1 n, 0 d), 1 grad (1 n, 0 d), 0 Hess (0 n, 0 d)
+  Approximate Mean Response                  =  6.6672202620944617e+01
+  Approximate Standard Deviation of Response =  4.7845719855511838e+01
+  Importance Factor for ssv_1                =  9.8718209181260730e-01
+  Importance Factor for ssv_2                =  1.2751626609522063e-02
+  Importance Factor for ssv_3                =  6.5286301086117421e-05
+  Importance Factor for ssv_4                =  8.9394327604487813e-07
+  Importance Factor for ssv_5                =  1.0133350709880940e-07
+  Importance Factor for ssv_1     ssv_2      = -3.6493284739698098e-18
+  Importance Factor for ssv_1     ssv_3      = -1.3056031769216968e-18
+  Importance Factor for ssv_2     ssv_3      = -1.4838683020591487e-19
+  Importance Factor for ssv_1     ssv_4      =  1.9478940554479565e-19
+  Importance Factor for ssv_2     ssv_4      =  1.0707541853071554e-20
+  Importance Factor for ssv_3     ssv_4      = -7.2629653856208131e-21
+  Importance Factor for ssv_1     ssv_5      =  7.1583335067638987e-20
+  Importance Factor for ssv_2     ssv_5      =  5.8460276173960097e-21
+  Importance Factor for ssv_3     ssv_5      = -6.9542572954415125e-22
+  Importance Factor for ssv_4     ssv_5      = -1.6570864954879704e-23
 dakota_uq_textbook_adaptsampling.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 120 total (120 new, 0 duplicate)

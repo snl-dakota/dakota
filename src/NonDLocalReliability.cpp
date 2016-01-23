@@ -2740,6 +2740,7 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	    << std::setw(20) << uv_labels[j].data() << " = "
 	    << std::resetiosflags(std::ios::adjustfield)
 	    << std::setw(width) << imp_fact_i[j] << '\n';
+
 	if (natafTransform.x_correlation())
 	  for (j=0, cntr=numUncertainVars; j<numUncertainVars; ++j)
 	    for (k=0; k<j; ++k, ++cntr)

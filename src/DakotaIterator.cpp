@@ -253,7 +253,8 @@ Iterator::Iterator(ProblemDescDB& problem_db):
 
 void Iterator::resize()
 {
-  // Base class currently is a no-op
+  // Update activeSet:
+  activeSet = iteratedModel.current_response().active_set();
 }
 
 

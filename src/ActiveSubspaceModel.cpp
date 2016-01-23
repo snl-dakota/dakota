@@ -211,6 +211,9 @@ bool ActiveSubspaceModel::initialize_mapping()
   // update with subspace constraints
   update_linear_constraints();
 
+  // set new subspace variable labels
+  update_var_labels();
+
   subspaceInitialized = true;
 
   if (reducedRank != numFullspaceVars)
@@ -230,6 +233,17 @@ bool ActiveSubspaceModel::finalize_mapping()
 bool ActiveSubspaceModel::mapping_initialized()
 {
   return subspaceInitialized;
+}
+
+void ActiveSubspaceModel::update_var_labels()
+{
+  // TODO: 'ssv' stands for subspace variable, come up with something better
+  StringMultiArray subspace_var_labels(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++) {
+    subspace_var_labels[i] = "ssv_" + boost::lexical_cast<std::string>(i+1);
+  }
+
+  continuous_variable_labels(subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 
 void ActiveSubspaceModel::init_fullspace_sampler()
@@ -1037,7 +1051,7 @@ void ActiveSubspaceModel::initialize_recast()
   RecastModel::
     init_maps(vars_map_indices, nonlinear_vars_mapping, vars_mapping, 
 	      set_mapping, primary_resp_map_indices, secondary_resp_map_indices,
-	      nonlinear_resp_mapping, NULL, NULL);
+	      nonlinear_resp_mapping, response_mapping, NULL);
 }
 
 /// Create a variables components totals array with the reduced space
@@ -1130,8 +1144,8 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   // mu_y = activeBasis^T * mu_x
   int m = activeBasis.numRows();
   int n = activeBasis.numCols();
-  double alpha = 1.0;
-  double beta = 0.0;
+  Real alpha = 1.0;
+  Real beta = 0.0;
 
   int incx = 1;
   int incy = 1;
@@ -1243,8 +1257,8 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   int m = W1.numRows();
   int n = W1.numCols();
 
-  double alpha = 1.0;
-  double beta = 0.0;
+  Real alpha = 1.0;
+  Real beta = 0.0;
 
   int incx = 1;
   int incy = 1;
@@ -1304,6 +1318,64 @@ void ActiveSubspaceModel::set_mapping(const Variables& recast_vars,
       break;
     }
   sub_model_set.derivative_vector(sub_model_dvv);  
+}
+
+
+/**
+  Perform the response mapping from submodel to recast response
+*/
+void ActiveSubspaceModel::
+response_mapping(const Variables& recast_y_vars,
+                 const Variables& sub_model_x_vars,
+                 const Response& sub_model_resp, Response& recast_resp)
+{
+  Teuchos::BLAS<int, Real> teuchos_blas;
+
+  // Function values are the same for both recast and sub_model:
+  recast_resp.function_values(sub_model_resp.function_values());
+
+
+  // Gradients and Hessians must be transformed though:
+  const RealMatrix& dg_dx = sub_model_resp.function_gradients();
+  if(!dg_dx.empty()) {
+    RealMatrix dg_dy = recast_resp.function_gradients();
+
+    // 	Performs the matrix-matrix operation:
+    // dg_dy <- alpha*W1^T*dg_dx + beta*dg_dy
+    const RealMatrix& W1 = asmInstance->activeBasis;
+    int m = W1.numCols();
+    int k = W1.numRows();
+    int n = dg_dx.numCols();
+
+    Real alpha = 1.0;
+    Real beta = 0.0;
+
+    teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
+                      W1.values(), k, dg_dx.values(), k, beta, dg_dy.values(), m);
+
+    recast_resp.function_gradients(dg_dy);
+  }
+
+  
+  // Now transform the Hessians:
+  const RealSymMatrixArray& H_x_all = sub_model_resp.function_hessians();
+  if(!H_x_all.empty()) {
+    RealSymMatrixArray H_y_all(H_x_all.size()); 
+    for (int i = 0; i < H_x_all.size(); i++) {
+      // compute H_y = W1^T * H_x * W1
+      const RealMatrix& W1 = asmInstance->activeBasis;
+      int m = W1.numRows();
+      int n = W1.numCols();
+
+      Real alpha = 1.0;
+
+      RealSymMatrix H_y(n, false);
+      Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha, H_x_all[i], W1, H_y);
+      H_y_all[i] = H_y;
+    }
+
+    recast_resp.function_hessians(H_y_all);
+  }
 }
 
 }  // namespace Dakota

@@ -166,6 +166,9 @@ protected:
   /// constraints) into linear constraints in the reduced space
   void update_linear_constraints();
 
+  /// update variable labels
+  void update_var_labels();
+
   
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -180,6 +183,12 @@ protected:
   static void set_mapping(const Variables& recast_vars,
 			  const ActiveSet& recast_set,
 			  ActiveSet& sub_model_set);
+
+  /// map responses from the sub-model to the recast model
+  static void response_mapping(const Variables& recast_y_vars,
+                               const Variables& sub_model_x_vars,
+                               const Response& sub_model_resp,
+                               Response& recast_resp);
 
   // ---
   // Member data
