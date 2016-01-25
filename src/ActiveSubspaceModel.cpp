@@ -216,6 +216,9 @@ bool ActiveSubspaceModel::initialize_mapping()
 
   subspaceInitialized = true;
 
+  // Perform numerical derivatives in subspace:
+  supportsEstimDerivs = true;
+
   if (reducedRank != numFullspaceVars)
     return true; // Size of variables has changed
   else
@@ -1216,7 +1219,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
   reduced_dist_params.uncertain_correlations(correl_y);
 
-
+  // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x
   m = inactiveBasis.numRows();
   n = inactiveBasis.numCols();
@@ -1230,6 +1233,14 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
                     mu_x.values(), incx, beta, mu_z.values(), incz);
 
   inactiveVars = mu_z;
+
+
+  // Set continuous variable types:
+  UShortMultiArray cont_variable_types(boost::extents[reducedRank]); 
+ 	for (int i = 0; i < reducedRank; i++) { 
+    cont_variable_types[i] = NORMAL_UNCERTAIN; 
+  }
+  currentVariables.continuous_variable_types(cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
 }
 
 
