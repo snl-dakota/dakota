@@ -17,7 +17,7 @@ namespace Dakota {
 // ------------------------------------------
 
 ReducedBasis::ReducedBasis() :
-  is_valid_svd(false)
+  col_means_computed(false), is_centered(false), is_valid_svd(false)
 {
 }
 
@@ -27,6 +27,8 @@ void
 ReducedBasis::set_matrix(const RealMatrix & mat)
 {
   matrix = mat;
+  col_means_computed = false;
+  is_centered = false;
   is_valid_svd = false;
 }
 
@@ -35,7 +37,11 @@ ReducedBasis::set_matrix(const RealMatrix & mat)
 void
 ReducedBasis::center_matrix()
 {
+  if ( is_centered )
+    return;
+
   compute_column_means(matrix, column_means);
+  col_means_computed = true;
 
   // working vector
   RealVector column_vec(matrix.numRows());
@@ -46,6 +52,7 @@ ReducedBasis::center_matrix()
     matrix_column -= column_vec;
   }
 
+  is_centered = true;
   is_valid_svd = false;
 }
 

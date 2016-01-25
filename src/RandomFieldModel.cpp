@@ -176,7 +176,7 @@ void RandomFieldModel::identify_field_model()
 {
   // operations common to both representations
   rfBasis.set_matrix(rfBuildData);
-  rfBasis.update_svd();  // includes centering the matrix
+  rfBasis.update_svd(true);  // true: center the matrix before factoring
   percentVariance = 0.9; // hardcoded: need to remove
   ReducedBasis::VarianceExplained truncation(percentVariance);
   actualReducedRank = truncation.get_num_components(rfBasis);
@@ -269,6 +269,8 @@ void RandomFieldModel::initialize_recast()
     rfmInstance->subModel.aleatory_distribution_parameters();
   size_t num_sm_normal = adp.normal_means().length();
 
+  // TODO: don't assume this for PCA case!
+
   // In general, each submodel continuous variable depends on all of
   // the recast (reduced) variables; others are one-to-one.
   Sizet2DArray vars_map_indices(submodel_vars);
@@ -360,11 +362,15 @@ void RandomFieldModel::initialize_rf_coeffs()
       subModel.aleatory_distribution_parameters();
     RealVector normal_means = sm_adp.normal_means();
     RealVector normal_std_deviations = sm_adp.normal_std_deviations();
+    RealVector normal_lb = sm_adp.normal_lower_bounds();
+    RealVector normal_ub = sm_adp.normal_upper_bounds();
 
     // append normal variables
     int num_sm_normal = normal_means.length();
     normal_means.resize(num_sm_normal + actualReducedRank);
     normal_std_deviations.resize(num_sm_normal + actualReducedRank);
+    normal_lb.resize(num_sm_normal + actualReducedRank);
+    normal_ub.resize(num_sm_normal + actualReducedRank);
     // BMA TODO: update label management to not assume normal are leading vars
     StringMultiArrayConstView sm_cv_labels = 
       subModel.continuous_variable_labels();
@@ -373,6 +379,8 @@ void RandomFieldModel::initialize_rf_coeffs()
     for (int i=0; i<actualReducedRank; ++i) {
       normal_means[num_sm_normal + i] = 0.0;
       normal_std_deviations[num_sm_normal + i] = 1.0;
+      normal_lb[num_sm_normal + i] = -std::numeric_limits<Real>::infinity();
+      normal_ub[num_sm_normal + i] = std::numeric_limits<Real>::infinity();
       String xi_label = "xi_" + boost::lexical_cast<String>(i+1);
       currentVariables.
         continuous_variable_label(xi_label, num_sm_normal + i);
@@ -385,6 +393,8 @@ void RandomFieldModel::initialize_rf_coeffs()
     Pecos::AleatoryDistParams& rfm_adp = aleatory_distribution_parameters();
     rfm_adp.normal_means(normal_means);
     rfm_adp.normal_std_deviations(normal_std_deviations);
+    rfm_adp.normal_lower_bounds(normal_lb);
+    rfm_adp.normal_upper_bounds(normal_ub);
   }
 }
 
@@ -452,7 +462,7 @@ void RandomFieldModel::derived_evaluate_nowait(const ActiveSet& set)
 void RandomFieldModel::generate_kl_realization()
 {
   const RealVector& rf_sqrt_eigenvalues = rfBasis.get_singular_values();
-  RealMatrix rf_eigenvectors = rfBasis.get_right_singular_vector_transpose();
+  RealMatrix rf_ev_trans = rfBasis.get_right_singular_vector_transpose();
   // extract N(0,1) KL coefficients to generate a field realization
   //
   // BMA TODO: properly extract the N(0,1) vars from their place in
@@ -473,10 +483,10 @@ void RandomFieldModel::generate_kl_realization()
   // augment the mean prediction with the covariance contributions
   RealVector kl_prediction = rfBasis.get_column_means();  // copy
   for (int i=0; i<actualReducedRank; ++i) {
-    // BMA TODO: replace with matrix-vector ops
-    RealVector rf_ev_i = Teuchos::getCol(Teuchos::Copy, rf_eigenvectors, i);
-    rf_ev_i.scale(rf_sqrt_eigenvalues[i] * kl_coeffs[i]);
-    kl_prediction += rf_ev_i;
+    // BMA TODO: replace with matrix-vector ops (perhaps in ReducedBasis)
+    Real mult = rf_sqrt_eigenvalues[i] * kl_coeffs[i];
+    for (int k=0; k<numFunctions; ++k)
+      kl_prediction[k] += mult*rf_ev_trans(i,k);
   }
 
   write_field(kl_prediction);
