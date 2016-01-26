@@ -491,10 +491,6 @@ if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
-if(BUILD_TESTING)
-  add_subdirectory(unit_test)
-endif()
-
 if(ENABLE_DAKOTA_DOCS)
   add_subdirectory(docs)
 endif()

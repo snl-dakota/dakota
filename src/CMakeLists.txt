@@ -1022,6 +1022,10 @@ if (DAKOTA_API_JAVA)
   add_subdirectory(api/java)
 endif()
 
+if(BUILD_TESTING)
+  add_subdirectory(unit_test)
+endif()
+
 
 # --- Pass some data back to Trilinos
 
