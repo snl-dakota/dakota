@@ -201,6 +201,10 @@ void RandomFieldModel::identify_field_model()
     RealMatrix factor_scores(num_samples, numFunctions);
     int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
                                        centered_matrix, principal_comp, 0.);
+
+    // BMA TODO: verify why this size differs; seems that factor
+    // scores should be n x p and that this could seg fault if
+    // num_samples > numFunctions...
     RealMatrix
       f_scores(Teuchos::Copy, factor_scores, num_samples, num_samples, 0, 0);
 
@@ -461,8 +465,12 @@ void RandomFieldModel::derived_evaluate_nowait(const ActiveSet& set)
 
 void RandomFieldModel::generate_kl_realization()
 {
-  const RealVector& rf_sqrt_eigenvalues = rfBasis.get_singular_values();
+  // ReducedBasis gives the singular values of the centered data
+  // matrix; the covariance is scaled by n-1:
+  int cov_dof = std::sqrt( (double)rfBasis.get_matrix().numRows() - 1 );
+  const RealVector& data_singular_values = rfBasis.get_singular_values();
   RealMatrix rf_ev_trans = rfBasis.get_right_singular_vector_transpose();
+
   // extract N(0,1) KL coefficients to generate a field realization
   //
   // BMA TODO: properly extract the N(0,1) vars from their place in
@@ -481,10 +489,10 @@ void RandomFieldModel::generate_kl_realization()
   }
 
   // augment the mean prediction with the covariance contributions
-  RealVector kl_prediction = rfBasis.get_column_means();  // copy
+  RealVector kl_prediction = rfBasis.get_column_means();
   for (int i=0; i<actualReducedRank; ++i) {
     // BMA TODO: replace with matrix-vector ops (perhaps in ReducedBasis)
-    Real mult = rf_sqrt_eigenvalues[i] * kl_coeffs[i];
+    Real mult = data_singular_values[i]/cov_dof * kl_coeffs[i];
     for (int k=0; k<numFunctions; ++k)
       kl_prediction[k] += mult*rf_ev_trans(i,k);
   }
@@ -497,8 +505,7 @@ void RandomFieldModel::generate_pca_gp_realization()
 {
   // augment the mean prediction with the GP contributions
   RealVector pca_prediction = rfBasis.get_column_means();
-
-  // BMA TODO: make sure this is the right matrix with right dimensions
+  // reduced basis comprised of the rows of V'
   const RealMatrix& principal_comp
     = rfBasis.get_right_singular_vector_transpose();
 
