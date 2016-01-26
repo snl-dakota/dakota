@@ -1,0 +1,3 @@
+[submodule "packages/external"]
+	path = packages/external
+	url = rhoope@software-login.sandia.gov:/home/rhoope/Dakota_packages_public_sandbox
