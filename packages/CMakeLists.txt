@@ -31,20 +31,20 @@ option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
 include(ManageRelocatablePackage)
 
 # Surfpack requires CONMIN and NCSUOPT before descending
-ManageRelocatablePackage(CONMIN CONMIN)
-ManageRelocatablePackage(NCSUOPT NCSUOpt)
+ManageRelocatablePackage(CONMIN external/CONMIN)
+ManageRelocatablePackage(NCSUOPT external/NCSUOpt)
 
-add_subdirectory(nidr)
+add_subdirectory(external/nidr)
 
 if(HAVE_AMPL)
   if (NOT AMPL_INCLUDE_DIRS)
-    add_subdirectory(ampl)
+    add_subdirectory(external/ampl)
   endif()
 endif(HAVE_AMPL)
 
 if(HAVE_OPTPP)
   if (NOT OPTPP_INCLUDE_DIRS)
-    add_subdirectory(OPTPP)
+    add_subdirectory(external/OPTPP)
   endif()
 endif()
 
@@ -53,13 +53,13 @@ endif()
 # component magic" is managed in the top-level CMakeLists.txt file
 include(FftwExternalProject) 
 if(HAVE_FFT) 
-  ManageRelocatablePackage(DFFTPACK dfftpack) 
+  ManageRelocatablePackage(DFFTPACK external/dfftpack) 
   FftwExternalProject() 
 endif(HAVE_FFT) 
  
-ManageRelocatablePackage(LHS LHS)
+ManageRelocatablePackage(LHS external/LHS)
  
-ManageRelocatablePackage(SPARSE_GRID VPISparseGrid)
+ManageRelocatablePackage(SPARSE_GRID external/VPISparseGrid)
 
 add_subdirectory(pecos)
 
@@ -75,7 +75,7 @@ if(HAVE_QUESO)
   endif()
 
   if(DAKOTA_QUESO_CMAKE)
-    add_subdirectory(queso)
+    add_subdirectory(external/queso)
   else()
 
   # Prerequisites for building QUESO
@@ -185,28 +185,28 @@ if(HAVE_ACRO)
     set(UTILIB_USE_MPI FALSE CACHE BOOL
       "MPI NOT enabled in DAKOTA so disable in Acro (Utilib) as well" FORCE)
   endif()
-  add_subdirectory(acro)
+  add_subdirectory(external/acro)
 endif(HAVE_ACRO)
 
 if(HAVE_DDACE)
-  add_subdirectory(DDACE)
+  add_subdirectory(external/DDACE)
 endif(HAVE_DDACE)
 
 if(HAVE_DOT)
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DOT/dbl_prec/dot1.f)
-    add_subdirectory(DOT)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../local/packages/external/DOT/dbl_prec/dot1.f)
+    add_subdirectory(../local/packages/external/DOT ${CMAKE_CURRENT_BINARY_DIR}/DOT)
   else()
     set(HAVE_DOT OFF CACHE BOOL "Build the DOT package" FORCE)
   endif()
 endif(HAVE_DOT)
 
 if(HAVE_DREAM)
-  add_subdirectory(dream)
+  add_subdirectory(external/dream)
 endif(HAVE_DREAM)
 
 
 if(HAVE_FSUDACE)
-  add_subdirectory(FSUDace)
+  add_subdirectory(external/FSUDace)
 endif(HAVE_FSUDACE)
 
 if(HAVE_HOPSPACK)
@@ -231,39 +231,39 @@ if(HAVE_HOPSPACK)
   # HOPSPACK expects BLAS symbol ddot to be found in LAPACK libs 
   set(LAPACK_ADD_LIBS ${BLAS_LIBS})
   set(HOPSPACK_TEST_LAPACK_FUNCS FALSE)
-  add_subdirectory(hopspack)
+  add_subdirectory(external/hopspack)
 endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
-  add_subdirectory(JEGA)
+  add_subdirectory(external/JEGA)
 endif(HAVE_JEGA)
 
 if(HAVE_NL2SOL)
-  add_subdirectory(NL2SOL)
+  add_subdirectory(external/NL2SOL)
 endif(HAVE_NL2SOL)
 
 if(HAVE_NLPQL)
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/NLPQL/NLPQLB.f)
-    add_subdirectory(NLPQL)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../local/packages/external/NLPQL/NLPQLB.f)
+    add_subdirectory(../local/packages/external/NLPQL ${CMAKE_CURRENT_BINARY_DIR}/NLPQL)
   else()
     set(HAVE_NLPQL OFF CACHE BOOL "Build the NLPQL package" FORCE)
   endif()
 endif(HAVE_NLPQL)
 
 if(HAVE_NOMAD)
-  add_subdirectory(NOMAD)
+  add_subdirectory(external/NOMAD)
 endif(HAVE_NOMAD)
 
 if(HAVE_NPSOL)
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/NPSOL/npsolsubs.f)
-    add_subdirectory(NPSOL)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../local/packages/external/NPSOL/npsolsubs.f)
+    add_subdirectory(../local/packages/external/NPSOL ${CMAKE_CURRENT_BINARY_DIR}/NPSOL)
   else()
     set(HAVE_NPSOL OFF CACHE BOOL "Build the NPSOL package" FORCE)
   endif()
 endif(HAVE_NPSOL)
 
 if(HAVE_PSUADE)
-  add_subdirectory(PSUADE)
+  add_subdirectory(external/PSUADE)
 endif(HAVE_PSUADE)
 
 #if(DAKOTA_RESULTS_DB)
@@ -271,5 +271,5 @@ endif(HAVE_PSUADE)
 #endif()
 
 if(HAVE_X_GRAPHICS)
-  add_subdirectory(motif)
+  add_subdirectory(external/motif)
 endif(HAVE_X_GRAPHICS)
