@@ -792,7 +792,7 @@ if(HAVE_AMPL)
   add_definitions("-DHAVE_AMPL")
 
   #include_directories(${Ampl_SOURCE_DIR}/ampl)
-  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/ampl)
+  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/ampl)
 
   #link_directories(${Dakota_BINARY_DIR}/packages/ampl)
   list(APPEND DAKOTA_PKG_LIBS amplsolver)

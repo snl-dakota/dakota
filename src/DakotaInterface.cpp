@@ -41,7 +41,7 @@
 
 #ifdef HAVE_AMPL
 #undef NO // avoid name collision from UTILIB
-#include "ampl/asl.h"
+#include "external/ampl/asl.h"
 #endif // HAVE_AMPL
 
 //#define DEBUG
