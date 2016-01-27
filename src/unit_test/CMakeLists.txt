@@ -37,7 +37,7 @@ dakota_add_unit_test(NAME min_unit_test SOURCES min_unit_test.cpp
 # Copy workdir unit_test helper script into the build tree at build time
 # NOTE:  at runtime the workdir test will look for the script in the parent dir
 set(ut_helper_script "uthelper")
-set(script_dest_path "${Dakota_BINARY_DIR}")
+set(script_dest_path "${Dakota_BINARY_DIR}/src")
 if(MSVC)
   set(script_ext ".bat")
   set(ut_helper_script ${ut_helper_script}${script_ext})
