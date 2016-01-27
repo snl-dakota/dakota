@@ -7142,6 +7142,8 @@ static Model_mp_utype
         MP2s(modelExportFormat,BINARY_ARCHIVE),
         MP2s(modelExportFormat,ALGEBRAIC_FILE),
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
+        MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
+        MP2s(randomFieldIdForm,RF_PCA_GP),
         MP2s(subspaceIdMethod,SUBSPACE_ID_BING_LI),
         MP2s(subspaceIdMethod,SUBSPACE_ID_CONSTANTINE);
 
@@ -7151,7 +7153,8 @@ static Real
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
-	MP_(percentFold);
+	MP_(percentFold),
+	MP_(truncationTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -7179,6 +7182,7 @@ static String
 	MP_(propagationModelPointer),
 	MP_(refineCVMetric),
 	MP_(responsesPointer),
+	MP_(rfDataFileName),
 	MP_(solutionLevelControl),
 	MP_(subMethodPointer),
 	MP_(variablesPointer);

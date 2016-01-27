@@ -2350,6 +2350,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
 	{"rf.propagation_model_pointer", P propagationModelPointer},
+	{"rf_data_file", P rfDataFileName},
 	{"simulation.solution_level_control", P solutionLevelControl},
 	{"surrogate.actual_model_pointer", P actualModelPointer},
 	{"surrogate.challenge_points_file", P importChallengePtsFile},
@@ -2504,7 +2505,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
       {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
-      {"surrogate.percent", P percentFold}};
+      {"surrogate.percent", P percentFold},
+      {"truncation_tolerance", P truncationTolerance}};
     #undef P
 
     KW<Real, DataModelRep> *kw;
@@ -2591,6 +2593,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
+        {"rf.expansion_bases", P reducedRank},
         {"subspace.bootstrap_samples", P numReplicates},
         {"subspace.reduced_rank", P reducedRank},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
@@ -2782,6 +2785,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataModelRep::
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
       // must be sorted by string (key)  
+	{"rf.expansion_form", P randomFieldIdForm},
 	{"subspace.truncation_method", P subspaceIdMethod},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},

@@ -20,8 +20,10 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   // LPS TODO: initialize other class data members off problemDB
   numFunctions(subModel.num_functions()),
-  numObservations(0), expansionForm(RF_KARHUNEN_LOEVE),
-  requestedReducedRank(0), percentVariance(1.0),
+  numObservations(0), 
+  expansionForm(problem_db.get_ushort("model.rf.expansion_form")),
+  requestedReducedRank(problem_db.get_int("model.rf.expansion_bases")),
+  percentVariance(problem_db.get_real("model.truncation_tolerance")),
   actualReducedRank(5)
 {
   rfmInstance = this;
@@ -177,7 +179,7 @@ void RandomFieldModel::identify_field_model()
   // operations common to both representations
   rfBasis.set_matrix(rfBuildData);
   rfBasis.update_svd(true);  // true: center the matrix before factoring
-  percentVariance = 0.9; // hardcoded: need to remove
+  //percentVariance = 0.9; // hardcoded: need to remove
   ReducedBasis::VarianceExplained truncation(percentVariance);
   actualReducedRank = truncation.get_num_components(rfBasis);
   Cout << "RandomFieldModel: retaining " << actualReducedRank 
@@ -185,9 +187,12 @@ void RandomFieldModel::identify_field_model()
 
   switch(expansionForm) {
   case RF_KARHUNEN_LOEVE: {
+    Cout << "KL Expansion Form " << '\n';
     break;
   }
   case RF_PCA_GP: {
+    
+    Cout << "PCA Expansion Form " << '\n';
 
     int num_samples = rfBuildData.numRows();
 

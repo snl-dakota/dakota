@@ -2466,7 +2466,18 @@ KEYWORD model {N_mom3(start,0,stop)}
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}
-    dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+    [ build_source {0}
+      rf_data_file STRING {N_mom(str,rfDataFileName)}
+      |
+      dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+     ]
+    [ expansion_form {0}
+      karhunen_loeve {N_mom(utype,randomFieldIdForm_RF_KARHUNEN_LOEVE)}
+      |
+      principal_components {N_mom(utype,randomFieldIdForm_RF_PCA_GP)}
+     ]
+    [ expansion_bases INTEGER {N_mom(int,reducedRank)} ]
+    [ truncation_tolerance REAL {N_mom(Real,truncationTolerance)} ]
     propagation_model_pointer STRING {N_mom(str,propagationModelPointer)}
    )
 
