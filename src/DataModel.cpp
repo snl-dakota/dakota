@@ -73,7 +73,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << subspaceIdMethod
     << reducedRank << numReplicates << autoRefine << maxFunctionEvals
-    << refineCVMetric << refineCVFolds << propagationModelPointer;
+    << refineCVMetric << refineCVFolds << propagationModelPointer
+    << truncationTolerance << rfDataFileName << randomFieldIdForm;
 }
 
 
@@ -106,7 +107,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> initialSamples >> refineSamples >> maxIterations 
     >> convergenceTolerance >> subspaceIdMethod
     >> reducedRank >> numReplicates >> autoRefine >> maxFunctionEvals
-    >> refineCVMetric >> refineCVFolds >> propagationModelPointer;
+    >> refineCVMetric >> refineCVFolds >> propagationModelPointer
+    >> truncationTolerance >> rfDataFileName >> randomFieldIdForm;
 }
 
 
@@ -138,7 +140,8 @@ void DataModelRep::write(std::ostream& s) const
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << subspaceIdMethod
     << reducedRank << numReplicates << autoRefine << maxFunctionEvals
-    << refineCVMetric << refineCVFolds << propagationModelPointer;
+    << refineCVMetric << refineCVFolds << propagationModelPointer
+    << truncationTolerance << rfDataFileName << randomFieldIdForm;
 }
 
 

@@ -321,8 +321,16 @@ public:
 
   // random field models
 
+  /// Contains which type of random field model 
+  unsigned short randomFieldIdForm;
+
+  /// truncation tolerance on build process: percent variance explained
+  Real truncationTolerance;
+
   /// pointer to the model through which to propagate the random field
   String propagationModelPointer;
+  /// File from which to build the random field
+  String rfDataFileName;
 
 private:
 

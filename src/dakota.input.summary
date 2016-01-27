@@ -2423,7 +2423,16 @@ KEYWORD model
 	  )
 	|
 	( random_field
-	  dace_method_pointer STRING
+	  [ build_source
+	    rf_data_file STRING
+	    | dace_method_pointer STRING
+	    ]
+	  [ expansion_form
+	    karhunen_loeve
+	    | principal_components
+	    ]
+	  [ expansion_bases INTEGER ]
+	  [ truncation_tolerance REAL ]
 	  propagation_model_pointer STRING
 	  )
 
