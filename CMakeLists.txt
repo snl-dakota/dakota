@@ -356,9 +356,9 @@ if (NOT BUILD_IN_TRILINOS)
     # if no one has configured a local src Teuchos, do so
     # this will respect Teuchos_DIR if already set
     if( NOT Teuchos_DIR )
-      if( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/packages/teuchos/cmake/tribits )
+      if( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/packages/external/teuchos/cmake/tribits )
         set( Teuchos_DIR
-          ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/packages/teuchos )
+          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/teuchos/packages/teuchos )
         set( Trilinos_ENABLE_Teuchos ON CACHE BOOL
           "ENABLE TriBITS build of teuchos" FORCE )
 
@@ -382,7 +382,7 @@ if (NOT BUILD_IN_TRILINOS)
       message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}" )
       set(DAKOTA_BUILDING_TEUCHOS TRUE CACHE BOOL
         "Dakota is building Teuchos in its build tree" FORCE)
-      add_subdirectory(packages/teuchos)
+      add_subdirectory(packages/external/teuchos)
 
     else()
       message(STATUS
