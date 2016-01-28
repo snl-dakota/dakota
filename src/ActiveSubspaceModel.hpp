@@ -226,6 +226,10 @@ protected:
   /// Number of bootstrap samples for subspace identification
   size_t numReplicates;
 
+  /// boolean flag to determine if variables should be transformed to u-space before
+  /// active subspace initialization
+  bool transformVars;
+
   // ---
   // TODO: add these criteria
 

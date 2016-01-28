@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "ActiveSubspaceModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "NonDLHSSampling.hpp"
 #include "BootstrapSampler.hpp"
 #include "dakota_linear_algebra.hpp"
@@ -36,6 +37,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   nullspaceTol(problem_db.get_real("model.convergence_tolerance")/1.0e3),
   subspaceIdMethod(probDescDB.get_ushort("model.subspace.truncation_method")),
   numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
+  transformVars(true),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
   subspaceInitialized(false),
@@ -71,8 +73,20 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
     = problem_db.get_string("model.surrogate.actual_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
-  sub_model = problem_db.get_model();
+
   //check_submodel_compatibility(actualModel);
+
+  Model return_model;
+
+  if (transformVars) {
+    ProbabilityTransformModel* transform_model
+       = new ProbabilityTransformModel(problem_db.get_model());
+    sub_model.assign_rep(transform_model, false);
+  }
+  else {
+    sub_model = problem_db.get_model();
+  }
+
   problem_db.set_db_model_nodes(model_index); // restore
 
   return sub_model;
