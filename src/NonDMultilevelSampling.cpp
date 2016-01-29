@@ -52,6 +52,16 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     // TO DO
   }
   */
+
+  if (pilotSamples.empty()) maxEvalConcurrency *= 100;
+  else {
+    size_t i, num_ps = pilotSamples.size(), max_ps = 0;
+    for (i=0; i<num_ps; ++i)
+      if (pilotSamples[i] > max_ps)
+	max_ps = pilotSamples[i];
+    if (max_ps)
+      maxEvalConcurrency *= max_ps;
+  }
 }
 
 

@@ -996,8 +996,8 @@ void HierarchSurrModel::resize_response()
   size_t num_curr_fns;
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    num_curr_fns
-      = surrogate_model().num_functions()+ truth_model().num_functions(); break;
+    num_curr_fns = surrogate_model().num_functions()
+                 +     truth_model().num_functions();                     break;
   case BYPASS_SURROGATE:
     num_curr_fns = truth_model().num_functions();                         break;
   //case MODEL_DISCREPANCY:
