@@ -138,6 +138,10 @@ protected:
   /// compute Constantine's metric to identify the active subspace
   void computeConstantineMetric(RealVector& singular_values, bool& svtol_met);
 
+  /// Compute active subspace size based on eigenvalue energy. Compatible with
+  /// other truncation methods.
+  void computeEnergyCriterion(RealVector& singular_values, bool& svtol_met);
+
   /// print inner iteration stats after SVD
   void print_svd_stats();
 
@@ -220,8 +224,14 @@ protected:
   /// user-specified tolerance on nullspace 
   double nullspaceTol;
 
-  /// Contains which method should be used to identify active subspace dimension
-  unsigned short subspaceIdMethod;
+  /// Boolean flag signaling use of Bing Li criterion to identify active subspace dimension
+  bool subspaceIdBingLi;
+
+  /// Boolean flag signaling use of Constantine criterion to identify active subspace dimension
+  bool subspaceIdConstantine;
+
+  /// Boolean flag signaling use of eigenvalue energy criterion to identify active subspace dimension
+  bool subspaceIdEnergy;
 
   /// Number of bootstrap samples for subspace identification
   size_t numReplicates;
@@ -292,6 +302,9 @@ protected:
   /// Gradient scaling factors to make multiple response function gradients
   /// similar orders of magnitude.
   RealArray gradientScaleFactors;
+
+  /// Truncation tolerance for eigenvalue energy subspace identification
+  Real truncationTolerance;
 
 
   // Helper members

@@ -2501,6 +2501,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     static KW<Real, DataModelRep> Rdmo[] = {	
       // must be sorted by string (key)
       {"convergence_tolerance", P convergenceTolerance},
+      {"subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
       {"surrogate.neural_network_range", P annRange},
@@ -2593,9 +2594,9 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
-        {"rf.expansion_bases", P reducedRank},
+        {"rf.expansion_bases", P dimension},
         {"subspace.bootstrap_samples", P numReplicates},
-        {"subspace.reduced_rank", P reducedRank},
+        {"subspace.dimension", P dimension},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
         {"surrogate.points_total", P pointsTotal},
@@ -2786,7 +2787,6 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
       // must be sorted by string (key)  
 	{"rf.expansion_form", P randomFieldIdForm},
-	{"subspace.truncation_method", P subspaceIdMethod},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
 	{"surrogate.import_build_format", P importBuildFormat},
@@ -3042,6 +3042,9 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataModelRep> Bdmo[] = {	
       // must be sorted by string (key)
 	{"hierarchical_tags", P hierarchicalTags},
+	{"subspace.truncation_method.bing_li", P subspaceIdBingLi},
+	{"subspace.truncation_method.constantine", P subspaceIdConstantine},
+	{"subspace.truncation_method.energy", P subspaceIdEnergy},
 	{"surrogate.auto_refine", P autoRefine},
 	{"surrogate.challenge_points_file_active", P importChallengeActive},
 	{"surrogate.cross_validate", P crossValidateFlag},

@@ -20,7 +20,8 @@
 #include "ProbabilityTransformation.hpp"
 #include "pecos_stat_util.hpp"
 
-namespace Dakota {
+namespace Dakota
+{
 
 
 /// Probability transformation specialization of RecastModel
@@ -29,14 +30,14 @@ namespace Dakota {
 class ProbabilityTransformModel: public RecastModel
 {
 public:
-  
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// standard constructor
   ProbabilityTransformModel(const Model& sub_model,
-		                        bool truncated_bounds = false, Real bound = 10.);
+                            bool truncated_bounds = false, Real bound = 10.);
 
   /// destructor
   ~ProbabilityTransformModel();
@@ -97,14 +98,14 @@ protected:
   /// static function for RecastModels used to map u-space ActiveSets
   /// from NonD Iterators to x-space ActiveSets for Model evaluations
   static void set_u_to_x_mapping(const Variables& u_vars,
-				 const ActiveSet& u_set, ActiveSet& x_set);
+                                 const ActiveSet& u_set, ActiveSet& x_set);
 
   /// static function for RecastModels used to map x-space responses from
   /// Model evaluations to u-space responses for return to NonD Iterator.
   static void resp_x_to_u_mapping(const Variables& x_vars,
-				  const Variables& u_vars,
-				  const Response& x_response,
-				  Response& u_response);
+                                  const Variables& u_vars,
+                                  const Response& x_response,
+                                  Response& u_response);
 
 private:
   /// Nonlinear variable transformation that encapsulates the required
@@ -252,8 +253,11 @@ private:
 };
 
 
-inline void ProbabilityTransformModel::distribution_parameter_derivatives(bool dist_param_derivs)
-{ distParamDerivs = dist_param_derivs; }
+inline void ProbabilityTransformModel::distribution_parameter_derivatives(
+  bool dist_param_derivs)
+{
+  distParamDerivs = dist_param_derivs;
+}
 
 
 /** Map the variables from iterator space (u) to simulation space (x). */
@@ -261,7 +265,7 @@ inline void ProbabilityTransformModel::
 vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 {
   ptmInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-					    x_vars.continuous_variables_view());
+      x_vars.continuous_variables_view());
 }
 
 
@@ -270,7 +274,7 @@ inline void ProbabilityTransformModel::
 vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 {
   ptmInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-					    u_vars.continuous_variables_view());
+      u_vars.continuous_variables_view());
 }
 
 } // namespace Dakota

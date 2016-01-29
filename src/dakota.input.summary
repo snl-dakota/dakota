@@ -2415,10 +2415,13 @@ KEYWORD model
 	  [ max_iterations INTEGER ]
 	  [ convergence_tolerance REAL ]
 	  [ truncation_method
-	    bing_li
-	    | constantine
+	    [ bing_li ]
+	    [ constantine ]
+	    [ energy
+	      [ truncation_tolerance REAL ]
+	      ]
 	    ]
-	  [ reduced_rank INTEGER ]
+	  [ dimension INTEGER ]
 	  [ bootstrap_samples INTEGER ]
 	  )
 	|

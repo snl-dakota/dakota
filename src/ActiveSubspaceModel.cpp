@@ -35,14 +35,17 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 		 std::numeric_limits<Real>::epsilon())),
   performAssessment(false), 
   nullspaceTol(problem_db.get_real("model.convergence_tolerance")/1.0e3),
-  subspaceIdMethod(probDescDB.get_ushort("model.subspace.truncation_method")),
+  subspaceIdBingLi(probDescDB.get_bool("model.subspace.truncation_method.bing_li")),
+  subspaceIdConstantine(probDescDB.get_bool("model.subspace.truncation_method.constantine")),
+  subspaceIdEnergy(probDescDB.get_bool("model.subspace.truncation_method.energy")),
   numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
   transformVars(true),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
   subspaceInitialized(false),
-  reducedRank(problem_db.get_int("model.subspace.reduced_rank")),
-  gradientScaleFactors(RealArray(numFunctions, 1.0))
+  reducedRank(problem_db.get_int("model.subspace.dimension")),
+  gradientScaleFactors(RealArray(numFunctions, 1.0)),
+  truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -108,7 +111,8 @@ ActiveSubspaceModel(const Model& sub_model,
   maxIterations(max_iter), maxFunctionEvals(max_evals),
   svTol(std::max(conv_tol, std::numeric_limits<Real>::epsilon())),
   performAssessment(false), nullspaceTol(conv_tol/1.0e3),
-  subspaceIdMethod(subspace_id_method), numReplicates(100),
+  subspaceIdBingLi(false),
+  subspaceIdConstantine(true), subspaceIdEnergy(false), numReplicates(100),
   numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
   currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
   subspaceInitialized(false), reducedRank(0),
@@ -632,20 +636,31 @@ compute_svd(bool& svtol_met)
     svtol_met = true;
   }
   else {
-    // Identify the active subspace using one of the methods below:
-    switch(subspaceIdMethod) {
-    case SUBSPACE_ID_CONSTANTINE:
-      if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "ASM: Determining eigenvalue gap with boostrap and Constantine "
-	     << "metric." << std::endl;
-      computeConstantineMetric(singular_values, svtol_met);
-      break;
-    case SUBSPACE_ID_BING_LI: case SUBSPACE_ID_DEFAULT: default:
+    if (subspaceIdBingLi) {
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "ASM: Determining eigenvalue gap with boostrap and Bing-Li "
 	     << "metric." << std::endl;
       computeBingLiCriterion(singular_values, svtol_met);
-      break;
+    }
+    if (subspaceIdConstantine) {
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "ASM: Determining eigenvalue gap with boostrap and Constantine "
+	     << "metric." << std::endl;
+      computeConstantineMetric(singular_values, svtol_met);
+    }
+    if (subspaceIdEnergy) {
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "ASM: Determining minimum subspace size with eigenvalue energy "
+	           << "metric." << std::endl;
+      computeEnergyCriterion(singular_values, svtol_met);
+    }
+
+    // Default case:
+    if (!(subspaceIdBingLi || subspaceIdConstantine || subspaceIdEnergy)) {
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "ASM: Determining eigenvalue gap with boostrap and Bing-Li "
+	     << "metric." << std::endl;
+      computeBingLiCriterion(singular_values, svtol_met);
     }
   }
 
@@ -761,16 +776,24 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
   }
 
   // Cutoff is 1st minimum of the criterion
-  reducedRank = 0;
+  int rank = 0;
   for (size_t i = 1; i < num_vars; ++i)
   {
     if(bing_li_criterion[i-1] < bing_li_criterion[i])
     {
       svtol_met = true;
-      reducedRank = i-1;
+      rank = i-1;
       break;
     }
   }
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nASM: Bing Li metric subspace size estimate = "
+         << rank
+         << std::endl;
+
+  if (rank > reducedRank)
+    reducedRank = rank;
 }
 
 void ActiveSubspaceModel::
@@ -836,7 +859,7 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
   }
 
   // Cutoff is global minimum of metric
-  reducedRank = 0;
+  int rank = 0;
   Real min_val = 0;
   svtol_met = true; // This just bypasses the tolerance check
   for (size_t i = 0; i < num_vars-1; ++i)
@@ -844,9 +867,52 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
     if(constantine_metric[i] < min_val || i == 0)
     {
       min_val = constantine_metric[i];
-      reducedRank = i+1;
+      rank = i+1;
     }
   }
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nASM: Constantine metric subspace size estimate = "
+         << rank
+         << std::endl;
+
+  if (rank > reducedRank)
+    reducedRank = rank;
+}
+
+void ActiveSubspaceModel::
+computeEnergyCriterion(RealVector& singular_values, bool& svtol_met)
+{
+  int num_vars = derivativeMatrix.numRows();
+  svtol_met = true; // This just bypasses the tolerance check
+
+  Real total_energy = 0.0;
+  for (size_t i = 0; i < num_vars; ++i)
+  {
+    // eigenvalue = (singular_value)^2
+    total_energy += std::pow(singular_values[i],2);
+  }
+
+  Real running_total_energy = 0.0;
+  int rank = 0;
+  for (size_t i = 0; i < num_vars; ++i)
+  {
+    running_total_energy += std::pow(singular_values[i],2);
+    if(std::abs(1.0 - (running_total_energy/total_energy)) < truncationTolerance)
+    {
+      rank = i+1;
+      break;
+    }
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nASM: Eigenvalue energy metric subspace size estimate = "
+         << rank
+         << std::endl;
+  
+
+  if (rank > reducedRank)
+    reducedRank = rank;
 }
 
 void ActiveSubspaceModel::print_svd_stats()
