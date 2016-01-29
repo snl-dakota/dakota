@@ -152,6 +152,12 @@ private:
   /// values/bounds/labels
   void update_model(Model& model);
 
+  /// resize currentResponse based on responseMode
+  void resize_response();
+  /// aggregate LF and HF response to create a new response with 2x size
+  void aggregate_response(const Response& lf_resp, const Response& hf_resp,
+			  Response& agg_resp);
+  
   //
   //- Heading: Data members
   //
@@ -252,6 +258,8 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
+  resize_response(); // if needed
+
   // don't pass to low fidelity model (in case it includes surrogates) since
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case

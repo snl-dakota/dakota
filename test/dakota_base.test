@@ -41982,9 +41982,9 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 22457 total (22457 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5327382163e-02  6.1430426177e-03
- response_fn_2  1.2932928682e-01  2.0603452655e-02
- response_fn_3  2.5327382163e-02  6.1430426177e-03
+            f1  2.5327382163e-02  6.5977710729e-03  7.6968813737e-01 -1.4569293047e-01
+            f2  1.2932928682e-01  1.3370616572e-02  8.8363664209e-01 -3.9612759982e-01
+            f3  2.5327382163e-02  6.5977710728e-03  7.6968813735e-01 -1.4569293063e-01
 dakota_uq_genz_pce_lls_adapted.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
