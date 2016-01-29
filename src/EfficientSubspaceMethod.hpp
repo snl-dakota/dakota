@@ -80,10 +80,6 @@ private:
   /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
   size_t miPLIndex;
 
-  /// Flag determining if uncertain variables are transformed prior to
-  /// active subspace identification.
-  bool transformVars;
-
   /// Model including full space uncertain variables. Transformed to standard
   /// normal variables if transformVars == true.
   Model fullSpaceModel;

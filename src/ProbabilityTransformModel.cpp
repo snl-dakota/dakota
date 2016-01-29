@@ -29,11 +29,11 @@ ProbabilityTransformModel(const Model& x_model,
   ptmInstance = this;
   modelType = "probability_transform";
 
-  numContinuousVars = x_model.cv();
-  numDiscreteIntVars = x_model.div();
-  numDiscreteStringVars = x_model.dsv();
-  numDiscreteRealVars = x_model.drv();
-  numFunctions = x_model.num_functions();
+  numContinuousVars = subModel.cv();
+  numDiscreteIntVars = subModel.div();
+  numDiscreteStringVars = subModel.dsv();
+  numDiscreteRealVars = subModel.drv();
+  numFunctions = subModel.num_functions();
 
   initialize_sizes();
 
@@ -42,7 +42,7 @@ ProbabilityTransformModel(const Model& x_model,
   initialize_random_variable_parameters(); // TODO Move to runtime
   initialize_random_variable_correlations();
 
-  transform_model(x_model, truncated_bounds, bound);
+  transform_model(truncated_bounds, bound);
 }
 
 ProbabilityTransformModel::
@@ -166,8 +166,7 @@ void ProbabilityTransformModel::initialize_sizes()
     abort_handler(-1);
 }
 
-void ProbabilityTransformModel::transform_model(const Model& x_model,
-    bool truncated_bounds, Real bound)
+void ProbabilityTransformModel::transform_model(bool truncated_bounds, Real bound)
 {
   ///////////////////////
   // Perform recasting //
@@ -216,8 +215,8 @@ void ProbabilityTransformModel::transform_model(const Model& x_model,
   // There is no additional response mapping beyond that required by the
   // nonlinear variables mapping.
   BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
-  const Response& x_resp = x_model.current_response();
-  const SharedVariablesData& svd = x_model.current_variables().shared_data();
+  const Response& x_resp = subModel.current_response();
+  const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
   short recast_resp_order = 1; // recast resp order to be same as original resp
@@ -304,7 +303,7 @@ void ProbabilityTransformModel::transform_model(const Model& x_model,
       break;
     }
   const Pecos::AleatoryDistParams& x_adp
-    = x_model.aleatory_distribution_parameters();
+    = subModel.aleatory_distribution_parameters();
   Pecos::AleatoryDistParams&       u_adp
     = aleatory_distribution_parameters();
   Real dbl_inf = std::numeric_limits<Real>::infinity();
@@ -411,7 +410,7 @@ void ProbabilityTransformModel::transform_model(const Model& x_model,
   //////////////////////////////////////////////////////////////////
 
   const Pecos::EpistemicDistParams& x_edp
-    = x_model.epistemic_distribution_parameters();
+    = subModel.epistemic_distribution_parameters();
   size_t num_ciuv = x_edp.ceuv();
   if (num_ciuv) {
     RealRealPairRealMapArray ciuv_bpa(num_ciuv);
@@ -492,10 +491,10 @@ void ProbabilityTransformModel::transform_model(const Model& x_model,
       case Pecos::TRIANGULAR:
       case Pecos::HISTOGRAM_BIN:
         // bounded distributions: x-space has desired bounds
-        c_l_bnds[i] = x_model.continuous_lower_bound(i);
-        c_u_bnds[i] = x_model.continuous_upper_bound(i);
+        c_l_bnds[i] = subModel.continuous_lower_bound(i);
+        c_u_bnds[i] = subModel.continuous_upper_bound(i);
         break;
-      // Note: Could use x_model bounds for the following cases as well except
+      // Note: Could use subModel bounds for the following cases as well except
       // that NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
       case Pecos::LOGNORMAL: { // semi-bounded distribution
         Real mean, stdev;
@@ -576,21 +575,21 @@ void ProbabilityTransformModel::transform_model(const Model& x_model,
         c_u_bnds[i] = dbl_inf;
         break;
       case Pecos::BOUNDED_NORMAL:
-        // can't rely on x_model bounds since could be 1-sided
+        // can't rely on subModel bounds since could be 1-sided
         c_l_bnds[i] = x_adp.normal_lower_bound(nuv_cntr);
         c_u_bnds[i] = x_adp.normal_upper_bound(nuv_cntr);
         break;
       case Pecos::BOUNDED_LOGNORMAL:
-        // can't rely on x_model bounds since could be 1-sided
+        // can't rely on subModel bounds since could be 1-sided
         c_l_bnds[i] = x_adp.lognormal_lower_bound(lnuv_cntr);
         c_u_bnds[i] = x_adp.lognormal_upper_bound(lnuv_cntr);
         break;
       case Pecos::LOGUNIFORM:
       case Pecos::TRIANGULAR:
       case Pecos::HISTOGRAM_BIN:                    // bounded distributions
-        // 2-sided: can rely on x_model bounds
-        c_l_bnds[i] = x_model.continuous_lower_bound(i);
-        c_u_bnds[i] = x_model.continuous_upper_bound(i);
+        // 2-sided: can rely on subModel bounds
+        c_l_bnds[i] = subModel.continuous_lower_bound(i);
+        c_u_bnds[i] = subModel.continuous_upper_bound(i);
         break;
       }
       switch (x_ran_vars[i].type()) {

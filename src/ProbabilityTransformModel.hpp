@@ -79,7 +79,7 @@ protected:
   void verify_correlation_support(short u_space_type);
 
   /// recast x_model from x-space to u-space to create u_model
-  void transform_model(const Model& x_model, bool truncated_bounds, Real bound);
+  void transform_model(bool truncated_bounds, Real bound);
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations

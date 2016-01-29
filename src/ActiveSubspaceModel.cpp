@@ -39,7 +39,6 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   subspaceIdConstantine(probDescDB.get_bool("model.subspace.truncation_method.constantine")),
   subspaceIdEnergy(probDescDB.get_bool("model.subspace.truncation_method.energy")),
   numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
-  transformVars(true),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
   subspaceInitialized(false),
@@ -80,6 +79,8 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   //check_submodel_compatibility(actualModel);
 
   Model return_model;
+
+  transformVars = true;
 
   if (transformVars) {
     ProbabilityTransformModel* transform_model
@@ -1205,6 +1206,15 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   const Pecos::AleatoryDistParams& native_params =
     subModel.aleatory_distribution_parameters();
 
+  // update the reduced space model
+  Pecos::AleatoryDistParams& reduced_dist_params =
+    aleatory_distribution_parameters();
+
+  // initialize AleatoryDistParams for reduced model
+  // This is necessary if subModel has been transformed
+  // to standard normals from a different distribution
+  reduced_dist_params.copy(native_params); // deep copy
+
   // native space characterization
   const RealVector& mu_x = native_params.normal_means();
   const RealVector& sd_x = native_params.normal_std_deviations();
@@ -1215,7 +1225,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
-    Cerr << "Wrong correlation size";
+    Cerr << "Wrong correlation size in ActiveSubspaceModel." << std::endl;
     abort_handler(-1);
   }
 
@@ -1273,11 +1283,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
-    sd_y = std::sqrt(V_y(i,i));
-
-  // update the reduced space model
-  Pecos::AleatoryDistParams& reduced_dist_params =
-    aleatory_distribution_parameters();
+    sd_y(i) = std::sqrt(V_y(i,i));
 
   reduced_dist_params.normal_means(mu_y);
   reduced_dist_params.normal_std_deviations(sd_y);
