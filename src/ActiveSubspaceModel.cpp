@@ -212,6 +212,8 @@ void ActiveSubspaceModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping()
 {
+  bool sub_model_resize = subModel.initialize_mapping();
+
   // TODO: create modes to switch between active, inactive, and complete
   //       subspaces
 
@@ -241,7 +243,7 @@ bool ActiveSubspaceModel::initialize_mapping()
   if (reducedRank != numFullspaceVars)
     return true; // Size of variables has changed
   else
-    return false; // Size of variables is the same
+    return sub_model_resize; // Size of variables is the same, resize if subModel resized
 }
 
 

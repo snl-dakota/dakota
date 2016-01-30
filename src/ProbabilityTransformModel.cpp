@@ -24,7 +24,8 @@ ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model,
                           bool truncated_bounds, Real bound) :
-  RecastModel(x_model), distParamDerivs(false)
+  RecastModel(x_model), distParamDerivs(false),
+  truncatedBounds(truncated_bounds), boundVal(bound)
 {
   ptmInstance = this;
   modelType = "probability_transform";
@@ -39,10 +40,73 @@ ProbabilityTransformModel(const Model& x_model,
 
   initialize_random_variable_transformation();
   initialize_random_variable_types(STD_NORMAL_U);
-  initialize_random_variable_parameters(); // TODO Move to runtime
   initialize_random_variable_correlations();
 
-  transform_model(truncated_bounds, bound);
+  size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
+  Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
+  SizetArray recast_vars_comps_total; // default: no change in cauv total
+  // we do not reorder the u-space variable types such that we preserve a
+  // 1-to-1 mapping with consistent ordering
+  vars_map.resize(numContinuousVars);
+  for (i=0; i<numContinuousVars; ++i) {
+    vars_map[i].resize(1);
+    vars_map[i][0] = i;
+  }
+  primary_resp_map.resize(numFunctions);
+  for (i=0; i<numFunctions; ++i) {
+    primary_resp_map[i].resize(1);
+    primary_resp_map[i][0] = i;
+  }
+
+  // Nataf is a nonlinear tranformation for all variables except Normals.
+  // Nonlinear mappings require special ASV logic for transforming Hessians.
+  const std::vector<Pecos::RandomVariable>& x_ran_vars
+    = natafTransform.x_random_variables();
+  const Pecos::ShortArray& u_types = natafTransform.u_types();
+  bool nonlinear_vars_map = false;
+  short x_type, u_type;
+  for (i=numContDesVars; i<num_cdv_cauv; ++i) {
+    x_type = x_ran_vars[i].type();
+    u_type = u_types[i];
+    if ( x_type != u_type &&
+         !( x_type == Pecos::NORMAL && u_type == Pecos::STD_NORMAL ) &&
+         !( ( x_type == Pecos::UNIFORM || x_type == Pecos::HISTOGRAM_BIN ||
+              x_type == Pecos::CONTINUOUS_DESIGN   ||
+              x_type == Pecos::CONTINUOUS_INTERVAL ||
+              x_type == Pecos::CONTINUOUS_STATE ) &&
+            u_type == Pecos::STD_UNIFORM ) &&
+         !( x_type == Pecos::EXPONENTIAL && u_type == Pecos::STD_EXPONENTIAL) &&
+         !( x_type == Pecos::BETA   && u_type == Pecos::STD_BETA ) &&
+         !( x_type == Pecos::GAMMA  && u_type == Pecos::STD_GAMMA ) ) {
+      nonlinear_vars_map = true;
+      break;
+    }
+  }
+
+  // There is no additional response mapping beyond that required by the
+  // nonlinear variables mapping.
+  BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
+  const Response& x_resp = subModel.current_response();
+  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
+  const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
+
+  RecastModel::
+  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFunctions,
+             0, 0,recast_resp_order);
+
+  RecastModel::
+  init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
+            primary_resp_map, secondary_resp_map,
+            nonlinear_resp_map, resp_x_to_u_mapping, NULL);
+
+  // publish inverse mappings for use in data imports.  Since derivatives are
+  // not imported and response values are not transformed, an inverse variables
+  // transformation is sufficient for this purpose.
+  RecastModel::inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 }
 
 ProbabilityTransformModel::
@@ -51,6 +115,17 @@ ProbabilityTransformModel::
   /* empty dtor */
 }
 
+
+bool ProbabilityTransformModel::initialize_mapping()
+{
+  bool sub_model_resize = subModel.initialize_mapping();
+
+  initialize_random_variable_parameters();
+
+  transform_model(truncatedBounds, boundVal);
+  
+  return sub_model_resize;
+}
 
 
 void ProbabilityTransformModel::initialize_sizes()
@@ -173,69 +248,10 @@ void ProbabilityTransformModel::transform_model(bool truncated_bounds, Real boun
   ///////////////////////
 
   size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
-  Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
-  SizetArray recast_vars_comps_total; // default: no change in cauv total
-  // we do not reorder the u-space variable types such that we preserve a
-  // 1-to-1 mapping with consistent ordering
-  vars_map.resize(numContinuousVars);
-  for (i=0; i<numContinuousVars; ++i) {
-    vars_map[i].resize(1);
-    vars_map[i][0] = i;
-  }
-  primary_resp_map.resize(numFunctions);
-  for (i=0; i<numFunctions; ++i) {
-    primary_resp_map[i].resize(1);
-    primary_resp_map[i][0] = i;
-  }
-  // Nataf is a nonlinear tranformation for all variables except Normals.
-  // Nonlinear mappings require special ASV logic for transforming Hessians.
   const std::vector<Pecos::RandomVariable>& x_ran_vars
     = natafTransform.x_random_variables();
   const Pecos::ShortArray& u_types = natafTransform.u_types();
-  bool nonlinear_vars_map = false;
   short x_type, u_type;
-  for (i=numContDesVars; i<num_cdv_cauv; ++i) {
-    x_type = x_ran_vars[i].type();
-    u_type = u_types[i];
-    if ( x_type != u_type &&
-         !( x_type == Pecos::NORMAL && u_type == Pecos::STD_NORMAL ) &&
-         !( ( x_type == Pecos::UNIFORM || x_type == Pecos::HISTOGRAM_BIN ||
-              x_type == Pecos::CONTINUOUS_DESIGN   ||
-              x_type == Pecos::CONTINUOUS_INTERVAL ||
-              x_type == Pecos::CONTINUOUS_STATE ) &&
-            u_type == Pecos::STD_UNIFORM ) &&
-         !( x_type == Pecos::EXPONENTIAL && u_type == Pecos::STD_EXPONENTIAL) &&
-         !( x_type == Pecos::BETA   && u_type == Pecos::STD_BETA ) &&
-         !( x_type == Pecos::GAMMA  && u_type == Pecos::STD_GAMMA ) ) {
-      nonlinear_vars_map = true;
-      break;
-    }
-  }
-
-  // There is no additional response mapping beyond that required by the
-  // nonlinear variables mapping.
-  BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
-  const Response& x_resp = subModel.current_response();
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
-  const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
-  short recast_resp_order = 1; // recast resp order to be same as original resp
-  if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
-
-  RecastModel::
-  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFunctions,
-             0, 0,recast_resp_order);
-
-  RecastModel::
-  init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-            primary_resp_map, secondary_resp_map,
-            nonlinear_resp_map, resp_x_to_u_mapping, NULL);
-
-  // publish inverse mappings for use in data imports.  Since derivatives are
-  // not imported and response values are not transformed, an inverse variables
-  // transformation is sufficient for this purpose.
-  RecastModel::inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 
   // Update continuous aleatory variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds,distribution_moment}())

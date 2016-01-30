@@ -43,6 +43,13 @@ public:
   ~ProbabilityTransformModel();
 
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  bool initialize_mapping();
+
+
 
 protected:
 
@@ -234,6 +241,12 @@ private:
   /// df/dx dx/ds.  The default is to calculate derivatives with respect
   /// to standard random variables u using the chain rule df/dx dx/du.
   bool distParamDerivs;
+
+  /// boolean flag to indicate truncated bounds
+  bool truncatedBounds;
+
+  /// bound value
+  Real boundVal;
 
   /// flag for computing interval-type metrics instead of integrated
   /// metrics If any epistemic variables are active in a metric
