@@ -240,10 +240,17 @@ bool ActiveSubspaceModel::initialize_mapping()
   // Perform numerical derivatives in subspace:
   supportsEstimDerivs = true;
 
-  if (reducedRank != numFullspaceVars)
+  if (reducedRank != numFullspaceVars || // Active SS is reduced rank
+      sub_model_resize) { // Active SS is full rank but subModel resized
+
+    // update message lengths for send/receive of parallel jobs (normally
+    // performed once in Model::init_communicators() just after construct time)
+    estimate_message_lengths();
+
     return true; // Size of variables has changed
+  }
   else
-    return sub_model_resize; // Size of variables is the same, resize if subModel resized
+    return false;
 }
 
 

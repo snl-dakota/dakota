@@ -1009,10 +1009,14 @@ void HierarchSurrModel::resize_response()
   
   // gradient and Hessian settings are based on independent spec (not LF, HF)
   // --> preserve previous settings
-  if (currentResponse.num_functions() != num_curr_fns)
+  if (currentResponse.num_functions() != num_curr_fns) {
     currentResponse.reshape(num_curr_fns, currentVariables.cv(),
 			    !currentResponse.function_gradients().empty(),
 			    !currentResponse.function_hessians().empty());
+    // update message lengths for send/receive of parallel jobs (normally
+    // performed once in Model::init_communicators() just after construct time)
+    estimate_message_lengths();
+  }
 }
 
   

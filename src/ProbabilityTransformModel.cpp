@@ -123,7 +123,12 @@ bool ProbabilityTransformModel::initialize_mapping()
   initialize_random_variable_parameters();
 
   transform_model(truncatedBounds, boundVal);
-  
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  if (sub_model_resize)
+    estimate_message_lengths();
+
   return sub_model_resize;
 }
 

@@ -258,7 +258,10 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
-  resize_response(); // if needed
+  // if necessary, resize the response for entering/exiting an aggregated mode.
+  // Since parallel job scheduling only involves either the LF or HF model at
+  // any given time, this call does not need to be matched on serve_run() procs.
+  resize_response();
 
   // don't pass to low fidelity model (in case it includes surrogates) since
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
