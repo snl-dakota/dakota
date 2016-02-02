@@ -122,6 +122,10 @@ bool RandomFieldModel::initialize_mapping()
   if (expansionForm == RF_KARHUNEN_LOEVE) {
     // augment AleatoryDistParams with normal(0,1)
     initialize_rf_coeffs();
+    // update message lengths for send/receive of parallel jobs (normally
+    // performed once in Model::init_communicators() just after construct time)
+    estimate_message_lengths();
+
     return true; // size of variables changed
   }
   // may need true for PCA/GP if the vars characterization changes

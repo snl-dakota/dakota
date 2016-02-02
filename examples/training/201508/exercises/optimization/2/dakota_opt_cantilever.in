@@ -5,11 +5,11 @@ environment
     tabular_data_file 'opt_cantilever.dat'
 
 method
-  # Choose an appropriate method and controls
+  # Choose an appropriate method and controls and add necessary keywords
 
 
 variables
-  # Update the variables specification
+  # Update the variables specification and add variables as needed
 
   continuous_design 2
    descriptors    'w'   't'   
@@ -31,7 +31,7 @@ interface
    deactivate active_set_vector
 
 responses
-  # Complete the responses section
+  # Complete the responses section by adding needed keywords
 
   descriptors 'mass' 'stress' 'displacement'
   numerical_gradients

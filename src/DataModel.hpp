@@ -27,14 +27,11 @@ enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
 
 /// define special values for SurrogateModel::responseMode
 enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
-       BYPASS_SURROGATE, MODEL_DISCREPANCY };
+       BYPASS_SURROGATE, MODEL_DISCREPANCY, AGGREGATED_MODELS };
 
 /// define special values for approxCorrectionType
 enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
        COMBINED_CORRECTION };
-
-/// define special values for active subspace identification methods
-enum { SUBSPACE_ID_DEFAULT=0, SUBSPACE_ID_BING_LI, SUBSPACE_ID_CONSTANTINE };
 
 /// define types of random field approximations
 enum { RF_KARHUNEN_LOEVE=0, RF_PCA_GP, RF_ICA };
@@ -301,11 +298,17 @@ public:
   /// convergence tolerance on build process
   Real convergenceTolerance;
 
-  /// Contains which method should be used to identify active subspace dimension
-  unsigned short subspaceIdMethod;
+  /// Flag to use Bing Li method to identify active subspace dimension
+  bool subspaceIdBingLi;
 
-  /// value for active subspace size
-  int reducedRank;
+  /// Flag to use Constantine method to identify active subspace dimension
+  bool subspaceIdConstantine;
+
+  /// Flag to use eigenvalue energy method to identify active subspace dimension
+  bool subspaceIdEnergy;
+
+  /// Size of subspace
+  int dimension;
 
   /// Number of bootstrap samples for subspace identification
   int numReplicates;

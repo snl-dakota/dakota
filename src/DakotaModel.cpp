@@ -3491,7 +3491,8 @@ void Model::estimate_message_lengths()
       string_variable_max(
         epistDistParams.discrete_set_string_values_probabilities(),
 	offset, new_vars);
-      offset += epistDistParams.discrete_set_string_values_probabilities().size();
+      offset +=
+	epistDistParams.discrete_set_string_values_probabilities().size();
       string_variable_max(discreteStateSetStringValues, offset, new_vars);
 
       buff << new_vars;

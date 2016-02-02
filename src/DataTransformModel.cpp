@@ -174,6 +174,10 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   expand_scales_array(srd, sub_model.scaling_options().linEqScales, 
                       sub_model.scaling_options().linEqScales.length(),
                       num_recast_primary, scalingOpts.linEqScales);
+
+  // For this derivation of RecastModel, all resizing can occur at construct
+  // time --> Variables/Response are up to date for estimate_message_lengths()
+  // within Model::init_communicators().
 }
 
 

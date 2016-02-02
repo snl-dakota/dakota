@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "EfficientSubspaceMethod.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "ProblemDescDB.hpp"
@@ -18,28 +19,13 @@ EfficientSubspaceMethod::
 EfficientSubspaceMethod(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
   seedSpec(probDescDB.get_int("method.random_seed")),
-  subspaceSamples(probDescDB.get_int("method.samples")), // default 0
-  transformVars(true)
+  subspaceSamples(probDescDB.get_int("method.samples")) // default 0
 {
   // the Iterator initializes:
   //   maxIterations    (default -1)
   //   convergenceTol   (default 1.0e-4); tolerance before checking recon error
   //   maxFunctionEvals (default 1000)
   validate_inputs();
-
-  if (transformVars) {
-    // Initialize transformation:
-    initialize_random_variable_transformation();
-    initialize_random_variable_types(STD_NORMAL_U);
-    initialize_random_variable_parameters(); // TODO Move to runtime
-    initialize_random_variable_correlations();
-    //verify_correlation_support(STD_NORMAL_U);
-
-    transform_model(iteratedModel, fullSpaceModel); // retain orig distrib bnds
-  }
-  else {
-    fullSpaceModel = iteratedModel;
-  }
 
   // would be useful to initialize the sub-iterator here for setting
   // concurrency, but don't know the variable sizes yet
@@ -150,10 +136,6 @@ void EfficientSubspaceMethod::reduced_space_uq(Model& subspace_model)
   // transfer ownership of allocated memory to an Iterator envelope
   Iterator reduced_space_sampler;
   reduced_space_sampler.assign_rep(lhs_rep, false);
-
-  // BMA: Is this needed? Isn't the passed model already in u-space?
-  if (transformVars)
-    lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   reduced_space_sampler.init_communicators(pl_iter);

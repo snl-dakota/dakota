@@ -39,9 +39,10 @@ DataModelRep::DataModelRep():
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING),
   initialSamples(0), maxIterations(-1), convergenceTolerance(1.0e-4), 
-  subspaceIdMethod(SUBSPACE_ID_DEFAULT), referenceCount(1),
-  reducedRank(0), numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
-  refineCVMetric("root_mean_squared"), refineCVFolds(10)
+  subspaceIdBingLi(false), subspaceIdConstantine(false), subspaceIdEnergy(false),
+  referenceCount(1), dimension(0), numReplicates(100), autoRefine(false),
+  maxFunctionEvals(1000), refineCVMetric("root_mean_squared"), refineCVFolds(10),
+  truncationTolerance(1.0e-6)
 { }
 
 
@@ -71,8 +72,9 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
     << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
-    << convergenceTolerance << subspaceIdMethod
-    << reducedRank << numReplicates << autoRefine << maxFunctionEvals
+    << convergenceTolerance << subspaceIdBingLi << subspaceIdConstantine
+    << subspaceIdEnergy
+    << dimension << numReplicates << autoRefine << maxFunctionEvals
     << refineCVMetric << refineCVFolds << propagationModelPointer
     << truncationTolerance << rfDataFileName << randomFieldIdForm;
 }
@@ -105,8 +107,9 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> primaryRespCoeffs >> secondaryRespCoeffs >> subMethodServers
     >> subMethodProcs >> subMethodScheduling     
     >> initialSamples >> refineSamples >> maxIterations 
-    >> convergenceTolerance >> subspaceIdMethod
-    >> reducedRank >> numReplicates >> autoRefine >> maxFunctionEvals
+    >> convergenceTolerance >> subspaceIdBingLi >> subspaceIdConstantine
+    >> subspaceIdEnergy
+    >> dimension >> numReplicates >> autoRefine >> maxFunctionEvals
     >> refineCVMetric >> refineCVFolds >> propagationModelPointer
     >> truncationTolerance >> rfDataFileName >> randomFieldIdForm;
 }
@@ -138,8 +141,9 @@ void DataModelRep::write(std::ostream& s) const
     << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
     << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
-    << convergenceTolerance << subspaceIdMethod
-    << reducedRank << numReplicates << autoRefine << maxFunctionEvals
+    << convergenceTolerance << subspaceIdBingLi << subspaceIdConstantine
+    << subspaceIdEnergy
+    << dimension << numReplicates << autoRefine << maxFunctionEvals
     << refineCVMetric << refineCVFolds << propagationModelPointer
     << truncationTolerance << rfDataFileName << randomFieldIdForm;
 }

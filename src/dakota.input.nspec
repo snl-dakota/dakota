@@ -2457,11 +2457,13 @@ KEYWORD model {N_mom3(start,0,stop)}
     [ max_iterations INTEGER {N_mom(int,maxIterations)} ]
     [ convergence_tolerance REAL {N_mom(Real,convergenceTolerance)} ]
     [ truncation_method {0}
-      bing_li {N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)}
-      |
-      constantine {N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}
+      [ bing_li {N_mom(true,subspaceIdBingLi)} ]
+      [ constantine {N_mom(true,subspaceIdConstantine)} ]
+      [ energy {N_mom(true,subspaceIdEnergy)}
+        [ truncation_tolerance REAL {N_mom(Real,truncationTolerance)} ]
+       ]
      ]
-    [ reduced_rank INTEGER {N_mom(int,reducedRank)} ]
+    [ dimension INTEGER {N_mom(int,dimension)} ]
     [ bootstrap_samples INTEGER {N_mom(int,numReplicates)} ]
    )
   |
@@ -2476,7 +2478,7 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       principal_components {N_mom(utype,randomFieldIdForm_RF_PCA_GP)}
      ]
-    [ expansion_bases INTEGER {N_mom(int,reducedRank)} ]
+    [ expansion_bases INTEGER {N_mom(int,dimension)} ]
     [ truncation_tolerance REAL {N_mom(Real,truncationTolerance)} ]
     propagation_model_pointer STRING {N_mom(str,propagationModelPointer)}
    )

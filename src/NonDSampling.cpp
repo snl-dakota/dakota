@@ -1146,6 +1146,29 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
 }
 
 
+int NonDSampling::compute_wilks_sample_size(Real alpha, Real beta, bool twosided)
+{
+  Real tol = 1.e-10; // convergence tolerance
+  Real n = 50.0; // initial guess for sample size
+  Real conv = DBL_MAX;
+
+  if( !twosided ) {
+    return std::ceil( std::log(1.0-beta)/std::log(alpha) );
+  }
+
+  Real func, fprime;
+  while( conv > tol ) {
+    func = (n-1.0)*std::pow(alpha,n) - n*std::pow(alpha,(n-1)) - beta + 1.0;
+    fprime = ((n-1.0)*std::log(alpha)+1.0)*std::pow(alpha,n) - (n*std::log(alpha)+1.0)*std::pow(alpha,(n-1));
+    n -= func/fprime;
+    conv = std::fabs(func);
+  }
+
+  return std::ceil(n);
+
+}
+
+
 /** Computes CDF/CCDF based on sample binning.  A PDF is inferred from a
     CDF/CCDF within compute_densities() after level computation. */
 void NonDSampling::compute_level_mappings(const IntResponseMap& samples)

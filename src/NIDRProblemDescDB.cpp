@@ -7143,9 +7143,7 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_FILE),
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
-        MP2s(randomFieldIdForm,RF_PCA_GP),
-        MP2s(subspaceIdMethod,SUBSPACE_ID_BING_LI),
-        MP2s(subspaceIdMethod,SUBSPACE_ID_CONSTANTINE);
+        MP2s(randomFieldIdForm,RF_PCA_GP);
 
 static Real
 	MP_(annRange),
@@ -7205,7 +7203,10 @@ static bool
 	MP_(modelUseDerivsFlag),
         MP_(domainDecomp),
         MP_(pointSelection),
-        MP_(pressFlag);
+        MP_(pressFlag),
+  MP_(subspaceIdBingLi),
+  MP_(subspaceIdConstantine),
+  MP_(subspaceIdEnergy);
 
 static short
 	MP_(annNodes),
@@ -7228,7 +7229,7 @@ static int
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
-        MP_(reducedRank),
+        MP_(dimension),
         MP_(refineCVFolds),
         MP_(subMethodProcs),
         MP_(subMethodServers);

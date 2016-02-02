@@ -3161,12 +3161,15 @@
 	    <param type='REAL' />
 	  </keyword>
 	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
-	    <oneOf>
-	      <keyword id="bing_li" name="bing_li" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_BING_LI)}" />
-	      <keyword id="constantine" name="constantine" code="{N_mom(utype,subspaceIdMethod_SUBSPACE_ID_CONSTANTINE)}" />
-	    </oneOf>
+	    <keyword id="bing_li" name="bing_li" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
+	    <keyword id="constantine" name="constantine" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
+	    <keyword id="energy" name="energy" code="{N_mom(true,subspaceIdEnergy)}" minOccurs="0">
+	      <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="truncation_tolerance" help="" minOccurs="0" >
+	        <param type="REAL" />
+	      </keyword>
+	    </keyword>
 	  </keyword>
-      <keyword  id='reduced_rank' name='reduced_rank' code='{N_mom(int,reducedRank)}' minOccurs='0'>
+      <keyword  id='dimension' name='dimension' code='{N_mom(int,dimension)}' minOccurs='0'>
         <param type='INTEGER' />
       </keyword>
       <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
@@ -3190,7 +3193,7 @@
 	      <keyword id="principal_components" name="principal_components" code="{N_mom(utype,randomFieldIdForm_RF_PCA_GP)}" />
 	    </oneOf>
 	  </keyword>
-	  <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,reducedRank)}" label="expansion_bases" help="" minOccurs="0" >
+	  <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,dimension)}" label="expansion_bases" help="" minOccurs="0" >
 	    <param type='INTEGER' />
 	  </keyword>
 	  <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="truncation_tolerance" help="" minOccurs="0" >
