@@ -1,4 +1,0 @@
-#define darkstipple_width 2
-#define darkstipple_height 2
-static char darkstipple_bits[] = {
-   0x01, 0x02};
