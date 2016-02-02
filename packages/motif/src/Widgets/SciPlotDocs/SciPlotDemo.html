@@ -1,0 +1,155 @@
+<html><head><title>SciPlot Widget Demo Program</title></head><body>
+<h1><a name="top">SciPlot Demo Program</a></h1>
+
+
+
+
+
+
+<ul>
+<li><a href="#comp">Compilation Instructions</a>
+<li><a href="#sciplot">x/y plotter</a>
+
+<ul>
+<li><a href="#screen">Screen Shots</a>
+<li><a href="#usage">Usage</a>
+<li><a href="#data">Input File Format</a>
+<li><a href="#sample">Sample Input File</a>
+</ul>
+<li><a href="#realtime">Realtime Demo</a>
+<ul>
+<li><a href="#realtime_usage">Usage</a>
+</ul>
+</ul>
+
+
+<ul>
+<li>
+<a href="SciPlot.html">SciPlot General Info</a>
+<li>
+<a href="SciPlotProg.html">Programmer's Documentation</a>
+</ul>
+
+<p><hr><h2><a name="comp">Compilation Instructions</a></h2>
+<p>Shipped with the source code distribution are two demo programs
+that show some of the features of the SciPlot widget.  <b>NOTE!  The demo
+programs require Motif, but the SciPlot widget itself does not.</b>
+
+<p>If you have the program imake installed, you may use the supplied Imakefile
+to generate a Makefile.  Otherwise, copy the file Makefile.noImake to Makefile,
+and edit that to conform to your system.  Actually, other than specifying the
+C compiler to use, the Makefile should require little customization.
+
+<p>To generate the Makefile, type:
+
+<p><code>xmkmf</code>
+
+<p>To compile both demo programs, type:
+
+<p><code>make</code>
+
+
+
+<p><hr><h2><a name="sciplot">x/y plotter</a></h2>
+
+<p>The SciPlot Demo program takes a text file (or standard input) as input
+and plots the data from that file as x/y or polar plots.  More than one 
+set of x/y (polar) line data may appear in a single plot frame, and more
+than one plot frame may be displayed on the screen.  As shown in the
+<a href="#screen">plot frame controls</a>
+, many features of the SciPlot widget are available for customization before
+generating a postscript copy.
+
+<h3><a name="screen">Screen Shots</a></h3>
+
+<img src=SciPlotDemo.gif alt="[Picture of demo frame]">
+
+<h3><a name="usage">Usage</a></h3>
+
+<p>The SciPlot Demo program is made automatically when compiling the SciPlot
+Widget source code, as shipped.  It is called "sciplot" and is executed by
+typing:
+
+<p><code>sciplot data.txt</code>
+
+<p>where data.txt is a sciplot input file, described below.  Note that sciplot
+can also read multiple input files on the same command line, or read from
+standard input.
+
+<h3><a name="data">Input File Format</a></h3>
+<p>There are 5 commands that sciplot recognizes in the input file:
+
+<dl>
+<dt>Title [title]
+<dd>Signifies the start of a new plot, and optionally specifies the title
+for the plot.
+
+<dt>Xaxis [x axis label]
+<dd>Optional x axis label
+
+<dt>Yaxis [y axis label]
+<dd>Optional y axis label
+
+<dt>Polar [rad]
+<dd>Polar plot flag.  If not present, the form is assumed to be a cartesian
+(x/y) plot.
+
+<dt>Line legend-label
+<dd>Begins a new line of data to be added to the current plot.  The values
+to be added immediately follow this line in the input file; and the program
+will continue to add lines until another command is reached, or the file ends.
+<p>Data is free format, but must be separated by a comma, equal sign, or
+whitespace.  Both the x and y (r and theta) coordinates must appear on the
+same line of text in the file.
+</dl>
+
+<p>Any text labels in the file should be enclosed in quotation characters.
+
+<h3><a name="sample">Sample Input File</a></h3>
+<pre>
+Title="Crack Growth Comparison"
+Xaxis="Number of Cycles (kc)"
+Yaxis="Crack Depth (mm)"
+
+Line="25% strain"
+0.000000e+00    2.000000e+00
+1.373497e+02    2.500000e+00
+2.403780e+02    3.000000e+00
+3.205736e+02    3.500000e+00
+3.845680e+02    4.000000e+00
+
+Line="50% strain"
+0.000000e+00    2.000000e+00
+3.480081e+01    2.500000e+00
+6.082956e+01    3.000000e+00
+8.105608e+01    3.500000e+00
+9.719518e+01    4.000000e+00
+
+Line="100% strain"
+0.000000e+00    2.000000e+00
+4.212263e+00    2.500000e+00
+6.219232e+00    3.000000e+00
+7.458972e+00    3.500000e+00
+8.387889e+00    4.000000e+00
+
+</pre>
+
+<p><hr><h2><a name="realtime">Realtime Demo</a></h2>
+<p>This is just a simple program that uses the realtime updating capabilities
+of the widget.  Instituted in the program is a timed callback
+(XtAppAddTimeOut) that simply randomly increments one of the points every
+half second.  The plot is redrawn after every update.
+
+<h3><a name="realtime_usage">Usage</a></h3>
+<p>Just execute the program "realtime" to see this demo.
+It takes no arguments.
+
+<hr>
+
+<br>Web Page Design by: <a href="http://www.ae.utexas.edu/~rwmcm">Rob McMullen</a>
+<br>Updated: 20 Feb 96
+<br>E-mail: <a href="mailto:rwmcm@mail.ae.utexas.edu">rwmcm@mail.ae.utexas.edu</a>
+<br>	<a href=SciPlot.html>SciPlot</a> :
+	<a href=SciPlotProg.html>Programmer's Reference</a> |
+	<a href=SciPlotDemo.html>Demo Programs</a>
+</body></html>

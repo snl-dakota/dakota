@@ -1,0 +1,616 @@
+<html><head><title>SciPlot Widget Man Page</title></head><body>
+<h1><a name="top">SciPlot Widget Programmer's Reference</a></h1>
+
+
+
+
+
+<ul>
+<li><a href="#html3">Viewing this document</a>
+<li><a href="#usage">Usage</a>
+
+<li><a href="#color">Color</a>
+<li><a href="#font">Fonts</a>
+<li><a href="#point">Point Styles</a>
+<li><a href="#line">Line Styles</a>
+<li><a href="#eps">Postscript Output</a>
+<li><a href="#res">New Resources</a>
+<li><a href="#pub">Public Functions</a>
+<ul>
+<li><a href="#ref">Refresh Functions</a>
+<li><a href="#ref">Color Functions</a>
+<li><a href="#list">Data Manipulation Functions</a>
+
+
+
+<li><a href="#graph">Graph Control Functions</a>
+<li><a href="#output">Hardcopy/Output Functions</a>
+</ul>
+<li><a href="#bug">Bugs</a>
+</ul>
+
+
+<ul><li>
+<a href="SciPlot.html">Back to SciPlot home page</a>
+</ul>
+
+<p><hr><h2><a name="html3">Viewing this document</a></h2>
+<p>This programmer's reference for the SciPlot widget uses HTML3 tables,
+support for which is becoming very common among WWW browsers.  Both Netscape
+and Mosaic (the most common browsers) support tables, and support for tables in
+<a href=http://www.unlv.edu/chimera/>Chimera</a> (my browser of choice) will
+be included in version 2.0.
+
+<p><hr><h2><a name="usage">Usage</a></h2>
+<p>To use the SciPlot widget in an application, include the three source code
+files SciPlot.c, SciPlot.h, and SciPlotP.h with the rest of the source code
+for the application.  Include the object SciPlot.o in the Makefile rule that
+compiles the application.
+
+<p>If it is important for the widget to respond to Motif keyboard traversal or
+any events while in a Motif program, define the keyword "MOTIF" for the C
+compiler.  In a Makefile, a commom place to put this definition is in a
+variable called "DEFINES".  The line in the Makefile would look like this:
+<code>
+<dl>
+<dt>	DEFINES=-DMOTIF
+</dl>
+</code>
+
+<p>In source code that uses the SciPlot widget, include the following two header
+files before references to the plot widget:
+<code>
+<dl>
+<dt>#include &lt;X11/Intrinsic.h&gt;
+<dt>#include "SciPlot.h"
+</dl>
+
+<p>To create the SciPlot widget, use the following code as an example:
+<dl>
+<dt>plotWidget=XtVaCreateManagedWidget("plot2",
+<dd>		sciplotWidgetClass,parent,
+<dd>		XtNheight, 250,
+<dd>		XtNwidth, 250,
+<dd>		XtNplotTitle, "Demo of Plot Widget",
+<dd>		XtNxLabel, "X Axis (units)",
+<dd>		XtNyLabel, "Y Axis (units)",
+<dd>		XtNchartType, XtPOLAR,
+<dd>		XtNdegrees, True,
+<dd>		NULL);
+</dl>
+</code>
+<p>This example creates a 250x250 polar plot widget as a child of parent,
+using degrees as the angle measurement unit.
+
+<p>Data is plotted on the graph in groups called <i>lists</i>.  Each <i>list</i>
+consists of a group of coordinates that will be connected together by a drawn
+line, and share the same point style, point color, line style, line color and
+legend label.  Data is added to the widget using convenience functions only. 
+There is no current provision to add data via the argument list.
+
+<p>An example using one of the convenience functions is given below:
+<code>
+<dl>
+<dt>double rlist[]={14.,18.,22.,26.,SCIPLOT_SKIP_VAL,30.,34.,38.,42.};
+<dt>double tlist[]={30.,60.,90.,120.,SCIPLOT_SKIP_VAL,150.,180.,270.,355.};
+<dt>int line1;
+<p>
+<dt>line1=SciPlotListCreateFromDouble(plotWidget,
+<dd>9,rlist,tlist,
+<dd>"List 1");
+</dl>
+</code>
+
+<p>The variable line1 is the identifier of the <i>list</i> that will be needed to
+modify the <i>list</i> by the other convenience functions that operate on
+<i>lists</i>.
+
+<p>This example adds a <i>list</i> to be plotted in plotWidget.  If plotWidget was
+created using the call to XtVaCreateManagedWidget above, the line would be
+added to a polar plot, where the angles in tlist would be interpreted as
+degrees.
+
+<p>Note that this example includes the new feature of skipping over a blank
+space in the line.  There will not be a line segment connecting the point
+(26,120) to (30,150).
+
+<p>There are other convenience functions to specify colors and styles of the
+points and lines drawn in the Plot widget, as well as functions to pick
+the colors used and others to update previously defined <i>lists</i>.  See
+<a href="#pub">Public Functions</a>
+below for descriptions of all of the convenience
+functions.
+
+<p><hr><h2><a name="color">Color</a></h2>
+<p>The SciPlot widget fully supports color on displays which also support color.
+By default, two colors are allocated at creation time:  black for the
+foreground, and white for the background.  For the SciPlot widget to use any
+other color, one of the color convenience functions must be used to allocate
+a color in the global colormap.
+
+<p>Colors are indicated by an integer returned from the color allocation
+convenience functions.  The two default colors occupy the first two spaces
+in the color table, where the default background (white) is number 0, and the
+default foreground (black) is number 1.
+
+<p><hr><h2><a name="font">Fonts</a></h2>
+<p>Fonts used by the SciPlot widget are referenced using special notation.  This
+non-standard notation was used to be able to easily convert between PostScript
+and X11 notation, and as a result, only a subset of the fonts that are
+available in both X11 and PostScript are available.
+
+<p>Fonts are referenced by using predefined keywords to indicate the typeface,
+style, and point size.  Each keyword is an integer value defined in SciPlot.h,
+and a complete font definition is created by logically or-ing keywords together.
+
+<p>Supported fonts and styles are listed below:
+<table border>
+<tr><th>Font Name<th>Description
+<tr><td>XtFONT_TIMES<td>Times
+<tr><td>XtFONT_COURIER<td>Courier (monospaced font)
+<tr><td>XtFONT_HELVETICA<td>Helvetica
+<tr><td>XtFONT_LUCIDA<td>Lucida
+<tr><td>XtFONT_LUCIDASANS<td>Lucida Sans Serif
+<tr><td>XtFONT_NCSCHOOLBOOK<td>New Century Schoolbook
+</table>
+
+<table border>
+<tr><th>Style Name<th>Description
+<tr><td>XtFONT_BOLD<td>Bold
+<tr><td>XtFONT_ITALIC<td>Italic
+<tr><td>XtFONT_BOLD_ITALIC<td>Bold and Italic
+</table>
+
+<p>A font is specified by logically or-ing together these keywords,
+plus the size in points.
+<p>Some examples follow:
+<dl>
+<dt>12 point Times, bold:
+<dd>	XtFONT_TIMES|XtFONT_BOLD|12
+	
+<dt>10 point Courier:
+<dd>	XtFONT_COURIER|10
+	
+<dt>16 point Lucida, bold and italic:
+<dd>	XtFONT_LUCIDA|XtFONT_BOLD_ITALIC|16
+</dl>
+<p>Note that XtFONT_BOLD_ITALIC is simply shorthand for XtFONT_BOLD|XtFONT_ITALIC
+
+<p><hr><h2><a name="point">Point Styles</a></h2>
+<p>The SciPlot widget is capable of drawing markers at each data point.  There are
+19 predefined point marker definitions:
+
+<table border>
+<tr><th>Style Name<th>Description
+<tr><td>XtMARKER_NONE<td>no point marker drawn
+<tr><td>XtMARKER_CIRCLE<td>open circle
+<tr><td>XtMARKER_SQUARE<td>square
+<tr><td>XtMARKER_UTRIANGLE<td>triangle (pointing up)
+<tr><td>XtMARKER_DTRIANGLE<td>triangle (pointing down)
+<tr><td>XtMARKER_LTRIANGLE<td>triangle (pointing left)
+<tr><td>XtMARKER_RTRIANGLE<td>triangle (pointing right)
+<tr><td>XtMARKER_DIAMOND<td>diamond
+<tr><td>XtMARKER_HOURGLASS<td>hourglass shape
+<tr><td>XtMARKER_BOWTIE<td>bowtie shape
+<tr><td>XtMARKER_FCIRCLE<td>filled variants of the above...
+<tr><td>XtMARKER_FSQUARE<td>
+<tr><td>XtMARKER_FUTRIANGLE<td>
+<tr><td>XtMARKER_FDTRIANGLE<td>
+<tr><td>XtMARKER_FLTRIANGLE<td>
+<tr><td>XtMARKER_FRTRIANGLE<td>
+<tr><td>XtMARKER_FDIAMOND<td>
+<tr><td>XtMARKER_FHOURGLASS<td>
+<tr><td>XtMARKER_FBOWTIE<td>
+</table>
+
+<p><hr><h2><a name="line">Line Styles</a></h2>
+<p>For each <i>list</i> in the SciPlot widget, one of the following styles may be used to
+draw the lines that connect each point in the <i>list</i>:
+
+<table border>
+<tr><th>Style Name<th>Description
+<tr><td>XtLINE_NONE<td>no line (only points drawn)
+<tr><td>XtLINE_SOLID<td>solid line (the default)
+<tr><td>XtLINE_DOTTED<td>dotted line
+<tr><td>XtLINE_WIDEDOT<td>widely spaced dotted line
+</table>
+
+<p><hr><h2><a name="eps">Postscript Output</a></h2>
+<p>Encapsulated PostScript (EPS) files of the plot displayed in the SciPlot widget
+may be generated.  These files are suitable for printing or importing into
+documents that can handle the EPS format.  Color is ignored when creating the
+EPS files, however.
+
+<p><hr><h2><a name="res">New Resources</a></h2>
+<p>Resources for the SciPlot widget are documented below, also showing the default
+values.
+
+<table border>
+<tr><th>Name<th>Class<th>Type<th>Default
+<tr><td>XtNaxisFont<td>XtCSciPlotFont<td>int<td>XtFONT_TIMES|10
+<tr><td>XtNchartType<td>XtCMargin<td>int<td>XtCARTESIAN
+<tr><td>XtNdegrees<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNdefaultMarkerSize<td>XtCInt<td>int<td>3
+<tr><td>XtNdrawMajor<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNdrawMajorTics<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNdrawMinor<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNdrawMinorTics<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNlabelFont<td>XtCSciPlotFont<td>int<td>XtFONT_TIMES|18
+<tr><td>XtNlegendLineSize<td>XtCMargin<td>int<td>16
+<tr><td>XtNlegendMargin<td>XtCMargin<td>int<td>3
+<tr><td>XtNmargin<td>XtCMargin<td>int<td>5
+<tr><td>XtNmonochrome<td>XtCBoolean<td>Boolean<td>False
+<tr><td>XtNplotTitle<td>XtCString<td>String<td>"Plot"
+<tr><td>XtNshowLegend<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNshowTitle<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNshowXLabel<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNshowYLabel<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNtitleFont<td>XtCSciPlotFont<td>int<td>XtFONT_HELVETICA|24
+<tr><td>XtNtitleMargin<td>XtCMargin<td>int<td>8
+<tr><td>XtNxAxisNumbers<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNyAxisNumbers<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNxLabel<td>XtCString<td>String<td>"X Axis"
+<tr><td>XtNyLabel<td>XtCString<td>String<td>"Y Axis"
+<tr><td>XtNxLog<td>XtCBoolean<td>Boolean<td>False
+<tr><td>XtNyLog<td>XtCBoolean<td>Boolean<td>False
+<tr><td>XtNyNumbersHorizontal<td>XtCBoolean<td>Boolean<td>True
+<tr><td>XtNxOrigin<td>XtCBoolean<td>Boolean<td>False
+<tr><td>XtNyOrigin<td>XtCBoolean<td>Boolean<td>False
+</table>
+
+<p>
+<dl>
+<dt>XtNchartType
+<dd>Specifies a the type of chart to be drawn.  Currently, two types are
+available:  XtCARTESIAN = cartesian (X-Y) plot, XtPOLAR = polar plot.
+
+<p><dt>XtNdegrees
+<dd>Sets the type of angular unit measurement:  True=degrees,
+False=radians.
+
+<p><dt>XtNdefaultMarkerSize
+<dd>Size of the point style markers in pixels.
+
+<p><dt>XtNdrawMajor
+<dd>Controls the display of major gridlines.
+
+<p><dt>XtNdrawMajorTics
+<dd>Controls the display of major tic marks on the axes.
+
+<p><dt>XtNdrawMinor
+<dd>Controls the display of minor gridlines.
+
+<p><dt>XtNdrawMinorTics
+<dd>Controls the display of minor tic marks on the axes.
+
+<p><dt>XtNlabelFont
+<dd>Names the font for use on the axis labels, as well as the numbers
+that mark the scale for each axis.
+
+<p><dt>XtNlegendLineSize
+<dd>The length (in pixels) of the small lines used to show the line style
+and color in the legend box.
+
+<p><dt>XtNlegendMargin
+<dd>Sets the border margin (in pixels) between the legend box outline and
+anything contained in it. Also controls the spacing between the line
+sample and the text, and the vertical spacing between legend entries.
+
+<p><dt>XtNmargin
+<dd>The spacing (in pixels) of the plot with the border of the widget.
+
+<p><dt>XtNmonochrome
+<dd>Ignores any colors specified in any lists, and draws only in the
+foreground and background colors of the widget.
+
+<p><dt>XtNplotTitle
+<dd>This is the title of the plot that is drawn along the lower border of
+the widget.
+
+<p><dt>XtNshowLegend
+<dd>If True, the legend block is drawn.
+
+<p><dt>XtNshowTitle
+<dd>If True, the plot title is drawn.
+
+<p><dt>XtNshowXLabel
+<dd>If True, the X axis (or the polar axis) label is drawn.
+
+<p><dt>XtNshowYLabel
+<dd>If True, the Y axis label is drawn.
+
+<p><dt>XtNtitleFont
+<dd>This font is used for the title of the plot.
+
+<p><dt>XtNtitleMargin
+<dd>Spacing (in pixels) between the plot and the title.
+
+<p><dt>XtNxLabel
+<dt>XtNyLabel
+<dt>(Cartesian only.)
+<dd>Sets the label for each axis.
+
+<p><dt>XtNxAxisNumbers
+<dt>XtNyAxisNumbers
+<dt>(Cartesian only.)
+<dd>Controls whether the axis numbers are displayed for the corresponding
+axis.  XtNxAxisNumbers also controls the display of the radial numbers in
+a polar plot.
+
+<p><dt>XtNxLog
+<dt>XtNyLog
+<dt>(Cartesian only.)
+<dd>Controls the logarithmic scales of the X and Y axes.  If either of
+the resources is set to True, the corresponding axis will display in
+logarithmic units.  Note that log axes cannot display numbers less
+than or equal to zero, so only points with values on that axis greater
+than zero will be plotted.
+
+<p><dt>XtNyNumbersHorizontal
+<dt>(Cartesian only.)
+<dd>If True, then the y axis numbers will be drawn horizontally, somewhat
+decreasing the area available for showing the plot, but more like a standard
+scientific plot.
+</dl>
+
+<p><hr><h2><a name="pub">Public Functions</a></h2>
+<p>The SciPlot widget uses an abstracted type "real" for its internal
+representation of floating point values.  By default, it is typedeffed to
+float.  Some of the convenience functions may depend on this real data type,
+but in general, separate functions will be provided depending upon a data
+type of float or double.
+
+<p>Note that any changes to the widget are not reflected until a call to the
+public function SciPlotUpdate().  This includes any of the functions that
+add or remove <i>lists</i>, or change plot styles.  Any changes accomplished
+through XtVaSetValues, however, automatically updates the widget.
+
+<ul>
+<li>
+<h3><a name="ref">Refresh Functions</a></h3>
+<dl>
+<p><dt>void <b>SciPlotUpdate(w)</b>
+<dt>Widget w;
+<dd>This function simply causes a recalculation of all internal parameters,
+and redraws the plot.  Call this function after adding, deleting,
+or changing <i>lists</i> to force the Widget to redraw itself.
+
+<p><dt>Boolean <b>SciPlotQuickUpdate(w)</b>
+<dt>Widget w;
+<dd>This is an alternate function to redraw the widget.  It is provided
+mainly as a tool to use the SciPlot as a realtime display, because it does
+not clear the entire widget.  Some flicker may still appear, but only in
+the graph region.  The static areas (labels and legend) will not flicker.
+<p>This function does not adjust the axis ranges, unlike SciPlotUpdate().
+It returns a boolean that indicates if all points are within the current
+axis ranges.
+</dl>
+
+<pre>
+
+
+</pre>
+<li>
+<h3><a name="ref">Color Functions</a></h3>
+<dl>
+<dt>int <b>SciPlotAllocNamedColor(w,name)</b>
+<dt>Widget w;
+<dt>char *name;
+<dd>Attempts to allocate a color in the widget's colormap by using the
+standard X color name database.
+
+<p><dd>Returns a unique integer color ID greater than 1 if successful in
+allocating the named color.  If unsuccessful, it returns a 1, which
+is the default foreground color black.
+
+<p><dt>int <b>SciPlotAllocRGBColor(w,r,g,b)</b>
+<dt>Widget w;
+<dt>int r,g,b;
+<dd>Tries to allocate the color named by the r, g, and b parameters.  Note
+that these are integers ranging from 0 to 255, not 0 to 65535 as in
+X functions.
+
+<p><dd>As the previous function, it returns a number greater than 1 indicating
+that it found and allocated the new color.  If it returns 1, it could
+not allocate the color, and returned the value for the default
+foreground.
+
+<p><dt>int <b>SciPlotStoreAllocatedColor(w,p)</b>
+<dt>Widget w;
+<dt>Pixel p;
+<dd>Stores the previously allocated color <i>p</i> and returns the SciPlot
+color index corresponding to this color.
+
+<p><dt>void <b>SciPlotSetBackgroundColor(w,color)</b>
+<dt>Widget w;
+<dt>int color;
+<dd>Sets the background color of the widget to the color specified.  Note that
+the color ID number is obtained from one of the two functions
+SciPlotAllocNamedColor or SciPlotAllocRGBColor.
+
+<p><dt>void <b>SciPlotSetForegroundColor(w,color)</b>
+<dt>Widget w;
+<dt>int color;
+<dd>Sets the default foreground color to the color specified.  (See the note about
+color IDs above.)  This color is used as the default for the axis and legend
+box lines, as well as all of the text that appears in the widget.  PostScript
+output remains in monochrome, however.
+
+</dl>
+
+<pre>
+
+
+</pre>
+<li>
+<h3><a name="list">Data Manipulation Functions</a></h3>
+<p>Remember, you must call SciPlotUpdate() before your changes will be
+visible in the widget!
+<dl>
+<p><dt>int <b>SciPlotListCreateDouble(w,num,xlist,ylist,legend)</b>
+<dt>Widget w;
+<dt>int num;
+<dt>double *xlist,*ylist;
+<dt>char *legend;
+<dd>Creates a <i>list</i> from the data given in the arrays xlist and ylist.
+Both arrays must have num entries.  The parameter legend is the name
+of this <i>list</i>, and is drawn in the legend box.  The initial colors (for
+both the points and the line) are set to black, the initial point
+style is set to a square, and the initial line style is solid.
+
+<p><dd>Returns an ID number for the newly created <i>list</i>.
+
+<p><dt>int <b>SciPlotListCreateFloat(w,num,xlist,ylist,legend)</b>
+<dt>Widget w;
+<dt>int num;
+<dt>float *xlist,*ylist;
+<dt>char *legend;
+<dd>Same as SciPlotListCreateDouble, except takes arrays of type float.
+
+<p><dt>int <b>SciPlotListAddDouble(w,list_id,num,xlist,ylist)</b>
+<dt>Widget w;
+<dt>int list_id,num;
+<dt>double *xlist,*ylist;
+<dd>Appends the new data contained in the arrays xlist and ylist to the data
+in the <i>list</i> referenced by list_id.  Both xlist and ylist must
+be arrays of type double, and have num parameters.
+<p>Note that the <i>list</i> to be updated may have been originally created
+with any of the creation convenience functions, not only with the functions
+that require type double.  It is the type of the new data that matters.
+
+<p><dt>int <b>SciPlotListAddFloat(w,list_id,num,xlist,ylist)</b>
+<dt>Widget w;
+<dt>int list_id,num;
+<dt>float *xlist,*ylist;
+<dt>char *legend;
+<dd>Same as SciPlotListAddDouble, but takes arrays of type float.
+
+<p><dt>void <b>SciPlotListUpdateDouble(w,list_id,num,xlist,ylist)</b>
+<dt>Widget w;
+<dt>int list_id,num;
+<dt>double *xlist,*ylist;
+<dd>Replaces the data in the <i>list</i> referenced by list_id with the new data
+contained in the arrays xlist and ylist.  Both xlist and ylist must
+be arrays of type double, and have num parameters.
+
+Note that the <i>list</i> to be updated may have been originally created with
+any of the creation convenience functions, not only with the functions that
+require type double.
+
+<p><dt>void <b>SciPlotListUpdateFloat(w,list_id,num,xlist,ylist)</b>
+<dt>Widget w;
+<dt>int list_id,num;
+<dt>float *xlist,*ylist;
+<dd>Same as SciPlotListUpdateDouble, but takes arrays of type float.
+
+<p><dt>int <b>SciPlotListDelete(w,list_id)</b>
+<dt>Widget w;
+<dt>int list_id;
+<dd>Deletes the <i>list</i> referenced by the ID number list_id.
+
+<p><dt>void <b>SciPlotListSetStyle(w,list_id,pcolor,pstyle,lcolor,lstyle)</b>
+<dt>Widget w;
+<dt>int list_id;
+<dt>int pstyle,pcolor,lstyle,lcolor;
+<dd>Sets the styles of the <i>list</i> with an ID number of list_id.  See the
+sections
+<a href="#color">Color</a>
+,
+<a href="#point">Point Styles</a>
+and
+<a href="#line">Line Styles</a>
+for descriptions of the
+available options.
+
+</dl>
+
+<pre>
+
+
+</pre>
+<li>
+<h3><a name="graph">Graph Control Functions</a></h3>
+<p>Remember, you must call SciPlotUpdate() before your changes will be
+visible in the widget!
+<dl>
+<p><dt>void <b>SciPlotSetXAutoScale(w)</b>
+<dt>Widget w;
+<p>
+<dt>(Cartesian only.)
+<dd>Forces the widget to automatically scale the X axis based on the minimum
+and maximum values determined from all of the <i>lists</i>.
+
+<p><dt>void <b>SciPlotSetXUserScale(w,min,max)</b>
+<dt>Widget w;
+<dt>double min,max;
+<p>
+<dt>(Cartesian only, and not in logarithmic mode.)
+<dd>Forces the widget to display the X axis range based on the specified minimum
+and maximum values.
+
+<p><dt>void <b>SciPlotSetYAutoScale(w)</b>
+<dt>Widget w;
+<p>
+<dt>(Cartesian only.)
+<dd>Forces the widget to automatically scale the Y axis based on the minimum
+and maximum values determined from all of the <i>lists</i>.
+
+<p><dt>void <b>SciPlotSetYUserScale(w,min,max)</b>
+<dt>Widget w;
+<dt>double min,max;
+<p>
+<dt>(Cartesian only, and not in logarithmic mode.)
+<dd>Forces the widget to display the Y axis range based on the specified minimum
+and maximum values.
+
+</dl>
+
+<pre>
+
+
+</pre>
+<li>
+<h3><a name="output">Hardcopy/Output Functions</a></h3>
+<dl>
+<p><dt>Boolean <b>SciPlotPSCreate(w,filename)</b>
+<dt>Widget w;
+<dt>char *filename;
+<dd>This function generates an Encapsulated PostScript file of the
+current contents of the plot widget, sized to fit on an entire page.  
+Colors are ignored, producing a PostScript file that is black and
+white only.
+
+<p><dd>The filename parameter should include the pathname, if required.
+
+<p><dd>Returns True indicating that the file was successfully created.  Any
+error in file creation or in the subsequent writes to the file will
+cause the subroutine to return False.
+
+<p><dt>Boolean <b>SciPlotPSCreateColor(w,filename)</b>
+<dt>Widget w;
+<dt>char *filename;
+<dd>Similar to SciPlotPSCreate, but creates a color Encapsulated PostScript
+file instead of black and white.
+
+<p><dt>void <b>SciPlotExportData(w,fd)</b>
+<dt>Widget w;
+<dt>FILE *fd;
+<dd>Writes to the file (must already by opened) referenced by fd a summary of
+the state of the SciPlot widget.  The columns of data are separated by tab
+characters, so with minor editing, the file generated should be importable by
+many commercial graphing programs.
+
+</dl>
+</ul>
+
+<p><hr><h2><a name="bug">Bugs</a></h2>
+The font selection algorithm isn't as robust as it should be when trying to
+choose a replacement for a font; specifically, when the user requests
+a font or a size that doesn't exist in the X server.
+
+<hr>
+
+<br>	<a href=SciPlot.html>SciPlot</a> :
+	<a href=SciPlotProg.html>Programmer's Reference</a> |
+	<a href=SciPlotDemo.html>Demo Programs</a>
+<br><hr>Web Page Design by <a href="http://www.ae.utexas.edu/~rwmcm">Rob McMullen</a><br>E-mail: <a href="mailto:rwmcm@mail.ae.utexas.edu">rwmcm@mail.ae.utexas.edu</a><br>Updated: 4 Sep 96<br></body></html>
