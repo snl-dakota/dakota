@@ -1153,18 +1153,18 @@ int NonDSampling::compute_wilks_sample_size(Real alpha, Real beta, bool twosided
   Real conv = DBL_MAX;
 
   if( !twosided ) {
-    return ceil( log(1.0-beta)/log(alpha) );
+    return std::ceil( std::log(1.0-beta)/std::log(alpha) );
   }
 
   Real func, fprime;
   while( conv > tol ) {
-    func = (n-1.0)*pow(alpha,n) - n*pow(alpha,(n-1)) - beta + 1.0;
-    fprime = ((n-1.0)*log(alpha)+1.0)*pow(alpha,n) - (n*log(alpha)+1.0)*pow(alpha,(n-1));
+    func = (n-1.0)*std::pow(alpha,n) - n*std::pow(alpha,(n-1)) - beta + 1.0;
+    fprime = ((n-1.0)*std::log(alpha)+1.0)*std::pow(alpha,n) - (n*std::log(alpha)+1.0)*std::pow(alpha,(n-1));
     n -= func/fprime;
-    conv = fabs(func);
+    conv = std::fabs(func);
   }
 
-  return ceil(n);
+  return std::ceil(n);
 
 }
 
