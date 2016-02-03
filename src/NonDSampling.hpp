@@ -233,6 +233,9 @@ protected:
   String    rngName;	 ///< name of the random number generator
   unsigned short sampleType;  ///< the sample type: default, random, lhs,
                               ///< incremental random, or incremental lhs
+  bool      wilksFlag;   /// flags use of Wilks formula to calculate num samples
+  Real      wilksAlpha;  /// flags use of Wilks formula to calculate num samples
+  Real      wilksBeta;   /// flags use of Wilks formula to calculate num samples
 
   /// current increment in a sequence of samples
   int samplesIncrement;

@@ -44,6 +44,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
   backfillFlag(probDescDB.get_bool("method.backfill")),
+  wilksFlag(probDescDB.get_bool("method.wilks_samples")),
   numLHSRuns(0)
 {
   if (epistemicStats && totalLevelRequests) {
@@ -60,6 +61,17 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
 
   // initialize finalStatistics using the default statistics set
   initialize_final_statistics();
+
+  if ( wilksFlag ) {
+    Real alpha = probDescDB.get_real("method.wilks_alpha");
+    if (alpha <= 0.0)
+      alpha = 0.95;
+    Real beta = probDescDB.get_real("method.wilks_beta");
+    if (beta <= 0.0)
+      beta = 0.95;
+    numSamples = compute_wilks_sample_size(alpha, beta /* ,twosided = true */);
+    Cout << "NonDSampling::NonDSampling : sampleSize = " << numSamples << std::endl;
+  }
 
   // update concurrency
   if (numSamples) // samples is optional (default = 0)

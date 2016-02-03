@@ -1602,6 +1602,14 @@
 			  <param type="REAL" />
 			</keyword>
 		      </keyword>
+		      <keyword  id="wilks_samples" name="wilks_samples" code="{N_mdm(true,wilksFlag)}" label="wilks_samples" help="" minOccurs="0" >
+			<keyword  id="wilks_alpha" name="wilks_alpha" code="{N_mdm(Real,wilksAlpha)}" label="wilks_alpha" help="" minOccurs="0" >
+			  <param type="REAL" />
+			</keyword>
+			<keyword  id="wilks_beta" name="wilks_beta" code="{N_mdm(Real,wilksBeta)}" label="wilks_beta" help="" minOccurs="0" >
+			  <param type="REAL" />
+			</keyword>
+		      </keyword>
 		    </keyword>
 		  </oneOf>
 		  <keyword  id="reliability_levels" name="reliability_levels" code="{N_mdm(resplevs,reliabilityLevels)}" label="reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >

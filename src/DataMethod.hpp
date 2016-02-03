@@ -780,6 +780,12 @@ public:
   /// The percentage of variance explained by using a truncated 
   /// number of principal components in PCA
   Real percentVarianceExplained;
+  /// Flag to specify use of Wilks formula to calculate num samples
+  bool wilksFlag;
+  /// Wilks alpha parameter - 
+  Real wilksAlpha;
+  /// Wilks beta parameter - 
+  Real wilksBeta;
 
   // NonD
 
