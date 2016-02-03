@@ -814,8 +814,9 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 	       (interfaceType & DIRECT_INTERFACE_BIT) ||
 	       evalScheduling == PEER_STATIC_SCHEDULING ) {
 	    //peer_static_schedule_evaluations_nowait(); // needed for override?
-	    Cerr << "Error: message passing requires nonblocking scheduler."
-		 << std::endl;
+	    Cerr << "Error: nonblocking message passing scheduler not "
+		 << "implemented for peer static, as required by parallel "
+		 << "configuration settings." << std::endl;
 	    abort_handler(-1);
 	  }
 	  else

@@ -470,7 +470,11 @@ void SurrogateModel::
 asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
 	    ShortArray& approx_asv, bool build_flag)
 {
-  if (surrogateFnIndices.size() != numFns) { // mixed response set
+  if (surrogateFnIndices.size() == numFns) {
+    if (build_flag) actual_asv = orig_asv;
+    else            approx_asv = orig_asv;
+  }
+  else { // mixed response set
     if (build_flag) { // construct mode: define actual_asv
       actual_asv.assign(numFns, 0);
       for (ISIter it=surrogateFnIndices.begin();
@@ -494,10 +498,6 @@ asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
 	}
       }
     }
-  }
-  else {
-    if (build_flag) actual_asv = orig_asv;
-    else            approx_asv = orig_asv;
   }
 }
 

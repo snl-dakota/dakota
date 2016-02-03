@@ -222,7 +222,7 @@ public:
   //- Heading: Set and Inquire functions
   //
 
-  /// replaces existing letter with a new one
+  /// assign letter or replace existing letter with a new one
   void assign_rep(Interface* interface_rep, bool ref_count_incr = true);
 
   /// returns the interface type
