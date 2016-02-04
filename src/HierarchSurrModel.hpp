@@ -152,10 +152,20 @@ private:
   /// values/bounds/labels
   void update_model(Model& model);
 
+  /// called from derived_synchronize() for case of a shared model form
+  /// between low and high fidelity, resulting in a single combined job queue
+  const IntResponseMap& derived_synchronize_same_model();
+  /// called from derived_synchronize() for case of distinct model forms
+  /// with competing job queues
+  const IntResponseMap& derived_synchronize_nowait_loop();
+  /// called from derived_synchronize() for case of distinct model forms
+  /// without competing job queues
+  const IntResponseMap& derived_synchronize_distinct_model();
+
   /// resize currentResponse based on responseMode
   void resize_response();
   /// aggregate LF and HF response to create a new response with 2x size
-  void aggregate_response(const Response& lf_resp, const Response& hf_resp,
+  void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
   
   //

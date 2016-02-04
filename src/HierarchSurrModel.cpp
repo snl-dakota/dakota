@@ -472,7 +472,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     break;
   }
   case AGGREGATED_MODELS:
-    aggregate_response(lf_model.current_response(), hi_fi_response,
+    aggregate_response(hi_fi_response, lf_model.current_response(),
 		       currentResponse);
     break;
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
@@ -617,90 +617,117 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     fidelity evaluations, high fidelity evaluations, or both. */
 const IntResponseMap& HierarchSurrModel::derived_synchronize()
 {
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  if (sameModelForm)
+    return derived_synchronize_same_model();
+  else {
+    if (!truthIdMap.empty() && !surrIdMap.empty()) // 2 competing queues:
+      return derived_synchronize_nowait_loop();    //   use nonblocking synch
+    else                                           // 1 queue:
+      return derived_synchronize_distinct_model(); //   use blocking synch
+  }
+}
 
-  if (sameModelForm) {
-    surrResponseMap.clear();
-    // retrieve LF and HF evals aggregated into a single IntResponseMap
-    component_parallel_mode(LF_MODEL);
-    const IntResponseMap& combined_resp_map
-      = orderedModels[lowFidelityIndices.first].synchronize();
-    // perform any LF/HF aggregations
-    IntIntMIter hf_id_it = truthIdMap.begin(), lf_id_it = surrIdMap.begin();
-    switch (responseMode) {
-    case MODEL_DISCREPANCY:
-      for ( ; hf_id_it!=truthIdMap.end() && lf_id_it!=surrIdMap.end();
-	    ++hf_id_it, ++lf_id_it ) {
-	IntRespMCIter hf_map_it = combined_resp_map.find(hf_id_it->first),
-	              lf_map_it = combined_resp_map.find(lf_id_it->first);
-	deltaCorr.compute(hf_map_it->second, lf_map_it->second, // HF,LF resp
-			  surrResponseMap[lf_id_it->second],    // rekey
-			  quiet_flag);
-      }
-      break;
-    case AGGREGATED_MODELS:
-      for ( ; hf_id_it!=truthIdMap.end() && lf_id_it!=surrIdMap.end();
-	    ++hf_id_it, ++lf_id_it ) {
-	IntRespMCIter hf_map_it = combined_resp_map.find(hf_id_it->first),
-	              lf_map_it = combined_resp_map.find(lf_id_it->first);
-	aggregate_response(lf_map_it->second, hf_map_it->second, // LF,HF resp
-			   surrResponseMap[lf_id_it->second]);   // rekey
-      }
-      break;
-    default: { // process any combination of HF and LF completions
-      Response empty_resp;
-      int hf_eval_id, hf_rekey, lf_eval_id, lf_rekey;
-      while (hf_id_it != truthIdMap.end() || lf_id_it != surrIdMap.end()) {
-	if (hf_id_it == truthIdMap.end()) hf_eval_id = hf_rekey = INT_MAX;
-	else { hf_eval_id = hf_id_it->first; hf_rekey = hf_id_it->second; }
-	if (lf_id_it == surrIdMap.end())  lf_eval_id = lf_rekey = INT_MAX;
-	else { lf_eval_id = lf_id_it->first; lf_rekey = lf_id_it->second; }
-	if (hf_rekey < lf_rekey) { // only HF available
-	  IntRespMCIter hf_map_it = combined_resp_map.find(hf_eval_id);
-	  response_mapping(hf_map_it->second, empty_resp,
-			   surrResponseMap[hf_rekey]);
-	  ++hf_id_it;
-	}
-	else if (lf_rekey < hf_rekey) { // only LF available
-	  IntRespMCIter lf_map_it = combined_resp_map.find(lf_eval_id);
-	  response_mapping(empty_resp, lf_map_it->second,
-			   surrResponseMap[lf_rekey]);
-	  ++lf_id_it;
-	}
-	else { // both LF and HF available
-	  IntRespMCIter hf_map_it = combined_resp_map.find(hf_eval_id),
-	                lf_map_it = combined_resp_map.find(lf_eval_id);
-	  response_mapping(hf_map_it->second, lf_map_it->second, // HF,LF resp
-			   surrResponseMap[lf_rekey]);
-	  ++hf_id_it; ++lf_id_it;
-	}
-      }
-      break;
+
+const IntResponseMap& HierarchSurrModel::derived_synchronize_same_model()
+{
+  // TO DO: LF cached response map from nowait?
+
+  surrResponseMap.clear();
+  // retrieve LF and HF evals aggregated into a single IntResponseMap
+  component_parallel_mode(LF_MODEL);
+  const IntResponseMap& combined_resp_map
+    = orderedModels[lowFidelityIndices.first].synchronize();
+
+  // perform any LF/HF aggregations
+  IntIntMIter hf_id_it = truthIdMap.begin(), lf_id_it = surrIdMap.begin();
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: {
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+    for ( ; hf_id_it!=truthIdMap.end() && lf_id_it!=surrIdMap.end();
+	  ++hf_id_it, ++lf_id_it ) {
+      IntRespMCIter hf_map_it = combined_resp_map.find(hf_id_it->first),
+	            lf_map_it = combined_resp_map.find(lf_id_it->first);
+      deltaCorr.compute(hf_map_it->second, lf_map_it->second, // HF,LF resp
+			surrResponseMap[lf_id_it->second],    // rekey
+			quiet_flag);
     }
+    break;
+  }
+  case AGGREGATED_MODELS:
+    for ( ; hf_id_it!=truthIdMap.end() && lf_id_it!=surrIdMap.end();
+	  ++hf_id_it, ++lf_id_it ) {
+      IntRespMCIter hf_map_it = combined_resp_map.find(hf_id_it->first),
+	            lf_map_it = combined_resp_map.find(lf_id_it->first);
+      aggregate_response(hf_map_it->second, lf_map_it->second, // HF,LF resp
+			 surrResponseMap[lf_id_it->second]);   // rekey
     }
-    truthIdMap.clear(); surrIdMap.clear();
-    return surrResponseMap;
+    break;
+  default: { // process any combination of HF and LF completions
+    Response empty_resp;
+    int hf_eval_id, hf_rekey, lf_eval_id, lf_rekey;
+    while (hf_id_it != truthIdMap.end() || lf_id_it != surrIdMap.end()) {
+      if (hf_id_it == truthIdMap.end()) hf_eval_id = hf_rekey = INT_MAX;
+      else { hf_eval_id = hf_id_it->first; hf_rekey = hf_id_it->second; }
+      if (lf_id_it == surrIdMap.end())  lf_eval_id = lf_rekey = INT_MAX;
+      else { lf_eval_id = lf_id_it->first; lf_rekey = lf_id_it->second; }
+      if (hf_rekey < lf_rekey) { // only HF available
+	IntRespMCIter hf_map_it = combined_resp_map.find(hf_eval_id);
+	response_mapping(hf_map_it->second, empty_resp,
+			 surrResponseMap[hf_rekey]);
+	++hf_id_it;
+      }
+      else if (lf_rekey < hf_rekey) { // only LF available
+	IntRespMCIter lf_map_it = combined_resp_map.find(lf_eval_id);
+	response_mapping(empty_resp, lf_map_it->second,
+			 surrResponseMap[lf_rekey]);
+	++lf_id_it;
+      }
+      else { // both LF and HF available
+	IntRespMCIter hf_map_it = combined_resp_map.find(hf_eval_id),
+	  lf_map_it = combined_resp_map.find(lf_eval_id);
+	response_mapping(hf_map_it->second, lf_map_it->second, // HF,LF resp
+			 surrResponseMap[lf_rekey]);
+	++hf_id_it; ++lf_id_it;
+      }
+    }
+    break;
+  }
   }
 
-  bool asynch_hi_fi = !truthIdMap.empty(), asynch_lo_fi = !surrIdMap.empty();
-  if (asynch_hi_fi && asynch_lo_fi) {
-    // in this case, we don't want to starve either LF or HF scheduling by
-    // blocking on one or the other --> leverage derived_synchronize_nowait()
-    IntResponseMap aggregated_map; // accumulate surrResponseMap returns
-    while (!truthIdMap.empty() || !surrIdMap.empty()) {
-      // partial_map is a reference to surrResponseMap, returned by _nowait()
-      const IntResponseMap& partial_map	= derived_synchronize_nowait();
-      if (!partial_map.empty())
-	aggregated_map.insert(partial_map.begin(), partial_map.end());
-    }
-    surrResponseMap = aggregated_map; // now replace surrResponseMap for return
-    return surrResponseMap;
+  truthIdMap.clear(); surrIdMap.clear();
+  return surrResponseMap;
+}
+
+
+const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait_loop()
+{
+  // in this case, we don't want to starve either LF or HF scheduling by
+  // blocking on one or the other --> leverage derived_synchronize_nowait()
+  IntResponseMap aggregated_map; // accumulate surrResponseMap returns
+  while (!truthIdMap.empty() || !surrIdMap.empty()) {
+    // partial_map is a reference to surrResponseMap, returned by _nowait()
+    const IntResponseMap& partial_map = derived_synchronize_nowait();
+    if (!partial_map.empty())
+      aggregated_map.insert(partial_map.begin(), partial_map.end());
   }
 
-  bool cached_hi_fi = !cachedTruthRespMap.empty(),
+  // Note: cached response maps and any LF/HF aggregations are managed
+  // within derived_synchronize_nowait()
+
+  surrResponseMap = aggregated_map; // now replace surrResponseMap for return
+  return surrResponseMap;
+}
+
+
+const IntResponseMap& HierarchSurrModel::derived_synchronize_distinct_model()
+{
+  bool asynch_hi_fi = !truthIdMap.empty(), asynch_lo_fi = !surrIdMap.empty(),
+       cached_hi_fi = !cachedTruthRespMap.empty(),
        cached_lo_fi = !cachedApproxRespMap.empty(),
        hi_fi_evals  = (asynch_hi_fi || cached_hi_fi),
-       lo_fi_evals  = (asynch_lo_fi || cached_lo_fi);
+       lo_fi_evals  = (asynch_lo_fi || cached_lo_fi),
+       quiet_flag   = (outputLevel < NORMAL_OUTPUT);
+
   surrResponseMap.clear();
 
   // --------------------------
@@ -819,7 +846,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
   case AGGREGATED_MODELS:
     for (; hf_map_it != hi_fi_resp_map_rekey.end() && 
 	   lf_map_it != lo_fi_resp_map_rekey.end(); ++hf_map_it, ++lf_map_it)
-      aggregate_response(lf_map_it->second, hf_map_it->second,
+      aggregate_response(hf_map_it->second, lf_map_it->second,
 			 surrResponseMap[hf_map_it->first]);
     break;
   default: { // {UN,AUTO_}CORRECTED_SURROGATE modes
@@ -1038,7 +1065,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
 	deltaCorr.compute(hf_map_it->second, lf_map_it->second,
 			  surrResponseMap[hf_eval_id], quiet_flag); break;
       case AGGREGATED_MODELS:
-	aggregate_response(lf_map_it->second, hf_map_it->second,
+	aggregate_response(hf_map_it->second, lf_map_it->second,
 			   surrResponseMap[hf_eval_id]); break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
 	response_mapping(hf_map_it->second, lf_map_it->second,
@@ -1084,7 +1111,7 @@ void HierarchSurrModel::resize_response()
 
   
 void HierarchSurrModel::
-aggregate_response(const Response& lf_resp, const Response& hf_resp,
+aggregate_response(const Response& hf_resp, const Response& lf_resp,
 		   Response& agg_resp)
 {
   if (agg_resp.is_null())
