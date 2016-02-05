@@ -49,6 +49,11 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   asmInstance = this;
   modelType = "subspace";
 
+  componentParallelMode = OFFLINE_PHASE;
+  offlineEvalConcurrency = initialSamples;
+  onlineEvalConcurrency = 1; // Will be overwritten with correct value in
+                             // derived_set_communicators()
+
   const IntVector& db_refine_samples = 
     problem_db.get_iv("model.refinement_samples");
   if (db_refine_samples.length() == 1)
@@ -121,6 +126,11 @@ ActiveSubspaceModel(const Model& sub_model,
 {
   asmInstance = this;
   modelType = "subspace";
+
+  componentParallelMode = OFFLINE_PHASE;
+  offlineEvalConcurrency = initialSamples;
+  onlineEvalConcurrency = 1; // Will be overwritten with correct value in
+                             // derived_set_communicators()
   
   // BMA TODO: probably want to do numerical derivatives in the
   // smaller subspace, not in the subModel space... (not yet)
@@ -212,6 +222,9 @@ void ActiveSubspaceModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping()
 {
+  // Set mode OFFLINE_PHASE
+  component_parallel_mode(OFFLINE_PHASE);
+
   bool sub_model_resize = subModel.initialize_mapping();
 
   // TODO: create modes to switch between active, inactive, and complete
@@ -240,6 +253,10 @@ bool ActiveSubspaceModel::initialize_mapping()
   // Perform numerical derivatives in subspace:
   supportsEstimDerivs = true;
 
+  
+  // Set mode ONLINE_PHASE
+  component_parallel_mode(ONLINE_PHASE);
+
   if (reducedRank != numFullspaceVars || // Active SS is reduced rank
       sub_model_resize) { // Active SS is full rank but subModel resized
 
@@ -258,6 +275,71 @@ bool ActiveSubspaceModel::finalize_mapping()
 {
   // TODO: return to full space
   return false; // This will become true when TODO is implemented.
+}
+
+
+void ActiveSubspaceModel::component_parallel_mode(short mode)
+{
+  // mode may be correct, but can't guarantee active parallel config is in sync
+  //if (componentParallelMode == mode)
+  //  return; // already in correct parallel mode
+
+  // terminate previous serve mode (if active)
+  size_t index; int iter_comm_size;
+  if (componentParallelMode != mode) {
+    ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
+    size_t index = subModel.mi_parallel_level_index();
+    if (pc_it->mi_parallel_level_defined(index) && 
+        pc_it->mi_parallel_level(index).server_communicator_size() > 1)
+      subModel.stop_servers();
+  }
+
+  // activate new serve mode (matches ActiveSubspaceModel::serve_run(pl_iter)).
+  if (componentParallelMode != mode &&
+      modelPCIter->mi_parallel_level_defined(miPLIndex)) {
+    ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
+    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
+    if (mi_pl.server_communicator_size() > 1) {
+      parallelLib.bcast(mode, mi_pl);
+      if (mode == OFFLINE_PHASE) {
+        parallelLib.bcast(offlineEvalConcurrency, mi_pl);
+        subModel.set_communicators(pl_iter, offlineEvalConcurrency);
+      }
+      else if (mode == ONLINE_PHASE) {
+        subModel.set_communicators(pl_iter, onlineEvalConcurrency);
+      }
+    }
+  }
+
+  componentParallelMode = mode;
+}
+
+
+void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter, int online_eval_concurrency)
+{
+  onlineEvalConcurrency = online_eval_concurrency;
+  set_communicators(pl_iter, onlineEvalConcurrency, false); // don't recurse
+
+  // Initially start in offline phase:
+  componentParallelMode = OFFLINE_PHASE;
+	subModel.serve_run(pl_iter, offlineEvalConcurrency);
+
+  while (componentParallelMode) {
+    parallelLib.bcast(componentParallelMode, *pl_iter);
+    if (componentParallelMode == OFFLINE_PHASE) {
+      parallelLib.bcast(offlineEvalConcurrency, *pl_iter);
+      subModel.serve_run(pl_iter, offlineEvalConcurrency);
+    }
+    else if (componentParallelMode == ONLINE_PHASE) {
+	    subModel.serve_run(pl_iter, onlineEvalConcurrency);
+    }
+  }
+}
+
+
+void ActiveSubspaceModel::stop_servers()
+{
+  component_parallel_mode(0);
 }
 
 
@@ -322,9 +404,12 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     probDescDB.set_db_list_nodes(fullspaceSampler.method_id());
     fullspaceSampler.init_communicators(pl_iter);
     
+    // TODO: add this back to use refinement samples
     // batch additions support concurrency up to batchSize * model concurrency
-    int batch_concurrency = batchSize * subModel.derivative_concurrency();
-    subModel.init_communicators(pl_iter, batch_concurrency);
+    //int batch_concurrency = batchSize * subModel.derivative_concurrency();
+    //subModel.init_communicators(pl_iter, batch_concurrency);
+
+    subModel.init_communicators(pl_iter, max_eval_concurrency);
 
     probDescDB.set_db_method_node(method_index); // restore method only
   }
@@ -337,8 +422,18 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
-  if (recurse_flag)
+  onlineEvalConcurrency = max_eval_concurrency;
+
+  if (recurse_flag) {
     fullspaceSampler.set_communicators(pl_iter);
+
+    //subModel.set_communicators(pl_iter, max_eval_concurrency);
+
+    // RecastModels do not utilize default set_ie_asynchronous_mode() as
+    // they do not define the ie_parallel_level
+    asynchEvalFlag     = subModel.asynch_flag();
+    evaluationCapacity = subModel.evaluation_capacity();
+  }
 }
 
 
@@ -349,9 +444,12 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     fullspaceSampler.free_communicators(pl_iter);
 
+    // TODO: add this back to use refinement samples
     // batch additions support concurrency up to batchSize * model concurrency
-    int batch_concurrency = batchSize * subModel.derivative_concurrency();
-    subModel.free_communicators(pl_iter, batch_concurrency);
+    //int batch_concurrency = batchSize * subModel.derivative_concurrency();
+    //subModel.free_communicators(pl_iter, batch_concurrency);
+
+    subModel.free_communicators(pl_iter, max_eval_concurrency);
   }
 }
 

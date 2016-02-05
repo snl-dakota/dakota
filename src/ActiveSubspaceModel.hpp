@@ -14,6 +14,10 @@
 
 namespace Dakota {
 
+// define special values for componentParallelMode
+#define OFFLINE_PHASE 1
+#define ONLINE_PHASE 2
+
 /// forward declarations
 class ProblemDescDB;
 
@@ -89,6 +93,19 @@ protected:
 
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag);
+
+
+  /// update component parallel mode for supporting parallelism in
+  /// the offline and online phases
+  void component_parallel_mode(short mode);
+
+  /// Service the offline and online phase job requests received from the
+  /// master; completes when termination message received from stop_servers().
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+
+  /// Executed by the master to terminate the offline and online phase
+  /// server operations when iteration on the ActiveSubspaceModel is complete
+  void stop_servers();
 
   // ---
   // Construct time convenience functions
@@ -193,6 +210,7 @@ protected:
                                const Variables& sub_model_x_vars,
                                const Response& sub_model_resp,
                                Response& recast_resp);
+
 
   // ---
   // Member data
@@ -318,6 +336,12 @@ protected:
   /// the index of the active metaiterator-iterator parallelism level
   /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
   size_t miPLIndex;
+
+  /// Concurrency to use once subspace has been built.
+  int onlineEvalConcurrency;
+
+  /// Concurrency to use when building subspace.
+  int offlineEvalConcurrency;
 
 };
 
