@@ -24,16 +24,16 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 
 ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
-  randomSeed(24620), 
+  randomSeed(24620),
   initialSamples(problem_db.get_int("model.initial_samples")),
-  batchSize(0),  // updated later
+  batchSize(0), // updated later
   maxIterations(problem_db.get_int("model.max_iterations")),
   // may need to allow this control later if doing nullspace verification:
   maxFunctionEvals(std::numeric_limits<int>::max()),
   // need to offer user control
   svTol(std::max(problem_db.get_real("model.convergence_tolerance"),
-		 std::numeric_limits<Real>::epsilon())),
-  performAssessment(false), 
+                 std::numeric_limits<Real>::epsilon())),
+  performAssessment(false),
   nullspaceTol(problem_db.get_real("model.convergence_tolerance")/1.0e3),
   subspaceIdBingLi(probDescDB.get_bool("model.subspace.truncation_method.bing_li")),
   subspaceIdConstantine(probDescDB.get_bool("model.subspace.truncation_method.constantine")),
@@ -50,7 +50,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   modelType = "subspace";
 
   componentParallelMode = OFFLINE_PHASE;
-  offlineEvalConcurrency = initialSamples;
+  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_set_communicators()
 
@@ -60,7 +60,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     batchSize = db_refine_samples[0];
   else if (db_refine_samples.length() > 1) {
     Cerr << "\nError (ActiveSubspaceModel): refinement_samples must be "
-	 << "length 1 if specified." << std::endl;
+         << "length 1 if specified." << std::endl;
     abort_handler(PARSE_ERROR);
   }
 
@@ -108,12 +108,12 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
     subspace for continuous variables only, but carries other active
     variables along for the ride. */
 ActiveSubspaceModel::
-ActiveSubspaceModel(const Model& sub_model, 
-		    int random_seed, int initial_samples, int batch_size,
-		    double conv_tol, size_t max_iter, size_t max_evals,
-        unsigned short subspace_id_method):
-  RecastModel(sub_model), randomSeed(random_seed), 
-  initialSamples(initial_samples), batchSize(batch_size), 
+ActiveSubspaceModel(const Model& sub_model,
+                    int random_seed, int initial_samples, int batch_size,
+                    double conv_tol, size_t max_iter, size_t max_evals,
+                    unsigned short subspace_id_method):
+  RecastModel(sub_model), randomSeed(random_seed),
+  initialSamples(initial_samples), batchSize(batch_size),
   maxIterations(max_iter), maxFunctionEvals(max_evals),
   svTol(std::max(conv_tol, std::numeric_limits<Real>::epsilon())),
   performAssessment(false), nullspaceTol(conv_tol/1.0e3),
@@ -128,10 +128,10 @@ ActiveSubspaceModel(const Model& sub_model,
   modelType = "subspace";
 
   componentParallelMode = OFFLINE_PHASE;
-  offlineEvalConcurrency = initialSamples;
+  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_set_communicators()
-  
+
   // BMA TODO: probably want to do numerical derivatives in the
   // smaller subspace, not in the subModel space... (not yet)
   //supportsEstimDerivs = true;
@@ -158,8 +158,7 @@ void ActiveSubspaceModel::validate_inputs()
   // set default initialSamples, with lower bound of 2
   // TODO: allow other user control of initial sample rule?
   if (initialSamples <= 0) {
-    initialSamples =
-      (unsigned int) std::ceil( (double) subModel.cv() / 100.0 );
+    initialSamples = (unsigned int) std::ceil( (double) subModel.cv() / 100.0 );
     initialSamples = std::max(2, initialSamples);
     Cout << "\nInfo: Efficient subspace method setting (initial) samples = "
          << initialSamples << "." << std::endl;
@@ -253,7 +252,6 @@ bool ActiveSubspaceModel::initialize_mapping()
   // Perform numerical derivatives in subspace:
   supportsEstimDerivs = true;
 
-  
   // Set mode ONLINE_PHASE
   component_parallel_mode(ONLINE_PHASE);
 
@@ -289,7 +287,7 @@ void ActiveSubspaceModel::component_parallel_mode(short mode)
   if (componentParallelMode != mode) {
     ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
     size_t index = subModel.mi_parallel_level_index();
-    if (pc_it->mi_parallel_level_defined(index) && 
+    if (pc_it->mi_parallel_level_defined(index) &&
         pc_it->mi_parallel_level(index).server_communicator_size() > 1)
       subModel.stop_servers();
   }
@@ -315,14 +313,15 @@ void ActiveSubspaceModel::component_parallel_mode(short mode)
 }
 
 
-void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter, int online_eval_concurrency)
+void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter,
+                                    int online_eval_concurrency)
 {
   onlineEvalConcurrency = online_eval_concurrency;
   set_communicators(pl_iter, onlineEvalConcurrency, false); // don't recurse
 
   // Initially start in offline phase:
   componentParallelMode = OFFLINE_PHASE;
-	subModel.serve_run(pl_iter, offlineEvalConcurrency);
+  subModel.serve_run(pl_iter, offlineEvalConcurrency);
 
   while (componentParallelMode) {
     parallelLib.bcast(componentParallelMode, *pl_iter);
@@ -331,7 +330,7 @@ void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter, int online_eval_concurr
       subModel.serve_run(pl_iter, offlineEvalConcurrency);
     }
     else if (componentParallelMode == ONLINE_PHASE) {
-	    subModel.serve_run(pl_iter, onlineEvalConcurrency);
+      subModel.serve_run(pl_iter, onlineEvalConcurrency);
     }
   }
 }
@@ -356,7 +355,8 @@ void ActiveSubspaceModel::update_var_labels()
     subspace_var_labels[i] = "ssv_" + boost::lexical_cast<std::string>(i+1);
   }
 
-  continuous_variable_labels(subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
+  continuous_variable_labels(
+    subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 
 void ActiveSubspaceModel::init_fullspace_sampler()
@@ -387,10 +387,10 @@ void ActiveSubspaceModel::init_fullspace_sampler()
      into any submodels. */
 void ActiveSubspaceModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
+                           bool recurse_flag)
 {
   // The same model is used in multiple contexts, with varying degrees
-  // of concurrency: 
+  // of concurrency:
   //  - fullspaceSampler(subModel) with initialSamples
   //  - fullspaceSampler(subModel) with batchSamples
   //  - direct evaluate() of verif_samples, one at a time
@@ -418,7 +418,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 void ActiveSubspaceModel::
 derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			  bool recurse_flag)
+                          bool recurse_flag)
 {
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
@@ -427,11 +427,9 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     fullspaceSampler.set_communicators(pl_iter);
 
-    //subModel.set_communicators(pl_iter, max_eval_concurrency);
-
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
-    asynchEvalFlag     = subModel.asynch_flag();
+    asynchEvalFlag = subModel.asynch_flag();
     evaluationCapacity = subModel.evaluation_capacity();
   }
 }
@@ -439,7 +437,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 void ActiveSubspaceModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
+                           bool recurse_flag)
 {
   if (recurse_flag) {
     fullspaceSampler.free_communicators(pl_iter);
@@ -467,22 +465,18 @@ void ActiveSubspaceModel::identify_subspace()
   while (!svtol_met && !recon_tol_met &&
          currIter < maxIterations && totalEvals < maxFunctionEvals &&
          reducedRank <= numFullspaceVars) {
-
     // Run the inner iteration until user tol met (if possible), then check
     // reconstruction error, then continue outer if not tight enough
     if (currIter == 0) {
-
       // initially do this loop until tolerance met
       // once met (svTol will always be met),
-      while (!svtol_met && currIter < maxIterations && 
+      while (!svtol_met && currIter < maxIterations &&
              totalEvals < maxFunctionEvals
              && reducedRank <= numFullspaceVars) {
-
         ++currIter;  // any addition of batch of points counts as an iteration
         Cout << "\nASM: Iteration " << currIter << "." << std::endl;
         expand_basis(svtol_met);
         print_svd_stats();
-
       } // until SVD converged
 
       if (svtol_met) {
@@ -499,7 +493,6 @@ void ActiveSubspaceModel::identify_subspace()
         Cout << "\n    Proceeding to reconstruction with reducedRank = "
              << reducedRank << std::endl;
       }
-
     }
     else {
       ++currIter;  // any addition of batch of points counts as an iteration
@@ -512,12 +505,12 @@ void ActiveSubspaceModel::identify_subspace()
     // the reduced basis is dimension N x r and stored in the first r
     // cols of leftSingularVectors; extract it instead of using BLAS directly
     RealMatrix reduced_basis_W1(Teuchos::View, leftSingularVectors,
-                               numFullspaceVars, reducedRank);
+                                numFullspaceVars, reducedRank);
     activeBasis = reduced_basis_W1;
 
     RealMatrix reduced_basis_W2(Teuchos::View, leftSingularVectors,
-                               numFullspaceVars, numFullspaceVars - reducedRank,
-                               0, reducedRank);
+                                numFullspaceVars,numFullspaceVars - reducedRank,
+                                0, reducedRank);
 
     inactiveBasis = reduced_basis_W2;
     if (outputLevel >= DEBUG_OUTPUT) {
@@ -533,7 +526,8 @@ void ActiveSubspaceModel::identify_subspace()
     else {
       // Bypass tolerance check if no reconstruction:
       recon_tol_met = true;
-      Cout << "\nASM: Reconstruction has been bypassed. performAssessment = false" << std::endl;
+      Cout << "\nASM: Reconstruction has been bypassed."
+           << " performAssessment = false" << std::endl;
     }
 
     if (!recon_tol_met)
@@ -553,7 +547,7 @@ void ActiveSubspaceModel::identify_subspace()
   if(performAssessment) {
     Cout << "\n  reconstruction tolerance met?: " << recon_tol_met;
   }
-  else {    
+  else {
     Cout << "\n  reconstruction tolerance met?: bypassed";
   }
   Cout << "\n  max_iterations reached: " << (bool) (currIter >= maxIterations)
@@ -657,12 +651,11 @@ append_sample_matrices(unsigned int diff_samples)
   }
 
   int sample_insert_point = varsMatrix.numCols();
-  derivativeMatrix.reshape(numFullspaceVars,
-                           totalSamples*numFunctions);
+  derivativeMatrix.reshape(numFullspaceVars, totalSamples*numFunctions);
   varsMatrix.reshape(numFullspaceVars, totalSamples);
 
   unsigned int diff_sample_ind = 0;
-  IntRespMCIter resp_it  = all_responses.begin();
+  IntRespMCIter resp_it = all_responses.begin();
   IntRespMCIter resp_end = all_responses.end();
 
   // Compute gradient scaling factors if more than 1 response function
@@ -671,7 +664,7 @@ append_sample_matrices(unsigned int diff_samples)
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
       const RealVector& resp_vector = resp_it->second.function_values();
       for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
-        gradientScaleFactors[fn_ind] += resp_vector(fn_ind) / 
+        gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
           static_cast<Real>(diff_samples);
       }
     }
@@ -679,7 +672,7 @@ append_sample_matrices(unsigned int diff_samples)
 
   // Reset iterators and indices
   diff_sample_ind = 0;
-  resp_it  = all_responses.begin();
+  resp_it = all_responses.begin();
   resp_end = all_responses.end();
 
   for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
@@ -690,7 +683,7 @@ append_sample_matrices(unsigned int diff_samples)
     for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
       unsigned int col_ind = sample_ind * numFunctions + fn_ind;
       for (unsigned int var_ind = 0; var_ind < numFullspaceVars; ++var_ind) {
-        derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind) / 
+        derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind) /
           gradientScaleFactors[fn_ind];
       }
     }
@@ -731,7 +724,7 @@ compute_svd(bool& svtol_met)
   if(derivativeMatrix.numRows() != singular_values.length())
   {
     Cerr << "Number of computed singular_values does not match the dimension "
-            "of the space of gradient samples! Logic not currently supported!"
+         << "of the space of gradient samples! Logic not currently supported!"
          << std::endl;
     abort_handler(-1);
   }
@@ -739,27 +732,27 @@ compute_svd(bool& svtol_met)
   if (reducedRank > 0 && reducedRank <= singular_values.length()) {
     // reducedRank has been provided, set svtol_met to true:
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "ASM: Subspace size has been specified as reduced_rank = " << reducedRank
-	         << "." << std::endl;
+      Cout << "ASM: Subspace size has been specified as reduced_rank = "
+           << reducedRank << "." << std::endl;
     svtol_met = true;
   }
   else {
     if (subspaceIdBingLi) {
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "ASM: Determining eigenvalue gap with boostrap and Bing-Li "
-	     << "metric." << std::endl;
+             << "metric." << std::endl;
       computeBingLiCriterion(singular_values, svtol_met);
     }
     if (subspaceIdConstantine) {
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "ASM: Determining eigenvalue gap with boostrap and Constantine "
-	     << "metric." << std::endl;
+             << "metric." << std::endl;
       computeConstantineMetric(singular_values, svtol_met);
     }
     if (subspaceIdEnergy) {
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "ASM: Determining minimum subspace size with eigenvalue energy "
-	           << "metric." << std::endl;
+             << "metric." << std::endl;
       computeEnergyCriterion(singular_values, svtol_met);
     }
 
@@ -767,7 +760,7 @@ compute_svd(bool& svtol_met)
     if (!(subspaceIdBingLi || subspaceIdConstantine || subspaceIdEnergy)) {
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "ASM: Determining eigenvalue gap with boostrap and Bing-Li "
-	     << "metric." << std::endl;
+             << "metric." << std::endl;
       computeBingLiCriterion(singular_values, svtol_met);
     }
   }
@@ -776,7 +769,12 @@ compute_svd(bool& svtol_met)
 
   // Compute ratio of largest singular value not in active subspace to
   // largest singular value in active subspace:
-  int sv_cutoff_ind = (reducedRank < num_singular_values)?(reducedRank):(num_singular_values-1);
+  int sv_cutoff_ind;
+  if (reducedRank < num_singular_values)
+    sv_cutoff_ind = reducedRank;
+  else
+    sv_cutoff_ind = num_singular_values-1;
+
   svRatio = singular_values[sv_cutoff_ind]/singular_values[0];
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -801,8 +799,7 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
   RealMatrix::scalarType eigen_sum = 0.0;
   for(size_t i = 0; i < num_vars; ++i)
   {
-    RealMatrix::scalarType eigen_val = singular_values[i] *
-                                       singular_values[i];
+    RealMatrix::scalarType eigen_val = singular_values[i] * singular_values[i];
     bing_li_criterion[i] = eigen_val;
     eigen_sum += eigen_val;
   }
@@ -818,10 +815,9 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
 
   Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
 
-  std::vector<RealMatrix::scalarType> bootstrapped_determinants(num_vars);
+  std::vector<RealMatrix::scalarType> bootstrapped_det(num_vars);
 
-  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
-    numFunctions);
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,numFunctions);
 
   for (size_t i = 0; i < numReplicates; ++i)
   {
@@ -843,7 +839,7 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
       // Get determinant from LU decomposition
 
       Teuchos::SerialDenseVector<RealMatrix::ordinalType,
-              RealMatrix::ordinalType> pivot(num_sing_vec);
+                                 RealMatrix::ordinalType> pivot(num_sing_vec);
       RealMatrix::ordinalType info;
 
       lapack.GETRF(num_sing_vec, num_sing_vec, submatrix.values(),
@@ -855,22 +851,22 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
         det *= submatrix(i,i);
       }
 
-      bootstrapped_determinants[j] += std::abs(det);
+      bootstrapped_det[j] += std::abs(det);
     }
   }
 
   RealMatrix::scalarType det_sum = 0.0;
-  bootstrapped_determinants[0] = 0.0;
+  bootstrapped_det[0] = 0.0;
   for (size_t i = 1; i < num_vars; ++i)
   {
-    bootstrapped_determinants[i] = 1.0 - bootstrapped_determinants[i] /
-                                   static_cast<RealMatrix::scalarType>(numReplicates);
-    det_sum += bootstrapped_determinants[i];
+    bootstrapped_det[i] = 1.0 - bootstrapped_det[i] /
+                          static_cast<RealMatrix::scalarType>(numReplicates);
+    det_sum += bootstrapped_det[i];
   }
 
   for (size_t i = 0; i < num_vars; ++i)
   {
-    bing_li_criterion[i] += bootstrapped_determinants[i] / det_sum;
+    bing_li_criterion[i] += bootstrapped_det[i] / det_sum;
   }
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -897,8 +893,7 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nASM: Bing Li metric subspace size estimate = "
-         << rank
-         << std::endl;
+         << rank << std::endl;
 
   if (rank > reducedRank)
     reducedRank = rank;
@@ -981,8 +976,7 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nASM: Constantine metric subspace size estimate = "
-         << rank
-         << std::endl;
+         << rank << std::endl;
 
   if (rank > reducedRank)
     reducedRank = rank;
@@ -1015,9 +1009,7 @@ computeEnergyCriterion(RealVector& singular_values, bool& svtol_met)
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nASM: Eigenvalue energy metric subspace size estimate = "
-         << rank
-         << std::endl;
-  
+         << rank << std::endl;
 
   if (rank > reducedRank)
     reducedRank = rank;
@@ -1116,8 +1108,7 @@ assess_reconstruction(bool& recon_tol_met)
   // evaluate model at nominal values
   subModel.continuous_variables(nominal_vars);
   subModel.evaluate(active_set);
-  const RealVector& ynominal =
-    subModel.current_response().function_values();
+  const RealVector& ynominal = subModel.current_response().function_values();
 
   // TODO: use array of RealVectors here
 
@@ -1226,7 +1217,7 @@ void ActiveSubspaceModel::initialize_recast()
   }
 
   BoolDequeArray nonlinear_resp_mapping(numFunctions,
-					BoolDeque(numFunctions, false));
+                                        BoolDeque(numFunctions, false));
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)
@@ -1236,13 +1227,13 @@ void ActiveSubspaceModel::initialize_recast()
   if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   RecastModel::
-    init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary, 
-	       num_secondary, recast_secondary_offset, recast_resp_order);
+    init_sizes(vars_comps_total, all_relax_di, all_relax_dr, num_primary,
+               num_secondary, recast_secondary_offset, recast_resp_order);
 
   RecastModel::
-    init_maps(vars_map_indices, nonlinear_vars_mapping, vars_mapping, 
-	      set_mapping, primary_resp_map_indices, secondary_resp_map_indices,
-	      nonlinear_resp_mapping, response_mapping, NULL);
+    init_maps(vars_map_indices, nonlinear_vars_mapping, vars_mapping,
+              set_mapping, primary_resp_map_indices, secondary_resp_map_indices,
+              nonlinear_resp_mapping, response_mapping, NULL);
 }
 
 /// Create a variables components totals array with the reduced space
@@ -1257,7 +1248,7 @@ SizetArray ActiveSubspaceModel::variables_resize()
       
     case MIXED_DESIGN: case RELAXED_DESIGN:
       // resize continuous design
-      vc_totals[TOTAL_CDV] = reducedRank; 
+      vc_totals[TOTAL_CDV] = reducedRank;
       break;
 
     case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
@@ -1265,9 +1256,9 @@ SizetArray ActiveSubspaceModel::variables_resize()
       vc_totals[TOTAL_CAUV] = reducedRank;
       break;
 
-    case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: 
+    case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN:
     case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-      // resize continuous epistemic (note there may not actually be 
+      // resize continuous epistemic (note there may not actually be
       // any epistemic variables in the *_UNCERTAIN cases)
       vc_totals[TOTAL_CEUV] = reducedRank;
       break;
@@ -1278,8 +1269,8 @@ SizetArray ActiveSubspaceModel::variables_resize()
       break;
 
     default:
-      Cerr << "\nError: invalid active variables view " << active_view 
-	   << " in ActiveSubspaceModel.\n";
+      Cerr << "\nError: invalid active variables view " << active_view
+           << " in ActiveSubspaceModel.\n";
       abort_handler(-1);
       break;
 
@@ -1381,9 +1372,11 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   alpha = 1.0;
   beta = 0.0;
   RealMatrix UTVx(n, m, false);
-  UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, activeBasis, V_x, beta);
+  UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
+                alpha, activeBasis, V_x, beta);
   RealMatrix V_y(reducedRank, reducedRank, false);
-  V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, UTVx, activeBasis, beta);
+  V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
+               alpha, UTVx, activeBasis, beta);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nV_y = \n" << V_y;
@@ -1429,11 +1422,12 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
 
   // Set continuous variable types:
-  UShortMultiArray cont_variable_types(boost::extents[reducedRank]); 
- 	for (int i = 0; i < reducedRank; i++) { 
-    cont_variable_types[i] = NORMAL_UNCERTAIN; 
+  UShortMultiArray cont_variable_types(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++) {
+    cont_variable_types[i] = NORMAL_UNCERTAIN;
   }
-  currentVariables.continuous_variable_types(cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
+  currentVariables.continuous_variable_types(
+    cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
 }
 
 
@@ -1455,8 +1449,8 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   copy_data(sub_model_x_vars.continuous_variables(), x);
 
   //  Calculate x = activeBasis*y + inactiveBasis*inactiveVars via matvec directly into x cv in submodel
-  //void 	GEMV (ETransp trans, const OrdinalType m, const OrdinalType n, const alpha_type alpha, const A_type *A, const OrdinalType lda, const x_type *x, const OrdinalType incx, const beta_type beta, ScalarType *y, const OrdinalType incy) const
-  // 	Performs the matrix-std::vector operation: y <- alpha*A*x+beta*y or y <- alpha*A'*x+beta*y where A is a general m by n matrix.
+  //void  GEMV (ETransp trans, const OrdinalType m, const OrdinalType n, const alpha_type alpha, const A_type *A, const OrdinalType lda, const x_type *x, const OrdinalType incx, const beta_type beta, ScalarType *y, const OrdinalType incy) const
+  //  Performs the matrix-std::vector operation: y <- alpha*A*x+beta*y or y <- alpha*A'*x+beta*y where A is a general m by n matrix.
   const RealMatrix& W1 = asmInstance->activeBasis;
   int m = W1.numRows();
   int n = W1.numCols();
@@ -1501,8 +1495,8 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
     depend on all others.  TODO: Could instead rely on a richer
     default in RecastModel based on varsMapIndices. */
 void ActiveSubspaceModel::set_mapping(const Variables& recast_vars,
-				      const ActiveSet& recast_set,
-				      ActiveSet& sub_model_set)
+                                      const ActiveSet& recast_set,
+                                      ActiveSet& sub_model_set)
 {
   // if the reduced-space (recast) set specifies any continuous
   // variable, enable derivaties w.r.t. all continuous variables in
@@ -1518,10 +1512,10 @@ void ActiveSubspaceModel::set_mapping(const Variables& recast_vars,
   for (size_t i=0; i<recast_dvv.size(); ++i)
     if (1 <= recast_dvv[i] && recast_dvv[i] <= recast_cv) {
       for (size_t j=1; j<=max_sm_id; ++j)
-	sub_model_dvv.push_back(j);
+        sub_model_dvv.push_back(j);
       break;
     }
-  sub_model_set.derivative_vector(sub_model_dvv);  
+  sub_model_set.derivative_vector(sub_model_dvv);
 }
 
 
@@ -1544,7 +1538,7 @@ response_mapping(const Variables& recast_y_vars,
   if(!dg_dx.empty()) {
     RealMatrix dg_dy = recast_resp.function_gradients();
 
-    // 	Performs the matrix-matrix operation:
+    //  Performs the matrix-matrix operation:
     // dg_dy <- alpha*W1^T*dg_dx + beta*dg_dy
     const RealMatrix& W1 = asmInstance->activeBasis;
     int m = W1.numCols();
@@ -1564,7 +1558,7 @@ response_mapping(const Variables& recast_y_vars,
   // Now transform the Hessians:
   const RealSymMatrixArray& H_x_all = sub_model_resp.function_hessians();
   if(!H_x_all.empty()) {
-    RealSymMatrixArray H_y_all(H_x_all.size()); 
+    RealSymMatrixArray H_y_all(H_x_all.size());
     for (int i = 0; i < H_x_all.size(); i++) {
       // compute H_y = W1^T * H_x * W1
       const RealMatrix& W1 = asmInstance->activeBasis;
@@ -1574,7 +1568,8 @@ response_mapping(const Variables& recast_y_vars,
       Real alpha = 1.0;
 
       RealSymMatrix H_y(n, false);
-      Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha, H_x_all[i], W1, H_y);
+      Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha,
+                                             H_x_all[i], W1, H_y);
       H_y_all[i] = H_y;
     }
 
