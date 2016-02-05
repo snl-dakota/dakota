@@ -277,10 +277,10 @@ void NonDMultilevelSampling::multilevel_mc(size_t mf_index)
 	 << std::endl;
   }
 
-  // aggregate mean and variance of estimator(s)
+  // aggregate expected value of estimators for Y, Y^2, Y^3, and Y^4. Final
+  // expected value result is sum of expected values from telescopic sum. These
+  // uncentered raw moment estimates are then converted to standardized moments.
   if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
-  // Final estimator result is sum of final mu_l from telescopic sum;
-  // final variance of estimator is a similar sum of variances.
   for (qoi=0; qoi<numFunctions; ++qoi) {
     Real mu_Y1 = 0., mu_Y2 = 0., mu_Y3 = 0., mu_Y4 = 0.;
     for (lev=0; lev<num_lev; ++lev) {
@@ -288,6 +288,8 @@ void NonDMultilevelSampling::multilevel_mc(size_t mf_index)
       mu_Y1 += sum_Y1(qoi,lev) / Nl; mu_Y2 += sum_Y2(qoi,lev) / Nl;
       mu_Y3 += sum_Y3(qoi,lev) / Nl; mu_Y4 += sum_Y4(qoi,lev) / Nl;
     }
+    // convert uncentered raw moments to standardized moments. There is no bias
+    // correction for small sample sizes as in NonDSampling::compute_moments().
     Real cm2 = mu_Y2 - mu_Y1*mu_Y1, cm3 = mu_Y3 - mu_Y1*(3.*cm2 + mu_Y1*mu_Y1);
     momentStats(0,qoi) = mu_Y1;
     momentStats(1,qoi) = std::sqrt(cm2);

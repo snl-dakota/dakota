@@ -1108,6 +1108,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ principal_components {N_mdm(true,pcaFlag)}
             [ percent_variance_explained REAL {N_mdm(Real,percentVarianceExplained)} ]
            ]
+          [ wilks_samples {N_mdm(true,wilksFlag)}
+            [ wilks_alpha REAL {N_mdm(Real,wilksAlpha)} ]
+            [ wilks_beta REAL {N_mdm(Real,wilksBeta)} ]
+           ]
          )
         [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
           [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]

@@ -2487,7 +2487,9 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"solution_target", P solnTarget},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
-	{"volume_boxsize_limit", P volBoxSize}};
+	{"volume_boxsize_limit", P volBoxSize},
+	{"wilks_alpha", P wilksAlpha},
+	{"wilks_beta", P wilksBeta}};
     #undef P
 
     KW<Real, DataMethodRep> *kw;
@@ -3028,7 +3030,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"sbl.truth_surrogate_bypass", P surrBasedLocalLayerBypass},
 	{"scaling", P methodScaling},
 	{"speculative", P speculativeFlag},
-	{"variance_based_decomp", P vbdFlag}};
+	{"variance_based_decomp", P vbdFlag},
+	{"wilks_samples", P wilksFlag}};
     #undef P
 
     KW<bool, DataMethodRep> *kw;

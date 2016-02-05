@@ -14,6 +14,10 @@
 
 namespace Dakota {
 
+// define special values for componentParallelMode
+#define OFFLINE_PHASE 1
+#define ONLINE_PHASE 2
+
 /// forward declarations
 class ProblemDescDB;
 
@@ -34,8 +38,8 @@ class ProblemDescDB;
 // Algorithm enhancements
 //  * Build surrogate in inactive dirs based on conditional expectation
 //  * Add linear constraints to this Model for the recast domain
-// 
-// Architecture: 
+//
+// Architecture:
 //  * Be able to construct this Model type directly from problem db and
 //    offer a user option.
 //  * Verbosity control
@@ -49,7 +53,7 @@ class ProblemDescDB;
 class ActiveSubspaceModel: public RecastModel
 {
 public:
-  
+
   //
   //- Heading: Constructor and destructor
   //
@@ -58,10 +62,10 @@ public:
   ActiveSubspaceModel(ProblemDescDB& problem_db);
 
   /// lightweight constructor
-  ActiveSubspaceModel(const Model& sub_model, 
-		      int random_seed, int initial_samples, int batch_size,
-		      double conv_tol, size_t max_iter, size_t max_evals,
-          unsigned short subspace_id_method);
+  ActiveSubspaceModel(const Model& sub_model,
+                      int random_seed, int initial_samples, int batch_size,
+                      double conv_tol, size_t max_iter, size_t max_evals,
+                      unsigned short subspace_id_method);
 
   /// destructor
   ~ActiveSubspaceModel();
@@ -82,13 +86,26 @@ protected:
   //
 
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag);
+                                  bool recurse_flag);
 
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag);
+                                 bool recurse_flag);
 
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag);
+                                  bool recurse_flag);
+
+
+  /// update component parallel mode for supporting parallelism in
+  /// the offline and online phases
+  void component_parallel_mode(short mode);
+
+  /// Service the offline and online phase job requests received from the
+  /// master; completes when termination message received from stop_servers().
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+
+  /// Executed by the master to terminate the offline and online phase
+  /// server operations when iteration on the ActiveSubspaceModel is complete
+  void stop_servers();
 
   // ---
   // Construct time convenience functions
@@ -123,7 +140,7 @@ protected:
 
   /// sample the derivative at diff_samples points and leave temporary
   /// in dace_iterator
-  void generate_fullspace_samples(unsigned int diff_samples); 
+  void generate_fullspace_samples(unsigned int diff_samples);
 
   /// append the fullspaceSampler samples to the derivative and vars matrices
   void append_sample_matrices(unsigned int diff_samples);
@@ -173,26 +190,27 @@ protected:
   /// update variable labels
   void update_var_labels();
 
-  
+
   // ---
   // Callback functions that perform data transform during the Recast operations
   // ---
 
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
-  static void vars_mapping(const Variables& recast_xi_vars, 
-			   Variables& sub_model_x_vars);
+  static void vars_mapping(const Variables& recast_xi_vars,
+                           Variables& sub_model_x_vars);
 
   /// map the inbound ActiveSet to the sub-model (map derivative variables)
   static void set_mapping(const Variables& recast_vars,
-			  const ActiveSet& recast_set,
-			  ActiveSet& sub_model_set);
+                          const ActiveSet& recast_set,
+                          ActiveSet& sub_model_set);
 
   /// map responses from the sub-model to the recast model
   static void response_mapping(const Variables& recast_y_vars,
                                const Variables& sub_model_x_vars,
                                const Response& sub_model_resp,
                                Response& recast_resp);
+
 
   // ---
   // Member data
@@ -221,23 +239,26 @@ protected:
   /// boolean flag to determine if reconstruction assessment is performed
   bool performAssessment;
 
-  /// user-specified tolerance on nullspace 
+  /// user-specified tolerance on nullspace
   double nullspaceTol;
 
-  /// Boolean flag signaling use of Bing Li criterion to identify active subspace dimension
+  /// Boolean flag signaling use of Bing Li criterion to identify active
+  /// subspace dimension
   bool subspaceIdBingLi;
 
-  /// Boolean flag signaling use of Constantine criterion to identify active subspace dimension
+  /// Boolean flag signaling use of Constantine criterion to identify active
+  /// subspace dimension
   bool subspaceIdConstantine;
 
-  /// Boolean flag signaling use of eigenvalue energy criterion to identify active subspace dimension
+  /// Boolean flag signaling use of eigenvalue energy criterion to identify
+  /// active subspace dimension
   bool subspaceIdEnergy;
 
   /// Number of bootstrap samples for subspace identification
   size_t numReplicates;
 
-  /// boolean flag to determine if variables should be transformed to u-space before
-  /// active subspace initialization
+  /// boolean flag to determine if variables should be transformed to u-space
+  /// before active subspace initialization
   bool transformVars;
 
   // ---
@@ -318,6 +339,12 @@ protected:
   /// the index of the active metaiterator-iterator parallelism level
   /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
   size_t miPLIndex;
+
+  /// Concurrency to use once subspace has been built.
+  int onlineEvalConcurrency;
+
+  /// Concurrency to use when building subspace.
+  int offlineEvalConcurrency;
 
 };
 

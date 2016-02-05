@@ -810,13 +810,15 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 	if (ieDedMasterFlag)
 	  master_dynamic_schedule_evaluations_nowait();
 	else {
+	  // need to use peer_dynamic to avoid blocking on local jobs;
+	  // nowait requirement makes the following cases an error:
 	  if ( asynchLocalEvalStatic || multiProcEvalFlag ||
 	       (interfaceType & DIRECT_INTERFACE_BIT) ||
 	       evalScheduling == PEER_STATIC_SCHEDULING ) {
-	    //peer_static_schedule_evaluations_nowait(); // needed for override?
-	    Cerr << "Error: nonblocking message passing scheduler not "
-		 << "implemented for peer static, as required by parallel "
-		 << "configuration settings." << std::endl;
+	    //peer_static_schedule_evaluations_nowait();
+	    Cerr << "Error: nonblocking message passing scheduler, as required "
+		 << "by parallel algorithm,\n       not supported for peer "
+		 << "static configuration due to local blocking." << std::endl;
 	    abort_handler(-1);
 	  }
 	  else

@@ -6683,6 +6683,8 @@ static Real
 	MP_(vbdDropTolerance),
 	MP_(volBoxSize),
 	MP_(vns),
+	MP_(wilksAlpha),
+	MP_(wilksBeta),
 	MP_(xConvTol);
 
 static RealVector
@@ -6800,7 +6802,8 @@ static bool
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
 	MP_(vbdFlag),
-	MP_(volQualityFlag);
+	MP_(volQualityFlag),
+	MP_(wilksFlag);
 
 static short
         MP_(expansionType),
